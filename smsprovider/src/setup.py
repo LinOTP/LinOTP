@@ -24,7 +24,7 @@
 #    Support: www.lsexperts.de
 #
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 from smsprovider import __version__
 
