@@ -1,0 +1,21 @@
+Source: linotp-adminclient-cli
+Section: net
+Priority: optional
+Maintainer: LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>
+Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49),
+ python-setuptools
+Standards-Version: 3.9.1
+
+Package: linotp-adminclient-cli
+Architecture: all
+Homepage: http://www.linotp.org/
+Depends: ${misc:Depends}, ${python:Depends}, python-usb
+Replaces: linotpadminclientce (<< 2.5.2-1~), linotp-adminclient-ce (<< 2.7)
+Breaks: linotpadminclientce (<< 2.5.2-1~), linotp-adminclient-ce (<< 2.7)
+Description: This package contains the LinOTP command line Admin Client.
+ LinOTP 2 is an open solution for strong two-factor authentication with 
+ One Time Passwords.  LinOTP 2 is also open as far as its modular 
+ architecture  is concerned.  LinOTP 2 aims to not bind you to any 
+ decision of the authentication protocol or  it does not dictate 
+ you where your user information should be stored.
+ This is achieved by its new, totally modular architecture.

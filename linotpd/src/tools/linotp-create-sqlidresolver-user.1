@@ -1,0 +1,38 @@
+.\" Manpage for linotp-create-sqlidresolver-user
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH LINOTP-CREATE-SQLRESOLVER-USER 1 "04 Feb 2013" "2.5" "linotp-create-sqlidresolver-user man page"
+.SH NAME
+linotp-create-sqlidresolver-user \- creates a user line to be stored in a usefile.
+.SH SYNOPSIS
+linotp-create-sqlidresolver-user -u <username> [-p <password>]
+.SH DESCRIPTION
+This tool creates an output line to be used as username and crypted password for LSE LinOTP SQL Resolvers.
+This tool outputs the values username, crypted password and salt. The password is encrypted using the function crypt(password,salt).
+.SH COMMON OPTIONS
+.PP
+\fB\-u <username> \fR
+.RS 4
+The loginname of the user.
+.RE
+
+.PP
+\fB\-h\fR
+.RS 4
+Display a help message.
+.RE
+
+.PP
+\fB\-p <password>\fR
+.RS 4
+The password of the user. If you do not specify it you are asked to type it in.
+The user id of the user.
+.RE
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>

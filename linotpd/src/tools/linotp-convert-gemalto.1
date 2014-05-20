@@ -1,0 +1,28 @@
+.\" Manpage for linotp-convert-gemalto
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH man 1 "04 Feb 2013" "2.5" "linotp-convert-gemalto man page"
+.SH NAME
+linotp-convert-gemalto \- convert Gemalto PSKC files to a CSV file, so that it can be imported into linotp..
+.SH SYNOPSIS
+linotp-convert-gemalto --file=<gemalto-file>
+.SH DESCRIPTION
+The PSKC file of Gemalto is not RFC 6030 conform so it can not be imported directly into LinOTP. This tool can convert the file to a CSV file.
+.SH COMMON OPTIONS
+.PP
+\fB\--file=<filename>\fR
+.RS 4
+The PSKC Gemalto file.
+.RE
+
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+linotpadm (1)
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp@lsexperts.de>

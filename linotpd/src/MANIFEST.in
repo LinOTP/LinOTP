@@ -1,0 +1,11 @@
+include linotp/config/deployment.ini_tmpl
+include LICENSE
+recursive-include linotp/public *
+recursive-include linotp/templates *
+recursive-include linotp/i18n *
+recursive-include config *
+recursive-include tools *
+recursive-include linotp/lib/tokens *.mako
+exclude linotp/controllers/testing.py
+include DESCRIPTION
+include tools/README-migrate.txt

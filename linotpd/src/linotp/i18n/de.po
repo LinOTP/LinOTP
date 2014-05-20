@@ -1,0 +1,118 @@
+# German translations for LinOTP package - German messages for LinOTP.
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP admin clients.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+##
+msgid ""
+msgstr ""
+"Project-Id-Version: LinOTP 2\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"PO-Revision-Date: 2012-09-21 14:23+0200\n"
+"Last-Translator: linotp@lsexperts.de\n"
+"Language-Team: Deutsch <>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+msgid "Provision your Google Authenticator"
+msgstr "Google Authenticator registrieren"
+
+msgid ""
+"1. You first need to install the google authenticator to your Android or "
+"IPhone."
+msgstr ""
+"1. Sie müssen erst den Google Authenticator auf Ihrem Android oder iPhone "
+"installieren."
+
+msgid "link for Android"
+msgstr "Link für Android"
+
+msgid "link for iPhone"
+msgstr "Link für iPhone"
+
+msgid ""
+"Using the QR Code you can directly go to install the google authenticator on "
+"your iPhone."
+msgstr ""
+"Indem Sie mit dem iPhone den QR Code einscannen, können Sie direkt den "
+"Google Authenticator auf Ihrem iPhone installieren."
+
+msgid "2. Then you may create a profile."
+msgstr "2. Dann können Sie Ihren Token/das Profil erzeugen."
+
+msgid "enroll Google Authenticator"
+msgstr "Google Authenticator registrieren"
+
+msgid "3."
+msgstr "3."
+
+msgid "Google Authenticator"
+msgstr "Google Authenticator"
+
+msgid "successfully created!"
+msgstr "erfolgreich erzeugt!"
+
+msgid "Click on this link to install the profile to your Android or iPhone:"
+msgstr ""
+"Klicken Sie mit Ihrem Smartphone auf diesen Link, um das Profil auf Ihrem "
+"Android oder iPhone zu installieren:"
+
+msgid "install profile"
+msgstr "Profil installieren"
+
+msgid ""
+"Or you can scan the below bar code image with your Android phone to import "
+"the secret."
+msgstr ""
+"Sie können aber auch den unten angezeigten QR Code mit Ihrem Android "
+"Smartphone scannen, um das Profil zu importieren."
+
+msgid "Provision your OATH Token"
+msgstr "Google Authenticator registrieren"
+
+msgid "1. You first need to install the oathtoken to your iPhone."
+msgstr "1. Sie müssen zuerst die oathtoken App auch Ihrem iPhone installieren."
+
+msgid ""
+"Using the QR Code you can directly go to install the oath token on your "
+"iPhone."
+msgstr ""
+"Mit dem QR Code können Sie direkt die oathtoken App auf Ihrem iPhone "
+"installieren."
+
+msgid "enroll OATH Token"
+msgstr "OATH Token erzeugen"
+
+msgid "Click on this link to install the oathtoken profile to your iPhone:"
+msgstr ""
+"Klicken Sie ihn Ihrem Smartphone auf diesen Link, um das Profil auf Ihrem "
+"iPhone zu installieren:"
+
+msgid ""
+"Or you can scan the below bar code image with your iPhone to import the "
+"secret."
+msgstr ""
+"Sie können aber auch den unten angezeigten QR Code mit Ihrem iPhone scannen, "
+"um das Profil zu importieren."

@@ -1,0 +1,32 @@
+.\" Manpage for linotp-create-certificate.
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH LINOTP-CREATE-CERTIFICATE 1 "09 Sep 2013" "2.6" "linotp-create-certificate man page"
+.SH NAME
+linotp-create-certificate \- create the webserver certificate.
+.SH SYNOPSIS
+linotp-create-auditkeys -f <apache config>
+.SH DESCRIPTION
+This tool creates the private key and the self-signed certificate for the LinOTP webserver.
+It reads the linotp apache config and thus gets the information, where the certificate and
+the key should be located.
+.SH COMMON OPTIONS
+.PP
+\fB\-f <apache config file> \fR
+.RS 4
+The apache config file containing the information where the keys are located.
+.RE
+
+.PP
+\fB\-h\fR
+.RS 4
+Display a help message.
+.RE
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>

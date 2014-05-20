@@ -1,0 +1,114 @@
+<VirtualHost _default_:443>
+	ServerAdmin webmaster@localhost
+
+    Header always edit Set-Cookie ^(.*)$ $1;secure
+
+	DocumentRoot /var/www
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+	<Directory /var/www/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+    Alias /doc/html         /usr/share/doc/linotpdoc/html
+   	WSGIScriptAlias /       /etc/linotp2/linotpapp.wsgi
+	#
+	# The daemon is running as user 'linotp'
+	# This user should have access to the encKey database encryption file
+	WSGIDaemonProcess linotp processes=1 threads=15 display-name=%{GROUP} user=linotp
+	WSGIProcessGroup linotp
+        WSGIPassAuthorization On
+
+        <Location /admin>
+	        SSLVerifyClient require
+	        SSLVerifyDepth  2
+		# Who signed the client certificates
+	        SSLCACertificateFile /etc/ssl/certs/daheim.pem
+		# what client certs are allowed to log in?
+	        SSLRequire ( %{SSL_CLIENT_S_DN_OU} eq "az" and %{SSL_CLIENT_S_DN_CN} in {"linotpadm", "Manfred Mann"} )
+        </Location>
+
+
+	<Location /audit>
+		SSLVerifyClient require
+	        SSLVerifyDepth  2
+	        SSLCACertificateFile /etc/ssl/certs/daheim.pem
+	        SSLRequire ( %{SSL_CLIENT_S_DN_OU} eq "az" and %{SSL_CLIENT_S_DN_CN} in {"linotpadm", "Manfred Mann"} )
+	</Location>
+
+	<Location /gettoken>
+		AuthType Digest
+		AuthName "LinOTP2 gettoken"
+		AuthDigestProvider file
+		AuthUserFile /etc/linotp2/gettoken-api
+		Require valid-user
+	</Location>
+
+	<Location /manage>
+		SSLVerifyClient require
+	        SSLVerifyDepth  2
+	        SSLCACertificateFile /etc/ssl/certs/daheim.pem
+	        SSLRequire ( %{SSL_CLIENT_S_DN_OU} eq "az" and %{SSL_CLIENT_S_DN_CN} in {"linotpadm", "Manfred Mann"} )
+	</Location>
+
+	<Location /selfservice>
+	# THe authentication for selfservice is done from within the application
+	</Location>
+
+        <Location /system>
+		SSLVerifyClient require
+	        SSLVerifyDepth  2
+	        SSLCACertificateFile /etc/ssl/certs/daheim.pem
+	        SSLRequire ( %{SSL_CLIENT_S_DN_OU} eq "az" and %{SSL_CLIENT_S_DN_CN} in {"linotpadm", "Manfred Mann"} )
+        </Location>
+
+
+	<Location /license>
+		SSLVerifyClient require
+	        SSLVerifyDepth  2
+	        SSLCACertificateFile /etc/ssl/certs/daheim.pem
+	        SSLRequire ( %{SSL_CLIENT_S_DN_OU} eq "az" and %{SSL_CLIENT_S_DN_CN} in {"linotpadm", "Manfred Mann"} )
+	</Location>
+
+        <Location /validate>
+        # No Authentication
+        </Location>
+
+
+	ErrorLog /var/log/apache2/error.log
+
+	LogLevel warn
+
+	# Do not use %q! This will reveal all parameters, including setting PINs and Keys!
+	# Using SSL_CLINET_S_DN_CN will show you, which administrator did what task
+	LogFormat "%h %l %u %t %>s \"%m %U %H\"  %b \"%{Referer}i\" \"%{User-agent}i\" \"%{SSL_CLIENT_S_DN_CN}x\"" LinOTP2
+	CustomLog /var/log/apache2/ssl_access.log LinOTP2
+
+	#   SSL Engine Switch:
+	#   Enable/Disable SSL for this virtual host.
+	SSLEngine on
+    SSLOptions +StdEnvVars
+
+	#   If both key and certificate are stored in the same file, only the
+	#   SSLCertificateFile directive is needed.
+	SSLCertificateFile    /etc/ssl/certs/linotpserver.pem
+	SSLCertificateKeyFile /etc/ssl/private/linotpserver.key
+
+	<FilesMatch "\.(cgi|shtml|phtml|php)$">
+		SSLOptions +StdEnvVars
+	</FilesMatch>
+	<Directory /usr/lib/cgi-bin>
+		SSLOptions +StdEnvVars
+	</Directory>
+	BrowserMatch ".*MSIE.*" \
+		nokeepalive ssl-unclean-shutdown \
+		downgrade-1.0 force-response-1.0
+
+        ErrorDocument 500 "<h1>Internal Server Error</h1> Possible reasons can be missing modules or bad access rights on LinOTP configuration files or log files. Please check the apache logfile <pre>/var/log/apache2/error.log</pre> for more details."
+
+</VirtualHost>

@@ -1,0 +1,31 @@
+.\" Manpage for linotp-create-auditkeys.
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH LINOTP-CREATE-AUDITKEYS 1 "22 Mar 2013" "2.5" "linotp-create-audit man page"
+.SH NAME
+linotp-create-auditkeys \- create the audit signing keys.
+.SH SYNOPSIS
+linotp-create-auditkeys -f <ini file>
+.SH DESCRIPTION
+This tool creates the audit signing keys for LinOTP. It reads the configuration from the linotp.ini file
+to determine, where the siging keys  should be generated.
+.SH COMMON OPTIONS
+.PP
+\fB\-f <ini file> \fR
+.RS 4
+The linotp.ini file containing the information where the signing keys are located.
+.RE
+
+.PP
+\fB\-h\fR
+.RS 4
+Display a help message.
+.RE
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>

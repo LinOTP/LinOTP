@@ -1,0 +1,707 @@
+linotp (2.7-0.rc0~precise) precise; urgency=low
+
+  * Integrated linotp-ee package into this package, adding:
+    - Support for SQL Audit
+    - Tools such as: linotp-decrypt-otpkey, linotp-tokens-used, linotp-backup,
+      linotp-restore, etc.
+    - Support for HSM
+    - eTokenDat, PSKC, DPWplain and vasco token import
+  * Fixed broken custom-template handling (#12555)
+  * Fixed some corner cases of JSON and CSV audit output (#12550, #12556)
+  * Fixed erroneous QR-Code generation
+  * Pinned WebOb version to < 1.4 due to incompatibility with Pylons (#12586)
+  * WebUI: Moved 'License' menu entry to 'Help/Support'
+  * WebUI: Added 'Help/About' dialog
+  * WebUI: Cleaned up a little and exchanged the LinOTP logos
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 May 2014 12:40:35 +0200
+
+linotp (2.6.1.1-1) precise; urgency=low
+
+  * Fixed Yubikey token so it supports LinOTP/RADIUS challenge-response
+  * Removed 'const' JS variable that broke IE9
+  * Added Yubikey public ID to token description when importing CSV file
+    (#12417)
+  * Fixed erroneous active-token-count in WebUI (#12523)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 08 Apr 2014 15:17:40 +0200
+
+linotp (2.6.1-1) precise; urgency=low
+
+  * Added support for BasicAuthentication to HttpSMSProvider
+  * Prevent resolver creation with same name (and different case)
+  * Improved /auth/index forms and deprecated /auth/requestsms
+  * Improve entropy by using /dev/urandom (#12243)
+  * Added streaming output to audit/search JSON and CSV (#12392)
+  * Made wildcard search in SQL Resolver more precise (#12135)
+  * Small graphical WebUI fixes (#12229)
+  * Added possibility to change the phone number of SMS token (#2953)
+  * Require * for wildcard token search (#2838)
+  * Removed PIL as a hard dependency (you may use pillow-pil) (#12409)
+  * Only enable apache site on first installation (not upgrade) (#12246,
+    #12457)
+  * Supress error during installation if no 'lse_release' exists #(12237)
+  * Shorten UserIdResolver display string in UserView (#2678)
+  * Added python-httplib2 dependency
+  * Added challenge-response and http-POST to remote token (#12433, #12451)
+  * Added challenge-response to RADIUS token (#12432)
+  * Added client information to audit log (#12417)
+  * Enable 'Enter' key in auth/index forms (#12103, #12446)
+  * Allow SmtpSMSProvider to raise exceptions (#12419)
+  * Several challenge-response error handling fixes (#12416, #12420, #12427)
+  * Several OpenID fixes (#12415, #12428, #12265, #12190, #12264)
+  * Fix hostname/port FQDN splitting (#12410)
+  * Added man page for linotp-auth-radius
+  * Removed obsolete log warnings and errors (#12396, #12443)
+  * Prevent challenges from being sent when multiple tokens match (#12413)
+  * Fixed check_yubikey so that it supports two slots (#12477)
+  * Enabled realm assignment during Yubikey enrollment
+  * Added autoassignment for Yubikeys
+  * Added new policy 'ignore_autoassignment_pin'
+  * Removed newlines in token CSV export (#12465)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 27 Mar 2014 14:19:12 +0100
+
+linotp (2.6.0.3-1) precise; urgency=low
+
+  * Fix problem with LDAPS connection (#12431)
+  * Catch token exceptions to prevent errors when processing several tokens (#12416)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 19 Feb 2014 14:18:32 +0100
+
+linotp (2.6.0.2-1) precise; urgency=low
+
+  * Fixed the module exception in community edition. (#12424)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 14 Feb 2014 08:28:05 +0100
+
+linotp (2.6.0.1-2) precise; urgency=low
+
+  * Fixed the ownership of /etc/linotp2/private.pem
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 11 Feb 2014 15:38:05 +0100
+
+linotp (2.6.0.1-1) precise; urgency=low
+
+  * Added radius client tool "linotp-auth-radius", which supports challenge response
+  * Fix the otppin=2 (no pin) problems with email and totptoken (#12399 #12398)
+  * Fix for email token to support otppin=2 (closes #12398)
+  * Fix 'Logout' button (closes #12371)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Feb 2014 15:38:05 +0100
+
+linotp (2.6-1) precise; urgency=low
+
+  * Added Challenge Response functionality for all tokens.
+  * Added Challenge Response Policy (#12234)
+  * Searching for tokens in the WebUI now uses wildcards.
+  **  To find "benjamin" you will have to search for "ben*".
+  **  "ben" will return nothing.
+  * Added UserPassOnNoToken Policy (#12145)
+  * Export token list to csv (#2963)
+  * Add additional user attributes in the token list api (#12187)
+  * Export audit list to csv (#2963)
+  * Added /auth/index3 with 3 lines (#12138)
+  * Use Yubikey with prefix like the serial number (#12039)
+  * Enroll Yubikey with Challenge Response and Yubikey NEO (#12186)
+  * SMS-Token: The mobile number can now be used in the mailto field (#12151)
+  * Add non-blocking behaviour when sending SMS OTP (#2986)
+  * The token description can be set in the WebUI (#12163)
+  * The Resolver dialog now start the realm dialog if no realm is defined (#12160)
+  * The yubikey in Yubivo mode (with 44 characters output) is supported (#2989)
+  * Import Yubico CSV in Yubico mode for Yubikeys, that were generated with the
+  **  Yubico personalization tool (#12326)
+  * The token type list is sorted when enrolling in the management WebUI (#12231)
+  * The authorize policies can contain regular expressions for the token
+  **  serial number (#12197)
+  * Added script 'linotp-token-usage' for token statistics (#12299)
+  * Added severals cripts for simpler installation and maintenance:
+  **  linotp-create-certificate, linotp-create-enckey, linotp-create-auditkeys,
+  **  linotp-fix-access-rights (#2883)
+  * /validate/check can return addition token details of the authenticated token.
+  **  Configured by the policy 'detail_on_success' (#2661)
+  * Support for eToken dat file import (#12124)
+  * Policies can now be deactivated and activated (#2903)
+  * Added new token type E-mail token, that sends OTP via smtp (#2704, #12332)
+  * Improve pam_linotp for build process and challenge response support (#12176)
+  * Using POST instead of GET requests in selfservice UI (#12161)
+  * Improved the HTML online help, to be available online from linotp.org
+  **  or installed on the server
+  * Removed several misleading error messages during installation
+  * Improved several error messages
+  * rlm_linotp now also builds on Ubuntu 12.04 (#12154)
+  * Improved the certificate handling for the LDAP resolver (#12089)
+  * Improved the performance when loading many users in the WebUI (#12076)
+  * Fixed a padding problem in the OCRA token (#12202)
+  * Fixed the logout link in the management Web UI (#12022)
+  * Fixed SMS token without serial number (#12322)
+  * Fixed the signature checking in the SQL audit module (#12267, #2700)
+  * Fixed apache config to use secure cookies (#12148)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 23 Dec 2013 15:19:09 +0100
+
+linotp (2.5.2.1-1) precise; urgency=low
+
+  * Change RC8 to the release version
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Aug 2013 11:28:37 +0200
+
+linotp (2.5.2-1.rc8) lucid; urgency=low
+
+  * Fixed multiple selected policies 	                    #12114
+  * Fixed for user with special char for access to selfservice #12110
+  * Fixed export of policy with user with special chars   #12107
+  * Fixed of missing manpage for source distribution      #12100
+  * Fixed export of empty policies                        #12099
+  * Fixed of weird PKG-INFO from build                    #12098
+  * Fixed for ad users with special char in dn for access to selfservice #12090
+ 
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Jul 2013 00:53:29 +0200
+
+linotp (2.5.2-1.rc7) precise; urgency=low
+
+  * Fixed ignored timeStep from enrollment dialog #12080
+  * Fixed access for AD user with special characters to selfservice #12090
+  * Added required package entry for configobj in glinotpadm #12088
+
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Jul 2013 11:34:22 +0200
+
+linotp (2.5.2-1) precise; urgency=low
+
+  * release community edition
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 05 Jul 2013 11:56:52 +0200
+
+linotp (2.5.2-0.rc6) precise; urgency=low
+
+  * Fixed wrong positiv response during OCRA rollout #12058
+  * Fixed enrolling Yubikeys in GTK client #12070
+  * Fixed default getFromConfig #12067
+  * Added index to token table #12061
+  * Fixed documentation #12075
+  * Added more unittests
+  * Fixed OCRAChallengeTimeout #12069
+  * Fixed the UI of the TOTP enrollment to honour the timestep #12080
+  * Fixed the dependency for repoze.who #12081
+  * Added multiple LDAPS useridresolvers #12065
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 04 Jul 2013 00:41:13 +0200
+
+linotp (2.5.2-0.rc5) precise; urgency=low
+
+  * fixed LDAP encoding (#12062)
+  * fixed tokenclass type (#12054)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 02 Jul 2013 12:00:06 +0200
+
+
+linotp (2.5.2-0.rc4) precise; urgency=low
+
+  * fixed unicode in LDAP-Resolver
+  * fixed JSON object handling in webUI
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 28 Jun 2013 15:02:06 +0200
+
+
+linotp (2.5.2-0.rc3) precise; urgency=low
+
+  * Bug #12026 Closed (fixed) WebUI: SyncWindows and CounterWindow could not be set
+  * Bug #12018 Closed (fixed) otplen is not honoured by /admin/init
+  * Bug #12015 Closed (fixed) Hide help button in CE
+  * Bug #12014 Closed (fixed) LinOTP Logo
+  * Bug #12011 Closed (fixed) Typos in translation
+  * Bug #3003, #3000 Closed (fixed) Wrong wsgi file in documentation
+  * Bug #3002 Closed (fixed) Added info for creating certificates
+  * Bug #2999, #2998, #2996, #2995, #2994, #2992, #2991 Closed (fixed) Improved documentation for manual installation
+  * Bug #2975 Closed (fixed)  removed link to linotp-register
+  * Bug #2969 Closed (fixed)  rewrite string handling in logging
+  * Enhancement #2909 Closed (fixed) Better handling of HSM errors
+  * Bug Closed #2864 (fixed)  Tokenrealm does not work with sqlite
+ 
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Jun 2013 16:10:06 +0200
+
+
+
+linotp (2.5.2-0.rc2) precise; urgency=low
+
+  * fixed #998
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 19 Jun 2013 17:44:00 +0200
+
+linotp (2.5.2-0.rc1) precise; urgency=low
+
+  * added possibility to display action history in selfservice
+  * added a script (linotp-pip-update) to update a pip installation (#882)
+  * added authentication to ocra controller (#873)
+  * added dynamic selfservice actions
+  * added feitian library, that can create the feitian challenge
+  * added hook for setup defaults in the manage enrolment gui (#925)
+  * added label for enrollmen of OCRA token
+  * added labels into selfservice UI (#842)
+  * added labels tags to html UI for better usage (#842)
+  * added missing vasco token
+  * added policy import to WebUI (#858)
+  * added policy support for dynamic tokens
+  * added several tools (#883) to make the installation like pip install easier.
+  * added the dynamic hmac and sms token implementation + rendering
+  * added the dynamic motp token
+  * added the dynamic version of the totp token
+  * added the possiblity to export the policies in the WebUI and in the GTK client (part of #774 and #858).
+  * added the user and realm to the enrollment of dynamic tokens.
+  * added transition packages to rename the debian archives (#844)
+  * added users and resolvers to policies in selfservice, authentication, enrollment and authorization (#856). cool!
+  * added WebUI and Doku for #872: The policy checker
+  * added yubikey in orignial yubikey mode (44 characters) to authenticate with the yubico online cloud service
+  * add missing genkey in the ocra selfservice
+  * add the policy definitions of the dynamic tokens
+  * assign Token by OTP value (#666): Added to selfservice
+  * closed #895: More detailed information when the SMS is sent via /validate/check of /validate/smspin.
+  * closed #924 and #942: The preset of the mobile number for an SMS token is now contained in the token.mako file.
+  * closed #932: The user was not able to authenticate to selfservice
+  * closed #935: Deprecation Information about searching tokens
+  * closed #938: Use SecureFormatter in linotp.ini
+  * closed #939: The sms text from the policy is used to send the sms
+  * closed #947: We require python 2.6.
+  * closed #950: added dependency for python repoze.who
+  * closed #952: make sure that genkey is in defined range
+  * correct audit entry, when the userpassword (otppin=1) is wrong. (#843)
+  * dynamic PASSWORD token
+  * dynamic RADIUS token
+  * dynamic Remote token
+  * dynamic token
+  * extended the template lookup path to support dynamic token definitions
+  * first implementation for #871 to support feitian c601 token.
+  * fix #874 and provide the documentation statically.
+  * fix and test for ticket #864 - sqlite: assign realms to token
+  * fixed #737 and added a search button to flexigrid.
+  * fixed #875: added SecureFormatter to be able to remove non printable characters from the log args
+  * fixed #876: the redirect will only be done, if the login was successful.
+  * fixed #879: The audit trail does not show entries with sqlalchemy 0.8.0
+  * fixed (#890): The setting of the OCRA PIN does not work in the WebUI.
+  * fixed #893: We added more tests for the HttpSMSProvider.
+  * fixed #898: The CA certificate from the LDAP Resolvers gets written only on the first request.
+  * fixed #911, use a default token list if linotpTokenModules is not defined.
+  * fixed #931: If the useridresolveree is not present or the LDAP or SQL resolver can not be loaded, we now added an error message.
+  * fixed #948: return space instead of empty string in case of MS SQL server
+  * fixed #954: problems with redundant MS SQL server.
+  * fixed an issue with userassign and added policy tests. (#863)
+  * fixed missing dependency for configobj (#888)
+  * fixed missing urllib import for ocra token.
+  * fixed problem, that an admin was not able to view the users in the realm he has rights to
+  * fixed the broken FileAudit module
+  * fixed the possiblity to do cross site scripting in the doc controller.
+  * fixed user enumeration with validate/smsping (#869)
+  * fix for #923 - delete of undefined tokentype object
+  * fix for #933 - restore noreferrals status
+  * fix for #940 hmac vaerification + more debug token info
+  * fix for #945: You may either specify genkey or otpkey but not both
+  * fix for defaultRealm() in ocra/check_t (value instead of function)
+  * fix for encoding problem in qr image #930
+  * fix for SQLAlchemy unicode warning
+  * fix for ticket #920 - put request identifier in the log output
+  * fix for tokeniterator exact user match
+  * fix permissions for SSL privkey and who.ini (#A756)
+  * fix problem #848: The system settings are not stored, it data on another tab is missing.
+  * fix the counter reset in case of the model setType() call
+  * fix the OCRA bug for missing leading zeros - truncation to last digit
+  * implemented additional API to to a get_serial_by_otp in selfservice (#666)
+  * implemented (with tests) the controller /system/checkPolicy (#872)
+  * improved #679, the usage of clients in policies: exclude clients
+  * improved PSKC import to import OCRA suites (#823)
+  * increase font size (style italic) to make it easier to assign a token to a user...
+  * integration test adjustments for py2.6
+  * limit size of realm and resolver dialogs. If hundret resolvers or realms are defined, the dialog is too big
+  * make it easy installable on Univention Corporate Server.
+  * make the cookie a secure cookie, means it must be transferred via SSL
+  * migrated Vasco token (#927)
+  * migrate simple pass token and tagespasswort to dynamic token module
+  * moved etoken enrollment tool from server to EE client (#834)
+  * performance fix - reduce userid lookup
+  * renamed the webprovissionOCRA to activateQR #912
+  * resolver init hook -  #941
+  * reverted to the timeStepping=30 for the setup
+  * set maximum auth count and validity period. (#743)
+  * solve 2.6. compatibilty issue for time2float
+  * the mobile number (instead of phone) will now be used in selfservice for SMS token
+  
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 02 Jun 2013 12:44:00 +0200
+
+linotp (2.5.1-1) lucid; urgency=low
+
+  * fix in WebUI for System settings and IE compatiblity
+  * fixed tokenview in selfservice (#852)
+  * Work in Progress for release 2.5.1
+  * improved python PIP installation
+  * Define the contents of the lost password token (#806)
+  * Only active tokens are counted for the licensing (#810)
+  * Fixed translation
+  * Added alert-box (pop under)
+  * Improved performance with dynamic token classes
+  * added QR-Code image to reply
+  * added QR-Code enrollment in management web UI and selfserivce portal
+  * added online help/manual
+  * acced import OCRA seeds via CSV
+  * Possibility to send 500er HTTP error instead of status:false
+  * fixed broken totp resync
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 22 Feb 2013 14:25:14 +0200
+
+linotp (2.5.0-9) lucid; urgency=low
+
+  * fixed location of config files
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 17 Dec 2012 08:12:14 +0200
+
+linotp (2.5.0-8) lucid; urgency=low
+
+  * TOTP token now honours defaultOtpLength
+  * fixed TOTP accept second OTP
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 12 Dec 2012 14:26:14 +0200
+
+linotp (2.5.0-7) lucid; urgency=low
+
+  * change to encrypt data by label not handle
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 03 Dec 2012 11:26:14 +0200
+
+linotp (2.5.0-6) lucid; urgency=low
+  * fixed the possibility to have more than one slot connected in pkcs11 security provider
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 22 Nov 2012 14:14:14 +0200
+
+linotp (2.5.0-5) lucid; urgency=low
+ 
+  * fixed ocra resync
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 22 Nov 2012 14:14:14 +0200
+
+linotp (2.5.0-4) lucid; urgency=low
+  * fix log output in case of missing sha224
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 21 Nov 2012 12:23:14 +0200
+
+linotp (2.5.0-3) lucid; urgency=low
+
+  * normalize activationcode
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 20 Nov 2012 20:09:14 +0200
+
+linotp (2.5.0-2) lucid; urgency=low
+
+  * fixed the HSM session pool
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 14 Nov 2012 20:09:14 +0200
+
+linotp (2.5.0-1) lucid; urgency=low
+
+  * added limit to sqlresolver
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 07 Nov 2012 18:09:14 +0200
+
+linotp (2.4.4-ocra-12) lucid; urgency=low
+
+  * fixed unpadding of empfy string
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 05 Nov 2012 18:09:14 +0200
+
+linotp (2.4.4-ocra-11) lucid; urgency=low
+
+  * improved setting of security module password
+  * added first draft of YubiHSM module
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sun, 04 Nov 2012 12:45:14 +0200
+
+linotp (2.4.4-ocra-10) lucid; urgency=low
+
+  * fixed setting of securitymodule password
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 01 Nov 2012 16:11:14 +0200
+
+linotp (2.4.4-ocra-9) lucid; urgency=low
+
+  * added creation of AES Key
+  * fixed usage of DB2 as UserIdResolver
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 29 Oct 2012 11:11:14 +0200
+
+
+linotp (2.4.4-ocra-8) lucid; urgency=low
+
+  * fixed Name of QrOcraDefaultSuite
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 29 Oct 2012 11:11:14 +0200
+
+linotp (2.4.4-ocra-7) lucid; urgency=low
+
+  * fixed Umlaute with Apache
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 24 Oct 2012 13:30:14 +0200
+
+linotp (2.4.4-ocra-6) lucid; urgency=low
+ 
+  * improved automatic update
+ 
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 22 Oct 2012 15:30:14 +0200
+
+linotp (2.4.4-ocra-5) lucid; urgency=low
+
+  * applilance update fix
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Oct 2012 15:30:14 +0200
+
+linotp (2.4.4-ocra-4) lucid; urgency=low
+
+  * HSM integration
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 10 Oct 2012 19:40:14 +0200
+
+
+linotp (2.4.4-ocra-3) lucid; urgency=low
+ 
+  * delivery version with python 2.6 fix
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 09 Oct 2012 10:50:14 +0200
+
+
+linotp (2.4.4-ocra-2) lucid; urgency=low
+
+  * first implementation of OCRA
+  * i18n for selfservice
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 21 Sep 2012 16:20:14 +0200
+
+linotp (2.4.4-1) lucid; urgency=low
+
+  * fix in lib/user that make the GTk GUI fail when enrolling tokens for users
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 27 Jul 2012 16:20:14 +0200
+
+linotp (2.4.4) lucid; urgency=low
+
+  * Added SMTP SMS gateway support 
+  * Added Authorization based on authenticating client IP address
+  * Added functionality to retrieve OTPs to print One Time Password lists
+  * Added test button to SQL Resolver
+  * Improved dynamic token class loading
+  * SMS OTP can be sent with customized text
+  * Import eToken Pass: automatic SHA type detection
+  * Improved the Unicode support in SQL Resolver and LDAP resolver
+  * Improved search capabilitiestokenview and userview (WebUI)
+  * Added possibility to turn off session protection
+  * Added possibility to prefix name of audit table
+  * Improved the Oracle support 
+  * Several minor fixes
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 25 Jul 2012 11:20:14 +0200
+
+linotp (2.4.3-5) lucid; urgency=low
+
+  * merged the dynamic token class
+  * added noSessionCheck to disable session protection
+  * WebUI: Improved filtering in Tokenview and Userview
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 14 May 2012 16:43:00 +0200
+
+linotp (2.4.3-4) lucid; urgency=low
+
+  * ORACE special release
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 04 May 2012 15:44:00 +0200
+
+linotp (2.4.3-3) lucid; urgency=low
+
+  * fixed bugs in test suite, policy-lib and remote-token
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 23 Apr 2012 15:44:00 +0200
+
+linotp (2.4.3-2) lucid; urgency=low
+
+  * improved the documentation of the admin and system controller
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 18 Apr 2012 10:44:00 +0200
+
+linotp (2.4.3-1) lucid; urgency=low
+
+  * fixed import error in case of non-existing profile module
+  * added LDAP axample for Apache
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 16 Apr 2012 10:30:00 +0200
+
+linotp (2.4.3) lucid; urgency=low
+
+  * added loading of csv OATH files (#653)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sat, 28 Jan 2012 20:00:00 +0200
+
+linotp (2.4.2-2) lucid; urgency=low
+
+  * added the linotp/tokendb/password_pw "yes" to generate a random linotpDB password
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 19 Jan 2012 10:00:00 +0200
+
+linotp (2.4.2-1) lucid; urgency=low
+
+  * changed the python version from 2.5,2.6 to 2.6,2.7
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 09 Jan 2012 12:00:00 +0200
+
+linotp (2.4.2) lucid; urgency=low
+
+  * added possibility to send SMS by entering PIN
+  * added auto assigning functionality
+  * fixed the session protection of loadtokens
+  * fixed upload of license in webui
+  * fixed minor bug in radius token
+  * Added configuration of chasing referrals
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 10 Nov 2011 12:03:33 +0200
+
+linotp (2.4.1) lucid; urgency=low
+
+  * storing sizelimit with ldap resolver
+  * changed gethostbyaddr to only gethostname. If the DNS reverse resolving does not work well, this produces an error!
+  * added delete and unassign to self service portal
+  * added imprint for self service
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 18 Oct 2011 12:03:33 +0200
+
+linotp (2.4) lucid; urgency=low
+
+  * New authentication protocols supported: RADIUS Server Radiator, SAML, OpenID
+  * New tokens supported: TOTP (OATH), LinOTP Remote Token, LinOTP Radius Token, Tagespasswort Token
+  * Support for HMAC with SHA1 and SHA256
+  * Support for audit trail
+  * OATH certified, including PSKC import
+  * Passwords in Config are now being encrypted
+  * OTP Pins can be stored hashed or encrypted
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 Sep 2011 16:03:33 +0200
+
+linotp (2.4-rc3) lucid; urgency=low
+
+  * reworked pin poliy
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 05 Sep 2011 09:35:26 +0200
+
+linotp (2.4-rc2) lucid; urgency=low
+
+  *  2nd release candidate
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 17 Aug 2011 13:21:50 +0200
+
+linotp (2.4-rc1) lucid; urgency=low
+
+  * frist feature complete version
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 04 Aug 2011 09:08:32 +0200
+
+linotp (2.4-pre2) lucid; urgency=low
+
+  * Added Audit Trail etc.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 31 May 2011 11:44:30 +0200
+
+linotp (2.4-pre1) unstable; urgency=low
+
+  * Pre1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 07 Mar 2011 12:00:00 +0200
+
+
+
+
+linotp (2.3-rc2) unstable; urgency=low
+
+  * RC2
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 10 Mar 2011 12:00:00 +0200
+
+linotp (2.3-pre2) unstable; urgency=low
+
+  * Pre release 2
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 02 Feb 2011 12:00:00 +0200
+
+linotp (2.3-pre1) unstable; urgency=low
+
+  * improved error document 500
+  * auth at selfservice for PasswdIdResolver
+  * Fixed copy paste bug in selfservice portal
+  * improved the stability to the env.config access
+  * rewrite selfservice portal. now based on jQuery
+  * implemented policy definition for selfservice portal
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sun, 31 Oct 2010 13:00:00 +0200
+
+linotp (2.2) stable; urgency=low
+
+  * Added new WebUI management client /manage/index with nearly the complete functionality
+  * Management Client pyGUI: Added a button for testing LDAP connections
+  * Management Client pyGUI: several minor bugfixes (userview, windows client
+  * Management Client Windows Installer: improved the windows installer and made it more simple.
+  * Management Client Windows Installer: Choosing language English or German
+  * Rewrite of Token Class to make it easier to add new token types.
+  * Added new Token Type SMS OTP Token / Mobile TAN
+  * Added SMS Requester Web form /auth/requestsms
+  * Added Authentication Test Web form /auth/index
+  * Virtual Appliance/Install-CD: Added ldap-utils for troubleshooting
+  * Virtual Appliance/Install-CD: SSL certificate will not be generated anew when updating
+  * Virtual Appliance/Install-CD: encKey will not be generated anew when updating
+  * Virtual Appliance/Install-CD: All configuration of the LinOTP server and the FreeRADIUS clients
+    will be done during Installation. No need of dpkg-reconfigure anymore.
+  * Virtual Appliance/Install-CD: Added basic backup and restore scripts.
+  * Virtual Appliance/Install-CD: Added openntpd
+  * Improved logging
+  * Added new user  manual for the self service portal
+  * Improved Self servie portal
+  * Added checkPass function to useridresolvers. So that authentication to the selfservice portal
+    can be made transparent with existing user store passwords
+  * LDAP UserIdResolver: Optimized errorhandling to avoid piling up of timeouts.
+  * Added the possibility to configure PrependPIN, ResetFailCounter and IncFailCount
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Oct 2010 19:30:00 +0200
+
+linotp (2.2-rc2) stable; urgency=low
+
+  * WebUI: Added version information in footer
+  * changed to version 2.2 in LDAP response
+  * WebUI: Added hour glass during testing LDAP connection
+  * Added Test-LDAP-connection interface: /admin/testresolver
+  * Fixed the Spass Token so it will _not_ require a PIN during rollout
+  * Virtual Appliance: Added ldap-utils to the ISO
+  * WebUI: Fixed missing column "phone"  
+  * WebUI: Fixed presetting of LDAP/AD attributes in the LDAP Resolver Dialog
+  * WebUI: Fixed the refresh of the Realm combobox
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 Oct 2010 09:30:00 +0200
+
+
+linotp (2.2-pre3) stable; urgency=low
+
+  * SMS Token added
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 27 Sep 2010 10:05:00 +0200
+
+
+linotp (2.2-pre2) stable; urgency=low
+
+  * improved va installer
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 13 Sep 2010 21:00:30 +0200
+
+linotp (2.2-pre1) stable; urgency=low
+
+  * Implementing of new features.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Jul 2010 23:54:30 +0200
+
+
+
+linotp (2.1) stable; urgency=low
+
+  * Initial release of new debian package building system
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 25 Jun 2010 23:54:30 +0200

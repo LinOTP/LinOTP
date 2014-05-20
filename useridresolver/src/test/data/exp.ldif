@@ -1,0 +1,31 @@
+dn: o=linotp,c=org
+objectClass: top
+
+dn: cn=user1,o=linotp,c=org
+objectClass: inetOrgPerson
+cn: user1
+sn: Eins
+mail: user1@linotp.org
+userPassword: geheim
+
+dn: cn=user2,o=linotp,c=org
+objectClass: inetOrgPerson
+cn: user2
+sn: Zwo
+mail: user1@linotp.org
+userPassword: geheim
+
+dn: cn=kölbel,o=linotp,c=org
+objectClass: inetOrgPerson
+cn: kölbel
+sn: Zwo
+mail: koelbel@linotp.org
+userPassword: geheim
+
+dn: cn=weiß,o=linotp,c=org
+objectClass: inetOrgPerson
+cn: weiß
+sn: Zwo
+mail: weiss@linotp.org
+userPassword: geheim
+

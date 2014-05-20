@@ -1,0 +1,52 @@
+.\" Manpage for linotp-decrypt-otpkey
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH man 1 "04 Feb 2013" "2.5" "linotp-decrypt-otpkey man page"
+.SH NAME
+linotp-decrypt-otpkey \- decrypt values of encrypted OTP Keys.
+.SH SYNOPSIS
+linotp-decrypt-otpkey --otp=<LinOtpKeyEnc> --iv=<LinOtpKeyIV> --enckey=<key file>
+.SH DESCRIPTION
+This tool can decrypt the OTP Key stored in the LinOTP database. 
+You need to pass the encrypted key, the IV and the filename of the encryption key.
+.SH COMMON OPTIONS
+.PP
+\fB\--otp=<LinOtpKeyEnc>\fR
+.RS 4
+Pass the encrpyted key taken from the database.
+.RE
+
+.PP
+\fB\--iv=<LinOtpKeyIV>\fR
+.RS 4
+Pass the IV taken from the database.
+.RE
+
+.PP
+\fB\--enckey=<filename>\fR
+.RS 4
+Pass the encryption key file.
+.RE
+
+.SH EXAMPLE
+
+linotp-decrypt-otpkey --otp=1c224d3....106aab4d703e4 --iv=14c6d84d04b4e2a7a5f04e1134761f7e --enckey=/etc/linotp2/encKey
+
+Response would be:
+
+CB4F416398FA7725F521DBCCCC19F3E9F8DF4727
+
+You may read the encrypted OTP and the IV from the database
+mysql> select LinOtpTokenSerialnumber,  LinOtpKeyEnc, LinOtpKeyIV from Token;
+
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+linotpadm (1)
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp@lsexperts.de>

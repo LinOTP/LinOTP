@@ -1,0 +1,125 @@
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+
+#
+# LinOTP - Pylons development environment configuration
+#
+# The %(here)s variable will be replaced with the parent directory of this file
+#
+[DEFAULT]
+debug = false
+# Uncomment and replace with the address which should receive any error reports
+#email_to = you@yourdomain.com
+smtp_server = localhost
+error_email_from = paste@localhost
+
+
+#################################################################################
+# These are the LinOTP specific settings.
+# note that these are loaded into the token database and after that
+# are hold in the table "Config"
+# i.e. changed them afterwards will have no effect.
+#
+
+# You may select several useridresolver by comma seperating
+linotp.useridresolver = useridresolver.PasswdIdResolver.IdResolver,useridresolver.LDAPIdResolver.IdResolver
+#linotp.useridresolver = useridresolver.PasswdIdResolver.IdResolver
+
+#
+# Settings for LDAPIdResolver
+#
+linotp.DefaultSyncWindow = 50 
+linotp.DefaultOtpLen = 6
+linotp.DefaultCountWindow = 50
+linotp.DefaultMaxFailCount = 15
+linotp.ldapresolver.LDAPFILTER =  (&(uid=%s)(ObjectClass=inetOrgPerson))
+linotp.ldapresolver.LDAPSEARCHFILTER = (uid=*)(ObjectClass=inetOrgPerson)
+linotp.ldapresolver.LDAPURI    =  ldaps://themis.az.local
+linotp.ldapresolver.LDAPBASE   =  dc=az,dc=local
+linotp.ldapresolver.BINDDN     =  cn=admin,dc=az,dc=local
+linotp.ldapresolver.BINDPW     =  guessWhat!
+linotp.ldapresolver.TIMEOUT     =  5
+linotp.ldapresolver.LOGINNAMEATTRIBUTE = uid
+linotp.ldapresolver.USERINFO = { "username": "uid", "phone" : "telephoneNumber", "groups" : "o", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }
+
+linotpSecretFile = /usr/local/linotpd/encKey
+
+
+
+[server:main]
+use = egg:Paste#http
+host = localhost
+port = 5000
+# You may activate this, to serve https unless you got no broken distribution ;-)
+#ssl_pem = *
+
+[app:main]
+use = egg:LinOTP
+sqlalchemy.url = sqlite:///%(here)s/token.db
+# sqlalchemy.url = postgres://user:password@localhost/otpdb
+# sqlalchemy.url = mysql://user:password@themis/linotp2
+full_stack = true
+static_files = true
+
+cache_dir = %(here)s/data
+# We do not have cookie. 
+#beaker.session.key = linotp
+#beaker.session.secret = somesecret
+
+# If you like to fine-tune the individual locations of the cache data dirs
+# for the Cache data, or the Session saves, un-comment the desired settings
+# here:
+#beaker.cache.data_dir = %(here)s/data/cache
+#beaker.session.data_dir = %(here)s/data/sessions
+
+
+# WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
+# Debug mode will enable the interactive debugging tool, allowing ANYONE to
+# execute malicious code after an exception is raised.
+set debug = false
+
+
+# Logging configuration
+[loggers]
+keys = root
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s

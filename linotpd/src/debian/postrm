@@ -1,0 +1,21 @@
+#!/bin/sh -e
+if [ "$1" = "purge" -a -e /usr/share/debconf/confmodule ]; then
+    # Source debconf library.
+    . /usr/share/debconf/confmodule
+    # Remove my changes to the db.
+    db_purge
+    if getent passwd linotp > /dev/null; then
+		a2dissite linotp2 || true
+	    echo "Deleting user >>linotp<<"
+	    deluser linotp 
+		/etc/init.d/apache2 reload
+    fi
+    echo "Deleting log directory."
+    rm -fr /var/log/linotp
+    rm -fr /etc/linotp2/token.db
+    rm -fr /etc/linotp2/encKey
+    rm -fr /etc/linotp2/admins
+	rm -fr /etc/linotp2/data
+	mv -f /etc/linotp2/linotp.ini /etc/linotp2/linotp.ini.old
+fi
+

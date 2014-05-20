@@ -1,0 +1,481 @@
+#!/bin/bash
+set -e
+# Automatically added by dh_pysupport
+if which update-python-modules >/dev/null 2>&1; then
+	update-python-modules  linotp.public
+fi
+# End automatically added section
+
+. /usr/share/debconf/confmodule
+
+APACHE_CONFIG=/etc/linotp2/apache-servername.conf
+LINOTP_INI=/etc/linotp2/linotp.ini
+WHO_INI=/etc/linotp2/who.ini
+ENCKEYFILE=/etc/linotp2/encKey
+REALM="LinOTP2 admin area"
+DIGESTFILE=/etc/linotp2/admins
+LOGDIR=/var/log/linotp
+CACHEDIR=/etc/linotp2/data
+TEMPLATEDIR=/etc/linotp2/custom-templates
+DBFILE='\/%(here)s\/token.db'
+DBFILE_FS=/etc/linotp2/token.db
+RAND_DEVICE=/dev/urandom
+FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
+LSB_RELEASE=`which lsb_release || true`
+
+echo "postinst: $1"
+
+####################################################################
+#
+#  only functions
+#
+
+function check_user() {
+	if ! getent passwd linotp > /dev/null; then
+		adduser \
+			--system \
+			--disabled-login \
+			--gecos "LinOTP Server" \
+			--shell /bin/false \
+			linotp  >/dev/null
+		echo "LinOTP2: done setting up user..." 
+	fi
+}
+
+# this function checks, if we are on a univention corparate server
+function check_ucs() {
+	if [ -x "$LSB_RELEASE" ]; then
+		RELEASE=`$LSB_RELEASE -i -s`
+		echo "Installing on $RELEASE"
+		if [ "$RELEASE" = "Univention" ]; then
+			return 0
+		fi
+	fi
+	return 1
+}
+
+# check if we are doing an upgrade
+function check_upgrade() {
+	if [ -f /etc/linotp2/we_are_doing_an_upgrade ]; then
+		return 0
+	fi
+	return 1
+}
+
+# check if the apache site was disabled
+#
+# the file is created in prerm
+#
+# Note: For older version os LinOTP prerm would not create this
+# file an apache would be enabled again.
+function check_apache_disabled() {
+	if [ -f /etc/linotp2/apache_site_disabled ]; then
+		rm /etc/linotp2/apache_site_disabled
+		return 0
+	fi
+	return 1
+}
+
+function configure_sql() {
+	# If the tokendb/password does not exist / is empty, we are on an appliance
+	# should not regenerate this!
+	#echo "LinOTP2: SQL password: $DBPASSWORD1"
+	if [ "$DBPASSWORD1" = "" ] || [ "$DBPASSWORD1" = "1234" ]; then
+		echo "LinOTP2: SQL Password empty or known password: We do not change the SQL configuration in linotp.ini"
+	elif [ "$UCS_INSTALL" = "true" ]; then
+		echo "LinOTP2: UCS install, we do not change linotp.ini"
+	else
+		sed -e s/^sqlalchemy.url.*/"$SQLALCHEMY"/ $LINOTP_INI > $LINOTP_INI.new
+		mv $LINOTP_INI.new $LINOTP_INI
+		# and do the Audit SQL
+		sed -e s/^linotpAudit.sql.url.*/"$SQLAUDIT"/ $LINOTP_INI > $LINOTP_INI.new
+		mv $LINOTP_INI.new $LINOTP_INI
+		echo "LinOTP2: SQL configuration in linotp.ini CHANGED!"
+	fi
+}
+
+function fix_access_right() {
+	chown -R linotp $LOGDIR
+	chown linotp $ENCKEYFILE
+	if [ -f $DBFILE_FS ]; then
+		chown linotp $DBFILE_FS
+	fi
+}
+
+function create_tables() {
+	echo "LinOTP2: Try to create tables, now" 
+	update-python-modules -p
+	paster setup-app $LINOTP_INI || true
+	fix_access_right
+}
+
+
+function create_grant_string1() {
+	# create the grant string for all hosts
+	echo "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'%' identified by 'XXXXXXXXX';"
+	SQL_STATEMENT="grant all privileges on ${DBNAME}.* to '${DBUSER}'@'%' identified by '${DBPASSWORD1}';"
+}
+
+function create_grant_string2() {
+	# create the grant string for localhost
+	TEMP_HOST="localhost"
+	echo "grant all privileges on ${DBNAME}.* to '${DBUSER}'@'${TEMP_HOST}' identified by 'xxxxxxxxxxxx';"
+	SQL_STATEMENT="grant all privileges on ${DBNAME}.* to '${DBUSER}'@'${TEMP_HOST}' identified by '${DBPASSWORD1}';"
+}
+
+function create_enc_key() {
+	check_user
+	echo "LinOTP2: Generating encryption key in $ENCKEYFILE. This may take a while..."
+	# we need the user linotp
+	dd if=$RAND_DEVICE of=$ENCKEYFILE bs=1 count=96
+	chown linotp $ENCKEYFILE
+	chmod 400 $ENCKEYFILE
+	echo "LinOTP2: done creating enckey"
+}
+
+evaluate_answers() {
+	db_get linotp/appliance || true
+	APPLIANCE_INSTALL=$RET
+
+	db_get linotp/generate_enckey
+	ENCKEY=$RET
+	db_set linotp/generate_enckey false
+	db_get linotp/apache/activate
+	APACHE=$RET
+	echo "LinOTP2: I got these keys: $ENCKEY, $APACHE"
+
+	if [ "$APACHE" = "true" ]; then
+		db_get linotp/apache/admin_password
+		if [ "$RET" != "$FAKE_PASSWORD" ]; then
+			# Only update the password if it is not the fake password
+			PWDIGEST=`echo -n "admin:$REALM:$RET" | md5sum | cut -f1 -d ' '`
+			echo "admin:$REALM:$PWDIGEST" > $DIGESTFILE
+		fi
+		# delete password from database
+		#db_reset linotp/apache/admin_password
+		db_set linotp/apache/admin_password $FAKE_PASSWORD
+
+		db_get linotp/apache/ssl_create
+		APACHE_SSL_CREATE=$RET
+		#db_reset linotp/apache/ssl_create
+		db_set linotp/apache/ssl_create false
+
+		db_get linotp/tokendb/dbtype_apache2
+		TOKENDB=$RET
+		echo "LinOTP2: I got these keys: apache: $APACHE_SSL_CREATE, tokendb: $TOKENDB"
+	else
+		db_get linotp/tokendb/dbtype
+		TOKENDB=$RET
+	fi
+
+	echo "LinOTP2: This is my database: $TOKENDB"
+
+	if [ "$TOKENDB" = "SQLite" ]; then
+		#db_input high linotp/choose_token_file || true
+		#db_go
+		#db_get linotp/choose_token_file
+		#DBFILE=$RET
+		DBFILE='\/%(here)s\/token.db'
+		DBFILE_FS=/etc/linotp2/token.db
+		db_get linotp/sqlite/ask_createdb || true
+		CREATEDB_SQLITE=$RET
+	elif [ "$TOKENDB" = "MySQL" ]; then
+		db_get linotp/tokendb/dbhost
+		DBHOST=$RET
+		db_get linotp/tokendb/dbname
+		DBNAME=$RET
+		db_get linotp/tokendb/dbuser
+		DBUSER=$RET
+		db_get linotp/tokendb/randompw || true
+		RANDOMPW=$RET
+		if [ "$RANDOMPW" = "true" ]; then
+			DBPASSWORD1=`pwgen 16 1`
+			db_set linotp/tokendb/randompw false
+		else
+			db_get linotp/tokendb/password
+			DBPASSWORD1=$RET
+		fi
+		db_get linotp/mysql/ask_createdb || true
+		CREATEDB=$RET
+		# As we also delete the rootpassword from the debian db, we can
+		# not create the database in successive runs.
+		db_reset linotp/mysql/ask_createdb
+		if [ "$CREATEDB" = "true" ]; then
+			db_get linotp/mysql/ask_rootpw
+			ROOTPW=$RET
+			db_reset linotp/mysql/ask_rootpw
+		fi
+		db_get linotp/mysql/ask_createtables || true
+		CREATE_TABLES=$RET
+	fi
+}
+
+##################################################################
+#
+# start here
+#
+
+case "$1" in
+configure)
+	##
+	##  postinst called with configure
+	##
+	##
+
+	# initialize the linotp.ini
+	if [ -f $LINOTP_INI ]; then
+		# The linotp.ini already exist. Obviously we are doing an update!
+		echo "LinOTP2: linotp.ini already exists"
+		UPDATE=1
+	else
+		cp /etc/linotp2/linotp.ini.example $LINOTP_INI
+	fi
+
+
+	# Create logdir
+	if [ ! -d $LOGDIR ]; then
+		mkdir -p $LOGDIR
+		check_user
+		chown -R linotp $LOGDIR
+		echo "LinOTP2: added logdir"
+	fi
+
+	if [ -d $CACHEDIR ]; then
+		rm -fr $CACHEDIR/*
+	fi
+
+	if [ ! -d $CACHEDIR ]; then
+		mkdir -p $CACHEDIR
+		check_user
+		chown -R linotp $CACHEDIR
+		echo "LinOTP2: added cachedir"
+	fi
+
+	if [ ! -d $TEMPLATEDIR ]; then
+		mkdir -p $TEMPLATEDIR
+		check_user
+		chown -R linotp $TEMPLATEDIR
+		echo "LinOTP2: added templatedir"
+	fi
+
+
+	###########################################################################
+	#
+	#  univention corporate server
+	#
+	if check_ucs; then
+		echo "LinOTP2: Doing UCS installation"
+		APACHE="false"
+		TOKENDB="MySQL"
+		# We can get a certificate from UCS!
+		APACHE_SSL_CREATE="false"
+		if [ -f $ENCKEYFILE ]; then
+			ENCKEY="false"
+		else
+			ENCKEY="true"
+		fi
+		# local database
+		DBHOST="localhost"
+		DBNAME="LinOTP2"
+		DBUSER="linotp2"
+		DBPASSWORD1=`pwgen 16 1`
+		CREATEDB="false"
+		ROOTPW=""
+		CREATE_TABLES="false"
+		UCS_INSTALL="true"
+	else
+		###########################################################################
+		#
+		#  normal installation
+		#
+		evaluate_answers
+		echo "LinOTP2: done asking questions...."
+	fi
+
+	##################################################################
+	#
+	# We are done with asking questions
+	#
+
+	if [  "$ENCKEY" = "true" ]; then
+		create_enc_key
+	fi
+
+	#
+	# APACHE setup
+	#
+
+	if [ "$APACHE" = "true" ]; then
+		# running in apache, we need the user linotp
+		check_user
+		if [ -d $LOGDIR ]; then
+			chown -R linotp $LOGDIR
+		fi
+		if ! check_apache_disabled; then
+			a2ensite linotp2
+			a2enmod auth_digest
+			a2enmod wsgi
+			a2enmod ssl
+			a2enmod headers
+			echo "LinOTP2: done activating apache"
+		fi
+		if [ "$APACHE_SSL_CREATE" = "true" ]; then
+			# in appliance install these directories do not exist, yet
+			mkdir -p /etc/ssl/private
+			mkdir -p /etc/ssl/certs
+			openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes
+		fi
+		touch $APACHE_CONFIG
+		invoke-rc.d apache2 reload
+		echo "LinOTP2: done setting up apache with ssl"
+	else
+		a2dissite linotp2
+	fi
+
+	########################################################################
+	#
+	# Check and create token databases
+	#
+	# ...if we are within the appliance, we can not create the database, since
+	# the mysql is not running.
+	# so we need to do the mysql creating in firstboot!
+
+	if [ "$TOKENDB" = "MySQL" ]; then
+		#	echo "Confiugring mysql"
+		SQLALCHEMY="sqlalchemy.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
+		SQLAUDIT="linotpAudit.sql.url = mysql:\/\/$DBUSER:$DBPASSWORD1@$DBHOST\/$DBNAME"
+		configure_sql
+		if [ "$CREATEDB" = "true" ]; then
+			if [ "$ROOTPW" = "" ] && [ -f /etc/lseappliance/mysql_root ]; then
+				ROOTPW=`cat /etc/lseappliance/mysql_root`
+			fi
+
+			# create the database with the rootpw
+			# mysql --host=localhost --user=root --password='test123!' --execute="create database LinOTP2;"
+			# grant access for the LinOTP user
+			create_grant_string1
+			GRANT_STRING1=${SQL_STATEMENT}
+			create_grant_string2
+			GRANT_STRING2=${SQL_STATEMENT}
+			# test, if the package is installed.
+			# will return 1 if it is, 0 if not
+			INSTALLED=`dpkg -l linotp 2>&1 | grep ^ii | wc -l`
+			echo "LinOTP2: The result of dpkg -l linotp: $INSTALLED"
+
+			#
+			# TODO: At the moment we will create the database on the first run, which might fail!!!
+			#       We only create the database on reboot, if the appliance=true was set in the
+			#	preseed file
+			if [ "$APPLIANCE_INSTALL" = "true" ] && [ ! -f /etc/lseappliance/mysql_root ]; then
+				# The package is not installed, so we will create the database after next reboot
+				echo "LinOTP2: Will setup the database after next reboot"
+				echo $GRANT_STRING1 > /etc/linotp2/linotpcreatedb.sql
+				echo $GRANT_STRING2 >> /etc/linotp2/linotpcreatedb.sql
+				cp /etc/rc.local /etc/rc.local.linotp-dpkg
+				echo "#!/bin/sh -e" > /etc/rc.local
+				echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME;\" || true" >> /etc/rc.local
+				echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < /etc/linotp2/linotpcreatedb.sql || true" >> /etc/rc.local
+				echo "rm /etc/linotp2/linotpcreatedb.sql" >> /etc/rc.local
+				# create tables
+				echo "paster setup-app $LINOTP_INI" >> /etc/rc.local
+				echo "chown -R linotp $LOGDIR/*" >> /etc/rc.local
+				echo "chown linotp $ENCKEYFILE" >> /etc/rc.local
+				# Finally we would clean the rc.local
+				echo "mv /etc/rc.local.linotp-dpkg /etc/rc.local" >> /etc/rc.local
+				#echo "echo '#!/bin/sh -e' > /etc/rc.local" >> /etc/rc.local
+				#echo "echo 'exit 0'>> /etc/rc.local" >> /etc/rc.local
+				echo "LinOTP2: written this rc.local:"
+				cat /etc/rc.local
+			else
+				# We can try to create the database now!
+				echo "LinOTP2: Try to set up database, now"
+				mysql --host=$DBHOST --user=root --password="${ROOTPW}" --execute="create database if not exists $DBNAME;" || true
+				temp_sql=`mktemp`
+				# set password
+				if [ "$DBPASSWORD1" != "" ] && [ "$DBPASSWORD1" != "1234" ]; then
+					echo $GRANT_STRING1 > $temp_sql
+					echo $GRANT_STRING2 >> $temp_sql
+					mysql --host=$DBHOST --user=root --password="${ROOTPW}" < $temp_sql || true
+					rm $temp_sql
+				fi
+			fi #APPLIANCE_INSTALL
+		fi #CREATE_DB
+		if [ "$CREATE_TABLES" = "true" ] && [ "$APPLIANCE_INSTALL" != "true" ]; then
+			# we create the database tables if not an appliance
+			create_tables
+		fi
+		# On an Appliance or a UCS we create the tables in case of an upgrade!
+		if [ "$APPLIANCE_INSTALL" = "true" ] || [ "$UCS_INSTALL" = "true" ] ; then
+			if check_upgrade; then
+				echo "LinOTP2: Doing an upgrade, creating tables"
+				create_tables
+			fi
+		fi
+	elif [ "$TOKENDB" = "SQLite" ]; then
+		#echo "Configuring sqlite"
+		SQLALCHEMY="sqlalchemy.url = sqlite:\/\/$DBFILE"
+		SQLAUDIT="linotpAudit.sql.url = sqlite:\/\/$DBFILE"
+		configure_sql
+		if [ "$CREATEDB_SQLITE" = "true" ]; then
+			if [ -f $DBFILE_FS ]; then
+				mv $DBFILE_FS $DBFILE_FS.old
+			fi
+			create_tables
+		fi
+		mkdir /var/run/linotp
+		chown linotp /var/run/linotp/
+		chown linotp /etc/linotp2
+		chown linotp /etc/linotp2/token.db
+	fi #TOKENDB
+
+	chown -R linotp  $LOGDIR
+
+	# adapt who.ini
+	sed -e s/^secret\ =\ .*/secret\ =\ `pwgen 16 1`/ $WHO_INI > $WHO_INI.new
+	mv $WHO_INI.new $WHO_INI
+	chown linotp $WHO_INI
+	chmod 600 $WHO_INI
+
+	# remove the template cache, as the templates might have changed
+	rm -fr /etc/linotp2/data/*
+
+	#
+	# create sql Audit trail as default
+	#
+	PRIVKEY=/etc/linotp2/private.pem
+	PUBKEY=/etc/linotp2/public.pem
+
+	if [ ! -f $PRIVKEY ];  then
+		echo "LinOTP2: createing private key pair"
+		# create keypair:
+		openssl genrsa -out $PRIVKEY 2048
+		# extract the public key:
+		openssl rsa -in $PRIVKEY -pubout -out $PUBKEY
+		chmod 600 $PRIVKEY
+	fi
+	chown linotp $PRIVKEY
+
+	#
+	# Finally, if we are in the appliance or UCS, we activate the Mysql Audit.
+	# We can only do this at the end, otherwise the creation of the database might fail...
+	#
+	if [ "$APPLIANCE_INSTALL" = "true" ] || check_ucs ; then
+		echo "LinOTP2: Appliance install, activating mysql audit"
+		sed -e s/"^#linotpAudit.type = linotp.lib.audit.SQLAudit"/"linotpAudit.type = linotp.lib.audit.SQLAudit"/ $LINOTP_INI > $LINOTP_INI.new
+		mv $LINOTP_INI.new $LINOTP_INI
+	else
+		echo "LinOTP2: SQLAudit has not been activated."
+	fi
+
+	rm -f /etc/linotp2/we_are_doing_an_upgrade
+	;;
+
+abort-upgrade|abort-remove|abort-deconfigure)
+	;;
+
+*)
+	echo "postinst called with unknown argument \`$1'" >&2
+	exit 1
+	;;
+esac
+

@@ -1,0 +1,12 @@
+Source: linotp-freeradius-perl
+Section: net
+Priority: extra
+Maintainer: root <linotp@lsexperts.de>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.4
+Homepage: http://www.lsexperts.de
+
+Package: linotp-freeradius-perl
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, freeradius, libconfig-file-perl, libtry-tiny-perl, libwww-perl, libio-socket-ssl-perl
+Description: Perl module for FreeRADIUS to talk to LinOTP

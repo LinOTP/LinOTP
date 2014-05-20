@@ -1,0 +1,15 @@
+{
+	"id"			: "lintop2",
+	"name"			: "LinOTP2",
+	"descr"			: "Users can be authenticated by the One Time Password backend LinOTP2",
+	"definition"		: "linotp2.json",
+	"branch"		: "2.3",
+	"dependencies"		: ["saml"],
+	"access"		: {
+		"zip"		: {
+			"type"		: "zip",
+			"version"	: "2.3",
+			"url"		: "linotp2.zip"
+		}
+	}
+}

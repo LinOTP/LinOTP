@@ -1,0 +1,8 @@
+                AuthBasicProvider ldap
+                AuthType Basic
+                AuthName "LinOTP 2 admin area"
+                AuthLDAPURL "ldap://ldapserver:389/ou=someOU,dc=subdomain,dc=domainname,dc=tld?sAMAccountName?sub?(objectClass=user)" NONE
+                AuthLDAPBindDN "serviceaccount@subdomain.domainname.intern"
+                AuthLDAPBindPassword "yourPassword"
+                Require ldap-group cn=linotpadmin_group,ou=Roles,ou=Administration,ou=Groups,ou=someOU,dc=subdomain,dc=domainname,dc=tld
+

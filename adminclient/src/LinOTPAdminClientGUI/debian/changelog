@@ -1,0 +1,270 @@
+linotp-adminclient-gui (2.7-0.rc0~precise) precise; urgency=low
+
+  * Renamed package from linotp-adminclient-ee
+  * Exchanged LinOTP logo
+  * Removed M2Crypto dependency, since license verification is done on the
+    server
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 May 2014 12:40:35 +0200
+
+linotp-adminclient-ee (2.6.1-1) precise; urgency=low
+
+  * Added client information to audit log (#12417)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 27 Mar 2014 14:19:12 +0100
+
+linotp-adminclient-ee (2.6.0.1-1) precise; urgency=low
+
+  * Set version 2.6.0.1-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Feb 2014 15:38:05 +0100
+
+linotp-adminclient-ee (2.6-1) precise; urgency=low
+
+  * Added more Yubikey functionalities.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 23 Dec 2013 15:19:09 +0100
+
+linotp-adminclient-ee (2.5.2.1-1) precise; urgency=low
+
+  * Change RC8 to the release version
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Aug 2013 11:27:54 +0200
+
+linotp-adminclient-ee (2.5.2-1.rc8) lucid; urgency=low
+
+  * Fixed multiple selected policies 	                    #12114
+  * Fixed for user with special char for access to selfservice #12110
+  * Fixed export of policy with user with special chars   #12107
+  * Fixed of missing manpage for source distribution      #12100
+  * Fixed export of empty policies                        #12099
+  * Fixed of weird PKG-INFO from build                    #12098
+  * Fixed for ad users with special char in dn for access to selfservice #12090
+   
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Jul 2013 00:51:56 +0200
+
+linotp-adminclient-ee (2.5.2-1.rc7) precise; urgency=low
+
+  * Fixed ignored timeStep from enrollment dialog #12080
+  * Fixed access for AD user with special characters to selfservice #12090
+  * Added required package entry for configobj in glinotpadm #12088
+
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Jul 2013 11:33:12 +0200
+
+linotp-adminclient-ee (2.5.2-0.rc6) precise; urgency=low
+
+  * Fixed wrong positiv response during OCRA rollout #12058
+  * Fixed enrolling Yubikeys in GTK client #12070
+  * Fixed default getFromConfig #12067
+  * Added index to token table #12061
+  * Fixed documentation #12075
+  * Added more unittests
+  * Fixed OCRAChallengeTimeout #12069
+  * Fixed the UI of the TOTP enrollment to honour the timestep #12080
+  * Fixed the dependency for repoze.who #12081
+  * Added multiple LDAPS useridresolvers #12065
+   
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 04 Jul 2013 00:28:26 +0200
+
+linotp-adminclient-ee (2.5.2-0.rc5) precise; urgency=low
+
+  * fixed LDAP encoding (#12062)
+  * fixed tokenclass type (#12054)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 02 Jul 2013 12:00:06 +0200
+
+
+linotp-adminclient-ee (2.5.2-0.rc3) precise; urgency=low
+
+  * vesion number increase
+  
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Jun 2013 16:10:06 +0200
+
+
+
+linotp-adminclient-ee (2.5.2-0.rc1) precise; urgency=low
+
+  * closed #904: Yubikey can now be enrolled with GTK client based on python 2.7
+  * modified the GTK client this way, that the realm filter is always available in the GTK client (#845)
+  * added the possibility to give the CA certificate with the LDAP Resolver (#862)
+  * fixed missing dependency for configobj (#888)
+  * fixed the jumping of the filter cursor (#682)
+  * added transition packages to rename the debian archives (#844)
+  * error handling when loading and parsing config file
+  * added import of policies to GTK client
+  * added the possiblity to export the policies in the WebUI and in the GTK client (part of #774 and #858).
+  * gtk client audit log now shows the last audit entry
+  * moved etoken enrollment tool from server to EE client (#834)
+  * fixed display of policy in GTK client (#857)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 05 Jun 2013 12:14:00 +0200
+
+linotp-adminclient-ee (2.5.1-2) lucid; urgency=low
+
+  * change package name
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 20 Mar 2013 23:47:30 +0200
+
+linotpadminclientee (2.5.1-1) lucid; urgency=low
+
+  * The version number, displayed in the help menu now will be the python package version.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 22 Feb 2013 14:25:30 +0200
+
+linotpadminclientee (2.4.5) lucid; urgency=low
+
+  * added possibility to set identifier for LDAP resolver 
+  * added OCRA settings
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 17 Sep 2012 15:00:30 +0200
+
+linotpadminclientee (2.4.4) lucid; urgency=low
+
+  * improved the login behavior
+
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 25 Jul 2012 11:21:30 +0200
+
+linotpadminclientee (2.4.3-1) lucid; urgency=low
+
+  * adding authorization polcies
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 29 May 2011 11:10:24 +0200
+
+linotpadminclientee (2.4.3) lucid; urgency=low
+
+  * set to version 2.4.3
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 25 Apr 2011 08:10:24 +0200
+
+linotpadminclientee (2.4.2) lucid; urgency=low
+
+  * added copyTokenPin
+  * added possibility for configuring chasing of referrals
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 25 Nov 2011 16:40:24 +0200
+
+linotpadminclientee (2.4.1) lucid; urgency=low
+
+  * added the tool get serial by otp
+  * added audit trail as a third tab
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 31 Oct 2011 11:10:24 +0200
+
+
+linotpadminclientee (2.4) lucid; urgency=low
+
+  * speed up of userview
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 Sep 2011 16:10:24 +0200
+
+linotpadminclientee (2.4-rc3) lucid; urgency=low
+
+  * reworked pin poliy
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 05 Sep 2011 09:35:51 +0200
+
+linotpadminclientee (2.4-rc2) lucid; urgency=low
+
+  *   2nd release candidate
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 17 Aug 2011 13:22:12 +0200
+
+linotpadminclientee (2.4-rc1) lucid; urgency=low
+
+  * first feature complete version
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 04 Aug 2011 09:08:52 +0200
+
+linotpadminclientee (2.4-pre2) lucid; urgency=low
+
+  * Added Audit Trail etc.
+
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 31 May 2011 11:44:53 +0200
+
+linotpadminclientee (2.4-pre1) unstable; urgency=low
+
+  * Pre1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 07 Mar 2011 12:00:00 +0200
+
+
+
+
+linotpadminclientee (2.3-rc2) unstable; urgency=low
+
+  * RC2
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 10 Mar 2011 12:00:00 +0200
+
+linotpadminclientee (2.3-pre2) unstable; urgency=low
+
+  * Pre release 2
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 02 Feb 2011 12:00:00 +0200
+
+linotpadminclientee (2.3-pre1) unstable; urgency=low
+
+  * proxy config
+  * It may be configured if the eTokenNG get initialized or not
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sun, 31 Oct 2010 13:00:30 +0200
+
+linotpadminclientee (2.2) stable; urgency=low
+
+  * Final release
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Oct 2010 19:00:30 +0200
+
+linotpadminclientee (2.2-rc3) stable; urgency=low
+
+  * Fixed the userfiltering for Windows clients
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 06 Oct 2010 11:00:30 +0200
+
+linotpadminclientee (2.2-rc2) stable; urgency=low
+
+  * Added Button for testing LDAP connection
+  * Fixed the broken filtering of users
+  * Make PrependPIN, ResetFailcounter and IncFailCounter available for configuration
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 04 Oct 2010 09:30:30 +0200
+
+linotpadminclientee (2.2-rc1) stable; urgency=low
+
+  * First release candidate.
+  * For SMS token the description gets filled with the mobile number
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 28 Sep 2010 10:30:30 +0200
+
+
+linotpadminclientee (2.2-pre3) stable; urgency=low
+
+  * Added SMS Token rollout and preset of mobile phone number from LDAP
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 28 Sep 2010 10:30:30 +0200
+
+
+linotpadminclientee (2.2-pre2) stable; urgency=low
+
+  * improved VA installer
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 13 Sep 2010 21:00:30 +0200
+
+linotpadminclientee (2.2-pre1) stable; urgency=low
+
+  * Implementing of new features.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Jul 2010 23:54:30 +0200
+
+
+
+linotpadminclientee (2.1) stable; urgency=low
+
+  * Initial release of new debian package building system
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 25 Jun 2010 23:54:30 +0200

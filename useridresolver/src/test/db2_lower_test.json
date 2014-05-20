@@ -1,0 +1,14 @@
+{
+    "config": {
+            "linotp.sqlresolver.Driver"     : "ibm_db_sa+pyodbc",
+            "linotp.sqlresolver.Port"     : "",
+            "linotp.sqlresolver.Database"     : "",
+            "linotp.sqlresolver.Server"     : "linotp_db2",
+            "linotp.sqlresolver.User"       : "",
+            "linotp.sqlresolver.Password"   : "",
+            "linotp.sqlresolver.Table"       : "linotpusers",
+            "linotp.sqlresolver.Map"    : "{ \"username\": \"username\", \"userid\" : \"id\", \"password\": \"passWord\", \"salt\" : \"salT\", \"givenname\" : \"givenname\", \"surname\":\"surname\", \"email\":\"email\" }"
+    },
+    "config2_map": "{ \"username\": \"username\", \"userid\" : \"username\", \"password\": \"passWord\", \"givenname\" : \"givenname\", \"surname\":\"surname\", \"email\":\"email\" }",
+    "config3_where": "(1 = 0 OR \"linotpusers\".id > 2 ) AND 1 = 1"
+}

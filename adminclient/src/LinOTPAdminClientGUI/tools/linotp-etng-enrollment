@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP admin clients.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+
+import binascii
+from getopt import getopt, GetoptError
+import sys
+from linotputilsee.etokenng import initetng
+from linotputilsee.etokenng import etngError
+
+'''
+TODO:
+    * we could write encrypted PSKC files
+'''
+
+def usage():
+    print  '''
+    Parameter:
+    --pin=<user pin of the tokens>, if not set, a random user pin is user per token.
+    --label=<label for the tokens>, if not set, the default label "eTokenNG" is used.
+    --file=<filename of xml file>,  the filename of the xml file.
+
+    program can be called this way:
+    python etng-enrollment.py --pin=secret --file=seeds.xml
+
+'''
+
+def main():
+    try:
+        opts, args = getopt(sys.argv[1:], "",
+                ["help", "pin=", "file=", "label="])
+
+    except GetoptError:
+        print "There is an error in your parameter syntax:"
+        usage()
+        sys.exit(1)
+
+
+    filename = ""
+    pin = "1234567890"
+    label = "eTokenNG"
+
+    for opt, arg in opts:
+        if opt in ('--help'):
+            usage()
+            sys.exit(0)
+        elif opt in ('--pin'):
+            pin = arg
+        elif opt in ('--file'):
+            filename = arg
+        elif opt in ('--label'):
+            label = arg
+
+
+    if "" == filename:
+        print "missing parameter"
+        usage()
+        sys.exit(1)
+
+    randomPin = False
+    if "" == pin:
+        randomPin = True
+
+    token_dict = {}
+
+    while True:
+        try:
+            data = initetng({'userpin':pin, 'label':label, 'randomUserPIN':randomPin, 'debug' : False })
+            token_dict[data['serial']] = { 'otpkey' : data['hmac'] }
+
+            print "Successfully initilized token %s" % data['serial']
+        except etngError, e:
+            print "Error: %s" % str(e)
+
+
+        print "---------------------------------------"
+        print "Insert next Token and hit enter."
+        x = raw_input("If you are done, press 'D': ")
+
+        if "D" == x.upper():
+            break
+
+    print "Now writing token file..."
+
+
+    f = open(filename, 'w')
+    f.write("<Tokens>\n")
+    for key in token_dict:
+        f.write('''<Token serial="%s">
+<CaseModel>eTokenNG OTP</CaseModel>
+<Model>eTokenNG OTP</Model>
+<ProductionDate>06/15/2011</ProductionDate>
+<ProductName>eTokenNG OTP</ProductName>
+<Applications>
+<Application ConnectorID="a61c4073-2fc8-4170-99d1-9f5b70a2cec6">
+<Seed>%s</Seed>
+<MovingFactor>1</MovingFactor>
+</Application>
+</Applications>
+</Token>''' % (key, token_dict[key]['otpkey']))
+
+    f.write("</Tokens>\n")
+    f.close()
+
+
+
+if __name__ == '__main__':
+    main()

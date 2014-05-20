@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+
+"""This tool generates passwords for the sql resolver"""
+
+VERSION = '0.1'
+import os, sys
+from getopt import getopt, GetoptError
+import getpass
+import crypt
+import pprint
+import random
+
+
+
+def usage():
+    print  '''
+    Parameter:
+    -u username
+    -p password
+    '''
+
+
+def main():
+
+    user = ""
+    password = ""
+
+
+    try:
+        opts, args = getopt(sys.argv[1:], "u:p:h", ["help"])
+
+    except GetoptError:
+        print "There is an error in your parameter syntax:"
+        usage()
+        sys.exit(1)
+
+    for opt, arg in opts:
+        if opt in ('-u'):
+            user = arg
+        elif opt in ('-p'):
+            password = arg
+        elif opt in ('-h', '--help'):
+            usage()
+            sys.exit(1)
+
+    if password == "":
+        password = getpass.getpass("Please enter a password: ")
+
+    # the salt are two characters from: [./a-zA-Z0-9]
+    pool = "./0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    salt = pool[random.randrange(0, len(pool))] + pool[random.randrange(0, len(pool))]
+    encryptedPW = crypt.crypt(password, salt)
+
+    print("|%s|%s|%s|" % (user, encryptedPW, salt))
+
+if __name__ == '__main__':
+    main()

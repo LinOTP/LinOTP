@@ -1,0 +1,81 @@
+Python package for talking to YubiKeys.
+
+Author : Fredrik Thulin <fredrik@yubico.com>
+
+Copyright (c) 2011, Yubico AB
+All rights reserved.
+
+See the file COPYING for complete copyright statement.
+
+
+================
+  Introduction
+================
+
+The YubiKey is a hardware token for authentication. The main
+mode of the YubiKey is entering a one time password (or a strong
+static password) by acting as a USB HID device, but there are
+things one can do with bi-directional communication.
+
+  1) Configuration. The yubikey_config class should be a feature-
+     wise complete implementation of everything that can be
+     configured on YubiKeys version 1.3 to 2.2 (besides deprecated
+     functions in YubiKey 1.x).
+
+     See examples/configure_nist_test_key for an example.
+
+  2) Challenge-response. YubiKey 2.2 supports HMAC-SHA1 or Yubico
+     challenge-response operations.
+
+     See examples/nist_challenge_response for an example.
+
+
+================
+    Example
+================
+
+Here is a trivial usage example :
+
+    #!/usr/bin/env python
+    """ Get version of connected YubiKey. """
+
+    import sys
+    import yubico.yubikey
+
+    debug = False
+
+    try:
+        YK = yubico.yubikey.find_key(debug=debug)
+	print "Version : %s " % YK.version()
+    except yubico.yubico_exception.YubicoError as inst:
+	print "ERROR: %s" % inst.value
+        sys.exit(1)
+
+
+================
+  Installation
+================
+
+You should be able to install python-yubico in the standard-python way,
+which seems to be
+
+  $ cd python-yubico-$ver
+  $ python setup.py install
+
+although I've never tried this myself. I use Ubuntu, so I created a
+PPA (Personal Package Archive) for easy installation (and removal) on
+Ubuntu systems.
+
+If you use a recent Ubuntu release, you should be able to install
+python-yubico with these commands :
+
+  $ sudo add-apt-repository ppa:fredrikt/python-yubico
+  $ sudo apt-get update
+  $ sudo apt-get install python-yubico
+
+The Launchpad PPA key generated for my packages is C7E50642.
+
+
+================
+
+Comments, feedback and patches welcome!

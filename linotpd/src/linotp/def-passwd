@@ -1,0 +1,47 @@
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+bin:x:2:2:bin:/bin:/bin/sh
+sys:x:3:3:sys:/dev:/bin/sh
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/bin/sh
+man:x:6:12:man:/var/cache/man:/bin/sh
+lp:x:7:7:lp:/var/spool/lpd:/bin/sh
+mail:x:8:8:mail:/var/mail:/bin/sh
+news:x:9:9:news:/var/spool/news:/bin/sh
+uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh
+proxy:x:13:13:proxy:/bin:/bin/sh
+www-data:x:33:33:www-data:/var/www:/bin/sh
+backup:x:34:34:backup:/var/backups:/bin/sh
+list:x:38:38:Mailing List Manager:/var/list:/bin/sh
+irc:x:39:39:ircd:/var/run/ircd:/bin/sh
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh
+nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
+libuuid:x:100:101::/var/lib/libuuid:/bin/sh
+syslog:x:101:102::/home/syslog:/bin/false
+messagebus:x:102:106::/var/run/dbus:/bin/false
+hplip:x:103:7:HPLIP system user,,,:/var/run/hplip:/bin/false
+avahi-autoipd:x:104:110:Avahi autoip daemon,,,:/var/lib/avahi-autoipd:/bin/false
+avahi:x:105:111:Avahi mDNS daemon,,,:/var/run/avahi-daemon:/bin/false
+couchdb:x:106:113:CouchDB Administrator,,,:/var/lib/couchdb:/bin/bash
+haldaemon:x:107:114:Hardware abstraction layer,,,:/var/run/hald:/bin/false
+speech-dispatcher:x:108:29:Speech Dispatcher,,,:/var/run/speech-dispatcher:/bin/sh
+kernoops:x:109:65534:Kernel Oops Tracking Daemon,,,:/:/bin/false
+saned:x:110:116::/home/saned:/bin/false
+pulse:x:111:117:PulseAudio daemon,,,:/var/run/pulse:/bin/false
+gdm:x:112:119:Gnome Display Manager:/var/lib/gdm:/bin/false
+kay:x:1000:1000:Kay Winkler,,,:/home/kay:/bin/bash
+postgres:x:113:122:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
+privoxy:x:114:65534::/etc/privoxy:/bin/false
+beate:x:1004:1001:Beate Winkler,,,,:/home/beate:/bin/bash
+virtualbox:x:1005:1002:Work,In Weiterstadt,WorkPhone,TelPriv,:/home/virtualbox:/bin/bash
+philip:x:1002:100:Philip Winkler,,,,:/home/philip:/bin/bash
+marvin:x:1001:100:Marvin Winkler,,,,:/home/marvin:/bin/bash
+sarah:x:1003:100:Sarah Winkler,,,,:/home/sarah:/bin/bash
+owi:x:1007:100:OWI,,,,:/home/owi:/bin/bash
+debian-tor:x:115:124::/var/lib/tor:/bin/bash
+postfix:x:116:126::/var/spool/postfix:/bin/false
+sshd:x:117:65534::/var/run/sshd:/usr/sbin/nologin
+mysql:x:118:129:MySQL Server,,,:/var/lib/mysql:/bin/false
+newpki:x:119:130:NewPKI Server,,,:/home/newpki:/bin/false
+munin:x:120:131::/var/lib/munin:/bin/false
+b1822:x:1008:1003:1822,,,,:/home/b1822:/bin/bash

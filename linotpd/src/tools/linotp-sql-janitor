@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+""" This is a janitor program, that cleans up the audit log
+    If the audit entries exceed the linotpAudit.sql.highwatermark
+    the tool will delete old entries and only leave the
+       linotpAudit.sql.lowwatermark entries
+"""
+
+from linotp.lib.utils import config_get, INI_FILE
+from sqlalchemy import *
+from getopt import getopt, GetoptError
+import sys, datetime
+import logging, logging.config
+logging.config.fileConfig(INI_FILE)
+log = logging.getLogger(__name__)
+
+
+def usage():
+    print '''
+Usage:
+        linotp-sql-janitor [--high=###] [--low=###]
+
+        --high=, -h   specify the high watermark (the maximum number of audit entries allowed)
+        --low=, -l    specify the low watermark  (the number of entries kept, if the high watermark is exceeded)
+'''
+
+def sqljanitor(SQL_URL, SQL_HIGH, SQL_LOW):
+    t1 = datetime.datetime.now()
+
+    id_pos = 0
+
+    engine = create_engine(SQL_URL)
+
+    engine.echo = False  # We want to see the SQL we're creating
+    metadata = MetaData(engine)
+
+    # The audit table already exists, so no need to redefine it. Just
+    # load it from the database using the "autoload" feature.
+    audit = Table('audit', metadata, autoload=True)
+
+    overall_number = 0
+
+    rows = audit.count().execute()
+    row = rows.fetchone()
+    overall_number = int(row[id_pos])
+
+    print "found %i entries in the audit" % overall_number
+    log.info("[sqljanitor] found %i entries in the audit" % overall_number)
+
+    if overall_number >= SQL_HIGH:
+        print "Deleting older entries"
+        log.info("[sqljanitor] Deleting older entries")
+        s = audit.select().order_by(asc(audit.c.id)).limit(1)
+        rows = s.execute()
+        first_id = int(rows.fetchone()[id_pos])
+
+        s = audit.select().order_by(desc(audit.c.id)).limit(1)
+        rows = s.execute()
+        last_id = int (rows.fetchone()[id_pos])
+
+        print "Found ids between %i and %i" % (first_id, last_id)
+        log.info("[sqljanitor] Found ids between %i and %i" % (first_id, last_id))
+
+        delete_from = last_id - SQL_LOW
+
+        if delete_from > 0:
+            print "deleting all IDs less than %i" % delete_from
+            log.info("[sqljanitor] deleting all IDs less than %i" % delete_from)
+            s = audit.delete(audit.c.id < delete_from)
+            s.execute()
+
+        else:
+            print "Nothing to do. There are less entries than the low watermark"
+            log.info("[sqljanitor] Nothing to do. There are less entries than the low watermark")
+
+    else:
+        print "Nothing to be done: %i below high watermark %i" % (overall_number, SQL_HIGH)
+        log.info("[sqljanitor] Nothing to be done: %i below high watermark %i" % (overall_number, SQL_HIGH))
+
+
+    t2 = datetime.datetime.now()
+
+    duration = t2 - t1
+    print "took me %i seconds" % duration.seconds
+    log.info("[sqljanitor] took me %i seconds" % duration.seconds)
+
+    return
+
+def main():
+
+    SQL_URL = config_get("DEFAULT", "linotpAudit.sql.url")
+    SQL_HIGH = int(config_get("DEFAULT", "linotpAudit.sql.highwatermark", "10000"))
+    SQL_LOW = int(config_get("DEFAULT", "linotpAudit.sql.lowwatermark", "5000"))
+
+    try:
+        opts, args = getopt(sys.argv[1:], "h:l:",
+                ["high=", "low="])
+
+
+    except GetoptError:
+        print "There is an error in your parameter syntax:"
+        usage()
+        sys.exit(1)
+
+    for opt, arg in opts:
+        if opt in ('--high, -h'):
+            SQL_HIGH = int(arg)
+        elif opt in ('--low, -l'):
+            SQL_LOW = int(arg)
+
+    sqljanitor(SQL_URL, SQL_HIGH, SQL_LOW)
+
+    sys.exit(0)
+
+if __name__ == '__main__':
+    main()

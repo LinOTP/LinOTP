@@ -1,0 +1,4 @@
+# create a group yubihsm and add the user (linotp service account) to this group
+# So the linotp server will be able to access the HSM
+#
+BUS=="usb", ACTION=="add", SYSFS{idVendor}=="1050", SYSFS{idProduct}=="0018", GROUP="yubihsm"

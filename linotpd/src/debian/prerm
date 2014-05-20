@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+. /usr/share/debconf/confmodule
+
+# check if linotp was run via apache
+db_get linotp/apache/activate || true
+
+if [ ! -f /etc/apache2/sites-enabled/linotp2 ]; then
+	# site was manually disabled!
+	touch /etc/linotp2/apache_site_disabled
+fi
+
+if [ "$RET" = "true" ]; then
+	a2dissite linotp2
+	invoke-rc.d apache2 reload
+fi
+

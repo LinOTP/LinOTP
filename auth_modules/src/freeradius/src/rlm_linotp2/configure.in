@@ -1,0 +1,35 @@
+AC_INIT(rlm_linotp2.c)
+AC_REVISION($Revision: 1.4 $)
+AC_DEFUN(modname,[rlm_linotp2])
+AC_PREREQ([2.50])
+
+fail=
+if test x$with_[]modname != xno; then
+	AC_PROG_CC
+	AC_PROG_CPP
+
+        AC_CHECK_LIB(curl, curl_global_init,
+                [ linotp2_ldflags="$linotp2_ldflags -lcurl" ],
+                [ fail="$fail curl" ])
+
+	targetname=modname
+else
+	targetname=
+	echo \*\*\* module modname is disabled.
+fi
+
+if test x"$fail" != x""; then
+	if test x"${enable_strict_dependencies}" = x"yes"; then
+		AC_MSG_ERROR([set --without-]modname[ to disable it explicitly.])
+	else
+		AC_MSG_WARN([silently not building ]modname[.])
+		AC_MSG_WARN([FAILURE: ]modname[ requires: $fail.]); 
+		targetname=""
+	fi
+fi
+
+AC_SUBST(linotp2_ldflags)
+AC_SUBST(linotp2_cflags)
+AC_SUBST(targetname)
+AC_CONFIG_HEADER(config.h)
+AC_OUTPUT(Makefile)

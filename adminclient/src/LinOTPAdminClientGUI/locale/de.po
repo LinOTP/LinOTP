@@ -1,0 +1,2502 @@
+# German translations for LinOTP package - German messages for LinOTP.
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP admin clients.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+##
+msgid ""
+msgstr ""
+"Project-Id-Version: LinOTP 2\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2013-04-02 17:30+0200\n"
+"Last-Translator: Cornelius Kölbel <cornelius.koelbel@lsexperts.de>\n"
+"Language-Team: Deutsch <>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#, python-format
+msgid "Error reading resolver configuration from server: %s"
+msgstr "Fehler beim Lesen der Resolver-Konfiguration vom Server: %si"
+
+#, python-format
+msgid "Error reading system configuration from server: %s"
+msgstr "Fehler beim Lesen der System-Konfiguration vom Server: %s"
+
+#, python-format
+msgid "Error reading realm configuration from server: %s"
+msgstr "Fehler beim Lesen der Realm Konfiguration vom Server: %s"
+
+#, python-format
+msgid "Error writing resolver configuration to server: %s"
+msgstr "Fehler beim Schreiben der Resolver-Konfiguration zum Server: %s"
+
+#, python-format
+msgid "Error writing configuration to server: %s"
+msgstr "Fehler beim Schreiben der Konfiguration zum Server: %s"
+
+msgid "Fetching tokenlist from server"
+msgstr "Hole Tokenliste vom Server"
+
+#, python-format
+msgid "populating token list (%s)"
+msgstr "Lade Tokenliste (%s)"
+
+#, python-format
+msgid "%s tokens found"
+msgstr "%s Tokens gefunden"
+
+msgid "LinOTP Server does not support paging!"
+msgstr "Der LinOTP Server unterstützt kein Paging!"
+
+msgid ""
+"Please setup the LinOTP Server in the Admin Client configuration correctly"
+msgstr ""
+"Bitte konfigurieren Sie die Verbindung zum LinOTP Server in der Admin-Client-"
+"Konfiguration."
+
+msgid "Fetching userlist from server"
+msgstr "Hole Benutzerliste vom Server"
+
+#, python-format
+msgid "populating user list (%s)"
+msgstr "Lade Benutzerliste (%s)"
+
+#, python-format
+msgid "sorting user list of %s users"
+msgstr "sortiere die Benutzerliste mit %s Benutzern"
+
+#, python-format
+msgid "setting filter for user list of %s users"
+msgstr "Setze Filter der Benutzerliste mit %s Bentuzern"
+
+#, python-format
+msgid "%s users found"
+msgstr "Es wurden %s Benutzer gefunden."
+
+msgid "Error reading audit information"
+msgstr "Fehler beim Lesen der Audit Informationen."
+
+msgid "user"
+msgstr "Benutzer"
+
+msgid "realm"
+msgstr "Realm"
+
+msgid "serial"
+msgstr "Seriennummer"
+
+msgid "admin"
+msgstr "Administrator"
+
+msgid "success"
+msgstr "Erfolg"
+
+msgid "action"
+msgstr "Aktion"
+
+msgid "action detail"
+msgstr "Aktion, Detail"
+
+msgid "signature"
+msgstr "Signatur"
+
+msgid "token type"
+msgstr "Tokentyp"
+
+msgid "info"
+msgstr "Info"
+
+msgid "date"
+msgstr "Datum"
+
+msgid "log level"
+msgstr "Log Level"
+
+msgid "LinOTP server"
+msgstr "LinOTP Server"
+
+msgid "Client"
+msgstr "Client"
+
+msgid ""
+"LinOTPGui::importtoken - Please specify a filename to import the token from."
+msgstr ""
+"LinOTPGui::importtoken - Bitte geben Sie einen Dateinamen einer Datei an, "
+"aus der die Token importiert werden sollen."
+
+#, python-format
+msgid "LinOTPGui::importtoken - got a seed %s without a serial"
+msgstr "LinOTPGui::importtoken - Lese ein Seed %s ohne Seriennummer"
+
+#, python-format
+msgid "LinOTPGui::importtoken - I/O error : %s"
+msgstr "LinOTPGui::importtoken - I/O Fehler : %s"
+
+msgid "No Token selected"
+msgstr "Es ist kein Token ausgewählt"
+
+msgid "gathering selected tokens"
+msgstr "Sammle die ausgewählten Token"
+
+#, python-format
+msgid "gathering token: %s"
+msgstr "Sammle Token: %s"
+
+msgid "No user selected"
+msgstr "Es ist kein Benutzer ausgewählt"
+
+msgid "gathering selected users"
+msgstr "Sammle die ausgewählten Benutzer"
+
+#, python-format
+msgid "gathering user: %s"
+msgstr "Sammle Benutzer: %s"
+
+#, python-format
+msgid "(%(s)s) %(t)d of %(c)d %(te)s"
+msgstr "(%(s)s) %(t)d von %(c)d %(te)s"
+
+msgid "Error"
+msgstr "Fehler"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Select logfile"
+msgstr "Logdatei auswählen"
+
+msgid "Log files"
+msgstr "Log Dateien"
+
+msgid "All files"
+msgstr "Alle Dateien"
+
+msgid "Select client certificate"
+msgstr "Benutzer Zertifikat auswählen"
+
+msgid "certificate files"
+msgstr "Zertifikatsdateien"
+
+msgid "private key files"
+msgstr "Private Schlüssel"
+
+msgid "Select Token definition file"
+msgstr "Tokendefinitionsdatei auswählen"
+
+msgid "Token file"
+msgstr "Tokendatei"
+
+msgid "You need to select exactly one token to display it's details."
+msgstr ""
+"Sie müssen genau einen Token auswählen, um die Details dieses Tokens "
+"anzuzeigen."
+
+#, python-format
+msgid "Tokeninfo for token %s"
+msgstr "Details von Token %s"
+
+msgid ""
+"eTokenPASS are available with HMAC-SHA-1 or HMAC-SHA-256 algorithm.\n"
+"The newer eToken Pass (starting with version 6.20) are using SHA-256.\n"
+"You may take a look into the XML file for the version number!\n"
+"Please choose the right Algorithm.\n"
+msgstr ""
+"eToken Pass sind sowohl mit HMAC-SHA-1 als auch mit HMAC-SHA-256 verfügbar.\n"
+"Die neuen eToken Pass (ab Version 6.20) verwenden SHA-256.\n"
+"Werfen Sie dazu einen Blick in die XML-Datei!\n"
+"Bitte wählen Sie den entsprechenden Algorithmus.\n"
+
+msgid ""
+"Timebased OATH tokens either generate a new OTP value every 30 or every 60 "
+"seconds."
+msgstr ""
+"Zeitbasierte OATH Token generieren entweder alle 30 oder alle 60 Sekunden "
+"einen neuen Wert."
+
+msgid ""
+"For timebased OATH tokens this is the amount of seconds\n"
+"LinOTP will try to find the matching OTP value before and after the "
+"currentime."
+msgstr ""
+"Für zeitbasierte OTP Token ist das Wert in Sekunden, in denen LinOTP \n"
+"vor und nach der aktuellen Zeit versuchen wird den OTP Wert zu finden."
+
+msgid ""
+"For eventbased OATH tokens this is the window of the allowed blank presses."
+msgstr ""
+"Bei ereignisbasierten OATH Token ist das das Fenster der erlaubten \"Blank "
+"presses\"."
+
+msgid "After that many failed authentication tries the token will be locked"
+msgstr ""
+"Nach so vielen fehlgeschlagenen Authentisierungsversuchen wird der Token "
+"gesperrt."
+
+msgid ""
+"When doing a manual or an auto resync this is the number of OTP values that "
+"will be calculated in the future."
+msgstr ""
+"Bei einem manuellen und automatischen Resync werden soviele OTP Werte in die "
+"Zukunft gerechnet, um den Zählerstand zu finden."
+
+#, python-format
+msgid "Setting %s for token %s"
+msgstr "Setze %s von Token %s"
+
+#, python-format
+msgid "Select %s for token %s"
+msgstr "Setze %s von Token %s"
+
+#, python-format
+msgid "Unhandled Tokeninfo key: %s!"
+msgstr "Nicht bearbeiteter Tokeninfo Schlüssel: %s"
+
+#, python-format
+msgid "Successfully set the %s"
+msgstr "Erfolgreich %s gesetzt"
+
+#, python-format
+msgid "Failed to set the %s!"
+msgstr "Fehler beim Setzen von %s!"
+
+msgid ""
+"You are trying to assign a Token to a very user. You may only select one "
+"user!"
+msgstr ""
+"Sie versuchen einen Token gezielt einem Benutzer zuzuweisen. Sie dürfen nur "
+"einen Benutzer auswählen."
+
+msgid ""
+"You are trying to enroll a Token to a very user. You may only select one "
+"user!"
+msgstr ""
+"Sie versuchen einen Token gezielt für einem Benutzer auszurollen. Sie dürfen "
+"nur einen Benutzer auswählen."
+
+msgid "Please insert token"
+msgstr "Bitte Token einstecken"
+
+#, python-format
+msgid "disabling token for user %s"
+msgstr "Deaktiviere den Token für Benutzer %s"
+
+#, python-format
+msgid "disabling token %s"
+msgstr "Deaktiviere Token %s"
+
+msgid "disabled"
+msgstr "gesperrt"
+
+#, python-format
+msgid "enabling token %s"
+msgstr "Aktiviere Token %s"
+
+msgid "enabled"
+msgstr "entsperrt"
+
+#, python-format
+msgid "removing token %s"
+msgstr "Entferne Token %s"
+
+msgid "removed"
+msgstr "gelöscht"
+
+msgid "Load a policy file"
+msgstr "Richtlinien-Datei laden"
+
+msgid "policy config"
+msgstr "Richtlinien-Konfiguration"
+
+#, python-format
+msgid "Could not parse policy file: %s"
+msgstr "Fehler beim Parsen der Richtlinien-Datei: %s"
+
+msgid "Save the policy file"
+msgstr "Richtlinien-Datei speichern"
+
+#, python-format
+msgid "The file %s already exist. Overwrite?"
+msgstr "Die Datei %s existiert bereits. Soll sie überschrieben werden?"
+
+msgid "Successfully saved policy file."
+msgstr "Richtlinien-Datei wurde erfolgreich gespeichert."
+
+msgid "Error writing policy file."
+msgstr "Fehler beim Schreiben der Richtlinien-Datei."
+
+#, python-format
+msgid "Found the token serial: %s"
+msgstr "Token mit der Seriennummer %s gefunden."
+
+#, python-format
+msgid ""
+"\n"
+"The token belongs to %s (%s)"
+msgstr ""
+"\n"
+"Der Token gehört %s (%s)"
+
+msgid "Could not find a matching token serial for the given OTP value."
+msgstr ""
+"Es konnte kein passender Token mit der angegebenen Seriennummer gefunden "
+"werden."
+
+#, python-format
+msgid "unassigning token %s"
+msgstr "Hebe die Zuweisung für Token %s auf"
+
+msgid "unassigned"
+msgstr "Zuweisung aufgehoben"
+
+#, python-format
+msgid "assigning token %s"
+msgstr "Weise Token %s zu"
+
+msgid "assigned"
+msgstr "zugewiesen"
+
+msgid ""
+"The eTokenNG OTP will be initialized. All data on the Token will be lost."
+msgstr ""
+"Der eTokenNG OTP wird hierbei initialisiert. Alle Daten auf dem Token werden "
+"gelöscht."
+
+msgid "starting to enroll eToken-NG OTP"
+msgstr "rolle eToken-NG OTP aus"
+
+msgid "initialize pkcs11 interface"
+msgstr "initialisiere PKCS11 Interface"
+
+msgid "initialize token"
+msgstr "initialisiere Token"
+
+msgid "login to token"
+msgstr "logge auf Token ein"
+
+msgid "delete old OTP application"
+msgstr "lösche alte OTP-Applikation"
+
+msgid "create new OTP application"
+msgstr "erzeuge neue OTP-Applikation"
+
+msgid "finalizing token"
+msgstr "schließe die Tokenerstellung ab"
+
+msgid "The mOTP Key needs to be 16, 24 or 32 characters!"
+msgstr "Der Key für mOTP muss 16, 24 oder 32 Hex-Zeichen lang sein!"
+
+msgid "The mOTP Pin needs to be 4 digits!"
+msgstr "Der mOTP Pin muss 4 Ziffern lang sein!"
+
+msgid "mOTP Token initialized successfully."
+msgstr "mOTP Token wurde erfolgreich initilisiert."
+
+msgid "You need to enter a PIN and a KEY."
+msgstr "Sie müssen eine PIN und einen KEY eingeben."
+
+msgid "The HMAC Key must only contain hex characters!"
+msgstr "Der HMAC Key darf nur HEX Zeichen enthalten!"
+
+msgid ""
+"The HMAC Key needs to be 32, 40, 48 or 64 characters long, which is 128, "
+"160, 192 or 256 bit!"
+msgstr ""
+"Der HMAC Key muss 32, 40, 48 oder 64 Zeichen lang sein! Das entspricht 128, "
+"160, 192 oder 256 bit."
+
+msgid "OATH Token initialized successfully."
+msgstr "OATH Token wurde erfolgreich initialisiert."
+
+msgid "You need to enter a Seed."
+msgstr "Sie müssen ein Seed eingeben."
+
+msgid "SPass Token enrolled successfully."
+msgstr "SPass Token wurde erfolgreich ausgerollt."
+
+msgid "SMS Token enrolled successfully."
+msgstr "SMS Token wurde erfolgreich ausgerollt."
+
+msgid "The python-yubico module is not installed. You can not enroll yubikeys"
+msgstr ""
+"Das Python yubikey modul ist nicht installiert. Sie können keine Yubikeys "
+"ausrollen."
+
+msgid "Please insert the YubiKey"
+msgstr "Bitte einen YubiKey einstecken"
+
+msgid ""
+"You need to enter the unlock key with 6 bytes in HEX format like: "
+"10FF2B1212EE"
+msgstr ""
+"Sie müssen den Entsperr-Code als 6 Bytes im HEX Format eingeben. Bsp: "
+"10FF2B1212EE"
+
+msgid ""
+"You need to enter enter the new unlock key with 6 bytes in HEX format like: "
+"10FF2B1212EE"
+msgstr ""
+"Sie müssen den Entsperr-Code als 6 Bytes im HEX Format eingeben. Bsp: "
+"10FF2B1212EE"
+
+msgid "YubiKey enrolled successfully."
+msgstr "YubiKey wurde erfolgreich ausgerollt."
+
+msgid "Failed to enroll YubiKey."
+msgstr "Das Ausrollen des YubiKey ist fehlgeschlagen."
+
+#, python-format
+msgid "Remote Token with serial %s enrolled successfully."
+msgstr "Ein Remote Token mit der Seriennummer %s wurde erfolgreich ausgerollt."
+
+#, python-format
+msgid "Failed to enroll Token with serial %s."
+msgstr "Fehler beim Ausrollen des Tokens %s."
+
+#, python-format
+msgid "RADIUS Token with serial %s enrolled successfully."
+msgstr "RADIUS Token mit der Seriennummer %s wurde erfolgreich ausgerollt."
+
+#, python-format
+msgid "resyncing Token with serial: %s"
+msgstr "Resynchronisiere den Token mit der Seriennummer: %s"
+
+#, python-format
+msgid "Token with serial %s was resynchronized successfully"
+msgstr "Token %s wurde erfolgreich synchronisiert"
+
+#, python-format
+msgid "Could not resyncronize Token with serial number %s"
+msgstr "Der Token %s konnte nicht synchronisiert werden"
+
+#, python-format
+msgid "OTP PIN of token %s set successfully"
+msgstr "OTP PIN des Tokens %s wurde erfolgreich gesetzt."
+
+#, python-format
+msgid "Could not set OTP PIN of token %s"
+msgstr "Die OTP PIN des Tokens %s konnte nicht gesetzt werden."
+
+msgid "The OTP PINs are the same."
+msgstr "Die OTP-PINs sind gleich"
+
+msgid "The OTP PINs are different!"
+msgstr "Die OTP-PINs sind unterschiedlich!"
+
+msgid "The mOTP PINs are the same."
+msgstr "Die mOTP PINs sind gleich."
+
+msgid "The mOTP PINs are different!"
+msgstr "Die mOTP-PINs sind unterschiedlich!"
+
+#, python-format
+msgid "mOTP PIN of token %s set successfully"
+msgstr "mOTP PIN des Tokens %s wurde erfolgreich gesetzt."
+
+#, python-format
+msgid "Could not set mOTP PIN of token %s"
+msgstr "Die mOTP PIN des Tokens %s konnte nicht gesetzt werden."
+
+msgid "refiltering tokens"
+msgstr "Filtern der Tokenliste"
+
+#, python-format
+msgid "%s tokens managed"
+msgstr "%s Tokens unter Verwaltung"
+
+msgid "refiltering users"
+msgstr "Filtern der Benutzerliste"
+
+#, python-format
+msgid "LinOTPGui::readServerConfig: %s"
+msgstr "LinOTPGui::readServerConfig: %s"
+
+#, python-format
+msgid "LinOTPGui::writeServerConfig: %s"
+msgstr "LinOTPGui::writeServerConfig: %s"
+
+#, python-format
+msgid "Do you really want to delete the UserIdResolver >>%s<<?"
+msgstr "Wollen Sie wirklich den UserIdResolver >>%s<< löschen?"
+
+#, python-format
+msgid ""
+"Please assure to remove the UserIdResolver >>%s<< from any realm definition!"
+msgstr ""
+"Bitte entfernen Sie den UserIdResolver >>%s<< auch aus allen Realm "
+"Definitionen!"
+
+msgid "Add realm with the following name:"
+msgstr "Ein REALM mit dem folgenden Namen hinzufügen:"
+
+msgid ""
+"The realm should only consist of the characters a-zA-Z0-9 and minus: \"-\""
+msgstr ""
+"Der Name des REALMs sollte nur aus den Zeichen a-zA-Z0-9 und dem "
+"Minuszeichen \"-\" bestehen."
+
+#, python-format
+msgid "The REALM %s already exists!"
+msgstr "Der REALM %s existiert bereits!"
+
+msgid "Please select a realm."
+msgstr "Bitte wählen Sie ein Realm aus."
+
+msgid ""
+"You should also delete this empty realm. An empty realm can not be stored to "
+"the LinOTP server."
+msgstr ""
+"Sie müssen den leeren Realm auch löschen. Ein leeren Realm kann nicht auf "
+"dem Server gespeichert werden."
+
+msgid "Reading realms"
+msgstr "Einlesen der Realms"
+
+msgid ">> all realms <<"
+msgstr ">> alle Realms <<"
+
+msgid "No default realm"
+msgstr "Kein Standard-Realm"
+
+msgid ""
+"Please note: When choosing DEBUG log level passwords and other credentials "
+"get written to the logfile!"
+msgstr ""
+"Bitte beachten Sie: Im DEBUG log level werden Passwörter und andere "
+"Geheimnisse in die Log-Datei geschrieben!"
+
+#, python-format
+msgid "Login to %s"
+msgstr "Login auf %s"
+
+msgid "Logging in to LinOTP server..."
+msgstr "Einloggen auf dem LinOTP Server..."
+
+msgid "Logged in as"
+msgstr "Angemeldet als "
+
+#, python-format
+msgid "Could not set the realms of token %s:"
+msgstr "Kann die Realms vom Token %s nicht setzen."
+
+#, python-format
+msgid "Could not set the token realms: %s"
+msgstr "Kann die Realms vom Token %s nicht setzen."
+
+msgid "Unlicensed"
+msgstr "Unlizensiert"
+
+msgid "tokens"
+msgstr "Token"
+
+msgid ""
+"Signature-Error: The license information that was retrieved, was invalid!\n"
+msgstr "Signatur-Fehler: Die empfangenen Lizenzinformationen sind ungültig!\n"
+
+msgid ""
+"License-Error: The license information could not be retrieved from the "
+"server!\n"
+msgstr ""
+"Lizenz-Fehler:  Die Lizenzinformationen konnten nicht vom Server abgerufen "
+"werden!\n"
+
+msgid ""
+"Licensing-Error: Your tokens in use exceed the licensed token numbers. "
+"Please upgrade your license!\n"
+msgstr ""
+"Lizenz-Fehler: Die Tokenanzahl, die Sie in Verwendung haben, überschreitet "
+"die lizensierten Token. Bitte besorgen Sie Sich ein Lizenz-Upgrade!\n"
+
+msgid "Licensing-Error: You are running without a license!\n"
+msgstr "Lizenz-Fehler: Sie betreiben LinOTP ohne Lizenz!\n"
+
+msgid "Select license file"
+msgstr "Lizenz-Datei auswählen"
+
+msgid "license file"
+msgstr "Lizenz-Datei"
+
+msgid "Error reading license file."
+msgstr "Fehler beim Lesen der Lizenz-Datei."
+
+msgid "Error setting up license."
+msgstr "Fehler beim Setzen der Lizenz."
+
+msgid "Problem fetching the policy definitions!"
+msgstr "Problem beim Laden der Definitionen der Richtlinien."
+
+msgid ""
+"In the current scope the following actions are allowed:\n"
+"\n"
+msgstr ""
+"Im aktuellen Scope sind die folgenden Aktionen erlaubt:\n"
+"\n"
+
+msgid "Are you sure you want to delete the highlighted policy?"
+msgstr "Sind Sie sicher, dass Sie die ausgewählte Richtlinie löschen wollen?"
+
+msgid "No Policy selected"
+msgstr "Es wurde keine Richtlinie ausgewählt."
+
+msgid "You must exactly select one token to run the losttoken function."
+msgstr ""
+"Sie müssen genau einen Token auswählen, um die \"Verlorene Token\" Funktion "
+"ausführen zu können."
+
+#, python-format
+msgid ""
+"The token %s was lost?\n"
+"You may enroll a temporary token and\n"
+"automatically disable the lost token."
+msgstr ""
+"Der Token %s wurde verloren?\n"
+"Sie können einen temporären Token ausrollen,\n"
+"dabei wird der verlorenen Token automatisch deaktiviert."
+
+#, python-format
+msgid ""
+"Token %s enrolled. Use the old PIN with the password %s.\n"
+"The token is valid till %s"
+msgstr ""
+"Token %s ausgerollt.\n"
+"Der Benutzer soll die OTP PIN des alten Tokens zusammen mit dem \n"
+"Passwort %s verwenden.\n"
+"Der temporäre Token ist bis %s gültig."
+
+msgid "loading and trying to connect to server..."
+msgstr "Lade und versuche zum Server zu verbinden..."
+
+msgid "(c) LSE Leading Security Experts GmbH"
+msgstr "(c) LSE Leading Security Experts GmbH"
+
+msgid "LSE Leading Security Experts GmbH"
+msgstr "LSE Leading Security Experts GmbH"
+
+#, fuzzy
+msgid ""
+"SOFTWARE LICENSE AGREEMENT\n"
+"\n"
+"\n"
+"THIS LICENSE AGREEMENT IS A LEGAL AGREEMENT BETWEEN YOU \n"
+"– EITHER AS INDIVIDUAL OR AS SINGLE ENTITY - (USER) AND \n"
+"LSE LEADING SECURITY EXPERTS GMBH (LSE). \n"
+"\n"
+"BY USING THE SOFTWARE PRODUCT WHICH ACCOMPANIES THIS \n"
+"LICENSE AGREEMENT OR IS PRE-INSTALLED ON YOUR COMPUTER \n"
+"YOU AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE AGREEMENT. \n"
+"\n"
+"IF YOU DO NOT AGREE TO THE TERMS OF THIS LICENSE AGREEMENT, \n"
+"YOU ARE NOT ALLOWED TO INSTALL OR USE THE SOFTWARE PRODUCT. \n"
+"IN THAT CASE YOU SHOULD IMMEDIATELY RETURN THIS LICENSE \n"
+"AGREEMENT ALONG WITH THE SOFTWARE PRODUCT SEALED IN ITS \n"
+"ORIGINAL PACKAGING AND ALL OTHER BUNDELED LSE-PRODUCTS AND \n"
+"DOCUMENTS TO LSE LEADING SECURITY EXPERTS GMBH OR YOUR \n"
+"SOFTWARE DISTRIBUTOR FOR REFUND OF THE FULL PURCHASE PRICE. \n"
+"PRE-INSTALLED SOFTWARE MUST BE REMOVED.\n"
+"\n"
+"\n"
+"Software-License and Limitations\n"
+"\n"
+"The software product „LSE LinOTP“ and related components \n"
+"„LDAPIdResolver“, „SQLIdResolver“, „LinOTPAdminClient“ - \n"
+"referred to as 'Software' hereafter – as well as all copies of \n"
+"the product and the components are licensed, not sold. \n"
+"\n"
+"LSE grants the user a non-transferable, non-exclusive and \n"
+"revocable license for use of the Software on a contractually \n"
+"agreed number of computer systems. The Software must not \n"
+"be copied in any form except for one (1) backup copy.\n"
+"\n"
+"The user agrees not to change the Software, not to adapt it \n"
+"beyond the intended purpose, not to translate, not to reverse \n"
+"engineer, decompile or disassemble or attempt to reveal by \n"
+"any other means or through a third party the original source \n"
+"code of the Software.\n"
+"\n"
+"Any attempts of this sort will be considered and treated as \n"
+"violation of this license agreement and the corresponding\n"
+"license grant.\n"
+"\n"
+"The user is not authorized to lend, rent, lease or otherwise \n"
+"transfer or provide this Software and copies thereof or any \n"
+"accompanying documentation in any form to other users \n"
+"without prior permission granted by LSE in written form.\n"
+"\n"
+"In case of a transfer of the license to a third party, the user \n"
+"agrees to destroy or hand over any backup copies of the \n"
+"Software to the third party. The same applies to any \n"
+"accompanying documentation as well as to this license agreement. \n"
+"Any original storage media are also to be handed out to the third party. \n"
+"The installation of the software on the user's computer is to be removed.\n"
+"\n"
+"A transfer of this license to a third party is explicitly ruled out if \n"
+"the third party does not accept this license agreement.\n"
+"\n"
+"\n"
+"Limited Warranty\n"
+"\n"
+"LSE warrants that the software is essentially capable of \n"
+"performing in  conformance to the accompanying product \n"
+"information and the specification provided in the documentation\n"
+"or on the storage media.\n"
+"\n"
+"LSE provides a warranty of three (3) months starting from \n"
+"the date of purchase that the software is a) usable in the \n"
+"sense of and b) provides features as specified in the program \n"
+"description provided by LSE at the time of delivery to the\n"
+" user and accompanying the software.\n"
+"\n"
+"Any deficiencies occurring in this time frame are to be reported \n"
+"immediately. LSE reserves the right to repair or replace the \n"
+"Software in such a case. LSE has no warranty deed and is not \n"
+"liable for errors or interruptions during use of the Software.\n"
+"\n"
+"The court of jurisdiction for any disputes between the user and \n"
+"LSE that originate in this license agreement is - provided that the \n"
+"software is for professional use - the court responsible for the \n"
+"registered office of LSE.\n"
+"\n"
+"THE WARRANTIES LISTED HERE ARE THE ONLY AND EXCLUSIVE \n"
+"OPTIONS PROVIDED TO THE USER IN CASE OF BREACH OF WARRANTY. \n"
+"THIS WARRANTY IS EFFECTIVE IN PLACE OF ANY OTHER IMPLIED OR\n"
+"EXPRESSED WARRANTIES AND CONDITIONS INCLUDING THE \n"
+"WARRANTY OF MINIMUM QUALITY. SINCE SOME STATES AND \n"
+"COUNTRIES DO NOT ALLOW THIS FORM OF EXCLUSION OF WARRANTY \n"
+"(FOR NON-PROFESSIONAL USERS IN PARTICULAR) THIS EXCLUSION \n"
+"MAY NOT BE EFFECTIVE FOR THE USER. IN SUCH CASE THE REGULATIONS \n"
+"REGARDING VALIDITY OF EXCLUSION OF FURTHER WARRANTY OF \n"
+"THE RESPECTIVE STATE OR COUNTY ARE IN EFFECT.\n"
+"\n"
+msgstr ""
+"SOFTWARE-LIZENZVERTRAG\n"
+"\n"
+"\n"
+"DIESER LIZENZVERTRAG IST EIN RECHTSGÜLTIGER VERTRAG ZWISCHEN\n"
+"IHNEN -ENTWEDER ALS NATÜRLICHE ODER ALS JURISTISCHE PERSON-\n"
+"(Nutzer) UND LSE LEADING SECURITY EXPERTS GMBH (LSE).\n"
+"\n"
+"INDEM SIE DIE DIESEM VERTRAG BEIGEFÜGTE ODER AUF IHREM\n"
+"COMPUTER VORINSTALLIERTE SOFTWARE VERWENDEN, ERKLÄREN SIE SICH\n"
+"DAMIT EINVERSTANDEN, DURCH DIE BESTIMMUNGEN DIESES SOFTWARE-\n"
+"LIZENZVERTRAGS GEBUNDEN ZU SEIN. FALLS SIE DEN BESTIMMUNGEN\n"
+"DIESES SOFTWARE-LIZENZVERTRAGS NICHT ZUSTIMMEN, SIND SIE NICHT\n"
+"BERECHTIGT, DIE SOFTWARE ZU INSTALLIEREN ODER ZU VERWENDEN. IN\n"
+"DIESEM FALL SOLLTEN SIE DIESEN SOFTWARE-LIZENZVERTRAG ZUSAMMEN\n"
+"MIT DER  UNGEÖFFNETEN EVENTUELL MITGELIEFERTEN SOFTWARE-\n"
+"VERPACKUNG, SOWIE ALLEN ANDEREN DAZUGEHÖRIGEN LSE-PRODUKTEN\n"
+"UND UNTERLAGEN FÜR DIE ERSTATTUNG DES VOLLEN KAUFBETRAGES \n"
+"UMGEHEND AN DIE LSE ODER IHREN VERTRIEBSHÄNDLER ZURÜCKGEBEN. \n"
+"BEREITS VORINSTALLIERTE SOFTWARE IST ZU ENTFERNEN.\n"
+"\n"
+"\n"
+"Software-Lizenz und Einschränkungen\n"
+"\n"
+"Die Software „LSE LinOTP“ nebst den Komponenten „LDAPIdResolver“, \n"
+"„SQLIdResolver“, „LinOTPAdminClient“ - im folgenden Software genannt - "
+"sowie\n"
+"alle Kopien derselben werden lizenziert, nicht verkauft.\n"
+"\n"
+"Die LSE räumt dem Nutzer eine auschließlich für ihn, nichtübertragbare,\n"
+"nichtexklusive, widerrufliche Lizenz ein, Kopien der Software auf einer\n"
+"vertraglich vereinbarten Anzahl von Computern zu verwenden. Diese Software\n"
+"darf außer zum Zwecke einer (1) Sicherungskopie in keiner Form kopiert "
+"werden \n"
+"\n"
+"Der Nutzer verpflichtet sich, die Software nicht zu ändern, über den\n"
+"Verwendungszweck hinaus anzupassen, zu übersetzen, rückzuentwickeln, zu\n"
+"dekompilieren, zu disassemblieren oder auf sonstige Weise und auch nicht\n"
+"durch Dritte zu versuchen, den Quellcode der Software herauszufinden.\n"
+"\n"
+"Jegliche Versuche dieser Art werden als Verletzung dieser Vereinbarung und "
+"der\n"
+"entsprechenden Lizenz gesehen.\n"
+"Der Nutzer ist nicht berechtigt, diese Software und deren Kopie, oder eine\n"
+"eventuell beigefügte Dokumentation in irgendeiner Form und ohne vorherige\n"
+"schriftliche Genehmigung durch die LSE zu verleihen, zu vermieten, zu\n"
+"verleasen oder anderweitig an andere Benutzer/innen zu übertragen und für "
+"die\n"
+"Nutzung zur Verfügung zu stellen.\n"
+"\n"
+"Bei einer Übertragung der Lizenz auf einen Dritten, verpflichtet sich der "
+"Nutzer\n"
+"die Sicherungskopie zu vernichten oder dem Dritten zu übergeben. Dasselbe "
+"gilt\n"
+"für eine eventuell beigefügte Dokumentation und diesen Lizenzvertrag. Ein\n"
+"eventuell vorhandener Originaldatenträger von der LSE ist dem Dritten\n"
+"gleichfalls zu übergeben. Die installierte Software ist vom Computer zu\n"
+"entfernen.\n"
+"\n"
+"Eine Übertragung der Lizenz ist ausgeschlossen, wenn der dritte diesen\n"
+"Lizenzvertrag nicht akzeptiert.\n"
+"\n"
+"\n"
+"\n"
+"Beschränkte Gewährleistung\n"
+"\n"
+"LSE gewährleistet, daß die Software im Wesentlichen entsprechend der\n"
+"beigefügten Produktinformation lauffähig ist und die in der dazu gehörigen\n"
+"Dokumentation oder auf dem Datenträger aufgeführten Spezifikationen\n"
+"aufweisen. LSE. leistet ab Kaufdatum drei (3) Monate Gewähr, daß die "
+"Software\n"
+"im Sinne der zum Zeitpunkt der Übergabe an den Nutzer von LSE \n"
+"herausgegebenen, beiliegenden Programmbeschreibungen brauchbar ist und die\n"
+"dort aufgeführten Funktionen aufweist.In diesem Zeitraum auftretende Mängel\n"
+"sind unverzüglich schriftlich anzuzeigen. In einem solchen Fall behält sich "
+"LSE\n"
+"vor, die Software nachzubessern oder auszutauschen. LSE trifft keine\n"
+"Gewährleistungspflicht und keine Haftung für Fehler und\n"
+"\n"
+"Unterbrechungen während der Nutzung der Software.\n"
+"\n"
+"Gerichtsstand für alle Streitigkeiten zwischen dem Nutzer und der LSE aus\n"
+"diesem Vertrag ist, sofern der Nutzer Kaufmann ist, das für den Sitz der "
+"LSE\n"
+"zuständige Gericht.\n"
+"\n"
+"DIE HIER GENANNTEN GEWÄHRLEISTUNGEN SIND DIE EINZIGEN UND\n"
+"AUSSCHLIEßLICHEN MÖGLICHKEITEN, DIE DEM NUTZER BEI\n"
+"GARANTIEVERLETZUNGEN ZUR VERFÜGUNG STEHEN. DIESE GEWÄHRLEISTUNG\n"
+"GILT ANSTELLE ALLER ANDEREN STILLSCHWEIGENDEN ODER AUSDRÜCKLICHEN\n"
+"GEWÄHRLEISTUNGEN UND BEDINGUNGEN, EINSCHLIEßLICH DER\n"
+"GEWÄHRLEISTUNGEN DER MINDESTQUALITÄT. DA EINIGE STAATEN UND LÄNDER\n"
+"DIESE FORM DES AUSSCHLUSES (INSBESONDERE BEI NICHTKAUFLEUTEN)\n"
+"NICHT GESTATTEN, TRIFFT DIESER AUSSCHLUß MÖGLICHERWEISE NICHT AUF\n"
+"DEN NUTZER ZU. ES GELTEN DANN DIE JEWEILIGEN VORSCHRIFTEN DES\n"
+"BETREFFENDEN STAATS ODER LANDES BEZÜGLICH DER ZULÄSSIGKEIT DES\n"
+"AUSSCHLUSSES WEITERER GEWÄHRLEISTUNGEN.\n"
+"\n"
+"\n"
+
+msgid "build"
+msgstr "build"
+
+msgid "assign token"
+msgstr "Token zuweisen"
+
+msgid "_Cancel"
+msgstr "_Abbrechen"
+
+msgid "_OK"
+msgstr "_OK"
+
+msgid "Token serial"
+msgstr "Tokenseriennummer"
+
+msgid "User"
+msgstr "Benutzer"
+
+msgid "..."
+msgstr "..."
+
+msgid "<b>Userinfo</b>"
+msgstr "<b>Benutzerinformation</b>"
+
+msgid "Admin Client configuration"
+msgstr "Konfiguration Admin-Client"
+
+msgid "Protocol"
+msgstr "Protokoll"
+
+msgid "Hostname"
+msgstr "Servername (FQDN oder IP)"
+
+msgid "Port"
+msgstr "Port"
+
+msgid ""
+"This is the protocol the LinOTP server is working on. This can be either "
+"http or https."
+msgstr "Das ist das Protokoll, das der LinOTP Server spricht."
+
+msgid "This is the hostname of the LinOTP server"
+msgstr "Das ist der Servername des LinOTP Servers."
+
+msgid "This is the port the LinOTP server listens on"
+msgstr "Das ist der Port, auf dem der LinOTP Server lauscht."
+
+msgid "Proxyserver Port"
+msgstr "Proxyserver Port"
+
+msgid "Client Private Key"
+msgstr "Privater Schlüssel"
+
+msgid "Client Certificate"
+msgstr "Benutzer Zertifikat"
+
+msgid "Authentication Type"
+msgstr "Authentisierungsart"
+
+msgid "server connection"
+msgstr "Serververbindung "
+
+msgid "Default Token Name"
+msgstr "Standard-Tokenname"
+
+msgid "Password retry counter"
+msgstr "Zähler für die Versuche zur Passworteingabe"
+
+msgid "The OTP value will be displayed for this amount of seconds."
+msgstr "Der OTP-Wert wird soviel Sekunden angezeigt."
+
+msgid "OTP display duration"
+msgstr "OTP Anzeigendauer"
+
+msgid "Random User PIN"
+msgstr "Zufällige Benutzer PIN"
+
+msgid ""
+"If this checkbox is checked, an eTokenNG OTP will be enrolled with a random "
+"User PIN.\n"
+"Otherwise you will be asked to set a User PIN during enrollment."
+msgstr ""
+"Wenn diese Checkbox angehakt ist, werden eTokenNG OTP mit einer zufälligen "
+"Benutzer-PIN ausgerollt. Ansonsten werden Sie beim Ausrollen nach einer "
+"Benutzer-PIN gefragt."
+
+msgid "Random SO PIN"
+msgstr "Zufällige SO PIN"
+
+msgid ""
+"If this checkbox is checked, an eTokenNG OTP will be enrolled with a random "
+"SO PIN (Administrator Password).\n"
+"Otherwise you will be asked to set a SO PIN during enrollment."
+msgstr ""
+"Wenn diese Checkbox angehakt ist, werden eTokenNG OTP mit einer zufälligen "
+"SO PIN (Administrator-PIN) ausgerollt. Ansonsten werden Sie beim Ausrollen "
+"nach einer SO PIN gefragt."
+
+msgid "Initialize Token"
+msgstr "Token initialisieren"
+
+msgid "enrollment settings"
+msgstr "Einstellungen für die Tokenausstellung"
+
+msgid "Clear userfilter after enrollment"
+msgstr "Nach dem Ausrollen eines Tokens den Benutzerfilter wieder leeren."
+
+msgid "Client Settings"
+msgstr "Client Einstellungen"
+
+msgid "Logfile"
+msgstr "Logdatei"
+
+msgid "Rotate Count"
+msgstr "Anzahl der Datei-Rotationen"
+
+msgid "File size"
+msgstr "Dateigröße"
+
+msgid "Log Level"
+msgstr "Log Level"
+
+msgid "Logging"
+msgstr "Logging"
+
+msgid "ui file"
+msgstr "UI Datei"
+
+msgid "config file"
+msgstr "Konfigurationsdatei"
+
+msgid "files"
+msgstr "Dateien"
+
+msgid "C_opy Token PIN"
+msgstr "Token PIN k_opieren"
+
+msgid ""
+"Here you can copy the Token PIN of one token to another.\n"
+"Please enter the serial number of the source token and \n"
+"the serial number of the token, that should get the same \n"
+"token pin."
+msgstr ""
+"Hier können Sie die Token PIN von einem Token zu einem\n"
+"anderen kopieren. Bitte geben Sie dazu die Seriennummer\n"
+"des Quell-Tokens und die des Tokens, der die OTP PIN bekommen\n"
+"soll, ein."
+
+msgid "from Token"
+msgstr "Quell-Token"
+
+msgid "to Token"
+msgstr "Ziel-Token"
+
+msgid "Edit Realm"
+msgstr "REALM editieren"
+
+msgid "label"
+msgstr "Kennzeichnung"
+
+msgid "Enroll a token"
+msgstr "Token ausrollen"
+
+msgid "<b>User</b>"
+msgstr "<b>Benutzer</b>"
+
+msgid "Tokentype"
+msgstr "Tokentyp"
+
+msgid "again"
+msgstr "nochmal"
+
+msgid "SO PIN"
+msgstr "SO PIN"
+
+msgid "User PIN"
+msgstr "Benutzer PIN"
+
+msgid "<b>eToken NG-OTP</b>"
+msgstr "eToken NG-OTP"
+
+msgid "OTP Key"
+msgstr "OTP Key"
+
+msgid "mOTP PIN"
+msgstr "mOTP PIN"
+
+msgid "<b>mOTP</b>"
+msgstr "<b>mOTP</b>"
+
+msgid "HMAC Key / Seed"
+msgstr "HMAC Key / Seed"
+
+msgid "<b>OATH / HMAC-OTP</b>"
+msgstr "<b>OATH / HMAC OTP</b>"
+
+msgid ""
+"The Simple-Token will always authenticate the user - only based on the OTP "
+"PIN."
+msgstr ""
+"Der Simple-Pass Token wird den Benutzer immer erfolgreich - auf Basis der "
+"OTP-PIN - authentisieren. Er hat keinen veränderlichen Einmal-Anteil."
+
+msgid "<b>Simple-Pass</b>"
+msgstr "<b>Simple-Pass</b>"
+
+msgid "phone number"
+msgstr "Telefonnummer"
+
+msgid "SMS Provider"
+msgstr "SMS Provider"
+
+msgid "<b>SMS OTP</b>"
+msgstr "<b>SMS OTP / MobileTAN</b>"
+
+msgid "check PIN locally"
+msgstr "Überprüfe PIN lokal"
+
+msgid "remote LinOTP server"
+msgstr "remote LinOTP Server"
+
+msgid "remote serial"
+msgstr "Remote Tokenseriennummer"
+
+msgid "remote user"
+msgstr "Remote Benutzer"
+
+msgid "remote realm"
+msgstr "Remote Realm"
+
+msgid "remote resolver"
+msgstr "Remote Resolver"
+
+msgid "<b>Remote Token</b>"
+msgstr "<b>Remote Token</b>"
+
+msgid "Use no new unlock key"
+msgstr "Keinen neuen Entsperr-Code verwenden"
+
+msgid "Set a new unlock key"
+msgstr "Einen neuen Entsperr-Code setzen"
+
+msgid "Keep the same unlock key"
+msgstr "Den gleichen Entsperr-Code wieder verwenden"
+
+msgid "use unlock key"
+msgstr "Entsperr-Code verwenden"
+
+msgid "Slot 1"
+msgstr "Slot 1"
+
+msgid ""
+"You may choose if you want to write the OTP key to slot 1 or to slot 2.\n"
+"Slot 1 contains the yubico default OTP algorithm. \n"
+"\n"
+"Slot 1 is used by pressing on the key for only one second, slot 2 is used by "
+"pressing on the key for roughly two or three seconds."
+msgstr ""
+"Sie können auswählen, ob der OTP Schlüssel nach Slot 1 oder Slot 2 "
+"geschrieben wird.\n"
+"Slot 1 beinhaltet den Standard yubico OTP Algorithmus.\n"
+"\n"
+"Slot 1 wird benutzt, wenn Sie kurz auf die Taste drücken. Slot 2 wird "
+"benutzt, wenn Sie ca. 2 bis 3 Sekunden auf die Taste drücken."
+
+msgid "Slot 2"
+msgstr "Slot 2"
+
+msgid "Append Enter key"
+msgstr "Enter Taste am Ende anfügen"
+
+msgid "Will hit Enter after typing the OTP value."
+msgstr ""
+"In diesem Fall wird, nachdem der OTP Wert getippt wurde, auch noch die Enter "
+"Taste betätigt."
+
+msgid "<b>YubiKey</b>"
+msgstr "<b>YubiKey</b>"
+
+msgid "RADIUS server"
+msgstr "RADIUS Server"
+
+msgid "RADIUS user"
+msgstr "RADIUS Benutzer"
+
+msgid "RADIUS shared secret"
+msgstr "RADIUS Shared Secret"
+
+msgid ""
+"This is the RADIUS server, the user will be authenticated on. \n"
+"Please enter it as\n"
+"<servername or ip>:<port number>"
+msgstr ""
+"Dies ist der RADIUS Server, wo der Benutzer authentisiert wird.\n"
+"Bitte geben Sie ihn in der Form <servername oder IP>:<Port> ein."
+
+msgid "This is the username on the RADIUS server."
+msgstr "Das ist der Benutzername auf dem RADIUS Server."
+
+msgid "This is the shared secret for the RADIUS server."
+msgstr "Das ist shared secret des RADIUS Servers."
+
+msgid ""
+"This defines, if the OTP PIN is checked locally and only the splitted rest "
+"of the password is sent to the RADIUS server or if the complete password is "
+"sent."
+msgstr ""
+"Hier wird definiert, ob die OTP PIN lokal oder remote überprüft wird. Damit "
+"wird entweder nur der OTP Wert oder das komplette Passwort (OTP PIN und OTP "
+"Wert) zum RADIUS Server übertragen."
+
+msgid "<b>RADIUS Token</b>"
+msgstr "<b>RADIUS Token</b>"
+
+msgid "Get serial by OTP value"
+msgstr "Seriennummer anhand des OTP-Wertes bestimmen"
+
+msgid "Get Serial"
+msgstr "Seriennummer bestimmen"
+
+msgid ""
+"Here you can search for the serial number of a token.\n"
+"You need to enter the current OTP value and choose where\n"
+"you want to search the token.\n"
+"<b>This can be very time consuming!</b>"
+msgstr ""
+"Hier können Sie nach der Seriennummer eines Tokens suchen.\n"
+"Dazu müssen Sie den aktuellen OTP Wert eingeben und auswählen,\n"
+"nach welchen Kriterien der Token gesucht werden soll.\n"
+"<b>Achtung, dies kann sehr zeitaufwändig sein!</b>"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Assigned Token"
+msgstr "Zugewiesener Token"
+
+msgid "Realm"
+msgstr "Realm"
+
+msgid "OTP value"
+msgstr "OTP-Wert"
+
+msgid "Import Token file"
+msgstr "Token aus Datei importieren"
+
+msgid "Hash Method"
+msgstr "HASH Methode"
+
+msgid "Filename"
+msgstr "Dateiname"
+
+msgid "_Filename"
+msgstr "_Dateiname"
+
+msgid ""
+"Here you may import \n"
+"Aladdin XML files for \n"
+"eToken PASS."
+msgstr ""
+"Hier können Sie \n"
+"die Aladdin XML Datei\n"
+"für eToken PASS importieren."
+
+msgid "License"
+msgstr "Lizenz"
+
+msgid "Set _License"
+msgstr "_Lizenz setzen"
+
+msgid "Admin Login"
+msgstr "Admin Anmeldung"
+
+msgid "Login to "
+msgstr "Login auf "
+
+msgid "Username"
+msgstr "Benutzername"
+
+msgid "Password"
+msgstr "Passwort"
+
+msgid "Lost Token"
+msgstr "Verlorener Token"
+
+msgid "Get temporary token\t"
+msgstr "Temporären Token ausrollen"
+
+msgid "LinOTP policies"
+msgstr "LinOTP Richtlinien"
+
+msgid "active"
+msgstr "aktiv"
+
+msgid "time"
+msgstr "Zeit"
+
+msgid "_Export"
+msgstr "_Exportieren"
+
+msgid "_Import"
+msgstr "_Importieren"
+
+msgid "client"
+msgstr "Client"
+
+msgid "scope"
+msgstr "Scope"
+
+msgid "name"
+msgstr "Name"
+
+msgid "<b>Edit Policy</b>"
+msgstr "<b>Richtlinie bearbeiten</b>"
+
+msgid "Resyncing Token"
+msgstr "Resynchronisiere Token"
+
+msgid "Resync Token"
+msgstr "Token resynchronisieren"
+
+msgid "First OTP value"
+msgstr "Erster OTP-Wert"
+
+msgid "Second OTP value"
+msgstr "Zweiter OTP-Wert"
+
+msgid "Server Configuration"
+msgstr "Serverkonfiguration"
+
+msgid "Sync Window"
+msgstr "Syncronisations-Fenster"
+
+msgid "Count Window"
+msgstr "Zählerfenster"
+
+msgid "OTP Length"
+msgstr "OTP-Länge"
+
+msgid "Maximum Fail Count"
+msgstr "Zähler für Maximale Loginfehler"
+
+msgid "TOTP timestep"
+msgstr "TOTP Zeitintervall"
+
+msgid "TOTP time shift"
+msgstr "TOTP Zeitdrift"
+
+msgid "TOTP time window"
+msgstr "TOTP Zeitfenster"
+
+msgid ""
+"TOTP tokens are OATH Tokens based on RFC4226, where the counter is not "
+"increased by an event, but calculated from the unix system time. The counter "
+"increases either all 30 or 60 seconds. So you need to enter 30 or 60 here.\n"
+"This is a default value. You may change this per token."
+msgstr ""
+"TOTP Tokens sind OATH Token nach RFC4226. Dabei wird der Zähler nicht durch "
+"ein Ereignis (Knopfdruck) inkrementiert sondern aufgrund der ablaufenden "
+"Unix System Zeit. Der Zähler wird alle 30 oder 60 Sekunden erhöht. Geben Sie "
+"hier also entweder 30 oder 60 ein.\n"
+"Dies ist ein Standard-Wert, der pro Token geändert werden kann."
+
+msgid ""
+"This is the drift of the LinOTP clock from the TOTP token clocks. Usually "
+"you should have no default drift, but have your LinOTP server clock "
+"synchronized using NTP. So this should be set ot 0.\n"
+"This is a default value. You may change this per token."
+msgstr ""
+"Das ist die Zeitdrift der Uhr im LinOTP Server gegenüber den TOTP Token "
+"Uhren. Für gewöhnlich sollte hier 0 stehen, da Sie die Uhr im LinOTP Server "
+"per NTP aktuell halten sollten.\n"
+"Dies ist ein Standard-Wert, der pro Token geändert werden kann."
+
+msgid ""
+"LinOTP can calculate and compare the OTP values from some seconds before the "
+"current time and after the current time. A sensible value could 60 or 120, "
+"so that LinOTP will calculate and compare OTP values 1 or 2 minutes before "
+"the current time and after the current time.\n"
+"This is a default value. You may change this per token."
+msgstr ""
+"LinOTP kann die OTP Werte ein Zeitfenster vor und nach der aktuellen Zeit "
+"berechnen und vergleichen. Ein sinnvoller Wert kann 60 oder 120 sein, so "
+"dass LinOTP auch die Werte 1 oder 2 Minuten vor und nach der aktuellen Zeit "
+"vergleicht.\n"
+"Dies ist ein Standard-Wert, der pro Token geändert werden kann."
+
+msgid "<b>TOTP timebased HMAC</b>"
+msgstr "<b>TOTP (zeitbasiertes HMAC)</b>"
+
+msgid "default OCRA suite"
+msgstr "Standard OCRA Suite"
+
+msgid "default QR OCRA suite"
+msgstr "Standard OCRA Suite für QR-Token"
+
+msgid ""
+"This is the OCRA suite for a newly enrolled OCRA token, if no OCRA suite is "
+"specified during enrollment. Default: OCRA-1:HOTP-SHA256-8:C-QA08"
+msgstr ""
+"Dies ist die OCRA Suite die einem neu ausgerollten OCRA Token zugewiesen "
+"wird, falls während des Rollouts keine andere Suite angegeben wird. "
+"Standard: OCRA-1:HOTP-SHA256-8:C-QA08"
+
+msgid ""
+"This is the OCRA suite for a newly enrolled QR-OCRA token, if no OCRA suite "
+"is specified during enrollment. Default: OCRA-1:HOTP-SHA256-6:C-QA64"
+msgstr ""
+"Dies ist die OCRA Suite, die einem neu ausgerollten QR Token zugewiesen "
+"wird, wenn während des Rollouts keine explizite Suite angegeben wird. "
+"Standard: OCRA-1:HOTP-SHA256-6:C-QA64"
+
+msgid "<b>OCRA settings</b>"
+msgstr "<b>OCRA Einstellungen</b>"
+
+msgid "Token defaults"
+msgstr "Standardeinstellungen Token"
+
+msgid "Reset fail counter"
+msgstr "Loginfehler-Zähler  zurücksetzen"
+
+msgid "Fail counter increase on false PIN"
+msgstr "Failcounter bei einer falschen PIN hochzählen"
+
+msgid "Prepend PIN"
+msgstr "PIN voranstellen"
+
+msgid ""
+"If set to true (checked) the user needs to put the OTP PIN in front of the "
+"OTP value. (e.g. >>mySecret647356<<). If it is set to false (not checked) "
+"the user needs to put the OTP PIN behind the OTP value. (e.g. "
+">>647356mySecret<<)."
+msgstr ""
+"Wenn dies aktiviert ist, muss der Benutzer den OTP PIN vor dem OTP Wert "
+"eingeben. (D.h. >>meinGeheimnis647356<<). Wenn diese Einstellung deaktiviert "
+"ist, muss der Benutzer den OTP PIN nach dem OTP Wert eingeben (D.h. "
+">>647356meinGeheimnis<<)."
+
+msgid "Auto resync"
+msgstr "automatisches resynchronisieren"
+
+msgid ""
+"If Auto resync is true (checked) LinOTP will work like this: \n"
+"If a token is out of sync, LinOTP will remember the given OTP value for this "
+"user and for this token.  If the user logs on during the timeout time and "
+"provides another PIN and OTP value, LinOTP will try to resynchronize the "
+"token - identified by the OTP PIN - with these two OTP values.\n"
+"Of course the two OTP values need to be consecutive values."
+msgstr ""
+"Wenn Auto resync eingeschaltet ist, wird LinOTP wie folgt arbeiten:\n"
+"Wenn ein Token nicht mehr synchron ist, wird sich LinOTP beim Login den "
+"eingegebenen OTP-Wert für diesen Token merken. Wenn dann ein Benutzer "
+"während des TOTP Zeitfenster sich erneut mit einem neuen OTP Wert anmeldet, "
+"wird LinOTP versuchen, mit diesen beiden aufeinanderfolgenden Werten den "
+"Token zu resynchronisieren. \n"
+"Natürlich müssen die beiden OTP Werte direkt aufeinander folgen."
+
+msgid "Pass on user not found"
+msgstr "Unbekannte Benutzer authentisieren"
+
+msgid "Pass on User no Token"
+msgstr "Benutzer ohne Token authentisieren"
+
+msgid "Selfservice: display realm drop down box"
+msgstr "Selfservice: Auswahlbox mit Realmnnamen anzeigen"
+
+msgid "return SAML attributes"
+msgstr "SAML Attribute zurückliefern"
+
+msgid ""
+"If checked the controller /validate/samlcheck will also return attributes of "
+"the authenticated user."
+msgstr ""
+"Wenn dies aktiviert ist, wird der Controller /validate/samlcheck auf die "
+"Attribute des erfolgreich authentisierten Benutzers zurückliefern."
+
+msgid "Auto resync timeout"
+msgstr "Auto Resync Timeout"
+
+msgid "Overwrite Authentication client"
+msgstr "Authentisierungsclient überschreiben"
+
+msgid ""
+"Here you can enter a list of IP addresses, that may pass a client IP address "
+"for authorization.\n"
+"\n"
+"This is necessary, if you are using a RADIUS server, and all RADIUS clients "
+"are communicating with the RADIUS server but only the RADIUS server is "
+"communicating to the LinOTP server.\n"
+"In this case, you need to enter the IP address of the RADIUS server to be "
+"able to use the RADIUS clients IP addresses in the authorization policies."
+msgstr ""
+"Hier können Sie IP Adressen angeben, denen es erlaubt ist, den "
+"authentisierenden Client zu überschreiben.\n"
+"\n"
+"Dies ist beispielsweise bei der Benutzung eines RADIUS-Servers nötig. Alle "
+"RADIUS-Clients kommunizieren mit dem RADIUS-Server, aber nur der RADIUS-"
+"Server kommuniziert mit dem LinOTP-Server. Damit die "
+"Authorisierungsrichtlinien sich auch auf die RADIUS-Clients beziehen können, "
+"muss es der IP-Adresse des RADIUS-Servers erlaubt sein, die IP-Adressen des "
+"jeweiligen RADIUS-Clients mitzuliefern. Tragen Sie hier also eine Liste mit "
+"den IP-Adressen der RADIUS-Server ein."
+
+msgid "Maximum concurrent OCRA challenges"
+msgstr "Maximale Anzahl an gleichzeitigen OCRA Challenges"
+
+msgid "OCRA challenge timeout"
+msgstr "Timeout der OCRA Challenge"
+
+msgid ""
+"After this timeout the challenge is not valid any more and a response for "
+"this challenge will not be accepted. You can specify the timeout like 1D, 2H "
+"or 5M, which means day, hours, minutes. Default: 1M."
+msgstr ""
+"Nach dem Timeout ist eine Challenge nicht mehr gültig und eine entsprechende "
+"Antwort wird nicht mehr akzeptiert. Der Timout wird im Format 1D, 2H oder 5M "
+"angegeben. Dabei ist D=Tag, H=Stunde, M=Minute. Standard: 1M."
+
+msgid ""
+"This is the number of concurrently allowed open challenges. This means that "
+"a new challenge may be issued while another challenge is not responded, yet. "
+"Default: 3."
+msgstr ""
+"Dies ist die Anzahl der maximal gleichzeitig erlaubten OCRA challenges. Das "
+"bedeutet, dass eine neue Challenge angefordert werden kann, während eine "
+"andere noch nicht beantwortet wurde. Standart: 3."
+
+msgid "System settings"
+msgstr "Systemeinstellungen"
+
+msgid "_Add Realm"
+msgstr "Realm _hinzufügen"
+
+msgid "Re_name Realm"
+msgstr "Realm _umbenennen"
+
+msgid "_Remove Realm"
+msgstr "Realm _entfernen"
+
+msgid "Here you can add a already defined userstore to a realm"
+msgstr ""
+"Hier können Sie bereits definierte Benutzerdatenbanken-Definitionen "
+"hinzufügen."
+
+msgid "_Add userstore to realm"
+msgstr "_Benutzerdatenbank einem Realm hinzufügen"
+
+msgid "_Remove userstore from realm"
+msgstr "Benutzerdatenbank von einem Realm _entfernen"
+
+msgid "<b>Default Realm</b>"
+msgstr "<b>Standard Realm</b>"
+
+msgid "Split @ in username as realm"
+msgstr "@-Zeichen im Benutzernamen als Realm absplitten"
+
+msgid ""
+"If this is checked, an @ sign within a login user name will be used to split "
+"the right hand part and use it as the realm name."
+msgstr ""
+"Wenn dies ausgewählt ist, wird der rechte Teil hinter dem letzten @-Zeichen "
+"als Realm abgeschnitten."
+
+msgid "Realms"
+msgstr "Realms"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "<b>Flatfile PasswdIdResolver</b>"
+msgstr "<b>Flatfile PasswdIdResolver</b>"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "No anonymous referral chasing"
+msgstr "Referrals nicht (anonym) folgen"
+
+msgid "UID Type"
+msgstr "UID Typ"
+
+msgid "Size Limit"
+msgstr "Request Größenbeschränkung"
+
+msgid "Timeout"
+msgstr "Timeout"
+
+msgid "Bind Password"
+msgstr "Bind Passwort"
+
+msgid "BindDN"
+msgstr "BindDN"
+
+msgid "BaseDN"
+msgstr "BaseDN"
+
+msgid "CA certificate"
+msgstr "CA Zertifikat"
+
+msgid "<b>LDAP Server configuration</b>"
+msgstr "<b>Konfigration LDAP-Server</b>"
+
+msgid "Loginname attribute"
+msgstr "Attribut Loginname"
+
+msgid "Searchfilter"
+msgstr "Suchfilter"
+
+msgid "User Filter "
+msgstr "Benutzerfilter"
+
+msgid "Attribute mapping"
+msgstr "Attributszuordnung"
+
+msgid "Preset LDAP"
+msgstr "Setze LDAP"
+
+msgid "Preset Active Directory"
+msgstr "Setze Active Directory"
+
+msgid "Preset eDirectory"
+msgstr "Setze eDirectory"
+
+msgid "<b>LDAP attribute definition</b>"
+msgstr "<b>LDAP Attribute</b>"
+
+msgid "Test LDAP connection"
+msgstr "LDAP Verbindung testen"
+
+msgid "<b>LDAPIdResolver</b>"
+msgstr "<b>LDAPIdResolver</b>"
+
+msgid "Database"
+msgstr "Datenbank"
+
+msgid "SQL Server"
+msgstr "SQL-Server"
+
+msgid "Database driver"
+msgstr "Datenbank Treiber"
+
+msgid "<b>Server configuration</b>"
+msgstr "<b>Server-Konfiguration</b>"
+
+msgid "Login attribute (table)"
+msgstr "Attribut Loginname (Datenbanktabelle)"
+
+msgid "User attribute mapping"
+msgstr "Benutzerattributs-Zuordnung"
+
+msgid "<b>SQL attribute definition</b>"
+msgstr "<b>SQL Attribute</b>"
+
+msgid "<b>SQlIdResolver</b>"
+msgstr "<b>SQLIdResolver</b>"
+
+msgid "Set these resolver settings."
+msgstr "Die Resolversettings festlegen."
+
+msgid "<b>Edit selected userstore configuration</b>"
+msgstr "<b>Konfiguration des ausgewählten Benutzerspeicherortes</b>"
+
+msgid "Userstores"
+msgstr "Benutzerdatenbanken"
+
+msgid "SMS Provider Config"
+msgstr "SMS Provider Konfiguration"
+
+msgid "SMS Timeout"
+msgstr "SMS Gültigkeitsdauer"
+
+msgid ""
+"This is module name of the SMS Provider. At the moment valid SMS providers "
+"are:\n"
+"\n"
+"smsprovider.DeviceSMSProvider.DeviceSMSProvider\n"
+"\n"
+"and \n"
+"\n"
+"smsprovider.HttpSMSProvider.HttpSMSProvider"
+msgstr ""
+"Hier wird der Modulname des SMS Provider angegeben. Zur Zeit sind folgende "
+"Module verfügbar:\n"
+"\n"
+"smsprovider.DeviceSMSProvider.DeviceSMSProvider\n"
+"\n"
+"und\n"
+"\n"
+"smsprovider.HttpSMSProvider.HttpSMSProvider"
+
+msgid ""
+"This is the dictionary like configuration of the SMS Provider. \n"
+"For some providers this can be very complex. So please consult the "
+"administration manual for the correspondig entry."
+msgstr ""
+"Dies ist eine doppelte Wortliste zur Konfiguration des jeweiligen SMS "
+"Providers.\n"
+"Für jeden Provider hat sie eine andere Erscheinung und kann sehr komplex "
+"sein. Bitte konsultieren Sie hierzu das Administrationshandbuch."
+
+msgid ""
+"This is the time a sent SMS OTP value will be valid. After this time this "
+"OTP value can not be used anymore.\n"
+"\n"
+"Enter a number in seconds."
+msgstr ""
+"Hier wird die Zeit eingegeben, die ein SMS OTP-Wert, nachdem er erzeugt und "
+"versendet wurde, gültig ist. Danach kann dieser OTP-Wert nicht mehr "
+"verwendet werden.\n"
+"\n"
+"Geben Sie eine Zahl in Sekunden ein."
+
+msgid "if you change this, you are in real trouble ;-)"
+msgstr "Wenn Sie das ändern, dann bekommen Sie echte Probleme! ;-)"
+
+msgid "Tokenstore"
+msgstr "Tokenstore"
+
+msgid "Set MOTP Pin"
+msgstr "mOTP PIN setzen"
+
+msgid "Setting Tokeninfo"
+msgstr "Setze Tokendetails"
+
+msgid "Set OTP PIN"
+msgstr "OTP PIN setzen"
+
+msgid "OTP PIN"
+msgstr "OTP PIN"
+
+msgid "Set token realms"
+msgstr "Setze Token Realms"
+
+msgid "You may select the realms the token should be contained in."
+msgstr "Sie können die Realms auswählen, in denen der Token sein soll."
+
+msgid "Tokeninfo"
+msgstr "Tokeninfo"
+
+msgid "set Hashlib"
+msgstr "setze Hashlib"
+
+msgid "set OTP Length"
+msgstr "setze OTP-Länge"
+
+msgid "set Counter  Window"
+msgstr "Setze Zählerfenster"
+
+msgid "set Maximum Fail Counter"
+msgstr "setze Zähler für Maximale Loginfehler"
+
+msgid "set Sync Window"
+msgstr "setze Syncronisations-Fenster"
+
+msgid "set Time Window"
+msgstr "setze Zeitfenster"
+
+msgid "set Time Step"
+msgstr "setze Zeitschritt"
+
+msgid "Digest"
+msgstr "Digest"
+
+msgid "Basic"
+msgstr "Basic"
+
+msgid "sha1"
+msgstr "sha1"
+
+msgid "sha256"
+msgstr "sha256"
+
+msgid "remotely"
+msgstr "remote"
+
+msgid "locally"
+msgstr "lokal"
+
+msgid "--"
+msgstr "--"
+
+msgid "DEBUG"
+msgstr "DEBUG"
+
+msgid "INFO"
+msgstr "INFO"
+
+msgid "WARNING"
+msgstr "WARNING"
+
+msgid "ERROR"
+msgstr "ERROR"
+
+msgid "CRITICAL"
+msgstr "CRITICAL"
+
+msgid "LinOTP2 management"
+msgstr "LinOTP2 Management"
+
+msgid "_File"
+msgstr "_Datei"
+
+msgid "Import Tokenfile"
+msgstr "Token aus Datei importieren"
+
+msgid "_Login to server"
+msgstr "_Login auf Server"
+
+msgid "_Quit"
+msgstr "_Beenden"
+
+msgid "All actions that can be done with your tokens"
+msgstr "Alle Aktionen, die Sie mit bzw. auf Ihre Token ausführen koennen"
+
+msgid "_Token"
+msgstr "_Token"
+
+msgid "_assign"
+msgstr "_zuweisen"
+
+msgid "Assign a token to a user."
+msgstr "Einen Token einem Benutzer zuweisen"
+
+msgid ""
+"Remove the assignment of the token to a user. The token still remains in the "
+"token database."
+msgstr ""
+"Die Zuordnung eines Tokens zu einem Benutzer entfernen. Der Token selber "
+"bleibt weiterhin in der Token-Datenbank."
+
+msgid "_unassign"
+msgstr "Zuweisung a_ufheben"
+
+msgid "This adds the Token to the specified realms."
+msgstr "Die Tokens werden zu den folgenden Realms hinzugefügt."
+
+msgid "set Token realm"
+msgstr "Setze Token Realm"
+
+msgid "This displays more information about the token"
+msgstr "Hier können Sie mehr Informationen über den Token ansehen"
+
+msgid "show Token _details"
+msgstr "Zeige Token_details"
+
+msgid ""
+"If a user lost this token, this function will disable the lost token and the "
+"user will be issued a static password token."
+msgstr ""
+"Wenn ein Benutzer seinen Token verloren hat, können Sie\n"
+"mit dieser Funktion einen temporären Token ausrollen und\n"
+"den verlorenen Token deaktivieren."
+
+msgid "_lost token"
+msgstr "Ver_lorener Token"
+
+msgid "Enroll an eToken NG-OTP"
+msgstr "Einen eToken NG-OTP ausrollen"
+
+msgid "_enroll"
+msgstr "_ausrollen"
+
+msgid ""
+"Resynchronize the OTP Token. If the user produced to many blank presses, the "
+"token needs to be resynchronized."
+msgstr ""
+"Einen OTP Token synchronisieren. Wenn ein Benutzer zu viele leere "
+"Tastendrücke auf seinem OTP-Token durchgeführt hat, muss der Token "
+"synchronisiert werden."
+
+msgid "resync"
+msgstr "resynchronisieren"
+
+msgid ""
+"If the user failed to login many times, the fail counter will reach the max "
+"failcount value.\n"
+"To enable the user, to login again, you may reset the fail counter."
+msgstr ""
+"Wenn die Anmeldung eines Benutzers mehrere Male fehlgeschlagen ist, wird der "
+"Zähler für die Loginfehler den Wert \"Maximale Loginfehler\" erreicht "
+"haben.\n"
+"Um dem Benutzer wieder zu ermöglichen, sich anzumelden, müssen Sie den "
+"Loginfehler-Zähler zurücksetzen."
+
+msgid "reset _failcount"
+msgstr "Zähler Login_fehler zurücksetzen"
+
+msgid ""
+"Set the PIN for the OTP Token. The PIN is a fixed password, that the user "
+"needs to enter in front of the OTP value when authenticating."
+msgstr ""
+"Die PIN des OTP-Tokens setzen. Die PIN ist ein festes Passwort, das der "
+"Benutzer vor dem OTP-Wert beim Anmelden eingeben muss."
+
+msgid "set _pin"
+msgstr "_PIN setzen"
+
+msgid ""
+"This PIN is only used for mOTP tokens. This PIN needs to be entered on your "
+"mobile, so that the mobile will generate an OTP value"
+msgstr ""
+"Diese PIN wird nur für mOTP Token genutzt. Sie muss auf Ihrem Mobiltelefon "
+"eingegeben werden, so dass der OTP-Wert generiert werden kann."
+
+msgid "set _mOTP pin"
+msgstr "_mOTP PIN setzen"
+
+msgid ""
+"A disabled token can be enabled again to use it for authentication again.\t\t"
+msgstr ""
+"Ein deaktivierter Token kann wieder aktiviert werden, um ihn wieder für die "
+"Authentisierung zu verwenden."
+
+msgid "e_nable"
+msgstr "e_ntsperren"
+
+msgid ""
+"Disabling the token means, that the token is temporatily not usable for "
+"authentication. It can be enabled again."
+msgstr ""
+"Den Token zu deaktivieren bedeutet, dass Sie temporät den Token nicht für "
+"die Authentisierung verwenden können. Der Token kann wieder aktiviert werden."
+
+msgid "_disable"
+msgstr "_sperren"
+
+msgid ""
+"The token is removed from the token database. The token can not be used for "
+"authentication anymore. But it can be imported or enrolled afterwards again."
+msgstr ""
+"Der Token wird von der Tokendatenbank entfernt. Der Token kann nicht mehr "
+"für Authentisierung verwendet werden. Er kann später aber wieder importiert "
+"oder ausgerollt werden."
+
+msgid "remove"
+msgstr "löschen"
+
+msgid "_User"
+msgstr "_Benutzer"
+
+msgid "assign"
+msgstr "zuweisen"
+
+msgid "enroll"
+msgstr "ausrollen"
+
+msgid "enable"
+msgstr "entsperren"
+
+msgid "disable"
+msgstr "sperren"
+
+msgid "T_ools"
+msgstr "T_ools"
+
+msgid "get serial by OTP value"
+msgstr "Seriennummer anhand des OTP Wertes bestimmen."
+
+msgid "copy Token PIN"
+msgstr "Token PIN kopieren"
+
+msgid "Copy the token PIN from one Token to the other."
+msgstr "Die OTP PIN eines Tokens auf einen anderen kopieren."
+
+msgid "_Config"
+msgstr "_Konfiguration"
+
+msgid "Admin _Client configuration"
+msgstr "Konfiguration Admin-_Client"
+
+msgid "LinOTP _Server configuration"
+msgstr "Konfiguration LinOTP Server"
+
+msgid "LinOTP _policies"
+msgstr "LinOTP _Richtlinien"
+
+msgid "Here you may set policies for the LinOTP server"
+msgstr "Hier können Sie Richtlinien für den LinOTP Server definieren."
+
+msgid "_License"
+msgstr "_Lizenz"
+
+msgid "_Help"
+msgstr "_Hilfe"
+
+msgid ""
+"LSE LinOTP2\n"
+"Modular Managementsystem for OTP-Token"
+msgstr ""
+"LSE LinOTP2\n"
+"Modulares Managementsystem für OTP-Token"
+
+msgid "unassign"
+msgstr "Zuweisung aufheben"
+
+msgid "_resync"
+msgstr "_resynchronisieren"
+
+msgid "page"
+msgstr "Seite"
+
+msgid "of"
+msgstr "von"
+
+msgid "---"
+msgstr "---"
+
+msgid "filter"
+msgstr "Filter"
+
+msgid "Use this filter to display only a limited number of tokens."
+msgstr "Verwenden Sie diesen Filter, um nur einen Teil der Tokens anzuzeigen."
+
+msgid "Token search pattern"
+msgstr "Suchmuster für Tokens"
+
+msgid ""
+"Only tokens matching this search pattern will be loaded from the LinOTP "
+"server.\n"
+"In this case you do not need to use wildcard.\n"
+"A search pattern of \"F8\" will find all tokens containing the substring F8."
+msgstr ""
+"Es werden nur die Tokens vom LinOTP Server geladen, die auf dieses "
+"Suchmuster passen.\n"
+"Hier sind keine Wildcards (*) nötig.\n"
+"Das Suchmuster \"F8\" findet bspw. alle Tokens, die irgendwo die "
+"Zeichenkette F8 enthalten."
+
+msgid "token fetching"
+msgstr "Laden von Tokens"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "Use this filter to display only a limited number of users."
+msgstr ""
+"Verwenden Sie diesen Filter, um nur einen Teil der Benutzer anzuzeigen."
+
+msgid "user search pattern"
+msgstr "Suchmuster für Benutzer"
+
+msgid ""
+"Only users matching this search pattern are loaded from your user database. "
+"Search patterns may contain the '*' as a wildcard.\n"
+"Providing a sensible search pattern can speed up the management. "
+msgstr ""
+"Hier können Sie ein Suchmuster eintragen. Es werden nur Benutzer, die auf "
+"dieses Suchmuster passen, aus der Datenbank geladen. Das Suchmuster kann "
+"auch den Wildcard '*' enthalten. \n"
+"Bei großen Benutzerdatenbanken kann ein sinnvolles Suchmuster dazu dienlich "
+"sein, dass das Management wesentlich schneller zu bedienen ist."
+
+msgid ""
+"These controls are used to restrict the number of users, that are loaded "
+"from the user database."
+msgstr ""
+"Diese Einstellungen können dazu benutzt werden, die Benutzer, die von der "
+"Benutzerdatenbank geladen werden, zu beschränken."
+
+msgid "Userfetching"
+msgstr "Laden von Benutzern"
+
+msgid "<"
+msgstr "<"
+
+msgid "Page:"
+msgstr "Seite:"
+
+msgid ">"
+msgstr ">"
+
+msgid "/ --"
+msgstr "/ --"
+
+msgid "Lines per Page:"
+msgstr "Zeilen pro Seite:"
+
+msgid "100"
+msgstr "100"
+
+msgid "Total lines:"
+msgstr "Zeilenanzahl gesamt:"
+
+msgid "Filter column:"
+msgstr "Spaltenfilter:"
+
+msgid "Audit"
+msgstr "Audit"
+
+msgid "import tokenfile"
+msgstr "Tokendatei importieren"
+
+msgid "Logged in"
+msgstr "Eingeloggt auf "
+
+msgid "Connecting to LinOTP server..."
+msgstr "Verbinde zum LinOTP Server"
+
+msgid "http"
+msgstr "http"
+
+msgid "https"
+msgstr "https"
+
+msgid "eTokenNG-OTP"
+msgstr "eToken NG-OTP"
+
+msgid "mOTP"
+msgstr "mOTP"
+
+msgid "OATH"
+msgstr "OATH"
+
+msgid "SPass"
+msgstr "SPass"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "YubiKey"
+msgstr "YubiKey"
+
+msgid "TOTP (timebased OTP)"
+msgstr "TOTP (zeitbasiertes OTP)"
+
+msgid "Remote"
+msgstr "Remote"
+
+msgid "Radius"
+msgstr "RADIUS"
+
+msgid "Flatfile"
+msgstr "Flatfile"
+
+msgid "PasswdIdResolver"
+msgstr "PasswdIdResolver"
+
+msgid "LDAP"
+msgstr "LDAP"
+
+msgid "LDAPIdResolver"
+msgstr "LDAPIdResolver"
+
+msgid "SQL"
+msgstr "SQL"
+
+msgid "SQLIdResolver"
+msgstr "SQLIdResolver"
+
+msgid "Session exists"
+msgstr "Es existiert bereits eine Session auf den Token"
+
+msgid "Bad argument"
+msgstr "Fehlerhaftes Funktionsargument"
+
+msgid "Attribute value invalid"
+msgstr "Attributswert ist ungültig"
+
+msgid "invalid PIN length"
+msgstr "Ungültige PIN-Länge"
+
+msgid "Mechanism invalid"
+msgstr "Ungültiger Mechanismus"
+
+msgid "Token not present"
+msgstr "Es ist kein Token eingesteckt!"
+
+msgid "Template inconsistent"
+msgstr "Das Template ist inkonsistent"
+
+msgid "Template incomplete"
+msgstr "Das Template ist unvollständig"
+
+msgid "PIN expired"
+msgstr "PIN ist abgelaufen"
+
+msgid "Unknown initializazion key"
+msgstr "Unbekannter Initialisierungsschlüssel"
+
+#, python-format
+msgid "etng::__init__ - Unknown system platform (%s)"
+msgstr "etng::__init__ - Unbekanntes Betriebssystem (%s)"
+
+#, python-format
+msgid "etng::initpkcs11 - There are more than one tokens connected (%s)"
+msgstr "etng::initpkcs11 - Es sind mehr als ein Token angesteckt (%s)"
+
+#, python-format
+msgid "etng::inittoken - Failed to init token (%s)"
+msgstr ""
+"etng::inittoken - Die Initialisierung des Tokens ist fehlgeschlagen. (%s)"
+
+#, python-format
+msgid "etng::inittoken - Failed to ETC_InitPIN (%s)"
+msgstr "etng::inittoken - Fehler bei ETC_InitPIN (%s)"
+
+#, python-format
+msgid "etng::inittoken - Failed to ETC_InitTokenFinal (%s)"
+msgstr "etng::inittoken - Fehler bei ETC_InitTokenFinal (%s)"
+
+#, python-format
+msgid "etng::logintoken - Failed to C_Login (%s)"
+msgstr "etng::logintoken - Fehler bei C_Login (%s)"
+
+#, python-format
+msgid "etng::deleteOTP - Failed to C_GenerateRandom (%s)"
+msgstr "etng::deleteOTP - Fehler bei C_GenerateRandom (%s)"
+
+#, python-format
+msgid "etng::createAES - Failed to etpkcs11.C_CreateObject (%s)."
+msgstr "etng::createAES - Fehler bei C_CreateObject (%s)"
+
+#, python-format
+msgid ""
+"etng::createOTP - Failed to etsapi.SAPI_OTP_Create (%s). Maybe the token was "
+"initialized previously without HMAC support?"
+msgstr ""
+"etng::createOTP - Fehler bei etsapi.SAPI_OTP_Create (%s). Wurde der Token "
+"eventuell ohne den Support für HMAC initialisiert?"
+
+#, python-format
+msgid "etng::Finalize - Failed to C_GetTokenInfo (%s)"
+msgstr "etng::Finalize - Fehler bei C_GetTokenInfo (%s)"
+
+#, python-format
+msgid "etng::Finalize - Failed to finalize token (%s)"
+msgstr "etng::Finalize - Fehler beim Abschluss der Tokenerstellung (%s)"
+
+msgid "Creating AES key"
+msgstr "Erzeuge AES Key"
+
+#~ msgid ""
+#~ "This is the name of the policy. The name is just used by you for "
+#~ "identifying the policy."
+#~ msgstr ""
+#~ "Dies ist der Name der Richtlinie. Der Name dient lediglich dazu, dass Sie "
+#~ "die Richtlinie identifizieren können."
+
+#~ msgid "These are the usernames the policy applies to."
+#~ msgstr "Für diese Benutzer gilt die Richtlinie."
+
+#~ msgid "This is the realm, the policy applies to."
+#~ msgstr "Für diesen Realm gilt die Richtlinie."
+
+#~ msgid ""
+#~ "Here you may enter a comma seperated list of client IP addresses or IP "
+#~ "subnets."
+#~ msgstr ""
+#~ "Hier können Sie eine durch Komma getrennte Liste von Client IP-Adressen "
+#~ "oder Subnetzen angeben."
+
+#~ msgid ""
+#~ "Here you can choose the realm. Only users belonging in this realm will be "
+#~ "displayed."
+#~ msgstr ""
+#~ "Hier können Sie einen Realm auswählen. Es werden nur Benutzer aus diesem "
+#~ "Realm angezeigt."
+
+#~ msgid ""
+#~ "This specifies which attribute will be used to identify the user.\n"
+#~ "This can be the DN, entryUUID (OpenLDAP...), GUID (Novell eDirectory)\n"
+#~ "or objectGUID (Active Directory)."
+#~ msgstr ""
+#~ "Dieser Eintrag definiert, welches Attribute verwendet wird, um die "
+#~ "Benutzer eindeutig zu identifizieren.\n"
+#~ "Dies kann bspw. der DN sein oder entryUUID (für OpenLDAP), GUID (Novell "
+#~ "eDirectory) oder objectGUID (für Active Directory)."
+
+#~ msgid ""
+#~ "The LDAP module will chase referrals anonymously.\n"
+#~ "This will break in case of contacting Active Directory on root level.\n"
+#~ "Therefore you need to disable the (anonymous) referral chasing."
+#~ msgstr ""
+#~ "Das LDAP Modul folgt den LDAP Referrals anonym.\n"
+#~ "Dies führt beim Active Directory, das auf der Wurzelebene kontaktiert "
+#~ "wird, zu Problem.\n"
+#~ "Im Fall vom AD, sollte diese Option also angehakt werden."
+
+#~ msgid "This is the time the policy applies to."
+#~ msgstr "Zu dieser Zeit ist die Richtlinie gültig."
+
+#~ msgid "LSE LinOTP2"
+#~ msgstr "LSE LinOTP2"
+
+#~ msgid "SOFTWARE LICENSE AGREEMENT"
+#~ msgstr "SOFTWARE LICENSE AGREEMENT"
+
+#~ msgid "description"
+#~ msgstr "Beschreibung"
+
+#~ msgid "failcount"
+#~ msgstr "Zähler Loginfehler"
+
+#~ msgid "maxfailcount"
+#~ msgstr "Maximale Loginfehler"
+
+#~ msgid "page 3"
+#~ msgstr "seite 3"
+
+#~ msgid "email"
+#~ msgstr "E-Mail"
+
+#~ msgid "givenname"
+#~ msgstr "Vorname"
+
+#~ msgid "mobile"
+#~ msgstr "Mobiltelefon"
+
+#~ msgid "otpwindow"
+#~ msgstr "OTP Fenster"
+
+#~ msgid "phone"
+#~ msgstr "Telefon"
+
+#~ msgid "resolver"
+#~ msgstr "Resolver"
+
+#~ msgid "surname"
+#~ msgstr "Nachname"
+
+#~ msgid "username"
+#~ msgstr "Benutzername"
+
+#~ msgid "Choose a Hash algorithm"
+#~ msgstr "Wählen Sie einen Hashlib Algorithmus"
+
+#~ msgid "New unlock key"
+#~ msgstr "Neuer Entsperr-Code"
+
+#~ msgid "Unlock Key"
+#~ msgstr "Entsperr-Code"
+
+#~ msgid "New unlock key (2)"
+#~ msgstr "Neuer Entsperr-Code (2)"
+
+#~ msgid ""
+#~ "If checked, the user gets successfully authenticated if the user is not "
+#~ "found in the useridresolvers. USE WITH CAUTION!"
+#~ msgstr ""
+#~ "Wenn diese Checkbox angehakt wird, wird der Benutzer erfolgreich "
+#~ "authentisiert, wenn der Benutzer nicht in der Benutzerdatenbank gefunden "
+#~ "wird. MIT VORSICHT BENUTZEN!"
+
+#~ msgid ""
+#~ "If checked, the user is successfully authenticated if the user exists, "
+#~ "but has no tokens assigned."
+#~ msgstr ""
+#~ "Wenn diese Checkbox angehakt wird, wird der Benutzer erfolgreich "
+#~ "authentisiert, wenn der Benutzer in der Benutzerdatenbank gefunden wird "
+#~ "aber keinen Token hat. MIT VORSICHT BENUTZEN!"
+
+#~ msgid ""
+#~ "If the login with a token was successful, the fail counter gets resetted "
+#~ "if this checkbox is checked."
+#~ msgstr ""
+#~ "Wird diese Checkbox ausgewählt, so wird der Loginfehler-Zähler nach einem "
+#~ "erfolgreichem Login auf Null zurückgesetzt."
+
+#~ msgid ""
+#~ "If the user enters a wrong PIN, the fail counter is increased, if this "
+#~ "checkbox is checked."
+#~ msgstr ""
+#~ "Wenn diese Checkbox ausgewählt ist, so wird der Loginfehler-Zähler bei "
+#~ "der Eingabe einer falschen OTP PIN um eins erhöht."
+
+#~ msgid ""
+#~ "If this checkbox is checked:\n"
+#~ "If the HMAC OTP Token is out of sync the OTP counter will be resynced, if "
+#~ "the second valid OTP value is entered."
+#~ msgstr ""
+#~ "Wenn diese Checkbox angehakt wird:\n"
+#~ "Wenn der Zähler des HMAC OTP Token nicht mehr synchron ist, wird der "
+#~ "Zähler beim zweiten erfolgreichen einloggen synchronisiert."
+
+#~ msgid ""
+#~ "The OTP PIN is concatenated in front of the OTP value if this checkbox is "
+#~ "checked. If the checkbox is not checked, the user has to enter his PIN "
+#~ "behind the OTP value."
+#~ msgstr ""
+#~ "Die OTP PIN wird dem OTP Wert vorangestellt, wenn diese Checkbox angehakt "
+#~ "ist.\n"
+#~ "Wenn die Checkbox nicht angehakt ist, muss bei der Authentisierung die "
+#~ "OTP PIN hinter den OTP Wert geschrieben werden."
+
+#~ msgid ""
+#~ "The OTP counter will be resynced, if the second PIN is entered with this "
+#~ "time interval. Provide a number in seconds."
+#~ msgstr ""
+#~ "Der OTP Zähler wird resynchronisiert, wenn der zweite OTP Wert innerhalb "
+#~ "dieses Zeitintervalls eingegeben wird. (Eingabe in Sekunden)"
+
+#~ msgid ""
+#~ "If the LinOTP 2 server is located behind a proxy server, \n"
+#~ "you may enter the proxy server and the port the proxy is listening on.\n"
+#~ "<Proxyserver>:<Port>"
+#~ msgstr ""
+#~ "Wenn der LinOTP 2 Server hinter einem Proxy steht, \n"
+#~ "dann können Sie hier den Proxyserver und den Port angeben in der Form\n"
+#~ "<Proxyserver>:<Port>"
+
+#~ msgid ""
+#~ "Here you can enter the filename of the client certificate if the LinOTP "
+#~ "server requires client certificate authentication."
+#~ msgstr ""
+#~ "Hier können Sie den Dateinamen des Benutzerzertifikats angeben, wenn "
+#~ "LinOTP die Authentisierung via Zertifikat erfordert."
+
+#~ msgid ""
+#~ "Here you can enter the name of the private key file, if the LinOTP server "
+#~ "requires client certificate authentication."
+#~ msgstr ""
+#~ "Hier können Sie den Dateinamen des privaten Schlüssels angeben, wenn "
+#~ "LinOTP die Authentisierung via Zertifikat erfordert."
+
+#~ msgid ""
+#~ "This are the actions, that are allowed. Several actions may be seperated "
+#~ "by commas. \n"
+#~ "Valid actions are like:\n"
+#~ "\n"
+#~ "  \tenrollSMS\n"
+#~ "  \tenrollMOTP\n"
+#~ "  \tenrollHMAC\n"
+#~ "  \tassign\n"
+#~ "  \tdisable\n"
+#~ "  \tenable\n"
+#~ "  \tresync\n"
+#~ "  \tsetOTPPIN\n"
+#~ "  \tsetMOTPPIN"
+#~ msgstr ""
+#~ "Folgende Aktionen sind durch diese Richtlinie erlaubt. Mehrere Aktionen "
+#~ "können durch Kommata getrennt werden. Gültige Aktionen sind bspw:\n"
+#~ "\n"
+#~ "  \tenrollSMS\n"
+#~ "  \tenrollMOTP\n"
+#~ "  \tenrollHMAC\n"
+#~ "  \tassign\n"
+#~ "  \tdisable\n"
+#~ "  \tenable\n"
+#~ "  \tresync\n"
+#~ "  \tsetOTPPIN\n"
+#~ "  \tsetMOTPPIN"
+
+#~ msgid ""
+#~ "This is the scope the policy applies to.\n"
+#~ "At the moment the valid scope is \n"
+#~ "\n"
+#~ "\"selfservice\".\n"
+#~ "\n"
+#~ "This means that the policy applies to the selfservice portal."
+#~ msgstr ""
+#~ "Für diesen Bereich gilt die Richtlinie. \n"
+#~ "Zur Zeit gibt es den gültigen Bereich:\n"
+#~ "\n"
+#~ "\"selfservice\"\n"
+#~ "\n"
+#~ "Das bedeutet, dass die Richtlinie sich auf das Selfservice-Protal bezieht."
+
+#~ msgid "Action"
+#~ msgstr "Aktion"
+
+#~ msgid "Scope"
+#~ msgstr "Scope"
+
+#~ msgid "Time"
+#~ msgstr "Zeit"
+
+#~ msgid "Connection Protocol"
+#~ msgstr "Verbindungsprotokoll"
+
+#~ msgid "Not implemented yet!"
+#~ msgstr "Diese Funktion wird noch nicht unterstützt!"
+
+#~ msgid "_Canel"
+#~ msgstr "_Abbrechen"
+
+#~ msgid "Default"
+#~ msgstr "Default"
+
+#~ msgid "Unknown useridresolver: %s"
+#~ msgstr "Unbekannter UserIdResolver: %s"
+
+#~ msgid "/etc/passwd"
+#~ msgstr "/etc/passwd"
+
+#~ msgid ""
+#~ "This is a drivername as listed by sqalchemy. \n"
+#~ "Usual drivers are \"mysql\", \"postgres\", \"sqlite\", \"oracle\", "
+#~ "\"sybase\" or \"sapdb\".\n"
+#~ "\n"
+#~ "For a full list see http://www.sqlalchemy.org/docs/dbengine.html"
+#~ msgstr ""
+#~ "Dies ist ein Treibername wie er von SQLalchemy definiert wird.\n"
+#~ "Üblich sind die Treiber \"mysql\", \"postgres\", \"sqlite\", \"oracle\", "
+#~ "\"sybase\" oder \"sapdb\".\n"
+#~ "\n"
+#~ "Eine vollständige Liste findet sich hier http://www.sqlalchemy.org/docs/"
+#~ "dbengine.html"
+
+#~ msgid "activate users stored in an LDAP backend"
+#~ msgstr "Benutzer aus LDAP Server holen"
+
+#~ msgid "activate users stored in an SQL backend"
+#~ msgstr "Benutzer aus SQL Server holen"
+
+#~ msgid "Login attribute (column)"
+#~ msgstr "Attribut Loginname (Datenbankspalte)"
+
+#~ msgid "LinOTPGui::readtoken - Cannot read token list:"
+#~ msgstr "LinOTPGui::readtoken - Die Tokenliste ist nicht lesbar:"
+
+#~ msgid "LinOTPGui::userlist - Cannot read user list:"
+#~ msgstr "LinOTPGui::userlist - Die Benutzerliste ist nicht lesbar:"

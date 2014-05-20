@@ -1,0 +1,4 @@
+#!/bin/sh -e
+. /usr/share/debconf/confmodule
+# Remove my changes to the db.
+db_purge

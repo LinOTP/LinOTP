@@ -1,0 +1,106 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          linotp2-paster
+# Required-Start:    $remote_fs   
+# Required-Stop:     $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start LinOTP2 daemon at boot time
+# Description:       LinOTP2 provides one time password authentication for many different services
+### END INIT INFO
+#
+# LinOTP2 Startup script for the LinOTP2 Pylons app
+#
+# chkconfig: - 90 15
+# description: LinOTP2 is a Pylons-based web application.
+
+# Source Red Hat function library.
+if [ -f /etc/rc.d/init.d/functions ]; then
+. /etc/rc.d/init.d/functions
+fi
+
+RETVAL=0
+DESC=linotp
+APP_PATH=/etc/linotp2
+PYTHON=/usr/bin/python
+PASTER=/usr/bin/paster
+CONFIG=/etc/linotp2/linotp.ini
+USER=linotp
+GROUP=users
+LOG_FILE=/var/log/linotp/linotp.log
+PID_FILE=/var/run/linotp/linotp.pid
+LOCK_FILE=/var/run/linotp/linotp.lock
+
+OPTIONS=" serve -q --daemon \
+--user=$USER \
+--group=$GROUP \
+--log-file=$LOG_FILE \
+--pid-file=$PID_FILE \
+$CONFIG"
+
+start() {
+        echo -n $"Starting $DESC: "
+        status
+                if [[ $STATUS =~ 'Server running' ]]
+                then
+                        # if already started, echo paster status
+                        echo $STATUS
+                else
+			mkdir -p /var/run/linotp
+			chown $USER /var/run/linotp
+                        cd $APP_PATH
+                        #daemon $PYTHON $PASTER $OPTIONS
+                        $PYTHON $PASTER $OPTIONS
+			
+                        RETVAL=$?
+                        echo
+                        [ $RETVAL = 0 ] && touch $LOCK_FILE
+                        return $RETVAL
+                fi
+}
+
+stop() {
+        echo -n $"Stopping $DESC: "
+        status
+                if [[ $STATUS =~ 'No PID' ]]
+                then
+                        # if already stopped, echo paster status
+                        echo $STATUS
+                else
+                        cd $APP_PATH
+                        $PYTHON $PASTER serve --stop-daemon --pid-file=$PID_FILE
+                        RETVAL=$?
+                        [ $RETVAL = 0 ] && rm -f $LOCK_FILE
+                        echo
+                fi
+}
+
+status() {
+        cd $APP_PATH
+        STATUS=`$PYTHON $PASTER serve --status --pid-file=$PID_FILE $CONFIG`
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status
+        echo $STATUS
+        ;;
+  restart|reload|force-reload)
+        stop
+        start
+        ;;
+  *)
+        N=/etc/init.d/$DESC
+        echo "Usage: $0 {start|stop|status|restart}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
+

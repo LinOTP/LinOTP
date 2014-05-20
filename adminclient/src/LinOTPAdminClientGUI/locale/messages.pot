@@ -1,0 +1,2437 @@
+# glinotpadm.py messages
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP admin clients.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-04-07 14:46+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../glinotpadm.py:593
+#, python-format
+msgid "Error reading resolver configuration from server: %s"
+msgstr ""
+
+#: ../glinotpadm.py:619
+#, python-format
+msgid "Error reading system configuration from server: %s"
+msgstr ""
+
+#: ../glinotpadm.py:630
+#, python-format
+msgid "Error reading realm configuration from server: %s"
+msgstr ""
+
+#: ../glinotpadm.py:667
+#, python-format
+msgid "Error writing resolver configuration to server: %s"
+msgstr ""
+
+#: ../glinotpadm.py:683
+#, python-format
+msgid "Error writing configuration to server: %s"
+msgstr ""
+
+#: ../glinotpadm.py:694
+msgid "Fetching tokenlist from server"
+msgstr ""
+
+#: ../glinotpadm.py:743
+#, python-format
+msgid "populating token list (%s)"
+msgstr ""
+
+#: ../glinotpadm.py:760
+#, python-format
+msgid "%s tokens found"
+msgstr ""
+
+#: ../glinotpadm.py:762
+msgid "LinOTP Server does not support paging!"
+msgstr ""
+
+#: ../glinotpadm.py:773 ../glinotpadm.py:871 ../glinotpadm.py:3712
+msgid ""
+"Please setup the LinOTP Server in the Admin Client configuration correctly"
+msgstr ""
+
+#: ../glinotpadm.py:782
+msgid "Fetching userlist from server"
+msgstr ""
+
+#: ../glinotpadm.py:833
+#, python-format
+msgid "populating user list (%s)"
+msgstr ""
+
+#: ../glinotpadm.py:842
+#, python-format
+msgid "sorting user list of %s users"
+msgstr ""
+
+#: ../glinotpadm.py:850
+#, python-format
+msgid "setting filter for user list of %s users"
+msgstr ""
+
+#: ../glinotpadm.py:859 ../glinotpadm.py:2622 ../glinotpadm.py:2631
+#, python-format
+msgid "%s users found"
+msgstr ""
+
+#: ../glinotpadm.py:939
+msgid "Error reading audit information"
+msgstr ""
+
+#: ../glinotpadm.py:945 ../glinotpadm.glade.h:236
+msgid "user"
+msgstr ""
+
+#: ../glinotpadm.py:946 ../glinotpadm.glade.h:231 ../glinotpadm.glade.h:448
+msgid "realm"
+msgstr ""
+
+#: ../glinotpadm.py:946 ../glinotpadm.glade.h:158
+msgid "serial"
+msgstr ""
+
+#: ../glinotpadm.py:947
+msgid "admin"
+msgstr ""
+
+#: ../glinotpadm.py:948
+msgid "success"
+msgstr ""
+
+#: ../glinotpadm.py:948 ../glinotpadm.glade.h:233
+msgid "action"
+msgstr ""
+
+#: ../glinotpadm.py:949
+msgid "action detail"
+msgstr ""
+
+#: ../glinotpadm.py:949
+msgid "signature"
+msgstr ""
+
+#: ../glinotpadm.py:950
+msgid "token type"
+msgstr ""
+
+#: ../glinotpadm.py:950
+msgid "info"
+msgstr ""
+
+#: ../glinotpadm.py:951
+msgid "date"
+msgstr ""
+
+#: ../glinotpadm.py:951
+msgid "log level"
+msgstr ""
+
+#: ../glinotpadm.py:952
+msgid "LinOTP server"
+msgstr ""
+
+#: ../glinotpadm.py:953 ../glinotpadm.glade.h:463
+msgid "Client"
+msgstr ""
+
+#: ../glinotpadm.py:959
+msgid ""
+"LinOTPGui::importtoken - Please specify a filename to import the token from."
+msgstr ""
+
+#: ../glinotpadm.py:977 ../glinotpadm.py:1002
+#, python-format
+msgid "LinOTPGui::importtoken - got a seed %s without a serial"
+msgstr ""
+
+#: ../glinotpadm.py:1005
+#, python-format
+msgid "LinOTPGui::importtoken - I/O error : %s"
+msgstr ""
+
+#: ../glinotpadm.py:1024
+msgid "No Token selected"
+msgstr ""
+
+#: ../glinotpadm.py:1030
+msgid "gathering selected tokens"
+msgstr ""
+
+#: ../glinotpadm.py:1034
+#, python-format
+msgid "gathering token: %s"
+msgstr ""
+
+#: ../glinotpadm.py:1046 ../glinotpadm.py:1894
+msgid "No user selected"
+msgstr ""
+
+#: ../glinotpadm.py:1049
+msgid "gathering selected users"
+msgstr ""
+
+#: ../glinotpadm.py:1070
+#, python-format
+msgid "gathering user: %s"
+msgstr ""
+
+#: ../glinotpadm.py:1080
+#, python-format
+msgid "(%(s)s) %(t)d of %(c)d %(te)s"
+msgstr ""
+
+#: ../glinotpadm.py:1159 ../glinotpadm.glade.h:468
+msgid "Error"
+msgstr ""
+
+#: ../glinotpadm.py:1164
+msgid "Info"
+msgstr ""
+
+#: ../glinotpadm.py:1192
+msgid "Select logfile"
+msgstr ""
+
+#: ../glinotpadm.py:1199
+msgid "Log files"
+msgstr ""
+
+#: ../glinotpadm.py:1204 ../glinotpadm.py:1249 ../glinotpadm.py:1273
+#: ../glinotpadm.py:1305 ../glinotpadm.py:1691 ../glinotpadm.py:1745
+#: ../glinotpadm.py:3572
+msgid "All files"
+msgstr ""
+
+#: ../glinotpadm.py:1234 ../glinotpadm.py:1259
+msgid "Select client certificate"
+msgstr ""
+
+#: ../glinotpadm.py:1241
+msgid "certificate files"
+msgstr ""
+
+#: ../glinotpadm.py:1266
+msgid "private key files"
+msgstr ""
+
+#: ../glinotpadm.py:1298
+msgid "Select Token definition file"
+msgstr ""
+
+#: ../glinotpadm.py:1310
+msgid "Token file"
+msgstr ""
+
+#: ../glinotpadm.py:1356
+msgid "You need to select exactly one token to display it's details."
+msgstr ""
+
+#: ../glinotpadm.py:1359
+#, python-format
+msgid "Tokeninfo for token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1417
+msgid ""
+"eTokenPASS are available with HMAC-SHA-1 or HMAC-SHA-256 algorithm.\n"
+"The newer eToken Pass (starting with version 6.20) are using SHA-256.\n"
+"You may take a look into the XML file for the version number!\n"
+"Please choose the right Algorithm.\n"
+msgstr ""
+
+#: ../glinotpadm.py:1425
+msgid ""
+"Timebased OATH tokens either generate a new OTP value every 30 or every 60 "
+"seconds."
+msgstr ""
+
+#: ../glinotpadm.py:1432
+msgid ""
+"For timebased OATH tokens this is the amount of seconds\n"
+"LinOTP will try to find the matching OTP value before and after the "
+"currentime."
+msgstr ""
+
+#: ../glinotpadm.py:1435
+msgid ""
+"For eventbased OATH tokens this is the window of the allowed blank presses."
+msgstr ""
+
+#: ../glinotpadm.py:1437
+msgid "After that many failed authentication tries the token will be locked"
+msgstr ""
+
+#: ../glinotpadm.py:1439
+msgid ""
+"When doing a manual or an auto resync this is the number of OTP values that "
+"will be calculated in the future."
+msgstr ""
+
+#: ../glinotpadm.py:1443
+#, python-format
+msgid "Setting %s for token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1444
+#, python-format
+msgid "Select %s for token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1460
+#, python-format
+msgid "Unhandled Tokeninfo key: %s!"
+msgstr ""
+
+#: ../glinotpadm.py:1465
+#, python-format
+msgid "Successfully set the %s"
+msgstr ""
+
+#: ../glinotpadm.py:1468
+#, python-format
+msgid "Failed to set the %s!"
+msgstr ""
+
+#: ../glinotpadm.py:1494
+msgid ""
+"You are trying to assign a Token to a very user. You may only select one "
+"user!"
+msgstr ""
+
+#: ../glinotpadm.py:1518
+msgid ""
+"You are trying to enroll a Token to a very user. You may only select one "
+"user!"
+msgstr ""
+
+#: ../glinotpadm.py:1525 ../glinotpadm.py:2345
+msgid "Please insert token"
+msgstr ""
+
+#: ../glinotpadm.py:1544
+#, python-format
+msgid "disabling token for user %s"
+msgstr ""
+
+#: ../glinotpadm.py:1563
+#, python-format
+msgid "disabling token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1567
+msgid "disabled"
+msgstr ""
+
+#: ../glinotpadm.py:1581
+#, python-format
+msgid "enabling token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1585
+msgid "enabled"
+msgstr ""
+
+#: ../glinotpadm.py:1598
+#, python-format
+msgid "removing token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1602
+msgid "removed"
+msgstr ""
+
+#: ../glinotpadm.py:1680
+msgid "Load a policy file"
+msgstr ""
+
+#: ../glinotpadm.py:1687 ../glinotpadm.py:1741
+msgid "policy config"
+msgstr ""
+
+#: ../glinotpadm.py:1714
+#, python-format
+msgid "Could not parse policy file: %s"
+msgstr ""
+
+#: ../glinotpadm.py:1734
+msgid "Save the policy file"
+msgstr ""
+
+#: ../glinotpadm.py:1757
+#, python-format
+msgid "The file %s already exist. Overwrite?"
+msgstr ""
+
+#: ../glinotpadm.py:1765
+msgid "Successfully saved policy file."
+msgstr ""
+
+#: ../glinotpadm.py:1768
+msgid "Error writing policy file."
+msgstr ""
+
+#: ../glinotpadm.py:1817
+#, python-format
+msgid "Found the token serial: %s"
+msgstr ""
+
+#: ../glinotpadm.py:1819
+#, python-format
+msgid ""
+"\n"
+"The token belongs to %s (%s)"
+msgstr ""
+
+#: ../glinotpadm.py:1822
+msgid "Could not find a matching token serial for the given OTP value."
+msgstr ""
+
+#: ../glinotpadm.py:1841
+#, python-format
+msgid "unassigning token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1845 ../glinotpadm.glade.h:369
+msgid "unassigned"
+msgstr ""
+
+#: ../glinotpadm.py:1899
+#, python-format
+msgid "assigning token %s"
+msgstr ""
+
+#: ../glinotpadm.py:1903 ../glinotpadm.glade.h:370
+msgid "assigned"
+msgstr ""
+
+#: ../glinotpadm.py:1984
+msgid ""
+"The eTokenNG OTP will be initialized. All data on the Token will be lost."
+msgstr ""
+
+#: ../glinotpadm.py:1989
+msgid "starting to enroll eToken-NG OTP"
+msgstr ""
+
+#: ../glinotpadm.py:2005 ../linotputilsee/etokenng.py:553
+msgid "initialize pkcs11 interface"
+msgstr ""
+
+#: ../glinotpadm.py:2010 ../linotputilsee/etokenng.py:555
+msgid "initialize token"
+msgstr ""
+
+#: ../glinotpadm.py:2014 ../linotputilsee/etokenng.py:557
+msgid "login to token"
+msgstr ""
+
+#: ../glinotpadm.py:2018 ../linotputilsee/etokenng.py:559
+msgid "delete old OTP application"
+msgstr ""
+
+#: ../glinotpadm.py:2022 ../linotputilsee/etokenng.py:561
+msgid "create new OTP application"
+msgstr ""
+
+#: ../glinotpadm.py:2026
+msgid "finalizing token"
+msgstr ""
+
+#: ../glinotpadm.py:2079
+msgid "The mOTP Key needs to be 16, 24 or 32 characters!"
+msgstr ""
+
+#: ../glinotpadm.py:2081
+msgid "The mOTP Pin needs to be 4 digits!"
+msgstr ""
+
+#: ../glinotpadm.py:2106
+msgid "mOTP Token initialized successfully."
+msgstr ""
+
+#: ../glinotpadm.py:2114
+msgid "You need to enter a PIN and a KEY."
+msgstr ""
+
+#: ../glinotpadm.py:2121
+msgid "The HMAC Key must only contain hex characters!"
+msgstr ""
+
+#: ../glinotpadm.py:2123
+msgid ""
+"The HMAC Key needs to be 32, 40, 48 or 64 characters long, which is 128, "
+"160, 192 or 256 bit!"
+msgstr ""
+
+#: ../glinotpadm.py:2145
+msgid "OATH Token initialized successfully."
+msgstr ""
+
+#: ../glinotpadm.py:2156
+msgid "You need to enter a Seed."
+msgstr ""
+
+#: ../glinotpadm.py:2175
+msgid "SPass Token enrolled successfully."
+msgstr ""
+
+#: ../glinotpadm.py:2197
+msgid "SMS Token enrolled successfully."
+msgstr ""
+
+#: ../glinotpadm.py:2203
+msgid "The python-yubico module is not installed. You can not enroll yubikeys"
+msgstr ""
+
+#: ../glinotpadm.py:2209
+msgid "Please insert the YubiKey"
+msgstr ""
+
+#: ../glinotpadm.py:2217
+msgid ""
+"You need to enter the unlock key with 6 bytes in HEX format like: "
+"10FF2B1212EE"
+msgstr ""
+
+#: ../glinotpadm.py:2224
+msgid ""
+"You need to enter enter the new unlock key with 6 bytes in HEX format like: "
+"10FF2B1212EE"
+msgstr ""
+
+#: ../glinotpadm.py:2243
+msgid "YubiKey enrolled successfully."
+msgstr ""
+
+#: ../glinotpadm.py:2245
+msgid "Failed to enroll YubiKey."
+msgstr ""
+
+#: ../glinotpadm.py:2275
+#, python-format
+msgid "Remote Token with serial %s enrolled successfully."
+msgstr ""
+
+#: ../glinotpadm.py:2277 ../glinotpadm.py:2301
+#, python-format
+msgid "Failed to enroll Token with serial %s."
+msgstr ""
+
+#: ../glinotpadm.py:2299
+#, python-format
+msgid "RADIUS Token with serial %s enrolled successfully."
+msgstr ""
+
+#: ../glinotpadm.py:2463
+#, python-format
+msgid "resyncing Token with serial: %s"
+msgstr ""
+
+#: ../glinotpadm.py:2473
+#, python-format
+msgid "Token with serial %s was resynchronized successfully"
+msgstr ""
+
+#: ../glinotpadm.py:2474
+#, python-format
+msgid "Could not resyncronize Token with serial number %s"
+msgstr ""
+
+#: ../glinotpadm.py:2514
+#, python-format
+msgid "OTP PIN of token %s set successfully"
+msgstr ""
+
+#: ../glinotpadm.py:2515
+#, python-format
+msgid "Could not set OTP PIN of token %s"
+msgstr ""
+
+#: ../glinotpadm.py:2534
+msgid "The OTP PINs are the same."
+msgstr ""
+
+#: ../glinotpadm.py:2541
+msgid "The OTP PINs are different!"
+msgstr ""
+
+#: ../glinotpadm.py:2554
+msgid "The mOTP PINs are the same."
+msgstr ""
+
+#: ../glinotpadm.py:2561
+msgid "The mOTP PINs are different!"
+msgstr ""
+
+#: ../glinotpadm.py:2580
+#, python-format
+msgid "mOTP PIN of token %s set successfully"
+msgstr ""
+
+#: ../glinotpadm.py:2581
+#, python-format
+msgid "Could not set mOTP PIN of token %s"
+msgstr ""
+
+#: ../glinotpadm.py:2600
+msgid "refiltering tokens"
+msgstr ""
+
+#: ../glinotpadm.py:2603
+#, python-format
+msgid "%s tokens managed"
+msgstr ""
+
+#: ../glinotpadm.py:2620 ../glinotpadm.py:2628
+msgid "refiltering users"
+msgstr ""
+
+#: ../glinotpadm.py:2698
+#, python-format
+msgid "LinOTPGui::readServerConfig: %s"
+msgstr ""
+
+#: ../glinotpadm.py:2771
+#, python-format
+msgid "LinOTPGui::writeServerConfig: %s"
+msgstr ""
+
+#: ../glinotpadm.py:2910
+#, python-format
+msgid "Do you really want to delete the UserIdResolver >>%s<<?"
+msgstr ""
+
+#: ../glinotpadm.py:2912
+#, python-format
+msgid ""
+"Please assure to remove the UserIdResolver >>%s<< from any realm definition!"
+msgstr ""
+
+#: ../glinotpadm.py:3010
+msgid "Add realm with the following name:"
+msgstr ""
+
+#: ../glinotpadm.py:3016
+msgid ""
+"The realm should only consist of the characters a-zA-Z0-9 and minus: \"-\""
+msgstr ""
+
+#: ../glinotpadm.py:3023
+#, python-format
+msgid "The REALM %s already exists!"
+msgstr ""
+
+#: ../glinotpadm.py:3053
+msgid "Please select a realm."
+msgstr ""
+
+#: ../glinotpadm.py:3064
+msgid ""
+"You should also delete this empty realm. An empty realm can not be stored to "
+"the LinOTP server."
+msgstr ""
+
+#: ../glinotpadm.py:3144
+msgid "Reading realms"
+msgstr ""
+
+#: ../glinotpadm.py:3150
+msgid ">> all realms <<"
+msgstr ""
+
+#: ../glinotpadm.py:3168
+msgid "No default realm"
+msgstr ""
+
+#: ../glinotpadm.py:3354
+msgid ""
+"Please note: When choosing DEBUG log level passwords and other credentials "
+"get written to the logfile!"
+msgstr ""
+
+#: ../glinotpadm.py:3363
+#, python-format
+msgid "Login to %s"
+msgstr ""
+
+#: ../glinotpadm.py:3368
+msgid "Logging in to LinOTP server..."
+msgstr ""
+
+#: ../glinotpadm.py:3386
+msgid "Logged in as"
+msgstr ""
+
+#: ../glinotpadm.py:3462
+#, python-format
+msgid "Could not set the realms of token %s:"
+msgstr ""
+
+#: ../glinotpadm.py:3470
+#, python-format
+msgid "Could not set the token realms: %s"
+msgstr ""
+
+#: ../glinotpadm.py:3512 ../glinotpadm.py:3517 ../glinotpadm.glade.h:467
+msgid "Unlicensed"
+msgstr ""
+
+#: ../glinotpadm.py:3514
+msgid "tokens"
+msgstr ""
+
+#: ../glinotpadm.py:3526
+msgid ""
+"Signature-Error: The license information that was retrieved, was invalid!\n"
+msgstr ""
+
+#: ../glinotpadm.py:3528
+msgid ""
+"License-Error: The license information could not be retrieved from the "
+"server!\n"
+msgstr ""
+
+#: ../glinotpadm.py:3530
+msgid ""
+"Licensing-Error: Your tokens in use exceed the licensed token numbers. "
+"Please upgrade your license!\n"
+msgstr ""
+
+#: ../glinotpadm.py:3532
+msgid "Licensing-Error: You are running without a license!\n"
+msgstr ""
+
+#: ../glinotpadm.py:3560
+msgid "Select license file"
+msgstr ""
+
+#: ../glinotpadm.py:3567
+msgid "license file"
+msgstr ""
+
+#: ../glinotpadm.py:3590
+msgid "Error reading license file."
+msgstr ""
+
+#: ../glinotpadm.py:3595
+msgid "Error setting up license."
+msgstr ""
+
+#: ../glinotpadm.py:3642
+msgid "Problem fetching the policy definitions!"
+msgstr ""
+
+#: ../glinotpadm.py:3658
+msgid ""
+"In the current scope the following actions are allowed:\n"
+"\n"
+msgstr ""
+
+#: ../glinotpadm.py:3723
+msgid "Are you sure you want to delete the highlighted policy?"
+msgstr ""
+
+#: ../glinotpadm.py:3727
+msgid "No Policy selected"
+msgstr ""
+
+#: ../glinotpadm.py:3815
+msgid "You must exactly select one token to run the losttoken function."
+msgstr ""
+
+#: ../glinotpadm.py:3817
+#, python-format
+msgid ""
+"The token %s was lost?\n"
+"You may enroll a temporary token and\n"
+"automatically disable the lost token."
+msgstr ""
+
+#: ../glinotpadm.py:3834
+#, python-format
+msgid ""
+"Token %s enrolled. Use the old PIN with the password %s.\n"
+"The token is valid till %s"
+msgstr ""
+
+#: ../glinotpadm.py:4197
+msgid "loading and trying to connect to server..."
+msgstr ""
+
+#: ../glinotpadm.glade.h:1
+msgid "(c) LSE Leading Security Experts GmbH"
+msgstr ""
+
+#: ../glinotpadm.glade.h:2
+msgid "LSE Leading Security Experts GmbH"
+msgstr ""
+
+#: ../glinotpadm.glade.h:3
+msgid ""
+"SOFTWARE LICENSE AGREEMENT\n"
+"\n"
+"\n"
+"THIS LICENSE AGREEMENT IS A LEGAL AGREEMENT BETWEEN YOU \n"
+"– EITHER AS INDIVIDUAL OR AS SINGLE ENTITY - (USER) AND \n"
+"LSE LEADING SECURITY EXPERTS GMBH (LSE). \n"
+"\n"
+"BY USING THE SOFTWARE PRODUCT WHICH ACCOMPANIES THIS \n"
+"LICENSE AGREEMENT OR IS PRE-INSTALLED ON YOUR COMPUTER \n"
+"YOU AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE AGREEMENT. \n"
+"\n"
+"IF YOU DO NOT AGREE TO THE TERMS OF THIS LICENSE AGREEMENT, \n"
+"YOU ARE NOT ALLOWED TO INSTALL OR USE THE SOFTWARE PRODUCT. \n"
+"IN THAT CASE YOU SHOULD IMMEDIATELY RETURN THIS LICENSE \n"
+"AGREEMENT ALONG WITH THE SOFTWARE PRODUCT SEALED IN ITS \n"
+"ORIGINAL PACKAGING AND ALL OTHER BUNDELED LSE-PRODUCTS AND \n"
+"DOCUMENTS TO LSE LEADING SECURITY EXPERTS GMBH OR YOUR \n"
+"SOFTWARE DISTRIBUTOR FOR REFUND OF THE FULL PURCHASE PRICE. \n"
+"PRE-INSTALLED SOFTWARE MUST BE REMOVED.\n"
+"\n"
+"\n"
+"Software-License and Limitations\n"
+"\n"
+"The software product „LSE LinOTP“ and related components \n"
+"„LDAPIdResolver“, „SQLIdResolver“, „LinOTPAdminClient“ - \n"
+"referred to as 'Software' hereafter – as well as all copies of \n"
+"the product and the components are licensed, not sold. \n"
+"\n"
+"LSE grants the user a non-transferable, non-exclusive and \n"
+"revocable license for use of the Software on a contractually \n"
+"agreed number of computer systems. The Software must not \n"
+"be copied in any form except for one (1) backup copy.\n"
+"\n"
+"The user agrees not to change the Software, not to adapt it \n"
+"beyond the intended purpose, not to translate, not to reverse \n"
+"engineer, decompile or disassemble or attempt to reveal by \n"
+"any other means or through a third party the original source \n"
+"code of the Software.\n"
+"\n"
+"Any attempts of this sort will be considered and treated as \n"
+"violation of this license agreement and the corresponding\n"
+"license grant.\n"
+"\n"
+"The user is not authorized to lend, rent, lease or otherwise \n"
+"transfer or provide this Software and copies thereof or any \n"
+"accompanying documentation in any form to other users \n"
+"without prior permission granted by LSE in written form.\n"
+"\n"
+"In case of a transfer of the license to a third party, the user \n"
+"agrees to destroy or hand over any backup copies of the \n"
+"Software to the third party. The same applies to any \n"
+"accompanying documentation as well as to this license agreement. \n"
+"Any original storage media are also to be handed out to the third party. \n"
+"The installation of the software on the user's computer is to be removed.\n"
+"\n"
+"A transfer of this license to a third party is explicitly ruled out if \n"
+"the third party does not accept this license agreement.\n"
+"\n"
+"\n"
+"Limited Warranty\n"
+"\n"
+"LSE warrants that the software is essentially capable of \n"
+"performing in  conformance to the accompanying product \n"
+"information and the specification provided in the documentation\n"
+"or on the storage media.\n"
+"\n"
+"LSE provides a warranty of three (3) months starting from \n"
+"the date of purchase that the software is a) usable in the \n"
+"sense of and b) provides features as specified in the program \n"
+"description provided by LSE at the time of delivery to the\n"
+" user and accompanying the software.\n"
+"\n"
+"Any deficiencies occurring in this time frame are to be reported \n"
+"immediately. LSE reserves the right to repair or replace the \n"
+"Software in such a case. LSE has no warranty deed and is not \n"
+"liable for errors or interruptions during use of the Software.\n"
+"\n"
+"The court of jurisdiction for any disputes between the user and \n"
+"LSE that originate in this license agreement is - provided that the \n"
+"software is for professional use - the court responsible for the \n"
+"registered office of LSE.\n"
+"\n"
+"THE WARRANTIES LISTED HERE ARE THE ONLY AND EXCLUSIVE \n"
+"OPTIONS PROVIDED TO THE USER IN CASE OF BREACH OF WARRANTY. \n"
+"THIS WARRANTY IS EFFECTIVE IN PLACE OF ANY OTHER IMPLIED OR\n"
+"EXPRESSED WARRANTIES AND CONDITIONS INCLUDING THE \n"
+"WARRANTY OF MINIMUM QUALITY. SINCE SOME STATES AND \n"
+"COUNTRIES DO NOT ALLOW THIS FORM OF EXCLUSION OF WARRANTY \n"
+"(FOR NON-PROFESSIONAL USERS IN PARTICULAR) THIS EXCLUSION \n"
+"MAY NOT BE EFFECTIVE FOR THE USER. IN SUCH CASE THE REGULATIONS \n"
+"REGARDING VALIDITY OF EXCLUSION OF FURTHER WARRANTY OF \n"
+"THE RESPECTIVE STATE OR COUNTY ARE IN EFFECT.\n"
+"\n"
+msgstr ""
+
+#: ../glinotpadm.glade.h:97
+msgid "build"
+msgstr ""
+
+#: ../glinotpadm.glade.h:98
+msgid "assign token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:99
+msgid "_Cancel"
+msgstr ""
+
+#: ../glinotpadm.glade.h:100
+msgid "_OK"
+msgstr ""
+
+#: ../glinotpadm.glade.h:101
+msgid "Token serial"
+msgstr ""
+
+#: ../glinotpadm.glade.h:102
+msgid "User"
+msgstr ""
+
+#: ../glinotpadm.glade.h:103 ../glinotpadm.glade.h:135
+msgid "..."
+msgstr ""
+
+#: ../glinotpadm.glade.h:104
+msgid "<b>Userinfo</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:105
+msgid "Admin Client configuration"
+msgstr ""
+
+#: ../glinotpadm.glade.h:106
+msgid "Protocol"
+msgstr ""
+
+#: ../glinotpadm.glade.h:107
+msgid "Hostname"
+msgstr ""
+
+#: ../glinotpadm.glade.h:108
+msgid "Port"
+msgstr ""
+
+#: ../glinotpadm.glade.h:109
+msgid ""
+"This is the protocol the LinOTP server is working on. This can be either "
+"http or https."
+msgstr ""
+
+#: ../glinotpadm.glade.h:110
+msgid "This is the hostname of the LinOTP server"
+msgstr ""
+
+#: ../glinotpadm.glade.h:111
+msgid "This is the port the LinOTP server listens on"
+msgstr ""
+
+#: ../glinotpadm.glade.h:112
+msgid "Proxyserver Port"
+msgstr ""
+
+#: ../glinotpadm.glade.h:113
+msgid "Client Private Key"
+msgstr ""
+
+#: ../glinotpadm.glade.h:114
+msgid "Client Certificate"
+msgstr ""
+
+#: ../glinotpadm.glade.h:115
+msgid "Authentication Type"
+msgstr ""
+
+#: ../glinotpadm.glade.h:116
+msgid "server connection"
+msgstr ""
+
+#: ../glinotpadm.glade.h:117
+msgid "Default Token Name"
+msgstr ""
+
+#: ../glinotpadm.glade.h:118
+msgid "Password retry counter"
+msgstr ""
+
+#: ../glinotpadm.glade.h:119
+msgid "The OTP value will be displayed for this amount of seconds."
+msgstr ""
+
+#: ../glinotpadm.glade.h:120
+msgid "OTP display duration"
+msgstr ""
+
+#: ../glinotpadm.glade.h:121
+msgid "Random User PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:122
+msgid ""
+"If this checkbox is checked, an eTokenNG OTP will be enrolled with a random "
+"User PIN.\n"
+"Otherwise you will be asked to set a User PIN during enrollment."
+msgstr ""
+
+#: ../glinotpadm.glade.h:124
+msgid "Random SO PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:125
+msgid ""
+"If this checkbox is checked, an eTokenNG OTP will be enrolled with a random "
+"SO PIN (Administrator Password).\n"
+"Otherwise you will be asked to set a SO PIN during enrollment."
+msgstr ""
+
+#: ../glinotpadm.glade.h:127
+msgid "Initialize Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:128
+msgid "enrollment settings"
+msgstr ""
+
+#: ../glinotpadm.glade.h:129
+msgid "Clear userfilter after enrollment"
+msgstr ""
+
+#: ../glinotpadm.glade.h:130
+msgid "Client Settings"
+msgstr ""
+
+#: ../glinotpadm.glade.h:131
+msgid "Logfile"
+msgstr ""
+
+#: ../glinotpadm.glade.h:132
+msgid "Rotate Count"
+msgstr ""
+
+#: ../glinotpadm.glade.h:133
+msgid "File size"
+msgstr ""
+
+#: ../glinotpadm.glade.h:134
+msgid "Log Level"
+msgstr ""
+
+#: ../glinotpadm.glade.h:136
+msgid "Logging"
+msgstr ""
+
+#: ../glinotpadm.glade.h:137
+msgid "ui file"
+msgstr ""
+
+#: ../glinotpadm.glade.h:138
+msgid "config file"
+msgstr ""
+
+#: ../glinotpadm.glade.h:139
+msgid "files"
+msgstr ""
+
+#: ../glinotpadm.glade.h:140
+msgid "C_opy Token PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:141
+msgid ""
+"Here you can copy the Token PIN of one token to another.\n"
+"Please enter the serial number of the source token and \n"
+"the serial number of the token, that should get the same \n"
+"token pin."
+msgstr ""
+
+#: ../glinotpadm.glade.h:145
+msgid "from Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:146
+msgid "to Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:147
+msgid "Edit Realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:148
+msgid "label"
+msgstr ""
+
+#: ../glinotpadm.glade.h:149
+msgid "Enroll a token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:150
+msgid "<b>User</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:151
+msgid "Tokentype"
+msgstr ""
+
+#: ../glinotpadm.glade.h:152 ../glinotpadm.glade.h:349
+msgid "again"
+msgstr ""
+
+#: ../glinotpadm.glade.h:153
+msgid "SO PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:154
+msgid "User PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:155
+msgid "<b>eToken NG-OTP</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:156
+msgid "OTP Key"
+msgstr ""
+
+#: ../glinotpadm.glade.h:157
+msgid "mOTP PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:159
+msgid "<b>mOTP</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:160
+msgid "HMAC Key / Seed"
+msgstr ""
+
+#: ../glinotpadm.glade.h:161
+msgid "<b>OATH / HMAC-OTP</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:162
+msgid ""
+"The Simple-Token will always authenticate the user - only based on the OTP "
+"PIN."
+msgstr ""
+
+#: ../glinotpadm.glade.h:163
+msgid "<b>Simple-Pass</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:164
+msgid "phone number"
+msgstr ""
+
+#: ../glinotpadm.glade.h:165
+msgid "SMS Provider"
+msgstr ""
+
+#: ../glinotpadm.glade.h:166
+msgid "<b>SMS OTP</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:167
+msgid "check PIN locally"
+msgstr ""
+
+#: ../glinotpadm.glade.h:168
+msgid "remote LinOTP server"
+msgstr ""
+
+#: ../glinotpadm.glade.h:169
+msgid "remote serial"
+msgstr ""
+
+#: ../glinotpadm.glade.h:170
+msgid "remote user"
+msgstr ""
+
+#: ../glinotpadm.glade.h:171
+msgid "remote realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:172
+msgid "remote resolver"
+msgstr ""
+
+#: ../glinotpadm.glade.h:173
+msgid "<b>Remote Token</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:174
+msgid "Use no new unlock key"
+msgstr ""
+
+#: ../glinotpadm.glade.h:175
+msgid "Set a new unlock key"
+msgstr ""
+
+#: ../glinotpadm.glade.h:176
+msgid "Keep the same unlock key"
+msgstr ""
+
+#: ../glinotpadm.glade.h:177
+msgid "use unlock key"
+msgstr ""
+
+#: ../glinotpadm.glade.h:178
+msgid "Slot 1"
+msgstr ""
+
+#: ../glinotpadm.glade.h:179
+msgid ""
+"You may choose if you want to write the OTP key to slot 1 or to slot 2.\n"
+"Slot 1 contains the yubico default OTP algorithm. \n"
+"\n"
+"Slot 1 is used by pressing on the key for only one second, slot 2 is used by "
+"pressing on the key for roughly two or three seconds."
+msgstr ""
+
+#: ../glinotpadm.glade.h:183
+msgid "Slot 2"
+msgstr ""
+
+#: ../glinotpadm.glade.h:184
+msgid "Append Enter key"
+msgstr ""
+
+#: ../glinotpadm.glade.h:185
+msgid "Will hit Enter after typing the OTP value."
+msgstr ""
+
+#: ../glinotpadm.glade.h:186
+msgid "<b>YubiKey</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:187
+msgid "RADIUS server"
+msgstr ""
+
+#: ../glinotpadm.glade.h:188
+msgid "RADIUS user"
+msgstr ""
+
+#: ../glinotpadm.glade.h:189
+msgid "RADIUS shared secret"
+msgstr ""
+
+#: ../glinotpadm.glade.h:190
+msgid ""
+"This is the RADIUS server, the user will be authenticated on. \n"
+"Please enter it as\n"
+"<servername or ip>:<port number>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:193
+msgid "This is the username on the RADIUS server."
+msgstr ""
+
+#: ../glinotpadm.glade.h:194
+msgid "This is the shared secret for the RADIUS server."
+msgstr ""
+
+#: ../glinotpadm.glade.h:195
+msgid ""
+"This defines, if the OTP PIN is checked locally and only the splitted rest "
+"of the password is sent to the RADIUS server or if the complete password is "
+"sent."
+msgstr ""
+
+#: ../glinotpadm.glade.h:196
+msgid "<b>RADIUS Token</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:197
+msgid "Get serial by OTP value"
+msgstr ""
+
+#: ../glinotpadm.glade.h:198
+msgid "Get Serial"
+msgstr ""
+
+#: ../glinotpadm.glade.h:199
+msgid ""
+"Here you can search for the serial number of a token.\n"
+"You need to enter the current OTP value and choose where\n"
+"you want to search the token.\n"
+"<b>This can be very time consuming!</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:203
+msgid "Type"
+msgstr ""
+
+#: ../glinotpadm.glade.h:204
+msgid "Assigned Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:205
+msgid "Realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:206
+msgid "OTP value"
+msgstr ""
+
+#: ../glinotpadm.glade.h:207
+msgid "Import Token file"
+msgstr ""
+
+#: ../glinotpadm.glade.h:208
+msgid "Hash Method"
+msgstr ""
+
+#: ../glinotpadm.glade.h:209
+msgid "Filename"
+msgstr ""
+
+#: ../glinotpadm.glade.h:210
+msgid "_Filename"
+msgstr ""
+
+#: ../glinotpadm.glade.h:211
+msgid ""
+"Here you may import \n"
+"Aladdin XML files for \n"
+"eToken PASS."
+msgstr ""
+
+#: ../glinotpadm.glade.h:214
+msgid "License"
+msgstr ""
+
+#: ../glinotpadm.glade.h:215
+msgid "Set _License"
+msgstr ""
+
+#: ../glinotpadm.glade.h:216
+msgid "Admin Login"
+msgstr ""
+
+#: ../glinotpadm.glade.h:217
+msgid "Login to "
+msgstr ""
+
+#: ../glinotpadm.glade.h:218
+msgid "Username"
+msgstr ""
+
+#: ../glinotpadm.glade.h:219
+msgid "Password"
+msgstr ""
+
+#: ../glinotpadm.glade.h:220
+msgid "Lost Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:221
+msgid "Get temporary token\t"
+msgstr ""
+
+#: ../glinotpadm.glade.h:222
+msgid "LinOTP policies"
+msgstr ""
+
+#: ../glinotpadm.glade.h:223
+msgid "active"
+msgstr ""
+
+#: ../glinotpadm.glade.h:224 ../glinotpadm.glade.h:228
+msgid "time"
+msgstr ""
+
+#: ../glinotpadm.glade.h:225
+msgid "_Export"
+msgstr ""
+
+#: ../glinotpadm.glade.h:226
+msgid "_Import"
+msgstr ""
+
+#: ../glinotpadm.glade.h:229
+msgid "client"
+msgstr ""
+
+#: ../glinotpadm.glade.h:235
+msgid "scope"
+msgstr ""
+
+#: ../glinotpadm.glade.h:238
+msgid "name"
+msgstr ""
+
+#: ../glinotpadm.glade.h:239
+msgid "<b>Edit Policy</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:240
+msgid "Resyncing Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:241
+msgid "Resync Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:242
+msgid "First OTP value"
+msgstr ""
+
+#: ../glinotpadm.glade.h:243
+msgid "Second OTP value"
+msgstr ""
+
+#: ../glinotpadm.glade.h:244
+msgid "Server Configuration"
+msgstr ""
+
+#: ../glinotpadm.glade.h:245
+msgid "Sync Window"
+msgstr ""
+
+#: ../glinotpadm.glade.h:246
+msgid "Count Window"
+msgstr ""
+
+#: ../glinotpadm.glade.h:247
+msgid "OTP Length"
+msgstr ""
+
+#: ../glinotpadm.glade.h:248
+msgid "Maximum Fail Count"
+msgstr ""
+
+#: ../glinotpadm.glade.h:249
+msgid "TOTP timestep"
+msgstr ""
+
+#: ../glinotpadm.glade.h:250
+msgid "TOTP time shift"
+msgstr ""
+
+#: ../glinotpadm.glade.h:251
+msgid "TOTP time window"
+msgstr ""
+
+#: ../glinotpadm.glade.h:252
+msgid ""
+"TOTP tokens are OATH Tokens based on RFC4226, where the counter is not "
+"increased by an event, but calculated from the unix system time. The counter "
+"increases either all 30 or 60 seconds. So you need to enter 30 or 60 here.\n"
+"This is a default value. You may change this per token."
+msgstr ""
+
+#: ../glinotpadm.glade.h:254
+msgid ""
+"This is the drift of the LinOTP clock from the TOTP token clocks. Usually "
+"you should have no default drift, but have your LinOTP server clock "
+"synchronized using NTP. So this should be set ot 0.\n"
+"This is a default value. You may change this per token."
+msgstr ""
+
+#: ../glinotpadm.glade.h:256
+msgid ""
+"LinOTP can calculate and compare the OTP values from some seconds before the "
+"current time and after the current time. A sensible value could 60 or 120, "
+"so that LinOTP will calculate and compare OTP values 1 or 2 minutes before "
+"the current time and after the current time.\n"
+"This is a default value. You may change this per token."
+msgstr ""
+
+#: ../glinotpadm.glade.h:258
+msgid "<b>TOTP timebased HMAC</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:259
+msgid "default OCRA suite"
+msgstr ""
+
+#: ../glinotpadm.glade.h:260
+msgid "default QR OCRA suite"
+msgstr ""
+
+#: ../glinotpadm.glade.h:261
+msgid ""
+"This is the OCRA suite for a newly enrolled OCRA token, if no OCRA suite is "
+"specified during enrollment. Default: OCRA-1:HOTP-SHA256-8:C-QA08"
+msgstr ""
+
+#: ../glinotpadm.glade.h:262
+msgid ""
+"This is the OCRA suite for a newly enrolled QR-OCRA token, if no OCRA suite "
+"is specified during enrollment. Default: OCRA-1:HOTP-SHA256-6:C-QA64"
+msgstr ""
+
+#: ../glinotpadm.glade.h:263
+msgid "<b>OCRA settings</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:264
+msgid "Token defaults"
+msgstr ""
+
+#: ../glinotpadm.glade.h:265
+msgid "Reset fail counter"
+msgstr ""
+
+#: ../glinotpadm.glade.h:266
+msgid "Fail counter increase on false PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:267
+msgid "Prepend PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:268
+msgid ""
+"If set to true (checked) the user needs to put the OTP PIN in front of the "
+"OTP value. (e.g. >>mySecret647356<<). If it is set to false (not checked) "
+"the user needs to put the OTP PIN behind the OTP value. (e.g. "
+">>647356mySecret<<)."
+msgstr ""
+
+#: ../glinotpadm.glade.h:269
+msgid "Auto resync"
+msgstr ""
+
+#: ../glinotpadm.glade.h:270
+msgid ""
+"If Auto resync is true (checked) LinOTP will work like this: \n"
+"If a token is out of sync, LinOTP will remember the given OTP value for this "
+"user and for this token.  If the user logs on during the timeout time and "
+"provides another PIN and OTP value, LinOTP will try to resynchronize the "
+"token - identified by the OTP PIN - with these two OTP values.\n"
+"Of course the two OTP values need to be consecutive values."
+msgstr ""
+
+#: ../glinotpadm.glade.h:273
+msgid "Pass on user not found"
+msgstr ""
+
+#: ../glinotpadm.glade.h:274
+msgid "Pass on User no Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:275
+msgid "Selfservice: display realm drop down box"
+msgstr ""
+
+#: ../glinotpadm.glade.h:276
+msgid "return SAML attributes"
+msgstr ""
+
+#: ../glinotpadm.glade.h:277
+msgid ""
+"If checked the controller /validate/samlcheck will also return attributes of "
+"the authenticated user."
+msgstr ""
+
+#: ../glinotpadm.glade.h:278
+msgid "Auto resync timeout"
+msgstr ""
+
+#: ../glinotpadm.glade.h:279
+msgid "Overwrite Authentication client"
+msgstr ""
+
+#: ../glinotpadm.glade.h:280
+msgid ""
+"Here you can enter a list of IP addresses, that may pass a client IP address "
+"for authorization.\n"
+"\n"
+"This is necessary, if you are using a RADIUS server, and all RADIUS clients "
+"are communicating with the RADIUS server but only the RADIUS server is "
+"communicating to the LinOTP server.\n"
+"In this case, you need to enter the IP address of the RADIUS server to be "
+"able to use the RADIUS clients IP addresses in the authorization policies."
+msgstr ""
+
+#: ../glinotpadm.glade.h:284
+msgid "Maximum concurrent OCRA challenges"
+msgstr ""
+
+#: ../glinotpadm.glade.h:285
+msgid "OCRA challenge timeout"
+msgstr ""
+
+#: ../glinotpadm.glade.h:286
+msgid ""
+"After this timeout the challenge is not valid any more and a response for "
+"this challenge will not be accepted. You can specify the timeout like 1D, 2H "
+"or 5M, which means day, hours, minutes. Default: 1M."
+msgstr ""
+
+#: ../glinotpadm.glade.h:287
+msgid ""
+"This is the number of concurrently allowed open challenges. This means that "
+"a new challenge may be issued while another challenge is not responded, yet. "
+"Default: 3."
+msgstr ""
+
+#: ../glinotpadm.glade.h:288
+msgid "System settings"
+msgstr ""
+
+#: ../glinotpadm.glade.h:289
+msgid "_Add Realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:290
+msgid "Re_name Realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:291
+msgid "_Remove Realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:292
+msgid "Here you can add a already defined userstore to a realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:293
+msgid "_Add userstore to realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:294
+msgid "_Remove userstore from realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:295
+msgid "<b>Default Realm</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:296
+msgid "Split @ in username as realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:297
+msgid ""
+"If this is checked, an @ sign within a login user name will be used to split "
+"the right hand part and use it as the realm name."
+msgstr ""
+
+#: ../glinotpadm.glade.h:298
+msgid "Realms"
+msgstr ""
+
+#: ../glinotpadm.glade.h:299
+msgid "Name"
+msgstr ""
+
+#: ../glinotpadm.glade.h:300
+msgid "<b>Flatfile PasswdIdResolver</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:301
+msgid "URI"
+msgstr ""
+
+#: ../glinotpadm.glade.h:302
+msgid "No anonymous referral chasing"
+msgstr ""
+
+#: ../glinotpadm.glade.h:303
+msgid "UID Type"
+msgstr ""
+
+#: ../glinotpadm.glade.h:304
+msgid "Size Limit"
+msgstr ""
+
+#: ../glinotpadm.glade.h:305
+msgid "Timeout"
+msgstr ""
+
+#: ../glinotpadm.glade.h:306
+msgid "Bind Password"
+msgstr ""
+
+#: ../glinotpadm.glade.h:307
+msgid "BindDN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:308
+msgid "BaseDN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:309
+msgid "CA certificate"
+msgstr ""
+
+#: ../glinotpadm.glade.h:310
+msgid "<b>LDAP Server configuration</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:311
+msgid "Loginname attribute"
+msgstr ""
+
+#: ../glinotpadm.glade.h:312
+msgid "Searchfilter"
+msgstr ""
+
+#: ../glinotpadm.glade.h:313
+msgid "User Filter "
+msgstr ""
+
+#: ../glinotpadm.glade.h:314
+msgid "Attribute mapping"
+msgstr ""
+
+#: ../glinotpadm.glade.h:315
+msgid "Preset LDAP"
+msgstr ""
+
+#: ../glinotpadm.glade.h:316
+msgid "Preset Active Directory"
+msgstr ""
+
+#: ../glinotpadm.glade.h:317
+msgid "Preset eDirectory"
+msgstr ""
+
+#: ../glinotpadm.glade.h:318
+msgid "<b>LDAP attribute definition</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:319
+msgid "Test LDAP connection"
+msgstr ""
+
+#: ../glinotpadm.glade.h:320
+msgid "<b>LDAPIdResolver</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:321
+msgid "Database"
+msgstr ""
+
+#: ../glinotpadm.glade.h:322
+msgid "SQL Server"
+msgstr ""
+
+#: ../glinotpadm.glade.h:323
+msgid "Database driver"
+msgstr ""
+
+#: ../glinotpadm.glade.h:324
+msgid "<b>Server configuration</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:325
+msgid "Login attribute (table)"
+msgstr ""
+
+#: ../glinotpadm.glade.h:326
+msgid "User attribute mapping"
+msgstr ""
+
+#: ../glinotpadm.glade.h:327
+msgid "<b>SQL attribute definition</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:328
+msgid "<b>SQlIdResolver</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:329
+msgid "Set these resolver settings."
+msgstr ""
+
+#: ../glinotpadm.glade.h:330
+msgid "<b>Edit selected userstore configuration</b>"
+msgstr ""
+
+#: ../glinotpadm.glade.h:331
+msgid "Userstores"
+msgstr ""
+
+#: ../glinotpadm.glade.h:332
+msgid "SMS Provider Config"
+msgstr ""
+
+#: ../glinotpadm.glade.h:333
+msgid "SMS Timeout"
+msgstr ""
+
+#: ../glinotpadm.glade.h:334
+msgid ""
+"This is module name of the SMS Provider. At the moment valid SMS providers "
+"are:\n"
+"\n"
+"smsprovider.DeviceSMSProvider.DeviceSMSProvider\n"
+"\n"
+"and \n"
+"\n"
+"smsprovider.HttpSMSProvider.HttpSMSProvider"
+msgstr ""
+
+#: ../glinotpadm.glade.h:341
+msgid ""
+"This is the dictionary like configuration of the SMS Provider. \n"
+"For some providers this can be very complex. So please consult the "
+"administration manual for the correspondig entry."
+msgstr ""
+
+#: ../glinotpadm.glade.h:343
+msgid ""
+"This is the time a sent SMS OTP value will be valid. After this time this "
+"OTP value can not be used anymore.\n"
+"\n"
+"Enter a number in seconds."
+msgstr ""
+
+#: ../glinotpadm.glade.h:346
+msgid "if you change this, you are in real trouble ;-)"
+msgstr ""
+
+#: ../glinotpadm.glade.h:347
+msgid "Tokenstore"
+msgstr ""
+
+#: ../glinotpadm.glade.h:348
+msgid "Set MOTP Pin"
+msgstr ""
+
+#: ../glinotpadm.glade.h:350
+msgid "Setting Tokeninfo"
+msgstr ""
+
+#: ../glinotpadm.glade.h:351
+msgid "Set OTP PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:352
+msgid "OTP PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:353
+msgid "Set token realms"
+msgstr ""
+
+#: ../glinotpadm.glade.h:354
+msgid "You may select the realms the token should be contained in."
+msgstr ""
+
+#: ../glinotpadm.glade.h:355
+msgid "Tokeninfo"
+msgstr ""
+
+#: ../glinotpadm.glade.h:356
+msgid "set Hashlib"
+msgstr ""
+
+#: ../glinotpadm.glade.h:357
+msgid "set OTP Length"
+msgstr ""
+
+#: ../glinotpadm.glade.h:358
+msgid "set Counter  Window"
+msgstr ""
+
+#: ../glinotpadm.glade.h:359
+msgid "set Maximum Fail Counter"
+msgstr ""
+
+#: ../glinotpadm.glade.h:360
+msgid "set Sync Window"
+msgstr ""
+
+#: ../glinotpadm.glade.h:361
+msgid "set Time Window"
+msgstr ""
+
+#: ../glinotpadm.glade.h:362
+msgid "set Time Step"
+msgstr ""
+
+#: ../glinotpadm.glade.h:363
+msgid "Digest"
+msgstr ""
+
+#: ../glinotpadm.glade.h:364
+msgid "Basic"
+msgstr ""
+
+#: ../glinotpadm.glade.h:365
+msgid "sha1"
+msgstr ""
+
+#: ../glinotpadm.glade.h:366
+msgid "sha256"
+msgstr ""
+
+#: ../glinotpadm.glade.h:367
+msgid "remotely"
+msgstr ""
+
+#: ../glinotpadm.glade.h:368
+msgid "locally"
+msgstr ""
+
+#: ../glinotpadm.glade.h:371
+msgid "--"
+msgstr ""
+
+#: ../glinotpadm.glade.h:372
+msgid "DEBUG"
+msgstr ""
+
+#: ../glinotpadm.glade.h:373
+msgid "INFO"
+msgstr ""
+
+#: ../glinotpadm.glade.h:374
+msgid "WARNING"
+msgstr ""
+
+#: ../glinotpadm.glade.h:375
+msgid "ERROR"
+msgstr ""
+
+#: ../glinotpadm.glade.h:376
+msgid "CRITICAL"
+msgstr ""
+
+#: ../glinotpadm.glade.h:377
+msgid "LinOTP2 management"
+msgstr ""
+
+#: ../glinotpadm.glade.h:378
+msgid "_File"
+msgstr ""
+
+#: ../glinotpadm.glade.h:379
+msgid "Import Tokenfile"
+msgstr ""
+
+#: ../glinotpadm.glade.h:380
+msgid "_Login to server"
+msgstr ""
+
+#: ../glinotpadm.glade.h:381
+msgid "_Quit"
+msgstr ""
+
+#: ../glinotpadm.glade.h:382
+msgid "All actions that can be done with your tokens"
+msgstr ""
+
+#: ../glinotpadm.glade.h:383
+msgid "_Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:384 ../glinotpadm.glade.h:429
+msgid "_assign"
+msgstr ""
+
+#: ../glinotpadm.glade.h:385
+msgid "Assign a token to a user."
+msgstr ""
+
+#: ../glinotpadm.glade.h:386
+msgid ""
+"Remove the assignment of the token to a user. The token still remains in the "
+"token database."
+msgstr ""
+
+#: ../glinotpadm.glade.h:387
+msgid "_unassign"
+msgstr ""
+
+#: ../glinotpadm.glade.h:388
+msgid "This adds the Token to the specified realms."
+msgstr ""
+
+#: ../glinotpadm.glade.h:389
+msgid "set Token realm"
+msgstr ""
+
+#: ../glinotpadm.glade.h:390
+msgid "This displays more information about the token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:391
+msgid "show Token _details"
+msgstr ""
+
+#: ../glinotpadm.glade.h:392
+msgid ""
+"If a user lost this token, this function will disable the lost token and the "
+"user will be issued a static password token."
+msgstr ""
+
+#: ../glinotpadm.glade.h:393
+msgid "_lost token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:394
+msgid "Enroll an eToken NG-OTP"
+msgstr ""
+
+#: ../glinotpadm.glade.h:395 ../glinotpadm.glade.h:431
+msgid "_enroll"
+msgstr ""
+
+#: ../glinotpadm.glade.h:396
+msgid ""
+"Resynchronize the OTP Token. If the user produced to many blank presses, the "
+"token needs to be resynchronized."
+msgstr ""
+
+#: ../glinotpadm.glade.h:397
+msgid "resync"
+msgstr ""
+
+#: ../glinotpadm.glade.h:398
+msgid ""
+"If the user failed to login many times, the fail counter will reach the max "
+"failcount value.\n"
+"To enable the user, to login again, you may reset the fail counter."
+msgstr ""
+
+#: ../glinotpadm.glade.h:400
+msgid "reset _failcount"
+msgstr ""
+
+#: ../glinotpadm.glade.h:401
+msgid ""
+"Set the PIN for the OTP Token. The PIN is a fixed password, that the user "
+"needs to enter in front of the OTP value when authenticating."
+msgstr ""
+
+#: ../glinotpadm.glade.h:402 ../glinotpadm.glade.h:433
+msgid "set _pin"
+msgstr ""
+
+#: ../glinotpadm.glade.h:403
+msgid ""
+"This PIN is only used for mOTP tokens. This PIN needs to be entered on your "
+"mobile, so that the mobile will generate an OTP value"
+msgstr ""
+
+#: ../glinotpadm.glade.h:404
+msgid "set _mOTP pin"
+msgstr ""
+
+#: ../glinotpadm.glade.h:405
+msgid ""
+"A disabled token can be enabled again to use it for authentication again.\t\t"
+msgstr ""
+
+#: ../glinotpadm.glade.h:406 ../glinotpadm.glade.h:434
+msgid "e_nable"
+msgstr ""
+
+#: ../glinotpadm.glade.h:407
+msgid ""
+"Disabling the token means, that the token is temporatily not usable for "
+"authentication. It can be enabled again."
+msgstr ""
+
+#: ../glinotpadm.glade.h:408 ../glinotpadm.glade.h:435
+msgid "_disable"
+msgstr ""
+
+#: ../glinotpadm.glade.h:409
+msgid ""
+"The token is removed from the token database. The token can not be used for "
+"authentication anymore. But it can be imported or enrolled afterwards again."
+msgstr ""
+
+#: ../glinotpadm.glade.h:410 ../glinotpadm.glade.h:436
+msgid "remove"
+msgstr ""
+
+#: ../glinotpadm.glade.h:411
+msgid "_User"
+msgstr ""
+
+#: ../glinotpadm.glade.h:412
+msgid "assign"
+msgstr ""
+
+#: ../glinotpadm.glade.h:413
+msgid "enroll"
+msgstr ""
+
+#: ../glinotpadm.glade.h:414
+msgid "enable"
+msgstr ""
+
+#: ../glinotpadm.glade.h:415
+msgid "disable"
+msgstr ""
+
+#: ../glinotpadm.glade.h:416
+msgid "T_ools"
+msgstr ""
+
+#: ../glinotpadm.glade.h:417
+msgid "get serial by OTP value"
+msgstr ""
+
+#: ../glinotpadm.glade.h:418
+msgid "copy Token PIN"
+msgstr ""
+
+#: ../glinotpadm.glade.h:419
+msgid "Copy the token PIN from one Token to the other."
+msgstr ""
+
+#: ../glinotpadm.glade.h:420
+msgid "_Config"
+msgstr ""
+
+#: ../glinotpadm.glade.h:421
+msgid "Admin _Client configuration"
+msgstr ""
+
+#: ../glinotpadm.glade.h:422
+msgid "LinOTP _Server configuration"
+msgstr ""
+
+#: ../glinotpadm.glade.h:423
+msgid "LinOTP _policies"
+msgstr ""
+
+#: ../glinotpadm.glade.h:424
+msgid "Here you may set policies for the LinOTP server"
+msgstr ""
+
+#: ../glinotpadm.glade.h:425
+msgid "_License"
+msgstr ""
+
+#: ../glinotpadm.glade.h:426
+msgid "_Help"
+msgstr ""
+
+#: ../glinotpadm.glade.h:427
+msgid ""
+"LSE LinOTP2\n"
+"Modular Managementsystem for OTP-Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:430
+msgid "unassign"
+msgstr ""
+
+#: ../glinotpadm.glade.h:432
+msgid "_resync"
+msgstr ""
+
+#: ../glinotpadm.glade.h:437
+msgid "page"
+msgstr ""
+
+#: ../glinotpadm.glade.h:438
+msgid "of"
+msgstr ""
+
+#: ../glinotpadm.glade.h:439
+msgid "---"
+msgstr ""
+
+#: ../glinotpadm.glade.h:440
+msgid "filter"
+msgstr ""
+
+#: ../glinotpadm.glade.h:441
+msgid "Use this filter to display only a limited number of tokens."
+msgstr ""
+
+#: ../glinotpadm.glade.h:442
+msgid "Token search pattern"
+msgstr ""
+
+#: ../glinotpadm.glade.h:443
+msgid ""
+"Only tokens matching this search pattern will be loaded from the LinOTP "
+"server.\n"
+"In this case you do not need to use wildcard.\n"
+"A search pattern of \"F8\" will find all tokens containing the substring F8."
+msgstr ""
+
+#: ../glinotpadm.glade.h:446
+msgid "token fetching"
+msgstr ""
+
+#: ../glinotpadm.glade.h:447
+msgid "Token"
+msgstr ""
+
+#: ../glinotpadm.glade.h:449
+msgid "Use this filter to display only a limited number of users."
+msgstr ""
+
+#: ../glinotpadm.glade.h:450
+msgid "user search pattern"
+msgstr ""
+
+#: ../glinotpadm.glade.h:451
+msgid ""
+"Only users matching this search pattern are loaded from your user database. "
+"Search patterns may contain the '*' as a wildcard.\n"
+"Providing a sensible search pattern can speed up the management. "
+msgstr ""
+
+#: ../glinotpadm.glade.h:453
+msgid ""
+"These controls are used to restrict the number of users, that are loaded "
+"from the user database."
+msgstr ""
+
+#: ../glinotpadm.glade.h:454
+msgid "Userfetching"
+msgstr ""
+
+#: ../glinotpadm.glade.h:455
+msgid "<"
+msgstr ""
+
+#: ../glinotpadm.glade.h:456
+msgid "Page:"
+msgstr ""
+
+#: ../glinotpadm.glade.h:457
+msgid ">"
+msgstr ""
+
+#: ../glinotpadm.glade.h:458
+msgid "/ --"
+msgstr ""
+
+#: ../glinotpadm.glade.h:459
+msgid "Lines per Page:"
+msgstr ""
+
+#: ../glinotpadm.glade.h:460
+msgid "100"
+msgstr ""
+
+#: ../glinotpadm.glade.h:461
+msgid "Total lines:"
+msgstr ""
+
+#: ../glinotpadm.glade.h:462
+msgid "Filter column:"
+msgstr ""
+
+#: ../glinotpadm.glade.h:464
+msgid "Audit"
+msgstr ""
+
+#: ../glinotpadm.glade.h:465
+msgid "import tokenfile"
+msgstr ""
+
+#: ../glinotpadm.glade.h:466
+msgid "Logged in"
+msgstr ""
+
+#: ../glinotpadm.glade.h:469
+msgid "Connecting to LinOTP server..."
+msgstr ""
+
+#: ../glinotpadm.glade.h:470
+msgid "http"
+msgstr ""
+
+#: ../glinotpadm.glade.h:471
+msgid "https"
+msgstr ""
+
+#: ../glinotpadm.glade.h:472
+msgid "eTokenNG-OTP"
+msgstr ""
+
+#: ../glinotpadm.glade.h:473
+msgid "mOTP"
+msgstr ""
+
+#: ../glinotpadm.glade.h:474
+msgid "OATH"
+msgstr ""
+
+#: ../glinotpadm.glade.h:475
+msgid "SPass"
+msgstr ""
+
+#: ../glinotpadm.glade.h:476
+msgid "SMS"
+msgstr ""
+
+#: ../glinotpadm.glade.h:477
+msgid "YubiKey"
+msgstr ""
+
+#: ../glinotpadm.glade.h:478
+msgid "TOTP (timebased OTP)"
+msgstr ""
+
+#: ../glinotpadm.glade.h:479
+msgid "Remote"
+msgstr ""
+
+#: ../glinotpadm.glade.h:480
+msgid "Radius"
+msgstr ""
+
+#: ../glinotpadm.glade.h:481
+msgid "Flatfile"
+msgstr ""
+
+#: ../glinotpadm.glade.h:482
+msgid "PasswdIdResolver"
+msgstr ""
+
+#: ../glinotpadm.glade.h:483
+msgid "LDAP"
+msgstr ""
+
+#: ../glinotpadm.glade.h:484
+msgid "LDAPIdResolver"
+msgstr ""
+
+#: ../glinotpadm.glade.h:485
+msgid "SQL"
+msgstr ""
+
+#: ../glinotpadm.glade.h:486
+msgid "SQLIdResolver"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:165
+msgid "Session exists"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:166
+msgid "Bad argument"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:167
+msgid "Attribute value invalid"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:168
+msgid "invalid PIN length"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:169
+msgid "Mechanism invalid"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:170
+msgid "Token not present"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:171
+msgid "Template inconsistent"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:172
+msgid "Template incomplete"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:173
+msgid "PIN expired"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:174
+msgid "Unknown initializazion key"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:243
+#, python-format
+msgid "etng::__init__ - Unknown system platform (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:266
+#, python-format
+msgid "etng::initpkcs11 - There are more than one tokens connected (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:301
+#, python-format
+msgid "etng::inittoken - Failed to init token (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:315
+#, python-format
+msgid "etng::inittoken - Failed to ETC_InitPIN (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:324
+#, python-format
+msgid "etng::inittoken - Failed to ETC_InitTokenFinal (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:349
+#, python-format
+msgid "etng::logintoken - Failed to C_Login (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:376
+#, python-format
+msgid "etng::deleteOTP - Failed to C_GenerateRandom (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:425
+#, python-format
+msgid "etng::createAES - Failed to etpkcs11.C_CreateObject (%s)."
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:471
+#, python-format
+msgid ""
+"etng::createOTP - Failed to etsapi.SAPI_OTP_Create (%s). Maybe the token was "
+"initialized previously without HMAC support?"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:490
+#, python-format
+msgid "etng::Finalize - Failed to C_GetTokenInfo (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:509
+#, python-format
+msgid "etng::Finalize - Failed to finalize token (%s)"
+msgstr ""
+
+#: ../linotputilsee/etokenng.py:563
+msgid "Creating AES key"
+msgstr ""

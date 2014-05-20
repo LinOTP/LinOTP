@@ -1,0 +1,19 @@
+root:x:0:0:root-def-passwd:/root:/bin/bash
+localuser:oYfMdAcwVs2DQ:10:10:localuser:/root:/bin/bash
+horst:yn0Zck2KDip6U:11:11:horst:/root:/bin/bash
+remoteuser:x:20:20:remoteuser:/root:/bin/bash
+def:x:1004:1001:def User,,,,:/home/def:/bin/bash
+virtualbox:x:1005:1002:Work,In Weiterstadt,WorkPhone,TelPriv,:/home/virtualbox:/bin/bash
+b1822:x:1008:1003:1822,,,,:/home/b1822:/bin/bash
+postgres:x:116:123:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
+kölbel:x:345:345:Umlaut User,,,:/home/koelbel:/bin/bash
+7654321:x:346:346:Umlaut User,,,:/home/koelbel:/bin/bash
+user1:x:347:347:Umlaut User,,,:/home/koelbel:/bin/bash
+user2:x:348:348:Umlaut User,,,:/home/koelbel:/bin/bash
+passthru_user1:JT7bTACk0ud6U:1100:1100:::
+passthru_user2:e7yT2qttrNrlk:1101:1101:::
+detail_user:e7yT2qttrNrlk:2101:2101:::
+hans:e7yT2qttrNrlk:42:0:Hans Müller,Room 22,+49(0)1234-22,+49(0)5678-22,hans@example.com:x:x
+susi:e7yT2qttrNrlk:1336:0:Susanne Bauer,Room 23,+49(0)1234-24,+49(0)5678-23,susanne@example.com:x:x
+rollo:e7yT2qttrNrlk:21:0:Rollobert Fischer,Room 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
+

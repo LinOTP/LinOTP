@@ -1,0 +1,512 @@
+.\" Manpage for linotpadm.py.
+.\" Contact linot@lsexperts.de for any feedback.
+.TH man 1 "02 Jul 2010" "2.2" "linotpadm.py man page"
+.SH NAME
+linotpadm.py \- manage the LSE LinOTP server and OTP tokens.
+.SH SYNOPSIS
+linotpadm.py --url=<linotpserver> [ --admin=<adminuser> ] --command=<commands> [ command options ]
+.SH DESCRIPTION
+linotpadm.py is the command line client to manage the LSE LinOTP server. The LinOTP server is a authentication backend, that can handle many different OTP (one time password) tokens.
+.SH COMMON OPTIONS
+.PP
+\fB\--url=<server> \fR
+.br
+\fB\-U <server>\fR
+.RS 4
+With this parameter you specify on which URL you want to contact the LinOTP server. This parameter is mandatory.
+
+The LinOTP server will usually run on port 80 or 443, if you are using SSL. Or - if the LinOTP server is simply run by paster - it also may run on 5000 or 5001. So the right url should be \fB --url=https://linotpserver:443\fR or \fB --url=http://linotpserver:80\fR.
+.RE
+
+.PP
+\fB\--admin=<adminuser>\fR
+.br
+\fB\-a <adminuser>\fR
+.RS 4
+If you need to authenticate to the admin interface, you can specify the name of the admin user here. You will be asked for the password.
+.RE
+
+.PP
+\fB\--cert=<file>\fR
+.br
+\fB\-c <file>\fR
+.RS 4
+If the server is configured to request a client certificate to authenticate to the admin interface, you can specifiy the name of the PKCS#12 file here. If the private key of the PKCS#12 file is passphrase protected, you will be asked for the passphrase.
+.RE
+
+.PP
+\fB\--key=<file>\fR
+.br
+\fB\-k <file>\fR
+.RS 4
+If you are using a client certificate for the admin interface, you may specify the name of the key file here.
+.RE
+
+.PP
+\fB\--version\fR
+.br
+\fB\-v\fR
+.RS 4
+Print version information of this linotpadm management client.
+.RE
+
+.PP
+\fB\--help\fR
+.br
+\fB\-h\fR
+.RS 4
+Print help information on the parameters and options.
+.RE
+
+.PP
+\fB\--automate=<config file>\fR
+.RS
+The parameters are read from the config file. Can be combined with parameters on the command line.
+For a config file example see below.
+.RE
+
+.PP
+\fB\--command=<command>\fR
+.br
+\fB\-C <command>\fR
+.RS
+Specify which command you want to execute on the LinOTP server. A list of all commands can be found in the section \fBCOMMANDS\fR.
+.RE
+
+.SH TOKEN MANAGEMENT COMMANDS
+The LinOTP server accepts many different commands that
+can be sent to the server using this management client.
+Each command can take several arguments. These are described in
+more detail in the section \fBCOMMAND ARGUMENTS\fR. You may issue
+the following commands. The arguments the command will accepts are 
+listed behind the command. Optional parameters are denoted in square
+brackets.
+
+.PP
+\fB listtoken [ --user= | --serial= ]\fR
+.RS 4
+This command returns a list of the token known by the LinOTP server. The list can be filtered for users or serialnumber of the token. 
+The user needs to be entered as loginname.
+.RE
+
+.PP
+\fB listuser\fR
+.RS 4
+This lists the users the LinOTP server will find in all confgiured UserIdResolvers.
+.RE
+
+.PP
+\fB inittoken --serial= --otpey= [--user=]  [--description=] [--pin=] [--etng] [--pytoken] [--type=]  \fR
+.RS 4
+This command initializes a token, i.e. it creates a new token in the database. The only mandatory parameters are --serial and --otpkey. If you
+like to, you can also issue the parameter --user. In this case the token will be assigned immediately to this user. Als you can set the PIN, add a
+description or specify the tokentype.
+.RE
+
+.PP
+\fB assigntoken --user= --serial=  \fR
+.RS 4
+This will assign the token with the given serial number to the given user.
+.RE
+
+.PP
+\fB unassigntoken --serial=\fR
+.RS 4
+This will unassign the token with the given serial number from its user.
+.RE
+
+.PP
+\fB importtoken --file= | -f  \fR
+.RS 4
+This will import tokens that are defined in an XML file to the LinOTP server. The file needs to be in the format for eToken PASS by SafeNet/Aladdin.
+.RE
+
+.PP
+\fB disabletoken --serial= | --user \fR
+.RS 4
+This will disable the token with the given serialnumber or all tokens of the given user. Disabling a token means, that it can not be used to authenticate anymore, as long as it is not enabled again.
+.RE
+
+.PP
+\fB enabletoken --serial= | --user=  \fR
+.RS 4
+This will enable a disabled token again.
+.RE
+
+.PP
+\fB removetoken --serial= | --user=  \fR
+.RS 4
+This will remove the token with the given serialnumber or all tokens of the given user from the LinOTP server.
+.RE
+
+.PP
+\fB\ resynctoken --serial= | --user=  --otp1= --otp2=   \fR
+.RS 4
+This will resync an evenbased token like the HMAC OTP tokens. You need to specify the serialnumber and also two succeeding OTP values.
+.RE
+
+.PP
+\fB\ set --user= | --serial=  [--pin=]  [--maxfailcount=] [--syncwindow=] [--otplen=] \fR
+.RS 4
+This can set several values for one token or all tokens of the given user.
+.RE
+
+.SH SECURITY MODULE COMMANDS
+
+A security module is a module to be used to store the encrpytion keys and encrypt and decrypt data.
+In the linotp.ini file you need to configure the security module, which can be a file, a PKCS11
+smartcard or hardware security module.
+Some security modules need a password to access the encryption keys. You can either specify the
+password in linotp.ini or you can enter the password afterwards using this command.
+
+\fB\ securityModule \fR
+.RS 4
+This will retrieve the information about the current security module.
+To set the password for the security module, you need to specify the module name with the parameter --module.
+.RE
+
+\fB\ securityModule --module=<modulename> \fR
+.RS 4
+Set the password for the module defined in linotp.ini.
+.RE
+
+
+.SH SERVER CONFIGURATION COMMANDS
+
+.PP
+\fB\ getconfig  \fR
+.RS 4
+This returns the complete server configuration of the 
+LinOTP server as it is stored in the Config table of
+the token database.
+.RE
+
+.PP
+\fB\ setconfig --config= \fR
+.RS 4
+This can be used to set a single config value like 
+\fB\--config='DefaultSyncWindow=512'\fR.
+.RE
+
+
+.SH REALM AND RESOLVER CONFIGURATION COMMANDS
+A LinOTP server may have several UserIdResolvers configured.
+A UserIdResolver tells the LinOTP server, where the users are
+stored. This can be flat files on the LinOTP server, SQL servers or
+LDAP/AD servers.
+
+Several UserIdResolvers can be grouped togeather into a "REALM".
+
+Thus one LinOTP server can manage several user with the same
+loginname, as long as they reside in different realms.
+
+A user needs to provide the realm he belongs to. Either he
+needs to do this directly or the authentication module might
+be configured this way, to add the realm. If the user does not 
+provide and realm and the authentication modul also does not
+set any realm, this user is looked up in the DEFAULT REALM.
+
+These commands can be used to configure UserIdResolvers and realms.
+.PP
+\fB\ getrealms \fR
+.RS 4
+This lists all realms. Within each realm you can see, which 
+UserIdResolvers belong to this realm.
+This command takes no parameter.
+.RE
+
+.PP
+\fB\ setrealm --realm=<realmname> --resolver=<resolverlist> \fR
+.RS 4
+This command will set the resolverlist of a realm. If the realm does not exist, it will be created. If the realm does exist, the old resolverlist will be overwritten.
+.RE
+
+.PP
+\fB\ deleterealm --realm=<realmname>  \fR
+.RS 4
+This will delete the realm with the given name. The UserIdResolvers will not be deleted.
+.RE
+
+.PP
+\fB\ setdefaultrealm --realm=<realmname> \fR
+.RS 4
+This will set the default realm.
+.RE
+
+.PP
+\fB\ getresolvers \fR
+.RS 4
+This returns a list of all UserIdResolvers. This command takes no arguments.
+.RE
+
+.PP
+\fB\ deleteresolver --resolver=<resolvername> \fR
+.RS 4
+This will delete the UserIdResolver with the given resolvername.
+.RE
+
+.PP
+\fB\ setresolver --resolver=<resolvername> --rtype=[LDAP|SQL|FILE] ... \fR
+.RS 4
+This will create a new UserIdResolver or reconfigure a given UserIdResolver.
+The type of the UserIdResolver is set with the parameter --rtype. A detailed list of
+parameters for setting up UserIdResolvers can be found in seciont \fBUSERIDRESOLVER PARAMETERS\fR.
+.RE
+
+.SH COMMAND ARGUMENTS
+
+.PP
+--user=<user>
+.RS 4
+This argument is always used, when token operations
+are run on a user. This expects the loginname of the user.
+.RE
+
+.PP
+--pin=<pin>
+.RS 4
+This expects the OTP PIN, when setting the OTP PIN for a given token.
+.RE
+
+.PP
+--serial=<S/N>
+.RS 4
+Token are always addressed by their serial number. 
+So always when you are doing some operation on a token,
+you need to specify the serial number.
+.RE
+
+.PP
+--description=<description of token>
+.RS 4
+Each token may have a desription. You can use this argument to set it.
+.RE
+
+.PP
+--otpkey=<BASE64>
+.RS 4
+This is the HMAC secret that is used to calculate the OTP values. In case of MOTP token, this is the motp secret.
+.RE
+
+.PP
+--file=<file>
+.RS 4
+Used to specify the XML filename with the token definitions to import.
+.RE
+
+.PP
+--otp1=, --otp2=
+.RS 4
+The succeeding otp values when resyncing an event based token.
+.RE
+
+.PP
+--window=<window size>
+.RS 4
+This is the resync windows size, when resyncing tokens.
+.RE
+
+.PP
+--etng
+.RS 4
+When doing an inittoken, this flag tells the client to initialize an eToken NG OTP.
+.RE
+
+.PP
+--pytoken
+.RS 4
+When doing an inittoken, this flag tells the client that a pytoken should be generated.
+.RE
+
+.PP
+--type=<tokentype>
+.RS 4
+When doing an inittoken, this arguemnts tells, what kind of token should be initialized. Valid values: "HMAC" (default), "motp".
+.RE
+
+.PP
+--realm=<realmname>
+.RS 4
+When dealing with realms, this takes the name of the realm. It should only contain the characters a-z,0-9 and the "minus".
+.RE
+
+.PP
+--resolver=<resolvername> or --resolver=<resolverlist>
+.RS 4
+With some commands this arguemnt takes a single resolvername, with others a comma seperated list of resolver identifiers.
+.RE
+
+.PP
+--csv
+.RS 4
+This parameter adds to the command "listtoken". Show the token list as CSV format. 
+.RE
+
+.PP
+--export_fields=<additional user fields>
+.RS 4
+Additional fields from the useridresolver to add to the export.
+.RE
+
+.SH USERIDRESOLVEER PARAMETERS
+
+.PP
+--rf_file         
+.RS 4
+Resolver FILE: the filename containing the users on the LinOTP server
+.RE
+
+.PP
+--rl_uri          
+.RS 4
+Resolver LDAP: the LDAP uri of the ldap server
+.RE
+
+.PP
+--rl_basedn       
+.RS 4
+Resolver LDAP: the BaseDN for searching for users
+.RE
+
+.PP
+--rl_binddn       
+.RS 4
+Resolver LDAP: the BindDN to authenticate to the LDAP server
+.RE
+
+.PP
+--rl_bindpw       
+.RS 4
+Resolver LDAP: the Bind Password to authenticate to the LDAP server
+.RE
+.PP
+--rl_timeout      
+.RS 4
+Resolver LDAP: the timeout when connecting to the LDAP server
+.RE
+.PP
+--rl_loginattr    
+.RS 4
+Resolver LDAP: the attribute containing the loginname like uid
+.RE
+.PP
+--rl_searchfilter 
+.RS 4
+Resolver LDAP: the searchfilter. Something like (uid=*)(objectClass=inetOrgPerson)
+.RE
+.PP
+--rl_userfilter   
+.RS 4
+Resolver LDAP: the userfilter for reverse resoling the DN for a given loginname,
+something like (&(uid=%s)(ObjectClass=inetOrgPerson))
+.RE
+.PP
+--rl_attrmap      
+.RS 4
+Resolver LDAP: the attribute mapping. Something like:
+{ "username": "uid", "phone" : "telephoneNumber", "groups" : "o", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }
+.RE
+
+.SH EXAMPLES
+
+.PP
+To list all know users you may issue a command like this:
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=listtoken
+.RE
+
+.PP
+To import an XML file to your server, you need to do the following:
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=importtoken --file=mytoken.xml
+.RE
+
+.PP
+To enroll a pytoken and assign it to the user 'hans' do this. This will output a python script (the pytoken) to stdout. The token will be assigned to the user 'hans' and when the token is used, the counter will we written to his home directory.
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=inittoken --user=hans --pytokeni
+.RE
+
+.PP
+To enroll an eToken NG OTP and assign it to 'hans' do this. The serial number will be read from the smartcard of the eToken NG OTP.
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=inittoken --user=hans --etng
+.RE
+
+.PP
+To set the OTP PIN to 'test' for a token with the serial number 003e7e4e do this:
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=set --serial=003e7e4e --pin=test
+.RE
+
+.PP
+To set a new LDAP UserIdResolver, that contacts an LDAP server on 172.16.200.1 you could do it like this:
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=setresolver --resolver=newldap --rtype=LDAP --rl_uri='ldaps://172.16.200.1' --rl_basedn='dc=az,dc=local' --rl_binddn='cn=admin,dc=az,dc=local' --rl_bindpw='guessWhat' --rl_timeout=5  --rl_loginattr=uid --rl_searchfilter='(uid=*)(ObejctClass=inetOrgPerson)' --rl_userfilter='(&(uid=%s)(ObjectClass=inetOrgPerson))' --rl_attrmap='{ "username": "uid", "phone" : "telephoneNumber", "groups" : "o", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }'
+.RE
+
+.PP
+Now you might want to add this UserIdResolver do a realm:
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=setrealm --realm=myRealm --resolver='useridresolver.LDAPIdResolver.IdResolver.newldap'
+.RE
+
+.PP
+If you want to make the new realm 'myRealm' the default realm do this:
+.RS 4
+\fB
+linotpadm.py --url=https://localhost:443 --admin=admin --command=setdefaultrealm --realm=myRealm
+.RE
+
+.SH CONFIG FILE EXAMPLE
+
+.RS 4
+\fB
+[Default]
+.br
+protocol=https
+.br
+host=localhost
+.br
+admin=admin
+.br
+password=test123!
+.br
+command=listtoken
+.br
+csv_format=True
+.br
+mail_host=localhost
+.br
+mail_to=<email>
+.br
+mail_from=<email>
+.br
+mail_subject=some text
+.br                           
+cifs_server=your.file.server
+.br
+cifs_share=<share>
+.br
+cifs_dir=<directory>
+.br
+cifs_user=<username>
+.br
+cifs_password=<password>
+.RE
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+python (1)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>, Cornelius Kölbel <cornelius.koelbel@lsexperts.de>

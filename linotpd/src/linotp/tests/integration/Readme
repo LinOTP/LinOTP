@@ -1,0 +1,83 @@
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+
+
+Dependencies
+============================================
+
+You need to install all dependencies listed in requirements.txt
+
+I recommend creating a virtualenv and installing the dependencies there:
+
+$ mkdir /opt/selenium-venv
+$ virtualenv /opt/selenium-venv
+$ source /opt/selenium-venv/bin/activate
+$ pip install -r requirements.txt
+
+You also need an X-Server on your machine (or a virtual framebuffer such as
+xvfb) and Firefox. When using a virtual framebuffer set the $DISPLAY env
+variable before executing the tests.
+
+
+Server Configuration file
+============================================
+
+To run the LinOTP Selenium Tests you need a server.cfg file.
+
+A default file for CentOS Server beggar is supplied: server_cfg.ini
+
+
+Chrome driver
+============================================
+
+The Chrome Selenium driver (for Google Chrome or Chromium) is faster and is
+therefore used by default.
+
+You can specify a different driver by editing the config file (server_cfg.ini)
+or using the option --tc=selenium.driver:firefox
+
+To install the Chrome driver follow these steps (tested on Ubuntu 13.10 64bit):
+
+$ cd /usr/local/bin/
+$ wget http://chromedriver.storage.googleapis.com/2.9/chromedriver_linux64.zip
+$ unzip chromedriver_linux64.zip
+$ rm chromedriver_linux64.zip
+$ mv chromedriver chromedriver-2.9
+$ chmod 755 chromedriver-2.9
+$ ln -s chromedriver-2.9 chromedriver
+$ cd /usr/bin/
+$ ln -s chromium-browser google-chrome
+
+
+Execution
+============================================
+
+$ nosetests --tc-file=server_cfg.ini test_create_useridresolvers.py
+
+It is possible to overwrite some specific cfg settings as follows:
+
+$ nosetests --tc-file=server_cfg.ini --tc=linotp.host:10.76.124.35 \
+    test_create_useridresolvers.py
+

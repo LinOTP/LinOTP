@@ -1,0 +1,33 @@
+#!/bin/sh
+# Create LinOTP account
+if ! getent passwd linotp > /dev/null; then
+   adduser --system -c "LinOTP Server" --shell /bin/false linotp  >/dev/null;
+fi
+
+ENCKEY=/etc/linotp2/encKey
+if [ -f $ENCKEY ]; then
+	echo "You already got an encryption key."
+else
+	echo "You got no encryption key. I will generate one. This make take some time..."
+	dd if=/dev/random of=$ENCKEY bs=1 count=32
+fi
+chown linotp $ENCKEY
+chmod 600 $ENCKEY
+
+LOGDIR=/var/log/linotp
+if [ ! -d $LOGDIR ]; then
+	mkdir -p $LOGDIR
+fi
+chown -R linotp $LOGDIR
+chown -R linotp $LOGDIR/*
+
+TOKENDB=/etc/linotp2/token.db
+if [ -f $TOKENDB ]; then
+	echo "The sqlite token DB file $TOKENDB already exists."
+else
+	paster setup-app /etc/linotp2/linotp.ini
+fi
+chown linotp $TOKENDB
+
+mkdir -p /var/run/linotp/
+chown linotp /var/run/linotp/

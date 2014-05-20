@@ -1,0 +1,10 @@
+
+TARGET     = @targetname@
+SRCS       = rlm_linotp2.c
+HEADERS    =
+RLM_LIBS   = @linotp2_ldflags@
+RLM_CFLAGS = @linotp2_cflags@ -Werror-implicit-function-declaration
+
+include ../rules.mak
+
+$(LT_OBJS): $(HEADERS)

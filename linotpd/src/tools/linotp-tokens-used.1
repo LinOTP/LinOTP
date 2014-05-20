@@ -1,0 +1,37 @@
+.\" Manpage for linotp-tokens-used
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH man 1 "04 Feb 2013" "2.5" "linotp-tokens-used man page"
+.SH NAME
+linotp-tokens-used \- display the used tokens.
+.SH SYNOPSIS
+linotp-tokens-used [config]
+.SH DESCRIPTION
+This tool can restore a previous made backup. You need to pass the SQL Dumpfile and the encryptoin key.
+.SH COMMON OPTIONS
+.PP
+\fB\config\fR
+.RS 4
+If the parameter "config" is passed header information to be used with munin are displayed.
+.RE
+
+.SH EXAMPLE
+
+# linotp-tokens-used config
+
+	graph_title LinOTP Tokens
+	graph_vlabel Tokens
+	_tokennum.label token count
+	_inactive.label inactive tokens
+	_notassigned.label not assigned tokens
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+linotpadm (1)
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp@lsexperts.de>

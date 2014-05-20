@@ -1,0 +1,33 @@
+.\" Manpage for linotp-restore
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH man 1 "04 Feb 2013" "2.5" "linotp-restore man page"
+.SH NAME
+linotp-restore \- restore a backup that was made with linotp-backup
+.SH SYNOPSIS
+linotp-restore <sql-dump-file> <encKey-File>
+.SH DESCRIPTION
+This tool can restore a previous made backup. You need to pass the SQL Dumpfile and the encryptoin key.
+.SH COMMON OPTIONS
+.PP
+\fB\<sql-dump-file>\fR
+.RS 4
+The MySQL dump.
+.RE
+
+.PP
+\fB\<encKey-File>\fR
+.RS 4
+The encryption key file.
+.RE
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+linotpadm (1), linotp-backup (1)
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp@lsexperts.de>

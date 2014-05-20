@@ -1,0 +1,150 @@
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+
+#
+# LinOTP - Pylons development environment configuration
+#
+# The %(here)s variable will be replaced with the parent directory of this file
+#
+[DEFAULT]
+debug = false
+profile = false
+# Uncomment and replace with the address which should receive any error reports
+#email_to = you@yourdomain.com
+smtp_server = localhost
+error_email_from = paste@localhost
+
+#
+# default audit trail set to SQL Audit
+#
+#linotpAudit.type = linotp.lib.audit.SQLAudit
+linotpAudit.key.private = %(here)s/private.pem
+linotpAudit.key.public = %(here)s/public.pem
+
+#linotpAudit.sql.url = mysql://user:password@localhost/LinOTP2
+linotpAudit.sql.url = sqlite:///%(here)s/token.sqlite
+# One entry for SQL audit might take about 1K
+linotpAudit.sql.highwatermark = 10000
+linotpAudit.sql.lowwatermark = 5000
+
+linotpGetotp.active = False
+
+linotp.DefaultSyncWindow = 1000
+linotp.DefaultOtpLen = 6
+linotp.DefaultCountWindow = 50
+linotp.DefaultMaxFailCount = 15
+linotp.FailCounterIncOnFalsePin = True
+linotp.PrependPin = True
+linotp.DefaultResetFailCount = True
+linotp.splitAtSign = True
+
+linotpSecretFile = %(here)s/dummy-encKey
+
+# These are the settings for the RADIUS Token
+# The location of the RADIUS dictionary file
+radius.dictfile= %(here)s/dictionary
+# The NAS Identifier of your LinOTP server, 
+# that is sent to the RADIUS server
+radius.nas_identifier = LinOTP
+
+
+[server:main]
+use = egg:Paste#http
+#host = 172.16.200.100
+host = 0.0.0.0
+#host = localhost
+port = 5001
+#ssl_pem = *
+
+[app:main]
+use = egg:LinOTP
+#sqlalchemy.url = mysql://user:password@localhost/LinOTP2
+sqlalchemy.url = sqlite:///%(here)s/token.sqlite
+sqlalchemy.pool_recycle = 3600
+full_stack = true
+static_files = true
+
+who.config_file = %(here)s/who.ini
+who.log_level = warning
+who.log_file = %(here)s/linotp.log
+
+
+cache_dir = %(here)s/data
+custom_templates = %(here)s/custom-templates/
+#beaker.session.key = linotp
+#beaker.session.secret = somesecret
+
+# If you'd like to fine-tune the individual locations of the cache data dirs
+# for the Cache data, or the Session saves, un-comment the desired settings
+# here:
+#beaker.cache.data_dir = %(here)s/data/cache
+#beaker.session.data_dir = %(here)s/data/sessions
+
+
+#
+#  Note: You should change the Logging Level from DEGUB to WARN
+#
+# Logging configuration
+[loggers]
+keys = root, linotp, sqlalchemy
+
+[logger_root]
+level = DEBUG
+handlers = file
+
+[logger_linotp]
+level = DEBUG
+handlers = file
+qualname = linotp
+
+[logger_sqlalchemy]
+level = ERROR
+handlers = file
+qualname = sqlalchemy.engine
+# "level = INFO" logs SQL queries.
+# "level = DEBUG" logs SQL queries and results.
+# "level = WARN" logs neither.  (Recommended for production systems.)
+
+[handlers]
+keys = file
+
+[handler_file]
+class = handlers.RotatingFileHandler
+# Make the logfiles 10 MB
+# and rotate 4  files
+args = ('%(here)s/linotp.log','a', 10000000, 4)
+level = INFO
+formatter = generic
+
+[formatters]
+keys = generic
+
+[formatter_generic]
+class = linotp.lib.log.SecureFormatter
+format = %(asctime)s %(levelname)-5.5s {%(thread)d} [%(name)s][%(funcName)s #%(lineno)d] %(message)s
+datefmt = %Y/%m/%d - %H:%M:%S
+
+
+

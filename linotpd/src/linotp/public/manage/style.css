@@ -1,0 +1,344 @@
+/*!
+ *   LinOTP - the open source solution for two factor authentication
+ *   Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+ *
+ *   This file is part of LinOTP server.
+ *
+ *   This program is free software: you can redistribute it and/or
+ *   modify it under the terms of the GNU Affero General Public
+ *   License, version 3, as published by the Free Software Foundation.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the
+ *              GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ *    E-mail: linotp@lsexperts.de
+ *    Contact: www.linotp.org
+ *    Support: www.lsexperts.de
+ *
+ */
+/*** STYLES ***/
+.simple_overlay {
+
+        /* must be initially hidden */
+        display:block;
+
+        /* place overlay on top of other elements */
+        z-index:1099;
+
+        /* styling */
+        background-color:#EEEEEE;
+
+        width:400px;
+        min-height:50px;
+        border:1px solid #666;
+
+        padding-top: 15px;
+        padding-left: 20px;
+
+	position: fixed;
+
+        /* CSS3 styling for latest browsers */
+        -moz-box-shadow:0 0 90px 5px #000;
+        -webkit-box-shadow: 0 0 90px #000;
+
+        -moz-border-radius:6px;
+        -webkit-border-radius:6px;
+}
+
+.javascript_error {
+	display:block;
+	z-index:2000;
+	background-color: #EB6D5A;
+	width: 100%;
+	position: fixed;
+	text-align: center;
+	padding: 10px;
+}
+
+.info_box {
+	display:block;
+	z-index:1;
+	background-color:#f6a350;
+	width:100%-5pt;
+	padding-left:15pt;
+	padding-right:5pt;
+	padding-top: 2pt;
+    padding-bottom: 1pt;
+}
+
+.error_box {
+	display:block;
+	z-index:1;
+	background-color:#fe2b25;
+	color: white;
+	width:100%-5pt;
+	padding-left:15pt;
+	padding-right:5pt;
+	padding-top: 2pt;
+    padding-bottom: 1pt;
+}
+
+#button_info_text {
+	padding: -3pt;
+    margin: 5pt;
+    font-size: 7pt;
+}
+.status_line {
+	display:block;
+	z-index:1;
+	background-color:#EEEEEE;
+	width:100%;
+	min-height:20px;
+	position:relative;
+}
+
+/*
+ * jqeury selectable stuff for selecting Resolvers
+ * #resolvers_select, realms_select... li { margin: 3px; padding: 0.4em; font-size: 1.4em; height: 18px; }
+ */
+.select_list .ui-selecting { background: #FECA40; }
+/*#realms_select .ui-selected { background: #F39814; color: white; }*/
+.select_list .ui-selected {
+			background: #d5effc url(/css/flexigrid/images/hl.png) repeat-x top;
+			border-right: 1px solid #d2e3ec;
+			border-left: 1px solid #eef8ff;
+			border-bottom: 1px solid #a8d8eb;
+			}
+.select_list { list-style-type: none; margin: 0; padding: 0; width: 95%; }
+.select_list li { margin: 3px; padding: 0.4em; }
+.select_list li:hover { background: #FEB77E; }
+
+
+#logDiv { width: 100%; height: 50px; padding: 0.5em; }
+
+/*
+ * Token stuff
+ */
+a.activeToken {
+	color: black;
+	background-color:white;
+}
+a.disabledToken {
+	color: black;
+	text-decoration:line-through;
+}
+
+label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }
+
+h1 {
+	color: #fe8625;
+}
+
+body {
+	/*
+	font-family: helvetica, impact, sans-serif;
+	*/
+	font-family: Verdana,Arial,sans-serif; font-size: 1.0em;
+	/*background: #cacee4;
+	 */
+	height: 100%;
+	}
+
+html {
+	height: 100%;
+}
+
+#token {
+  border:1px solid blue;
+}
+#token_even {
+  background: #CCCCCC;
+}
+#token_uneven {
+  background: #DDDDDD;
+}
+
+#wrap {
+ width:98%;
+ height: 100%;
+ margin:0 auto;
+ position: absolute;
+ top: 0;
+ right: 0;
+ bottom: 0;
+ left: 0;
+ z-index: 1;
+ min-width: 900px;
+}
+
+#main {
+ float:right;
+ width: 86%;
+ background: #080808;
+ /*padding: 3px;*/
+ position: relative;
+ z-index: 1;
+ margin-bottom: 20px;
+}
+
+#main #tabs #ui-tabs-1 button.ui-button {
+ margin-bottom: 0.5em;
+}
+
+#sidebar {
+float:left;
+width:13%;
+background:#fefefe;
+padding: 3px;
+position: relative;
+z-index: 1;
+}
+
+#sidebar #realms {
+	margin-bottom: 16px;
+}
+
+#selected_tokens {
+	font-size: 100%;
+	font-style:italic;
+}
+#selected_users {
+	font-size: 100%;
+	font-style:italic;
+}
+
+#selected_tokens_header span {
+    font-weight:bold;
+}
+
+#selected_users_header span {
+    font-weight:bold;
+}
+
+#action-menu li {
+    list-style-type: none;
+}
+
+.action-button {
+	//padding:0;
+	//margin:0;
+	width:95%;
+	//font-size:12px;
+	//border: 1px solid #333333;
+	//background-color: #fe8625;
+	//color:#000000;
+	}
+
+ li#logo {
+    float: right;
+    margin-right: 10px;
+    background: none;
+ }
+
+ li#logo div {
+    background-image:  url("/images/linotp_logo_118x40.png");
+    margin-left: 38px;
+    background-repeat:no-repeat;
+    height: 40px;
+    width: 118px;
+ }
+
+ #menu {
+ 	width:100%;
+	margin-top: 5px;
+	padding: 5px 0;
+ }
+
+ #menu.sf-menu ul {
+	width: 12em;
+ }
+
+ #menu.sf-menu li:first-child a {
+	border-left:none;
+ }
+
+ #menu.sf-menu a {
+	border-top: none;
+	padding: 12px 25px;
+ }
+
+ #nav {
+ background:#dddddd;
+ //float:left;
+ }
+ #logout {
+ float:right;
+ }
+
+ #main {
+ background:#fefefe;
+ }
+
+
+#footer {
+ clear:both;
+ color: white;
+ background:#080808;
+ padding: 2px 0 2px 8px;
+}
+
+ #nav ul {
+   margin:0;
+   padding:0;
+   list-style:none;
+ }
+ #nav li {
+   display:inline;
+   margin:0;
+   padding:0;
+ }
+
+ #nav ul li a,
+ #nav ul li a:visited {
+    color:#333;padding:0 10px;
+    height:30px;
+    border-right:1px solid #ffffff;
+    line-height:30px;
+    background:#fe8625;
+    text-decoration: none;
+    }
+
+ #nav ul li a:hover {
+ 	color:#ffffff;
+ 	text-decoration:none;
+ 	border-bottom:3px solid #111111;
+ 	margin: -3px 0 0 0;
+ }
+
+/*
+ *  Styles for displaying the TokenInfo
+ */
+
+.tokeninfoInnerTable   {
+	border-color: #fe8625;
+    border-width: 1px 0px 1px 0px;
+    border-style: solid;
+	border-collapse:collapse
+}
+
+.tokeninfoOuterTable   {
+	border-collapse:collapse;
+	vertical-align:top;
+	border:1px solid #fe8625;
+	padding: 0px 3px 0px 3px;
+}
+
+
+.collapsed-table tr {
+  display: none;
+}
+
+.italic_label {
+	font-style: italic;
+}
+
+label.error {
+	color: red;
+}

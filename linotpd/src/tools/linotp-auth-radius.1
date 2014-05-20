@@ -1,0 +1,45 @@
+.\" Manpage for linotp-auth-radius.
+.\" Contact linotp-community@lsexperts.de for any feedback.
+.TH LINOTP-AUTH-RADIUS 1 "04 Feb 2014" "2.5" "auth-radius man page"
+.SH NAME
+linotp-auth-radius \- connects to a radius server and does an authentication request with support for challenge response authentication.
+.SH SYNOPSIS
+linotp-auth-radius \-r <radius server> \-d <radius dict> \-i 
+.SH DESCRIPTION
+This radius authentication client submits an authentication request to a radius server. Options are:
+.SH COMMON OPTIONS
+.PP
+\fB\-f <radius server> \fR
+.RS 4
+specify the radius server
+.RE
+
+.PP
+\fB\-d <radius dictionary> \fR
+.RS 4
+specify the radius dictionary for the radius attribute translation.
+.RE
+
+.PP
+\fB\-i\fR
+.RS 4
+Interactive \- ask for missing parameters like user and password.
+.RE
+
+.PP
+\fB\-h\fR
+.RS 4
+show the help and usage example of the linotp-auth-radius client.
+.RE
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+linotp-auth-radius -h shows more details and usage examples.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>
+
+
+

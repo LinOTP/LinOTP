@@ -1,0 +1,62 @@
+.\" Manpage for linotp-migrate
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH LINOTP-MIGRATE 1 "04 Feb 2013" "2.5" "linotp-migrate man page"
+.SH NAME
+linotp-migrate \- script to migrate LinOTP 1.0 to LinOTP 2.x
+.SH SYNOPSIS
+linotp-migrate [--ldap=<URI>] [--binddn=<binddn>] [--filter=<UserFilter>] [--linotp2=<URL of LinOTP2>] [--admin=<admin user>] [--loginattr=<Attribute>]
+.SH DESCRIPTION
+This tool is used to migrate token data from LinOTP 1.0 to a LinOTP 2.x installation.
+The LinOTP2 UserIdResolver needs to be set up and running. It needs to be configured to the default realm.
+.SH COMMON OPTIONS
+
+.PP
+\fB\--ldap=<URI>\fR
+.RS 4
+This is the LDAP URI of the LinOTP 1.0 installation.
+.RE
+
+.PP
+\fB\--binddn=<binddn>\fR
+.RS 4
+This is the BINDDN of the user connecting to the LinOTP 1.0 installation. You will be asked for the password.
+.RE
+
+.PP
+\fB\--filter=<UserFilter>\fR
+.RS 4
+This is the filter to find the users in the LinOTP 1.0 installation.
+This can be something like "cn=*,ou=users,dc=example,dc=com".
+.RE
+
+.PP
+\fB\--linotp2=<URL>\fR
+.RS 4
+This is the URL of your LinOTP2 installation. This can be something like "https://linotpserver/"
+.RE
+
+.PP
+\fB\--admin=<admin user>\fR
+.RS 4
+This is the username of a LinOT 2 admin, who is allowed to create tokens.
+You are asked for a password.
+.RE
+
+.PP
+\fB\--loginattr=<attribute>\fR
+.RS 4
+This is the Attribute in the LinOTP 1.0 installation that holds the attribute for the Loginname.
+.RE
+
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+linotpadm (1)
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>

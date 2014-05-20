@@ -1,0 +1,51 @@
+.\" Manpage for linotp-create-pwidresolver-user
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH LINOTP-CREATE-PWIDRESOLVER-USER  1 "04 Feb 2013" "2.5" "linotp-create-pwidresolver-user man page"
+.SH NAME
+linotp-create-pwidresolver-user \- creates a user line to be stored in a usefile.
+.SH SYNOPSIS
+linotp-create-pwidresolver-user -u <username> -i <uid> [-p <password>] [-d <description>]
+.SH DESCRIPTION
+This tool creates a line like in /etc/passwd for a user in a userfile.
+Please note, that you can also specify a password, so that logging in to the selfservice portal is also possible.
+.SH COMMON OPTIONS
+.PP
+\fB\-u <username> \fR
+.RS 4
+The loginname of the user.
+.RE
+
+.PP
+\fB\-h\fR
+.RS 4
+Display a help message.
+.RE
+
+.PP
+\fB\-i <uid>\fR
+.RS 4
+The user id of the user.
+.RE
+
+.PP
+\fB\-p <password>\fR
+.RS 4
+The password of the user. If you do not specify it you are asked to type it in.
+The user id of the user.
+.RE
+
+.PP
+\fB\-d <description>\fR
+.RS 4
+An optional description of the user. This will be split into given name and surname.
+.RE
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>

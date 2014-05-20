@@ -1,0 +1,37 @@
+.\" Manpage for linotp-sql-janitor
+.\" Contact linotp@lsexperts.de for any feedback.
+.TH man 1 "04 Feb 2013" "2.5" "linotp-sql-janitor man page"
+.SH NAME
+linotp-sql-janitor \- remove old entries from the audit table.
+.SH SYNOPSIS
+linotp-sql-janitor [--high=<high watermark>] [--low=<low watermark>]
+.SH DESCRIPTION
+This tool removes old entries from the audit table. If more than "high watermark" entries are in the audit table, older entries will be deleted so that only "low watermark"
+entries remain in the table. 
+This tool can decrypt the OTP Key stored in the LinOTP database. You need to pass the encrypted key, the IV and the filename of the encryption key.
+
+.SH COMMON OPTIONS
+.PP
+\fB\--high=<high watermark>\fR
+.RS 4
+The maximum entries. If not given 10.000 as default is assumed.
+.RE
+
+.PP
+\fB\--low=<low watermark>\fR
+.RS 4
+The minimum old remaining entries. If not given 5.000 as default is assumed.
+.RE
+
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+linotpadm (1)
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp@lsexperts.de>

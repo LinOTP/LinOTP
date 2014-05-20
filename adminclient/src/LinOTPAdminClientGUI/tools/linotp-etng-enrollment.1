@@ -1,0 +1,38 @@
+.\" Manpage for linotp-etng-enrollment
+.\" Contact linotp-community@lsexperts.de for any feedback.
+.TH man 1 "04 Feb 2013" "2.5" "linotp-etng-enrollment man page"
+.SH NAME
+linotp-etng-enrollment \- mass enroll eToken NG OTP.
+.SH SYNOPSIS
+linotp-etng-enrollment --pin=<token pin> --file=<XML file> [--label=<label>]
+.SH DESCRIPTION
+This tool is used to mass enroll eToken NG OTP. You can plug in new eToken and each Token will get initialized. 
+You can do this in a loop till all tokens are done. This tool then writes an XML file, which can be imported to LinOTP.
+.SH COMMON OPTIONS
+.PP
+\fB\--file=<filename> \fR
+.RS 4
+The name of the XML file to write the token information to.
+.RE
+
+.PP
+\fB\--pin=<token pin>\fR
+.RS 4
+During initialization this Token User PIN is set. This is the PIN of the hardware eToken!
+.RE
+
+.PP
+\fB\--label=<token label>\fR
+.RS 4
+This is the label of the token.
+.RE
+
+
+.SH INTERNET SOURCES
+http://www.linotp.org,  http://www.lsexperts.de
+.SH SEE ALSO
+
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>
