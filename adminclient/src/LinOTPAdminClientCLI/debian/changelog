@@ -1,10 +1,10 @@
-linotp-adminclient-cli (2.7-0.rc0~precise) precise; urgency=low
+linotp-adminclient-cli (2.7-1~precise) precise; urgency=low
 
   * Renamed package from linotp-adminclient-ce
   * Removed dependency on M2Crypto, since license verification is done on the
     server
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 May 2014 12:40:35 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 20 May 2014 18:31:52 +0200
 
 linotp-adminclient-ce (2.6.1-1) precise; urgency=low
 

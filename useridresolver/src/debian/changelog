@@ -1,11 +1,11 @@
-linotp-useridresolver (2.7-0.rc0~precise) precise; urgency=low
+linotp-useridresolver (2.7-1~precise) precise; urgency=low
 
   * Integrated linotp-useridresolver-ee package into this package, adding
     support for:
     - LDAP and AD UserIdResolvers
     - SQL UserIdResolvers
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 May 2014 12:40:35 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 20 May 2014 18:31:52 +0200
 
 linotp-useridresolver (2.6.1-1) precise; urgency=low
 

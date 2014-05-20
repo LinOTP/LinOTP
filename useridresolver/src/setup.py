@@ -53,7 +53,7 @@ def get_file_contents(file_path):
 
 setup(
     name='LinOtpUserIdResolver',
-    version='2.7rc0',
+    version='2.7',
     description='LinOTP2 modules for resolving usernames',
     author='LSE Leading Security Experts GmbH',
     author_email='linotp@lsexperts.de',
