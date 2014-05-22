@@ -158,7 +158,7 @@ class AuditBase(object):
         '''
         pass
 
-    def search(self, param, AND=True, display_error=True, rp_dict={}):
+    def search(self, param, AND=True, display_error=True, rp_dict=None):
         '''
         This function is used to search audit events.
 

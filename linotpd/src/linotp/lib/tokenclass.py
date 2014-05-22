@@ -671,11 +671,14 @@ class TokenClass(object):
     def setOtpCount(self, otpCount):
         self.token.LinOtpCount = int(otpCount)
 
-    def setPin(self, pin, param={}):
+    def setPin(self, pin, param=None):
         '''
         set the PIN. The optional parameter "param" can hold the information,
         if the PIN is encrypted or hashed.
         '''
+        if param is None:
+            param = {}
+
         storeHashed = True
         enc = getParam(param, "encryptpin", optional)
         if enc is not None and "true" == enc.lower():

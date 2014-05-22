@@ -352,11 +352,5 @@ class BaseController(WSGIController):
 
         return
 
-    def __del__(self):
-        pass
-    def __enter__(self):
-        pass
-    def __exit__(self, typ, value, traceback):
-        pass
 
 ###eof#########################################################################
