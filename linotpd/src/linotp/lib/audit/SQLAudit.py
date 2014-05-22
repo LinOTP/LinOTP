@@ -486,7 +486,7 @@ class Audit(AuditBase):
 
         return iter(audit_q)
 
-    def search(self, param, AND=True, display_error=True, rp_dict={}):
+    def search(self, param, AND=True, display_error=True, rp_dict=None):
         '''
         This function is used to search audit events.
 
@@ -497,6 +497,9 @@ class Audit(AuditBase):
             A list of dictionaries is return.
             Each list element denotes an audit event.
         '''
+        if rp_dict is None:
+            rp_dict = {}
+
         if 'or' in param:
             if "true" == param['or'].lower():
                 AND = False
