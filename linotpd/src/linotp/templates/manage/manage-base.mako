@@ -622,7 +622,7 @@ ${c.version} --- ${c.licenseinfo}
 			</p>
 			<p>
 			<select id='pskc_type' name='pskc_type' onchange="pskc_type_changed();">
-				<option value='plain selected'>${_("plain value")}</option>
+				<option value='plain' selected='selected'>${_("plain value")}</option>
 				<option value='key'>${_("preshared key")}</option>
 				<option value='password'>${_("password protected")}</option>
 			</select>
