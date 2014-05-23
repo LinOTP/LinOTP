@@ -1,0 +1,29 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+#%:
+#	dh $@
+#
+#include /usr/share/cdbs/1/class/autotools.mk
+#include /usr/share/cdbs/1/rules/debhelper.mk
+#include /usr/share/cdbs/1/class/cmake.mk #Cmake stuff
+#
+#DEB_CONFIGURE_EXTRA_FLAGS := --libdir=/lib
+
+#%:
+#dh $@
+
+
+export DH_VERBOSE=1
+
+#%:
+#	dh $@
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+CONFIGURE_EXTRA_FLAGS += --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH)
+
+%:
+	dh $@ --with autoreconf
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(CONFIGURE_EXTRA_FLAGS)

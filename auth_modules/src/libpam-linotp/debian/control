@@ -1,0 +1,15 @@
+Source: libpam-linotp
+Section: net
+Priority: optional
+Maintainer: LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>
+Build-Depends: debhelper (>=7.4.0), cdbs (>=0.4.49), libpam0g-dev, libcurl4-openssl-dev, dh-autoreconf
+Standards-Version: 3.9.1
+
+Package: libpam-linotp
+Architecture: amd64
+Homepage: http://www.linotp.org/
+Depends: ${misc:Depends}, libcurl3, ${shlibs:Depends} 
+Description: PAM module for one time passwords with LinOTP
+ This PAM moculde directly communicates to the 
+ LinOTP server, so that there is no RADIUS 
+ setup necessary.

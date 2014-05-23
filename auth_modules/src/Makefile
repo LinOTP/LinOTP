@@ -24,12 +24,14 @@ source:
 
 
 builddeb:
+	mkdir -p ../build
 	(cd libpam-linotp; libtoolize; aclocal; autoconf; autoheader; automake --add-missing; dpkg-buildpackage -i -I -rfakeroot)
 	(cd freeradius_perl; dpkg-buildpackage)
-	cp libpam-linotp_*.deb ../../OUTPUT/
-	cp linotp-freeradius-perl_*_all.deb ../../OUTPUT/
+	mv libpam-linotp_* ../build/
+	mv linotp-freeradius-perl_* ../build/
 
 clean:
+	rm -rf ../build
 	rm -f *.tar.gz
 	(cd libpam-linotp; rm -f config.guess config.sub COPYING depcomp INSTALL install-sh missing)
 	(cd libpam-linotp; rm -fr aclocal.m4 autom4te.cache config.log config.status configure libtool ltmain.sh Makefile Makefile.in compile)
