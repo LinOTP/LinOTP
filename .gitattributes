@@ -1,0 +1,15 @@
+/.gitattributes		export-ignore
+
+# This filter removes all lines starting with `#:` or with
+# `"POT-Creation-Date:` from gettext .po files. These lines contain
+# the location where the string was found.
+# To make the git diffs and commits clearer and to reduce the necessary
+# merges, these lines are stripped.
+#
+# To enable this, you need to add this to your ~/.gitconfig:
+#
+# [filter "cleanpo"]
+#      clean = "grep -v -E '(^#: )|(\"POT-Creation-Date: )'"
+#
+
+*.po		filter=cleanpo
