@@ -64,12 +64,6 @@ ppa-dev:
 	make ppa-preprocess
 	dput ppa:linotp/unstable linotp_*_source.changes
 
-
-ppa:
-	make ppa-preprocess
-	dput ppa:linotp/stable linotp_*_source.changes
-
-
 # We need to have a builddepLOCAL, as we need to build the debian file inside a linotp-VERSION
 #  directory. Otherwise the packagname of linotp in the debconf database will be unknown.
 #

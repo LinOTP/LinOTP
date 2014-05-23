@@ -38,11 +38,6 @@ ppa-dev:
 	make ppa-preprocess
 	dput ppa:linotp/unstable ../linotp-useridresolver_*_source.changes
 
-ppa:
-	make ppa-preprocess
-	dput ppa:linotp/stable ../linotp-useridresolver_*_source.changes
-
-
 buildrpm:
 #	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
 	$(PYTHON) setup.py bdist_rpm

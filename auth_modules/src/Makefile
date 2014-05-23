@@ -55,9 +55,3 @@ ppa-dev:
 	(cd libpam-linotp; dput ppa:linotp/unstable ../libpam-linotp_*_source.changes)
 	(cd freeradius_perl; dput ppa:linotp/unstable ../linotp-freeradius-perl_*.changes)
 
-ppa:
-	make ppa-preprocess
-	(cd libpam-linotp; dput ppa:linotp/stable ../libpam-linotp_*_source.changes)
-	(cd freeradius_perl; dput ppa:linotp/stable ../linotp-freeradius-perl_*.changes)
-
-

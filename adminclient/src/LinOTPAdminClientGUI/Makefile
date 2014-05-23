@@ -78,8 +78,3 @@ ppa-dev:
 	make ppa-preprocess
 	dput ppa:linotp/unstable ../linotp-adminclient-gui*_source.changes
 
-ppa:
-	make ppa-preprocess
-	dput ppa:linotp/stable ../linotp-adminclient-gui_*_source.changes
-
-

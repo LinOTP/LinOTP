@@ -20,8 +20,4 @@ ppa-preprocess:
 ppa-dev:
 	for d in $(SUB_DIRS); do (cd $$d; $(MAKE) ppa-dev ); done
 
-ppa:
-	for d in $(SUB_DIRS); do (cd $$d; $(MAKE) ppa); done
-
-
 all: create builddeb ppa-preprocess
