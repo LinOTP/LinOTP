@@ -19,7 +19,6 @@ source:
 
 create:
 	make source
-	cp dist/*.tar* ..
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)

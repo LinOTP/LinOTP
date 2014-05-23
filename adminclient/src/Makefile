@@ -6,9 +6,11 @@ clean:
 	rm -f python-yubico_*
 	rm -f LinOTPAdminClientCLI-*.tar.gz
 	for d in $(SUB_DIRS); do (cd $$d; $(MAKE) clean ); done
+	rm -rf ../build
 
 create:
-	for d in $(SUB_DIRS); do (cd $$d; $(MAKE) create ); done
+	mkdir ../build
+	for d in $(SUB_DIRS); do (cd $$d; $(MAKE) create; cp dist/*.tar* ../../build/); done
 
 builddeb: create
 	for d in $(SUB_DIRS); do (cd $$d; $(MAKE) builddeb ); done

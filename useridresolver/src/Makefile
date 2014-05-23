@@ -19,8 +19,9 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE)
 
 create:
+	mkdir ../build
 	make source
-	cp dist/*.tar* ..
+	cp dist/*.tar* ../build/
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -64,6 +65,7 @@ clean:
 	rm -f ../linotp*useridresolver_*.tar.gz
 	rm -rf LinOtpUserIdResolver.egg-info/
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
+	rm -rf ../build/
 
 test_resolver:
 	nosetests -x -v test/test_resolve.py

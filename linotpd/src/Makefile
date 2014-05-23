@@ -37,9 +37,10 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE)
 
 create:
+	mkdir ../build
 	make buildtranslation
 	make source
-	cp dist/*.tar* .
+	cp dist/*.tar* ../build/
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -99,6 +100,7 @@ clean:
 	rm -fr ./LinOTP.egg-info/
 	rm -f linotp/i18n/linotp.pot
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
+	rm -rf ../build/
 
 
 test:

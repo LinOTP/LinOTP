@@ -17,7 +17,9 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE)
 
 create:
+	mkdir ../build
 	make source
+	cp dist/*.tar* ../build/
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -46,6 +48,7 @@ clean:
 	rm -f ../SMSProvider_*.tar.gz
 	rm -f ../linotp-smsprovider_*.tar.gz
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
+	rm -rf ../build/
 
 test_sms:
 	(nosetests -v -x test/test_sms.py)
