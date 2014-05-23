@@ -1,0 +1,19 @@
+Source: linotp-smsprovider
+Section: net
+Priority: optional
+Maintainer: LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>
+Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49)
+Standards-Version: 3.8.4
+
+Package: linotp-smsprovider
+Architecture: all
+Homepage: http://www.linotp.org/
+Depends: ${misc:Depends}, ${python:Depends}, python-socksipy, linotp,
+  python-httplib2
+Replaces: smsprovider (<< 2.5.2-1~)
+Breaks: smsprovider (<< 2.5.2-1~)
+Description: LinOTP SMSProvider Community Edition. Needed for the LinOTP server.
+ LinOTP 2 is an open solution for strong two-factor authentication with 
+ One Time Passwords.  LinOTP 2 is also open as far as its modular 
+ architecture is concerned.  LinOTP 2 aims to support multiple token types
+ This package is base to support SMS OTP Tokens
