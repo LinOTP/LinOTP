@@ -83,5 +83,39 @@ choose *PyDev->PyDev Project*.
 To make the project run your LinOTP Server create a new Debug Configuration
 and add paster as the *Main Module* and as arguments *serve test.ini2*.
 
-That's all folks - happy developing ;-)
 
+Build packages
+==============
+
+PyPI
+----
+
+To build packages that can be installed with pip do the following:
+
+    cd linotpd/src
+    make create
+    # pip install ../build/LinOTP-<VERSION>.tar.gz
+
+    cd useridresolver/src
+    make create
+    # pip install ../build/LinOtpUserIdResolver-<VERSION>.tar.gz
+
+    cd smsprovider/src
+    make create
+    # pip install ../build/SMSProvider-<VERSION>.tar.gz
+
+    cd adminclient/src
+    make create
+    # pip install ../build/LinOTPAdminClientCLI-<VERSION>.tar.gz
+    # pip install ../build/LinOTPAdminClientGUI-<VERSION>.tar.gz
+
+    cd adminclient/src/python-yubico
+    make create
+    # pip install dist/python-yubico-<VERSION>.tar.gz
+
+    cd auth_modules/src/pam_py_linotp
+    python setup.py sdist
+    # pip install dist/pam_py_linotp-<VERSION>.tar.gz
+
+
+That's all folks - happy developing ;-)
