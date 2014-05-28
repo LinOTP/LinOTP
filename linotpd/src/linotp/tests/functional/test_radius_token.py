@@ -101,10 +101,17 @@ class TestRadiusToken(TestController):
         radius server process will not be accessable outside of a test anymore
         '''
         import subprocess
+        import os.path
 
-        self.p = subprocess.Popen(["../../tools/dummy_radius_server.py"])
+        radius_server_file = "linotp/tests/tools/dummy_radius_server.py"
+        self.assertTrue(os.path.isfile(radius_server_file) == True,
+                        "radius demo server not found: %s" % radius_server_file)
 
+        self.p = subprocess.Popen([radius_server_file])
         assert self.p is not None
+
+        return
+
 
     def _stop_radius_server(self):
         '''
