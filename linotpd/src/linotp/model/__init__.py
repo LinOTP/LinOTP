@@ -50,89 +50,196 @@ from sqlalchemy.orm import relation
 
 from linotp.model import meta
 from linotp.model.meta import Session
+from linotp.model.meta import MetaData
+
 from linotp.lib.crypt import geturandom
 from linotp.lib.crypt import encrypt, hash, SecretObj
 from linotp.lib.crypt import encryptPin
 from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import get_rand_digit_str
 
-log = logging.getLogger(__name__)
+from sqlalchemy.engine.reflection import Inspector
+
 
 from pylons import config
-implicit_returning = config.get('linotpSQL.implicit_returning', True)
+log = logging.getLogger(__name__)
 
+tokenrealm_table = None
+realm_table = None
+token_table = None
+config_table = None
+challenges_table = None
+ocra_table = None
+
+
+session_configured = False
 
 def init_model(engine):
-    """Call me before using any of the tables or classes in the model"""
-    ## Reflected tables must be defined and mapped here
-    #global reflected_table
-    #reflected_table = sa.Table("Reflected", meta.metadata, autoload=True,
-    #                           autoload_with=engine)
-    #orm.mapper(Reflected, reflected_table)
-    #
-    #sm = orm.sessionmaker(autoflush=True, autocommit=False, bind=engine)
+    """
+    init_model binds the table objects to the class objects
+    - to be called before using any of the tables or classes in the model!!!
 
-    #meta.Session = orm.scoped_session(sm)
-    #meta.engine = engine
+    :param engine: the sql engine
+    """
+    log.debug('model init: init_model')
+    global tokenrealm_table
+    global realm_table
+    global token_table
+    global config_table
+    global challenges_table
+    global ocra_table
 
-    meta.Session.configure(bind=engine)
+    global session_configured
+    implicit_returning = config.get('linotpSQL.implicit_returning', True)
+
+    name = engine.name
+
+    ## mapping - used to map table column names to object members
+    mapping = None
+
+    chall_properties = {}
+    ocra_properties = {}
+
+    ## in case of oracle we map some columns to object attributes
+    ## as some attributes are reserved keywords in oracle
+    if engine.name.startswith('oracle:'):
+
+        mapping = {}
+        mapping['session'] = 'linotpsession'
+        mapping['timestamp'] = 'linotptimestamp'
+
+    log.debug('calling ORM Mapper')
+
+    context = {}
+
     meta.engine = engine
+    if session_configured is False:
+        session_configured = True
+        meta.Session.configure(bind=engine)
 
+    inspector = Inspector.from_engine(engine)
+    table_names = inspector.get_table_names()
+
+    context['table_names'] = table_names
+
+    meta_data = MetaData()
+    meta_data.reflect(bind=engine)
+    context['meta_data'] = meta_data
+
+    if tokenrealm_table is None:
+    ## create TokenRealm Table and ORM mapping to the TokenRealm class
+        tokenrealm_table = create_tokenrealm_table(context, implicit_returning)
+        orm.mapper(TokenRealm, tokenrealm_table)
+
+    if realm_table is None:
+        ## create Realm Table and ORM mapping to the Realm class
+        realm_table = create_realm_table(context, implicit_returning)
+        orm.mapper(Realm, realm_table)
+
+    if token_table is None:
+        ## create Token Table and ORM mapping to the Token class
+        token_table = create_token_table(context, implicit_returning)
+        orm.mapper(Token, token_table, properties={
+            'realms':relation(Realm, secondary=tokenrealm_table,
+                primaryjoin=token_table.c.LinOtpTokenId == tokenrealm_table.c.token_id,
+                secondaryjoin=tokenrealm_table.c.realm_id == realm_table.c.id,
+                foreign_keys=[tokenrealm_table.c.token_id, tokenrealm_table.c.realm_id ]
+                )
+            })
+
+    if config_table is None:
+        ## create Config Table and ORM mapping to the Config class
+        config_table = create_config_table(context, implicit_returning)
+        orm.mapper(Config, config_table)
+
+    if challenges_table is None:
+        ## create Challenges Table and ORM mapping to the Challenges class
+        challenges_table = create_challenges_table(context, mapping, implicit_returning)
+        if mapping is not None:
+            chall_properties = {
+               'session': challenges_table.c.linotpsession,
+               'timestamp': challenges_table.c.linotptimestamp,
+               }
+
+        orm.mapper(Challenge, challenges_table, properties=chall_properties)
+
+    if ocra_table is None:
+        ## create Ocra Table and ORM mapping to the Ocra class
+        ocra_table = create_ocra_table(context, mapping, implicit_returning)
+        if mapping is not None:
+            ocra_properties = {
+               'session': ocra_table.c.linotpsession,
+               'timestamp': ocra_table.c.linotptimestamp,
+               }
+        orm.mapper(OcraChallenge, ocra_table, properties=ocra_properties)
 
     log.debug('model init: init_model')
+    return
 
-## Non-reflected tables may be defined and mapped at module level
-#foo_table = sa.Table("Foo", meta.metadata,
-#    sa.Column("id", sa.types.Integer, primary_key=True),
-#    sa.Column("bar", sa.types.String(255), nullable=False),
-#    )
-#
-#class Foo(object):
-#    pass
-#
-#orm.mapper(Foo, foo_table)
+def get_table(context, table_name):
+    '''
+    helper - to get the table object from table_name
 
-
-## Classes for reflected tables may be defined here, but the table and
-## mapping itself must be done in the init_model function
-#reflected_table = None
-#
-#class Reflected(object):
-#    pass
-
-token_table = sa.Table('Token', meta.metadata,
-                sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
-                sa.Column('LinOtpTokenDesc', sa.types.Unicode(80), default=u''),
-                sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(40), default=u'', unique=True, nullable=False, index=True),
-
-                sa.Column('LinOtpTokenType', sa.types.Unicode(30), default=u'HMAC', index=True),
-                sa.Column('LinOtpTokenInfo', sa.types.Unicode(2000), default=u''),
-                sa.Column('LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),  ## encrypt
-                sa.Column('LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),  ## encrypt
-                sa.Column('LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),  ## encrypt
-                sa.Column('LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),  ## encrypt
-
-                sa.Column('LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
-                sa.Column('LinOtpIdResClass', sa.types.Unicode(120), default=u''),
-                sa.Column('LinOtpUserid', sa.types.Unicode(320), default=u'', index=True),
+    :param table_name: name of the table
+    :return: table object or None if table does not exist
+    '''
+    table = None
+    if table_name in context.get('table_names'):
+        meta_data = context.get('meta_data')
+        table = meta_data.tables[table_name]
+    return table
 
 
-                sa.Column('LinOtpSeed', sa.types.Unicode(32), default=u''),
-                sa.Column('LinOtpOtpLen', sa.types.Integer(), default=6),
-                sa.Column('LinOtpPinHash', sa.types.Unicode(512), default=u''),  ## hashed
-                sa.Column('LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),  ## encrypt
-                sa.Column('LinOtpKeyIV', sa.types.Unicode(32), default=u''),
+def create_token_table(context, implicit_returning=True):
+    """
+    helper to define the token table object
 
-                sa.Column('LinOtpMaxFail', sa.types.Integer(), default=10),
-                sa.Column('LinOtpIsactive', sa.types.Boolean(), default=True),
-                sa.Column('LinOtpFailCount', sa.types.Integer(), default=0),
-                sa.Column('LinOtpCount', sa.types.Integer(), default=0),
-                sa.Column('LinOtpCountWindow', sa.types.Integer(), default=10),
-                sa.Column('LinOtpSyncWindow', sa.types.Integer(), default=1000),
-                implicit_returning=implicit_returning,
-                )
+    :param context: dict, which contains the meta data and the table_names
+    :param implicit_returning: from sqlalchemy docu:
+
+        implicit_returning = False
+            TableClause doesn't support having a primary key or column
+            -level defaults, so implicit returning doesn't apply.
+
+    :return: table object
+    """
+    token_table = get_table(context, 'Token')
+    if token_table is not None:
+        return token_table
+
+    token_table = sa.Table('Token', meta.metadata,
+        sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
+        sa.Column('LinOtpTokenDesc', sa.types.Unicode(80), default=u''),
+        sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(40), default=u'', unique=True, nullable=False, index=True),
+
+        sa.Column('LinOtpTokenType', sa.types.Unicode(30), default=u'HMAC', index=True),
+        sa.Column('LinOtpTokenInfo', sa.types.Unicode(2000), default=u''),
+        sa.Column('LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),  ## encrypt
+        sa.Column('LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),  ## encrypt
+        sa.Column('LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),  ## encrypt
+        sa.Column('LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),  ## encrypt
+
+        sa.Column('LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
+        sa.Column('LinOtpIdResClass', sa.types.Unicode(120), default=u''),
+        sa.Column('LinOtpUserid', sa.types.Unicode(320), default=u'', index=True),
 
 
+        sa.Column('LinOtpSeed', sa.types.Unicode(32), default=u''),
+        sa.Column('LinOtpOtpLen', sa.types.Integer(), default=6),
+        sa.Column('LinOtpPinHash', sa.types.Unicode(512), default=u''),  ## hashed
+        sa.Column('LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),  ## encrypt
+        sa.Column('LinOtpKeyIV', sa.types.Unicode(32), default=u''),
+
+        sa.Column('LinOtpMaxFail', sa.types.Integer(), default=10),
+        sa.Column('LinOtpIsactive', sa.types.Boolean(), default=True),
+        sa.Column('LinOtpFailCount', sa.types.Integer(), default=0),
+        sa.Column('LinOtpCount', sa.types.Integer(), default=0),
+        sa.Column('LinOtpCountWindow', sa.types.Integer(), default=10),
+        sa.Column('LinOtpSyncWindow', sa.types.Integer(), default=1000),
+        implicit_returning=implicit_returning,
+        )
+
+    return token_table
 
 class Token(object):
 
@@ -154,9 +261,10 @@ class Token(object):
         self.LinOtpOtpLen = 6
         self.LinOtpSeed = u''
 
-        self.LinOtpIdResolver = None
-        self.LinOtpIdResClass = None
-        self.LinOtpUserid = None
+        ## defaults must be set to the same as in table definition
+        self.LinOtpIdResolver = ''
+        self.LinOtpIdResClass = ''
+        self.LinOtpUserid = ''
 
         # will be assigned automaticaly
         # self.LinOtpTokenId      = 0
@@ -504,16 +612,37 @@ def createToken(serial):
     return token
 
 
+def create_config_table(context, implicit_returning=True):
+    """
+    helper to define the token table object
 
-config_table = sa.Table('Config', meta.metadata,
-                sa.Column('Key', sa.types.Unicode(255), primary_key=True, nullable=False),
-                sa.Column('Value', sa.types.Unicode(2000), default=u''),
-                sa.Column('Type', sa.types.Unicode(2000), default=u''),
-                sa.Column('Description', sa.types.Unicode(2000), default=u''),
-                implicit_returning=implicit_returning,
-                )
+    :param context: dict, which contains the meta data and the table_names
+    :param implicit_returning: from sqlalchemy docu:
 
-log.debug('config table append_column')
+        implicit_returning = False
+            TableClause doesn't support having a primary key or column
+            -level defaults, so implicit returning doesn't apply.
+
+    :return: table object
+    """
+
+    log.debug('create config table')
+
+    config_table = get_table(context, 'Config')
+    if config_table is not None:
+        return config_table
+
+
+    config_table = sa.Table('Config', meta.metadata,
+        sa.Column('Key', sa.types.Unicode(255), primary_key=True, nullable=False),
+        sa.Column('Value', sa.types.Unicode(2000), default=u''),
+        sa.Column('Type', sa.types.Unicode(2000), default=u''),
+        sa.Column('Description', sa.types.Unicode(2000), default=u''),
+        implicit_returning=implicit_returning,
+        )
+    return config_table
+
+
 
 class Config(object):
 
@@ -536,15 +665,36 @@ class Config(object):
 
     __str__ = __unicode__
 
+def create_tokenrealm_table(context, implicit_returning=True):
+    """
+    helper to define the tokenrealm table object
 
-# This table connect a token to several realms
-tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
-                sa.Column('id', sa.types.Integer(), sa.Sequence('tokenrealm_seq_id', optional=True), primary_key=True, nullable=False),
-                sa.Column('token_id', sa.types.Integer(), ForeignKey('Token.LinOtpTokenId')),
-                #sa.Column('realm_id', sa.types.Integer())
-                sa.Column('realm_id', sa.types.Integer(), ForeignKey('Realm.id')),
-                implicit_returning=implicit_returning,
-                )
+    :param context: dict, which contains the meta data and the table_names
+    :param implicit_returning: from sqlalchemy docu:
+
+        implicit_returning = False
+            TableClause doesn't support having a primary key or column
+            -level defaults, so implicit returning doesn't apply.
+
+    :return: table object
+    """
+
+
+    tokenrealm_table = get_table(context, 'TokenRealm')
+    if tokenrealm_table is not None:
+        return tokenrealm_table
+
+
+    # This table connect a token to several realms
+    tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
+        sa.Column('id', sa.types.Integer(), sa.Sequence('tokenrealm_seq_id', optional=True), primary_key=True, nullable=False),
+        sa.Column('token_id', sa.types.Integer(), ForeignKey('Token.LinOtpTokenId')),
+        #sa.Column('realm_id', sa.types.Integer())
+        sa.Column('realm_id', sa.types.Integer(), ForeignKey('Realm.id')),
+        implicit_returning=implicit_returning,
+        )
+
+    return tokenrealm_table
 
 class TokenRealm(object):
 
@@ -553,14 +703,33 @@ class TokenRealm(object):
         self.realm_id = realmid
         self.token_id = 0
 
+def create_realm_table(context, implicit_returning=True):
+    """
+    helper to define the realm table object
 
-realm_table = sa.Table('Realm', meta.metadata,
-                sa.Column('id', sa.types.Integer(), sa.Sequence('realm_seq_id', optional=True), primary_key=True, nullable=False),
-                sa.Column('name', sa.types.Unicode(255), default=u'', unique=True, nullable=False),
-                sa.Column('default', sa.types.Boolean(), default=False),
-                sa.Column('option', sa.types.Unicode(40), default=u''),
-                implicit_returning=implicit_returning,
-                )
+    :param context: dict, which contains the meta data and the table_names
+    :param implicit_returning: from sqlalchemy docu:
+
+        implicit_returning = False
+            TableClause doesn't support having a primary key or column
+            -level defaults, so implicit returning doesn't apply.
+
+    :return: table object
+    """
+
+    realm_table = get_table(context, 'Realm')
+    if realm_table is not None:
+        return realm_table
+
+
+    realm_table = sa.Table('Realm', meta.metadata,
+        sa.Column('id', sa.types.Integer(), sa.Sequence('realm_seq_id', optional=True), primary_key=True, nullable=False),
+        sa.Column('name', sa.types.Unicode(255), default=u'', unique=True, nullable=False),
+        sa.Column('default', sa.types.Boolean(), default=False),
+        sa.Column('option', sa.types.Unicode(40), default=u''),
+        implicit_returning=implicit_returning,
+        )
+    return realm_table
 
 class Realm(object):
     def __init__(self, realm):
@@ -577,25 +746,54 @@ class Realm(object):
 
 
 ''' ''' '''
-ocra challenges are stored
+ocra challenges
 ''' ''' '''
 
-log.debug('creating ocra table')
+def create_ocra_table(context, mapping=None, implicit_returning=True):
+    """
+    helper to define the ocra table object
 
-ocra_table = sa.Table('ocra', meta.metadata,
-                sa.Column('id', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
-                sa.Column('transid', sa.types.Unicode(20), unique=True,
-                                                nullable=False, index=True),
-                sa.Column('data', sa.types.Unicode(512), default=u''),
-                sa.Column('challenge', sa.types.Unicode(256), default=u''),
-                sa.Column('session', sa.types.Unicode(512), default=u''),
-                sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
-                sa.Column('timestamp', sa.types.DateTime, default=datetime.now()),
-                sa.Column('received_count', sa.types.Integer(), default=0),
-                sa.Column('received_tan', sa.types.Boolean, default=False),
-                sa.Column('valid_tan', sa.types.Boolean, default=False),
-                implicit_returning=implicit_returning,
-                )
+    :param context: dict, which contains the meta data and the table_names
+    :param implicit_returning: from sqlalchemy docu:
+
+        implicit_returning = False
+            TableClause doesn't support having a primary key or column
+            -level defaults, so implicit returning doesn't apply.
+
+    :return: table object
+    """
+
+    log.debug('creating ocra table')
+
+    ocra_table = get_table(context, 'ocra')
+    if ocra_table is not None:
+        return ocra_table
+
+    if mapping is None:
+        mapping = {}
+
+    session_column = mapping.get('session', 'session')
+    timestamp_column = mapping.get('timestamp', 'timestamp')
+
+    ## the columns timestamp and session loading is defered in init_model
+    ocra_table = sa.Table('ocra', meta.metadata,
+        sa.Column('id', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
+        sa.Column('transid', sa.types.Unicode(20), unique=True,
+                                        nullable=False, index=True),
+        sa.Column('data', sa.types.Unicode(512), default=u''),
+        sa.Column('challenge', sa.types.Unicode(256), default=u''),
+        sa.Column(session_column, sa.types.Unicode(512),
+                                   default=u''),
+        sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
+        sa.Column(timestamp_column, sa.types.DateTime,
+                                            default=datetime.now()),
+        sa.Column('received_count', sa.types.Integer(), default=0),
+        sa.Column('received_tan', sa.types.Boolean, default=False),
+        sa.Column('valid_tan', sa.types.Boolean, default=False),
+        implicit_returning=implicit_returning,
+        )
+
+    return ocra_table
 
 class OcraChallenge(object):
     '''
@@ -671,29 +869,55 @@ class OcraChallenge(object):
 
 
 ''' ''' '''
-challenges are stored
+challenges
 ''' ''' '''
+def create_challenges_table(context, mapping=None, implicit_returning=True):
+    """
+    helper to define the challenges table object
 
-log.debug('creating challenges table')
+    :param context: dict, which contains the meta data and the table_names
+    :param implicit_returning: from sqlalchemy docu:
 
-challenges_table = sa.Table('challenges', meta.metadata,
-                sa.Column('id', sa.types.Integer(),
-                          sa.Sequence('token_seq_id', optional=True),
-                          primary_key=True, nullable=False),
-                sa.Column('transid', sa.types.Unicode(64),
-                                                unique=True, nullable=False,
-                                                index=True),
-                sa.Column('data', sa.types.Unicode(512), default=u''),
-                sa.Column('challenge', sa.types.Unicode(512), default=u''),
-                sa.Column('session', sa.types.Unicode(512), default=u''),
-                sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
-                sa.Column('timestamp', sa.types.DateTime,
-                                                    default=datetime.now()),
-                sa.Column('received_count', sa.types.Integer(), default=0),
-                sa.Column('received_tan', sa.types.Boolean, default=False),
-                sa.Column('valid_tan', sa.types.Boolean, default=False),
-                implicit_returning=implicit_returning,
-                )
+        implicit_returning = False
+            TableClause doesn't support having a primary key or column
+            -level defaults, so implicit returning doesn't apply.
+
+    :return: table object
+    """
+
+    log.debug('creating challenges table')
+
+    challenges_table = get_table(context, 'challenges')
+    if challenges_table is not None:
+        return challenges_table
+
+    if mapping is None:
+        mapping = {}
+
+    session_column = mapping.get('session', 'session')
+    timestamp_column = mapping.get('timestamp', 'timestamp')
+
+    ## the columns timestamp and session loading is defered in init_model
+    challenges_table = sa.Table('challenges', meta.metadata,
+        sa.Column('id', sa.types.Integer(),
+                  sa.Sequence('token_seq_id', optional=True),
+                  primary_key=True, nullable=False),
+        sa.Column('transid', sa.types.Unicode(64),
+                                        unique=True, nullable=False,
+                                        index=True),
+        sa.Column('data', sa.types.Unicode(512), default=u''),
+        sa.Column('challenge', sa.types.Unicode(512), default=u''),
+        sa.Column(session_column, sa.types.Unicode(512),
+                                   default=u''),
+        sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
+        sa.Column(timestamp_column, sa.types.DateTime,
+                                            default=datetime.now()),
+        sa.Column('received_count', sa.types.Integer(), default=0),
+        sa.Column('received_tan', sa.types.Boolean, default=False),
+        sa.Column('valid_tan', sa.types.Boolean, default=False),
+        implicit_returning=implicit_returning,
+        )
+    return challenges_table
 
 class Challenge(object):
     '''
@@ -833,30 +1057,4 @@ class Challenge(object):
 
     __str__ = __unicode__
 
-
-
-
-
-
-log.debug('calling ORM Mapper')
-
-# config_table.append_column( sa.Column('IV', sa.types.Unicode(2000), default=u''),)
-# see: http://www.sqlalchemy.org/docs/orm/relationships.html#sqlalchemy.orm.relationship
-#      http://www.sqlalchemy.org/docs/05/reference/orm/mapping.html
-# The realms of a token will be stored in the additional attribute "realms"
-# and the token, to which the realms belong will be stored in the backed "token"
-#orm.mapper(Token, token_table, properties={
-#    #'realms':relation(Realm, secondary=tokenrealm_table)
-#    'realms':relation(TokenRealm, backref=backref('token'))
-#    })
-
-orm.mapper(Token, token_table, properties={
-    'realms':relation(Realm, secondary=tokenrealm_table,
-        primaryjoin=token_table.c.LinOtpTokenId == tokenrealm_table.c.token_id,
-        secondaryjoin=tokenrealm_table.c.realm_id == realm_table.c.id)
-    })
-orm.mapper(Realm, realm_table)
-orm.mapper(TokenRealm, tokenrealm_table)
-orm.mapper(Config, config_table)
-orm.mapper(OcraChallenge, ocra_table)
-orm.mapper(Challenge, challenges_table)
+##eof#########################################################################
