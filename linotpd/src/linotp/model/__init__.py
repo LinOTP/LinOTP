@@ -133,7 +133,7 @@ def create_token_table():
 
         sa.Column('LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
         sa.Column('LinOtpIdResClass', sa.types.Unicode(120), default=u''),
-        sa.Column('LinOtpUserid', sa.types.Unicode(320), default=u'', index=True),
+        sa.Column('LinOtpUserid', sa.types.Unicode(320), default=None, index=True),
 
 
         sa.Column('LinOtpSeed', sa.types.Unicode(32), default=u''),
@@ -174,12 +174,13 @@ class Token(object):
         self.LinOtpSeed = u''
 
         ## defaults must be set to the same as in table definition
-        self.LinOtpIdResolver = ''
-        self.LinOtpIdResClass = ''
-        self.LinOtpUserid = ''
+        self.LinOtpIdResolver = u''
+        self.LinOtpIdResClass = u''
+        self.LinOtpUserid = u''
 
-        # will be assigned automaticaly
-        # self.LinOtpTokenId      = 0
+        self.LinOtpTokenDesc = u''
+        self.LinOtpTokenInfo = u''
+
         log.debug('Token init done')
 
     def _fix_spaces(self, data):
@@ -455,6 +456,14 @@ class Token(object):
 
     def storeToken(self):
         log.debug('storeToken()')
+
+        if self.LinOtpUserid is None:
+            self.LinOtpUserid = u''
+        if self.LinOtpTokenDesc is None:
+            self.LinOtpTokenDesc = u''
+        if self.LinOtpTokenInfo is None:
+            self.LinOtpTokenInfo = u''
+
         Session.add(self)
         Session.flush()
         Session.commit()

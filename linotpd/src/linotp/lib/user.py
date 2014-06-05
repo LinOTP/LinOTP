@@ -650,7 +650,7 @@ def getUserInfo(userid, resolver, resolverC):
     userInfo = {}
     module = ""
 
-    if len(userid) == 0 or userid is None:
+    if not(userid):
         return userInfo
 
     try:

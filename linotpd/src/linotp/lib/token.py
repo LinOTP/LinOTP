@@ -2424,7 +2424,7 @@ class TokenIterator(object):
         for field in self.user_fields:
             userInfo["User.%s" % field] = u''
 
-        if tok.LinOtpUserid != '':
+        if tok.LinOtpUserid:
             #userInfo["User.description"]    = u'/:no user info:/'
             userInfo["User.userid"] = u'/:no user info:/'
             userInfo["User.username"] = u'/:no user info:/'
