@@ -438,7 +438,7 @@ class TestChallengeResponseController(TestController):
         """
         import subprocess
         try:
-            self.p = subprocess.Popen(["../../tools/dummy_radius_server.py",
+            self.p = subprocess.Popen(["linotp/tests/tools/dummy_radius_server.py",
                                        "-d", "config/dictionary"])
         except Exception as exx:
             raise exx

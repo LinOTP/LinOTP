@@ -179,6 +179,14 @@ def load_environment(global_conf, app_conf):
 
     ## get the help url
     url = config.get("linotpHelp.url", None)
+
+    ## this is a quick hack for the test setup :-(
+    ## the big one should handle the timeout when help button
+    ## is pressed
+    version = pkg_resources.get_distribution("linotp").version
+    if not(url) and 'dev' in version:
+        url = "file:///usr/share/doc/linotpdoc/html/"
+
     if url == None:
         version = pkg_resources.get_distribution("linotp").version
         offline_url = "file:///usr/share/doc/linotpdoc/html/"
