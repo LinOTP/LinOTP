@@ -44,9 +44,11 @@ else:
 """The application's model objects"""
 import sqlalchemy as sa
 
+
 from sqlalchemy import orm
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relation
+
 
 from linotp.model import meta
 from linotp.model.meta import Session
@@ -61,18 +63,22 @@ from linotp.lib.crypt import get_rand_digit_str
 from sqlalchemy.engine.reflection import Inspector
 
 
+from distutils.version import LooseVersion
+
 from pylons import config
 log = logging.getLogger(__name__)
 
-tokenrealm_table = None
-realm_table = None
-token_table = None
-config_table = None
-challenges_table = None
-ocra_table = None
 
+implicit_returning = config.get('linotpSQL.implicit_returning', True)
 
-session_configured = False
+## for oracle and the SQLAlchemy 0.7 we need a mapping of columns
+## due to reserved keywords session and timestamp
+COL_PREFIX = ""
+SQLU = config.get("sqlalchemy.url", "")
+if (SQLU.startswith("oracle:") and
+    LooseVersion(sa.__version__) <= LooseVersion(0.7)):
+    COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
+
 
 def init_model(engine):
     """
@@ -82,96 +88,12 @@ def init_model(engine):
     :param engine: the sql engine
     """
     log.debug('model init: init_model')
-    global tokenrealm_table
-    global realm_table
-    global token_table
-    global config_table
-    global challenges_table
-    global ocra_table
 
-    global session_configured
-    implicit_returning = config.get('linotpSQL.implicit_returning', True)
-
-    name = engine.name
-
-    ## mapping - used to map table column names to object members
-    mapping = None
-
-    chall_properties = {}
-    ocra_properties = {}
-
-    ## in case of oracle we map some columns to object attributes
-    ## as some attributes are reserved keywords in oracle
-    if engine.name.startswith('oracle:'):
-
-        mapping = {}
-        mapping['session'] = 'linotpsession'
-        mapping['timestamp'] = 'linotptimestamp'
-
-    log.debug('calling ORM Mapper')
 
     context = {}
 
     meta.engine = engine
-    if session_configured is False:
-        session_configured = True
-        meta.Session.configure(bind=engine)
-
-    inspector = Inspector.from_engine(engine)
-    table_names = inspector.get_table_names()
-
-    context['table_names'] = table_names
-
-    meta_data = MetaData()
-    meta_data.reflect(bind=engine)
-    context['meta_data'] = meta_data
-
-    if tokenrealm_table is None:
-    ## create TokenRealm Table and ORM mapping to the TokenRealm class
-        tokenrealm_table = create_tokenrealm_table(context, implicit_returning)
-        orm.mapper(TokenRealm, tokenrealm_table)
-
-    if realm_table is None:
-        ## create Realm Table and ORM mapping to the Realm class
-        realm_table = create_realm_table(context, implicit_returning)
-        orm.mapper(Realm, realm_table)
-
-    if token_table is None:
-        ## create Token Table and ORM mapping to the Token class
-        token_table = create_token_table(context, implicit_returning)
-        orm.mapper(Token, token_table, properties={
-            'realms':relation(Realm, secondary=tokenrealm_table,
-                primaryjoin=token_table.c.LinOtpTokenId == tokenrealm_table.c.token_id,
-                secondaryjoin=tokenrealm_table.c.realm_id == realm_table.c.id,
-                foreign_keys=[tokenrealm_table.c.token_id, tokenrealm_table.c.realm_id ]
-                )
-            })
-
-    if config_table is None:
-        ## create Config Table and ORM mapping to the Config class
-        config_table = create_config_table(context, implicit_returning)
-        orm.mapper(Config, config_table)
-
-    if challenges_table is None:
-        ## create Challenges Table and ORM mapping to the Challenges class
-        challenges_table = create_challenges_table(context, mapping, implicit_returning)
-        if mapping is not None:
-            chall_properties = {
-               'session': challenges_table.c.linotpsession,
-               'timestamp': challenges_table.c.linotptimestamp,
-               }
-
-        orm.mapper(Challenge, challenges_table, properties=chall_properties)
-
-    if ocra_table is None:
-        ## create Ocra Table and ORM mapping to the Ocra class
-        ocra_table = create_ocra_table(context, mapping, implicit_returning)
-        if mapping is not None:
-            ocra_properties = {
-               'session': ocra_table.c.linotpsession,
-               'timestamp': ocra_table.c.linotptimestamp,
-               }
-        orm.mapper(OcraChallenge, ocra_table, properties=ocra_properties)
+    meta.Session.configure(bind=engine)
 
     log.debug('model init: init_model')
     return
@@ -190,22 +112,12 @@ def get_table(context, table_name):
     return table
 
 
-def create_token_table(context, implicit_returning=True):
+def create_token_table():
     """
     helper to define the token table object
 
-    :param context: dict, which contains the meta data and the table_names
-    :param implicit_returning: from sqlalchemy docu:
-
-        implicit_returning = False
-            TableClause doesn't support having a primary key or column
-            -level defaults, so implicit returning doesn't apply.
-
     :return: table object
     """
-    token_table = get_table(context, 'Token')
-    if token_table is not None:
-        return token_table
 
     token_table = sa.Table('Token', meta.metadata,
         sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
@@ -612,26 +524,14 @@ def createToken(serial):
     return token
 
 
-def create_config_table(context, implicit_returning=True):
+def create_config_table():
     """
     helper to define the token table object
-
-    :param context: dict, which contains the meta data and the table_names
-    :param implicit_returning: from sqlalchemy docu:
-
-        implicit_returning = False
-            TableClause doesn't support having a primary key or column
-            -level defaults, so implicit returning doesn't apply.
 
     :return: table object
     """
 
     log.debug('create config table')
-
-    config_table = get_table(context, 'Config')
-    if config_table is not None:
-        return config_table
-
 
     config_table = sa.Table('Config', meta.metadata,
         sa.Column('Key', sa.types.Unicode(255), primary_key=True, nullable=False),
@@ -665,25 +565,12 @@ class Config(object):
 
     __str__ = __unicode__
 
-def create_tokenrealm_table(context, implicit_returning=True):
+def create_tokenrealm_table():
     """
     helper to define the tokenrealm table object
 
-    :param context: dict, which contains the meta data and the table_names
-    :param implicit_returning: from sqlalchemy docu:
-
-        implicit_returning = False
-            TableClause doesn't support having a primary key or column
-            -level defaults, so implicit returning doesn't apply.
-
     :return: table object
     """
-
-
-    tokenrealm_table = get_table(context, 'TokenRealm')
-    if tokenrealm_table is not None:
-        return tokenrealm_table
-
 
     # This table connect a token to several realms
     tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
@@ -703,23 +590,16 @@ class TokenRealm(object):
         self.realm_id = realmid
         self.token_id = 0
 
-def create_realm_table(context, implicit_returning=True):
+def create_realm_table():
     """
     helper to define the realm table object
-
-    :param context: dict, which contains the meta data and the table_names
-    :param implicit_returning: from sqlalchemy docu:
-
-        implicit_returning = False
-            TableClause doesn't support having a primary key or column
-            -level defaults, so implicit returning doesn't apply.
 
     :return: table object
     """
 
-    realm_table = get_table(context, 'Realm')
-    if realm_table is not None:
-        return realm_table
+    #realm_table = get_table(context, 'Realm')
+    #if realm_table is not None:
+    #    return realm_table
 
 
     realm_table = sa.Table('Realm', meta.metadata,
@@ -749,25 +629,12 @@ class Realm(object):
 ocra challenges
 ''' ''' '''
 
-def create_ocra_table(context, mapping=None, implicit_returning=True):
+def create_ocra_table(mapping=None):
     """
     helper to define the ocra table object
-
-    :param context: dict, which contains the meta data and the table_names
-    :param implicit_returning: from sqlalchemy docu:
-
-        implicit_returning = False
-            TableClause doesn't support having a primary key or column
-            -level defaults, so implicit returning doesn't apply.
-
     :return: table object
     """
-
     log.debug('creating ocra table')
-
-    ocra_table = get_table(context, 'ocra')
-    if ocra_table is not None:
-        return ocra_table
 
     if mapping is None:
         mapping = {}
@@ -871,25 +738,14 @@ class OcraChallenge(object):
 ''' ''' '''
 challenges
 ''' ''' '''
-def create_challenges_table(context, mapping=None, implicit_returning=True):
+def create_challenges_table(mapping=None):
     """
     helper to define the challenges table object
-
-    :param context: dict, which contains the meta data and the table_names
-    :param implicit_returning: from sqlalchemy docu:
-
-        implicit_returning = False
-            TableClause doesn't support having a primary key or column
-            -level defaults, so implicit returning doesn't apply.
 
     :return: table object
     """
 
     log.debug('creating challenges table')
-
-    challenges_table = get_table(context, 'challenges')
-    if challenges_table is not None:
-        return challenges_table
 
     if mapping is None:
         mapping = {}
@@ -1056,5 +912,57 @@ class Challenge(object):
         return "%s" % unicode(descr)
 
     __str__ = __unicode__
+
+
+log.debug('calling ORM Mapper')
+
+## create TokenRealm Table and ORM mapping to the TokenRealm class
+tokenrealm_table = create_tokenrealm_table()
+orm.mapper(TokenRealm, tokenrealm_table)
+
+## create Realm Table and ORM mapping to the Realm class
+realm_table = create_realm_table()
+orm.mapper(Realm, realm_table)
+
+## create Token Table and ORM mapping to the Token class
+token_table = create_token_table()
+orm.mapper(Token, token_table, properties={
+    'realms':relation(Realm, secondary=tokenrealm_table,
+        primaryjoin=token_table.c.LinOtpTokenId == tokenrealm_table.c.token_id,
+        secondaryjoin=tokenrealm_table.c.realm_id == realm_table.c.id,
+        foreign_keys=[tokenrealm_table.c.token_id, tokenrealm_table.c.realm_id ]
+        )
+    })
+
+## create Config Table and ORM mapping to the Config class
+config_table = create_config_table()
+orm.mapper(Config, config_table)
+
+## for oracle and the SQLAlchemy 0.7 we need a mapping of columns
+## due to reserved keywords session and timestamp
+
+mapping = {}
+mapping['session'] = "%ssession" % COL_PREFIX
+mapping['timestamp'] = "%stimestamp" % COL_PREFIX
+
+## create challenges Table and ORM mapping to the Challenge class
+challenges_table = create_challenges_table(mapping)
+
+challenge_properties = {}
+if len(COL_PREFIX) > 0:
+    for key, value in mapping.items():
+        challenge_properties[key] = challenges_table.columns[value]
+
+orm.mapper(Challenge, challenges_table, properties=challenge_properties)
+
+## create Ocra Table and ORM mapping to the Ocra class
+ocra_table = create_ocra_table(mapping)
+ocra_properties = {}
+if len(COL_PREFIX) > 0:
+    for key, value in mapping.items():
+        ocra_properties[key] = ocra_table.columns[value]
+
+orm.mapper(OcraChallenge, ocra_table, properties=ocra_properties)
+
 
 ##eof#########################################################################
