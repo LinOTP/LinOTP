@@ -12,11 +12,11 @@ secKey
 .project
 .pydevproject
 .settings
-.versioning-bak
 .idea
 *test.sh
 PKG-INFO
 *.swp
+linotp-build
 
 # Build artifacts
 adminclient/src/linotp-adminclient-*.dsc
@@ -41,13 +41,53 @@ adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui.prerm.debhelp
 adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui.substvars
 adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui/
 adminclient/src/LinOTPAdminClientGUI/debian/python-module-stampdir/
+adminclient/src/python-yubico/debian/files
+adminclient/src/python-yubico/debian/python-module-stampdir/
+adminclient/src/python-yubico/debian/python-yubico.postinst.debhelper
+adminclient/src/python-yubico/debian/python-yubico.prerm.debhelper
+adminclient/src/python-yubico/debian/python-yubico.substvars
+adminclient/src/python-yubico/debian/python-yubico/
+adminclient/src/python-yubico_*.diff.gz
+adminclient/src/python-yubico_*.dsc
+adminclient/src/python-yubico_*.changes
+adminclient/src/python-yubico_*.orig.tar.gz
 auth_modules/src/freeradius_perl/debian/files
 auth_modules/src/freeradius_perl/debian/linotp-freeradius-perl.substvars
 auth_modules/src/freeradius_perl/debian/linotp-freeradius-perl/
+
+# libpam-linotp
 auth_modules/src/libpam-linotp_*.dsc
 auth_modules/src/libpam-linotp_*.tar.gz
 auth_modules/src/libpam-linotp_*.changes
 auth_modules/src/libpam-linotp_*.deb
+auth_modules/src/libpam-linotp/COPYING
+auth_modules/src/libpam-linotp/INSTALL
+auth_modules/src/libpam-linotp/Makefile
+auth_modules/src/libpam-linotp/Makefile.in
+auth_modules/src/libpam-linotp/aclocal.m4
+auth_modules/src/libpam-linotp/autom4te.cache/
+auth_modules/src/libpam-linotp/compile
+auth_modules/src/libpam-linotp/config.guess
+auth_modules/src/libpam-linotp/config.status
+auth_modules/src/libpam-linotp/config.sub
+auth_modules/src/libpam-linotp/configure
+auth_modules/src/libpam-linotp/debian/autoreconf.after
+auth_modules/src/libpam-linotp/debian/autoreconf.before
+auth_modules/src/libpam-linotp/debian/files
+auth_modules/src/libpam-linotp/debian/libpam-linotp.substvars
+auth_modules/src/libpam-linotp/debian/libpam-linotp/
+auth_modules/src/libpam-linotp/depcomp
+auth_modules/src/libpam-linotp/install-sh
+auth_modules/src/libpam-linotp/libtool
+auth_modules/src/libpam-linotp/ltmain.sh
+auth_modules/src/libpam-linotp/missing
+auth_modules/src/libpam-linotp/src/.libs/
+auth_modules/src/libpam-linotp/src/Makefile
+auth_modules/src/libpam-linotp/src/Makefile.in
+auth_modules/src/libpam-linotp/src/pam_linotp.la
+auth_modules/src/libpam-linotp/src/pam_linotp.lo
+auth_modules/src/libpam-linotp/src/pam_linotp.o
+
 auth_modules/src/LinOTPAuth.tar.gz
 auth_modules/src/linotp-freeradius-perl_*.dsc
 auth_modules/src/linotp-freeradius-perl_*.tar.gz
@@ -71,11 +111,23 @@ qrcode/deb_dist/
 qrcode/qrcode-*.tar.gz
 qrcode_*_amd64.build
 RELEASE/
+
+# SMS Provider
 smsprovider/src/SMSProvider-*.tar.gz
 smsprovider/src/SMSProvider_*.orig.tar.gz
 smsprovider/src/SMSProvider/debian/
 smsprovider/src/linotp-smsprovider*
 smsprovider/src/smsprovider_*
+smsprovider/SMSProvider_*.orig.tar.gz
+smsprovider/linotp-smsprovider_*.dsc
+smsprovider/linotp-smsprovider_*.tar.gz
+smsprovider/linotp-smsprovider_*.changes
+smsprovider/src/debian/files
+smsprovider/src/debian/linotp-smsprovider.postinst.debhelper
+smsprovider/src/debian/linotp-smsprovider.prerm.debhelper
+smsprovider/src/debian/linotp-smsprovider.substvars
+smsprovider/src/debian/linotp-smsprovider/
+smsprovider/src/debian/python-module-stampdir/
 
 # Transit packages
 transit_packages/adminclientce/debian/
