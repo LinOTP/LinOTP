@@ -49,6 +49,9 @@ class TestManageController(TestController):
         token: token1 (r1), token2 (r1), token3 (r2)
         '''
 
+        ## remove all other tokens
+        self.deleteAllTokens()
+
         # create resolvers
         response = self.app.get(url(controller='system', action='setResolver'),
                                 params={'name':'reso1',
