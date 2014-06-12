@@ -356,7 +356,8 @@ class IdResolver (UserIdResolver):
         if "password" in userInfo:
             # check if we have something like SHA or salted SHA
             m = re.match("^\{(.*)\}(.*)", userInfo["password"])
-            # check if we have the PHP Password Framework like it is used in Wordpress
+            # check if we have the PHP Password Framework like it is
+            # used in Wordpress
             m_php = re.match("^\$P\$(.*)", userInfo["password"])
             if m:
                 # The password field contains something like
@@ -563,7 +564,7 @@ class IdResolver (UserIdResolver):
                 dbObj.close()
                 raise Exception("Invalid map with invalid columns: %r. "
                                 "Possible columns: %s" %
-                            (invalid_columns, [co.name for co in table.co]))
+                        (invalid_columns, [co.name for co in table.columns]))
             else:
                 log.info('Valid mapping: %r' % self.sqlUserInfo)
         except Exception as e:
@@ -813,22 +814,34 @@ class IdResolver (UserIdResolver):
 
         for key in self.sqlUserInfo:
             colName = self.sqlUserInfo.get(key)
+
             try:
                 value = row[colName]
                 log.debug("[__getUserInfo] %r:%r" % (value, type(value)))
+
                 if type(value) in [str, unicode] and self.sqlEncoding != "":
-                    log.debug("[__getUserInfo] convert %r to <%r>" %
-                              (value, self.sqlEncoding))
                     value = value.decode(self.sqlEncoding)
-            except UnicodeDecodeError as  e:
+                    log.debug("[__getUserInfo] convert %r to <%r>" %
+                              (row[colName], value))
+
+            except UnicodeEncodeError as exx:
+                # here we use a fallback if conversion fails:
+                # the upper layer has to deal with this native string
+                log.warning("[__getUserInfo] decodeing error: %r " % exx)
+                value = row[colName]
+
+            except UnicodeDecodeError as e:
                 log.warning("[__getUserInfo] encoding error: can not convert "
                                       "column %r of %r:%r" % (colName, row, e))
                 log.warning("[__getUserInfo] %s" % traceback.format_exc())
                 value = "-ERR: encoding-"
+
             except NoSuchColumnError as  e:
                 log.error("[__getUserInfo] %s" % traceback.format_exc())
                 value = "-ERR: column mapping-"
+
             userInfo[key] = value
+
         return userInfo
 
     def __add_where_clause_to_filter(self, filtr):
@@ -930,7 +943,6 @@ class IdResolver (UserIdResolver):
                 val = val.replace('*', '%')
 
             if '.' in val:
-
                 if not self.sqlConnect.startswith('mysql'):
                     val = val.replace('.', '_')
                 else:

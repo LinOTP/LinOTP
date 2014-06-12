@@ -70,11 +70,11 @@ class SQLUser(object):
 
         umap = { "userid"   : "id",
                 "username"  : "user",
-                "phone"     : "telephoneNumber",
+                "phone"     : "telephonenumber",
                 "mobile"    : "mobile",
                 "email"     : "mail",
                 "surname"   : "sn",
-                "givenname" : "givenName" ,
+                "givenname" : "givenname" ,
                 "password"  : "password",
                 "salt"      : "salt" }
 
@@ -99,10 +99,10 @@ class SQLUser(object):
             CREATE TABLE %s
             (
               %s text,
-              telephoneNumber text,
+              telephonenumber text,
               mobile text,
               sn text,
-              givenName text,
+              givenname text,
               password text,
               salt text,
               id text,
@@ -119,16 +119,16 @@ class SQLUser(object):
         self.connection.execute(t)
 
 
-    def addUser(self, user, telephoneNumber, mobile, sn, givenName, password, salt, id, mail):
+    def addUser(self, user, telephonenumber, mobile, sn, givenname, password, salt, id, mail):
         intoStr = """
-            INSERT INTO %s( %s, telephoneNumber, mobile,
-            sn, givenName, password, salt, id, mail)
-            VALUES (:user, :telephoneNumber, :mobile, :sn, :givenName, :password, :salt, :id, :mail);
+            INSERT INTO %s( %s, telephonenumber, mobile,
+            sn, givenname, password, salt, id, mail)
+            VALUES (:user, :telephonenumber, :mobile, :sn, :givenname, :password, :salt, :id, :mail);
             """ % (self.userTable, self.usercol)
         t = sqlalchemy.sql.expression.text(intoStr)
 
-        self.connection.execute(t, user=user, telephoneNumber=telephoneNumber, mobile=mobile, sn=sn,
-                                givenName=givenName, password=password, salt=salt, id=id, mail=mail)
+        self.connection.execute(t, user=user, telephonenumber=telephonenumber, mobile=mobile, sn=sn,
+                                givenname=givenname, password=password, salt=salt, id=id, mail=mail)
 
         #execute(sqlalchemy.sql.expression.text("""SELECT COUNT(*) FROM Config WHERE Config.Key = :key"""), key=REPLICATION_CONFIG_KEY)
 
@@ -203,48 +203,48 @@ class TestOrphandTokens(TestController):
 
         for i in range(1, usercount):
             user = 'hey%d' % i
-            telephoneNumber = '012345-678-%d' % i
+            telephonenumber = '012345-678-%d' % i
             mobile = '00123-456-%d' % i
             sn = 'yak%d' % i
-            givenName = 'kayak%d' % i
+            givenname = 'kayak%d' % i
             password = 'safr2r32'
             salt = 't123'
             id = '__%d' % i
-            mail = sn + '.' + givenName + "@example.com"
+            mail = sn + '.' + givenname + "@example.com"
 
-            userAdd.addUser(user, telephoneNumber, mobile, sn, givenName, password, salt, id, mail)
+            userAdd.addUser(user, telephonenumber, mobile, sn, givenname, password, salt, id, mail)
 
         u_dict = [{
             'user' : 'kn_t',
-            'telephoneNumber' : '012345-678-99999',
+            'telephonenumber' : '012345-678-99999',
             'mobile' : '00123-456-99999',
             'sn' : 'kn_t',
-            'givenName' : 'knöt',
+            'givenname' : 'knöt',
             'password' : 'safr2r32',
             'salt' : 't123',
             'id' : '__9999',
             },
             {'user' : 'knöt',
-            'telephoneNumber' : '012345-678-99998',
+            'telephonenumber' : '012345-678-99998',
             'mobile' : '00123-456-99998',
             'sn' : 'knöt',
-            'givenName' : 'knöt',
+            'givenname' : 'knöt',
             'password' : 'safr2r32',
             'salt' : 't123',
             'id' : '__9998',
             },
             {'user' : 'kn%t',
-            'telephoneNumber' : '012345-678-99997',
+            'telephonenumber' : '012345-678-99997',
             'mobile' : '00123-456-99997',
             'sn' : 'kn%t',
-            'givenName' : 'kn%t',
+            'givenname' : 'kn%t',
             'password' : 'safr2r32',
             'salt' : 't123',
             'id' : '__9997',
             },
             ]
         for user in u_dict:
-            user['mail'] = user['sn'] + '.' + user['givenName'] + "@example.com"
+            user['mail'] = user['sn'] + '.' + user['givenname'] + "@example.com"
             userAdd.addUser(**user)
 
         resolverDefinition = userAdd.getResolverDefinition()
