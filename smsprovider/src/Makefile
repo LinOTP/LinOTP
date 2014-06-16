@@ -17,7 +17,7 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE)
 
 create:
-	mkdir ../build
+	mkdir -p ../build
 	make source
 	cp dist/*.tar* ../build/
 
@@ -31,10 +31,12 @@ buildrpm:
 builddeb:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
+	mkdir -p ../build
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../ 
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	dpkg-buildpackage -i -I -rfakeroot
+	mv ../linotp-smsprovider*.deb ../build/
 
 clean:
 	$(PYTHON) setup.py clean

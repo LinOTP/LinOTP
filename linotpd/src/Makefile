@@ -37,7 +37,7 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE)
 
 create:
-	mkdir ../build
+	mkdir -p ../build
 	make buildtranslation
 	make source
 	cp dist/*.tar* ../build/
@@ -80,11 +80,13 @@ builddeblocal:
 	dpkg-buildpackage -i -I -rfakeroot
 
 builddeb:
+	mkdir -p ../build
 	make buildtranslation
 	mkdir -p linotp-$(VERSION)
 	cp -r $(COPYSTUFF)  linotp-$(VERSION)
 	(cd linotp-$(VERSION) ; make builddeblocal )
 	rm -fr linotp-$(VERSION)
+	mv linotp*.deb ../build
 
 clean:
 	$(PYTHON) setup.py clean

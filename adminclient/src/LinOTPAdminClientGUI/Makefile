@@ -28,6 +28,7 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE)
 
 create:
+	mkdir -p ../build
 	make buildversion
 	make source
 
@@ -40,13 +41,15 @@ buildrpm:
 	$(PYTHON) setup.py bdist_rpm 
 
 builddeb:
+	mkdir -p ../build
 	make buildversion
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../ 
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
-	dpkg-buildpackage -i -I -rfakeroot 
+	dpkg-buildpackage -i -I -rfakeroot
+	mv ../linotp-adminclient-gui*.deb ../build/
 
 clean:
 	$(PYTHON) setup.py clean
@@ -62,6 +65,7 @@ clean:
 	rm -f ../linotp*adminclient*gui*.tar.gz
 	rm -f ../LinOTP*AdminClient*GUI*.tar.gz
 	rm -rf LinOTPAdminClientGUI.egg-info/
+	rm -rf ../build/linotp-adminclient-gui*.deb
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
 	rm -rf debian/linotp-adminclient-*
 
