@@ -31,6 +31,7 @@ create:
 	mkdir -p ../build
 	make buildversion
 	make source
+	mv dist/LinOTPAdminClientGUI*.tar.gz ../build/
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -68,6 +69,7 @@ clean:
 	rm -rf ../build/linotp-adminclient-gui*.deb
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
 	rm -rf debian/linotp-adminclient-*
+	rm -f ../build/LinOTPAdminClientGUI*.tar.gz
 
 ppa-preprocess:
 	rm -f ../*.dsc

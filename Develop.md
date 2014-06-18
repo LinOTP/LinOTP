@@ -104,18 +104,21 @@ To build packages that can be installed with pip do the following:
     make create
     # pip install ../build/SMSProvider-<VERSION>.tar.gz
 
-    cd adminclient/src
+    cd adminclient/src/LinOTPAdminClientCLI
     make create
     # pip install ../build/LinOTPAdminClientCLI-<VERSION>.tar.gz
+
+    cd adminclient/src/LinOTPAdminClientGUI
+    make create
     # pip install ../build/LinOTPAdminClientGUI-<VERSION>.tar.gz
 
     cd adminclient/src/python-yubico
     make create
-    # pip install dist/python-yubico-<VERSION>.tar.gz
+    # pip install ../build/python-yubico-<VERSION>.tar.gz
 
     cd auth_modules/src/pam_py_linotp
-    python setup.py sdist
-    # pip install dist/pam_py_linotp-<VERSION>.tar.gz
+    make create
+    # pip install ../build/pam_py_linotp-<VERSION>.tar.gz
 
 
 That's all folks - happy developing ;-)

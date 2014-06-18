@@ -20,6 +20,7 @@ source:
 create:
 	mkdir -p ../build
 	make source
+	mv dist/LinOTPAdminClientCLI*.tar.gz ../build/
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -37,6 +38,7 @@ builddeb:
 	# build the package
 	dpkg-buildpackage -i -I -rfakeroot
 	mv ../linotp-adminclient-cli*.deb ../build/
+	rm -f ../build/LinOTPAdminClientCLI*.tar.gz
 
 clean:
 	$(PYTHON) setup.py clean

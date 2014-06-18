@@ -16,7 +16,9 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE)
 
 create:
+	mkdir -p ../build
 	make source
+	mv dist/python-yubico*.tar.gz ../build
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -46,6 +48,7 @@ clean:
 	rm -f ../$(PROJECT)_*.changes
 	rm -f ../$(PROJECT)_*.tar.gz
 	rm -f ../$(PROJECT)-*.tar.gz
-	rm -rf ../build/
+	rm -f ../build/python-yubico*.tar.gz
+	rm -f ../build/python-yubico*.deb
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
 
