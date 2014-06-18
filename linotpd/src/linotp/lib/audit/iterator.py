@@ -32,8 +32,9 @@ try:
 except ImportError: # pragma: no cover
     import simplejson as json
 
-class AuditIterator(object):
-
+class AuditQuery(object):
+    """ build the the audit query and return result iterator 
+    """
     def __init__(self, param, audit, user=None, columns=None):
         self.page = 1
         self.headers = False
@@ -88,12 +89,14 @@ class AuditIterator(object):
 
         log.debug("[search] search_dict: %s" % self._search_dict)
 
-        page = param.get('page', None) or None
-        if page is not None:
+        if 'page' in param:
+            page = param.get('page', '1') or '1'
             self.page = int(page)
             self._rp_dict['page'] = self.page
 
-        self._rp_dict['rp'] = param.get('rp', '15') or '15'
+        if 'rp' in param:
+            self._rp_dict['rp'] = param.get('rp', '15') or '15'
+
         self._rp_dict['sortname'] = param.get('sortname')
         self._rp_dict['sortorder'] = param.get('sortorder')
         log.debug("[search] rp_dict: %s" % self._rp_dict)
@@ -102,80 +105,101 @@ class AuditIterator(object):
             self._search_dict['user'] = user.login
             self._search_dict['realm'] = user.realm
 
-    def __iter__(self):
-        """
-        This method returns a generator that yields dicts of the form
-        {'id': ID, 'cell': LIST, 'data': LIST}, each representing a row of the
-        SQLAlchemy Iterator.
-        """
-        # fetch the query iterator
-        audit_search_iter = self._audit.searchQuery(self._search_dict,
+
+        self.audit_search_iter = self._audit.searchQuery(self._search_dict,
                                                    rp_dict=self._rp_dict)
-        for row in audit_search_iter:
-            entry = {}
-            if type(row) != dict:
-                ## convert table data to dict!
-                row = self._audit.row2dict(row)
-            if 'number' in row:
-                cell = []
-                for col in self._columns:
-                    # In the previous implementation there were two conflicting ways
-                    # of handling the case where 'col' doesn't exist in 'row'. When
-                    # exporting all columns it was implemented like this: row.get(col, '')
-                    # When exporting only selected columns like this: row.get(col)
-                    # In the second case None is returned which in JSON translates as
-                    # null.
-                    # In order to differentiate between the empty string (which could be
-                    # a valid value for most fields) and non-existence I chose the second
-                    # option. If this causes problems, the issue has to be revisited.
-                    cell.append(row.get(col))
-                entry = {'id': row['number'],
-                         'cell': cell}
-                if self.headers is True:
-                    entry['data'] = self._columns
-            yield entry
+
+    def get_entry(self, row):
+        entry = {}
+        if type(row) != dict:
+            ## convert table data to dict!
+            row = self._audit.row2dict(row)
+        if 'number' in row:
+            cell = []
+            for col in self._columns:
+                # In the previous implementation there were two conflicting ways
+                # of handling the case where 'col' doesn't exist in 'row'. When
+                # exporting all columns it was implemented like this: row.get(col, '')
+                # When exporting only selected columns like this: row.get(col)
+                # In the second case None is returned which in JSON translates as
+                # null.
+                # In order to differentiate between the empty string (which could be
+                # a valid value for most fields) and non-existence I chose the second
+                # option. If this causes problems, the issue has to be revisited.
+                cell.append(row.get(col))
+            entry = {'id': row['number'],
+                     'cell': cell}
+            if self.headers is True:
+                entry['data'] = self._columns
+
+        return entry
 
     def get_total(self):
         return self._audit.getTotal(self._search_dict)
-
 
 class JSONAuditIterator(object):
     """
     default audit output generator in json format
     """
 
-    def __init__(self, audit_iterator):
-        self.audit_iterator = audit_iterator
+    def __init__(self, audit_query):
+        self.audit_query = audit_query
+        self.result = self.audit_query.audit_search_iter
+        self.page = self.audit_query.page
+        self.i = 0
+        self.closed = False
+
+    def next(self):
+        res = ""
+        if self.i == 0:
+            res = '{ "page": %d, "rows": [' % int(self.page)
+            self.i = 1
+        else:
+            res = ', '
+            self.i = self.i + 1
+
+        try:
+            row_data = self.result.next()
+            entry = self.audit_query.get_entry(row_data)
+            res = "%s %s" % (res,json.dumps(entry, indent=3))
+
+        except StopIteration as exx:
+            if self.closed == False:
+                res = '], "total": %d }' % self.audit_query.get_total()
+                self.closed = True
+            else:
+                log.info("returned %d entries" % self.i)
+                raise exx
+
+        return res
 
     def __iter__(self):
-        """
-        Generator method (i.e. returns a generator by using 'yield')
-        """
-        yield '{ "page": %d, "rows": [' % int(self.audit_iterator.page)
-        for i, entry in enumerate(self.audit_iterator):
-            if i == 0:
-                yield " %s" % json.dumps(entry, indent=3)
-            else:
-                yield ", %s" % json.dumps(entry, indent=3)
-        yield '], "total": %d }' % self.audit_iterator.get_total()
-
+        return self
 
 class CSVAuditIterator(object):
     """
     create cvs output by iterating over result
     """
 
-    def __init__(self, audit_iterator, delimiter):
-        self.audit_iterator = audit_iterator
+    def __init__(self, audit_query, delimiter):
+        self.audit_query = audit_query
+        self.result = self.audit_query.audit_search_iter
+        self.page = self.audit_query.page
+        self.i = 0
+        self.closed = False
         self.delimiter = delimiter
 
-    def __iter__(self):
+
+    def next(self):
         """
         Generator method (i.e. returns a generator by using 'yield')
         """
-        for i, entry in enumerate(self.audit_iterator):
+        res = ""
+        try:
+            row_data = self.result.next()
+            entry = self.audit_query.get_entry(row_data)
             result = ""
-            if i == 0 and self.audit_iterator.headers:
+            if self.i == 0 and self.audit_query.headers:
                 row = entry.get('data', [])
                 r_str = json.dumps(row, ensure_ascii=False)[1:-1]
                 result += r_str
@@ -189,7 +213,20 @@ class CSVAuditIterator(object):
                     row_entry = row_entry.replace('\"', "'")
                 row.append(row_entry)
             r_str = json.dumps(row, ensure_ascii=False)[1:-1]
-            yield (result + r_str + "\n").encode('utf-8')
-        yield "\n"
+            res = (result + r_str + "\n").encode('utf-8')
+            self.i = self.i + 1
+
+        except StopIteration as exx:
+            if self.closed == False:
+                res = "\n"
+                self.closed = True
+            else:
+                log.info("returned %d entries" % self.i)
+                raise exx
+
+        return res
+
+    def __iter__(self):
+        return self
 
 ###eof#########################################################################

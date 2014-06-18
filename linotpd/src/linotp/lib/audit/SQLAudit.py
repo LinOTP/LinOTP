@@ -63,11 +63,11 @@ def now():
     u_now = u"%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     return u_now
 
+######################## MODEL ################################################
 table_prefix = config.get("linotpAudit.sql.table_prefix", "")
+audit_table_name = '%saudit' % table_prefix
 
-######################## MODEL ##########################################################
-
-audit_table = schema.Table('%saudit' % table_prefix, metadata,
+audit_table = schema.Table(audit_table_name, metadata,
     schema.Column('id', types.Integer, schema.Sequence('audit_seq_id',
                                                        optional=True),
                   primary_key=True),
@@ -156,14 +156,7 @@ class AuditTable(object):
         We need to distinguish, if this is an entry after the adding the
         client entry or before. Otherwise the old signatures will break!
         '''
-        s = "number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s, admin=%s, %s, %s, server=%s, %s, %s" % (
-                    str(self.id), str(self.timestamp), self.action, str(self.success),
-                    self.serial, self.tokentype, self.user, self.realm,
-                    self.administrator, self.action_detail, self.info,
-                    self.linotp_server, self.log_level, str(self.clearance_level))
-
-        if self.client:
-            s += ", client=%s" % self.client
+        s = getAsString(self.__dict__)
         return s
 
 
@@ -213,9 +206,9 @@ class Audit(AuditBase):
             # create the column "client"
             column = schema.Column("client", types.Unicode(80))
             column.create(audit_table)
-        except Exception, e:
+        except Exception as exx:
             # Obviously we already migrated the database.
-            log.info("[__init__] Error during database migration: %r" % e)
+            log.info("[__init__] Error during database migration: %r" % exx)
 
 
     def _sign(self, audit_line):
@@ -230,15 +223,18 @@ class Audit(AuditBase):
         log.debug("[_sign] signature : %s" % hexlify(signature))
         return hexlify(signature)
 
+
     def _verify(self, auditline, signature):
         '''
         Verify the signature of the audit line
         '''
-        s_audit = auditline.getAsString()
+        s_audit = getAsString(auditline)
+
         log.debug("[_verify] verifying %s" % s_audit)
         self.VerifyEVP.verify_init()
         self.VerifyEVP.verify_update(s_audit)
         res = self.VerifyEVP.verify_final(unhexlify(signature))
+
         return res
 
 
@@ -363,12 +359,15 @@ class Audit(AuditBase):
 
         line = {}
         line['number'] = audit_line.id
+        line['id'] = audit_line.id
         line['date'] = str(audit_line.timestamp)
+        line['timestamp'] = str(audit_line.timestamp)
         line['serial'] = audit_line.serial
         line['action'] = audit_line.action
         line['action_detail'] = audit_line.action_detail
         line['success'] = audit_line.success
         line['token_type'] = audit_line.tokentype
+        line['tokentype'] = audit_line.tokentype
         line['user'] = audit_line.user
         line['realm'] = audit_line.realm
         line['administrator'] = audit_line.administrator
@@ -382,7 +381,7 @@ class Audit(AuditBase):
         # Signature check
         # TODO: use instead the verify_init
         log.debug("[search] old sig = %s" % audit_line.signature)
-        res = self._verify(audit_line, audit_line.signature)
+        res = self._verify(line, audit_line.signature)
         if res == 1:
             line['sig_check'] = "OK"
         else:
@@ -471,148 +470,28 @@ class Audit(AuditBase):
 
         if 'rp' in rp_dict or 'page' in rp_dict:
             # build the LIMIT and OFFSET
-            limit = int(rp_dict.get('rp'))
-
-            if rp_dict.get('rp'):
-                limit = int(rp_dict.get('rp'))
+            page = 1
             offset = 0
-            if rp_dict.get('page'):
+            limit = 15
+
+            if 'rp' in rp_dict:
+                limit = int(rp_dict.get('rp'))
+
+            if 'page' in rp_dict:
                 page = int(rp_dict.get('page'))
-                offset = limit * (page - 1)
 
-                start = offset
-                stop = offset + limit
-                audit_q = audit_q.slice(start, stop)
-
-        return iter(audit_q)
-
-    def search(self, param, AND=True, display_error=True, rp_dict=None):
-        '''
-        This function is used to search audit events.
-
-        param:
-            Search parameters can be passed.
-
-        return:
-            A list of dictionaries is return.
-            Each list element denotes an audit event.
-        '''
-        if rp_dict is None:
-            rp_dict = {}
-
-        if 'or' in param:
-            if "true" == param['or'].lower():
-                AND = False
-
-        result = [{}]
-
-        log.debug("[search] got the params %s" % param)
-        log.debug("[search] got the rp_dict %s" % rp_dict)
-
-        # build the condition / WHERE clause
-        condition = self._buildCondition(param, AND)
-        log.debug("[search] the following condition was build from "
-                  "the parameters %s (%s): %s" % (param, AND, condition))
-
-        # build the LIMIT and OFFSET
-        limit = 100
-        if rp_dict.get('rp'):
-            limit = int(rp_dict.get('rp'))
-        offset = 0
-        if rp_dict.get('page'):
-            page = int(rp_dict.get('page'))
             offset = limit * (page - 1)
 
-        order = AuditTable.id
-        if rp_dict.get("sortname"):
-            sortn = rp_dict.get('sortname').lower()
-            if "serial" == sortn:
-                order = AuditTable.serial
-            elif "number" == sortn:
-                order = AuditTable.id
-            elif "user" == sortn:
-                order = AuditTable.user
-            elif "action" == sortn:
-                order = AuditTable.action
-            elif "action_detail" == sortn:
-                order = AuditTable.action_detail
-            elif "realm" == sortn:
-                order = AuditTable.realm
-            elif "date" == sortn:
-                order = AuditTable.timestamp
-            elif "administrator" == sortn:
-                order = AuditTable.administrator
-            elif "success" == sortn:
-                order = AuditTable.success
-            elif "tokentype" == sortn:
-                order = AuditTable.tokentype
-            elif "info" == sortn:
-                order = AuditTable.info
-            elif "linotp_server" == sortn:
-                order = AuditTable.linotp_server
-            elif "client" == sortn:
-                order = AuditTable.client
-            elif "log_level" == sortn:
-                order = AuditTable.log_level
-            elif "clearance_level" == sortn:
-                order = AuditTable.clearance_level
+            start = offset
+            stop = offset + limit
+            audit_q = audit_q.slice(start, stop)
 
-        # build the ordering
-        order_dir = asc(order)
-
-        if rp_dict.get("sortorder"):
-            sorto = rp_dict.get('sortorder').lower()
-            if "desc" == sorto:
-                order_dir = desc(order)
-
-        if type(condition).__name__ == 'NoneType':
-            audit_q = self.session.query(AuditTable)\
-                .order_by(order_dir)
-        else:
-            audit_q = self.session.query(AuditTable)\
-                .filter(condition)\
-                .order_by(order_dir)
-
-        # FIXME? BUT THIS IS SO MUCH SLOWER!
-        # FIXME: Here desc() ordering also does not work! :/
-        start = offset
-        stop = offset + limit
-        audit_q = audit_q.slice(start, stop)
-
-        for audit_line in audit_q:
-            line = {}
-            line['number'] = audit_line.id
-            line['date'] = str(audit_line.timestamp)
-            line['serial'] = audit_line.serial
-            line['action'] = audit_line.action
-            line['action_detail'] = audit_line.action_detail
-            line['success'] = audit_line.success
-            line['token_type'] = audit_line.tokentype
-            line['user'] = audit_line.user
-            line['realm'] = audit_line.realm
-            line['administrator'] = audit_line.administrator
-            line['action_detail'] = audit_line.action_detail
-            line['info'] = audit_line.info
-            line['linotp_server'] = audit_line.linotp_server
-            line['client'] = audit_line.client
-            line['log_level'] = audit_line.log_level
-            line['clearance_level'] = audit_line.clearance_level
-
-            # Signature check
-            # TODO: use instead the verify_init
-            log.debug("[search] old sig = %s" % audit_line.signature)
-            res = self._verify(audit_line, audit_line.signature)
-            if res == 1:
-                line['sig_check'] = "OK"
-            else:
-                line['sig_check'] = "FAIL"
-            # TODO: missing line check
+        ## we drop here the ORM due to memory consumption
+        ## and return a resultproxy for row iteration
+        result = self.session.execute(audit_q.statement)
+        return iter(result)
 
 
-            result.append(line)
-
-        log.debug("[search] %s" % result)
-        return result
 
     def getTotal(self, param, AND=True, display_error=True):
         '''
@@ -628,5 +507,25 @@ class Audit(AuditBase):
 
         log.debug("[getTotal] count=%s " % str(c))
         return c
+
+def getAsString(data):
+    '''
+    We need to distinguish, if this is an entry after the adding the
+    client entry or before. Otherwise the old signatures will break!
+    '''
+
+    s = "number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s, admin=%s, %s, %s, server=%s, %s, %s" % (
+                str(data.get('id')), str(data.get('timestamp')),
+                data.get('action'), str(data.get('success')),
+                data.get('serial'), data.get('tokentype'),
+                data.get('user'), data.get('realm'),
+                data.get('administrator'), data.get('action_detail'),
+                data.get('info'), data.get('linotp_server'),
+                data.get('log_level'), str(data.get('clearance_level')))
+
+    if 'client' in data:
+        s += ", client=%s" % data.get('client')
+    return s
+
 
 ###eof#########################################################################

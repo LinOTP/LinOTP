@@ -44,7 +44,7 @@ from linotp.lib.policy import checkPolicyPre, PolicyException
 
 from linotp.lib.reply import sendError
 from linotp.lib.audit.base import search as audit_search
-from linotp.lib.audit.iterator import AuditIterator
+from linotp.lib.audit.iterator import AuditQuery
 from linotp.lib.audit.iterator import CSVAuditIterator
 from linotp.lib.audit.iterator import JSONAuditIterator
 
@@ -119,7 +119,7 @@ class AuditController(BaseController):
                 be OR concatenated.
 
             The Flexigrid provides us the following parameters:
-                ('page', u'1'), ('rp', u'100'),
+                ('page', u'1'), ('rp', u'25'),
                 ('sortname', u'number'),
                 ('sortorder', u'asc'),
                 ('query', u''), ('qtype', u'serial')]
@@ -133,7 +133,7 @@ class AuditController(BaseController):
 
             log.debug("[search] params: %s" % param)
 
-            output_format = getParam(param, "outform", optional)
+
             checkPolicyPre('audit', 'view', {})
 
             log.debug("[search] params %r" % param)
@@ -141,24 +141,29 @@ class AuditController(BaseController):
             # remove the param outform (and other parameters that should not
             # be used for search!
             search_params = {}
-            for p in param:
-                if p not in ["outform"]:
-                    search_params[p] = param[p]
+            search_params.update(param)
+            for key in ["outform", 'delimiter']: 
+                if key in search_params:
+                    del search_params[key]
 
-            log.debug("[search] search params %r" % search_params)
+            output_format = param.get("outform", 'json') or 'json'
+            delimiter = param.get('delimiter', ',') or ','
 
             audit_iterator = None
-            base_audit_iterator = AuditIterator(search_params, audit)
+
+            log.debug("[search] search params %r" % search_params)
+            audit_query = AuditQuery(search_params, audit)
+
             if output_format == "csv":
                 filename = "linotp-audit.csv"
                 response.content_type = "application/force-download"
                 response.headers['Content-disposition'] = (
                                         'attachment; filename=%s' % filename)
-                delimiter = search_params.get('delimiter', ',') or ','
-                audit_iterator = CSVAuditIterator(base_audit_iterator, delimiter)
+
+                audit_iterator = CSVAuditIterator(audit_query, delimiter)
             else:
                 response.content_type = 'application/json'
-                audit_iterator = JSONAuditIterator(base_audit_iterator)
+                audit_iterator = JSONAuditIterator(audit_query)
 
             c.audit['success'] = True
             Session.commit()
