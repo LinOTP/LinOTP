@@ -19,41 +19,42 @@ PKG-INFO
 linotp-build
 
 # Build artifacts
-adminclient/src/linotp-adminclient-*.dsc
-adminclient/src/linotp-adminclient-*.tar.gz
-adminclient/src/linotp-adminclient-*.deb
-adminclient/src/linotp-adminclient-*.build
-adminclient/src/linotp-adminclient-*.changes
-adminclient/src/LinOTPAdminClientCLI-*.tar.gz
-adminclient/src/LinOTPAdminClientCLI_*.orig.tar.gz
-adminclient/src/LinOTPAdminClientCLI/debian/files
-adminclient/src/LinOTPAdminClientCLI/debian/linotp-adminclient-cli.postinst.debhelper
-adminclient/src/LinOTPAdminClientCLI/debian/linotp-adminclient-cli.prerm.debhelper
-adminclient/src/LinOTPAdminClientCLI/debian/linotp-adminclient-cli.substvars
-adminclient/src/LinOTPAdminClientCLI/debian/linotp-adminclient-cli/
-adminclient/src/LinOTPAdminClientCLI/debian/python-module-stampdir/
-adminclient/src/LinOTPAdminClientGUI-*.tar.gz
-adminclient/src/LinOTPAdminClientGUI_*.orig.tar.gz
-adminclient/src/LinOTPAdminClientGUI/debian/files
-adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui.postinst.debhelper
-adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui.postrm.debhelper
-adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui.prerm.debhelper
-adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui.substvars
-adminclient/src/LinOTPAdminClientGUI/debian/linotp-adminclient-gui/
-adminclient/src/LinOTPAdminClientGUI/debian/python-module-stampdir/
-adminclient/src/python-yubico/debian/files
-adminclient/src/python-yubico/debian/python-module-stampdir/
-adminclient/src/python-yubico/debian/python-yubico.postinst.debhelper
-adminclient/src/python-yubico/debian/python-yubico.prerm.debhelper
-adminclient/src/python-yubico/debian/python-yubico.substvars
-adminclient/src/python-yubico/debian/python-yubico/
-adminclient/src/python-yubico_*.diff.gz
-adminclient/src/python-yubico_*.dsc
-adminclient/src/python-yubico_*.changes
-adminclient/src/python-yubico_*.orig.tar.gz
 auth_modules/src/freeradius_perl/debian/files
 auth_modules/src/freeradius_perl/debian/linotp-freeradius-perl.substvars
 auth_modules/src/freeradius_perl/debian/linotp-freeradius-perl/
+
+# adminclient
+adminclient/LinOTPAdminClientCLI/LinOTPAdminClientCLI_*.orig.tar.gz
+adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*.dsc
+adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*.tar.gz
+adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*_amd64.changes
+adminclient/LinOTPAdminClientCLI/src/debian/files
+adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.postinst.debhelper
+adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.prerm.debhelper
+adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.substvars
+adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli/
+adminclient/LinOTPAdminClientCLI/src/debian/python-module-stampdir/
+adminclient/LinOTPAdminClientGUI/LinOTPAdminClientGUI_*.orig.tar.gz
+adminclient/LinOTPAdminClientGUI/linotp-adminclient-gui_*.dsc
+adminclient/LinOTPAdminClientGUI/linotp-adminclient-gui_*.tar.gz
+adminclient/LinOTPAdminClientGUI/linotp-adminclient-gui_*_amd64.changes
+adminclient/LinOTPAdminClientGUI/src/debian/files
+adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.postinst.debhelper
+adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.postrm.debhelper
+adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.prerm.debhelper
+adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.substvars
+adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui/
+adminclient/LinOTPAdminClientGUI/src/debian/python-module-stampdir/
+adminclient/python-yubico/python-yubico_0.0.1-1.diff.gz
+adminclient/python-yubico/python-yubico_0.0.1-1.dsc
+adminclient/python-yubico/python-yubico_0.0.1-1_amd64.changes
+adminclient/python-yubico/python-yubico_0.0.1.orig.tar.gz
+adminclient/python-yubico/src/debian/files
+adminclient/python-yubico/src/debian/python-module-stampdir/
+adminclient/python-yubico/src/debian/python-yubico.postinst.debhelper
+adminclient/python-yubico/src/debian/python-yubico.prerm.debhelper
+adminclient/python-yubico/src/debian/python-yubico.substvars
+adminclient/python-yubico/src/debian/python-yubico/
 
 # libpam-linotp
 auth_modules/src/libpam-linotp_*.dsc
@@ -128,20 +129,6 @@ smsprovider/src/debian/linotp-smsprovider.prerm.debhelper
 smsprovider/src/debian/linotp-smsprovider.substvars
 smsprovider/src/debian/linotp-smsprovider/
 smsprovider/src/debian/python-module-stampdir/
-
-# Transit packages
-transit_packages/adminclientce/debian/
-transit_packages/adminclientee/debian/
-transit_packages/doc/debian/
-transit_packages/linotpadminclientce_*
-transit_packages/linotpadminclientee_*
-transit_packages/linotpdoc_*
-transit_packages/linotpuseridresolver_*
-transit_packages/linotpuseridresolveree_*
-transit_packages/smsprovider/debian/
-transit_packages/smsprovider_*
-transit_packages/useridresolver/debian/
-transit_packages/useridresolveree/debian/
 
 # UserIdResolver
 useridresolver/LinOtpUserIdResolver-*.tar.gz
