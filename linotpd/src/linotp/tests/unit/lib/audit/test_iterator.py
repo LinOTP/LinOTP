@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import unittest
+import sys
+if sys.version_info < (2,7):
+    try:
+        import unittest2 as unittest
+    except ImportError as exc:
+        print "You need to install unittest2 on Python 2.6. unittest2 is a "\
+              "backport of new unittest features."
+        raise exc
+else:
+    import unittest
 from mock import MagicMock
 
 try:
@@ -143,8 +152,8 @@ class AuditIteratorTestCase(unittest.TestCase):
                 }
             )
 
-    def mest_row2dict_called(self):
-        ## TODO: make it work again
+    @unittest.skip("Test is broken. TODO fix it.")
+    def test_row2dict_called(self):
         """
         Verify that audit.row2dict is called when some element returned by
         the searchQuery is no dictionary
@@ -164,8 +173,8 @@ class AuditIteratorTestCase(unittest.TestCase):
             )
         audit.row2dict.assert_called_once_with(None)
 
-    def mest_user_search(self):
-        ## TODO: make it work again
+    @unittest.skip("Test is broken. TODO fix it.")
+    def test_user_search(self):
         """
         Verify that if 'user' is passed in as a parameter, username and realm
         are added to the search parameters.
