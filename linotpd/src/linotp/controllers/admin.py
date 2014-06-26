@@ -770,7 +770,7 @@ class AdminController(BaseController):
 
             logTokenNum()
             c.audit['success'] = ret
-            checkPolicyPost('admin', 'init', param, user=user)
+            checkPolicyPost('admin', 'init', helper_param, user=user)
 
             Session.commit()
 

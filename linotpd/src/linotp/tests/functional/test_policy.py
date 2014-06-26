@@ -2309,8 +2309,7 @@ class TestPolicies(TestController):
         log.error(response)
         assert '"status": true' in response
 
-        parameters = { 'serial' : 'enroll_002',
-                       'type' : 'spass',
+        parameters = { 'type' : 'spass',
                        'user' : 'root@myDefRealm',
                        'selftest_admin' : 'admin_init'
                       }
