@@ -4,8 +4,8 @@ LinOtpUserIdResolver
 LinOTP features a concept of UserIdResolvers. Such a module is used to convert a user object from
 any kind of user database to a distinct ID, that can be used by LinOTP to assign tokens to.
 
-This community edition contains the base class for useridresolvers and the PasswdResolver, that
-can handle users in flat files like an /etc/passwd.
+This package contains the base class for useridresolvers, the PasswdIdResolver (flat files),
+the LDAPIdResolver (OpenLDAP, AD, eDirectory) and the SQLIdResolver.
 
 This package is used by the linotp package. For installation see the linotp package.
 

@@ -36,7 +36,7 @@ if system == "Windows":
 setup(
     name='LinOTPAdminClientGUI',
     version='2.7.1.dev0',
-    description='LinOTP Client Enterprise Edition ',
+    description='LinOTP GUI client',
     author='LSE Leading Security Experts GmbH',
     author_email='linotp@lsexperts.de',
     url='http://www.linotp.org',

@@ -12,7 +12,7 @@ Depends: ${misc:Depends}, ${python:Depends}, python-socksipy, linotp,
   python-httplib2
 Replaces: smsprovider (<< 2.5.2-1~)
 Breaks: smsprovider (<< 2.5.2-1~)
-Description: LinOTP SMSProvider Community Edition. Needed for the LinOTP server.
+Description: LinOTP SMSProvider. Needed for the LinOTP server.
  LinOTP 2 is an open solution for strong two-factor authentication with 
  One Time Passwords.  LinOTP 2 is also open as far as its modular 
  architecture is concerned.  LinOTP 2 aims to support multiple token types
