@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-if sys.version_info < (2,7):
+if sys.version_info < (2, 7):
     try:
         import unittest2 as unittest
     except ImportError as exc:
@@ -46,7 +46,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             }
         audit = MagicMock(spec=["searchQuery", "getTotal"])
         audit_query = AuditQuery(param, audit)
-        audit_iterator = audit_query.audit_search_iter
+        audit_iterator = iter(audit_query.get_query_result())
 
         self.assertEqual(len(list(audit_iterator)), 0)
         audit.searchQuery.assert_called_once_with(
@@ -76,7 +76,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             }
         audit = MagicMock(spec=["searchQuery"])
         audit_query = AuditQuery(param, audit)
-        audit_iterator = audit_query.audit_search_iter
+        audit_iterator = iter(audit_query.get_query_result())
 
         self.assertEqual(len(list(audit_iterator)), 0)
         audit.searchQuery.assert_called_once_with(
@@ -106,7 +106,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             }
         audit = MagicMock(spec=["searchQuery"])
         audit_query = AuditQuery(param, audit)
-        audit_iterator = audit_query.audit_search_iter
+        audit_iterator = iter(audit_query.get_query_result())
 
         self.assertEqual(len(list(audit_iterator)), 0)
         audit.searchQuery.assert_called_once_with(
@@ -135,7 +135,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             }
         audit = MagicMock(spec=["searchQuery"])
         audit_query = AuditQuery(param, audit)
-        audit_iterator = audit_query.audit_search_iter
+        audit_iterator = iter(audit_query.get_query_result())
 
         self.assertEqual(len(list(audit_iterator)), 0)
         audit.searchQuery.assert_called_once_with(
@@ -152,18 +152,23 @@ class AuditIteratorTestCase(unittest.TestCase):
                 }
             )
 
-    @unittest.skip("Test is broken. TODO fix it.")
+    #@unittest.skip("Test is broken. TODO fix it.")
     def test_row2dict_called(self):
         """
         Verify that audit.row2dict is called when some element returned by
         the searchQuery is no dictionary
         """
         audit = MagicMock(spec=["searchQuery", "row2dict"])
-        audit.searchQuery.return_value = iter([None, {'key': 'value'}])
+        audit.searchQuery.return_value = [None, {'key': 'value'}]
         audit_query = AuditQuery({}, audit)
-        audit_iterator = audit_query.audit_search_iter
+        audit_iterator = iter(audit_query.get_query_result())
 
-        self.assertEqual(len(list(audit_iterator)), 2)
+        rows = 0
+        for row in audit_iterator:
+            audit_query.get_entry(row)
+            rows = rows + 1
+
+        self.assertEqual(rows, 2)
         audit.searchQuery.assert_called_once_with(
             {},
             rp_dict={
@@ -172,8 +177,8 @@ class AuditIteratorTestCase(unittest.TestCase):
                 }
             )
         audit.row2dict.assert_called_once_with(None)
+        return
 
-    @unittest.skip("Test is broken. TODO fix it.")
     def test_user_search(self):
         """
         Verify that if 'user' is passed in as a parameter, username and realm
@@ -192,7 +197,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             audit,
             user=user
             )
-        audit_iterator = audit_query.audit_search_iter
+        audit_iterator = iter(audit_query.get_query_result())
 
         self.assertEqual(len(list(audit_iterator)), 0)
         audit.searchQuery.assert_called_once_with(
@@ -202,11 +207,13 @@ class AuditIteratorTestCase(unittest.TestCase):
                 'user': 'hans'
                 },
             rp_dict={
-                'rp': '15',
+#                'rp': '15',
                 'sortname': None,
                 'sortorder': None
                 }
             )
+
+        return
 
     def test_JSONAuditIterator_1(self):
         """
@@ -363,4 +370,7 @@ u""""number", "date", "sig_check", "missing_line", "action", "success", "serial"
         for value in csv_audit_iterator:
             result_csv += value
         result_csv = result_csv.decode('utf-8')
-        self.assertEqual(expected_csv, result_csv)
+        self.assertEqual(expected_csv, result_csv,
+                         "%r \n\n%r" % (expected_csv, result_csv))
+
+        return

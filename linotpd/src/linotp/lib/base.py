@@ -25,7 +25,6 @@
 #
 '''The Controller's Base class '''
 import os
-import gc
 
 from pylons.i18n.translation import set_lang
 from pylons.i18n import LanguageError
@@ -290,8 +289,6 @@ class BaseController(WSGIController):
         # WSGIController.__call__ dispatches to the Controller method
         # the request is routed to. This routing information is
         # available in environ['pylons.routes_dict']
-
-
 
         path = ""
         glo = getGlobalObject()

@@ -211,9 +211,38 @@ class Audit(AuditBase):
             log.info("[__init__] Error during database migration: %r" % exx)
 
 
+    def _attr_to_dict(self, audit_line):
+
+        line = {}
+        line['number'] = audit_line.id
+        line['id'] = audit_line.id
+        line['date'] = str(audit_line.timestamp)
+        line['timestamp'] = str(audit_line.timestamp)
+        line['missing_line'] = ""
+        line['serial'] = audit_line.serial
+        line['action'] = audit_line.action
+        line['action_detail'] = audit_line.action_detail
+        line['success'] = audit_line.success
+        line['token_type'] = audit_line.tokentype
+        line['tokentype'] = audit_line.tokentype
+        line['user'] = audit_line.user
+        line['realm'] = audit_line.realm
+        line['administrator'] = audit_line.administrator
+        line['action_detail'] = audit_line.action_detail
+        line['info'] = audit_line.info
+        line['linotp_server'] = audit_line.linotp_server
+        line["client"] = audit_line.client
+        line['log_level'] = audit_line.log_level
+        line['clearance_level'] = audit_line.clearance_level
+
+        return line
+
     def _sign(self, audit_line):
-        s_audit = audit_line.getAsString()
-        log.debug("[_sign] signing %s" % s_audit)
+        '''
+        Create a signature of the audit object
+        '''
+        line = self._attr_to_dict(audit_line)
+        s_audit = getAsString(line)
 
         key = EVP.load_key_string(self.private)
         key.reset_context(md='sha256')
@@ -357,26 +386,7 @@ class Audit(AuditBase):
         :return: audit entry dict
         """
 
-        line = {}
-        line['number'] = audit_line.id
-        line['id'] = audit_line.id
-        line['date'] = str(audit_line.timestamp)
-        line['timestamp'] = str(audit_line.timestamp)
-        line['serial'] = audit_line.serial
-        line['action'] = audit_line.action
-        line['action_detail'] = audit_line.action_detail
-        line['success'] = audit_line.success
-        line['token_type'] = audit_line.tokentype
-        line['tokentype'] = audit_line.tokentype
-        line['user'] = audit_line.user
-        line['realm'] = audit_line.realm
-        line['administrator'] = audit_line.administrator
-        line['action_detail'] = audit_line.action_detail
-        line['info'] = audit_line.info
-        line['linotp_server'] = audit_line.linotp_server
-        line["client"] = audit_line.client
-        line['log_level'] = audit_line.log_level
-        line['clearance_level'] = audit_line.clearance_level
+        line = self._attr_to_dict(audit_line)
 
         # Signature check
         # TODO: use instead the verify_init
@@ -489,7 +499,7 @@ class Audit(AuditBase):
         ## we drop here the ORM due to memory consumption
         ## and return a resultproxy for row iteration
         result = self.session.execute(audit_q.statement)
-        return iter(result)
+        return result
 
 
 

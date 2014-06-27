@@ -33,7 +33,7 @@ except ImportError: # pragma: no cover
     import simplejson as json
 
 class AuditQuery(object):
-    """ build the the audit query and return result iterator 
+    """ build the the audit query and return result iterator
     """
     def __init__(self, param, audit, user=None, columns=None):
         self.page = 1
@@ -42,6 +42,8 @@ class AuditQuery(object):
         self._audit = audit
         self._search_dict = {}
         self._rp_dict = {}
+
+        self.audit = audit
 
         if 'headers' in param:
             self.headers = True
@@ -52,23 +54,23 @@ class AuditQuery(object):
         else:
             # Use all columns
             self._columns = ['number',
-                             'date',
-                             'sig_check',
-                             'missing_line',
-                             'action',
-                             'success',
-                             'serial',
-                             'token_type',
-                             'user',
-                             'realm',
-                             'administrator',
-                             'action_detail',
-                             'info',
-                             'linotp_server',
-                             'client',
-                             'log_level',
+                            'date',
+                            'sig_check',
+                            'missing_line',
+                            'action',
+                            'success',
+                            'serial',
+                            'token_type',
+                            'user',
+                            'realm',
+                            'administrator',
+                            'action_detail',
+                            'info',
+                            'linotp_server',
+                            'client',
+                            'log_level',
                              'clearance_level'
-                            ]
+                                     ]
 
         if "query" in param:
             if "extsearch" == param['qtype']:
@@ -106,8 +108,20 @@ class AuditQuery(object):
             self._search_dict['realm'] = user.realm
 
 
-        self.audit_search_iter = self._audit.searchQuery(self._search_dict,
+    def get_page(self):
+        return self.page
+
+    def with_headers(self):
+        return self.headers
+
+    def get_headers(self):
+        return self._columns
+
+    def get_query_result(self):
+
+        self.audit_search = self._audit.searchQuery(self._search_dict,
                                                    rp_dict=self._rp_dict)
+        return self.audit_search
 
     def get_entry(self, row):
         entry = {}
@@ -143,16 +157,24 @@ class JSONAuditIterator(object):
     """
 
     def __init__(self, audit_query):
+        '''
+        create the iterator from the AuditQuery object
+        '''
         self.audit_query = audit_query
-        self.result = self.audit_query.audit_search_iter
-        self.page = self.audit_query.page
+        self.result = iter(audit_query.get_query_result())
+        self.page = audit_query.get_page()
         self.i = 0
         self.closed = False
 
     def next(self):
+        """
+        iterator callback for the response handler
+        """
         res = ""
+        prefix = ""
         if self.i == 0:
-            res = '{ "page": %d, "rows": [' % int(self.page)
+            prefix = '{ "page": %d, "rows": [' % int(self.page)
+            res = prefix
             self.i = 1
         else:
             res = ', '
@@ -161,11 +183,11 @@ class JSONAuditIterator(object):
         try:
             row_data = self.result.next()
             entry = self.audit_query.get_entry(row_data)
-            res = "%s %s" % (res,json.dumps(entry, indent=3))
+            res = "%s %s" % (res, json.dumps(entry, indent=3))
 
         except StopIteration as exx:
             if self.closed == False:
-                res = '], "total": %d }' % self.audit_query.get_total()
+                res = '%s ], "total": %d }' % (prefix, self.audit_query.get_total())
                 self.closed = True
             else:
                 log.info("returned %d entries" % self.i)
@@ -182,9 +204,13 @@ class CSVAuditIterator(object):
     """
 
     def __init__(self, audit_query, delimiter):
+        '''
+        create the iterator from the AuditQuery object
+        '''
         self.audit_query = audit_query
-        self.result = self.audit_query.audit_search_iter
-        self.page = self.audit_query.page
+        self.result = iter(audit_query.get_query_result())
+        self.page = audit_query.get_page()
+
         self.i = 0
         self.closed = False
         self.delimiter = delimiter
@@ -192,33 +218,37 @@ class CSVAuditIterator(object):
 
     def next(self):
         """
-        Generator method (i.e. returns a generator by using 'yield')
+        iterator callback for the response handler
         """
         res = ""
         try:
+
+            headers = ""
+            if self.i == 0 and self.audit_query.with_headers():
+                headers = "%s\n" % json.dumps(self.audit_query.get_headers(),
+                                               ensure_ascii=False)[1:-1]
+                res = headers
+
             row_data = self.result.next()
             entry = self.audit_query.get_entry(row_data)
-            result = ""
-            if self.i == 0 and self.audit_query.headers:
-                row = entry.get('data', [])
-                r_str = json.dumps(row, ensure_ascii=False)[1:-1]
-                result += r_str
-                result += "\n"
-            row = []
+
             raw_row = entry.get('cell', [])
-            ## we must escape some dump entries, which destroy the
-            ## import of the csv data - like SMSProviderConfig 8-(
+
+        ## we must escape some dump entries, which destroy the
+        ## import of the csv data - like SMSProviderConfig 8-(
+            row = []
             for row_entry in raw_row:
                 if type(row_entry) in (str, unicode):
                     row_entry = row_entry.replace('\"', "'")
                 row.append(row_entry)
+
             r_str = json.dumps(row, ensure_ascii=False)[1:-1]
-            res = (result + r_str + "\n").encode('utf-8')
+            res = (headers + r_str + "\n").encode('utf-8')
             self.i = self.i + 1
 
         except StopIteration as exx:
             if self.closed == False:
-                res = "\n"
+                res = "%s\n" % res
                 self.closed = True
             else:
                 log.info("returned %d entries" % self.i)
