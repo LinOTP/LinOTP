@@ -28,7 +28,6 @@
 """
 """
 
-
 import logging
 from linotp.tests import TestController, url
 import re
@@ -43,10 +42,11 @@ class TestPolicies(TestController):
         '''
         Overwrite the deleting of the realms!
 
-        If the realms are deleted also the table TokenRealm gets deleted and
-        we loose the information how many tokens are within a realm!
+        If the realms are deleted also the table TokenRealm gets deleted and we loose the information
+        how many tokens are within a realm!
         '''
         ## here we do the system test init per test method
+        #self._setLicense()
         #self.__deleteAllRealms__()
         #self.__deleteAllResolvers__()
         #self.__createResolvers__()
@@ -78,8 +78,7 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+        self.assertTrue('"status": true' in response, response)
 
     def test_02getPolicy_Realm(self):
         '''
@@ -93,8 +92,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_03getPolicy(self):
         '''
@@ -102,8 +101,8 @@ class TestPolicies(TestController):
         '''
         parameters = { 'selftest_admin' : 'adminR1'}
         response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     ##### Define System access
 
@@ -119,8 +118,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_05setPolicy_System(self):
         '''
@@ -134,8 +133,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_06setPolicy_System(self):
         """
@@ -154,9 +153,9 @@ class TestPolicies(TestController):
                       }
         response = self.app.get(url(controller='system', action='setPolicy'),
                                 params=parameters)
-        log.error(response)
-        assert '"status": false' in response
-        assert 'setPolicy failed: name and action required!' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('setPolicy failed: name and action required!' in response, response)
 
         return
 
@@ -173,9 +172,9 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
-        assert 'setPolicy failed: name and action required!' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('setPolicy failed: name and action required!' in response, response)
 
         return
 
@@ -188,8 +187,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'adminR1'
                       }
         response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_08checkPolicy_System(self):
         '''
@@ -203,8 +202,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'adminR1'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_09checkPolicy_System(self):
         '''
@@ -218,8 +217,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'adminEnroller'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_10checkPolicy_System(self):
         '''
@@ -229,8 +228,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'adminEnroller'
                       }
         response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
 
     ##### define admin access
@@ -250,8 +249,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
         # one administrator for enabling and disabling
         parameters = { 'name' : 'adm201a',
                        'scope' : 'admin',
@@ -261,8 +260,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # one administrator for setting
         parameters = { 'name' : 'adm201b',
@@ -273,8 +272,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # one administrator for setting
         parameters = { 'name' : 'adm201c',
@@ -285,8 +284,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # one administrator for resyncing
         parameters = { 'name' : 'adm201d',
@@ -297,8 +296,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # one administrator for resetting
         parameters = { 'name' : 'adm201e',
@@ -309,8 +308,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # one administrator for removing
         parameters = { 'name' : 'adm201f',
@@ -321,8 +320,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # one administrator for removing
         parameters = { 'name' : 'adm201g',
@@ -333,8 +332,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_202_initToken(self):
@@ -346,24 +345,24 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'cko_test_003',
                        'type' : 'spass',
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'cko_test_002',
                        'type' : 'spass',
                        'selftest_admin' : 'admin_reset'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
 
     def test_203_enable_disbale(self):
@@ -374,29 +373,29 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='disable'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'selftest_admin' : 'admin_enable_disable'
                       }
         response = self.app.get(url(controller='admin', action='disable'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='enable'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'selftest_admin' : 'admin_enable_disable'
                       }
         response = self.app.get(url(controller='admin', action='enable'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_204_set(self):
@@ -408,16 +407,16 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='set'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'maxFailCount' : '20',
                        'selftest_admin' : 'admin_set'
                       }
         response = self.app.get(url(controller='admin', action='set'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_205_setPIN(self):
@@ -429,32 +428,32 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_set'
                       }
         response = self.app.get(url(controller='admin', action='setPin'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'userpin' : 'test',
                        'selftest_admin' : 'admin_setpin'
                       }
         response = self.app.get(url(controller='admin', action='setPin'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'pin' : 'test',
                        'selftest_admin' : 'admin_set'
                       }
         response = self.app.get(url(controller='admin', action='set'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'pin' : 'test',
                        'selftest_admin' : 'admin_setpin'
                       }
         response = self.app.get(url(controller='admin', action='set'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_206_resync(self):
@@ -467,8 +466,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_set'
                       }
         response = self.app.get(url(controller='admin', action='resync'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'otp1' : '123456',
@@ -477,8 +476,8 @@ class TestPolicies(TestController):
                       }
 
         response = self.app.get(url(controller='admin', action='resync'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_207_reset(self):
         '''
@@ -488,15 +487,15 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_set'
                       }
         response = self.app.get(url(controller='admin', action='reset'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'selftest_admin' : 'admin_reset'
                       }
         response = self.app.get(url(controller='admin', action='reset'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_208_assign_unassign(self):
         '''
@@ -507,23 +506,23 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_set'
                       }
         response = self.app.get(url(controller='admin', action='assign'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'user' : 'root',
                        'selftest_admin' : 'admin_assign_unassign'
                       }
         response = self.app.get(url(controller='admin', action='assign'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'cko_test_001',
                        'selftest_admin' : 'admin_assign_unassign'
                       }
         response = self.app.get(url(controller='admin', action='unassign'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_209_remove_fail(self):
         '''
@@ -533,8 +532,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_set'
                       }
         response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_210_remove_success(self):
         '''
@@ -544,8 +543,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_remove'
                       }
         response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_211_remove_in_wrong_realm(self):
@@ -564,46 +563,46 @@ class TestPolicies(TestController):
                                                                                   'realm' : realm,
                                                                                   'selftest_admin' : 'superadmin'})
 
-        log.error(response)
-        assert '"setPolicy pol211":' in response
-        assert '"status": true,' in response
+
+        self.assertTrue('"setPolicy pol211":' in response, response)
+        self.assertTrue('"status": true,' in response, response)
 
         # add token to realm_wrong
         response = self.app.get(url(controller="admin", action="init"), params={'serial' : serial,
                                                                                'type' : 'spass',
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": true' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": true' in response, response)
 
         response = self.app.get(url(controller="admin", action="tokenrealm"), params={'serial' : serial,
                                                                                'realms' : realm_wrong,
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": 1' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         # admin will fail to remove token in wrong realm
         response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
                                                                                'selftest_admin' : admin})
-        log.error(response)
-        assert '"status": false,' in response
-        assert 'You do not have the administrative right to remove token' in response
+
+        self.assertTrue('"status": false,' in response, response)
+        self.assertTrue('You do not have the administrative right to remove token' in response, response)
 
         # remove token
         response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": 1' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         # remove policy
         response = self.app.get(url(controller="system", action="delPolicy"), params={'name' : policy,
                                                                                   'selftest_admin' : 'superadmin'})
 
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"linotp.Policy.%s.scope": true' % policy in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response, response)
 
     def test_212_remove_no_action(self):
         '''
@@ -619,9 +618,9 @@ class TestPolicies(TestController):
         #                        params={'serial' : serial,
         #                                   'type' : 'spass',
         #                                   'selftest_admin' : 'superadmin'})
-        #log.error(response)
-        #assert '"status": true,' in response
-        #assert '"value": true' in response
+        #
+        #self.assertTrue('"status": true,' in response
+        #self.assertTrue('"value": true' in response
 
 
         response = self.app.get(url(controller="system", action="setPolicy"),
@@ -634,50 +633,50 @@ class TestPolicies(TestController):
                                         }
                                 )
 
-        log.error(response)
-        assert '"setPolicy pol212":' in response
-        assert '"status": true,' in response
+
+        self.assertTrue('"setPolicy pol212":' in response, response)
+        self.assertTrue('"status": true,' in response, response)
 
         # add token to realm_wrong
         response = self.app.get(url(controller="admin", action="init"),
                                 params={'serial' : serial,
                                            'type' : 'spass',
                                            'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": true' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": true' in response, response)
 
         response = self.app.get(url(controller="admin", action="tokenrealm"),
                                 params={'serial' : serial,
                                            'realms' : realm,
                                            'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": 1' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         # admin will fail to remove token in his right realm
         response = self.app.get(url(controller="admin", action="remove"),
                                 params={'serial' : serial,
                                            'selftest_admin' : admin})
-        log.error(response)
-        assert '"status": false,' in response
-        assert 'ERR410: You do not have the administrative right to remove token' in response
+
+        self.assertTrue('"status": false,' in response, response)
+        self.assertTrue('ERR410: You do not have the administrative right to remove token' in response, response)
 
         # remove token
         response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": 1' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         # remove policy
         response = self.app.get(url(controller="system", action="delPolicy"),
                                 params={'name' : policy,
                                         'selftest_admin' : 'superadmin'})
 
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"linotp.Policy.%s.scope": true' % policy in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response, response)
 
 
         return
@@ -698,39 +697,39 @@ class TestPolicies(TestController):
                                                                                   'realm' : realm,
                                                                                   'selftest_admin' : 'superadmin'})
 
-        log.error(response)
-        assert '"setPolicy pol213":' in response
-        assert '"status": true,' in response
+
+        self.assertTrue('"setPolicy pol213":' in response, response)
+        self.assertTrue('"status": true,' in response, response)
 
         # token has no realm
         response = self.app.get(url(controller="admin", action="init"), params={'serial' : serial,
                                                                                'type' : 'spass',
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": true' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": true' in response, response)
 
         # admin will fail to remove the token as it is in no realm of his
         response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
                                                                                'selftest_admin' : admin})
-        log.error(response)
-        assert '"status": false,' in response
-        assert 'You do not have the administrative right to remove token' in response
+
+        self.assertTrue('"status": false,' in response, response)
+        self.assertTrue('You do not have the administrative right to remove token' in response, response)
 
         # remove token
         response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"value": 1' in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         # remove policy
         response = self.app.get(url(controller="system", action="delPolicy"), params={'name' : policy,
                                                                                   'selftest_admin' : 'superadmin'})
 
-        log.error(response)
-        assert '"status": true,' in response
-        assert '"linotp.Policy.%s.scope": true' % policy in response
+
+        self.assertTrue('"status": true,' in response, response)
+        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response, response)
 
 
     '''
@@ -776,8 +775,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'name' : 'self_02',
                        'scope' : 'selfservice',
@@ -786,8 +785,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'name' : 'self_03',
                        'scope' : 'selfservice',
@@ -796,8 +795,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_420_selfService_init(self):
         '''
@@ -810,8 +809,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'horst@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userinit'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'type': 'motp',
                        'serial': 'self002',
@@ -820,8 +819,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'postgres@myOtherRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userinit'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         '''
         Users in myMixRealm are not allowed to init a token
@@ -833,8 +832,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'horst@myMixRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userinit'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_421_selfService_disable(self):
         '''
@@ -845,24 +844,24 @@ class TestPolicies(TestController):
                        'selftest_user' : 'horst@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userdisable'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         # myOtherRealm is allowed to disable
         parameters = { 'serial': 'self002',
                        'selftest_user' : 'postgres@myOtherRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userdisable'), params=parameters)
-        log.error(response)
-        assert  '"disable token": 1' in response
+
+        self.assertTrue('"disable token": 1' in response, response)
 
         # myOtherRealm: a user, not the owner of the token can not disable the token
         parameters = { 'serial': 'self002',
                        'selftest_user' : 'not_the_owner@myOtherRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userdisable'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
 
     def test_422_sefService_setOTPPIN(self):
@@ -875,8 +874,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'horst@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         # myOtherRealm is allowed to set PIN
         parameters = { 'serial': 'self002',
@@ -884,22 +883,22 @@ class TestPolicies(TestController):
                        'selftest_user' : 'postgres@myOtherRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial': 'self001',
                        'selftest_admin': 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial': 'self002',
                        'selftest_admin': 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_423_selfservice_webprovision(self):
@@ -911,22 +910,22 @@ class TestPolicies(TestController):
                        'selftest_user' : 'horst@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'horst@myMixRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'type' : 'googleauthenticator',
                        'selftest_user' : 'horst@myMixRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_423a_selfservice_assign(self):
@@ -938,33 +937,33 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='show'), params={ 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"LinOtp.TokenSerialnumber": "cko_test_003"' in response
-        assert '"LinOtp.CountWindow": 10' in response
-        assert '"LinOtp.MaxFail": 10' in response
-        assert '"User.description": ""' in response
-        assert '"LinOtp.IdResClass": ""' in response
-        assert '"mydefrealm"' in response
+
+        self.assertTrue('"LinOtp.TokenSerialnumber": "cko_test_003"' in response, response)
+        self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
+        self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
+        self.assertTrue('"User.description": ""' in response, response)
+        self.assertTrue('"LinOtp.IdResClass": ""' in response, response)
+        self.assertTrue('"mydefrealm"' in response, response)
 
 
         parameters = { 'serial' : 'cko_test_003',
                        'selftest_user' : 'horst@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # unassign the token
         parameters = { 'serial' : 'cko_test_003',
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='unassign'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_424_selfservice_assign(self):
         '''
@@ -975,16 +974,16 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # user tries to assign
         parameters = { 'serial' : 'cko_test_003',
                        'selftest_user' : 'root@myOtherRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_425_selfservice_user(self):
         '''
@@ -997,44 +996,44 @@ class TestPolicies(TestController):
                                                                                        'action' : 'webprovisionOATH',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # user in realm, who has no policy
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'user2@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         # user who has a policy
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'user1@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'self_user_pol1',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # delete both tokens
         response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user1',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user2',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_426_selfservice_resolver(self):
         '''
@@ -1047,58 +1046,58 @@ class TestPolicies(TestController):
                                                                                        'action' : 'webprovisionOATH',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # delete the old self_03 policy, so that we can use the mixrealm to test
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'self_03',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # we list all the policy to find errors
         response = self.app.get(url(controller='system', action='getPolicy'), params={'scope':'selfservice' ,
                                                                                       'realm':'mymixrealm',
                                                                                      'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # user in resolver myOtherRes, who is not allowed to enroll token
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'other_user@myMixRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         # user in resolver myDefRes, who is allowed to enroll token
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'user1@myMixRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'self_res_pol1',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # delete both tokens
         response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user1',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user2',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_427_selfservice_assign(self):
         '''
@@ -1111,30 +1110,30 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # check this token is in no realm
         response = self.app.get(url(controller='admin', action='show'), params={})
-        log.error(response)
-        assert '"LinOtp.TokenSerialnumber": "%s"' % serial in response
-        assert '"LinOtp.CountWindow": 10' in response
-        assert '"LinOtp.MaxFail": 10' in response
-        assert '"User.description": ""' in response
-        assert '"LinOtp.IdResClass": ""' in response
-        assert '"LinOtp.RealmNames": []' in response
+
+        self.assertTrue('"LinOtp.TokenSerialnumber": "%s"' % serial in response, response)
+        self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
+        self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
+        self.assertTrue('"User.description": ""' in response, response)
+        self.assertTrue('"LinOtp.IdResClass": ""' in response, response)
+        self.assertTrue('"LinOtp.RealmNames": []' in response, response)
 
         # user tries to assign
         parameters = { 'serial' : serial,
                        'selftest_user' : 'horst@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
-        log.error(response)
-        assert  '"assign token": true' in response
+
+        self.assertTrue('"assign token": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={'serial':serial})
-        log.error(response)
-        assert '"value": 1' in response
+
+        self.assertTrue('"value": 1' in response, response)
 
 
     def test_428_selfservice_assign(self):
@@ -1148,39 +1147,39 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # set the realm of the token
         response = self.app.get(url(controller='admin', action='tokenrealm'), params={'serial' : serial,
                                                                                      'realms':'myOtherRealm',
                                                                                      'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": 1'  in response
+
+        self.assertTrue('"value": 1'  in response, response)
 
 
         # check this token is in no realm
         response = self.app.get(url(controller='admin', action='show'), params={"serial" : serial})
-        log.error(response)
-        assert '"LinOtp.TokenSerialnumber": "temp_spass_428"'  in response
-        assert '"LinOtp.CountWindow": 10'  in response
-        assert '"LinOtp.MaxFail": 10'  in response
-        assert '"User.description": ""'  in response
-        assert '"LinOtp.IdResClass": ""'  in response
-        assert '"myotherrealm"'  in response
+
+        self.assertTrue('"LinOtp.TokenSerialnumber": "temp_spass_428"'  in response, response)
+        self.assertTrue('"LinOtp.CountWindow": 10'  in response, response)
+        self.assertTrue('"LinOtp.MaxFail": 10'  in response, response)
+        self.assertTrue('"User.description": ""'  in response, response)
+        self.assertTrue('"LinOtp.IdResClass": ""'  in response, response)
+        self.assertTrue('"myotherrealm"'  in response, response)
 
         # user tries to assign
         parameters = { 'serial' : serial,
                        'selftest_user' : 'horst@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
-        assert 'The token you want to assign is not contained in your realm!' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('The token you want to assign is not contained in your realm!' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={'serial':serial})
-        log.error(response)
-        assert '"value": 1' in response
+
+        self.assertTrue('"value": 1' in response, response)
 
     def test_429_get_serial_by_OTP(self):
         '''
@@ -1198,38 +1197,39 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # set the realm of the token
         response = self.app.get(url(controller='admin', action='tokenrealm'), params={'serial' : serial,
                                                                                      'realms':'myDefRealm',
                                                                                      'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": 1'  in response
+
+        self.assertTrue('"value": 1'  in response, response)
 
         # check this token is in no realm
         response = self.app.get(url(controller='admin', action='show'), params={"serial" : serial})
-        log.error(response)
-        assert '"LinOtp.TokenSerialnumber": "oath429"'  in response
+
+        self.assertTrue('"LinOtp.TokenSerialnumber": "oath429"'  in response, response)
 
         # user to get the serial of the OTP of the unassigned token.
         parameters = { 'otp' : otps[3],
                        'selftest_user' : 'passthru_user1@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
-        assert 'The policy settings do not allow you to request a serial by OTP!' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('The policy settings do not allow you to request a serial by OTP!' in response, response)
 
         # set policy
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'getSerial',
-                                                                                     'scope' : 'selfservice',
-                                                                                     'realm' : 'myDefRealm',
-                                                                                     'action' : 'getserial',
-                                                                                     'selftest_admin' : 'superadmin' })
-        log.error(response)
-        assert '"value" : true'
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params={'name' : 'getSerial',
+                                         'scope' : 'selfservice',
+                                         'realm' : 'myDefRealm',
+                                         'action' : 'getserial',
+                                         'selftest_admin' : 'superadmin' })
+
+        self.assertTrue('"value" : true', response)
 
         # try again to get the serial
         parameters = { 'otp' : otps[0],
@@ -1237,28 +1237,28 @@ class TestPolicies(TestController):
                        'selftest_user' : 'passthru_user1@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
-        assert '"serial": "oath429"' in response
+
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"serial": "oath429"' in response, response)
 
         parameters = { 'otp' : otps[3],
                        'selftest_user' : 'passthru_user1@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
-        assert '"serial": "oath429"' in response
+
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"serial": "oath429"' in response, response)
 
         # remove the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'getSerial',
                                                                                      'selftest_admin' : 'superadmin' })
-        log.error(response)
-        assert '"value" : true'
+
+        self.assertTrue('"value" : true', response)
 
         # remove the token
         response = self.app.get(url(controller='admin', action='remove'), params={'serial':serial})
-        log.error(response)
-        assert '"value": 1' in response
+
+        self.assertTrue('"value": 1' in response, response)
 
     def test_430_passthru_policy(self):
         '''
@@ -1271,26 +1271,26 @@ class TestPolicies(TestController):
                                                                                        'action' : 'passthru',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # user1 is allowed to passthru as he has no token.
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'pass':'geheim1'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # user2 is allowed to passthru as he is not in the policy
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'pass':'geheim2'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'NoToken',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_430_passOnNoToken_policy(self):
         '''
@@ -1303,97 +1303,104 @@ class TestPolicies(TestController):
                                                                                        'action' : 'passOnNoToken',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # user1 is allowed to passthru as he has no token.
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'pass':'argsargs'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'pass':'OtherPW'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # user2 is allowed to passthru as he is not in the policy
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'pass':'geheim2'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'NoToken',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_431_otppin_policy(self):
         '''
         Policy 431: check that passthru_user1 can authenticate with the password but passthru_user2 authenticates with OTP PIN.
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'otppin',
-                                                                                       'scope' : 'authentication',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'otppin=1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-        log.error(response)
-        assert '"status": true' in response
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params={'name' : 'otppin',
+                                       'scope' : 'authentication',
+                                       'realm' : 'myDefRealm',
+                                       'user' : 'passthru_user1',
+                                       'action' : 'otppin=1',
+                                       'selftest_admin' : 'superadmin'
+                                       })
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'spass',
-                                                                                   'serial' : 'spass_pin_1',
-                                                                                   'pin' : 'otppin',
-                                                                                   'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+        response = self.app.get(url(controller='admin', action='init'),
+                                params={'user':'passthru_user1',
+                                       'type' : 'spass',
+                                       'serial' : 'spass_pin_1',
+                                       'pin' : 'otppin',
+                                       'selftest_admin' : 'superadmin'})
 
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
-                                                                               'type' : 'spass',
-                                                                                   'serial' : 'spass_pin_2',
-                                                                                   'pin' : 'otppin',
-                                                                                   'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+        self.assertTrue('"status": true' in response, response)
+
+        response = self.app.get(url(controller='admin', action='init'),
+                                params={'user':'passthru_user2',
+                                       'type' : 'spass',
+                                       'serial' : 'spass_pin_2',
+                                       'pin' : 'otppin',
+                                       'selftest_admin' : 'superadmin'})
+
+        self.assertTrue('"status": true' in response, response)
 
 
         # user1 has otppin=1
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'geheim1'})
-        log.error(response)
-        assert '"value": true' in response
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user':'passthru_user1',
+                                        'pass':'geheim1'})
+
+        self.assertTrue('"value": true' in response, response)
 
         # user2 has default otppin=0
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'geheim2'})
-        log.error(response)
-        assert '"value": false' in response
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user':'passthru_user2',
+                                        'pass':'geheim2'})
 
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'otppin'})
-        log.error(response)
-        assert '"value": true' in response
+        self.assertTrue('"value": false' in response, response)
 
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'otppin',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-        log.error(response)
-        assert '"status": true' in response
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user':'passthru_user2',
+                                        'pass':'otppin'})
+
+        self.assertTrue('"value": true' in response, response)
+
+        response = self.app.get(url(controller='system', action='delPolicy'),
+                                params={'name' : 'otppin',
+                                       'selftest_admin' : 'superadmin'
+                                       })
+
+        self.assertTrue('"status": true' in response, response)
 
         # remove the tokens
         response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_2',
                                                                                    'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_1',
                                                                                    'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_440_check_authorize(self):
@@ -1408,8 +1415,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '192.168.17.15',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
@@ -1417,63 +1424,63 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_1',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
                                                                                'type' : 'spass',
                                                                                'serial' : 'spass_pin_2',
                                                                                'pin' : 'otppin',
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
         # auth user 1
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.17.15'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # auth user 1 fails. Wrong client
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.17.16'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # user2 is not allowed to auth
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.17.15'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # user2 may login at other clients
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.17.16'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user1',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # remove the tokens
         response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_2',
                                                                                    'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_1',
                                                                                    'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_440a_check_authorize_client_exclude(self):
@@ -1488,8 +1495,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '192.168.17.15, 192.168.17.16',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'authorize_all',
                                                                                        'scope' : 'authorization',
@@ -1499,8 +1506,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '192.168.0.0/16, -192.168.17.15, !192.168.17.16',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
@@ -1508,75 +1515,75 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_1',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
                                                                                'type' : 'spass',
                                                                                'serial' : 'spass_pin_2',
                                                                                'pin' : 'otppin',
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
         # auth user 1
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.17.15'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # auth user 1 can also auth on othe clients
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.20.1'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # user2 is not allowed to auth on certain clients
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.17.15'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.17.16'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # user2 may login at other clients
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'pass':'otppin',
                                                                                    'client' : '192.168.20.1'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_root',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_all',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # remove the tokens
         response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_2',
                                                                                    'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_1',
                                                                                    'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_441_check_tokentype(self):
@@ -1592,8 +1599,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '192.168.20.21',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
@@ -1601,29 +1608,29 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_1',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # Token type SPASS is not allowed to login
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # Token type SPASS is allowed to login from another client
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'client' : '192.168.20.22',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
 
         # delete old token SPASS and enroll PW token
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_1',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
                                                                                'type' : 'pw',
@@ -1631,21 +1638,21 @@ class TestPolicies(TestController):
                                                                                 'pin' : 'otppin',
                                                                                 'otpkey' : 'secret',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # Token type PW is allowed to login
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppinsecret'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # delete PW token
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'pw_1',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         #
         # enroll PW token for passthru_user2
@@ -1656,28 +1663,28 @@ class TestPolicies(TestController):
                                                                                'serial' : 'spass_2',
                                                                                'pin' : 'otppin',
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # user 2 can authenticate with other token, since he is not in policy
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # delete pw_2
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_2',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user1',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_441b_check_auth_serial(self):
         '''
@@ -1692,8 +1699,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '192.168.20.21',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
@@ -1701,29 +1708,29 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_1',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # Token type SPASS is not allowed to login
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # Token type SPASS is allowed to login from another client
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'client' : '192.168.20.22',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
 
         # delete old token SPASS and enroll PW token
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_1',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
                                                                                'type' : 'pw',
@@ -1731,21 +1738,21 @@ class TestPolicies(TestController):
                                                                                 'pin' : 'otppin',
                                                                                 'otpkey' : 'secret',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # Token type PW is allowed to login
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppinsecret'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # delete PW token
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'pw_1',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         #
         # enroll PW token for passthru_user2
@@ -1756,28 +1763,28 @@ class TestPolicies(TestController):
                                                                                'serial' : 'spass_2',
                                                                                'pin' : 'otppin',
                                                                                'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # user 2 can authenticate with other token, since he is not in policy
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # delete pw_2
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_2',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user1',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
 
@@ -1793,8 +1800,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '192.168.20.21',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
@@ -1802,57 +1809,57 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_1',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
                                                                                'type' : 'spass',
                                                                                 'serial' : 'spass_pin_2',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # Realm for user1 gets rewritten
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1@WrongRealm',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # Realm for user2 gets not rewritten
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2@WrongRealm',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # User 2 can login with right realm
         response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2@myDefRealm',
                                                                                    'client' : '192.168.20.21',
                                                                                    'pass':'otppin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
 
         # delete the tokens
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_1',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_2',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'set_realm',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
 
@@ -1868,8 +1875,8 @@ class TestPolicies(TestController):
                       'selftest_admin' : 'superadmin' }
 
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        print response
-        assert ('"realm": true' in response)
+
+        self.assertTrue(('"realm": true' in response), response)
 
         parameters = { 'name' : '501_user2',
                       'scope' : 'admin',
@@ -1879,8 +1886,8 @@ class TestPolicies(TestController):
                       'selftest_admin' : 'superadmin' }
 
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        print response
-        assert ('"realm": true' in response)
+
+        self.assertTrue(('"realm": true' in response), response)
 
     def test_502_check_userlist(self):
         '''
@@ -1889,13 +1896,13 @@ class TestPolicies(TestController):
         parameters = { 'realm' : 'MyDefRealm',
                       'selftest_admin' : '501_admin_def'}
         response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        print response
-        assert('"status": true' in response)
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='manage', action='userview_flexi'), params=parameters)
-        print response
 
-        assert('"rows":' in response)
+
+        self.assertTrue('"rows":' in response, response)
 
     def test_503_check_userlist(self):
         '''
@@ -1904,13 +1911,13 @@ class TestPolicies(TestController):
         parameters = { 'realm' : 'MyDefRealm',
                       'selftest_admin' : '501_admin_other'}
         response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        print response
+
         assert('You do not have the administrative right to list users' in response)
 
         response = self.app.get(url(controller='manage', action='userview_flexi'), params=parameters)
-        print response
 
-        assert('You do not have the administrative right to list users' in response)
+
+        self.assertTrue('You do not have the administrative right to list users' in response, response)
 
     def test_550_check_policy(self):
         '''
@@ -1985,8 +1992,8 @@ class TestPolicies(TestController):
         # set the policies
         for pol in policies:
             response = self.app.get(url(controller='system', action='setPolicy'), pol)
-            log.error(response)
-            assert  '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
         # check the policies
         # cp1_admin is allowed to do all actions in realm1
@@ -1995,9 +2002,9 @@ class TestPolicies(TestController):
                                                                                 'action' : 'initHMAC',
                                                                                 'scope' : 'admin',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"cp1": {' in response
-        assert '"allowed": true' in response
+
+        self.assertTrue('"cp1": {' in response, response)
+        self.assertTrue('"allowed": true' in response, response)
 
         # cp1_admin has no rights in realm2
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'cp1_admin',
@@ -2005,8 +2012,8 @@ class TestPolicies(TestController):
                                                                                 'action' : 'initHMAC',
                                                                                 'scope' : 'admin',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"allowed": false' in response
+
+        self.assertTrue('"allowed": false' in response, response)
 
         # cp2_admin is allowed to remove in realm2
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'cp2_admin',
@@ -2014,9 +2021,9 @@ class TestPolicies(TestController):
                                                                                 'action' : 'remove',
                                                                                 'scope' : 'admin',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"cp2": {' in response
-        assert '"allowed": true' in response
+
+        self.assertTrue('"cp2": {' in response, response)
+        self.assertTrue('"allowed": true' in response, response)
 
         # cp2_admin is not allowed to enroll in realm2
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'cp2_admin',
@@ -2024,9 +2031,8 @@ class TestPolicies(TestController):
                                                                                 'action' : 'initHMAC',
                                                                                 'scope' : 'admin',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"allowed": false' in response
 
+        self.assertTrue('"allowed": false' in response, response)
 
         # check scope enrollment, user1 may enroll 3 tokens, user2 only 1 token
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
@@ -2034,18 +2040,18 @@ class TestPolicies(TestController):
                                                                                 'action' : 'maxtoken',
                                                                                 'scope' : 'enrollment',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"cp_enroll_1": {' in response
-        assert '"action": "maxtoken=3",' in response
+
+        self.assertTrue('"cp_enroll_1": {' in response, response)
+        self.assertTrue('"action": "maxtoken=3",' in response, response)
 
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user2',
                                                                                 'realm' : 'myDefRealm',
                                                                                 'action' : 'maxtoken',
                                                                                 'scope' : 'enrollment',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"cp_enroll_2": {' in response
-        assert '"action": "maxtoken=1",' in response
+
+        self.assertTrue('"cp_enroll_2": {' in response, response)
+        self.assertTrue('"action": "maxtoken=1",' in response, response)
 
         # check scope authentication
         # user1 has otppin=0, all other suers otppin=1
@@ -2054,18 +2060,18 @@ class TestPolicies(TestController):
                                                                                 'action' : 'otppin',
                                                                                 'scope' : 'authentication',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"cp_auth_1": {' in response
-        assert '"action": "otppin=0",' in response
+
+        self.assertTrue('"cp_auth_1": {' in response, response)
+        self.assertTrue('"action": "otppin=0",' in response, response)
 
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user2',
                                                                                 'realm' : 'myDefRealm',
                                                                                 'action' : 'otppin',
                                                                                 'scope' : 'authentication',
                                                                                 'client' : ''})
-        log.error(response)
-        assert '"cp_auth_2": {' in response
-        assert '"action": "otppin=1",' in response
+
+        self.assertTrue('"cp_auth_2": {' in response, response)
+        self.assertTrue('"action": "otppin=1",' in response, response)
 
         # check scope selfservice
         # Webprovisioning from 192.168.20.1 is not allowed
@@ -2074,17 +2080,17 @@ class TestPolicies(TestController):
                                                                                 'action' : 'webprovisionGOOGLE',
                                                                                 'scope' : 'selfservice',
                                                                                 'client' : '192.168.20.1'})
-        log.error(response)
-        assert '"allowed": false' in response
+
+        self.assertTrue('"allowed": false' in response, response)
 
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
                                                                                 'realm' : 'myDefRealm',
                                                                                 'action' : 'initHMAC',
                                                                                 'scope' : 'selfservice',
                                                                                 'client' : '192.168.20.1'})
-        log.error(response)
-        assert '"allowed": true' in response
-        assert '"action": "initHMAC, setOTPPIN",' in response
+
+        self.assertTrue('"allowed": true' in response, response)
+        self.assertTrue('"action": "initHMAC, setOTPPIN",' in response, response)
 
         # webprovisioning from 172.16.200.X is allowrd
         response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
@@ -2092,20 +2098,20 @@ class TestPolicies(TestController):
                                                                                 'action' : 'webprovisionGOOGLE',
                                                                                 'scope' : 'selfservice',
                                                                                 'client' : '172.16.200.10'})
-        log.error(response)
+
 
         #response = self.app.get(url(controller='system', action='getPolicy'),{ 'selftest_admin':'superadmin' })
-        #log.error(response)
-        assert '"cp_self_2": {' in response
-        assert '"action": "initHMAC, setOTPPIN, webprovisionGOOGLE",' in response
+        #
+        self.assertTrue('"cp_self_2": {' in response, response)
+        self.assertTrue('"action": "initHMAC, setOTPPIN, webprovisionGOOGLE",' in response, response)
 
 
 
         # delete the policies
         for policy in policies:
             response = self.app.get(url(controller='system', action='delPolicy'), params={'name':policy['name']})
-            log.error(response)
-            assert  '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
     def test_601_otppin_length01(self):
         '''
@@ -2118,8 +2124,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_602_otppin_length02(self):
         '''
@@ -2132,8 +2138,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_603_otppin_length02(self):
         '''
@@ -2146,8 +2152,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_604_otp_length_do(self):
         '''
@@ -2159,8 +2165,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'root@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         # PIN to long
         parameters = { 'serial' : 'cko_test_004',
@@ -2168,8 +2174,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'root@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
         # PIN perfect
         parameters = { 'serial' : 'cko_test_004',
@@ -2177,8 +2183,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'root@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_605_otppin_contents(self):
@@ -2192,8 +2198,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_606_otppin_contents(self):
         '''
@@ -2205,8 +2211,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'root@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_607_otppin_contents(self):
         '''
@@ -2218,8 +2224,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'root@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_608_otppin_contents(self):
         '''
@@ -2232,8 +2238,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_609_otppin_contents(self):
         '''
@@ -2245,8 +2251,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'root@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_610_otppin_contents(self):
         '''
@@ -2257,8 +2263,8 @@ class TestPolicies(TestController):
                        'selftest_user' : 'root@myDefRealm'
                       }
         response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     '''
@@ -2277,8 +2283,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_702_cleanup(self):
@@ -2290,8 +2296,8 @@ class TestPolicies(TestController):
                            'selftest_admin' : 'superadmin'
                           }
             response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-            log.error(response)
-            assert  '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
 
     def test_703_enrollment01(self):
@@ -2306,16 +2312,16 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'type' : 'spass',
                        'user' : 'root@myDefRealm',
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # The user may not own a third token!
         parameters = { 'serial' : 'enroll_003',
@@ -2324,8 +2330,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
+
+        self.assertTrue('"status": false' in response, response)
 
     def test_704_enrollment02(self):
         '''
@@ -2340,8 +2346,8 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # this would be the 4th token, but only 3 allowed.
         parameters = { 'serial' : 'enroll_004',
@@ -2350,9 +2356,9 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'admin_init'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
-        assert 'You can not init any more tokens' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('You can not init any more tokens' in response, response)
 
     def test_705_tokencount(self):
         '''
@@ -2364,17 +2370,17 @@ class TestPolicies(TestController):
                         'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'enroll_tc_01',
                        'user' : 'remoteuser@myDefRealm',
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='assign'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
-        #assert 'You can not assign any more tokens' in response
+
+        self.assertTrue('"status": false' in response, response)
+        #self.assertTrue('You can not assign any more tokens' in response
 
 
     def test_706_tokencount(self):
@@ -2386,9 +2392,9 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
-        assert 'You may not put any more tokens in realm' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('You may not put any more tokens in realm' in response, response)
 
 
     def test_707_tokencount(self):
@@ -2400,24 +2406,24 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='disable'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'enroll_tc_01',
                        'realms' : 'mydefrealm',
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         parameters = { 'serial' : 'enroll_003',
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='admin', action='enable'), params=parameters)
-        log.error(response)
-        assert '"status": false' in response
-        assert 'You may not enable any more tokens in realm' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('You may not enable any more tokens in realm' in response, response)
 
 
     def test_708_tokencount(self):
@@ -2432,16 +2438,16 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
-        assert  '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
         parameters = { 'type' : 'oathcsv',
                        'file' : 'import0001, 1234123412345',
                        'selftest_admin': 'realmadmin' }
         response = self.app.put(url(controller="admin", action='loadtokens'), params=parameters)
-        log.error(response)
-        assert "The maximum number of allowed tokens in realm" in response
+
+        self.assertTrue("The maximum number of allowed tokens in realm" in response, response)
 
     def test_709_maxtoken_with_user(self):
         '''
@@ -2456,8 +2462,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token max1
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
@@ -2466,8 +2472,8 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_1',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # enroll 2nd token for max1 will fail
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
@@ -2476,8 +2482,8 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_2',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert 'the maximum number of allowed tokens per user is exceeded' in response
+
+        self.assertTrue('the maximum number of allowed tokens per user is exceeded' in response, response)
 
         # enroll 2 tokens for max2
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
@@ -2486,8 +2492,8 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_3',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
                                                                                'realm':'myOtherRealm',
@@ -2495,23 +2501,23 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_4',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # delete the tokens of the user
         for serial in ["spass_pin_1", "spass_pin_3", "spass_pin_4"]:
             response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
                                                                                  'selftest_admin' : 'superadmin'
                                                                                   })
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'maxtoken_per_user',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_710_otp_pin_random_for_users(self):
         '''
@@ -2525,8 +2531,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token max1
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
@@ -2535,8 +2541,8 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_1',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # enroll token for max2
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
@@ -2545,39 +2551,39 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'spass_pin_2',
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # validate token of max1: unknown otp pin
         response = self.app.get(url(controller='validate', action='check'), params={'user':'max1',
                                                                                'realm':'myOtherRealm',
                                                                                'pass' : 'otppin'
                                                                                 })
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
         # validate token of max2: known otp pin
         response = self.app.get(url(controller='validate', action='check'), params={'user':'max2',
                                                                                'realm':'myOtherRealm',
                                                                                'pass' : 'otppin'
                                                                                 })
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # delete the tokens of the user
         for serial in ["spass_pin_1", "spass_pin_2"]:
             response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
                                                                                  'selftest_admin' : 'superadmin'
                                                                                   })
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'otppinrandom_per_user',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_711_get_tokenlabel_for_users(self):
         '''
@@ -2591,8 +2597,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll a token max1
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
@@ -2601,8 +2607,8 @@ class TestPolicies(TestController):
                                                                                'type' : 'hmac',
                                                                                 'genkey' : 1,
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"value": "otpauth://hotp/max1?' in response
+
+        self.assertTrue('"value": "otpauth://hotp/max1?' in response, response)
 
         # enroll token for max2
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
@@ -2611,8 +2617,8 @@ class TestPolicies(TestController):
                                                                                'type' : 'hmac',
                                                                                 'genkey' : 1,
                                                                                 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert 'value": "otpauth://hotp/hmac2?' in response
+
+        self.assertTrue('value": "otpauth://hotp/hmac2?' in response, response)
 
 
         # delete the tokens of the user
@@ -2620,15 +2626,15 @@ class TestPolicies(TestController):
             response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
                                                                                  'selftest_admin' : 'superadmin'
                                                                                   })
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'tokenlabel_per_user',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
     def test_712_autoassignment_for_users(self):
         '''
@@ -2645,72 +2651,72 @@ class TestPolicies(TestController):
                                                                                        'client' : '',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll tokens in realm myOtherRealm
         response = self.app.get(url(controller='admin', action='init'), params={'type' : 'hmac',
                                                                                 'serial' : 'token1',
                                                                                 'otpkey' : 'd9848218d9977592fa70522579ec00e30adc490a',
                                                                                 'selftest_admin' : 'superadmin'})  # OTP: 585489
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'type' : 'hmac',
                                                                                 'serial' : 'token2',
                                                                                 'otpkey' : '6b9c172fd7a521e57891f758141ce66741694c59',
                                                                                 'selftest_admin' : 'superadmin'})  # OTP: 843851
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # set realm of tokens
         response = self.app.get(url(controller='admin', action='tokenrealm'), params={'serial' : 'token1',
                                                                                      'realms' : 'myOtherRealm',
                                                                                      'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
-        assert '"value": 1' in response
+
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         response = self.app.get(url(controller='admin', action='tokenrealm'), params={'serial' : 'token2',
                                                                                      'realms' : 'myOtherRealm',
                                                                                      'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"status": true' in response
-        assert '"value": 1' in response
+
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         # check tokens in realm
         response = self.app.get(url(controller='admin', action='show'), params={ 'selftest_admin' : 'superadmin'})
-        log.error(response)
-        assert '"LinOtp.TokenSerialnumber": "token2"' in response
-        assert '"LinOtp.CountWindow": 10' in response
-        assert '"LinOtp.MaxFail": 10' in response
-        assert '"User.description": ""' in response
-        assert '"LinOtp.IdResClass": ""' in response
 
-        assert '"myotherrealm"' in response
+        self.assertTrue('"LinOtp.TokenSerialnumber": "token2"' in response, response)
+        self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
+        self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
+        self.assertTrue('"User.description": ""' in response, response)
+        self.assertTrue('"LinOtp.IdResClass": ""' in response, response)
 
-        assert '"LinOtp.TokenSerialnumber": "token1"' in response
-        assert '"LinOtp.CountWindow": 10' in response
-        assert '"LinOtp.MaxFail": 10' in response
-        assert '"User.description": ""' in response
-        assert '"LinOtp.IdResClass": ""' in response
-        assert '"myotherrealm"' in response
+        self.assertTrue('"myotherrealm"' in response, response)
+
+        self.assertTrue('"LinOtp.TokenSerialnumber": "token1"' in response, response)
+        self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
+        self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
+        self.assertTrue('"User.description": ""' in response, response)
+        self.assertTrue('"LinOtp.IdResClass": ""' in response, response)
+        self.assertTrue('"myotherrealm"' in response, response)
 
         # authenticate max1, gets the token assigned.
         response = self.app.get(url(controller='validate', action='check'), params={'user' : 'max1',
                                                                                   'realm' : 'myotherrealm',
                                                                                   'pass' : 'password1585489'
                                                                                   })
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # max 2 can not autoassign a token pw2
         response = self.app.get(url(controller='validate', action='check'), params={'user' : 'max2',
                                                                                   'realm' : 'myotherrealm',
                                                                                   'pass' : 'password2843851'
                                                                                   })
-        log.error(response)
-        assert '"value": false' in response
+
+        self.assertTrue('"value": false' in response, response)
 
 
         # delete the tokens of the user
@@ -2718,15 +2724,15 @@ class TestPolicies(TestController):
             response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
                                                                                  'selftest_admin' : 'superadmin'
                                                                                   })
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'autoassignment_user',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
 
     def test_713_losttoken_for_users(self):
@@ -2744,8 +2750,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'losttoken_user_2',
                                                                                        'scope' : 'enrollment',
@@ -2755,8 +2761,8 @@ class TestPolicies(TestController):
                                                                                        'client' : '',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
-        log.error(response)
-        assert '"status": true' in response
+
+        self.assertTrue('"status": true' in response, response)
 
         # enroll tokens in realm myOtherRealm
         response = self.app.get(url(controller='admin', action='init'), params={'type' : 'hmac',
@@ -2765,8 +2771,8 @@ class TestPolicies(TestController):
                                                                                 'serial' : 'token1',
                                                                                 'otpkey' : 'd9848218d9977592fa70522579ec00e30adc490a',
                                                                                 'selftest_admin' : 'superadmin'})  # OTP: 585489
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         response = self.app.get(url(controller='admin', action='init'), params={'type' : 'hmac',
                                                                                 'serial' : 'token2',
@@ -2774,21 +2780,21 @@ class TestPolicies(TestController):
                                                                                "realm" : "myOtherRealm",
                                                                                 'otpkey' : '6b9c172fd7a521e57891f758141ce66741694c59',
                                                                                 'selftest_admin' : 'superadmin'})  # OTP: 843851
-        log.error(response)
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         # generate lost tokens
         response = self.app.get(url(controller='admin', action="losttoken"), params={"serial" : "token1",
                                                                                     "selftest_admin": "superadmin"})
-        log.error(response)
+
         # check for password length 10
-        assert re.search('"password": "\S{8}"', unicode(response)) is not None
+        self.assertTrue(re.search('"password": "\S{8}"', unicode(response)) is not None, response)
 
         response = self.app.get(url(controller='admin', action="losttoken"), params={"serial" : "token2",
                                                                                     "selftest_admin": "superadmin"})
-        log.error(response)
+
                 # check for password length 10
-        assert re.search('"password": "\S{20}"', unicode(response)) is not None
+        self.assertTrue(re.search('"password": "\S{20}"', unicode(response)) is not None, response)
 
 
         # delete the tokens of the user
@@ -2796,16 +2802,16 @@ class TestPolicies(TestController):
             response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
                                                                                  'selftest_admin' : 'superadmin'
                                                                                   })
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         for p in ["losttoken_user_1", "losttoken_user_2"]:
             response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : p,
                                                                                          'selftest_admin' : 'superadmin'
                                                                                        })
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
 
 
@@ -2821,11 +2827,11 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
+
 
         from linotp.lib.policy import get_qrtan_url
         u = get_qrtan_url("testrealm")
-        assert(u == URL)
+        self.assertTrue(u == URL, u)
 
     def test_802_getqrtanurl(self):
         '''
@@ -2839,11 +2845,11 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
+
 
         from linotp.lib.policy import get_qrtan_url
         u = get_qrtan_url("testrealm")
-        assert(u == URL)
+        self.assertTrue(u == URL, u)
 
     def test_803_getqrtanurl(self):
         '''
@@ -2857,11 +2863,11 @@ class TestPolicies(TestController):
                        'selftest_admin' : 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-        log.error(response)
+
 
         from linotp.lib.policy import get_qrtan_url
         u = get_qrtan_url("testrealm")
-        assert(u == URL)
+        self.assertTrue(u == URL, u)
 
     def test_804_ocra_policy(self):
         '''
@@ -2885,63 +2891,63 @@ class TestPolicies(TestController):
         # create policies
         for policy in policies:
             response = self.app.get(url(controller='system', action='setPolicy'), params=policy)
-            log.error(response)
-            assert '"status": true' in response
-            assert '"setPolicy %s"' % policy.get('name') in response
+
+            self.assertTrue('"status": true' in response, response)
+            self.assertTrue('"setPolicy %s"' % policy.get('name') in response, response)
 
         # check policies
         for policy in policies:
             response = self.app.get(url(controller='system', action='getPolicy'), params={'name':policy.get('name')})
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
 
         response = self.app.get(url(controller='ocra', action='request'), params={'selftest_admin':'ocra_admin_1',
                                                                                  'user' : 'user1',
                                                                                  'data' : 'Testdaten'})
-        log.error(response)
-        assert '"status": false' in response
-        assert '"No token found: unable to create challenge for ' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('"No token found: unable to create challenge for ' in response, response)
 
         response = self.app.get(url(controller='ocra', action='checkstatus'), params={'selftest_admin':'ocra_admin_1',
                                                                                      'user': 'user1'})
-        log.error(response)
-        assert '"status": true' in response
-        assert '"values": []' in response
+
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"values": []' in response, response)
 
         response = self.app.get(url(controller='ocra', action='checkstatus'), params={'selftest_admin':'ocra_admin_2',
                                                                                      'user': 'user1'})
-        log.error(response)
-        assert '"status": false' in response
-        assert 'You do not have the administrative right to do an ocra/checkstatus' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('You do not have the administrative right to do an ocra/checkstatus' in response, response)
 
         response = self.app.get(url(controller='ocra', action='getActivationCode'), params={'selftest_admin':'ocra_admin_2'})
-        log.error(response)
-        assert '"status": true' in response
-        assert '"activationcode": "' in response
+
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"activationcode": "' in response, response)
 
         response = self.app.get(url(controller='ocra', action='calculateOtp'), params={'selftest_admin':'ocra_admin_2'})
-        log.error(response)
-        assert '"status": false' in response
-        assert '\'NoneType\' object has no attribute \'find\'' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('\'NoneType\' object has no attribute \'find\'' in response, response)
 
         response = self.app.get(url(controller='ocra', action='calculateOtp'), params={'selftest_admin':'ocra_admin_1'})
-        log.error(response)
-        assert '"status": false' in response
-        assert '"code": 410' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('"code": 410' in response, response)
 
         response = self.app.get(url(controller='ocra', action='getActivationCode'), params={'selftest_admin':'ocra_admin_1'})
-        log.error(response)
-        assert '"status": false' in response
-        assert 'You do not have the administrative right to do an ocra/getActivationCode' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('You do not have the administrative right to do an ocra/getActivationCode' in response, response)
 
 
         # delete policies
         for policy in policies:
             response = self.app.get(url(controller='system', action='delPolicy'), params={'name':policy.get('name')})
-            log.error(response)
-            assert '"status": true,' in response
-            assert '"linotp.Policy.%s.scope": true' % policy.get('name') in response
+
+            self.assertTrue('"status": true,' in response, response)
+            self.assertTrue('"linotp.Policy.%s.scope": true' % policy.get('name') in response, response)
 
 
     def test_810_admin_is_not_allowed_to_show(self):
@@ -2962,17 +2968,17 @@ class TestPolicies(TestController):
         # create policies
         for policy in policies:
             response = self.app.get(url(controller='system', action='setPolicy'), params=policy)
-            log.error(response)
-            assert '"status": true' in response
-            assert '"setPolicy %s"' % policy.get('name') in response
+
+            self.assertTrue('"status": true' in response, response)
+            self.assertTrue('"setPolicy %s"' % policy.get('name') in response, response)
 
         # test, if admin show_admin_1 is not allowed to show
         response = self.app.get(url(controller='admin', action='show'),
                                 params={'viewrealm' : 'testrealm',
                                         'selftest_admin' : 'show_admin_1'
                                         })
-        print response
-        assert '"status": true,' in response
+
+        self.assertTrue('"status": true,' in response, response)
 
 
     def test_812_empty_policy_name(self):
@@ -2985,9 +2991,9 @@ class TestPolicies(TestController):
                      'action' : 'initETNG',
                      'selftest_admin' : 'superadmin'}
         response = self.app.get(url(controller='system', action='setPolicy'), params=policy)
-        print response
-        assert '"status": false' in response
-        assert '"message": "The name of the policy must not be empty"' in response
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('"message": "The name of the policy must not be empty"' in response, response)
 
     def test_820_detail_on_success(self):
         '''
@@ -3001,8 +3007,8 @@ class TestPolicies(TestController):
                                                                                 'user' : 'detail_user',
                                                                                 'realm' : 'myMixRealm'
                                                                                 })
-        print response
-        assert '"value": true' in response
+
+        self.assertTrue('"value": true' in response, response)
 
         policies = [ {'name':'detail_1',
                      'scope' : 'authorization',
@@ -3023,42 +3029,41 @@ class TestPolicies(TestController):
         # set policy for authorization
         for pol in policies:
             response = self.app.get(url(controller='system', action='setPolicy'), params=pol)
-            print response
-            assert '"status": true' in response
-            assert '"setPolicy detail_' in response
+
+            self.assertTrue('"status": true' in response, response)
+            self.assertTrue('"setPolicy detail_' in response, response)
 
         # check the successful validation
         response = self.app.get(url(controller='validate', action='check'), params={'user' : 'detail_user@myMixRealm',
                                                                                     'pass' : 'secret'})
-        print response
-        assert '"value": true' in response
-        assert '"serial": "detail01",' in response
-        assert '"realm": "myMixRealm",' in response
-        assert '"user": "detail_user",' in response
-        assert '"tokentype": "spass"' in response
+
+        self.assertTrue('"value": true' in response, response)
+        self.assertTrue('"serial": "detail01",' in response, response)
+        self.assertTrue('"realm": "myMixRealm",' in response, response)
+        self.assertTrue('"user": "detail_user",' in response, response)
+        self.assertTrue('"tokentype": "spass"' in response, response)
 
         # check failed validation
         response = self.app.get(url(controller='validate', action='check'), params={'user' : 'detail_user@myMixRealm',
                                                                                     'pass' : 'wrong'})
-        print response
-        assert '"value": false' in response
-        assert '"error": "wrong otp pin -1"' in response
+
+        self.assertTrue('"value": false' in response, response)
+        self.assertTrue('"error": "wrong otp pin -1"' in response, response)
 
         #delete policies
         for pol in ["detail_1", "detail_2"]:
             response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : pol,
                                                                                           'selftest_admin' : 'superadmin'
                                                                                           })
-            print response
-            assert '"status": true' in response
-            assert '"delPolicy"' in response
+            self.assertTrue('"status": true' in response, response)
+            self.assertTrue('"delPolicy"' in response, response)
 
         # delete token
         response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'detail01',
                                                                                 'selftest_admin' : 'superadmin'
                                                                                 })
-        print response
-        assert '"value": 1' in response
+
+        self.assertTrue('"value": 1' in response, response)
 
     def test_998_cleanup_policies(self):
         '''
@@ -3067,7 +3072,7 @@ class TestPolicies(TestController):
         # generic delete of all policies
         parameters = {'selftest_admin' : 'superadmin'}
         response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
-        log.error(response)
+
 
         result = loads(response.body)
         names = result.get("result").get('value').keys()
@@ -3079,16 +3084,16 @@ class TestPolicies(TestController):
             parameters = { 'name' : name,
                           'selftest_admin' : 'superadmin' }
             response = self.app.get(url(controller='system', action='delPolicy'), params=parameters)
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
         ## delete all super policies as the end
         for name in ["ManageAll", "sysSuper"]:
             parameters = { 'name' : name,
                           'selftest_admin' : 'superadmin' }
             response = self.app.get(url(controller='system', action='delPolicy'), params=parameters)
-            log.error(response)
-            assert '"status": true' in response
+
+            self.assertTrue('"status": true' in response, response)
 
 
 
@@ -3099,6 +3104,6 @@ class TestPolicies(TestController):
         # check if we deleted all policies
         parameters = {'selftest_admin' : 'superadmin'}
         response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
-        log.error(response)
-        assert '"status": true' in response
-        assert '"value": {}' in response
+
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"value": {}' in response, response)

@@ -63,7 +63,7 @@ from linotp.lib.util import modhex_decode
 from linotp.lib.realm import realm2Objects
 from linotp.lib.realm import getRealms
 
-import linotp.lib.validate
+import linotp
 import linotp.lib.policy
 
 from linotp import model
@@ -573,7 +573,7 @@ def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True)
         log.debug("[getTokens4UserOrSerial] getting token object "
                                                 "with serial: %r" % serial)
         ## SAWarning of non unicode type
-        serial = u'' + serial
+        serial = linotp.lib.crypt.uencode(serial)
 
         sqlQuery = Session.query(Token).filter(
                             Token.LinOtpTokenSerialnumber == serial)
@@ -634,17 +634,18 @@ def getTokensOfType(typ=None, realm=None, assigned=None):
     if assigned is not None:
         # filter if assigned or not
         if "0" == unicode(assigned):
-            sqlQuery = sqlQuery.filter(Token.LinOtpUserid == "")
+            sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid == None,
+                                           Token.LinOtpUserid == ""))
         elif "1" == unicode(assigned):
-            sqlQuery = sqlQuery.filter(Token.LinOtpUserid != "")
+            sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
         else:
             log.warning("[getTokensOfType] assigned value not in [0,1] %r" % assigned)
 
     if realm is not None:
         # filter for the realm
         sqlQuery = sqlQuery.filter(and_(func.lower(Realm.name) == realm.lower(),
-                                         TokenRealm.realm_id == Realm.id,
-                                         TokenRealm.token_id == Token.LinOtpTokenId)).distinct()
+                                        TokenRealm.realm_id == Realm.id,
+                                        TokenRealm.token_id == Token.LinOtpTokenId)).distinct()
 
     for token in sqlQuery:
         log.debug("[getTokensOfType] adding token with serial %r" % token.LinOtpTokenSerialnumber)
@@ -2149,20 +2150,32 @@ class TokenIterator(object):
         condition = None
         ucondition = None
         scondition = None
-
-        valid_realms = []
+        r_condition = None
 
         if type(filterRealm) in (str, unicode):
-            filterRealm = [filterRealm]
+            filterRealm = filterRealm.split(',')
+
+        if type(filterRealm) in [list]:
+            s_realms = []
+            for f in filterRealm:
+                ## support for multiple realm filtering in the ui
+                ## as a coma separated string
+                for s_realm in f.split(','):
+                    s_realms.append(s_realm.strip())
+            filterRealm = s_realms
 
         ## create a list of all realms, which are allowed to be searched
+        ## based on the list of the existing ones
+        valid_realms = []
         realms = getRealms().keys()
         if '*' in filterRealm:
-            valid_realms.extend(realms)
+            valid_realms.append("*")
         else:
             for realm in realms:
                 if realm in filterRealm:
-                    valid_realms.append(realms)
+                    realm = linotp.lib.crypt.uencode(realm)
+                    valid_realms.append(realm)
+
 
         if serial is not None:
             ## check if the requested serial is in the realms of the admin (filterRealm)
@@ -2206,7 +2219,8 @@ class TokenIterator(object):
 
                 if searchType == "blank":
                     log.debug('[TokenIterator::init] search for empty user: >%r<' % (user.login))
-                    ucondition = and_(Token.LinOtpUserid == u'')
+                    ucondition = and_(or_(Token.LinOtpUserid == u'',
+                                          Token.LinOtpUserid == None))
 
                 if searchType == "exact":
                     log.debug('[TokenIterator::init] search for exact user: %r' % (user))
@@ -2238,7 +2252,8 @@ class TokenIterator(object):
                     else:
                         ## if no token is found, block search for user
                         ## and return nothing
-                        ucondition = and_(Token.LinOtpUserid == u'')
+                        ucondition = and_(or_(Token.LinOtpUserid == u'',
+                                              Token.LinOtpUserid == None))
 
                 ## handle case, when nothing found in former cases
                 if searchType == "wildcard":
@@ -2268,7 +2283,8 @@ class TokenIterator(object):
                     if len(serials) > 0:
                         ucondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
                     else:
-                        ucondition = and_(Token.LinOtpUserid == u'')
+                        ucondition = and_(or_(Token.LinOtpUserid == u'',
+                                              Token.LinOtpUserid == None))
 
         if filter is None:
             condition = None
@@ -2279,40 +2295,57 @@ class TokenIterator(object):
                         '/:token is inactive:/', '/:token is disabled:/']:
             condition = and_(Token.LinOtpIsactive == False)
         else:
+            ## search in other colums
+            filter = linotp.lib.crypt.uencode(filter)
             condition = or_(Token.LinOtpTokenDesc.contains(filter),
                             Token.LinOtpIdResClass.contains(filter),
                             Token.LinOtpTokenSerialnumber.contains(filter),
                             Token.LinOtpUserid.contains(filter),
                             Token.LinOtpTokenType.contains(filter))
 
-        #####################################################
+        ###################################################################
         ##  The condition for only getting certain realms!
-        if filterRealm is None:
-            conditionRealm = None
-        else:
-            if '*' in filterRealm:
-                conditionRealm = None
-                log.debug("[TokenIterator::init] wildcard for realm '*' found. Tokens of all realms will be displayed")
-            else:
-                conditionRealm = None
-                for r in filterRealm:
-                    log.debug("[TokenIterator::init] adding filter condition for realm %r" % r)
-                    if r == "''" or r == '""': r = ''
-                    if len(r) > 0:
-                        conditionRealm = or_(conditionRealm,
-                                                and_(Realm.name == r,
-                                                    TokenRealm.realm_id == Realm.id,
-                                                    TokenRealm.token_id == Token.LinOtpTokenId))
-                    else:
-                        ## TODO: this is not correct, must be 'not in'
-                        conditionRealm = or_(conditionRealm,
-                                                and_(Token.LinOtpUserid == u''))
+        if '*' in valid_realms:
+            log.debug("[TokenIterator::init] wildcard for realm '*' found."
+                      " Tokens of all realms will be displayed")
+        elif len(valid_realms) > 0:
+            log.debug("[TokenIterator::init] adding filter condition"
+                      " for realm %r" % valid_realms)
 
-        ## create the final condition
-        #condition = and_( condition, ucondition, scondition ) #, conditionRealm )
+            ## get all matching realms
+            realm_id_tuples = Session.query(Realm.id).\
+                                filter(Realm.name.in_(valid_realms)).all()
+            realm_ids = set()
+            for realm_tuple in realm_id_tuples:
+                realm_ids.add(realm_tuple[0])
+            ## get all tokenrealm ids
+            token_id_tuples = Session.query(TokenRealm.token_id).\
+                        filter(TokenRealm.realm_id.in_(realm_ids)).all()
+            token_ids = set()
+            for token_tuple in token_id_tuples:
+                token_ids.add(token_tuple[0])
 
+            ## define the token id condition
+            r_condition = and_(Token.LinOtpTokenId.in_(token_ids))
+
+        elif ("''" in filterRealm or '""' in filterRealm or
+              "/:no realm:/" in filterRealm):
+            log.debug("[TokenIterator::init] search for all tokens, which are"
+                      " in no realm")
+
+            ## get all tokenrealm ids
+            token_id_tuples = Session.query(TokenRealm.token_id).all()
+            token_ids = set()
+            for token_tuple in token_id_tuples:
+                token_ids.add(token_tuple[0])
+
+            ## define the token id not condition
+            r_condition = and_(not_(Token.LinOtpTokenId.in_(token_ids)))
+
+
+        ## create the final condition as AND of all conditions
         condTuple = ()
-        for conn in (condition, ucondition, scondition, conditionRealm):
+        for conn in (condition, ucondition, scondition, r_condition):
             if type(conn).__name__ != 'NoneType':
                 condTuple += (conn,)
 

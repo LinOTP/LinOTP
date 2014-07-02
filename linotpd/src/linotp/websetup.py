@@ -32,7 +32,7 @@
 
 
 from linotp.config.environment import load_environment
-import linotp.lib.base
+
 
 import logging
 LOG = logging.getLogger(__name__)
@@ -52,6 +52,8 @@ def setup_app(command, conf, param):
 
     load_environment(conf.global_conf, conf.local_conf)
     unitTest = conf.has_key('unitTest')
+
+    import linotp.lib.base
     linotp.lib.base.setup_app(conf.local_conf, conf.global_conf, unitTest)
 
 ###eof#########################################################################

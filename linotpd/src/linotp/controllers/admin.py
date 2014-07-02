@@ -134,11 +134,11 @@ class AdminController(BaseController):
             params.update(request.params)
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             if 'serial' in params:
-                    c.audit['serial'] = request.params['serial']
-                    c.audit['token_type'] = getTokenType(params.get('serial'))
+                    serial = request.params['serial']
+                    c.audit['serial'] = serial
+                    c.audit['token_type'] = getTokenType(serial)
 
             audit.log(c.audit)
-
             Session.commit()
             return request
 
@@ -745,10 +745,10 @@ class AdminController(BaseController):
 
             serial = helper_param.get('serial', None)
             prefix = helper_param.get('prefix', None)
-            if serial is None or len(serial) == 0:
+            if not serial:
                 serial = genSerial(tok_type, prefix)
-                helper_param['serial'] = serial
 
+            helper_param['serial'] = serial
 
             log.info("[init] initialize token. user: %s, serial: %s" % (user.login, serial))
             (ret, tokenObj) = initToken(helper_param, user, tokenrealm=tokenrealm)

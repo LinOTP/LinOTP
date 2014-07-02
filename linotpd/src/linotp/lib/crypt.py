@@ -57,7 +57,10 @@ from Crypto.Cipher import AES
 
 from linotp.lib.ext.pbkdf2  import PBKDF2
 
-
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 
 log = logging.getLogger(__name__)
@@ -445,6 +448,41 @@ def decrypt(input, iv, id=0):
     ret = hsm.decrypt(input, iv, id)
     return ret
 
+def uencode(value):
+    """
+    unicode escape the value - required to support non-unicode
+    databases
+    :param value: string to be escaped
+    :return: \u encoded value
+    """
+    ret = value
+
+    if ("linotp.uencode_data" in env
+        and env["linotp.uencode_data"].lower() == 'true'):
+        try:
+            ret = json.dumps(value)[1:-1]
+        except Exception as exx:
+            log.error("Failed to encode value %r : %r" % (value, exx))
+
+    return ret
+
+def udecode(value):
+    """
+    unicode de escape the value - required to support non-unicode
+    databases
+    :param value: string to be deescaped
+    :return: unicode value
+    """
+
+    ret = value
+    if ("linotp.uencode_data" in env
+        and env["linotp.uencode_data"].lower() == 'true'):
+        try:
+            ## add surrounding "" for correct decoding
+            ret = json.loads('"%s"' % value)
+        except Exception as exx:
+            log.error("Failed to decode value %r : %r" % (value, exx))
+    return ret
 
 def geturandom(len=20):
     '''
