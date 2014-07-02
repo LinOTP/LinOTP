@@ -28,7 +28,7 @@ This is the cmd client admin to manage the tokens on the LinOTP 2 server
   Dependencies: clientutils, etokenng
 """
 
-VERSION = '2.7.1.dev0'
+VERSION = '2.7'
 import os
 import subprocess
 import datetime

@@ -42,7 +42,7 @@ import urllib2
 import random
 
 CONFIGFILE = "python-totp.cfg"
-__VERSION__ = "2.7.1.dev0"
+__VERSION__ = "2.7"
 
 
 class HmacOtp(object):
