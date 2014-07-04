@@ -623,15 +623,15 @@ function clientUrlFetch(myUrl, params, callback, parameter){
 	 * @remark: introduced the params (:dict:) so we could switch to
 	 * 			a POST request, which will allow more and secure data
 	 */
-    var session = getsession();
-	//myUrl = myUrl + "&session=" + session;
-	params['session'] = session;
+    if (!('session' in params)) {
+        params['session'] = getsession();
+    }
 
 	show_waiting();
 
 	g.running_requests = g.running_requests +1 ;
 
-    $.ajax({
+    promise = $.ajax({
         url: myUrl,
         data : params,
         async: true,
@@ -647,6 +647,7 @@ function clientUrlFetch(myUrl, params, callback, parameter){
     		}
         }
       });
+    return promise
 }
 
 function clientUrlFetchSync(myUrl,params){
@@ -707,15 +708,6 @@ function reset_buttons() {
     disable_all_buttons();
 }
 
-function token_function_callback(xhdr, textStatus) {
-	resp = xhdr.responseText;
-	obj = jQuery.parseJSON(resp);
-    if (obj.result.status == false) {
-    	alert_info_text(obj.result.error.message);
-    }
-	reset_buttons();
-}
-
 function assign_callback(xhdr, textStatus, serial) {
 	resp = xhdr.responseText;
 	obj = jQuery.parseJSON(resp);
@@ -726,37 +718,94 @@ function assign_callback(xhdr, textStatus, serial) {
 	reset_buttons();
 }
 
+function token_operations_callback(responses) {
+    /*
+     * Evaluates a list of responses, displays a list of all the errors found
+     * and finally reloads the page.
+     */
+    var error_messages = [];
+    $.each(responses, function(index, responseData){
+        // "responseData" will contain an array of response information for each specific request
+        if (responseData.length !== 3 || responseData[1] !== 'success') {
+            error_messages.push('Request ' + index +  ' unsucessful')
+            return true; // skip to next item of each loop
+        }
+        var obj = responseData[0];
+        if (obj.result.status == false) {
+            error_messages.push(obj.result.error.message);
+        }
+        else if (obj.result.value == 0) {
+            // No operation performed on token
+            error_messages.push(obj.detail.message)
+        }
+    });
 
-function token_disable(){
-    tokentab = 0;
-    tokens = get_selected_tokens();
-    count = tokens.length;
-    for (i = 0; i < count; i++) {
-        serial = tokens[i];
-        clientUrlFetch("/admin/disable", {"serial": serial}, token_function_callback);
+    if (error_messages.length > 0) {
+        alert_info_text(error_messages.join(" -- "), null, ERROR)
     }
+    reset_buttons();
 }
 
-
-function token_enable(){
-    tokentab = 0;
-    tokens = get_selected_tokens();
-    count = tokens.length;
-    for (i = 0; i < count; i++) {
-        serial = tokens[i];
-        clientUrlFetch("/admin/enable", {"serial": serial}, token_function_callback);
+function token_operation(tokens, url, params) {
+    /*
+     * Performs an operation on a list of tokens
+     *
+     * tokens is a list of tokens (serial numbers)
+     * url is the operation to perform. For example "/admin/remove"
+     * params are any parameters required for the requests. You DON'T need to
+     * pass in the session. Token serial is set inside this function as well.
+     */
+    if (!('session' in params)) {
+        // To make the operation a tiny bit more efficient we fetch the session
+        // once instead of in every request (as clientUrlFetch would do).
+	    params['session'] = getsession();
     }
+    var requests = Array();
+    for (var i = 0; i < tokens.length; i++) {
+        params['serial'] = tokens[i];
+        var promise = clientUrlFetch(url, params)
+        requests.push(promise);
+    }
+    // By using the 'when' function (that takes a list of promises/deferreds as
+    // input) we make sure 'reset_buttons()' is execute ONCE after ALL the
+    // deletion requests have finished.
+    var defer = $.when.apply($, requests);
+    defer.done(function(){
+        var responses = [];
+        if (requests.length == 1) {
+            // "arguments" will be the array of response information for the request
+            responses = [arguments];
+        }
+        else {
+            responses = arguments;
+        }
+        token_operations_callback(responses);
+    });
 }
-
 
 function token_delete(){
-    tokentab = 0;
-    tokens = get_selected_tokens();
-    count = tokens.length;
-    for (i = 0; i < count; i++) {
-        serial = tokens[i];
-        clientUrlFetch("/admin/remove", {"serial": serial}, token_function_callback);
-    }
+    var tokens = get_selected_tokens();
+    token_operation(tokens, "/admin/remove", {});
+}
+
+function token_unassign(){
+    var tokens = get_selected_tokens();
+    token_operation(tokens, "/admin/unassign", {});
+}
+
+function token_reset(){
+    var tokens = get_selected_tokens();
+    token_operation(tokens, "/admin/reset", {});
+}
+
+function token_disable(){
+    var tokens = get_selected_tokens();
+    token_operation(tokens, "/admin/disable", {});
+}
+
+function token_enable(){
+    var tokens = get_selected_tokens();
+    token_operation(tokens, "/admin/enable", {});
 }
 
 function token_assign(){
@@ -771,27 +820,6 @@ function token_assign(){
         								"user": user[0].login,
         								'resConf':user[0].resolver,
         								'realm': $('#realm').val()}, assign_callback, serial);
-    }
-}
-
-function token_unassign(){
-    tokentab = 0;
-    tokens = get_selected_tokens();
-    count = tokens.length;
-    for (i = 0; i < count; i++) {
-        serial = tokens[i];
-        clientUrlFetch("/admin/unassign", {"serial": serial}, token_function_callback);
-    }
-}
-
-
-function token_reset(){
-    tokentab = 0;
-    tokens = get_selected_tokens();
-    count = tokens.length;
-    for (i = 0; i < count; i++) {
-        serial = tokens[i];
-        clientUrlFetch("/admin/reset", {"serial" : serial}, token_function_callback);
     }
 }
 

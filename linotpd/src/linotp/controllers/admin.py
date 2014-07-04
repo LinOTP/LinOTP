@@ -373,8 +373,14 @@ class AdminController(BaseController):
             logTokenNum()
             c.audit['success'] = ret
 
+            opt_result_dict = {}
+            if ret == 0 and serial:
+                opt_result_dict['message'] = "No token with serial %s" % serial
+            elif ret == 0 and user and not user.isEmpty():
+                opt_result_dict['message'] = "No tokens for this user"
+
             Session.commit()
-            return sendResult(response, ret)
+            return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[remove] policy failed %r" % pe)
@@ -435,8 +441,14 @@ class AdminController(BaseController):
             if "" == c.audit['realm'] and "" != c.audit['user']:
                 c.audit['realm'] = getDefaultRealm()
 
+            opt_result_dict = {}
+            if ret == 0 and serial:
+                opt_result_dict['message'] = "No token with serial %s" % serial
+            elif ret == 0 and user and not user.isEmpty():
+                opt_result_dict['message'] = "No tokens for this user"
+
             Session.commit()
-            return sendResult(response, ret, 1)
+            return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[enable] policy failed %r" % pe)
@@ -572,8 +584,14 @@ class AdminController(BaseController):
             if "" == c.audit['realm'] and "" != c.audit['user']:
                 c.audit['realm'] = getDefaultRealm()
 
+            opt_result_dict = {}
+            if ret == 0 and serial:
+                opt_result_dict['message'] = "No token with serial %s" % serial
+            elif ret == 0 and user and not user.isEmpty():
+                opt_result_dict['message'] = "No tokens for this user"
+
             Session.commit()
-            return sendResult(response, ret, 1)
+            return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error("[disable] policy failed %r" % pe)
@@ -840,16 +858,22 @@ class AdminController(BaseController):
 
             log.info("[unassign] unassigning token with serial %r from "
                      "user %r@%r" % (serial, user.login, user.realm))
-            res = unassignToken(serial, user, None)
+            ret = unassignToken(serial, user, None)
 
-            c.audit['success'] = res
+            c.audit['success'] = ret
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm
             if "" == c.audit['realm']:
                 c.audit['realm'] = getDefaultRealm()
 
+            opt_result_dict = {}
+            if ret == 0 and serial:
+                opt_result_dict['message'] = "No token with serial %s" % serial
+            elif ret == 0 and user and not user.isEmpty():
+                opt_result_dict['message'] = "No tokens for this user"
+
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error('[unassign] policy failed %r' % pe)
@@ -1568,8 +1592,14 @@ class AdminController(BaseController):
             #if "" == c.audit['realm'] and "" != c.audit['user']:
             #    c.audit['realm'] = getDefaultRealm()
 
+            opt_result_dict = {}
+            if ret == 0 and serial:
+                opt_result_dict['message'] = "No token with serial %s" % serial
+            elif ret == 0 and user and not user.isEmpty():
+                opt_result_dict['message'] = "No tokens for this user"
+
             Session.commit()
-            return sendResult(response, ret)
+            return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
             log.error('[reset] policy failed %r' % pe)
