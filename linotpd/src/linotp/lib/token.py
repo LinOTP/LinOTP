@@ -40,7 +40,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, not_
 from sqlalchemy import func
 
 
