@@ -38,17 +38,16 @@ import logging
 log = logging.getLogger(__name__)
 
 
-
 def createDBRealm(realm):
     '''
-        Store Realm in the DB Realm Table.
-        If the realm already exist, we do not need to store it
+    Store Realm in the DB Realm Table.
+    If the realm already exist, we do not need to store it
 
-       @param realm: the realm name
-       @type  realm: string
+    :param realm: the realm name
+    :type  realm: string
 
-       @return : if realm is created(True) or already esists(False)
-       @rtype  : boolean
+    :return : if realm is created(True) or already esists(False)
+    :rtype  : boolean
     '''
 
     ret = False
@@ -62,13 +61,13 @@ def createDBRealm(realm):
 
 def realm2Objects(realmList):
     '''
-        convert a list of realm names to a list of realmObjects
+    convert a list of realm names to a list of realmObjects
 
-        @param realmList: list of realnames
-        @type  realmList: list
+    :param realmList: list of realnames
+    :type  realmList: list
 
-        @return: list of realmObjects
-        @rtype:  list
+    :return: list of realmObjects
+    :rtype:  list
     '''
 
     realmObjList = []
@@ -82,19 +81,18 @@ def realm2Objects(realmList):
 
 def getRealmObject(name=u"", id=0):
     '''
-        returns the Realm Object for a given realm name.
-        If the given realm name is not found, it returns "None"
+    returns the Realm Object for a given realm name.
+    If the given realm name is not found, it returns "None"
 
-        @param name: realmname to be searched
-        @type  name: string
+    :param name: realmname to be searched
+    :type  name: string
 
-        @TODO: search by id not implemented, yet
-        @param id:   id of the realm object
-        @type  id:   integer
+    TODO: search by id not implemented, yet
+    :param id:   id of the realm object
+    :type  id:   integer
 
-        @return : realmObject - the database object
-        @rtype  : the sql db object
-
+    :return : realmObject - the database object
+    :rtype  : the sql db object
     '''
 
     log.debug("[getRealmObject] getting Realm object for name=%s, id=%i" % (name, id))
@@ -106,35 +104,28 @@ def getRealmObject(name=u"", id=0):
             realmObj = realmObjects[0]
     return realmObj
 
-
-
-
-
-
-
 def getRealms(aRealmName=""):
     '''
+    lookup for a defined realm or all realms
 
-        lookup for a defined realm or all realms
+    :note:  the realms dict is inserted into the LinOtp Config object
+    so that a lookup has not to reparse the whole config again
 
-        @note:  the realms dict is inserted into the LinOtp Config object
-        so that a lookup has not to reparse the whole config again
+    :param aRealmName: a realmname - the realm, that is of interestet, if =="" all realms are returned
+    :type  aRealmName: string
 
-        @param aRealmName: a realmname - the realm, that is of interestet, if =="" all realms are returned
-        @type  aRealmName: string
-
-        @return:  a dict with realm description like
-        @rtype :  dict : {
-                    u'myotherrealm': {'realmname': u'myotherrealm',
-                                    'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myOtherRes'],
-                                    'entry': u'linotp.useridresolver.group.myotherrealm'},
-                    u'mydefrealm': {'default': 'true',
-                                    'realmname': u'mydefrealm',
-                                    'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myDefRes'],
-                                    'entry': u'linotp.useridresolver.group.mydefrealm'},
-                   u'mymixrealm': {'realmname': u'mymixrealm',
-                                   'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myOtherRes', 'useridresolver.PasswdIdResolver.IdResolver.myDefRes'],
-                                   'entry': u'linotp.useridresolver.group.mymixrealm'}}
+    :return:  a dict with realm description like
+    :rtype :  dict : {
+                u'myotherrealm': {'realmname': u'myotherrealm',
+                                'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myOtherRes'],
+                                'entry': u'linotp.useridresolver.group.myotherrealm'},
+                u'mydefrealm': {'default': 'true',
+                                'realmname': u'mydefrealm',
+                                'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myDefRes'],
+                                'entry': u'linotp.useridresolver.group.mydefrealm'},
+               u'mymixrealm': {'realmname': u'mymixrealm',
+                               'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myOtherRes', 'useridresolver.PasswdIdResolver.IdResolver.myDefRes'],
+                               'entry': u'linotp.useridresolver.group.mymixrealm'}}
 
     '''
     ret = {}
@@ -157,11 +148,12 @@ def getRealms(aRealmName=""):
 
 def _initalGetRealms():
     '''
-       initaly parse all config entries, and extract the realm definition
+    initaly parse all config entries, and extract the realm definition
 
-        @return : a dict with all realm definitions
-        @rtype  : dict of definitions
+    :return : a dict with all realm definitions
+    :rtype  : dict of definitions
     '''
+
     Realms = {}
     defRealmConf = "linotp.useridresolver"
     realmConf = "linotp.useridresolver.group."
@@ -212,17 +204,18 @@ def _initalGetRealms():
 
 def _setDefaultRealm(realms, defaultRealm):
     """
-        internal method to set in the realm array the default attribute
-        (used by the _initalGetRealms)
+    internal method to set in the realm array the default attribute
+    (used by the _initalGetRealms)
 
-        @param realms: dict of all realm descriptions
-        @type  realms: dict
-        @param defaultRealm : name of the default realm
-        @type  defaultRelam : string
+    :param realms: dict of all realm descriptions
+    :type  realms: dict
+    :param defaultRealm : name of the default realm
+    :type  defaultRelam : string
 
-        @return success or not
-        @rtype  boolean
+    :return success or not
+    :rtype  boolean
     """
+
     ret = False
     for k in realms:
         '''
@@ -238,18 +231,15 @@ def _setDefaultRealm(realms, defaultRealm):
                 del r["default"]
     return ret
 
-
-
-
 def isRealmDefined(realm):
     '''
-        check, if a realm already exists or not
+    check, if a realm already exists or not
 
-        @param realm: the realm, that should be verified
-        @type  realm: string
+    :param realm: the realm, that should be verified
+    :type  realm: string
 
-        @return :found or not found
-        @rtype  :boolean
+    :return :found or not found
+    :rtype  :boolean
     '''
     ret = False
     realms = getRealms();
@@ -259,15 +249,15 @@ def isRealmDefined(realm):
 
 def setDefaultRealm(defaultRealm):
     """
-        set the defualt realm attrbute
+    set the defualt realm attrbute
 
-        @note: verify, if the defualtRealm could be empty :""
+    :note: verify, if the defualtRealm could be empty :""
 
-        @param defaultRealm: the default realm name
-        @type  defualtRealm: string
+    :param defaultRealm: the default realm name
+    :type  defualtRealm: string
 
-        @return:  success or not
-        @rtype:   boolean
+    :return:  success or not
+    :rtype:   boolean
     """
     ret = isRealmDefined(defaultRealm)
     if True == ret or defaultRealm == "":
@@ -276,31 +266,30 @@ def setDefaultRealm(defaultRealm):
 
 def getDefaultRealm():
     """
-        return the default realm
-        - lookup in the config for the DefaultRealm key
+    return the default realm
+    - lookup in the config for the DefaultRealm key
 
-        @return: the realm name
-        @rtype : string
+    :return: the realm name
+    :rtype : string
     """
+
     defaultRealmDef = "linotp.DefaultRealm"
     defaultRealm = getFromConfig(defaultRealmDef, "")
 
     if defaultRealm is None or defaultRealm == "":
-        log.warning("Serious configuration Issue: no Default Realm defined!")
+        log.info("Configuration issue: no Default Realm defined!")
         defaultRealm = ""
 
     return defaultRealm.lower()
 
-
-
 def deleteRealm(realmname):
     '''
-        delete the realm from the Database Table with the given name
+    delete the realm from the Database Table with the given name
 
-        @param realmname: the to be deleted realm
-        @type  realmname: string
-
+    :param realmname: the to be deleted realm
+    :type  realmname: string
     '''
+
     log.debug("[delete] delete Realm object with name=%s" % realmname)
     r = getRealmObject(name=realmname)
     if r is None:
@@ -322,3 +311,4 @@ def deleteRealm(realmname):
 
     return True
 
+###eof#########################################################################

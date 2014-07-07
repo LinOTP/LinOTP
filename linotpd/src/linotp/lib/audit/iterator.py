@@ -24,13 +24,16 @@
 #    Support: www.lsexperts.de
 #
 """ the iterators for the audit objects """
-
-import logging
-log = logging.getLogger(__name__)
 try:
     import json
 except ImportError: # pragma: no cover
     import simplejson as json
+
+
+import linotp
+import logging
+log = logging.getLogger(__name__)
+
 
 class AuditQuery(object):
     """ build the the audit query and return result iterator
@@ -81,13 +84,27 @@ class AuditQuery(object):
                     key, e, value = s.partition("=")
                     key = key.strip()
                     value = value.strip()
+
+                    ## unicode escape search parameter to match
+                    ## encoding in db, which stores audit
+                    ## entries in escaped format
+                    value = linotp.lib.crypt.uencode(value)
                     self._search_dict[key] = value
                 log.debug(self._search_dict)
             else:
-                self._search_dict[param['qtype']] = param["query"]
+                ## unicode escape search parameter to match
+                ## encoding in db, which stores audit
+                ## entries in escaped format
+                value = param["query"]
+                value = linotp.lib.crypt.uencode(value)
+                self._search_dict[param['qtype']] = value
         else:
-            for k, v in param.items():
-                self._search_dict[k] = v
+            for key, value in param.items():
+                ## unicode escape search parameter to match
+                ## encoding in db, which stores audit
+                ## entries in escaped format
+                value = linotp.lib.crypt.uencode(value)
+                self._search_dict[key] = value
 
         log.debug("[search] search_dict: %s" % self._search_dict)
 

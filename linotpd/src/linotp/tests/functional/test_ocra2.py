@@ -3041,9 +3041,10 @@ This is a very long message text, which should be used as the data for the chall
 This is a very long message text, which should be used as the data for the challenge
 '''
         (response2, activationkey) = self.init_1_QR_Token(user='root', message=ms)
-        if "value too long " not in response2:
-            log.error("'value too long' not in %s" % response2)
-            assert "value too long " in response2
+        ## oracle: value too large
+        ## postgres: value too long
+        self.assertTrue("value too " in response2, response2)
+
 
         (response2, activationkey) = self.init_1_QR_Token(user='root',
                                                           message=ms[0:100])

@@ -1294,7 +1294,7 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[importPolicy] done")
+            log.debug("[importPolicy] done")
 
 ############################################################
     def checkPolicy(self):
@@ -1376,7 +1376,7 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[checkPolicy] done")
+            log.debug("[checkPolicy] done")
 
 ##########################################################################
     def getPolicy(self):
@@ -1455,7 +1455,7 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[getPolicy] done")
+            log.debug("[getPolicy] done")
 
 ########################################################
     def delPolicy(self):
@@ -1501,7 +1501,7 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[delPolicy] done")
+            log.debug("[delPolicy] done")
 
 ########################################################
 

@@ -24,6 +24,7 @@
 #    Support: www.lsexperts.de
 #
 
+
 '''
 This file containes the standard token definitions:
 - OCRATokenClass
@@ -596,9 +597,9 @@ class TokenClass(object):
         self.token.LinOtpUserid = uuserid
 
     def getUser(self):
-        uidResolver = self.token.LinOtpIdResolver
-        uidResolverClass = self.token.LinOtpIdResClass
-        uuserid = self.token.LinOtpUserid
+        uidResolver = self.token.LinOtpIdResolver or ''
+        uidResolverClass = self.token.LinOtpIdResClass or ''
+        uuserid = self.token.LinOtpUserid or ''
         return (uuserid, uidResolver, uidResolverClass)
 
     def setUid(self, uid, uidResolver, uidResClass):
@@ -762,10 +763,11 @@ class TokenClass(object):
         info = {}
 
         tokeninfo = self.token.getInfo()
-        try:
-            info = json.loads(tokeninfo)
-        except Exception as e:
-            log.error('getTokenInfo %r' % (e))
+        if tokeninfo is not None and len(tokeninfo.strip()) > 0:
+            try:
+                info = json.loads(tokeninfo)
+            except Exception as e:
+                log.error('getTokenInfo %r' % (e))
 
         return info
 

@@ -30,25 +30,23 @@
 
 import binascii
 import logging
-import sys
 import traceback
-
 from datetime import datetime
 
-if sys.version_info[0:2] >= (2, 6):
-    from json import loads, dumps
-else:
-    from simplejson import loads, dumps
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 
 """The application's model objects"""
 import sqlalchemy as sa
 
-
 from sqlalchemy import orm
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relation
 
+import linotp
 
 from linotp.model import meta
 from linotp.model.meta import Session
@@ -60,25 +58,22 @@ from linotp.lib.crypt import encryptPin
 from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import get_rand_digit_str
 
-from sqlalchemy.engine.reflection import Inspector
-
-
-from distutils.version import LooseVersion
 
 from pylons import config
 log = logging.getLogger(__name__)
 
-
 implicit_returning = config.get('linotpSQL.implicit_returning', True)
 
-## for oracle and the SQLAlchemy 0.7 we need a mapping of columns
-## due to reserved keywords session and timestamp
+## for oracle we need a mapping of columns
+## due to reserved keywords 'session' and 'timestamp'
 COL_PREFIX = ""
 SQLU = config.get("sqlalchemy.url", "")
-if (SQLU.startswith("oracle:") and
-    LooseVersion(sa.__version__) <= LooseVersion(0.7)):
+if SQLU.startswith("oracle:"):
     COL_PREFIX = config.get("oracle.sql.column_prefix", "lino")
 
+
+session_column = "%ssession" % COL_PREFIX
+timestamp_column = "%stimestamp" % COL_PREFIX
 
 def init_model(engine):
     """
@@ -89,69 +84,47 @@ def init_model(engine):
     """
     log.debug('model init: init_model')
 
-
-    context = {}
-
     meta.engine = engine
     meta.Session.configure(bind=engine)
 
     log.debug('model init: init_model')
     return
 
-def get_table(context, table_name):
-    '''
-    helper - to get the table object from table_name
+token_table = sa.Table('Token', meta.metadata,
+                sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
+                sa.Column('LinOtpTokenDesc', sa.types.Unicode(80), default=u''),
+                sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(40), default=u'', unique=True, nullable=False, index=True),
 
-    :param table_name: name of the table
-    :return: table object or None if table does not exist
-    '''
-    table = None
-    if table_name in context.get('table_names'):
-        meta_data = context.get('meta_data')
-        table = meta_data.tables[table_name]
-    return table
+                sa.Column('LinOtpTokenType', sa.types.Unicode(30), default=u'HMAC', index=True),
+                sa.Column('LinOtpTokenInfo', sa.types.Unicode(2000), default=u''),
+                sa.Column('LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),  ## encrypt
+                sa.Column('LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),  ## encrypt
+                sa.Column('LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),  ## encrypt
+                sa.Column('LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),  ## encrypt
 
-
-def create_token_table():
-    """
-    helper to define the token table object
-
-    :return: table object
-    """
-
-    token_table = sa.Table('Token', meta.metadata,
-        sa.Column('LinOtpTokenId', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
-        sa.Column('LinOtpTokenDesc', sa.types.Unicode(80), default=u''),
-        sa.Column('LinOtpTokenSerialnumber', sa.types.Unicode(40), default=u'', unique=True, nullable=False, index=True),
-
-        sa.Column('LinOtpTokenType', sa.types.Unicode(30), default=u'HMAC', index=True),
-        sa.Column('LinOtpTokenInfo', sa.types.Unicode(2000), default=u''),
-        sa.Column('LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),  ## encrypt
-        sa.Column('LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),  ## encrypt
-        sa.Column('LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),  ## encrypt
-        sa.Column('LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),  ## encrypt
-
-        sa.Column('LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
-        sa.Column('LinOtpIdResClass', sa.types.Unicode(120), default=u''),
-        sa.Column('LinOtpUserid', sa.types.Unicode(320), default=None, index=True),
+                sa.Column('LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
+                sa.Column('LinOtpIdResClass', sa.types.Unicode(120), default=u''),
+                sa.Column('LinOtpUserid', sa.types.Unicode(320), default=u'', index=True),
 
 
-        sa.Column('LinOtpSeed', sa.types.Unicode(32), default=u''),
-        sa.Column('LinOtpOtpLen', sa.types.Integer(), default=6),
-        sa.Column('LinOtpPinHash', sa.types.Unicode(512), default=u''),  ## hashed
-        sa.Column('LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),  ## encrypt
-        sa.Column('LinOtpKeyIV', sa.types.Unicode(32), default=u''),
+                sa.Column('LinOtpSeed', sa.types.Unicode(32), default=u''),
+                sa.Column('LinOtpOtpLen', sa.types.Integer(), default=6),
+                sa.Column('LinOtpPinHash', sa.types.Unicode(512), default=u''),  ## hashed
+                sa.Column('LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),  ## encrypt
+                sa.Column('LinOtpKeyIV', sa.types.Unicode(32), default=u''),
 
-        sa.Column('LinOtpMaxFail', sa.types.Integer(), default=10),
-        sa.Column('LinOtpIsactive', sa.types.Boolean(), default=True),
-        sa.Column('LinOtpFailCount', sa.types.Integer(), default=0),
-        sa.Column('LinOtpCount', sa.types.Integer(), default=0),
-        sa.Column('LinOtpCountWindow', sa.types.Integer(), default=10),
-        sa.Column('LinOtpSyncWindow', sa.types.Integer(), default=1000),
-        implicit_returning=implicit_returning,
-        )
+                sa.Column('LinOtpMaxFail', sa.types.Integer(), default=10),
+                sa.Column('LinOtpIsactive', sa.types.Boolean(), default=True),
+                sa.Column('LinOtpFailCount', sa.types.Integer(), default=0),
+                sa.Column('LinOtpCount', sa.types.Integer(), default=0),
+                sa.Column('LinOtpCountWindow', sa.types.Integer(), default=10),
+                sa.Column('LinOtpSyncWindow', sa.types.Integer(), default=1000),
+                implicit_returning=implicit_returning,
+                )
 
-    return token_table
+TOKEN_ENCODE = ["LinOtpTokenDesc", "LinOtpTokenSerialnumber",
+                "LinOtpTokenInfo", "LinOtpUserid", "LinOtpIdResClass",
+                "LinOtpIdResolver"]
 
 class Token(object):
 
@@ -173,15 +146,49 @@ class Token(object):
         self.LinOtpOtpLen = 6
         self.LinOtpSeed = u''
 
-        ## defaults must be set to the same as in table definition
-        self.LinOtpIdResolver = u''
-        self.LinOtpIdResClass = u''
-        self.LinOtpUserid = u''
+        self.LinOtpIdResolver = None
+        self.LinOtpIdResClass = None
+        self.LinOtpUserid = None
 
-        self.LinOtpTokenDesc = u''
-        self.LinOtpTokenInfo = u''
-
+        # will be assigned automaticaly
+        # self.LinOtpTokenId      = 0
         log.debug('Token init done')
+
+    def __setattr__(self, name, value):
+        """
+        to support unicode on all backends, we use the json encoder with
+        the assci encode default
+
+        :param name: db column name or class memeber
+        :param value: the corresponding value
+
+        :return: - nothing -
+        """
+        if name in TOKEN_ENCODE:
+            ## encode data
+            if value:
+                value = linotp.lib.crypt.uencode(value)
+        super(Token, self).__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        """
+        to support unicode on all backends, we use the json decoder with
+        the assci decode default
+
+        :param name: db column name or class memeber
+
+        :return: the corresponding value
+        """
+        #Default behaviour
+        value = object.__getattribute__(self, name)
+        if name in TOKEN_ENCODE:
+            if value:
+                value = linotp.lib.crypt.udecode(value)
+            else:
+                value = ""
+
+        return value
+
 
     def _fix_spaces(self, data):
         '''
@@ -223,21 +230,18 @@ class Token(object):
 
     def getHOtpKey(self):
         log.debug('getHOtpKey()')
-        key = binascii.unhexlify(self.LinOtpKeyEnc)
-        iv = binascii.unhexlify(self.LinOtpKeyIV)
+        key = binascii.unhexlify(self.LinOtpKeyEnc or '')
+        iv = binascii.unhexlify(self.LinOtpKeyIV or '')
         secret = SecretObj(key, iv)
         return secret
 
     def getOtpCounter(self):
-        return self.LinOtpCount
+        return self.LinOtpCount or 0
 
     def getUserPin(self):
         log.debug('getHOtpKey()')
-        pu = self.LinOtpTokenPinUser
-        if pu is None: pu = ''
-        puiv = self.LinOtpTokenPinUserIV
-        if puiv is None: puiv = ''
-
+        pu = self.LinOtpTokenPinUser or ''
+        puiv = self.LinOtpTokenPinUserIV or ''
         key = binascii.unhexlify(pu)
         iv = binascii.unhexlify(puiv)
         secret = SecretObj(key, iv)
@@ -257,10 +261,11 @@ class Token(object):
         ## calculate a hash from a pin
         # Fix for working with MS SQL servers
         # MS SQL servers sometimes return a '<space>' when the column is empty: ''
-        seed_str = self._fix_spaces(self.LinOtpSeed)
+        seed_str = self._fix_spaces(self.LinOtpSeed or '')
         seed = binascii.unhexlify(seed_str)
         hPin = hash(pin, seed)
-        log.debug("[getHashedPin] hPin: %s, pin: %s, seed: %s" % (binascii.hexlify(hPin), pin, self.LinOtpSeed))
+        log.debug("[getHashedPin] hPin: %s, pin: %s, seed: %s" %
+                  (binascii.hexlify(hPin), pin, self.LinOtpSeed or ''))
         return binascii.hexlify(hPin)
 
     def setDescription(self, desc):
@@ -298,23 +303,23 @@ class Token(object):
             log.error("[comparePin] no valid PIN!")
             return res
 
-        if (self.isPinEncrypted() == True):
-            log.debug("[comparePin] we got an encrypted PIN!")
-            tokenPin = self.LinOtpPinHash[2:]
-            decryptTokenPin = decryptPin(tokenPin)
-            # TODO CKO: remove the TokenPin
-            #log.debug("[comparePin] the decrypted PIN is %s" % decryptTokenPin)
-            if (decryptTokenPin == pin):
-                res = True
-        else:
-            log.debug("[comparePin] we got a hashed PIN!")
-            # TODO CKO: remove the PIN hash
-            #log.debug("[comparePin] The Hash is %s while the LinOtpPinHash is %s" % (mypHash,self.LinOtpPinHash))
-            if len(self.LinOtpPinHash) > 0:
-                mypHash = self.getHashedPin(pin)
+        if self.LinOtpPinHash:
+            if self.isPinEncrypted():
+                log.debug("[comparePin] we got an encrypted PIN!")
+                tokenPin = self.LinOtpPinHash[2:]
+                decryptTokenPin = decryptPin(tokenPin)
+                if decryptTokenPin == pin:
+                    res = True
             else:
-                mypHash = pin
-            if (mypHash == self.LinOtpPinHash):
+                log.debug("[comparePin] we got a hashed PIN!")
+                ## is there a hashed pin
+                hashed_pin = self.getHashedPin(pin)
+                if hashed_pin == self.LinOtpPinHash:
+                    res = True
+
+        else: ## token hashed pin is empyt or none
+            log.debug("[comparePin] there is no pin for this token!")
+            if pin == '':
                 res = True
 
         return res
@@ -334,7 +339,7 @@ class Token(object):
         ret = False
         if pin is None:
             pin = self.LinOtpPinHash
-        if (pin.startswith("@@") == True):
+        if pin and pin.startswith("@@"):
             ret = True
         return ret
 
@@ -377,7 +382,7 @@ class Token(object):
             if hasattr(self, kMethod):
                 return getattr(self, kMethod)()
             else:
-                return getattr(self, key)
+                return getattr(self, key) or ''
         else:
             return fallback
 
@@ -386,19 +391,19 @@ class Token(object):
         log.debug('get_vars()')
 
         ret = {}
-        ret['LinOtp.TokenId'] = self.LinOtpTokenId
-        ret['LinOtp.TokenDesc'] = self.LinOtpTokenDesc
-        ret['LinOtp.TokenSerialnumber'] = self.LinOtpTokenSerialnumber
+        ret['LinOtp.TokenId'] = self.LinOtpTokenId or ''
+        ret['LinOtp.TokenDesc'] = self.LinOtpTokenDesc or ''
+        ret['LinOtp.TokenSerialnumber'] = self.LinOtpTokenSerialnumber or ''
 
-        ret['LinOtp.TokenType'] = self.LinOtpTokenType
-        ret['LinOtp.TokenInfo'] = self._fix_spaces(self.LinOtpTokenInfo)
+        ret['LinOtp.TokenType'] = self.LinOtpTokenType or 'hmac'
+        ret['LinOtp.TokenInfo'] = self._fix_spaces(self.LinOtpTokenInfo or '')
         # ret['LinOtpTokenPinUser']   = self.LinOtpTokenPinUser
         # ret['LinOtpTokenPinSO']     = self.LinOtpTokenPinSO
 
-        ret['LinOtp.IdResolver'] = self.LinOtpIdResolver
-        ret['LinOtp.IdResClass'] = self.LinOtpIdResClass
-        ret['LinOtp.Userid'] = self.LinOtpUserid
-        ret['LinOtp.OtpLen'] = self.LinOtpOtpLen
+        ret['LinOtp.IdResolver'] = self.LinOtpIdResolver or ''
+        ret['LinOtp.IdResClass'] = self.LinOtpIdResClass or ''
+        ret['LinOtp.Userid'] = self.LinOtpUserid or ''
+        ret['LinOtp.OtpLen'] = self.LinOtpOtpLen or 6
         # ret['LinOtp.PinHash']        = self.LinOtpPinHash
 
         ret['LinOtp.MaxFail'] = self.LinOtpMaxFail
@@ -442,7 +447,7 @@ class Token(object):
     def getInfo(self):
         # Fix for working with MS SQL servers
         # MS SQL servers sometimes return a '<space>' when the column is empty: ''
-        return self._fix_spaces(self.LinOtpTokenInfo)
+        return self._fix_spaces(self.LinOtpTokenInfo or '')
 
     def setInfo(self, info):
         self.LinOtpTokenInfo = info
@@ -455,15 +460,14 @@ class Token(object):
             self.setPin(pin, hashed)
 
     def storeToken(self):
-        log.debug('storeToken()')
-
         if self.LinOtpUserid is None:
             self.LinOtpUserid = u''
-        if self.LinOtpTokenDesc is None:
-            self.LinOtpTokenDesc = u''
-        if self.LinOtpTokenInfo is None:
-            self.LinOtpTokenInfo = u''
+        if self.LinOtpIdResClass is None:
+            self.LinOtpIdResClass = ''
+        if self.LinOtpIdResolver is None:
+            self.LinOtpIdResolver = ''
 
+        log.debug('storeToken()')
         Session.add(self)
         Session.flush()
         Session.commit()
@@ -475,7 +479,7 @@ class Token(object):
         return
 
     def getType(self):
-        return self.LinOtpTokenType
+        return self.LinOtpTokenType or 'hmac'
 
     def updateType(self, typ):
         #in case the prevoius has been different type
@@ -504,7 +508,7 @@ class Token(object):
         self.updateOtpKey(otpKey)
 
     def getRealms(self):
-        return self.realms
+        return self.realms or ''
 
     def getRealmNames(self):
         r_list = []
@@ -532,26 +536,19 @@ def createToken(serial):
 
     return token
 
+###############################################################################
 
-def create_config_table():
-    """
-    helper to define the token table object
+config_table = sa.Table('Config', meta.metadata,
+                sa.Column('Key', sa.types.Unicode(255), primary_key=True, nullable=False),
+                sa.Column('Value', sa.types.Unicode(2000), default=u''),
+                sa.Column('Type', sa.types.Unicode(2000), default=u''),
+                sa.Column('Description', sa.types.Unicode(2000), default=u''),
+                implicit_returning=implicit_returning,
+                )
 
-    :return: table object
-    """
+log.debug('config table append_column')
 
-    log.debug('create config table')
-
-    config_table = sa.Table('Config', meta.metadata,
-        sa.Column('Key', sa.types.Unicode(255), primary_key=True, nullable=False),
-        sa.Column('Value', sa.types.Unicode(2000), default=u''),
-        sa.Column('Type', sa.types.Unicode(2000), default=u''),
-        sa.Column('Description', sa.types.Unicode(2000), default=u''),
-        implicit_returning=implicit_returning,
-        )
-    return config_table
-
-
+CONFIG_ENCODE = ["Key", "Value", "Description"]
 
 class Config(object):
 
@@ -572,25 +569,52 @@ class Config(object):
     def __unicode__(self):
         return self.Description
 
+    def __setattr__(self, name, value):
+        """
+        to support unicode on all backends, we use the json encoder with
+        the assci encode default
+
+        :param name: db column name or class memeber
+        :param value: the corresponding value
+
+        :return: - nothing -
+        """
+        if name in CONFIG_ENCODE:
+            ## encode data
+            if value:
+                value = linotp.lib.crypt.uencode(value)
+        super(Config, self).__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        """
+        to support unicode on all backends, we use the json decoder with
+        the assci decode default
+
+        :param name: db column name or class memeber
+
+        :return: the corresponding value
+        """
+        #Default behaviour
+        value = object.__getattribute__(self, name)
+        if name in CONFIG_ENCODE:
+            if value:
+                value = linotp.lib.crypt.udecode(value)
+            else:
+                value = ""
+
+        return value
+
     __str__ = __unicode__
 
-def create_tokenrealm_table():
-    """
-    helper to define the tokenrealm table object
 
-    :return: table object
-    """
-
-    # This table connect a token to several realms
-    tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
-        sa.Column('id', sa.types.Integer(), sa.Sequence('tokenrealm_seq_id', optional=True), primary_key=True, nullable=False),
-        sa.Column('token_id', sa.types.Integer(), ForeignKey('Token.LinOtpTokenId')),
-        #sa.Column('realm_id', sa.types.Integer())
-        sa.Column('realm_id', sa.types.Integer(), ForeignKey('Realm.id')),
-        implicit_returning=implicit_returning,
-        )
-
-    return tokenrealm_table
+# This table connect a token to several realms
+tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
+                sa.Column('id', sa.types.Integer(), sa.Sequence('tokenrealm_seq_id', optional=True), primary_key=True, nullable=False),
+                sa.Column('token_id', sa.types.Integer(), ForeignKey('Token.LinOtpTokenId')),
+                #sa.Column('realm_id', sa.types.Integer())
+                sa.Column('realm_id', sa.types.Integer(), ForeignKey('Realm.id')),
+                implicit_returning=implicit_returning,
+                )
 
 class TokenRealm(object):
 
@@ -599,34 +623,65 @@ class TokenRealm(object):
         self.realm_id = realmid
         self.token_id = 0
 
-def create_realm_table():
-    """
-    helper to define the realm table object
 
-    :return: table object
-    """
+realm_table = sa.Table('Realm', meta.metadata,
+                sa.Column('id', sa.types.Integer(), sa.Sequence('realm_seq_id', optional=True), primary_key=True, nullable=False),
+                sa.Column('name', sa.types.Unicode(255), default=u'', unique=True, nullable=False),
+                sa.Column('default', sa.types.Boolean(), default=False),
+                sa.Column('option', sa.types.Unicode(40), default=u''),
+                implicit_returning=implicit_returning,
+                )
 
-    #realm_table = get_table(context, 'Realm')
-    #if realm_table is not None:
-    #    return realm_table
-
-
-    realm_table = sa.Table('Realm', meta.metadata,
-        sa.Column('id', sa.types.Integer(), sa.Sequence('realm_seq_id', optional=True), primary_key=True, nullable=False),
-        sa.Column('name', sa.types.Unicode(255), default=u'', unique=True, nullable=False),
-        sa.Column('default', sa.types.Boolean(), default=False),
-        sa.Column('option', sa.types.Unicode(40), default=u''),
-        implicit_returning=implicit_returning,
-        )
-    return realm_table
+REALM_ENCODE = ["name", "option"]
 
 class Realm(object):
+
+    def __setattr__(self, name, value):
+        """
+        to support unicode on all backends, we use the json encoder with
+        the assci encode default
+
+        :param name: db column name or class memeber
+        :param value: the corresponding value
+
+        :return: - nothing -
+        """
+        if name in REALM_ENCODE:
+            ## encode data
+            if value:
+                value = linotp.lib.crypt.uencode(value)
+        super(Realm, self).__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        """
+        to support unicode on all backends, we use the json decoder with
+        the assci decode default
+
+        :param name: db column name or class memeber
+
+        :return: the corresponding value
+        """
+        #Default behaviour
+        value = object.__getattribute__(self, name)
+        if name in REALM_ENCODE:
+            if value:
+                value = linotp.lib.crypt.udecode(value)
+            else:
+                value = ""
+
+        return value
+
     def __init__(self, realm):
         log.debug("setting realm name to %s" % realm)
         self.name = realm
+        if realm is not None:
+            self.name = realm.lower()
         #self.id     = 0
 
     def storeRealm(self):
+        if self.name is None:
+            self.name = ''
+        self.name = self.name.lower()
         log.debug('storeRealm()')
         Session.add(self)
         Session.commit()
@@ -635,41 +690,28 @@ class Realm(object):
 
 
 ''' ''' '''
-ocra challenges
+ocra challenges are stored
 ''' ''' '''
 
-def create_ocra_table(mapping=None):
-    """
-    helper to define the ocra table object
-    :return: table object
-    """
-    log.debug('creating ocra table')
+log.debug('creating ocra table')
 
-    if mapping is None:
-        mapping = {}
 
-    session_column = mapping.get('session', 'session')
-    timestamp_column = mapping.get('timestamp', 'timestamp')
+ocra_table = sa.Table('ocra', meta.metadata,
+                sa.Column('id', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
+                sa.Column('transid', sa.types.Unicode(20), unique=True,
+                                                nullable=False, index=True),
+                sa.Column('data', sa.types.Unicode(512), default=u''),
+                sa.Column('challenge', sa.types.Unicode(256), default=u''),
+                sa.Column(session_column, sa.types.Unicode(512), default=u''),
+                sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
+                sa.Column(timestamp_column, sa.types.DateTime, default=datetime.now()),
+                sa.Column('received_count', sa.types.Integer(), default=0),
+                sa.Column('received_tan', sa.types.Boolean, default=False),
+                sa.Column('valid_tan', sa.types.Boolean, default=False),
+                implicit_returning=implicit_returning,
+                )
 
-    ## the columns timestamp and session loading is defered in init_model
-    ocra_table = sa.Table('ocra', meta.metadata,
-        sa.Column('id', sa.types.Integer(), sa.Sequence('token_seq_id', optional=True), primary_key=True, nullable=False),
-        sa.Column('transid', sa.types.Unicode(20), unique=True,
-                                        nullable=False, index=True),
-        sa.Column('data', sa.types.Unicode(512), default=u''),
-        sa.Column('challenge', sa.types.Unicode(256), default=u''),
-        sa.Column(session_column, sa.types.Unicode(512),
-                                   default=u''),
-        sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
-        sa.Column(timestamp_column, sa.types.DateTime,
-                                            default=datetime.now()),
-        sa.Column('received_count', sa.types.Integer(), default=0),
-        sa.Column('received_tan', sa.types.Boolean, default=False),
-        sa.Column('valid_tan', sa.types.Boolean, default=False),
-        implicit_returning=implicit_returning,
-        )
-
-    return ocra_table
+OCRA_ENCODE = ["data", "challenge", "tokenserial"]
 
 class OcraChallenge(object):
     '''
@@ -688,6 +730,41 @@ class OcraChallenge(object):
         self.valid_tan = False
 
         log.debug('OcraChallenge: init done!')
+
+    def __setattr__(self, name, value):
+        """
+        to support unicode on all backends, we use the json encoder with
+        the assci encode default
+
+        :param name: db column name or class memeber
+        :param value: the corresponding value
+
+        :return: - nothing -
+        """
+        if name in OCRA_ENCODE:
+            ## encode data
+            if value:
+                value = linotp.lib.crypt.uencode(value)
+        super(OcraChallenge, self).__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        """
+        to support unicode on all backends, we use the json decoder with
+        the assci decode default
+
+        :param name: db column name or class memeber
+
+        :return: the corresponding value
+        """
+        #Default behaviour
+        value = object.__getattribute__(self, name)
+        if name in OCRA_ENCODE:
+            if value:
+                value = linotp.lib.crypt.udecode(value)
+            else:
+                value = ""
+
+        return value
 
     def setData(self, data):
         self.data = unicode(data)
@@ -740,49 +817,37 @@ class OcraChallenge(object):
 
         return "%s" % unicode(descr)
 
+
     __str__ = __unicode__
 
 
 
 ''' ''' '''
-challenges
+challenges are stored
 ''' ''' '''
-def create_challenges_table(mapping=None):
-    """
-    helper to define the challenges table object
 
-    :return: table object
-    """
+log.debug('creating challenges table')
 
-    log.debug('creating challenges table')
+challenges_table = sa.Table('challenges', meta.metadata,
+                sa.Column('id', sa.types.Integer(),
+                          sa.Sequence('token_seq_id', optional=True),
+                          primary_key=True, nullable=False),
+                sa.Column('transid', sa.types.Unicode(64),
+                                                unique=True, nullable=False,
+                                                index=True),
+                sa.Column('data', sa.types.Unicode(512), default=u''),
+                sa.Column('challenge', sa.types.Unicode(512), default=u''),
+                sa.Column(session_column, sa.types.Unicode(512), default=u''),
+                sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
+                sa.Column(timestamp_column, sa.types.DateTime,
+                                                    default=datetime.now()),
+                sa.Column('received_count', sa.types.Integer(), default=0),
+                sa.Column('received_tan', sa.types.Boolean, default=False),
+                sa.Column('valid_tan', sa.types.Boolean, default=False),
+                implicit_returning=implicit_returning,
+                )
 
-    if mapping is None:
-        mapping = {}
-
-    session_column = mapping.get('session', 'session')
-    timestamp_column = mapping.get('timestamp', 'timestamp')
-
-    ## the columns timestamp and session loading is defered in init_model
-    challenges_table = sa.Table('challenges', meta.metadata,
-        sa.Column('id', sa.types.Integer(),
-                  sa.Sequence('token_seq_id', optional=True),
-                  primary_key=True, nullable=False),
-        sa.Column('transid', sa.types.Unicode(64),
-                                        unique=True, nullable=False,
-                                        index=True),
-        sa.Column('data', sa.types.Unicode(512), default=u''),
-        sa.Column('challenge', sa.types.Unicode(512), default=u''),
-        sa.Column(session_column, sa.types.Unicode(512),
-                                   default=u''),
-        sa.Column('tokenserial', sa.types.Unicode(64), default=u''),
-        sa.Column(timestamp_column, sa.types.DateTime,
-                                            default=datetime.now()),
-        sa.Column('received_count', sa.types.Integer(), default=0),
-        sa.Column('received_tan', sa.types.Boolean, default=False),
-        sa.Column('valid_tan', sa.types.Boolean, default=False),
-        implicit_returning=implicit_returning,
-        )
-    return challenges_table
+CHALLENGE_ENCODE = ["data", "challenge", 'tokenserial']
 
 class Challenge(object):
     '''
@@ -803,15 +868,61 @@ class Challenge(object):
 
         log.debug('Challenge: init done!')
 
+    def __setattr__(self, name, value):
+        """
+        to support unicode on all backends, we use the json encoder with
+        the assci encode default
+
+        :param name: db column name or class memeber
+        :param value: the corresponding value
+
+        :return: - nothing -
+        """
+        if name in CHALLENGE_ENCODE:
+            ## encode data
+            if value:
+                value = linotp.lib.crypt.uencode(value)
+        super(Challenge, self).__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        """
+        to support unicode on all backends, we use the json decoder with
+        the assci decode default
+
+        :param name: db column name or class memeber
+
+        :return: the corresponding value
+        """
+        #Default behaviour
+        value = object.__getattribute__(self, name)
+        if name in CHALLENGE_ENCODE:
+            if value:
+                value = linotp.lib.crypt.udecode(value)
+            else:
+                value = ""
+
+        return value
+
+
+
     @classmethod
     def createTransactionId(cls , length=20):
         return get_rand_digit_str(length)
 
     def setData(self, data):
         if type(data) in [dict, list]:
-            self.data = dumps(data)
+            self.data = json.dumps(data)
         else:
             self.data = unicode(data)
+
+    def getData(self):
+        data = {}
+        try:
+            data = json.loads(self.data)
+        except:
+            data = self.data
+        return data
+
 
     def get(self, key=None, fallback=None, save=False):
         '''
@@ -840,13 +951,6 @@ class Challenge(object):
     def getId(self):
         return self.id
 
-    def getData(self):
-        data = {}
-        try:
-            data = loads(self.data)
-        except:
-            data = self.data
-        return data
 
     def getSession(self):
         return self.session
@@ -923,39 +1027,39 @@ class Challenge(object):
     __str__ = __unicode__
 
 
+
+
+
+
 log.debug('calling ORM Mapper')
 
-## create TokenRealm Table and ORM mapping to the TokenRealm class
-tokenrealm_table = create_tokenrealm_table()
-orm.mapper(TokenRealm, tokenrealm_table)
+# config_table.append_column( sa.Column('IV', sa.types.Unicode(2000), default=u''),)
+# see: http://www.sqlalchemy.org/docs/orm/relationships.html#sqlalchemy.orm.relationship
+#      http://www.sqlalchemy.org/docs/05/reference/orm/mapping.html
+# The realms of a token will be stored in the additional attribute "realms"
+# and the token, to which the realms belong will be stored in the backed "token"
+#orm.mapper(Token, token_table, properties={
+#    #'realms':relation(Realm, secondary=tokenrealm_table)
+#    'realms':relation(TokenRealm, backref=backref('token'))
+#    })
 
-## create Realm Table and ORM mapping to the Realm class
-realm_table = create_realm_table()
-orm.mapper(Realm, realm_table)
-
-## create Token Table and ORM mapping to the Token class
-token_table = create_token_table()
 orm.mapper(Token, token_table, properties={
     'realms':relation(Realm, secondary=tokenrealm_table,
         primaryjoin=token_table.c.LinOtpTokenId == tokenrealm_table.c.token_id,
-        secondaryjoin=tokenrealm_table.c.realm_id == realm_table.c.id,
-        foreign_keys=[tokenrealm_table.c.token_id, tokenrealm_table.c.realm_id ]
-        )
+        secondaryjoin=tokenrealm_table.c.realm_id == realm_table.c.id)
     })
-
-## create Config Table and ORM mapping to the Config class
-config_table = create_config_table()
+orm.mapper(Realm, realm_table)
+orm.mapper(TokenRealm, tokenrealm_table)
 orm.mapper(Config, config_table)
+
 
 ## for oracle and the SQLAlchemy 0.7 we need a mapping of columns
 ## due to reserved keywords session and timestamp
-
 mapping = {}
 mapping['session'] = "%ssession" % COL_PREFIX
 mapping['timestamp'] = "%stimestamp" % COL_PREFIX
 
-## create challenges Table and ORM mapping to the Challenge class
-challenges_table = create_challenges_table(mapping)
+## create challenges ORM mapping to the Challenge class
 
 challenge_properties = {}
 if len(COL_PREFIX) > 0:
@@ -964,14 +1068,12 @@ if len(COL_PREFIX) > 0:
 
 orm.mapper(Challenge, challenges_table, properties=challenge_properties)
 
-## create Ocra Table and ORM mapping to the Ocra class
-ocra_table = create_ocra_table(mapping)
+## create Ocra ORM mapping to the Ocra class
 ocra_properties = {}
 if len(COL_PREFIX) > 0:
     for key, value in mapping.items():
         ocra_properties[key] = ocra_table.columns[value]
 
 orm.mapper(OcraChallenge, ocra_table, properties=ocra_properties)
-
 
 ##eof#########################################################################
