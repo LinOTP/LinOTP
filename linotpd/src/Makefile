@@ -3,7 +3,7 @@ PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/linotp
 PROJECT=LinOTP
-VERSION = 2.7
+VERSION = 2.7.0.1rc0
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
 
 all:

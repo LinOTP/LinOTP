@@ -1,3 +1,18 @@
+linotp (2.7.0.1-0.rc0~precise) precise; urgency=low
+
+  * Fixed PSKC import with plain input
+  * Fixed SecretObj cleanup in some corner-cases
+  * Cleaned up default parameters in functions to prevent memory leaks
+  * Added late binding to ORM mapping
+  * Fixed several issues with Oracle databases such as: reserved words in
+    columns, None/empty values not being mapped correctly to Python objects,
+    Unicode handling
+  * Made significant modifications to SQLAudit to fix a memory leak
+  * Fixed checkPolicyPost() in admin/init without serial (#12603)
+  * Added /:no realm:/ search option for token list
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 11 Jul 2014 19:34:53 +0200
+
 linotp (2.7-1~precise) precise; urgency=low
 
   * Integrated linotp-ee package into this package, adding:
