@@ -42,7 +42,6 @@ import urllib2
 import random
 
 CONFIGFILE = "python-totp.cfg"
-__VERSION__ = "2.7.1.dev0"
 
 
 class HmacOtp(object):
@@ -172,7 +171,7 @@ def usage():
     """
 
     info = '''
-    totp-token - version %s
+    totp-token 
 
   token configuration:
     s, seed:       enter the seed on the command line
@@ -199,8 +198,7 @@ def usage():
 
     q, query:      search for an otp in the defined range (-r)
 
-''' % __VERSION__
-
+''' 
     print info
 
 def disclaimer():
@@ -337,10 +335,6 @@ def get_configuration_args(the_args):
 
         elif opt in ('-x', "--selftest"):
             selftest()
-            sys.exit(0)
-
-        elif opt in ('-v', "--version"):
-            print __VERSION__
             sys.exit(0)
 
         elif opt in ('-g', '--genkey'):
