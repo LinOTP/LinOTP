@@ -1,4 +1,4 @@
-linotp (2.7.0.1-0.rc0~precise) precise; urgency=low
+linotp (2.7.0.2-0.rc0~precise) precise; urgency=low
 
   * Fixed PSKC import with plain input
   * Fixed SecretObj cleanup in some corner-cases
@@ -11,7 +11,7 @@ linotp (2.7.0.1-0.rc0~precise) precise; urgency=low
   * Fixed checkPolicyPost() in admin/init without serial (#12603)
   * Added /:no realm:/ search option for token list
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 11 Jul 2014 19:34:53 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 14 Jul 2014 16:14:38 +0200
 
 linotp (2.7-1~precise) precise; urgency=low
 

@@ -37,7 +37,7 @@ import httplib2
 import getpass
 
 
-__VERSION__ = "2.7.0.1rc0"
+__VERSION__ = "2.7.0.2rc0"
 
 
 LOG = logging.getLogger(__name__)
