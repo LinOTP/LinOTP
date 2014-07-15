@@ -1,3 +1,9 @@
+linotp-freeradius-perl (1.4-2~precise) precise; urgency=low
+
+  * Added missing file that caused the debian package to be empty
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 15 Jul 2014 16:46:46 +0200
+
 linotp-freeradius-perl (1.4-1~precise) precise; urgency=low
 
   * adjusted license in files for Open Source LinOTP 2.7
