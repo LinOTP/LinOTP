@@ -325,7 +325,7 @@ ${c.version} --- ${c.licenseinfo}
 	<p><a href="http://www.linotp.org/" target="_blank">http://www.linotp.org</a>
 	<br/>${_("or")}<br/>
 	<a href="http://www.lsexperts.de/" target="_blank">http://www.lsexperts.de</a></p>
-	<p>${_("Credits to:")}
+	<p>${_("Authors:")}
 		<br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
 		<br>Rainer Endres, Stefan Pietsch, Eric Sesterhenn
 	</p>
