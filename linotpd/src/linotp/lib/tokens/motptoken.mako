@@ -155,7 +155,7 @@ function self_motp_submit(){
 
 <h1>${_("Register your mOTP Token")}</h1>
 <div id='registermotpform'>
-	<form class="cmxform" id='form_registermotp'>
+	<form class="cmxform" id='form_registermotp' method="POST" onsubmit="self_motp_submit();return false;">
 	<fieldset>
 		<table>
 		<tr>
@@ -179,8 +179,8 @@ function self_motp_submit(){
 	    <td><input type="text" name="motp_self_desc" id="motp_self_desc" value="self enrolled" class="text" /></td>
 		</tr>
         </table>
-        <button class='action-button' id='button_register_motp'
-        		onclick="self_motp_submit();">${_("register mOTP Token")}</button>
+        <input type="submit" class='action-button' id='button_register_motp'
+        		value="${_("register mOTP Token")}" />
     </fieldset>
     </form>
 </div>
