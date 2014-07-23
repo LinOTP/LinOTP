@@ -171,7 +171,7 @@ def usage():
     """
 
     info = '''
-    totp-token 
+    totp-token
 
   token configuration:
     s, seed:       enter the seed on the command line
@@ -198,7 +198,8 @@ def usage():
 
     q, query:      search for an otp in the defined range (-r)
 
-''' 
+'''
+
     print info
 
 def disclaimer():
@@ -316,7 +317,7 @@ def get_configuration_args(the_args):
     '''
     params = {}
     opts, _args = getopt(the_args, "vxhgt:o:a:cu:j:r:s:l:q:d:",
-            ["version", "selftest", "help", "genkey", "timestep=",
+            ["selftest", "help", "genkey", "timestep=",
              "offset=", "add_offset=", "check", "url=", "jitter=",
              "range=", "seed=", "algo=",
              "query=", "digits="])

@@ -668,7 +668,6 @@ def _getTokenTypeConfig(section='config'):
     '''
 
     res = {}
-
     g = config['pylons.app_globals']
     tokenclasses = g.tokenclasses
 
@@ -688,6 +687,7 @@ def _getTokenTypeConfig(section='config'):
                 c.scope = page.get('scope')
                 p_html = render(os.path.sep + page.get('html'))
                 p_html = remove_empty_lines(p_html)
+
 
                 tab = conf.get('title')
                 c.scope = tab.get('scope')

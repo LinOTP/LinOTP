@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
@@ -25,7 +25,7 @@
  *    Support: www.lsexperts.de
  *
  * contains the ocra2 token web interface
--->
+</%doc>
 
 %if c.scope == 'config.title' :
  ${_("OCRA2 settings")}
