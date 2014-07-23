@@ -23,34 +23,32 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-"""Contains SmsToken class"""
+"""Contains SpassToken (simple pass token) class"""
 
 import time
 
-from token import Token
-from helper import select
+from linotp_selenium_helper.token import Token
+from linotp_selenium_helper.helper import select
 
+class SpassToken(Token):
+    """Creates a Spass Token in the LinOTP WebUI"""
 
-class SmsToken(Token):
-    """Creates a sms token in the LinOTP WebUI"""
-
-    def __init__(self, driver, base_url, pin, phone="", description=""):
+    def __init__(self,
+                 driver,
+                 base_url,
+                 pin="",
+                 description="Selenium enrolled"):
         Token.__init__(self, driver=driver, base_url=base_url)
         select_tag = driver.find_element_by_id("tokentype")
-        select(driver, select_element=select_tag, option_text="SMS OTP")
-        driver.find_element_by_id("enroll_sms_desc").clear()
-        driver.find_element_by_id("enroll_sms_desc").send_keys(description)
-        if phone:
-            driver.find_element_by_id("sms_phone").clear()
-            driver.find_element_by_id("sms_phone").send_keys(email)
+        select(driver, select_element=select_tag, option_text="Simple Pass Token")
+        driver.find_element_by_id("enroll_spass_desc").clear()
+        driver.find_element_by_id("enroll_spass_desc").send_keys(description)
         driver.find_element_by_id("button_enroll_enroll").click()
-        self.serial = driver.find_element_by_css_selector("#info_box > #info_text > span").text
-        if not self.serial or not self.serial.startswith("LSSM"):
-            raise Exception("SMS token was not enrolled correctly.")
+        time.sleep(1)
+        self.serial = driver.find_element_by_css_selector("#info_text > .text_param1").text
         driver.find_element_by_id("pin1").clear()
         driver.find_element_by_id("pin1").send_keys(pin)
         driver.find_element_by_id("pin2").clear()
         driver.find_element_by_id("pin2").send_keys(pin)
-        time.sleep(1)
         driver.find_element_by_id("button_setpin_setpin").click()
 

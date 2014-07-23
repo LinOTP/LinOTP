@@ -65,6 +65,7 @@ class HotpToken(Token):
         wel_enroll_hmac_desc.send_keys(description)
         driver.find_element_by_id("button_enroll_enroll").click()
         time.sleep(1)
+        self.serial = driver.find_element_by_css_selector("#info_text > .text_param1").text
         driver.find_element_by_id("pin1").clear()
         driver.find_element_by_id("pin1").send_keys(pin)
         driver.find_element_by_id("pin2").clear()

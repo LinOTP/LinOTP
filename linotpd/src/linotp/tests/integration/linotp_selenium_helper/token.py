@@ -33,4 +33,5 @@ class Token:
         """Initialize values and open the menu in the UI"""
         self.driver = driver
         self.base_url = base_url
+        self.serial = None
         driver.find_element_by_id("button_enroll").click()

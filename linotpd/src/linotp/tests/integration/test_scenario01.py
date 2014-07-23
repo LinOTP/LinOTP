@@ -34,6 +34,7 @@ from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.token_import import TokenImport
 from linotp_selenium_helper.validate import Validate
 from linotp_selenium_helper.remote_token import RemoteToken
+from linotp_selenium_helper.spass_token import SpassToken
 
 from linotp.lib.HMAC import HmacOtp
 import binascii
@@ -196,8 +197,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
 
         TokenImport(driver, self.base_url, "safenet", file_content, None)
 
-        test1_user = "bach"
-        test1_token = "oath137332"
+        serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()
 
         ### 4. Im Management Webinterface nun eine Policy anlegen ###
@@ -209,9 +209,9 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         ### 5. eToken zuweisen ###
 
         user_view = UserView(driver, self.base_url, test1_realm)
-        user_view.select_user(test1_user)
+        user_view.select_user("bach")
         token_view = TokenView(driver, self.base_url)
-        token_view.select_token(test1_token)
+        token_view.select_token(serial_token_bach)
         driver.find_element_by_id("button_assign").click()
         time.sleep(2)
         driver.find_element_by_id("pin1").clear()
@@ -223,18 +223,86 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
 
         ### 6. Remote Token zuweisen ###
 
-        driver.get(self.base_url + "/manage/")
-        time.sleep(2)
         user_view = UserView(driver, self.base_url, test1_realm)
-        remote_token_user = "debussy"
-        user_view.select_user(remote_token_user)
-        remote_token_pin = "1234"
+        user_view.select_user("debussy")
         remote_token = RemoteToken(driver=self.driver,
                                    base_url=self.base_url,
                                    url="https://billybones",
-                                   serial="LSSP0002F653",
-                                   pin=remote_token_pin)
+                                   remote_serial="LSSP0002F653",
+                                   pin="1234")
+        serial_token_debussy = remote_token.serial
         remote_token_otp = "666666"
+        time.sleep(1)
+
+        ### 7. Spass-Token zuweisen ###
+
+        user_view = UserView(driver, self.base_url, test1_realm)
+        user_view.select_user("beethoven")
+        spass_token = SpassToken(
+            driver=self.driver,
+            base_url=self.base_url,
+            pin=u"beethovenspass#ñô",
+            description="SPass Token enrolled with Selenium"
+            )
+        serial_token_beethoven = spass_token.serial
+        time.sleep(1)
+
+        ### 8. Selfservice mOTP ###
+
+        driver.get(self.base_url + "/account/login")
+        driver.find_element_by_id("login").clear()
+        driver.find_element_by_id("login").send_keys("mozart")
+        driver.find_element_by_id("password").clear()
+        driver.find_element_by_id("password").send_keys("Test123!")
+        driver.find_element_by_id("password").submit() # Submits the form
+        driver.find_element_by_id("motp_secret").clear()
+        driver.find_element_by_id("motp_secret").send_keys("1234123412341234")
+        driver.find_element_by_id("motp_s_pin1").clear()
+        driver.find_element_by_id("motp_s_pin1").send_keys("1234")
+        driver.find_element_by_id("motp_s_pin2").clear()
+        driver.find_element_by_id("motp_s_pin2").send_keys("1234")
+        driver.find_element_by_id("motp_self_desc").clear()
+        driver.find_element_by_id("motp_self_desc").send_keys("Selenium self enrolled")
+        driver.find_element_by_id("button_register_motp").click()
+        time.sleep(1)
+        alert_box_text = driver.find_element_by_id("allert_box_text").text
+        alert_box_text_list = alert_box_text.split("\n")
+        self.assertEqual(
+            alert_box_text_list[0],
+            "Token enrolled successfully:"
+            )
+        serial_text = alert_box_text_list[1] # serial: LSMO12345678
+        serial_token_mozart = serial_text[8:].strip()
+        self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-labelledby='ui-dialog-title-allert_box']]").click()
+        driver.find_element_by_link_text("Logout").click()
+
+        ### 9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN
+
+        user_token_dict = {
+            "bach": serial_token_bach,
+            "debussy": serial_token_debussy,
+            "mozart": serial_token_mozart,
+            "beethoven": serial_token_beethoven
+            }
+        for user in user_token_dict:
+            driver.get(self.base_url + "/account/login")
+            driver.find_element_by_id("login").clear()
+            driver.find_element_by_id("login").send_keys(user)
+            driver.find_element_by_id("password").clear()
+            driver.find_element_by_id("password").send_keys("Test123!")
+            driver.find_element_by_id("password").submit()
+            driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='set PIN']").click()
+            time.sleep(1)
+            # driver.find_element_by_css_selector('#tokenDiv > ul > li > a').click()
+            driver.find_element_by_id('tokenDiv').find_element_by_link_text(user_token_dict[user]).click()
+            driver.find_element_by_id("pin1").clear()
+            driver.find_element_by_id("pin1").send_keys(user + "newpin")
+            driver.find_element_by_id("pin2").clear()
+            driver.find_element_by_id("pin2").send_keys(user + "newpin")
+            driver.find_element_by_id("button_setpin").click()
+            time.sleep(1)
+            self.assertEqual("PIN set successfully", self.close_alert_and_get_its_text())
+            driver.find_element_by_link_text("Logout").click()
 
         ### 10. Authentisierung der 4 Benutzer (noch unvollstaendig)  ###
 
@@ -245,22 +313,21 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                             self.http_username,
                             self.http_password)
         for counter in range(0, 20):
-            otp = "1234" + hotp.generate(counter=counter, key=seed_oath137332_bin)
-            access_granted, _ = validate.validate(user=test1_user + "@" +
+            otp = "bachnewpin" + hotp.generate(counter=counter, key=seed_oath137332_bin)
+            access_granted, _ = validate.validate(user="bach@" +
                                                 test1_realm, password=otp)
             self.assertTrue(access_granted, "OTP: " + otp + " for user " +
-                            test1_user + "@" + test1_realm + " returned False")
-        access_granted, _ = validate.validate(user=test1_user + "@" + test1_realm,
+                            "bach@" + test1_realm + " returned False")
+        access_granted, _ = validate.validate(user="bach@" + test1_realm,
                                             password="1234111111")
-        self.assertFalse(access_granted, "OTP: 1234111111 should be False for user " + test1_user)
+        self.assertFalse(access_granted, "OTP: 1234111111 should be False for user bach")
 
         # Validate Remote token
-        access_granted, _ = validate.validate(user=remote_token_user + "@" + test1_realm,
-                                            password=remote_token_pin + remote_token_otp)
+        access_granted, _ = validate.validate(user="debussy@" + test1_realm,
+                                            password="debussynewpin" + remote_token_otp)
         self.assertTrue(access_granted, "OTP: " + remote_token_otp + " for user " +
-                        remote_token_user + "@" + test1_realm + " returned False")
-        access_granted, _ = validate.validate(user=remote_token_user + "@" + test1_realm,
+                        "debussy@" + test1_realm + " returned False")
+        access_granted, _ = validate.validate(user="debussy@" + test1_realm,
                                             password="1234111111")
-        self.assertFalse(access_granted, "OTP: 1234111111 should be False for user %s" %
-                                          remote_token_user)
+        self.assertFalse(access_granted, "OTP: 1234111111 should be False for user debussy")
 

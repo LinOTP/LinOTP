@@ -116,6 +116,7 @@ class UserView:
                     "#ui-tabs-2 > div.flexigrid > div.sDiv > div.sDiv2 > "
                     "input.qsbox"
                 )
+        search_box.clear()
         search_box.send_keys(username)
 
         select_type = self.driver.find_element_by_css_selector(

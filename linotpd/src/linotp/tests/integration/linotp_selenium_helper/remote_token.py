@@ -34,7 +34,7 @@ from helper import hover, select
 class RemoteToken(Token):
     """Creates a Remote Token in the LinOTP WebUI"""
 
-    def __init__(self, driver, base_url, url, serial, pin):
+    def __init__(self, driver, base_url, url, remote_serial, pin):
         """Currently only supports enrolling remote tokens using the remote
            serial. PIN is always checked locally.
         """
@@ -44,9 +44,10 @@ class RemoteToken(Token):
         driver.find_element_by_id("remote_server").clear()
         driver.find_element_by_id("remote_server").send_keys(url)
         driver.find_element_by_id("remote_serial").clear()
-        driver.find_element_by_id("remote_serial").send_keys(serial)
+        driver.find_element_by_id("remote_serial").send_keys(remote_serial)
         driver.find_element_by_id("button_enroll_enroll").click()
         time.sleep(1)
+        self.serial = driver.find_element_by_css_selector("#info_text > .text_param1").text
         driver.find_element_by_id("pin1").clear()
         driver.find_element_by_id("pin1").send_keys(pin)
         driver.find_element_by_id("pin2").clear()

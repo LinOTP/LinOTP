@@ -34,8 +34,6 @@ from helper import select
 class EmailToken(Token):
     """Creates a e-mail token in the LinOTP WebUI"""
 
-    serial = None
-
     def __init__(self, driver, base_url, pin, email="", description=""):
         Token.__init__(self, driver=driver, base_url=base_url)
         select_tag = driver.find_element_by_id("tokentype")
