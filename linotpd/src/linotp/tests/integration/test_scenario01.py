@@ -40,6 +40,21 @@ from linotp.lib.HMAC import HmacOtp
 import binascii
 
 
+def calculate_motp(epoch, key, pin, digits=6):
+    """
+    :param epoch: number of seconds since January 1, 1970 (time.time())
+    :type epoch: number
+    :param key: mOTP key
+    :type key: string
+    :param pin: mOTP PIN
+    :type pin: string
+    """
+    from hashlib import md5
+    vhash = "%d%s%s" % (epoch / 10, key, pin)
+    motp = md5(vhash).hexdigest()[:digits]
+    return motp
+
+
 class TestScenario01(TestCase):
     """TestCase class that tests Scenario 01 as defined here:
        https://wally/projects/linotp/wiki/TestingTest_Szenario_01
@@ -249,6 +264,8 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
 
         ### 8. Selfservice mOTP ###
 
+        motp_key = "1234123412341234"
+        motp_pin = "1234"
         driver.get(self.base_url + "/account/login")
         driver.find_element_by_id("login").clear()
         driver.find_element_by_id("login").send_keys("mozart@" + test1_realm)
@@ -257,11 +274,11 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("password").submit() # Submits the form
         time.sleep(1)
         driver.find_element_by_id("motp_secret").clear()
-        driver.find_element_by_id("motp_secret").send_keys("1234123412341234")
+        driver.find_element_by_id("motp_secret").send_keys(motp_key)
         driver.find_element_by_id("motp_s_pin1").clear()
-        driver.find_element_by_id("motp_s_pin1").send_keys("1234")
+        driver.find_element_by_id("motp_s_pin1").send_keys(motp_pin)
         driver.find_element_by_id("motp_s_pin2").clear()
-        driver.find_element_by_id("motp_s_pin2").send_keys("1234")
+        driver.find_element_by_id("motp_s_pin2").send_keys(motp_pin)
         driver.find_element_by_id("motp_self_desc").clear()
         driver.find_element_by_id("motp_self_desc").send_keys("Selenium self enrolled")
         driver.find_element_by_id("button_register_motp").click()
@@ -307,7 +324,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
 
         ### 10. Authentisierung der 4 Benutzer (noch unvollstaendig)  ###
 
-        # Validate HOTP Token
+        # Validate HOTP Token - bach
         hotp = HmacOtp()
         validate = Validate(self.http_protocol,
                             self.http_host,
@@ -323,7 +340,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                                             password="1234111111")
         self.assertFalse(access_granted, "OTP: 1234111111 should be False for user bach")
 
-        # Validate Remote token
+        # Validate Remote token - debussy
         access_granted, _ = validate.validate(user="debussy@" + test1_realm,
                                             password="debussynewpin" + remote_token_otp)
         self.assertTrue(access_granted, "OTP: " + remote_token_otp + " for user " +
@@ -331,4 +348,33 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         access_granted, _ = validate.validate(user="debussy@" + test1_realm,
                                             password="1234111111")
         self.assertFalse(access_granted, "OTP: 1234111111 should be False for user debussy")
+
+        # Validate Spass token - beethoven
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                            password="beethovennewpin")
+        self.assertTrue(access_granted, "OTP: " + "beethovennewpin" + " for user " +
+                        "beethoven@" + test1_realm + " returned False")
+        access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
+                                            password="randominvalidpin")
+        self.assertFalse(access_granted, "OTP: randominvalidpin should be False for user beethoven")
+
+        # Validate mOTP token - mozart
+        current_epoch = time.time()
+        motp_otp = calculate_motp(
+            epoch=current_epoch,
+            key=motp_key,
+            pin=motp_pin
+            )
+        access_granted, _ = validate.validate(user="mozart@" + test1_realm,
+                                            password="mozartnewpin" + motp_otp)
+        self.assertTrue(access_granted, "OTP: " + motp_otp + " for user " +
+                        "mozart@" + test1_realm + " returned False")
+        motp_otp = calculate_motp(
+            epoch=current_epoch - 4000,
+            key=motp_key,
+            pin=motp_pin
+            )
+        access_granted, _ = validate.validate(user="mozart@" + test1_realm,
+                                            password="mozartnewpin" + motp_otp)
+        self.assertFalse(access_granted, "OTP: mozartnewpin%s should be False for user mozart" % motp_otp)
 
