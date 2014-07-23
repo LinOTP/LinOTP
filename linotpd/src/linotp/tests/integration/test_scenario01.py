@@ -251,10 +251,11 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
 
         driver.get(self.base_url + "/account/login")
         driver.find_element_by_id("login").clear()
-        driver.find_element_by_id("login").send_keys("mozart")
+        driver.find_element_by_id("login").send_keys("mozart@" + test1_realm)
         driver.find_element_by_id("password").clear()
         driver.find_element_by_id("password").send_keys("Test123!")
         driver.find_element_by_id("password").submit() # Submits the form
+        time.sleep(1)
         driver.find_element_by_id("motp_secret").clear()
         driver.find_element_by_id("motp_secret").send_keys("1234123412341234")
         driver.find_element_by_id("motp_s_pin1").clear()
@@ -287,7 +288,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         for user in user_token_dict:
             driver.get(self.base_url + "/account/login")
             driver.find_element_by_id("login").clear()
-            driver.find_element_by_id("login").send_keys(user)
+            driver.find_element_by_id("login").send_keys("%s@%s" % (user, test1_realm))
             driver.find_element_by_id("password").clear()
             driver.find_element_by_id("password").send_keys("Test123!")
             driver.find_element_by_id("password").submit()
