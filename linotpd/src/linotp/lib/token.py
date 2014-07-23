@@ -1581,6 +1581,7 @@ def removeToken(user=None, serial=None):
         ## we cleanup the challenges
         challenges = set()
         for serial in serials:
+            serial = linotp.lib.crypt.uencode(serial)
             challenges.update(linotp.lib.validate.get_challenges(serial=serial))
 
         for chall in challenges:
