@@ -572,7 +572,7 @@ function save_token_config(){
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
-            alert_info_text("text_token_save_error", "", ERROR);
+            alert_info_text(data.result.error.message, "", ERROR);
         }
     });
 }

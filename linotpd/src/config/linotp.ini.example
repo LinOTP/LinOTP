@@ -26,8 +26,29 @@
 #
 # LinOTP - Pylons development environment configuration
 #
-# The %(here)s variable will be replaced with the parent directory of this file
+# Remark:
+# the %(here)s variable will be replaced with the parent directory of this file
 #
+
+##############################################################################
+## Paster Configuration:
+## ---------------------
+use = egg:Paste#http
+## define the host ip and port, where the paster process should listen
+## 0.0.0.0 stands for any ip on the host
+[server:main]
+host = 0.0.0.0
+port = 5001
+
+## usage of ssl certificates within paster
+#ssl_pem = *
+
+
+
+##############################################################################
+## LinOTP Configuration:
+## ---------------------
+## in the following section you can define the LinOTP process parameters
 [DEFAULT]
 debug = false
 profile = false
@@ -36,23 +57,57 @@ profile = false
 smtp_server = localhost
 error_email_from = paste@localhost
 
-#
-# default audit trail set to SQL Audit
-#
+
+## Audit Log:
+## ---------
+## Audit log capability will log all requests in a non repudiable way in a
+## audit log database. To switch the audit capability on uncomment the
+## linotpAudit.type, which should point to your audit log class
 #linotpAudit.type = linotp.lib.audit.SQLAudit
+#linotpAudit.sql.url = mysql://linotp2:1234@localhost/LinOTP2
+
 linotpAudit.key.private = %(here)s/private.pem
 linotpAudit.key.public = %(here)s/public.pem
 
-linotpAudit.sql.url = mysql://linotp2:1234@localhost/LinOTP2
-linotpAudit.file.filename = /var/log/linotp/audit.log
-linotpAudit.file.audit_num = %(here)s/audit_num
-#linotpAudit.sql.url = sqlite:///%(here)s/token.sqlite
-# One entry for SQL audit might take about 1K
+## define the max amount of audit log entries in the log database
+## - one SQL audit entry might take up about 1K of space
 linotpAudit.sql.highwatermark = 10000
 linotpAudit.sql.lowwatermark = 5000
 
-linotpGetotp.active = False
 
+## Audit table and column definition:
+## ----------------------------------
+## some databases don't support the used table or column names
+## to prevent collission the following table and column prefix
+## can be defined
+#linotpAudit.sql.table_prefix = lino
+
+
+## Audit Data truncation:
+## ----------------------
+## Some databases (eg. MySQL) silently truncate data if the data is longer that
+## the VARCHAR column definition. To prevent this silent truncation an error
+## can be raised.
+## Other databases (e.g. Oracle, PostgreSQL) raise an exception (if the data
+## length exceeds the field length).
+## Basically we make sure all DBs behave the same way. If error_on_truncation is
+## set to True, an Exception is raised. If error_on_truncation is False (default)
+## then the  data is silently truncated.
+##
+## Caution: Setting this parameter to True might make your system unusable!
+##
+# linotpAudit.error_on_truncation = True
+
+
+## Unicode Token Database:
+## -----------------------
+## to support token dbs with limited support for unicode the linotp.uencode_data
+## switch can be set to true. This will transparently store unicode data in the
+## token info in uencoded format in the database
+# linotp.uencode_data = True
+
+## Default LinOTP Token configuration:
+## -----------------------------------
 
 linotp.DefaultSyncWindow = 1000
 linotp.DefaultOtpLen = 6
@@ -63,43 +118,60 @@ linotp.PrependPin = True
 linotp.DefaultResetFailCount = True
 linotp.splitAtSign = True
 
+linotpGetotp.active = False
+
+## Encrytion key:
+## --------------
+## The encryption key is used to encrypt the token seeds before storing them
+## in the Token database.
+##
+## Caution: Be careful with this key - losing it, will render your token and
+## LinOTP configuration useless
 linotpSecretFile = %(here)s/encKey
 
-# These are the settings for the RADIUS Token
-# The location of the RADIUS dictionary file
+
+## RADIUS Token:
+## -------------
+## These are the settings for the RADIUS Token:
+## radius.dictfile, the RADIUS dictionary file which contains the mapping of
+## radius attributes names to ids
 radius.dictfile= %(here)s/dictionary
-# The NAS Identifier of your LinOTP server, 
-# that is sent to the RADIUS server
+
+## radius.nas_identifier - the NAS Identifier of your LinOTP server
+## which is sent to the RADIUS server
 radius.nas_identifier = LinOTP
 
 
-[server:main]
-use = egg:Paste#http
-#host = 172.16.200.100
-host = 0.0.0.0
-#host = localhost
-port = 5001
-#ssl_pem = *
 
+##############################################################################
+## LinOTP Server Configuration:
+## ----------------------------
+## LinOTP runs in the scope of the pylons framework, which
+## can be adjusted in various aspects. To change these parameters please check
+## the pylons or beaker configuration
 [app:main]
 use = egg:LinOTP
+
+
+
+## define location of the LinOTP Token Database
 sqlalchemy.url = mysql://linotp2:1234@localhost/LinOTP2
-#sqlalchemy.url = sqlite:///%(here)s/token.sqlite
+
 sqlalchemy.pool_recycle = 3600
-#sqlalchemy.url = postgres://user:password@localhost/otpdb
-#sqlalchemy.url = mysql://user:password@localhost/linotp2
-full_stack = true
-static_files = true
 
 who.config_file = %(here)s/who.ini
 who.log_level = warning
 who.log_file = /var/log/linotp/linotp.log
 
 
+full_stack = true
+static_files = true
+
+
 cache_dir = %(here)s/data
 custom_templates = %(here)s/custom-templates/
-#beaker.session.key = linotp
-#beaker.session.secret = somesecret
+
+## Beaker Configuration
 
 # If you'd like to fine-tune the individual locations of the cache data dirs
 # for the Cache data, or the Session saves, un-comment the desired settings
@@ -107,18 +179,28 @@ custom_templates = %(here)s/custom-templates/
 #beaker.cache.data_dir = %(here)s/data/cache
 #beaker.session.data_dir = %(here)s/data/sessions
 
+#beaker.session.key = linotp
+#beaker.session.secret = somesecret
 
-#
-#  Note: You should change the Logging Level from DEGUB to WARN
-#
-# Logging configuration
+
+##############################################################################
+## Logging Configuration:
+## ----------------------
+## Note: You should change the Logging Level from DEBUG to WARN
+##
+
+
+## Logger configuration
+## - define which modules should be logged
 [loggers]
 keys = root, linotp, sqlalchemy
 
+## root module logging definition:
 [logger_root]
 level = DEBUG
 handlers = file
 
+## linotp module logging definition:
 [logger_linotp]
 level = DEBUG
 handlers = file
@@ -131,6 +213,7 @@ qualname = sqlalchemy.engine
 # "level = INFO" logs SQL queries.
 # "level = DEBUG" logs SQL queries and results.
 # "level = WARN" logs neither.  (Recommended for production systems.)
+
 
 [handlers]
 keys = file
@@ -147,7 +230,12 @@ formatter = generic
 keys = generic
 
 [formatter_generic]
-# Beware: This will only work with python >= 2.7
+## To secure your log output and prevent command escaping use the
+## logger class definition linotp.lib.log.SecureFormatter by uncommenting the
+## line below
+##
+## Caution: The SecureFormatter will only work with python >= 2.7
+##
 #class = linotp.lib.log.SecureFormatter
 format = %(asctime)s %(levelname)-5.5s {%(thread)d} [%(name)s][%(funcName)s #%(lineno)d] %(message)s
 datefmt = %Y/%m/%d - %H:%M:%S

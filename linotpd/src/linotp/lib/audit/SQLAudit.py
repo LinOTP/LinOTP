@@ -158,6 +158,17 @@ class AuditTable(object):
         self.timestamp = now()
         self.siganture = ' '
 
+    def _get_field_len(self, col_name):
+        leng = -1
+        try:
+            ll = audit_table.columns[col_name]
+            ty = ll.type
+            leng = ty.length
+        except Exception as exx:
+            leng = -1
+
+        return leng
+
     def __setattr__(self, name, value):
         """
         to support unicode on all backends, we use the json encoder with
@@ -168,6 +179,20 @@ class AuditTable(object):
 
         :return: - nothing -
         """
+        if type(value) in [str, unicode]:
+            field_len = self._get_field_len(name)
+            encoded_value = linotp.lib.crypt.uencode(value)
+            if field_len != -1 and len(encoded_value) > field_len:
+                log.warning("truncating audit data: [audit.%s] %s" % (name, value))
+                trunc_as_err = config.get("linotpAudit.error_on_truncation", False) or False
+                if trunc_as_err != False:
+                    raise Exception("truncating audit data: [audit.%s] %s" % (name, value))
+
+                ## during the encoding the value might expand -
+                ## so we take this additional length into account
+                add_len = len(encoded_value) - len(value)
+                value = value[:field_len - add_len]
+
         if name in AUDIT_ENCODE:
             ## encode data
             if value:
