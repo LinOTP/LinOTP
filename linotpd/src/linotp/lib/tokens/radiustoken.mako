@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
@@ -25,7 +25,7 @@
  *    Support: www.lsexperts.de
  *
  * contains the radius token web interface
--->
+</%doc>
 
 
 
