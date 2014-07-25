@@ -1,4 +1,4 @@
-linotp (2.7.0.2-0.rc1~precise) precise; urgency=low
+linotp (2.7.0.2-0.rc2~precise) precise; urgency=low
 
   * Fixed PSKC import with plain input
   * Fixed SecretObj cleanup in some corner-cases
@@ -10,8 +10,11 @@ linotp (2.7.0.2-0.rc1~precise) precise; urgency=low
   * Made significant modifications to SQLAudit to fix a memory leak
   * Fixed checkPolicyPost() in admin/init without serial (#12603)
   * Added /:no realm:/ search option for token list
+  * Removed empty token config tabs in the WebUI (#12634)
+  * Added linotpAudit.error_on_truncation config option to control DB
+    behaviour when writing large values to the DB
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 22 Jul 2014 14:23:07 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 25 Jul 2014 15:02:45 +0200
 
 linotp (2.7-1~precise) precise; urgency=low
 
