@@ -33,10 +33,10 @@
 ##############################################################################
 ## Paster Configuration:
 ## ---------------------
+[server:main]
 use = egg:Paste#http
 ## define the host ip and port, where the paster process should listen
 ## 0.0.0.0 stands for any ip on the host
-[server:main]
 host = 0.0.0.0
 port = 5001
 
