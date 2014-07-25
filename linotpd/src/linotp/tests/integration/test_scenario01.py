@@ -322,14 +322,14 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
             self.assertEqual("PIN set successfully", self.close_alert_and_get_its_text())
             driver.find_element_by_link_text("Logout").click()
 
-        ### 10. Authentisierung der 4 Benutzer (noch unvollstaendig)  ###
-
-        # Validate HOTP Token - bach
-        hotp = HmacOtp()
+        ### 10. Authentisierung der 4 Benutzer ###
         validate = Validate(self.http_protocol,
                             self.http_host,
                             self.http_username,
                             self.http_password)
+
+        # Validate HOTP Token - bach
+        hotp = HmacOtp()
         for counter in range(0, 20):
             otp = "bachnewpin" + hotp.generate(counter=counter, key=seed_oath137332_bin)
             access_granted, _ = validate.validate(user="bach@" +
@@ -378,3 +378,105 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                                             password="mozartnewpin" + motp_otp)
         self.assertFalse(access_granted, "OTP: mozartnewpin%s should be False for user mozart" % motp_otp)
 
+        ### 11. mOTP Pin im selfservice ändern ###
+
+        driver.get(self.base_url + "/account/login")
+        driver.find_element_by_id("login").clear()
+        driver.find_element_by_id("login").send_keys("%s@%s" % ("mozart", test1_realm))
+        driver.find_element_by_id("password").clear()
+        driver.find_element_by_id("password").send_keys("Test123!")
+        driver.find_element_by_id("password").submit()
+        driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='set mOTP PIN']").click()
+        time.sleep(1)
+        driver.find_element_by_id('tokenDiv').find_element_by_link_text(serial_token_mozart).click()
+        driver.find_element_by_id("mpin1").clear()
+        new_motp_pin = "5588"
+        driver.find_element_by_id("mpin1").send_keys(new_motp_pin)
+        driver.find_element_by_id("mpin2").clear()
+        driver.find_element_by_id("mpin2").send_keys(new_motp_pin)
+        driver.find_element_by_id("button_setmpin").click()
+        time.sleep(1)
+        self.assertEqual("mOTP PIN set successfully", self.close_alert_and_get_its_text())
+        driver.find_element_by_link_text("Logout").click()
+
+        current_epoch = time.time()
+        motp_otp = calculate_motp(
+            epoch=current_epoch,
+            key=motp_key,
+            pin=new_motp_pin
+            )
+        access_granted, _ = validate.validate(user="mozart@" + test1_realm,
+                                            password="mozartnewpin" + motp_otp)
+        self.assertTrue(access_granted, "OTP: mozartnewpin" + motp_otp + " for user " +
+                        "mozart@" + test1_realm + " returned False")
+
+        ### 12. Token Resynchronisierung ###
+
+        # Bach 'presses' his token more than 10 times and fails to authenticate
+        counter = 50 # was 19
+        hotp = HmacOtp()
+        otp = "bachnewpin" + hotp.generate(counter=counter, key=seed_oath137332_bin)
+        access_granted, _ = validate.validate(user="bach@" + test1_realm,
+                                              password=otp)
+        self.assertFalse(access_granted, "OTP: %s should be False for user bach" % otp)
+
+        driver.get(self.base_url + "/account/login")
+        driver.find_element_by_id("login").clear()
+        driver.find_element_by_id("login").send_keys("%s@%s" % ("bach", test1_realm))
+        driver.find_element_by_id("password").clear()
+        driver.find_element_by_id("password").send_keys("Test123!")
+        driver.find_element_by_id("password").submit()
+        driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='Resync Token']").click()
+        time.sleep(1)
+        driver.find_element_by_id('tokenDiv').find_element_by_link_text(serial_token_bach).click()
+        otp1 = hotp.generate(counter=counter + 1, key=seed_oath137332_bin)
+        otp2 = hotp.generate(counter=counter + 2, key=seed_oath137332_bin)
+        driver.find_element_by_id("otp1").clear()
+        driver.find_element_by_id("otp1").send_keys(otp1)
+        driver.find_element_by_id("otp2").clear()
+        driver.find_element_by_id("otp2").send_keys(otp2)
+        driver.find_element_by_id("button_resync").click()
+        time.sleep(1)
+        self.assertEqual("Token resynced successfully", self.close_alert_and_get_its_text())
+        driver.find_element_by_link_text("Logout").click()
+
+        # Should be able to authenticate again
+        otp = "bachnewpin" + hotp.generate(counter=counter + 3, key=seed_oath137332_bin)
+        access_granted, _ = validate.validate(user="bach@" + test1_realm,
+                                              password=otp)
+        self.assertTrue(access_granted, "OTP: %s should be True for user bach" % otp)
+
+        ### 13. Ein Benutzer debussy deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden. ###
+
+        driver.get(self.base_url + "/account/login")
+        driver.find_element_by_id("login").clear()
+        driver.find_element_by_id("login").send_keys("%s@%s" % ("debussy", test1_realm))
+        driver.find_element_by_id("password").clear()
+        driver.find_element_by_id("password").send_keys("Test123!")
+        driver.find_element_by_id("password").submit()
+        driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='Disable Token']").click()
+        time.sleep(1)
+        driver.find_element_by_id('tokenDiv').find_element_by_link_text(serial_token_debussy).click()
+        driver.find_element_by_id("button_disable").click()
+        time.sleep(1)
+        self.assertEqual("Token disabled successfully", self.close_alert_and_get_its_text())
+        driver.find_element_by_link_text("Logout").click()
+
+        # debussy should be unable to authenticate
+        access_granted, _ = validate.validate(user="debussy@" + test1_realm,
+                                            password="debussynewpin" + remote_token_otp)
+        self.assertFalse(access_granted, "OTP: debussynewpin" + remote_token_otp + "should be False for user debussy")
+
+        ### 14. Der Admin entsperrt diesen Token, der Benutzer debussy kann sich wieder anmelden. ###
+
+        driver.get(self.base_url + "/manage")
+        time.sleep(1)
+        token_view = TokenView(driver, self.base_url)
+        token_view.select_token(serial_token_debussy)
+        driver.find_element_by_id("button_enable").click()
+        time.sleep(1)
+
+        # debussy should be able to authenticate
+        access_granted, _ = validate.validate(user="debussy@" + test1_realm,
+                                            password="debussynewpin" + remote_token_otp)
+        self.assertTrue(access_granted, "OTP: debussynewpin" + remote_token_otp + "should be True for user debussy")
