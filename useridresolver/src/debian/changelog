@@ -4,12 +4,12 @@ linotp-useridresolver (2.7.1-0.dev0~precise) precise; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 May 2014 16:49:22 +0200
 
-linotp-useridresolver (2.7.0.2-0.rc1~precise) precise; urgency=low
+linotp-useridresolver (2.7.0.2-0.rc2~precise) precise; urgency=low
 
   * Fallback for SQLIdResolver: If the data can't be decoded it is returned as
     it is to the upper layer
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 22 Jul 2014 14:23:07 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 25 Jul 2014 15:02:45 +0200
 
 linotp-useridresolver (2.7-1~precise) precise; urgency=low
 
