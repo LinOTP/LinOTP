@@ -800,10 +800,14 @@ function token_resync_callback(xhdr, textStatus) {
 	var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
             if (obj.result.value)
-                alert_info_text("text_resync_success")
+                alert_info_text("text_resync_success");
             else
                 alert_info_text("text_resync_fail", "", ERROR);
-        }
+    } else {
+        message = obj.result.error.message;
+        alert_info_text(message, "", ERROR);
+    }
+
     reset_buttons();
 }
 
@@ -2447,11 +2451,14 @@ function tokenbuttons(){
 				}
         },
         open: function() {
-        	tokens = get_selected_tokens();
-        	token_string = tokens.join(", ");
-        	$('#tokenid_resync').html(token_string);
-        	translate_dialog_resync_token();
-        	do_dialog_icons();
+            tokens = get_selected_tokens();
+            token_string = tokens.join(", ");
+            /* delete otp values in dialog */
+            $("#otp1").val("");
+            $("#otp2").val("");
+            $('#tokenid_resync').html(token_string);
+            translate_dialog_resync_token();
+            do_dialog_icons();
         }
     });
     $('#button_resync').click(function(){

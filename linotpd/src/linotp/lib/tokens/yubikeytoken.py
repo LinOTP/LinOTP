@@ -147,6 +147,35 @@ class YubikeyTokenClass(TokenClass):
         return request_is_valid
 
 
+    def resync(self, otp1, otp2, options=None):
+        """
+        resyc the yubikey token
+
+        this is done by checking two subsequent otp values for their counter
+
+        :param otp1: first otp value
+        :param otp2: second otp value
+
+        :return: boolean
+        """
+        ret = False
+
+        syncWindow = self.token.getSyncWindow()
+        counter = self.token.getOtpCounter()
+        counter1 = self.checkOtp(otp1, window=syncWindow, options=options)
+
+        if counter1 < counter:
+            return ret
+
+        counter2 = self.checkOtp(otp2, counter=counter1, options=options)
+
+        if counter1 + 1 == counter2:
+            ret = True
+            self.incOtpCounter(counter2, True)
+
+        return ret
+
+
     def checkOtp(self, anOtpVal, counter=None, window=None, options=None):
         """
         checkOtp - validate the token otp against a given otpvalue

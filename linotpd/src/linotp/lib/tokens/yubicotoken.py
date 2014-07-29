@@ -148,6 +148,11 @@ class YubicoTokenClass(TokenClass):
 
         return
 
+    def resync(self, otp1, otp2, options=None):
+        """
+        resync of yubico tokens - not supported!!
+        """
+        raise Exception("YUBICO token resync is not managed by LinOTP.")
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         '''
