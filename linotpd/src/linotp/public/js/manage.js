@@ -495,8 +495,9 @@ function get_server_config() {
 	return $systemConfig;
 }
 
-function load_token_config() {
+var $token_config_changed = [];
 
+function load_token_config() {
 
 	var selectTag = $('#tab_token_settings');
 	selectTag.find('div').each(
@@ -506,6 +507,23 @@ function load_token_config() {
 		  var tt = n[0];
 		  $tokenConfigCallbacks[tt] = tt+'_get_config_params';
 		  $tokenConfigInbacks[tt]   = tt+'_get_config_val';
+		}
+	);
+	$('#tab_token_settings div form :input').change(
+		function(){
+			var attr = $(this).closest("form").closest("div").attr('id');
+			var n= attr.split("_");
+		  	var tt = n[0];
+			$token_config_changed.push(tt);
+			var nn = "#" +tt + "_token_settings";
+			var label = $("#tab_token_settings [href='"+nn+"']").closest('a').text();
+
+			var marker = "* ";
+
+			if (label.substring(0, marker.length) !== marker) {
+				$("#tab_token_settings [href='"+nn+"']").closest('a').text(marker + label);
+				//$("#tab_token_settings [href='"+nn+"']").closest('a').attr( "class", 'token_config_changed');
+			}
 		}
 	);
 
@@ -550,15 +568,17 @@ function save_token_config(){
     var params = {'session': getsession()};
     for (tt in $tokenConfigCallbacks) {
     	try{
-    		var functionString = ''+$tokenConfigCallbacks[tt];
-			var funct = window[functionString];
-			var exi = typeof funct;
-			var l_params = {};
-			if (exi == 'function') {
-				l_params = window[functionString]();
-			}
-	    	for (var key in l_params) {
-  				params[key] = l_params[key];
+    		if ($.inArray(tt, $token_config_changed)!==-1) {
+	    		var functionString = ''+$tokenConfigCallbacks[tt];
+				var funct = window[functionString];
+				var exi = typeof funct;
+				var l_params = {};
+				if (exi == 'function') {
+					l_params = window[functionString]();
+				}
+		    	for (var key in l_params) {
+	  				params[key] = l_params[key];
+				}
 			}
 		}
 		catch(err) {
@@ -3357,14 +3377,19 @@ $(document).ready(function(){
                     var validation_fails = "";
                     $('#dialog_token_settings').find('form').each(
                         function( index ) {
-                            var valid = $(this).valid();
-                            if (valid != true) {
-                                formName = $(this).find('legend').text();
-                                if (formName.length == 0) {
-                                    formName = $(this).find('label').first().text();
-                                }
-                                validation_fails = validation_fails +
-                                            "<li>" + formName.trim() +"</li>";
+							var attr = $(this).closest("form").closest("div").attr('id');
+							var tt= attr.split("_")[0];
+
+						  	if ($.inArray(tt, $token_config_changed) !== -1) {
+	                            var valid = $(this).valid();
+	                            if (valid != true) {
+	                                formName = $(this).find('legend').text();
+	                                if (formName.length == 0) {
+	                                    formName = $(this).find('label').first().text();
+	                                }
+	                                validation_fails = validation_fails +
+	                                            "<li>" + formName.trim() +"</li>";
+	                            }
                             }
                         }
                     );
@@ -3389,6 +3414,20 @@ $(document).ready(function(){
 				}
         },
         open: function(event, ui) {
+        	/**
+        	 * we reset all labels to not contain the leadin star, which shows
+        	 * something has changed before
+        	 */
+    		var selectTag = $('#tab_token_settings');
+			selectTag.find('li').each( function()
+			{
+    			var a_ref = $(this).find("a");
+    			var label = a_ref.text();
+    			label = label.replace("* ","");
+    			a_ref.text(label);
+    		});
+			/* clean up the array, so that it contains no token changed info*/
+        	$token_config_changed.splice(0,$token_config_changed.length);
         	do_dialog_icons();
         	translate_token_settings();
         }

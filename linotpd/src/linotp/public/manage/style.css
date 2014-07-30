@@ -221,6 +221,12 @@ z-index: 1;
     list-style-type: none;
 }
 
+
+.token_config_changed {
+    display: inline;
+    color: green;
+}
+
 .action-button {
 	//padding:0;
 	//margin:0;
