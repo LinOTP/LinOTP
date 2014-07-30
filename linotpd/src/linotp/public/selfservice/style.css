@@ -209,3 +209,13 @@ td.key  {
 label.error {
 	color: red;
 }
+
+.javascript_error {
+	display:block;
+	z-index:2000;
+	background-color: #EB6D5A;
+	width: 100%;
+	text-align: center;
+	padding: 10px 0;
+	margin: 5px 0;
+}

@@ -658,6 +658,11 @@ msgstr "Yubikey ausrollen"
 msgid "Authentication"
 msgstr "Authentisierung"
 
+msgid "You need to enable Javascript to use the authentication forms."
+msgstr ""
+"Sie müssen Javascript aktivieren, um die Authentisierungsformulare "
+"verwenden zu können"
+
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "Hier können Sie sich mit Ihrem OCRA OTP Token authentisieren."
 
@@ -717,28 +722,11 @@ msgstr "OCRA2 Anmeldung"
 msgid "Pin"
 msgstr "PIN"
 
-msgid ""
-"Here you authenticate with your username and your OTP PIN to retrieve an SMS "
-"containing your current OTP value."
-msgstr ""
-"Authentisieren Sie sich hier mit Ihrem Benutzernamen und Ihrer OTP PIN, um "
-"eine SMS mit einem OTP-Wert anzufordern."
-
-msgid "Enter your username and the OTP PIN."
-msgstr "Geben Sie Ihren Benutzernamen und die OTP PIN ein."
+msgid "Here you may try to authenticate using your OTP token."
+msgstr "Hier können Sie die Authentisierung mit Ihrem OTP-Token testen."
 
 msgid "Login"
 msgstr "Login"
-
-msgid ""
-"This form is deprecated since the same functionality was implemented in the "
-"regular /auth/index and /auth/index3 forms."
-msgstr ""
-"Dieses Formular ist veraltet da die gleiche Funktionalität im regulären /"
-"auth/index und /auth/index3 umgesetzt wurde."
-
-msgid "Here you may try to authenticate using your OTP token."
-msgstr "Hier können Sie die Authentisierung mit Ihrem OTP-Token testen."
 
 msgid "password (OTP PIN and OTP value)"
 msgstr "Password (OTP PIN und OTP-Wert)"

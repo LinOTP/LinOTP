@@ -36,7 +36,9 @@
 	</div>
 </div>
 
-
+<div class="javascript_error" id="javascript_error">
+	${_("You need to enable Javascript to use the authentication forms.")}
+</div>
 
 ${self.body()}
 
