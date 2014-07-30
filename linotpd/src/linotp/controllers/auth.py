@@ -94,17 +94,6 @@ class AuthController(BaseController):
         return render("/auth3.mako")
 
 
-    def requestsms(self):
-        '''
-        This is the method for requesting the sending of SMS
-
-        Call it directly in your browser like this
-            http(s)://server/auth/requestsms
-        '''
-        log.debug("[requestsms] authenticating user")
-        return render("/auth-sms.mako")
-
-
     def ocra(self):
         '''
         This is the method for testing ocra tokens
