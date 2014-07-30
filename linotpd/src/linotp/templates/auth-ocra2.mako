@@ -50,7 +50,7 @@ ${_('Enter for verification the OTP value in the lower form.')}
 <div id='register'>
 		<table>
 		<tr><td>
-        <form class="cmxform"  id="form_challenge_ocra2">
+        <form class="cmxform"  id="form_challenge_ocra2" method="post">
         	<frameset name=login>
                 <table><tr>
                 	<td><h2>${_('Submit a challenge:')}</h2></td>
@@ -82,7 +82,7 @@ ${_('Enter for verification the OTP value in the lower form.')}
         	</td>
 		</tr><tr>
         <td>
-        <form class="cmxform"  id="form_login_ocra2">
+        <form class="cmxform"  id="form_login_ocra2" method="post">
         	<frameset name=login>
                 <table><tr>
 				    <td><h2>${_('Login:')}</h2></td>

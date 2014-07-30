@@ -48,7 +48,7 @@ ${_('Enter your username, the OTP PIN and the OTP value.')}
 <div id='register'>
 		<table>
 		<tr><td>
-        <form class="cmxform"  id="form_challenge_ocra">
+        <form class="cmxform"  id="form_challenge_ocra" method="post">
         	<frameset name=login>
                 <table><tr>
                 	<td><h2>${_('Submit a challenge:')}</h2></td>
@@ -75,7 +75,7 @@ ${_('Enter your username, the OTP PIN and the OTP value.')}
         	</td>
 		</tr><tr>
         <td>
-        <form class="cmxform"  id="form_login_ocra">
+        <form class="cmxform"  id="form_login_ocra" method="post">
         	<frameset name=login>
                 <table><tr>
 				    <td><h2>${_('Login:')}</h2></td>

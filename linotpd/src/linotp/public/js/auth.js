@@ -142,37 +142,37 @@ $(document).ready(function() {
 	*/
 
 	// auth/index
-	$("#form_login").submit(function() {
+	$("#form_login").submit(function(submit_event) {
+		submit_event.preventDefault();
 		login_user( column = 2);
-		return false;
 	});
 
 	// auth/index3
-	$("#form_login3").submit(function() {
+	$("#form_login3").submit(function(submit_event) {
+		submit_event.preventDefault();
 		login_user( column = 3);
-		return false;
 	});
 
 	// auth/ocra
-	$("#form_challenge_ocra").submit(function() {
+	$("#form_challenge_ocra").submit(function(submit_event) {
+		submit_event.preventDefault();
 		getOcraChallenge();
-		return false;
 	});
 
-	$("#form_login_ocra").submit(function() {
+	$("#form_login_ocra").submit(function(submit_event) {
+		submit_event.preventDefault();
 		login_user( column = 2);
-		return false;
 	});
 
 	// auth/ocra2
-	$("#form_challenge_ocra2").submit(function() {
+	$("#form_challenge_ocra2").submit(function(submit_event) {
+		submit_event.preventDefault();
 		getOcra2Challenge();
-		return false;
 	});
 
-	$("#form_login_ocra2").submit(function() {
+	$("#form_login_ocra2").submit(function(submit_event) {
+		submit_event.preventDefault();
 		login_user( column = 2);
-		return false;
 	});
 
 });
