@@ -31,21 +31,21 @@ function create_oathcsv_dialog() {
         modal: true,
         buttons: {
             'load token file': {click: function(){
-            	$('#loadtokens_session_oathcsv').val(getsession());
+                $('#loadtokens_session_oathcsv').val(getsession());
                 load_tokenfile('oathcsv');
                 $(this).dialog('close');
-            	},
-				id: "button_oathcsv_load",
-				text: "load token file"
-				},
+                },
+                id: "button_oathcsv_load",
+                text: "load token file"
+                },
             Cancel: {click: function(){
                 $(this).dialog('close');
-            	},
-				id: "button_oathcsv_cancel",
-				text: "Cancel"
-				}
+                },
+                id: "button_oathcsv_cancel",
+                text: "Cancel"
+                }
         },
         open: do_dialog_icons
     });
-	return $dialog_load_tokens_oathcsv ;
+    return $dialog_load_tokens_oathcsv ;
 }

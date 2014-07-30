@@ -50,26 +50,26 @@ function create_pskc_dialog() {
         modal: true,
         buttons: {
             'load token file': { click: function(){
-            	$('#loadtokens_session_pskc').val(getsession());
+                $('#loadtokens_session_pskc').val(getsession());
                 load_tokenfile('pskc');
                 $(this).dialog('close');
-            	},
-				id: "button_pskc_load",
-				text: "load token file"
-				},
+                },
+                id: "button_pskc_load",
+                text: "load token file"
+                },
             Cancel: {click: function(){
                 $(this).dialog('close');
-            	},
-				id: "button_pskc_cancel",
-				text: "Cancel"
-				}
+                },
+                id: "button_pskc_cancel",
+                text: "Cancel"
+                }
         },
         open: function(){
-        	translate_import_pskc();
-        	do_dialog_icons();
+            translate_import_pskc();
+            do_dialog_icons();
         }
     });
- 	return $dialog_load_tokens_pskc;
+    return $dialog_load_tokens_pskc;
 }
 
 $(document).ready(function(){
