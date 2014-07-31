@@ -2650,18 +2650,6 @@ $(document).ready(function(){
     // hide the javascrip message
     $('#javascript_error').hide();
 
-    $('#do_waiting').overlay({
-        top: 10,
-        mask: {
-            color: '#fff',
-            loadSpeed: 100,
-            opacity: 0.5
-        },
-        closeOnClick: true,
-        load: true
-    });
-    hide_waiting();
-
     $("button").button();
 
     /*

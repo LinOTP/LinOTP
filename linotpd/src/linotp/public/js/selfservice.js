@@ -793,18 +793,6 @@ $(document).ready(function() {
     }
     );
 
-    $('#do_waiting').overlay({
-        top : 10,
-        mask : {
-            color : '#fff',
-            loadSpeed : 100,
-            opacity : 0.5
-        },
-        closeOnClick : false,
-        load : true
-    });
-    $('#do_waiting').hide();
-
     $("#tabs").tabs({
         ajaxOptions : {
             error : function(xhr, status, index, anchor) {

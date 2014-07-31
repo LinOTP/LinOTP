@@ -41,7 +41,6 @@
     <script type='text/javascript' src='/js/hoverIntent.min.js'></script>
     <script type='text/javascript' src='/js/superfish.min.js'></script>
 %endif
-<script type="text/javascript" src="/js/jquery.tools.min.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
 
 <script type="text/javascript" src="/js/qrcode.js"></script>
