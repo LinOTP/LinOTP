@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
@@ -24,18 +24,13 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
--->
-    <ul>
-    % for tok in c.tokenArray:
-        %if tok['LinOtp.Isactive']:
-        <li><a class='activeToken' href='' 
-        	onclick="selectToken('${tok['LinOtp.TokenSerialnumber']}'); return false;">
-        		${tok['LinOtp.TokenSerialnumber']}
-        </a></li>      
-        %else:
-        <li><a class='disabledToken' href='' 
-        	onclick="selectToken('${tok['LinOtp.TokenSerialnumber']}'); return false;"> 
-        		${tok['LinOtp.TokenSerialnumber']} </a></li>
-        %endif        
-    % endfor
-    </ul>
+</%doc>
+<ul>
+% for tok in c.tokenArray:
+    <li>
+        <a class="${'activeToken' if tok['LinOtp.Isactive'] else 'disabledToken'}">
+            ${tok['LinOtp.TokenSerialnumber']}
+        </a>
+    </li>
+% endfor
+</ul>
