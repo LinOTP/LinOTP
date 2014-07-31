@@ -15,8 +15,8 @@
 <script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
 
 <!-- jQuery UI -->
-<link type="text/css" href="/css/smoothness/jquery-ui-1.8.2.custom.css" rel="stylesheet" />
-<script type="text/javascript" src="/js/jquery-ui-1.8.15.custom.min.js"></script>
+<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 
 <!-- form validation -->
 <script type="text/javascript" src="/js/jquery.validate.js"></script>

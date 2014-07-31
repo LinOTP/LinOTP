@@ -12,22 +12,27 @@
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
+%if c.debug:
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.css" />
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.css" />
+%else:
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.min.css" />
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.min.css" />
+%endif
+<link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
+<link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css' />
 <link type="text/css" rel="stylesheet" href="/manage/style.css"/>
 <link type="text/css" rel="stylesheet" href="/manage/custom-style.css"/>
 
-<link type="text/css" rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.21.custom.css" />
-
-<link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
-<link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css' />
-
 %if c.debug:
     <script type="text/javascript" src="/js/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui.js"></script>
 %else:
     <script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 %endif
 <script type="text/javascript" src="/js/jquery.cookie.js"></script>
 <script type="text/javascript" src="/js/jquery.tools.min.js"></script>
-<script type="text/javascript" src="/js/jquery-ui-1.8.21.custom.min.js"></script>
 <script type="text/javascript" src="/js/jquery.validate.js"></script>
 <script type="text/javascript" src="/js/jquery.form.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
