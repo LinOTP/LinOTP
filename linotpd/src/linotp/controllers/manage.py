@@ -40,6 +40,7 @@ from linotp.lib.base import BaseController
 from pylons.templating import render_mako as render
 from mako.exceptions import CompileException
 
+from paste.deploy.converters import asbool
 
 # Our Token stuff
 from linotp.lib.token   import TokenIterator
@@ -140,6 +141,7 @@ class ManageController(BaseController):
         '''
 
         try:
+            c.debug = asbool(config.get('debug', False))
             c.title = "LinOTP Management"
             admin_user = getUserFromRequest(request)
             if admin_user.has_key('login'):

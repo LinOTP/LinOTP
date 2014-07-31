@@ -12,7 +12,7 @@
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
 <link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
 
-<script type="text/javascript" src="/js/jquery-1.4.2.js"></script>
+<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
 
 <!-- jQuery UI -->
 <link type="text/css" href="/css/smoothness/jquery-ui-1.8.2.custom.css" rel="stylesheet" />

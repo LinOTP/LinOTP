@@ -40,7 +40,7 @@
 
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
 <link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
-<script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
 
 </head>
 

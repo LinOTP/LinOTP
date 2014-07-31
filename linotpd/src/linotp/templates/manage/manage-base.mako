@@ -20,7 +20,11 @@
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 <link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css' />
 
-<script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+%if c.debug:
+    <script type="text/javascript" src="/js/jquery-1.11.1.js"></script>
+%else:
+    <script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
+%endif
 <script type="text/javascript" src="/js/jquery.cookie.js"></script>
 <script type="text/javascript" src="/js/jquery.tools.min.js"></script>
 <script type="text/javascript" src="/js/jquery-ui-1.8.21.custom.min.js"></script>
