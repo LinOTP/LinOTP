@@ -109,13 +109,10 @@
             required:  "${_('required input field')}",
             minlength: "${_('minimum length must be greater than {0}')}",
             maxlength: "${_('maximum length must be lower than {0}')}",
-            range: '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}',
         });
-
-        jQuery.validator.addMethod("motp_secret", function(value, element, param){
+        jQuery.validator.addMethod("motp_secret_v", function(value, element, param){
             return value.match(/^[a-fA-F0-9]+$/i);
         }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}' );
-
         $('#form_registermotp').validate({
             rules: {
                 motp_secret: {
@@ -123,8 +120,18 @@
                     minlength: 16,
                     maxlength: 32,
                     number: false,
-                    motp_secret: true
+                    motp_secret_v: true
                 }
+            }
+        });
+        $('#form_registermotp').submit(function( submit_event ) {
+            submit_event.preventDefault();
+            if ($(this).valid()) {
+                var params = self_motp_get_param();
+                enroll_token( params );
+                $(this).trigger("reset"); //clear form
+            } else {
+                alert('${_("Form data not valid.")}');
             }
         });
 
@@ -137,40 +144,19 @@
             urlparam['otppin']      = $('#motp_s_pin1').val();
             return urlparam;
         }
-        function self_motp_clear()
-        {
-            $('#motp_s_pin1').val('');
-            $('#motp_secret').val('');
-            $('#motp_s_pin2').val('');
-        }
-        function self_motp_submit(){
-            var ret = false;
-            if ($('#form_registermotp').valid()) {
-                var params =  self_motp_get_param();
-                enroll_token( params );
-                //self_motp_clear();
-                ret = true;
-            } else {
-                alert('${_("Form data not valid.")}');
-            }
-            return ret;
-        }
     </script>
 
     <h1>${_("Register your mOTP Token")}</h1>
     <div id="registermotpform">
-        <form class="cmxform" id="form_registermotp" method="post" onsubmit="self_motp_submit();return false;">
+        <form class="cmxform" id="form_registermotp" method="post">
             <fieldset>
                 <table>
                     <tr>
                         <td>
-                            <label for="secret">${_("Init Secret of motp-Token")}</label>
+                            <label for="motp_secret">${_("Init Secret of motp-Token")}</label>
                         </td>
                         <td>
-                            <input id="motp_secret" name="secret" class="required ui-widget-content ui-corner-all"
-                                pattern="[a-fA-F0-9]{16,32}"
-                                minlength="16"
-                                maxlength="32" />
+                            <input id="motp_secret" name="motp_secret" class="required ui-widget-content ui-corner-all" />
                         </td>
                     </tr>
                     <tr>
