@@ -826,6 +826,13 @@ $(document).ready(function() {
         fillSpace : true
     });
 
+    // delegated event
+    // The list of tokens is dynamic and can change after page load
+    // If it were static one could use $("#tokenDiv ul li").click(function ...
+    $("#tokenDiv").on("click", "ul li", function(event) {
+        event.preventDefault();
+        selectToken($.trim($(this).text()));
+    });
 });
 
 function deselect() {
