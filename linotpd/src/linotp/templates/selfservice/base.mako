@@ -47,7 +47,7 @@
 <script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/jquery.tools.min.js"></script>
-<script type="text/javascript" src="/js/jquery.validate.js"></script>
+<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
 
 <script type="text/javascript" src="/js/qrcode.js"></script>
 <script type="text/javascript" src="/js/qrcode-helper.js"></script>

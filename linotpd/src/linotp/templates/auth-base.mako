@@ -19,7 +19,7 @@
 <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 
 <!-- form validation -->
-<script type="text/javascript" src="/js/jquery.validate.js"></script>
+<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
 
 <!-- Our own functions -->
 <script type="text/javascript" src="/js/auth.js"></script>
