@@ -35,7 +35,7 @@
 }
 
 .info_box {
-	display:block;
+	display: none;
 	z-index:1;
 	background-color:#f6a350;
 	width:100%-5pt;
@@ -46,7 +46,7 @@
 }
 
 .error_box {
-	display:block;
+	display: none;
 	z-index:1;
 	background-color:#fe2b25;
 	color: white;

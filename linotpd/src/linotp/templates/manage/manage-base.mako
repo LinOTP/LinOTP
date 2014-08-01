@@ -117,12 +117,42 @@
 
 <div id="left_and_right">
 <div id="sidebar">
-
-${self.sidebar()}
-
+    <span id="selected_tokens_header">${_("selected tokens")}</span>
+    <div id="selected_tokens"></div>
+    <span id="selected_users_header">${_("selected users")}</span>
+    <div id="selected_users"></div>
+    <p>${_("Logged in as")}: ${c.admin}
+        <a href="${c.logout_url}">${_("Logout")}</a>
+    </p>
+    <div id="realms">
+    ${_("Realms")}: <select id=realm></select>
+    </div>
+    <button class='action-button' id='button_enroll'>${_("enroll")}</button>
+    <button class='action-button' id='button_assign'>${_("assign")}</button>
+    <button class='action-button' id='button_unassign'>${_("unassign")}</button>
+    <button class='action-button' id='button_enable'>${_("enable")}</button>
+    <button class='action-button' id='button_disable'>${_("disable")}</button>
+    <button class='action-button' id='button_setpin'>${_("set PIN")}</button>
+    <button class='action-button' id='button_resetcounter'>${_("Reset failcounter")}</button>
+    <button class='action-button' id='button_delete'>${_("delete")}</button>
 </div> <!-- sidebar -->
 
-${self.body()}
+<div id="main">
+    <div class="info_box" id="info_box">
+        <span id="info_text"></span>
+        <button id="button_info_text">OK</button>
+    </div>
+    <div id="tabs">
+        <ul>
+            <li><a href="/manage/tokenview"><span>${_("Token View")}</span></a></li>
+            <li><a href="/manage/userview"><span>${_("User View")}</span></a></li>
+            <li><a href="/manage/policies"><span>${_("Policies")}</span></a></li>
+            <li><a href="/manage/audittrail"><span>${_("Audit Trail")}</span></a></li>
+        </ul>
+    </div>
+    <div id='errorDiv'></div>
+    <div id='successDiv'></div>
+</div>  <!-- end of main-->
 
 </div>
 <div id="footer">

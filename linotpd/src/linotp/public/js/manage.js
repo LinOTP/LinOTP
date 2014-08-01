@@ -2742,6 +2742,12 @@ $(document).ready(function(){
         }
     });
 
+    // Info box
+    $("#button_info_text").button();
+    $('#button_info_text').click(function(){
+        $('#info_box').hide('blind',{},500);
+    });
+
     disable_all_buttons();
 
     /*****************************************************************************************

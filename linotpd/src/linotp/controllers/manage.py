@@ -205,7 +205,7 @@ class ManageController(BaseController):
             c.logout_url = "%s://log-me-out:fake@%s/manage/logout" % (url_scheme, http_host)
 
             Session.commit()
-            ren = render('/manage/start.mako')
+            ren = render('/manage/manage-base.mako')
             return ren
 
         except PolicyException as pe:
