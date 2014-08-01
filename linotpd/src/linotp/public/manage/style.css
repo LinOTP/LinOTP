@@ -23,6 +23,8 @@
  *    Support: www.lsexperts.de
  *
  */
+
+
 /*** STYLES ***/
 .javascript_error {
 	display:block;
@@ -209,37 +211,57 @@ z-index: 1;
 	//color:#000000;
 	}
 
- li#logo {
-    float: right;
-    margin-right: 10px;
-    background: none;
+ .ui-widget-header {
+	background: none repeat scroll 0 0 #ddd;
  }
 
- li#logo div {
-    background-image:  url("/images/linotp_logo_118x40.png");
-    margin-left: 38px;
-    background-repeat:no-repeat;
-    height: 40px;
-    width: 118px;
+ #header {
+	float: left;
+	width: 100%;
+	margin: 5px 0;
  }
 
- #menu {
- 	width:100%;
-	margin-top: 5px;
-	padding: 5px 0;
+ #header #logo {
+ 	float: right;
+	margin-right: 5px;
+	padding-top: 2px;
  }
 
- #menu.sf-menu ul {
-	width: 12em;
+ #header #logo img {
+	display: block;
  }
 
- #menu.sf-menu li:first-child a {
-	border-left:none;
+ #header .sf-menu {
+	margin-bottom: 0;
+ }
+
+ #header .sf-menu li {
+	background-color: #eee;
+ }
+
+ #header .sf-menu li:hover {
+	background-color: #FEFEFE;
+ }
+
+ #header .sf-menu > li {
+	background-color: transparent;
+ }
+
+ #header .sf-menu > li:hover {
+	background-color: transparent;
  }
 
  #menu.sf-menu a {
 	border-top: none;
-	padding: 12px 25px;
+    color: black;
+ }
+
+ #header .sf-menu li:first-child a {
+	border-left:none;
+ }
+
+ #header .sf-menu > li:hover > a {
+	color: #AAA;
  }
 
  #nav {

@@ -63,50 +63,48 @@
 <body>
 
 <div id="wrap">
+<div id="header" class="ui-widget-header ui-corner-all">
+    <ul id='menu' class='sf-menu sf-vertical'>
+        <li><a href='#'>${_("LinOTP Config")}</a>
+            <ul>
+                <li><a href='#' id='menu_edit_resolvers'>${_("useridresolvers")}</a></li>
+                <li><a href='#' id='menu_edit_realms'>${_("realms")}</a></li>
+                <li><a href='#' id='menu_system_config'>${_("System Config")}</a></li>
+                <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
+                <li><a href='#' id='menu_policies'>${_("Policies")}</a></li>
+            </ul>
+        </li>
+        <li><a href='#'>${_("Tools")}</a>
+            <ul>
+                <li><a href='#' id='menu_tools_getserial'>${_("Get Serial by OTP")}</a></li>
+                <li><a href='#' id='menu_tools_copytokenpin'>${_("Copy Token PIN")}</a></li>
+                <li><a href='#' id='menu_tools_checkpolicy'>${_("Check Policy")}</a></li>
+                <li><a href='#' id='menu_tools_exporttoken'>${_("Export Token information")}</a></li>
+                <li><a href='#' id='menu_tools_exportaudit'>${_("Export Audit information")}</a></li>
+            </ul>
+        </li>
+        <li><a href='#'>${_("Import Token File")}</a>
+            <ul>
+                <li><a href='#' id='menu_load_aladdin_xml_tokenfile'>${_("SafeNet/ Aladdin XML")}</a></li>
+                <li><a href='#' id='menu_load_oath_csv_tokenfile'>${_("OATH csv")}</a></li>
+                <li><a href='#' id='menu_load_yubikey_csv_tokenfile'>${_("Yubikey csv")}</a></li>
 
-<ul id='menu' class='sf-menu sf-vertical ui-widget-header ui-widget ui-widget-content ui-corner-all'>
-    <li><a href='#'>${_("LinOTP Config")}</a>
-        <ul>
-            <li><a href='#' id='menu_edit_resolvers'>${_("useridresolvers")}</a></li>
-            <li><a href='#' id='menu_edit_realms'>${_("realms")}</a></li>
-            <li><a href='#' id='menu_system_config'>${_("System Config")}</a></li>
-            <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
-            <li><a href='#' id='menu_policies'>${_("Policies")}</a></li>
-        </ul>
-    </li>
-    <li><a href='#'>${_("Tools")}</a>
-		  <ul>
-            <li><a href='#' id='menu_tools_getserial'>${_("Get Serial by OTP")}</a></li>
-            <li><a href='#' id='menu_tools_copytokenpin'>${_("Copy Token PIN")}</a></li>
-            <li><a href='#' id='menu_tools_checkpolicy'>${_("Check Policy")}</a></li>
-            <li><a href='#' id='menu_tools_exporttoken'>${_("Export Token information")}</a></li>
-            <li><a href='#' id='menu_tools_exportaudit'>${_("Export Audit information")}</a></li>
-        </ul>
-    </li>
-    <li><a href='#'>${_("Import Token File")}</a>
-		  <ul>
-            <li><a href='#' id='menu_load_aladdin_xml_tokenfile'>${_("SafeNet/ Aladdin XML")}</a></li>
-            <li><a href='#' id='menu_load_oath_csv_tokenfile'>${_("OATH csv")}</a></li>
-            <li><a href='#' id='menu_load_yubikey_csv_tokenfile'>${_("Yubikey csv")}</a></li>
-
-		% for id in c.importers:
-		<li><a href='#' id='menu_load_${id}'>${c.importers[id]}</a></li>
-		% endfor
-		</ul>
-    </li>
-    <li>
-    	<li><a href='#'>${_("Help")}</a>
-		  <ul>
-    		<li><a href='${c.help_url}' target="_blank" id="menu_help">${_("Documentation")}</a></li>
-            <li><a href='#' id='menu_view_support'>${_("Support")}</a></li>
-            <li><a href='#' id='menu_about'>${_("About LinOTP")}</a></li>
-        </ul>
-    </li>
-    <li id="logo">
-        <div></div>
-    </li>
-</ul>
-
+            % for id in c.importers:
+            <li><a href='#' id='menu_load_${id}'>${c.importers[id]}</a></li>
+            % endfor
+            </ul>
+        </li>
+        <li>
+            <li><a href='#'>${_("Help")}</a>
+            <ul>
+                <li><a href='${c.help_url}' target="_blank" id="menu_help">${_("Documentation")}</a></li>
+                <li><a href='#' id='menu_view_support'>${_("Support")}</a></li>
+                <li><a href='#' id='menu_about'>${_("About LinOTP")}</a></li>
+            </ul>
+        </li>
+    </ul>
+    <div id="logo"><img src="/images/linotp_logo_118x40.png" alt="LinOTP"/></div>
+</div> <!-- header -->
 <div class="javascript_error" id="javascript_error">
 	${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
 </div>
