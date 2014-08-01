@@ -30,16 +30,19 @@
     <script type="text/javascript" src="/js/jquery.validate.js"></script>
     <script type="text/javascript" src="/js/jquery.form.js"></script>
     <script type="text/javascript" src="/js/jquery.cookie.js"></script>
+    <script type='text/javascript' src='/js/hoverIntent.js'></script>
+    <script type='text/javascript' src='/js/superfish.js'></script>
 %else:
     <script type="text/javascript" src="/js/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
     <script type="text/javascript" src="/js/jquery.form.min.js"></script>
     <script type="text/javascript" src="/js/jquery.cookie.min.js"></script>
+    <script type='text/javascript' src='/js/hoverIntent.min.js'></script>
+    <script type='text/javascript' src='/js/superfish.min.js'></script>
 %endif
 <script type="text/javascript" src="/js/jquery.tools.min.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
-<script type='text/javascript' src='/js/superfish.js'></script>
 
 <script type="text/javascript" src="/js/qrcode.js"></script>
 <script type="text/javascript" src="/js/qrcode-helper.js"></script>
