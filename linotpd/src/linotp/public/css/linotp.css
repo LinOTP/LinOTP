@@ -1,0 +1,23 @@
+/*
+ * Common styles used by all parts of LinOTP
+ */
+
+#do_waiting {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    width: 320px;
+    height: 30px;
+    padding: 40px;
+    margin-top: -55px;
+    margin-left: -200px;
+    background-color: #EEE;
+    border: 1px solid #666;
+    z-index: 1000;
+    box-shadow:0 0 90px 5px #000;
+}
+
+#do_waiting span {
+    margin-left: 5px;
+}

@@ -37,6 +37,7 @@
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
+<link type="text/css" rel="stylesheet" href="/css/linotp.css"/>
 <link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
 <link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
@@ -70,8 +71,8 @@
 	</div>
 </div>
 
-<div class="simple_overlay" id="do_waiting">
-	<img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Communicating with LinOTP server...")}
+<div id="do_waiting">
+    <img src="/images/ajax-loader.gif" border="0" alt="" /><span>${_("Communicating with LinOTP server...")}</span>
 </div>
 
 <div id="sidebar">

@@ -21,6 +21,7 @@
 %endif
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 <link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css' />
+<link type="text/css" rel="stylesheet" href="/css/linotp.css"/>
 <link type="text/css" rel="stylesheet" href="/manage/style.css"/>
 <link type="text/css" rel="stylesheet" href="/manage/custom-style.css"/>
 
@@ -110,9 +111,8 @@
 	${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
 </div>
 
-
-<div class="simple_overlay" id="do_waiting">
-	<img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Communicating with LinOTP server...")}
+<div id="do_waiting">
+    <img src="/images/ajax-loader.gif" border="0" alt="" /><span>${_("Communicating with LinOTP server...")}</span>
 </div>
 
 <div id="left_and_right">

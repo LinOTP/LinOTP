@@ -24,33 +24,6 @@
  *
  */
 /*** STYLES ***/
-.simple_overlay {
-
-	/* must be initially hidden */
-	display:none;
-
-	/* place overlay on top of other elements */
-	z-index:10000;
-
-	/* styling */
-	background-color:#EEEEEE;
-
-	width:400px;
-	min-height:50px;
-	border:1px solid #666;
-
-	padding-top: 15px;
-	padding-left: 20px;
-
-	/* CSS3 styling for latest browsers */
-	-moz-box-shadow:0 0 90px 5px #000;
-	-webkit-box-shadow: 0 0 90px #000;
-
-	-moz-border-radius:6px;
-	-webkit-border-radius:6px;
-
-}
-
 a.activeToken {
 	color: black;
 	background-color:white;

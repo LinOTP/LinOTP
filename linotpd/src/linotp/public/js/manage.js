@@ -3923,9 +3923,6 @@ $(document).ready(function(){
      minHeight: 60
      });
      */
-
-    $('#do_waiting').click(reset_waiting());
-
 });
 //--------------------------------------------------------------------------------------
 // End of document ready
