@@ -165,8 +165,8 @@ ${c.version} --- ${c.licenseinfo}
 <input type='hidden' id='token_enroll_fail' value='${_("Error enrolling token:\n %s")}'/>
 <input type='hidden' id='token_enroll_ok'   value='${_("Token enrolled successfully:\n %s")}'/>
 
-<div id="allert_box">
-	<span id="allert_box_text"> </span>
+<div id="alert_box">
+	<span id="alert_box_text"> </span>
 </div>
 
 </body>

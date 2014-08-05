@@ -283,7 +283,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("motp_self_desc").send_keys("Selenium self enrolled")
         driver.find_element_by_id("button_register_motp").click()
         time.sleep(1)
-        alert_box_text = driver.find_element_by_id("allert_box_text").text
+        alert_box_text = driver.find_element_by_id("alert_box_text").text
         alert_box_text_list = alert_box_text.split("\n")
         self.assertEqual(
             alert_box_text_list[0],

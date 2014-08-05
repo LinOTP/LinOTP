@@ -54,9 +54,9 @@ function alert_box(p_title, s, param1) {
         s=str;
     }
 
-    $('#allert_box_text').html(s);
+    $('#alert_box_text').html(s);
 
-    $( "#allert_box" ).dialog({
+    $( "#alert_box" ).dialog({
         title : p_title,
         width: 450,
         modal: true,
