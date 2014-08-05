@@ -404,7 +404,7 @@ function get_selected(){
     $("#button_enroll").button("enable");
 
     // The policies (we can select only one)
-    if ($('#tabs').tabs('option', 'selected') == 2) {
+    if ($('#tabs').tabs('option', 'active') == 2) {
         policy = get_selected_policy().join(',');
         if (policy) {
             $.get('/system/getPolicy', {'name' : policy,
@@ -418,7 +418,7 @@ function get_selected(){
                     if (pol_active == undefined) {
                         pol_active = "True";
                     }
-                    $('#policy_active').attr("checked", pol_active=="True" );
+                    $('#policy_active').prop('checked', pol_active=="True");
                     $('#policy_name').val(pol);
                     $('#policy_action').val(data.result.value[pol].action);
                     $('#policy_scope').val(data.result.value[pol].scope);
@@ -1148,7 +1148,7 @@ function token_enroll(){
         case 'ocra':
             params['sharedsecret'] = 1;
             // If we got to generate the hmac key, we do it here:
-            if  ( $('#ocra_key_cb').attr('checked') ) {
+            if  ( $('#ocra_key_cb').is(':checked') ) {
                 params['genkey']    = 1;
             } else {
                 // OTP Key
@@ -1903,7 +1903,7 @@ function save_ldap_config(){
     }
     // checkboxes
     var noreferrals="False";
-    if ($("#ldap_noreferrals").attr('checked')) {
+    if ($("#ldap_noreferrals").is(':checked')) {
         noreferrals = "True";
     }
     url += "NOREFERRALS="+noreferrals+"&";
@@ -3006,7 +3006,7 @@ $(document).ready(function(){
         params['ldap_certificate']  = $('#ldap_certificate').val();
 
 
-        if ($('#ldap_noreferrals').attr('checked')) {
+        if ($('#ldap_noreferrals').is(':checked')) {
             params["NOREFERRALS"] = "True";
         }
 
@@ -3514,7 +3514,7 @@ $(document).ready(function(){
 
 
     $('#menu_policies').click(function(){
-        $('#tabs').tabs('select', 2);
+        $('#tabs').tabs('option', 'active', 2);
     });
 
     /*********************************************************************
@@ -4149,7 +4149,7 @@ function resolver_ldap(name){
         $('#ldap_resolvername').val("");
         resolver_set_ldap(obj);
     }
-    $('#ldap_noreferrals').attr('checked', ("True" == obj.result.value.data.NOREFERRALS));
+    $('#ldap_noreferrals').prop('checked', ("True" == obj.result.value.data.NOREFERRALS));
 
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');
@@ -4431,8 +4431,7 @@ function view_policy() {
             return;
         }
 
-        var pol_active = $('#policy_active').attr("checked");
-        if (pol_active == "checked") {
+        if ($('#policy_active').is(':checked')) {
             pol_active = "True";
         } else {
             pol_active = "False";

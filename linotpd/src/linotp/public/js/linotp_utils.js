@@ -46,7 +46,7 @@ function cb_changed(checkbox_id,arry){
  * cb_changed - dependent on the checkbox state,
  * show all entries (identified by their id), which are listed in the array
  */
-    var checked = $('#'+checkbox_id).attr('checked');
+    var checked = $('#'+checkbox_id).is(':checked');
 
     for (i=0; i<arry.length; i++) {
         var sid = arry[i];
