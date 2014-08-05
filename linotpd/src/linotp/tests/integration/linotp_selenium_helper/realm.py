@@ -25,6 +25,8 @@
 #
 """Contains Realm class"""
 
+import time
+
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from helper import hover
@@ -40,7 +42,9 @@ class Realm:
     def create(self, driver, base_url):
         """Opens the LinOTP manage interface and the UserIdResolver menu"""
         driver.get(base_url + "/manage/")
+        time.sleep(1)
         hover(driver, driver.find_element_by_css_selector('#menu > li'))
+        time.sleep(1)
         driver.find_element_by_id("menu_edit_realms").click()
         driver.find_element_by_id("button_realms_new").click()
         driver.find_element_by_id("realm_name").clear()

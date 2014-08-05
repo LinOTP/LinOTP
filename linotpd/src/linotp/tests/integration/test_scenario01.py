@@ -291,7 +291,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
             )
         serial_text = alert_box_text_list[1] # serial: LSMO12345678
         serial_token_mozart = serial_text[8:].strip()
-        self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-labelledby='ui-dialog-title-allert_box']]").click()
+        self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
         driver.find_element_by_link_text("Logout").click()
 
         ### 9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN

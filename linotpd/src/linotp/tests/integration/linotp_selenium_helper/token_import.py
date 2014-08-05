@@ -55,7 +55,9 @@ class TokenImport:
         self.driver.get(self.base_url + "/manage/")
         import_button = self.driver.find_element_by_xpath(u"//ul[@id='menu']//"
                                        "li[a[text()='Import Token File']]")
+        time.sleep(1)
         hover(self.driver, import_button)
+        time.sleep(1)
         if self.file_type == "safenet":
             self.driver.find_element_by_id("menu_load_aladdin_xml_tokenfile").click()
         else:

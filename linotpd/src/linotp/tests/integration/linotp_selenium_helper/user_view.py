@@ -50,21 +50,25 @@ class UserView:
         select(self.driver, realm_select, self.realm_name)
 
     def _open_tab_user_view(self):
-        """Select the 'User View' tab"""
-        user_view = self.driver.find_element_by_xpath("//div[@id='tabs']"
-                                                      "/ul/li[2]/a/span")
-        user_view.click()
+        """
+        Select the 'User View' tab
+        Returns the #id of the "User View" tab.
+        """
+        user_view_tab = self.driver.find_element_by_xpath(
+            u"//div[@id='tabs']/ul/li/a/span[text()='User View']"
+            )
+        tab_id = user_view_tab.find_element_by_xpath("../..").get_attribute("aria-controls")
+        user_view_tab.click()
+        return tab_id
 
     def get_num_users(self):
         """Return the number of users in the current realm"""
         self.driver.get(self.base_url + "/manage/")
         self._select_realm()
-        self._open_tab_user_view()
+        tab_id = self._open_tab_user_view()
         time.sleep(2)
-        pPageStat = self.driver.find_element_by_css_selector(
-                    "#ui-tabs-2 > div.flexigrid > div.pDiv > div.pDiv2 > "
-                    "div.pGroup > span.pPageStat"
-                ).text
+        pPageStat = self.driver.find_element_by_css_selector("#%s > div.flexigrid "
+            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat" % tab_id).text
         if pPageStat == "No items":
             return 0
         numbers = [int(s) for s in pPageStat.split() if s.isdigit()]
@@ -77,23 +81,21 @@ class UserView:
         """Return True if users exists in the current realm"""
         self.driver.get(self.base_url + "/manage/")
         self._select_realm()
-        self._open_tab_user_view()
-        search_box = self.driver.find_element_by_css_selector(
-                    "#ui-tabs-2 > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "input.qsbox"
-                )
+        tab_id = self._open_tab_user_view()
+        search_box = self.driver.find_element_by_css_selector("#%s > div.flexigrid "
+            "> div.sDiv > div.sDiv2 > input[name=\"q\"]" % tab_id)
         search_box.send_keys(username)
 
         select_type = self.driver.find_element_by_css_selector(
-                    "#ui-tabs-2 > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "select[name=\"qtype\"]"
+                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
+                    "select[name=\"qtype\"]" % tab_id
                 )
         select(self.driver, select_type, "in username")
 
         time.sleep(1)
         submit_button = self.driver.find_element_by_css_selector(
-                    "#ui-tabs-2 > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "input[name=\"search_button\"]"
+                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
+                    "input[name=\"search_button\"]" % tab_id
                 )
         submit_button.click()
         time.sleep(2)
@@ -111,24 +113,22 @@ class UserView:
            nor after the selection.
         """
         self._select_realm()
-        self._open_tab_user_view()
-        search_box = self.driver.find_element_by_css_selector(
-                    "#ui-tabs-2 > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "input.qsbox"
-                )
+        tab_id = self._open_tab_user_view()
+        search_box = self.driver.find_element_by_css_selector("#%s > div.flexigrid "
+            "> div.sDiv > div.sDiv2 > input[name=\"q\"]" % tab_id)
         search_box.clear()
         search_box.send_keys(username)
 
         select_type = self.driver.find_element_by_css_selector(
-                    "#ui-tabs-2 > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "select[name=\"qtype\"]"
+                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
+                    "select[name=\"qtype\"]" % tab_id
                 )
         select(self.driver, select_type, "in username")
 
         time.sleep(1)
         submit_button = self.driver.find_element_by_css_selector(
-                    "#ui-tabs-2 > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "input[name=\"search_button\"]"
+                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
+                    "input[name=\"search_button\"]" % tab_id
                 )
         submit_button.click()
         time.sleep(2)

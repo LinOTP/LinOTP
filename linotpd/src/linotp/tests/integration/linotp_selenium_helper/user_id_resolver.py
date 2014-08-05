@@ -45,7 +45,9 @@ class UserIdResolver:
 
         #Open the LinOTP manage interface and the UserIdResolver menu
         driver.get(self.base_url + "/manage/")
+        time.sleep(1)
         hover(self.driver, self.driver.find_element_by_css_selector('#menu > li'))
+        time.sleep(1)
         driver.find_element_by_id("menu_edit_resolvers").click()
         driver.find_element_by_id("button_resolver_new").click()
 
@@ -54,7 +56,9 @@ class UserIdResolver:
         Return the number of found users.
         """
         self.driver.get(self.base_url + "/manage/")
+        time.sleep(1)
         hover(self.driver, self.driver.find_element_by_css_selector('#menu > li'))
+        time.sleep(1)
         self.driver.find_element_by_id("menu_edit_resolvers").click()
 
         resolvers = self.driver.find_elements_by_css_selector("#resolvers_list > ol > li")
@@ -70,7 +74,7 @@ class UserIdResolver:
         time.sleep(2)
         alert_box = self.driver.find_element_by_id("alert_box_text")
         alert_box_text = alert_box.text
-        self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-labelledby='ui-dialog-title-alert_box']]").click()
+        self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
 
         p = re.compile(".*?config seems to be OK! Number of users found: (\d+)")
         m = p.search(alert_box_text)
