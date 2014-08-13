@@ -2011,7 +2011,7 @@ class AdminController(BaseController):
                     init_param['vasco_auth'] = TOKENS[serial]['tokeninfo'].get('auth')
 
                 # add ocrasuite for ocra tokens, only if ocrasuite is not empty
-                if TOKENS[serial]['type'] == 'ocra':
+                if TOKENS[serial]['type'] in ['ocra', 'ocra2']:
                     if TOKENS[serial].get('ocrasuite', "") != "":
                         init_param['ocrasuite'] = TOKENS[serial].get('ocrasuite')
 
