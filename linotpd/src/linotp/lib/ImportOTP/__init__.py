@@ -145,10 +145,10 @@ def parseOATHcsv(csv):
 
         # otplen or ocrasuite
         if len(l) >= 4:
-            if ttype != "ocra":
-                otplen = int(l[3].strip())
-            elif ttype == "ocra":
+            if ttype in ["ocra", "ocra2"]:
                 ocrasuite = l[3].strip()
+            else:
+                otplen = int(l[3].strip())
 
         # timeStep
         if len(l) >= 5:
