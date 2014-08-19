@@ -136,9 +136,11 @@
 </div> <!-- sidebar -->
 
 <div id="main">
-    <div class="info_box" id="info_box">
-        <span id="info_text"></span>
-        <button id="button_info_text">OK</button>
+    <div id="info_box">
+        <div id='info_bar'>
+          <span id="info_text"></span>
+          <button class="button_info_text">OK</button>
+       </div>
     </div>
     <div id="tabs">
         <ul>
@@ -323,7 +325,7 @@ ${c.version} --- ${c.licenseinfo}
 			<tr id="lic_contact-phone_tr"><td>${_("Contact phone")}</td><td><label id="lic_contact-phone"> </label></td></tr>
 			<tr id="lic_date_tr"><td>${_("Date")}</td><td><label id="lic_date"> </label></td></tr>
 			<tr id="lic_expire_tr"><td>${_("Expire")}</td><td><label id="lic_expire"> </label></td></tr>
-			<tr id="lic_subscription_tr"><td>${_("Subscription runtime")}</td><td><label id="lic_subscription"> </label></td></tr>
+			<tr id="lic_subscription_tr"><td>${_("Subscription")}</td><td><label id="lic_subscription"> </label></td></tr>
 			</table>
 
 		</div>
@@ -1388,6 +1390,8 @@ ${c.version} --- ${c.licenseinfo}
 <div id="text_form_validation_error1">${_("Incorrect or missing input at")}:<ul><span class="text_param1"> </span></ul>
 	<div>${_("Please have a look at each of the forms for more details.")}</div></div>
 <div id="text_form_validation_error_title">${_("Form Validation Error")}</div>
+<div id="text_support_lic_error">${_("License reminder:")}</div>
+<div id="text_support_lic_installed">${_("Support license installed successfully.")}</div>
 </div> <!--end of hidden-->
 
 <div id="alert_box">

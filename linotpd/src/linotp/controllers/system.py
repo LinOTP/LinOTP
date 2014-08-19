@@ -86,6 +86,9 @@ from linotp.lib.policy import getPolicyDefinitions
 from linotp.lib.policy import create_policy_export_file
 from linotp.lib.policy import get_client_policy
 
+import linotp.lib.support
+
+
 from paste.fileapp import FileApp
 from cgi import escape
 from pylons.i18n.translation import _
@@ -131,15 +134,15 @@ class SystemController(BaseController):
             c.audit['success'] = False
             c.audit['client'] = get_client()
 
-            ## check session might raise an abort()
+            # check session might raise an abort()
             check_session()
 
             # check authorization
             if action not in ["_add_dynamic_tokens", 'setupSecurityModule',
-                              'getSupportInfo']:
+                              'getSupportInfo', 'isSupportValid']:
                 checkPolicyPre('system', action)
 
-            ## default return for the __before__ and __after__
+            # default return for the __before__ and __after__
             return response
 
         except PolicyException as pex:
@@ -150,7 +153,7 @@ class SystemController(BaseController):
             return sendError(response, pex, context='before')
 
         except webob.exc.HTTPUnauthorized as acc:
-            ## the exception, when an abort() is called if forwarded
+            # the exception, when an abort() is called if forwarded
             log.error("[__before__::%r] webob.exception %r" % (action, acc))
             log.error("[__before__] %s" % traceback.format_exc())
             Session.rollback()
@@ -178,7 +181,7 @@ class SystemController(BaseController):
         try:
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             audit.log(c.audit)
-            ## default return for the __before__ and __after__
+            # default return for the __before__ and __after__
             return response
 
         except Exception as exx:
@@ -234,7 +237,7 @@ class SystemController(BaseController):
                 "DefaultResetFailCount"]
 
 
-        ### config settings from here
+        # config settings from here
         try:
             param = getLowerParams(request.params)
             log.info("[setDefault] saving default configuration: %r" % param)
@@ -320,7 +323,7 @@ class SystemController(BaseController):
                 c.audit['info'] = "%s=%s" % (key, val)
 
             else:
-                ## we gather all key value pairs in the conf dict
+                # we gather all key value pairs in the conf dict
                 conf = {}
                 for key in param:
                     if key == 'session':
@@ -418,7 +421,7 @@ class SystemController(BaseController):
             if 'session' in param:
                 del param['session']
 
-            ## if there is no parameter, we return them all
+            # if there is no parameter, we return them all
             if len(param) == 0:
                 conf = getLinotpConfig()
                 keys = conf.keys()
@@ -437,8 +440,8 @@ class SystemController(BaseController):
                         else:
                             res[Key] = conf.get(key)
 
-                ## as we return the decrypted values, we could do this in place
-                ## and display the value under the original key
+                # as we return the decrypted values, we could do this in place
+                # and display the value under the original key
                 for key in keys:
                     if key.startswith("enclinotp."):
                         Key = key[len("enclinotp."):]
@@ -496,7 +499,7 @@ class SystemController(BaseController):
 
 
 
-        ### config settings from here
+        # config settings from here
         try:
             param = getLowerParams(request.params)
             log.debug("[getRealms] with params: %r" % param)
@@ -658,7 +661,7 @@ class SystemController(BaseController):
             log.info("[delResolver] deleting resolver: %r" % param)
 
             resolver = getParam(param, "resolver", required)
-            ### only delete a resolver, if it is not used by any realm
+            # only delete a resolver, if it is not used by any realm
             found = False
             fRealms = []
             realms = getRealms()
@@ -870,7 +873,7 @@ class SystemController(BaseController):
 
             realm_resolvers = []
             for resolver in resolvers.split(','):
-                ## check resolver returns the correct resolver description
+                # check resolver returns the correct resolver description
                 (res, realm_resolver) = checkResolverType(resolver)
                 if res == False:
                     raise Exception("unknown resolver %r  or invalid resolver "
@@ -924,15 +927,15 @@ class SystemController(BaseController):
             realm = getParam(param, "realm", required)
 
 
-            ## we test if before delete there has been a default
-            ## if yes - check after delete, if still one there
-            ##         and set the last available to default
+            # we test if before delete there has been a default
+            # if yes - check after delete, if still one there
+            #         and set the last available to default
             defRealm = getDefaultRealm()
             hadDefRealmBefore = False
             if defRealm != "":
                 hadDefRealmBefore = True
 
-            ## now test if realm is defined
+            # now test if realm is defined
             if isRealmDefined(realm) == True:
                 if realm.lower() == defRealm.lower():
                     setDefaultRealm("")
@@ -1214,7 +1217,7 @@ class SystemController(BaseController):
             tclass = tokenclasses.get(tok)
             tclass_object = newToken(tclass)
             if hasattr(tclass_object, 'getClassInfo'):
-                ## check if we have a policy in the definition
+                # check if we have a policy in the definition
                 try:
                     policy = tclass_object.getClassInfo('policy', ret=None)
                     if policy is not None and policy.has_key(scope):
@@ -1411,7 +1414,7 @@ class SystemController(BaseController):
         log.debug("[getPolicy] getting policy: %r" % param)
         export = None
 
-        ### config settings from here
+        # config settings from here
 
         try:
             name = getParam(param, "name", optional)
@@ -1520,7 +1523,7 @@ class SystemController(BaseController):
             glo = getGlobalObject()
             sep = glo.security_provider
 
-            ## for test purpose we switch to an errHSM
+            # for test purpose we switch to an errHSM
             if isSelfTest():
                 if params.get('__hsmexception__') == '__ON__':
                     hsm = c.hsm.get('obj')
@@ -1581,43 +1584,11 @@ class SystemController(BaseController):
         or the support subscription info, which could be the old license
         """
         res = {}
-        params = {}
         try:
-            params.update(request.params)
-            log.debug("[getSupportInfo] parameters: %r" % params)
 
-            license_data = getFromConfig("license")
+            res = linotp.lib.support.getSupportLicenseInfo()
 
-            if license_data is not None and len(license_data) > 0:
-                support_string = binascii.unhexlify(license_data)
-                (support_info, sign, licStr) = parseSubscription(support_string)
-
-                res['description'] = support_info
-
-            else:
-
-                version = get_version_number()
-
-                support_info = {}
-                support_info['comment'] = (_('LinOTP Support Info'))
-                support_info['version'] = 'LinOTP %s' % version
-                support_info['issuer'] = ''
-                support_info['token-num'] = ''
-                support_info['licensee'] = ''
-                support_info['address'] = '<a href="http://www.lsexperts.de" target="_blank">http://www.lsexperts.de</a>'
-                support_info['contact-name'] = ''
-                support_info['contact-email'] = '<a href="mailto:linotp@lsexperts.de">linotp@lsexperts.de</a>'
-                support_info['contact-phone'] = '+49 6151 86086-115'
-                support_info['date'] = ''
-                support_info['expire'] = ''
-                support_info['subscription'] = (
-                    _('You are using the open source version with community '
-                    'support. For professional support, feel free to contact '
-                    'LSE by email or by phone.'))
-                res['description'] = support_info
-
-            c.audit['success'] = res
-            Session.commit()
+            c.audit['success'] = True
             return sendResult(response, res, 1)
 
         except Exception as exx:
@@ -1630,15 +1601,50 @@ class SystemController(BaseController):
             Session.close()
             log.error("[getSupportInfo] done")
 
+    def isSupportValid(self):
+        """
+        verifies the support license status
+
+        if ok
+            status and value in response are both true
+        else
+            value is false and the detail is returned as detail in the response
+        """
+        res = {}
+        message = None
+        try:
+            license_txt = getFromConfig('license', '')
+            try:
+                licString = binascii.unhexlify(license_txt)
+            except TypeError:
+                licString = license_txt
+
+            (res, msg) = linotp.lib.support.isSupportLicenseValid(licString)
+            if res == False:
+                message = {'reason':msg}
+
+            c.audit['success'] = res
+            return sendResult(response, res, 1, opt=message)
+
+        except Exception as exx:
+            log.error("[isSupportValid] failed verify support info: %r" % exx)
+            log.error("[isSupportValid] %s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+            log.error("[isSupportValid] done")
+
     def setSupport(self):
         """
         hook to load a support subscription file
 
         receives the data with a form post file upload
+        and installes it after license verification
         """
         res = False
-        params = {}
-        support_description = ""
+        message = None
 
         try:
             licField = request.POST['license']
@@ -1653,16 +1659,18 @@ class SystemController(BaseController):
                 support_description = licField.encode('utf-8')
             log.debug("[setSupport] license %s", support_description)
 
-            storeConfig("license", binascii.hexlify(support_description))
 
-            res = True
+            res, msg = linotp.lib.support.setSupportLicense(support_description)
+            if res == False:
+                message = {'reason' : msg}
+
             c.audit['success'] = res
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(response, res, 1, opt=message)
 
         except Exception as exx:
-            log.error("[setSupport] : failed to acces support info: %r" % exx)
+            log.error("[setSupport] failed to set support license: %r" % exx)
             log.error("[setSupport] %s" % traceback.format_exc())
             Session.rollback()
             return sendError(response, exx)
@@ -1670,49 +1678,7 @@ class SystemController(BaseController):
         finally:
             Session.close()
             log.error("[setSupport] done")
-        return valid;
-
-### helper function
-
-def parseSubscription(licString):
-    """
-    parse the support subscription license
-
-    :param licString: the support license as multiline string
-    :return: tuple of license dict, extracted signature and the
-                      license as string, which the signature could be checked
-                      against
-    """
-    licInfo = {}
-    signature = ""
-    licStr = ""
 
 
-    read_license = 0
-    read_signature = 0
-
-    for l in licString.split('\n'):
-        if (l.startswith("-----BEGIN LICENSE-----")):
-            read_license = 1
-        elif (l.startswith("-----END LICENSE-----")):
-            read_license = 0
-        elif (l.startswith("-----BEGIN LICENSE SIGNATURE-----")):
-            read_signature = 1
-        elif (l.startswith("-----END LICENSE SIGNATURE-----")):
-            read_signature = 0
-        else:
-            if 1 == read_license:
-                licStr = licStr + l + "\n"
-                try:
-                    (key, val) = l.split("=", 2)
-                    licInfo[key] = val
-                except:
-                    log.debug("->parseLicense - %s", l)
-            if 1 == read_signature:
-                signature += l.rstrip()
-
-    log.debug("->p - :::%s:::", licStr)
-
-    return (licInfo, signature, licStr)
 #eof###########################################################################
 

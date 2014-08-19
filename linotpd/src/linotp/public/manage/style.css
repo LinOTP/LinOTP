@@ -46,6 +46,9 @@
 	padding-top: 2pt;
     padding-bottom: 1pt;
 }
+#info_bar {
+    display:none;
+}
 
 .error_box {
 	display: none;
@@ -59,7 +62,7 @@
     padding-bottom: 1pt;
 }
 
-#button_info_text {
+.button_info_text {
 	padding: -3pt;
     margin: 5pt;
     font-size: 7pt;
