@@ -49,6 +49,7 @@ import M2Crypto
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.config import storeConfig
+from linotp.lib.config import refreshConfig
 from linotp.lib.util import get_version_number
 from linotp.lib.token import getTokenNumResolver
 
@@ -141,6 +142,7 @@ def getSupportLicenseInfo():
     """
     info = {}
 
+    refreshConfig()
     licString = getFromConfig("license", None)
     if licString:
         try:

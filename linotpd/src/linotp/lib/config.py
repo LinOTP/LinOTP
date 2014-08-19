@@ -53,7 +53,7 @@ ENCODING = 'utf-8'
 
 
 ###############################################################################
-##     public interface
+# #     public interface
 ###############################################################################
 
 def initLinotpConfig():
@@ -118,7 +118,7 @@ def getLinotpConfig():
     return ret
 
 ###############################################################################
-##     implementation class
+# #     implementation class
 ###############################################################################
 class LinOtpConfig(dict):
     '''
@@ -155,57 +155,63 @@ class LinOtpConfig(dict):
             val = conf.get('linotp.enableReplication')
             if val.lower() == 'true':
 
-                ## look for the timestamp when config was created
+                # # look for the timestamp when config was created
                 e_conf_date = conf.get('linotp.Config')
 
-                ## in case of replication, we always have to look if the
-                ## config data in the database changed
+                # # in case of replication, we always have to look if the
+                # # config data in the database changed
                 db_conf_date = _retrieveConfigDB('linotp.Config')
 
                 if str(db_conf_date) != str(e_conf_date):
                     do_reload = True
 
+        return self.refreshConfig(do_reload=do_reload)
+
+    def refreshConfig(self, do_reload=False):
+
+        conf = self.glo.getConfig()
+
         if do_reload == True:
-            ## in case there is no entry in the dbconf or
-            ## the config file is newer, we write the config back to the db
+            # # in case there is no entry in the dbconf or
+            # # the config file is newer, we write the config back to the db
             entries = conf.keys()
             for entry in entries:
                 del conf[entry]
 
             writeback = False
-            ## get all conf entries from the config file
+            # # get all conf entries from the config file
             fileconf = _getConfigFromEnv()
 
-            ##  get all configs from the DB
+            # #  get all configs from the DB
             (dbconf, delay) = _retrieveAllConfigDB()
             self.glo.setConfigIncomplete(not delay)
 
-            ## we only merge the config file once as a removed entry
-            ##  might reappear otherwise
+            # # we only merge the config file once as a removed entry
+            # #  might reappear otherwise
             if dbconf.has_key('linotp.Config') == False:
                 conf.update(fileconf)
                 writeback = True
-            ##
-            ##else:
-            ##    modCFFileDatum = fileconf.get('linotp.Config')
-            ##    dbTimeStr = dbconf.get('linotp.Config')
-            ##    dbTimeStr = dbTimeStr.split('.')[0]
-            ##    modDBFileDatum =
-            ##           datetime.strptime(dbTimeStr,'%Y-%m-%d %H:%M:%S')
-            ##    # if configFile timestamp is newer than last update:
-            ##    #             reincorporate conf
-            ##    #if modCFFileDatum > modDBFileDatum:
-            ##    #    conf.update(fileconf)
-            ##    #    writeback = True
-            ##
+            # #
+            # #else:
+            # #    modCFFileDatum = fileconf.get('linotp.Config')
+            # #    dbTimeStr = dbconf.get('linotp.Config')
+            # #    dbTimeStr = dbTimeStr.split('.')[0]
+            # #    modDBFileDatum =
+            # #           datetime.strptime(dbTimeStr,'%Y-%m-%d %H:%M:%S')
+            # #    # if configFile timestamp is newer than last update:
+            # #    #             reincorporate conf
+            # #    #if modCFFileDatum > modDBFileDatum:
+            # #    #    conf.update(fileconf)
+            # #    #    writeback = True
+            # #
 
             conf.update(dbconf)
-            ## chck, if there is a selfTest in the DB and delete it
+            # # chck, if there is a selfTest in the DB and delete it
             if dbconf.has_key('linotp.selfTest'):
                 _removeConfigDB('linotp.selfTest')
                 _storeConfigDB('linotp.Config', datetime.now())
 
-            ## the only thing we take from the fileconf is the selftest
+            # # the only thing we take from the fileconf is the selftest
             if fileconf.has_key('linotp.selfTest'):
                 conf['linotp.selfTest'] = 'True'
 
@@ -265,9 +271,9 @@ class LinOtpConfig(dict):
 
         if typ == 'password':
 
-            ## in case we have a password type, we have to put
-            ##- in the config only the encrypted pass and
-            ##- add the config enclinotp.* with the clear password
+            # # in case we have a password type, we have to put
+            # #- in the config only the encrypted pass and
+            # #- add the config enclinotp.* with the clear password
 
             res = self.parent.__setitem__(key, encryptPassword(val))
             res = self.parent.__setitem__('enc' + key, val)
@@ -275,7 +281,7 @@ class LinOtpConfig(dict):
             self.glo.setConfig({'enc' + key : val})
 
         else:
-            ## update this config and sync with global dict and db
+            # # update this config and sync with global dict and db
             nVal = _expandHere(val)
             res = self.parent.__setitem__(key, nVal)
             self.glo.setConfig({key:nVal})
@@ -344,16 +350,16 @@ class LinOtpConfig(dict):
             encKey = 'enc' + key
 
         res = self.parent.__delitem__(Key)
-        ## sync with global dict
+        # # sync with global dict
         self.glo.delConfig(Key)
 
-        ## do we have an decrypted in local or global dict??
+        # # do we have an decrypted in local or global dict??
         if encKey is not None:
             res = self.parent.__delitem__(encKey)
-            ## sync with global dict
+            # # sync with global dict
             self.glo.delConfig(encKey)
 
-        ## sync with db
+        # # sync with db
         if key.startswith('linotp.'):
             Key = key
         else:
@@ -374,9 +380,9 @@ class LinOtpConfig(dict):
         :rtype  : any value a dict update will return
         '''
         res = self.parent.update(dic)
-        ## sync the lobal dict
+        # # sync the lobal dict
         self.glo.setConfig(dic)
-        ## sync to disc
+        # # sync to disc
         for key in dic:
             if key != 'linotp.Config':
                 _storeConfigDB(key, dic.get(key))
@@ -386,7 +392,7 @@ class LinOtpConfig(dict):
 
 
 ###############################################################################
-##  helper class from here
+# #  helper class from here
 ###############################################################################
 def getGlobalObject():
     glo = None
@@ -434,7 +440,7 @@ def _getConfigFromEnv():
     try:
         _getConfigReadLock()
         for entry in env.config:
-            ## we check for the modification time of the config file
+            # # we check for the modification time of the config file
             if entry == '__file__':
                 fname = env.config.get('__file__')
                 mTime = time.localtime(os.path.getmtime(fname))
@@ -469,7 +475,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
         if (en != val):
             raise Exception("StoreConfig: Error during encoding password type!")
 
-    ## update
+    # # update
     if confEntries.count() == 1:
         theConf = confEntries[0]
         theConf.Value = unicode(value)
@@ -478,7 +484,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
         if (desc is not None):
             theConf.Description = unicode(desc)
 
-    ## insert
+    # # insert
     elif confEntries.count() == 0:
         theConf = Config(
                         Key=unicode(key),
@@ -506,7 +512,7 @@ def _removeConfigDB(key):
         theConf = confEntries[0]
 
         try:
-            #Session.add(theConf)
+            # Session.add(theConf)
             Session.delete(theConf)
 
         except Exception as e:
@@ -519,7 +525,7 @@ def _removeConfigDB(key):
 def _retrieveConfigDB(Key):
     log.debug('[retrieveConfigDB] key: %r' % Key)
 
-    ## prepend "lonotp." if required
+    # # prepend "lonotp." if required
     key = Key
     if (not key.startswith("linotp.")):
         if (not key.startswith("enclinotp.")):
@@ -571,7 +577,7 @@ def updateConfig(confi):
     conf = getLinotpConfig()
 
 
-    ## remember all key, which should be processed
+    # # remember all key, which should be processed
     p_keys = copy.deepcopy(confi)
 
     typing = False
@@ -579,7 +585,7 @@ def updateConfig(confi):
     for entry in confi:
         typ = confi.get(entry + ".type", None)
         des = confi.get(entry + ".desc", None)
-        ## check if we have a descriptive entry
+        # # check if we have a descriptive entry
         if typ is not None or des is not None:
             typing = True
             if typ is not None:
@@ -588,7 +594,7 @@ def updateConfig(confi):
                 del p_keys[entry + ".desc"]
 
     if typing == True:
-        ## tupple dict containing the additional info
+        # # tupple dict containing the additional info
         t_dict = {}
         for entry in p_keys:
             val = confi.get(entry)
@@ -620,6 +626,12 @@ def getFromConfig(key, defVal=None):
     value = conf.get(key, defVal)
     return value
 
+def refreshConfig():
+    log.debug('[refreshConfig]')
+    conf = getLinotpConfig()
+    conf.refreshConfig(do_reload=True)
+    return
+
 def removeFromConfig(key, iCase=False):
     log.debug('[removeFromConfig] key:  %r' % key)
     conf = getLinotpConfig()
@@ -628,8 +640,8 @@ def removeFromConfig(key, iCase=False):
         if conf.has_key(key):
             del conf[key]
     else:
-        ## case insensitive delete
-        ##- might have multiple hits
+        # # case insensitive delete
+        # #- might have multiple hits
         fConf = []
         for k in conf:
             if (k.lower() == key.lower() or
