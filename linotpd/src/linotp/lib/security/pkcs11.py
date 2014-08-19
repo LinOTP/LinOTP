@@ -58,6 +58,7 @@ from linotp.lib.security.provider import VALUE_KEY
 
 from Crypto.Cipher import AES as    AESCipher
 from getopt import getopt, GetoptError
+from paste.deploy.converters import asbool
 import sys
 import getpass
 
@@ -193,6 +194,7 @@ class Pkcs11SecurityModule(SecurityModule):
         self.connectedTokens = []
         library = config.get("library")
         self.slotid = int(config.get("slotid", 0))
+        self.accept_invalid_padding = asbool(config.get("accept_invalid_padding", True))
 
         self.handles = { CONFIG_KEY: config.get("configHandle", None),
                          TOKEN_KEY: config.get("tokenHandle", None),
@@ -259,10 +261,6 @@ class Pkcs11SecurityModule(SecurityModule):
         r = s
         l_s = len(r)
         missing_num = block - l_s % block
-        ## TODO: FIX: padding has to be elaborated
-        ##            with backward compatibility in mind
-        if missing_num == 16:
-            missing_num = 0
         missing_byte = chr(missing_num)
 
         r += missing_byte * missing_num
@@ -271,19 +269,22 @@ class Pkcs11SecurityModule(SecurityModule):
     @classmethod
     def unpad(cls, s, block=16):
         '''
-        This removes the PKCS7 padding.
-        Check the last byte. If it is 1-15 we assume a padding and also
-        check the n last bytes
+        This removes and checks the PKCS7 padding.
         '''
-        if not s:
-            return s
-
-        r = s
-        last_byte = s[-1]
-        count = ord(last_byte)
-        if count in range(1, 16):
-            if r[-ord(last_byte):] == last_byte * ord(last_byte):
-                r = r[:-ord(last_byte)]
+        r = None
+        try:
+            last_byte = s[-1]
+            count = ord(last_byte)
+            if 0 < count <= block and s[-count:] == last_byte * count:
+                r = s[:-count]
+            else:
+                if self.accept_invalid_padding:
+                    log.warning("warning", "[unpad] Invalid padding detected")
+                    r = s
+                else:
+                    log.error("error", "[unpad] Invalid padding detected")
+        except Exception as  e:
+            log.warning("[unpad] Error unpadding data %s: %s" % (s, str(e)))
         return r
 
     def initpkcs11(self):
