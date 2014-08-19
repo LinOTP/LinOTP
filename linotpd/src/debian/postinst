@@ -85,11 +85,16 @@ function configure_sql() {
 	elif [ "$UCS_INSTALL" = "true" ]; then
 		echo "LinOTP2: UCS install, we do not change linotp.ini"
 	else
-		sed -e s/^sqlalchemy.url.*/"$SQLALCHEMY"/ $LINOTP_INI > $LINOTP_INI.new
+		sed -e "s/^sqlalchemy.url.*/${SQLALCHEMY}"/ $LINOTP_INI > $LINOTP_INI.new
 		mv $LINOTP_INI.new $LINOTP_INI
-		# and do the Audit SQL
-		sed -e s/^linotpAudit.sql.url.*/"$SQLAUDIT"/ $LINOTP_INI > $LINOTP_INI.new
-		mv $LINOTP_INI.new $LINOTP_INI
+		if [ "$APPLIANCE_INSTALL" = "true" ] ; then
+			# Audit is active per default on the LSE SVA. On other systems it
+			# needs to be manually enabled.
+			# TODO Ask if Audit should be enabled during installation of any
+			# Debian based system?
+			sed -e "s/^#\?linotpAudit.sql.url \?=.*/${SQLAUDIT}"/ $LINOTP_INI > $LINOTP_INI.new
+			mv $LINOTP_INI.new $LINOTP_INI
+		fi
 		echo "LinOTP2: SQL configuration in linotp.ini CHANGED!"
 	fi
 }
