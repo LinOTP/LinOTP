@@ -4,7 +4,7 @@ linotp (2.7.1-0.dev0~precise) precise; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 May 2014 16:49:22 +0200
 
-linotp (2.7.0.2-0.rc2~precise) precise; urgency=low
+linotp (2.7.0.2-1~precise) precise; urgency=low
 
   * Fixed PSKC import with plain input
   * Fixed SecretObj cleanup in some corner-cases
@@ -20,7 +20,7 @@ linotp (2.7.0.2-0.rc2~precise) precise; urgency=low
   * Added linotpAudit.error_on_truncation config option to control DB
     behaviour when writing large values to the DB
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 25 Jul 2014 15:02:45 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 31 Jul 2014 14:58:56 +0200
 
 linotp (2.7-1~precise) precise; urgency=low
 
