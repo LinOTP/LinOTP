@@ -47,10 +47,16 @@ class RemoteToken(Token):
         driver.find_element_by_id("remote_serial").send_keys(remote_serial)
         driver.find_element_by_id("button_enroll_enroll").click()
         time.sleep(1)
-        self.serial = driver.find_element_by_css_selector("#info_text > .text_param1").text
         driver.find_element_by_id("pin1").clear()
         driver.find_element_by_id("pin1").send_keys(pin)
         driver.find_element_by_id("pin2").clear()
         driver.find_element_by_id("pin2").send_keys(pin)
         driver.find_element_by_id("button_setpin_setpin").click()
+        time.sleep(1)
+        info_boxes = driver.find_elements_by_css_selector("#info_box > .info_box > span")
+        for box in info_boxes:
+            if box.text.startswith("created token with serial"):
+                self.serial = box.find_element_by_tag_name("span").text
+        if not self.serial or not self.serial.startswith("LSRE"):
+            raise Exception("Remote token was not enrolled correctly.")
 
