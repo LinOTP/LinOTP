@@ -38,18 +38,18 @@ from base64 import b64encode, b64decode
 import binascii
 
 import hmac
-import random
 import os
 import time
 import urlparse
 import urllib
+
+from linotp.lib.crypt import urandom
 
 from linotp.lib.user import User
 from linotp.lib.user import getUserId
 from linotp.lib.user import getUserInfo
 
 from linotp.lib.realm import getDefaultRealm
-
 
 from hashlib import sha1
 
@@ -89,7 +89,7 @@ def xor(x, y):
 def randchar():
     import string
     chars = string.letters + string.digits
-    return random.choice(chars)
+    return urandom.choice(chars)
 
 def get_nonce():
     now = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
@@ -149,7 +149,7 @@ def get_dh_key(pubkey, session_type, secret_b64, gen=None, mod=None):
         gen = _DEFAULT_GEN
 
     # building the DH signature
-    dh_private = random.randrange(1, mod - 1)
+    dh_private = urandom.randrange(1, mod - 1)
     dh_public = pow(gen, dh_private, mod)
     dh_shared = btwoc(pow(pubkey, dh_private, mod))
 
@@ -444,7 +444,7 @@ class SQLStorage(object):
 
         seed = ""
         for i in range(32):
-            seed += chr(random.randrange(0, 255))
+            seed += chr(urandom.randrange(0, 255))
 
         token = binascii.hexlify(hashlib.sha1(seed).digest())
         return token
