@@ -187,15 +187,14 @@ function load_flexi(){
 }
 
 
-function alert_info_text(s, param1, display_type) {
+function alert_info_text(s, text_container, display_type) {
     /*
      * If the parameter is the ID of an element, we pass the text from this very element
      */
     str = s;
     try {
-        if (param1) {
-
-            $('#'+s+' .text_param1').html(param1);
+        if (text_container) {
+            $('#'+s+' .text_param1').html(text_container);
         }
         if ( $('#'+s).length > 0 ) { // Element exists!
             s=$('#'+s).html();
@@ -207,14 +206,25 @@ function alert_info_text(s, param1, display_type) {
     catch (e) {
         s=str;
     }
+
+    new_info_bar = $('#info_bar').clone(true,true)
+    new_info_bar.removeAttr('id');
+    new_info_bar.children('span').removeAttr('id');
+
+    pp = $('#info_bar').parent();
+    new_info_bar.appendTo(pp);
+
     if (display_type == ERROR) {
-        $('#info_box').addClass("error_box");
-        $('#info_box').removeClass("info_box");
+        new_info_bar.addClass("error_box");
+        new_info_bar.removeClass("info_box");
     } else {
-        $('#info_box').addClass("info_box");
-        $('#info_box').removeClass("error_box");
+        new_info_bar.addClass("info_box");
+        new_info_bar.removeClass("error_box");
     }
-    $('#info_text').html(s);
+
+    new_info_bar.children('span').html(s);
+    new_info_bar.show()
+
     $('#info_box').show();
 }
 
@@ -710,6 +720,17 @@ function get_tokennum(){
     return obj.result.value.resultset.tokens;
 }
 
+function check_license(){
+    /* call the server license check*/
+    var resp = clientUrlFetchSync('/system/isSupportValid',{});
+    var obj = jQuery.parseJSON(resp);
+    if (obj.result.value === false) {
+       message = obj.detail.reason
+       intro = $('#text_support_lic_error').html()
+       alert_info_text(intro + " " + message, '' ,ERROR);
+       return;
+    }
+}
 
 function check_serial(serial){
     var resp = clientUrlFetchSync('/admin/check_serial',{'serial':serial});
@@ -825,6 +846,7 @@ function token_disable(){
 
 function token_enable(){
     var tokens = get_selected_tokens();
+    check_license();
     token_operation(tokens, "/admin/enable", {});
 }
 
@@ -958,6 +980,7 @@ function view_setpin_after_enrolling(tokens) {
      * or not display it. In case of no OTP PIN or AD PIN, we don't want to see this dialog!
      */
     view_setpin_dialog(tokens);
+    check_license();
 }
 
 function view_setpin_after_assigning(tokens) {
@@ -1120,7 +1143,6 @@ function enroll_callback(xhdr, textStatus, p_serial) {
     }
     $('#token_table').flexReload();
 }
-
 
 
 function token_enroll(){
@@ -1525,21 +1547,23 @@ function parsePolicyImport(xml, textStatus) {
     hide_waiting();
 };
 
-function parseXMLlicense(xml, textStatus){
-    var version = $(xml).find('version').text();
-    var status = $(xml).find('status').text();
-    var value = $(xml).find('value').text();
+function parseLicense(xhdr, textStatus){
+    // calback to handle response when license has been submitted
+    var resp = xhdr.responseText;
+    var obj = jQuery.parseJSON(resp);
+    var status = obj.result.status;
 
-    if ("error" == textStatus) {
-        alert_info_text("text_linotp_comm_fail");
-    }
-    else {
-        if ("False" == status) {
-            alert_info_text("text_subscription_import_failed", value);
-        }
-        else {
-            alert_info_text("text_subscription_import_result", value);
-
+    // error occured    
+    if ( status === false) {
+        message = obj.result.error.message;
+        alert_info_text(message, '' ,ERROR);
+    } else {
+        value = obj.result.value;
+        if (value === false){
+            message = obj.detail.reason;
+            alert_info_text(message, '', ERROR);
+        } else {
+            alert_box('', "text_support_lic_installed");
         }
     }
     hide_waiting();
@@ -1652,8 +1676,8 @@ function support_set(){
     $('#set_support_form').ajaxSubmit({
         data: { session:getsession() },
         type: "POST",
-        error: parseXMLlicense,
-        success: parseXMLlicense,
+        error: parseLicense,
+        success: parseLicense,
         dataType: 'xml'
     });
     } else {
@@ -1708,7 +1732,7 @@ function support_view(){
         else { $('#lic_licensee_tr').hide(); }
 
         if (support_dict['expire'].length > 0 ) {
-            $('#lic_expire').html(data.result.value.description['expire']);
+            $('#lic_expire').html(support_dict['expire']);
             $('#lic_expire_tr').show();
             }
         else { $('#lic_expire_tr').hide(); }
@@ -2743,9 +2767,9 @@ $(document).ready(function(){
     });
 
     // Info box
-    $("#button_info_text").button();
-    $('#button_info_text').click(function(){
-        $('#info_box').hide('blind',{},500);
+    $(".button_info_text").button();
+    $('.button_info_text').click(function(){
+        $(this).parent().hide('blind',{},500);
     });
 
     disable_all_buttons();
