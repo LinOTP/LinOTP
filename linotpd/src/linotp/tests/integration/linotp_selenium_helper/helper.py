@@ -29,6 +29,7 @@ import requests
 from requests.auth import HTTPDigestAuth
 import logging
 from testconfig import config
+from urlparse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -64,11 +65,22 @@ def get_session(base_url, user=None, pwd=None):
         LOG.debug("Content:\n%s" % r.text)
         if r.status_code != 200:
             raise Exception('Admin login failed')
-        try:
-            session = r.cookies['admin_session']
-        except Exception as exception:
-            LOG.error('Could not get session %r' % exception)
-            raise exception
+        session = None
+        domain = urlparse(base_url).netloc.split(':')[0]
+        exceptions = []
+        for d in (domain, domain + ".local", None):
+            # We try to find any cookie containing 'admin_session'. Sometimes
+            # the Cookie domain is not completely clear therefore we try
+            # several alternatives and as last resource try to get any cookie
+            # matching 'admin_session' no matter what the domain (=None).
+            try:
+                session = r.cookies.get('admin_session', domain=d)
+                if session:
+                    break
+            except requests.cookies.CookieConflictError as exc:
+                exceptions.append(exc)
+        if not session:
+            raise Exception('Could not get session %r' % exceptions)
     return session
 
 def get_from_tconfig(key_array, default=None, required=False):
