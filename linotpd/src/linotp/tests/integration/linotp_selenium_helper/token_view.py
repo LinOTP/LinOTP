@@ -25,6 +25,7 @@
 #
 """Contains TokenView class"""
 
+import time
 
 class TokenViewException(Exception):
     pass
@@ -42,6 +43,7 @@ class TokenView:
         """Select the 'Token View' tab"""
         token_view = self.driver.find_element_by_xpath("//div[@id='tabs']"
                                                       "/ul/li[1]/a/span")
+        time.sleep(1)
         token_view.click()
 
     def select_token(self, token_serial):

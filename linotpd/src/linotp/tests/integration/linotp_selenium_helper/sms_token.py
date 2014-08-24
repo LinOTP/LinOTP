@@ -42,15 +42,19 @@ class SmsToken(Token):
         driver.find_element_by_id("enroll_sms_desc").send_keys(description)
         if phone:
             driver.find_element_by_id("sms_phone").clear()
-            driver.find_element_by_id("sms_phone").send_keys(email)
+            driver.find_element_by_id("sms_phone").send_keys(phone)
         driver.find_element_by_id("button_enroll_enroll").click()
-        self.serial = driver.find_element_by_css_selector("#info_box > #info_text > span").text
-        if not self.serial or not self.serial.startswith("LSSM"):
-            raise Exception("SMS token was not enrolled correctly.")
+        time.sleep(1)
         driver.find_element_by_id("pin1").clear()
         driver.find_element_by_id("pin1").send_keys(pin)
         driver.find_element_by_id("pin2").clear()
         driver.find_element_by_id("pin2").send_keys(pin)
-        time.sleep(1)
         driver.find_element_by_id("button_setpin_setpin").click()
+        time.sleep(1)
+        info_boxes = driver.find_elements_by_css_selector("#info_box > .info_box > span")
+        for box in info_boxes:
+            if box.text.startswith("created token with serial"):
+                self.serial = box.find_element_by_tag_name("span").text
+        if not self.serial or not self.serial.startswith("LSSM"):
+            raise Exception("SMS token was not enrolled correctly.")
 

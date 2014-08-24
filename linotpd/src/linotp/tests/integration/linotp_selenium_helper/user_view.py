@@ -59,6 +59,7 @@ class UserView:
             )
         tab_id = user_view_tab.find_element_by_xpath("../..").get_attribute("aria-controls")
         user_view_tab.click()
+        time.sleep(1)
         return tab_id
 
     def get_num_users(self):
