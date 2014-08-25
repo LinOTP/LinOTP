@@ -41,10 +41,9 @@
 	z-index:1;
 	background-color:#f6a350;
 	width:100%-5pt;
-	padding-left:15pt;
-	padding-right:5pt;
-	padding-top: 2pt;
-    padding-bottom: 1pt;
+    padding-left: 10px;
+    font-size: 12px;
+    margin-bottom: 2px;
 }
 #info_bar {
     display:none;
@@ -56,10 +55,15 @@
 	background-color:#fe2b25;
 	color: white;
 	width:100%-5pt;
-	padding-left:15pt;
-	padding-right:5pt;
-	padding-top: 2pt;
-    padding-bottom: 1pt;
+    padding-left: 10px;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+a.close_all {
+    display: none; /*block*/
+    font-size: 11px;
+    margin: 5px 0;
 }
 
 .button_info_text {
