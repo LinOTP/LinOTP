@@ -1592,78 +1592,72 @@ function load_tokenfile(type){
             dataType: 'xml'
         });
     }
-    else
-        if ("feitian" == type) {
-            $('#load_tokenfile_form_feitian').ajaxSubmit({
-                data: { session:getsession() },
-                type: "POST",
-                error: parseXML,
-                success: parseXML,
-                dataType: 'xml'
-            });
-        }
-        else
-            if ("pskc" == type) {
-                $('#load_tokenfile_form_pskc').ajaxSubmit({
-                    data: { session:getsession() },
-                    type: "POST",
-                    error: parseXML,
-                    success: parseXML,
-                    dataType: 'xml'
-                });
-            }
-            else
-                if ("dpw" == type) {
-                    $('#load_tokenfile_form_dpw').ajaxSubmit({
-                        data: { session:getsession() },
-                        type: "POST",
-                        error: parseXML,
-                        success: parseXML,
-                        dataType: "xml"
-                    });
-                } else
-                if ("dat" == type) {
-                    $('#load_tokenfile_form_dat').ajaxSubmit({
-                        data: { session:getsession() },
-                        type: "POST",
-                        error: parseXML,
-                        success: parseXML,
-                        dataType: "dat"
-                    });
-                }
-                else
-                if ("vasco" == type) {
-                    $('#load_tokenfile_form_vasco').ajaxSubmit({
-                        data: { session:getsession() },
-                        type: "POST",
-                        error: parseXML,
-                        success: parseXML,
-                        dataType: "xml"
-                    });
-                } else
-                if ("oathcsv" == type) {
-                    $('#load_tokenfile_form_oathcsv').ajaxSubmit({
-                        data: { session:getsession() },
-                        type: "POST",
-                        error: parseXML,
-                        success: parseXML,
-                        dataType: "xml"
-                    });
-                }
-
-                if ("yubikeycsv" == type) {
-                    $('#load_tokenfile_form_yubikeycsv').ajaxSubmit({
-                        data: { session:getsession() },
-                        type: "POST",
-                        error: parseXML,
-                        success: parseXML,
-                        dataType: "xml"
-                    });
-                }
-
-                else {
-                    alert_info_text( "text_import_unknown_type", "", ERROR);
-                };
+    else if ("feitian" == type) {
+        $('#load_tokenfile_form_feitian').ajaxSubmit({
+            data: { session:getsession() },
+            type: "POST",
+            error: parseXML,
+            success: parseXML,
+            dataType: 'xml'
+        });
+    }
+    else if ("pskc" == type) {
+        $('#load_tokenfile_form_pskc').ajaxSubmit({
+            data: { session:getsession() },
+            type: "POST",
+            error: parseXML,
+            success: parseXML,
+            dataType: 'xml'
+        });
+    }
+    else if ("dpw" == type) {
+        $('#load_tokenfile_form_dpw').ajaxSubmit({
+            data: { session:getsession() },
+            type: "POST",
+            error: parseXML,
+            success: parseXML,
+            dataType: "xml"
+        });
+    }
+    else if ("dat" == type) {
+        $('#load_tokenfile_form_dat').ajaxSubmit({
+            data: { session:getsession() },
+            type: "POST",
+            error: parseXML,
+            success: parseXML,
+            dataType: "dat"
+        });
+    }
+    else if ("vasco" == type) {
+        $('#load_tokenfile_form_vasco').ajaxSubmit({
+            data: { session:getsession() },
+            type: "POST",
+            error: parseXML,
+            success: parseXML,
+            dataType: "xml"
+        });
+    }
+    else if ("oathcsv" == type) {
+        $('#load_tokenfile_form_oathcsv').ajaxSubmit({
+            data: { session:getsession() },
+            type: "POST",
+            error: parseXML,
+            success: parseXML,
+            dataType: "xml"
+        });
+    }
+    else if ("yubikeycsv" == type) {
+        $('#load_tokenfile_form_yubikeycsv').ajaxSubmit({
+            data: { session:getsession() },
+            type: "POST",
+            error: parseXML,
+            success: parseXML,
+            dataType: "xml"
+        });
+    }
+    else {
+        alert_info_text( "text_import_unknown_type", "", ERROR);
+    };
     return false;
 }
 
