@@ -1821,11 +1821,11 @@ def add_dynamic_selfservice_enrollment(actions):
 
         :return: hash of {tokentype : html for tab}
     '''
-
-    dynanmic_actions = {}
+   
+    dynamic_actions = {}
     g = config['pylons.app_globals']
     tokenclasses = g.tokenclasses
-
+        
     for tok in tokenclasses.keys():
         tclass = tokenclasses.get(tok)
         tclass_object = newToken(tclass)
@@ -1843,7 +1843,7 @@ def add_dynamic_selfservice_enrollment(actions):
                     ''' remove empty lines '''
                     t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                     e_name = "%s.%s.%s" % (tok, 'selfservice', 'enroll')
-                    dynanmic_actions[e_name] = t_html
+                    dynamic_actions[e_name] = t_html
 
                 ## check if there are other selfserive policy actions
                 policy = tclass_object.getClassInfo('policy', ret=None)
@@ -1861,14 +1861,14 @@ def add_dynamic_selfservice_enrollment(actions):
                             ''' remove empty lines '''
                             t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
                             e_name = "%s.%s.%s" % (tok, 'selfservice', action)
-                            dynanmic_actions[e_name] = t_html
+                            dynamic_actions[e_name] = t_html
 
 
             except Exception as e:
-                log.info('[_add_dynamic_actions] no policy for tokentype '
+                log.debug('[_add_dynamic_actions] no policy for tokentype '
                          '%s found (%r)' % (unicode(tok), e))
 
-    return dynanmic_actions
+    return dynamic_actions
 
 
 def add_dynamic_selfservice_policies(actions):
