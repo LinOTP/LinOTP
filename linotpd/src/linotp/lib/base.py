@@ -332,7 +332,7 @@ class BaseController(WSGIController):
         for language in languages:
             for lang in language.split(','):
                 try:
-                    if lang == "en":
+                    if lang == "en" or lang == "en-gb" or lang == "en-GB":
                         found_lang = True
                         break
                     set_lang(lang)
