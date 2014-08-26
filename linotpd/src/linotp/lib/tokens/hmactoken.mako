@@ -58,7 +58,7 @@ function hmac_get_enroll_params(){
    	url['description'] = $('#enroll_hmac_desc').val();
 
     // If we got to generate the hmac key, we do it here:
-    if  ( $('#hmac_key_cb').attr('checked') ) {
+    if  ( $('#hmac_key_cb').is(':checked') ) {
     	url['genkey'] = 1;
 
     } else {
@@ -135,17 +135,18 @@ jQuery.validator.addMethod("hmac_secret", function(value, element, param){
 }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}'  );
 
 $('#form_enroll_hmac').validate({
-	debug: true,
+    debug: true,
     rules: {
         hmac_secret: {
             minlength: 40,
             maxlength: 64,
             number: false,
             hmac_secret: true,
-			required: function() {
-            	var res = $('#hmac_key_cb2').attr('checked') === 'undefined';
-            return res;
-        }
+            required: function() {
+                // When the checkbox is checked, this field is NOT required
+                // and vice versa
+                return ! $('#hmac_key_cb2').is(':checked');
+            }
         }
     }
 });

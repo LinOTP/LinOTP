@@ -69,7 +69,7 @@ function ocra2_get_enroll_params(){
 	url['ocrasuite'] = $('#ocrasuite_algorithm').val();
 
     // If we got to generate the ocra2 key, we do it here:
-    if  ( $('#ocra2_key_cb').attr('checked') ) {
+    if  ( $('#ocra2_key_cb').is(':checked')  ) {
     	url['genkey'] = 1;
 
     } else {
@@ -135,17 +135,18 @@ jQuery.validator.addMethod("ocra2_secret", function(value, element, param){
 }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}'  );
 
 $('#form_enroll_ocra2').validate({
-	debug: true,
+    debug: true,
     rules: {
         ocra2_secret: {
             minlength: 40,
             maxlength: 64,
             number: false,
             ocra2_secret: true,
-			required: function() {
-            	var res = $('#ocra2_key_cb2').attr('checked') === 'undefined';
-            return res;
-        }
+            required: function() {
+                // When the checkbox is checked, this field is NOT required
+                // and vice versa
+                return ! $('#ocra2_key_cb2').is(':checked');
+            }
         }
     }
 });
