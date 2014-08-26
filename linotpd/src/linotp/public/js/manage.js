@@ -225,7 +225,31 @@ function alert_info_text(s, text_container, display_type) {
     new_info_bar.children('span').html(s);
     new_info_bar.show()
 
+    toggle_close_all_link();
+
     $('#info_box').show();
+}
+
+function toggle_close_all_link() {
+    /*
+     * This function counts the number of visible info boxes and error boxes and
+     * if more than 3 are displayed it shows the "Close all" link. Otherwise it
+     * hides the link.
+     */
+    visible_boxes = $("#info_box > div").filter(":visible");
+    close_all = $("a.close_all");
+    if (visible_boxes.length > 3) {
+        close_all.click(function( event ) {
+            event.preventDefault();
+            visible_boxes.hide('blind', {}, 500);
+            $(this).hide('blind', {}, 500);
+        });
+        close_all.show('blind', {}, 500);
+        close_all.css("display", "block");
+    }
+    else {
+       close_all.hide('blind', {}, 500);
+    }
 }
 
 function alert_box(title, s, param1) {
@@ -2763,7 +2787,7 @@ $(document).ready(function(){
     // Info box
     $(".button_info_text").button();
     $('.button_info_text').click(function(){
-        $(this).parent().hide('blind',{},500);
+        $(this).parent().hide('blind', {}, 500, toggle_close_all_link);
     });
 
     disable_all_buttons();

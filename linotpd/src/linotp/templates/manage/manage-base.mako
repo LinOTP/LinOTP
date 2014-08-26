@@ -142,6 +142,7 @@
           <button class="button_info_text">OK</button>
        </div>
     </div>
+    <a href="#" class="close_all">${_("Close all")}</a>
     <div id="tabs">
         <ul>
             <li><a href="/manage/tokenview"><span>${_("Token View")}</span></a></li>

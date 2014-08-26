@@ -862,6 +862,9 @@ msgstr "Fehlzähler zurücksetzen"
 msgid "delete"
 msgstr "löschen"
 
+msgid "Close all"
+msgstr "Alle schließen"
+
 msgid "Token View"
 msgstr "Tokenansicht"
 
