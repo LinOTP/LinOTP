@@ -37,7 +37,7 @@
 ${_("Here you may try to authenticate using your OTP token.")}
 </p>
 <p>
-${_("Enter your username, the OTP PIN and the OTP value.")}
+${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
 </p>
 </div> <!-- sidebar -->
 
@@ -53,7 +53,7 @@ ${_("Enter your username, the OTP PIN and the OTP value.")}
                 <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
                 </tr>
                 <tr>
-                <td>${_("password (OTP PIN and OTP value)")}</td>
+                <td>${_("OTP PIN and OTP value")}</td>
                 <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
                 </tr>
                 </table>
