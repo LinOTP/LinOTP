@@ -38,9 +38,9 @@
 ${_("Here you may try to authenticate using your OCRA OTP token.")}
 </p>
 <p>
-${_('Enter your username, the OCRA2 Token PIN and the input for the challenge.')}
-${_('By submit this will generate an QR image, that could be scaned with your OCRA2 Token reader.')}
-${_('Enter for verification the OTP value in the lower form.')}
+${_('Enter your username, the OTP PIN and the input for the challenge.')}
+${_('By submitting this you will generate a QR image, that can be scaned with your OCRA2 Token reader.')}
+${_('To verify your result enter the OTP value into the form below.')}
 </p>
 </div> <!-- sidebar -->
 
@@ -58,7 +58,7 @@ ${_('Enter for verification the OTP value in the lower form.')}
                 <td>${_('username')}</td>
                 <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
                 </tr><tr>
-                <td>${_('Pin')}</td>
+                <td>${_('OTP PIN')}</td>
                 <td><input type='text' id='pin' name="pass" maxlength="200"  class="required"></td>
                 </tr><tr>
 	                <td>${_('challenge')}</td>
@@ -90,7 +90,7 @@ ${_('Enter for verification the OTP value in the lower form.')}
 	                <td>${_('username')}</td>
 	                <td><input type='text' id='user2' name="user" maxlength="200"  class="required"></td>
                 </tr><tr>
-	                <td>${_('password')}</td>
+	                <td>${_('OTP PIN and OTP value')}</td>
 	                <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
                 </tr></table>
                 </frameset>

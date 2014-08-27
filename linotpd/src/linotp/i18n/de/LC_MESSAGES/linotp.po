@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-08-21 10:50+0200\n"
+"PO-Revision-Date: 2014-08-26 11:08+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -678,12 +678,6 @@ msgstr ""
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "Hier können Sie sich mit Ihrem OCRA OTP Token authentisieren."
 
-msgid "If you got no OCRA OTP Token, you may register a user account "
-msgstr "Wenn Sie keinen OCRA OTP Token haben, können Sie sich registrieren"
-
-msgid "here"
-msgstr "hier"
-
 msgid "Enter your username, the OTP PIN and the OTP value."
 msgstr "Geben Sie Ihren Benutzernamen, die OTP PIN und den OTP Wert ein."
 
@@ -708,46 +702,41 @@ msgstr "Scannen Sie die Challenge ein und holen Sie Ihren OTP Wert:"
 msgid "Login:"
 msgstr "Login:"
 
-msgid "password"
-msgstr "Passwort"
+msgid "OTP PIN and OTP value"
+msgstr "OTP PIN und OTP-Wert"
 
 msgid "login"
 msgstr "Login"
 
-msgid ""
-"Enter your username, the OCRA2 Token PIN and the input for the challenge."
-msgstr "Geben Sie Ihren Benutzernamen, die OCRA2 PIN und die Challenge ein."
-
-msgid ""
-"By submit this will generate an QR image, that could be scaned with your "
-"OCRA2 Token reader."
+msgid "Enter your username, the OTP PIN and the input for the challenge."
 msgstr ""
-"Hier wird ein QR Bilde generiert, dieses können Sie mit Ihrem OCRA2 Token "
-"einscannen."
+"Geben Sie Ihren Benutzernamen, die OTP PIN und den Text für die Challenge "
+"ein."
 
-msgid "Enter for verification the OTP value in the lower form."
+msgid ""
+"By submitting this you will generate a QR image, that can be scaned with "
+"your OCRA2 Token reader."
+msgstr ""
+"Hier wird ein QR Bild generiert, dieses können Sie mit Ihrem OCRA2-Token-"
+"Scanner einscannen."
+
+msgid "To verify your result enter the OTP value into the form below."
 msgstr "Bitte geben Sie zur Prüfung unten den OTP-Wert ein."
 
 msgid "OCRA2 Login"
 msgstr "OCRA2 Anmeldung"
 
-msgid "Pin"
-msgstr "PIN"
+msgid "OTP PIN"
+msgstr "OTP PIN"
 
 msgid "Here you may try to authenticate using your OTP token."
 msgstr "Hier können Sie die Authentisierung mit Ihrem OTP-Token testen."
 
-msgid "Login"
-msgstr "Login"
-
-msgid "password (OTP PIN and OTP value)"
-msgstr "Password (OTP PIN und OTP-Wert)"
-
 msgid "Enter your username, the OTP PIN (Password) and the OTP value."
 msgstr "Geben Sie Ihren Benutzernamen, die OTP PIN und den OTP Wert ein."
 
-msgid "password/PIN"
-msgstr "Passwort/PIN"
+msgid "Login"
+msgstr "Login"
 
 msgid "OTP value"
 msgstr "OTP-Wert"
@@ -2425,6 +2414,9 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "Pin"
+#~ msgstr "PIN"
 
 #~ msgid "LinOTP Support Info"
 #~ msgstr "LinOTP Support Information"

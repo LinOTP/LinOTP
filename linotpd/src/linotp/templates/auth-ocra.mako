@@ -36,7 +36,6 @@
 <p>
 ${_("Here you may try to authenticate using your OCRA OTP token.")}
 </p>
-<p>${_('If you got no OCRA OTP Token, you may register a user account ')}<a href="http://linotp-register.linotp.org">${_('here')}</a></p>
 <p>
 ${_('Enter your username, the OTP PIN and the OTP value.')}
 </p>
@@ -83,7 +82,7 @@ ${_('Enter your username, the OTP PIN and the OTP value.')}
 	                <td>${_('username')}</td>
 	                <td><input type='text' id='user2' name="user" maxlength="200"  class="required"></td>
                 </tr><tr>
-	                <td>${_('password')}</td>
+	                <td>${_('OTP PIN and OTP value')}</td>
 	                <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
                 </tr></table>
                 </frameset>

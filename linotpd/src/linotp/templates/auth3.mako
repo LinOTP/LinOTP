@@ -53,7 +53,7 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
                 <td><input type='text' id='user3' name="user" maxlength="200"  class="required"></td>
                 </tr>
                 <tr>
-                <td>${_("password/PIN")}</td>
+                <td>${_("OTP PIN")}</td>
                 <td><input type="password" autocomplete="off" name="pass" id="pass3" maxlength=200></td>
                 </tr>
                 <tr>
