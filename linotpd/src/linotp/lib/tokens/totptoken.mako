@@ -133,7 +133,7 @@ function totp_get_enroll_params(){
     params['type'] = 'totp';
    	params['description'] = $('#enroll_totp_desc').val();
 
-    if  ( $('#totp_key_cb').attr('checked') ) {
+    if  ( $('#totp_key_cb').is(':checked') ) {
 		params['genkey']	= 1;
 		params['hashlib']	= 'sha1';
 		params['otplen']	= 6;
@@ -195,17 +195,18 @@ jQuery.validator.addMethod("totp_secret", function(value, element, param){
 }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}' );
 
 $('#form_enroll_totp').validate({
-	debug: true,
+    debug: true,
     rules: {
         totp_secret: {
             minlength: 40,
             maxlength: 64,
             number: false,
             totp_secret: true,
-			required: function() {
-            	var res = $('#totp_key_cb2').attr('checked') === 'undefined';
-            return res;
-        }
+            required: function() {
+                // When the checkbox is checked, this field is NOT required
+                // and vice versa
+                return ! $('#totp_key_cb2').is(':checked');
+            }
         }
     }
 });
