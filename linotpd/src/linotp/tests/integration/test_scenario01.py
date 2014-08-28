@@ -399,6 +399,8 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         self.assertEqual("mOTP PIN set successfully", self.close_alert_and_get_its_text())
         driver.find_element_by_link_text("Logout").click()
 
+        time.sleep(10) # otherwise next mOTP value might not be valid
+
         current_epoch = time.time()
         motp_otp = calculate_motp(
             epoch=current_epoch,
