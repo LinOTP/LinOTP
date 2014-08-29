@@ -46,7 +46,7 @@ setup(
     install_requires=[
         "Pylons>=0.9.7,<=1.0",
         "WebOb<1.4",
-        "SQLAlchemy>=0.6,<0.8.0b2",
+        "SQLAlchemy>=0.6",
         "docutils>=0.4",
         "simplejson>=2.0",
         "pycrypto>=1.0",
