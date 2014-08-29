@@ -65,7 +65,13 @@
 <div id="wrap">
 <div id="header" class="ui-widget-header ui-corner-all">
     <ul id='menu' class='sf-menu sf-vertical'>
-        <li><a href='#'>${_("LinOTP Config")}</a>
+		<li>
+				<div class="float_left">
+				Elm Authentication System<br>
+				<span class=portalname>${_("Management Portal")}</span>
+				</div>
+		</li>        
+		<li><a href='#'>${_("LinOTP Config")}</a>
             <ul>
                 <li><a href='#' id='menu_edit_resolvers'>${_("useridresolvers")}</a></li>
                 <li><a href='#' id='menu_edit_realms'>${_("realms")}</a></li>
@@ -102,8 +108,8 @@
                 <li><a href='#' id='menu_about'>${_("About LinOTP")}</a></li>
             </ul>
         </li>
+		<li id="logo"><div></div></li>
     </ul>
-    <div id="logo"><img src="/images/linotp_logo_118x40.png" alt="LinOTP"/></div>
 </div> <!-- header -->
 <div class="javascript_error" id="javascript_error">
 	${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
