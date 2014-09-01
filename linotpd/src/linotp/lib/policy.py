@@ -1010,7 +1010,7 @@ def get_autoassignment(user):
     if len(pol) > 0:
         otplen = getPolicyActionValue(pol, "autoassignment")
         log.debug("[get_autoassigmnet] got the otplen = %s" % str(otplen))
-        if type(otplen) == int:
+        if type(otplen) == int and otplen > 0:
             ret = True
 
     return ret, otplen
