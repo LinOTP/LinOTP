@@ -175,6 +175,21 @@ class YubikeyTokenClass(TokenClass):
 
         return ret
 
+    def resetTokenInfo(self):
+        """
+        resetTokenInfo - hook called during token init/update
+
+        in yubikey we have to reset the tokeninfo as it preserves the
+        tokenid, which changes with an token update
+        """
+
+        info = self.getTokenInfo()
+
+        if info and "yubikey.tokenid" in info:
+            del info["yubikey.tokenid"]
+            self.setTokenInfo(info)
+
+        return
 
     def checkOtp(self, anOtpVal, counter=None, window=None, options=None):
         """
@@ -209,7 +224,7 @@ class YubikeyTokenClass(TokenClass):
                   % (anOtpVal, counter, options))
         res = -1
 
-        if len(anOtpVal) < 32:
+        if len(anOtpVal) < self.getOtpLen():
             return res
 
         serial = self.token.getSerial()
