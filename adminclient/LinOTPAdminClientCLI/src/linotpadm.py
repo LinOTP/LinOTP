@@ -407,15 +407,17 @@ def main():
             usage()
             sys.exit(0)
         elif opt in ('-U', '--url'):
+            
             if arg.startswith('https://'):
                 config["protocol"] = "https"
-                config["host"] = arg[8:]
+                config["host"] = arg[8:].rstrip('/')
             elif arg.startswith('http://'):
                 config["protocol"] = "http"
-                config["host"] = arg[7:]
+                config["host"] = arg[7:].rstrip('/')
             else:
                 print "Malformed url format. You need to start with http or https [" + arg + "]"
                 sys.exit(1)
+            
         elif opt in ('-a', '--admin'):
             config["admin"] = arg
             if _ask_password is None:
