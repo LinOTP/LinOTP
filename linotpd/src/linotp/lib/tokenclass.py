@@ -558,6 +558,11 @@ class TokenClass(object):
         if otplen is not None:
             self.setOtpLen(otplen)
 
+        self.resetTokenInfo()
+
+        return
+
+    def resetTokenInfo(self):
         return
 
     def _genOtpKey_(self, otpkeylen=None):
