@@ -48,13 +48,25 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         # Initialize mock objects
         secret_obj = MagicMock(spec=linotp.lib.crypt.SecretObj)
         secret_obj.aes_decrypt = _aes_decrypt_constructor(aes_key)
-        model_token = MagicMock(spec=linotp.model.Token)
+        model_token = MagicMock(
+            spec=[
+                "getSerial",
+                "getHOtpKey",
+                "getInfo",
+                "setInfo",
+                "setType",
+                "LinOtpCountWindow"
+                ]
+            ) # linotp.model.Token
         model_token.getSerial.return_value = serial
         model_token.getHOtpKey.return_value = secret_obj
         model_token.getInfo.return_value = u'' + '{\n"yubikey.tokenid": "' + self.private_uid + '"\n}'
+        model_token.LinOtpCountWindow = None # Not required in the Yubikey Token
         model_token.LinOtpCount = 0
+        model_token.LinOtpOtpLen = 32
         self.model_token = model_token
         self.yubikey_token = YubikeyTokenClass(model_token)
+        model_token.setType.assert_called_once_with("yubikey")
 
     def test_checkotp_positive(self):
         """
