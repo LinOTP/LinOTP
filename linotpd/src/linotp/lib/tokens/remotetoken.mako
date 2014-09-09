@@ -161,6 +161,10 @@ function remote_get_enroll_params(){
 
     jQuery.extend(params, add_user_data());
 
+    if ($('#remote_pin1').val() != '') {
+        params['pin'] = $('#remote_pin1').val();
+    }
+
 	return params;
 }
 
@@ -234,6 +238,16 @@ $("#form_enroll_token").validate({
 	<td><label for="remote_resconf">${_("remote user useridresolver")}</label></td>
 	<td><input type="text" name="remote_resconf" id="remote_resconf"
 		value="${sys_remote_resConf}" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	<tr>
+    <td><label for="remote_pin1" id="remote_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('remote_pin1','remote_pin2');" name="pin1" id="remote_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	<tr>
+    <td><label for="remote_pin2" id="remote_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('remote_pin1','remote_pin2');" name="pin2" id="remote_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 	</tr></table>
 
 

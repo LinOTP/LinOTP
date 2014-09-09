@@ -145,6 +145,10 @@ function totp_get_enroll_params(){
 
 	jQuery.extend(params, add_user_data());
 
+    if ($('#totp_pin1').val() != '') {
+        params['pin'] = $('#totp_pin1').val();
+    }
+
     return params;
 }
 </script>
@@ -164,6 +168,16 @@ function totp_get_enroll_params(){
 	<option value='60' >60 ${_("seconds")}</option>
 	<option value='30' >30 ${_("seconds")}</option>
 	</select></td>
+</tr>
+<tr>
+    <td><label for="totp_pin1" id="totp_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin1" id="totp_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td><label for="totp_pin2" id="totp_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin2" id="totp_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr>
 <tr>
     <td><label for="enroll_totp_desc" id='enroll_totp_desc_label'>${_("Description")}</label></td>

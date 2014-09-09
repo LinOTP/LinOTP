@@ -126,6 +126,10 @@ function sms_get_enroll_params(){
 
     jQuery.extend(params, add_user_data());
 
+    if ($('#sms_pin1').val() != '') {
+        params['pin'] = $('#sms_pin1').val();
+    }
+
     return params;
 }
 </script>
@@ -134,6 +138,14 @@ function sms_get_enroll_params(){
 <table><tr>
 	<td><label for="sms_phone">${_("phone number")}</label></td>
 	<td><input type="text" name="sms_phone" id="sms_phone" value="" class="text ui-widget-content ui-corner-all"></td>
+</tr><tr>
+    <td><label for="sms_pin1" id="sms_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('sms_pin1','sms_pin2');" name="pin1" id="sms_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr><tr>
+    <td><label for="sms_pin2" id="sms_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('sms_pin1','sms_pin2');" name="pin2" id="sms_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr><tr>
     <td><label for="enroll_sms_desc" id='enroll_sms_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="enroll_sms_desc" id="enroll_sms_desc" value="webGUI_generated" class="text" /></td>

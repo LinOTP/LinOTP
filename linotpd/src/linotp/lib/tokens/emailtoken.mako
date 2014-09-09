@@ -125,6 +125,9 @@ function email_get_enroll_params(){
     params['email_address']	= $('#email_address').val();
     params['description'] = $('#email_address').val() + " " + $('#enroll_email_desc').val();
     jQuery.extend(params, add_user_data());
+    if ($('#email_pin1').val() != '') {
+        params['pin'] = $('#email_pin1').val();
+    }
     return params;
 }
 </script>
@@ -132,6 +135,14 @@ function email_get_enroll_params(){
 <table><tr>
 	<td><label for="email_address">${_("E-mail address")}</label></td>
 	<td><input type="text" name="email_address" id="email_address" value="" class="text ui-widget-content ui-corner-all"></td>
+</tr><tr>
+    <td><label for="email_pin1" id="email_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin1" id="email_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr><tr>
+    <td><label for="email_pin2" id="email_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin2" id="email_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr><tr>
     <td><label for="enroll_email_desc" id='enroll_email_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="enroll_email_desc" id="enroll_email_desc" value="webGUI_generated" class="text" /></td>

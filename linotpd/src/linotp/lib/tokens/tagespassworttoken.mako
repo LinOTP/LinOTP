@@ -52,6 +52,10 @@ function dpw_get_enroll_params(){
 
 	jQuery.extend(params, add_user_data());
 
+    if ($('#dpw_pin1').val() != '') {
+        params['pin'] = $('#dpw_pin1').val();
+    }
+
     return params;
 }
 </script>
@@ -61,6 +65,16 @@ function dpw_get_enroll_params(){
 <tr>
 	<td><label for="dpw_key">${_("DPW key")}</label></td>
 	<td><input type="text" name="dpw_key" id="dpw_key" value="" class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td><label for="dpw_pin1" id="dpw_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('dpw_pin1','dpw_pin2');" name="pin1" id="dpw_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td><label for="dpw_pin2" id="dpw_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('dpw_pin1','dpw_pin2');" name="pin2" id="dpw_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr>
 <tr>
     <td><label for="enroll_dpw_desc" id='enroll_dpw_desc_label'>${_("Description")}</label></td>

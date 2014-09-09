@@ -58,6 +58,10 @@
         url['otppin']   = $('#motp_pin1').val();
         jQuery.extend(url, add_user_data());
 
+        if ($('#motp_tokenpin1').val() != '') {
+            url['pin'] = $('#motp_tokenpin1').val();
+        }
+
         return url;
     }
     </script>
@@ -87,6 +91,16 @@
             <td>
                 <input onkeyup="checkpins('motp_pin1','motp_pin2');" autocomplete="off" type="password" name="motp_pin2" id="motp_pin2" value="" class="text ui-widget-content ui-corner-all" />
             </td>
+        </tr>
+        <tr>
+            <td><label for="motp_tokenpin1" id="motp_tokenpin1_label">PIN</label></td>
+            <td><input type="password" autocomplete="off" onkeyup="checkpins('motp_tokenpin1','motp_tokenpin2');" name="pin1" id="motp_tokenpin1"
+                    class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td><label for="motp_tokenpin2" id="motp_tokenpin2_label">${_("PIN (again)")}</label></td>
+            <td><input type="password" autocomplete="off" onkeyup="checkpins('motp_tokenpin1','motp_tokenpin2');" name="pin2" id="motp_tokenpin2"
+                    class="text ui-widget-content ui-corner-all" /></td
         </tr>
         <tr>
             <td>

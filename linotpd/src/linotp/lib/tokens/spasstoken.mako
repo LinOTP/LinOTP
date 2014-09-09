@@ -50,6 +50,10 @@ function spass_get_enroll_params(){
 
 	jQuery.extend(params, add_user_data());
 
+    if ($('#spass_pin1').val() != '') {
+        params['pin'] = $('#spass_pin1').val();
+    }
+
     return params;
 }
 </script>
@@ -59,6 +63,16 @@ ${_("Anyway, you can set an OTP PIN, so that using this token the user can "+
 "authenticate always and only with this fixed PIN.")}</p>
 
 <table>
+<tr>
+    <td><label for="spass_pin1" id="spass_opin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('spass_pin1','spass_pin2');" name="pin1" id="spass_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td><label for="spass_pin2" id="spass_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('spass_pin1','spass_pin2');" name="pin2" id="spass_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
+</tr>
 <tr>
     <td><label for="enroll_spass_desc" id='enroll_spass_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="enroll_spass_desc" id="enroll_spass_desc" value="webGUI_generated" class="text" /></td>

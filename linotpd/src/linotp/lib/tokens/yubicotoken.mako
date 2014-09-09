@@ -130,6 +130,10 @@ function yubico_get_enroll_params(){
 
 	jQuery.extend(params, add_user_data());
 
+    if ($('#yubico_pin1').val() != '') {
+        params['pin'] = $('#yubico_pin1').val();
+    }
+
 	return params;
 }
 
@@ -143,6 +147,16 @@ function yubico_get_enroll_params(){
 		${_("Token ID")}</label></td>
 	<td><input class="required" type="text" name="yubico_token_id" id="yubico_token_id" min=12
 		class="text ui-widget-content ui-corner-all"/></td>
+</tr>
+<tr>
+    <td><label for="yubico_pin1" id="yubico_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin1" id="yubico_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td><label for="yubico_pin2" id="yubico_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin2" id="yubico_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr>
 <tr>
     <td><label for="yubico_enroll_desc" id='yubico_enroll_desc_label'>${_("Description")}</label></td>

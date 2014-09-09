@@ -478,6 +478,16 @@ ${c.version} --- ${c.licenseinfo}
     			</tr>
     			<tr><td> </td><td><input type='checkbox' id='ocra_key_cb' onclick="cb_changed('ocra_key_cb',['ocra_key','ocra_key_label','ocra_key_intro']);">
     				<label for=ocra_key_cb>${_("Generate OCRA key.")}</label></td></tr>
+                <tr>
+                    <td><label for="ocra_pin1" id="ocra_pin1_label">PIN</label></td>
+                    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
+                            class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
+                <tr>
+                    <td><label for="ocra_pin2" id="ocra_pin2_label">${_("PIN (again)")}</label></td>
+                    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin2" id="ocra_pin2"
+                            class="text ui-widget-content ui-corner-all" /></td
+                </tr>
     			</table>
     		</div>
 

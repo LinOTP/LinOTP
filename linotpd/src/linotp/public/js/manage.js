@@ -997,16 +997,6 @@ function view_setpin_dialog(tokens) {
     $dialog_setpin_token.dialog('open');
 }
 
-
-function view_setpin_after_enrolling(tokens) {
-    /*
-     * TODO: depending on the OTP PIN type (o,1,2,) we can display
-     * or not display it. In case of no OTP PIN or AD PIN, we don't want to see this dialog!
-     */
-    view_setpin_dialog(tokens);
-    check_license();
-}
-
 function view_setpin_after_assigning(tokens) {
     /*
      * TODO: depending on the OTP PIN type (o,1,2,) we can display
@@ -1158,8 +1148,6 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             $('#enroll_url').html(dia_text);
             $('#qr_url_tabs').tabs();
             $dialog_show_enroll_url.dialog("open");
-        } else {
-            view_setpin_after_enrolling([serial]);
         }
     }
     else {
@@ -1199,6 +1187,9 @@ function token_enroll(){
             } else {
                 // OTP Key
                 params['otpkey']    = $('#ocra_key').val();
+            }
+            if ($('#ocra_pin1').val() != '') {
+                params['pin'] = $('#ocra_pin1').val();
             }
             break;
 
@@ -1492,21 +1483,6 @@ function getSerialByOtp(otp, type, assigned, realm) {
     }
     clientUrlFetch('/admin/getSerialByOtp', param, get_serial_by_otp_callback);
 
-}
-
-
-function checkpins(){
-    var pin1 = $('#pin1').val();
-    var pin2 = $('#pin2').val();
-    if (pin1 == pin2) {
-        $('#pin1').removeClass('ui-state-error');
-        $('#pin2').removeClass('ui-state-error');
-    }
-    else {
-        $('#pin1').addClass('ui-state-error');
-        $('#pin2').addClass('ui-state-error');
-    }
-    return false;
 }
 
 
@@ -3280,7 +3256,6 @@ $(document).ready(function(){
         buttons: {
             'OK': {click:function() {
                     $(this).dialog('close');
-                    view_setpin_after_enrolling([$('#enroll_token_serial').val()]);
                 },
                 id: "button_show_enroll_ok",
                 text: "Ok"

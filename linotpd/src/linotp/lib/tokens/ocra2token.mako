@@ -79,6 +79,10 @@ function ocra2_get_enroll_params(){
 
     jQuery.extend(url, add_user_data());
 
+    if ($('#ocra2_pin1').val() != '') {
+        url['pin'] = $('#ocra2_pin1').val();
+    }
+
     return url;
 }
 </script>
@@ -101,6 +105,16 @@ function ocra2_get_enroll_params(){
 	        <option value="OCRA-1:HOTP-SHA256-8:C-QN08">SHA256 - otplen 8 digits - numeric challenge 8 digits</option>
 	        <option value="OCRA-1:HOTP-SHA256-8:C-QA64">SHA256 - otplen 8 digits - numeric challenge 64 chars</option>
     </select></td>
+</tr>
+<tr>
+    <td><label for="ocra2_pin1" id="ocra2_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin1" id="ocra2_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td><label for="ocra2_pin2" id="ocra2_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin2" id="ocra2_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr>
 <tr>
     <td><label for="enroll_ocra2_desc" id='enroll_ocra2_desc_label'>${_("Description")}</label></td>

@@ -147,6 +147,11 @@ function radius_get_enroll_params(){
 	params['description'] 			=  "radius:" + $('#radius_server').val();
 
 	jQuery.extend(params, add_user_data());
+
+    if ($('#radius_pin1').val() != '') {
+        params['pin'] = $('#radius_pin1').val();
+    }
+
     return params;
 }
 
@@ -206,6 +211,16 @@ $("#form_enroll_token").validate({
 	</tr><tr>
 	<td><label for="radius_secret">${_("RADIUS shared secret")}</label></td>
 	<td><input type="password" name="radius_secret" id="radius_secret" value="${sys_radius_secret}" class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	<tr>
+    <td><label for="radius_pin1" id="radius_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="pin1" id="radius_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+	</tr>
+	<tr>
+    <td><label for="radius_pin2" id="radius_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="radius_pin2" id="radius_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 	</tr></table>
 
 %endif

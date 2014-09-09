@@ -71,6 +71,9 @@ function hmac_get_enroll_params(){
     url['hashlib']	= $('#hmac_algorithm').val();
 	url['otplen']	= $('#hmac_otplen').val();
 
+    if ($('#hmac_pin1').val() != '') {
+        url['pin'] = $('#hmac_pin1').val();
+    }
 
     return url;
 }
@@ -101,6 +104,16 @@ function hmac_get_enroll_params(){
 	        <option value="sha256">sha256</option>
 	        <option value="sha512">sha512</option>
     </select></td>
+</tr>
+<tr>
+    <td><label for="hmac_pin1" id="hmac_pin1_label">PIN</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin1" id="hmac_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td><label for="hmac_pin2" id="hmac_pin2_label">${_("PIN (again)")}</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin2" id="hmac_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr>
 <tr>
     <td><label for="enroll_hmac_desc" id='enroll_hmac_desc_label'>${_("Description")}</label></td>
