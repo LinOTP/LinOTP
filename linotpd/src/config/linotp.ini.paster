@@ -89,6 +89,7 @@ static_files = true
 who.config_file = %(here)s/who.ini
 who.log_level = warning
 who.log_file = %(here)s/linotp.log
+#who.generate_random_secret = true
 
 
 cache_dir = %(here)s/data

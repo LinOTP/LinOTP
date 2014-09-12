@@ -35,6 +35,11 @@ from pylons.middleware import ErrorHandler, StatusCodeRedirect
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 from linotp.config.environment import load_environment
+from subprocess import Popen, PIPE
+from contextlib import contextmanager
+import re
+import os
+import tempfile
 
 profile_load = False
 try:
@@ -122,7 +127,34 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     # repoze.who
     if repoze_load:
-        app = make_who_with_config(app, global_conf, app_conf['who.config_file'], app_conf['who.log_file'], app_conf['who.log_level'])
+        if 'who.generate_random_secret' in app_conf and not app_conf['who.generate_random_secret']:
+            app = make_who_with_config(app, global_conf, app_conf['who.config_file'], app_conf['who.log_file'], app_conf['who.log_level'])
+        else:
+            # Read the current configuration file and replace "secret" keys in every line
+            who_config_lines = []
+            secret = Popen('pwgen -s 16 1', shell=True, stdout=PIPE).stdout.read().rstrip()
+            if len(secret) != 16:
+                raise RuntimeError('Could not generate random repoze.who secret, missing or broken pwgen program?')
+
+            with open(app_conf['who.config_file']) as f:
+                for line in f.readlines():
+                    who_config_lines.append(re.sub(r'^(secret)\s*=\s*.*$', r'\1 = %s' % secret, line))
+            with tempinput(''.join(who_config_lines)) as who_config_file:
+                app = make_who_with_config(app, global_conf, who_config_file, app_conf['who.log_file'], app_conf['who.log_level'])
 
     return app
 
+
+@contextmanager
+def tempinput(data):
+    """
+    Create a temporary file containing data.
+    Uses contextmanager to make sure that the file is deleted after use.
+    :param data: Contents of temporary file
+    :return: Filename of temporary file
+    """
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp.write(data)
+    temp.close()
+    yield temp.name
+    os.unlink(temp.name)
