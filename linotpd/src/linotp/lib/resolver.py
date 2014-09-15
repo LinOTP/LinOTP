@@ -81,7 +81,7 @@ class Resolver():
             e = Exception("non conformant characters in resolver name: " + self.name + " (not in " + nameExp + ")")
             raise e
 
-        ## handle types
+        # handle types
         self.type = getParam(param, 'type', required)
         resolvertypes = get_resolver_types()
         if self.type not in resolvertypes:
@@ -114,7 +114,7 @@ class Resolver():
                     self.desc[key] = param.get(k)
 
                 elif 'session' == k:
-                    ## supress session parameter
+                    # supress session parameter
                     pass
                 else:
                     self.data[k] = param.get(k)
@@ -123,7 +123,7 @@ class Resolver():
                     else:
                         log.warn("[setDefinition]: the passed key %r is not a "
                                  "parameter for the resolver %r" % (k, self.type))
-        ## now check if we have for every type def an parameter
+        # now check if we have for every type def an parameter
         ok = self._sanityCheck()
         if ok != True:
             raise Exception("type definition does not match parameter! %s"
@@ -188,27 +188,27 @@ def checkResolverType(resolver):
     res = False
     ret = False
 
-    ## prepare
+    # prepare
     reso = resolver.strip()
     reso = reso.replace("\"", "")
 
-    ## the fully qualified resolver
+    # the fully qualified resolver
     if reso in context.resolver_clazzes:
         res = context.resolver_clazzes.get(reso)
         ret = True
     else:
-        ## if the last argument is the configuration
+        # if the last argument is the configuration
         pack = reso.split('.')
         rtype = ".".join(pack[:-1])
         conf = pack[-1]
 
-        ## lookup, if there is a resolver definition
+        # lookup, if there is a resolver definition
         if rtype in context.resolver_types:
             res = "%s.%s" % (rtype, conf)
             ret = True
-        ##
+        # #
         else:
-            ## legacy support, where resolver is defined as
+            # legacy support, where resolver is defined as
             #    "useridresolver.passwdresolver.mrealm"
             # so we only could rely only on the type definition e.g.
             #  'passwdresolver' as part of the string
@@ -218,7 +218,7 @@ def checkResolverType(resolver):
                     ret = True
                     break
 
-    ##  is resolver defined in the linotp config
+    #  is resolver defined in the linotp config
     try:
         getResolverObject(res)
     except Exception as exx:
@@ -236,6 +236,10 @@ def splitResolver(resolver):
     try:
         l = reso.split('.', 3)
         package = l[0]
+
+        if package == 'useridresolveree':
+            package = 'useridresolver'
+
         module = l[1]
         class_ = l[2]
         if len(l) == 3:
@@ -247,7 +251,7 @@ def splitResolver(resolver):
         raise Exception("invalid resolver class specification" + reso)
     return (package, module, class_, conf)
 
-## external system/getResolvers
+# external system/getResolvers
 def getResolverList(filter_resolver_type=None):
     '''
     Gets the list of configured resolvers
@@ -264,7 +268,7 @@ def getResolverList(filter_resolver_type=None):
 
         for typ in resolvertypes:
             if entry.startswith("linotp." + typ):
-                #the realm might contain dots "."
+                # the realm might contain dots "."
                 # so take all after the 3rd dot for realm
                 r = {}
                 resolver = entry.split(".", 3)
@@ -304,7 +308,7 @@ def getResolverInfo(resolvername):
 
         for typ in resolvertypes:
 
-            ## get the typed values of the descriptor!
+            # get the typed values of the descriptor!
             resolver_conf = get_resolver_classConfig(typ)
             if typ in resolver_conf:
                 descr = resolver_conf.get(typ).get('config', {})
@@ -312,7 +316,7 @@ def getResolverInfo(resolvername):
                 descr = resolver_conf
 
             if entry.startswith("linotp." + typ) and entry.endswith(resolvername):
-                #the realm might contain dots "."
+                # the realm might contain dots "."
                 # so take all after the 3rd dot for realm
                 resolver = entry.split(".", 3)
                 # An old entry without resolver name
@@ -324,11 +328,11 @@ def getResolverInfo(resolvername):
                     configEntry = resolver[2]
                     if descr.get(configEntry) == 'password':
 
-                        ## do we already have the decrypted pass?
+                        # do we already have the decrypted pass?
                         if 'enc' + entry in conf:
                             value = conf.get('enc' + entry)
                         else:
-                            ## if no, we take the encpass and decrypt it
+                            # if no, we take the encpass and decrypt it
                             value = conf.get(entry)
                             try:
                                 en = decryptPassword(value)
@@ -388,7 +392,7 @@ def deleteResolver(resolvername):
 
 
 
-## external in token.py user.py validate.py
+# external in token.py user.py validate.py
 def getResolverObject(resolvername):
     """
     get the resolver instance from a resolver name spec
@@ -405,13 +409,13 @@ def getResolverObject(resolvername):
     """
     r_obj = None
 
-    ### this patch is a bit hacky:
-    ## the normal request has a request context, where it retrieves
-    ## the resolver info from and preserves the loaded resolvers for reusage
-    ## But in case of a authentication request (by a redirect from a 401)
-    ## the caller is no std request and the context object is missing :-(
-    ## The solution is to deal with local references, either to the
-    ## global context or to local data (where we have no reuse of the resolver)
+    #  this patch is a bit hacky:
+    # the normal request has a request context, where it retrieves
+    # the resolver info from and preserves the loaded resolvers for reusage
+    # But in case of a authentication request (by a redirect from a 401)
+    # the caller is no std request and the context object is missing :-(
+    # The solution is to deal with local references, either to the
+    # global context or to local data (where we have no reuse of the resolver)
 
     resolvers_loaded = {}
     try:
@@ -421,11 +425,16 @@ def getResolverObject(resolvername):
     except Exception as exx:
         resolvers_loaded = {}
 
-    ## test if there is already a resolver of this kind loaded
+    # port of the 2.6. resolver to 2.7
+    if resolvername[:len('useridresolveree.')] == 'useridresolveree.':
+        resolvername = "useridresolver.%s" % resolvername[len('useridreseolveree.') - 1:]
+
+
+    # test if there is already a resolver of this kind loaded
     if resolvername in resolvers_loaded:
         return resolvers_loaded.get(resolvername)
 
-    ## no resolver - so instatiate one
+    # no resolver - so instatiate one
     else:
         parts = resolvername.split('.')
         if len(parts) > 2:
@@ -436,7 +445,7 @@ def getResolverObject(resolvername):
             log.error("unknown resolver class %s " % resolvername)
             return r_obj
 
-        ## create the resolver instance and load the config
+        # create the resolver instance and load the config
         r_obj = r_obj_class()
         conf = resolvername.split(".")[-1]
 
@@ -447,7 +456,7 @@ def getResolverObject(resolvername):
 
     return r_obj
 
-## external lib/base.py
+# external lib/base.py
 def setupResolvers(config=None, cache_dir="/tmp"):
     """
     hook for the server start -
@@ -479,14 +488,14 @@ def initResolvers():
         resolver_types = copy.deepcopy(glo.getResolverTypes())
         setattr(context, 'resolver_types', resolver_types)
 
-        ## dict of all resolvers, which are instatiated during the request
+        # dict of all resolvers, which are instatiated during the request
         setattr(context, 'resolvers_loaded', {})
 
     except Exception as exx:
         log.error("Failed to initialize resolver in context %r" % exx)
     return
 
-## external lib/base.py
+# external lib/base.py
 def closeResolvers():
     """
     hook to close the resolvers at the end of the request
@@ -503,7 +512,7 @@ def closeResolvers():
     return
 
 
-## internal functions
+# internal functions
 def get_resolver_class(resolver_type):
     '''
     return the class object for a resolver type
@@ -513,13 +522,13 @@ def get_resolver_class(resolver_type):
     '''
     ret = None
 
-    ### this patch is a bit hacky:
-    ## the normal request has a request context, where it retrieves
-    ## the resolver info from and preserves the loaded resolvers for reusage
-    ## But in case of a authentication request (by a redirect from a 401)
-    ## the caller is no std request and the context object is missing :-(
-    ## The solution is, to deal with local references, either to the
-    ## global context or to local data
+    # ## this patch is a bit hacky:
+    # the normal request has a request context, where it retrieves
+    # the resolver info from and preserves the loaded resolvers for reusage
+    # But in case of a authentication request (by a redirect from a 401)
+    # the caller is no std request and the context object is missing :-(
+    # The solution is, to deal with local references, either to the
+    # global context or to local data
 
     try:
         resolver_clazzes = context.resolver_clazzes
@@ -530,12 +539,12 @@ def get_resolver_class(resolver_type):
         resolver_types = copy.deepcopy(glo.getResolverTypes())
 
     parts = resolver_type.split('.')
-    ## resolver is fully qualified
+    # resolver is fully qualified
     if len(parts) > 1:
         if resolver_type in resolver_clazzes:
             ret = resolver_clazzes.get(resolver_type)
 
-    ## resolver is in abreviated form, we have to do a reverse lookup
+    # resolver is in abreviated form, we have to do a reverse lookup
     elif resolver_type in resolver_types.values():
         for k, v in resolver_types.iteritems():
             if v == resolver_type:

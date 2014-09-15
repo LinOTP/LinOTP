@@ -186,6 +186,10 @@ class Token(object):
                 value = linotp.lib.crypt.udecode(value)
             else:
                 value = ""
+        # port of the 2.6. resolver to 2.7
+        if name in ['LinOtpIdResClass']:
+            if value[:len('useridresolveree.')] == 'useridresolveree.':
+                value = "useridresolver.%s" % value[len('useridreseolveree.') - 1:]
 
         return value
 
