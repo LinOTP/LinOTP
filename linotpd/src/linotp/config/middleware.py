@@ -35,8 +35,8 @@ from pylons.middleware import ErrorHandler, StatusCodeRedirect
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 from linotp.config.environment import load_environment
-from subprocess import Popen, PIPE
 from contextlib import contextmanager
+import binascii
 import re
 import os
 import tempfile
@@ -132,9 +132,9 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
         else:
             # Read the current configuration file and replace "secret" keys in every line
             who_config_lines = []
-            secret = Popen('pwgen -s 16 1', shell=True, stdout=PIPE).stdout.read().rstrip()
-            if len(secret) != 16:
-                raise RuntimeError('Could not generate random repoze.who secret, missing or broken pwgen program?')
+            secret = binascii.hexlify(os.urandom(16))
+            if len(secret) != 32:
+                raise RuntimeError('Could not generate random repoze.who secret, no os.urandom support?')
 
             with open(app_conf['who.config_file']) as f:
                 for line in f.readlines():
