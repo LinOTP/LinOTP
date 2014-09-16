@@ -103,7 +103,7 @@
             </ul>
         </li>
     </ul>
-    <div id="logo"><img src="/images/linotp_logo_118x40.png" alt="LinOTP"/></div>
+    <div id="logo"><img src="/images/linotp_logo_103x35.png" alt="LinOTP"/></div>
 </div> <!-- header -->
 <div class="javascript_error" id="javascript_error">
 	${_("You need to enable Javascript to use the LinOTP Management Web UI.")}

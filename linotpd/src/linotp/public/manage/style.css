@@ -226,12 +226,13 @@ z-index: 1;
 	float: left;
 	width: 100%;
 	margin: 5px 0;
+	height: 45px;
  }
 
  #header #logo {
- 	float: right;
+	float: right;
 	margin-right: 5px;
-	padding-top: 2px;
+	margin-top: 5px;
  }
 
  #header #logo img {
@@ -260,7 +261,9 @@ z-index: 1;
 
  #menu.sf-menu a {
 	border-top: none;
-    color: black;
+	color: black;
+	font-size: 16px;
+	height: 21px;
  }
 
  #header .sf-menu li:first-child a {
