@@ -4440,7 +4440,8 @@ function view_policy() {
         $dialog_import_policy.dialog("open");
     });
 
-    $('#button_policy_add').click(function(){
+    $('#button_policy_add').click(function(event){
+        event.preventDefault();
         var pol_name = $('#policy_name').val();
         pol_name = $.trim(pol_name);
         if (pol_name.length == 0) {
@@ -4474,7 +4475,8 @@ function view_policy() {
         });
     });
 
-    $('#button_policy_delete').click(function(){
+    $('#button_policy_delete').click(function(event){
+        event.preventDefault();
         var policy = get_selected_policy().join(',');
         if (policy) {
             $.get('/system/delPolicy', {'name' : policy, 'session':getsession()},
@@ -4486,9 +4488,14 @@ function view_policy() {
                     alert_info_text(data.result.error.message, "", ERROR);
                 }
             });
+            $('#policy_form').trigger("reset");
         }
     });
 
+    $('#button_policy_clear').click(function(event){
+        event.preventDefault();
+        $('#policy_form').trigger("reset");
+    });
 
     $('#policy_scope_combo').change(function(){
         renew_policy_actions();
