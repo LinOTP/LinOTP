@@ -179,31 +179,10 @@ def load_environment(global_conf, app_conf):
 
     ## get the help url
     url = config.get("linotpHelp.url", None)
-
-    ## this is a quick hack for the test setup :-(
-    ## the big one should handle the timeout when help button
-    ## is pressed
-    version = pkg_resources.get_distribution("linotp").version
-    if not(url) and 'dev' in version:
-        url = "file:///usr/share/doc/linotpdoc/html/"
-
-    if url == None:
+    if url is None:
         version = pkg_resources.get_distribution("linotp").version
-        offline_url = "file:///usr/share/doc/linotpdoc/html/"
         # First try to get the help for this specific version
         url = "http://linotp.org/doc/%s/index.html" % version
-        try:
-            ## Try to open the online url with a timeout of 5 seconds
-            ## If the system is definitively offline the request will return immediately
-            urllib2.urlopen(url, timeout=5)
-        except urllib2.HTTPError:
-            # it seems the version does not exist, we set the latest
-            url = "http://linotp.org/doc/latest/index.html"
-            log.info("the Help URL for the version %s is not available, using the latest one: %s" % (version, url))
-        except urllib2.URLError:
-            # it seems we are offline, using an offline url
-            log.warning("it seems we are offline, so using the offline url %s" % offline_url)
-            url = offline_url
     config['help_url'] = url
 
     log.debug("[load_environment] done")
