@@ -136,7 +136,7 @@ class TestManageController(TestController):
         print "policies response: %r" % response.testbody
         assert '<a id=policy_export>' in response.testbody
         assert '<button id=policy_import>' in response.testbody
-        assert '<button  id=button_policy_delete>' in response.testbody
+        assert '<button id="button_policy_delete">' in response.testbody
 
     def test_audit(self):
         '''

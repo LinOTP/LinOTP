@@ -41,7 +41,9 @@ class Policy:
 
         driver.get(base_url + "/manage/")
         driver.find_element_by_xpath("//div[@id='tabs']/ul/li[3]/a").click()
-        driver.find_element_by_id("policy_active").click()
+        policy_active_cb = driver.find_element_by_id("policy_active")
+        if not policy_active_cb.is_selected():
+            policy_active_cb.click()
         driver.find_element_by_id("policy_name").clear()
         driver.find_element_by_id("policy_name").send_keys(self.name)
         scope_select = driver.find_element_by_id('policy_scope_combo')
