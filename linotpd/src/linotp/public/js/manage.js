@@ -2682,7 +2682,10 @@ $(document).ready(function(){
      dropShadows: true
      });
      */
-    $('ul.sf-menu').superfish();
+    $('ul.sf-menu').superfish({
+        delay: 0,
+        speed: 'fast'
+    });
 
     // Button functions
     $('#button_assign').click(function(event){
