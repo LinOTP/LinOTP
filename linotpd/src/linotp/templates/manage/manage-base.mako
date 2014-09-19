@@ -39,7 +39,7 @@
     <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
     <script type="text/javascript" src="/js/jquery.form.min.js"></script>
     <script type="text/javascript" src="/js/jquery.cookie.min.js"></script>
-    <script type='text/javascript' src='/js/hoverIntent.min.js'></script>
+    <script type='text/javascript' src='/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/js/superfish.min.js'></script>
 %endif
 <script type="text/javascript" src="/js/flexigrid.js"></script>
