@@ -92,7 +92,7 @@ def load_environment(global_conf, app_conf):
     config.init_app(global_conf, app_conf, package='linotp', paths=paths)
 
     config['linotp.root'] = root
-    config['routes.map'] = make_map()
+    config['routes.map'] = make_map(global_conf, app_conf)
     config['pylons.app_globals'] = app_globals.Globals()
     config['pylons.h'] = linotp.lib.helpers
 

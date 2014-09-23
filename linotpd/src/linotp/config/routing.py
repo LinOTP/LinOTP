@@ -34,7 +34,7 @@ refer to the routes manual at http://routes.groovie.org/docs/
 from pylons import config
 from routes import Mapper
 
-def make_map():
+def make_map(global_conf, app_conf,):
     '''
     Create, configure and return the routes Mapper
     There are the three main controllers:
@@ -48,25 +48,41 @@ def make_map():
 
     # The ErrorController route (handles 404/500 error pages); it should
     # likely stay at the top, ensuring it can always be resolved
+
     routeMap.connect('/error/{action}', controller='error')
     routeMap.connect('/error/{action}/{id}', controller='error')
-
-    # CUSTOM ROUTES HERE
-    routeMap.connect('/manage/custom-style.css', controller='manage', action='custom_style')
-    routeMap.connect('/selfservice/custom-style.css', controller='selfservice', action='custom_style')
 
     routeMap.connect('/{controller}/{action}')
     routeMap.connect('/{controller}/{action}/{id}')
 
-    routeMap.connect('/admin', controller='admin', action='show')
-    routeMap.connect('/validate', controller='validate', action='check')
-    routeMap.connect('/system', controller='system', action='getConfig')
+    # the first / - default will be taken!!
 
-    # the default site will be the self service
-    routeMap.connect('/', controller='selfservice', action='index')
+    # in case of selfservice, we route the default / to selfservice
+    selfservice = app_conf.get('service.selfservice', 'True') == 'True'
+    if selfservice:
+        routeMap.connect('/selfservice/custom-style.css', controller='selfservice', action='custom_style')
+        routeMap.connect('/selfservice', controller='selfservice', action='index')
+        routeMap.connect('/', controller='selfservice', action='index')
 
-    routeMap.connect('/manage/', controller='manage', action='index')
+    # in case of manage, we route the default / to manage
+    manage = app_conf.get('service.manage', 'True') == 'True'
+    if manage:
+        routeMap.connect('/manage/custom-style.css', controller='manage', action='custom_style')
+        routeMap.connect('/admin', controller='admin', action='show')
+        routeMap.connect('/system', controller='system', action='getConfig')
+        routeMap.connect('/manage/', controller='manage', action='index')
+        routeMap.connect('/', controller='manage', action='index')
 
-    # the default openid will be the status
-    routeMap.connect('/openid/', controller='openid', action='status')
+    # in case of validate, we route the default / to validate
+    validate = app_conf.get('service.validate', 'True') == 'True'
+    if validate:
+        routeMap.connect('/validate', controller='validate', action='check')
+        routeMap.connect('/', controller='validate', action='check')
+
+
+    openid = app_conf.get('service.openid', 'True') == 'True'
+    if openid:
+        # the default openid will be the status
+        routeMap.connect('/openid/', controller='openid', action='status')
+
     return routeMap

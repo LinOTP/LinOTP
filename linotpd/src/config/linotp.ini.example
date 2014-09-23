@@ -152,7 +152,10 @@ radius.nas_identifier = LinOTP
 [app:main]
 use = egg:LinOTP
 
-
+#service.manage = False
+#service.selfservice = False
+#service.validate = False
+#service.openid = False
 
 ## define location of the LinOTP Token Database
 sqlalchemy.url = mysql://linotp2:1234@localhost/LinOTP2
