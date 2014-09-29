@@ -770,16 +770,16 @@ ${c.version} --- ${c.licenseinfo}
 <div id='dialog_import_dat'>
     <form id="load_tokenfile_form_dat" action="/admin/loadtokens" method="post"
             enctype="multipart/form-data" onsubmit="return false;">
-        <p>${_("Here you can upload the data file that came with your eToken.")}</p>
-        <p>${_("Please choose the token file")}:
-            <input name="file" type="file" size="30" maxlength="1000000" accept="text/* data/*">
-            <p>
-                <label for='startdate'>Startdate</label>
-                <input id='startdate' name="startdate" type="datetime" value="1.1.2000"/>
-            </p>
-            <input name="type" type="hidden" value="dat">
-            <input name="session" id="loadtokens_session_dat" type="hidden" value="">
+        <label for="upload_etoken_dat"> ${_("Upload the eToken data file:")}</label>
+            <input id='upload_etoken_dat' name="file" type="file"
+                    size="30" maxlength="1000000" accept="text/* data/*">
         </p>
+        <p>
+            <label for='startdate'>Timebased eToken can use a different start date:</label>
+            <input id='startdate' name="startdate" type="datetime" value="1.1.2000 00:00:00"/>
+        </p>
+        <input name="type" type="hidden" value="dat">
+        <input name="session" id="loadtokens_session_dat" type="hidden" value="">
     </form>
 </div>
 

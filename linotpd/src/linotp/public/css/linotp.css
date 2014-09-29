@@ -21,3 +21,7 @@
 #do_waiting span {
     margin-left: 5px;
 }
+
+#load_tokenfile_form_dat input {
+    margin:10px;
+}
