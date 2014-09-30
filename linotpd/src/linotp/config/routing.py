@@ -52,8 +52,8 @@ def make_map(global_conf, app_conf,):
     routeMap.connect('/error/{action}', controller='error')
     routeMap.connect('/error/{action}/{id}', controller='error')
 
-    routeMap.connect('/{controller}/{action}')
-    routeMap.connect('/{controller}/{action}/{id}')
+    # routeMap.connect('/{controller}/{action}')
+    # routeMap.connect('/{controller}/{action}/{id}')
 
     # the first / - default will be taken!!
 
@@ -63,6 +63,10 @@ def make_map(global_conf, app_conf,):
         routeMap.connect('/selfservice/custom-style.css', controller='selfservice', action='custom_style')
         routeMap.connect('/selfservice', controller='selfservice', action='index')
         routeMap.connect('/', controller='selfservice', action='index')
+        for cont in ['selfservice']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
 
     # in case of manage, we route the default / to manage
     manage = app_conf.get('service.manage', 'True') == 'True'
@@ -73,16 +77,48 @@ def make_map(global_conf, app_conf,):
         routeMap.connect('/manage/', controller='manage', action='index')
         routeMap.connect('/', controller='manage', action='index')
 
+        for cont in ['admin', 'system', 'manage', 'account', 'audit', 'auth']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
     # in case of validate, we route the default / to validate
     validate = app_conf.get('service.validate', 'True') == 'True'
     if validate:
         routeMap.connect('/validate', controller='validate', action='check')
         routeMap.connect('/', controller='validate', action='check')
+        for cont in ['validate']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
+    # in case of validate, we route the default / to validate
+    validate = app_conf.get('service.ocra', 'True') == 'True'
+    if validate:
+        routeMap.connect('/ocra', controller='ocra', action='checkstatus')
+        for cont in ['ocra']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     openid = app_conf.get('service.openid', 'True') == 'True'
     if openid:
         # the default openid will be the status
         routeMap.connect('/openid/', controller='openid', action='status')
+        for cont in ['openid']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
+    #linotpGetotp.active
+    getotp = global_conf.get('linotpGetotp.active', 'True') == 'True'
+    if getotp:
+        for cont in ['gettoken']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
+    # linotp.selfTest
+    self_test = global_conf.get('linotp.selfTest', 'True') == 'True'
+    if self_test:
+        for cont in ['testing']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
 
     return routeMap
