@@ -129,7 +129,7 @@ def set_defaults():
                description=u"Delay until next challenge is created")
 
 
-    ## setup for totp defaults
+    # setup for totp defaults
     # "linotp.totp.timeStep";"60";"None";"None"
     # "linotp.totp.timeWindow";"600";"None";"None"
     # "linotp.totp.timeShift";"240";"None";"None"
@@ -150,7 +150,7 @@ def set_defaults():
         value=u"240", typ=u"int",
         description=u"Autosync timeout for an totp token")
 
-    ## setup for ocra defaults
+    # setup for ocra defaults
     # OcraDefaultSuite
     # QrOcraDefaultSuite
     # OcraMaxChallenges
@@ -202,7 +202,7 @@ def setup_app(conf, conf_global=None, unitTest=False):
         log.info("Deleting previous tables...")
         meta.metadata.drop_all(bind=meta.engine)
 
-    ## Create the tables if they don't already exist
+    # Create the tables if they don't already exist
     log.info("Creating tables...")
     meta.metadata.create_all(bind=meta.engine)
 
@@ -244,6 +244,8 @@ class BaseController(WSGIController):
         :return: None
 
         """
+        self.sep = None
+
         self.parent = super(WSGIController, self)
         self.parent.__init__(*args, **kw)
 
@@ -266,6 +268,18 @@ class BaseController(WSGIController):
                 config['app_setup_done'] = False
                 log.error("Failed to serve request: %r" % exx)
                 raise exx
+
+        # set the decryption device before loading linotp config,
+        # so it contains the decrypted values as well
+        glo = getGlobalObject()
+        self.sep = glo.security_provider
+
+        try:
+            hsm = self.sep.getSecurityModule()
+            c.hsm = hsm
+        except Exception as exx:
+            log.error('failed to assign hsm device: %r' % exx)
+            raise exx
 
         l_config = initLinotpConfig()
 
@@ -291,13 +305,8 @@ class BaseController(WSGIController):
         # available in environ['pylons.routes_dict']
 
         path = ""
-        glo = getGlobalObject()
-        sep = glo.security_provider
 
         try:
-            hsm = sep.getSecurityModule()
-            c.hsm = hsm
-
             if environ:
                 path = environ.get("PATH_INFO", "") or ""
 
@@ -307,12 +316,12 @@ class BaseController(WSGIController):
 
         finally:
             meta.Session.remove()
-            ## free the lock on the scurityPovider if any
-            sep.dropSecurityModule()
+            # free the lock on the scurityPovider if any
+            if self.sep:
+                self.sep.dropSecurityModule()
             closeResolvers()
 
-
-            ## hint for the garbage collector to make the dishes
+            # hint for the garbage collector to make the dishes
             data_objects = ["resolvers_loaded", "resolver_types",
                             "resolver_clazzes", "linotpConfig", "audit", "hsm"]
             for data_obj in data_objects:
@@ -332,7 +341,7 @@ class BaseController(WSGIController):
         for language in languages:
             for lang in language.split(','):
                 try:
-                    if lang == "en":
+                    if lang[:2] == "en":
                         found_lang = True
                         break
                     set_lang(lang)
