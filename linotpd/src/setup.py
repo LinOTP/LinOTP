@@ -105,12 +105,18 @@ setup(
                 ]
             ),
         (
-            get_debian_package() + 'etc/apache2/sites-available/',
+            get_debian_package() + 'etc/linotp2/apache2.2-example/',
             [
-                'config/linotp2',
-                'config/linotp2-radius',
-                'config/linotp2-certs',
-                'config/linotp2-ldap'
+                'config/apache2.2-example/linotp2',
+                'config/apache2.2-example/linotp2-radius',
+                'config/apache2.2-example/linotp2-certs',
+                'config/apache2.2-example/linotp2-ldap',
+                ]
+            ),
+        (
+            get_debian_package() + 'etc/linotp2/apache2.4-example/',
+            [
+                'config/apache2.4-example/linotp2.conf',
                 ]
             ),
         (
