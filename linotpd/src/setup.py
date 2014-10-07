@@ -46,7 +46,7 @@ setup(
     author_email='linotp@lsexperts.de',
     url='http://www.linotp.org',
     install_requires=[
-        "Pylons>=0.9.7,<=1.0",
+        "Pylons>=0.9.7",
         "WebOb<1.4",
         "SQLAlchemy>=0.6",
         "docutils>=0.4",
