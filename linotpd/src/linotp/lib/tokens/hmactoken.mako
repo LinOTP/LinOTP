@@ -87,8 +87,6 @@ function google_constrains() {
     }
 }
 
-
-
 /*
  * 'typ'_get_enroll_params()
  *
@@ -218,32 +216,29 @@ ${_("Enroll HOTP Token")}
 
 %if c.scope == 'selfservice.enroll':
 <script>
-	jQuery.extend(jQuery.validator.messages, {
-		required: "${_('required input field')}",
-		minlength: "${_('minimum length must be greater than {0}')}",
-		maxlength: "${_('maximum length must be lower than {0}')}",
-
-	});
-
-jQuery.validator.addMethod("hmac_secret", function(value, element, param){
-	var res1 = value.match(/^[a-fA-F0-9]+$/i);
-	var res2 = !value;
+    jQuery.extend(jQuery.validator.messages, {
+        required: "${_('required input field')}",
+        minlength: "${_('minimum length must be greater than {0}')}",
+        maxlength: "${_('maximum length must be lower than {0}')}",
+        range: '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}',
+    });
+    
+jQuery.validator.addMethod("content_check", function(value, element, param){
+    var res1 = value.match(/^[a-fA-F0-9]+$/i);
+    var res2 = !value;
     return  res1 || res2 ;
-}, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}'  );
+    }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}');
 
-$('#form_enroll_hmac').validate({
+var hmac_self_validator = $('#form_enroll_hmac').validate({
     debug: true,
     rules: {
         hmac_self_secret: {
+            minlength: 40,
+            maxlength: 64,
+            number: false,
+            content_check: true,
             required: function() {
-                if ($('#hmac_key_cb2').is(':checked')) { return true;}
-                var val = $('#hmac_self_secret').val();
-                if (val.length == 0 ) {return false}
-                var hash = $('#hmac_self_hashlib').val();
-                if ((hash == 'sha1') && (val.length < 20)) {return false}
-                if ((hash == 'sha256') && (val.length < 32)) {return false}
-                if ((hash == 'sha512') && (val.length < 64)) {return false}
-                return true;
+                return ! $('#hmac_key_cb2').is(':checked');
             }
         }
     }
@@ -251,8 +246,8 @@ $('#form_enroll_hmac').validate({
 
 function self_hmac_get_param()
 {
-	var urlparam = {};
-	var typ = 'hmac';
+    var urlparam = {};
+    var typ = 'hmac';
 
     if  ( $('#hmac_key_cb2').is(':checked') ) {
     	urlparam['genkey'] = 1;
@@ -261,33 +256,34 @@ function self_hmac_get_param()
         urlparam['otpkey'] = $('#hmac_self_secret').val();
     }
 
-	urlparam['type'] 	= typ;
-	urlparam['hashlib'] = $('#hmac_self_hashlib').val();
-	urlparam['otplen'] 	= $('#hmac_self_otplen').val();
-	
-	var desc = $("#hmac_self_desc").val();
-	if (desc.length > 0) {
-	   urlparam['description'] = $("#hmac_self_desc").val();
-	}
-
-	return urlparam;
+    urlparam['type'] 	= typ;
+    urlparam['hashlib'] = $('#hmac_self_hashlib').val();
+    urlparam['otplen'] 	= $('#hmac_self_otplen').val();
+    
+    var desc = $("#hmac_self_desc").val();
+    if (desc.length > 0) {
+       urlparam['description'] = $("#hmac_self_desc").val();
+    }
+    
+    return urlparam;
 }
 
 function self_hmac_clear()
 {
 	$('#hmac_secret').val('');
+	hmac_self_validator.resetForm();
 
 }
 function self_hmac_submit(){
-    
+
     var ret = false;
     var params =  self_hmac_get_param();
-    
-    if  ( $('#hmac_key_cb2').is(':checked') === false 
-           && $('#form_enroll_hmac').valid() === false) {
+
+    if  ( ($('#hmac_key_cb2').is(':checked') === false) 
+           && ($('#form_enroll_hmac').valid() === false)) {
         alert('${_("Form data not valid.")}');
         return ret
-    } 
+    }
     enroll_token( params );
     // reset the form
     $("#hmac_key_cb2").prop("checked", false);
@@ -297,9 +293,8 @@ function self_hmac_submit(){
     $('#hmac_self_otplen').val('6');
     $('#hmac_self_hashlib').val("sha1");
     hmac_self_google_constrains()
-    ret = true;
 
-	return ret;
+	return true;
 
 }
 
@@ -320,49 +315,51 @@ function hmac_self_google_constrains() {
 
 
 $( document ).ready(function() {
-    
+
     $('#hmac_key_cb2').click(function() {
         cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
+        hmac_self_validator.resetForm();
     });
     $('#hmac_self_google_compliant').click(function() {
         hmac_self_google_constrains();
     });
 
 
-    $('#button_enroll_hmac').click(function (){
+    $('#button_enroll_hmac').click(function (e){
+        e.preventDefault();
         self_hmac_submit();
     });
 
 });
 
 </script>
-<h2>${_("Enroll your HOTP Token")}</h2>
+<h2>${_("Enroll your HOTP token")}</h2>
 <div id='enroll_hmac_form'>
-	<form class="cmxform" id='form_enroll_hmac'>
-	<fieldset>
-		<table>
-		<tr><td colspan="2">${("Token Seed:")}</td></tr>
+    <form class="cmxform" id='form_enroll_hmac'>
+    <fieldset>
+        <table>
+        <tr><td colspan="2">${_("Token Seed:")}</td></tr>
         <tr>
             <td class="description"><label id='hmac_self_secret_label' 
                     for='hmac_self_secret'>${_("Enter your token seed")}</label></td>
             <td><input id='hmac_self_secret' name='hmac_self_secret' 
-                class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
+                class="required ui-widget-content ui-corner-all"/></td>
         </tr>
         <tr>
             <td> </td>
-        	<td><label for='hmac_key_cb2'>${_("or generate new one")}</label>
-        	     <input type='checkbox' id='hmac_key_cb2' name='hmac_key_cb2'>
-        	</td>
+            <td><label for='hmac_key_cb2'>${_("or generate new one")}</label>
+                 <input type='checkbox' id='hmac_key_cb2' name='hmac_key_cb2'>
+            </td>
         </tr>
         
-        <tr><td class="space">${("Token Settings:")}</td></tr>
+        <tr><td class="space">${_("Token Settings:")}</td></tr>
         %if c.otplen == -1:
         <tr>
-        <td class='description'><label for='hmac_self_otplen'>${_("OTP Digits")}</label></td>
-        <td><select id='hmac_self_otplen' name='hmac_self_otplen'>
-            <option value='6' selected>6</option>
-            <option value='8'>8</option>
-            </select></td>
+            <td class='description'><label for='hmac_self_otplen'>${_("OTP Digits")}</label></td>
+            <td><select id='hmac_self_otplen' name='hmac_self_otplen'>
+                <option value='6' selected>6</option>
+                <option value='8'>8</option>
+                </select></td>
         </tr>
         %else:
             <input type='hidden' id='hmac_self_otplen' value='${c.otplen}'>
@@ -370,12 +367,12 @@ $( document ).ready(function() {
         
         %if c.hmac_hashlib == -1:
         <tr>
-        <td class='description'><label for='hmac_self_hashlib'>${_("Hash algorithm")}</label></td>
-        <td><select id='hmac_self_hashlib' name='hmac_self_hashlib'>
-            <option value='sha1' selected>sha1</option>
-            <option value='sha256'>sha256</option>
-            <option value='sha512'>sha512</option>
-            </select></td>
+            <td class='description'><label for='hmac_self_hashlib'>${_("Hash algorithm")}</label></td>
+            <td><select id='hmac_self_hashlib' name='hmac_self_hashlib'>
+                <option value='sha1' selected>sha1</option>
+                <option value='sha256'>sha256</option>
+                <option value='sha512'>sha512</option>
+                </select></td>
         </tr>
         %endif
 		%if c.hmac_hashlib == 1:

@@ -28,8 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-08 20:55+0200\n"
-"PO-Revision-Date: 2014-10-08 20:59+0200\n"
+"POT-Creation-Date: 2014-10-09 00:44+0200\n"
+"PO-Revision-Date: 2014-10-09 00:45+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -145,7 +145,7 @@ msgstr ""
 "verwendet wird und den Token einzigartig macht. Bitte darauf achten!"
 
 msgid "Token Seed:"
-msgstr "Token Schlüssel"
+msgstr "Token Schlüssel:"
 
 msgid "Enter seed"
 msgstr "Schlüssel eingeben"
@@ -209,7 +209,7 @@ msgstr ""
 msgid "Form data not valid."
 msgstr "Die Formulardaten sind ungültig."
 
-msgid "Enroll your HOTP Token"
+msgid "Enroll your HOTP token"
 msgstr "Rollen Sie Ihren HOTP Token aus"
 
 msgid "Enter your token seed"
@@ -650,9 +650,6 @@ msgstr "TOTP Token ausrollen"
 msgid "Enroll your TOTP token"
 msgstr "Rollen Sie Ihren TOTP Token aus"
 
-msgid "digits"
-msgstr "Ziffern"
-
 msgid ""
 "The Google Authenticator supports only 6 digits, SHA1 hashing and time step "
 "30."
@@ -660,7 +657,7 @@ msgstr ""
 "Der Google Authenticator unterstützt nur 6 Ziffern, den SHA1 Hash "
 "Algorithmus und einen Zeitschritt von 30 Sekunden."
 
-msgid "enroll TOTP Token"
+msgid "enroll totp token"
 msgstr "TOTP Token ausrollen"
 
 msgid "Vasco Token"
@@ -2474,6 +2471,15 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "Enroll your TOTP Token"
+#~ msgstr "Rollen Sie Ihren HOTP Token aus"
+
+#~ msgid "digits"
+#~ msgstr "Ziffern"
+
+#~ msgid "enroll TOTP Token"
+#~ msgstr "TOTP Token ausrollen"
 
 #~ msgid "OtpAuth Softtoken Url"
 #~ msgstr "OtpAuth Softtoken Url"
