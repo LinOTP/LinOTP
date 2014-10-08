@@ -120,7 +120,50 @@ function totp_enroll_setup_defaults(config){
 		}
 	}
 	$('#totp_key').val('');
+    $('#totp_key_cb').prop('checked', false);
+    $('#totp_google_compliant').prop('checked', false);
+    cb_changed_deactivate('totp_key_cb',['totp_key']);
+    totp_google_constrains();
+	
 }
+
+/*
+ * helper function to controll the constrains if 
+ * token should be google authenticator compliant
+ */
+function totp_google_constrains() {
+    if ($('#totp_key_cb').is(':checked') === false) {
+        $('#totp_otplen').prop('disabled', false);
+        $('#totp_algorithm').prop('disabled', false);
+        $('#totp_timestep').prop('disabled', false);
+                
+        $('#totp_google_compliant').prop('disabled', true);
+        $('#totp_google_label').prop('disabled', true);
+        $('#totp_google_label').addClass('disabled');
+    } else {
+        $('#totp_google_compliant').prop('disabled', false);
+        $('#totp_google_label').prop('disabled', false);
+        $('#totp_google_label').removeClass('disabled');
+
+        if ($('#totp_google_compliant').is(":checked")) {
+            // disable otplen and hash algo selction
+            $('#totp_otplen').prop('disabled', true);
+            $('#totp_algorithm').prop('disabled', true);
+            $('#totp_timestep').prop('disabled', true);
+            // set defaults for ggogle auth
+            $('#totp_otplen').val('6');
+            $('#totp_algorithm').val("sha1");
+            $('#totp_timestep').val("30");
+        } else {
+            $('#totp_otplen').prop('disabled', false);
+            $('#totp_algorithm').prop('disabled', false);
+            $('#totp_timestep').prop('disabled', false);
+        }
+    }
+}
+
+
+
 /*
  * 'typ'_get_enroll_params()
  *
@@ -136,13 +179,13 @@ function totp_get_enroll_params(){
     if  ( $('#totp_key_cb').is(':checked') ) {
 		params['genkey']	= 1;
 		params['hashlib']	= 'sha1';
-		params['otplen']	= 6;
     } else {
         // OTP Key
     	params['otpkey'] 	= $('#totp_key').val();
     }
-    params['timeStep'] 	= $('#totp_timestep').val();
-
+    params['otplen']   = $('#totp_otplen').val();
+    params['timeStep'] = $('#totp_timestep').val();
+    params['hashlib']  = $('#totp_algorithm').val();
 	jQuery.extend(params, add_user_data());
 
     if ($('#totp_pin1').val() != '') {
@@ -151,37 +194,97 @@ function totp_get_enroll_params(){
 
     return params;
 }
+$( document ).ready(function() {
+
+
+
+$('#totp_key_cb').click(function() {
+   cb_changed_deactivate('totp_key_cb',['totp_key']);
+   $('#totp_google_compliant').prop('checked', false);
+   totp_google_constrains();
+});
+$('#totp_google_compliant').click(function() {
+   totp_google_constrains();
+});
+
+
+
+});
 </script>
-<p>${_("Please enter or copy the HMAC key.")}</p>
-<table><tr>
-<td><label for="totp_key" id='totp_key_label'>${_("HMAC key")}</label></td>
-<td><input type="text" name="totp_key" id="totp_key" value="" class="text ui-widget-content ui-corner-all" /></td>
+
+<hr>
+<table>
+<tr><td colspan="2">${_("Create a new OATH token - HMAC time based")}</td></tr>
+<tr class="space">
+    <th colspan="2" title='${_("The token seed is the secret that is used in the hmac algorithm to make your token unique. So please take care!")}'
+    >Token Seed:</th>
 </tr>
-<tr><td> </td><td><input type='checkbox' id='totp_key_cb' onclick="cb_changed('totp_key_cb',['totp_key','totp_key_label','totp_key_intro']);">
-<label for=totp_key_cb>${_("Generate HMAC key.")}</label></td>
+<tr>
+    <td class="description"><label for="totp_key" id='totp_key_label'>${_("Enter seed")}</label></td>
+    <td><input type="text" name="totp_key" id="totp_key" value="" 
+        class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td> </td><td class="description"> <label for="totp_key_cb">${_("or generate new one")}</label>
+     <input type='checkbox' id='totp_key_cb'> </td>
+    
+    
+</tr>
+<tr class="space">
+    <th colspan="2" title='${_("The hmac algorithm could be controlled by the following settings. Make sure that these settings match your hardware token or software token capabilities.")}'>
+    Token Settings:</th>
+</tr>
+<tr>
+    <td class="description"><label for="totp_otplen">${_("OTP Digits")}</label></td>
+    <td><select name="pintype" id="totp_otplen">
+            <option  selected value="6">6</option>
+            <option  value="8">8</option>
+    </select></td>
+</tr>
+<tr>
+    <td class="description"><label for="totp_algorithm">${_("Hash algorithm")}</label></td>
+    <td><select name="algorithm" id='totp_algorithm' >
+            <option selected value="sha1">sha1</option>
+            <option value="sha256">sha256</option>
+            <option value="sha512">sha512</option>
+    </select></td>
+</tr>
+<tr>
+    <td class="description">
+        <label for='totp_timestep' 
+               title='${_("The :timestep: defines the granularity of the time in seconds that is used in the hmac algorithm.")}'>
+        ${_("Time Step")}</label></td>
+    <td>
+    	<select id='totp_timestep'>
+    	<option value='60' >60 ${_("seconds")}</option>
+    	<option value='30' >30 ${_("seconds")}</option>
+    	</select></td>
+</tr>
+<tr>
+    <td class="description"><label for="enroll_totp_desc" id='enroll_totp_desc_label'>${_("Description")}</label></td>
+    <td><input type="text" name="enroll_totp_desc" id="enroll_totp_desc" value="web ui generated" class="text" /></td>
 </tr>
 
 <tr>
-<td><label for='totp_timestep'>${_("timeStep")}</label></td>
-<td>
-	<select id='totp_timestep'>
-	<option value='60' >60 ${_("seconds")}</option>
-	<option value='30' >30 ${_("seconds")}</option>
-	</select></td>
+    <td> </td>
+    <td><input type='checkbox' id='totp_google_compliant'>
+        <label for='totp_google_compliant' id="totp_google_label" 
+            title='The Google Authenticator supports only 6 digits, SHA1 hashing and 30 seconds timestep values.'
+                class="annotation">${_("Google Authenticator compliant")}</label>
+    </td>
 </tr>
+
+<tr class="space" title="Protect your token with a static pin">
+    <th colspan="2">Token Pin:</th></tr>
 <tr>
-    <td><label for="totp_pin1" id="totp_pin1_label">PIN</label></td>
+    <td class="description"><label for="totp_pin1" id="totp_pin1_label">PIN</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin1" id="totp_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr>
-    <td><label for="totp_pin2" id="totp_pin2_label">${_("PIN (again)")}</label></td>
+    <td class="description"><label for="totp_pin2" id="totp_pin2_label">${_("PIN (again)")}</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin2" id="totp_pin2"
             class="text ui-widget-content ui-corner-all" /></td
-</tr>
-<tr>
-    <td><label for="enroll_totp_desc" id='enroll_totp_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_totp_desc" id="enroll_totp_desc" value="webGUI_generated" class="text" /></td>
 </tr>
 </table>
 
@@ -280,10 +383,10 @@ function self_totp_submit(){
 			<td><input id='totp_secret' name='totp_secret' class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
 		</tr>
 		%if c.totp_hashlib == 1:
-			<input type=hidden id='totp_hashlib' value='sha1'>
+			<input type="hidden" id='totp_hashlib' value='sha1'>
 		%endif
 		%if c.totp_hashlib == 2:
-			<input type=hidden id='totp_hashlib' value='sha256'>
+			<input type="hidden" id='totp_hashlib' value='sha256'>
 		%endif
 		%if c.totp_hashlib == -1:
 		<tr>

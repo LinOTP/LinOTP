@@ -43,6 +43,51 @@ ${_("HMAC eventbased")}
 
 %if c.scope == 'enroll' :
 <script>
+/*
+ * 'typ'_enroll_setup_defaults()
+ *
+ * this method is called, before the dialog is shown
+ *
+ */
+function hmac_enroll_setup_defaults(config){
+    $('#hmac_key').val('');
+    $('#hmac_key_cb').prop('checked', false);
+    $('#hmac_google_compliant').prop('checked', false);
+    cb_changed_deactivate('hmac_key_cb',['hmac_key']);
+    google_constrains();
+}
+
+/*
+ * helper function to controll the constrains if 
+ * token should be google authenticator compliant
+ */
+function google_constrains() {
+    if ($('#hmac_key_cb').is(':checked') === false) {
+        $('#hmac_otplen').prop('disabled', false);
+        $('#hmac_algorithm').prop('disabled', false);
+        $('#hmac_google_compliant').prop('disabled', true);
+        $('#hmac_google_label').prop('disabled', true);
+        $('#hmac_google_label').addClass('disabled');
+    } else {
+        $('#hmac_google_compliant').prop('disabled', false);
+        $('#hmac_google_label').prop('disabled', false);
+        $('#hmac_google_label').removeClass('disabled');
+
+        if ($('#hmac_google_compliant').is(":checked")) {
+            // disable otplen and hash algo selction
+            $('#hmac_otplen').prop('disabled', true);
+            $('#hmac_algorithm').prop('disabled', true);
+            // set defaults for ggogle auth
+            $('#hmac_otplen').val('6');
+            $('#hmac_algorithm').val("sha1");
+        } else {
+            $('#hmac_otplen').prop('disabled', false);
+            $('#hmac_algorithm').prop('disabled', false);
+        }
+    }
+}
+
+
 
 /*
  * 'typ'_get_enroll_params()
@@ -51,11 +96,10 @@ ${_("HMAC eventbased")}
  * - it will return a hash of parameters for admin/init call
  *
  */
-
 function hmac_get_enroll_params(){
     var url = {};
     url['type'] = 'hmac';
-   	url['description'] = $('#enroll_hmac_desc').val();
+   	url['description'] = $('#enroll_hmac_desc22').val();
 
     // If we got to generate the hmac key, we do it here:
     if  ( $('#hmac_key_cb').is(':checked') ) {
@@ -77,28 +121,56 @@ function hmac_get_enroll_params(){
 
     return url;
 }
+$( document ).ready(function() {
+
+
+
+$('#hmac_key_cb').click(function() {
+   cb_changed_deactivate('hmac_key_cb',['hmac_key']);
+   $('#hmac_google_compliant').prop('checked', false);
+   google_constrains();
+});
+$('#hmac_google_compliant').click(function() {
+   google_constrains();
+});
+
+
+
+});
+
+
 </script>
 
-<p><span id='hmac_key_intro'>
-	${_("Please enter or copy the HMAC key.")}</span></p>
-<table><tr>
-	<td><label for="hmac_key" id='hmac_key_label'>${_("HMAC key")}</label></td>
-	<td><input type="text" name="hmac_key" id="hmac_key" value="" class="text ui-widget-content ui-corner-all" /></td>
-</tr><tr>
-	<td> </td><td><input type='checkbox' id='hmac_key_cb' onclick="cb_changed('hmac_key_cb',['hmac_key','hmac_key_label','hmac_key_intro']);">
-	<label for=hmac_key_cb>${_("Generate HMAC key.")}</label></td>
-</tr><tr>
-	<td><label for="hmac_otplen">${_("OTP Length")}</label></td>
+<hr>
+<table>
+<tr><td colspan=2><span id='hmac_key_intro'>${_("Create a new OATH token - HMAC event based")}</span></td></tr>
+<tr class="space">
+    <th colspan="2" title='${_("The token seed is the secret that is used in the hmac algorithm to make your token unique. So please take care!")}'
+    >${_("Token Seed:")}</th>
+</tr>
+<tr>
+    <td class="description"><label for="hmac_key" id='hmac_key_label'>${_("Enter seed")}</label></td>
+    <td><input type="text" name="hmac_key" id="hmac_key" value="" 
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr>
+<tr>
+    <td> </td><td class="description"> <label for=hmac_key_cb>${_("or generate new one")}</label>
+     <input type='checkbox' id='hmac_key_cb'> </td>
+</tr>
+<tr class="space">
+    <th colspan="2" title='${_("The hmac algorithm could be controlled by the following settings. Make sure that these settings match your hardware token or software token capabilities.")}'>
+    ${_("Token Settings:")}</th>
+</tr>
+<tr>
+	<td class="description"><label for="hmac_otplen">${_("OTP Digits")}</label></td>
 	<td><select name="pintype" id="hmac_otplen">
-			<option  value="4">4</option>
 			<option  selected value="6">6</option>
 			<option  value="8">8</option>
-			<option  value="10">10</option>
-			<option  value="12">12</option>
 	</select></td>
 
-</tr><tr>
-	<td><label for="hmac_algorithm">${_("Hash algorithm")}</label></td>
+</tr>
+<tr>
+	<td class="description"><label for="hmac_algorithm">${_("Hash algorithm")}</label></td>
 	<td><select name="algorithm" id='hmac_algorithm' >
 	        <option selected value="sha1">sha1</option>
 	        <option value="sha256">sha256</option>
@@ -106,18 +178,30 @@ function hmac_get_enroll_params(){
     </select></td>
 </tr>
 <tr>
-    <td><label for="hmac_pin1" id="hmac_pin1_label">PIN</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin1" id="hmac_pin1"
+    <td class="description"><label for="enroll_hmac_desc22" id='enroll_hmac_desc_label'>${_("Description")}</label></td>
+    <td><input type="text" id="enroll_hmac_desc22" 
+                value="web ui generated" class="text" /></td>
+</tr>
+<tr>
+    <td> </td>
+    <td><input type='checkbox' id='hmac_google_compliant'>
+        <label for='hmac_google_compliant' id="hmac_google_label" 
+                title='${_("The Google Authenticator supports only 6 digits and SHA1 hashing.")}'
+                class="annotation">${_("Google Authenticator compliant")}</label>
+    </td>
+</tr>
+
+<tr class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr>
+    <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("PIN")}</label></td>
+    <td><input type="password" autocomplete="off" 
+                onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin1" id="hmac_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr>
-    <td><label for="hmac_pin2" id="hmac_pin2_label">${_("PIN (again)")}</label></td>
+    <td class="description"><label for="hmac_pin2" id="hmac_pin2_label">${_("PIN (again)")}</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin2" id="hmac_pin2"
             class="text ui-widget-content ui-corner-all" /></td
-</tr>
-<tr>
-    <td><label for="enroll_hmac_desc" id='enroll_hmac_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_hmac_desc" id="enroll_hmac_desc" value="webGUI_generated" class="text" /></td>
 </tr>
 
 </table>

@@ -79,6 +79,7 @@ from linotp.model       import OcraChallenge
 from linotp.model.meta  import Session
 from linotp.lib.reply   import create_img
 from linotp.lib.apps    import create_google_authenticator_url
+from linotp.lib.apps    import create_google_authenticator
 from linotp.lib.apps    import create_oathtoken_url
 
 from linotp.lib.validate import check_pin
@@ -1131,12 +1132,15 @@ class TokenClass(object):
             if user is not None:
                 try:
 
-                    goo_url = create_google_authenticator_url(user.login,
-                                                  user.realm, otpkey,
-                                                  tok_type.lower(),
-                                                  serial=self.getSerial())
+                    p = {}
+                    p.update(params)
+                    p['otpkey'] = otpkey
+                    p['serial'] = self.getSerial()
+                    # label
+                    goo_url = create_google_authenticator(p)
+
                     response_detail["googleurl"] = {
-                          "description": _("URL for google Authenticator"),
+                          "description": _("OtpAuth Softtoken Url"),
                           "value" :     goo_url,
                           "img"   :     create_img(goo_url, width=250)
                           }

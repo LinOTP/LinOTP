@@ -28,7 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-08-26 11:08+0200\n"
+"POT-Creation-Date: 2014-10-08 14:56+0200\n"
+"PO-Revision-Date: 2014-10-08 15:08+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -91,8 +92,8 @@ msgstr ""
 msgid "OTP seed"
 msgstr "OTP Seed"
 
-msgid "URL for google Authenticator"
-msgstr "URL für Google Authenticator"
+msgid "OtpAuth Softtoken Url"
+msgstr "OtpAuth Softtoken Url"
 
 msgid "URL for OATH token"
 msgstr "URL für OATH-Token"
@@ -121,6 +122,9 @@ msgstr "E-Mail Token"
 msgid "E-mail address"
 msgstr "E-Mail-Adresse"
 
+msgid "PIN (again)"
+msgstr "PIN (wiederholen)"
+
 msgid "Description"
 msgstr "Beschreibung"
 
@@ -130,20 +134,58 @@ msgstr "HMAC Token Einstellungen"
 msgid "HMAC eventbased"
 msgstr "HMAC ereignisbasiert"
 
-msgid "Please enter or copy the HMAC key."
-msgstr "Bitte geben Sie das HMAC Seed ein."
+msgid "Create a new OATH token - HMAC event based"
+msgstr "Einen neuen OATH Token anlegen - HMAC Ereignis basiert"
 
-msgid "HMAC key"
-msgstr "HMAC Seed"
+msgid ""
+"The token seed is the secret that is used in the hmac algorithm to make your "
+"token unique. So please take care!"
+msgstr ""
+"Der Token Schlüssel ist das Geheimnis, dass in dem hmac Algorithmus "
+"verwendet wird und den Token einzigartig macht. Bitte darauf achten!"
 
-msgid "Generate HMAC key."
-msgstr "HMAC Seed vom Server generieren lassen."
+msgid "Token Seed:"
+msgstr "Token Schlüssel"
 
-msgid "OTP Length"
-msgstr "OTP-Länge"
+msgid "Enter seed"
+msgstr "Schlüssel eingeben"
+
+msgid "or generate new one"
+msgstr "oder einen neuen generieren"
+
+msgid ""
+"The hmac algorithm could be controlled by the following settings. Make sure "
+"that these settings match your hardware token or software token capabilities."
+msgstr ""
+"Der hmac Algorithmus kann durch die folgenden Einstellungen beeinflusst "
+"werden. Bitte stellen Sie sicher, dass diese Einstellungen zu ihrem Hardware "
+"Token bzw. zu den Fähigkeiten ihres Softtokens passen."
+
+msgid "Token Settings:"
+msgstr "Token Einstellungen:"
+
+msgid "OTP Digits"
+msgstr "Otp Ziffern"
 
 msgid "Hash algorithm"
 msgstr "Hash Algorithmus"
+
+msgid "The Google Authenticator supports only 6 digits and SHA1 hashing."
+msgstr ""
+"Der Google Authenticator unterstützt nur 6 Ziffern und den SHA1 Hash "
+"Algorithmus."
+
+msgid "Google Authenticator compliant"
+msgstr "Google Authenticator konform."
+
+msgid "Protect your token with a static pin"
+msgstr "Schützen Sie ihren Token durch einen festen Pin:"
+
+msgid "Token Pin:"
+msgstr "Token Pin:"
+
+msgid "PIN"
+msgstr "PIN"
 
 msgid "Enroll your HOTP Token"
 msgstr "Rollen Sie Ihren HOTP Token aus"
@@ -166,6 +208,9 @@ msgstr ""
 
 msgid "Form data not valid."
 msgstr "Die Formulardaten sind ungültig."
+
+msgid "Generate HMAC key."
+msgstr "HMAC Seed vom Server generieren lassen."
 
 msgid "Seed for HOTP token"
 msgstr "Seed des HOTP Token"
@@ -583,7 +628,17 @@ msgstr ""
 msgid "HMAC time based"
 msgstr "HMAC zeitbasiert"
 
-msgid "timeStep"
+msgid "Create a new OATH token - HMAC time based"
+msgstr "Einen neuen OATH token anlegen - HMAC Zeit basiert"
+
+msgid ""
+"The :timestep: defines the granularity of the time in seconds that is used "
+"in the hmac algorithm."
+msgstr ""
+"Der :Zeitschritt: definiert die Granularität der Zeit in Sekunden die in dem "
+"HMAC Algorithmus verwendet werden."
+
+msgid "Time Step"
 msgstr "Zeitschritt"
 
 msgid "seconds"
@@ -597,6 +652,9 @@ msgstr "Rollen Sie Ihren TOTP Token aus"
 
 msgid "Generate HMAC key"
 msgstr "Generiere HMAC Key"
+
+msgid "timeStep"
+msgstr "Zeitschritt"
 
 msgid "enroll TOTP Token"
 msgstr "TOTP Token ausrollen"
@@ -1147,9 +1205,6 @@ msgstr "Sie können die PINs zurücksetzen für Token"
 msgid "PIN type"
 msgstr "PIN Typ"
 
-msgid "PIN (again)"
-msgstr "PIN (wiederholen)"
-
 msgid "Set PIN"
 msgstr "PIN setzen"
 
@@ -1425,10 +1480,8 @@ msgstr ""
 msgid "Tagespasswort Token file"
 msgstr "Tagespasswort Tokendatei"
 
-msgid "Here you can upload the data file that came with your eToken."
-msgstr ""
-"Hier können Sie die Datei importieren, die mit Ihren eToken ausgeliefert "
-"wurde."
+msgid "Upload the eToken data file:"
+msgstr "eToken .dat Datei hochladen:"
 
 msgid "eToken dat file"
 msgstr "eToken .dat Datei"
@@ -1599,9 +1652,6 @@ msgstr "Zeitfenster"
 
 msgid "Time Shift"
 msgstr "Zeitversatz"
-
-msgid "Time Step"
-msgstr "Zeitschritt"
 
 msgid "set Hashlib"
 msgstr "setze Hash Algorithmus"
@@ -2104,6 +2154,9 @@ msgstr "Richtlinie speichern"
 msgid "delete policy"
 msgstr "Richtlinie löschen"
 
+msgid "clear"
+msgstr "löschen"
+
 msgid "count auth"
 msgstr "Authentisierungszähler"
 
@@ -2414,6 +2467,23 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "URL for google Authenticator"
+#~ msgstr "URL für Google Authenticator"
+
+#~ msgid "Please enter or copy the HMAC key."
+#~ msgstr "Bitte geben Sie das HMAC Seed ein."
+
+#~ msgid "HMAC key"
+#~ msgstr "HMAC Seed"
+
+#~ msgid "OTP Length"
+#~ msgstr "OTP-Länge"
+
+#~ msgid "Here you can upload the data file that came with your eToken."
+#~ msgstr ""
+#~ "Hier können Sie die Datei importieren, die mit Ihren eToken ausgeliefert "
+#~ "wurde."
 
 #~ msgid "Pin"
 #~ msgstr "PIN"
