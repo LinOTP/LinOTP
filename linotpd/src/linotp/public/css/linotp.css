@@ -25,3 +25,25 @@
 #load_tokenfile_form_dat input {
     margin:10px;
 }
+
+.disabled {
+    opacity:.2;
+}
+
+.annotation {
+    font-style: italic;
+    font-size: 90%;
+}
+tr.space > th
+{
+  padding-top: 0.7em;
+  text-align: left;
+  font-weight: normal;
+}
+td.description
+{
+  padding-left: 1em;
+  text-align: left;
+  font-weight: normal;
+  font-size: 90%;
+}

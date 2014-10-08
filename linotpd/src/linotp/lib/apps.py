@@ -34,11 +34,83 @@ This file contains utilities to generates the URL for smartphone apps like
 import binascii
 import base64
 
+
+import urllib
+
 import logging
 log = logging.getLogger(__name__)
 
 from linotp.lib.policy import get_tokenlabel
 from urllib import quote
+
+#######################################
+def create_google_authenticator(param):
+    '''
+    create url for google authenticator
+
+    :param param: request dictionary
+    :return: string with google url
+    '''
+
+    serial = param.get("serial", None)
+
+    digits = param.get("otplen", None)
+
+    otpkey = param.get("otpkey", None)
+    key = base64.b32encode(binascii.unhexlify(otpkey))
+    key = key.strip("=")
+
+    algo = param.get("hashlib", "sha1") or "sha1"
+    algo = algo.upper()
+    if algo not in['SHA1', 'SHA256', 'SHA512' , 'MD5']:
+        algo = 'SHA1'
+
+    typ = param.get("type", 'hotp')
+    if typ.lower() == 'hmac':
+        typ = 'hotp'
+    if not typ.lower() in ['totp', 'hotp']:
+        raise Exception('not supported otpauth token type: %r' % typ)
+
+    url_param = {}
+    url_param['secret'] = key
+    if digits != '6':
+        url_param['digits'] = digits
+    url_param['counter'] = 0
+    if algo != 'SHA1':
+        url_param['algorithm'] = algo
+
+    if 'timeStep' in param:
+        url_param['period'] = param.get('timeStep')
+
+
+    ga = "otpauth://%s/%s" % (typ, serial)
+    qg_param = urllib.urlencode(url_param)
+
+    base_len = len(ga) + len(qg_param)
+    max_len = 400
+    allowed_label_len = max_len - base_len
+    log.debug("[create_google_authenticator_url] we got %s characters"
+              " left for the token label" % str(allowed_label_len))
+
+    # show the user login in the token prefix
+    if len(param.get('user.login', '')) > 0:
+        label = get_tokenlabel(param.get('user.login', ''), param.get('user.realm', ''), serial)
+        label = label[0:allowed_label_len]
+    else:
+        label = serial
+        if len(param.get('description', '')) > 0:
+            label = label + ':' + param.get('description')
+        label = label[0:allowed_label_len]
+
+    url_label = quote(label)
+    ga = "otpauth://%s/%s" % (typ, url_label)
+    ga = "%s?%s" % (ga, qg_param)
+
+    log.debug("[_create_google_authenticator] google authenticator: %r" % ga[:20])
+    return ga
+
+
+
 
 
 
@@ -62,7 +134,7 @@ def create_google_authenticator_url(user, realm, key, type="hmac", serial=""):
     # also strip the padding =, as it will get problems with the google app.
     otpkey = base64.b32encode(key_bin).strip('=')
 
-    #'url' : "otpauth://hotp/%s?secret=%s&counter=0" % ( user@realm, otpkey )
+    # 'url' : "otpauth://hotp/%s?secret=%s&counter=0" % ( user@realm, otpkey )
     base_len = len("otpauth://%s/?secret=%s&counter=0" % (type, otpkey))
     max_len = 119
     allowed_label_len = max_len - base_len
@@ -76,7 +148,7 @@ def create_google_authenticator_url(user, realm, key, type="hmac", serial=""):
     return "otpauth://%s/%s?secret=%s&counter=0" % (type, url_label, otpkey)
 
 def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
-    #'url' : 'oathtoken:///addToken?name='+serial +
+    # 'url' : 'oathtoken:///addToken?name='+serial +
     #                '&key='+otpkey+
     #                '&timeBased=false&counter=0&numDigites=6&lockdown=true',
 
