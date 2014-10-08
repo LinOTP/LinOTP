@@ -237,6 +237,7 @@ class SelfserviceController(BaseController):
 
             add_local_policies()
             c.otplen = -1
+            c.totp_len = -1
 
             return response
 
@@ -1106,15 +1107,15 @@ class SelfserviceController(BaseController):
             # check selfservice authorization
             #
             #TODO: use get_cleint_policy instead
-            #Cornelius Kölbel        Apr 18 7:31 PM
+            # Cornelius Kölbel        Apr 18 7:31 PM
             #
             #Hier sollte nicht mehr die Funktion getPolicy verwendet werden sondern die Funktion
             #
             #get_client_policy
             #
-            #Wenn ich genau wüsste, was die Funktion token_call macht (gräßlicher Name) dann könnte ich mehr dazu sagen.
+            # Wenn ich genau wüsste, was die Funktion token_call macht (gräßlicher Name) dann könnte ich mehr dazu sagen.
             #
-            #Die Funktion getPolicy ist zu grobschlächtig ;-) get_client_policy liefert die Policies auch in Abhängigkeit vom Benutzer, vom Realm und vom anfragenden Client zurück.
+            # Die Funktion getPolicy ist zu grobschlächtig ;-) get_client_policy liefert die Policies auch in Abhängigkeit vom Benutzer, vom Realm und vom anfragenden Client zurück.
 
             pols = getPolicy({ "realm" : self.authUser.realm,
                                 "scope" : "selfservice" })
@@ -1124,9 +1125,9 @@ class SelfserviceController(BaseController):
                 actions_in = action.split(',')
 
                 ## TODO: verify
-                ## Cornelius Kölbel        Apr 18 7:31 PM
+                # # Cornelius Kölbel        Apr 18 7:31 PM
                 ##
-                ## Das könnte schlecht sein, wenn es eine Action gibt, die irgendwie so lautet:
+                # # Das könnte schlecht sein, wenn es eine Action gibt, die irgendwie so lautet:
                 ##
                 ## sms_string="Hallo und viel Freude"
                 ##

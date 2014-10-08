@@ -1140,7 +1140,7 @@ class TokenClass(object):
                     goo_url = create_google_authenticator(p)
 
                     response_detail["googleurl"] = {
-                          "description": _("OtpAuth Softtoken Url"),
+                          "description": _("OTPAuth Url"),
                           "value" :     goo_url,
                           "img"   :     create_img(goo_url, width=250)
                           }

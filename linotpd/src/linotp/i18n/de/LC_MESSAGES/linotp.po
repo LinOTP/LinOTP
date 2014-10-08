@@ -28,8 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-08 14:56+0200\n"
-"PO-Revision-Date: 2014-10-08 15:08+0200\n"
+"POT-Creation-Date: 2014-10-08 20:55+0200\n"
+"PO-Revision-Date: 2014-10-08 20:59+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -92,8 +92,8 @@ msgstr ""
 msgid "OTP seed"
 msgstr "OTP Seed"
 
-msgid "OtpAuth Softtoken Url"
-msgstr "OtpAuth Softtoken Url"
+msgid "OTPAuth Url"
+msgstr "OTPAuth Url"
 
 msgid "URL for OATH token"
 msgstr "URL für OATH-Token"
@@ -187,8 +187,8 @@ msgstr "Token Pin:"
 msgid "PIN"
 msgstr "PIN"
 
-msgid "Enroll your HOTP Token"
-msgstr "Rollen Sie Ihren HOTP Token aus"
+msgid "Enroll HOTP Token"
+msgstr "HOTP Token ausrollen"
 
 msgid "required input field"
 msgstr "Benötigtes Eingabefeld"
@@ -209,14 +209,14 @@ msgstr ""
 msgid "Form data not valid."
 msgstr "Die Formulardaten sind ungültig."
 
-msgid "Generate HMAC key."
-msgstr "HMAC Seed vom Server generieren lassen."
+msgid "Enroll your HOTP Token"
+msgstr "Rollen Sie Ihren HOTP Token aus"
 
-msgid "Seed for HOTP token"
-msgstr "Seed des HOTP Token"
+msgid "Enter your token seed"
+msgstr "Schlüssel eingeben"
 
-msgid "hashlib"
-msgstr "Hash Algorithmus"
+msgid "self enrolled"
+msgstr "selbst erstellt"
 
 msgid "enroll hmac token"
 msgstr "HMAC Token ausrollen"
@@ -644,17 +644,21 @@ msgstr "Zeitschritt"
 msgid "seconds"
 msgstr "Sekunden"
 
-msgid "Register totp"
-msgstr "TOTP registrieren"
+msgid "Enroll TOTP Token"
+msgstr "TOTP Token ausrollen"
 
-msgid "Enroll your TOTP Token"
+msgid "Enroll your TOTP token"
 msgstr "Rollen Sie Ihren TOTP Token aus"
 
-msgid "Generate HMAC key"
-msgstr "Generiere HMAC Key"
+msgid "digits"
+msgstr "Ziffern"
 
-msgid "timeStep"
-msgstr "Zeitschritt"
+msgid ""
+"The Google Authenticator supports only 6 digits, SHA1 hashing and time step "
+"30."
+msgstr ""
+"Der Google Authenticator unterstützt nur 6 Ziffern, den SHA1 Hash "
+"Algorithmus und einen Zeitschritt von 30 Sekunden."
 
 msgid "enroll TOTP Token"
 msgstr "TOTP Token ausrollen"
@@ -2157,6 +2161,9 @@ msgstr "Richtlinie löschen"
 msgid "clear"
 msgstr "löschen"
 
+msgid "hashlib"
+msgstr "Hash Algorithmus"
+
 msgid "count auth"
 msgstr "Authentisierungszähler"
 
@@ -2468,6 +2475,24 @@ msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
 
+#~ msgid "OtpAuth Softtoken Url"
+#~ msgstr "OtpAuth Softtoken Url"
+
+#~ msgid "Generate HMAC key."
+#~ msgstr "HMAC Seed vom Server generieren lassen."
+
+#~ msgid "Seed for HOTP token"
+#~ msgstr "Seed des HOTP Token"
+
+#~ msgid "Register totp"
+#~ msgstr "TOTP registrieren"
+
+#~ msgid "Generate HMAC key"
+#~ msgstr "Generiere HMAC Key"
+
+#~ msgid "timeStep"
+#~ msgstr "Zeitschritt"
+
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
 
@@ -2520,9 +2545,6 @@ msgstr ""
 
 #~ msgid "check PIN locally"
 #~ msgstr "Überprüfe PIN"
-
-#~ msgid "enroll HOTP Token"
-#~ msgstr "HOTP Token ausrollen"
 
 #~ msgid "Seed for TOTP token"
 #~ msgstr "Seed des TOTP Token"

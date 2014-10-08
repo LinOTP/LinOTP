@@ -47,3 +47,7 @@ td.description
   font-weight: normal;
   font-size: 90%;
 }
+
+h2 {
+    color: #fe8625;
+}

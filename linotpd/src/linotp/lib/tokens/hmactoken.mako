@@ -212,7 +212,7 @@ $('#hmac_google_compliant').click(function() {
 
 
 %if c.scope == 'selfservice.title.enroll':
-${_("Enroll your HOTP Token")}
+${_("Enroll HOTP Token")}
 %endif
 
 
@@ -234,15 +234,16 @@ jQuery.validator.addMethod("hmac_secret", function(value, element, param){
 $('#form_enroll_hmac').validate({
     debug: true,
     rules: {
-        hmac_secret: {
-            minlength: 40,
-            maxlength: 64,
-            number: false,
-            hmac_secret: true,
+        hmac_self_secret: {
             required: function() {
-                // When the checkbox is checked, this field is NOT required
-                // and vice versa
-                return ! $('#hmac_key_cb2').is(':checked');
+                if ($('#hmac_key_cb2').is(':checked')) { return true;}
+                var val = $('#hmac_self_secret').val();
+                if (val.length == 0 ) {return false}
+                var hash = $('#hmac_self_hashlib').val();
+                if ((hash == 'sha1') && (val.length < 20)) {return false}
+                if ((hash == 'sha256') && (val.length < 32)) {return false}
+                if ((hash == 'sha512') && (val.length < 64)) {return false}
+                return true;
             }
         }
     }
@@ -253,17 +254,21 @@ function self_hmac_get_param()
 	var urlparam = {};
 	var typ = 'hmac';
 
-    if  ( $('#hmac_key_cb2').attr('checked') ) {
+    if  ( $('#hmac_key_cb2').is(':checked') ) {
     	urlparam['genkey'] = 1;
     } else {
         // OTP Key
-        urlparam['otpkey'] = $('#hmac_secret').val();
+        urlparam['otpkey'] = $('#hmac_self_secret').val();
     }
 
 	urlparam['type'] 	= typ;
-	urlparam['hashlib'] = $('#hmac_hashlib').val();
-	urlparam['otplen'] 	= 6;
-	urlparam['description'] = $("#hmac_self_desc").val();
+	urlparam['hashlib'] = $('#hmac_self_hashlib').val();
+	urlparam['otplen'] 	= $('#hmac_self_otplen').val();
+	
+	var desc = $("#hmac_self_desc").val();
+	if (desc.length > 0) {
+	   urlparam['description'] = $("#hmac_self_desc").val();
+	}
 
 	return urlparam;
 }
@@ -274,56 +279,130 @@ function self_hmac_clear()
 
 }
 function self_hmac_submit(){
+    
+    var ret = false;
+    var params =  self_hmac_get_param();
+    
+    if  ( $('#hmac_key_cb2').is(':checked') === false 
+           && $('#form_enroll_hmac').valid() === false) {
+        alert('${_("Form data not valid.")}');
+        return ret
+    } 
+    enroll_token( params );
+    // reset the form
+    $("#hmac_key_cb2").prop("checked", false);
+    $('#hmac_self_secret').val('');
+    $('#hmac_self_google_compliant').prop("checked", false);
+    cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
+    $('#hmac_self_otplen').val('6');
+    $('#hmac_self_hashlib').val("sha1");
+    hmac_self_google_constrains()
+    ret = true;
 
-	var ret = false;
-	var params =  self_hmac_get_param();
-
-	if  ( $('#hmac_key_cb2').attr('checked') === undefined && $('#form_enroll_hmac').valid() === false) {
-		alert('${_("Form data not valid.")}');
-	} else {
-		enroll_token( params );
-		$("#hmac_key_cb2").prop("checked", false);
-		cb_changed('hmac_key_cb2',['hmac_secret','hmac_key_label2']);
-		ret = true;
-	}
 	return ret;
 
 }
+
+function hmac_self_google_constrains() {
+
+    if ($('#hmac_self_google_compliant').is(":checked")) {
+        // disable otplen and hash algo selction
+        $('#hmac_self_otplen').prop('disabled', true);
+        $('#hmac_self_hashlib').prop('disabled', true);
+        // set defaults for ggogle auth
+        $('#hmac_self_otplen').val('6');
+        $('#hmac_self_hashlib').val("sha1");
+    } else {
+        $('#hmac_self_otplen').prop('disabled', false);
+        $('#hmac_self_hashlib').prop('disabled', false);
+    }
+}
+
+
+$( document ).ready(function() {
+    
+    $('#hmac_key_cb2').click(function() {
+        cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
+    });
+    $('#hmac_self_google_compliant').click(function() {
+        hmac_self_google_constrains();
+    });
+
+
+    $('#button_enroll_hmac').click(function (){
+        self_hmac_submit();
+    });
+
+});
+
 </script>
-<h1>${_("Enroll your HOTP Token")}</h1>
+<h2>${_("Enroll your HOTP Token")}</h2>
 <div id='enroll_hmac_form'>
 	<form class="cmxform" id='form_enroll_hmac'>
 	<fieldset>
-		<table><tr>
-			<td><label for='hmac_key_cb'>${_("Generate HMAC key.")+':'}</label></td>
-			<td><input type='checkbox' name='hmac_key_cb2' id='hmac_key_cb2' onclick="cb_changed('hmac_key_cb2',['hmac_secret','hmac_key_label2']);"></td>
-		</tr><tr>
-			<td><label id='hmac_key_label2' for='hmac_secret'>${_("Seed for HOTP token")}</label></td>
-			<td><input id='hmac_secret' name='hmac_secret' class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
-		</tr>
+		<table>
+		<tr><td colspan="2">${("Token Seed:")}</td></tr>
+        <tr>
+            <td class="description"><label id='hmac_self_secret_label' 
+                    for='hmac_self_secret'>${_("Enter your token seed")}</label></td>
+            <td><input id='hmac_self_secret' name='hmac_self_secret' 
+                class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
+        </tr>
+        <tr>
+            <td> </td>
+        	<td><label for='hmac_key_cb2'>${_("or generate new one")}</label>
+        	     <input type='checkbox' id='hmac_key_cb2' name='hmac_key_cb2'>
+        	</td>
+        </tr>
+        
+        <tr><td class="space">${("Token Settings:")}</td></tr>
+        %if c.otplen == -1:
+        <tr>
+        <td class='description'><label for='hmac_self_otplen'>${_("OTP Digits")}</label></td>
+        <td><select id='hmac_self_otplen' name='hmac_self_otplen'>
+            <option value='6' selected>6</option>
+            <option value='8'>8</option>
+            </select></td>
+        </tr>
+        %else:
+            <input type='hidden' id='hmac_self_otplen' value='${c.otplen}'>
+        %endif
+        
+        %if c.hmac_hashlib == -1:
+        <tr>
+        <td class='description'><label for='hmac_self_hashlib'>${_("Hash algorithm")}</label></td>
+        <td><select id='hmac_self_hashlib' name='hmac_self_hashlib'>
+            <option value='sha1' selected>sha1</option>
+            <option value='sha256'>sha256</option>
+            <option value='sha512'>sha512</option>
+            </select></td>
+        </tr>
+        %endif
 		%if c.hmac_hashlib == 1:
-			<input type=hidden id='hmac_hashlib' name='hmac_hashlib' value='sha1'>
+			<input type=hidden id='hmac_self_hashlib' value='sha1'>
 		%endif
 		%if c.hmac_hashlib == 2:
-			<input type=hidden id='hmac_hashlib' name='hmac_hashlib' value='sha256'>
+			<input type=hidden id='hmac_self_hashlib' value='sha256'>
 		%endif
-		%if c.hmac_hashlib == -1:
-		<tr>
-		<td><label for='hmac_hashlib'>${_("hashlib")}</label></td>
-		<td><select id='hmac_hashlib' name='hmac_hashlib'>
-			<option value='sha1' selected>sha1</option>
-			<option value='sha256'>sha256</option>
-			</select></td>
-		</tr>
-		%endif
-		<tr>
-		    <td><label for="hmac_self_desc" id='hmac_self_desc_label'>${_("Description")}</label></td>
-		    <td><input type="text" name="hmac_self_desc" id="hmac_self_desc" value="self enrolled" class="text" /></td>
-		</tr>
+        %if c.hmac_hashlib == 3:
+            <input type=hidden id='hmac_self_hashlib' value='sha512'>
+        %endif
 
+        <tr>
+            <td class='description'><label for="hmac_self_desc" id='hmac_self_desc_label'>${_("Description")}</label></td>
+            <td><input type="text" name="hmac_self_desc" id="hmac_self_desc" class="text" placeholder="${_('self enrolled')}"/></td>
+        </tr>
+        <tr>
+            <td> </td>
+            <td><input type='checkbox' id='hmac_self_google_compliant' name='hmac_self_google_compliant'>
+                <label for='hmac_self_google_compliant' id="hmac_self_google_label" 
+                        title='${_("The Google Authenticator supports only 6 digits and SHA1 hashing.")}'
+                        class="annotation">${_("Google Authenticator compliant")}</label>
+            </td>
+        </tr>
         </table>
-	    <button class='action-button' id='button_enroll_hmac'
-	    	    onclick="self_hmac_submit();">${_("enroll hmac token")}</button>
+
+        <button class='action-button' id='button_enroll_hmac'>${_("enroll hmac token")}</button>
 
     </fieldset>
     </form>

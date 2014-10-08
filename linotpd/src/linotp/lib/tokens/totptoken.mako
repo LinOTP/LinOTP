@@ -292,7 +292,7 @@ $('#totp_google_compliant').click(function() {
 
 
 %if c.scope == 'selfservice.title.enroll':
-${_("Register totp")}
+${_("Enroll TOTP Token")}
 %endif
 
 
@@ -314,15 +314,16 @@ jQuery.validator.addMethod("totp_secret", function(value, element, param){
 $('#form_enroll_totp').validate({
     debug: true,
     rules: {
-        totp_secret: {
-            minlength: 40,
-            maxlength: 64,
-            number: false,
-            totp_secret: true,
+        totp_self_secret: {
             required: function() {
-                // When the checkbox is checked, this field is NOT required
-                // and vice versa
-                return ! $('#totp_key_cb2').is(':checked');
+                if ($('#totp_key_cb2').is(':checked')) { return true;}
+                var val = $('#totp_self_secret').val();
+                if (val.length == 0 ) {return false}
+                var hash = $('#totp_self_hashlib').val();
+                if ((hash == 'sha1') && (val.length < 20)) {return false}
+                if ((hash == 'sha256') && (val.length < 32)) {return false}
+                if ((hash == 'sha512') && (val.length < 64)) {return false}
+                return true;
             }
         }
     }
@@ -333,18 +334,22 @@ function self_totp_get_param()
 	var urlparam = {};
 	var typ = 'totp';
 
-    if  ( $('#totp_key_cb2').attr('checked') ) {
+    if  ( $('#totp_key_cb2').is(":checked") ) {
     	urlparam['genkey'] = 1;
     } else {
         // OTP Key
-        urlparam['otpkey'] = $('#totp_secret').val();
+        urlparam['otpkey'] = $('#totp_self_secret').val();
     }
 
 	urlparam['type'] 	= typ;
-	urlparam['hashlib'] = $('#totp_hashlib').val();
-	urlparam['otplen'] 	= 6;
-	urlparam['timestep'] 	= $('#totp_timestep').val();
-	urlparam['description'] = $("#totp_self_desc").val();
+	urlparam['hashlib'] = $('#totp_self_hashlib').val();
+	urlparam['otplen'] 	= $('#totp_self_otplen').val();
+	urlparam['timeStep'] 	= $('#totp_self_timestep').val();
+
+    var desc = $("#totp_self_desc").val();
+    if (desc.length > 0) {
+       urlparam['description'] = $("#totp_self_desc").val();
+    }
 
 	return urlparam;
 }
@@ -359,63 +364,142 @@ function self_totp_submit(){
 	var ret = false;
 	var params =  self_totp_get_param();
 
-	if  ( $('#totp_key_cb2').attr('checked') === undefined && $('#form_enroll_totp').valid() === false) {
+	if  ( $('#totp_key_cb2').is(":checked") === undefined && 
+	       $('#form_enroll_totp').valid() === false) {
 		alert('${_("Form data not valid.")}');
-	} else {
-		enroll_token( params );
-		$("#totp_key_cb2").prop("checked", false);
-		cb_changed('totp_key_cb2',['totp_secret','totp_key_label2']);
-		ret = true;
-	}
-	return ret;
+		return false;
+	} 
+	enroll_token( params );
+    // reset the form
+    $("#totp_key_cb2").prop("checked", false);
+    $('#totp_self_secret').val('');
+    $('#totp_self_google_compliant').prop("checked", false);
+    cb_changed_deactivate('totp_key_cb2',['totp_self_secret']);
+    $('#totp_self_otplen').val('6');
+    $('#totp_self_hashlib').val("sha1");
+    $('#totp_self_timestep').val('30');
+    totp_self_google_constrains()
+
+	ret = true;
+
+    return ret;
 
 }
+
+function totp_self_google_constrains() {
+
+    if ($('#totp_self_google_compliant').is(":checked")) {
+        // disable otplen and hash algo selction
+        $('#totp_self_otplen').prop('disabled', true);
+        $('#totp_self_hashlib').prop('disabled', true);
+        $('#totp_self_timestep').prop('disabled', true);
+        // set defaults for ggogle auth
+        $('#totp_self_otplen').val('6');
+        $('#totp_self_hashlib').val("sha1");
+        $('#totp_self_timestep').val('30');
+    } else {
+        $('#totp_self_otplen').prop('disabled', false);
+        $('#totp_self_hashlib').prop('disabled', false);
+        $('#totp_self_timestep').prop('disabled', false);
+    }
+}
+
+
+$( document ).ready(function() {
+    
+    $('#totp_key_cb2').click(function() {
+        cb_changed_deactivate('totp_key_cb2',['totp_self_secret']);
+    });
+    $('#totp_self_google_compliant').click(function() {
+        totp_self_google_constrains();
+    });
+
+
+    $('#button_enroll_totp').click(function (){
+        self_totp_submit();
+    });
+
+});
+
 </script>
-<h1>${_("Enroll your TOTP Token")}</h1>
+<h2>${_("Enroll your TOTP token")}</h2>
 <div id='enroll_totp_form'>
 	<form class="cmxform" id='form_enroll_totp'>
 	<fieldset>
-		<table><tr>
-			<td><label for='totp_key_cb'>${_("Generate HMAC key")}</label></td>
-			<td><input type='checkbox' name='totp_key_cb2' id='totp_key_cb2' onclick="cb_changed('totp_key_cb2',['totp_secret','totp_key_label2']);"></td>
-		</tr><tr>
-			<td><label id='totp_key_label2' for='totp_secret'>${_("Seed for HOTP token")}</label></td>
-			<td><input id='totp_secret' name='totp_secret' class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
+		<table>
+        <tr><td colspan="2">${("Token Seed:")}</td></tr>
+		<tr>
+			<td class="description"><label id='totp_key_label2' 
+			    for='totp_self_secret'>${_("Enter your token seed")}</label></td>
+			<td><input id='totp_self_secret' name='totp_self_secret' 
+			    class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
 		</tr>
+        <tr>
+            <td> </td>
+            <td><label for='totp_key_cb2'>${_("or generate new one")}</label>
+                <input type='checkbox' name='totp_key_cb2' id='totp_key_cb2'>
+            </td>
+        </tr>
+        
+        <tr><td class="space">${("Token Settings:")}</td></tr>
+        %if c.totp_len == -1:
+            <tr>
+            <td class="description"><label for='totp_self_otplen'>${_("OTP Digits")}</label></td>
+            <td><select id='totp_self_otplen'>
+                <option value='6' selected>6 ${_("digits")}</option>
+                <option value='8'>8 ${_("digits")}</option>
+                </select></td>
+            </tr>
+        %else:
+            <input type='hidden' id='totp_self_otplen' value='${c.totp_len}'>
+        %endif
+        %if c.totp_hashlib == -1:
+        <tr>
+        <td class='description'><label for='totp_self_hashlib'>${_("Hash algorithm")}</label></td>
+        <td><select id='totp_self_hashlib'>
+            <option value='sha1' selected>sha1</option>
+            <option value='sha256'>sha256</option>
+            <option value='sha256'>sha512</option>
+            </select></td>
+        </tr>
+        %endif
 		%if c.totp_hashlib == 1:
-			<input type="hidden" id='totp_hashlib' value='sha1'>
+			<input type="hidden" id='totp_self_hashlib' value='sha1'>
 		%endif
 		%if c.totp_hashlib == 2:
-			<input type="hidden" id='totp_hashlib' value='sha256'>
+			<input type="hidden" id='totp_self_hashlib' value='sha256'>
 		%endif
-		%if c.totp_hashlib == -1:
-		<tr>
-		<td><label for='totp_hashlib'>${_("hashlib")}</label></td>
-		<td><select id='totp_hashlib'>
-			<option value='sha1' selected>sha1</option>
-			<option value='sha256'>sha256</option>
-			</select></td>
-		</tr>
-		%endif
+        %if c.totp_hashlib == 3:
+            <input type="hidden" id='totp_self_hashlib' value='sha512'>
+        %endif
+
 
 		%if c.totp_timestep == -1:
 			<tr>
-			<td><label for='totp_timestep'>${_("timeStep")}</label></td>
-			<td><select id='totp_timestep'>
+			<td class="description"><label for='totp_self_timestep'>${_("Time Step")}</label></td>
+			<td><select id='totp_self_timestep'>
 				<option value='30' selected>30 ${_("seconds")}</option>
 				<option value='60'>60 ${_("seconds")}</option>
 				</select></td>
 			</tr>
 		%else:
-			<input type='hidden' id='totp_timestep' value='${c.totp_timestep}'>
+			<input type='hidden' id='totp_self_timestep' value='${c.totp_timestep}'>
 		%endif
+
 		<tr>
-		    <td><label for="totp_self_desc" id='totp_self_desc_label'>${_("Description")}</label></td>
-		    <td><input type="text" name="totp_self_desc" id="totp_self_desc" value="self enrolled" class="text" /></td>
+		    <td class="description"><label for="totp_self_desc" id='totp_self_desc_label'>${_("Description")}</label></td>
+		    <td><input type="text" name="totp_self_desc" id="totp_self_desc" placeholder="${_('self enrolled')}" class="text" /></td>
+		</tr>
+		<tr>
+        <td> </td>
+        <td><input type='checkbox' id='totp_self_google_compliant' name='totp_self_google_compliant'>
+            <label for='totp_self_google_compliant' id="totp_self_google_label" 
+                    title='${_("The Google Authenticator supports only 6 digits, SHA1 hashing and time step 30.")}'
+                    class="annotation">${_("Google Authenticator compliant")}</label>
+        </td>
 		</tr>
         </table>
-	    <button class='action-button' id='button_enroll_totp'
-	    	    onclick="self_totp_submit();">${_("enroll TOTP Token")}</button>
+	    <button class='action-button' id='button_enroll_totp'>${_("enroll TOTP Token")}</button>
 
     </fieldset>
     </form>

@@ -306,7 +306,7 @@ function enroll_token(params) {
                         if (detail.hasOwnProperty('otpkey')) {
                             try {
                                 if (detail.hasOwnProperty('googleurl')) {
-                                    details = details + '<li>Google QR Code</li>';
+                                    details = details + '<li>OTPAuth QR Code</li>';
                                     details = details + '<p>' + detail.googleurl.img + '</p>';
                                     details = details + '<li>' + detail.googleurl.value + '</li>';
                                 }
