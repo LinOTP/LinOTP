@@ -28,8 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-09 00:44+0200\n"
-"PO-Revision-Date: 2014-10-09 00:45+0200\n"
+"POT-Creation-Date: 2014-10-09 17:53+0200\n"
+"PO-Revision-Date: 2014-10-09 18:04+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -65,7 +65,7 @@ msgid "Subscription expired!"
 msgstr "Die Subskription ist abgelaufen!"
 
 msgid "License volume exceeded:"
-msgstr "Lizenz Volumen überschritten"
+msgstr "Lizenz Volumen überschritten:"
 
 msgid "tokens used"
 msgstr "verwendete Token"
@@ -135,7 +135,7 @@ msgid "HMAC eventbased"
 msgstr "HMAC ereignisbasiert"
 
 msgid "Create a new OATH token - HMAC event based"
-msgstr "Einen neuen OATH Token anlegen - HMAC Ereignis basiert"
+msgstr "Einen neuen OATH Token anlegen - HMAC ereignisbasiert"
 
 msgid ""
 "The token seed is the secret that is used in the hmac algorithm to make your "
@@ -2390,67 +2390,59 @@ msgstr "OTP Tokenzuweisung aufheben"
 msgid "Provision your Google Authenticator"
 msgstr "Google Authenticator registrieren"
 
-msgid ""
-"1. You first need to install the google authenticator to your Android or "
-"iPhone."
-msgstr ""
-"1. Sie müssen erst den Google Authenticator auf Ihrem Android oder iPhone "
-"installieren."
+msgid "The Google Authenticator is an OTP token for smartphones "
+msgstr "Der Google Authenticator ist ein OTP Token für Smartphones "
 
-msgid "link for Android"
-msgstr "Link für Android"
+msgid "which is available in the appropriate app stores."
+msgstr "den es in den entsprechenden App Stores gibt."
 
-msgid "link for iPhone"
-msgstr "Link für iPhone"
+msgid "Provision your "
+msgstr "Anlegen eines "
 
-msgid ""
-"Using the QR code you can directly go to install the google authenticator on "
-"your iPhone."
-msgstr ""
-"Indem Sie mit Ihrem iPhone den QR Code einscannen, können Sie direkt den "
-"Google Authenticator auf Ihrem iPhone installieren."
-
-msgid "2. Then you may create a profile."
-msgstr "2. Dann können Sie Ihren Token/das Profil erzeugen."
-
-msgid "event based"
-msgstr "HMAC ereignisbasiert"
-
-msgid "time based"
-msgstr "HMAC zeitbasiert"
-
-msgid "enroll Google Authenticator"
-msgstr "Google Authenticator registrieren"
-
-msgid "3."
-msgstr "3."
-
-msgid "Google Authenticator"
+msgid " Google Authenticator"
 msgstr "Google Authenticator"
 
-msgid "successfully created!"
-msgstr "erfolgreich erzeugt!"
+msgid " in LinOTP:"
+msgstr "in LinOTP"
 
-msgid "Click on this link to install the profile to your Android or iPhone:"
+msgid "Choose your token profile "
+msgstr "Bitte wählen Sie ihren Token Type "
+
+msgid "event based"
+msgstr "ereignisbasiert"
+
+msgid "time based"
+msgstr "zeitbasiert"
+
+msgid "and"
+msgstr "und"
+
+msgid "enroll it!"
+msgstr "rollen Sie ihn aus!"
+
+msgid "Google Authenticator token successfully created!"
+msgstr "Google Authenticator Token wurde erfolgreich angelegt!"
+
+msgid "Load your Google Authenticator profile:"
+msgstr "Laden des Google Authenticator Profils:"
+
+msgid "To install the profile on your mobil, click on the QR code image"
 msgstr ""
-"Klicken Sie auf Ihrem Smartphone auf diesen Link, um das Profil auf Ihrem "
-"Android oder iPhone zu installieren:"
+"Um das angelegte Profil auf ihrem Handy zu aktivieren, klicken sie auf das "
+"QR Code Bild"
 
-msgid "install profile"
-msgstr "Profil installieren"
-
-msgid ""
-"Or you can scan the QR code below with your Android phone to import the "
-"secret."
+msgid " or scan the QR code below with your Google Authenticator mobile app."
 msgstr ""
-"Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem Android "
-"Smartphone, um das Profil zu importieren."
+" oder scannen den fogenden QR Code mit ihrer Google Authenticator App ein."
 
 msgid "Provision your OATH Token"
 msgstr "OATH Token registrieren"
 
 msgid "1. You first need to install the oathtoken to your iPhone."
 msgstr "1. Sie müssen zuerst die oathtoken App auf Ihrem iPhone installieren."
+
+msgid "link for iPhone"
+msgstr "Link für iPhone"
 
 msgid ""
 "Using the QR Code you can directly go to install the oath token on your "
@@ -2459,18 +2451,55 @@ msgstr ""
 "Mit dem QR Code können Sie direkt die oathtoken App auf Ihrem iPhone "
 "installieren."
 
+msgid "2. Then you may create a profile."
+msgstr "2. Dann können Sie Ihren Token/das Profil erzeugen."
+
 msgid "enroll OATH Token"
 msgstr "OATH Token erzeugen"
+
+msgid "3."
+msgstr "3."
+
+msgid "successfully created!"
+msgstr "erfolgreich erzeugt!"
 
 msgid "Click on this link to install the oathtoken profile to your iPhone:"
 msgstr ""
 "Klicken Sie ihn Ihrem Smartphone auf diesen Link, um das Profil auf Ihrem "
 "iPhone zu installieren:"
 
+msgid "install profile"
+msgstr "Profil installieren"
+
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid ""
+#~ "1. You first need to install the google authenticator to your Android or "
+#~ "iPhone."
+#~ msgstr ""
+#~ "1. Sie müssen erst den Google Authenticator auf Ihrem Android oder iPhone "
+#~ "installieren."
+
+#~ msgid "link for Android"
+#~ msgstr "Link für Android"
+
+#~ msgid ""
+#~ "Using the QR code you can directly go to install the google authenticator "
+#~ "on your iPhone."
+#~ msgstr ""
+#~ "Indem Sie mit Ihrem iPhone den QR Code einscannen, können Sie direkt den "
+#~ "Google Authenticator auf Ihrem iPhone installieren."
+
+#~ msgid "enroll Google Authenticator"
+#~ msgstr "Google Authenticator registrieren"
+
+#~ msgid "Click on this link to install the profile to your Android or iPhone:"
+#~ msgstr ""
+#~ "Klicken Sie auf Ihrem Smartphone auf diesen Link, um das Profil auf Ihrem "
+#~ "Android oder iPhone zu installieren:"
 
 #~ msgid "Enroll your TOTP Token"
 #~ msgstr "Rollen Sie Ihren HOTP Token aus"
