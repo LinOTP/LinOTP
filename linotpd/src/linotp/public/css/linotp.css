@@ -51,3 +51,10 @@ td.description
 h2 {
     color: #fe8625;
 }
+.indent {
+  padding-left: 1em;
+  text-align: left;
+  font-weight: normal;
+  font-size: 90%;
+
+}
