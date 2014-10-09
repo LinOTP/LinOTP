@@ -1158,7 +1158,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
 
 
 function token_enroll(){
-
+    check_license();
     var users = get_selected_users();
     var url = '/admin/init';
     var params = {};
@@ -1942,6 +1942,7 @@ function save_ldap_config(){
 }
 
 function save_realm_config(){
+    check_license();
     var realm = $('#realm_name').val();
     show_waiting();
     $.get('/system/setRealm', {
@@ -2203,7 +2204,7 @@ function resolver_edit_type(){
 
 function resolver_new_type(){
 
-
+    check_license();
     $dialog_ask_new_resolvertype.dialog('open');
 
 }
