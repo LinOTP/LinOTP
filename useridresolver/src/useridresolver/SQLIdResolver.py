@@ -340,6 +340,9 @@ class IdResolver (UserIdResolver):
 
         :return :  true in case of success, false if password does not match
         :rtype :   boolean
+
+        :todo: extend to support htpasswd passwords:
+             http://httpd.apache.org/docs/2.2/misc/password_encryptions.html
         '''
 
         log.info("[checkPass] checking password for user %s" % uid)
