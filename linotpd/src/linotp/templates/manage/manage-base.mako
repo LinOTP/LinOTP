@@ -1233,7 +1233,7 @@ ${c.version} --- ${c.licenseinfo}
 <div id='dialog_ldap_resolver'>
     <form class="cmxform" id="form_ldapconfig">
         <fieldset name="Server config">
-            <legend class='ldap_dialog_label'>${_("LDAP Server configuration")}</legend>
+            <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
             <table>
             <tr><td><label for=ldap_resolvername>${_("Resolver name")}:</label></td>
                 <td><input type="text" name="ldap_resolvername" class="required"  id="ldap_resolvername" size="35" maxlength="20"></td></tr>
@@ -1264,7 +1264,7 @@ ${c.version} --- ${c.licenseinfo}
         </fieldset>
 
         <fieldset name='${_("LDAP attributes")}'>
-            <legend class='ldap_dialog_label'>${_("LDAP attributes")}</legend>
+            <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
             <table>
             <tr><td><label for=ldap_loginattr>${_("LoginName Attribute")}:</label></td>
                 <td><input type="text" name="ldap_loginattr" class="required"  id="ldap_loginattr" size="35" maxlength="60"></td></tr>
@@ -1277,8 +1277,10 @@ ${c.version} --- ${c.licenseinfo}
             <tr><td><label for=ldap_uidtype>${_("UID Type")}:</label></td>
                 <td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20" maxlength="20"></td></tr>
             </table>
-            <button class="action-button" id="button_preset_ad">${_("Preset attributes for Active Directory")}</button>
-            <button class="action-button" id="button_preset_ldap">${_("Preset attributes for LDAP")}</button>
+            <table width="100%"><tr>
+            <td><button class="action-button" id="button_preset_ad">${_("Preset Active Directory")}</button></td>
+            <td><button class="action-button" id="button_preset_ldap">${_("Preset LDAP")}</button></td>
+            </tr></table>
         </fieldset>
     </form>
 </div>
@@ -1294,39 +1296,46 @@ ${c.version} --- ${c.licenseinfo}
 <!-- #################### dialog SQL resolver #################################### -->
 
 <div id='dialog_sql_resolver'>
-<form class="cmxform" id="form_sqlconfig"><fieldset name='${_("Server config")}'><table>
-		<tr><td><label for=sql_resolvername>${_("Resolver name")}:</label></td>
-			<td><input type="text" name="sql_resolvername" class="required"  id="sql_resolvername" size="35" maxlength="20"></td></tr>
-		<tr><td><label for=sql_driver>${_("Driver")}:</label></td>
-			<td><input type="text" name="sql_driver" class="required"  id="sql_driver" size="35" maxlength="40"></td></tr>
-		<tr><td><label for=sql_server>${_("Server")}:</label></td>
-			<td><input type="text" name="sql_server"  id="sql_server" size="35" maxlength="80"></td></tr>
-		<tr><td><label for=sql_port>${_("Port")}:</label></td>
-			<td><input type="text" name="sql_port"  id="sql_port" size="35" maxlength="5"></td></tr>
-		<tr><td><label for=sql_database>${_("Database")}:</label></td>
-			<td><input type="text" name="sql_database"  id="sql_database" size="35" maxlength="60"></td></tr>
-		<tr><td><label for=sql_user>${_("User")}:</label></td>
-			<td><input type="text" name="sql_user"   id="sql_user" size="35" maxlength="60"></td></tr>
-		<tr><td><label for=sql_password>${_("Password")}:</label></td>
-			<td><input type="password" autocomplete="off" name="sql_password"  id="sql_password" size="35" maxlength="60"></td></tr>
-		</table>
-		</fieldset>
-		<fieldset name='${_("SQL attributes")}'><table>
-		<tr><td><label for=sql_table>${_("Database table")}:</label></td>
-			<td><input type="text" name="sql_table" class="required"  id="sql_table" size="35" maxlength="60"></td></tr>
-		<tr><td><label for=sql_limit>${_("Limit")}:</label></td>
-			<td><input type="text" name="sql_limit" class="required"  id="sql_limit" size="35" maxlength="5"></td></tr>
-		<tr><td><label for=sql_mapping>${_("Attribute mapping")}:</label></td>
-			<td><input type="text" name="sql_mapping" class="required"  id="sql_mapping" size="35" maxlength="200"></td></tr>
-		<tr><td><label for=sql_where>${_("Where statement")}:</label></td>
-			<td><input type="text" name="sql_where" class="optional"  id="sql_where" size="35" maxlength="200"></td></tr>
-		<tr><td><label for=sql_encoding>${_("Database encoding")}:</label></td>
-			<td><input type="text" name="sql_encoding" class="optional"  id="sql_encoding" size="35" maxlength="200"></td></tr>
-		<tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
-			<td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="35" maxlength="200"></td></tr>
-		</table></fieldset></form>
-		<div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
-		<button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
+<form class="cmxform" id="form_sqlconfig">
+  <fieldset name='${_("Server config")}'>
+    <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
+    <table>
+        <tr><td><label for=sql_resolvername>${_("Resolver name")}:</label></td>
+        	<td><input type="text" name="sql_resolvername" class="required"  id="sql_resolvername" size="30" maxlength="20"></td></tr>
+        <tr><td><label for=sql_driver>${_("Driver")}:</label></td>
+        	<td><input type="text" name="sql_driver" class="required"  id="sql_driver" size="30" maxlength="40"></td></tr>
+        <tr><td><label for=sql_server>${_("Server")}:</label></td>
+        	<td><input type="text" name="sql_server"  id="sql_server" size="30" maxlength="80"></td></tr>
+        <tr><td><label for=sql_port>${_("Port")}:</label></td>
+        	<td><input type="text" name="sql_port"  id="sql_port" size="30" maxlength="5"></td></tr>
+        <tr><td><label for=sql_database>${_("Database")}:</label></td>
+        	<td><input type="text" name="sql_database"  id="sql_database" size="30" maxlength="60"></td></tr>
+        <tr><td><label for=sql_user>${_("User")}:</label></td>
+        	<td><input type="text" name="sql_user"   id="sql_user" size="30" maxlength="60"></td></tr>
+        <tr><td><label for=sql_password>${_("Password")}:</label></td>
+        	<td><input type="password" autocomplete="off" name="sql_password"  id="sql_password" size="30" maxlength="60"></td></tr>
+        <tr><td><label for=sql_table>${_("Database table")}:</label></td>
+            <td><input type="text" name="sql_table" class="required"  id="sql_table" size="30" maxlength="60"></td></tr>
+        <tr><td><label for=sql_limit>${_("Limit")}:</label></td>
+            <td><input type="text" name="sql_limit" class="required"  id="sql_limit" size="30" maxlength="5"></td></tr>
+        <tr><td><label for=sql_encoding>${_("Database encoding")}:</label></td>
+            <td><input type="text" name="sql_encoding" class="optional"  id="sql_encoding" size="30" maxlength="200"></td></tr>
+        <tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
+            <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30" maxlength="200"></td></tr>
+    </table>
+    <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
+    <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
+    </fieldset>
+    
+    <fieldset name='${_("SQL attributes")}'>
+      <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
+        <table>
+        <tr><td><label for=sql_mapping>${_("Attribute mapping")}:</label></td>
+        	<td><input type="text" name="sql_mapping" class="required"  id="sql_mapping" size="35" maxlength="200"></td></tr>
+        <tr><td><label for=sql_where>${_("Where statement")}:</label></td>
+        	<td><input type="text" name="sql_where" class="optional"  id="sql_where" size="35" maxlength="200"></td></tr>
+        </table>
+    </fieldset></form>
 </div>
 <script>
 	function translate_dialog_sql_resolver() {

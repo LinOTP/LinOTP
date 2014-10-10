@@ -3134,8 +3134,7 @@ $(document).ready(function(){
     $dialog_sql_resolver = $('#dialog_sql_resolver').dialog({
         autoOpen: false,
         title: 'SQL Resolver',
-        width: 650,
-        heigh: 500,
+        width: 600,
         modal: true,
         buttons: {
             'Cancel': {click: function(){
