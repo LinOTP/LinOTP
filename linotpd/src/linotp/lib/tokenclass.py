@@ -1127,7 +1127,8 @@ class TokenClass(object):
             response_detail["otpkey"] = {
                   "description": _("OTP seed"),
                   "value"      :  "seed://%s" % otpkey,
-                  "img"        :  create_img(otpkey, width=200),
+                  "img"        :  "<div name='seed'>%s</div><a href='seed://%s'>%s</a>" %
+                                  (otpkey, otpkey, create_img(otpkey, width=200)),
                      }
             if user is not None:
                 try:
