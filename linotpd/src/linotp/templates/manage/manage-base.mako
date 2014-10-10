@@ -1231,49 +1231,56 @@ ${c.version} --- ${c.licenseinfo}
 <!-- ################## dialog LDAP resolver ######################### -->
 
 <div id='dialog_ldap_resolver'>
-	<form class="cmxform" id="form_ldapconfig"><fieldset name="Server config"><table>
-			<tr><td><label for=ldap_resolvername>${_("Resolver name")}:</label></td>
-				<td><input type="text" name="ldap_resolvername" class="required"  id="ldap_resolvername" size="35" maxlength="20"></td></tr>
-			<tr><td><label for=ldap_uri>${_("Server-URI")}:</label></td>
-				<td><input type="text" name="ldap_uri" class="required"  id="ldap_uri" size="35" maxlength="200"
-					onkeyup="ldap_resolver_ldaps();"></td></tr>
-			<tr id="ldap_resolver_certificate"><td>
-				<label for="ldap_certificate">${_("CA Certificate")}:</label></td>
-				<td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"
-					 title='${_("If you are using LDAPS you can enter the CA certificate in PEM format here.")}'> </textarea></td>
-					 </tr>
-			<tr><td><label for=ldap_basedn>${_("BaseDN")}:</label></td>
-				<td><input type="text" name="ldap_basedn" class="required"  id="ldap_basedn" size="35" maxlength="200"></td></tr>
-			<tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>
-				<td><input type="text" name="ldap_binddn" id="ldap_binddn" size="35" maxlength="200"></td></tr>
-			<tr><td><label for=ldap_password>${_("Bind Password")}</label>:</td>
-				<td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" size="35" maxlength="60"></td></tr>
-			<tr><td><label for=ldap_timeout>${_("Timeout")}</label>:</td>
-				<td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="5"></td></tr>
-			<tr><td><label for=ldap_sizelimit>${_("Sizelimit")}:</label></td>
-				<td><input type="text" name="ldap_sizelimit" class="required"  id="ldap_sizelimit" size="35" maxlength="10"></td></tr>
-			<tr><td> </td>
-				<td><input type="checkbox" name="noreferrals" value="noreferralss" id="ldap_noreferrals">
-					<label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
-			</table>
-			</fieldset>
-			<fieldset name='${_("LDAP attributes")}'><table>
-			<tr><td><label for=ldap_loginattr>${_("LoginName Attribute")}:</label></td>
-				<td><input type="text" name="ldap_loginattr" class="required"  id="ldap_loginattr" size="35" maxlength="60"></td></tr>
-			<tr><td><label for=ldap_searchfilter>${_("Searchfilter")}:</label></td>
-				<td><input type="text" name="ldap_searchfilter" class="required"  id="ldap_searchfilter" size="35" maxlength="200"></td></tr>
-			<tr><td><label for=ldap_userfilter>${_("Userfilter")}:</label></td>
-				<td><input type="text" name="ldap_userfilter" class="required"  id="ldap_userfilter" size="35" maxlength="200"></td></tr>
-			<tr><td><label for=ldap_mapping>${_("Attribute mapping")}:</label></td>
-				<td><input type="text" name="ldap_mapping" class="required"  id="ldap_mapping" size="35" maxlength="200"></td></tr>
-			<tr><td><label for=ldap_uidtype>${_("UID Type")}:</label></td>
-				<td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20" maxlength="20"></td></tr>
-			</table>
-			<button class="action-button" id="button_preset_ad">${_("Preset AD")}</button>
-			<button class="action-button" id="button_preset_ldap">${_("Preset LDAP")}</button>
-			</fieldset></form>
-			<div id="progress_test_ldap"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
-			<button class="action-button" id="button_test_ldap">${_("Test LDAP connection")}</button>\
+    <form class="cmxform" id="form_ldapconfig">
+        <fieldset name="Server config">
+            <legend class='ldap_dialog_label'>${_("LDAP Server configuration")}</legend>
+            <table>
+            <tr><td><label for=ldap_resolvername>${_("Resolver name")}:</label></td>
+                <td><input type="text" name="ldap_resolvername" class="required"  id="ldap_resolvername" size="35" maxlength="20"></td></tr>
+            <tr><td><label for=ldap_uri>${_("Server-URI")}:</label></td>
+                <td><input type="text" name="ldap_uri" class="required"  id="ldap_uri" size="35" maxlength="200"
+                    onkeyup="ldap_resolver_ldaps();"></td></tr>
+            <tr id="ldap_resolver_certificate"><td>
+                <label for="ldap_certificate">${_("CA Certificate")}:</label></td>
+                <td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"
+                    title='${_("If you are using LDAPS you can enter the CA certificate in PEM format here.")}'> </textarea></td>
+                </tr>
+            <tr><td><label for=ldap_basedn>${_("BaseDN")}:</label></td>
+                <td><input type="text" name="ldap_basedn" class="required"  id="ldap_basedn" size="35" maxlength="200"></td></tr>
+            <tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>
+                <td><input type="text" name="ldap_binddn" id="ldap_binddn" size="35" maxlength="200"></td></tr>
+            <tr><td><label for=ldap_password>${_("Bind Password")}</label>:</td>
+                <td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" size="35" maxlength="60"></td></tr>
+            <tr><td><label for=ldap_timeout>${_("Timeout")}</label>:</td>
+                <td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="5"></td></tr>
+            <tr><td><label for=ldap_sizelimit>${_("Sizelimit")}:</label></td>
+                <td><input type="text" name="ldap_sizelimit" class="required"  id="ldap_sizelimit" size="35" maxlength="10"></td></tr>
+            <tr><td> </td>
+                <td><input type="checkbox" name="noreferrals" value="noreferralss" id="ldap_noreferrals">
+                    <label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
+            </table>
+            <button class="action-button" id="button_test_ldap">${_("Test LDAP Server connection")}</button>
+            <div id="progress_test_ldap"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connection ...")} </div>
+        </fieldset>
+
+        <fieldset name='${_("LDAP attributes")}'>
+            <legend class='ldap_dialog_label'>${_("LDAP attributes")}</legend>
+            <table>
+            <tr><td><label for=ldap_loginattr>${_("LoginName Attribute")}:</label></td>
+                <td><input type="text" name="ldap_loginattr" class="required"  id="ldap_loginattr" size="35" maxlength="60"></td></tr>
+            <tr><td><label for=ldap_searchfilter>${_("Searchfilter")}:</label></td>
+                <td><input type="text" name="ldap_searchfilter" class="required"  id="ldap_searchfilter" size="35" maxlength="200"></td></tr>
+            <tr><td><label for=ldap_userfilter>${_("Userfilter")}:</label></td>
+                <td><input type="text" name="ldap_userfilter" class="required"  id="ldap_userfilter" size="35" maxlength="200"></td></tr>
+            <tr><td><label for=ldap_mapping>${_("Attribute mapping")}:</label></td>
+                <td><input type="text" name="ldap_mapping" class="required"  id="ldap_mapping" size="35" maxlength="200"></td></tr>
+            <tr><td><label for=ldap_uidtype>${_("UID Type")}:</label></td>
+                <td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20" maxlength="20"></td></tr>
+            </table>
+            <button class="action-button" id="button_preset_ad">${_("Preset attributes for Active Directory")}</button>
+            <button class="action-button" id="button_preset_ldap">${_("Preset attributes for LDAP")}</button>
+        </fieldset>
+    </form>
 </div>
 <script>
 	function translate_dialog_ldap_resolver() {
@@ -1393,7 +1400,7 @@ ${c.version} --- ${c.licenseinfo}
 <div id="text_realm_delete_success">${_("Realm deleted")}: <span class="text_param1"> </span></div>
 <div id="text_realm_delete_fail">${_("Failed deleting Realm")}: <span class="text_param1"> </span></div>
 <div id="text_regexp_error">${_("Error in regular expression for")}: <span class="text_param1"> </span></div>
-<div id="text_ldap_config_success">${_("LDAP config seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
+<div id="text_ldap_config_success">${_("LDAP Server configuration seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
 <div id="text_ldap_load_error">${_("Error loading LDAP resolver")}: <span class="text_param1"> </span></div>
 <div id="text_sql_load_error">${_("Error loading SQL resolver")}: <span class="text_param1"> </span></div>
 <div id="text_sql_config_success">${_("SQL config seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>

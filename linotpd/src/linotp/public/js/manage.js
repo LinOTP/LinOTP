@@ -3043,7 +3043,6 @@ $(document).ready(function(){
         title: 'LDAP Resolver',
         width: 600,
         modal: true,
-        maxHeight: 500,
         buttons: {
             'Cancel': { click: function(){
                 $(this).dialog('close');

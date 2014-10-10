@@ -265,6 +265,10 @@ class IdResolver (UserIdResolver):
                         resultList.append(userdata)
             # unbind
             l.unbind_s()
+
+        except ldap.SIZELIMIT_EXCEEDED as e:
+            log.warning("[testconnection] LDAP Error: %r" % e)
+
         except ldap.LDAPError as  e:
             log.error("[testconnection] LDAP Error: %s\n%s"
                                             % (str(e), traceback.format_exc()))

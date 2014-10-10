@@ -28,8 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-09 17:53+0200\n"
-"PO-Revision-Date: 2014-10-09 18:04+0200\n"
+"POT-Creation-Date: 2014-10-10 16:20+0200\n"
+"PO-Revision-Date: 2014-10-10 16:26+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -122,11 +122,20 @@ msgstr "E-Mail Token"
 msgid "E-mail address"
 msgstr "E-Mail-Adresse"
 
-msgid "PIN (again)"
-msgstr "PIN (wiederholen)"
-
 msgid "Description"
 msgstr "Beschreibung"
+
+msgid "Protect your token with a static pin"
+msgstr "Schützen Sie ihren Token durch einen festen Pin:"
+
+msgid "Token Pin:"
+msgstr "Token Pin:"
+
+msgid "enter PIN"
+msgstr "PIN setzen"
+
+msgid "confirm PIN"
+msgstr "Pin bestätigen"
 
 msgid "HMAC Token Settings"
 msgstr "HMAC Token Einstellungen"
@@ -177,15 +186,6 @@ msgstr ""
 
 msgid "Google Authenticator compliant"
 msgstr "Google Authenticator konform."
-
-msgid "Protect your token with a static pin"
-msgstr "Schützen Sie ihren Token durch einen festen Pin:"
-
-msgid "Token Pin:"
-msgstr "Token Pin:"
-
-msgid "PIN"
-msgstr "PIN"
 
 msgid "Enroll HOTP Token"
 msgstr "HOTP Token ausrollen"
@@ -863,6 +863,12 @@ msgstr "Support"
 msgid "About LinOTP"
 msgstr "Über LinOTP"
 
+msgid "Logged in as"
+msgstr "Eingeloggt als"
+
+msgid "Logout"
+msgstr "Abmelden"
+
 msgid "You need to enable Javascript to use the LinOTP Management Web UI."
 msgstr ""
 "Sie müssen Javascript aktivieren, um das LinOTP Management Web UI benutzen "
@@ -871,17 +877,11 @@ msgstr ""
 msgid "Communicating with LinOTP server..."
 msgstr "Kommuniziere mit dem LinOTP Server..."
 
-msgid "selected tokens"
-msgstr "ausgewählte Token"
-
 msgid "selected users"
 msgstr "ausgewählte Benutzer"
 
-msgid "Logged in as"
-msgstr "Eingeloggt als"
-
-msgid "Logout"
-msgstr "Abmelden"
+msgid "selected tokens"
+msgstr "ausgewählte Token"
 
 msgid "Realms"
 msgstr "Realms"
@@ -1205,6 +1205,9 @@ msgstr "Sie können die PINs zurücksetzen für Token"
 
 msgid "PIN type"
 msgstr "PIN Typ"
+
+msgid "PIN (again)"
+msgstr "PIN (wiederholen)"
 
 msgid "Set PIN"
 msgstr "PIN setzen"
@@ -1774,6 +1777,9 @@ msgstr "Ablaufdatum"
 msgid "New temporary token"
 msgstr "Neuer temporärer Token"
 
+msgid "LDAP Server configuration"
+msgstr "LDAP Server-Konfiguration"
+
 msgid "Resolver name"
 msgstr "Resolver Name"
 
@@ -1807,6 +1813,12 @@ msgstr "Größenlimit"
 msgid "No anonymous referral chasing"
 msgstr "Kein anonymes Verfolgen der Referrals"
 
+msgid "Test LDAP Server connection"
+msgstr "LDAP Server Verbindung testen"
+
+msgid "Testing connection ..."
+msgstr "Teste Verbindung..."
+
 msgid "LDAP attributes"
 msgstr "LDAP Attribute"
 
@@ -1825,20 +1837,23 @@ msgstr "Attributszuordnung"
 msgid "UID Type"
 msgstr "UID Typ"
 
+msgid "Preset attributes for Active Directory"
+msgstr "Werte vorbelegen für Active Directory"
+
+msgid "Preset attributes for LDAP"
+msgstr "Werte vorbelegen für LDAP"
+
+msgid "LDAP Resolver"
+msgstr "LDAP Resolver"
+
+msgid "Test LDAP connection"
+msgstr "LDAP Verbindung testen"
+
 msgid "Preset AD"
 msgstr "AD vorbelegen"
 
 msgid "Preset LDAP"
 msgstr "LDAP vorbelegen"
-
-msgid "Testing connections..."
-msgstr "Teste LDAP Verbindung..."
-
-msgid "Test LDAP connection"
-msgstr "LDAP Verbindung testen"
-
-msgid "LDAP Resolver"
-msgstr "LDAP Resolver"
 
 msgid "Server config"
 msgstr "Serverkonfiguration"
@@ -1875,6 +1890,9 @@ msgstr "Datenbank-Kodierung"
 
 msgid "Additional connection parameters"
 msgstr "Zusätzliche Verbindungsparameter"
+
+msgid "Testing connections..."
+msgstr "Teste LDAP Verbindung..."
 
 msgid "Test SQL connection"
 msgstr "SQL Verbindung testen"
@@ -2041,8 +2059,10 @@ msgstr "Löschen des Realms fehlgeschlagen"
 msgid "Error in regular expression for"
 msgstr "Fehler im regulären Ausdruck für"
 
-msgid "LDAP config seems to be OK! Number of users found"
-msgstr "LDAP Konfiguration scheint OK! Anzahl der gefundenen Benutzer"
+msgid "LDAP Server configuration seems to be OK! Number of users found"
+msgstr ""
+"LDAP Server Konfiguration scheint OK!\n"
+"Anzahl der gefundenen Benutzer "
 
 msgid "Error loading LDAP resolver"
 msgstr "Fehler beim Laden des LDAP Resolvers"
@@ -2475,6 +2495,9 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "PIN"
+#~ msgstr "PIN"
 
 #~ msgid ""
 #~ "1. You first need to install the google authenticator to your Android or "
