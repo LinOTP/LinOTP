@@ -35,6 +35,21 @@ ${_("Simple Pass Token")}
 %if c.scope == 'enroll' :
 <script>
 /*
+ * 'typ'_enroll_setup_defaults()
+ *
+ * this method is called, before the dialog is shown
+ *
+ */
+function spass_enroll_setup_defaults(config, options){
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }
+}
+
+/*
  * 'typ'_get_enroll_params()
  *
  * this method is called, when the token  is submitted
@@ -57,25 +72,26 @@ function spass_get_enroll_params(){
     return params;
 }
 </script>
-
+<hr>
 <p>${_("The Simple Pass token will not require any one time password component.")}
 ${_("Anyway, you can set an OTP PIN, so that using this token the user can "+
 "authenticate always and only with this fixed PIN.")}</p>
 
 <table>
 <tr>
-    <td><label for="spass_pin1" id="spass_opin1_label">PIN</label></td>
+    <td><label for="enroll_spass_desc" id='enroll_spass_desc_label'>${_("Description")}</label></td>
+    <td><input type="text" name="enroll_spass_desc" id="enroll_spass_desc" value="webGUI_generated" class="text" /></td>
+</tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows">
+    <td class="description"><label for="spass_pin1" id="spass_opin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('spass_pin1','spass_pin2');" name="pin1" id="spass_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
-<tr>
-    <td><label for="spass_pin2" id="spass_pin2_label">${_("PIN (again)")}</label></td>
+<tr name="set_pin_rows">
+    <td class="description"><label for="spass_pin2" id="spass_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('spass_pin1','spass_pin2');" name="pin2" id="spass_pin2"
             class="text ui-widget-content ui-corner-all" /></td
-</tr>
-<tr>
-    <td><label for="enroll_spass_desc" id='enroll_spass_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_spass_desc" id="enroll_spass_desc" value="webGUI_generated" class="text" /></td>
 </tr>
 </table>
 

@@ -49,12 +49,19 @@ ${_("HMAC eventbased")}
  * this method is called, before the dialog is shown
  *
  */
-function hmac_enroll_setup_defaults(config){
+function hmac_enroll_setup_defaults(config, options){
     $('#hmac_key').val('');
     $('#hmac_key_cb').prop('checked', false);
     $('#hmac_google_compliant').prop('checked', false);
     cb_changed_deactivate('hmac_key_cb',['hmac_key']);
     google_constrains();
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }
+    
 }
 
 /*
@@ -188,16 +195,15 @@ $('#hmac_google_compliant').click(function() {
                 class="annotation">${_("Google Authenticator compliant")}</label>
     </td>
 </tr>
-
-<tr class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
-<tr>
-    <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("PIN")}</label></td>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows">
+    <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" 
                 onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin1" id="hmac_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
-<tr>
-    <td class="description"><label for="hmac_pin2" id="hmac_pin2_label">${_("PIN (again)")}</label></td>
+<tr name="set_pin_rows">
+    <td class="description"><label for="hmac_pin2" id="hmac_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin2" id="hmac_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 </tr>

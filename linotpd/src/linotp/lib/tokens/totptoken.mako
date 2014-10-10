@@ -111,7 +111,7 @@ ${_("HMAC time based")}
  *
  *
  */
-function totp_enroll_setup_defaults(config){
+function totp_enroll_setup_defaults(config, options){
 	for (var key in config) {
 		if (key == "totp.timeStep")
 		{
@@ -124,8 +124,15 @@ function totp_enroll_setup_defaults(config){
     $('#totp_google_compliant').prop('checked', false);
     cb_changed_deactivate('totp_key_cb',['totp_key']);
     totp_google_constrains();
-	
-}
+
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }
+}	
+
 
 /*
  * helper function to controll the constrains if 
@@ -272,15 +279,14 @@ $('#totp_google_compliant').click(function() {
     </td>
 </tr>
 
-<tr class="space" title="Protect your token with a static pin">
-    <th colspan="2">Token Pin:</th></tr>
-<tr>
-    <td class="description"><label for="totp_pin1" id="totp_pin1_label">PIN</label></td>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>                 
+<tr name="set_pin_rows" >
+    <td class="description"><label for="totp_pin1" id="totp_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin1" id="totp_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
-<tr>
-    <td class="description"><label for="totp_pin2" id="totp_pin2_label">${_("PIN (again)")}</label></td>
+<tr name="set_pin_rows" >
+    <td class="description"><label for="totp_pin2" id="totp_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin2" id="totp_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 </tr>

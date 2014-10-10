@@ -113,7 +113,20 @@ ${_("Yubikey")}
 
 %if c.scope == 'enroll' :
 <script>
-
+/*
+ * 'typ'_enroll_setup_defaults()
+ *
+ * this method is called, before the dialog is shown
+ *
+ */
+function yubico_enroll_setup_defaults(config, options){
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }
+}
 /*
  * 'typ'_get_enroll_params()
  *
@@ -138,7 +151,7 @@ function yubico_get_enroll_params(){
 }
 
 </script>
-
+<hr>
 <p>${_("Here you need to enter the token ID of the Yubikey.")}</p>
 <p>${_("You can do this by inserting the Yubikey and simply push the button.")}</p>
 <table>
@@ -149,18 +162,19 @@ function yubico_get_enroll_params(){
 		class="text ui-widget-content ui-corner-all"/></td>
 </tr>
 <tr>
-    <td><label for="yubico_pin1" id="yubico_pin1_label">PIN</label></td>
+    <td><label for="yubico_enroll_desc" id='yubico_enroll_desc_label'>${_("Description")}</label></td>
+    <td><input type="text" name="yubico_enroll_desc" id="yubico_enroll_desc" value="Yubico Cloud token" class="text" /></td>
+</tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows">
+    <td class="description"><label for="yubico_pin1" id="yubico_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin1" id="yubico_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
-<tr>
-    <td><label for="yubico_pin2" id="yubico_pin2_label">${_("PIN (again)")}</label></td>
+<tr name="set_pin_rows">
+    <td class="description"><label for="yubico_pin2" id="yubico_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin2" id="yubico_pin2"
             class="text ui-widget-content ui-corner-all" /></td
-</tr>
-<tr>
-    <td><label for="yubico_enroll_desc" id='yubico_enroll_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="yubico_enroll_desc" id="yubico_enroll_desc" value="Yubico Cloud token" class="text" /></td>
 </tr>
 </table>
 

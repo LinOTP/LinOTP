@@ -301,21 +301,21 @@ def getPolicyDefinitions(scope=""):
     for ttype in token_type_list:
         pol['admin']["init%s" % ttype.upper()] = {'type': 'bool'}
 
-        ## TODO: action=initETNG
-        ## Cornelius Kölbel        Apr 18 7: 31 PM
-        ##
-        ## Haben wir auch noch den die policy
-        ##
-        ## scope=admin, action=initETNG?
-        ##
-        ## Das ist nämlich eine spezialPolicy, die der HMAC-Token mitbringen
-        ## muss.
+        # TODO: action=initETNG
+        # Cornelius Kölbel        Apr 18 7: 31 PM
+        #
+        # Haben wir auch noch den die policy
+        #
+        # scope=admin, action=initETNG?
+        #
+        # Das ist nämlich eine spezialPolicy, die der HMAC-Token mitbringen
+        # muss.
 
-        ## todo: if all tokens are dynamic, the token init must be only shown
-        ## if there is a rendering section for:
-        ## conf = linotp.lib.token.getTokenConfig(ttype, section='init')
-        ## if len(conf) > 0:
-        ##    pol['admin']["init%s" % ttype.upper()]={'type': 'bool'}
+        # todo: if all tokens are dynamic, the token init must be only shown
+        # if there is a rendering section for:
+        # conf = linotp.lib.token.getTokenConfig(ttype, section='init')
+        # if len(conf) > 0:
+        #    pol['admin']["init%s" % ttype.upper()]={'type': 'bool'}
 
         conf = linotp.lib.token.getTokenConfig(ttype, section='selfservice')
         if 'enroll' in conf:
@@ -545,13 +545,13 @@ def getPolicy(param, display_inactive=False):
         #log.debug("[getPolicy] cleanup acccording to user %s" % param["user"])
         for polname, policy in Policies.items():
             pol_users = [p.strip()
-                         for p in policy.get('user').lower().split(',')]
+                         for p in (policy.get('user', '')or'').lower().split(',')]
             #log.debug("[getPolicy] users in policy %s: %s"
             #          % (polname, str(pol_users) ))
             delete_it = True
             for u in pol_users:
                 #log.debug("[getPolicy] User: %s" % u )
-                if u == param['user'].lower():
+                if u == param.get('user', '').lower() or u == '':
                     #log.debug("[getPolicy] setting delete_it to false."
                     #          "We are using policy %s" % str(polname))
                     delete_it = False
@@ -1044,8 +1044,9 @@ def getRandomOTPPINLength(user):
     maxOTPPINLength = -1
 
     for R in Realms:
-        pol = get_client_policy(get_client(), scope='enrollment', realm=R,
-                                user=user.login, userObj=user)
+        pol = get_client_policy(get_client(),
+                                scope='enrollment', action='otp_pin_random',
+                                realm=R, user=user.login, userObj=user)
         if len(pol) == 0:
             log.debug("[getRandomOTPPINLength] there is no scope=enrollment "
                       "policy for Realm %r" % R)

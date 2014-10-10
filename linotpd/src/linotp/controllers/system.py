@@ -1394,6 +1394,8 @@ class SystemController(BaseController):
         arguments:
             * realm - (optional) will return all policies in the given realm
             * name  - (optional) will only return the policy with the given name
+            * action  (optional) will only return the policy with the given action
+            * user    (optional) will only return the policy for this user
             * scope - (optional) will only return the policies within the given scope
             * export - (optional) The filename needs to be specified as the third part of the URL like /system/getPolicy/policy.cfg. It
                     will then be exported to this file.
@@ -1415,11 +1417,17 @@ class SystemController(BaseController):
         export = None
 
         # config settings from here
-
+        action = None
+        user = None
         try:
             name = getParam(param, "name", optional)
             realm = getParam(param, "realm", optional)
             scope = getParam(param, "scope", optional)
+            if 'action' in param:
+                action = param.get('action') or None
+            if 'user' in param:
+                user = param.get('user') or None
+
             display_inactive = getParam(param, "display_inactive", optional)
             if display_inactive:
                 display_inactive = True
@@ -1432,10 +1440,21 @@ class SystemController(BaseController):
             pol = {}
             if name != None:
                 for nam in name.split(','):
-                    poli = getPolicy({'name':nam, 'realm':realm, 'scope': scope}, display_inactive=display_inactive)
+                    search_param = {'name':nam, 'realm':realm, 'scope': scope}
+                    if action:
+                        search_param['action'] = action
+                    if user:
+                        search_param['user'] = user
+
+                    poli = getPolicy(search_param, display_inactive=display_inactive)
                     pol.update(poli)
             else:
-                pol = getPolicy({'name':name, 'realm':realm, 'scope': scope}, display_inactive=display_inactive)
+                search_param = {'name':name, 'realm':realm, 'scope': scope}
+                if action:
+                    search_param['action'] = action
+                if user:
+                    search_param['user'] = user
+                pol = getPolicy(search_param, display_inactive=display_inactive)
 
             c.audit['success'] = True
             c.audit['info'] = "name = %s, realm = %s, scope = %s" \

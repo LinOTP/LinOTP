@@ -29,6 +29,31 @@
 .disabled {
     opacity:.2;
 }
+.indent {
+  padding-left: 1em;
+  text-align: left;
+  font-weight: normal;
+  font-size: 90%;
+}
+
+.sel_box {
+    max-height: 11em;
+    min-height: 6em;
+}
+
+.sel_user_box {
+    max-height: 1em; 
+    overflow: auto; 
+    font-size: 85% ; 
+    padding-bottom: 5px;
+}
+
+.sel_tok_box {
+    max-height: 7em; 
+    overflow: auto; 
+    font-size: 85% ; 
+    padding-bottom: 5px;
+}
 
 .annotation {
     font-style: italic;
@@ -51,10 +76,4 @@ td.description
 h2 {
     color: #fe8625;
 }
-.indent {
-  padding-left: 1em;
-  text-align: left;
-  font-weight: normal;
-  font-size: 90%;
 
-}

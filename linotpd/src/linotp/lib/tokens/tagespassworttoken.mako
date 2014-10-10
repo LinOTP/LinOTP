@@ -36,6 +36,20 @@ ${_("Day OTP Token / Tagespasswort")}
 
 <script>
 /*
+ * 'typ'_enroll_setup_defaults()
+ *
+ * this method is called, before the dialog is shown
+ *
+ */
+function dpw_enroll_setup_defaults(config, options){
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }
+}
+/*
  * 'typ'_get_enroll_params()
  *
  * this method is called, when the token  is submitted
@@ -59,7 +73,7 @@ function dpw_get_enroll_params(){
     return params;
 }
 </script>
-
+<hr>
 <p>${_("Here you can define the 'Tagespasswort' token, that changes every day.")}</p>
 <table>
 <tr>
@@ -67,18 +81,19 @@ function dpw_get_enroll_params(){
 	<td><input type="text" name="dpw_key" id="dpw_key" value="" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr>
-    <td><label for="dpw_pin1" id="dpw_pin1_label">PIN</label></td>
+    <td><label for="enroll_dpw_desc" id='enroll_dpw_desc_label'>${_("Description")}</label></td>
+    <td><input type="text" name="enroll_dpw_desc" id="enroll_dpw_desc" value="webGUI_generated" class="text" /></td>
+</tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows">
+    <td class="description"><label for="dpw_pin1" id="dpw_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('dpw_pin1','dpw_pin2');" name="pin1" id="dpw_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr>
-    <td><label for="dpw_pin2" id="dpw_pin2_label">${_("PIN (again)")}</label></td>
+    <td class="description"><label for="dpw_pin2" id="dpw_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('dpw_pin1','dpw_pin2');" name="pin2" id="dpw_pin2"
             class="text ui-widget-content ui-corner-all" /></td
-</tr>
-<tr>
-    <td><label for="enroll_dpw_desc" id='enroll_dpw_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_dpw_desc" id="enroll_dpw_desc" value="webGUI_generated" class="text" /></td>
 </tr>
 </table>
 

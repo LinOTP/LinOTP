@@ -311,16 +311,16 @@ function get_selected_users(){
     var selectedUserItems = new Array();
     var tt = $("#user_table");
     var selected = $('.trSelected', tt);
+    var actual_realm = $('#realm').val();
     selected.each(function(){
         var user = new Object();
-        user = { resolver:"" , login:"" };
+        user = { resolver:"" , login:"" , realm:actual_realm };
         column = $('td', $(this));
         column.each(function(){
             var attr = $(this).attr("abbr");
             if (attr == "useridresolver") {
                 var resolver = $('div', $(this)).html().split('.');
                 user.resolver = resolver[resolver.length-1];
-
             }
         });
 
@@ -347,8 +347,35 @@ function get_scope_actions(scope) {
      * This function returns the allowed actions within a scope
      */
     var actions = Array();
-    var resp = clientUrlFetchSync("/system/getPolicyDef",{"scope" : scope}, true, "Error fetching policy definitions:");
-    obj = jQuery.parseJSON(resp);
+    var resp = clientUrlFetchSync("/system/getPolicyDef",
+                                  {"scope" : scope}, 
+                                  true, "Error fetching policy definitions:");
+    var obj = jQuery.parseJSON(resp);
+    if (obj.result.status) {
+            for (var k in obj.result.value) {
+                action = k;
+                if ("int"==obj.result.value[k].type) {
+                    action = k+"=<int>";
+                } else
+                if ("str"==obj.result.value[k].type) {
+                    action = k+"=<string>";
+                };
+                actions.push(action);
+            }
+    }
+    return actions.sort();
+}
+
+function get_policy(definition) {
+    /*
+     * This function returns the policies which conform to the 
+     * set of definitions: scope, action, user, realm
+     */
+    var actions = Array();
+    var resp = clientUrlFetchSync("/system/getPolicy",
+                                  definition, 
+                                  true, "Error fetching policy definitions:");
+    var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
             for (var k in obj.result.value) {
                 action = k;
@@ -1275,7 +1302,24 @@ function tokentype_changed(){
             var exi = typeof funct;
             try{
                 if (exi == 'function') {
-                    var l_params = window[functionString]($systemConfig);
+                    var rand_pin = 0;
+                    var policy_def = {'scope':'enrollment',
+                                      'action': 'otp_pin_random'};
+                    var selected_users = get_selected_users();
+                    if (selected_users.length == 1) {
+                        policy_def['realm'] = selected_users[0].realm; 
+                        policy_def['user']  = selected_users[0].login;
+                    } else {
+                        defrealm = get_defaulrealm()
+                        if (defrealm.length > 0) {
+                            policy_def['realm'] = defrealm[0];
+                        } else {
+                            policy_def['realm'] =  $('#realm').val();
+                        };
+                    }
+                    rand_pin = get_policy(policy_def).length;
+                    var options = {'otp_pin_random':rand_pin}
+                    var l_params = window[functionString]($systemConfig, options);
                 }
             }
             catch(err) {
@@ -1427,6 +1471,23 @@ function fill_realms() {
     return defaultRealm;
 }
 
+function get_defaulrealm(){
+    var realms = new Array();
+    var url = '/system/getDefaultRealm';
+
+    var resp = $.ajax({
+            url: url,
+            async: false,
+            data: { 'session':getsession()},
+            type: "GET"
+        }).responseText;
+    var data = jQuery.parseJSON(resp);
+    for (var i in data.result.value) {
+        realms.push(i);
+    };
+    return realms;
+}
+
 function get_realms(){
     var realms = new Array();
     var resp = $.ajax({
@@ -1441,7 +1502,6 @@ function get_realms(){
     };
     return realms;
 }
-
 // ####################################################
 //
 //  jQuery stuff
@@ -3737,6 +3797,8 @@ $(document).ready(function(){
             }]
         });
         $('#user_table').flexReload();
+        // remove the selected user display
+        document.getElementById('selected_users').innerHTML = "";
     });
 
     $dialog_setpin_token = $('#dialog_set_pin').dialog({

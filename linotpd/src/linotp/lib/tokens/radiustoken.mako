@@ -128,7 +128,20 @@ ${_("RADIUS token")}
 
 %if c.scope == 'enroll' :
 <script>
-
+/*
+ * 'typ'_enroll_setup_defaults()
+ *
+ * this method is called, before the dialog is shown
+ *
+ */
+function radius_enroll_setup_defaults(config, options){
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }
+}
 /*
  * 'typ'_get_enroll_params()
  *
@@ -190,7 +203,7 @@ $("#form_enroll_token").validate({
 
 %>
 </script>
-
+<hr>
 <p>${_("Here you can define, to which RADIUS server the request should be forwarded.")}</p>
 <p>${_("Please specify the server, the secret and the username")}</p>
 <table><tr>
@@ -212,13 +225,14 @@ $("#form_enroll_token").validate({
 	<td><label for="radius_secret">${_("RADIUS shared secret")}</label></td>
 	<td><input type="password" name="radius_secret" id="radius_secret" value="${sys_radius_secret}" class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
-	<tr>
-    <td><label for="radius_pin1" id="radius_pin1_label">PIN</label></td>
+    <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+	<tr name="set_pin_rows">
+    <td class="description"><label for="radius_pin1" id="radius_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="pin1" id="radius_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
-	<tr>
-    <td><label for="radius_pin2" id="radius_pin2_label">${_("PIN (again)")}</label></td>
+	<tr name="set_pin_rows">
+    <td class="description"><label for="radius_pin2" id="radius_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="radius_pin2" id="radius_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 	</tr></table>

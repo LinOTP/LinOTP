@@ -105,6 +105,10 @@
     </ul>
     <div id="logo"><img src="/images/linotp_logo_103x35.png" alt="LinOTP"/></div>
 </div> <!-- header -->
+<div align="right" style="font-size: 70%">
+    <p>${_("Logged in as")}: ${c.admin} | <a href="${c.logout_url}">${_("Logout")}</a>
+    </p>
+</div>
 <div class="javascript_error" id="javascript_error">
 	${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
 </div>
@@ -115,13 +119,12 @@
 
 <div id="left_and_right">
 <div id="sidebar">
-    <span id="selected_tokens_header">${_("selected tokens")}</span>
-    <div id="selected_tokens"></div>
-    <span id="selected_users_header">${_("selected users")}</span>
-    <div id="selected_users"></div>
-    <p>${_("Logged in as")}: ${c.admin}
-        <a href="${c.logout_url}">${_("Logout")}</a>
-    </p>
+    <div class="sel_box" >
+        <span id="selected_users_header">${_("selected users")}</span>
+        <div id="selected_users" class="sel_user_box"></div>
+        <span id="selected_tokens_header">${_("selected tokens")}</span>
+        <div id="selected_tokens" class='sel_tok_box'></div>
+    </div>
     <div id="realms">
     ${_("Realms")}: <select id=realm></select>
     </div>
@@ -470,6 +473,7 @@ ${c.version} --- ${c.licenseinfo}
     		</table>
 
     		<div id="token_enroll_ocra">
+    		    <hr>
     			<p><span id='ocra_key_intro'>
     				${_("Please enter or copy the OCRA key.")}</span></p>
     			<table><tr>
@@ -478,13 +482,14 @@ ${c.version} --- ${c.licenseinfo}
     			</tr>
     			<tr><td> </td><td><input type='checkbox' id='ocra_key_cb' onclick="cb_changed('ocra_key_cb',['ocra_key','ocra_key_label','ocra_key_intro']);">
     				<label for=ocra_key_cb>${_("Generate OCRA key.")}</label></td></tr>
-                <tr>
-                    <td><label for="ocra_pin1" id="ocra_pin1_label">PIN</label></td>
+                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>    				
+                <tr name="set_pin_rows" >
+                    <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
                             class="text ui-widget-content ui-corner-all" /></td>
                 </tr>
-                <tr>
-                    <td><label for="ocra_pin2" id="ocra_pin2_label">${_("PIN (again)")}</label></td>
+                <tr name="set_pin_rows" >
+                    <td class="description"><label for="ocra_pin2" id="ocra_pin2_label">${_("confirm PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin2" id="ocra_pin2"
                             class="text ui-widget-content ui-corner-all" /></td
                 </tr>

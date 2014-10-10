@@ -106,12 +106,17 @@ ${_("E-mail token")}
 
 %if c.scope == 'enroll' :
 <script>
-function email_enroll_setup_defaults(config){
+function email_enroll_setup_defaults(config, options){
 	// in case we enroll e-mail otp, we get the e-mail address of the user
 	email_addresses = get_selected_email();
 	$('#email_address').val($.trim(email_addresses[0]));
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }	
 }
-
 /*
  * 'typ'_get_enroll_params()
  *
@@ -131,21 +136,24 @@ function email_get_enroll_params(){
     return params;
 }
 </script>
-
+<hr>
 <table><tr>
 	<td><label for="email_address">${_("E-mail address")}</label></td>
 	<td><input type="text" name="email_address" id="email_address" value="" class="text ui-widget-content ui-corner-all"></td>
-</tr><tr>
-    <td><label for="email_pin1" id="email_pin1_label">PIN</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin1" id="email_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
-</tr><tr>
-    <td><label for="email_pin2" id="email_pin2_label">${_("PIN (again)")}</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin2" id="email_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
-</tr><tr>
+</tr>
+<tr>
     <td><label for="enroll_email_desc" id='enroll_email_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="enroll_email_desc" id="enroll_email_desc" value="webGUI_generated" class="text" /></td>
+</tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr  name='set_pin_rows'>
+    <td class="description"><label for="email_pin1" id="email_pin1_label">${_("enter PIN")}:</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin1" id="email_pin1"
+            class="text ui-widget-content ui-corner-all" /></td>
+</tr><tr name='set_pin_rows'>
+    <td class="description"><label for="email_pin2" id="email_pin2_label">${_("confirm PIN")}:</label></td>
+    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin2" id="email_pin2"
+            class="text ui-widget-content ui-corner-all" /></td
 </tr>
 </table>
 

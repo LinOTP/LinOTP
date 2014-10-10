@@ -52,6 +52,20 @@ ${_("OCRA2 - challenge/response Token")}
 
 %if c.scope == 'enroll' :
 <script>
+/*
+ * 'typ'_enroll_setup_defaults()
+ *
+ * this method is called, before the dialog is shown
+ *
+ */
+function ocra2_enroll_setup_defaults(config, options){
+    var rand_pin = options['otp_pin_random'];
+    if (rand_pin > 0) {
+        $("[name='set_pin_rows']").hide();
+    } else {
+        $("[name='set_pin_rows']").show();
+    }
+}
 
 /*
  * 'typ'_get_enroll_params()
@@ -86,6 +100,7 @@ function ocra2_get_enroll_params(){
     return url;
 }
 </script>
+<hr>
 <p><span id='ocra2_key_intro'>
 	${_("Please enter or copy the OCRA2 key.")}</span></p>
 <table>
@@ -107,18 +122,20 @@ function ocra2_get_enroll_params(){
     </select></td>
 </tr>
 <tr>
-    <td><label for="ocra2_pin1" id="ocra2_pin1_label">PIN</label></td>
+    <td><label for="enroll_ocra2_desc" id='enroll_ocra2_desc_label'>${_("Description")}</label></td>
+    <td><input type="text" name="enroll_ocra2_desc" id="enroll_ocra2_desc" value="webGUI_generated" class="text" /></td>
+</tr>
+
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows">
+    <td class="description"><label for="ocra2_pin1" id="ocra2_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin1" id="ocra2_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
-<tr>
-    <td><label for="ocra2_pin2" id="ocra2_pin2_label">${_("PIN (again)")}</label></td>
+<tr name="set_pin_rows">
+    <td class="description"><label for="ocra2_pin2" id="ocra2_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin2" id="ocra2_pin2"
             class="text ui-widget-content ui-corner-all" /></td
-</tr>
-<tr>
-    <td><label for="enroll_ocra2_desc" id='enroll_ocra2_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_ocra2_desc" id="enroll_ocra2_desc" value="webGUI_generated" class="text" /></td>
 </tr>
 
 </table>
