@@ -32,8 +32,18 @@
 
 
 from linotp.config.environment import load_environment
-from alembic.config import Config
-from alembic import command
+
+try:
+    from alembic.config import Config
+    alembicconfig_available = True
+except ImportError:
+    alembicconfig_available = False
+
+try:
+    from alembic import command
+    alembic_available = True
+except ImportError:
+    alembic_available = False
 
 import os
 
@@ -60,7 +70,10 @@ def setup_app(command, conf, param):
     import linotp.lib.base
     linotp.lib.base.setup_app(conf.local_conf, conf.global_conf, unitTest)
 
-    upgrade_databases(conf.local_conf, conf.global_conf)
+    if alembicconfig_available and alembic_available:
+
+        upgrade_databases(conf.local_conf, conf.global_conf)
+
 
     return
 
