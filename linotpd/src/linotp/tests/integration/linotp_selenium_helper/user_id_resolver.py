@@ -76,8 +76,10 @@ class UserIdResolver:
         alert_box_text = alert_box.text
         self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
 
-        p = re.compile(".*?config seems to be OK! Number of users found: (\d+)")
-        m = p.search(alert_box_text)
+        m = re.match(
+            ".*?config(uration)? seems to be OK! Number of users found: (?P<nusers>\d+)",
+            alert_box_text
+            )
         if m is None:
             raise Exception("text_connection for " + self.name + " failed: " + alert_box_text)
-        return int(m.group(1))
+        return int(m.group('nusers'))
