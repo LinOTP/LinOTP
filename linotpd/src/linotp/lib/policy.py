@@ -466,7 +466,6 @@ def getPolicy(param, display_inactive=False):
                     else:
                         Policies[name] = {key: value}
                     #log.debug( Policies )
-
     # Now we need to clean up policies, that are inactive
     if not display_inactive:
         pol2delete = []
@@ -516,6 +515,7 @@ def getPolicy(param, display_inactive=False):
     if param.get('action', None) is not None:
         #log.debug("[getPolicy] cleanup acccording to action %s"
         #          % param["action"])
+        param_action = param['action'].strip().lower()
         for polname, policy in Policies.items():
             delete_it = True
             #log.debug("[getPolicy] evaluating policy %s: %s"
@@ -526,15 +526,20 @@ def getPolicy(param, display_inactive=False):
                                lower().split(',')]
                 #log.debug("[getPolicy] actions in policy %s: %s "
                 #          % (polname, str(pol_actions) ))
-                # so even if there is an action like otppin=XXX,
-                # it will finde the action "otppin"
-                for a in [pa.split("=")[0].strip() for pa in pol_actions]:
-                    # if the action in the policy is '*' it fits all actions!
-                    #log.debug( "[getPolicy] Action: %s" % a )
-                    if a.lower() == param['action'].lower() or a == "*":
-                        #log.debug( "[getPolicy] Setting delete_it to false.
-                        #So we are using policy: %s" % str(polname))
+                for policy_action in pol_actions:
+                    if policy_action == '*' or policy_action == param_action:
+                        # If any action (*) or the exact action we are looking
+                        # for matches, then keep the policy
+                        # e.g. otppin=1 matches when we search for 'otppin=1'
                         delete_it = False
+                    elif policy_action.split('=')[0].strip() == param_action:
+                        # If the first part of the action matches then keep the
+                        # policy
+                        # e.g. otppin=1 matches when we search for 'otppin'
+                        delete_it = False
+                    else:
+                        # No match, delete_it = True
+                        pass
             if delete_it:
                 pol2delete.append(polname)
         for polname in pol2delete:
