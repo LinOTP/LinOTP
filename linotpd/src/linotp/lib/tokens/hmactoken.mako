@@ -104,7 +104,7 @@ function google_constrains() {
 function hmac_get_enroll_params(){
     var url = {};
     url['type'] = 'hmac';
-   	url['description'] = $('#enroll_hmac_desc22').val();
+   	url['description'] = $('#enroll_hmac_desc').val();
 
     // If we got to generate the hmac key, we do it here:
     if  ( $('#hmac_key_cb').is(':checked') ) {
@@ -183,8 +183,8 @@ $('#hmac_google_compliant').click(function() {
     </select></td>
 </tr>
 <tr>
-    <td class="description"><label for="enroll_hmac_desc22" id='enroll_hmac_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" id="enroll_hmac_desc22" 
+    <td class="description"><label for="enroll_hmac_desc" id='enroll_hmac_desc_label'>${_("Description")}</label></td>
+    <td><input type="text" id="enroll_hmac_desc" 
                 value="web ui generated" class="text" /></td>
 </tr>
 <tr>
