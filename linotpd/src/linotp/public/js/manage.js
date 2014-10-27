@@ -3936,14 +3936,32 @@ $(document).ready(function(){
      * Tabs
      */
     $("#tabs").tabs({
-        ajaxOptions: {
-            error: function(xhr, status, index, anchor){
-                $(anchor.hash).html("Couldn't load this tab. Please respond to the administrator:" + status);
-            }
-        },
         collapsible: false,
         spinner: 'Retrieving data...',
-        cache: true,
+        beforeLoad: function( event, ui ) {
+            // The purpose of the following is to prevent automatic reloads
+            // of the tab. When the tab loads for the first time the 'loaded'
+            // option is set.
+            // The tab can be reloaded by reloading the whole page, or using
+            // the controls provided inside the tab.
+            // Tab Option 'cache: true' (used before for this same purpose)
+            // was removed in jQuery UI version 1.10
+            if ( ui.tab.data( "loaded" )  ) {
+                event.preventDefault();
+            }
+            else {
+                ui.jqXHR.success(function() {
+                    ui.tab.data ( "loaded", true );
+                });
+                // Following replaces ajaxOptions error function. ajaxOptions was
+                // removed in jQuery UI 1.10
+                ui.jqXHR.error(function(){
+                    ui.panel.html("Couldn't load this tab. " +
+                        "Please contact your administrator.");
+                });
+            }
+            return;
+        }
         //load: function(event, ui){
         //    get_selected();
         //}
