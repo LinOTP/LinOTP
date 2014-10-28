@@ -371,24 +371,18 @@ function get_policy(definition) {
      * This function returns the policies which conform to the 
      * set of definitions: scope, action, user, realm
      */
-    var actions = Array();
+    var policies = Array();
     var resp = clientUrlFetchSync("/system/getPolicy",
                                   definition, 
                                   true, "Error fetching policy definitions:");
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
             for (var k in obj.result.value) {
-                action = k;
-                if ("int"==obj.result.value[k].type) {
-                    action = k+"=<int>";
-                } else
-                if ("str"==obj.result.value[k].type) {
-                    action = k+"=<string>";
-                };
-                actions.push(action);
+                policy = obj.result.value[k];
+                policies.push(policy);
             }
     }
-    return actions.sort();
+    return policies;
 }
 
 function get_selected_mobile(){
@@ -1026,10 +1020,28 @@ function view_setpin_dialog(tokens) {
 
 function view_setpin_after_assigning(tokens) {
     /*
-     * TODO: depending on the OTP PIN type (o,1,2,) we can display
-     * or not display it. In case of no OTP PIN or AD PIN, we don't want to see this dialog!
+     * depending on the policies
+     * - random pin
+     * we can display or not display it.
+     * TODO: should this be disabled on otppin != 0 as well?
      */
-    view_setpin_dialog(tokens);
+    var display_setPin = true;
+
+    var selected_users = get_selected_users();
+    var policy_def = {'scope':'enrollment',
+                  'action': 'otp_pin_random'};
+        policy_def['realm'] = selected_users[0].realm;
+        policy_def['user']  = selected_users[0].login;
+
+    var rand_pin = get_policy(policy_def);
+    if (rand_pin.length > 0) {
+        display_setPin = false;
+    }
+
+    if (display_setPin === true) {
+        view_setpin_dialog(tokens);
+    }
+
 }
 
 /******************************************************************************
@@ -1303,22 +1315,16 @@ function tokentype_changed(){
             try{
                 if (exi == 'function') {
                     var rand_pin = 0;
-                    var policy_def = {'scope':'enrollment',
-                                      'action': 'otp_pin_random'};
+                    var options = {};
                     var selected_users = get_selected_users();
                     if (selected_users.length == 1) {
+                        var policy_def = {'scope':'enrollment',
+                                      'action': 'otp_pin_random'};
                         policy_def['realm'] = selected_users[0].realm; 
                         policy_def['user']  = selected_users[0].login;
-                    } else {
-                        defrealm = get_defaulrealm()
-                        if (defrealm.length > 0) {
-                            policy_def['realm'] = defrealm[0];
-                        } else {
-                            policy_def['realm'] =  $('#realm').val();
-                        };
+                        rand_pin = get_policy(policy_def).length;
+                        options = {'otp_pin_random':rand_pin}
                     }
-                    rand_pin = get_policy(policy_def).length;
-                    var options = {'otp_pin_random':rand_pin}
                     var l_params = window[functionString]($systemConfig, options);
                 }
             }
