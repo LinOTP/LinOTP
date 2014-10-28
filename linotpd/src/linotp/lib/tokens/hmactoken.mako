@@ -51,7 +51,7 @@ ${_("HMAC eventbased")}
  */
 function hmac_enroll_setup_defaults(config, options){
     $('#hmac_key').val('');
-    $('#hmac_key_cb').prop('checked', false);
+    $('#hmac_key_cb').prop('checked', true);
     $('#hmac_google_compliant').prop('checked', false);
     cb_changed_deactivate('hmac_key_cb',['hmac_key']);
     google_constrains();
@@ -128,13 +128,12 @@ function hmac_get_enroll_params(){
 }
 $( document ).ready(function() {
 
-
-
-$('#hmac_key_cb').click(function() {
+$('input[name="hmac_key_cb"]').click(function() {
    cb_changed_deactivate('hmac_key_cb',['hmac_key']);
    $('#hmac_google_compliant').prop('checked', false);
    google_constrains();
 });
+
 $('#hmac_google_compliant').click(function() {
    google_constrains();
 });
@@ -153,18 +152,34 @@ $('#hmac_google_compliant').click(function() {
     <th colspan="2" title='${_("The token seed is the secret that is used in the hmac algorithm to make your token unique. So please take care!")}'
     >${_("Token Seed:")}</th>
 </tr>
+
 <tr>
-    <td class="description"><label for="hmac_key" id='hmac_key_label'>${_("Enter seed")}</label></td>
-    <td><input type="text" name="hmac_key" id="hmac_key" value="" 
-            class="text ui-widget-content ui-corner-all" /></td>
-</tr>
+    <td class="description" colspan='2'>
+        <input type="radio" name="hmac_seed_gen" value="gen_key" id='hmac_key_cb'/>
+        <label for"hmac_key_cb">${_("generate random seed")}</label></td>
+ </tr>
+
+
 <tr>
-    <td> </td><td class="description"> <label for=hmac_key_cb>${_("or generate new one")}</label>
-     <input type='checkbox' id='hmac_key_cb'> </td>
+    <td class="description" >
+        <input type="radio" name="hmac_seed_gen" value='no_gen_key' id='hmac_key_cb_no'/>
+        <label for"hmac_key_cb_no">${_("enter seed")}</label></td>
+    <td>
+        <input type="text" name="hmac_key" id="hmac_key" value="" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
+
 <tr class="space">
     <th colspan="2" title='${_("The hmac algorithm could be controlled by the following settings. Make sure that these settings match your hardware token or software token capabilities.")}'>
     ${_("Token Settings:")}</th>
+</tr>
+<tr>
+    <td colspan="2" class="description description_w_space">
+        <input type='checkbox' id='hmac_google_compliant'>
+        <label for='hmac_google_compliant' id="hmac_google_label"
+                title='${_("The Google Authenticator supports only 6 digits and SHA1 hashing.")}'
+                >${_("Google Authenticator compliant")}</label>
+    </td>
+
 </tr>
 <tr>
 	<td class="description"><label for="hmac_otplen">${_("OTP Digits")}</label></td>
@@ -187,14 +202,7 @@ $('#hmac_google_compliant').click(function() {
     <td><input type="text" id="enroll_hmac_desc" 
                 value="web ui generated" class="text" /></td>
 </tr>
-<tr>
-    <td> </td>
-    <td><input type='checkbox' id='hmac_google_compliant'>
-        <label for='hmac_google_compliant' id="hmac_google_label" 
-                title='${_("The Google Authenticator supports only 6 digits and SHA1 hashing.")}'
-                class="annotation">${_("Google Authenticator compliant")}</label>
-    </td>
-</tr>
+
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("enter PIN")}:</label></td>
@@ -276,8 +284,8 @@ function self_hmac_get_param()
 
 function self_hmac_clear()
 {
-	$('#hmac_secret').val('');
-	hmac_self_validator.resetForm();
+    $('#hmac_secret').val('');
+    hmac_self_validator.resetForm();
 
 }
 function self_hmac_submit(){
@@ -292,7 +300,7 @@ function self_hmac_submit(){
     }
     enroll_token( params );
     // reset the form
-    $("#hmac_key_cb2").prop("checked", false);
+    $("#hmac_key_cb2").prop("checked", true);
     $('#hmac_self_secret').val('');
     $('#hmac_self_google_compliant').prop("checked", false);
     cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
@@ -322,14 +330,16 @@ function hmac_self_google_constrains() {
 
 $( document ).ready(function() {
 
-    $('#hmac_key_cb2').click(function() {
+    $('input[name="hmac_key_cb2"]').click(function() {
         cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
         hmac_self_validator.resetForm();
     });
+
     $('#hmac_self_google_compliant').click(function() {
         hmac_self_google_constrains();
     });
-
+    $("#hmac_key_cb2").prop("checked", true);
+    cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
 
     $('#button_enroll_hmac').click(function (e){
         e.preventDefault();
@@ -344,21 +354,31 @@ $( document ).ready(function() {
     <form class="cmxform" id='form_enroll_hmac'>
     <fieldset>
         <table>
-        <tr><td colspan="2">${_("Token Seed:")}</td></tr>
+        <tr class="space"><th colspan="2">${_("Token Seed:")}</th></tr>
         <tr>
-            <td class="description"><label id='hmac_self_secret_label' 
-                    for='hmac_self_secret'>${_("Enter your token seed")}</label></td>
-            <td><input id='hmac_self_secret' name='hmac_self_secret' 
-                class="required ui-widget-content ui-corner-all"/></td>
-        </tr>
-        <tr>
-            <td> </td>
-            <td><label for='hmac_key_cb2'>${_("or generate new one")}</label>
-                 <input type='checkbox' id='hmac_key_cb2' name='hmac_key_cb2'>
+            <td class="description" >
+                <input type='radio' id='hmac_key_cb2' name='hmac_key_cb2' selected="selected">
+                <label for='hmac_key_cb2'>${_("generate random seed")}</label>
             </td>
         </tr>
-        
-        <tr><td class="space">${_("Token Settings:")}</td></tr>
+        <tr>
+            <td class="description">
+                <input type='radio' id='hmac_key_cb2_no' name='hmac_key_cb2'>
+                <label id='hmac_self_secret_label'
+                    for='hmac_key_cb2_no'>${_("enter token seed")}</label></td>
+            <td><input id='hmac_self_secret' name='hmac_self_secret' disabled="disabled"
+                class="required ui-widget-content ui-corner-all"/></td>
+        </tr>
+        <tr class="space"><th>${_("Token Settings:")}</th></tr>
+        <tr>
+
+            <td colspan="2" class="description description_w_space">
+                <input type='checkbox' id='hmac_self_google_compliant' name='hmac_self_google_compliant'>
+                <label for='hmac_self_google_compliant' id="hmac_self_google_label"
+                        title='${_("The Google Authenticator supports only 6 digits and SHA1 hashing.")}'
+                        >${_("Google Authenticator compliant")}</label>
+            </td>
+        </tr>
         %if c.otplen == -1:
         <tr>
             <td class='description'><label for='hmac_self_otplen'>${_("OTP Digits")}</label></td>
@@ -395,14 +415,7 @@ $( document ).ready(function() {
             <td class='description'><label for="hmac_self_desc" id='hmac_self_desc_label'>${_("Description")}</label></td>
             <td><input type="text" name="hmac_self_desc" id="hmac_self_desc" class="text" placeholder="${_('self enrolled')}"/></td>
         </tr>
-        <tr>
-            <td> </td>
-            <td><input type='checkbox' id='hmac_self_google_compliant' name='hmac_self_google_compliant'>
-                <label for='hmac_self_google_compliant' id="hmac_self_google_label" 
-                        title='${_("The Google Authenticator supports only 6 digits and SHA1 hashing.")}'
-                        class="annotation">${_("Google Authenticator compliant")}</label>
-            </td>
-        </tr>
+        <tr class="space"></tr>
         </table>
 
         <button class='action-button' id='button_enroll_hmac'>${_("enroll hmac token")}</button>

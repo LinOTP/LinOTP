@@ -301,14 +301,16 @@ function enroll_token(params) {
                     if (data.hasOwnProperty('detail')) {
                         var detail = data.detail;
                         if (detail.hasOwnProperty('serial')) {
-                            details = details + '<li> serial: ' + detail.serial + '</li>';
+                            details = details + '<li>Serial number: ' + detail.serial + '</li>';
                         }
                         if (detail.hasOwnProperty('otpkey')) {
                             try {
                                 if (detail.hasOwnProperty('googleurl')) {
-                                    details = details + '<li>OTPAuth QR Code</li>';
-                                    details = details + '<p>' + detail.googleurl.img + '</p>';
-                                    details = details + '<li>' + detail.googleurl.value + '</li>';
+                                    details = details + '<li> Enrollemnent: <br><a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
+                                    details = details + '<br><a href="' + detail.googleurl.value + '">' +
+                                                             detail.googleurl.value + '</a></li>';
+                                    details = details + '<li> Seed: ' +
+                                        detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length) + '</li>';
                                 }
                             }
                             catch (e){
@@ -324,7 +326,7 @@ function enroll_token(params) {
 
                     }
                     details = details + '</ul>';
-                    alert_box('', String.sprintf(token_enroll_ok, details));
+                    alert_box("Token enrollment result", String.sprintf(token_enroll_ok, details));
                     /*
                     * the dynamic tokens must provide a function to gather all data from the form
                     */
