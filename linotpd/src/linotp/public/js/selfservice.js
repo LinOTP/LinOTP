@@ -794,19 +794,35 @@ $(document).ready(function() {
     );
 
     $("#tabs").tabs({
-        ajaxOptions : {
-            error : function(xhr, status, index, anchor) {
-                if (xhr.status == LOGIN_CODE) {
-                    alert("Your session has expired!");
-                    location.reload();
-                } else {
-                    $(anchor.hash).html("Couldn't load this tab. Please respond to the administrator:" + xhr.statusText + " (" + xhr.status + ")");
-                }
-            }
-        },
         collapsible : true,
         spinner : 'Retrieving data...',
-        cache : true
+        beforeLoad: function( event, ui ) {
+            // The purpose of the following is to prevent automatic reloads
+            // of the tab. When the tab loads for the first time the 'loaded'
+            // option is set.
+            // The tab can be reloaded by reloading the whole page
+            // Tab Option 'cache: true' (used before for this same purpose)
+            // was removed in jQuery UI version 1.10
+            if ( ui.tab.data( "loaded" )  ) {
+                event.preventDefault();
+            }
+            else {
+                ui.jqXHR.success(function() {
+                    ui.tab.data ( "loaded", true );
+                });
+                // Following replaces ajaxOptions error function. ajaxOptions was
+                // removed in jQuery UI 1.10
+                ui.jqXHR.error(function( jqXHR ){
+                    if (jqXHR.status == LOGIN_CODE) {
+                        alert("Your session has expired!");
+                        location.reload();
+                    } else {
+                        ui.panel.html("Couldn't load this tab. Please respond to the administrator:" + jqXHR.statusText + " (" + jqXHR.status + ")");
+                    }
+                });
+            }
+            return;
+        }
     });
 
     // Log Div
