@@ -2188,7 +2188,9 @@ def checkPolicyPost(controller, method, param=None, user=None):
 
         if 'init' == method:
             # check if we are supposed to genereate a random OTP PIN
-            randomPINLength = getRandomOTPPINLength(user)
+            randomPINLength = -1
+            if user and user.login:
+                randomPINLength = getRandomOTPPINLength(user)
             if randomPINLength > 0:
                 newpin = getRandomPin(randomPINLength)
                 log.debug("[init] setting random pin for token with serial "
