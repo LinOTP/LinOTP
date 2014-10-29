@@ -79,6 +79,12 @@ td.description
   font-size: 90%;
 }
 
+td.description_w_space
+{
+  padding-top: 0.7em;
+}
+
+
 h2 {
     color: #fe8625;
 }
