@@ -1443,18 +1443,27 @@ class SystemController(BaseController):
                     search_param = {'name':nam, 'realm':realm, 'scope': scope}
                     if action:
                         search_param['action'] = action
-                    if user:
-                        search_param['user'] = user
-
                     poli = getPolicy(search_param, display_inactive=display_inactive)
                     pol.update(poli)
             else:
                 search_param = {'name':name, 'realm':realm, 'scope': scope}
                 if action:
                     search_param['action'] = action
-                if user:
-                    search_param['user'] = user
                 pol = getPolicy(search_param, display_inactive=display_inactive)
+
+            # due to bug in getPolicy we have to post check if user is in policy!
+            if user:
+                rpol = {}
+                for p_name, policy in pol.items():
+                    if policy['user'] == None:
+                        rpol[p_name] = policy
+                    else:
+                        users = policy['user'].split(',')
+                        for use in users:
+                            if use.strip() == user.strip() or use.strip() == '*':
+                                rpol[p_name] = policy
+                pol = rpol
+
 
             c.audit['success'] = True
             c.audit['info'] = "name = %s, realm = %s, scope = %s" \
