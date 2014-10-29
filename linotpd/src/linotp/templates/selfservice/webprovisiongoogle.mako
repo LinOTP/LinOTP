@@ -25,42 +25,45 @@
  *    Support: www.lsexperts.de
  *
 -->
-<h2>${_("Provision your Google Authenticator")}</h2>
+<h2>${_("Provision your OATH soft token")}</h2>
 
-<div id='googletokenform'>
+<div id='googletokenform' >
     <form class="cmxform" name='myForm'>
-      <fieldset>
-         <div title='${_("The Google Authenticator is an OTP token for smartphones ")}
-            ${_("which is available in the appropriate app stores.")}'>
-            <b>${_("Provision your ")}
-                <a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2' target='extern'>
-                    ${_(" Google Authenticator")}</a> 
-                ${_(" in LinOTP:")}</b>
-            <p class='indent'>
-                <label for="google_type">${_("Choose your token profile ")}</label>
-                <select id="google_type">
-                % if 'webprovisionGOOGLE' in c.actions:
+        <ol start="0">
+            <li>${_("You need an OATH compatible soft token app installed on your mobile device.")}
+               <br>${_("(FreeOTP, Google Authenticator or another OATH compatible soft token)")}
+            </li>
+            <li>${_("Provision your soft token in LinOTP")}:
+                % if 'webprovisionGOOGLE' in c.actions and 'webprovisionGOOGLEtime' in c.actions:
+                <br><label for="google_type">${_("Choose your token profile ")}</label>
+                    <select id="google_type">
                     <option value=hotp>${_("event based")}</option>
-                %endif
-                % if 'webprovisionGOOGLEtime' in c.actions:
                     <option value=totp>${_("time based")}</option>
+                    </select>
+                    ${_("and")} <button class='action-button' id='button_provisionGoogle' onclick="provisionGoogle(); return false;">
+                    ${_("enroll your token")}.
+                    </button>
+                % elif 'webprovisionGOOGLE' in c.actions:
+                    <input type="hidden" id="google_type" value="hotp"/>
+                    <br>
+                    <button class='action-button' id='button_provisionGoogle_hotp' onclick="provisionGoogle(); return false;">
+                    ${_("enroll your event based token")}.
+                    </button>
+                % elif 'webprovisionGOOGLEtime' in c.actions:
+                    <input type="hidden" id="google_type" value="totp"/>
+                    <br>
+                    <button class='action-button' id='button_provisionGoogle_totp' onclick="provisionGoogle(); return false;">
+                    ${_("enroll your time based token")}.
+                    </button>
                 %endif
-               </select>
-            ${_("and")} <button class='action-button' id='button_provisionGoogle' onclick="provisionGoogle(); return false;">
-            ${_("enroll it!")}
-            </button>
-            </p>
-        </div>
-        <div id="provisionGoogleResultDiv">
-            <p class='indent'><i>${_("Google Authenticator token successfully created!")}</i></p>
-            <p><b>${_("Load your Google Authenticator profile:")}</b></p>
-            <div class='indent'>
-                ${_("To install the profile on your mobil, click on the QR code image")}
-                ${_(" or scan the QR code below with your Google Authenticator mobile app.")}
-                <br/><a id="google_link"><span id="google_qr_code"> </span></a>
+            </li>
+            <div id="provisionGoogleResultDiv">
+            <li>${_("Install your soft token profile")}:
+                <p>${_("To install the token on your mobile device, scan the QR code below with your soft token app or follow the link")}:</p>
+                <br><a id="google_link"><span id="google_qr_code"> </span></a>
+           </li>
             </div>
-        </div>
-        </fieldset>
+        </ol>
     </form>
 </div>
 

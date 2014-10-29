@@ -71,6 +71,10 @@ tr.space > th
   text-align: left;
   font-weight: normal;
 }
+#googletokenform li
+{
+  padding-bottom: 0.7em;
+}
 td.description
 {
   padding-left: 1em;
