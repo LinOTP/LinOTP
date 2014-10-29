@@ -29,8 +29,6 @@
 <html>
 <head>
 <title>${_("LinOTP 2 User self service")}</title>
-<meta name="author" content="Cornelius Kölbel">
-<meta name="date" content="2010-03-14T20:35:38+0100">
 <meta name="copyright" content="LSE Leading Security Experts GmbH">
 <meta name="keywords" content="LinOTP 2, self service">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -112,7 +110,7 @@
 			<li><a href="/selfservice/webprovisionoathtoken"><span>${_("Enroll OATH token")}</span></a></li>
 		%endif
 		% if 'webprovisionGOOGLE' in c.actions or 'webprovisionGOOGLEtime' in c.actions:
-			<li><a href="/selfservice/webprovisiongoogletoken"><span>${_("Enroll Google Authenticator")}</span></a></li>
+			<li><a href="/selfservice/webprovisiongoogletoken"><span>${_("Enroll OATH soft token")}</span></a></li>
 		%endif
 
 		% if 'assign' in c.actions:
