@@ -3124,7 +3124,7 @@ $(document).ready(function(){
         $('#ldap_searchfilter').val('(sAMAccountName=*)(objectClass=user)');
         $('#ldap_userfilter').val('(&(sAMAccountName=%s)(objectClass=user))');
         $('#ldap_mapping').val('{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
-        $('#ldap_uidtype').val('DN');
+        $('#ldap_uidtype').val('objectGUID');
         return false;
     });
     $('#button_preset_ldap').click(function(event){
@@ -4227,6 +4227,7 @@ function resolver_ldap(name){
                     'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
                     'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
                     'USERINFO': '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
+                    'UIDTYPE': 'objectGUID',
                     'CACERTIFICATE' : '',
                     'NOREFERRALS' : 'True',
                 }

@@ -1266,15 +1266,15 @@ ${c.version} --- ${c.licenseinfo}
         <fieldset name='${_("LDAP attributes")}'>
             <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
             <table>
-            <tr><td><label for=ldap_loginattr>${_("LoginName Attribute")}:</label></td>
+            <tr><td><label for="ldap_loginattr">${_("LoginName Attribute")}:</label></td>
                 <td><input type="text" name="ldap_loginattr" class="required"  id="ldap_loginattr" size="35" maxlength="60"></td></tr>
-            <tr><td><label for=ldap_searchfilter>${_("Searchfilter")}:</label></td>
+            <tr><td><label for="ldap_searchfilter">${_("Searchfilter")}:</label></td>
                 <td><input type="text" name="ldap_searchfilter" class="required"  id="ldap_searchfilter" size="35" maxlength="200"></td></tr>
-            <tr><td><label for=ldap_userfilter>${_("Userfilter")}:</label></td>
+            <tr><td><label for="ldap_userfilter">${_("Userfilter")}:</label></td>
                 <td><input type="text" name="ldap_userfilter" class="required"  id="ldap_userfilter" size="35" maxlength="200"></td></tr>
-            <tr><td><label for=ldap_mapping>${_("Attribute mapping")}:</label></td>
+            <tr><td><label for="ldap_mapping">${_("Attribute mapping")}:</label></td>
                 <td><input type="text" name="ldap_mapping" class="required"  id="ldap_mapping" size="35" maxlength="200"></td></tr>
-            <tr><td><label for=ldap_uidtype>${_("UID Type")}:</label></td>
+            <tr><td><label for="ldap_uidtype" title="${_('The UID (unique identifier) for your LDAP objects - could be DN, GUID or entryUUID (LDAP) or objectGUID (Active Directory)')}">${_("UID Type")}:</label></td>
                 <td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20" maxlength="20"></td></tr>
             </table>
             <table width="100%"><tr>
