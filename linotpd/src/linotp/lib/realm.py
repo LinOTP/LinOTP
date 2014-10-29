@@ -69,10 +69,15 @@ def realm2Objects(realmList):
     :return: list of realmObjects
     :rtype:  list
     '''
-
+    realm_set = set()
     realmObjList = []
     if realmList is not None:
+
+        # make the requested realms uniq
         for r in realmList:
+            realm_set.add(r)
+
+        for r in list(realm_set):
             realmObj = getRealmObject(name=r)
             if realmObj is not None:
                 log.debug("[setRealms] added realm %s to realmObjList" % realmObj)

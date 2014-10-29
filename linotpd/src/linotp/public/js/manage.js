@@ -2687,6 +2687,7 @@ function tokenbuttons(){
     $('#button_tokenrealm').click(function(event){
         tokens = get_selected_tokens();
         token_string = tokens.join(", ");
+        g.realms_of_token = Array();
 
         // get all realms the admin is allowed to view
         var realms = '';
@@ -2705,7 +2706,6 @@ function tokenbuttons(){
 
             $('#tokenrealm_select').selectable({
                 stop: function(){
-                    g.realms_of_token = Array();
                     $(".ui-selected", this).each(function(){
                         // fill realms of token
                         var index = $("#tokenrealm_select li").index(this);
