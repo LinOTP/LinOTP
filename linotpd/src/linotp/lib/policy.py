@@ -547,17 +547,22 @@ def getPolicy(param, display_inactive=False):
 
     pol2delete = []
     if param.get('user', None) is not None:
-        #log.debug("[getPolicy] cleanup acccording to user %s" % param["user"])
+        # log.debug("[getPolicy] cleanup acccording to user %s" % param["user"])
         for polname, policy in Policies.items():
-            pol_users = [p.strip()
-                         for p in (policy.get('user', '')or'').lower().split(',')]
-            #log.debug("[getPolicy] users in policy %s: %s"
-            #          % (polname, str(pol_users) ))
+            if policy.get('user'):
+                pol_users = [p.strip()
+                             for p in policy.get('user').lower().split(',')]
+                # log.debug("[getPolicy] users in policy %s: %s"
+                #          % (polname, str(pol_users) ))
+            else:
+                log.error("search on empty policy user (None): No access granted!")
+                pol_users = []
+
             delete_it = True
             for u in pol_users:
-                #log.debug("[getPolicy] User: %s" % u )
-                if u == param.get('user', '').lower() or u == '':
-                    #log.debug("[getPolicy] setting delete_it to false."
+                # log.debug("[getPolicy] User: %s" % u )
+                if u == param['user'].lower():
+                    # log.debug("[getPolicy] setting delete_it to false."
                     #          "We are using policy %s" % str(polname))
                     delete_it = False
             if delete_it:
