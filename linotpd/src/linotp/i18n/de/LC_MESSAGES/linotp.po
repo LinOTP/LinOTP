@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-10-10 16:26+0200\n"
+"PO-Revision-Date: 2014-10-29 20:29+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -155,11 +155,11 @@ msgstr ""
 msgid "Token Seed:"
 msgstr "Token Schlüssel:"
 
-msgid "Enter seed"
-msgstr "Schlüssel eingeben"
+msgid "generate random seed"
+msgstr "ein zufälliges Seed generieren"
 
-msgid "or generate new one"
-msgstr "oder einen neuen generieren"
+msgid "enter seed"
+msgstr "Seed eingeben"
 
 msgid ""
 "The hmac algorithm could be controlled by the following settings. Make sure "
@@ -172,12 +172,6 @@ msgstr ""
 msgid "Token Settings:"
 msgstr "Token Einstellungen:"
 
-msgid "OTP Digits"
-msgstr "Otp Ziffern"
-
-msgid "Hash algorithm"
-msgstr "Hash Algorithmus"
-
 msgid "The Google Authenticator supports only 6 digits and SHA1 hashing."
 msgstr ""
 "Der Google Authenticator unterstützt nur 6 Ziffern und den SHA1 Hash "
@@ -185,6 +179,12 @@ msgstr ""
 
 msgid "Google Authenticator compliant"
 msgstr "Google Authenticator konform."
+
+msgid "OTP Digits"
+msgstr "Otp Ziffern"
+
+msgid "Hash algorithm"
+msgstr "Hash Algorithmus"
 
 msgid "Enroll HOTP Token"
 msgstr "HOTP Token ausrollen"
@@ -211,8 +211,8 @@ msgstr "Die Formulardaten sind ungültig."
 msgid "Enroll your HOTP token"
 msgstr "Rollen Sie Ihren HOTP Token aus"
 
-msgid "Enter your token seed"
-msgstr "Schlüssel eingeben"
+msgid "enter token seed"
+msgstr "Token Seed eingeben"
 
 msgid "self enrolled"
 msgstr "selbst erstellt"
@@ -1776,8 +1776,8 @@ msgstr "Ablaufdatum"
 msgid "New temporary token"
 msgstr "Neuer temporärer Token"
 
-msgid "LDAP Server configuration"
-msgstr "LDAP Server-Konfiguration"
+msgid "Server Configuration"
+msgstr "Server-Konfiguration"
 
 msgid "Resolver name"
 msgstr "Resolver Name"
@@ -1821,6 +1821,9 @@ msgstr "Teste Verbindung..."
 msgid "LDAP attributes"
 msgstr "LDAP Attribute"
 
+msgid "Mapping Attributes"
+msgstr "Mapping Attribute"
+
 msgid "LoginName Attribute"
 msgstr "Attribut Loginname "
 
@@ -1836,11 +1839,11 @@ msgstr "Attributszuordnung"
 msgid "UID Type"
 msgstr "UID Typ"
 
-msgid "Preset attributes for Active Directory"
-msgstr "Werte vorbelegen für Active Directory"
+msgid "Preset Active Directory"
+msgstr "Vorbelegen für Active Directory"
 
-msgid "Preset attributes for LDAP"
-msgstr "Werte vorbelegen für LDAP"
+msgid "Preset LDAP"
+msgstr "LDAP vorbelegen"
 
 msgid "LDAP Resolver"
 msgstr "LDAP Resolver"
@@ -1850,9 +1853,6 @@ msgstr "LDAP Verbindung testen"
 
 msgid "Preset AD"
 msgstr "AD vorbelegen"
-
-msgid "Preset LDAP"
-msgstr "LDAP vorbelegen"
 
 msgid "Server config"
 msgstr "Serverkonfiguration"
@@ -1872,17 +1872,11 @@ msgstr "Datenbank"
 msgid "User"
 msgstr "Benutzer"
 
-msgid "SQL attributes"
-msgstr "SQL Attribute"
-
 msgid "Database table"
 msgstr "Datenbanktabelle"
 
 msgid "Limit"
 msgstr "Limit"
-
-msgid "Where statement"
-msgstr "Where Anweisung"
 
 msgid "Database encoding"
 msgstr "Datenbank-Kodierung"
@@ -1890,11 +1884,17 @@ msgstr "Datenbank-Kodierung"
 msgid "Additional connection parameters"
 msgstr "Zusätzliche Verbindungsparameter"
 
+msgid "Test SQL connection"
+msgstr "SQL Verbindung testen"
+
 msgid "Testing connections..."
 msgstr "Teste LDAP Verbindung..."
 
-msgid "Test SQL connection"
-msgstr "SQL Verbindung testen"
+msgid "SQL attributes"
+msgstr "SQL Attribute"
+
+msgid "Where statement"
+msgstr "Where Anweisung"
 
 msgid "SQL Resolver"
 msgstr "SQL Resolver"
@@ -2264,8 +2264,8 @@ msgstr "OCRA token aktivieren"
 msgid "Enroll OATH token"
 msgstr "OATH Token ausrollen"
 
-msgid "Enroll Google Authenticator"
-msgstr "Google Authenticator ausrollen"
+msgid "Enroll OATH soft token"
+msgstr "OATH Softtoken ausrollen"
 
 msgid "Assign Token"
 msgstr "Token zuweisen"
@@ -2406,23 +2406,21 @@ msgstr "PIN erfolgreich gesetzt"
 msgid "Unassign OTP Token"
 msgstr "OTP Tokenzuweisung aufheben"
 
-msgid "Provision your Google Authenticator"
-msgstr "Google Authenticator registrieren"
+msgid "Provision your OATH soft token"
+msgstr "Rollen sie ihren OATH Token aus"
 
-msgid "The Google Authenticator is an OTP token for smartphones "
-msgstr "Der Google Authenticator ist ein OTP Token für Smartphones "
+msgid ""
+"You need an OATH compatible soft token app installed on your mobile device."
+msgstr ""
+"Sie müssen einen OATH kompatible Soft Token App auf ihrem Handy installiert "
+"haben."
 
-msgid "which is available in the appropriate app stores."
-msgstr "den es in den entsprechenden App Stores gibt."
+msgid "(FreeOTP, Google Authenticator or another OATH compatible soft token)"
+msgstr ""
+"(FreeOTP, Google Authenticator oder ein anderer OATH kompatibler Softtoken)"
 
-msgid "Provision your "
-msgstr "Anlegen eines "
-
-msgid " Google Authenticator"
-msgstr "Google Authenticator"
-
-msgid " in LinOTP:"
-msgstr "in LinOTP"
+msgid "Provision your soft token in LinOTP"
+msgstr "Legen sie ihren Softtoken im LinOTP an"
 
 msgid "Choose your token profile "
 msgstr "Bitte wählen Sie ihren Token Type "
@@ -2436,23 +2434,24 @@ msgstr "zeitbasiert"
 msgid "and"
 msgstr "und"
 
-msgid "enroll it!"
-msgstr "rollen Sie ihn aus!"
+msgid "enroll your token"
+msgstr "erstellen sie ihren Token"
 
-msgid "Google Authenticator token successfully created!"
-msgstr "Google Authenticator Token wurde erfolgreich angelegt!"
+msgid "enroll your event based token"
+msgstr "erstellen sie ihren ereignis-basierten Token"
 
-msgid "Load your Google Authenticator profile:"
-msgstr "Laden des Google Authenticator Profils:"
+msgid "enroll your time based token"
+msgstr "erstellen sie ihren zeit-basierten Token"
 
-msgid "To install the profile on your mobil, click on the QR code image"
+msgid "Install your soft token profile"
+msgstr "Istallieren sie ihren Softtoken Typ"
+
+msgid ""
+"To install the token on your mobile device, scan the QR code below with your "
+"soft token app or follow the link"
 msgstr ""
-"Um das angelegte Profil auf ihrem Handy zu aktivieren, klicken sie auf das "
-"QR Code Bild"
-
-msgid " or scan the QR code below with your Google Authenticator mobile app."
-msgstr ""
-" oder scannen den fogenden QR Code mit ihrer Google Authenticator App ein."
+"Um den Token in ihrem Mobilgerät zu installieren, scannen sie bitte den "
+"unten stehenden QRCode ein oder folgen sie dem Link."
 
 msgid "Provision your OATH Token"
 msgstr "OATH Token registrieren"
@@ -2494,6 +2493,49 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "or generate new one"
+#~ msgstr "oder einen neuen generieren"
+
+#~ msgid "Preset attributes for LDAP"
+#~ msgstr "Werte vorbelegen für LDAP"
+
+#~ msgid "Enroll Google Authenticator"
+#~ msgstr "Google Authenticator ausrollen"
+
+#~ msgid "Provision your Google Authenticator"
+#~ msgstr "Google Authenticator registrieren"
+
+#~ msgid "which is available in the appropriate app stores."
+#~ msgstr "den es in den entsprechenden App Stores gibt."
+
+#~ msgid "Provision your "
+#~ msgstr "Anlegen eines "
+
+#~ msgid " Google Authenticator"
+#~ msgstr "Google Authenticator"
+
+#~ msgid " in LinOTP:"
+#~ msgstr "in LinOTP"
+
+#~ msgid "enroll it!"
+#~ msgstr "rollen Sie ihn aus!"
+
+#~ msgid "Google Authenticator token successfully created!"
+#~ msgstr "Google Authenticator Token wurde erfolgreich angelegt!"
+
+#~ msgid "Load your Google Authenticator profile:"
+#~ msgstr "Laden des Google Authenticator Profils:"
+
+#~ msgid "To install the profile on your mobil, click on the QR code image"
+#~ msgstr ""
+#~ "Um das angelegte Profil auf ihrem Handy zu aktivieren, klicken sie auf "
+#~ "das QR Code Bild"
+
+#~ msgid ""
+#~ " or scan the QR code below with your Google Authenticator mobile app."
+#~ msgstr ""
+#~ " oder scannen den fogenden QR Code mit ihrer Google Authenticator App ein."
 
 #~ msgid "PIN"
 #~ msgstr "PIN"
