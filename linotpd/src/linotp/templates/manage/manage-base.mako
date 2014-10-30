@@ -119,11 +119,11 @@
 
 <div id="left_and_right">
 <div id="sidebar">
-    <div class="sel_box" >
-        <span id="selected_users_header">${_("selected users")}</span>
-        <div id="selected_users" class="sel_user_box"></div>
-        <span id="selected_tokens_header">${_("selected tokens")}</span>
-        <div id="selected_tokens" class='sel_tok_box'></div>
+    <div class="sel_box ui-corner-all ui-widget-content" >
+        <span id="selected_users_header">${_("Selected users")}:</span>
+        <div id="selected_users" class="sel_user_box"> </div>
+        <span id="selected_tokens_header">${_("Selected tokens")}:</span>
+        <div id="selected_tokens" class='sel_tok_box'> </div>
     </div>
     <div id="realms">
     ${_("Realms")}: <select id=realm></select>

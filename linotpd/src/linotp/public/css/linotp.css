@@ -39,11 +39,11 @@
 .sel_box {
     max-height: 11em;
     min-height: 6em;
+    margin-bottom: 20px;
 }
 
 .sel_user_box {
-    max-height: 1em; 
-    overflow: auto; 
+    max-height: 1.2em; 
     font-size: 85% ; 
     padding-bottom: 5px;
 }
@@ -52,7 +52,6 @@
     max-height: 7em; 
     overflow: auto; 
     font-size: 85% ; 
-    padding-bottom: 5px;
 }
 
 .annotation {
