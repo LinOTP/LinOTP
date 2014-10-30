@@ -182,11 +182,11 @@ z-index: 1;
 }
 
 #selected_tokens {
-	font-size: 100%;
+	font-size: 80%;
 	font-style:italic;
 }
 #selected_users {
-	font-size: 100%;
+	font-size: 80%;
 	font-style:italic;
 }
 

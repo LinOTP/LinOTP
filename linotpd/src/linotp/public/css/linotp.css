@@ -37,26 +37,29 @@
 }
 
 .sel_box {
-    max-height: 11em;
-    min-height: 6em;
     margin-bottom: 20px;
 }
 
 .sel_user_box {
-    max-height: 1.2em; 
-    font-size: 85% ; 
+    height: 1.2em;
+    font-size: 80%;
     padding-bottom: 5px;
 }
 
 .sel_tok_box {
-    max-height: 7em; 
-    overflow: auto; 
-    font-size: 85% ; 
+    height: 5em;
+    overflow: auto;
+    font-size: 80%;
 }
 
 .annotation {
     font-style: italic;
     font-size: 90%;
+}
+
+.legend {
+    font-size: 90%;
+    opacity: 0.8;
 }
 
 .resolver_dialog_label {

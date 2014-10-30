@@ -119,14 +119,18 @@
 
 <div id="left_and_right">
 <div id="sidebar">
-    <div class="sel_box ui-corner-all ui-widget-content" >
-        <span id="selected_users_header">${_("Selected users")}:</span>
+    <div class="sel_box">
+        <fieldset name="${_('Selected user')}" class="ui-corner-all ui-widget-content">
+        <legend id="selected_users_header" class="legend">${_("Selected user")}</legend>
         <div id="selected_users" class="sel_user_box"> </div>
-        <span id="selected_tokens_header">${_("Selected tokens")}:</span>
+        </fieldset>
+        <fieldset name="${_('Selected tokens')}" class="ui-corner-all ui-widget-content">
+        <legend id="selected_tokens_header" class="legend">${_("Selected token")}</legend>
         <div id="selected_tokens" class='sel_tok_box'> </div>
+        </fieldset>
     </div>
     <div id="realms">
-    ${_("Realms")}: <select id=realm></select>
+    ${_("Realms")}: <select id="realm"> </select>
     </div>
     <button class='action-button' id='button_enroll'>${_("enroll")}</button>
     <button class='action-button' id='button_assign'>${_("assign")}</button>
@@ -134,7 +138,7 @@
     <button class='action-button' id='button_enable'>${_("enable")}</button>
     <button class='action-button' id='button_disable'>${_("disable")}</button>
     <button class='action-button' id='button_setpin'>${_("set PIN")}</button>
-    <button class='action-button' id='button_resetcounter'>${_("Reset failcounter")}</button>
+    <button class='action-button' id='button_resetcounter'>${_("reset failcounter")}</button>
     <button class='action-button' id='button_delete'>${_("delete")}</button>
 </div> <!-- sidebar -->
 
