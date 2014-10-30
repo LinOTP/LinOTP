@@ -28,8 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-29 21:07+0100\n"
-"PO-Revision-Date: 2014-10-29 21:09+0100\n"
+"PO-Revision-Date: 2014-11-07 15:06+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -877,11 +876,14 @@ msgstr ""
 msgid "Communicating with LinOTP server..."
 msgstr "Kommuniziere mit dem LinOTP Server..."
 
-msgid "selected users"
-msgstr "ausgewählte Benutzer"
+msgid "Selected user"
+msgstr "ausgewählter Benutzer"
 
-msgid "selected tokens"
+msgid "Selected tokens"
 msgstr "ausgewählte Token"
+
+msgid "Selected token"
+msgstr "ausgewählter Token"
 
 msgid "Realms"
 msgstr "Realms"
@@ -904,7 +906,7 @@ msgstr "deaktivieren"
 msgid "set PIN"
 msgstr "PIN setzen"
 
-msgid "Reset failcounter"
+msgid "reset failcounter"
 msgstr "Fehlzähler zurücksetzen"
 
 msgid "delete"
@@ -2120,6 +2122,26 @@ msgstr "Lizenz Erinnerung:"
 
 msgid "Support license installed successfully."
 msgstr "Die Support Lizenz wurde erfolgreich installiert."
+
+msgid "OATH Soft Token"
+msgstr "OATH Softtoken"
+
+msgid ""
+"QR-Code for installing the token in OATH compatible Soft Tokens (FreeOTP, "
+"Google Authenticator and other tokens using the 'oathurl:/' syntax)"
+msgstr ""
+"QR-Code zur Installation in verschiedenen OATH Softtoken Apps (FreeOTP, "
+"Google Authenticator und andere Token welche die 'otpauth://' Syntax "
+"unterstützen."
+
+msgid "'OATH token' app"
+msgstr "'OATH Token' App"
+
+msgid "QR-Code for installing the token in the 'OATH Token' app for iOS."
+msgstr "QR-Code zur Installation des Tokens in der 'OATH Token' App für iOS."
+
+msgid "The OATH token seed for installing the token using manual input"
+msgstr "Der OATH Token Seed zur manuellen Eingabe."
 
 msgid "OTP values"
 msgstr "OTP-Werte"
