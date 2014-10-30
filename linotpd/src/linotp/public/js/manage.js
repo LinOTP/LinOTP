@@ -1192,7 +1192,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
     else {
         alert_info_text("text_error_creating_token", obj.result.error.message, ERROR);
     }
-    $('#token_table').flexReload();
+    reset_buttons();
 }
 
 
