@@ -90,12 +90,15 @@ encodings = [
     "utf_8_sig"
 ];
 
+
 function error_handling(message, file, line){
     Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line +
     "\nTo go on, reload this web page.";
     alert(Fehler);
     return true;
 }
+
+
 
 // We need this dialogs globally, so that we do not create more than one instance!
 
@@ -112,6 +115,8 @@ var $dialog_show_enroll_url;
 var $dialog_token_info;
 var $dialog_setpin_token;
 var $dialog_view_temporary_token;
+
+
 var $dialog_import_policy;
 var $dialog_tokeninfo_set;
 
@@ -131,7 +136,20 @@ var g = {};
 
 ERROR = "error";
 
-
+var support_license_dict = {
+    'comment' : i18n.gettext('Description'),
+    'issuer' : i18n.gettext('Issuer'),
+    'token-num' : i18n.gettext('Number of tokens'),
+    'licensee' : i18n.gettext('Licensee'),
+    'address' : i18n.gettext('Address'),
+    'contact-name' : i18n.gettext('Contact name'),
+    'contact-email' : i18n.gettext('Contact EMail'),
+    'contact-phone' : i18n.gettext('Contact phone'),
+    'date' : i18n.gettext('Date'),
+    'expire' : i18n.gettext('Expiration'),
+    'subscription' : i18n.gettext('Subscription'),
+    'version' : i18n.gettext('Version'),
+};
 
 function len(obj) {
   var len = obj.length ? --obj.length : -1;
@@ -1752,84 +1770,36 @@ function support_set(){
 
 function support_view(){
 
+    // clean out old data
+    $("#dialog_support_view").html("");
+
     $.get('/system/getSupportInfo', { 'session':getsession()} ,
      function(data, textStatus, XMLHttpRequest){
-        support_dict = data.result.value;
-        if ('description' in data.result.value) {
-            support_dict = data.result.value.description;
+        support_info = data.result.value;
+
+        if ($.isEmptyObject(support_info)) {
+            var info = "";
+            info += '<h2 class="contact_info">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
+            info += i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact <p class="contact_info"><a href="mailto:sales@lsexperts.de">LSE Leading Security Experts GmbH</a></p> for support agreement purchase.');
+            $("#dialog_support_view").html(info);
+
+        } else {
+            var info = "";
+            info += '<h2 class="contact_info">' + i18n.gettext('Your LinOTP support subscription') + '</h2>';
+            info += "<table><tbody>";
+            $.map(support_info, function(value,key){
+                if ( support_license_dict.hasOwnProperty(key) ) {
+                    key = i18n.gettext(support_license_dict[key]);
+                }
+                if (value && value.length > 0) {
+                    info += "<tr><td class='subscription_detail'>" + key + "</td><td class='subscription_detail'>" + value + "</td></tr>";
+                }
+            });
+            info += "</tbody></table>";
+            $("#dialog_support_view").html(info);
         }
-        if (support_dict['comment'].length > 0 ) {
-            $('#lic_comment').html(support_dict['comment']);
-            $('#lic_comment_tr').show();
-            }
-        else { $('#lic_comment_tr').hide(); }
-
-        if (support_dict['token-num'].length > 0 ) {
-            $('#lic_token-num').html(support_dict['token-num']);
-            $('#lic_token-num_tr').show();
-            }
-        else { $('#lic_token-num_tr').hide(); }
-
-        if (support_dict['contact-name'].length > 0 ) {
-            $('#lic_contact-name').html(support_dict['contact-name']);
-            $('#lic_contact-name_tr').show();
-            }
-        else { $('#lic_contact-name_tr').hide(); }
-
-        if (support_dict['version'].length > 0 ) {
-            $('#lic_version').html(support_dict['version']);
-            $('#lic_version_tr').show();
-            }
-        else { $('#lic_version_tr').hide(); }
-
-        if (support_dict['contact-email'].length > 0 ) {
-            $('#lic_contact-email').html(support_dict['contact-email']);
-            $('#lic_contact-email_tr').show();
-            }
-        else { $('#lic_contact-email_tr').hide(); }
-
-        if (support_dict['licensee'].length > 0 ) {
-            $('#lic_licensee').html(support_dict['licensee']);
-            $('#lic_licensee_tr').show();
-            }
-        else { $('#lic_licensee_tr').hide(); }
-
-        if (support_dict['expire'].length > 0 ) {
-            $('#lic_expire').html(support_dict['expire']);
-            $('#lic_expire_tr').show();
-            }
-        else { $('#lic_expire_tr').hide(); }
-
-        if (support_dict['contact-phone'].length > 0 ) {
-            $('#lic_contact-phone').html(support_dict['contact-phone']);
-            $('#lic_contact-phone_tr').show();
-            }
-        else { $('#lic_contact-phone_tr').hide(); }
-
-        if (support_dict['address'].length > 0 ) {
-            $('#lic_address').html(support_dict['address']);
-            $('#lic_address_tr').show();
-            }
-        else { $('#lic_address_tr').hide(); }
-
-        if (support_dict['date'].length > 0 ) {
-            $('#lic_date').html(support_dict['date']);
-            $('#lic_date_tr').show();
-            }
-        else { $('#lic_date_tr').hide(); }
-
-        if (support_dict['issuer'].length > 0 ) {
-            $('#lic_issuer').html(support_dict['issuer']);
-            $('#lic_issuer_tr').show();
-            }
-        else { $('#lic_issuer_tr').hide(); }
-
-        if (support_dict['subscription'].length > 0 ) {
-            $('#lic_subscription').html(support_dict['subscription']);
-            $('#lic_subscription_tr').show();
-            }
-        else { $('#lic_subscription_tr').hide(); }
     });
+    return false;
 }
 
 function load_system_config(){
@@ -4744,6 +4714,7 @@ function view_audit() {
     });
 }
 
+
 /*
  * window.CURRENT_LANGUAGE is set in the template from the mako lib.
  * Here, we dynamically load the desired language JSON file for Jed.
@@ -4764,6 +4735,7 @@ if (browser_lang && browser_lang !== 'en') {
         alert('Unsupported localisation for ' + browser_lang);
     }
 }
+
 
 $(document).ready(function() {
 

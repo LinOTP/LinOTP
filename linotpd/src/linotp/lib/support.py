@@ -151,13 +151,6 @@ def getSupportLicenseInfo():
             lic_str = licString
         (info, _lic_sign, _lic_txt) = parseSupportLicense(lic_str)
 
-    else:
-        # if we have no licens in the config, we compose the
-        # comuninity edition text
-        info.update(support_info)
-        version = get_version_number()
-        info['version'] = 'LinOTP %s' % version
-
     return info
 
 

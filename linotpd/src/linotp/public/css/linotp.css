@@ -26,6 +26,14 @@
     margin:10px;
 }
 
+.contact_info {
+    text-align: center;
+}
+
+.subscription_detail {
+    font-size: 80%;
+}
+
 .disabled {
     opacity:.2;
 }

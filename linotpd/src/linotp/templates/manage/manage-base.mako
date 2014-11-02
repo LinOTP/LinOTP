@@ -118,7 +118,7 @@ if isinstance(lang, list):
             <li><a href='#'>${_("Help")}</a>
             <ul>
                 <li><a href='${c.help_url}' target="_blank" id="menu_help">${_("Documentation")}</a></li>
-                <li><a href='#' id='menu_view_support'>${_("Support")}</a></li>
+                <li><a href='#' id='menu_view_support'>${_("Support and Subscription")}</a></li>
                 <li><a href='#' id='menu_about'>${_("About LinOTP")}</a></li>
             </ul>
         </li>
@@ -341,27 +341,12 @@ ${c.version} --- ${c.licenseinfo}
 
 <!-- ################ Support view ################ -->
 <div id='dialog_support_view'>
-		<table>
-			<tr id="lic_comment_tr"><td>${_("Comment")}</td><td><label id="lic_comment"> </label></td></tr>
-			<tr id="lic_version_tr"><td>${_("Version")}</td><td><label id="lic_version"> </label></td></tr>
-			<tr id="lic_issuer_tr"><td>${_("Issuer")}</td><td><label id="lic_issuer"> </label></td></tr>
-			<tr id="lic_token-num_tr"><td>${_("Token #")}</td><td><label id="lic_token-num"> </label></td></tr>
-			<tr id="lic_licensee_tr"><td>${_("Licensee")}</td><td><label id="lic_licensee"> </label></td></tr>
-			<tr id="lic_address_tr"><td>${_("Address")}</td><td><label id="lic_address"> </label></td></tr>
-			<tr id="lic_contact-name_tr"><td>${_("Contact Name")}</td><td><label id="lic_contact-name"> </label></td></tr>
-			<tr id="lic_contact-email_tr"><td>${_("Contact Email")}</td><td><label id="lic_contact-email"> </label></td></tr>
-			<tr id="lic_contact-phone_tr"><td>${_("Contact phone")}</td><td><label id="lic_contact-phone"> </label></td></tr>
-			<tr id="lic_date_tr"><td>${_("Date")}</td><td><label id="lic_date"> </label></td></tr>
-			<tr id="lic_expire_tr"><td>${_("Expire")}</td><td><label id="lic_expire"> </label></td></tr>
-			<tr id="lic_subscription_tr"><td>${_("Subscription")}</td><td><label id="lic_subscription"> </label></td></tr>
-			</table>
-
-		</div>
+</div>
 
 <script>
 	function translate_support_view() {
-		$("#dialog_support_view" ).dialog( "option", "title", '${_("LSE LinOTP Support")}' );
-		$('#button_support_set .ui-button-text').html('${_("Set Support Subscription")}');
+		$("#dialog_support_view" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
+		$('#button_support_set .ui-button-text').html('${_("Set Support and Subscription")}');
 		$('#button_support_close .ui-button-text').html('${_("Close")}');
 	}
 </script>
@@ -372,7 +357,7 @@ ${c.version} --- ${c.licenseinfo}
 <div id='dialog_set_support'>
 	<form id="set_support_form" action="/system/setSupport" method="post"
 				enctype="multipart/form-data" onsubmit="return false;">
-        <p>${_("Please choose your support file")}:</p>
+        <p>${_("Please choose your support and subscription file")}:</p>
         <p><input name="license" id="license_file" type="file" size="30" maxlength="100000" accept="text/*">
         </p>
     </form>
@@ -380,8 +365,8 @@ ${c.version} --- ${c.licenseinfo}
 
 <script>
 	function translate_support_set() {
-		$("#dialog_set_support" ).dialog( "option", "title", '${_("LSE LinOTP Subscription")}' );
-		$('#button_support_set .ui-button-text').html('${_("Set Subscription")}');
+		$("#dialog_set_support" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
+		$('#button_support_set .ui-button-text').html('${_("Set Support and Subscription")}');
 		$('#button_support_cancel .ui-button-text').html('${_("Cancel")}');
 	}
 </script>

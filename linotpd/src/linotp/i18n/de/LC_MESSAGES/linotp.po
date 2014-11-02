@@ -28,8 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-29 21:07+0100\n"
-"PO-Revision-Date: 2014-10-29 21:09+0100\n"
+"POT-Creation-Date: 2014-11-02 20:07+0100\n"
+"PO-Revision-Date: 2014-11-02 20:11+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -726,6 +726,55 @@ msgstr "Yubikey Token ID"
 msgid "enroll yubico token"
 msgstr "Yubikey ausrollen"
 
+msgid "Issuer"
+msgstr "Aussteller"
+
+msgid "Number of tokens"
+msgstr "Anzahl Tokens"
+
+msgid "Licensee"
+msgstr "Lizenznehmer"
+
+msgid "Address"
+msgstr "Adresse"
+
+msgid "Contact name"
+msgstr "Kontakt"
+
+msgid "Contact EMail"
+msgstr "Kontakt Email"
+
+msgid "Contact phone"
+msgstr "Kontakt Telefon"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "Expiration"
+msgstr "Ablaufdatum"
+
+msgid "Subscription"
+msgstr "Subskription"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Professional LinOTP support and enterprise subscription"
+msgstr "Professionellen LinOTP Support und Subskription für Unternehmen"
+
+msgid ""
+"For professional LinOTP support and enterprise subscription, feel free to "
+"contact <p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE "
+"Leading Security Experts GmbH</a></p> for support agreement purchase."
+msgstr ""
+"Zum Erwerb von professionellen Support und Subskription für ihr Unternehmen "
+"kontaktieren Sie uns unter: \n"
+"<p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE Leading "
+"Security Experts GmbH</a></p>"
+
+msgid "Your LinOTP support subscription"
+msgstr "Ihr LinOTP Support und Subskription"
+
 msgid "Authentication"
 msgstr "Authentisierung"
 
@@ -857,8 +906,8 @@ msgstr "Hilfe"
 msgid "Documentation"
 msgstr "Dokumentation"
 
-msgid "Support"
-msgstr "Support"
+msgid "Support and Subscription"
+msgstr "Support und Subskription"
 
 msgid "About LinOTP"
 msgstr "Über LinOTP"
@@ -877,10 +926,13 @@ msgstr ""
 msgid "Communicating with LinOTP server..."
 msgstr "Kommuniziere mit dem LinOTP Server..."
 
-msgid "selected users"
-msgstr "ausgewählte Benutzer"
+msgid "Selected user"
+msgstr "ausgewählter Benutzer"
 
-msgid "selected tokens"
+msgid "Selected tokens"
+msgstr "ausgewählte Token"
+
+msgid "Selected token"
 msgstr "ausgewählte Token"
 
 msgid "Realms"
@@ -904,7 +956,7 @@ msgstr "deaktivieren"
 msgid "set PIN"
 msgstr "PIN setzen"
 
-msgid "Reset failcounter"
+msgid "reset failcounter"
 msgstr "Fehlzähler zurücksetzen"
 
 msgid "delete"
@@ -1125,59 +1177,17 @@ msgstr "Abbrechen"
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
 
-msgid "Comment"
-msgstr "Kommentar"
+msgid "LSE LinOTP Support and Subscription"
+msgstr "LSE LinOTP Support und Subskription "
 
-msgid "Version"
-msgstr "Version"
-
-msgid "Issuer"
-msgstr "Aussteller"
-
-msgid "Token #"
-msgstr "Tokenanzahl"
-
-msgid "Licensee"
-msgstr "Lizenznehmer"
-
-msgid "Address"
-msgstr "Adresse"
-
-msgid "Contact Name"
-msgstr "Kontakt"
-
-msgid "Contact Email"
-msgstr "Kontakt Email"
-
-msgid "Contact phone"
-msgstr "Kontakt Telefon"
-
-msgid "Date"
-msgstr "Datum"
-
-msgid "Expire"
-msgstr "Ablaufdatum"
-
-msgid "Subscription"
-msgstr "Subskription"
-
-msgid "LSE LinOTP Support"
-msgstr "LSE LinOTP Support"
-
-msgid "Set Support Subscription"
-msgstr "Support Subskription registrieren"
+msgid "Set Support and Subscription"
+msgstr "Support Subskription und Subskription registrieren"
 
 msgid "Close"
 msgstr "Schließen"
 
-msgid "Please choose your support file"
-msgstr "Bitte wählen Sie eine Support Lizenz-Datei"
-
-msgid "LSE LinOTP Subscription"
-msgstr "LSE LinOTP Subskription"
-
-msgid "Set Subscription"
-msgstr "Subskription registrieren"
+msgid "Please choose your support and subscription file"
+msgstr "Bitte wählen Sie eine Support- und Subskriptions-Datei"
 
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
@@ -2501,6 +2511,30 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "Support"
+#~ msgstr "Support"
+
+#~ msgid "LSE LinOTP Support"
+#~ msgstr "LSE LinOTP Support"
+
+#~ msgid "Set Subscription"
+#~ msgstr "Subskription registrieren"
+
+#~ msgid "Comment"
+#~ msgstr "Kommentar"
+
+#~ msgid "For professional LinOTP support and enterprise subscription, "
+#~ msgstr "Zum Erwerb von "
+
+#~ msgid "feel free to contact "
+#~ msgstr "professionellen LinOTP Support und Subskription für Unternehmen"
+
+#~ msgid "for support agreement purchase."
+#~ msgstr "können Sie und gerne kontaktieren"
+
+#~ msgid "Token #"
+#~ msgstr "Tokenanzahl"
 
 #~ msgid "or generate new one"
 #~ msgstr "oder einen neuen generieren"
