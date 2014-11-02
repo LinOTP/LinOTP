@@ -25,13 +25,19 @@
  */
 window.onerror = error_handling;
 
+/* Use Jed for i18n. The correct JSON file is dynamically loaded later. */
+var i18n = new Jed({});
+var sprintf = Jed.sprintf;
+
+if (!String.sprintf) {
+    String.sprintf = Jed.sprintf;
+}
+
 /* The HTTP status code, that determines that
  * the Login to the selfservice portal is required.
  * Is also defined in controllers/account.py
  */
 LOGIN_CODE = 576
-
-
 
 
 function alert_box(p_title, s, param1) {
@@ -70,38 +76,6 @@ function alert_box(p_title, s, param1) {
 
 }
 
-
-
-function sprintf() {
-    if (sprintf.arguments.length < 2) {
-        return;
-    }
-
-    var data = sprintf.arguments[0];
-
-    for (var k = 1; k < sprintf.arguments.length; ++k) {
-
-        switch( typeof( sprintf.arguments[ k ] ) ) {
-            case 'string':
-                data = data.replace(/%s/, sprintf.arguments[k]);
-                break;
-            case 'number':
-                data = data.replace(/%d/, sprintf.arguments[k]);
-                break;
-            case 'boolean':
-                data = data.replace(/%b/, sprintf.arguments[k] ? 'true' : 'false');
-                break;
-            default:
-                /// function | object | undefined
-                break;
-        }
-    }
-    return (data );
-}
-
-if (!String.sprintf) {
-    String.sprintf = sprintf;
-}
 
 function error_handling(message, file, line) {
     Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line;
@@ -274,7 +248,6 @@ function enroll_token(params) {
      */
     var token_enroll_ok = $('#token_enroll_ok').val();
     var token_enroll_fail = $('#token_enroll_fail').val();
-
     var typ = params['type'];
 
     if (params['description'] === undefined) {
@@ -917,3 +890,30 @@ function view_audit_selfservice() {
             addTitleToCell: true
     });
 }
+
+/*
+ * window.CURRENT_LANGUAGE is set in the template from the mako lib.
+ * Here, we dynamically load the desired language JSON file for Jed.
+ */
+var browser_lang = window.CURRENT_LANGUAGE || 'en';
+if (browser_lang && browser_lang !== 'en') {
+    try {
+        var url = sprintf("/i18n/%s.json", browser_lang);
+        $.get(
+            url,
+            {},
+            function(data, textStatus) {
+                i18n.options.locale_data.messages = data;
+            },
+            "json"
+        );
+    } catch(e) {
+        alert('Unsupported localisation for ' + browser_lang);
+    }
+}
+
+$(document).ready(function() {
+
+    return false;
+
+});

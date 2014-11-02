@@ -26,6 +26,18 @@
  *    Support: www.lsexperts.de
  *
 -->
+
+<%!
+from pylons.i18n.translation import get_lang
+%>
+
+<%
+lang = get_lang() or "en"
+allang = "%r" % lang
+if isinstance(lang, list):
+    lang = lang[0]
+%>
+
 <html>
 <head>
 <title>${_("LinOTP 2 User self service")}</title>
@@ -51,6 +63,15 @@
 <script type="text/javascript" src="/js/qrcode-helper.js"></script>
 <script type="text/javascript" src="/js/linotp_utils.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
+
+<!-- load language settings befor selfservice.js -->
+<script type="text/javascript">
+    window.CURRENT_LANGUAGE = "${lang}";
+    window.ALL_CURRENT_LANGUAGE = "${allang}";
+</script>
+
+<script type="text/javascript" src="/js/jed.js"></script>
+
 <script type="text/javascript" src="/js/selfservice.js"></script>
 
 

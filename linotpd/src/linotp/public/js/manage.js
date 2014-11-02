@@ -25,6 +25,9 @@
  */
 window.onerror = error_handling;
 
+/* Use Jed for i18n. The correct JSON file is dynamically loaded later. */
+var i18n = new Jed({});
+var sprintf = Jed.sprintf;
 
 encodings = [
     "ascii","big5","big5hkscs",
@@ -4741,3 +4744,29 @@ function view_audit() {
     });
 }
 
+/*
+ * window.CURRENT_LANGUAGE is set in the template from the mako lib.
+ * Here, we dynamically load the desired language JSON file for Jed.
+ */
+var browser_lang = window.CURRENT_LANGUAGE || 'en';
+if (browser_lang && browser_lang !== 'en') {
+    try {
+        var url = sprintf("/i18n/%s.json", browser_lang);
+        $.get(
+            url,
+            {},
+            function(data, textStatus) {
+                i18n.options.locale_data.messages = data;
+            },
+            "json"
+        );
+    } catch(e) {
+        alert('Unsupported localisation for ' + browser_lang);
+    }
+}
+
+$(document).ready(function() {
+
+    return false;
+
+});

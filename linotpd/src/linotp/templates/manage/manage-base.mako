@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<%!
+from pylons.i18n.translation import get_lang
+%>
+
+<%
+lang = get_lang() or "en"
+allang = "%r" % lang
+if isinstance(lang, list):
+    lang = lang[0]
+%>
+
 <html>
+
 <head>
 <title>${_("LinOTP 2 Management")}</title>
 
@@ -57,6 +69,14 @@
 <script type="text/javascript" src="/js/vasco.js"></script>
 <script type="text/javascript" src="/js/pskc.js"></script>
 <script type="text/javascript" src="/js/tools.js"></script>
+
+<!-- load language settings befor manage.js -->
+<script type="text/javascript">
+    window.CURRENT_LANGUAGE = "${lang}";
+    window.ALL_CURRENT_LANGUAGE = "${allang}";
+</script>
+
+<script type="text/javascript" src="/js/jed.js"></script>
 <script type="text/javascript" src="/js/manage.js"></script>
 
 </head>

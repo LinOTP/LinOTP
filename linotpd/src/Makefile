@@ -6,6 +6,13 @@ VERSION = 2.7.1.dev0
 PROJECT=LinOTP
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
 
+I18N_LANGUAGES = de
+I18N_SRC := $(CURDIR)/linotp/i18n
+I18N_JSON_DEST := $(CURDIR)/linotp/public/i18n
+I18N_PO_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po)
+I18N_JSON_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_JSON_DEST)/$(lang).json)
+
+
 all:
 	@echo "make source - Create source package"
 	@echo "make create - Create the source packages"
@@ -18,19 +25,26 @@ all:
 	@echo "make ppa     - Publish in PRODUCTIVE repository linotp"
 
 
-translate:
-	mkdir -p linotp/i18n/
+extract:
 	python setup.py extract_messages
-	#	python setup.py init_catalog -l de
 	msgmerge -U linotp/i18n/de/LC_MESSAGES/linotp.po linotp/i18n/linotp.pot
-	gtranslator linotp/i18n/de/LC_MESSAGES/linotp.po
+
+# Compile a .po file to a .json file using the `pojson` tool.
+$(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
+	mkdir -p $(I18N_JSON_DEST)
+	pojson -e utf-8 $< > $@
+
+# Compile all .po files to .mo files using babel. As a dependency,
+# the .po files are compiled to .json files. The order doesn't matter.
+compile_catalog: $(I18N_JSON_FILES)
 	python setup.py compile_catalog
 
-buildtranslation:
-	mkdir -p linotp/i18n/
-	python setup.py extract_messages
-	msgmerge -U linotp/i18n/de/LC_MESSAGES/linotp.po linotp/i18n/linotp.pot
-	python setup.py compile_catalog
+translate: extract
+	gtranslator linotp/i18n/de/LC_MESSAGES/linotp.po
+	make compile_catalog
+
+buildtranslation: extract
+	make compile_catalog
 
 source:
 	make buildtranslation
@@ -100,7 +114,7 @@ clean:
 	rm -f ./*.upload
 	rm -f ./*.tar.gz
 	rm -fr ./LinOTP.egg-info/
-	rm -f linotp/i18n/linotp.pot
+	rm -f $(I18N_JSON_FILES)
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
 	rm -rf ../build/
 
