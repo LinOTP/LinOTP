@@ -558,7 +558,9 @@ class TestSelfserviceController(TestController):
         response = self.app.get(url(controller='selfservice', action='webprovisiongoogletoken'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
-        assert "<div id='googletokenform'>" in response
+        assert "googletokenform" in response.body
+
+        return
 
 
     def test_ocra(self):
