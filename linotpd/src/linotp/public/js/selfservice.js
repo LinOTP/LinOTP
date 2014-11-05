@@ -279,7 +279,7 @@ function enroll_token(params) {
                         if (detail.hasOwnProperty('otpkey')) {
                             try {
                                 if (detail.hasOwnProperty('googleurl')) {
-                                    details = details + '<li> Enrollemnent: <br><a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
+                                    details = details + '<li> Enrollment: <br><a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
                                     details = details + '<br><a href="' + detail.googleurl.value + '">' +
                                                              detail.googleurl.value + '</a></li>';
                                     details = details + '<li> Seed: ' +
