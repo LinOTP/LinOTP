@@ -556,7 +556,7 @@ def getPolicy(param, display_inactive=False):
                 #          % (polname, str(pol_users) ))
             else:
                 log.error("search on empty policy user (None): No access granted!")
-                pol_users = []
+                raise Exception("Empty userlist in policy '%s' not supported!" % polname)
 
             delete_it = True
             for u in pol_users:
