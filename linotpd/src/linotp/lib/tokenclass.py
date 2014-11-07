@@ -1125,10 +1125,10 @@ class TokenClass(object):
 
         if otpkey != None:
             response_detail["otpkey"] = {
+                  "order"      : '1',
                   "description": _("OTP seed"),
                   "value"      :  "seed://%s" % otpkey,
-                  "img"        :  "<div name='seed'>%s</div><a href='seed://%s'>%s</a>" %
-                                  (otpkey, otpkey, create_img(otpkey, width=200)),
+                  "img"        :  create_img(otpkey, width=200),
                      }
             if user is not None:
                 try:
@@ -1141,6 +1141,7 @@ class TokenClass(object):
                     goo_url = create_google_authenticator(p)
 
                     response_detail["googleurl"] = {
+                          "order"      : '0',
                           "description": _("OTPAuth Url"),
                           "value" :     goo_url,
                           "img"   :     create_img(goo_url, width=250)
@@ -1150,6 +1151,7 @@ class TokenClass(object):
                                                     otpkey, tok_type,
                                                     serial=self.getSerial())
                     response_detail["oathurl"] = {
+                           "order"      : '2',
                           "description" : _("URL for OATH token"),
                            "value" : oath_url,
                            "img"   : create_img(oath_url, width=250)

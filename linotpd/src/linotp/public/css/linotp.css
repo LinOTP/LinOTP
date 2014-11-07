@@ -44,9 +44,18 @@
   font-size: 90%;
 }
 
+.enrollment_annotation {
+  font-size: 100%;
+}
+
+.enrollment_value {
+  font-size: 50%;
+}
+
 .sel_box {
     margin-bottom: 20px;
 }
+
 
 .sel_user_box {
     height: 1.2em;

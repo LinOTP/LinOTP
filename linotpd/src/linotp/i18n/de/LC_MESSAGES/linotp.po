@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-02 20:11+0100\n"
+"PO-Revision-Date: 2014-11-07 15:06+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -932,7 +932,7 @@ msgid "Selected tokens"
 msgstr "ausgewählte Token"
 
 msgid "Selected token"
-msgstr "ausgewählte Token"
+msgstr "ausgewählter Token"
 
 msgid "Realms"
 msgstr "Realms"
@@ -1175,6 +1175,42 @@ msgstr "Abbrechen"
 
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
+
+msgid "Comment"
+msgstr "Kommentar"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Issuer"
+msgstr "Aussteller"
+
+msgid "Token #"
+msgstr "Tokenanzahl"
+
+msgid "Licensee"
+msgstr "Lizenznehmer"
+
+msgid "Address"
+msgstr "Adresse"
+
+msgid "Contact Name"
+msgstr "Kontakt"
+
+msgid "Contact Email"
+msgstr "Kontakt Email"
+
+msgid "Contact phone"
+msgstr "Kontakt Telefon"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "Expire"
+msgstr "Ablaufdatum"
+
+msgid "Subscription"
+msgstr "Subskription"
 
 msgid "LSE LinOTP Support and Subscription"
 msgstr "LSE LinOTP Support und Subskription "
@@ -2129,6 +2165,26 @@ msgstr "Lizenz Erinnerung:"
 
 msgid "Support license installed successfully."
 msgstr "Die Support Lizenz wurde erfolgreich installiert."
+
+msgid "OATH Soft Token"
+msgstr "OATH Softtoken"
+
+msgid ""
+"QR-Code for installing the token in OATH compatible Soft Tokens (FreeOTP, "
+"Google Authenticator and other tokens using the 'oathurl:/' syntax)"
+msgstr ""
+"QR-Code zur Installation in verschiedenen OATH Softtoken Apps (FreeOTP, "
+"Google Authenticator und andere Token welche die 'otpauth://' Syntax "
+"unterstützen."
+
+msgid "'OATH token' app"
+msgstr "'OATH Token' App"
+
+msgid "QR-Code for installing the token in the 'OATH Token' app for iOS."
+msgstr "QR-Code zur Installation des Tokens in der 'OATH Token' App für iOS."
+
+msgid "The OATH token seed for installing the token using manual input"
+msgstr "Der OATH Token Seed zur manuellen Eingabe."
 
 msgid "OTP values"
 msgstr "OTP-Werte"

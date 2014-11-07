@@ -1134,12 +1134,10 @@ function token_info_save(){
             alert(rObj.result.error.message);
         }
     }
-
     // re-display
     tokeninfo_redisplay();
     return true;
 }
-
 
 
 function enroll_callback(xhdr, textStatus, p_serial) {
@@ -1170,35 +1168,44 @@ function enroll_callback(xhdr, textStatus, p_serial) {
                 $('#token_enroll_user').html("---");
             }
 
+            var dia_tabs = {};
+            var dia_tabs_content = {};
 
-            var dia_text = '<div id="qr_url_tabs"><ul>';
-            // TAB header
             for (var k in obj.detail) {
                 var theDetail = obj.detail[k];
                 if (theDetail != null && theDetail.hasOwnProperty('description') ){
-                    dia_text += '<li><a href="#url_content_'+k+'">'+theDetail.description+'</a></li>';
+                    // fallback, if no ordering is defined
+                    if (theDetail.hasOwnProperty('order')) {
+                        order = theDetail.order;
+                    } else {
+                        order = k;
+                    }
+                    var description = theDetail.description;
+                    if ( $("#description_" +k ).length !== 0) {
+                        description = $("#description_" +k ).html();
+                    }
+                    dia_tabs[order] = '<li><a href="#url_content_'+k+'">'+ description + '</a></li>';
+                    dia_tabs_content[order] = _extract_tab_content(theDetail, k);
                 }
             };
+            // now extract all orders and sort them
+            var keys = [];
+            for (var key in dia_tabs) {
+                keys.push(key);
+            }
+            keys.sort();
+
+            // create the TAB header
+            var dia_text = '<div id="qr_url_tabs">';
+            dia_text += '<ul>';
+            for (order in keys) {
+                dia_text += dia_tabs[order];
+            }
             dia_text += '</ul>';
-            //console_log(obj.detail);
-            // TAB content
-            for (var k in obj.detail) {
-                var theDetail = obj.detail[k];
-                if (theDetail != null && theDetail.hasOwnProperty('description') ){
-                    //console_log(theDetail)
-                    dia_text += '<div id="url_content_'+k+'">';
-                    var desc = theDetail.description;
-                    var value = theDetail.value;
-                    var img   = theDetail.img;
-                    dia_text += "<p>";
-                    var href = "<a href='"+ value+ "'>"+desc+"</a>";
-                    dia_text += href;
-                    var qr_code = img;
-                    dia_text += "<br/>";
-                    dia_text += qr_code;
-                    dia_text += "</p>";
-                    dia_text += "</div>";
-                }
+
+            // create the TAB content
+            for (order in keys) {
+                dia_text += dia_tabs_content[order];
             }
             // serial number
             dia_text += '<input type=hidden id=enroll_token_serial value='+serial+'>';
@@ -1216,6 +1223,25 @@ function enroll_callback(xhdr, textStatus, p_serial) {
     reset_buttons();
 }
 
+function _extract_tab_content(theDetail, k) {
+    var value = theDetail.value;
+    var img   = theDetail.img;
+
+    var annotation = '';
+    if($('#annotation_' + k).length !== 0) {
+        annotation = $('#annotation_' + k).html();
+    }
+
+    var dia_text ='';
+    dia_text += '<div id="url_content_'+k+'">';
+    dia_text += "<p>";
+    dia_text += "<div class='enrollment_annotation'>" + annotation + "</div>";
+    dia_text += "<a href='"+ value+ "'>"+img+"</a>";
+    dia_text += "<br/>";
+    dia_text += "<div class='enrollment_value'>" + value + "</div>";
+    dia_text += "</p></div>";
+    return dia_text;
+}
 
 function token_enroll(){
     check_license();

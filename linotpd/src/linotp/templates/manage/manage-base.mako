@@ -1433,6 +1433,18 @@ ${c.version} --- ${c.licenseinfo}
 <div id="text_form_validation_error_title">${_("Form Validation Error")}</div>
 <div id="text_support_lic_error">${_("License reminder:")}</div>
 <div id="text_support_lic_installed">${_("Support license installed successfully.")}</div>
+
+
+<div id="description_googleurl">${_("OATH Soft Token")}</div>
+<div id="annotation_googleurl"><i>${_("QR-Code for installing the token in OATH compatible Soft Tokens (FreeOTP, Google Authenticator and other tokens using the 'oathurl:/' syntax)")}</i></div>
+
+<div id="description_oathurl">${_("'OATH token' app")}</div>
+<div id="annotation_oathurl">${_("QR-Code for installing the token in the 'OATH Token' app for iOS.")}</div>
+
+<div id="description_otpkey">${_("OTP seed")}</div>
+<div id="annotation_otpkey">${_("The OATH token seed for installing the token using manual input")}</div>
+
+
 </div> <!--end of hidden-->
 
 <div id="alert_box">
