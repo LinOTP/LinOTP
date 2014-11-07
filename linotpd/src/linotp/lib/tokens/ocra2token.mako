@@ -116,9 +116,8 @@ function ocra2_get_enroll_params(){
 <tr>
 	<td><label for="ocrasuite_algorithm">${_("Ocra suite")}</label></td>
 	<td><select name="algorithm" id='ocrasuite_algorithm' >
-	        <option selected value="OCRA-1:HOTP-SHA256-8:C-QN08">SHA256 - otplen 8 digits - numeric challenge 8 digits</option>
-	        <option value="OCRA-1:HOTP-SHA256-8:C-QN08">SHA256 - otplen 8 digits - numeric challenge 8 digits</option>
-	        <option value="OCRA-1:HOTP-SHA256-8:C-QA64">SHA256 - otplen 8 digits - numeric challenge 64 chars</option>
+            <option selected value="OCRA-1:HOTP-SHA256-8:C-QN08">SHA256 - otplen 8 digits - numeric challenge 8 digits</option>
+            <option value="OCRA-1:HOTP-SHA256-8:C-QA64">SHA256 - otplen 8 digits - numeric challenge 64 chars</option>
     </select></td>
 </tr>
 <tr>
