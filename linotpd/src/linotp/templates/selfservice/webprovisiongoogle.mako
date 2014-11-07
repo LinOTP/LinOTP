@@ -29,7 +29,7 @@
 
 <div id='googletokenform' >
     <form class="cmxform" name='myForm'>
-        <ol start="0">
+        <ol>
             <li>${_("You need an OATH compatible soft token app installed on your mobile device.")}
                <br>${_("(FreeOTP, Google Authenticator or another OATH compatible soft token)")}
             </li>

@@ -25,7 +25,7 @@
  *    Support: www.lsexperts.de
  *
 -->
-<h1>${_("Provision your OATH Token")}</h1>
+<h2>${_("Provision your OATH Token")}</h2>
 
 <div id='oathtokenform'>
 	<form class="cmxform" name='myForm'> 
