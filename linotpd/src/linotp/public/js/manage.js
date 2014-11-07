@@ -4735,10 +4735,3 @@ if (browser_lang && browser_lang !== 'en') {
         alert('Unsupported localisation for ' + browser_lang);
     }
 }
-
-
-$(document).ready(function() {
-
-    return false;
-
-});

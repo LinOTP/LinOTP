@@ -912,8 +912,3 @@ if (browser_lang && browser_lang !== 'en') {
     }
 }
 
-$(document).ready(function() {
-
-    return false;
-
-});
