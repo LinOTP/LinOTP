@@ -2017,6 +2017,7 @@ function save_tokenrealm_config(){
             }
             else {
                 $('#token_table').flexReload();
+                $('#selected_tokens').html('');
             }
          });
     }
