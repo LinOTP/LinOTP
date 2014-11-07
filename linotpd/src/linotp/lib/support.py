@@ -54,7 +54,6 @@ from linotp.lib.util import get_version_number
 from linotp.lib.token import getTokenNumResolver
 
 
-
 support_info = {
     'comment' :'LinOTP Support Info',
     'issuer' : '',
@@ -193,9 +192,9 @@ def isSupportLicenseValid(licString, raiseException=False):
             raise Exception(error)
         return valid, error
 
-    valid = verify_expiration(lic_dict)
+    (valid, msg) = verify_expiration(lic_dict)
     if not valid:
-        error = _("Subscription expired!")
+        error = _("License expired: %r" % msg)
         log.error("[setLicense] Verification of support license failed! %s\n %r"
                   % (error, licString))
         if raiseException:
@@ -227,38 +226,49 @@ def verify_expiration(lic_dic):
     today = datetime.datetime.now()
 
     if "expire" not in lic_dic:
-        log.error("no license expiration information in license  %r" % lic_dic)
-        return False
+        msg = "no license expiration information in license  %r" % lic_dic
+        log.error(msg)
+        return (False, msg)
+
+    if "subscription" not in lic_dic:
+        msg = "no license subscription information in license  %r" % lic_dic
+        log.error(msg)
+        return (False, msg)
+
+    check_dates = {}
 
     # we check only for the date string which has to be the first part of
     # the expiration date definition
     expire = lic_dic.get('expire').split()[0].strip()
-    if expire.lower() in ('never'):
-        expire = lic_dic.get('subscription').split()[0].strip()
-        return True
+    if expire.lower() not in ('never'):
+        check_dates['expire'] = expire
 
-    # -with  support for two date formats
-    expiration_date = None
+    subscription = lic_dic.get('subscription').split()[0].strip()
+    check_dates['subscription'] = subscription
 
-    for fmt in ('%d.%m.%Y', "%m/%d/%Y", "%Y-%m-%d"):
-        try:
-            expiration_date = datetime.datetime.strptime(expire, fmt)
-            break
-        except:
-            log.info("license expiration format not of format %s : %r" %
-                     (fmt, expire))
-            expiration_date = None
+    for expire_type, expire in check_dates.items():
+        # -with  support for two date formats
+        expiration_date = None
+        for fmt in ('%d.%m.%Y', "%m/%d/%Y", "%Y-%m-%d"):
+            try:
+                expiration_date = datetime.datetime.strptime(expire, fmt)
+                break
+            except:
+                log.info("license expiration format not of format %s : %r" %
+                         (fmt, expire))
+                expiration_date = None
 
-    if not expiration_date:
-        log.error("Failed to convert license expiration date %r" % expire)
-        return False
+        if not expiration_date:
+            msg = "Failed to convert license %s date %r" % (expire_type, expire)
+            log.error(msg)
+            return (False, msg)
 
-    if today > expiration_date:
-        log.error("License expiration date %r overdue" % expire)
-        return False
+        if today > expiration_date:
+            msg = "%s valid till %r"
+            log.error(msg % (expire_type, expire))
+            return (False, msg % (expire_type, expire))
 
-
-    return ret
+    return (ret, "")
 
 def verify_volume(lic_dict):
 
