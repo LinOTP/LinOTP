@@ -120,9 +120,9 @@ function totp_enroll_setup_defaults(config, options){
 		}
 	}
 	$('#totp_key').val('');
-    $('#totp_key_cb').prop('checked', true);
+    $('#totp_rb_key_gen').prop('checked', true);
     $('#totp_google_compliant').prop('checked', false);
-    cb_changed_deactivate('totp_key_cb',['totp_key']);
+    cb_changed_deactivate('totp_rb_key_gen',['totp_key']);
     totp_google_constrains();
 
     var rand_pin = options['otp_pin_random'];
@@ -139,7 +139,7 @@ function totp_enroll_setup_defaults(config, options){
  * token should be google authenticator compliant
  */
 function totp_google_constrains() {
-    if ($('#totp_key_cb').is(':checked') === false) {
+    if ($('#totp_rb_key_gen').is(':checked') === false) {
         $('#totp_otplen').prop('disabled', false);
         $('#totp_algorithm').prop('disabled', false);
         $('#totp_timestep').prop('disabled', false);
@@ -183,7 +183,7 @@ function totp_get_enroll_params(){
     params['type'] = 'totp';
    	params['description'] = $('#enroll_totp_desc').val();
 
-    if  ( $('#totp_key_cb').is(':checked') ) {
+    if  ( $('#totp_rb_key_gen').is(':checked') ) {
 		params['genkey']	= 1;
 		params['hashlib']	= 'sha1';
     } else {
@@ -203,8 +203,8 @@ function totp_get_enroll_params(){
 }
 $( document ).ready(function() {
 
-$('input[name="totp_key_cb"]').click(function() {
-   cb_changed_deactivate('totp_key_cb',['totp_key']);
+$('input[name="totp_rbg_key_gen"]').click(function() {
+   cb_changed_deactivate('totp_rb_key_gen',['totp_key']);
    $('#totp_google_compliant').prop('checked', false);
    totp_google_constrains();
 });
@@ -228,15 +228,15 @@ $('#totp_google_compliant').click(function() {
 
 <tr>
     <td class="description" colspan='2'>
-        <input type="radio" name="totp_seed_gen" value="gen_key" id='totp_key_cb'/>
+        <input type="radio" name="totp_rbg_key_gen" value="gen_key" id='totp_rb_key_gen'/>
         <label for"hmac_key_cb">${_("generate random seed")}</label></td>
  </tr>
 
 
 <tr>
     <td class="description" >
-        <input type="radio" name="totp_seed_gen" value='no_gen_key' id='totp_key_cb_no'/>
-        <label for"totp_key_cb_no">${_("enter seed")}</label></td>
+        <input type="radio" name="totp_rbg_key_gen" value='no_gen_key' id='totp_rb_key_gen_no'/>
+        <label for"totp_rb_key_gen_no">${_("enter seed")}</label></td>
     <td>
         <input type="text" name="totp_key" id="totp_key" value="" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
@@ -333,7 +333,7 @@ var totp_self_validator = $('#form_enroll_totp').validate({
             number: false,
             content_check: true,
             required: function() { 
-                return ! $('#totp_key_cb2').is(':checked');
+                return ! $('#totp_rb2_key_gen').is(':checked');
             }
         }
     }
@@ -344,7 +344,7 @@ function self_totp_get_param()
     var urlparam = {};
     var typ = 'totp';
 
-    if  ( $('#totp_key_cb2').is(':checked') ) {
+    if  ( $('#totp_rb2_key_gen').is(':checked') ) {
         urlparam['genkey'] = 1;
     } else {
         // OTP Keytotp_secret
@@ -375,17 +375,17 @@ function self_totp_submit(){
     var ret = false;
     var params =  self_totp_get_param();
 
-    if  ( ($('#totp_key_cb2').is(':checked') === false) 
+    if  ( ($('#totp_rb2_key_gen').is(':checked') === false) 
            && ($('#form_enroll_totp').valid() === false)) {
         alert('${_("Form data not valid.")}');
         return ret
     }
     enroll_token( params );
     // reset the form
-    $("#totp_key_cb2").prop("checked", true);
+    $("#totp_rb2_key_gen").prop("checked", true);
     $('#totp_self_secret').val('');
     $('#totp_self_google_compliant').prop("checked", false);
-    cb_changed_deactivate('totp_key_cb2',['totp_self_secret']);
+    cb_changed_deactivate('totp_rb2_key_gen',['totp_self_secret']);
     $('#totp_self_otplen').val('6');
     $('#totp_self_hashlib').val("sha1");
     $('#totp_self_timestep').val('30');
@@ -417,8 +417,8 @@ function totp_self_google_constrains() {
 
 $( document ).ready(function() {
     
-    $('input[name="totp_key_cb2"]').click(function() {
-        cb_changed_deactivate('totp_key_cb2',['totp_self_secret']);
+    $('input[name="totp_rbg2_key_gen"]').click(function() {
+        cb_changed_deactivate('totp_rb2_key_gen',['totp_self_secret']);
         totp_self_validator.resetForm();
     });
 
@@ -431,8 +431,8 @@ $( document ).ready(function() {
         self_totp_submit();
     });
 
-    $("#totp_key_cb2").prop("checked", true);
-    cb_changed_deactivate('totp_key_cb2',['totp_self_secret']);
+    $("#totp_rb2_key_gen").prop("checked", true);
+    cb_changed_deactivate('totp_rb2_key_gen',['totp_self_secret']);
 
 
 });
@@ -446,15 +446,15 @@ $( document ).ready(function() {
         <tr class="space"><th colspan="2">${_("Token Seed:")}</th></tr>
         <tr>
             <td class="description">
-                <input type='radio' id='totp_key_cb2' name='totp_key_cb2'>
-                <label for='totp_key_cb2'>${_("generate random seed")}</label>
+                <input type='radio' id='totp_rb2_key_gen' name='totp_rbg2_key_gen'>
+                <label for='totp_rb2_key_gen'>${_("generate random seed")}</label>
             </td>
         </tr>
         <tr>
             <td class="description">
-                <input type='radio' id='totp_key_cb2_no' name='totp_key_cb2'>
+                <input type='radio' id='totp_rb2_key_gen_no' name='totp_rbg2_key_gen'>
                 <label id='totp_self_secret_label'
-                    for='totp_key_cb2_no'>${_("enter token seed")}</label></td>
+                    for='totp_rb2_key_gen_no'>${_("enter token seed")}</label></td>
             <td><input id='totp_self_secret' name='totp_self_secret'
                 class="required ui-widget-content ui-corner-all"/></td>
         </tr>
