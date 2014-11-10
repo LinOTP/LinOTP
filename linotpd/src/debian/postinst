@@ -23,7 +23,43 @@ RAND_DEVICE=/dev/urandom
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
 
-echo "postinst: $1"
+DOING_UPGRADE=false
+DOING_NEW_INSTALLATION=false
+DOING_RECONFIGURE=false
+if [ -n "$2" ]; then
+	INSTALLED_VERSION=${2}
+    # if ever needed one could compare versions using dpkg --compare-versions
+fi
+# Currently debconf's postinst script does not use the 'reconfigure' parameter
+# but instead sets DEBCONF_RECONFIGURE to 1. The recommended method for dealing
+# with this and being future proof is supporting both. See debconf-devel
+# manpage for details.
+if [ "$1" = "reconfigure" ] || [ "${DEBCONF_RECONFIGURE}" = 1 ]; then
+	DOING_UPGRADE=false
+	DOING_NEW_INSTALLATION=false
+	DOING_RECONFIGURE=true
+elif [ "$1" = "configure" ]; then
+    DOING_RECONFIGURE=false
+	if [ -n "${INSTALLED_VERSION}" ]; then
+		DOING_UPGRADE=true
+		DOING_NEW_INSTALLATION=false
+	else
+		DOING_UPGRADE=false
+		DOING_NEW_INSTALLATION=true
+	fi
+fi
+
+print_timestamp() {
+    date +"%Y/%m/%d - %T"
+}
+
+# Always print to stderr, otherwise debconf can get confused
+echo `print_timestamp` "INFO [linotp postinst] Upgrading package?: ${DOING_UPGRADE}" >&2
+echo `print_timestamp` "INFO [linotp postinst] Reconfiguring package?: ${DOING_RECONFIGURE}" >&2
+echo `print_timestamp` "INFO [linotp postinst] Installing new package?: ${DOING_NEW_INSTALLATION}" >&2
+echo `print_timestamp` "INFO [linotp postinst] Currently installed version: ${INSTALLED_VERSION}" >&2
+echo `print_timestamp` "INFO [linotp postinst] script param \$1: ${1}" >&2
+echo `print_timestamp` "INFO [linotp postinst] script param \$2: ${2}" >&2
 
 ####################################################################
 #

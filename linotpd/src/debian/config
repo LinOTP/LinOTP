@@ -35,6 +35,40 @@ function check_mysql_tables() {
 	#echo "DB: $DB_OK, TABLES: $TABLES_OK" >> /var/log/messages
 }
 
+DOING_UPGRADE=false
+DOING_NEW_INSTALLATION=false
+DOING_RECONFIGURE=false
+if [ -n "$2" ]; then
+	INSTALLED_VERSION=${2}
+    # if ever needed one could compare versions using dpkg --compare-versions
+fi
+if [ "$1" = "configure" ]; then
+    DOING_RECONFIGURE=false
+	if [ -n "${INSTALLED_VERSION}" ]; then
+		DOING_UPGRADE=true
+		DOING_NEW_INSTALLATION=false
+	else
+		DOING_UPGRADE=false
+		DOING_NEW_INSTALLATION=true
+	fi
+elif [ "$1" = "reconfigure" ]; then
+	DOING_UPGRADE=false
+	DOING_NEW_INSTALLATION=false
+	DOING_RECONFIGURE=true
+fi
+
+print_timestamp() {
+    date +"%Y/%m/%d - %T"
+}
+
+# Always print to stderr, otherwise debconf can get confused
+echo `print_timestamp` "INFO [linotp config] Upgrading package?: ${DOING_UPGRADE}" >&2
+echo `print_timestamp` "INFO [linotp config] Reconfiguring package?: ${DOING_RECONFIGURE}" >&2
+echo `print_timestamp` "INFO [linotp config] Installing new package?: ${DOING_NEW_INSTALLATION}" >&2
+echo `print_timestamp` "INFO [linotp config] Currently installed version: ${INSTALLED_VERSION}" >&2
+echo `print_timestamp` "INFO [linotp config] script param \$1: ${1}" >&2
+echo `print_timestamp` "INFO [linotp config] script param \$2: ${2}" >&2
+
 # In case of univention corparate server we do not use debconf!
 if [ !  $(check_ucs) ]; then
 	if [ -f $ENCKEY ]; then
