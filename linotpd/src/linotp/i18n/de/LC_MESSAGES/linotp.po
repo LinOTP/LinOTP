@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-07 15:06+0100\n"
+"PO-Revision-Date: 2014-11-10 12:31+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -60,11 +60,11 @@ msgstr ""
 msgid "License is not valid!"
 msgstr "Keine gültige Lizenz!"
 
-msgid "Subscription expired!"
-msgstr "Die Subskription ist abgelaufen!"
-
 msgid "License volume exceeded:"
 msgstr "Lizenz Volumen überschritten:"
+
+msgid "expired - valid till"
+msgstr "abgelaufen - gültig bis"
 
 msgid "tokens used"
 msgstr "verwendete Token"
@@ -1175,42 +1175,6 @@ msgstr "Abbrechen"
 
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
-
-msgid "Comment"
-msgstr "Kommentar"
-
-msgid "Version"
-msgstr "Version"
-
-msgid "Issuer"
-msgstr "Aussteller"
-
-msgid "Token #"
-msgstr "Tokenanzahl"
-
-msgid "Licensee"
-msgstr "Lizenznehmer"
-
-msgid "Address"
-msgstr "Adresse"
-
-msgid "Contact Name"
-msgstr "Kontakt"
-
-msgid "Contact Email"
-msgstr "Kontakt Email"
-
-msgid "Contact phone"
-msgstr "Kontakt Telefon"
-
-msgid "Date"
-msgstr "Datum"
-
-msgid "Expire"
-msgstr "Ablaufdatum"
-
-msgid "Subscription"
-msgstr "Subskription"
 
 msgid "LSE LinOTP Support and Subscription"
 msgstr "LSE LinOTP Support und Subskription "
@@ -2567,6 +2531,30 @@ msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
 
+#~ msgid "License reminder: %r"
+#~ msgstr "Lizenz Erinnerung: %r"
+
+#~ msgid "License expired: %r"
+#~ msgstr "Lizenz Erinnerung: %r"
+
+#~ msgid "Subscription expired!"
+#~ msgstr "Die Subskription ist abgelaufen!"
+
+#~ msgid "Comment"
+#~ msgstr "Kommentar"
+
+#~ msgid "Token #"
+#~ msgstr "Tokenanzahl"
+
+#~ msgid "Contact Name"
+#~ msgstr "Kontakt"
+
+#~ msgid "Contact Email"
+#~ msgstr "Kontakt Email"
+
+#~ msgid "Expire"
+#~ msgstr "Ablaufdatum"
+
 #~ msgid "Support"
 #~ msgstr "Support"
 
@@ -2576,9 +2564,6 @@ msgstr ""
 #~ msgid "Set Subscription"
 #~ msgstr "Subskription registrieren"
 
-#~ msgid "Comment"
-#~ msgstr "Kommentar"
-
 #~ msgid "For professional LinOTP support and enterprise subscription, "
 #~ msgstr "Zum Erwerb von "
 
@@ -2587,9 +2572,6 @@ msgstr ""
 
 #~ msgid "for support agreement purchase."
 #~ msgstr "können Sie und gerne kontaktieren"
-
-#~ msgid "Token #"
-#~ msgstr "Tokenanzahl"
 
 #~ msgid "or generate new one"
 #~ msgstr "oder einen neuen generieren"

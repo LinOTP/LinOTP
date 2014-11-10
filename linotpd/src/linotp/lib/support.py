@@ -194,7 +194,7 @@ def isSupportLicenseValid(licString, raiseException=False):
 
     (valid, msg) = verify_expiration(lic_dict)
     if not valid:
-        error = _("License expired: %r" % msg)
+        error = "%s" % msg
         log.error("[setLicense] Verification of support license failed! %s\n %r"
                   % (error, licString))
         if raiseException:
@@ -264,9 +264,10 @@ def verify_expiration(lic_dic):
             return (False, msg)
 
         if today > expiration_date:
-            msg = "%s valid till %r"
-            log.error(msg % (expire_type, expire))
-            return (False, msg % (expire_type, expire))
+            msg_txt = _("expired - valid till")
+            msg = "%s %s %r" % (expire_type, msg_txt, expire)
+            log.error(msg)
+            return (False, msg)
 
     return (ret, "")
 
