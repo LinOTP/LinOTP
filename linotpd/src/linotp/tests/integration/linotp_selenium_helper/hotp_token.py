@@ -48,18 +48,20 @@ class HotpToken(Token):
         Token.__init__(self, driver=driver, base_url=base_url)
         select_tag = driver.find_element_by_id("tokentype")
         select(driver, select_element=select_tag, option_text="HMAC eventbased")
-        wel_hmac_key_cb = driver.find_element_by_id("hmac_key_cb")
+        wel_hmac_key_rb_gen = driver.find_element_by_id("hmac_key_rb_gen")
+        wel_hmac_key_rb_no = driver.find_element_by_id("hmac_key_rb_no")
         wel_hmac_key = driver.find_element_by_id("hmac_key")
         wel_hmac_otplen = driver.find_element_by_id("hmac_otplen")
         wel_hmac_algorithm = driver.find_element_by_id("hmac_algorithm")
         wel_enroll_hmac_desc = driver.find_element_by_id("enroll_hmac_desc")
-        if wel_hmac_key_cb.is_selected():
-            wel_hmac_key_cb.click() # unselect checkbox
+
         if hmac_key:
+            wel_hmac_key_rb_no.click()  # select: seed input - no random see
             wel_hmac_key.clear()
             wel_hmac_key.send_keys(hmac_key)
         elif generate_key:
-            wel_hmac_key_cb.click()
+            wel_hmac_key_rb_gen.click()  # select: random seed
+
         select(driver, select_element=wel_hmac_otplen, option_text=str(otp_length))
         select(driver, select_element=wel_hmac_algorithm, option_text=hash_algorithm)
         driver.find_element_by_id("hmac_pin1").clear()

@@ -51,9 +51,9 @@ ${_("HMAC eventbased")}
  */
 function hmac_enroll_setup_defaults(config, options){
     $('#hmac_key').val('');
-    $('#hmac_key_cb').prop('checked', true);
+    $('#hmac_key_rb_gen').prop('checked', true);
     $('#hmac_google_compliant').prop('checked', false);
-    cb_changed_deactivate('hmac_key_cb',['hmac_key']);
+    cb_changed_deactivate('hmac_key_rb_gen',['hmac_key']);
     google_constrains();
     var rand_pin = options['otp_pin_random'];
     if (rand_pin > 0) {
@@ -69,7 +69,7 @@ function hmac_enroll_setup_defaults(config, options){
  * token should be google authenticator compliant
  */
 function google_constrains() {
-    if ($('#hmac_key_cb').is(':checked') === false) {
+    if ($('#hmac_key_rb_gen').is(':checked') === false) {
         $('#hmac_otplen').prop('disabled', false);
         $('#hmac_algorithm').prop('disabled', false);
         $('#hmac_google_compliant').prop('disabled', true);
@@ -107,7 +107,7 @@ function hmac_get_enroll_params(){
    	url['description'] = $('#enroll_hmac_desc').val();
 
     // If we got to generate the hmac key, we do it here:
-    if  ( $('#hmac_key_cb').is(':checked') ) {
+    if  ( $('#hmac_key_rb_gen').is(':checked') ) {
     	url['genkey'] = 1;
 
     } else {
@@ -128,8 +128,8 @@ function hmac_get_enroll_params(){
 }
 $( document ).ready(function() {
 
-$('input[name="hmac_key_cb"]').click(function() {
-   cb_changed_deactivate('hmac_key_cb',['hmac_key']);
+$('input[name="hmac_seed_gen_radiogroup"]').click(function() {
+   cb_changed_deactivate('hmac_key_rb_gen',['hmac_key']);
    $('#hmac_google_compliant').prop('checked', false);
    google_constrains();
 });
@@ -155,15 +155,15 @@ $('#hmac_google_compliant').click(function() {
 
 <tr>
     <td class="description" colspan='2'>
-        <input type="radio" name="hmac_seed_gen" value="gen_key" id='hmac_key_cb'/>
-        <label for"hmac_key_cb">${_("generate random seed")}</label></td>
+        <input type="radio" name="hmac_seed_gen_radiogroup" value="gen_key" id='hmac_key_rb_gen'/>
+        <label for"hmac_key_rb_gen">${_("generate random seed")}</label></td>
  </tr>
 
 
 <tr>
     <td class="description" >
-        <input type="radio" name="hmac_seed_gen" value='no_gen_key' id='hmac_key_cb_no'/>
-        <label for"hmac_key_cb_no">${_("enter seed")}</label></td>
+        <input type="radio" name="hmac_seed_gen_radiogroup" value='no_gen_key' id='hmac_key_rb_no'/>
+        <label for"hmac_key_rb_no">${_("enter seed")}</label></td>
     <td>
         <input type="text" name="hmac_key" id="hmac_key" value="" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
@@ -252,7 +252,7 @@ var hmac_self_validator = $('#form_enroll_hmac').validate({
             number: false,
             content_check: true,
             required: function() {
-                return ! $('#hmac_key_cb2').is(':checked');
+                return ! $('#hmac_key_rb2_gen').is(':checked');
             }
         }
     }
@@ -263,7 +263,7 @@ function self_hmac_get_param()
     var urlparam = {};
     var typ = 'hmac';
 
-    if  ( $('#hmac_key_cb2').is(':checked') ) {
+    if  ( $('#hmac_key_rb2_gen').is(':checked') ) {
     	urlparam['genkey'] = 1;
     } else {
         // OTP Key
@@ -293,17 +293,17 @@ function self_hmac_submit(){
     var ret = false;
     var params =  self_hmac_get_param();
 
-    if  ( ($('#hmac_key_cb2').is(':checked') === false) 
+    if  ( ($('#hmac_key_rb2_gen').is(':checked') === false) 
            && ($('#form_enroll_hmac').valid() === false)) {
         alert('${_("Form data not valid.")}');
         return ret
     }
     enroll_token( params );
     // reset the form
-    $("#hmac_key_cb2").prop("checked", true);
+    $("#hmac_key_rb2_gen").prop("checked", true);
     $('#hmac_self_secret').val('');
     $('#hmac_self_google_compliant').prop("checked", false);
-    cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
+    cb_changed_deactivate('hmac_key_rb2_gen',['hmac_self_secret']);
     $('#hmac_self_otplen').val('6');
     $('#hmac_self_hashlib').val("sha1");
     hmac_self_google_constrains()
@@ -330,16 +330,16 @@ function hmac_self_google_constrains() {
 
 $( document ).ready(function() {
 
-    $('input[name="hmac_key_cb2"]').click(function() {
-        cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
+    $('input[name="hmac_seed_gen_radiogroup2"]').click(function() {
+        cb_changed_deactivate('hmac_key_rb2_gen',['hmac_self_secret']);
         hmac_self_validator.resetForm();
     });
 
     $('#hmac_self_google_compliant').click(function() {
         hmac_self_google_constrains();
     });
-    $("#hmac_key_cb2").prop("checked", true);
-    cb_changed_deactivate('hmac_key_cb2',['hmac_self_secret']);
+    $("#hmac_key_rb2_gen").prop("checked", true);
+    cb_changed_deactivate('hmac_key_rb2_gen',['hmac_self_secret']);
 
     $('#button_enroll_hmac').click(function (e){
         e.preventDefault();
@@ -357,15 +357,15 @@ $( document ).ready(function() {
         <tr class="space"><th colspan="2">${_("Token Seed:")}</th></tr>
         <tr>
             <td class="description" >
-                <input type='radio' id='hmac_key_cb2' name='hmac_key_cb2' selected="selected">
-                <label for='hmac_key_cb2'>${_("generate random seed")}</label>
+                <input type='radio' id='hmac_key_rb2_gen' name='hmac_seed_gen_radiogroup2' selected="selected">
+                <label for='hmac_key_rb2_gen'>${_("generate random seed")}</label>
             </td>
         </tr>
         <tr>
             <td class="description">
-                <input type='radio' id='hmac_key_cb2_no' name='hmac_key_cb2'>
+                <input type='radio' id='hmac_key_rb2_no' name='hmac_seed_gen_radiogroup2'>
                 <label id='hmac_self_secret_label'
-                    for='hmac_key_cb2_no'>${_("enter token seed")}</label></td>
+                    for='hmac_key_rb2_no'>${_("enter token seed")}</label></td>
             <td><input id='hmac_self_secret' name='hmac_self_secret' disabled="disabled"
                 class="required ui-widget-content ui-corner-all"/></td>
         </tr>
