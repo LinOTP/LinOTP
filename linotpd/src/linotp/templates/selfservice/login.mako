@@ -30,8 +30,6 @@
 <html>
 <head>
 <title>LinOTP 2 User self service</title>
-<meta name="author" content="Cornelius Kölbel">
-<meta name="date" content="2010-07-05T23:23:25+0200">
 <meta name="copyright" content="LSE Leading Security Experts GmbH">
 <meta name="keywords" content="LinOTP 2, self service">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -54,15 +52,12 @@ $(document).ready(function() {
 
 <div id="wrap">
 
-<div id="header">
-	<div id="logo">
-	</div>
-	
-	<div class="float_right">
-	Open Source Edition<br>
-	<span class=portalname>${_("Selfservice Portal")}</span>
-	</div>
-</div>
+    <div id="header">
+        <div class="header">
+            <span class="portalname float_left">${_("Selfservice Portal")}</span>
+        </div>
+        <div id="logo" class="float_right"> </div>
+    </div>
 
 
 <div id="sidebar">
@@ -117,7 +112,7 @@ ${_("If you lost a token, you may also disable this token.")}
 </div>  <!-- end of main-->
 
 <div id="footer">
-	${c.version} --- ${c.licenseinfo}
+    ${c.version} --- &copy; ${c.licenseinfo}
 </div>
 </div>  <!-- end of wrap -->
 </body>

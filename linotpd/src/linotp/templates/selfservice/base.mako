@@ -81,13 +81,11 @@ if isinstance(lang, list):
 <div id="wrap">
 
 <div id="header">
-	<div id="logo">
-	</div>
-
-	<div class="float_right">
-	Open Source Edition<br>
-	<span class=portalname>${_("Selfservice Portal")}</span>
-	</div>
+    <div class="header"> <span class="portalname float_left">${_("Selfservice Portal")}</span></div>
+    <div id="logo" class="float_right"> </div>
+</div>
+<div class="logout">
+    <p>${_("Logged in as")}:${c.user}@${c.realm} | <a href="/account/logout">${_("Logout")}</a> </p>
 </div>
 
 <div id="do_waiting">
@@ -95,10 +93,6 @@ if isinstance(lang, list):
 </div>
 
 <div id="sidebar">
-
-	<div id="logout">
-	<a href="/account/logout">${_("Logout")}</a>
-	</div> <!-- logout -->
 
 	<div>${_("Tokens for user:")} ${c.user} ${_("in realm")} ${c.realm}</div>
 
@@ -176,7 +170,7 @@ if isinstance(lang, list):
 </div>  <!-- end of main-->
 
 <div id="footer">
-${c.version} --- ${c.licenseinfo}
+${c.version} --- &copy; ${c.licenseinfo}
 </div>
 
 
