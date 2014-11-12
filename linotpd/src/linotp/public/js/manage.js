@@ -436,6 +436,17 @@ function get_selected_email() {
     return selectedEmailItems;
 }
 
+function show_selected_status(){
+    var selectedUserItems = get_selected_users();
+    var selectedTokenItems = get_selected_tokens();
+    document.getElementById('selected_tokens').innerHTML = selectedTokenItems.join(", ");
+    // we can only select a single user
+    if ( selectedUserItems.length > 0 )
+        document.getElementById('selected_users').innerHTML = selectedUserItems[0].login;
+    else
+        document.getElementById('selected_users').innerHTML = "";
+}
+
 function get_selected(){
     var selectedUserItems = get_selected_users();
     var selectedTokenItems = get_selected_tokens();
@@ -4630,6 +4641,7 @@ function view_token() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
+            onSuccess: show_selected_status,
             addTitleToCell: true,
             dblClickResize: true,
             searchbutton: true
@@ -4676,6 +4688,7 @@ function view_user() {
             preProcess: pre_flexi,
             onError: error_flexi,
             onSubmit: load_flexi,
+            onSuccess: show_selected_status,
             addTitleToCell: true,
             dblClickResize: true,
             searchbutton: true
