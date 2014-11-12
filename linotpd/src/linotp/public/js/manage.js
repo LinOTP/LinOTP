@@ -254,12 +254,12 @@ function alert_info_text(s, text_container, display_type) {
 function toggle_close_all_link() {
     /*
      * This function counts the number of visible info boxes and error boxes and
-     * if more than 3 are displayed it shows the "Close all" link. Otherwise it
+     * if more than 1 are displayed it shows the "Close all" link. Otherwise it
      * hides the link.
      */
     visible_boxes = $("#info_box > div").filter(":visible");
     close_all = $("a.close_all");
-    if (visible_boxes.length > 3) {
+    if (visible_boxes.length > 1) {
         close_all.click(function( event ) {
             event.preventDefault();
             visible_boxes.hide('blind', {}, 500);
