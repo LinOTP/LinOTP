@@ -184,7 +184,7 @@ if isinstance(lang, list):
 
 </div>
 <div id="footer">
-${c.version} --- ${c.licenseinfo}
+${c.version} --- &copy; ${c.licenseinfo}
 </div>
 
 <span id="include_footer"> </span>

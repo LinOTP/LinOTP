@@ -1,6 +1,3 @@
-<meta name="generator" content="Bluefish 1.0.7">
-<meta name="author" content="Cornelius Kölbel">
-<meta name="date" content="2010-08-31T12:40:08+0200">
 <meta name="copyright" content="LSE Leading Security Experts GmbH">
 <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -27,24 +24,22 @@
 
 </head>
 <body>
-
+<div id="wrap">
 <div id="header">
-	<div id="logo"></div>
-	<div class="float_right">
-	Open Source Edition<br>
-	<span class=portalname>${_("Authentication")}</span>
-	</div>
+    <div class="header" ">
+        <span class="portalname float_left">${_("Authentication")}</span>
+    </div>
+    <div id="logo" class="float_right"> </div>
 </div>
 
 <div class="javascript_error" id="javascript_error">
-	${_("You need to enable Javascript to use the authentication forms.")}
+    ${_("You need to enable Javascript to use the authentication forms.")}
 </div>
 
 ${self.body()}
 
 
-<div id="footer">
-${c.licenseinfo}
+<div id="footer">${c.version} --- &copy; ${c.licenseinfo}</div>
 </div>
 </body>
 </html>

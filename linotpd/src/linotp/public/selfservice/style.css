@@ -38,30 +38,31 @@ h1 {
 }
 
 body {
-	font-family: helvetica, impact, sans-serif;
-	}
+    font-family: helvetica, impact, sans-serif;
+}
 
 #wrap {
- width:95%;
- margin:0 auto;
+    width:97%;
+    margin:0 auto;
 }
 
 
 #main {
-float:right;
-width:68%;
-background: #080808;
-border: 1px solid #fe8625;
-padding: 3px;
+    float:right;
+    width:68%;
+    background: #080808;
+    padding: 3px;
 }
 
 #sidebar {
-float:left;
-width:30%;
-background:#eeeeee;
-border-right: 1px solid #fe8625;
-padding: 3px;
-/*position:  relative;*/
+    float:left;
+    width:30%;
+    display: block;
+    min-height: 33em;
+    background:#eeeeee;
+    border-right: 1px solid #fe8625;
+    margin: 2px;
+    padding: 3px;
 }
 
 #imprint {
@@ -71,51 +72,66 @@ padding: 3px;
 }
 
 
- #header {
- background:#feb77e;
- font-size:large;
- background-image:url(/images/ui-bg_highlight-soft_75_cccccc_1x100.png);
- margin: 1px;
- padding: 3px;
- border: 1px solid #aaaaaa;
- height: 70px;
+#header {
+    background: none repeat scroll 0 0 #EEEEEE;
+    font-size:medium;
+    margin-bottom: 0px;
+    padding: 0.3em;
+    padding-left: 1em;
+    height: 50px;
+    border-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border: 1px solid #AAAAAA;
+}
+
+#logo{
+    background-image:  url(/images/linotp_logo_103x35.png);
+    background-repeat: no-repeat;
+    background-position:center;
+    display: block;
+    height: 50px;
+    width: 110px;
+}
+
+.header {
+    width : 100%;
+}
+
+.float_left {
+    float:left;
+}
+
+.float_right{
+    float:right;
+    text-align:right;
+}
+
+.portalname{
+    color: #fe8625;
+    font-size:200%;
+    /*	text-shadow:black 3px 2px 4px; */
+}
+
+
+#menu {
+    width:100%;
+}
+#nav {
+    background:#dddddd;
+    //float:left;
  }
 
- #logo{
- background-image:  url(/images/linotp_logo_200x68_72dpi.png);
- background-repeat: no-repeat;
- float: left;
- height: 68px;
- width: 200px;
- margin: 1px 0 0 1px;
- }
+#logout {
+    float:right;
+}
+.logout {
+    float:right;
+    text-align: right;
+    font-size: 0.7em;
+    margin-top: -0.5em;
+    padding-right: 2px;
+}
 
- .float_left {
- 	float:left;
- }
- .float_right{
- 	float:right;
-	text-align:right;
- }
-
- .portalname{
- 	color:white;
-	font-size:200%;
-	text-shadow:black 3px 2px 4px;
- }
-
-
-
- #menu {
- width:100%;
- }
- #nav {
- background:#dddddd;
- //float:left;
- }
- #logout {
- float:right;
- }
 
  #main {
  background:#fefefe;
@@ -123,9 +139,12 @@ padding: 3px;
 
 
 #footer {
- clear:both;
- color: white;
- background:#080808;
+    background: none repeat scroll 0 0 #080808;
+    border-radius: 4px;
+    clear: both;
+    color: white;
+    margin-top: 2px;
+    padding: 2px;
 }
 
  #nav ul {
