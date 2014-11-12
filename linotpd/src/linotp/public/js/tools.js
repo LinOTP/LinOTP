@@ -243,7 +243,7 @@ function create_tools_exportaudit_dialog() {
         buttons: {
             'Export': { click:  function(){
                         exportAudit($('#export_audit_number').val(),
-                                    $('#exüprt_audit_page').val());
+                                    $('#export_audit_page').val());
                         $(this).dialog('close');
                         },
                     id: "button_export_audit",
@@ -270,7 +270,7 @@ function add_user_data() {
      * This function returns an object with the user data as needed by the /admin/init controller
      */
     var param = new Object();
-    var users = get_selected_users();
+    var users = get_selected_user();
     if (users[0]) {
         param['user'] = users[0].login;
         param['resConf'] = users[0].resolver;

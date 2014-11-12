@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-10 12:31+0100\n"
+"PO-Revision-Date: 2014-11-12 15:42+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -757,6 +757,15 @@ msgstr "Subskription"
 
 msgid "Version"
 msgstr "Version"
+
+msgid "User selection:"
+msgstr "Benutzer Auswahl:"
+
+msgid "Selection of more than one user is not supported!"
+msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
+
+msgid "Please select only one user."
+msgstr "Bitte wählen Sie nur einen Benutzer aus."
 
 msgid "Professional LinOTP support and enterprise subscription"
 msgstr "Professionellen LinOTP Support und Subskription für Unternehmen"
