@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-10 12:31+0100\n"
+"PO-Revision-Date: 2014-11-13 16:14+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -773,6 +773,31 @@ msgstr ""
 
 msgid "Your LinOTP support subscription"
 msgstr "Ihr LinOTP Support und Subskription"
+
+msgid ""
+"LDAP Server, especially Active Directory, implement a default serverside "
+"maximum size limit of 1000 objects."
+msgstr ""
+"LDAP Server, insbesondere Active Directoy, haben auf der Server Seite eine "
+"standardmäßige Beschränkung in seiner Antwort von 1000 zurückgegebenen "
+"Objekten (sizelimit)."
+
+msgid ""
+"This is independed of the local sizelimit and does not hinder the "
+"functionality of LinOTP."
+msgstr ""
+"Diese Beschränkung ist unabhängig von der lokal anggebenen Beschränkung und "
+"beeinträchtigt nicht die Funktionalität im Zusammenhang mit LinOTP."
+
+#, python-format
+msgid "Number of users found: %d"
+msgstr "Anzahl der gefundene Benutzer: %d"
+
+msgid "Connection Test: successful"
+msgstr "Verbindungs Test: erfolgreich"
+
+msgid "LDAP Connection Test"
+msgstr "LDAP Verbindungs Test"
 
 msgid "Authentication"
 msgstr "Authentisierung"

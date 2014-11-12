@@ -3114,10 +3114,18 @@ $(document).ready(function(){
                     $('#progress_test_ldap').hide();
                     if (obj.result.status == true) {
                         result = obj.result.value.result;
-                        if (result == "success") {
+                        if (result.lastIndexOf("success", 0) === 0 ) {
+                            var limit = "";
+                            if (result === "success SIZELIMIT_EXCEEDED") {
+                                limit = i18n.gettext("LDAP Server, especially Active Directory, implement a default serverside maximum size limit of 1000 objects.") +
+                                        i18n.gettext("This is independed of the local sizelimit and does not hinder the functionality of LinOTP.");
+                            }
                             // show number of found users
                             var userarray = obj.result.value.desc;
-                            alert_box("LDAP Test", "text_ldap_config_success", userarray.length);
+                            var usr_msg = sprintf(i18n.gettext("Number of users found: %d"),userarray.length);
+                            var msg = i18n.gettext("Connection Test: successful") +
+                                      "<p>" + usr_msg + "</p><p class='hint'>" + limit + "</p>";
+                            alert_box(i18n.gettext("LDAP Connection Test"), msg);
                         }
                         else {
                             alert_box("LDAP Test", obj.result.value.desc);
