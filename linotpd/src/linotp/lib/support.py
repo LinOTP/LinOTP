@@ -162,7 +162,7 @@ def setSupportLicense(licString):
     """
 
     log.debug("[setSupportLicense] license %r", licString)
-    valid, msg = isSupportLicenseValid(licString)
+    valid, msg = isSupportLicenseValid(licString, raiseException=True)
 
     storeConfig("license", binascii.hexlify(licString))
     log.info("[setLicense] license saved!")
@@ -185,7 +185,7 @@ def isSupportLicenseValid(licString, raiseException=False):
 
     valid = verify_signature(lic_str, lic_sign)
     if not valid:
-        error = _("License is not valid!")
+        error = _("License is not valid - signature could not be verified!")
         log.error("[setLicense] Verification of support license failed! %s\n %r"
                   % (error, licString))
         if raiseException:
