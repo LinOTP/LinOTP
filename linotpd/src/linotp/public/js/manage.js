@@ -294,7 +294,11 @@ function alert_box(title, s, param1) {
     }
     title_t = title;
     try {
-        title_t=$('#'+title).text();
+        if ($('#'+title).length > 0 ) {
+            title_t=$('#'+title).text();
+        } else {
+            title_t = title;
+        }
     } catch(e) {
         title_t = title;
     }
@@ -322,7 +326,7 @@ function get_selected_tokens(){
     return selectedTokenItems;
 }
 
-function get_selected_users(){
+function get_selected_user(){
     /*
      * This function returns the list of selected users.
      * Each list element is an object with
@@ -332,6 +336,14 @@ function get_selected_users(){
     var selectedUserItems = new Array();
     var tt = $("#user_table");
     var selected = $('.trSelected', tt);
+    if (selected.length > 1){
+        // unselect all selected users - as the last selected could not be identified easily
+        selected.removeClass('trSelected');
+        alert_box( i18n.gettext("User selection:"),
+                   i18n.gettext("Selection of more than one user is not supported!")+"<p>"
+                   + i18n.gettext("Please select only one user.") + "</p>");
+        return selectedUserItems;
+    }
     var actual_realm = $('#realm').val();
     selected.each(function(){
         var user = new Object();
@@ -437,7 +449,7 @@ function get_selected_email() {
 }
 
 function show_selected_status(){
-    var selectedUserItems = get_selected_users();
+    var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
     document.getElementById('selected_tokens').innerHTML = selectedTokenItems.join(", ");
     // we can only select a single user
@@ -448,7 +460,7 @@ function show_selected_status(){
 }
 
 function get_selected(){
-    var selectedUserItems = get_selected_users();
+    var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
     document.getElementById('selected_tokens').innerHTML = selectedTokenItems.join(", ");
     // we can only select a single user
@@ -931,7 +943,7 @@ function token_assign(){
 
     tokentab = 0;
     tokens = get_selected_tokens();
-    user = get_selected_users();
+    user = get_selected_user();
     count = tokens.length;
     for (i = 0; i < count; i++) {
         serial = tokens[i];
@@ -1059,7 +1071,7 @@ function view_setpin_after_assigning(tokens) {
      */
     var display_setPin = true;
 
-    var selected_users = get_selected_users();
+    var selected_users = get_selected_user();
     var policy_def = {'scope':'enrollment',
                   'action': 'otp_pin_random'};
         policy_def['realm'] = selected_users[0].realm;
@@ -1170,7 +1182,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
         if (true == g.display_genkey) {
 
             // display the QR-Code of the URL. tab
-            var users = get_selected_users();
+            var users = get_selected_user();
             var emails = get_selected_email();
             $('#token_enroll_serial').html(serial);
             if (users.length >= 1) {
@@ -1256,7 +1268,7 @@ function _extract_tab_content(theDetail, k) {
 
 function token_enroll(){
     check_license();
-    var users = get_selected_users();
+    var users = get_selected_user();
     var url = '/admin/init';
     var params = {};
     var serial = '';
@@ -1320,7 +1332,7 @@ function token_enroll(){
 }
 
 function get_enroll_infotext(){
-    var users = get_selected_users();
+    var users = get_selected_user();
     $("#enroll_info_text_user").hide();
     $("#enroll_info_text_nouser").hide();
     $("#enroll_info_text_multiuser").hide();
@@ -1374,7 +1386,7 @@ function tokentype_changed(){
                 if (exi == 'function') {
                     var rand_pin = 0;
                     var options = {};
-                    var selected_users = get_selected_users();
+                    var selected_users = get_selected_user();
                     if (selected_users.length == 1) {
                         var policy_def = {'scope':'enrollment',
                                       'action': 'otp_pin_random'};
