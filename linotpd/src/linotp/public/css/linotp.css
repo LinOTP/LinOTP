@@ -74,6 +74,11 @@
     font-size: 90%;
 }
 
+.hint {
+    font-size: 70%;
+    opacity: 0.8;
+}
+
 .legend {
     font-size: 90%;
     opacity: 0.8;

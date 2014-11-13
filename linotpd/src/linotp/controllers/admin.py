@@ -2102,10 +2102,10 @@ class AdminController(BaseController):
         try:
             param = getLowerParams(request.params)
 
-            type = getParam(param, "type", required)
-            log.debug("[testresolver] testing resolver of type %s" % type)
+            typ = getParam(param, "type", required)
+            log.debug("[testresolver] testing resolver of type %s" % typ)
 
-            if type == "ldap":
+            if typ == "ldap":
                 import useridresolver.LDAPIdResolver
 
                 param['BINDDN'] = getParam(param, "ldap_binddn", required)
@@ -2121,11 +2121,11 @@ class AdminController(BaseController):
                 param['NOREFERRALS'] = getParam(param, "noreferrals", optional)
                 param['CACERTIFICATE'] = getParam(param, "ldap_certificate", optional)
 
-                (success, desc) = useridresolver.LDAPIdResolver.IdResolver.testconnection(param)
-                res['result'] = success
+                (status, desc) = useridresolver.LDAPIdResolver.IdResolver.testconnection(param)
+                res['result'] = status
                 res['desc'] = desc
 
-            elif type == "sql":
+            elif typ == "sql":
                 import useridresolver.SQLIdResolver
 
                 param["Driver"] = getParam(param, "sql_driver", required)

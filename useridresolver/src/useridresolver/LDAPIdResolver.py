@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 
 #
-#    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
+#   LinOTP - the open source solution for two factor authentication
+#   Copyright (C) 2010 - 2014 LSE Leading Security Experts GmbH
 #
-#    This file is part of LinOTP userid resolvers.
+#   This file is part of LinOTP userid resolvers.
 #
-#    This program is free software: you can redistribute it and/or
-#    modify it under the terms of the GNU Affero General Public
-#    License, version 3, as published by the Free Software Foundation.
+#   This program is free software: you can redistribute it and/or
+#   modify it under the terms of the GNU Affero General Public
+#   License, version 3, as published by the Free Software Foundation.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
 #
-#    You should have received a copy of the
-#               GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#   You should have received a copy of the
+#              GNU Affero General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
-#    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#   E-mail: linotp@lsexperts.de
+#   Contact: www.linotp.org
+#   Support: www.lsexperts.de
 #
 """ This module implements the communication
                 and data mapping to LDAP servers.
@@ -54,7 +54,7 @@ import logging
 log = logging.getLogger(__name__)
 
 DEFAULT_UID_TYPE = "DN"  # can be entryUUID, GUID, objectGUID or DN
-#DEFAULT_UID_TYPE = "entryUUID"
+# DEFAULT_UID_TYPE = "entryUUID"
 ENCODING = 'utf-8'
 DEFAULT_SIZELIMIT = 500
 BIND_NOT_POSSIBLE_TIMEOUT = 30
@@ -209,6 +209,8 @@ class IdResolver (UserIdResolver):
         '''
 
         old_cert_file = None
+        l = None
+        status = "success"
 
         try:
             # do a bind
@@ -216,13 +218,13 @@ class IdResolver (UserIdResolver):
             l = ldap.initialize(uri, trace_level=0)
 
             if uri.startswith('ldaps'):
-            ## for test purpose, we create a temporay file with only this cert
+            # for test purpose, we create a temporay file with only this cert
                 old_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
 
-                ##put all certs in a set
+                # put all certs in a set
                 test_set = set()
                 test_set.update(cls.ca_certs)
-                ## including the test one
+                # including the test one
                 cert = params.get('CACERTIFICATE')
                 test_set.add(cert.strip().replace('\r\n', '\n'))
 
@@ -244,10 +246,11 @@ class IdResolver (UserIdResolver):
             resultList = []
             searchFilter = "(&" + params['LDAPSEARCHFILTER'] + ")"
             sizelimit = int(DEFAULT_SIZELIMIT)
+
             try:
-                sizelimit = int(params.get("SIZELIMIT"))
-            except:
-                pass
+                sizelimit = int(params.get("SIZELIMIT"), DEFAULT_SIZELIMIT)
+            except ValueError:
+                sizelimit = int(DEFAULT_SIZELIMIT)
 
             ldap_result_id = l.search_ext(params['LDAPBASE'],
                                           ldap.SCOPE_SUBTREE,
@@ -263,24 +266,28 @@ class IdResolver (UserIdResolver):
                         # compose response as we like it
                         userdata["userid"] = result_data[0][0]
                         resultList.append(userdata)
-            # unbind
-            l.unbind_s()
 
         except ldap.SIZELIMIT_EXCEEDED as e:
-            log.warning("[testconnection] LDAP Error: %r" % e)
+            if len(resultList) < sizelimit:
+                status = "success SIZELIMIT_EXCEEDED"
+                log.warning("[testconnection] LDAP Error: %r" % e)
 
         except ldap.LDAPError as  e:
+            status = "error"
             log.error("[testconnection] LDAP Error: %s\n%s"
                                             % (str(e), traceback.format_exc()))
-            return ("error", str(e))
+            return (status, str(e))
 
         finally:
-            #restore the old_cert_file
+            # unbind
+            if l:
+                l.unbind_s()
+            # restore the old_cert_file
             if old_cert_file != None:
                 cls.CERTFILE = _set_cacertificate(cls.ca_certs,
                                                   ca_dir=cls.ca_dir)
 
-        return ("success", resultList)
+        return (status, resultList)
 
     def __init__(self):
         """ Initialize the ldap resolver class
@@ -366,7 +373,7 @@ class IdResolver (UserIdResolver):
                     l_obj.set_option(ldap.OPT_REFERRALS, 0)
                 l_obj.network_timeout = self.timeout
                 # This is HIGH debug
-                #log.debug("[bind] %s, %s" %(self.binddn, self.bindpw))
+                # log.debug("[bind] %s, %s" %(self.binddn, self.bindpw))
                 dn_encode = self.binddn.encode(ENCODING)
                 pw_encode = self.bindpw.encode(ENCODING)
                 l_obj.simple_bind_s(dn_encode, pw_encode)
@@ -416,11 +423,11 @@ class IdResolver (UserIdResolver):
                                                 % (type(loginname), loginname))
 
         if type(loginname) == unicode:
-            ## we are called externaly by an unicode string
+            # we are called externaly by an unicode string
             LoginName = loginname.encode(ENCODING)
 
         elif type(loginname) == str:
-            ## we might be called internaly, so the loginname is of utf-8 str
+            # we might be called internaly, so the loginname is of utf-8 str
             LoginName = loginname
 
         else:
@@ -433,7 +440,7 @@ class IdResolver (UserIdResolver):
 
         log.debug("[getUserId] type of LoginName %s" % type(LoginName))
 
-        #fil = self.filter % LoginName.decode(ENCODING)
+        # fil = self.filter % LoginName.decode(ENCODING)
         fil = ldap.filter.filter_format(self.filter,
                                         [LoginName.decode(ENCODING)])
         fil = fil.encode(ENCODING)
@@ -448,7 +455,7 @@ class IdResolver (UserIdResolver):
 
         resultList = None
         try:
-            ## log.error("%r : %r" % (self.uidType, attrlist))
+            # log.error("%r : %r" % (self.uidType, attrlist))
             l_id = l_obj.search_ext(self.base,
                               ldap.SCOPE_SUBTREE,
                               filterstr=fil,
@@ -487,11 +494,11 @@ class IdResolver (UserIdResolver):
                         guid = res.get(key)[0]
                         userid = self.guid2str(guid)
                 if userid == None:
-                    ## should never be reached:
+                    # should never be reached:
                     raise Exception('[getUserId] - objectguid: no userid '
                                     'found %r' % (res))
         else:
-            ## Ticket #754
+            # Ticket #754
             if len(resultList) == 0:
                 log.info("[getUserId] resultList is empty")
             else:
@@ -526,7 +533,7 @@ class IdResolver (UserIdResolver):
 
         username = u''
 
-        ## getUserLDAPInfo returns (now) a list of unicode values
+        # getUserLDAPInfo returns (now) a list of unicode values
         l_user = self.getUserLDAPInfo(userid)
 
         if self.loginnameattribute in l_user:
@@ -586,14 +593,14 @@ class IdResolver (UserIdResolver):
 
                     resultList = {}
 
-                    ## now convert the resList to unicode:
-                    ##   dict of list(UTF-8)
+                    # now convert the resList to unicode:
+                    #   dict of list(UTF-8)
                     for key in resList:
                         val = resList.get(key)
                         rval = val
 
                         if type(val) == list:
-                            ## val should be a list of utf str
+                            # val should be a list of utf str
                             rval = []
                             for v in val:
                                 try:
@@ -608,7 +615,7 @@ class IdResolver (UserIdResolver):
                                                                 % (type(v), v))
 
                         elif type(val) == str:
-                            ## or val might be a direct utf-8 str
+                            # or val might be a direct utf-8 str
                             try:
                                 rval = val.decode(ENCODING)
                             except:
@@ -617,8 +624,8 @@ class IdResolver (UserIdResolver):
                                           'data type %r: %r'
                                           % (type(val), val))
                         else:
-                            ## this should not be reached -
-                            ## so anything different is treated as unknown
+                            # this should not be reached -
+                            # so anything different is treated as unknown
                             rval = val
                             log.warning('[getUserLDAPInfo] unknown and '
                                         'unsupported LDAP return data type'
@@ -857,7 +864,7 @@ class IdResolver (UserIdResolver):
             log.warning("[loadConfig] conversion of self.uidType: %r to str()"
                                                                 % self.uidType)
             self.uidType = str(self.uidType)
-        #self.sizelimit      = float(sizelimit)
+        # self.sizelimit      = float(sizelimit)
         try:
             self.sizelimit = int(sizelimit)
         except ValueError:
@@ -962,10 +969,10 @@ class IdResolver (UserIdResolver):
                         case the Uid is not the DN
         '''
 
-        ## Patch:
-        ##   simple bind allows anonymous auth which raises no exception
-        ##   so we return immediatly if no password is given
-        ##
+        # Patch:
+        #   simple bind allows anonymous auth which raises no exception
+        #   so we return immediatly if no password is given
+        #
 
         log.debug("[checkPass]")
 
@@ -1052,15 +1059,15 @@ class IdResolver (UserIdResolver):
         :return: resultList, a dict with user info
         '''
 
-        ## CKO: not sure if we want to activate this! :-/
+        # CKO: not sure if we want to activate this! :-/
         #==================================================================
         # if self.brokenconfig:
-        #    return [ { u'username':'BROKEN CONFIG!' },
-        #                            { u'username':self.brokenconfig_text} ]
+        #   return [ { u'username':'BROKEN CONFIG!' },
+        #                           { u'username':self.brokenconfig_text} ]
         #
         # TODO: check if field is searchable
         # several filters are & concatenated:
-        #    (&(objectClass=inetOrgPerson)(uid=theodor))
+        #   (&(objectClass=inetOrgPerson)(uid=theodor))
         # if we got an empty search dictionary, we will get all users!
         #==================================================================
 
@@ -1111,7 +1118,7 @@ class IdResolver (UserIdResolver):
                 while 1:
                     userdata = {}
                     result_type, result_data = l_obj.result(ldap_result_id, 0)
-                    #print result_type, ldap.RES_SEARCH_ENTRY, result_data
+                    # print result_type, ldap.RES_SEARCH_ENTRY, result_data
                     if (result_data == []):
                         break
                     else:
@@ -1121,13 +1128,13 @@ class IdResolver (UserIdResolver):
                                 userdata["userid"] = \
                                         unicode(result_data[0][0], ENCODING)
                             elif self.uidType.lower() == "objectguid":
-                                #res =
+                                # res =
                                 # result_data[0][1].get(self.uidType,[None])[0]
                                 userid = None
-                                #resDN  = result_data[0][0]
+                                # resDN  = result_data[0][0]
                                 resData = result_data[0][1]
-                                ## in case of objectguid, we have to
-                                ##              check case insensitiv!!!
+                                # in case of objectguid, we have to
+                                ##             check case insensitiv!!!
                                 for key in resData:
                                     if key.lower() == self.uidType.lower():
                                         res = resData.get(key)[0]
@@ -1136,21 +1143,21 @@ class IdResolver (UserIdResolver):
                                 if userid != None:
                                     userdata["userid"] = userid
                                 else:
-                                    ## should never be reached!!
+                                    # should never be reached!!
                                     raise Exception('No Userid found')
                             else:
                                 # Ticket #754
                                 userdata["userid"] = \
                                  result_data[0][1].get(self.uidType, [None])[0]
-                            #log.debug("[getUserList] result: %s "
-                            #                           % result_data[0][0] )
+                            # log.debug("[getUserList] result: %s "
+                            #                          % result_data[0][0] )
                             for ukey, uval in self.userinfo.iteritems():
                                 if uval in result_data[0][1]:
                                 # An attribute can hold more than 1 value
                                 # So we only take the first one at the moment
-                                #    result_data[0][1][v][0]
+                                #   result_data[0][1][v][0]
                                 # If we want to get all
-                                #    result_data[0][1][v] gives us a list
+                                #   result_data[0][1][v] gives us a list
                                     rdata = result_data[0][1][uval][0]
                                     try:
                                         udata = rdata.decode(ENCODING)
@@ -1187,7 +1194,7 @@ if __name__ == "__main__":
                 '(uid=*)(ObjectClass=inetOrgperson)',
         # this is the base search pattern for userlist
         'linotp.ldapresolver.LOGINNAMEATTRIBUTE': 'uid',
-        #CKO: need this for getUserInfo
+        # CKO: need this for getUserInfo
         'linotp.ldapresolver.USERINFO': (
           '{"username": "uid", "description": "", "phone": "telephoneNumber",'
           ' "groups": "o", "mobile": "mobile", "email": "email",'
