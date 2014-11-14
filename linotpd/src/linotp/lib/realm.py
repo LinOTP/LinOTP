@@ -181,6 +181,12 @@ def _initalGetRealms():
 
             ##resids          = env.config[entry]
             resids = getFromConfig(entry)
+
+            # we adjust here the *ee resolvers from the config
+            # so we only have to deal with the un-ee resolvers in the server
+            # which match the available resolver classes
+
+            resids = resids.replace("useridresolveree.", "useridresolver.")
             r["useridresolver"] = resids.split(",")
 
             Realms[theRealm] = r

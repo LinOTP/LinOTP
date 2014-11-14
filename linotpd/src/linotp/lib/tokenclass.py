@@ -605,6 +605,12 @@ class TokenClass(object):
     def getUser(self):
         uidResolver = self.token.LinOtpIdResolver or ''
         uidResolverClass = self.token.LinOtpIdResClass or ''
+
+        # we adjust the token-resolver-class-info to match
+        # to the available un-ee resolvers, which makes the live
+        # alot easier
+        if 'useridresolveree.' in uidResolverClass:
+            uidResolverClass = uidResolverClass.replace('useridresolveree.', 'useridresolver.')
         uuserid = self.token.LinOtpUserid or ''
         return (uuserid, uidResolver, uidResolverClass)
 
