@@ -1436,13 +1436,13 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 
 <div id="description_googleurl">${_("OATH Soft Token")}</div>
-<div id="annotation_googleurl"><i>${_("QR-Code for installing the token in OATH compatible Soft Tokens (FreeOTP, Google Authenticator and other tokens using the 'oathurl:/' syntax)")}</i></div>
+<div id="annotation_googleurl">${_("QR-Code for installing the token in OATH compatible Soft Tokens (FreeOTP, Google Authenticator and other tokens using the 'otpauth:/' syntax).")}</div>
 
 <div id="description_oathurl">${_("'OATH token' app")}</div>
 <div id="annotation_oathurl">${_("QR-Code for installing the token in the 'OATH Token' app for iOS.")}</div>
 
 <div id="description_otpkey">${_("OTP seed")}</div>
-<div id="annotation_otpkey">${_("The OATH token seed for installing the token using manual input")}</div>
+<div id="annotation_otpkey">${_("The OATH token seed for installing the token using manual input.")}</div>
 
 
 </div> <!--end of hidden-->
