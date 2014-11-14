@@ -384,11 +384,21 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
         for k in resolverUid:
             v = resolverUid.get(k)
         user_id = v
-        user_resolver = k
+
+        # in the database could be tokens of ResolverClass:
+        #    useridresolver. or useridresolveree.
+        # so we have to make sure
+        # - there is no 'useridresolveree' in the searchterm and
+        # - there is a wildcard search: second replace
+        # Remark: when the token is loaded the response to the
+        # resolver class is adjusted
+
+        user_resolver = k.replace('useridresolveree.', 'useridresolver.')
+        user_resolver = user_resolver.replace('useridresolver.', 'useridresolver%.')
 
         ''' coout tokens: 0 1 or more '''
         tokens = Session.query(Token).filter(Token.LinOtpTokenType == unicode(tok_type))\
-                                       .filter(Token.LinOtpIdResClass == unicode(user_resolver))\
+                                       .filter(Token.LinOtpIdResClass.like(unicode(user_resolver)))\
                                        .filter(Token.LinOtpUserid == unicode(user_id))
 
     elif serial is not None:
@@ -498,10 +508,21 @@ def getTokenNumResolver(resolver=None, active=True):
             sqlQuery = Session.query(Token).count()
         return sqlQuery
     else:
+        # in the database could be tokens of ResolverClass:
+        #    useridresolver. or useridresolveree.
+        # so we have to make sure
+        # - there is no 'useridresolveree' in the searchterm and
+        # - there is a wildcard search: second replace
+        # Remark: when the token is loaded the response to the
+        # resolver class is adjusted
+
+        resolver = resolver.resplace('useridresolveree.', 'useridresolver.')
+        resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
+
         if active:
-            sqlQuery = Session.query(Token).filter(and_(Token.LinOtpIdResClass == resolver, Token.LinOtpIsactive == True)).count()
+            sqlQuery = Session.query(Token).filter(and_(Token.LinOtpIdResClass.like(resolver), Token.LinOtpIsactive == True)).count()
         else:
-            sqlQuery = Session.query(Token).filter(Token.LinOtpIdResClass == resolver).count()
+            sqlQuery = Session.query(Token).filter(Token.LinOtpIdResClass.like(resolver)).count()
         return sqlQuery
 
 def getAllTokenUsers():
@@ -566,13 +587,24 @@ def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True)
             # the upper layer will catch / at least should
             (uid, resolver, resolverClass) = getUserId(user)
 
+            # in the database could be tokens of ResolverClass:
+            #    useridresolver. or useridresolveree.
+            # so we have to make sure
+            # - there is no 'useridresolveree' in the searchterm and
+            # - there is a wildcard search: second replace
+            # Remark: when the token is loaded the response to the
+            # resolver class is adjusted
+
+            resolverClass = resolverClass.replace('useridresolveree.', 'useridresolver.')
+            resolverClass = resolverClass.replace('useridresolver.', 'useridresolver%.')
+
             sqlQuery = Session.query(model.Token).filter(
                         model.Token.LinOtpUserid == uid).filter(
-                        model.Token.LinOtpIdResClass == resolverClass)
+                        model.Token.LinOtpIdResClass.like(resolverClass))
             if forUpdate == True:
                 sqlQuery = Session.query(model.Token).with_lockmode("update").filter(
                             model.Token.LinOtpUserid == uid).filter(
-                            model.Token.LinOtpIdResClass == resolverClass)
+                            model.Token.LinOtpIdResClass.like(resolverClass))
 
             for token in sqlQuery:
                 log.debug("[getTokens4UserOrSerial] user serial (user): %r"
