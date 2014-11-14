@@ -1431,13 +1431,26 @@ class Ocra2TokenClass(TokenClass):
         response_detail = {}
 
         info = self.getInfo()
-        response_detail.update(info)
+
+        otpkey = None
+        if 'otpkey' in info:
+            otpkey = info.get('otpkey')
+
+        response_detail["otpkey"] = {
+                    "order"      : '1',
+                    "description": _("OTP seed"),
+                    "value"      :  "seed://%s" % otpkey,
+                    "img"        :  create_img(otpkey, width=200),
+                    }
 
         ocra_url = info.get('app_import')
+
         response_detail["ocraurl"] = {
-               "description" : _("URL for OCRA token"),
-               "value" : ocra_url,
-               "img"   : create_img(ocra_url, width=250)}
+                    "order"      : '0',
+                    "description" : _("URL for OCRA2 token"),
+                    "value" : ocra_url,
+                    "img"   : create_img(ocra_url, width=250)
+                    }
 
         return response_detail
 
