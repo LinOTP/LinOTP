@@ -185,7 +185,7 @@ def isSupportLicenseValid(licString, raiseException=False):
 
     valid = verify_signature(lic_str, lic_sign)
     if not valid:
-        error = _("License is not valid - signature could not be verified!")
+        error = _("signature could not be verified!")
         log.error("[setLicense] Verification of support license failed! %s\n %r"
                   % (error, licString))
         if raiseException:
@@ -203,7 +203,7 @@ def isSupportLicenseValid(licString, raiseException=False):
 
     valid, detail = verify_volume(lic_dict)
     if not valid:
-        error = _("License volume exceeded:") + detail
+        error = _("volume exceeded:") + detail
         log.error("[setLicense] Verification of support license failed! %s\n %r"
                   % (error, licString))
         if raiseException:
@@ -222,9 +222,6 @@ def verify_expiration(lic_dic):
     """
     ret = True
 
-    import datetime
-    today = datetime.datetime.now()
-
     if "expire" not in lic_dic:
         msg = "no license expiration information in license  %r" % lic_dic
         log.error(msg)
@@ -235,41 +232,55 @@ def verify_expiration(lic_dic):
         log.error(msg)
         return (False, msg)
 
-    check_dates = {}
-
     # we check only for the date string which has to be the first part of
     # the expiration date definition
-    expire = lic_dic.get('expire').split()[0].strip()
-    if expire.lower() not in ('never'):
-        check_dates['expire'] = expire
+    if (lic_dic.get('expire','') or '').strip():
+        expire = lic_dic.get('expire').split()[0].strip()
+        if expire.lower() not in ('never'):
+            return check_date('expire', expire)
 
-    subscription = lic_dic.get('subscription').split()[0].strip()
-    check_dates['subscription'] = subscription
+    if (lic_dic.get('subscription','') or '').strip():
+        subscription = lic_dic.get('subscription').split()[0].strip()
+        return check_date('subscription',subscription)
 
-    for expire_type, expire in check_dates.items():
-        # -with  support for two date formats
-        expiration_date = None
-        for fmt in ('%d.%m.%Y', "%m/%d/%Y", "%Y-%m-%d"):
-            try:
-                expiration_date = datetime.datetime.strptime(expire, fmt)
-                break
-            except:
-                log.info("license expiration format not of format %s : %r" %
-                         (fmt, expire))
-                expiration_date = None
-
-        if not expiration_date:
-            msg = "Failed to convert license %s date %r" % (expire_type, expire)
-            log.error(msg)
-            return (False, msg)
-
-        if today > expiration_date:
-            msg_txt = _("expired - valid till")
-            msg = "%s %s %r" % (expire_type, msg_txt, expire)
-            log.error(msg)
+    else: # old style license, we have to check the date entry for the subscription
+        if (lic_dic.get('date','') or '').strip():
+            subscription = lic_dic.get('date').split()[0].strip()
+            return check_date('date', subscription)
+        else:
+            msg = "invalid license (old license style)"
             return (False, msg)
 
     return (ret, "")
+
+def check_date(expire_type, expire):
+
+    import datetime
+    today = datetime.datetime.now()
+
+    # -with  support for two date formats
+    expiration_date = None
+    for fmt in ('%d.%m.%Y', "%m/%d/%Y", "%Y-%m-%d"):
+        try:
+            expiration_date = datetime.datetime.strptime(expire, fmt)
+            break
+        except:
+            log.info("license expiration format not of format %s : %r" %
+                     (fmt, expire))
+            expiration_date = None
+
+    if not expiration_date:
+        msg = "unsuported date format date %r" % (expire)
+        log.error("check of %s failed: %s" % (expire_type, msg))
+        return (False, msg)
+
+    if today > expiration_date:
+        msg_txt = _("expired - valid till")
+        msg = "%s %r" % (msg_txt, expire)
+        log.error("check of %s failed: %s" % (expiration_date, msg))
+        return (False, msg)
+
+    return (True,'')
 
 def verify_volume(lic_dict):
 
@@ -283,7 +294,7 @@ def verify_volume(lic_dict):
                   (lic_dict.get('token-num'), err))
         return False, "max %d" % token_volume
 
-    if num > token_volume:
+    if num >= token_volume:
         log.error("licensed token volume exceeded %r>%r" % (num, token_volume))
         used = _("tokens used")
         licnu = _("tokens supported")
