@@ -34,6 +34,11 @@
     font-size: 80%;
 }
 
+.subscription_info {
+    font-size: 90%;
+    text-align: center;
+}
+
 .disabled {
     opacity:.2;
 }
