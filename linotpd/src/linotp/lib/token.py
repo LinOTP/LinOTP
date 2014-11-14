@@ -2239,7 +2239,19 @@ class TokenIterator(object):
                         for realm in valid_realms:
                             users.append(User(user.login, realm))
 
+                    # resolve the realm with wildcard:
+                    # identify all users and add these to the userlist
+                    userlist = []
                     for usr in users:
+                        urealm =  usr.realm
+                        if urealm == '*':
+                            # if the realm is set to *, the getUserId
+                            # triggers the identification of all resolvers, where the
+                            # user might reside: tigger the user resolver lookup
+                            (uid, resolver, resolverClass) = getUserId(usr)
+                            userlist.extend(usr.getUserPerConf())
+
+                    for usr in userlist:
                         try:
                             tokens = getTokens4UserOrSerial(user=usr, _class=False)
                             for tok in tokens:

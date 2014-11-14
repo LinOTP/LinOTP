@@ -144,6 +144,29 @@ class User(object):
 
         return uid
 
+    def getUserPerConf(self):
+        """
+        a wildcard usr (realm = *) could have multiple configurations
+        this method will return a list of uniq users, one per configuration
+
+        :return: list of users
+        """
+        resolvers = self.getResolvers()
+        if len(resolvers) == 1:
+            return [self]
+
+        # if we have multiple resolvers in this wildcard user
+        # we create one user per config and add this user to the list
+        # of all users to be checked
+        userlist = []
+        for resolver in resolvers:
+            (resId, resClass, resConf) = self.getResolverConf(resolver)
+            uid = self.getResolverUId(resolver)
+            n_user = User(self.login)
+            n_user.addResolverUId(resClass, uid, resConf, resId, resClass)
+            userlist.append(n_user)
+
+        return userlist
     def getResolverConf(self, resolver):
         conf = ""
         if self.resolverConf.has_key(resolver):
