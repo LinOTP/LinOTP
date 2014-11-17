@@ -170,6 +170,29 @@ if [ !  $(check_ucs) ]; then
 					db_go
 				fi
 			else
+				if [ "${DOING_UPGRADE}" = true ]
+				then
+					# In version 2.6 of LinOTP ask_createdb was RESET in the
+					# postinst. This meant the question appeared again,
+					# because the 'seen' flag had been reset too. The RESET was
+					# changed to a SET in LinOTP 2.7.1 .
+					# If we detect an upgrade from a version between 2.6 and
+					# 2.7.1 we force the 'seen' flag of the question to true,
+					# preventing the latter from being displayed to the user.
+					# In other versions (or when running dpkg-reconfigure)
+					# we don't want to interfere with the regular debian
+					# behaviour.
+					# See also issues #12298 and #12718
+					dpkg --compare-versions ${INSTALLED_VERSION} ge 2.6
+					result_ge=$?
+					dpkg --compare-versions ${INSTALLED_VERSION} lt 2.7.1
+					result_lt=$?
+					if [ $result_ge = 0 ] && [ $result_lt = 0 ]
+					then
+						# Version is >= than 2.6 and < than 2.7.1
+						db_fset linotp/mysql/ask_createdb seen true
+					fi
+				fi
 				if [ "$DBHOST" = "localhost" ]; then
 					if [ -x $MYSQLSERVER ]; then
 						# server is installed locally

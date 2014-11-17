@@ -240,7 +240,7 @@ evaluate_answers() {
 		CREATEDB=$RET
 		# As we also delete the rootpassword from the debian db, we can
 		# not create the database in successive runs.
-		db_reset linotp/mysql/ask_createdb
+		db_set linotp/mysql/ask_createdb false
 		if [ "$CREATEDB" = "true" ]; then
 			db_get linotp/mysql/ask_rootpw
 			ROOTPW=$RET
