@@ -244,10 +244,11 @@ evaluate_answers() {
 		if [ "$CREATEDB" = "true" ]; then
 			db_get linotp/mysql/ask_rootpw
 			ROOTPW=$RET
-			db_reset linotp/mysql/ask_rootpw
+			db_set linotp/mysql/ask_rootpw false
 		fi
 		db_get linotp/mysql/ask_createtables || true
 		CREATE_TABLES=$RET
+		db_set linotp/mysql/ask_createtables false
 	fi
 }
 
