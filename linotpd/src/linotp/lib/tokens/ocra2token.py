@@ -1431,6 +1431,8 @@ class Ocra2TokenClass(TokenClass):
         response_detail = {}
 
         info = self.getInfo()
+        # add : app_import, serial and sharedsecret
+        response_detail.update(info)
 
         otpkey = None
         if 'otpkey' in info:

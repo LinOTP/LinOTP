@@ -2393,6 +2393,7 @@ class OcraTokenClass(TokenClass):
         response_detail = {}
 
         info = self.getInfo()
+        # add : app_import, serial and sharedsecret
         response_detail.update(info)
 
         otpkey = None
@@ -2415,7 +2416,6 @@ class OcraTokenClass(TokenClass):
                     "value": ocra_url,
                     "img": create_img(ocra_url, width=250),
                    }
-
 
         return response_detail
 
