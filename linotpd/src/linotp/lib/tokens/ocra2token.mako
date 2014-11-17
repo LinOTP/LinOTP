@@ -186,7 +186,7 @@ function self_ocra2_get_param()
 	var urlparam = {};
 	var typ = 'ocra2';
 
-    if  ( $('#ocra2_key_cb2').attr('checked') ) {
+    if  ( $('#ocra2_key_cb2').is(':checked')) {
     	urlparam['genkey'] = 1;
     } else {
         // OTP Key
