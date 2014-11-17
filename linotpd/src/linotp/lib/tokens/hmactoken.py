@@ -38,6 +38,11 @@ from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp
 from linotp.lib.validate import split_pin_otp
 
+from linotp.lib.reply   import create_img
+from linotp.lib.apps    import create_google_authenticator_url
+from linotp.lib.apps    import create_google_authenticator
+from linotp.lib.apps    import create_oathtoken_url
+
 
 optional = True
 required = False
@@ -604,4 +609,59 @@ class HmacTokenClass(TokenClass):
         log.debug("[get_multi_otp] end. dictionary of multiple future OTP is: otp_dict: %r - status: %r - error %r" % (ret, error, otp_dict))
         return (ret, error, otp_dict)
 
+    def getInitDetail(self, params , user=None):
+        '''
+        to complete the token normalisation, the response of the initialiastion
+        should be build by the token specific method, the getInitDetails
+        '''
+        response_detail = {}
+
+        info = self.getInfo()
+        response_detail.update(info)
+        response_detail['serial'] = self.getSerial()
+
+        tok_type = self.type.lower()
+
+        otpkey = None
+        if 'otpkey' in info:
+            otpkey = info.get('otpkey')
+
+        if otpkey != None:
+            response_detail["otpkey"] = {
+                  "order"      : '1',
+                  "description": _("OTP seed"),
+                  "value"      :  "seed://%s" % otpkey,
+                  "img"        :  create_img(otpkey, width=200),
+                     }
+
+            p = {}
+            p.update(params)
+            p['otpkey'] = otpkey
+            p['serial'] = self.getSerial()
+            # label
+            goo_url = create_google_authenticator(p)
+
+            response_detail["googleurl"] = {
+                  "order"      : '0',
+                  "description": _("OTPAuth Url"),
+                  "value" :     goo_url,
+                  "img"   :     create_img(goo_url, width=250)
+                  }
+
+            if user is not None:
+                try:
+
+                    oath_url = create_oathtoken_url(user.login, user.realm,
+                                                    otpkey, tok_type,
+                                                    serial=self.getSerial())
+                    response_detail["oathurl"] = {
+                           "order"      : '2',
+                           "description" : _("URL for OATH token"),
+                           "value" : oath_url,
+                           "img"   : create_img(oath_url, width=250)
+                           }
+                except Exception as ex:
+                    log.info('failed to set oath or google url: %r' % ex)
+
+        return response_detail
 
