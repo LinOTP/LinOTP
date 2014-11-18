@@ -30,4 +30,4 @@ selenium
 simplejson
 requests
 LinOTP
-LinOTPAdminClientCE
+LinOTPAdminClientCLI
