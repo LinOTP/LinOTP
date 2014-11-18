@@ -78,9 +78,6 @@ from linotp.model       import OcraChallenge
 
 from linotp.model.meta  import Session
 from linotp.lib.reply   import create_img
-from linotp.lib.apps    import create_google_authenticator_url
-from linotp.lib.apps    import create_google_authenticator
-from linotp.lib.apps    import create_oathtoken_url
 
 from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp
