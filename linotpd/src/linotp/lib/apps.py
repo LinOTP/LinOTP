@@ -43,6 +43,9 @@ log = logging.getLogger(__name__)
 from linotp.lib.policy import get_tokenlabel
 from urllib import quote
 
+class NoOtpAuthTokenException(Exception):
+    pass
+
 #######################################
 def create_google_authenticator(param):
     '''
@@ -51,6 +54,12 @@ def create_google_authenticator(param):
     :param param: request dictionary
     :return: string with google url
     '''
+
+    typ = param.get("type", 'hotp')
+    if typ.lower() == 'hmac':
+        typ = 'hotp'
+    if not typ.lower() in ['totp', 'hotp']:
+        raise NoOtpAuthTokenException('not supported otpauth token type: %r' % typ)
 
     serial = param.get("serial", None)
 
@@ -67,12 +76,6 @@ def create_google_authenticator(param):
     if algo not in['SHA1', 'SHA256', 'SHA512' , 'MD5']:
         algo = 'SHA1'
 
-    typ = param.get("type", 'hotp')
-    if typ.lower() == 'hmac':
-        typ = 'hotp'
-    if not typ.lower() in ['totp', 'hotp']:
-        raise Exception('not supported otpauth token type: %r' % typ)
-
     url_param = {}
     url_param['secret'] = key
     if digits != '6':
@@ -83,7 +86,6 @@ def create_google_authenticator(param):
 
     if 'timeStep' in param:
         url_param['period'] = param.get('timeStep')
-
 
     ga = "otpauth://%s/%s" % (typ, serial)
     qg_param = urllib.urlencode(url_param)

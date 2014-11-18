@@ -41,6 +41,7 @@ from linotp.lib.validate import split_pin_otp
 from linotp.lib.reply   import create_img
 from linotp.lib.apps    import create_google_authenticator_url
 from linotp.lib.apps    import create_google_authenticator
+from linotp.lib.apps    import NoOtpAuthTokenException
 from linotp.lib.apps    import create_oathtoken_url
 
 
@@ -633,20 +634,23 @@ class HmacTokenClass(TokenClass):
                   "value"      :  "seed://%s" % otpkey,
                   "img"        :  create_img(otpkey, width=200),
                      }
+            try:
+                p = {}
+                p.update(params)
+                p['otpkey'] = otpkey
+                p['serial'] = self.getSerial()
+                # label
+                goo_url = create_google_authenticator(p)
 
-            p = {}
-            p.update(params)
-            p['otpkey'] = otpkey
-            p['serial'] = self.getSerial()
-            # label
-            goo_url = create_google_authenticator(p)
+                response_detail["googleurl"] = {
+                      "order"      : '0',
+                      "description": _("OTPAuth Url"),
+                      "value" :     goo_url,
+                      "img"   :     create_img(goo_url, width=250)
+                      }
 
-            response_detail["googleurl"] = {
-                  "order"      : '0',
-                  "description": _("OTPAuth Url"),
-                  "value" :     goo_url,
-                  "img"   :     create_img(goo_url, width=250)
-                  }
+            except NoOtpAuthTokenException as exx:
+                log.warning("%r" % exx)
 
             if user is not None:
                 try:

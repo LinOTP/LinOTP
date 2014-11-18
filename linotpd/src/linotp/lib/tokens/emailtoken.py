@@ -449,3 +449,15 @@ class EmailTokenClass(HmacTokenClass):
         otp_counter = -1
         reply = None
         return pin_match, otp_counter, reply
+
+    def getInitDetail(self, params , user=None):
+        '''
+        to complete the token normalisation, the response of the initialiastion
+        should be build by the token specific method, the getInitDetails
+        '''
+        response_detail = {}
+
+        info = self.getInfo()
+        response_detail['serial'] = self.getSerial()
+
+        return response_detail
