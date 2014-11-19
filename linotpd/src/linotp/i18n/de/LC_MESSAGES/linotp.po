@@ -1215,7 +1215,7 @@ msgid "LSE LinOTP Support and Subscription"
 msgstr "LSE LinOTP Support und Subskription "
 
 msgid "Set Support and Subscription"
-msgstr "Support Subskription und Subskription registrieren"
+msgstr "Support und Subskription registrieren"
 
 msgid "Close"
 msgstr "Schließen"
