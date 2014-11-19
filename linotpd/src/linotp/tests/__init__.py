@@ -103,7 +103,7 @@ class TestController(TestCase):
         '''
         TestCase.__init__(self, *args, **kwargs)
 
-        LOG.error("ConfigFile: %s " % config['__file__'])
+        LOG.debug("ConfigFile: %s " % config['__file__'])
 
         conffile = config['__file__']
 

@@ -2250,6 +2250,8 @@ class TokenIterator(object):
                             # user might reside: tigger the user resolver lookup
                             (uid, resolver, resolverClass) = getUserId(usr)
                             userlist.extend(usr.getUserPerConf())
+                        else:
+                            userlist.append(usr)
 
                     for usr in userlist:
                         try:

@@ -525,16 +525,15 @@ class TestSelfserviceController(TestController):
                                         'type': 'hmac',
                                         'selftest_user': 'root@myDefRealm'
                                         })
-        print response
-        assert '"message": "valid types are \'oathtoken\' and \'googleauthenticator\' and \'googleauthenticator_time\'. You provided hmac",' in response
+        self.assertTrue('"message": "valid types are \'oathtoken\' and \'googleauthenticator\' and \'googleauthenticator_time\'. You provided hmac",' in response,response)
 
         response = self.app.get(url(controller='selfservice', action='userwebprovision'),
                                 params={'serial':'token01',
                                         'type': 'googleauthenticator',
                                         'selftest_user': 'root@myDefRealm'
                                         })
-        print response
-        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
+
+        self.assertTrue('"message": "ERR410: The policy settings do not allow you to issue this request!"' in response,response)
 
         self.createPolicy('webprovisionGOOGLE')
 
@@ -543,22 +542,19 @@ class TestSelfserviceController(TestController):
                                         'type': 'googleauthenticator',
                                         'selftest_user': 'root@myDefRealm'
                                         })
-        print response
-        assert '"url": "otpauth://hotp/LSGO' in response
+        self.assertTrue('"url": "otpauth://hotp/LSGO' in response, response)
 
         # test
         response = self.app.get(url(controller='admin', action='show'),
                                 params={'user': 'root'})
-        print response
-        assert '"LinOtp.TokenSerialnumber": "LSGO' in response
-        assert '"LinOtp.Isactive": true' in response
+        self.assertTrue('"LinOtp.TokenSerialnumber": "LSGO' in response,response)
+        self.assertTrue('"LinOtp.Isactive": true' in response, response)
 
         # UI
 
         response = self.app.get(url(controller='selfservice', action='webprovisiongoogletoken'),
                                 params={'selftest_user': 'root@myDefRealm'})
-        print response
-        assert "googletokenform" in response.body
+        self.assertTrue("googletokenform" in response.body, response)
 
         return
 
