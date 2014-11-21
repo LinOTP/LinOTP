@@ -692,20 +692,20 @@ def getUserPhone(user, phone_type='phone'):
                     "type %r." % (uid, resId, resClass, phone_type))
         return ""
 
-def check_user_password(username, realm, password):
+def get_authenticated_user(username, realm, password):
     '''
-    This is a helper function to check the username and password against
-    a userstore.
+    check the username and password against a userstore.
 
-    return
+    :param username: the user login name
+    :param realm: the realm, where the user belongs to
+    :param password: the to be checked userstore password
 
-      success    --- This is the username of the authenticated user. If unsuccessful,
-                      returns None
+    :return: None or user@realm of the authenticated user.
     '''
-    success = None
+    auth_user = None
     try:
-        log.info("[check_user_password] User %r from realm %r tries to "
-                 "authenticate to selfservice" % (username, realm))
+        log.info("User %r from realm %r tries to authenticate to selfservice"
+                 % (username, realm))
         if type(username) != unicode:
             username = username.decode(ENCODING)
         u = User(username, realm, "")
@@ -713,44 +713,39 @@ def check_user_password(username, realm, password):
         # Now we know, the resolvers of this user and we can verify the password
         if (len(res) == 1):
             (uid, resolver, resolverC) = getUserId(u)
-            log.info("[check_user_password] the user resolves to %r" % uid)
-            log.info("[check_user_password] The username is found within the "
-                     "resolver %r" % resolver)
+            log.info("the user resolves to %r" % uid)
+            log.info("The username is found within the resolver %r" % resolver)
             # Authenticate user
             try:
                 (package, module, class_, conf) = splitResolver(resolverC)
                 module = package + "." + module
                 y = getResolverObject(resolverC)
             except Exception as e:
-                log.error("[check_user_password] [ module %r notfound! :%r ]"
-                          % (module, e))
+                log.error("[ module %r notfound! :%r ]" % (module, e))
             try:
                 if  y.checkPass(uid, password):
-                    log.debug("[check_user_password] Successfully "
-                              "authenticated user %r." % username)
+                    log.debug("Successfully authenticated user %r." % username)
                     # try:
                     #identity = self.add_metadata( environ, identity )
-                    success = username + '@' + realm
+                    auth_user = username + '@' + realm
                 else:
-                    log.info("[check_user_password] user %r failed "
-                             "to authenticate." % username)
+                    log.info("user %r failed to authenticate." % username)
             except Exception as e:
-                log.error("[check_user_password] Error checking password "
-                          "within module %r:%r" % (module, e))
-                log.error("[check_user_password] %s" % traceback.format_exc())
+                log.error("Error checking password within module %r:%r" 
+                          % (module, e))
+                log.error("%s" % traceback.format_exc())
 
         elif (len(res) == 0):
-            log.error("[check_user_password] The username %r exists in NO "
-                      "resolver within the realm %r." % (username, realm))
+            log.error("The username %r exists in NO resolver within the "
+                      "realm %r." % (username, realm))
         else:
-            log.error("[check_user_password] The username %r exists in more "
-                      "than one resolver within the realm %r" % (username, realm))
+            log.error("The username %r exists in more than one resolver "
+                      "within the realm %r" % (username, realm))
             log.error(res)
-    except UserError as e:
-        log.error("[check_user_password] Error while trying to verify "
-                  "the username: %r" % e.description)
+    except UserError as exx:
+        log.error("Error while trying to verify the username: %r" % exx)
 
-    return success
+    return auth_user
 
 #eof###########################################################################
 
