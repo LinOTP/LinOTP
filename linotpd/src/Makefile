@@ -22,7 +22,6 @@ all:
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make translate"
 	@echo "make ppa-dev - Publish in ppa repository linotp-dev"
-	@echo "make ppa     - Publish in PRODUCTIVE repository linotp"
 
 
 extract:

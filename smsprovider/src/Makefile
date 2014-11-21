@@ -12,6 +12,7 @@ all:
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make test_sms - test the SMS provider"
+	@echo "make ppa-dev - Publish in ppa repository linotp-dev"
 
 source:
 	$(PYTHON) setup.py sdist $(COMPILE)
@@ -47,11 +48,21 @@ clean:
 	rm -f ../linotp-smsprovider_*.deb
 	rm -f ../linotp-smsprovider_*.dsc
 	rm -f ../linotp-smsprovider_*.changes
-	rm -f ../SMSProvider_*.tar.gz
 	rm -f ../linotp-smsprovider_*.tar.gz
+	rm -f ../linotp-smsprovider_*_source.build
+	rm -f ../linotp-smsprovider_*_source.changes
+	rm -f ../SMSProvider_*.tar.gz
 	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
 	rm -rf ../build/
 
 test_sms:
 	(nosetests -v -x test/test_sms.py)
 
+ppa-preprocess:
+	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
+	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
+	debuild -S
+
+ppa-dev:
+	make ppa-preprocess
+	dput ppa:linotp/unstable ../linotp-smsprovider_*_source.changes
