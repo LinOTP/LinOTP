@@ -588,7 +588,7 @@ class SelfserviceController(BaseController):
             log.error("[search] audit/search failed: %r" % exx)
             log.error("[search] %s" % traceback.format_exc())
             Session.rollback()
-            return sendError(response, u"audit/search failed: %s"
+            return sendError(response, _("audit/search failed: %s")
                                                         % unicode(exx), 0)
 
         finally:
@@ -762,7 +762,7 @@ class SelfserviceController(BaseController):
                     log.warning("[usersetpin] Setting of OTP PIN for Token %s"
                                 " by user %s failed: %s" %
                                         (serial, c.user, check_res['error']))
-                    return sendError(response, u"Setting OTP PIN failed: %s"
+                    return sendError(response, _("Error: %s")
                                                         % check_res['error'])
 
                 if 1 == getOTPPINEncrypt(serial=serial,
@@ -996,8 +996,8 @@ class SelfserviceController(BaseController):
             return sendError(response, e, 1)
 
         finally:
-           Session.close()
-           log.debug('[userdelete] done')
+            Session.close()
+            log.debug('[userdelete] done')
 
 
     def userdisable(self):
@@ -1216,7 +1216,7 @@ class SelfserviceController(BaseController):
 
         getotp_active = config.get("linotpGetotp.active")
         if "True" != getotp_active:
-            return sendError(response, "getotp is not activated.", 0)
+            return sendError(response, _("getotp is not activated."), 0)
 
         param = request.params
         ret = {}
@@ -1229,7 +1229,7 @@ class SelfserviceController(BaseController):
 
             if (True != isTokenOwner(serial, self.authUser)):
                 log.error("[usergetmultiotp] The serial %s does not belong to user %s@%s" % (serial, self.authUser.login, self.authUser.realm))
-                return sendError(response, "The serial %s does not belong to user %s@%s" % (serial, self.authUser.login, self.authUser.realm), 1)
+                return sendError(response, _("The serial %s does not belong to user %s@%s") % (serial, self.authUser.login, self.authUser.realm), 1)
 
             max_count = checkPolicyPre('selfservice', 'max_count', param, self.authUser)
             log.debug("[usergetmultiotp] checkpolicypre returned %s" % max_count)
@@ -1260,7 +1260,7 @@ class SelfserviceController(BaseController):
             log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
             log.error("[usergetmultiotp] %s" % traceback.format_exc())
             Session.rollback()
-            return sendError(response, u"selfservice/usergetmultiotp failed: %s"
+            return sendError(response, _(u"selfservice/usergetmultiotp failed: %s")
                              % unicode(e), 0)
 
         finally:
@@ -1472,7 +1472,7 @@ class SelfserviceController(BaseController):
                             'digits':   6,
                         }
             else:
-                return sendError(response, "valid types are 'oathtoken' and 'googleauthenticator' and 'googleauthenticator_time'. You provided %s" % type)
+                return sendError(response, _("valid types are 'oathtoken' and 'googleauthenticator' and 'googleauthenticator_time'. You provided %s") % type)
 
             logTokenNum()
             c.audit['serial'] = serial
@@ -1751,8 +1751,8 @@ class SelfserviceController(BaseController):
 
             typ = getParam(param, "type", required)
             if typ.lower() not in ["ocra", "ocra2"]:
-                return sendError(response, "valid types are 'ocra'. "
-                                                    "You provided %s" % typ)
+                return sendError(response, _("valid types are 'ocra'. "
+                                                    "You provided %s") % typ)
 
             helper_param = {}
             helper_param['type'] = typ
