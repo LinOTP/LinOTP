@@ -183,15 +183,15 @@ def getPolicyDefinitions(scope=""):
             'tokenlabel': {
                 'type': 'str',
                 'desc': 'the label for the google authenticator.'},
-            'autoassignment': {
-                'type': 'int',
-                'value': [6, 8],
-                'desc': 'users can assign a token just by using the '
-                        'unassigned token to authenticate.'},
+            'autoenrollment': {
+                'type': 'str',
+                'desc': 'users can enroll a token just by using the '
+                        'pin to authenticate and will an otp for authentication'},
             'autoassignment': {
 				'type': 'int',
                 'value': [6, 8, 32, 48],
-                'desc' : 'users can assign a token just by using the unassigned token to authenticate.'},
+                'desc' : 'users can assign a token just by using the '
+                         'unassigned token to authenticate.'},
             'ignore_autoassignment_pin': {
 				'type': 'bool',
                 'desc' : "Do not set password from auto assignment as token pin."},
@@ -1024,6 +1024,27 @@ def get_autoassignment(user):
             ret = True
 
     return ret, otplen
+
+def get_auto_enrollment(user):
+    '''
+    this function checks the policy scope=enrollment, action=autoenrollment
+    This policy policy returns the tokentyp: sms or email 
+    The function returns true, if autoenrollment is defined.
+    '''
+    ret = False
+    token_typ = ''
+
+    pol = get_client_policy(get_client(), scope='enrollment',
+                            realm=user.realm, user=user.login, userObj=user)
+
+    if len(pol) > 0:
+        t_typ = getPolicyActionValue(pol, "autoenrollment", String=True)
+        log.debug("[get_autoenrollment] got the token type = %s" % t_typ)
+        if type(t_typ) in [str, unicode] and t_typ.lower() in ['sms', 'email']:
+            ret = True
+            token_typ = t_typ.lower()
+
+    return ret, token_typ
 
 def ignore_autoassignment_pin(user):
     '''
