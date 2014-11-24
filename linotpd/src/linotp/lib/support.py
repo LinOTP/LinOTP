@@ -27,7 +27,7 @@
 
 import os
 
-PUB_KEY_DIRS = ['/etc/lseappliance/pubKeys']
+PUB_KEY_DIRS = ['/etc/lseappliance/pubkeys']
 PUB_KEY_EXTS = ['.pem']
 
 pubKey_linOTP = """-----BEGIN PUBLIC KEY-----

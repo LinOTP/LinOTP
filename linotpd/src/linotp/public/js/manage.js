@@ -1221,13 +1221,15 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             // create the TAB header
             var dia_text = '<div id="qr_url_tabs">';
             dia_text += '<ul>';
-            for (order in keys) {
+            for (var i = 0; i < keys.length; i++) {
+                order = keys[i];
                 dia_text += dia_tabs[order];
             }
             dia_text += '</ul>';
 
             // create the TAB content
-            for (order in keys) {
+            for (var i = 0; i < keys.length; i++) {
+                order = keys[i];
                 dia_text += dia_tabs_content[order];
             }
             // serial number

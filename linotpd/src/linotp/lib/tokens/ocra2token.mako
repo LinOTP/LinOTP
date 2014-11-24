@@ -209,7 +209,7 @@ function self_ocra2_submit(){
 	var ret = false;
 	var params =  self_ocra2_get_param();
 
-	if  ( $('#ocra2_key_cb2').attr('checked') === undefined && $('#form_enroll_ocra2').valid() === false) {
+	if  ( $('#ocra2_key_cb2').is(':checked') === undefined && $('#form_enroll_ocra2').valid() === false) {
 		alert('${_("Form data not valid.")}');
 	} else {
 		enroll_token( params );
