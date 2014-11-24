@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-19 14:06+0100\n"
+"PO-Revision-Date: 2014-11-23 23:28+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -57,12 +57,11 @@ msgstr ""
 "dedizierten Support stehen wir Ihnen gerne über E-Mail oder per Telefon zur "
 "Verfügung."
 
-msgid "License is not valid - signature could not be verified!"
-msgstr ""
-"Die Lizenz ist nicht gültig - die Signatur konnte nicht überprüft werden!"
+msgid "signature could not be verified!"
+msgstr "Die Signatur ist nicht gültig!"
 
-msgid "License volume exceeded:"
-msgstr "Lizenz Volumen überschritten:"
+msgid "volume exceeded:"
+msgstr "Volumen überschritten:"
 
 msgid "expired - valid till"
 msgstr "abgelaufen - gültig bis"
@@ -768,6 +767,15 @@ msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
 msgid "Please select only one user."
 msgstr "Bitte wählen Sie nur einen Benutzer aus."
 
+msgid "The upload of your support and subscription license failed: "
+msgstr "Das Laden der Support- und Subskriptions-Datei ist fehlgeschlagen: "
+
+msgid "License upload"
+msgstr "Lizenz hochladen"
+
+msgid "Invalid License"
+msgstr "ungültige Lizenz"
+
 msgid "Professional LinOTP support and enterprise subscription"
 msgstr "Professionellen LinOTP Support und Subskription für Unternehmen"
 
@@ -783,6 +791,15 @@ msgstr ""
 
 msgid "Your LinOTP support subscription"
 msgstr "Ihr LinOTP Support und Subskription"
+
+msgid "For support and subscription feel free to contact us at"
+msgstr "Für Support- und Subskriptions Fragen erreichen Sie uns"
+
+msgid "by phone"
+msgstr "über Telefon "
+
+msgid "or email"
+msgstr "oder E-Mail"
 
 msgid ""
 "LDAP Server, especially Active Directory, implement a default serverside "
@@ -2737,12 +2754,6 @@ msgstr ""
 
 #~ msgid "About"
 #~ msgstr "Über"
-
-#~ msgid "License"
-#~ msgstr "Lizenz"
-
-#~ msgid "View License"
-#~ msgstr "Lizenz anzeigen"
 
 #~ msgid "Set License"
 #~ msgstr "Lizenz setzen"

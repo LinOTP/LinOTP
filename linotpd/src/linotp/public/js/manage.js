@@ -1691,17 +1691,22 @@ function parseLicense(xhdr, textStatus){
     var obj = jQuery.parseJSON(resp);
     var status = obj.result.status;
 
-    // error occured    
+    var error_intro = i18n.gettext('The upload of your support and subscription license failed: ');
+    var dialog_title = i18n.gettext('License upload');
+
+    // error occured
     if ( status === false) {
-        message = obj.result.error.message;
+        var message = i18n.gettext('Invalid License') + ': <br>' + obj.result.error.message;
         alert_info_text(message, '' ,ERROR);
+        alert_box(dialog_title, error_intro + message);
     } else {
         value = obj.result.value;
         if (value === false){
-            message = obj.detail.reason;
+            message = i18n.gettext('Invalid License') + ': <br>' + obj.detail.reason;
             alert_info_text(message, '', ERROR);
+            alert_box(dialog_title, error_intro + message);
         } else {
-            alert_box('', "text_support_lic_installed");
+            alert_box(dialog_title, "text_support_lic_installed");
         }
     }
     hide_waiting();
@@ -1847,6 +1852,10 @@ function support_view(){
                 }
             });
             info += "</tbody></table>";
+            info += "<div class='subscription_info'><br>" +
+                i18n.gettext("For support and subscription feel free to contact us at") +
+                " <a href='https://www.lsexperts.de/service-support.html' target='_blank'>https://www.lsexperts.de</a> <br>" +
+                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
             $("#dialog_support_view").html(info);
         }
     });
