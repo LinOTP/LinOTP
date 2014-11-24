@@ -1853,7 +1853,7 @@ function support_view(){
             });
             info += "</tbody></table>";
             info += "<div class='subscription_info'><br>" +
-                i18n.gettext("For support and subscription feel free to contact us at") +
+                i18n.gettext("For support and subscription please contact us at") +
                 " <a href='https://www.lsexperts.de/service-support.html' target='_blank'>https://www.lsexperts.de</a> <br>" +
                 i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
             $("#dialog_support_view").html(info);
