@@ -4499,13 +4499,6 @@ function define_policy_action_autocomplete(availableActions) {
      * This sets the allowed actions in the policy action input
      */
     $( "#policy_action" )
-        // don't navigate away from the field on tab when selecting an item
-        .bind( "keydown", function( event ) {
-            if ( event.keyCode === $.ui.keyCode.TAB &&
-                    $( this ).data( "autocomplete" ).menu.active ) {
-                event.preventDefault();
-            }
-        })
         .autocomplete({
             minLength: 0,
             source: function( request, response ) {
