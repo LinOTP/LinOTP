@@ -248,7 +248,7 @@ class IdResolver (UserIdResolver):
             sizelimit = int(DEFAULT_SIZELIMIT)
 
             try:
-                sizelimit = int(params.get("SIZELIMIT"), DEFAULT_SIZELIMIT)
+                sizelimit = int(params.get("SIZELIMIT", DEFAULT_SIZELIMIT))
             except ValueError:
                 sizelimit = int(DEFAULT_SIZELIMIT)
 
