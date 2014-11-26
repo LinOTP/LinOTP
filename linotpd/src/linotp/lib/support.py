@@ -206,8 +206,6 @@ def isSupportLicenseValid(licString, raiseException=False):
         error = _("volume exceeded:") + detail
         log.error("[setLicense] Verification of support license failed! %s\n %r"
                   % (error, licString))
-        if raiseException:
-            raise Exception(error)
         return valid, error
 
     return valid, ""
