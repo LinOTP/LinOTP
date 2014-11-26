@@ -1,8 +1,75 @@
-linotp (2.7.1-0.dev0~precise) precise; urgency=low
+linotp (2.7.1-0.rc0~precise) precise; urgency=low
 
-  * Set new version 2.7.1-0.dev0~precise
+  Enhancements:
+  * Server: Added check for optional support and subscription license
+  * WebUI: Show warnings when the support and subscription has expired or
+    number of supported tokens has been exceeded
+  * WebUI: Editing the token config in the WebUI will only save what has been edited
+  * WebUI: PIN setting is now part of the 'enroll' dialog instead of being in a
+    separate dialog
+  * WebUI: Don't allow setting the token PIN in the token enrollment dialog when the
+    'random_pin' policy is set
+  * WebUI/Server: Added translation of selfservice and policy messages
+  * WebUI: Enabled JavaScript localisation (jed based) for 'manage' and
+    'selfservice' UI
+  * Server: Added Yubikey token support for uppercase OTP values
+  * Server: Added support for Yubikey token resync
+  * WebUI: Info and error boxes in the 'manage' UI now stack instead of
+    overlaying (hiding the older ones). When displaying more than one box a
+    'Close all' link is shown
+  * WebUI: Improve CSS styling for info and error boxes in 'manage' UI
+  * WebUI: Adapted the 'selfservice' and 'auth' interfaces to the 'manage' UI style
+  * WebUI: Improved display of currently selected user and token
+  * WebUI: Restricted the selection to a single user
+  * Server: Added system/getPolicy support for 'user' as filter criteria
+  * Server: Added system/getPolicy support for 'action' as filter criteria
+  * WebUI: Preset LDAPUserIdResolver AD with objectGUID instead of DN
+  * WebUI: Rework the selfservice Google web provisioning to refer to FreeOTP
+    and other softokens as well
+  * Server: Include OTP length and hash algorithm used in the 'otpauth' URL
+    generated when enrolling HOTP or TOTP tokens
+  * WebUI: Display the generated seed in the enrollment tabs in a copyable form
+  * WebUI: Extendend the eToken dat import to display start date support with hh:mm:ss
+  * Server: Added configuration options to selectively disable parts of LinOTP
+    (manage, selfservice, validate)
+  * WebUI: Added 'clear' button to policy form
+  * WebUI: Made policies 'active' by default
+  * Server: Initialize repoze.who with a random secret during server startup
+    or restart (old 'selfservice' sessions become invalidated)
+  * Server/Tools: Added the ability to dump the audit data before deletion
+  * Packaging: Removed obsolete SQLAlchemy <0.8.0b2 restriction
+  * Server: Random generation: switched to more secure randrange and choice methods
+  * WebUI: Updated jQuery to v1.11.1 and all plugins and JS libraries
+    (Superfish, jQuery Cookie, jQuery Validation, ...) to their latest version
+  * WebUI: Simplified selfservice tokenlist handling
+  * WebUI: Added warning to auth forms when Javascript is disabled in the
+    browser
+  * WebUI: Improved auth form handling of JS errors
+  * Server: Removed deprecated /auth/requestsms form because SMS can be
+    requested using the regular /auth/index form (by doing challenge-response)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 May 2014 16:49:22 +0200
+  Bug Fixes:
+  * Packaging: Fixed ask_createdb debconf question that kept being asked on
+    upgrade of the Debian packages
+  * WebUI: Cleaned up selfservice mOTP Token enrollment
+  * WebUI: Some fixes for localisation and wrong validation of seed input field
+  * Server: Fixed the search for ee-resolver tokens and user
+  * Server: Raise exception for empty 'user' in 'system' or 'admin' policy
+  * Server: Load the HSM before the LinOTP config, so that the config can hold decrypted values
+  * Server: Fixed help_url to always use linotp.org site with version
+  * Server: Added support for migrating old linotpee resolvers entries
+  * Server: Fixed reinitialisation of Yubikey token
+  * Server: Yubikey checkOtp should not raise exception if the OTP is too short
+  * Server: Fixed bug in Yubikey CSV import
+  * Server: Fixed padding and unpadding code for PKCS11 module
+  * Server: Fixed padding and unpadding code for YubiHSM module
+  * Server: Fixed token import to support ocra2 token
+  * WebUI: Fixed small display error when deleting or modifying multiple
+    tokens in the 'manage' UI
+  * WebUI: Fixed selfservice enroll of mOTP token
+  * Server: Fixed token serial not appearing in the audit log in some cases
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 27 Nov 2014 09:18:12 +0100
 
 linotp (2.7.0.2-1~precise) precise; urgency=low
 
