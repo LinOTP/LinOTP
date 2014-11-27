@@ -56,7 +56,6 @@ from linotp.lib.security.provider import TOKEN_KEY
 from linotp.lib.security.provider import VALUE_KEY
 
 from getopt import getopt, GetoptError
-from paste.deploy.converters import asbool
 import sys
 import getpass
 
@@ -80,7 +79,6 @@ class YubiSecurityModule(SecurityModule):
         self.debug = False
         self.password = config.get("password", "")
         self.device = config.get("device")
-        self.accept_invalid_padding = asbool(config.get("accept_invalid_padding", True))
 
         if not self.device:
             raise Exception("No .device specified")
@@ -113,42 +111,48 @@ class YubiSecurityModule(SecurityModule):
         self.is_ready = True
         return
 
-    @classmethod
-    def pad(cls, s, block=16):
-        '''
-        PKCS7 padding pads the missing bytes with the value of the number of
-        the bytes. If 4 bytes are missing, this missing bytes are filled
-        with \x04
-        '''
-        r = s
-        l_s = len(r)
+    def pad(self, unpadded_str, block=16):
+        """
+        PKCS7 padding pads the missing bytes with the value of the number of the bytes.
+        If 4 bytes are missing, this missing bytes are filled with \x04
+
+        :param unpadded_str: The string to pad
+        :type unpadded_str: str
+        :param block: Block size
+        :type block: int
+        :returns: padded string
+        :rtype: str
+        """
+        l_s = len(unpadded_str)
         missing_num = block - l_s % block
         missing_byte = chr(missing_num)
+        padding = missing_byte * missing_num
+        return unpadded_str + padding
 
-        r += missing_byte * missing_num
-        return r
-
-    @classmethod
-    def unpad(cls, s, block=16):
-        '''
+    def unpad(self, padded_str, block=16):
+        """
         This removes and checks the PKCS7 padding.
-        '''
-        r = None
-        try:
-            last_byte = s[-1]
-            count = ord(last_byte)
-            if 0 < count <= block and s[-count:] == last_byte * count:
-                r = s[:-count]
-            else:
-                if self.accept_invalid_padding:
-                    log.warning("error", "[unpad] Invalid padding detected")
-                    r = s
-                else:
-                    log.error("error", "[unpad] Invalid padding detected")
-        except Exception as  e:
-            log.warning("[unpad] Error unpadding data %s: %s" % (s, str(e)))
-        return r
 
+        :param padded_str: The string to unpad
+        :type padded_str: str
+        :param block: Block size
+        :type block: int
+        :raises ValueError: If padded_str is not correctly padded a ValueError
+            is raised. This can happen because in an older version of the pad()
+            method data was not correctly padded when the data-length was a
+            multiple of the block-length.
+            Beware that in some cases the incorrect padding can not be detected
+            and incomplete data will be returned.
+        :returns: unpadded string
+        :rtype: str
+        """
+        last_byte = padded_str[-1]
+        count = ord(last_byte)
+        if 0 < count <= block and padded_str[-count:] == last_byte * count:
+            unpadded_str = padded_str[:-count]
+            return unpadded_str
+        else:
+            raise ValueError("Input 'padded_str' is not properly padded")
 
     def login(self, password=None, slotid=0):
         '''
