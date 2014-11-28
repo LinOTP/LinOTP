@@ -777,6 +777,10 @@ class AdminController(BaseController):
             initDetail = tokenObj.getInitDetail(helper_param, user)
             response_detail.update(initDetail)
 
+            if tokenObj is not None and ret is True:
+                c.audit['serial'] = tokenObj.getSerial()
+                c.audit['token_type'] = tokenObj.type
+
             c.audit['success'] = ret
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm
