@@ -198,7 +198,7 @@ def yubi_mass_enroll(lotpc,
     :param yubi_slot: slot of the yubikey [1,2]
     :param yubi_prefix_serial: serial number added to the prefix
     :param yubi_prefix: the public prefix
-    :param yubi_prefix_random: the rendom prefix
+    :param yubi_prefix_random: the random prefix
     :param yubi_cr: boolean - uses as TOTP token
     '''
     yp = YubikeyPlug()
