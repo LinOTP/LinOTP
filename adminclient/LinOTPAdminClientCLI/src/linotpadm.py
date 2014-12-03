@@ -98,6 +98,8 @@ def usage():
         --yubimode=<OATH or YUBICO or STATIC>
         --yubislot=<1 or 2>
         --yubiCR                    : programm the Yubikey in challenge Response mode (TOTP, 60seconds)
+	--yubiunlock=<string>	    : unlock the Yubikey if access-code is set
+	--yubiaccess=<string>	    : set access-code (requires 12 hexadecimal characters)
     etokenng_mass_enroll [--label=TokenName]
     assigntoken:    --user --serial
     unassigntoken:  --serial
@@ -184,6 +186,8 @@ def showresult(rv):
 def yubi_mass_enroll(lotpc,
                      proc_params,
                      yubi_mode,
+		     yubi_unlock,
+		     yubi_access,
                      yubi_slot,
                      yubi_prefix_serial,
                      yubi_prefix,
@@ -195,6 +199,8 @@ def yubi_mass_enroll(lotpc,
     :param lotpc: the linotp connnection
     :param proc_params: the additional parameters from the command line
     :param yubi_mode: yubikey modus: YUBI_STATIC_MODE, YUBI_OATH_MODE, YUBI_AES_MODE
+    :param yubi_unlock: access-code to unlock a protected yubikey
+    :param yubi_access: access-code to protect yubikey from unauthorized update
     :param yubi_slot: slot of the yubikey [1,2]
     :param yubi_prefix_serial: serial number added to the prefix
     :param yubi_prefix: the public prefix
@@ -211,6 +217,8 @@ def yubi_mass_enroll(lotpc,
         #    break
         ret = yp.wait_for_new_yubikey()
         otpkey, serial = enrollYubikey(debug=False,
+					unlock_key=yubi_unlock,
+					access_key=yubi_access,
                                         prefix_serial=yubi_prefix_serial,
                                         fixed_string=yubi_prefix,
                                         len_fixed_string=yubi_prefix_random,
@@ -366,7 +374,9 @@ def main():
               "yubi_prefix" : None,
               "yubi_prefix_random" : 0,
               "yubi_mode" : YUBI_OATH_MODE,
-              "yubi_slot" : 1,
+              "yubi_unlock" : None,
+	      "yubi_access" : None,
+	      "yubi_slot" : 1,
               "yubi_prefix_serial" : False,
               "yubi_cr" : False,
               "realm": None,
@@ -389,7 +399,7 @@ def main():
                 'realm=', 'resolver=', 'rtype=',
                 'module=',
                 'label=', 'authtype=',
-                'yubiprefix=', 'yubiprefixrandom=', 'yubimode=', 'yubislot=',
+                'yubiprefix=', 'yubiprefixrandom=', 'yubimode=', 'yubiunlock=', 'yubiaccess=', 'yubislot=',
                 'yubiprefixserial', 'yubiCR',
                 'password=', 'csv', 'export_fields=',
                 'automate=', 'realm='] + file_opts + ldap_opts)
@@ -622,6 +632,8 @@ def main():
     elif (config.get("command") == "yubikey_mass_enroll"):
         yubi_mass_enroll(lotpc, param,
                          config.get("yubi_mode"),
+			 config.get("yubi_unlock"),
+                         config.get("yubi_access"),
                          config.get("yubi_slot"),
                          config.get("yubi_prefix_serial"),
                          config.get("yubi_prefix"),
