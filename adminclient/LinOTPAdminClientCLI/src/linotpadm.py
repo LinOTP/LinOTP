@@ -507,6 +507,10 @@ def main():
                 config["yubi_mode"] = YUBI_STATIC_MODE
             else:
                 print "No matching yubimode. Using OATH as default."
+	elif opt in ('--yubiunlock='):
+	    config["yubi_unlock"] = arg
+	elif opt in ('--yubiaccess='):
+	    config["yubi_access"] = arg
         elif opt in ('--yubislot='):
             config["yubi_slot"] = int(arg)
         elif opt in ('--yubiprefixserial'):
