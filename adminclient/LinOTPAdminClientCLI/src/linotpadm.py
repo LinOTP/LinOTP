@@ -98,8 +98,8 @@ def usage():
         --yubimode=<OATH or YUBICO or STATIC>
         --yubislot=<1 or 2>
         --yubiCR                    : programm the Yubikey in challenge Response mode (TOTP, 60seconds)
-	--yubiunlock=<string>	    : unlock the Yubikey if access-code is set
-	--yubiaccess=<string>	    : set access-code (requires 12 hexadecimal characters)
+	--yubiunlock=<string>	    : unlock the Yubikey if access-code is set (requires prefix "h:" followed by 12 hexadecimal characters)
+	--yubiaccess=<string>	    : set access-code (requires prefix "h:" followed by 12 hexadecimal characters)
     etokenng_mass_enroll [--label=TokenName]
     assigntoken:    --user --serial
     unassigntoken:  --serial
