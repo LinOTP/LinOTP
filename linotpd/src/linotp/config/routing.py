@@ -63,7 +63,7 @@ def make_map(global_conf, app_conf,):
         routeMap.connect('/selfservice/custom-style.css', controller='selfservice', action='custom_style')
         routeMap.connect('/selfservice', controller='selfservice', action='index')
         routeMap.connect('/', controller='selfservice', action='index')
-        for cont in ['selfservice']:
+        for cont in ['selfservice', 'account']:
             routeMap.connect('/%s/{action}' % cont , controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
@@ -77,7 +77,7 @@ def make_map(global_conf, app_conf,):
         routeMap.connect('/manage/', controller='manage', action='index')
         routeMap.connect('/', controller='manage', action='index')
 
-        for cont in ['admin', 'system', 'manage', 'account', 'audit', 'auth']:
+        for cont in ['admin', 'system', 'manage', 'audit', 'auth']:
             routeMap.connect('/%s/{action}' % cont , controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
