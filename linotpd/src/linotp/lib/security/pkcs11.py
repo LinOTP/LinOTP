@@ -194,6 +194,12 @@ class Pkcs11SecurityModule(SecurityModule):
         library = config.get("library")
         self.slotid = int(config.get("slotid", 0))
 
+        # Accept invalid padding?
+        config_entry = config.get('pkcs11.accept_invalid_padding', 'False')
+        self.accept_invalid_padding = False
+        if config_entry and config_entry.lower() == 'true':
+            self.accept_invalid_padding = True
+
         self.handles = { CONFIG_KEY: config.get("configHandle", None),
                          TOKEN_KEY: config.get("tokenHandle", None),
                          VALUE_KEY: config.get("valueHandle", None),
@@ -270,19 +276,34 @@ class Pkcs11SecurityModule(SecurityModule):
 
     def unpad(self, padded_str, block=16):
         """
-        This removes and checks the PKCS7 padding.
+        This removes and checks the PKCS #7 padding.
 
         :param padded_str: The string to unpad
         :type padded_str: str
         :param block: Block size
         :type block: int
         :raises ValueError: If padded_str is not correctly padded a ValueError
-            is raised. This can happen because in an older version of the pad()
-            method data was not correctly padded when the data-length was a
-            multiple of the block-length.
-            Beware that in some cases the incorrect padding can not be detected
-            and incomplete data will be returned.
-        :returns: unpadded string
+            can be raised.
+            This depends on the 'pkcs11.accept_invalid_padding' LinOTP config
+            option. If set to False (default) ValueError is raised.  The reason
+            why the data is sometimes incorrectly padded is because the pad()
+            method delivered with LinOTP version < 2.7.1 didn't pad correctly
+            when the data-length was a multiple of the block-length.
+            Beware that in some cases (statistically about 0.4% of data-chunks
+            whose length is a multiple of the block length) the incorrect
+            padding can not be detected and incomplete data is returned.  One
+            example for this last case is when the data ends with the byte
+            0x01. This is recognized as legitimate padding and is removed
+            before returning the data, thus removing a legitimate byte from the
+            data and making it unusable.
+            If you didn't upgrade from a LinOTP version before 2.7.1 (or don't
+            use a PKCS#11 HSM) you will not be affected by this in any way.
+            ValueError will of course also be raised if you data became corrupt
+            for some other reason (e.g. disk failure) and can not be unpadded.
+            In this case you should NOT set 'pkcs11.accept_invalid_padding' to
+            True because your data will be unusable anyway.
+        :returns: unpadded string or sometimes padded string when
+            'pkcs11.accept_invalid_padding' is set to True. See above.
         :rtype: str
         """
         last_byte = padded_str[-1]
@@ -290,6 +311,9 @@ class Pkcs11SecurityModule(SecurityModule):
         if 0 < count <= block and padded_str[-count:] == last_byte * count:
             unpadded_str = padded_str[:-count]
             return unpadded_str
+        elif self.accept_invalid_padding:
+            log.warning("[unpad] Input 'padded_str' is not properly padded")
+            return padded_str
         else:
             raise ValueError("Input 'padded_str' is not properly padded")
 
