@@ -35,7 +35,7 @@ except ImportError:
 
 setup(
     name='pam_py_linotp',
-    version='2.7.1rc0',
+    version='2.7.1rc1',
     description='LinOTP python PAM module',
     author='LSE Leading Security Experts GmbH',
     license='GPL v2, (C) LSE Leading Security Experts GmbH',

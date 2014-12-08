@@ -1,4 +1,4 @@
-linotp (2.7.1-0.rc0~precise) precise; urgency=low
+linotp (2.7.1-0.rc1~precise) precise; urgency=low
 
   Enhancements:
   * Server: Added check for optional support and subscription license
@@ -63,13 +63,15 @@ linotp (2.7.1-0.rc0~precise) precise; urgency=low
   * Server: Fixed bug in Yubikey CSV import
   * Server: Fixed padding and unpadding code for PKCS11 module
   * Server: Fixed padding and unpadding code for YubiHSM module
+  * Server: Added LinOTP config options 'pkcs11.accept_invalid_padding' and
+    'yubihsm.accept_invalid_padding'
   * Server: Fixed token import to support ocra2 token
   * WebUI: Fixed small display error when deleting or modifying multiple
     tokens in the 'manage' UI
   * WebUI: Fixed selfservice enroll of mOTP token
   * Server: Fixed token serial not appearing in the audit log in some cases
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 27 Nov 2014 09:18:12 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Dec 2014 16:45:25 +0100
 
 linotp (2.7.0.2-1~precise) precise; urgency=low
 
