@@ -54,22 +54,6 @@ from linotp.lib.util import get_version_number
 from linotp.lib.token import getTokenNumResolver
 
 
-support_info = {
-    'comment' :'LinOTP Support Info',
-    'issuer' : '',
-    'token-num' : '',
-    'licensee' : '',
-    'address' :  '<a href="http://www.lsexperts.de" target="_blank">http://www.lsexperts.de</a>',
-    'contact-name' : '',
-    'contact-email' : '<a href="mailto:linotp@lsexperts.de">linotp@lsexperts.de</a>',
-    'contact-phone' : '+49 6151 86086-115',
-    'date' : '',
-    'expire' : '',
-    'subscription' : _('You are using the open source version with community '
-            'support. For professional support, feel free to contact '
-            'LSE by email or by phone.')
-    }
-
 import logging
 log = logging.getLogger(__name__)
 
