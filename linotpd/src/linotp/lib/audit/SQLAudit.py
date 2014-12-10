@@ -55,7 +55,10 @@ import linotp
 
 # Create the logging object from the linotp.ini config file
 ini_file = config.get("__file__")
-logging.config.fileConfig(ini_file, disable_existing_loggers=False)
+if ini_file is not None:
+    # When importing the module with Sphinx to generate documentation
+    # 'ini_file' is None. In other cases this should not be the case.
+    logging.config.fileConfig(ini_file, disable_existing_loggers=False)
 log = logging.getLogger(__name__)
 
 metadata = schema.MetaData()
