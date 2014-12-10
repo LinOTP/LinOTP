@@ -200,12 +200,6 @@ class DefaultSecurityModule(SecurityModule):
         input += padding * "\0"
         aes = AES.new(key, AES.MODE_CBC, iv)
 
-        # cko: ARGH: Only ECB!
-        #import linotp.lib.yhsm as yhsm
-        #y = yhsm.YubiHSM(0x1111, password="14fda9321ae820aa34e57852a31b10d0")
-        #y.unlock(password="14fda9321ae820aa34e57852a31b10d0")
-        #res = y.encrypt(input)
-        #
         res = aes.encrypt(input)
 
         if self.crypted == False:
