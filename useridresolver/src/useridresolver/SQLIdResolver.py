@@ -24,10 +24,11 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-"""This module implements the communication and data mapping to SQL servers.
-   The LinOTP server imports this module to use SQL databases as a userstore.
+"""
+This module implements the communication and data mapping to SQL servers.
+The LinOTP server imports this module to use SQL databases as a userstore.
 
-  Dependencies: UserIdResolver
+Dependencies: UserIdResolver
 """
 
 #from sqlalchemy.event import listen
@@ -61,18 +62,19 @@ DEFAULT_ENCODING = "utf-8"
 
 
 def testconnection(params):
-    '''
+    """
     This is used to test if the given parameter set will do a successful
     SQL connection and return the number of found users
     params are:
-        Driver
-        Server
-        Port
-        Database
-        User
-        Password
-        Table
-    '''
+
+    - Driver
+    - Server
+    - Port
+    - Database
+    - User
+    - Password
+    - Table
+    """
     log.debug('[testconnection] %s' % str(params))
 
     num = -1
@@ -322,7 +324,6 @@ class IdResolver (UserIdResolver):
         :return: returns the resolver identifier string
                  or empty string if not exist
         :rtype : string
-
         """
         resolver = "SQLIdResolver.IdResolver"
         if self.conf != "":

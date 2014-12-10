@@ -180,9 +180,10 @@ def defineResolver(params):
 def checkResolverType(resolver):
     """
     check if a resolver of the given type exists
-    :param resolver: full qualified resolver name
-                     or optional with trailing conf like:
-                       useridresolver.PasswdIdResolver.IdResolver.etc_resl
+
+    :param resolver: full qualified resolver name or optional with trailing
+        conf like: ``useridresolver.PasswdIdResolver.IdResolver.etc_resl``
+
     :return: True or False
     """
     res = False

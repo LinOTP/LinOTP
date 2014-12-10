@@ -23,9 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-""" the security provider is a dynamic handler for the security
-    relevant tasks like
-       random, crypt, decrypt, sign
+"""
+The security provider is a dynamic handler for security relevant tasks like
+random, crypt, decrypt, sign
 """
 
 import thread

@@ -197,16 +197,17 @@ def get_token_type_list():
 
 
 def getRealms4Token(user, tokenrealm=None):
-    '''
+    """
     get the realm objects of a user or from the tokenrealm defintion,
     which could be a list of realms or a single realm
-     - helper method to enhance the code readablility
+
+    helper method to enhance the code readability
 
     :param user: the user wich defines the set of realms
     :param tokenrealm: a string or a list of realm strings
 
     :return: the list of realm objects
-    '''
+    """
 
     realms = []
     if user is not None and user.login != "" :

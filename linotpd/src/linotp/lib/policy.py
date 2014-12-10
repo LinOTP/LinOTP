@@ -421,16 +421,16 @@ def getPolicy(param, display_inactive=False):
     Function to retrieve the list of policies.
 
     attributes:
-        name:   (optional) will only return the policy with the name
-        user:   (optional) will only return the policies for this user
-        realm:  (optional) will only return the policies of this realm
-        scope:  (optional) will only return the policies within this scope
-        action: (optional) will only return the policies with this action
-                The action can also be something like "otppin" and will
-                return policies containing "otppin = 2"
 
-    returns:
-         a dictionary with the policies. The name of the policy being the key
+    - name:   (optional) will only return the policy with the name
+    - user:   (optional) will only return the policies for this user
+    - realm:  (optional) will only return the policies of this realm
+    - scope:  (optional) will only return the policies within this scope
+    - action: (optional) will only return the policies with this action
+         The action can also be something like "otppin" and will
+         return policies containing "otppin = 2"
+
+    :return: a dictionary with the policies. The name of the policy being the key
     '''
     Policies = {}
 
@@ -603,26 +603,28 @@ def deletePolicy(name):
 
 
 def getPolicyActionValue(policies, action, max=True, String=False):
-    '''
+    """
     This function retrieves the int value of an action from a list of policies
     input
-        policies: list of policies as returned from config.getPolicy
-              This is a list of dictionaries
-        action: an action, to be searched
-        max: if True, it will return the highest value, if there are
-              multiple policies
-              if False, it will return the lowest value, if there
-              are multiple policies
-        String: if True, the value is a string and not an integer
 
-            pol10: {
-            * action: "maxtoken = 10"
-            * scope: "enrollment"
-            * realm: "realm1"
-            * user: ""
-            * time: ""
+    :param policies: list of policies as returned from config.getPolicy
+        This is a list of dictionaries
+    :param action: an action, to be searched
+    :param max: if True, it will return the highest value, if there are
+        multiple policies if False, it will return the lowest value, if there
+        are multiple policies
+    :param String: if True, the value is a string and not an integer
+
+    Example policy::
+
+        pol10: {
+            action: "maxtoken = 10",
+            scope: "enrollment",
+            realm: "realm1",
+            user: "",
+            time: ""
            }
-    '''
+    """
     ret = -1
     if String:
         ret = ""
@@ -661,11 +663,12 @@ def getAdminPolicies(action, lowerRealms=False):
                       be lower case.
 
     :return: a dictionary with the following keys:
-        active (if policies are used)
-        realms (the realms, in which the admin is allowed to do this action)
-        resolvers    (the resolvers in which the admin is allowed to perform
-                     this action)
-        admin      (the name of the authenticated admin user)
+
+        - active (if policies are used)
+        - realms (the realms, in which the admin is allowed to do this action)
+        - resolvers (the resolvers in which the admin is allowed to perform
+          this action)
+        - admin (the name of the authenticated admin user)
     """
     active = True
     # check if we got admin policies at all
@@ -928,11 +931,13 @@ def checkTokenNum(user=None, realm=None):
 def checkTokenAssigned(user):
     '''
     This internal function checks the number of assigned tokens to a user
-    Therefor it checks the policy
+    Therefore it checks the policy::
+
         "scope = enrollment", action = "maxtoken = <number>"
 
-    returns FALSE, if the user has to many tokens assigned
-    returns TRUE, if more tokens may be assigned to the user
+    :return: False, if the user has to many tokens assigned True, if more
+        tokens may be assigned to the user
+    :rtype: bool
     '''
     if user is None:
         return True
@@ -973,10 +978,11 @@ def get_tokenlabel(user="", realm="", serial=""):
     '''
     This internal function returns the naming of the token as defined in policy
     scope = enrollment, action = tokenname = <string>
-    The string can have the following varaibles:
-        <u>: user
-        <r>: realm
-        <s>: token serial
+    The string can have the following variables:
+
+    - <u>: user
+    - <r>: realm
+    - <s>: token serial
 
     This function is used by the creation of googleauthenticator url
     '''
@@ -1102,12 +1108,14 @@ def getOTPPINPolicies(user, scope="selfservice"):
     This internal function returns the PIN policies for a realm.
     These policies can either be in the scope "selfservice" or "admin"
     The policy define when resettng an OTP PIN:
-     - what should be the length of the otp pin
-     - what should be the contents of the otp pin
-       by the actions:
-            otp_pin_minlength =
-            otp_pin_maxlength =
-            otp_pin_contents = [cns] (character, number, special character)
+
+    - what should be the length of the otp pin
+    - what should be the contents of the otp pin by the actions:
+
+      - otp_pin_minlength =
+      - otp_pin_maxlength =
+      - otp_pin_contents = [cns] (character, number, special character)
+
     :return: dictionary like {contents: "cns", min: 7, max: 10}
     '''
     log.debug("[getOTPPINPolicies]")
@@ -2597,13 +2605,14 @@ def get_auth_PinPolicy(realm=None, user=None):
     Returns the PIN policy, that defines, how the OTP PIN is to be verified
     within the given realm
 
-    return:
-        0    - verify against fixed OTP PIN
-        1    - verify the password component against the
-                      UserResolver (LPAP Password etc.)
-        2    - verify no OTP PIN at all! Only OTP value!
+    :return:
+        - 0 verify against fixed OTP PIN
+        - 1 verify the password component against the
+          UserResolver (LPAP Password etc.)
+        - 2 verify no OTP PIN at all! Only OTP value!
 
-    The policy is defined via
+    The policy is defined via::
+
         scope : authentication
         realm : ....
         action: otppin=0/1/2

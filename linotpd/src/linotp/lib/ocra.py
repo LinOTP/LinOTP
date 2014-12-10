@@ -23,7 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-'''
+"""
+Description of OCRA algorithm::
+
     OcraSuite = CryptoFunction(K, DataInput)
 
     CryptoFunction = HOTP-H-n
@@ -39,158 +41,164 @@
         T - timestamp (optional)
 
 
-   [C] | QFxx | [PH | Snnn | TG] : Challenge-Response computation
+    [C] | QFxx | [PH | Snnn | TG] : Challenge-Response computation
 
-   [C] | QFxx | [PH | TG] : Plain Signature computation
+    [C] | QFxx | [PH | TG] : Plain Signature computation
 
-   Each input that is used for the computation is represented by a
-   single letter (except Q) as and they are separated by a hyphen.
+    Each input that is used for the computation is represented by a
+    single letter (except Q) as and they are separated by a hyphen.
 
-   + Q: Challenge +
-   The input for challenge is further qualified by the formats supported
-   by the client for challenge question(s).  Supported values can be:
+    + Q: Challenge +
+    The input for challenge is further qualified by the formats supported
+    by the client for challenge question(s).  Supported values can be:
 
-                 +------------------+-------------------+
-                 |    Format (F)    | Up to Length (xx) |
-                 +------------------+-------------------+
-                 | A (alphanumeric) |       04-64       |
-                 |    N (numeric)   |       04-64       |
-                 |  H (hexadecimal) |       04-64       |
-                 +------------------+-------------------+
+                    +------------------+-------------------+
+                    |    Format (F)    | Up to Length (xx) |
+                    +------------------+-------------------+
+                    | A (alphanumeric) |       04-64       |
+                    |    N (numeric)   |       04-64       |
+                    |  H (hexadecimal) |       04-64       |
+                    +------------------+-------------------+
 
-                      Table 2: Challenge Format Table
+                        Table 2: Challenge Format Table
 
-   The default challenge format is N08, numeric and up to 8 digits.
+    The default challenge format is N08, numeric and up to 8 digits.
 
-   + P: Pin +
-   The input for P is further qualified by the hash function used for
-   the PIN/password.  Supported values for hash function can be:
+    + P: Pin +
+    The input for P is further qualified by the hash function used for
+    the PIN/password.  Supported values for hash function can be:
 
-   Hash function (H) - SHA1, SHA256, SHA512.
+    Hash function (H) - SHA1, SHA256, SHA512.
 
-   The default hash function for P is SHA1.
+    The default hash function for P is SHA1.
 
-   + S: Session +
-   The input for S is further qualified by the length of the session
-   data in bytes.  The client and server could agree to any length but
-   the typical values are:
+    + S: Session +
+    The input for S is further qualified by the length of the session
+    data in bytes.  The client and server could agree to any length but
+    the typical values are:
 
-   Length (nnn) - 064, 128, 256, and 512.
+    Length (nnn) - 064, 128, 256, and 512.
 
-   The default length is 064 bytes.
+    The default length is 064 bytes.
 
-   The input for timestamps is further qualified by G, size of the time-
-   step.  G can be specified in number of seconds, minutes, or hours:
+    The input for timestamps is further qualified by G, size of the time-
+    step.  G can be specified in number of seconds, minutes, or hours:
 
-           +--------------------+------------------------------+
-           | Time-Step Size (G) |           Examples           |
-           +--------------------+------------------------------+
-           |       [1-59]S      | number of seconds, e.g., 20S |
-           |       [1-59]M      |  number of minutes, e.g., 5M |
-           |       [0-48]H      |  number of hours, e.g., 24H  |
-           +--------------------+------------------------------+
+            +--------------------+------------------------------+
+            | Time-Step Size (G) |           Examples           |
+            +--------------------+------------------------------+
+            |       [1-59]S      | number of seconds, e.g., 20S |
+            |       [1-59]M      |  number of minutes, e.g., 5M |
+            |       [0-48]H      |  number of hours, e.g., 24H  |
+            +--------------------+------------------------------+
 
-                       Table 3: Time-step Size Table
+                        Table 3: Time-step Size Table
 
-   Default value for G is 1M, i.e., time-step size is one minute and the
-   T represents the number of minutes since epoch time [UT].
+    Default value for G is 1M, i.e., time-step size is one minute and the
+    T represents the number of minutes since epoch time [UT].
 
 
     OCRASuite = 'Algorithm:CryptoFunction:DataInput'
 
-    "OcraSuite-1:HOTP-SHA512-8:C-QN08-PSHA1"
-        OcraSuite-1: OcraSuite Version 1
-        HOTP-SHA512-8: HTOP mit SHA512 verkuerzt auf 8 Ziffern
-        C-QN08-PSHA1:
-            C: mit counter
-            QN08: numerische Challenge bis zu 8 Ziffern
-            PSHA1: SHA1 des Passworts
 
-    "OcraSuite-1:HOTP-SHA256-6:QA10-T1M"
-        OcraSuite-1: OcraSuite Version 1
-        HOTP-SHA256-6: HTOP mit SHA256 verkuerzt auf 6 Ziffern
-        QA10-T1M:
-            QA10: alphanumerische Challenge bis zu 10 Zeichen.
-            T1M: Timestamp Counter (time step = 1 minute)
+    OcraSuite-1:HOTP-SHA512-8:C-QN08-PSHA1
+
+    - OcraSuite-1: OcraSuite Version 1
+    - HOTP-SHA512-8: HTOP mit SHA512 verkuerzt auf 8 Ziffern
+    - C-QN08-PSHA1:
+
+    - C: mit counter
+    - QN08: numerische Challenge bis zu 8 Ziffern
+    - PSHA1: SHA1 des Passworts
 
 
-'ocrasuite' in unit tests:
+    OcraSuite-1:HOTP-SHA256-6:QA10-T1M
 
-OcraSuite-1:HOTP-SHA1-6:QN08
-OcraSuite-1:HOTP-SHA256-8:QA08
-OcraSuite-1:HOTP-SHA256-8:QN08-PSHA1
+    - OcraSuite-1: OcraSuite Version 1
+    - HOTP-SHA256-6: HTOP mit SHA256 verkuerzt auf 6 Ziffern
+    - QA10-T1M:
 
-OcraSuite-1:HOTP-SHA512-8:C-QN08
-OcraSuite-1:HOTP-SHA256-8:C-QN08-PSHA1
-
-OcraSuite-1:HOTP-SHA512-8:QN08-T1M
-OcraSuite-1:HOTP-SHA512-8:QA10-T1M
+    - QA10: alphanumerische Challenge bis zu 10 Zeichen.
+    - T1M: Timestamp Counter (time step = 1 minute)
 
 
+    'ocrasuite' in unit tests:
 
+    OcraSuite-1:HOTP-SHA1-6:QN08
+    OcraSuite-1:HOTP-SHA256-8:QA08
+    OcraSuite-1:HOTP-SHA256-8:QN08-PSHA1
 
-When computing a response, the concatenation order is always the
-following:
+    OcraSuite-1:HOTP-SHA512-8:C-QN08
+    OcraSuite-1:HOTP-SHA256-8:C-QN08-PSHA1
 
-    C | OTHER-PARTY-GENERATED-CHALLENGE-QUESTION |  YOUR-GENERATED-CHALLENGE-QUESTION | P| S | T
-
-If a value is empty (i.e., a certain input is not used in the
-computation) then the value is simply not represented in the string.
-
-The counter on the token or client MUST be incremented every time a
-new computation is requested by the user.  The server's counter value
-MUST only be incremented after a successful OcraSuite authentication.
+    OcraSuite-1:HOTP-SHA512-8:QN08-T1M
+    OcraSuite-1:HOTP-SHA512-8:QA10-T1M
 
 
 
 
-              CLIENT                                   SERVER
-             (PROVER)                                 VERIFIER)
-                |                                        |
-                |   Verifier sends challenge to prover   |
-                |   Challenge = Q                        |
-                |<---------------------------------------|
-                |                                        |
-                |   Prover Computes Response             |
-                |   R = OcraSuite(K, {[C] | Q | [P | S | T]}) |
-                |   Prover sends Response = R            |
-                |--------------------------------------->|
-                |                                        |
-                |  Verifier Validates Response           |
-                |  If Response is valid, Server sends OK |
-                |  If Response is not,  Server sends NOK |
-                |<---------------------------------------|
-                |                                        |
+    When computing a response, the concatenation order is always the
+    following:
+
+        C | OTHER-PARTY-GENERATED-CHALLENGE-QUESTION |  YOUR-GENERATED-CHALLENGE-QUESTION | P| S | T
+
+    If a value is empty (i.e., a certain input is not used in the
+    computation) then the value is simply not represented in the string.
+
+    The counter on the token or client MUST be incremented every time a
+    new computation is requested by the user.  The server's counter value
+    MUST only be incremented after a successful OcraSuite authentication.
 
 
-          CLIENT                                             SERVER
-        (PROVER)                                          (VERIFIER)
-           |                                                  |
-           |   1. Client sends client-challenge               |
-           |   QC = Client-challenge                          |
-           |------------------------------------------------->|
-           |                                                  |
-           |   2. Server computes server-response             |
-           |      and sends server-challenge                  |
-           |   RS = OcraSuite(K, [C] | QC | QS | [S | T])          |
-           |   QS = Server-challenge                          |
-           |   Response = RS, QS                              |
-           |<-------------------------------------------------|
-           |                                                  |
-           |   3. Client verifies server-response             |
-           |      and computes client-response                |
-           |   OcraSuite(K, [C] | QC | QS | [S | T]) != RS -> STOP |
-           |   RC = OcraSuite(K, [C] | QS | QC | [P | S | T])      |
-           |   Response = RC                                  |
-           |------------------------------------------------->|
-           |                                                  |
-           |   4. Server verifies client-response             |
-           |   OcraSuite(K, [C] | QS | QC | [P|S|T]) != RC -> STOP |
-           |   Response = OK                                  |
-           |<-------------------------------------------------|
-           |                                                  |
 
-'''
+
+                CLIENT                                   SERVER
+                (PROVER)                                 VERIFIER)
+                    |                                        |
+                    |   Verifier sends challenge to prover   |
+                    |   Challenge = Q                        |
+                    |<---------------------------------------|
+                    |                                        |
+                    |   Prover Computes Response             |
+                    |   R = OcraSuite(K, {[C] | Q | [P | S | T]}) |
+                    |   Prover sends Response = R            |
+                    |--------------------------------------->|
+                    |                                        |
+                    |  Verifier Validates Response           |
+                    |  If Response is valid, Server sends OK |
+                    |  If Response is not,  Server sends NOK |
+                    |<---------------------------------------|
+                    |                                        |
+
+
+            CLIENT                                             SERVER
+            (PROVER)                                          (VERIFIER)
+            |                                                  |
+            |   1. Client sends client-challenge               |
+            |   QC = Client-challenge                          |
+            |------------------------------------------------->|
+            |                                                  |
+            |   2. Server computes server-response             |
+            |      and sends server-challenge                  |
+            |   RS = OcraSuite(K, [C] | QC | QS | [S | T])          |
+            |   QS = Server-challenge                          |
+            |   Response = RS, QS                              |
+            |<-------------------------------------------------|
+            |                                                  |
+            |   3. Client verifies server-response             |
+            |      and computes client-response                |
+            |   OcraSuite(K, [C] | QC | QS | [S | T]) != RS -> STOP |
+            |   RC = OcraSuite(K, [C] | QS | QC | [P | S | T])      |
+            |   Response = RC                                  |
+            |------------------------------------------------->|
+            |                                                  |
+            |   4. Server verifies client-response             |
+            |   OcraSuite(K, [C] | QS | QC | [P|S|T]) != RC -> STOP |
+            |   Response = OK                                  |
+            |<-------------------------------------------------|
+            |                                                  |
+
+"""
 
 
 import binascii

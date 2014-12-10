@@ -187,26 +187,27 @@ class IdResolver (UserIdResolver):
 
     @classmethod
     def testconnection(cls, params):
-        '''
+        """
         This is used to test if the given parameter set will do a successful
         LDAP connection.
-        params are:
-            BINDDN
-            BINDPW
-            LDAPURI
-            TIMEOUT
-            LDAPBASE
-            LOGINNAMEATTRIBUTE': 'sAMAccountName',
-            LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
-            LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
-            USERINFO': '{ "username": "sAMAccountName", "phone" :
-                          "telephoneNumber", "mobile" : "mobile",
-                          "email" : "mail", "surname" : "sn",
-                          "givenname" : "givenName" }'
-            SIZELIMIT
-            NOREFERRALS
-            CACERTIFICATE
-        '''
+
+        :param params:
+            - BINDDN
+            - BINDPW
+            - LDAPURI
+            - TIMEOUT
+            - LDAPBASE
+            - LOGINNAMEATTRIBUTE': 'sAMAccountName',
+            - LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
+            - LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
+            - USERINFO': '{ "username": "sAMAccountName", "phone" :
+                "telephoneNumber", "mobile" : "mobile",
+                "email" : "mail", "surname" : "sn",
+                "givenname" : "givenName" }'
+            - SIZELIMIT
+            - NOREFERRALS
+            - CACERTIFICATE
+        """
 
         old_cert_file = None
         l = None
@@ -644,23 +645,29 @@ class IdResolver (UserIdResolver):
         return resultList
 
     def getUserInfo(self, userid):
-        '''
+        """
         return all user related information
 
-        :param userId: specied user
-        :type userId:  string
+        :param userId: specified user
+        :type userId: string
+
         :return: dictionary, containing all user related info
-        :rtype:  dict
+        :rtype: dict
 
-        The return is a dictionary with well defined keys:
-        fields = {
-            "username":1, "userid":1,
-            "description":0,
-            "phone":0,"mobile":0,"email":0,
-            "givenname":0,"surname":0,"gender":0
-          }
+        The return is a dictionary with well defined keys::
 
-        '''
+            fields = {
+                "username": 1,
+                "userid": 1,
+                "description": 0,
+                "phone": 0,
+                "mobile": 0,
+                "email": 0,
+                "givenname": 0,
+                "surname": 0,
+                "gender": 0
+            }
+        """
         log.debug("[getUserInfo]")
 
         ret = {}

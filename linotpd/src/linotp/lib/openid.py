@@ -454,10 +454,10 @@ class SQLStorage(object):
         This function sets the token of the user. This is the token,
         that is also stored in the cookie
 
-        params:
-            user -      the username
-            expire -    the time in seconds, how long this token is valid.
-                        This corresponds to the cookie lifetime.
+        :param user: the username
+
+        :param expire: the time in seconds, how long this token is valid.
+            This corresponds to the cookie lifetime.
         '''
         token = self._create_token(user)
 

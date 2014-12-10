@@ -13,20 +13,22 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-'''
- This module can be used to create the optical challenge image for Feitian
-    c601 token.
+"""
+This module can be used to create the optical challenge image for Feitian
+c601 token.
 
-    c601:
-    Either you can create a single challenge that will display the OTP response
-        calculate_optical_data(value="12345678")
+c601:
+Either you can create a single challenge that will display the OTP response::
 
-    or you can split the challenge into ACCOUNT and AMOUNT.
-         calculate_optical_data(value="12345", type=ACCOUNT)
-         calculate_optical_data(value="67890", type=AMOUNT)
+    calculate_optical_data(value="12345678")
 
-    The challenge then will be AMOUNT+ACCOUNT (6789012345)
-'''
+or you can split the challenge into ACCOUNT and AMOUNT::
+
+    calculate_optical_data(value="12345", type=ACCOUNT)
+    calculate_optical_data(value="67890", type=AMOUNT)
+
+The challenge then will be AMOUNT+ACCOUNT (6789012345)
+"""
 
 CHALLENGE = [0, 1]
 ACCOUNT = [1, 1]

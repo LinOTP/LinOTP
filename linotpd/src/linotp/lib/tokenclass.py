@@ -1155,7 +1155,7 @@ class TokenClass(object):
 
 
 class OcraTokenClass(TokenClass):
-    '''
+    """
     OcraTokenClass  implement an ocra compliant token
 
     used from Config
@@ -1165,49 +1165,46 @@ class OcraTokenClass(TokenClass):
         QrOcraDefaultSuite        - if none :'OCRA-1:HOTP-SHA256-8:C-QA64'
 
 
-    algorithm Ocra Token Rollout: tow phases of rollout
+    algorithm Ocra Token Rollout: two phases of rollout::
 
-    1. https://linotpserver/admin/init?
-        type=ocra&
-        genkey=1&
-        sharedsecret=1&
-        user=BENUTZERNAME&
-        session=SESSIONKEY
+        1. https://linotpserver/admin/init?
+            type=ocra&
+            genkey=1&
+            sharedsecret=1&
+            user=BENUTZERNAME&
+            session=SESSIONKEY
 
-        =>> "serial" : SERIENNUMMER, "sharedsecret" : DATAOBJECT, "app_import" : IMPORTURL
-        - genSharedSecret - vom HSM oder urandom ?
-        - app_import : + linotp://
-                       + ocrasuite ->> default aus dem config: (DefaultOcraSuite)
-                       + sharedsecret (Länge wie ???)
-                       + seriennummer
-        - seriennummer: uuid
-        - token wird angelegt ist aber nicht aktiv!!! (counter == 0)
-
-
-    2. https://linotpserver/admin/init?
-        type=ocra&
-        genkey=1&
-        activationcode=AKTIVIERUNGSCODE&
-        user=BENUTZERNAME&
-        message=MESSAGE&
-        session=SESSIONKEY
-
-        =>> "serial" : SERIENNUMMER, "nonce" : DATAOBJECT, "transactionid" : "TRANSAKTIONSID, "app_import" : IMPORTURL
-
-        - nonce - von HSM oder random ?
-        - pkcs5 - kdf2
-        - es darf zur einer Zeit nur eine QR Token inaktiv (== im Ausrollzustand) sein !!!!!
-          der Token wird über den User gefunden
-        - seed = pdkdf2(nonce + activcode + shared secret)
-        - challenge generiern - von urandom oder HSM
-
-    3. check_t
-        - counter ist > nach der ersten Transaktion
-        - if counter >= 1: delete sharedsecret löschen
+            =>> "serial" : SERIENNUMMER, "sharedsecret" : DATAOBJECT, "app_import" : IMPORTURL
+            - genSharedSecret - vom HSM oder urandom ?
+            - app_import : + linotp://
+                        + ocrasuite ->> default aus dem config: (DefaultOcraSuite)
+                        + sharedsecret (Länge wie ???)
+                        + seriennummer
+            - seriennummer: uuid
+            - token wird angelegt ist aber nicht aktiv!!! (counter == 0)
 
 
-    '''
+        2. https://linotpserver/admin/init?
+            type=ocra&
+            genkey=1&
+            activationcode=AKTIVIERUNGSCODE&
+            user=BENUTZERNAME&
+            message=MESSAGE&
+            session=SESSIONKEY
 
+            =>> "serial" : SERIENNUMMER, "nonce" : DATAOBJECT, "transactionid" : "TRANSAKTIONSID, "app_import" : IMPORTURL
+
+            - nonce - von HSM oder random ?
+            - pkcs5 - kdf2
+            - es darf zur einer Zeit nur eine QR Token inaktiv (== im Ausrollzustand) sein !!!!!
+            der Token wird über den User gefunden
+            - seed = pdkdf2(nonce + activcode + shared secret)
+            - challenge generiern - von urandom oder HSM
+
+        3. check_t
+            - counter ist > nach der ersten Transaktion
+            - if counter >= 1: delete sharedsecret löschen
+    """
 
 
     @classmethod
