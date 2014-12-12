@@ -35,7 +35,7 @@ from linotp.lib.realm import getDefaultRealm
 from linotp.lib.selftest import isSelfTest
 import traceback
 
-from linotp.lib.user import check_user_password
+from linotp.lib.user import get_authenticated_user
 
 class UserModelPlugin(object):
 
@@ -44,7 +44,7 @@ class UserModelPlugin(object):
         #log.debug( identity )
         username = None
         realm = None
-        success = None
+        authUser = None
         try:
             if isSelfTest():
                 if identity.has_key('login') == False and identity.has_key('repoze.who.plugins.auth_tkt.userid') == True:
@@ -76,11 +76,11 @@ class UserModelPlugin(object):
 
         # check username/realm, password
         if isSelfTest():
-            success = "%s@%s" % (unicode(username), unicode(realm))
+            authUser = "%s@%s" % (unicode(username), unicode(realm))
         else:
-            success = check_user_password(username, realm, password)
+            authUser = get_authenticated_user(username, realm, password)
 
-        return success
+        return authUser
 
     def add_metadata(self, environ, identity):
         #username = identity.get('repoze.who.userid')

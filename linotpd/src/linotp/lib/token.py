@@ -55,7 +55,7 @@ from linotp.lib.error import ParameterError
 
 from linotp.lib.user import getUserId, getUserInfo
 from linotp.lib.user import User, getUserRealms
-from linotp.lib.user import check_user_password
+from linotp.lib.user import get_authenticated_user
 
 from linotp.lib.util import getParam
 from linotp.lib.util import generate_password
@@ -862,6 +862,89 @@ def check_serial(serial):
 
     return (result, new_serial)
 
+def auto_enrollToken(passw, user, options=None):
+    '''
+    This function is called to auto_enroll a token:
+    - when the user has no token assigned and enters his password (without
+      otppin=1 policy), a new email or sms token is created and will be
+      assigned to the user. Finaly a challenge otp for this user will be
+      created that he will receive by email or sms.
+
+    :param passw: password of the user - to checked against the user resolver
+    :param user: user object of login name and realm
+    :param options: optional parameters used during challenge creation
+    :return: tuple of auth success and challenge output
+    '''
+
+    # check if autoenrollt is configured
+    auto = False
+    try:
+        auto, token_type = linotp.lib.policy.get_auto_enrollment(user)
+    except Exception as exx:
+        log.error("%r" % exx)
+        raise Exception("[auto_enrollToken] %r" % exx)
+
+    if not auto:
+        log.debug("no auto_enrollToken configured")
+        return False, {}
+
+    uid, res, resc = getUserId(user)
+    u_info = getUserInfo(uid, res, resc)
+
+    # enroll token for user
+    desc = 'auto enrolled for %s@%s' % (user.login,user.realm)
+    token_init = {'genkey' :1, "type" : token_type,
+                  'description' : desc[:80]}
+
+    # for sms get phone number of user
+    if token_type == 'sms':
+        mobile = u_info.get('mobile', None)
+        if not mobile:
+            log.warning('auto_enrollemnt for user %r faild: missing mobile number!'
+                        % user)
+            return False,{}
+
+        token_init['phone'] = mobile
+
+    # for email get email address
+    elif token_type == 'email':
+        email = u_info.get('email', None)
+        if not email:
+            log.warning('auto_enrollemnt for user %r faild: missing email!'
+                        % user)
+            return False,{}
+        token_init['email'] = email
+
+    # else: token type undefined
+    else:
+        log.warning('auto_enrollemnt for user %r faild: unknown token type'
+                    % (user, token_type))
+        return False,{}
+
+    authUser = get_authenticated_user(user.login, user.realm, passw)
+    if authUser is None:
+        log.error("User %r@%r failed to authenticate against userstore"
+                  % (user.login, user.realm))
+        return False, {}
+
+
+    (res, tokenObj) = initToken(token_init, user)
+    if res == False:
+        log.error('Failed to create token for user %s@%s during autoenrollment'
+                  % (user.login,user.realm))
+        return False,{}
+
+    # trigger challenge for user
+    (_res, reply) = linotp.lib.validate.create_challenge(tokenObj, options=options)
+    if _res is not True:
+        error = ('failed to create challenge for user %s@%s during autoenrollment'
+                  % (user.login,user.realm))
+        log.error(error)
+        raise Exception(error)
+
+    return (True, reply)
+
+
 def auto_assignToken(passw, user, pin="", param=None):
     '''
     This function is called to auto_assign a token, when the
@@ -912,8 +995,8 @@ def auto_assignToken(passw, user, pin="", param=None):
                     "the given OTP value found.", matching_token_count)
         return False
 
-    success = check_user_password(user.login, user.realm, pin)
-    if success is None:
+    authUser = get_authenticated_user(user.login, user.realm, pin)
+    if authUser is None:
         log.error("[auto_assignToken] User %r@%r failed to authenticate against userstore" % (user.login, user.realm))
         return False
 
@@ -1161,8 +1244,14 @@ def checkUserPass(user, passw, options=None):
         auto_assign_return = auto_assignToken(passw, user)
         if auto_assign_return == True:
             # We can not check the token, as the OTP value is already used!
-            # But we will authenticate the user....
+            # but we will authenticate the user....
             return (True, opt)
+
+        auto_enroll_return, opt = auto_enrollToken(passw, user, options=options)
+        if auto_enroll_return is True:
+            # we always have to return a false, as we have a challenge tiggered
+            return (False, opt)
+
 
         passOnNoToken = "PassOnUserNoToken"
         passOn = getFromConfig(passOnNoToken, False)
@@ -1254,7 +1343,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         ## if not skip to the next token in list
         typ = token.getType()
         if not tokenclasses.has_key(typ.lower()):
-            log.error('[initToken] typ %r not found in tokenclasses: %r' %
+            log.error('token typ %r not found in tokenclasses: %r' %
                       (typ, tokenclasses))
             continue
 
