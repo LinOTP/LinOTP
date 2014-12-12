@@ -33,7 +33,7 @@
 """
 
 BUILD_VERSION = '130405'
-VERSION = '2.7.1rc1'
+VERSION = '2.7.1'
 #import pkg_resources
 #VERSION = pkg_resources.get_distribution("linotpadminclientee").version
 

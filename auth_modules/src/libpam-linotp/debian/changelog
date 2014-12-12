@@ -1,8 +1,8 @@
-libpam-linotp (2.7.1-0.rc1~precise) precise; urgency=low
+libpam-linotp (2.7.1-1~precise) precise; urgency=low
 
   * Fixed the prompt configuration
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Dec 2014 16:45:25 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Dec 2014 15:28:36 +0100
 
 libpam-linotp (2.7.0.1-1~precise) precise; urgency=low
 

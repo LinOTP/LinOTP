@@ -1,4 +1,4 @@
-linotp (2.7.1-0.rc1~precise) precise; urgency=low
+linotp (2.7.1-1~precise) precise; urgency=low
 
   Enhancements:
   * Server: Added check for optional support and subscription license
@@ -71,7 +71,7 @@ linotp (2.7.1-0.rc1~precise) precise; urgency=low
   * WebUI: Fixed selfservice enroll of mOTP token
   * Server: Fixed token serial not appearing in the audit log in some cases
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Dec 2014 16:45:25 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Dec 2014 15:28:36 +0100
 
 linotp (2.7.0.2-1~precise) precise; urgency=low
 

@@ -1,10 +1,10 @@
-linotp-useridresolver (2.7.1-0.rc1~precise) precise; urgency=low
+linotp-useridresolver (2.7.1-1~precise) precise; urgency=low
 
   * Fixed LDAPIdResolver 'Size limit exceeded' error message that appeared
     when requesting more results than the server wanted to return (Microsoft
     Active Directory specific)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Dec 2014 16:45:25 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Dec 2014 15:28:36 +0100
 
 linotp-useridresolver (2.7.0.2-1~precise) precise; urgency=low
 

@@ -1,5 +1,5 @@
 FREERADDIR=`find sandbox -name freeradius\* -type d`
-LINOTP_VERSION=2.7.1rc1
+LINOTP_VERSION=2.7.1
 
 COMMENT="added LinOTP2 module rlm_linotp"
 info:
