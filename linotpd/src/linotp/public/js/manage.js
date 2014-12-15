@@ -1852,6 +1852,10 @@ function support_view(){
                 }
             });
             info += "</tbody></table>";
+            info += "<div class='subscription_info'><br>" +
+                i18n.gettext("For support and subscription please contact us at") +
+                " <a href='https://www.lsexperts.de/service-support.html' target='_blank'>https://www.lsexperts.de</a> <br>" +
+                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
             $("#dialog_support_view").html(info);
         }
     });
@@ -4495,13 +4499,6 @@ function define_policy_action_autocomplete(availableActions) {
      * This sets the allowed actions in the policy action input
      */
     $( "#policy_action" )
-        // don't navigate away from the field on tab when selecting an item
-        .bind( "keydown", function( event ) {
-            if ( event.keyCode === $.ui.keyCode.TAB &&
-                    $( this ).data( "autocomplete" ).menu.active ) {
-                event.preventDefault();
-            }
-        })
         .autocomplete({
             minLength: 0,
             source: function( request, response ) {

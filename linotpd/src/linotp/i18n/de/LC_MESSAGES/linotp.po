@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-19 14:06+0100\n"
+"PO-Revision-Date: 2014-11-24 16:16+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -37,11 +37,42 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
+#, python-format
+msgid "audit/search failed: %s"
+msgstr "Fehler bei der Suche im Audit Log: %s"
+
+#, python-format
+msgid "Error: %s"
+msgstr "Fehler: %s"
+
 msgid "The token you want to assign is  not contained in your realm!"
 msgstr "Der Token den Sie zuweisen wollen, ist nicht in Ihrem Realm enthalten!"
 
 msgid "The token is already assigned to another user."
 msgstr "Der Token ist bereits einem anderen Benutzer zugewiesen."
+
+msgid "getotp is not activated."
+msgstr "'getotp' ist nicht aktiv"
+
+#, python-format
+msgid "The serial %s does not belong to user %s@%s"
+msgstr "Die Seriennummer %s gehört nicht zu dem Benutzer %s@%s"
+
+#, python-format
+msgid "selfservice/usergetmultiotp failed: %s"
+msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %s"
+
+#, python-format
+msgid ""
+"valid types are 'oathtoken' and 'googleauthenticator' and "
+"'googleauthenticator_time'. You provided %s"
+msgstr ""
+"Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
+"'googleauthenticator_time'. Angegeben wurde %s"
+
+#, python-format
+msgid "valid types are 'ocra'. You provided %s"
+msgstr "Gültiger Tokentyp ist 'ocra'. Angegeben wurde %s"
 
 msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
 msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
@@ -49,20 +80,424 @@ msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
 msgid "The name of the policy must not be empty"
 msgstr "Der Name der Richtlinie darf nicht leer sein."
 
+#, python-format
+msgid "The provided PIN is too short. It should be at least %i characters."
+msgstr "Die angegebene PIN ist zu kurz. Es sollten mindestens %i Zeichen sein."
+
+#, python-format
 msgid ""
-"You are using the open source version with community support. For "
-"professional support, feel free to contact LSE by email or by phone."
-msgstr ""
-"Dies ist die LinOTP Open Source Version mit Community Support. Für "
-"dedizierten Support stehen wir Ihnen gerne über E-Mail oder per Telefon zur "
-"Verfügung."
+"The provided PIN is too long. It should not be longer than %i characters."
+msgstr "Die angegebene PIN ist zu lang. Es sollten maximal %i Zeichen sein."
 
-msgid "License is not valid - signature could not be verified!"
+#, python-format
+msgid ""
+"The provided PIN does not contain characters of the group or it does "
+"contains characters that are not in the group %s"
 msgstr ""
-"Die Lizenz ist nicht gültig - die Signatur konnte nicht überprüft werden!"
+"Die angegebene PIN besteht nicht aus Zeichen der Zeichendefinition oder "
+"beinhaltet Zeichen die nicht in der Zeichendefinition sind: %s"
 
-msgid "License volume exceeded:"
-msgstr "Lizenz Volumen überschritten:"
+msgid ""
+"The provided PIN does not contain any letters. Check policy otp_pin_contents."
+msgstr ""
+"Die angegebene Pin hat kein Buchstaben gemäß der Richtlinie "
+"'otp_pin_content'."
+
+msgid ""
+"The provided PIN does not contain any numbers. Check policy otp_pin_contents."
+msgstr ""
+"Die angegebene Pin hat keine Zahlen gemäß der Richtlinie 'otp_pin_content'."
+
+msgid ""
+"The provided PIN does not contain any special characters. It should contain "
+"some of these characters like .: ,;-_<>+*~!/()=?$. Check policy "
+"otp_pin_contents."
+msgstr ""
+"Die angegebene Pin hat keine Sonderzeichen gemäß der Richtlinie "
+"'otp_pin_content'. Sonderzeichen können sein .: ,;-_<>+*~!/()=?$."
+
+msgid ""
+"The provided PIN does not contain any other characters. It should contain "
+"some of these characters that are not contained in letters, digits and the "
+"defined special characters. Check policy otp_pin_contents."
+msgstr ""
+"Die angegebene Pin hat keine besonderen Zeichen gemäß der Richtlinie "
+"'otp_pin_content'. Die Pin sollte einige dieser besonderen Zeichen "
+"beinhalten, die weder Buchstaben noch Ziffern noch aus dem Bereich der "
+"Sonderzeichen sind."
+
+#, python-format
+msgid "The PIN contains letters, although it should not! (%s)"
+msgstr "Der Pin beinhaltet Buchstaben obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid "The PIN contains digits, although it should not! (%s)"
+msgstr "Der Pin beinhaltet Ziffern obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid "The PIN contains special characters, although it should not! (%s)"
+msgstr "Der Pin beinhaltet Sonderzeichen obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid "The PIN contains other characters, although it should not! (%s)"
+msgstr ""
+"Der Pin beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
+
+msgid "You do not have any rights in any realm! Check the policies."
+msgstr ""
+"Sie haben keine Rechte in allen Realms: Überprüfen Sie die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to remove token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den Token %s zu löschen - "
+"überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to enable token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den Token %s zu aktivieren - "
+"überprüfen Sie ggf. die Richtlinien."
+
+msgid ""
+"You may not enable any more tokens. Your maximum token number is reached!"
+msgstr ""
+"Das Token Maximum wurde erreicht - es können keine weiteren Token aktiviert "
+"werden."
+
+#, python-format
+msgid ""
+"You may not enable any more tokens in realm %s. Check the policy 'tokencount'"
+msgstr ""
+"Es können keine weiteren Token in dem Realm %s aktiviert werden. Prüfen Sie "
+"ggf. die Richtlinie 'tokencount'."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to disable token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den Token %s zu deaktivieren - "
+"überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to copy pin of token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den Pin des Tokens %s zu "
+"kopieren - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to copy user of token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um Benutzer des Tokens %s zu "
+"kopieren - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to run the losttoken workflow for "
+"token %s. Check the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den 'Lost Token' Prozess für "
+"den Token %s zu starten - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to run the getotp workflow for "
+"token %s. Check the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den 'getotp' Prozess für den "
+"Token %s zu starten - überprüfen Sie ggf. die Richtlinien."
+
+msgid ""
+"You do not have the administrative right to get serials by OTPs in this "
+"realm!"
+msgstr ""
+"Sie haben nicht die administrativen Rechte um in diesem Realm die "
+"Seriennummer über die OTP's zu identifizieren - überprüfen Sie ggf. die "
+"Richtlinien."
+
+#, python-format
+msgid "The tokentype '%s' could not be found."
+msgstr "Der Tokentype '%s' konnte nich gefunden werden."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to init token %s of type %s to user "
+"%s@%s. Check the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den Token %s vom Typ %s für "
+"den Benutzer %s@%s auszurollen - überprüfen Sie ggf. die Richtlinien."
+
+msgid ""
+"You do not have the administrative right to enroll tokens. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um Token auszurollen - überprüfen "
+"Sie ggf. die Richtlinien."
+
+#, python-format
+msgid "You do not have the administrative right to init token %s of type %s."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um den Token %s vom Typ %s "
+"auszurollen."
+
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr ""
+"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
+"ausrollen."
+
+#, python-format
+msgid ""
+"The maximum allowed number of tokens for the realm %s was reached. You can "
+"not init any more tokens. Check the policies scope=enrollment, "
+"action=tokencount."
+msgstr ""
+"Die maximale Anzahl an Token innerhalb des Realms %s wurde erreicht. Sie "
+"koennen keine weiteren Token mehr in diesem Realm ausrollen. Bitte "
+"ueberprüfen Sie die Richtlinie scope=enrollment, action=tokencount."
+
+msgid ""
+"The maximum number of allowed tokens per user is exceeded. Check the "
+"policies scope=enrollment, action=maxtoken"
+msgstr ""
+"Die maximale Anzahl an Token pro Benutzer wurde erreicht. Bitte ueberprüfen "
+"Sie die Richtlinie scope=enrollment, action=tokencount."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to unassign token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte um die Benutzerzuweisung für den "
+"Token %s aufzuheben - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to assign token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte für die Benutzerzuweisung für den "
+"Token %s - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
+"can not assign any more tokens. Check the policies."
+msgstr ""
+"Die maximale Anzahl an Token innerhalb des Realms %s (%s) wurde erreicht. "
+"Sie koennen keine weiteren Token ausrollen. Bitte überprüfen Sie die "
+"Richtlinie."
+
+msgid "the maximum number of allowed tokens is exceeded. Check the policies"
+msgstr ""
+"Die Maimalzahl an lizensierten Token wurde überschritten - überprüfen Sie "
+"ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set MOTP PIN/ SC UserPIN for "
+"token %s. Check the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Setzen der MOTP PIN / SC "
+"UserPIN für den Token %s - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set Smartcard PIN for token %s. "
+"Check the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Setzen der Smardcard PIN's "
+"für den Token %s - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set OTP PIN for token %s. Check "
+"the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Setzen der OTP PIN für den "
+"Token %s - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set token properties for %s. "
+"Check the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Setzen der Tokeneigenschaften "
+"für den Token %s - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to resync token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Synchronisieren des Tokens %s "
+"- überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid "You do not have the administrative right to list users in realm %s(%s)."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Anzeigen der Benutzer im "
+"Realm %s(%s)."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to show status of token challenges "
+"in realm %s(%s)."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Anzeigen des Status der Token "
+"Challenges im Realm %s(%s)."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to remove tokens from realm %s. "
+"Check the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Löschen von Token im Realm %s "
+"- überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to add tokens to realm %s. Check "
+"the policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Hinzufügen von Token im Realm "
+"%s - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You may not put any more tokens in realm %s. Check the policy 'tokencount'"
+msgstr ""
+"Es können keine weiteren Token im Realm %s hinzugefügt werden- überprüfen "
+"Sie ggf. die Richtlinie 'tokencount'."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to reset token %s. Check the "
+"policies."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Zurücksetzen des Token %s - "
+"überprüfen Sie ggf. die Richtlinien."
+
+msgid ""
+"You do not have the administrative right to import tokens. Check the "
+"policies."
+msgstr ""
+"Es fehlen die administrativen Rechte zum Importieren von Token - überprüfen "
+"Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to import token files to realm %s. "
+"Check the policies."
+msgstr ""
+"Es fehlen die administrativen Rechte zum Importieren von Token für den Realm "
+"%s - überprüfen Sie ggf. die Richtlinien."
+
+#, python-format
+msgid ""
+"The maximum number of allowed tokens in realm %s is exceeded. Check policy "
+"tokencount!"
+msgstr ""
+"Die Maximalzahl von Token für den Realm %s wurde erreicht - überprüfen Sie "
+"ggf. die Richtlinie 'tokencount'!"
+
+#, python-format
+msgid "Failed to run checkPolicyPre. Unknown method: %s"
+msgstr "Fehler bei der Richtlinie Überprüfung - unbekannte Methode: %s"
+
+#, python-format
+msgid "There is no policy gettoken/max_count definable for the tokentype %r"
+msgstr "Ed gibt keine Richtlinie 'gettoken/maxcount' für den Tokentyp %r"
+
+msgid ""
+"You do not have the administrative right to view the audit trail. You are "
+"missing a policy scope=audit, action=view"
+msgstr ""
+"Sie haben nicht die administrativen Rechte den Audit Log anzusehen. Es fehlt "
+"dazu ein Richtlinie mit 'scope=audit' und 'action=view'."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s definiert."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s im Realm %s definiert."
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr ""
+"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
+"ggf. die Richtlinien."
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr ""
+"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
+
+#, python-format
+msgid "Policy check failed. You are not allowed to %s system config."
+msgstr ""
+"Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die System "
+"Konfiguration anzusehen oder zu ändern (%s)."
+
+#, python-format
+msgid "You do not have the administrative right to do an ocra/%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte für die Ocra Anfrage: ocra/%s."
+
+#, python-format
+msgid "Failed to run getPolicyPre. Unknown controller: %s"
+msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter controller %s"
+
+msgid ""
+"You do not have the administrative right to get serials from this realm!"
+msgstr ""
+"Sie haben nicht die administrativen Rechte um die Seriennummern dieses "
+"Realms zu erfragen!."
+
+#, python-format
+msgid "Failed to run getPolicyPost. Unknown method: %s"
+msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter methode %s"
+
+msgid "You do not have system config read rights and not realm admin policies."
+msgstr ""
+"Sie haben nicht die Rechte um die System Konfiguration oder die Realm "
+"Administrations Richtlinien zu lesen."
+
+#, python-format
+msgid "Failed to run getPolicyPost. Unknown controller: %s"
+msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter controller %s"
+
+msgid "multiple tokens found - cannot determine tokentype!"
+msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
+
+msgid "signature could not be verified!"
+msgstr "Die Signatur ist nicht gültig!"
+
+msgid "volume exceeded:"
+msgstr "Volumen überschritten:"
 
 msgid "expired - valid till"
 msgstr "abgelaufen - gültig bis"
@@ -768,6 +1203,15 @@ msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
 msgid "Please select only one user."
 msgstr "Bitte wählen Sie nur einen Benutzer aus."
 
+msgid "The upload of your support and subscription license failed: "
+msgstr "Das Laden der Support- und Subskriptions-Datei ist fehlgeschlagen: "
+
+msgid "License upload"
+msgstr "Lizenz hochladen"
+
+msgid "Invalid License"
+msgstr "ungültige Lizenz"
+
 msgid "Professional LinOTP support and enterprise subscription"
 msgstr "Professionellen LinOTP Support und Subskription für Unternehmen"
 
@@ -783,6 +1227,15 @@ msgstr ""
 
 msgid "Your LinOTP support subscription"
 msgstr "Ihr LinOTP Support und Subskription"
+
+msgid "For support and subscription please contact us at"
+msgstr "Für Support- und Subskriptions Fragen erreichen Sie uns"
+
+msgid "by phone"
+msgstr "über Telefon "
+
+msgid "or email"
+msgstr "oder E-Mail"
 
 msgid ""
 "LDAP Server, especially Active Directory, implement a default serverside "
@@ -2566,6 +3019,17 @@ msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
 
+#~ msgid ""
+#~ "You are using the open source version with community support. For "
+#~ "professional support, feel free to contact LSE by email or by phone."
+#~ msgstr ""
+#~ "Dies ist die LinOTP Open Source Version mit Community Support. Für "
+#~ "dedizierten Support stehen wir Ihnen gerne über E-Mail oder per Telefon "
+#~ "zur Verfügung."
+
+#~ msgid "Setting OTP PIN failed: %s"
+#~ msgstr "Setzen der Token PIN ist fehlgeschlagen: %s"
+
 #~ msgid "License is not valid!"
 #~ msgstr "Keine gültige Lizenz!"
 
@@ -2738,12 +3202,6 @@ msgstr ""
 #~ msgid "About"
 #~ msgstr "Über"
 
-#~ msgid "License"
-#~ msgstr "Lizenz"
-
-#~ msgid "View License"
-#~ msgstr "Lizenz anzeigen"
-
 #~ msgid "Set License"
 #~ msgstr "Lizenz setzen"
 
@@ -2789,15 +3247,6 @@ msgstr ""
 #~ msgid "This is the location of your index.html file on the LinOTP server."
 #~ msgstr ""
 #~ "Das ist der Ort, wo auf dem LinOTP-Server die index.html der Hilfe liegt."
-
-#~ msgid ""
-#~ "The maximum allowed number of tokens for the realm %s was reached. You "
-#~ "can not init any more tokens. Check the policies scope=enrollment, "
-#~ "action=tokencount."
-#~ msgstr ""
-#~ "Die maximale Anzahl an Token innerhalb des Realms %s wurde erreicht. Sie "
-#~ "koennen keine weiteren Token mehr in diesem Realm ausrollen. Bitte "
-#~ "ueberprüfen Sie die Richtlinie scope=enrollment, action=tokencount."
 
 #~ msgid "Hello Kay"
 #~ msgstr "Hallo Kay"

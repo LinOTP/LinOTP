@@ -2,7 +2,7 @@ ECHO    = echo
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/linotp
-VERSION = 2.7.1.dev0
+VERSION = 2.7.1
 PROJECT=LinOTP
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
 
@@ -22,7 +22,6 @@ all:
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make translate"
 	@echo "make ppa-dev - Publish in ppa repository linotp-dev"
-	@echo "make ppa     - Publish in PRODUCTIVE repository linotp"
 
 
 extract:

@@ -1,8 +1,8 @@
-linotp-smsprovider (2.7.1-0.dev0~precise) precise; urgency=low
+linotp-smsprovider (2.7.1-1~precise) precise; urgency=low
 
-  * Set new version 2.7.1-0.dev0~precise
+  * Set new version 2.7.1
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 23 May 2014 16:49:22 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Dec 2014 15:28:36 +0100
 
 linotp-smsprovider (2.7-1~precise) precise; urgency=low
 

@@ -2483,7 +2483,7 @@ class TestPolicies(TestController):
                                                                                 'pin' : 'otppin',
                                                                                 'selftest_admin' : 'superadmin'})
 
-        self.assertTrue('the maximum number of allowed tokens per user is exceeded' in response, response)
+        self.assertTrue('maximum number of allowed tokens per user is exceeded' in response, response)
 
         # enroll 2 tokens for max2
         response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
