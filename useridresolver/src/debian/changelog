@@ -1,3 +1,9 @@
+linotp-useridresolver (2.7.2-0.dev0~precise) precise; urgency=low
+
+  * Set new version 2.7.2-0.dev0~precise
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 15 Dec 2014 16:56:27 +0100
+
 linotp-useridresolver (2.7.1-1~precise) precise; urgency=low
 
   * Fixed LDAPIdResolver 'Size limit exceeded' error message that appeared
