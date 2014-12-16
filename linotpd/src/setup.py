@@ -54,7 +54,7 @@ setup(
         "pycrypto>=1.0",
         "repoze.who<=1.1",
         "pyrad>=1.1",
-        "LinOtpUserIdResolver>=2.7.dev",
+        "LinOtpUserIdResolver>=2.7",
         "netaddr",
         "qrcode>=2.4",
         "configobj>=4.6.0",
