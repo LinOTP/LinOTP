@@ -770,7 +770,7 @@ $(document).ready(function() {
 
     $("#tabs").tabs({
         collapsible : true,
-        spinner : 'Retrieving data...',
+        // spinner : 'Retrieving data...',
         beforeLoad: function( event, ui ) {
             // The purpose of the following is to prevent automatic reloads
             // of the tab. When the tab loads for the first time the 'loaded'
@@ -778,6 +778,7 @@ $(document).ready(function() {
             // The tab can be reloaded by reloading the whole page
             // Tab Option 'cache: true' (used before for this same purpose)
             // was removed in jQuery UI version 1.10
+            ui.panel.html('<img src="/images/ajax-loader.gif"/> Retrieving data...');
             if ( ui.tab.data( "loaded" )  ) {
                 event.preventDefault();
             }
