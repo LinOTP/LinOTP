@@ -349,7 +349,7 @@ $( document ).ready(function() {
 });
 
 </script>
-<h2>${_("Enroll your HOTP token")}</h2>
+<h1>${_("Enroll your HOTP token")}</h1>
 <div id='enroll_hmac_form'>
     <form class="cmxform" id='form_enroll_hmac'>
     <fieldset>
