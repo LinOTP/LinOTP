@@ -438,7 +438,7 @@ $( document ).ready(function() {
 });
 
 </script>
-<h2>${_("Enroll your TOTP token")}</h2>
+<h1>${_("Enroll your TOTP token")}</h1>
 <div id='enroll_totp_form'>
     <form class="cmxform" id='form_enroll_totp'>
     <fieldset>
