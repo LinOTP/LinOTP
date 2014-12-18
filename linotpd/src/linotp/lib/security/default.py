@@ -116,7 +116,7 @@ class DefaultSecurityModule(SecurityModule):
                     secret = f.read(32)
                 f.close()
                 if secret == "" :
-                    #secret = setupKeyFile(secFile, id+1)
+                    # secret = setupKeyFile(secFile, id+1)
                     raise Exception ("No secret key defined for index: %s !\n"
                                      "Please extend your %s"" !"
                                      % (str(id), self.secFile))
@@ -143,10 +143,10 @@ class DefaultSecurityModule(SecurityModule):
         if param.has_key('password') == False:
             raise Exception("missing password")
 
-        ## if we have a crypted file and a password, we take all keys
-        ## from the file and put them in a hash
-        ##
-        ## After this we do not require the password anymore
+        # # if we have a crypted file and a password, we take all keys
+        # # from the file and put them in a hash
+        # #
+        # # After this we do not require the password anymore
 
         handles = ['pinHandle' , 'passHandle' , 'valueHandle', 'defaultHandle']
         for handle in handles:
@@ -155,7 +155,7 @@ class DefaultSecurityModule(SecurityModule):
         self.is_ready = True
         return
 
-    ## the real interfaces: random, encrypt, decrypt '''
+    # # the real interfaces: random, encrypt, decrypt '''
     def random(self, len=32):
         '''
         security module methods: random
@@ -193,7 +193,7 @@ class DefaultSecurityModule(SecurityModule):
             raise Exception('setup of security module incomplete')
 
         key = self.getSecret(id)
-        ## convert input to ascii, so we can securely append bin data
+        # # convert input to ascii, so we can securely append bin data
         input = binascii.b2a_hex(data)
         input += u"\x01\x02"
         padding = (16 - len(input) % 16) % 16
@@ -232,19 +232,19 @@ class DefaultSecurityModule(SecurityModule):
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)
         # cko
-        #import linotp.lib.yhsm as yhsm
-        #y = yhsm.YubiHSM(0x1111, password="14fda9321ae820aa34e57852a31b10d0")
-        #y.unlock(password="14fda9321ae820aa34e57852a31b10d0")
-        #log.debug("CKO in: %s" % input)
-        #output = binascii.hexlify(y.decrypt(input))
-        #log.debug("CKO out: %s" % output)
+        # import linotp.lib.yhsm as yhsm
+        # y = yhsm.YubiHSM(0x1111, password="14fda9321ae820aa34e57852a31b10d0")
+        # y.unlock(password="14fda9321ae820aa34e57852a31b10d0")
+        # log.debug("CKO in: %s" % input)
+        # output = binascii.hexlify(y.decrypt(input))
+        # log.debug("CKO out: %s" % output)
         #
         output = aes.decrypt(input)
-        #log.debug("CKO: output2: %s" % output)
+        # log.debug("CKO: output2: %s" % output)
         eof = output.rfind(u"\x01\x02")
         if eof >= 0: output = output[:eof]
 
-        ## convert output from ascii, back to bin data
+        # # convert output from ascii, back to bin data
         data = binascii.a2b_hex(output)
 
         if self.crypted == False:
@@ -346,7 +346,7 @@ class DefaultSecurityModule(SecurityModule):
         :return: decrypted data
         :rtype:  byte string
         '''
-        ## split at ":"
+        # # split at ":"
         pos = cryptValue.find(':')
         bIV = cryptValue[:pos]
         bData = cryptValue[pos + 1:len(cryptValue)]

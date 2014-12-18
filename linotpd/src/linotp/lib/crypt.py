@@ -90,7 +90,7 @@ except:
 
 
 
-## constant - later taken from the env?
+# # constant - later taken from the env?
 CONFIG_KEY = 1
 TOKEN_KEY = 2
 VALUE_KEY = 3
@@ -188,7 +188,7 @@ def getSecret(id=0):
 
     secFile = env["linotpSecretFile"]
 
-    #if True == isWorldAccessible(secFile):
+    # if True == isWorldAccessible(secFile):
     #    log.error("file permission of the secret file :%s: are not secure!", secFile)
     #    raise Exception("permissions of the secret file are not secure!")
     secret = ''
@@ -199,7 +199,7 @@ def getSecret(id=0):
             secret = f.read(32)
         f.close()
         if secret == "" :
-            #secret = setupKeyFile(secFile, id+1)
+            # secret = setupKeyFile(secFile, id+1)
             raise Exception ("No secret key defined for index: %s !\n"
                              "Please extend your %s !" % (unicode(id), secFile))
     except Exception as exx:
@@ -215,7 +215,7 @@ def setupKeyFile(secFile, maxId):
             secret = f.read(32)
         f.close()
 
-        ## if no secret: fill in a new one
+        # # if no secret: fill in a new one
         if secret == "" :
             f = open(secFile, 'ab+')
             secret = geturandom(32)
@@ -243,7 +243,7 @@ def _getCrypto(description):
        interface
     '''
     algo = getattr(CryptoHash, description.upper(), None)
-    #if not callable(algo):
+    # if not callable(algo):
     #    raise ValueError, ('Unknown hash algorithm', s[1])
     return algo
 
@@ -478,7 +478,7 @@ def udecode(value):
     if ("linotp.uencode_data" in env
         and env["linotp.uencode_data"].lower() == 'true'):
         try:
-            ## add surrounding "" for correct decoding
+            # # add surrounding "" for correct decoding
             ret = json.loads('"%s"' % value)
         except Exception as exx:
             log.error("Failed to decode value %r : %r" % (value, exx))
@@ -522,16 +522,16 @@ class urandom(object):
 
         :return: float value
         """
-        ## get a binary random string
+        # # get a binary random string
         randbin = geturandom(urandom.precision)
 
-        ## convert this to an integer
+        # # convert this to an integer
         randi = int(randbin.encode('hex'), 16) * 1.0
 
-        ## get the max integer
+        # # get the max integer
         intmax = 2 ** (8 * urandom.precision) * 1.0
 
-        ## scale the integer to an float between 0.0 and 1.0
+        # # scale the integer to an float between 0.0 and 1.0
         randf = randi / intmax
 
         assert randf >= 0.0
@@ -553,18 +553,18 @@ class urandom(object):
             end = start
             start = 0.0
 
-        ## make sure we have a float
+        # # make sure we have a float
         startf = start * 1.0
 
         dist = (end - start)
-        ## if end lower than start invert the distance and start at the end
+        # # if end lower than start invert the distance and start at the end
         if dist < 0:
             dist = dist * -1.0
             startf = end * 1.0
 
         ret = urandom.random()
 
-        ## result is start value + stretched distance
+        # # result is start value + stretched distance
         res = startf + ret * dist
 
         return res
@@ -582,14 +582,14 @@ class urandom(object):
             start = 0
 
         dist = end - start
-        ## if end lower than start invert the distance and start at the end
+        # # if end lower than start invert the distance and start at the end
         if dist < 0:
             dist = dist * -1
             start = end
 
         randf = urandom.random()
 
-        ## result is start value + stretched distance
+        # # result is start value + stretched distance
         ret = int(start + randf * dist)
 
         return ret
@@ -620,7 +620,7 @@ class urandom(object):
         if stop is None:
             stop = start
             start = 0
-        ## see python definition of randrange
+        # # see python definition of randrange
         res = urandom.choice(range(start, stop, step))
         return res
 
@@ -654,7 +654,7 @@ def zerome(bufferObject):
     ctypes.pythonapi.PyObject_AsCharBuffer(ctypes.py_object(bufferObject),
                                     ctypes.pointer(data), ctypes.pointer(size))
     ctypes.memset(data, 0, size.value)
-    #print repr(bufferObject)
+    # print repr(bufferObject)
     return
 
 ##eof##########################################################################

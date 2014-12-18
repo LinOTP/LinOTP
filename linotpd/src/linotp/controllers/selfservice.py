@@ -197,7 +197,11 @@ class SelfserviceController(BaseController):
                 log.debug('[__before__] param for action %s: %s' % (action, param))
 
                 # checking the session
-                if (False == check_selfservice_session()):
+                if (False == check_selfservice_session(request.url, 
+                                                       request.path, 
+                                                       request.cookies,
+                                                       request.params
+                                                       )):
                     c.audit['action'] = request.path[1:]
                     c.audit['info'] = "session expired"
                     audit.log(c.audit)
