@@ -97,6 +97,11 @@ from linotp.model.meta import Session
 from linotp.lib.reply import sendQRImageResult
 from linotp.lib.reply import create_img
 
+from linotp.controllers.remoteservice import (add_dynamic_selfservice_enrollment,
+                                            add_dynamic_selfservice_policies
+                                            )
+
+
 from linotp.lib.selfservice import get_imprint
 from linotp.lib.user import getUserInfo, User
 
@@ -1815,113 +1820,6 @@ class SelfserviceController(BaseController):
             Session.close()
             log.debug('[useractivateocratoken] done')
 
-
-def add_dynamic_selfservice_enrollment(actions):
-    '''
-        add_dynamic_actions - load the html of the dynamic tokens
-            according to the policy definition
-
-        :param actions: the allowd policy actions for the current scope
-        :type  actions: array of actions names
-
-        :return: hash of {tokentype : html for tab}
-    '''
-
-    dynanmic_actions = {}
-    g = config['pylons.app_globals']
-    tokenclasses = g.tokenclasses
-
-    for tok in tokenclasses.keys():
-        tclass = tokenclasses.get(tok)
-        tclass_object = newToken(tclass)
-        if hasattr(tclass_object, 'getClassInfo'):
-
-            try:
-                selfservice = tclass_object.getClassInfo('selfservice', ret=None)
-                ## check if we have a policy in the token definition for the enroll
-                if selfservice.has_key('enroll') and 'enroll' + tok.upper() in actions:
-                    service = selfservice.get('enroll')
-                    tab = service.get('title')
-                    c.scope = tab.get('scope')
-                    t_file = tab.get('html')
-                    t_html = render(t_file)
-                    ''' remove empty lines '''
-                    t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
-                    e_name = "%s.%s.%s" % (tok, 'selfservice', 'enroll')
-                    dynanmic_actions[e_name] = t_html
-
-                ## check if there are other selfserive policy actions
-                policy = tclass_object.getClassInfo('policy', ret=None)
-                if 'selfservice' in policy:
-                    selfserv_policies = policy.get('selfservice').keys()
-                    for action in actions:
-                        if action in selfserv_policies:
-                            ## now lookup, if there is an additional section
-                            ## in the selfservice to render
-                            service = selfservice.get(action)
-                            tab = service.get('title')
-                            c.scope = tab.get('scope')
-                            t_file = tab.get('html')
-                            t_html = render(t_file)
-                            ''' remove empty lines '''
-                            t_html = '\n'.join([line for line in t_html.split('\n') if line.strip() != ''])
-                            e_name = "%s.%s.%s" % (tok, 'selfservice', action)
-                            dynanmic_actions[e_name] = t_html
-
-
-            except Exception as e:
-                log.info('[_add_dynamic_actions] no policy for tokentype '
-                         '%s found (%r)' % (unicode(tok), e))
-
-    return dynanmic_actions
-
-
-def add_dynamic_selfservice_policies(actions):
-    '''
-        add_dynamic_actions - load the html of the dynamic tokens
-            according to the policy definition
-
-        :param actions: the allowd policy actions for the current scope
-        :type  actions: array of actions names
-
-        :return: hash of {tokentype : html for tab}
-    '''
-
-    dynamic_policies = []
-    g = config['pylons.app_globals']
-    tokenclasses = g.tokenclasses
-
-
-    defined_policies = []
-
-    for tok in tokenclasses.keys():
-        tclass = tokenclasses.get(tok)
-        tclt = newToken(tclass)
-        if hasattr(tclt, 'getClassInfo'):
-            ## check if we have a policy in the token definition
-            try:
-                policy = tclt.getClassInfo('policy', ret=None)
-                if policy is not None and policy.has_key('selfservice'):
-                    scope_policies = policy.get('selfservice').keys()
-                    ''' initialize the policies '''
-                    if len(defined_policies) == 0:
-                        for pol in actions:
-                            if '=' in pol:
-                                (name, val) = pol.split('=')
-                                defined_policies.append(name)
-
-                    for local_policy in scope_policies:
-                        if local_policy not in defined_policies:
-                            dynamic_policies.append(local_policy)
-            except Exception as e:
-                log.info('[_add_dynamic_actions] no policy for tokentype '
-                         '%s found (%r)' % (unicode(tok), e))
-
-    return dynamic_policies
-
-def add_local_policies():
-
-    return
 
 #eof##########################################################################
 
