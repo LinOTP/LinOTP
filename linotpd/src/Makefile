@@ -2,7 +2,6 @@ ECHO    = echo
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/linotp
-VERSION = 2.7.2.dev0
 PROJECT=LinOTP
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
 
@@ -68,19 +67,16 @@ ppa-preprocess:
 	rm -f *.upload
 	DEBEMAIL="LSE LinOTP2 Packaging <linotp2@lsexperts.de>" dch -i
 	make buildtranslation
-	rm -fr linotp-$(VERSION)
-	mkdir -p linotp-$(VERSION)
-	cp -r $(COPYSTUFF) linotp-$(VERSION)
+	rm -fr linotp-build
+	mkdir -p linotp-build
+	cp -r $(COPYSTUFF) linotp-build
 	rm -f linotp_*_source.changes
-	(cd linotp-$(VERSION); touch LINOTP_DEBIAN_PACKAGE;  debuild -S)
+	(cd linotp-build; touch LINOTP_DEBIAN_PACKAGE;  debuild -S)
 
 ppa-dev:
 	make ppa-preprocess
 	dput ppa:linotp/unstable linotp_*_source.changes
 
-# We need to have a builddepLOCAL, as we need to build the debian file inside a linotp-VERSION
-#  directory. Otherwise the packagname of linotp in the debconf database will be unknown.
-#
 builddeblocal:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
@@ -95,10 +91,10 @@ builddeblocal:
 builddeb:
 	mkdir -p ../build
 	make buildtranslation
-	mkdir -p linotp-$(VERSION)
-	cp -r $(COPYSTUFF)  linotp-$(VERSION)
-	(cd linotp-$(VERSION) ; make builddeblocal )
-	rm -fr linotp-$(VERSION)
+	mkdir -p linotp-build
+	cp -r $(COPYSTUFF)  linotp-build
+	(cd linotp-build ; make builddeblocal )
+	rm -fr linotp-build
 	mv linotp*.deb ../build
 
 clean:
