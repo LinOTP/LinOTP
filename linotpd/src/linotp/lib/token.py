@@ -1070,7 +1070,7 @@ def assignToken(serial, user, pin, param=None):
     return True
 
 
-def unassignToken(serial, user, pin):
+def unassignToken(serial, user=None, pin=None):
     '''
     unassignToken - used to assign and to unassign token
     '''
@@ -1088,7 +1088,8 @@ def unassignToken(serial, user, pin):
     token = toks[0]
     u = User('', '', '')
     token.setUser(u, True)
-    token.setPin(pin)
+    if pin:
+        token.setPin(pin)
 
     ## reset the OtpCounter
     token.setFailCount(0)
@@ -1097,7 +1098,7 @@ def unassignToken(serial, user, pin):
         token.storeToken()
     except Exception as e:
         log.error('[unassignToken] update token DB failed')
-        raise TokenAdminError("Token assign failed for %r/%r: %r"
+        raise TokenAdminError("Token unassign failed for %r/%r: %r"
                               % (user, serial, e), id=1105)
 
     log.debug("[unassignToken] successfully unassigned token with serial %r"
