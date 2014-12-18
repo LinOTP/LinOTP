@@ -111,7 +111,6 @@ class AdminController(BaseController):
             # Session handling
             check_session()
 
-            Session.commit()
             return request
 
         except Exception as exx:
