@@ -34,10 +34,10 @@ import subprocess
 import datetime
 from getopt import getopt, GetoptError
 import getpass
-from linotputils.clientutils import *
-from linotputils.yubikey import enrollYubikey
-from linotputils.yubikey import YubikeyPlug
-from linotputils.yubikey import create_static_password
+from linotpadminclientcli.clientutils import *
+from linotpadminclientcli.yubikey import enrollYubikey
+from linotpadminclientcli.yubikey import YubikeyPlug
+from linotpadminclientcli.yubikey import create_static_password
 import ConfigParser
 import pprint
 import smtplib
@@ -49,7 +49,7 @@ YUBI_OATH_MODE = 2
 YUBI_AES_MODE = 1
 
 try:
-    from linotputilsgui.etokenng import *
+    from linotpadminclientcligui.etokenng import *
     EDITION = "ETNG"
 except ImportError:
     EDITION = "NOETNG"
@@ -669,9 +669,9 @@ def main():
                 sys.exit(1)
             pyTemplate = "FAIL"
             pyTemplateList = ('pytoken.template.py',
-                    '/usr/share/pyshared/linotputils/pytoken.template.py',
-                    '/usr/local/lib/python2.6/dist-packages/linotputils/pytoken.template.py',
-                    '/usr/lib/python2.6/dist-packages/linotputils/pytoken.template.py',
+                    '/usr/share/pyshared/linotpadminclientcli/pytoken.template.py',
+                    '/usr/local/lib/python2.6/dist-packages/linotpadminclientcli/pytoken.template.py',
+                    '/usr/lib/python2.6/dist-packages/linotpadminclientcli/pytoken.template.py',
                 )
             for pT in pyTemplateList:
                 if os.path.isfile(pT):
