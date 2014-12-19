@@ -27,8 +27,8 @@
 import binascii
 from getopt import getopt, GetoptError
 import sys
-from linotputilsee.etokenng import initetng
-from linotputilsee.etokenng import etngError
+from linotpadminclientgui.etokenng import initetng
+from linotpadminclientgui.etokenng import etngError
 
 '''
 TODO:

@@ -67,13 +67,13 @@ except:
 import glib
 
 # our own modules
-from linotputils.clientutils import LinOTPClientError
-import linotputils.clientutils as clientutils
+from linotpadminclientcli.clientutils import LinOTPClientError
+import linotpadminclientcli.clientutils as clientutils
 
 # yubikey
 yubi_module = False
 try:
-    from  linotputils.yubikey import *
+    from  linotpadminclientcli.yubikey import *
     import yubico
     yubi_module = True
 except:
@@ -81,8 +81,8 @@ except:
     pass
 
 # gui edition
-import linotputilsgui.etokenng as lotpetng
-import linotputilsgui.license as linotp_license
+import linotpadminclientgui.etokenng as lotpetng
+import linotpadminclientgui.license as linotp_license
 
 MARKCOLOR = '#fe8625'
 TOKENPAGESIZE = 10000

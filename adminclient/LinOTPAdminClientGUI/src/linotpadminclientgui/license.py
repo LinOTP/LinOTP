@@ -29,8 +29,8 @@
 """
 
 
-from linotputils.clientutils import LinOTPClientError
-import linotputils.clientutils as clientutils
+from linotpadminclientcli.clientutils import LinOTPClientError
+import linotpadminclientcli.clientutils as clientutils
 
 
 import base64
