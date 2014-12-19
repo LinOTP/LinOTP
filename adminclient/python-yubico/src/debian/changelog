@@ -1,7 +1,0 @@
-python-yubico (0.0.1-1~precise) precise; urgency=low
-
-  * added original sourcecode from https://github.com/Yubico/python-yubico/
-    without any changes
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 May 2014 12:40:35 +0200
-

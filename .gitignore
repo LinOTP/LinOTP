@@ -45,16 +45,6 @@ adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.prerm.debhelp
 adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.substvars
 adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui/
 adminclient/LinOTPAdminClientGUI/src/debian/python-module-stampdir/
-adminclient/python-yubico/python-yubico_0.0.1-1.diff.gz
-adminclient/python-yubico/python-yubico_0.0.1-1.dsc
-adminclient/python-yubico/python-yubico_0.0.1-1_amd64.changes
-adminclient/python-yubico/python-yubico_0.0.1.orig.tar.gz
-adminclient/python-yubico/src/debian/files
-adminclient/python-yubico/src/debian/python-module-stampdir/
-adminclient/python-yubico/src/debian/python-yubico.postinst.debhelper
-adminclient/python-yubico/src/debian/python-yubico.prerm.debhelper
-adminclient/python-yubico/src/debian/python-yubico.substvars
-adminclient/python-yubico/src/debian/python-yubico/
 
 # libpam-linotp
 auth_modules/src/libpam-linotp_*.dsc

@@ -112,10 +112,6 @@ To build packages that can be installed with pip do the following:
     make create
     # pip install ../build/LinOTPAdminClientGUI-<VERSION>.tar.gz
 
-    cd adminclient/python-yubico/src
-    make create
-    # pip install ../build/python-yubico-<VERSION>.tar.gz
-
     cd auth_modules/src/pam_py_linotp
     make create
     # pip install ../build/pam_py_linotp-<VERSION>.tar.gz
