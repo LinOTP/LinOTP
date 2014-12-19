@@ -28,7 +28,8 @@ This is the cmd client admin to manage the tokens on the LinOTP 2 server
   Dependencies: clientutils, etokenng
 """
 
-VERSION = '2.7.2.dev0'
+from linotpadminclientcli import __version__
+
 import os
 import subprocess
 import datetime
@@ -468,7 +469,7 @@ def main():
         elif opt in ('--otppin'):
             param['otppin'] = arg
         elif opt in ('-v', '--version'):
-            print "linotpadm.py " + VERSION
+            print "linotpadm.py " + __version__
             sys.exit(0)
         elif opt in ('--config'):
             key, value = arg.rsplit('=', 2)

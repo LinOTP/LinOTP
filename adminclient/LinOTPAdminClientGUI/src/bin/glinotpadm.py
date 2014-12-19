@@ -32,10 +32,7 @@
   Dependencies: clientutil
 """
 
-BUILD_VERSION = '130405'
-VERSION = '2.7.2.dev0'
-#import pkg_resources
-#VERSION = pkg_resources.get_distribution("linotpadminclientee").version
+from linotpadminclientgui import __version__
 
 
 import sys, os
@@ -377,8 +374,8 @@ class LinOTPGui(object):
                 #gtk.tooltips.set_tip(obj, _(text))
 
         # Version
-        self.builder.get_object('aboutdialog').set_version(VERSION)
-        self.builder.get_object('labelBuildVersion').set_text("Build " + BUILD_VERSION)
+        self.builder.get_object('aboutdialog').set_version(__version__)
+        self.builder.get_object('labelBuildVersion').set_text(__version__)
         # set images
         self.builder.get_object('image1').set_from_file(RESOURCEDIR + 'linotp_logo_200x68_72dpi.png')
         # Filefilter for Client Certs and key
