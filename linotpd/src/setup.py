@@ -8,6 +8,8 @@ except ImportError:
 import os
 import sys
 
+from linotp import __version__
+
 # Taken from kennethreitz/requests/setup.py
 package_directory = os.path.realpath(os.path.dirname(__file__))
 
@@ -37,7 +39,7 @@ def get_debian_package():
 
 setup(
     name='LinOTP',
-    version='2.7.2.dev0',
+    version=__version__,
     description='LinOTP Service',
     author='LSE Leading Security Experts GmbH',
     license='AGPL v3, (C) LSE Leading Security Experts GmbH',

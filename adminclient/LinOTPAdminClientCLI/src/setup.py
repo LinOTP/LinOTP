@@ -38,6 +38,8 @@ from distutils.core import setup
 import os
 import sys
 
+from linotpadminclientcli import __version__
+
 # Taken from kennethreitz/requests/setup.py
 package_directory = os.path.realpath(os.path.dirname(__file__))
 
@@ -53,7 +55,7 @@ def get_file_contents(file_path):
 
 setup(
     name='LinOTPAdminClientCLI',
-    version='2.7.2.dev0',
+    version=__version__,
     description='LinOTP command-line client',
     author='LSE Leading Security Experts GmbH',
     author_email='linotp-community@lsexperts.de',

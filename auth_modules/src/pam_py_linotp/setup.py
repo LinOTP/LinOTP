@@ -33,14 +33,17 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+from pam_py_linotp import __version__
+
 setup(
     name='pam_py_linotp',
-    version='2.7.2.dev0',
+    version=__version__,
     description='LinOTP python PAM module',
     author='LSE Leading Security Experts GmbH',
     license='GPL v2, (C) LSE Leading Security Experts GmbH',
     author_email='linotp-community@lsexperts.de',
     url='http://www.linotp.org',
+    packages=['pam_py_linotp'],
     include_package_data=True,
     install_requires=[
     ],

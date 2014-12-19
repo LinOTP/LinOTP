@@ -29,13 +29,15 @@
 from setuptools import setup
 import platform
 
+from linotpadminclientgui import __version__
+
 system = platform.system()
 if system == "Windows":
     import py2exe
 
 setup(
     name='LinOTPAdminClientGUI',
-    version='2.7.2.dev0',
+    version=__version__,
     description='LinOTP GUI client',
     author='LSE Leading Security Experts GmbH',
     author_email='linotp@lsexperts.de',

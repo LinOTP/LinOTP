@@ -26,9 +26,11 @@
 
 from distutils.core import setup
 
+from smsprovider import __version__
+
 setup(
     name='SMSProvider',
-    version='2.7.2.dev0',
+    version=__version__,
     description='LinOTP2 modules for submitting SMS messages',
     author='LSE Leading Security Experts GmbH',
     author_email='linotp@lsexperts.de',
