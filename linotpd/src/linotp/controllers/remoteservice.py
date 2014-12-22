@@ -51,6 +51,7 @@ import traceback
 import binascii
 import os
 import logging
+import base64
 
 try:
     import json
@@ -76,7 +77,8 @@ from linotp.lib.policy import (checkPolicyPre,
                                PolicyException,
                                getOTPPINEncrypt,
                                getSelfserviceActions,
-                               checkOTPPINPolicy
+                               checkOTPPINPolicy,
+                               get_client_policy,
                                )
 
 from linotp.lib.reply import (sendResult,
@@ -87,7 +89,8 @@ from linotp.lib.reply import (sendResult,
 
 from linotp.lib.util import (get_version,
                              get_copyright_info,
-                             generate_otpkey
+                             generate_otpkey,
+                             get_client
                              )
 
 from linotp.lib.realm import getDefaultRealm, getRealms
@@ -118,7 +121,11 @@ from linotp.lib.token import (enableToken,
                               genSerial,
                               newToken,
                               get_multi_otp,
-                              getTokenType
+                              getTokenType,
+                              getTokensOfType,
+                              checkUserPass,
+                              auto_enrollToken,
+                              auto_assignToken,
                               )
 
 from linotp.lib.apps import (create_google_authenticator_url,
@@ -240,7 +247,15 @@ def get_cookie_secret():
     return config.repoze_auth_secret
 
 
-def get_pre_context():
+def get_pre_context(client):
+    """
+    get the rendering context before the login is shown, so the rendering
+    of the login page could be controlled if realm_box or secure_auth is
+    defined
+
+    :param client: the rendering is client dependend, so we need the info
+    :return: context dict, with all rendering attributes
+    """
 
     context = {}
     context["version"] = get_version()
@@ -248,31 +263,58 @@ def get_pre_context():
 
     context["default_realm"] = getDefaultRealm()
     context["realm_box"] = getRealmBox()
+
     context["realms"] = json.dumps(_get_realms_())
+
+
+    """
+    check for secure_auth, autoassign and autoenroll in policy definition
+    """
+
+    context['secure_auth'] = False
+    policy = get_client_policy(client=client,
+                                scope='selfservice',
+                                action='secure_auth')
+    if policy:
+        context['secure_auth'] = True
+
+    context['autoassign'] = False
+    policy = get_client_policy(client=client,
+                                scope='enrollment',
+                                action='autoassignment')
+    if policy:
+        context['autoassign'] = True
+
+    context['autoenroll'] = False
+    policy = get_client_policy(client=client,
+                                scope='enrollment',
+                                action='autoenrollment')
+    if policy:
+        context['autoenroll'] = True
 
     return context
 
-def get_context(user, realm):
+def get_context(user, realm, client):
+    """
+    get the user dependend rendering context
 
-    context = {}
-    context["version"] = get_version()
-    context["licenseinfo"] = get_copyright_info()
+    :param user: the selfservice user
+    :param realm: the selfservice realm
+    :param client: the selfservice client info - required for pre_context
+    :return: context dict, with all rendering attributes
+
+    """
+
+
+    context = get_pre_context(client)
 
     context["user"] = user
     context["realm"] = realm
-
     authUser = User(user, realm)
-
-    context["default_realm"] = getDefaultRealm()
-    context["realm_box"] = getRealmBox()
-    context["realms"] = json.dumps(_get_realms_())
-
     context["imprint"] = get_imprint(context["realm"])
     context["tokenArray"] = getTokenForUser(authUser)
 
-    # only the defined actions should be displayed
-    # - remark: the generic actions like enrollTT are allready approved
-    #   to have a rendering section and included
+    # show the defined actions, which have a rendering
     actions = getSelfserviceActions(authUser)
     context["actions"] = actions
     for policy in actions:
@@ -302,6 +344,16 @@ def get_context(user, realm):
 
 class RemoteserviceController(BaseController):
     """
+    the interface from the remote service into linotp to execute the
+    selfservice actions
+
+    after the login, the selfservice user gets an auth cookie, which states
+    that he already has been authenticated.
+
+    TODO:
+    - make the rendering language aware - we have to put in the the client some
+      code to transfer the langue to linotp
+    - verify the auth_cookie and session
 
     """
 
@@ -326,13 +378,17 @@ class RemoteserviceController(BaseController):
             # check_auth_cookie()
             # check_user_policy(scope='selfservice', action='action')
 
+        self.client = get_client()
+        context = get_pre_context(self.client)
+        self.secure_auth = context['secure_auth']
+        self.autoassign = context['autoassign']
+        self.autoenroll = context['autoenroll']
+
         audit.initialize()
         c.audit['success'] = False
-        # c.audit['client'] = get_client()
-        self.set_language()
-        # Session handling
-        # check_session()
+        c.audit['client'] = self.client
 
+        self.set_language()
         return
 
     def __after__(self, action, **params):
@@ -346,10 +402,17 @@ class RemoteserviceController(BaseController):
                                          'remoteservice/pre_context',
                                          ]:
 
-                log.debug("[__after__] authenticating as %s in realm %s!" % (c.user, c.realm))
+                if hasattr(self, 'authUser') and not self.authUser.isEmpty():
+                    c.audit['user'] = self.authUser.login
+                    c.audit['realm'] = self.authUser.realm
+                else:
+                    c.audit['user'] = ''
+                    c.audit['realm'] = ''
 
-                c.audit['user'] = self.authUser.login
-                c.audit['realm'] = self.authUser.realm
+                log.debug("[__after__] authenticating as %s in realm %s!"
+                          % (c.audit['user'], c.audit['realm']))
+
+
                 c.audit['success'] = True
 
                 if param.has_key('serial'):
@@ -375,24 +438,32 @@ class RemoteserviceController(BaseController):
         """
         user authentication for example to the remote selfservice
 
-        :param login: login name of the user
+        :param login: login name of the user normaly in the user@realm format
         :param realm: the realm of the user
         :param password: the password for the user authentication
+                         which is base32 encoded to seperate the
+                         os_passw:pin+otp in case of secure_auth
 
         :return: {result : {value: bool} }
         :rtype: json dict with bool value
         """
+
         ok = False
         param = {}
 
         try:
             param.update(request.params)
             login = param['login']
-            passw = param['password']
+            password = param['password']
         except KeyError as exx:
             return sendError(response, "Missing Key: %r" % exx)
 
         try:
+
+            (otp, passw) = password.split(':')
+            otp = base64.b32decode(otp)
+            passw = base64.b32decode(passw)
+
             user = User()
             if '@' in login:
                 user, rrealm = login.split("@")
@@ -400,25 +471,92 @@ class RemoteserviceController(BaseController):
             else:
                 realm = getDefaultRealm()
                 user = User(login, realm)
-            (uid, _resolver, resolver_class) = getUserId(user)
 
-            r_obj = getResolverObject(resolver_class)
-            if  r_obj.checkPass(uid, passw):
-                log.debug("[__checkToken] Successfully authenticated user %r."
-                                                                        % uid)
+            uid = "%s@%s" % (user.login, user.realm)
+
+            if self.secure_auth:
+                res = self._secure_auth_check(user, passw, otp)
+            else:
+                res = self._default_auth_check(user, passw, otp)
+
+            if res:
+                log.debug("Successfully authenticated user %s:" % uid)
                 cookie = create_auth_cookie(user)
                 response.set_cookie('userauthcookie' , cookie, max_age=180 * 24 * 360)
-                ok = "%s@%s" % (user.login, user.realm)
+                ok = uid
             else:
-                log.info("[__checkToken] user %r failed to authenticate."
-                                                                        % uid)
+                log.info("User %s failed to authenticate!" % uid)
 
             return sendResult(response, ok, 0)
 
         except Exception as exx:
             return sendError(response, exx)
 
+    def _default_auth_check(self, user, password, otp=None):
+        """
+        the former selfservice login controll:
+         check for username and os_pass
+
+        :param user: user object
+        :param password: the expected os_password
+        :param otp: not used
+
+        :return: bool
+        """
+        (uid, _resolver, resolver_class) = getUserId(user)
+        r_obj = getResolverObject(resolver_class)
+        res = r_obj.checkPass(uid, password)
+        return res
+
+    def _secure_auth_check(self, user, password, otp):
+        """
+        secure auth requires the os password and the otp (pin+otp)
+        - secure auth supports autoassignement, where the user logs in with
+                      os_password and only the otp value. If user has no token,
+                      a token with a matching otp in the window is searched
+        - secure auth supports autoenrollment, where a user with no token will
+                      get automaticaly enrolled one token.
+
+        :param user: user object
+        :param password: the os_password
+        :param otp: empty (for autoenrollment),
+                    otp value only for auto assignment or
+                    pin+otp for standard authentication (respects otppin ploicy)
+
+        :return: bool
+        """
+        ret = False
+
+        passwd_match = self._default_auth_check(user, password, otp)
+
+        if passwd_match:
+            toks = getTokenForUser(user)
+
+            # if user has no token, we check for auto assigneing one to him
+            if len(toks) == 0:
+
+                # if no token and otp, we might do an auto assign
+                if self.autoassign and otp:
+                    ret = auto_assignToken(password + otp, user)
+
+                # if no token no otp, we might trigger an aouto enroll
+                elif self.autoenroll and not otp:
+                    (auto_enroll_return, _reply) = auto_enrollToken(password, user)
+                    if auto_enroll_return is False:
+                        log.error("Tryed auto enrollmen but it failed")
+                    # we always have to return a false, as we have a challenge tiggered
+                    ret = False
+
+            # user has at least one token, so we do a check on pin + otp
+            else:
+                (ret, _reply) = checkUserPass(user, otp)
+        return ret
+
+
     def userinfo(self):
+        """
+        hook for the repoze auth, which requests additional user info
+        """
         param = {}
 
         try:
@@ -468,8 +606,7 @@ class RemoteserviceController(BaseController):
         try:
             param.update(request.params)
 
-            context = get_pre_context()
-
+            context = get_pre_context(self.client)
             response.content_type = 'application/json'
             return json.dumps(context, indent=3)
 
@@ -500,7 +637,7 @@ class RemoteserviceController(BaseController):
             else:
                 realm = getDefaultRealm()
 
-            context = get_context(user, realm)
+            context = get_context(user, realm, self.client)
             response.content_type = 'application/json'
             return json.dumps(context, indent=3)
 
@@ -1307,7 +1444,7 @@ class RemoteserviceController(BaseController):
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
             if ret['result'] == False and max_count == -1:
                 ret['error'] = "%s - %s" % (ret['error'], _("see policy defintion."))
-                
+
             ret["serial"] = serial
             c.audit['success'] = True
 
