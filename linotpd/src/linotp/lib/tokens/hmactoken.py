@@ -596,15 +596,15 @@ class HmacTokenClass(TokenClass):
         except ValueError as ex:
             log.error("[get_multi_otp]: Could not convert otplen - value error %r " % (ex))
             raise Exception(ex)
-
+        s_count = self.getOtpCount()
         secretHOtp = self.token.getHOtpKey()
-        hmac2Otp = HmacOtp(secretHOtp, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(secretHOtp, s_count, otplen, self.getHashlib(self.hashlibStr))
         log.debug("[get_multi_otp] retrieving %i OTP values for token %s" % (count, hmac2Otp))
 
         if count > 0:
             for i in range(count):
-                otpval = hmac2Otp.generate(self.getOtpCount() + i, inc_counter=False)
-                otp_dict["otp"][i] = otpval
+                otpval = hmac2Otp.generate(s_count + i, inc_counter=False)
+                otp_dict["otp"][s_count + i] = otpval
             ret = True
 
         log.debug("[get_multi_otp] end. dictionary of multiple future OTP is: otp_dict: %r - status: %r - error %r" % (ret, error, otp_dict))
