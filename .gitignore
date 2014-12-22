@@ -97,6 +97,7 @@ linotpd/src/LinOTP_*.orig.tar.gz
 linotpd/src/linotp/i18n/de/LC_MESSAGES/linotp.mo
 linotpd/src/linotp_*
 linotpd/src/LinOTP-*.tar.gz
+linotpd/src/linotp/public/i18n/de.json
 OUTPUT
 qrcode/deb_dist/
 qrcode/qrcode-*.tar.gz
