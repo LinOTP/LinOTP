@@ -30,7 +30,7 @@ import time
 import requests
 from requests.auth import HTTPDigestAuth
 
-from linotputils.clientutils import linotpclient
+from linotpadminclientcli.clientutils import linotpclient
 from linotp_selenium_helper import TestCase, LdapUserIdResolver, Realm
 from linotp_selenium_helper.user_view import UserView
 from linotp_selenium_helper.token_view import TokenView

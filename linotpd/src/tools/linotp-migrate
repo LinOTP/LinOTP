@@ -35,7 +35,7 @@ VERSION = '0.1'
 import os
 from getopt import getopt, GetoptError
 import getpass
-from linotputils.clientutils import *
+from linotpadminclientcli.clientutils import *
 import pprint
 
 
