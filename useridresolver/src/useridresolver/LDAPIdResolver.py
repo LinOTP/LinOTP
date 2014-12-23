@@ -469,7 +469,7 @@ class IdResolver (UserIdResolver):
         finally:
             self.unbind(l_obj)
 
-        if resultList == None:
+        if not resultList:
             log.info("[getUserId] : empty result ")
             return userid
         log.debug("[getUserId] : resultList :%r: " % (resultList))

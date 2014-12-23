@@ -124,13 +124,21 @@ optional = True
 required = False
 
 def getTokenForUser(user):
+    """
+    should be moved to token.py
+    """
     tokenArray = []
 
     log.debug("[getTokenForUser] iterating tokens for user...")
-    log.debug("[getTokenForUser] ...user %s in realm %s." % (user.login, user.realm))
-    toks = TokenIterator(user, None, filterRealm=user.realm)
+    log.debug("[getTokenForUser] ...user %s in realm %s." %
+              (user.login, user.realm))
+    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False)
 
-    for tok in toks:
+    for token in tokens:
+        tok = token.get_vars()
+        if tok.get('LinOtp.TokenInfo', None):
+            token_info = json.loads(tok.get('LinOtp.TokenInfo'))
+            tok['LinOtp.TokenInfo'] = token_info
         tokenArray.append(tok)
 
     log.debug("[getTokenForUser] found tokenarray: %r" % tokenArray)
