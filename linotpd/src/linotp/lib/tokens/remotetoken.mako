@@ -151,6 +151,20 @@ function remote_enroll_setup_defaults(config, options){
     } else {
         $("[name='set_pin_rows']").show();
     }
+
+    $('#remote_server').val(config['remote.server']);
+    $('#remote_serial').val(config['remote.serial']);
+    $('#remote_user').val(config['remote.user']);
+    $('#remote_realm').val(config['remote.realm']);
+    $('#remote_resconf').val(config['remote.resConf']);
+    var pin_check = config['remote.local_checkpin'];
+
+    var pin_check = config['remote.remote_checkpin'];
+    if (pin_check === '0') {
+        $('#remote_local_checkpin option[value="0"]').prop('selected',true);
+    } else {
+        $('#remote_local_checkpin option[value="1"]').prop('selected',true);
+    }
 }
 
 /*
