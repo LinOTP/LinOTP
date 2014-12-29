@@ -342,10 +342,10 @@ def get_context(user, realm, client):
 
     return context
 
-class RemoteserviceController(BaseController):
+class UserserviceController(BaseController):
     """
-    the interface from the remote service into linotp to execute the
-    selfservice actions
+    the interface from the service into linotp to execute the actions for the
+    user in the scope of the selfservice
 
     after the login, the selfservice user gets an auth cookie, which states
     that he already has been authenticated.
@@ -388,7 +388,6 @@ class RemoteserviceController(BaseController):
         c.audit['success'] = False
         c.audit['client'] = self.client
 
-        self.set_language()
         return
 
     def __after__(self, action, **params):
@@ -398,8 +397,9 @@ class RemoteserviceController(BaseController):
         param = request.params
 
         try:
-            if c.audit['action'] not in ['remoteservice/context',
-                                         'remoteservice/pre_context',
+            if c.audit['action'] not in ['userservice/context',
+                                         'userservice/pre_context',
+                                         'userservice/userinfo'
                                          ]:
 
                 if hasattr(self, 'authUser') and not self.authUser.isEmpty():
@@ -561,7 +561,7 @@ class RemoteserviceController(BaseController):
 
         try:
             param.update(request.params)
-            login = param['username']
+            login = param['user']
         except KeyError as exx:
             return sendError(response, "Missing Key: %r" % exx)
 
@@ -575,8 +575,11 @@ class RemoteserviceController(BaseController):
 
             (uid, resolver, resolver_class) = getUserId(user)
             uinfo = getUserInfo(uid, resolver, resolver_class)
+
+            # the passwd resolver should not expose the crypted/hasehd password
             if 'cryptpass' in uinfo:
                 del uinfo['cryptpass']
+
             Session.commit()
             return sendResult(response, uinfo, 0)
 

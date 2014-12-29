@@ -68,10 +68,10 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # in case of support for a remote selfservice, we have to enable this hook 
-    remoteservice = app_conf.get('service.remoteservice', 'True') == 'True'
-    if remoteservice:
-        routeMap.connect('/remoteservice', controller='remoteservice', action='index')
-        for cont in ['remoteservice']:
+    userservice = app_conf.get('service.userservice', 'True') == 'True'
+    if userservice:
+        routeMap.connect('/userservice', controller='userservice', action='index')
+        for cont in ['userservice']:
             routeMap.connect('/%s/{action}' % cont , controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 

@@ -157,9 +157,6 @@ class SelfserviceController(BaseController):
 
             param = request.params
 
-            # Call the __before__ from the parents class to do the translation
-            self.set_language()
-
             audit.initialize()
             c.audit['success'] = False
             c.audit['client'] = get_client()
@@ -244,7 +241,6 @@ class SelfserviceController(BaseController):
             for policy in additional_policies:
                 c.__setattr__(policy, -1)
 
-            add_local_policies()
             c.otplen = -1
             c.totp_len = -1
 
