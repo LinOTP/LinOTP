@@ -48,14 +48,13 @@
 
 
 function radius_get_config_val(){
-	var id_map = {};
+    var id_map = {};
 
-    id_map['radius.server']   = 'sys_radius_server';
+    id_map['radius.server']  = 'sys_radius_server';
     id_map['radius.secret']  = 'sys_radius_secret';
     id_map['radius.local_checkpin'] = 'sys_radius_local_checkpin';
-    // FIXME: We need to set the checkpin select box. Do not know how!
 
-	return id_map;
+    return id_map;
 
 }
 
@@ -66,6 +65,7 @@ function radius_get_config_val(){
  * - it will return a hash of parameters for system/setConfig call
  *
  */
+
 function radius_get_config_params(){
 
 	var url_params ={};
@@ -141,6 +141,16 @@ function radius_enroll_setup_defaults(config, options){
     } else {
         $("[name='set_pin_rows']").show();
     }
+
+    $('#radius_server').val(config['radius.server']);
+    $('#radius_secret').val(config['radius.secret']);
+
+    var pin_check = config['radius.local_checkpin'];
+    if (pin_check === '0') {
+        $('#radius_local_checkpin option[value="0"]').prop('selected',true);
+    } else {
+        $('#radius_local_checkpin option[value="1"]').prop('selected',true);
+    }
 }
 /*
  * 'typ'_get_enroll_params()
@@ -153,13 +163,13 @@ function radius_enroll_setup_defaults(config, options){
 function radius_get_enroll_params(){
     var params = {};
     params['type'] = 'radius';
-	params['radius.server'] 		=  $('#radius_server').val();
-	params['radius.local_checkpin'] =  $('#radius_local_checkpin').val();
-	params['radius.user'] 			=  $('#radius_user').val();
-	params['radius.secret'] 		=  $('#radius_secret').val();
-	params['description'] 			=  "radius:" + $('#radius_server').val();
+    params['radius.server'] 		=  $('#radius_server').val();
+    params['radius.local_checkpin'] =  $('#radius_local_checkpin').val();
+    params['radius.user'] 			=  $('#radius_user').val();
+    params['radius.secret'] 		=  $('#radius_secret').val();
+    params['description'] 			=  "radius:" + $('#radius_server').val();
 
-	jQuery.extend(params, add_user_data());
+    jQuery.extend(params, add_user_data());
 
     if ($('#radius_pin1').val() != '') {
         params['pin'] = $('#radius_pin1').val();
@@ -184,22 +194,22 @@ $("#form_enroll_token").validate({
      });
 
 <%
-	from linotp.lib.config import getFromConfig
-	sys_radius_server = ""
-	sys_radius_secret = ""
-	sys_checkpin_local = "selected"
-	sys_checkpin_remote = ""
+    from linotp.lib.config import getFromConfig
+    sys_radius_server = ""
+    sys_radius_secret = ""
+    sys_checkpin_local = "selected"
+    sys_checkpin_remote = ""
 
-	try:
-		sys_radius_server = getFromConfig("radius.server")
-		sys_radius_secret = getFromConfig("radius.secret")
-		sys_radius_local_checkpin = getFromConfig("radius.local_checkpin")
+    try:
+        sys_radius_server = getFromConfig("radius.server")
+        sys_radius_secret = getFromConfig("radius.secret")
+        sys_radius_local_checkpin = getFromConfig("radius.local_checkpin")
 
-		if sys_radius_local_checkpin == 0:
-			sys_checkpin_local = ""
-			sys_checkpin_remote = "selected"
-	except Exception:
-		pass
+        if sys_radius_local_checkpin == 0:
+            sys_checkpin_local = ""
+            sys_checkpin_remote = "selected"
+    except Exception:
+        pass
 
 %>
 </script>
@@ -207,34 +217,34 @@ $("#form_enroll_token").validate({
 <p>${_("Here you can define, to which RADIUS server the request should be forwarded.")}</p>
 <p>${_("Please specify the server, the secret and the username")}</p>
 <table><tr>
-	<td><label for="radius_server" title='${_("You need to enter the server like myradius:1812")}'>
-		${_("RADIUS server")}</label></td>
-	<td><input class="required" type="text" name="radius_server" id="radius_server" value="${sys_radius_server}" class="text ui-widget-content ui-corner-all"/></td>
-	</tr><tr>
-	<td><label for="radius_local_checkpin" title='${_("The PIN can either be verified on this local LinOTP server or forwarded to the RADIUS server")}'>
-		${_("check PIN")}</label></td>
-	<td><select name="radius_local_checkpin" id="radius_local_checkpin"
-		title='${_("The PIN can either be verified on this local LinOTP server or on the RADIUS server")}'>
-			<option ${sys_checkpin_remote} value=0>${_("on RADIUS server")}</option>
-			<option ${sys_checkpin_local} value=1>${_("locally")}</option>
-		</select></td>
-	</tr><tr>
-	<td><label for="radius_user">${_("RADIUS user")}</label></td>
-	<td><input type="text" name="radius_user" id="radius_user" value="" class="text ui-widget-content ui-corner-all" /></td>
-	</tr><tr>
-	<td><label for="radius_secret">${_("RADIUS shared secret")}</label></td>
-	<td><input type="password" name="radius_secret" id="radius_secret" value="${sys_radius_secret}" class="text ui-widget-content ui-corner-all" /></td>
-	</tr>
+    <td><label for="radius_server" title='${_("You need to enter the server like myradius:1812")}'>
+        ${_("RADIUS server")}</label></td>
+    <td><input class="required" type="text" name="radius_server" id="radius_server" value="${sys_radius_server}" class="text ui-widget-content ui-corner-all"/></td>
+    </tr><tr>
+    <td><label for="radius_local_checkpin" title='${_("The PIN can either be verified on this local LinOTP server or forwarded to the RADIUS server")}'>
+        ${_("check PIN")}</label></td>
+    <td><select name="radius_local_checkpin" id="radius_local_checkpin"
+        title='${_("The PIN can either be verified on this local LinOTP server or on the RADIUS server")}'>
+            <option ${sys_checkpin_remote} value="0">${_("on RADIUS server")}</option>
+            <option ${sys_checkpin_local} value="1">${_("locally")}</option>
+        </select></td>
+    </tr><tr>
+    <td><label for="radius_secret">${_("RADIUS shared secret")}</label></td>
+    <td><input type="password" name="radius_secret" id="radius_secret" value="${sys_radius_secret}" class="text ui-widget-content ui-corner-all" /></td>
+    </tr><tr>
+    <td><label for="radius_user">${_("RADIUS user")}</label></td>
+    <td><input type="text" name="radius_user" id="radius_user" value="" class="text ui-widget-content ui-corner-all" /></td>
+    </tr>
     <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
-	<tr name="set_pin_rows">
+    <tr name="set_pin_rows">
     <td class="description"><label for="radius_pin1" id="radius_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="pin1" id="radius_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
-	</tr>
-	<tr name="set_pin_rows">
+    </tr>
+    <tr name="set_pin_rows">
     <td class="description"><label for="radius_pin2" id="radius_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="radius_pin2" id="radius_pin2"
             class="text ui-widget-content ui-corner-all" /></td
-	</tr></table>
+    </tr></table>
 
 %endif
