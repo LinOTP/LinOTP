@@ -25,10 +25,9 @@
 #
 
 """
-remoteservice controller -
-     This is the controller for the remote self service
-     interface, where a remote process (pylons) with authenitcated users can
-     manage their own tokens
+userservice controller -
+     This is the controller for the user self service
+     interface, where an authenitcated users can manage their own tokens
 
 There are three types of requests
   * the context requests: before, context
@@ -122,7 +121,6 @@ from linotp.lib.token import (enableToken,
                               newToken,
                               get_multi_otp,
                               getTokenType,
-                              getTokensOfType,
                               checkUserPass,
                               auto_enrollToken,
                               auto_assignToken,
@@ -137,6 +135,11 @@ from pylons.i18n.translation import _
 from linotp.lib.audit.base import (logTokenNum,
                                    search as audit_search
                                    )
+
+from linotp.lib.crypt import (aes_decrypt_data,
+                              aes_encrypt_data
+                              )
+
 
 log = logging.getLogger(__name__)
 audit = config.get('audit')
@@ -174,60 +177,44 @@ def _get_realms_():
             realms = getRealms(def_realm)
     return realms
 
-# encrypted cookie data
-
-def encrypt(key, data, iv=None):
-    if iv is None:
-        iv = key
-        padding = (16 - len(iv) % 16) % 16
-        iv += padding * "\0"
-        iv = iv[:16]
-
-    # convert data from binary to hex as it might contain unicode++
-    input_data = binascii.b2a_hex(data)
-    input_data += u"\x01\x02"
-    padding = (16 - len(input_data) % 16) % 16
-    input_data += padding * "\0"
-    aes = AES.new(key, AES.MODE_CBC, iv)
-    res = aes.encrypt(input_data)
-    return res
-
-def decrypt(key, data, iv=None):
-    if iv is None:
-        iv = key
-        padding = (16 - len(iv) % 16) % 16
-        iv += padding * "\0"
-        iv = iv[:16]
-
-    aes = AES.new(key, AES.MODE_CBC, iv)
-    output = aes.decrypt(data)
-    eof = output.rfind(u"\x01\x02")
-    if eof >= 0: output = output[:eof]
-
-    # convert output from ascii, back to bin data, which might be unicode++
-    res = binascii.a2b_hex(output)
-    return res
-
-def create_auth_cookie(user):
+def create_auth_cookie(user, client):
     """
+    create and auth_cookie value from the authenticated user and client
+
+    :param user: the authenticated user
+    :param client: the requesting client
+    :return: the encrypted cookie value
     """
     secret = get_cookie_secret()
 
     username = user
     if type(user) == User:
         username = "%s@%s" % (user.login, user.realm)
+    iv = os.urandom(2)
+    enc = aes_encrypt_data(username + "|" + client, secret, iv)
 
-    auth_cookie = binascii.hexlify(encrypt(secret, username))
-    check_auth_cookie(username, auth_cookie)
+    auth_cookie = "%s%s" % (binascii.hexlify(iv), binascii.hexlify(enc))
     return auth_cookie
 
-def check_auth_cookie(user, cookie):
+def check_auth_cookie(cookie, user, client):
     """
+    verify that value of the auth_cookie contains the correct user and client
+
+    :param user: the authenticated user object
+    :param cookie: the auth_cookie
+    :param client: the requesting client
+
+    :return: boolean
     """
     secret = get_cookie_secret()
 
     try:
-        auth_cookie_val = decrypt(secret, binascii.unhexlify(cookie))
+        iv = cookie[:4]
+        enc = cookie[4:]
+        auth_cookie_val = aes_decrypt_data(binascii.unhexlify(enc),
+                                       secret,
+                                       binascii.unhexlify(iv))
+        cookie_user, cookie_client = auth_cookie_val.split('|')
     except:
         return False
 
@@ -235,17 +222,44 @@ def check_auth_cookie(user, cookie):
     if type(user) == User:
         username = "%s@%s" % (user.login, user.realm)
 
-    return (username == auth_cookie_val)
+    return (username == cookie_user and cookie_client == client)
 
 def get_cookie_secret():
     """
+    get the cookie encryption secret from the repoze config
+    - if the selfservice is droped from running localy, this
+      configuration option might not exist anymore
+
+    :return: return the cookie encryption secret
     """
+
     if hasattr(config, 'repoze_auth_secret') == False:
         secret = binascii.hexlify(os.urandom(16))
         setattr(config, 'repoze_auth_secret', secret)
 
     return config.repoze_auth_secret
 
+def check_userservice_session(request, user, client):
+    """
+    check if the user session is ok:
+    - check if the sessionvalue is the same as the cookie
+    - check if the user has been authenticated before by decrypt the cookie val
+
+    :param request: the request context
+    :param user:the authenticated user
+    :param client: the cookie is bouind to the client
+
+    :return: boolean
+    """
+    ret = False
+
+    cookie = request.cookies.get('userauthcookie', 'no_auth_cookie')
+    session = request.params.get('session', 'no_session')
+
+    if session == cookie:
+        ret = check_auth_cookie(cookie, user, client)
+
+    return ret
 
 def get_pre_context(client):
     """
@@ -348,23 +362,19 @@ class UserserviceController(BaseController):
     user in the scope of the selfservice
 
     after the login, the selfservice user gets an auth cookie, which states
-    that he already has been authenticated.
-
-    TODO:
-    - make the rendering language aware - we have to put in the the client some
-      code to transfer the langue to linotp
-    - verify the auth_cookie and session
-
+    that he already has been authenticated. This cookie is provided on every
+    request during which the auth_cookie and session is verified
     """
 
-    def __before__(self, action, **params):
-        # if action is not auth:
-        # - check if there is a cookie in the headers
-        # - if this cookie is valid
-        # check if user in param and cookie matches
-        # check if user is allowed to run action
+    def __before__(self, action, **parameters):
+        # if action is not an authentication request:
+        # - check if there is a cookie in the headers and in the session param
+        # - check if the decrypted cookie user and client are the same as
+        #   the requesting user / client
 
         params = {}
+        self.client = get_client()
+
         if action not in ['auth', 'pre_context']:
             params.update(request.params)
             try:
@@ -374,11 +384,11 @@ class UserserviceController(BaseController):
 
             login, realm = userid.split("@")
             self.authUser = User(login, realm)
-            # get cookies from request
-            # check_auth_cookie()
-            # check_user_policy(scope='selfservice', action='action')
 
-        self.client = get_client()
+            res = check_userservice_session(request, self.authUser, self.client)
+            if res is False:
+                raise Exception('Unauthenticated user request!')
+
         context = get_pre_context(self.client)
         self.secure_auth = context['secure_auth']
         self.autoassign = context['autoassign']
@@ -392,7 +402,6 @@ class UserserviceController(BaseController):
 
     def __after__(self, action, **params):
         '''
-
         '''
         param = request.params
 
@@ -481,7 +490,7 @@ class UserserviceController(BaseController):
 
             if res:
                 log.debug("Successfully authenticated user %s:" % uid)
-                cookie = create_auth_cookie(user)
+                cookie = create_auth_cookie(user, self.client)
                 response.set_cookie('userauthcookie' , cookie, max_age=180 * 24 * 360)
                 ok = uid
             else:

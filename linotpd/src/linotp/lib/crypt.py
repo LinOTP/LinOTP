@@ -466,6 +466,62 @@ def uencode(value):
 
     return ret
 
+# encrypted cookie data
+def aes_encrypt_data(data, key, iv=None):
+    """
+    encypt data for the cookie handling -
+    other than the std linotp key slots, here the key might change per server
+    startup, which is not in scope of std linotp encrypt
+
+    :param key: the encryption key
+    :param data: the data, which should be encrypted
+    :param iv: the salt value
+    :return: the encrypted data
+    """
+    if iv is None:
+        iv = key
+
+    padding = (16 - len(iv) % 16) % 16
+    iv += padding * "\0"
+    iv = iv[:16]
+
+    # convert data from binary to hex as it might contain unicode++
+    input_data = binascii.b2a_hex(data)
+    input_data += u"\x01\x02"
+    padding = (16 - len(input_data) % 16) % 16
+    input_data += padding * "\0"
+    aes = AES.new(key, AES.MODE_CBC, iv)
+    res = aes.encrypt(input_data)
+    return res
+
+def aes_decrypt_data(data, key, iv=None):
+    """
+    decrypt the given data
+    other than the linotp std decrypt this method takes a key not a keyslot,
+    which is required, as for every server startup the encryption key might
+    change
+
+    :param data: the to be decrypted data
+    :param key: the encryption key
+    :param iv: the random initialisation vector
+    :return: the decrypted value
+    """
+    if iv is None:
+        iv = key
+
+    padding = (16 - len(iv) % 16) % 16
+    iv += padding * "\0"
+    iv = iv[:16]
+
+    aes = AES.new(key, AES.MODE_CBC, iv)
+    output = aes.decrypt(data)
+    eof = output.rfind(u"\x01\x02")
+    if eof >= 0: output = output[:eof]
+
+    # convert output from ascii, back to bin data, which might be unicode++
+    res = binascii.a2b_hex(output)
+    return res
+
 def udecode(value):
     """
     unicode de escape the value - required to support non-unicode
