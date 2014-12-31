@@ -912,7 +912,7 @@ def auto_enrollToken(passw, user, options=None):
             log.warning('auto_enrollemnt for user %r faild: missing email!'
                         % user)
             return False,{}
-        token_init['email'] = email
+        token_init['email_address'] = email
 
     # else: token type undefined
     else:
@@ -933,13 +933,21 @@ def auto_enrollToken(passw, user, options=None):
                   % (user.login,user.realm))
         return False,{}
 
-    # trigger challenge for user
-    (_res, reply) = linotp.lib.validate.create_challenge(tokenObj, options=options)
-    if _res is not True:
-        error = ('failed to create challenge for user %s@%s during autoenrollment'
-                  % (user.login,user.realm))
-        log.error(error)
-        raise Exception(error)
+    # we have to use a try except as challenge creation might raise exception
+    # and we have to drop the created token
+    try:
+        # trigger challenge for user
+        (_res, reply) = linotp.lib.validate.create_challenge(tokenObj, options=options)
+        if _res is not True:
+            error = ('failed to create challenge for user %s@%s during autoenrollment'
+                      % (user.login, user.realm))
+            log.error(error)
+            raise Exception(error)
+
+    except Exception as exx:
+        Session.delete(tokenObj.token)
+        Session.commit()
+        raise exx
 
     return (True, reply)
 
