@@ -3497,7 +3497,7 @@ $(document).ready(function(){
     var $dialog_token_config = $('#dialog_token_settings').dialog({
         autoOpen: false,
         title: 'Token Config',
-        width: 600,
+        width: 900,
         modal: true,
         buttons: {
             'Save config': {

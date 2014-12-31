@@ -80,13 +80,13 @@ function totp_get_config_params(){
 <fieldset>
 	<legend>${_("TOTP settings")}</legend>
 	<table>
-		<tr><td><label for='totp_timeStep'> ${_("TOTP time Step")}: </label></td>
+		<tr><td><label for='totp_timeStep'> ${_("time step")}: </label></td>
 		<td><input type="text" name="tot_timeStep" class="required"  id="totp_timeStep" size="2" maxlength="2"
 			title='${_("This is the time step for time based tokens. Usually this is 30 or 60.")}'> sec</td></tr>
-		<tr><td><label for='totp_timeShift'> ${_("TOTP time Shift")}: </label></td>
+		<tr><td><label for='totp_timeShift'> ${_("time offset")}: </label></td>
 		<td><input type="text" name="totp_timeShift" class="required"  id="totp_timeShift" size="5" maxlength="5"
 			title='${_("This is the default time shift of the server. This should be 0.")}'> sec</td></tr>
-		<tr><td><label for='totp_timeWindow'> ${_("TOTP time window")}: </label></td>
+		<tr><td><label for='totp_timeWindow'> ${_("time lookup window")}: </label></td>
 		<td><input type="text" name="totp_timeWindow" class="required"  id="totp_timeWindow" size="5" maxlength="5"
 			title='${_("This is the time LinOTP will calculate before and after the current time. A reasonable value is 300.")}'> sec</td></tr>
 	</table>
