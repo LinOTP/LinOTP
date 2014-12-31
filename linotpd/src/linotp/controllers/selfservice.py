@@ -97,7 +97,7 @@ from linotp.model.meta import Session
 from linotp.lib.reply import sendQRImageResult
 from linotp.lib.reply import create_img
 
-from linotp.controllers.remoteservice import (add_dynamic_selfservice_enrollment,
+from linotp.controllers.userservice import (add_dynamic_selfservice_enrollment,
                                             add_dynamic_selfservice_policies
                                             )
 
@@ -199,8 +199,8 @@ class SelfserviceController(BaseController):
                 log.debug('[__before__] param for action %s: %s' % (action, param))
 
                 # checking the session
-                if (False == check_selfservice_session(request.url, 
-                                                       request.path, 
+                if (False == check_selfservice_session(request.url,
+                                                       request.path,
                                                        request.cookies,
                                                        request.params
                                                        )):
