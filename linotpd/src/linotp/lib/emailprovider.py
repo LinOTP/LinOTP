@@ -139,6 +139,6 @@ class SMTPEmailProvider(IEmailProvider):
                 smtplib.SMTPDataError) as smtplib_exception:
             LOG.error("[submitMessage] error(s) sending e-mail. Caught exception: %r" %
                       smtplib_exception)
-            success, status_message = False, "error sending e-mail %s" % smtplib_exception
+            success, status_message = False, "error sending e-mail %r" % smtplib_exception
         s.quit()
         return success, status_message
