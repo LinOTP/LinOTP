@@ -408,7 +408,8 @@ class UserserviceController(BaseController):
         try:
             if c.audit['action'] not in ['userservice/context',
                                          'userservice/pre_context',
-                                         'userservice/userinfo'
+                                         'userservice/userinfo',
+                                         'userservice/load_form'
                                          ]:
 
                 if hasattr(self, 'authUser') and not self.authUser.isEmpty():
