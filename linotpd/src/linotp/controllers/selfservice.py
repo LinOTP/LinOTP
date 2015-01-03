@@ -97,9 +97,9 @@ from linotp.model.meta import Session
 from linotp.lib.reply import sendQRImageResult
 from linotp.lib.reply import create_img
 
-from linotp.controllers.userservice import (add_dynamic_selfservice_enrollment,
-                                            add_dynamic_selfservice_policies
-                                            )
+from linotp.lib.userservice import (add_dynamic_selfservice_enrollment,
+                                    add_dynamic_selfservice_policies
+                                    )
 
 
 from linotp.lib.selfservice import get_imprint
@@ -234,10 +234,10 @@ class SelfserviceController(BaseController):
                         nval = val
                     c.__setattr__(name.strip(), nval)
 
-            c.dynamic_actions = add_dynamic_selfservice_enrollment(c.actions)
+            c.dynamic_actions = add_dynamic_selfservice_enrollment(config, c.actions)
 
             ## we require to establish all token local defined policies to be initialiezd
-            additional_policies = add_dynamic_selfservice_policies(actions)
+            additional_policies = add_dynamic_selfservice_policies(config, actions)
             for policy in additional_policies:
                 c.__setattr__(policy, -1)
 

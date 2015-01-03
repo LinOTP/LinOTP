@@ -22,13 +22,13 @@
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
-# linotp@lsexperts.de <>, 2014.
+# linotp@lsexperts.de <>, 2014, 2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-24 16:16+0100\n"
+"PO-Revision-Date: 2015-01-03 10:32+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -79,6 +79,9 @@ msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
 
 msgid "The name of the policy must not be empty"
 msgstr "Der Name der Richtlinie darf nicht leer sein."
+
+msgid "see policy defintion."
+msgstr "siehe Richtliniendefinition."
 
 #, python-format
 msgid "The provided PIN is too short. It should be at least %i characters."
@@ -142,6 +145,43 @@ msgstr "Der Pin beinhaltet Sonderzeichen obwohl dies nicht so sein sollte (%s)"
 msgid "The PIN contains other characters, although it should not! (%s)"
 msgstr ""
 "Der Pin beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im Selfservice den max_count für den Tokentyp "
+"%s definiert."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im Selfservice den max_count für den Tokentyp "
+"%s im Realm %s definiert."
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
+
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr ""
+"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
+"ausrollen."
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr ""
+"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
+"ggf. die Richtlinien."
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr ""
+"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr ""
@@ -248,12 +288,6 @@ msgid "You do not have the administrative right to init token %s of type %s."
 msgstr ""
 "Sie haben nicht die administrativen Rechte um den Token %s vom Typ %s "
 "auszurollen."
-
-msgid ""
-"You may not enroll any more tokens. Your maximum token number is reached!"
-msgstr ""
-"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
-"ausrollen."
 
 #, python-format
 msgid ""
@@ -426,37 +460,6 @@ msgstr ""
 "dazu ein Richtlinie mit 'scope=audit' und 'action=view'."
 
 #, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s definiert."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s im Realm %s definiert."
-
-msgid "The policy settings do not allow you to issue this request!"
-msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
-
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
-"ggf. die Richtlinien."
-
-msgid "The policy settings do not allow you to request a serial by OTP!"
-msgstr ""
-"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
-
-#, python-format
-msgid "Unknown method in selfservice: %s"
-msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
-
-#, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
 msgstr ""
 "Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die System "
@@ -526,12 +529,6 @@ msgstr ""
 
 msgid "OTP seed"
 msgstr "OTP Seed"
-
-msgid "OTPAuth Url"
-msgstr "OTPAuth Url"
-
-msgid "URL for OATH token"
-msgstr "URL für OATH-Token"
 
 msgid "URL for OCRA token"
 msgstr "URL für OCRA-Token"
@@ -666,6 +663,12 @@ msgstr ""
 "Geben Sie die OTP-Länge an, die benutzt werden soll. Dies können 6 oder 8 "
 "Zeichen sein."
 
+msgid "OTPAuth Url"
+msgstr "OTPAuth Url"
+
+msgid "URL for OATH token"
+msgstr "URL für OATH-Token"
+
 msgid "mOTP Token Settings"
 msgstr "mOTP Einstellungen"
 
@@ -788,6 +791,9 @@ msgstr "OCRA2 Token"
 
 msgid "ocra challenge-response token - hmac event based"
 msgstr "OCRA Challenge Response Token - HMAC ereignisbasiert"
+
+msgid "URL for OCRA2 token"
+msgstr "URL für OCRA2-Token"
 
 msgid "RADIUS Token"
 msgstr "RADIUS Token"
