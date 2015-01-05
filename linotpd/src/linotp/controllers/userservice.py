@@ -62,6 +62,8 @@ from pylons import (request,
                      tmpl_context as c
                      )
 
+from pylons.controllers.util import abort
+
 from pylons.templating import render_mako as render
 from mako.exceptions import CompileException
 
@@ -75,6 +77,7 @@ from linotp.lib.policy import (checkPolicyPre,
                                PolicyException,
                                getOTPPINEncrypt,
                                checkOTPPINPolicy,
+                               get_client_policy,
                                )
 
 from linotp.lib.reply import (sendResult,
@@ -90,7 +93,9 @@ from linotp.lib.util import (generate_otpkey,
 
 from linotp.lib.realm import getDefaultRealm
 
-from linotp.lib.user import (User)
+from linotp.lib.user import (User,
+                             getUserInfo,
+                             )
 
 from linotp.lib.token import (enableToken,
                               isTokenOwner,
@@ -109,7 +114,12 @@ from linotp.lib.token import (enableToken,
                               get_multi_otp,
                               getTokenType,
                               newToken,
+                              get_tokenserial_of_transaction,
+                              getTokens4UserOrSerial,
+                              checkSerialPass,
                               )
+
+from linotp.lib.tokenclass import OcraTokenClass
 
 from linotp.lib.apps import (create_google_authenticator_url,
                              create_oathtoken_url
@@ -129,6 +139,9 @@ from linotp.lib.userservice import (get_userinfo,
                                     create_auth_cookie
                                     )
 
+from linotp.lib.util import (check_selfservice_session,
+                            )
+
 log = logging.getLogger(__name__)
 audit = config.get('audit')
 
@@ -146,28 +159,60 @@ class UserserviceController(BaseController):
     request during which the auth_cookie and session is verified
     """
 
+    def _get_auth_user(self):
+        """
+        """
+        auth_type = ''
+
+        repose_auth = request.environ.get('repoze.who.identity')
+        if repose_auth:
+            log.debug("getting identity from repoze.who: %r" % repose_auth)
+            user_id = request.environ.get('repoze.who.identity', {}).get('repoze.who.userid', '')
+            auth_type = "repoze"
+        else:
+            log.debug("getting identity from params: %r" % request.params)
+            user_id = request.params.get('user', '')
+            auth_type = "userservice"
+
+        if type(user_id) == unicode:
+            user_id = user_id.encode(ENCODING)
+        identity = user_id.decode(ENCODING)
+
+        return (auth_type, identity)
+
+
     def __before__(self, action, **parameters):
         # if action is not an authentication request:
         # - check if there is a cookie in the headers and in the session param
         # - check if the decrypted cookie user and client are the same as
         #   the requesting user / client
 
-        params = {}
         self.client = get_client()
 
         if action not in ['auth', 'pre_context']:
-            params.update(request.params)
-            try:
-                userid = params['user']
-            except KeyError as keyerr:
-                raise Exception('missing parameter %r' % keyerr)
+            auth_type, identity = self._get_auth_user()
+            if not identity:
+                if auth_type == "userservice":
+                    raise Exception('No authenticated user found!')
+                else:
+                    abort(401, "You are not authenticated")
 
-            login, realm = userid.split("@")
+            login, _foo, realm = identity.rpartition('@')
             self.authUser = User(login, realm)
 
-            res = check_userservice_session(request, config, self.authUser, self.client)
-            if res is False:
-                raise Exception('Unauthenticated user request!')
+            if auth_type == "userservice":
+                res = check_userservice_session(request, config, self.authUser, self.client)
+                if not res:
+                    raise Exception('Unauthenticated user request!')
+
+            else:
+                res = check_selfservice_session(request.url,
+                                                       request.path,
+                                                       request.cookies,
+                                                       request.params
+                                                       )
+                if not res:
+                    abort(401, "No valid session")
 
         context = get_pre_context(self.client)
         self.secure_auth = context['secure_auth']
@@ -646,11 +691,9 @@ class UserserviceController(BaseController):
             upin = param.get("pin", None)
 
             if (True == isTokenOwner(serial, self.authUser)):
-                log.info("user %s@%s is unassigning his "
-                                                        "token with serial %s."
+                log.info("user %s@%s is unassigning his token with serial %s."
                          % (self.authUser.login, self.authUser.realm, serial))
-                # TODO: In what realm will the unassigned token be? We should
-                # handle this in the unassign Function
+
                 ret = unassignToken(serial, None, upin)
                 res["unassign token"] = ret
 
@@ -948,9 +991,6 @@ class UserserviceController(BaseController):
         '''
         enroll token
         '''
-        log.debug("[userinit] calling function")
-
-
         response_detail = {}
         param = {}
 
@@ -1312,6 +1352,388 @@ class UserserviceController(BaseController):
         finally:
             Session.close()
             log.error("[search] done")
+
+    def activateocratoken(self):
+        '''
+
+        activateocratoken - called from the selfservice web ui to activate the  OCRA token
+
+        :param type:    'ocra'
+        :type type:     string
+        :param serial:    serial number of the token
+        :type  serial:    string
+        :param activationcode: the calculated activation code
+        :type  activationcode: string - activationcode format
+
+        :return:    dict about the token
+        :rtype:     { 'activate': True, 'ocratoken' : {
+                        'url' :     url,
+                        'img' :     '<img />',
+                        'label' :   "%s@%s" % (self.authUser.login,
+                                                   self.authUser.realm),
+                        'serial' :  serial,
+                    }  }
+        '''
+        log.debug("calling function activateocratoken")
+        param = {}
+        ret = {}
+
+        try:
+            param.update(request.params)
+
+            # check selfservice authorization
+            checkPolicyPre('selfservice', 'useractivateocratoken',
+                                                    param, self.authUser)
+
+            typ = param["type"]
+            if typ and typ.lower() not in ["ocra", "ocra2"]:
+                return sendError(response, _("valid types are 'ocra' "
+                                             "or 'ocra2'. You provided %s")
+                                 % typ)
+
+            helper_param = {}
+            helper_param['type'] = typ
+            helper_param['serial'] = param["serial"]
+
+            acode = param["activationcode"]
+            helper_param['activationcode'] = acode.upper()
+
+            helper_param['genkey'] = param["genkey"]
+
+            (ret, tokenObj) = initToken(helper_param, self.authUser)
+
+            info = {}
+            serial = ""
+            if tokenObj is not None:
+                info = tokenObj.getInfo()
+                serial = tokenObj.getSerial()
+            else:
+                raise Exception('Token not found!')
+
+            url = info.get('app_import')
+            trans = info.get('transactionid')
+
+            ret = {
+                'url'       : url,
+                'img'       : create_img(url, width=400, alt=url),
+                'label'     : "%s@%s" % (self.authUser.login,
+                                            self.authUser.realm),
+                'serial'    : serial,
+                'transaction' : trans,
+            }
+
+            logTokenNum()
+
+            c.audit['serial'] = serial
+            c.audit['token_type'] = typ
+            c.audit['success'] = True
+
+            Session.commit()
+            return sendResult(response, {'activate': True, 'ocratoken': ret})
+
+        except PolicyException as pe:
+            log.error("policy failed: %r" % pe)
+            log.error("%s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, unicode(pe), 1)
+
+        except Exception as e:
+            log.error("token initialization failed! %r" % e)
+            log.error(" %s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, e, 1)
+
+        finally:
+            Session.close()
+            log.debug('done')
+
+    def finshocratoken(self):
+        '''
+
+        finshocratoken - called from the selfservice web ui to finish the
+                         OCRA token to run the final check_t for the token
+
+        :param passw: the calculated verificaton otp
+        :type  passw: string
+        :param transactionid: the transactionid
+        :type  transactionid: string
+
+        :return:    dict about the token
+        :rtype:     { 'result' = ok
+                      'failcount' = int(failcount)
+                    }
+
+        '''
+
+        log.debug("calling function finshocratoken")
+        param = request.params
+
+        try:
+            ''' check selfservice authorization '''
+
+            checkPolicyPre('selfservice', 'userwebprovision',
+                                                    param, self.authUser)
+
+            transid = param['transactionid']
+            passw = param['pass']
+            p_serial = param['serial']
+
+            value = {}
+
+            ocraChallenge = OcraTokenClass.getTransaction(transid)
+            if ocraChallenge is None:
+                error = ('[userfinshocratoken] No challenge for transaction'
+                            ' %s found' % unicode(transid))
+                log.error(error)
+                raise Exception(error)
+
+            serial = ocraChallenge.tokenserial
+            if serial != p_serial:
+                error = ('[userfinshocratoken] token mismatch for token '
+                      'serial: %s - %s' % (unicode(serial), unicode(p_serial)))
+                log.error(error)
+                raise Exception(error)
+
+            tokens = getTokens4UserOrSerial(serial=serial)
+            if len(tokens) == 0 or len(tokens) > 1:
+                error = ('[userfinshocratoken] no token found for '
+                         'serial: %s' % (unicode(serial)))
+                log.error(error)
+                raise Exception(error)
+
+            theToken = tokens[0]
+            tok = theToken.token
+            desc = tok.get()
+            realms = desc.get('LinOtp.RealmNames')
+            if realms is None or len(realms) == 0:
+                realm = getDefaultRealm()
+            elif len(realms) > 0:
+                realm = realms[0]
+
+            userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver,
+                                                        tok.LinOtpIdResClass)
+            user = User(login=userInfo.get('username'), realm=realm)
+
+            (ok, opt) = checkSerialPass(serial, passw, user=user,
+                                            options={'transactionid': transid})
+
+            failcount = tokens[0].getFailCount()
+            typ = tokens[0].type
+
+            value['result'] = ok
+            value['failcount'] = int(failcount)
+
+            c.audit['transactionid'] = transid
+            c.audit['token_type'] = typ
+            c.audit['success'] = value.get('result')
+
+            Session.commit()
+            return sendResult(response, value, opt)
+
+        except PolicyException as pe:
+            log.error("policy failed: %r" % pe)
+            log.error("%s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, unicode(pe), 1)
+
+        except Exception as e:
+            error = "token finitialization failed! %r" % e
+            log.error(" %s" % traceback.format_exc())
+            log.error(error)
+            Session.rollback()
+            return sendError(response, error, 1)
+
+        finally:
+            Session.close()
+            log.debug('done')
+
+# #--
+    def finshocra2token(self):
+        '''
+
+        finshocra2token - called from the selfservice web ui to finish
+                        the OCRA2 token to run the final check_t for the token
+
+        :param passw: the calculated verificaton otp
+        :type  passw: string
+        :param transactionid: the transactionid
+        :type  transactionid: string
+
+        :return:    dict about the token
+        :rtype:     { 'result' = ok
+                      'failcount' = int(failcount)
+                    }
+
+        '''
+
+        log.debug("calling function finshocra2token")
+        param = {}
+        param.update(request.params)
+        if 'session' in param:
+            del param['session']
+
+        value = {}
+        ok = False
+        typ = ''
+
+        try:
+            ''' check selfservice authorization '''
+
+            checkPolicyPre('selfservice', 'userwebprovision',
+                                                        param, self.authUser)
+            passw = param["pass"]
+
+            transid = param.get('state', None)
+            if transid is not None:
+                param['transactionid'] = transid
+                del param['state']
+
+            if transid is None:
+                transid = param.get('transactionid', None)
+
+            if transid is None:
+                raise Exception("missing parameter: state or transactionid!")
+
+            serial = get_tokenserial_of_transaction(transId=transid)
+            if serial is None:
+                value['value'] = False
+                value['failure'] = 'No challenge for transaction %r found'\
+                                    % transid
+
+            else:
+                param['serial'] = serial
+
+                tokens = getTokens4UserOrSerial(serial=serial)
+                if len(tokens) == 0 or len(tokens) > 1:
+                    raise Exception('tokenmismatch for token serial: %s'
+                                    % (unicode(serial)))
+
+                theToken = tokens[0]
+                tok = theToken.token
+                typ = theToken.getType()
+                realms = tok.getRealmNames()
+                if realms is None or len(realms) == 0:
+                    realm = getDefaultRealm()
+                elif len(realms) > 0:
+                    realm = realms[0]
+
+                userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
+                user = User(login=userInfo.get('username'), realm=realm)
+
+                (ok, opt) = checkSerialPass(serial, passw, user=user,
+                                     options=param)
+
+                value['value'] = ok
+                failcount = theToken.getFailCount()
+                value['failcount'] = int(failcount)
+
+            value['result'] = ok
+            value['failcount'] = int(failcount)
+
+            c.audit['transactionid'] = transid
+            c.audit['token_type'] = typ
+            c.audit['success'] = value.get('result')
+
+            Session.commit()
+            return sendResult(response, value, opt)
+
+        except PolicyException as pe:
+            log.error("[userfinshocra2token] policy failed: %r" % pe)
+            log.error("[userfinshocratoken] %s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, unicode(pe), 1)
+
+        except Exception as e:
+            error = "[userfinshocra2token] token initialization failed! %r" % e
+            log.error("[userfinshocra2token] %s" % traceback.format_exc())
+            log.error(error)
+            Session.rollback()
+            return sendError(response, error, 1)
+
+        finally:
+            Session.close()
+            log.debug('[userfinshocra2token] done')
+
+    def token_call(self):
+        '''
+            the generic method call for an dynamic token
+        '''
+        param = {}
+
+        res = {}
+
+        try:
+            param.update(request.params)
+
+            # # method could be part of the virtual url
+            context = request.path_info.split('/')
+            if len(context) > 2:
+                method = context[2]
+            else:
+                method = param["method"]
+
+            typ = param["type"]
+            serial = param.get("serial", None)
+
+            # check selfservice authorization for this dynamic method
+            pols = get_client_policy(self.client, scope="selfservice",
+                                     realm=self.authUser.realm,
+                                     action=method,
+                                     userObj=self.authUser.realm,
+                                     find_resolver=False)
+            if not pols or len(pols) == 0:
+                log.error('user %r not authorized to call %s'
+                          % (self.authUser, method))
+                raise PolicyException('user %r not authorized to call %s'
+                                      % (self.authUser, method))
+
+            glo = config['pylons.app_globals']
+            tokenclasses = glo.tokenclasses
+
+            if typ in tokenclasses.keys():
+                tclass = tokenclasses.get(typ)
+                tclt = None
+                if serial is not None:
+                    toks = getTokens4UserOrSerial(None, serial, _class=False)
+                    tokenNum = len(toks)
+                    if tokenNum == 1:
+                        token = toks[0]
+                        # object method call
+                        tclt = newToken(tclass)(token)
+
+                # static method call
+                if tclt is None:
+                    tclt = newToken(tclass)
+                method = '' + method.strip()
+                if hasattr(tclt, method):
+                    # TODO: check that method name is a function / method
+                    ret = getattr(tclt, method)(param)
+                    if len(ret) == 1:
+                        res = ret[0]
+                    if len(ret) > 1:
+                        res = ret[1]
+                else:
+                    res['status'] = 'method %s.%s not supported!' % (typ, method)
+
+            Session.commit()
+            return sendResult(response, res, 1)
+
+        except PolicyException as pe:
+            log.error("[token_call] policy failed: %r" % pe)
+            log.error("[token_call] %s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, unicode(pe), 1)
+
+        except Exception as e:
+            log.error("[token_call] calling method %s.%s of user %s failed! %r"
+                      % (typ, method, c.user, e))
+            log.error("[token_call] %s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, e, 1)
+
+        finally:
+            Session.close()
+            log.debug('[token_call] done')
 
 
 #eof##########################################################################

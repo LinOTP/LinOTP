@@ -1109,7 +1109,10 @@ def unassignToken(serial, user=None, pin=None):
 def checkSerialPass(serial, passw, options=None, user=None):
     '''
     This function checks the otp for a given serial
-    @attention: the parameter user must be set, as the pin policy==1 will verify the user pin
+
+    :attention: the parameter user must be set, as the pin policy==1 will
+                verify the user pin
+
     '''
 
     log.debug("[checkSerialPass] checking for serial %r"
