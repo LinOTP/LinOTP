@@ -201,14 +201,21 @@ class TestEmailtokenController(TestController):
         except KeyError:
             pass  # No challenges exist for this token
 
-        senderrs = {self.default_email_address:  (450, '4.1.8 <test@invalid.subdomain.linotp.de>: ' +
-                                                'Sender address rejected: Domain not found')}
         # Trigger SMTPRecipientsRefused exception when sendmail is called
-        self.mock_smtp_instance.sendmail.side_effect = smtplib.SMTPRecipientsRefused(senderrs)
+        exception_to_raise = smtplib.SMTPRecipientsRefused(
+            {
+                self.default_email_address: (
+                    450,
+                    '4.1.8 <test@invalid.subdomain.linotp.de>: ' +
+                        'Sender address rejected: Domain not found'
+                    )
+                }
+            )
+        self.mock_smtp_instance.sendmail.side_effect = exception_to_raise
         response_string = self.app.get(url(controller='validate', action='check'),
                                        params={'user': 'root', 'pass': self.pin})
         response = response_string.json
-        expected_error = "error sending e-mail " + str(senderrs)
+        expected_error = "error sending e-mail %r" % exception_to_raise
         self.assertEqual(expected_error, response['detail']['message'], "Error message does not match")
 
         # Get new challenges
