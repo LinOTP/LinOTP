@@ -413,7 +413,8 @@ class TestSelfserviceController(TestController):
         assert '"delete token": 1' in response
 
         # UI
-        response = self.app.get(url(controller='selfservice', action='delete'))
+        response = self.app.get(url(controller='selfservice', action='delete'),
+                                params={'selftest_user': 'root@myDefRealm'})
         print response
         assert "<div id='deleteform'>" in response
 
@@ -474,11 +475,13 @@ class TestSelfserviceController(TestController):
         assert '"LinOtp.Isactive": true' in response
 
         # UI
-        response = self.app.get(url(controller='selfservice', action='disable'))
+        response = self.app.get(url(controller='selfservice', action='disable'),
+                                params={'selftest_user': 'root@myDefRealm'})
         print response
         assert "<div id='disableform'>" in response
 
-        response = self.app.get(url(controller='selfservice', action='enable'))
+        response = self.app.get(url(controller='selfservice', action='enable'),
+                                params={'selftest_user': 'root@myDefRealm'})
         print response
         assert "<div id='enableform'>" in response
 

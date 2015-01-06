@@ -167,6 +167,8 @@ class User(object):
             userlist.append(n_user)
 
         return userlist
+
+
     def getResolverConf(self, resolver):
         conf = ""
         if self.resolverConf.has_key(resolver):
