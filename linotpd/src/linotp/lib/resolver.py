@@ -224,7 +224,7 @@ def checkResolverType(resolver):
         getResolverObject(res)
     except Exception as exx:
         log.warning("Failed to setup resolver %r: %r" % (res, exx))
-        res = False
+        res = "%r" % exx
         ret = False
 
     return (ret, res)

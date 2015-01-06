@@ -877,7 +877,8 @@ class SystemController(BaseController):
                 (res, realm_resolver) = checkResolverType(resolver)
                 if res == False:
                     raise Exception("unknown resolver %r  or invalid resolver "
-                                    "class specification " % resolver)
+                                    "class specification: %r "
+                                    % (resolver, realm_resolver))
                 realm_resolvers.append(realm_resolver)
 
             resolvers = ",".join(realm_resolvers)

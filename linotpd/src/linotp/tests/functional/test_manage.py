@@ -63,7 +63,7 @@ class TestManageController(TestController):
         response = self.app.get(url(controller='system', action='setResolver'),
                                 params={'name':'reso2',
                                         'type': 'passwdresolver',
-                                        'fileName': 'linotp/tests/functional/fixtures/my-passwd'})
+                                        'fileName': 'linotp/tests/functional/fixtures/my-pass2'})
         print response
         assert '"value": true' in response
 
