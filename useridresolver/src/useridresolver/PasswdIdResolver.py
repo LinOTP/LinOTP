@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
@@ -35,11 +34,15 @@ Remarks:
 
 """
 
+import os
 import re
 import logging
 
 
-from UserIdResolver import UserIdResolver
+from UserIdResolver import (UserIdResolver,
+                            ResolverLoadConfigError
+                            )
+
 from UserIdResolver import getResolverClass
 
 
@@ -500,8 +503,15 @@ class IdResolver (UserIdResolver):
             this could be the passwd file ,
             whether it is /etc/passwd or /etc/shadow
         """
-        self.fileName = self.getConfigEntry(config,
+        fileName = self.getConfigEntry(config,
                                         'linotp.passwdresolver.fileName', conf)
+
+        fileName = os.path.realpath(fileName)
+
+        if (not os.path.isfile(fileName) or not os.access(fileName, os.R_OK)):
+            raise ResolverLoadConfigError('File %r does not exist or is not '
+                                          'accesible' % fileName)
+        self.fileName = fileName
         self.loadFile()
 
         return self

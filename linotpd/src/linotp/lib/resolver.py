@@ -171,9 +171,24 @@ def defineResolver(params):
 
     :param params: dict of request parameters
     """
+
+    typ = params['type']
+    conf = params['name']
+    resolver_clazz = None
+
+    for clazz_name, clazz_type in context.resolver_types.items():
+        if typ.lower() in clazz_type.lower():
+            resolver_clazz = clazz_name
+
+    if not resolver_clazz:
+        raise Exception("no such resolver type '%r' defined!" % typ)
+
     resolver = Resolver()
     resolver.setDefinition(params)
     res = resolver.saveConfig()
+
+    getResolverObject(resolver_clazz + '.' + conf)
+
     return res
 
 

@@ -36,6 +36,8 @@ import re
 import webob
 import binascii
 
+from useridresolver.UserIdResolver import ResolverLoadConfigError
+
 from linotp.lib.selftest import isSelfTest
 from pylons import request, response, config, tmpl_context as c
 
@@ -585,6 +587,13 @@ class SystemController(BaseController):
 
             Session.commit()
             return sendResult(response, res, 1)
+
+        except ResolverLoadConfigError as exx:
+            log.error("Failed to load resolver definition %r \n %r"
+                      % (exx, param))
+            log.error("[setResolver] %s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, exx)
 
         except Exception as exx:
             log.error("[setResolver] error saving config: %r" % exx)

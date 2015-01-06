@@ -32,7 +32,9 @@
   Dependencies: UserIdResolver
 """
 
-from useridresolver.UserIdResolver import UserIdResolver
+from useridresolver.UserIdResolver import (UserIdResolver,
+                                           ResolverLoadConfigError
+                                           )
 from useridresolver.UserIdResolver import getResolverClass
 
 import ldap
@@ -851,7 +853,11 @@ class IdResolver (UserIdResolver):
                                 "linotp.ldapresolver.LOGINNAMEATTRIBUTE", conf)
         userinfo = self.getConfigEntry(config,
                                 "linotp.ldapresolver.USERINFO", conf)
-        self.userinfo = loads(userinfo)
+        try:
+            self.userinfo = loads(userinfo)
+        except ValueError as exx:
+            raise ResolverLoadConfigError("Invalid userinfo - no json "
+                                          "document: %s %r" % (userinfo, exx))
 
         timeout = self.getConfigEntry(config,
                                 "linotp.ldapresolver.TIMEOUT", conf)

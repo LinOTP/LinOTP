@@ -40,18 +40,20 @@ from sqlalchemy import Table, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoSuchColumnError
 
-from useridresolver.UserIdResolver import UserIdResolver
+from useridresolver.UserIdResolver import (UserIdResolver,
+                                           ResolverLoadConfigError
+                                           )
 
 import re
 import base64
 import hashlib
+import sys
 
 import linotp.lib.phppass as phppass
 
-import sys
-if sys.version_info[0:2] >= (2, 6):
+try:
     import json
-else:
+except:
     import simplejson as json
 
 import traceback
@@ -535,6 +537,9 @@ class IdResolver (UserIdResolver):
         userInfo = userInfo.strip('"')
         try:
             self.sqlUserInfo = json.loads(userInfo)
+        except ValueError as exx:
+            raise ResolverLoadConfigError("Invalid userinfo - no json "
+                                          "document: %s %r" % (userInfo, exx))
         except Exception as  e:
             raise Exception("linotp.sqlresolver.Map: " + str(e))
 
