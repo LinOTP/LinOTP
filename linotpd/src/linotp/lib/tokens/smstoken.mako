@@ -78,13 +78,15 @@ $(document).ready(function () {
 <form class="cmxform" id="form_smsconfig"><fieldset>
 <legend>${_("SMS Provider Config")}</legend>
 <table><tr>
-	<td><label for="c_sms_provider">${_("SMS Provider")}</label>: </td>
-	<td><input type="text" name="sms_provider" class="required"  id="c_sms_provider" size="37" maxlength="80"></td>
+	<td><label for="c_sms_provider">${_("Provider")}</label>: </td>
+	<td><input type="text" name="sms_provider" class="required"  id="c_sms_provider" size="37" maxlength="80"
+	           placeholder="smsprovider.HttpSMSProvider.HttpSMSProvider"></td>
 </tr><tr>
-	<td><label for='c_sms_provider_config'>${_("SMS Provider Config")}</label>: </td>
-	<td><textarea name="sms_provider_config" class="required"  id="c_sms_provider_config" cols='35' rows='6' maxlength="400"> </textarea></td>
+	<td><label for='c_sms_provider_config'>${_("Provider Config")}</label>: </td>
+	<td><textarea name="sms_provider_config" class="required"  id="c_sms_provider_config" cols='35' rows='6' maxlength="400"
+                  placeholder="{ 'URL':'http://smsproviderurl:5001/http2sms', 'PARAMETER': 'your url parameter as json', 'SMS_TEXT_KEY':'text', 'SMS_PHONENUMBER_KEY':'to', 'RETURN_SUCCESS':'ID'}"></textarea></td>
 </tr><tr>
-	<td><label for='c_sms_timeout'>${_("SMS Timeout")}</label>: </td>
+	<td><label for='c_sms_timeout'>${_("Timeout")}</label>: </td>
 	<td><input type="text" name="sms_timeout" class="required"  id="c_sms_timeout" size="5" maxlength="5"></td>
 </tr><tr>
 	<td><label for='c_sms_blocking'>${_("Time between SMS (sec.)")}</label>: </td>

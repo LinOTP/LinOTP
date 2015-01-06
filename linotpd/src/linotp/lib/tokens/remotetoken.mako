@@ -48,16 +48,14 @@
 
 
 function remote_get_config_val(){
-	var id_map = {};
+    var id_map = {};
 
     id_map['remote.server'] 		= 'sys_remote_server';
     id_map['remote.local_checkpin'] = 'sys_remote_local_checkpin';
     id_map['remote.realm'] 			= 'sys_remote_realm';
     id_map['remote.resConf'] 		= 'sys_remote_resConf';
 
-    // FIXME: We need to set the checkpin select box. Do not know how!
-
-	return id_map;
+    return id_map;
 
 }
 
@@ -72,7 +70,7 @@ function remote_get_config_params(){
 	var url_params ={};
 
     url_params['remote.server'] 	= $('#sys_remote_server').val();
-    url_params['remote.realm'] 	= $('#sys_remote_realm').val();
+    url_params['remote.realm'] 	    = $('#sys_remote_realm').val();
     url_params['remote.resConf'] 	= $('#sys_remote_resConf').val();
     url_params['remote.remote_checkpin'] 	= $('#sys_remote_local_checkpin').val();
 
@@ -150,6 +148,20 @@ function remote_enroll_setup_defaults(config, options){
         $("[name='set_pin_rows']").hide();
     } else {
         $("[name='set_pin_rows']").show();
+    }
+
+    $('#remote_server').val(config['remote.server']);
+    $('#remote_serial').val(config['remote.serial']);
+    $('#remote_user').val(config['remote.user']);
+    $('#remote_realm').val(config['remote.realm']);
+    $('#remote_resconf').val(config['remote.resConf']);
+    var pin_check = config['remote.local_checkpin'];
+
+    var pin_check = config['remote.remote_checkpin'];
+    if (pin_check === '0') {
+        $('#remote_local_checkpin option[value="0"]').prop('selected',true);
+    } else {
+        $('#remote_local_checkpin option[value="1"]').prop('selected',true);
     }
 }
 
