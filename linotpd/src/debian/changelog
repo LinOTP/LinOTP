@@ -1,3 +1,9 @@
+linotp (2.7.1+custom01-1~precise) precise; urgency=low
+
+  * Custom 2.7.1 version that includes auto-enrollment for SMS and Email Token
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 06 Jan 2015 16:54:11 +0100
+
 linotp (2.7.1-1~precise) precise; urgency=low
 
   Enhancements:
