@@ -50,6 +50,7 @@ import copy
 import os
 import traceback
 import logging
+import base64
 
 try:
     import json
@@ -93,9 +94,9 @@ from linotp.lib.util import (generate_otpkey,
 
 from linotp.lib.realm import getDefaultRealm
 
-from linotp.lib.user import (User,
-                             getUserInfo,
-                             )
+from linotp.lib.user import (getUserInfo,
+                              User,
+                              getUserId)
 
 from linotp.lib.token import (enableToken,
                               isTokenOwner,
@@ -132,15 +133,24 @@ from linotp.lib.audit.base import (logTokenNum,
                                    )
 
 from linotp.lib.userservice import (get_userinfo,
-                                    auth,
                                     check_userservice_session,
                                     get_pre_context,
                                     get_context,
-                                    create_auth_cookie
+                                    create_auth_cookie,
+                                    getTokenForUser
                                     )
 
 from linotp.lib.util import (check_selfservice_session,
                             )
+
+from linotp.lib.token import (checkUserPass,
+                              auto_enrollToken,
+                              auto_assignToken,
+                              )
+
+from linotp.lib.resolver import getResolverObject
+
+
 
 log = logging.getLogger(__name__)
 audit = config.get('audit')
@@ -192,27 +202,21 @@ class UserserviceController(BaseController):
         if action not in ['auth', 'pre_context']:
             auth_type, identity = self._get_auth_user()
             if not identity:
-                if auth_type == "userservice":
-                    raise Exception('No authenticated user found!')
-                else:
-                    abort(401, "You are not authenticated")
+                abort(401, "You are not authenticated")
 
             login, _foo, realm = identity.rpartition('@')
             self.authUser = User(login, realm)
 
             if auth_type == "userservice":
                 res = check_userservice_session(request, config, self.authUser, self.client)
-                if not res:
-                    raise Exception('Unauthenticated user request!')
-
             else:
                 res = check_selfservice_session(request.url,
                                                        request.path,
                                                        request.cookies,
                                                        request.params
                                                        )
-                if not res:
-                    abort(401, "No valid session")
+            if not res:
+                abort(401, "No valid session")
 
         context = get_pre_context(self.client)
         self.secure_auth = context['secure_auth']
@@ -247,24 +251,21 @@ class UserserviceController(BaseController):
                 log.debug("[__after__] authenticating as %s in realm %s!"
                           % (c.audit['user'], c.audit['realm']))
 
-
-                c.audit['success'] = True
-
                 if param.has_key('serial'):
                     c.audit['serial'] = param['serial']
                     c.audit['token_type'] = getTokenType(param['serial'])
 
                 audit.log(c.audit)
-
             return response
 
         except Exception as acc:
-            # # the exception, when an abort() is called if forwarded
+            # the exception, when an abort() is called if forwarded
             log.error("[__after__::%r] webob.exception %r" % (action, acc))
             log.error("[__after__] %s" % traceback.format_exc())
-            Session.rollback()
-            Session.close()
             raise acc
+
+        finally:
+            log.debug("%s done" % action)
 
 ###############################################################################
 # authentication hooks
@@ -294,7 +295,29 @@ class UserserviceController(BaseController):
             return sendError(response, "Missing Key: %r" % exx)
 
         try:
-            (res, uid, user) = auth(login, password, self.secure_auth)
+            res = False
+            uid = ""
+            user = User()
+
+            (otp, passw) = password.split(':')
+            otp = base64.b32decode(otp)
+            passw = base64.b32decode(passw)
+
+
+            if '@' in login:
+                user, rrealm = login.split("@")
+                user = User(user, rrealm)
+            else:
+                realm = getDefaultRealm()
+                user = User(login, realm)
+
+            uid = "%s@%s" % (user.login, user.realm)
+
+            if self.secure_auth:
+                res = self._secure_auth_check(user, passw, otp)
+            else:
+                res = self._default_auth_check(user, passw, otp)
+
             if res:
                 log.debug("Successfully authenticated user %s:" % uid)
                 cookie = create_auth_cookie(config, user, self.client)
@@ -303,10 +326,82 @@ class UserserviceController(BaseController):
             else:
                 log.info("User %s failed to authenticate!" % uid)
 
+
+            c.audit['success'] = True
+            Session.commit()
             return sendResult(response, ok, 0)
 
         except Exception as exx:
+            c.audit['info'] = ("%r" % exx)[:80]
+            Session.rollback()
             return sendError(response, exx)
+
+        finally:
+            Session.close()
+
+    def _default_auth_check(self, user, password, otp=None):
+        """
+        the former selfservice login controll:
+         check for username and os_pass
+
+        :param user: user object
+        :param password: the expected os_password
+        :param otp: not used
+
+        :return: bool
+        """
+        (uid, _resolver, resolver_class) = getUserId(user)
+        r_obj = getResolverObject(resolver_class)
+        res = r_obj.checkPass(uid, password)
+        return res
+
+    def _secure_auth_check(self, user, password, otp):
+        """
+        secure auth requires the os password and the otp (pin+otp)
+        - secure auth supports autoassignement, where the user logs in with
+                      os_password and only the otp value. If user has no token,
+                      a token with a matching otp in the window is searched
+        - secure auth supports autoenrollment, where a user with no token will
+                      get automaticaly enrolled one token.
+
+        :param user: user object
+        :param password: the os_password
+        :param otp: empty (for autoenrollment),
+                    otp value only for auto assignment or
+                    pin+otp for standard authentication (respects otppin ploicy)
+
+        :return: bool
+        """
+        ret = False
+
+        passwd_match = self._default_auth_check(user, password, otp)
+
+        if passwd_match:
+            toks = getTokenForUser(user)
+
+            # if user has no token, we check for auto assigneing one to him
+            if len(toks) == 0:
+
+                # if no token and otp, we might do an auto assign
+                if self.autoassign and otp:
+                    ret = auto_assignToken(password + otp, user)
+
+                # if no token no otp, we might trigger an aouto enroll
+                elif self.autoenroll and not otp:
+                    (auto_enroll_return, reply) = auto_enrollToken(password, user)
+                    if auto_enroll_return is False:
+                        error = ("autoenroll: %r" % reply.get('error', ''))
+                        log.error(error)
+                        raise Exception(error)
+                    # we always have to return a false, as we have a challenge tiggered
+                    ret = False
+
+            # user has at least one token, so we do a check on pin + otp
+            else:
+                (ret, _reply) = checkUserPass(user, otp)
+        return ret
+
+
 
     def userinfo(self):
         """
@@ -323,6 +418,8 @@ class UserserviceController(BaseController):
         try:
 
             uinfo = get_userinfo(login)
+
+            c.audit['success'] = True
 
             Session.commit()
             return sendResult(response, uinfo, 0)
@@ -358,15 +455,14 @@ class UserserviceController(BaseController):
             return json.dumps(context, indent=3)
 
         except Exception as e:
-            log.error("[before] failed with error: %r" % e)
-            log.error("[before] %s" % traceback.format_exc())
+            log.error("failed with error: %r" % e)
+            log.error("%s" % traceback.format_exc())
             Session.rollback()
-            Session.close()
             return sendError(response, e)
 
         finally:
-            log.debug('[before] done')
-
+            log.debug('done')
+            Session.close()
 
     def context(self):
         '''
@@ -432,8 +528,10 @@ class UserserviceController(BaseController):
             if section != 'selfservice':
                 return res
 
-            context_data = param['context']
-            context = json.loads(context_data)
+            user = self.authUser.login
+            realm = self.authUser.realm
+
+            context = get_context(config, user, realm, self.client)
             for k, v in context.items():
                 setattr(c, k, v)
 
@@ -455,6 +553,7 @@ class UserserviceController(BaseController):
                         res = remove_empty_lines(res)
 
             Session.commit()
+            c.audit['success'] = True
             return res
 
         except CompileException as exx:
@@ -1712,8 +1811,10 @@ class UserserviceController(BaseController):
                         res = ret[0]
                     if len(ret) > 1:
                         res = ret[1]
+                    c.audit['success'] = res
                 else:
                     res['status'] = 'method %s.%s not supported!' % (typ, method)
+                    c.audit['success'] = False
 
             Session.commit()
             return sendResult(response, res, 1)

@@ -71,19 +71,17 @@ from linotp.lib.crypt import (aes_decrypt_data,
 from linotp.lib.user import (getUserInfo,
                               User,
                               getUserId)
-from linotp.lib.token import (checkUserPass,
-                              auto_enrollToken,
-                              auto_assignToken,
-                              )
-
-from linotp.lib.resolver import getResolverObject
 
 from linotp.lib.realm import getDefaultRealm
 
-import base64
+
+
 
 import logging
 log = logging.getLogger(__name__)
+
+# const for encryption and iv
+SECRET_LEN = 32
 
 def get_userinfo(login):
 
@@ -104,94 +102,6 @@ def get_userinfo(login):
         del uinfo['cryptpass']
 
     return uinfo
-
-
-def auth(login, password, secure_auth=False):
-
-    res = False
-    uid = ""
-    user = User()
-
-    (otp, passw) = password.split(':')
-    otp = base64.b32decode(otp)
-    passw = base64.b32decode(passw)
-
-
-    if '@' in login:
-        user, rrealm = login.split("@")
-        user = User(user, rrealm)
-    else:
-        realm = getDefaultRealm()
-        user = User(login, realm)
-
-    uid = "%s@%s" % (user.login, user.realm)
-
-    if secure_auth:
-        res = _secure_auth_check(user, passw, otp)
-    else:
-        res = _default_auth_check(user, passw, otp)
-
-    return (res, uid, user)
-
-def _default_auth_check(user, password, otp=None):
-    """
-    the former selfservice login controll:
-     check for username and os_pass
-
-    :param user: user object
-    :param password: the expected os_password
-    :param otp: not used
-
-    :return: bool
-    """
-    (uid, _resolver, resolver_class) = getUserId(user)
-    r_obj = getResolverObject(resolver_class)
-    res = r_obj.checkPass(uid, password)
-    return res
-
-def _secure_auth_check(self, user, password, otp):
-    """
-    secure auth requires the os password and the otp (pin+otp)
-    - secure auth supports autoassignement, where the user logs in with
-                  os_password and only the otp value. If user has no token,
-                  a token with a matching otp in the window is searched
-    - secure auth supports autoenrollment, where a user with no token will
-                  get automaticaly enrolled one token.
-
-    :param user: user object
-    :param password: the os_password
-    :param otp: empty (for autoenrollment),
-                otp value only for auto assignment or
-                pin+otp for standard authentication (respects otppin ploicy)
-
-    :return: bool
-    """
-    ret = False
-
-    passwd_match = self._default_auth_check(user, password, otp)
-
-    if passwd_match:
-        toks = getTokenForUser(user)
-
-        # if user has no token, we check for auto assigneing one to him
-        if len(toks) == 0:
-
-            # if no token and otp, we might do an auto assign
-            if self.autoassign and otp:
-                ret = auto_assignToken(password + otp, user)
-
-            # if no token no otp, we might trigger an aouto enroll
-            elif self.autoenroll and not otp:
-                (auto_enroll_return, _reply) = auto_enrollToken(password, user)
-                if auto_enroll_return is False:
-                    log.error("Tryed auto enrollmen but it failed")
-                # we always have to return a false, as we have a challenge tiggered
-                ret = False
-
-        # user has at least one token, so we do a check on pin + otp
-        else:
-            (ret, _reply) = checkUserPass(user, otp)
-    return ret
 
 def getTokenForUser(user):
     """
@@ -232,12 +142,16 @@ def create_auth_cookie(config, user, client):
     :return: the encrypted cookie value
     """
     secret = get_cookie_secret(config)
+    key = binascii.unhexlify(secret)
 
     username = user
     if type(user) == User:
         username = "%s@%s" % (user.login, user.realm)
-    iv = os.urandom(2)
-    enc = aes_encrypt_data(username + "|" + client, secret, iv)
+    iv = os.urandom(SECRET_LEN)
+    try:
+        enc = aes_encrypt_data(username + "|" + client, key, iv)
+    except Exception as exx:
+        log.error("Failed to create encrypted cookie %r" % exx)
 
     auth_cookie = "%s%s" % (binascii.hexlify(iv), binascii.hexlify(enc))
     return auth_cookie
@@ -253,15 +167,17 @@ def check_auth_cookie(config, cookie, user, client):
     :return: boolean
     """
     secret = get_cookie_secret(config)
+    key = binascii.unhexlify(secret)
 
     try:
-        iv = cookie[:4]
-        enc = cookie[4:]
+        iv = cookie[:2 * SECRET_LEN]
+        enc = cookie[2 * SECRET_LEN:]
         auth_cookie_val = aes_decrypt_data(binascii.unhexlify(enc),
-                                       secret,
+                                       key,
                                        binascii.unhexlify(iv))
         cookie_user, cookie_client = auth_cookie_val.split('|')
-    except:
+    except Exception as exx:
+        log.error("Failed to decode cookie - session key seems to be old")
         return False
 
     username = user
@@ -279,11 +195,11 @@ def get_cookie_secret(config):
     :return: return the cookie encryption secret
     """
 
-    if hasattr(config, 'repoze_auth_secret') == False:
-        secret = binascii.hexlify(os.urandom(16))
-        setattr(config, 'repoze_auth_secret', secret)
+    if hasattr(config, 'selfservice_auth_secret') == False:
+        secret = binascii.hexlify(os.urandom(SECRET_LEN))
+        setattr(config, 'selfservice_auth_secret', secret)
 
-    return config.repoze_auth_secret
+    return config.selfservice_auth_secret
 
 def check_userservice_session(request, config, user, client):
     """
