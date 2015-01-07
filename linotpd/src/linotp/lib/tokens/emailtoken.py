@@ -311,8 +311,13 @@ class EmailTokenClass(HmacTokenClass):
         LOG.debug("[getEmailProviderConfig] provider config: %s"
                   % tConfig)
 
-        if tConfig is not None:
-            config = loads(tConfig)
+        try:
+            if tConfig is not None:
+                config = loads(tConfig)
+        except ValueError as exx:
+            raise ValueError('Failed to load provider config:%r %r'
+                             % (tConfig, exx))
+
 
         LOG.debug('[getEmailProviderConfig] e-mail provider config' +
                   ' found: config %r' % (config))

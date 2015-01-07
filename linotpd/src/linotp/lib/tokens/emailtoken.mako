@@ -70,8 +70,17 @@ function email_get_config_params(){
 }
 
 $(document).ready(function () {
-    $("#form_emailconfig").validate();
+    $("#form_emailconfig").validate({
+        rules: {
+            email_provider_config: {
+                valid_json: true
+            }
+        }
+       });
 });
+
+
+
 </script>
 
 <form class="cmxform" id="form_emailconfig">

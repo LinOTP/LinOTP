@@ -98,6 +98,19 @@ function error_handling(message, file, line){
     return true;
 }
 
+/*
+ * add the jquery validation methods
+ */
+$.validator.addMethod('valid_json', function (value, element, param) {
+    var isValid = false;
+    try {
+        var obj = $.parseJSON(value);
+        isValid = true;
+    } catch(err) {
+        isValid = false;
+    }
+    return isValid;
+}, i18n.gettext('Not a valid json string!'));
 
 
 // We need this dialogs globally, so that we do not create more than one instance!

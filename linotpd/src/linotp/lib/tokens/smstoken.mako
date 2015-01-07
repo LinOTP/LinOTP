@@ -71,7 +71,13 @@ function sms_get_config_params(){
 }
 
 $(document).ready(function () {
-    $("#form_smsconfig").validate();
+    $("#form_smsconfig").validate({
+        rules: {
+            sms_provider_config: {
+                valid_json: true
+            }
+        }
+       });
 });
  </script>
 
