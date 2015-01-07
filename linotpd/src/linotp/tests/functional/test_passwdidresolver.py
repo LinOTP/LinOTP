@@ -112,7 +112,7 @@ class TestPasswdController(TestController):
         Testing checkpass
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-passwd' }, "")
+        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-pass2' }, "")
 
         res = y.checkPass('2001', "geheim")
         print "result %r" % res
@@ -127,7 +127,7 @@ class TestPasswdController(TestController):
         Testing getSearchfields
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-passwd' }, "")
+        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-pass2' }, "")
 
         s = y.getSearchFields()
         print s
