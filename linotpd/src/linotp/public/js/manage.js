@@ -110,7 +110,69 @@ $.validator.addMethod('valid_json', function (value, element, param) {
         isValid = false;
     }
     return isValid;
-}, i18n.gettext('Not a valid json string!'));
+    },
+    i18n.gettext('Not a valid json string!')
+);
+
+jQuery.validator.addMethod("realmname", function(value, element, param){
+    return value.match(/^[a-zA-z0-9_\-\.]+$/i);
+    },
+    i18n.gettext("Please enter a valid realm name. It may contain characters, numbers and '_-.'.")
+);
+
+jQuery.validator.addMethod("resolvername", function(value, element, param){
+    return value.match(/^[a-zA-z0-9_\-]+$/i);
+    },
+    i18n.gettext("Please enter a valid resolver name. It may contain characters, numbers and '_-'.")
+);
+
+jQuery.validator.addMethod("ldap_uri", function(value, element, param){
+    return value.match(param);
+    },
+    i18n.gettext("Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://")
+);
+
+// LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
+jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
+    return value.match(/(\(\S+=\S+\))+/);
+    },
+    i18n.gettext("Please enter a valid searchfilter like this: (sAMAccountName=*)(objectClass=user)")
+);
+
+// LDAPFILTER: "(&(sAMAccountName=%s)(objectClass=user))"
+jQuery.validator.addMethod("ldap_userfilter", function(value, element, param){
+    return value.match(/\(\&(\(\S+=\S+\))+\)/);
+    },
+    i18n.gettext("Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)(objectClass=user))")
+);
+
+jQuery.validator.addMethod("ldap_mapping", function(value, element, param){
+    return value.match(/{.+}/);
+    },
+    i18n.gettext('Please enter a valid searchfilter like this: \
+    { "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" \
+    : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }')
+);
+
+jQuery.validator.addMethod("ldap_uidtype", function(value,element,param){
+    return value.match(/.*/);
+    },
+    i18n.gettext('Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or GUID')
+);
+
+jQuery.validator.addMethod("sql_driver", function(value, element, param){
+    return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(ibm_db_sa\+pyodbc)/);
+    }, 
+    i18n.gettext("Please enter a valid driver specification like: mysql, postgres, mssql, oracle or ibm_db_sa+pyodbc")
+);
+
+jQuery.validator.addMethod("sql_mapping", function(value, element, param){
+    return value.match(/{.+}/);
+    },
+    i18n.gettext('Please enter a valid searchfilter like this: \
+    { "username": "usercolumn", "password":"pw", "salt": "salt", "phone" : "telephoneNumber", "mobile" \
+    : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }')
+);
 
 
 // We need this dialogs globally, so that we do not create more than one instance!
@@ -2948,14 +3010,6 @@ $(document).ready(function(){
             do_dialog_icons();
         }
     });
-    jQuery.validator.addMethod("realmname", function(value, element, param){
-        return value.match(/^[a-zA-z0-9_\-\.]+$/i);
-    }, "Please enter a valid realm name. It may contain characters, numbers and '_-.'.");
-
-    jQuery.validator.addMethod("resolvername", function(value, element, param){
-        return value.match(/^[a-zA-z0-9_\-]+$/i);
-    }, "Please enter a valid resolver name. It may contain characters, numbers and '_-'.");
-
 
     $("#form_realmconfig").validate({
         rules: {
@@ -4233,9 +4287,6 @@ function realm_edit(name){
     $dialog_edit_realms.dialog("option", "title", "Edit Realm " + realm);
     $dialog_edit_realms.dialog('open');
 
-    jQuery.validator.addMethod("realmname", function(value, element, param){
-        return value.match(/^[a-zA-Z0-9_\-\.]+$/i);
-    }, "Please enter a valid realm name. It may contain characters, numbers and '_-.'.");
 
 
     $("#form_realmconfig").validate({
@@ -4315,33 +4366,7 @@ function resolver_ldap(name){
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');
 
-    jQuery.validator.addMethod("ldap_uri", function(value, element, param){
-        return value.match(param);
-    }, "Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://");
 
-    jQuery.validator.addMethod("resolvername", function(value, element, param){
-        return value.match(/^[a-z0-9_\-]+$/i);
-    }, "Please enter a valid resolver name. It may contain characters, numbers and '_-'.");
-
-    // LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
-    jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
-        return value.match(/(\(\S+=\S+\))+/);
-    }, "Please enter a valid searchfilter like this: (sAMAccountName=*)(objectClass=user)");
-
-    // LDAPFILTER: "(&(sAMAccountName=%s)(objectClass=user))"
-    jQuery.validator.addMethod("ldap_userfilter", function(value, element, param){
-        return value.match(/\(\&(\(\S+=\S+\))+\)/);
-    }, "Please enter a valid searchfilter like this: (&(sAMAccountName=%s)(objectClass=user))");
-
-    jQuery.validator.addMethod("ldap_mapping", function(value, element, param){
-        return value.match(/{.+}/);
-    }, 'Please enter a valid searchfilter like this: \
-        { "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" \
-        : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
-    jQuery.validator.addMethod("ldap_uidtype", function(value,element,param){
-        return value.match(/.*/);
-    }, 'Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or GUID'
-    );
     $("#form_ldapconfig").validate({
         rules: {
             ldap_uri: {
@@ -4372,6 +4397,7 @@ function resolver_ldap(name){
             },
             ldap_mapping: {
                 required: true,
+                valid_json: true,
                 minlength: 5,
                 ldap_mapping: true
             },
@@ -4447,19 +4473,6 @@ function resolver_sql(name){
 
     $dialog_sql_resolver.dialog('open');
 
-    jQuery.validator.addMethod("resolvername", function(value, element, param){
-        return value.match(/^[a-zA-Z0-9_\-]+$/i);
-    }, "Please enter a valid resolver name. It may contain characters, numbers and '_-'.");
-
-    jQuery.validator.addMethod("sql_driver", function(value, element, param){
-        return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(sqlite)|(ibm_db_sa\+pyodbc)/);
-    }, "Please enter a valid driver specification like: mysql, postgres, mssql, oracle, sqlite or ibm_db_sa+pyodbc");
-
-    jQuery.validator.addMethod("sql_mapping", function(value, element, param){
-        return value.match(/{.+}/);
-    }, 'Please enter a valid searchfilter like this: \
-        { "username": "usercolumn", "password":"pw", "salt": "salt", "phone" : "telephoneNumber", "mobile" \
-        : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
 
     $("#form_sqlconfig").validate({
         rules: {
@@ -4483,6 +4496,7 @@ function resolver_sql(name){
                 number: true
             },
             sql_mapping: {
+                valid_json: true,
                 required: true,
                 minlength: 5,
                 sql_mapping: true

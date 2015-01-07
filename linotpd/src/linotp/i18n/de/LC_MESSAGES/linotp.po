@@ -22,13 +22,13 @@
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
-# linotp@lsexperts.de <>, 2014.
+# linotp@lsexperts.de <>, 2014, 2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2014-11-24 16:16+0100\n"
+"PO-Revision-Date: 2015-01-07 17:47+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -36,10 +36,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-
-#, python-format
-msgid "audit/search failed: %s"
-msgstr "Fehler bei der Suche im Audit Log: %s"
 
 #, python-format
 msgid "Error: %s"
@@ -51,17 +47,6 @@ msgstr "Der Token den Sie zuweisen wollen, ist nicht in Ihrem Realm enthalten!"
 msgid "The token is already assigned to another user."
 msgstr "Der Token ist bereits einem anderen Benutzer zugewiesen."
 
-msgid "getotp is not activated."
-msgstr "'getotp' ist nicht aktiv"
-
-#, python-format
-msgid "The serial %s does not belong to user %s@%s"
-msgstr "Die Seriennummer %s gehört nicht zu dem Benutzer %s@%s"
-
-#, python-format
-msgid "selfservice/usergetmultiotp failed: %s"
-msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %s"
-
 #, python-format
 msgid ""
 "valid types are 'oathtoken' and 'googleauthenticator' and "
@@ -69,6 +54,24 @@ msgid ""
 msgstr ""
 "Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
 "'googleauthenticator_time'. Angegeben wurde %s"
+
+msgid "getotp is not activated."
+msgstr "'getotp' ist nicht aktiv"
+
+#, python-format
+msgid "The serial %s does not belong to user %s@%s"
+msgstr "Die Seriennummer %s gehört nicht zu dem Benutzer %s@%s"
+
+msgid "see policy defintion."
+msgstr "siehe Richtliniendefinition."
+
+#, python-format
+msgid "selfservice/usergetmultiotp failed: %s"
+msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %s"
+
+#, python-format
+msgid "audit/search failed: %s"
+msgstr "Fehler bei der Suche im Audit Log: %s"
 
 #, python-format
 msgid "valid types are 'ocra'. You provided %s"
@@ -142,6 +145,43 @@ msgstr "Der Pin beinhaltet Sonderzeichen obwohl dies nicht so sein sollte (%s)"
 msgid "The PIN contains other characters, although it should not! (%s)"
 msgstr ""
 "Der Pin beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s definiert."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s im Realm %s definiert."
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
+
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr ""
+"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
+"ausrollen."
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr ""
+"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
+"ggf. die Richtlinien."
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr ""
+"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr ""
@@ -248,12 +288,6 @@ msgid "You do not have the administrative right to init token %s of type %s."
 msgstr ""
 "Sie haben nicht die administrativen Rechte um den Token %s vom Typ %s "
 "auszurollen."
-
-msgid ""
-"You may not enroll any more tokens. Your maximum token number is reached!"
-msgstr ""
-"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
-"ausrollen."
 
 #, python-format
 msgid ""
@@ -426,37 +460,6 @@ msgstr ""
 "dazu ein Richtlinie mit 'scope=audit' und 'action=view'."
 
 #, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s definiert."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s im Realm %s definiert."
-
-msgid "The policy settings do not allow you to issue this request!"
-msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
-
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
-"ggf. die Richtlinien."
-
-msgid "The policy settings do not allow you to request a serial by OTP!"
-msgstr ""
-"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
-
-#, python-format
-msgid "Unknown method in selfservice: %s"
-msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
-
-#, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
 msgstr ""
 "Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die System "
@@ -536,11 +539,14 @@ msgstr "E-Mail OTP Token"
 msgid "E-mail provider config"
 msgstr "E-Mail Konfiguration"
 
-msgid "E-mail provider"
-msgstr "E-Mail Provider"
+msgid "Provider"
+msgstr "Provider"
 
-msgid "E-mail challenge validity (sec)"
-msgstr "Gültigkeit von E-Mail Challenge (Sek.)"
+msgid "Provider config"
+msgstr "Provider Konfiguration"
+
+msgid "Challenge validity (sec)"
+msgstr "E-Mail Challenge Gültigkeit (Sek.)"
 
 msgid "Time between e-mails (sec)"
 msgstr "Zeit zwischen E-Mails (Sek.)"
@@ -961,11 +967,11 @@ msgstr "SMS OTP Token"
 msgid "SMS Provider Config"
 msgstr "SMS Konfiguration"
 
-msgid "SMS Provider"
-msgstr "SMS Provider"
+msgid "Provider Config"
+msgstr "Provider Konfiguration"
 
-msgid "SMS Timeout"
-msgstr "SMS Timeout"
+msgid "Timeout"
+msgstr "Timeout"
 
 msgid "Time between SMS (sec.)"
 msgstr "Zeit zwischen SMS (Sek.)"
@@ -1037,24 +1043,24 @@ msgstr "TOTP Token Einstellungen"
 msgid "TOTP settings"
 msgstr "TOTP Einstellungen"
 
-msgid "TOTP time Step"
-msgstr "TOTP Zeitschritt"
+msgid "time step"
+msgstr "Zeitschritt"
 
 msgid "This is the time step for time based tokens. Usually this is 30 or 60."
 msgstr ""
 "Dies ist der Zeitschritt bei zeitbasierten Token. Dies sind gewöhnlich 30 "
 "oder 60 Sekunden."
 
-msgid "TOTP time Shift"
-msgstr "TOTP Zeitversatz"
+msgid "time offset"
+msgstr "Zeitversatz"
 
 msgid "This is the default time shift of the server. This should be 0."
 msgstr ""
 "Dies ist der standardmäßige Zeitversatz um den die Serveruhr und die "
 "Tokenuhr verschoben sind. Dies sollte 0 sein."
 
-msgid "TOTP time window"
-msgstr "TOTP Zeitfenster"
+msgid "time lookup window"
+msgstr "Zeitfenster"
 
 msgid ""
 "This is the time LinOTP will calculate before and after the current time. A "
@@ -1163,6 +1169,84 @@ msgstr "Yubikey Token ID"
 
 msgid "enroll yubico token"
 msgstr "Yubikey ausrollen"
+
+msgid "Not a valid json string!"
+msgstr "Kein gültiger JSON Text!"
+
+msgid ""
+"Please enter a valid realm name. It may contain characters, numbers and "
+"'_-.'."
+msgstr ""
+"Bitten geben Sie einen gültige Realmnamen ein. Dieser darf nur aus "
+"Buchstaben, Ziffern und '_-.' bestehen."
+
+msgid ""
+"Please enter a valid resolver name. It may contain characters, numbers and "
+"'_-'."
+msgstr ""
+"Bitten geben Sie eine gültige Resolvernamen ein. Diese darf aus Buchstaben, "
+"Ziffern und '_-.' bestehen."
+
+msgid ""
+"Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://"
+msgstr ""
+"Bitte geben Sie eine gültige LDAP URI ein, die mit ldap:// oder ldaps:// "
+"anfängt."
+
+msgid ""
+"Please enter a valid searchfilter like this: (sAMAccountName=*)"
+"(objectClass=user)"
+msgstr ""
+"Bitte geben sie einen gültigen LDAP Suchfilter ein, wie: (sAMAccountName=*)"
+"(objectClass=user)"
+
+#, python-format
+msgid ""
+"Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
+"(objectClass=user))"
+msgstr ""
+"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: (&"
+"(sAMAccountName=%s)(objectClass=user))"
+
+msgid ""
+"Please enter a valid searchfilter like this: \n"
+"    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+"\"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
+msgstr ""
+"Bitte geben sie einen gültigen LDAP Suchfilter ein, wie:\n"
+"    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+"\"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
+
+msgid ""
+"Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or "
+"GUID"
+msgstr ""
+"Bitte geben sie die UID (Uniq Identifier) des LDAP Servers z.B. DN, "
+"entryUUID, objectGUID oder GUID"
+
+msgid ""
+"Please enter a valid driver specification like: mysql, postgres, mssql, "
+"oracle or ibm_db_sa+pyodbc"
+msgstr ""
+"Bitte geben sie einen gültigen Treber an, wie: mysql, postgres, mssql, "
+"oracle oder ibm_db_sa+pyodbc"
+
+msgid ""
+"Please enter a valid searchfilter like this: \n"
+"    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
+"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
+msgstr ""
+"Bitte geben sie einen gültigen Suchfilter ein, wie z.B.: \n"
+"    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
+"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
 
 msgid "Issuer"
 msgstr "Aussteller"
@@ -2304,9 +2388,6 @@ msgstr "Bind DN"
 msgid "Bind Password"
 msgstr "Bind Passwort"
 
-msgid "Timeout"
-msgstr "Timeout"
-
 msgid "Sizelimit"
 msgstr "Größenlimit"
 
@@ -2717,9 +2798,6 @@ msgstr "Authentisierungszähler Maximum"
 msgid "time window"
 msgstr "Zeitfenster"
 
-msgid "time step"
-msgstr "Zeitschritt"
-
 msgid "time shift"
 msgstr "Zeitversatz"
 
@@ -3021,6 +3099,21 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "E-mail provider"
+#~ msgstr "E-Mail Provider"
+
+#~ msgid "SMS Timeout"
+#~ msgstr "SMS Timeout"
+
+#~ msgid "TOTP time Step"
+#~ msgstr "TOTP Zeitschritt"
+
+#~ msgid "TOTP time Shift"
+#~ msgstr "TOTP Zeitversatz"
+
+#~ msgid "TOTP time window"
+#~ msgstr "TOTP Zeitfenster"
 
 #~ msgid ""
 #~ "You are using the open source version with community support. For "
