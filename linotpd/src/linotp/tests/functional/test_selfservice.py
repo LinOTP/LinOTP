@@ -65,7 +65,7 @@ class TestSelfserviceController(TestController):
         '''
         self.createPolicy("history")
 
-        response = self.app.get(url(controller='selfservice', action='userhistory'),
+        response = self.app.get(url(controller='userservice', action='history'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
         assert '"rows": [' in response
@@ -79,14 +79,14 @@ class TestSelfserviceController(TestController):
         '''
         Selfservice: Testing user reset
         '''
-        response = self.app.get(url(controller='selfservice', action='userreset'),
+        response = self.app.get(url(controller='userservice', action='reset'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
         assert '"status": false' in response
         assert '"code": -311' in response
 
         self.createPolicy("reset")
-        response = self.app.get(url(controller='selfservice', action='userreset'),
+        response = self.app.get(url(controller='userservice', action='reset'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
         assert 'Missing parameter: ' in response
@@ -108,7 +108,7 @@ class TestSelfserviceController(TestController):
             print response
             assert '"value": false' in response
 
-        response = self.app.get(url(controller='selfservice', action='userreset'),
+        response = self.app.get(url(controller='userservice', action='reset'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'reset01'})
         print response
@@ -130,14 +130,14 @@ class TestSelfserviceController(TestController):
         '''
         Selfservice: Testing user resync
         '''
-        response = self.app.get(url(controller='selfservice', action='userresync'),
+        response = self.app.get(url(controller='userservice', action='resync'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
         assert '"status": false' in response
         assert '"code": -311' in response
 
         self.createPolicy("resync")
-        response = self.app.get(url(controller='selfservice', action='userresync'),
+        response = self.app.get(url(controller='userservice', action='resync'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
         assert 'Missing parameter' in response
@@ -153,7 +153,7 @@ class TestSelfserviceController(TestController):
         print response
         assert '"status": true' in response
 
-        response = self.app.get(url(controller='selfservice', action='userresync'),
+        response = self.app.get(url(controller='userservice', action='resync'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'XXXX',
                                         "otp1": "359864",
@@ -162,7 +162,7 @@ class TestSelfserviceController(TestController):
         assert '"status": false' in response
         assert 'no token found!' in response
 
-        response = self.app.get(url(controller='selfservice', action='userresync'),
+        response = self.app.get(url(controller='userservice', action='resync'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'token01',
                                         "otp1": "885497",
@@ -183,7 +183,7 @@ class TestSelfserviceController(TestController):
         Selfservice: setting mOTP PIN
         '''
 
-        response = self.app.get(url(controller='selfservice', action='usersetmpin'),
+        response = self.app.get(url(controller='userservice', action='setmpin'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'XXXX',
                                         'pin': '1234'})
@@ -192,7 +192,7 @@ class TestSelfserviceController(TestController):
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("setMOTPPIN")
-        response = self.app.get(url(controller='selfservice', action='usersetmpin'),
+        response = self.app.get(url(controller='userservice', action='setmpin'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
         assert 'Missing parameter: \'pin\'' in response
@@ -209,7 +209,7 @@ class TestSelfserviceController(TestController):
         print response
         assert '"status": true' in response
 
-        response = self.app.get(url(controller='selfservice', action='usersetmpin'),
+        response = self.app.get(url(controller='userservice', action='setmpin'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'token01',
                                         'pin': '1234'})
@@ -235,7 +235,7 @@ class TestSelfserviceController(TestController):
         print response
         assert '"status": true' in response
 
-        response = self.app.get(url(controller='selfservice', action='usersetpin'),
+        response = self.app.get(url(controller='userservice', action='setpin'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'spass01',
                                         'pin': '1234'})
@@ -244,14 +244,14 @@ class TestSelfserviceController(TestController):
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("setOTPPIN")
-        response = self.app.get(url(controller='selfservice', action='usersetpin'),
+        response = self.app.get(url(controller='userservice', action='setpin'),
                                 params={'selftest_user': 'root@myDefRealm'})
         print response
         assert 'Missing parameter: \'userpin\'' in response
         assert '"code": 905' in response
 
 
-        response = self.app.get(url(controller='selfservice', action='usersetpin'),
+        response = self.app.get(url(controller='userservice', action='setpin'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'spass01',
                                         'userpin': 'secretPin'})
@@ -283,7 +283,7 @@ class TestSelfserviceController(TestController):
         '''
         self.deleteToken('token01')
 
-        response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'),
+        response = self.app.get(url(controller='userservice', action='getSerialByOtp'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'type': 'hmac',
                                         'otp': '885497'})
@@ -300,7 +300,7 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
 
         self.createPolicy("getserial")
-        response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'),
+        response = self.app.get(url(controller='userservice', action='getSerialByOtp'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'type': 'hmac',
                                         'otp': '459812'})
@@ -315,7 +315,7 @@ class TestSelfserviceController(TestController):
         assert '"value": 1' in response
 
         # NOw the token is found
-        response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'),
+        response = self.app.get(url(controller='userservice', action='getSerialByOtp'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'type': 'hmac',
                                         'otp': '459812'})
@@ -345,28 +345,28 @@ class TestSelfserviceController(TestController):
         assert '"value": 1' in response
 
         # Now try to assign
-        response = self.app.get(url(controller='selfservice', action='userassign'),
+        response = self.app.get(url(controller='userservice', action='assign'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'token01'})
         print response
         assert '"message": "ERR410: ' in response
 
         self.createPolicy("assign")
-        response = self.app.get(url(controller='selfservice', action='userassign'),
+        response = self.app.get(url(controller='userservice', action='assign'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'token01'})
         print response
         assert '"assign token": true' in response
 
         # unassign
-        response = self.app.get(url(controller='selfservice', action='userunassign'),
+        response = self.app.get(url(controller='userservice', action='unassign'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'token01'})
         print response
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!",' in response
 
         self.createPolicy("unassign")
-        response = self.app.get(url(controller='selfservice', action='userunassign'),
+        response = self.app.get(url(controller='userservice', action='unassign'),
                                 params={'selftest_user': 'root@myDefRealm',
                                         'serial': 'token01'})
         print response
@@ -399,14 +399,14 @@ class TestSelfserviceController(TestController):
         print response
         assert '"status": true' in response
 
-        response = self.app.get(url(controller='selfservice', action='userdelete'),
+        response = self.app.get(url(controller='userservice', action='delete'),
                                 params={'serial': 'token01',
                                         'selftest_user': 'root@myDefRealm'})
         print response
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("delete")
-        response = self.app.get(url(controller='selfservice', action='userdelete'),
+        response = self.app.get(url(controller='userservice', action='delete'),
                                 params={'serial': 'token01',
                                         'selftest_user': 'root@myDefRealm'})
         print response
@@ -434,14 +434,14 @@ class TestSelfserviceController(TestController):
         assert '"status": true' in response
 
         # disable
-        response = self.app.get(url(controller='selfservice', action='userdisable'),
+        response = self.app.get(url(controller='userservice', action='disable'),
                                 params={'serial': 'token01',
                                         'selftest_user': 'root@myDefRealm'})
         print response
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!",' in response
 
         self.createPolicy("disable")
-        response = self.app.get(url(controller='selfservice', action='userdisable'),
+        response = self.app.get(url(controller='userservice', action='disable'),
                                 params={'serial': 'token01',
                                         'selftest_user': 'root@myDefRealm'})
         print response
@@ -455,14 +455,14 @@ class TestSelfserviceController(TestController):
 
         # now enable again
 
-        response = self.app.get(url(controller='selfservice', action='userenable'),
+        response = self.app.get(url(controller='userservice', action='enable'),
                                 params={'serial': 'token01',
                                         'selftest_user': 'root@myDefRealm'})
         print response
         assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
 
         self.createPolicy("enable")
-        response = self.app.get(url(controller='selfservice', action='userenable'),
+        response = self.app.get(url(controller='userservice', action='enable'),
                                 params={'serial': 'token01',
                                         'selftest_user': 'root@myDefRealm'})
         print response
@@ -491,7 +491,7 @@ class TestSelfserviceController(TestController):
         '''
         self.deleteToken('token01')
 
-        response = self.app.get(url(controller='selfservice', action='userinit'),
+        response = self.app.get(url(controller='userservice', action='enroll'),
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
@@ -502,7 +502,7 @@ class TestSelfserviceController(TestController):
 
         self.createPolicy('enrollHMAC')
 
-        response = self.app.get(url(controller='selfservice', action='userinit'),
+        response = self.app.get(url(controller='userservice', action='enroll'),
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
@@ -523,14 +523,14 @@ class TestSelfserviceController(TestController):
         selfservice: testing user webprovision
         '''
         self.deleteToken('token01')
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'),
+        response = self.app.get(url(controller='userservice', action='webprovision'),
                                 params={'serial':'token01',
                                         'type': 'hmac',
                                         'selftest_user': 'root@myDefRealm'
                                         })
         self.assertTrue('"message": "valid types are \'oathtoken\' and \'googleauthenticator\' and \'googleauthenticator_time\'. You provided hmac",' in response,response)
 
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'),
+        response = self.app.get(url(controller='userservice', action='webprovision'),
                                 params={'serial':'token01',
                                         'type': 'googleauthenticator',
                                         'selftest_user': 'root@myDefRealm'
@@ -540,7 +540,7 @@ class TestSelfserviceController(TestController):
 
         self.createPolicy('webprovisionGOOGLE')
 
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'),
+        response = self.app.get(url(controller='userservice', action='webprovision'),
                                 params={'prefix':'LSGO',
                                         'type': 'googleauthenticator',
                                         'selftest_user': 'root@myDefRealm'

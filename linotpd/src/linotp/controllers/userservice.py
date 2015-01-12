@@ -141,6 +141,7 @@ from linotp.lib.userservice import (get_userinfo,
                                     )
 
 from linotp.lib.util import (check_selfservice_session,
+                             isSelfTest
                             )
 
 from linotp.lib.token import (checkUserPass,
@@ -150,7 +151,7 @@ from linotp.lib.token import (checkUserPass,
 
 from linotp.lib.resolver import getResolverObject
 
-
+from linotp.lib.error import ParameterError
 
 log = logging.getLogger(__name__)
 audit = config.get('audit')
@@ -184,6 +185,10 @@ class UserserviceController(BaseController):
             user_id = request.params.get('user', '')
             auth_type = "userservice"
 
+        if not user_id and isSelfTest():
+            user_id = request.params.get('selftest_user', '')
+            auth_type = "selftest"
+
         if type(user_id) == unicode:
             user_id = user_id.encode(ENCODING)
         identity = user_id.decode(ENCODING)
@@ -202,21 +207,26 @@ class UserserviceController(BaseController):
         if action not in ['auth', 'pre_context']:
             auth_type, identity = self._get_auth_user()
             if not identity:
-                abort(401, "You are not authenticated")
+                abort(401, _("You are not authenticated"))
 
             login, _foo, realm = identity.rpartition('@')
             self.authUser = User(login, realm)
 
             if auth_type == "userservice":
                 res = check_userservice_session(request, config, self.authUser, self.client)
-            else:
+            elif auth_type == 'repoze':
                 res = check_selfservice_session(request.url,
                                                        request.path,
                                                        request.cookies,
                                                        request.params
                                                        )
+            elif auth_type == 'selftest':
+                res = True
+            else:
+                abort(401, _("No valid authentication session %r") % auth_type)
+
             if not res:
-                abort(401, "No valid session")
+                abort(401, _("No valid session"))
 
         context = get_pre_context(self.client)
         self.otpLogin = context['otpLogin']
@@ -519,7 +529,11 @@ class UserserviceController(BaseController):
 
             param.update(request.params)
 
-            act = param[ "type"]
+            try:
+                act = param[ "type"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
+
             try:
                 (tok, section, scope) = act.split('.')
             except Exception:
@@ -598,17 +612,17 @@ class UserserviceController(BaseController):
 
         try:
             param.update(request.params)
-            serial = param["serial"]
-            userid = param['user']
-            login, realm = userid.split("@")
-            authUser = User(login, realm)
+            try:
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userenable', param, authUser=authUser)
+            checkPolicyPre('selfservice', 'userenable', param, authUser=self.authUser)
 
-            if (True == isTokenOwner(serial, authUser)):
+            if (True == isTokenOwner(serial, self.authUser)):
                 log.info("[userenable] user %s@%s is enabling his token with serial %s."
-                            % (authUser.login, authUser.realm, serial))
+                            % (self.authUser.login, self.authUser.realm, serial))
                 ret = enableToken(True, None, serial)
                 res["enable token"] = ret
 
@@ -653,7 +667,11 @@ class UserserviceController(BaseController):
 
         try:
             param.update(request.params)
-            serial = param["serial"]
+
+            try:
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userdisable', param,
@@ -699,7 +717,10 @@ class UserserviceController(BaseController):
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userdelete', param, self.authUser)
 
-            serial = param["serial"]
+            try:
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             if (True == isTokenOwner(serial, self.authUser)):
                 log.info("[userdelete] user %s@%s is deleting his token with serial %s."
@@ -740,8 +761,10 @@ class UserserviceController(BaseController):
         try:
             param.update(request.params)
             checkPolicyPre('selfservice', 'userreset', param, self.authUser)
-
-            serial = param["serial"]
+            try:
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             if (True == isTokenOwner(serial, self.authUser)):
                 log.info("[userreset] user %s@%s is resetting the failcounter"
@@ -786,7 +809,11 @@ class UserserviceController(BaseController):
             param.update(request.params)
             checkPolicyPre('selfservice', 'userunassign', param, self.authUser)
 
-            serial = param["serial"]
+            try:
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
+
             upin = param.get("pin", None)
 
             if (True == isTokenOwner(serial, self.authUser)):
@@ -831,9 +858,11 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'usersetpin', param, self.authUser)
-
-            userPin = param["userpin"]
-            serial = param["serial"]
+            try:
+                userPin = param["userpin"]
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             if (True == isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is setting the OTP PIN "
@@ -888,9 +917,11 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'usersetmpin', param, self.authUser)
-
-            pin = param["pin"]
-            serial = param["serial"]
+            try:
+                pin = param["pin"]
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             if (True == isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is setting the mOTP PIN"
@@ -934,9 +965,12 @@ class UserserviceController(BaseController):
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userresync', param, self.authUser)
 
-            serial = param["serial"]
-            otp1 = param["otp1"]
-            otp2 = param["otp2"]
+            try:
+                serial = param["serial"]
+                otp1 = param["otp1"]
+                otp2 = param["otp2"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             if (True == isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is resyncing his "
@@ -981,7 +1015,12 @@ class UserserviceController(BaseController):
             checkPolicyPre('selfservice', 'userassign', param, self.authUser)
 
             upin = param.get("pin", None)
-            serial = param["serial"]
+
+            try:
+                serial = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
+
 
             # check if token is in another realm
             realm_list = getTokenRealms(serial)
@@ -1056,8 +1095,11 @@ class UserserviceController(BaseController):
             # check selfservice authorization
             checkPolicyPre('selfservice', 'usergetserialbyotp', param,
                                                                 self.authUser)
+            try:
+                otp = param["otp"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            otp = param["otp"]
             ttype = param.get("type", 'hmac')
 
             c.audit['token_type'] = ttype
@@ -1099,8 +1141,11 @@ class UserserviceController(BaseController):
             # check selfservice authorization
 
             checkPolicyPre('selfservice', 'userinit', param, self.authUser)
+            try:
+                tok_type = param["type"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            tok_type = param["type"]
 
             serial = param.get('serial', None)
             prefix = param.get('prefix', None)
@@ -1285,7 +1330,9 @@ class UserserviceController(BaseController):
                             'digits':   6,
                         }
             else:
-                return sendError(response, _("valid types are 'oathtoken' and 'googleauthenticator' and 'googleauthenticator_time'. You provided %s") % type)
+                return sendError(response, _(
+                "valid types are 'oathtoken' and 'googleauthenticator' and "
+                "'googleauthenticator_time'. You provided %s") % typ)
 
             logTokenNum()
             c.audit['serial'] = serial
@@ -1296,7 +1343,9 @@ class UserserviceController(BaseController):
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
             Session.commit()
-            return sendResult(response, { 'init': ret1, 'setpin' : False, 'oathtoken' : ret})
+            return sendResult(response, {'init': ret1,
+                                         'setpin' : False,
+                                         'oathtoken' : ret})
 
         except PolicyException as pe:
             log.error("[userwebprovision] policy failed: %r" % pe)
@@ -1340,8 +1389,13 @@ class UserserviceController(BaseController):
 
         try:
             param.update(request.params)
-            serial = param["serial"]
-            count = int(param["count"])
+
+            try:
+                serial = param["serial"]
+                count = int(param["count"])
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
+
             curTime = param.get("curTime", None)
 
             if (True != isTokenOwner(serial, self.authUser)):
@@ -1483,8 +1537,11 @@ class UserserviceController(BaseController):
             # check selfservice authorization
             checkPolicyPre('selfservice', 'useractivateocratoken',
                                                     param, self.authUser)
+            try:
+                typ = param["type"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            typ = param["type"]
             if typ and typ.lower() not in ["ocra", "ocra2"]:
                 return sendError(response, _("valid types are 'ocra' "
                                              "or 'ocra2'. You provided %s")
@@ -1492,12 +1549,19 @@ class UserserviceController(BaseController):
 
             helper_param = {}
             helper_param['type'] = typ
-            helper_param['serial'] = param["serial"]
+            try:
+                helper_param['serial'] = param["serial"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             acode = param["activationcode"]
             helper_param['activationcode'] = acode.upper()
 
-            helper_param['genkey'] = param["genkey"]
+            try:
+                helper_param['genkey'] = param["genkey"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
+
 
             (ret, tokenObj) = initToken(helper_param, self.authUser)
 
@@ -1573,9 +1637,12 @@ class UserserviceController(BaseController):
             checkPolicyPre('selfservice', 'userwebprovision',
                                                     param, self.authUser)
 
-            transid = param['transactionid']
-            passw = param['pass']
-            p_serial = param['serial']
+            try:
+                transid = param['transactionid']
+                passw = param['pass']
+                p_serial = param['serial']
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             value = {}
 
@@ -1680,7 +1747,10 @@ class UserserviceController(BaseController):
 
             checkPolicyPre('selfservice', 'userwebprovision',
                                                         param, self.authUser)
-            passw = param["pass"]
+            try:
+                passw = param["pass"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
 
             transid = param.get('state', None)
             if transid is not None:
@@ -1700,7 +1770,11 @@ class UserserviceController(BaseController):
                                     % transid
 
             else:
-                param['serial'] = serial
+                try:
+                    param['serial'] = serial
+                except KeyError as exx:
+                    raise ParameterError("Missing parameter: '%s'" % exx.message)
+
 
                 tokens = getTokens4UserOrSerial(serial=serial)
                 if len(tokens) == 0 or len(tokens) > 1:
@@ -1769,9 +1843,16 @@ class UserserviceController(BaseController):
             if len(context) > 2:
                 method = context[2]
             else:
-                method = param["method"]
+                try:
+                    method = param["method"]
+                except KeyError as exx:
+                    raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            typ = param["type"]
+            try:
+                typ = param["type"]
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%s'" % exx.message)
+
             serial = param.get("serial", None)
 
             # check selfservice authorization for this dynamic method

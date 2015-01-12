@@ -808,7 +808,7 @@ class TestPolicies(TestController):
                        'otppin' : '1234',
                        'selftest_user' : 'horst@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userinit'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='enroll'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -818,7 +818,7 @@ class TestPolicies(TestController):
                        'otppin' : '1234',
                        'selftest_user' : 'postgres@myOtherRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userinit'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='enroll'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -831,7 +831,7 @@ class TestPolicies(TestController):
                        'otppin' : '1234',
                        'selftest_user' : 'horst@myMixRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userinit'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='enroll'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -843,7 +843,7 @@ class TestPolicies(TestController):
         parameters = { 'serial': 'self001',
                        'selftest_user' : 'horst@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userdisable'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='disable'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -851,7 +851,7 @@ class TestPolicies(TestController):
         parameters = { 'serial': 'self002',
                        'selftest_user' : 'postgres@myOtherRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userdisable'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='disable'), params=parameters)
 
         self.assertTrue('"disable token": 1' in response, response)
 
@@ -859,7 +859,7 @@ class TestPolicies(TestController):
         parameters = { 'serial': 'self002',
                        'selftest_user' : 'not_the_owner@myOtherRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userdisable'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='disable'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -873,7 +873,7 @@ class TestPolicies(TestController):
                        'userpin' : 'test',
                        'selftest_user' : 'horst@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -882,7 +882,7 @@ class TestPolicies(TestController):
                        'userpin' : 'test',
                        'selftest_user' : 'postgres@myOtherRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -909,21 +909,21 @@ class TestPolicies(TestController):
                        'type' : 'oathtoken',
                        'selftest_user' : 'horst@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'horst@myMixRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
         parameters = { 'type' : 'googleauthenticator',
                        'selftest_user' : 'horst@myMixRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -953,7 +953,7 @@ class TestPolicies(TestController):
         parameters = { 'serial' : 'cko_test_003',
                        'selftest_user' : 'horst@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -981,7 +981,7 @@ class TestPolicies(TestController):
         parameters = { 'serial' : 'cko_test_003',
                        'selftest_user' : 'root@myOtherRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -1003,7 +1003,7 @@ class TestPolicies(TestController):
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'user2@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -1011,7 +1011,7 @@ class TestPolicies(TestController):
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'user1@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -1067,7 +1067,7 @@ class TestPolicies(TestController):
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'other_user@myMixRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -1075,7 +1075,7 @@ class TestPolicies(TestController):
         parameters = { 'type' : 'oathtoken',
                        'selftest_user' : 'user1@myMixRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userwebprovision'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -1127,7 +1127,7 @@ class TestPolicies(TestController):
         parameters = { 'serial' : serial,
                        'selftest_user' : 'horst@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
 
         self.assertTrue('"assign token": true' in response, response)
 
@@ -1172,7 +1172,7 @@ class TestPolicies(TestController):
         parameters = { 'serial' : serial,
                        'selftest_user' : 'horst@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='userassign'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
         self.assertTrue('The token you want to assign is not contained in your realm!' in response, response)
@@ -1216,7 +1216,7 @@ class TestPolicies(TestController):
         parameters = { 'otp' : otps[3],
                        'selftest_user' : 'passthru_user1@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='getSerialByOtp'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
         self.assertTrue('The policy settings do not allow you to request a serial by OTP!' in response, response)
@@ -1236,7 +1236,7 @@ class TestPolicies(TestController):
                        'realm' : "myDefRealm",
                        'selftest_user' : 'passthru_user1@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='getSerialByOtp'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
         self.assertTrue('"serial": "oath429"' in response, response)
@@ -1244,7 +1244,7 @@ class TestPolicies(TestController):
         parameters = { 'otp' : otps[3],
                        'selftest_user' : 'passthru_user1@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usergetSerialByOtp'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='getSerialByOtp'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
         self.assertTrue('"serial": "oath429"' in response, response)
@@ -2164,7 +2164,7 @@ class TestPolicies(TestController):
                        'userpin': 'bla',
                        'selftest_user' : 'root@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -2173,7 +2173,7 @@ class TestPolicies(TestController):
                        'userpin': '12345678test',
                        'selftest_user' : 'root@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -2182,7 +2182,7 @@ class TestPolicies(TestController):
                        'userpin': '1234567',
                        'selftest_user' : 'root@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -2210,7 +2210,7 @@ class TestPolicies(TestController):
                        'userpin': '123456',
                        'selftest_user' : 'root@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -2223,7 +2223,7 @@ class TestPolicies(TestController):
                        'userpin': 'ab3456',
                        'selftest_user' : 'root@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -2250,7 +2250,7 @@ class TestPolicies(TestController):
                        'userpin': 'ab3456',
                        'selftest_user' : 'root@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": false' in response, response)
 
@@ -2262,7 +2262,7 @@ class TestPolicies(TestController):
                        'userpin': 'ab3456!!',
                        'selftest_user' : 'root@myDefRealm'
                       }
-        response = self.app.get(url(controller='selfservice', action='usersetpin'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
