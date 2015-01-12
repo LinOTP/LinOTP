@@ -33,16 +33,27 @@ import getpass
 import crypt
 import pprint
 import random
-
+import hashlib
 
 
 def usage():
     print  '''
+
+    linotp-create-pyidresolver-user: create passwd entry for user
+
     Parameter:
     -u username
     -i uid (numerical)
+    -s hash algorithm    : hash algorithm either SHA512 or SHA256
     -p password
-    -d description
+    -d description    : passwd user description
+
+    instead of the generic description (-d) you can use:
+    -f fullname
+    -l location
+    -p phone
+    -m mobile
+    -e email
     '''
 
 
@@ -51,10 +62,20 @@ def main():
     user = ""
     password = ""
     uid = ""
-    description = ""
+    description = None
+    user_description = {
+                        'full_name': '',
+                        'location': '',
+                        'phone': '',
+                        'mobile': '',
+                        'email': '',
+                        }
+    hash_type = 'SHA512'
+    ctype = '6'
+    gid = None
 
     try:
-        opts, args = getopt(sys.argv[1:], "u:i:p:hd:", ["help"])
+        opts, args = getopt(sys.argv[1:], "u:i:s:p:d:h", ["help"])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -66,10 +87,35 @@ def main():
             user = arg
         elif opt in ('-i'):
             uid = arg
+        elif opt in ('-g'):
+            gid = arg
         elif opt in ('-p'):
             password = arg
         elif opt in ('-d'):
             description = arg
+
+        # user description by parts
+        elif opt in ('-f'):
+            user_description['full_name'] = arg
+        elif opt in ('-l'):
+            user_description['location'] = arg
+        elif opt in ('-p'):
+            user_description['phone'] = arg
+        elif opt in ('-m'):
+            user_description['mobile'] = arg
+        elif opt in ('-e'):
+            user_description['email'] = arg
+
+        elif opt in ('-s'):
+            hash_type = arg.upper()
+            if hash_type not in ['SHA256', 'SHA512']:
+                usage()
+                sys.exit(1)
+            if hash_type == 'SHA512':
+                ctype='6'
+            elif hash_type == 'SHA256':
+                ctype='5'
+
         elif opt in ('-h', '--help'):
             usage()
             sys.exit(1)
@@ -77,12 +123,28 @@ def main():
     if password == "":
         password = getpass.getpass("Please enter a password: ")
 
-    # the salt are two characters from: [./a-zA-Z0-9]
-    pool = "./0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    salt = pool[random.randrange(0, len(pool))] + pool[random.randrange(0, len(pool))]
-    encryptedPW = crypt.crypt(password, salt)
+    if not description:
+        description = ("%(full_name)s,%(location)s,%(phone)s,%(mobile)s,%(email)s"
+                        % user_description)
+    # we use crypt type sha512, which is a secure and standard according to:
+    # http://security.stackexchange.com/questions/20541/insecure-versions-of-crypt-hashes
+    H = hashlib.new(hash_type)
+    hash_len = H.digest_size
 
-    gid = uid
+    # the salt characters are from: [./a-zA-Z0-9]
+    pool = "./0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    # a secure len of the salt for sha256 should as well be of 32 bytes
+    # for sha512 should as well be of 64 bytes
+    salt = pool[random.randrange(0, len(pool))]
+    for i in range(0,hash_len):
+        salt = salt + pool[random.randrange(0, len(pool))]
+
+    # now define the password format by the salt definition
+    insalt = '$%s$%s$' % (ctype, salt[0:hash_len])
+    encryptedPW = crypt.crypt(password, insalt)
+
+    if not gid:
+        gid = uid
     home = ""
     shell = ""
     print("%s:%s:%s:%s:%s:%s:%s" % (user,

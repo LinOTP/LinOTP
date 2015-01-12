@@ -253,13 +253,19 @@ def _check_hash_type(password, hash_type, hash_value):
         log.debug("[_check_hash_type] found a salted hash.")
         try:
             new_hash_type = hash_type[1:]
-            # binary hash value
-            bin_hash = base64.b64decode(hash_value)[:-4]
-            # binary salt
-            bin_salt = base64.b64decode(hash_value)[-4:]
+            # decode the base64 hash value to binary
+            bin_value = base64.b64decode(hash_value)
+
             H = hashlib.new(new_hash_type)
+            hash_len = H.digest_size
+
+            # split the hashed passowrd from the binary salt
+            bin_hash = bin_value[:hash_len]
+            bin_salt = bin_value[hash_len:]
+
             H.update(password + bin_salt)
             bin_hashed_password = H.digest()
+
             res = (bin_hashed_password == bin_hash)
         except ValueError:
             log.error("[_check_hash_type] Unsupported Hash type: %r"
