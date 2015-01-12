@@ -219,7 +219,7 @@ class UserserviceController(BaseController):
                 abort(401, "No valid session")
 
         context = get_pre_context(self.client)
-        self.secure_auth = context['secure_auth']
+        self.otpLogin = context['otpLogin']
         self.autoassign = context['autoassign']
         self.autoenroll = context['autoenroll']
 
@@ -278,7 +278,7 @@ class UserserviceController(BaseController):
         :param realm: the realm of the user
         :param password: the password for the user authentication
                          which is base32 encoded to seperate the
-                         os_passw:pin+otp in case of secure_auth
+                         os_passw:pin+otp in case of otpLogin
 
         :return: {result : {value: bool} }
         :rtype: json dict with bool value
@@ -313,8 +313,8 @@ class UserserviceController(BaseController):
 
             uid = "%s@%s" % (user.login, user.realm)
 
-            if self.secure_auth:
-                res = self._secure_auth_check(user, passw, otp)
+            if self.otpLogin:
+                res = self._otpLogin_check(user, passw, otp)
             else:
                 res = self._default_auth_check(user, passw, otp)
 
@@ -355,7 +355,7 @@ class UserserviceController(BaseController):
         res = r_obj.checkPass(uid, password)
         return res
 
-    def _secure_auth_check(self, user, password, otp):
+    def _otpLogin_check(self, user, password, otp):
         """
         secure auth requires the os password and the otp (pin+otp)
         - secure auth supports autoassignement, where the user logs in with

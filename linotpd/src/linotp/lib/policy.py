@@ -161,7 +161,7 @@ def getPolicyDefinitions(scope=""):
             'getserial': {
                 'type': 'bool',
                 'desc': 'Allow to search an unassigned token by OTP value.'},
-            'secure_auth': {
+            'otpLogin': {
                 'type': 'bool',
                 'desc': 'Requires OTP for selfservice authentication'},
             },

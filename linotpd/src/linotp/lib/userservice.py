@@ -226,7 +226,7 @@ def check_userservice_session(request, config, user, client):
 def get_pre_context(client):
     """
     get the rendering context before the login is shown, so the rendering
-    of the login page could be controlled if realm_box or secure_auth is
+    of the login page could be controlled if realm_box or otpLogin is
     defined
 
     :param client: the rendering is client dependend, so we need the info
@@ -244,15 +244,15 @@ def get_pre_context(client):
 
 
     """
-    check for secure_auth, autoassign and autoenroll in policy definition
+    check for otpLogin, autoassign and autoenroll in policy definition
     """
 
-    context['secure_auth'] = False
+    context['otpLogin'] = False
     policy = get_client_policy(client=client,
                                 scope='selfservice',
-                                action='secure_auth')
+                                action='otpLogin')
     if policy:
-        context['secure_auth'] = True
+        context['otpLogin'] = True
 
     context['autoassign'] = False
     policy = get_client_policy(client=client,
