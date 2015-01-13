@@ -25,30 +25,31 @@
 #
 """ contains utility functions """
 
-from linotp.lib.error import ParameterError
-from linotp.lib.config import getFromConfig
+import binascii
+import string
+import re
+import netaddr
 
 from pylons import request
 from pylons import config
 from pylons.controllers.util import abort
 
-import binascii
-import os
+from linotp.lib.crypt import (urandom,
+                              geturandom
+                              )
 
-import string
-from linotp.lib.crypt import urandom
-from linotp.lib.crypt import geturandom
+from linotp.lib.selftest import isSelfTest
+from linotp.lib.error import ParameterError
+from linotp.lib.config import getFromConfig
 
-import pkg_resources
-
+from linotp import (__version__ as linotp_version,
+                    __copyright__ as linotp_copyright,
+                    __product__ as linotp_product,
+                    )
+SESSION_KEY_LENGTH = 32
 
 import logging
 log = logging.getLogger(__name__)
-from linotp.lib.selftest import isSelfTest
-from netaddr import IPAddress, IPNetwork
-import re
-
-SESSION_KEY_LENGTH = 32
 
 optional = True
 required = False
@@ -57,20 +58,19 @@ def get_version_number():
     '''
     returns the linotp version
     '''
-    return pkg_resources.get_distribution("linotp").version
+    return linotp_version
 
 def get_version():
     '''
     This returns the version, that is displayed in the WebUI and self service portal.
     '''
-    version = get_version_number()
-    return "LinOTP %s" % version
+    return "%s %s" % (linotp_product, linotp_version)
 
 def get_copyright_info():
     '''
     This returns the copyright information displayed in the WebUI and selfservice portal.
     '''
-    return "2010-2014 LSE Leading Security Experts GmbH"
+    return linotp_copyright
 
 def getParam(param, which, optional=True):
     """
@@ -132,8 +132,10 @@ def generate_otpkey(key_size=20):
     return binascii.hexlify(geturandom(key_size))
 
 
-def generate_password(size=6, characters=string.ascii_lowercase + string.ascii_uppercase + string.digits):
-    return ''.join(urandom.choice(characters) for x in range(size))
+def generate_password(size=6, characters=None):
+    if not characters:
+        characters=string.ascii_lowercase + string.ascii_uppercase + string.digits
+    return ''.join(urandom.choice(characters) for _x in range(size))
 
 def check_session():
     '''
@@ -151,7 +153,7 @@ def check_session():
         if not network:
             continue
         try:
-            if IPAddress(client) in IPNetwork(network):
+            if netaddr.IPAddress(client) in netaddr.IPNetwork(network):
                 log.debug("[check_session] skipping session check since client %s in allowed: %s" % (client, no_session_clients))
                 return
         except Exception as ex:
@@ -268,7 +270,7 @@ def normalize_activation_code(activationcode, upper=True, convert_o=True, conver
     This normalizes the activation code.
     1. lower letters are capitaliezed
     2. Oh's in the last two characters are turned to zeros
-    3. zeros in in the first-2 characters are turned to Ohs
+    3. zeros before the last 2 characters are turned to Ohs
     '''
     if upper:
         activationcode = activationcode.upper()
@@ -296,14 +298,13 @@ def is_valid_fqdn(hostname, split_port=False):
 
 def remove_empty_lines(doc):
     '''
-        remove empty lines from the input document
+    remove empty lines from the input document
 
-        @param doc: documemt containing long multiline text
-        @type  doc: string
+    :param doc: documemt containing long multiline text
+    :type  doc: string
 
-        @return: data without empty lines
-        @rtype:  string
-
+    :return: data without empty lines
+    :rtype:  string
     '''
     data = '\n'.join([line for line in doc.split('\n') if line.strip() != ''])
     return data
