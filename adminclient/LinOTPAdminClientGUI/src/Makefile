@@ -82,4 +82,7 @@ ppa-preprocess:
 ppa-dev:
 	make ppa-preprocess
 	dput ppa:linotp/unstable ../linotp-adminclient-gui*_source.changes
-
+wine:
+	mkdir -p ../build
+	wine c:\\python26\\python setup.py bdist --format=wininst
+	mv dist/LinOTPAdminClientGUI*.win32.exe ../build/
