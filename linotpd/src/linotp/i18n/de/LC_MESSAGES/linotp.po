@@ -38,6 +38,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #, python-format
+msgid "audit/search failed: %s"
+msgstr "Fehler bei der Suche im Audit Log: %s"
+
+#, python-format
 msgid "Error: %s"
 msgstr "Fehler: %s"
 
@@ -47,14 +51,6 @@ msgstr "Der Token den Sie zuweisen wollen, ist nicht in Ihrem Realm enthalten!"
 msgid "The token is already assigned to another user."
 msgstr "Der Token ist bereits einem anderen Benutzer zugewiesen."
 
-#, python-format
-msgid ""
-"valid types are 'oathtoken' and 'googleauthenticator' and "
-"'googleauthenticator_time'. You provided %s"
-msgstr ""
-"Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
-"'googleauthenticator_time'. Angegeben wurde %s"
-
 msgid "getotp is not activated."
 msgstr "'getotp' ist nicht aktiv"
 
@@ -62,16 +58,17 @@ msgstr "'getotp' ist nicht aktiv"
 msgid "The serial %s does not belong to user %s@%s"
 msgstr "Die Seriennummer %s gehört nicht zu dem Benutzer %s@%s"
 
-msgid "see policy defintion."
-msgstr "siehe Richtliniendefinition."
-
 #, python-format
 msgid "selfservice/usergetmultiotp failed: %s"
 msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %s"
 
 #, python-format
-msgid "audit/search failed: %s"
-msgstr "Fehler bei der Suche im Audit Log: %s"
+msgid ""
+"valid types are 'oathtoken' and 'googleauthenticator' and "
+"'googleauthenticator_time'. You provided %s"
+msgstr ""
+"Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
+"'googleauthenticator_time'. Angegeben wurde %s"
 
 #, python-format
 msgid "valid types are 'ocra'. You provided %s"
@@ -3099,6 +3096,9 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "see policy defintion."
+#~ msgstr "siehe Richtliniendefinition."
 
 #~ msgid "E-mail provider"
 #~ msgstr "E-Mail Provider"

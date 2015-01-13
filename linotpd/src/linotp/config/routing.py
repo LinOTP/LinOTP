@@ -67,13 +67,6 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont , controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
-    remoteservice = app_conf.get('service.remoteservice', 'True') == 'True'
-    if remoteservice:
-        for cont in ['remoteservice']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
-            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
-
-
     # in case of manage, we route the default / to manage
     manage = app_conf.get('service.manage', 'True') == 'True'
     if manage:
