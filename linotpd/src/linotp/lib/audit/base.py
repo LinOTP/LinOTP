@@ -211,14 +211,17 @@ def search(param, user=None, columns=None):
     log.debug("[search] search_dict: %s" % search_dict)
 
     rp_dict = {}
-    rp_dict['page'] = param.get('page')
     page = 1
-    if param.get('page'):
+    if 'page' in param:
+        rp_dict['page'] = param.get('page')
         page = param.get('page')
 
-    rp_dict['rp'] = param.get('rp')
-    rp_dict['sortname'] = param.get('sortname')
-    rp_dict['sortorder'] = param.get('sortorder')
+    if 'rp' in param:
+        rp_dict['rp'] = param.get('rp')
+    if 'sortname' in param:
+        rp_dict['sortname'] = param.get('sortname')
+    if 'sortorder' in param:
+        rp_dict['sortorder'] = param.get('sortorder')
     log.debug("[search] rp_dict: %s" % rp_dict)
     if user:
         search_dict['user'] = user.login
