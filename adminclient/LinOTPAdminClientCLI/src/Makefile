@@ -57,7 +57,6 @@ ppa-preprocess:
 	rm -f ../*.dsc
 	rm -f ../*.changes
 	rm -f ../*.upload
-	DEBEMAIL="LSE LinOTP2 Packaging <linotp2@lsexperts.de>"	dch -i
 	rm -f ../linotp-adminclient-cli_*_source.changes
 	debuild -S
 

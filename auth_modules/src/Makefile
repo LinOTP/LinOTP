@@ -47,8 +47,8 @@ ppa-preprocess:
 	rm -f *.dsc
 	rm -f *.changes
 	rm -f *.upload
-	(cd libpam-linotp; DEBEMAIL="LSE LinOTP2 Packaging <linotp2@lsexperts.de>" dch -i; rm -f ../libpam-linotp_*_source.changes; debuild -S)
-	(cd freeradius_perl; DEBEMAIL="LSE LinOTP2 Packaging <linotp2@lsexperts.de>" dch -i; rm -f ../linotp-freeradius-perl_*.changes; debuild -S)
+	(cd libpam-linotp; rm -f ../libpam-linotp_*_source.changes; debuild -S)
+	(cd freeradius_perl; rm -f ../linotp-freeradius-perl_*.changes; debuild -S)
 
 ppa-dev:
 	make ppa-preprocess

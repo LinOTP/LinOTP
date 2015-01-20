@@ -65,7 +65,6 @@ ppa-preprocess:
 	rm -f *.dsc
 	rm -f *.changes
 	rm -f *.upload
-	DEBEMAIL="LSE LinOTP2 Packaging <linotp2@lsexperts.de>" dch -i
 	make buildtranslation
 	rm -fr linotp-build
 	mkdir -p linotp-build
