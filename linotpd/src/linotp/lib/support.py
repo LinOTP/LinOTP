@@ -98,7 +98,7 @@ def parseSupportLicense(licString):
             read_signature = 0
         else:
             if 1 == read_license:
-                licStr = licStr + l + "\n"
+                licStr = licStr + line + "\n"
                 try:
                     (key, val) = l.split("=", 2)
                     licInfo[key] = val
