@@ -1,3 +1,9 @@
+linotp (2.7.1.1-1~precise) precise; urgency=low
+
+  * Bug Fix: Don't ignore whitespace in license file when calculating signature
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 21 Jan 2015 09:06:25 +0100
+
 linotp (2.7.1-1~precise) precise; urgency=low
 
   Enhancements:
