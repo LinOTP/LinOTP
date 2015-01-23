@@ -30,7 +30,7 @@ except ImportError: # pragma: no cover
     import simplejson as json
 
 
-import linotp
+import linotp.lib.crypt
 import logging
 log = logging.getLogger(__name__)
 
