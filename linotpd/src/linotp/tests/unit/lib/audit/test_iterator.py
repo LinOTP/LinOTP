@@ -17,10 +17,6 @@ try:
 except ImportError:
     import simplejson as json
 
-from linotp.lib.audit.iterator import AuditQuery
-from linotp.lib.audit.iterator import CSVAuditIterator
-from linotp.lib.audit.iterator import JSONAuditIterator
-
 
 class AuditIteratorTestCase(unittest.TestCase):
     """
@@ -34,6 +30,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         the right parameters. On a real system the call would most probably
         be received by linotp.lib.audit.SQLAudit
         """
+        from linotp.lib.audit.iterator import AuditQuery
         param = {
             'rp': u'15',
             'sortname': u'number',
@@ -64,6 +61,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         Verify searchQuery parameters.
         Search in realm, 10 per page, second page
         """
+        from linotp.lib.audit.iterator import AuditQuery
         param = {
             'rp': u'10',
             'sortname': u'number',
@@ -94,6 +92,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         Verify searchQuery parameters.
         Unicode
         """
+        from linotp.lib.audit.iterator import AuditQuery
         param = {
             'rp': u'15',
             'sortname': u'number',
@@ -124,6 +123,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         Verify searchQuery parameters.
         extended search (extsearch)
         """
+        from linotp.lib.audit.iterator import AuditQuery
         param = {
             'rp': u'15',
             'sortname': u'number',
@@ -158,6 +158,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         Verify that audit.row2dict is called when some element returned by
         the searchQuery is no dictionary
         """
+        from linotp.lib.audit.iterator import AuditQuery
         audit = MagicMock(spec=["searchQuery", "row2dict"])
         audit.searchQuery.return_value = [None, {'key': 'value'}]
         audit_query = AuditQuery({}, audit)
@@ -184,6 +185,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         Verify that if 'user' is passed in as a parameter, username and realm
         are added to the search parameters.
         """
+        from linotp.lib.audit.iterator import AuditQuery
         user = MagicMock(spec=["login", "realm"])
         user.login = "hans"
         user.realm = "myrealm"
@@ -220,6 +222,7 @@ class AuditIteratorTestCase(unittest.TestCase):
         Verify that the the JSONAuditIterator outputs the expected data given
         certain input values
         """
+        from linotp.lib.audit.iterator import (AuditQuery, JSONAuditIterator)
         param = {u'user': u'حافظ'}
         next_1 = {
             'info': u'',
@@ -317,6 +320,7 @@ u"""{ "page": 1, "rows": [ {
         Verify that the the CSVAuditIterator outputs the expected data given
         certain input values
         """
+        from linotp.lib.audit.iterator import (AuditQuery, CSVAuditIterator)
         expected_csv = \
 u""""number", "date", "sig_check", "missing_line", "action", "success", "serial", "token_type", "user", "realm", "administrator", "action_detail", "info", "linotp_server", "client", "log_level", "clearance_level"
 768, "2014-04-25 11:52:54.243084", "OK", null, "validate/check", "1", "LSSP000120D8", "spass", "حافظ", "se_realm1", "", "", "", "oldjoe", "192.168.33.44", "INFO", 0

@@ -6,10 +6,6 @@ import binascii
 from mock import MagicMock, patch
 from Crypto.Cipher import AES
 
-from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
-import linotp.lib.crypt
-import linotp.model
-
 
 def _aes_decrypt_constructor(hex_key):
     """
@@ -36,6 +32,8 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
     requiring an installed server.
     """
     def setUp(self):
+        from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
+        import linotp.lib.crypt
         # Without this logging in the tested class fails
         logging.basicConfig()
 
@@ -161,6 +159,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Verify the simple classmethods getClassType and getClassPrefix
         """
+        from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
         self.assertEqual(YubikeyTokenClass.getClassType(), "yubikey")
         self.assertEqual(YubikeyTokenClass.getClassPrefix(), "UBAM")
 
@@ -168,6 +167,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Test the classmethod getClassInfo
         """
+        from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
         full_class_info = {
             'selfservice': {},
             'description': 'Yubico token to run the AES OTP mode.',
