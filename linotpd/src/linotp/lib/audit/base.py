@@ -211,60 +211,51 @@ def search(param, user=None, columns=None):
     log.debug("[search] search_dict: %s" % search_dict)
 
     rp_dict = {}
-    rp_dict['page'] = param.get('page')
     page = 1
-    if param.get('page'):
+    if 'page' in param:
+        rp_dict['page'] = param.get('page')
         page = param.get('page')
 
-    rp_dict['rp'] = param.get('rp')
-    rp_dict['sortname'] = param.get('sortname')
-    rp_dict['sortorder'] = param.get('sortorder')
+    if 'rp' in param:
+        rp_dict['rp'] = param.get('rp')
+    if 'sortname' in param:
+        rp_dict['sortname'] = param.get('sortname')
+    if 'sortorder' in param:
+        rp_dict['sortorder'] = param.get('sortorder')
     log.debug("[search] rp_dict: %s" % rp_dict)
     if user:
         search_dict['user'] = user.login
         search_dict['realm'] = user.realm
 
-    result = audit.search(search_dict, rp_dict=rp_dict)
+    result = audit.searchQuery(search_dict, rp_dict=rp_dict)
 
     lines = []
-    if columns:
-        # In this case we have only a limited list of columns, like in
-        # the selfservice portal
-        for a in result:
-            if a.has_key('number'):
-                cell = []
-                for c in columns:
-                    cell.append(a.get(c))
-                lines.append({'id': a['number'],
-                              'cell' : cell
-                              })
-    else:
-        # Here we use all columns, that exist
-        for a in result:
-            if a.has_key('number'):
-                lines.append(
-                    { 'id' : a['number'],
-                        'cell': [
-                            a.get('number', ''),
-                            a.get('date', ''),
-                            a.get('sig_check', ''),
-                            a.get('missing_line', ''),
-                            a.get('action', ''),
-                            a.get('success', ''),
-                            a.get('serial', ''),
-                            a.get('token_type', ''),
-                            a.get('user', ''),
-                            a.get('realm', ''),
-                            a.get('administrator', ''),
-                            a.get('action_detail', ''),
-                            a.get('info', ''),
-                            a.get('linotp_server', ''),
-                            a.get('client', ''),
-                            a.get('log_level', ''),
-                            a.get('clearance_level', ''),
-                             ]
-                    }
-                )
+
+    if not columns:
+        columns = ['number', 'date', 'sig_check', 'missing_line',
+               'action', 'success', 'serial', 'token_type',
+               'user', 'realm', 'administrator', 'action_detail',
+               'info', 'linotp_server', 'client', 'log_level',
+               'clearance_level']
+
+    # In this case we have only a limited list of columns, like in
+    # the selfservice portal
+    for row in result:
+        a = dict(row.items())
+        if 'number' not in a and 'id' in a:
+            a['number'] = a['id']
+        if 'date' not in a and 'timestamp' in a:
+            a['date'] = a['timestamp']
+        if 'token_type' not in a and 'tokentype' in a:
+            a['token_type'] = a['tokentype']
+
+        cell = []
+        for colname in columns:
+            if len(a['serial']) > 0:
+                pass
+            cell.append(a.get(colname))
+        lines.append({'id': a['id'], 'cell' : cell })
+
     # get the complete number of audit logs
     total = audit.getTotal(search_dict)
 
