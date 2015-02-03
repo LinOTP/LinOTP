@@ -67,6 +67,15 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont , controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
+    # in case of support for a remote selfservice, we have to enable this hook 
+    userservice = app_conf.get('service.userservice', 'True') == 'True'
+    if userservice:
+        routeMap.connect('/userservice', controller='userservice', action='index')
+        for cont in ['userservice']:
+            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
+
     # in case of manage, we route the default / to manage
     manage = app_conf.get('service.manage', 'True') == 'True'
     if manage:

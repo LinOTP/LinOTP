@@ -346,7 +346,7 @@ class TestGetOtpController(TestController):
                       'curTime' : self.TOTPcurTime,
                       'count' : "20",
                       'selftest_user' : 'localuser@mydefrealm' }
-        response = self.app.get(url(controller='selfservice', action='usergetmultiotp'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='getmultiotp'), params=parameters)
         print "test_09: ", response
         assert '"message": "ERR410:' in response
 
@@ -368,7 +368,7 @@ class TestGetOtpController(TestController):
                       'curTime' : self.TOTPcurTime,
                       'count' : "20",
                       'selftest_user' : 'localuser@mydefrealm' }
-        response = self.app.get(url(controller='selfservice', action='usergetmultiotp'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='getmultiotp'), params=parameters)
         print response
 
         resp = loads(response.body)
@@ -392,7 +392,7 @@ class TestGetOtpController(TestController):
                       'curTime' : self.TOTPcurTime,
                       'count' : "20",
                       'selftest_user' : 'localuser@mydefrealm' }
-        response = self.app.get(url(controller='selfservice', action='usergetmultiotp'), params=parameters)
+        response = self.app.get(url(controller='userservice', action='getmultiotp'), params=parameters)
         print response
         assert '"message": "The serial hotp1 does not belong to user localuser@mydefrealm"' in response
 

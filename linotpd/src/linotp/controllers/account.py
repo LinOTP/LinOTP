@@ -80,7 +80,6 @@ class AccountController(BaseController):
         log.debug("[__before__::%r] %r" % (action, params))
 
         try:
-            self.set_language()
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
 

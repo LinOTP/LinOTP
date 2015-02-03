@@ -107,11 +107,9 @@ class AdminController(BaseController):
             audit.initialize()
             c.audit['success'] = False
             c.audit['client'] = get_client()
-            self.set_language()
             # Session handling
             check_session()
 
-            Session.commit()
             return request
 
         except Exception as exx:

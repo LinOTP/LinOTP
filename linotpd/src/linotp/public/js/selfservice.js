@@ -72,8 +72,6 @@ function alert_box(p_title, s, param1) {
                 }
             }
      });
-
-
 }
 
 
@@ -92,7 +90,7 @@ function get_selfservice_session() {
     if (document.cookie) {
         session = getcookie("linotp_selfservice");
         if (session == "") {
-            alert("there is no linotp_selfservice cookie");
+            alert(i18n.gettext("there is no linotp_selfservice cookie"));
         }
     }
     return session;
@@ -117,6 +115,58 @@ function log(text) {
     $('#logText').html(datum + ": " + text + '<br>' + $('#logText').html());
 }
 
+function run_sync_request(url,params){
+    /*
+     * run_sync_request - to submit a syncronous  http request
+     *
+     * @remark: introduced the params (:dict:) so we could switch to
+     *          a POST request, which will allow more and secure data
+     */
+    var def_resp = {
+        'result' : { 'status' : false }
+    };
+    var resp = def_resp;
+
+    params['session'] = get_selfservice_session();
+
+    try{
+        show_waiting();
+
+        resp = $.ajax({
+            url: url,
+            data : params,
+            dataType : "json",
+            cache : false,
+            async: false,
+            type: 'POST',
+            error : function(data) {
+                if (data.status == LOGIN_CODE) {
+                    alert(i18n.gettext("Your session has expired!"));
+                    location.reload();
+                    def_resp['result'] = { 'error' :
+                        { 'message' : i18n.gettext("Your session has expired!")}};
+                } else {
+                    def_resp['result'] = { 'error' :
+                        { 'message' : data.statusText}};
+                }
+                resp = def_resp;
+           },
+        }).responseJSON;
+    }
+    catch(e) {
+        alert(i18n.gettext('Error ') + e);
+        resp = def_resp;
+    }
+    finally {
+        hide_waiting();
+        if (typeof resp == 'undefined') {
+            resp = def_resp;
+        }
+        return resp;
+    }
+}
+
+
 // Old functions from the tokenhandling and prototype
 
 function resync() {
@@ -126,27 +176,24 @@ function resync() {
     var serial = $('.selectedToken').val();
 
     if (otp1 == "" || otp2 == "" || serial == "") {
-        alert("You need to select a Token and enter two OTP values.");
+        alert(i18n.gettext("You need to select a Token and enter two OTP values."));
         hide_waiting();
     } else {
-        $.post('/selfservice/userresync', {
+        var params = {
             'otp1' : otp1,
             'otp2' : otp2,
             'serial' : serial,
-            'session' : get_selfservice_session()
-        }, function(data, textStatus, XMLHttpRequest) {
-            hide_waiting();
-            if (data.result.status == false) {
-                alert("Error resyncing Token: " + data.result.error.message);
-            };
-            if (data.result.status == true) {
-                if (data.result.value['resync Token']) {
-                    alert("Token resynced successfully");
-                } else {
-                    alert("Failed to resync Token");
-                }
-            };
-        });
+        };
+        var data = run_sync_request('/userservice/resync', params);
+        if (data.result.status == true) {
+            if (data.result.value['resync Token']) {
+                alert(i18n.gettext("Token resynced successfully"));
+            } else {
+                alert(i18n.gettext("Failed to resync Token"));
+            }
+        } else {
+            alert(i18n.gettext("Error resyncing Token: ") + data.result.error.message);
+        }
     }
     return false;
 }
@@ -155,29 +202,27 @@ function assign() {
     show_waiting();
     var serial = $('#assign_serial').val();
     if (serial == "") {
-        alert("You need to enter a serial number");
+        alert(i18n.gettext("You need to enter a serial number"));
         hide_waiting();
     } else {
-        Check = confirm("You are going to assign a new token to you. Is this the correct serial: " + serial + "?");
+        Check = confirm(i18n.gettext("You are going to assign a new token to you. Is this the correct serial: ") + serial + "?");
         if (Check == false) {
             hide_waiting();
             return false;
         } else {
-            $.post('/selfservice/userassign', {
+            var params = {
                 'serial' : serial,
                 'description' : 'self assigned',
-                'session' : get_selfservice_session()
-            }, function(data, textStatus, XMLHttpRequest) {
-                hide_waiting();
-                if (data.result.status == false) {
-                    alert("Error assigning Token: " + data.result.error.message);
-                };
-                if (data.result.status == true) {
-                    alert("Token assigned successfully");
-                    showTokenlist();
-                    $('#assign_serial').val('');
-                };
-            });
+            };
+            var data = run_sync_request('/userservice/assign', params);
+
+            if (data.result.status == true) {
+                alert(i18n.gettext("Token assigned successfully"));
+                showTokenlist();
+                $('#assign_serial').val('');
+            } else {
+                alert(i18n.gettext("Error assigning Token: ") + data.result.error.message);
+            }
         } // end of else
     }
     showTokenlist();
@@ -191,27 +236,21 @@ function getserial() {
     show_waiting();
     var otp = $('#otp_serial').val();
     if (otp == "") {
-        alert("You need to enter an OTP value");
+        alert(i18n.gettext("You need to enter an OTP value"));
         hide_waiting();
     } else {
-        $.post('/selfservice/usergetSerialByOtp', {
-            'otp' : otp,
-            'session' : get_selfservice_session()
-        }, function(data, textStatus, XMLHttpRequest) {
-            hide_waiting();
-            if (data.result.status == false) {
-                alert("Error getting Serial: " + data.result.error.message);
-            };
-            if (data.result.status == true) {
-                var serial = data.result.value.serial;
-                if (serial != "") {
-                    $('#assign_serial').val(serial);
-                } else {
-                    alert("No Token with this OTP value found!");
-                }
-            };
-        });
-
+        var data = run_sync_request('/userservice/getSerialByOtp', 
+                            {'otp' : otp});
+        if (data.result.status == true) {
+            var serial = data.result.value.serial;
+            if (serial != "") {
+                $('#assign_serial').val(serial);
+            } else {
+                alert(i18n.gettext("No Token with this OTP value found!"));
+            }
+        } else {
+            alert(i18n.gettext("Error getting serial: ") + data.result.error.message);
+        }
     }
     return false;
 }
@@ -222,19 +261,14 @@ function token_call(formid, params) {
     params['session'] = get_selfservice_session();
 
     if ($('#' + formid).valid()) {
-        show_waiting();
-        $.post('/selfservice/token_call', params, function(data, textStatus, XMLHttpRequest) {
-            hide_waiting();
-            if (data.result.status == false) {
-                alert("Error calling token:" + data.result.error.message);
-            };
-            if (data.result.status == true) {
-                showTokenlist();
-            };
-        });
-        // end of get
+        var data = run_sync_request('/userservice/token_call', params)
+        if (data.result.status == true) {
+            showTokenlist();
+        } else {
+            alert(i18n.gettext("Error calling token:") + data.result.error.message);
+        }
     } else {
-        alert("Form data not valid.");
+        alert(i18n.gettext("Form data not valid."));
     }
     showTokenlist();
     return false;
@@ -253,209 +287,102 @@ function enroll_token(params) {
     if (params['description'] === undefined) {
         params['description'] = "self enrolled";
     }
-    params['session'] = get_selfservice_session();
-
-    show_waiting();
-    try {
-        $.ajax({
-            url : '/selfservice/userinit',
-            data : params,
-            dataType : "json",
-            cache : false,
-            async : false,
-            type: 'POST',
-            success : function(data) {
-                //console_log(data.result)
-                if (data.result.status == false) {
-                    alert(String.sprintf(token_enroll_fail, data.result.error.message));
-                };
-                if (data.result.status == true) {
-                    var details = '<ul>';
-                    if (data.hasOwnProperty('detail')) {
-                        var detail = data.detail;
-                        if (detail.hasOwnProperty('serial')) {
-                            details = details + '<li>Serial number: ' + detail.serial + '</li>';
-                        }
-                        if (detail.hasOwnProperty('otpkey')) {
-                            try {
-                                if (detail.hasOwnProperty('googleurl')) {
-                                    details = details + '<li> Enrollment: <br><a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
-                                    details = details + '<br><a href="' + detail.googleurl.value + '">' +
-                                                             detail.googleurl.value + '</a></li>';
-                                    details = details + '<li> Seed: ' +
-                                        detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length) + '</li>';
-                                }
-                            }
-                            catch (e){
-                                details = details + '<li> otpkey: ' + detail.otpkey + '</li>';
-                            }
-                        }
-                        if (detail.hasOwnProperty('ocraurl')) {
-                            details = details + '<li>OCRA QR Code</li>';
-                            if (detail.ocraurl.hasOwnProperty('img')) {
-                               details = details + '<p>' + detail.ocraurl.img + '</p>';
-                            }
-                        }
-
-                    }
-                    details = details + '</ul>';
-                    alert_box("Token enrollment result", String.sprintf(token_enroll_ok, details));
-                    /*
-                    * the dynamic tokens must provide a function to gather all data from the form
-                    */
-                    var functionString = "self_" + typ + '_enroll_details';
-                    var funct = window[functionString];
-                    var exi = typeof funct;
-                    if (exi == 'function') {
-                        var res = window[functionString](data);
-                    }
-                };
-            },
-            error : function(data) {
-
-                if (data.status == LOGIN_CODE) {
-                    alert("Your session has expired!");
-                    location.reload();
-                } else {
-                    alert(JSON.stringify(data));
-                }
-                //console_log(JSON.stringify(data));
+    var data = run_sync_request('/userservice/enroll',params);
+    if (data.result.status == true) {
+        var details = '<ul>';
+        if (data.hasOwnProperty('detail')) {
+            var detail = data.detail;
+            if (detail.hasOwnProperty('serial')) {
+                details = details + '<li>Serial number: ' + detail.serial + '</li>';
             }
-        });
+            if (detail.hasOwnProperty('otpkey')) {
+                try {
+                    if (detail.hasOwnProperty('googleurl')) {
+                        details = details + '<li> Enrollment: <br><a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
+                        details = details + '<br><a href="' + detail.googleurl.value + '">' +
+                                                 detail.googleurl.value + '</a></li>';
+                        details = details + '<li> Seed: ' +
+                            detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length) + '</li>';
+                    }
+                }
+                catch (e){
+                    details = details + '<li> otpkey: ' + detail.otpkey + '</li>';
+                }
+            }
+            if (detail.hasOwnProperty('ocraurl')) {
+                details = details + '<li>OCRA QR Code</li>';
+                if (detail.ocraurl.hasOwnProperty('img')) {
+                   details = details + '<p>' + detail.ocraurl.img + '</p>';
+                }
+            }
 
-    } finally {
-        hide_waiting();
-        showTokenlist();
-    }
-
-    return false;
-
-}
-
-function enroll_hotp() {
-    /*
-     * enroll the HOTP token with a given seed
-     */
-    var seed = $('#hotp_secret').val();
-    var type = "hmac";
-    var hashlib = $('#hotp_hashlib').val();
-
-    if ($('#form_enrollhotp').valid()) {
-        show_waiting();
-        $.post('/selfservice/userinit', {
-            otpkey : seed,
-            type : type,
-            desciption : "self enrolled",
-            session : get_selfservice_session(),
-            hashlib : hashlib
-        }, function(data, textStatus, XMLHttpRequest) {
-            hide_waiting();
-            if (data.result.status == false) {
-                alert("Error enrolling token:" + data.result.error.message);
-            };
-            if (data.result.status == true) {
-                alert("Token enrolled successfully");
-                showTokenlist();
-            };
-        });
-        // end of get
+        }
+        details = details + '</ul>';
+        alert_box(i18n.gettext("Token enrollment result"), 
+                    i18n.gettext("Token enrolled successfully ") + details);
+        /*
+        * the dynamic tokens must provide a function to gather all data from the form
+        */
+        var functionString = "self_" + typ + '_enroll_details';
+        var funct = window[functionString];
+        var exi = typeof funct;
+        if (exi == 'function') {
+            var res = window[functionString](data);
+        }
     } else {
-        alert("Form data not valid.");
-    }
-    return false;
-}
+        alert(i18n.gettext("Failed to enroll token: ") + data.result.error.message);
+    };
 
-function enroll_totp() {
-    /*
-     * enroll the TOTP token with a given seed
-     */
-    var seed = $('#totp_secret').val();
-    var type = "totp";
-    var hashlib = $('#totp_hashlib').val();
-    var timeStep = $('#totp_timestep').val();
-    if ($('#form_enrolltotp').valid()) {
-        show_waiting();
-        $.post('/selfservice/userinit', {
-            otpkey : seed,
-            type : type,
-            desciption : "self enrolled",
-            session : get_selfservice_session(),
-            hashlib : hashlib,
-            timeStep : timeStep
-        }, function(data, textStatus, XMLHttpRequest) {
-            hide_waiting();
-            if (data.result.status == false) {
-                alert("Error enrolling token: " + data.result.error.message);
-            };
-            if (data.result.status == true) {
-                alert("Token enrolled successfully");
-                showTokenlist();
-            };
-        });
-        // end of get
-    } else {
-        alert("Form data not valid.");
-    }
+
+    showTokenlist();
     return false;
+
 }
 
 function reset_failcounter() {
     show_waiting();
     var serial = $('.selectedToken').val();
-    $.post("/selfservice/userreset", {
-        serial : serial,
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-        if (data.result.status == false) {
-            alert("Error resetting Failcounter");
-        };
-        if (data.result.status == true) {
-            alert("Failcounter resetted successfully");
-            showTokenlist();
-            $('.selectedToken').val("");
-        };
-    });
+    var params = {serial : serial};
+
+    var data = run_sync_request("/userservice/reset", params);
+    if (data.result.status == true) {
+        alert(i18n.gettext("Failcounter resetted successfully"));
+        showTokenlist();
+        $('.selectedToken').val("");
+    } else {
+        alert(i18n.gettext("Failed to reset failcounter!\n") + data.result.error.message);
+    }
     return false;
 }
 
 function disable() {
-    show_waiting();
     var serial = $('.selectedToken').val();
-    $.post("/selfservice/userdisable", {
-        serial : serial,
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-        if (data.result.status == false) {
-            alert("Error disabling Token");
-        };
-        if (data.result.status == true) {
-            alert("Token disabled successfully");
-            showTokenlist();
-            $('.selectedToken').val("");
-        };
-    });
+    var params = { serial : serial};
+
+    var data = run_sync_request("/userservice/disable",params);
+    if (data.result.status == true) {
+        alert(i18n.gettext("Token disabled successfully"));
+        showTokenlist();
+        $('.selectedToken').val("");
+    } else {
+        alert(i18n.gettext("Error disabling Token!\n") + data.result.error.message);
+    }
     return false;
 }
 
 function enable() {
-    show_waiting();
     var serial = $('.selectedToken').val();
-    $.post("/selfservice/userenable", {
-        serial : serial,
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-        if (data.result.status == false) {
-            alert("Error enabling Token");
-        };
-        if (data.result.status == true) {
-            alert("Token enabled successfully");
-            showTokenlist();
-            $('.selectedToken').val("");
-        };
-    });
+    var param = {serial : serial };
+
+    var data = run_sync_request("/userservice/enable", param);
+    if (data.result.status == true) {
+        alert(i18n.gettext("Token enabled successfully"));
+        showTokenlist();
+        $('.selectedToken').val("");
+    } else {
+        alert(i18n.gettext("Error enabling Token!\n") + data.result.error.message);
+    }
+
     return false;
 }
 
@@ -464,163 +391,167 @@ function getotp() {
     var serial = $('.selectedToken').val();
     var count = $('#otp_count').val();
     var session = get_selfservice_session();
-    if (check_active_session()) {
-        window.open('/selfservice/usergetmultiotp?serial=' + serial + '&session=' + session + '&count=' + count + '&view=1', 'getotp_window', "status=1,toolbar=1,menubar=1");
+    var params = {'serial' :  serial,
+                   'count' : count,
+               };
+    var data = run_sync_request("/userservice/getmultiotp", params);
+    if (data.result.status == true) {
+        var ht = "<h3>" + i18n.gettext("OTP values for token ") + data.result.value.serial +"</h3>"
+        if (data.result.value.result === true) {
+            ht += "<table class='getotp'>";
+            var id_head = i18n.gettext('Time');
+            if (data.result.value.type === 'HMAC') {
+                id_head = i18n.gettext('Counter');
+            }
+            ht += "<tr><th>" + id_head + "</th>"
+            ht +="<th>" + i18n.gettext('Otp Value') +"</th></tr>";
+            var keys = Object.keys(data.result.value.otp);
+            var i = 0;
+            for (var id in keys) {
+                key = keys[id]
+                otp = data.result.value.otp[key];
+                if (i%2 == 0 ){
+                    ht += "<tr class='even'>"
+                } else {
+                    ht += "<tr class='odd'>"
+                }
+                ht += "<td>" + key + "</td><td>" + otp +"</td></tr>";
+                i++;
+            }
+            ht += "</table>";
+            alert_box("OTP Values", ht);
+        } else {
+            alert(i18n.gettext("Error getting otp values") + ":\n" + data.result.value.error);
+        }
+        showTokenlist();
+        $('.selectedToken').val("");
+    } else {
+        alert(i18n.gettext("Error getting otp values") + ":\n" + data.result.error.message);
     }
-    hide_waiting();
     return false;
 }
 
 function unassign() {
     show_waiting();
     var serial = $('.selectedToken').val();
-    $.post("/selfservice/userunassign", {
-        serial : serial,
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-        if (data.result.status == false) {
-            alert("Error unassigning Token");
-        };
-        if (data.result.status == true) {
-            alert("Token unassigned successfully");
-            showTokenlist();
-            $('.selectedToken').val("");
-        };
-    });
+    var params = {serial : serial};
+
+    var data = run_sync_request("/userservice/unassign", params);
+    if (data.result.status == true) {
+        alert(i18n.gettext("Token unassigned successfully"));
+        showTokenlist();
+        $('.selectedToken').val("");
+    } else {
+        alert(i18n.gettext("Error unassigning Token!\n") + data.result.error.message);
+    }
     return false;
 }
 
 function token_delete() {
-    show_waiting();
     var serial = $('.selectedToken').val();
-    $.post("/selfservice/userdelete", {
-        serial : serial,
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-        if (data.result.status == false) {
-            alert("Error deleting Token");
-        };
-        if (data.result.status == true) {
-            alert("Token deleted successfully");
-            showTokenlist();
-            $('.selectedToken').val("");
-        };
-    });
+    var params = {serial : serial};
+
+    var data = run_sync_request("/userservice/delete", params);
+    if (data.result.status == true) {
+        alert(i18n.gettext("Token deleted successfully"));
+        showTokenlist();
+        $('.selectedToken').val("");
+    } else {
+        alert(i18n.gettext("Failed to delete token!\n") + data.result.error.message);
+    }
     return false;
 }
 
 function provisionOath() {
     show_waiting();
-    $.post("/selfservice/userwebprovision", {
-        'type' : 'oathtoken',
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-        if (data.result.status == true) {
-            if (data.result.value.init == true) {
-                // The token was successfully initialized and we will display the url
-                showTokenlist();
-                //$('#oath_info').hide();
-                var url = data.result.value.oathtoken.url;
-                var img = data.result.value.oathtoken.img;
-                $('#oath_link').attr("href", url);
-                $('#oath_qr_code').html(img);
-                $('#provisionresultDiv').show();
-                $('#qr_code_iphone_download_oath').hide();
-            }
-        } else {
-            alert("Failed to enroll token!\n" + data.result.error.message);
+    var params = {'type' : 'oathtoken'}
+    var data = run_sync_request("/userservice/webprovision", params);
+    if (data.result.status == true) {
+        if (data.result.value.init == true) {
+            // The token was successfully initialized and we will display the url
+            showTokenlist();
+            //$('#oath_info').hide();
+            var url = data.result.value.oathtoken.url;
+            var img = data.result.value.oathtoken.img;
+            $('#oath_link').attr("href", url);
+            $('#oath_qr_code').html(img);
+            $('#provisionresultDiv').show();
+            $('#qr_code_iphone_download_oath').hide();
         }
-    });
+    } else {
+        alert(i18n.gettext("Failed to enroll token!\n") + data.result.error.message);
+    }
 }
 
 function provisionOcra() {
-    show_waiting();
+
     var acode = $('#activationcode').val();
     var serial = $('#serial').val();
     var activation_fail = $('#ocra_activate_fail').val();
     var genkey = 1;
 
-    params = {
+    var params = {
         'type' : 'ocra',
         'serial' : serial,
         'genkey' : 1,
         'activationcode' : acode,
-        'session' : get_selfservice_session()
     };
-
-    $.post("/selfservice/useractivateocratoken", params, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-
-        if (data.result.status == true) {
-            if (data.result.value.activate == true) {
-                // The token was successfully initialized and we will display the url
-                showTokenlist();
-                // console_log(data.result.value)
-                var img = data.result.value.ocratoken.img;
-                var url = data.result.value.ocratoken.url;
-                var trans = data.result.value.ocratoken.transaction;
-                $('#ocra_link').attr("href", url);
-                $('#ocra_qr_code').html(img);
-                $('#qr_activate').hide();
-                //$('#activationcode').attr("disabled","disabled");
-                $('#transactionid').attr("value", trans);
-                $('#qr_finish').show();
-                $('#qr_confirm1').show();
-                $('#qr_confirm2').show();
-            }
-        } else {
-            alert(activation_fail + " \n" + data.result.error.message);
+    var data = run_sync_request("/userservice/activateocratoken", params);
+    if (data.result.status == true) {
+        if (data.result.value.activate == true) {
+            // The token was successfully initialized and we will display the url
+            showTokenlist();
+            // console_log(data.result.value)
+            var img = data.result.value.ocratoken.img;
+            var url = data.result.value.ocratoken.url;
+            var trans = data.result.value.ocratoken.transaction;
+            $('#ocra_link').attr("href", url);
+            $('#ocra_qr_code').html(img);
+            $('#qr_activate').hide();
+            //$('#activationcode').attr("disabled","disabled");
+            $('#transactionid').attr("value", trans);
+            $('#qr_finish').show();
+            $('#qr_confirm1').show();
+            $('#qr_confirm2').show();
         }
-    });
+    } else {
+        alert(i18n.gettext("Failed to activate token! \n") + data.result.error.message);
+    }
 }
 
 function finishOcra() {
-    show_waiting();
     var trans = $('#transactionid').val();
     var serial = $('#serial').val();
     var ocra_check = $('#ocra_check').val();
     var ocra_finish_ok = $('#ocra_finish_ok').val();
     var ocra_finish_fail = $('#ocra_finish_fail').val();
 
-    $.post("/selfservice/userfinshocratoken", {
+    var params = {
         'type' : 'ocra',
         'serial' : serial,
         'transactionid' : trans,
         'pass' : ocra_check,
         'from' : 'finishOcra',
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-
-        //console_log(data.result)
-
-        if (data.result.status == true) {
-            // The token was successfully initialized and we will display the url
-            // if not (false) display an ocra_finish_fail message for retry
-            showTokenlist();
-            if (data.result.value.result == false) {
-                alert(ocra_finish_fail);
-            } else {
-                alert(String.sprintf(ocra_finish_ok, serial));
-                $('#qr_completed').show();
-                $('#qr_finish').hide();
-                //$('#ocra_check').attr("disabled","disabled");
-                $('#ocra_qr_code').html('<div/>');
-                $('#qr_completed').html(String.sprintf(ocra_finish_ok, serial));
-            }
+    }
+    var data = run_sync_request("/userservice/finshocratoken", params);
+    if (data.result.status == true) {
+        // The token was successfully initialized and we will display the url
+        // if not (false) display an ocra_finish_fail message for retry
+        showTokenlist();
+        if (data.result.value.result == false) {
+            alert(ocra_finish_fail);
         } else {
-            alert("Failed to enroll token!\n" + data.result.error.message);
+            alert(String.sprintf(ocra_finish_ok, serial));
+            $('#qr_completed').show();
+            $('#qr_finish').hide();
+            //$('#ocra_check').attr("disabled","disabled");
+            $('#ocra_qr_code').html('<div/>');
+            $('#qr_completed').html(String.sprintf(ocra_finish_ok, serial));
         }
-    });
-
+    } else {
+        alert(i18n.gettext("Failed to enroll token!\n") + data.result.error.message);
+    }
 }
-
-
-
-
 
 
 function provisionGoogle() {
@@ -629,27 +560,23 @@ function provisionGoogle() {
     if ($('#google_type').val() == "totp") {
         type = "googleauthenticator_time";
     }
-    $.post("/selfservice/userwebprovision", {
-        "type" : type,
-        'session' : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        hide_waiting();
-        if (data.result.status == true) {
-            if (data.result.value.init == true) {
-                showTokenlist();
-                // The token was successfully initialized and we will display the url
-                //var qr_code = generate_qrcode(10, data.result.value.oathtoken.url);
-                var url = data.result.value.oathtoken.url;
-                var img = data.result.value.oathtoken.img;
-                $('#google_link').attr("href", url);
-                $('#google_qr_code').html(img);
-                $('#provisionGoogleResultDiv').show();
-                $('#qr_code_iphone_download').hide();
-            }
-        } else {
-            alert("Failed to enroll token!\n" + data.result.error.message);
+    var params = {"type" : type};
+    var data = run_sync_request("/userservice/webprovision", params);
+    if (data.result.status == true) {
+        if (data.result.value.init == true) {
+            showTokenlist();
+            // The token was successfully initialized and we will display the url
+            //var qr_code = generate_qrcode(10, data.result.value.oathtoken.url);
+            var url = data.result.value.oathtoken.url;
+            var img = data.result.value.oathtoken.img;
+            $('#google_link').attr("href", url);
+            $('#google_qr_code').html(img);
+            $('#provisionGoogleResultDiv').show();
+            $('#qr_code_iphone_download').hide();
         }
-    });
+    } else {
+        alert(i18n.gettext("Failed to enroll token!\n") + data.result.error.message);
+    }
 }
 
 function setpin() {
@@ -665,21 +592,19 @@ function setpin() {
         alert(setpin_failed);
         hide_waiting();
     } else {
-        $.post('/selfservice/usersetpin', {
+        var params = {
             userpin : pin1,
             serial : serial,
-            session : get_selfservice_session()
-        }, function(data, textStatus, XMLHttpRequest) {
-            hide_waiting();
-            if (data.result.status == false) {
-                alert(setpin_error + data.result.error.message);
-            };
-            if (data.result.status == true) {
-                alert(setpin_ok);
-                $('#pin1').val("");
-                $('#pin2').val("");
-            };
-        });
+        };
+        var data = run_sync_request('/userservice/setpin', params);
+        if (data.result.status == true) {
+            alert(setpin_ok);
+            $('#pin1').val("");
+            $('#pin2').val("");
+        } else {
+            alert(setpin_error + data.result.error.message);
+        };
+
     }
     return false;
 }
@@ -697,21 +622,18 @@ function setmpin() {
         alert(setpin_failed);
         hide_waiting();
     } else {
-        $.post('/selfservice/usersetmpin', {
-            pin : pin1,
-            serial : serial,
-            session : get_selfservice_session()
-        }, function(data, textStatus, XMLHttpRequest) {
-            hide_waiting();
-            if (data.result.status == false) {
-                alert(setpin_error + data.result.error.message);
-            };
-            if (data.result.status == true) {
-                alert(setpin_ok);
-                $('#mpin1').val("");
-                $('#mpin2').val("");
-            };
-        });
+        var param = {
+                pin : pin1,
+                serial : serial,
+        };
+        var data = run_sync_request('/userservice/setmpin', param);
+        if (data.result.status == true) {
+            alert(setpin_ok);
+            $('#mpin1').val("");
+            $('#mpin2').val("");
+        } else {
+            alert(setpin_error + data.result.error.message);
+        }
     }
     return false;
 }
@@ -740,7 +662,7 @@ function check_active_session() {
         async : false,
         error : function(data) {
                 if (data.status == LOGIN_CODE) {
-                    alert("Your session has expired!");
+                    alert(i18n.gettext("Your session has expired!"));
                     active_session = false;
                     location.reload();
                 }
@@ -761,7 +683,7 @@ $(document).ready(function() {
     $.ajaxSetup({
         error: function(xhr, status, error) {
             if (xhr.status == LOGIN_CODE) {
-                alert("Your session has expired!");
+                alert(i18n.gettext("Your session has expired!"));
                 location.reload();
             }
         }
@@ -789,7 +711,7 @@ $(document).ready(function() {
                 // removed in jQuery UI 1.10
                 ui.jqXHR.error(function( jqXHR ){
                     if (jqXHR.status == LOGIN_CODE) {
-                        alert("Your session has expired!");
+                        alert(i18n.gettext("Your session has expired!"));
                         location.reload();
                     } else {
                         ui.panel.html("Couldn't load this tab. Please respond to the administrator:" + jqXHR.statusText + " (" + jqXHR.status + ")");
@@ -827,10 +749,10 @@ $.fn.slideFadeToggle = function(easing, callback) {
 function error_flexi(data){
     // we might do some mods here...
     if (data.status == LOGIN_CODE) {
-        alert("Your session has expired!");
+        alert(i18n.gettext("Your session has expired!"));
         location.reload();
     } else {
-        alert("Error loading history:" + data.status);
+        alert(i18n.gettext("Error loading history:\n") + data.status);
     }
 }
 
@@ -852,7 +774,7 @@ function load_flexi(){
 
 function view_audit_selfservice() {
        $("#audit_selfservice_table").flexigrid({
-            url : '/selfservice/userhistory?session='+ get_selfservice_session(),
+            url : '/userservice/history?session='+ get_selfservice_session(),
             method: 'GET',
             dataType : 'json',
             colModel : [{display: 'date', name : 'date', width : 160, sortable : true},

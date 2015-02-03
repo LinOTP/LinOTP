@@ -245,6 +245,7 @@ class BaseController(WSGIController):
 
         """
         self.sep = None
+        self.set_language(request.headers)
 
         self.parent = super(WSGIController, self)
         self.parent.__init__(*args, **kw)
@@ -333,9 +334,9 @@ class BaseController(WSGIController):
 
         return ret
 
-    def set_language(self):
+    def set_language(self, headers):
         '''Invoke before everything else. And set the translation language'''
-        languages = request.headers.get('Accept-Language', '').split(';')
+        languages = headers.get('Accept-Language', '').split(';')
         found_lang = False
 
         for language in languages:

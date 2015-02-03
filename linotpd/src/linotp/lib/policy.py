@@ -161,7 +161,7 @@ def getPolicyDefinitions(scope=""):
             'getserial': {
                 'type': 'bool',
                 'desc': 'Allow to search an unassigned token by OTP value.'},
-            'secure_auth': {
+            'otpLogin': {
                 'type': 'bool',
                 'desc': 'Requires OTP for selfservice authentication'},
             },
@@ -2309,6 +2309,29 @@ def checkPolicyPost(controller, method, param=None, user=None):
                                           "rights and not realm admin "
                                           "policies."))
             ret['realms'] = res
+
+    elif 'selfservice' == controller:
+        log.debug("[checkPolicyPost] entering controller %s" % controller)
+        log.debug("[checkPolicyPost] entering method %s" % method)
+        log.debug("[checkPolicyPost] using params %s" % param)
+        serial = getParam(param, "serial", optional)
+
+        if user is None:
+            user = getUserFromParam(param, optional)
+
+        if 'enroll' == method:
+            # check if we are supposed to genereate a random OTP PIN
+            randomPINLength = -1
+            if user and user.login:
+                randomPINLength = getRandomOTPPINLength(user)
+            if randomPINLength > 0:
+                newpin = getRandomPin(randomPINLength)
+                log.debug("[init] setting random pin for token with serial "
+                          "%s and user: %s" % (serial, user))
+                linotp.lib.token.setPin(newpin, None, serial)
+                log.debug("[init] pin set")
+                # TODO: This random PIN could be processed and
+                # printed in a PIN letter
 
     else:
         # unknown controller

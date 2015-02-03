@@ -575,7 +575,7 @@ def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True)
             sqlQuery = Session.query(Token).with_lockmode("update").filter(
                             Token.LinOtpTokenSerialnumber == serial)
 
-        #for token in Session.query(Token).filter(Token.LinOtpTokenSerialnumber == serial):
+        # for token in Session.query(Token).filter(Token.LinOtpTokenSerialnumber == serial):
         for token in sqlQuery:
             log.debug("[getTokens4UserOrSerial] user "
                       "serial (serial): %r" % token.LinOtpTokenSerialnumber)
@@ -885,14 +885,15 @@ def auto_enrollToken(passw, user, options=None):
         raise Exception("[auto_enrollToken] %r" % exx)
 
     if not auto:
-        log.debug("no auto_enrollToken configured")
-        return False, {}
+        msg = ("no auto_enrollToken configured")
+        log.debug(msg)
+        return False, {"error" : msg}
 
     uid, res, resc = getUserId(user)
     u_info = getUserInfo(uid, res, resc)
 
     # enroll token for user
-    desc = 'auto enrolled for %s@%s' % (user.login,user.realm)
+    desc = 'auto enrolled for %s@%s' % (user.login, user.realm)
     token_init = {'genkey' :1, "type" : token_type,
                   'description' : desc[:80]}
 
@@ -900,9 +901,10 @@ def auto_enrollToken(passw, user, options=None):
     if token_type == 'sms':
         mobile = u_info.get('mobile', None)
         if not mobile:
-            log.warning('auto_enrollemnt for user %r faild: missing mobile number!'
+            msg = ('auto_enrollemnt for user %s faild: missing mobile number!'
                         % user)
-            return False,{}
+            log.warning(msg)
+            return False, {'error': msg}
 
         token_init['phone'] = mobile
 
@@ -910,29 +912,36 @@ def auto_enrollToken(passw, user, options=None):
     elif token_type == 'email':
         email = u_info.get('email', None)
         if not email:
-            log.warning('auto_enrollemnt for user %r faild: missing email!'
+            msg = ('auto_enrollemnt for user %s faild: missing email!'
                         % user)
-            return False,{}
+            log.warning(msg)
+            return False, {'error': msg}
         token_init['email_address'] = email
 
     # else: token type undefined
     else:
-        log.warning('auto_enrollemnt for user %r faild: unknown token type'
+        msg = ('auto_enrollemnt for user %s faild: unknown token type'
                     % (user, token_type))
-        return False,{}
+        log.warning(msg)
+        return False, {'error': msg}
 
     authUser = get_authenticated_user(user.login, user.realm, passw)
     if authUser is None:
-        log.error("User %r@%r failed to authenticate against userstore"
+        msg = ("User %r@%r failed to authenticate against userstore"
                   % (user.login, user.realm))
-        return False, {}
+        log.error(msg)
+        return False, {'error': msg}
 
+    # if the passw is correct we use this as an initial pin
+    # to prevent otp spoof from email or sms
+    token_init['pin'] = passw
 
     (res, tokenObj) = initToken(token_init, user)
     if res == False:
-        log.error('Failed to create token for user %s@%s during autoenrollment'
-                  % (user.login,user.realm))
-        return False,{}
+        msg = ('Failed to create token for user %s@%s during autoenrollment'
+                  % (user.login, user.realm))
+        log.error(msg)
+        return False, {'error': msg}
 
     # we have to use a try except as challenge creation might raise exception
     # and we have to drop the created token
@@ -946,6 +955,9 @@ def auto_enrollToken(passw, user, options=None):
             raise Exception(error)
 
     except Exception as exx:
+        log.error("%r" % exx)
+        # we have to commit our token delete as the rollback
+        # on exception does not :-(
         Session.delete(tokenObj.token)
         Session.commit()
         raise exx
@@ -1078,13 +1090,13 @@ def assignToken(serial, user, pin, param=None):
     return True
 
 
-def unassignToken(serial, user, pin):
+def unassignToken(serial, user=None, pin=None):
     '''
     unassignToken - used to assign and to unassign token
     '''
     log.debug('[unassignToken] entering function unassignToken()')
     toks = getTokens4UserOrSerial(None, serial)
-    #toks  = Session.query(Token).filter(Token.LinOtpTokenSerialnumber == serial)
+    # toks  = Session.query(Token).filter(Token.LinOtpTokenSerialnumber == serial)
 
     if len(toks) > 1:
         log.warning("[unassignToken] multiple tokens found with serial: %r" % serial)
@@ -1096,7 +1108,8 @@ def unassignToken(serial, user, pin):
     token = toks[0]
     u = User('', '', '')
     token.setUser(u, True)
-    token.setPin(pin)
+    if pin:
+        token.setPin(pin)
 
     ## reset the OtpCounter
     token.setFailCount(0)
@@ -1105,7 +1118,7 @@ def unassignToken(serial, user, pin):
         token.storeToken()
     except Exception as e:
         log.error('[unassignToken] update token DB failed')
-        raise TokenAdminError("Token assign failed for %r/%r: %r"
+        raise TokenAdminError("Token unassign failed for %r/%r: %r"
                               % (user, serial, e), id=1105)
 
     log.debug("[unassignToken] successfully unassigned token with serial %r"
@@ -1116,7 +1129,10 @@ def unassignToken(serial, user, pin):
 def checkSerialPass(serial, passw, options=None, user=None):
     '''
     This function checks the otp for a given serial
-    @attention: the parameter user must be set, as the pin policy==1 will verify the user pin
+
+    :attention: the parameter user must be set, as the pin policy==1 will
+                verify the user pin
+
     '''
 
     log.debug("[checkSerialPass] checking for serial %r"
@@ -1408,7 +1424,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             audit['weight'] = 30
             matchinCounter = ret
 
-            #any valid otp increments, independend of the tokens state !!
+            # any valid otp increments, independend of the tokens state !!
             token.incOtpCounter(matchinCounter)
 
             if (token.isActive() == True):
@@ -2341,7 +2357,7 @@ class TokenIterator(object):
                     # identify all users and add these to the userlist
                     userlist = []
                     for usr in users:
-                        urealm =  usr.realm
+                        urealm = usr.realm
                         if urealm == '*':
                             # if the realm is set to *, the getUserId
                             # triggers the identification of all resolvers, where the

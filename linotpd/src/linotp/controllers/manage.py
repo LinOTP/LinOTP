@@ -91,7 +91,6 @@ class ManageController(BaseController):
             audit.initialize()
             c.audit['success'] = False
             c.audit['client'] = get_client()
-            self.set_language()
 
             c.version = get_version()
             c.licenseinfo = get_copyright_info()

@@ -322,7 +322,7 @@ function provisionOcra2() {
 		'session' : get_selfservice_session()
 	};
 
-	$.post("/selfservice/useractivateocratoken", params, function(data, textStatus, XMLHttpRequest) {
+	$.post("/userservice/activateocratoken", params, function(data, textStatus, XMLHttpRequest) {
 		hide_waiting();
 
 		if (data.result.status == true) {
@@ -357,7 +357,7 @@ function finishOcra2() {
 	var ocra_finish_ok = $('#ocra2_finish_ok').val();
 	var ocra_finish_fail = $('#ocra2_finish_fail').val();
 
-	$.post("/selfservice/userfinshocra2token", {
+	$.post("/userservice/finshocra2token", {
 		'type' : 'ocra2',
 		'serial' : serial,
 		'transactionid' : trans,
