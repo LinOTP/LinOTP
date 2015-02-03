@@ -26,7 +26,7 @@ protocol or where your user information should be stored. This is achieved by
 its modular architecture.
 
 LinOTP server also provides a modular architecture to calculate OTP values. 
-Thus many different OTP algorithms like the OATH standards: HMAC (RFC 4226)
+Thus many different OTP algorithms like the OAUTH standards: HMAC (RFC 4226)
 and time based HMAC are supported by LinOTP. But LinOTP's design makes it 
 easy to create your own tokens with different algorithms or even challenge 
 response tokens.
