@@ -56,7 +56,7 @@ def create_keys(file):
 
     r = call("openssl rsa -in %s -pubout -out %s" % (private, public), shell=True)
     if r == 0:
-        print "written public key: %s" % private
+        print "written public key: %s" % public
 
 
 
