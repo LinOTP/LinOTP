@@ -136,13 +136,6 @@ def pam_sm_authenticate( pamh, flags, argv ):
             syslog.syslog( "start pam_linotp.py authentication: %s, %s" %
                                                              ( flags, argv ) )
 
-        #log_debug("got user %s", user);
-        try:
-            pwd.getpwnam( pamh.user )
-        except  KeyError:
-            return pamh.PAM_USER_UNKNOWN
-
-
         ## get the password of the user:
         ##     either from the pam handle or request this
         if pamh.authtok == None:
