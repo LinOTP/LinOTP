@@ -1,0 +1,215 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+""" This tool is used to mass enroll sms tokens
+"""
+
+VERSION = '0.1'
+
+import getpass
+import json
+import sys
+import requests
+
+from requests.auth import HTTPBasicAuth
+from getopt import getopt, GetoptError
+
+import logging
+LOG = logging.getLogger(__name__)
+
+class Request(object):
+
+    def __init__(self, url, admin=None, password=None):
+
+        self.base_url = url
+        self.session = None
+        self.session_cookie = None
+
+        self.admin = None
+        self.password = None
+
+        if admin and password:
+            self.admin = admin
+            self.password = password
+
+        # trim trailing '/' to prevent error
+        if self.base_url[-1] == '/':
+            self.base_url = self.base_url[:-1]
+
+    def get_session(self):
+        url = "/admin/getsession"
+        pparams = {}
+        if self.admin:
+            auth=HTTPBasicAuth(self.admin, self.password)
+            pparams['auth'] = auth
+
+        response = requests.post(self.base_url+url, pparams)
+
+        cookies = response.cookies
+        for cookie in cookies:
+            if cookie.name == 'admin_session':
+                self.session = cookie.value
+                self.session_cookie = cookie
+                break
+
+        return self.session
+    
+    def get_users(self,user_filter=None):
+        url = '/admin/userlist'
+        if user_filter==None:
+            user_filter = {'username':'*'}
+        response = self.request(url, params=user_filter)
+        resp = json.loads(response.text, encoding='UTF-8')
+
+        # check for valid return status
+        status = resp.get('result',{}).get('status',False)
+        if status is False:
+            raise Exception('Failed to %s: %r' % (url, response))
+
+        result = resp.get('result',{}).get('value',[])
+        return result
+
+    def enroll_token(self, typ='hmac', params=None):
+        url = '/admin/init'
+
+        if params == None:
+            params = {}
+
+        params['type'] = typ
+
+        response = self.request(url, params)
+        resp = json.loads(response.text, encoding='UTF-8')
+
+        # check for valid return status
+        result = resp.get('result',{}).get('value',False)
+        if result is False:
+            raise Exception('Failed to %s: %r' % (url, response))
+
+        return result
+
+
+    def request(self,url, params=None):
+        pparams = {}
+        if params == None:
+            params = {}
+
+        if not self.session:
+            self.get_session()
+
+        if 'session' not in params:
+            params['session'] = self.session
+        cookies = dict(admin_session=self.session)
+        if self.admin:
+            auth=HTTPBasicAuth(self.admin, self.password)
+            pparams['auth'] = auth
+        response = requests.post(self.base_url+url, params, cookies=cookies, **pparams)
+        return response
+
+
+def usage():
+    usage = """
+    Helper tool to massenroll sms tokens - for all specified users with 
+    a specified mobile number
+
+    Parameters are:
+
+    --linotp:           the linotp url (required)
+    --admin:            the admin user - will prompt for the admin password
+    --username:         the username filter (optional)
+    --realm:            the realm filter for the user selection (optional)
+
+    
+    """
+    print usage
+
+def main():
+
+    linotp_url = None 
+
+    # dynamic parameters for userfilter and linotp connection
+    pparams = {}
+    init_pparams  = {}
+
+    try:
+        opts, args = getopt(sys.argv[1:], "hl:a:u:r:",
+                ["help", "linotp=", "admin=", "username=", "realm="])
+
+    except GetoptError:
+        print "There is an error in your parameter syntax:"
+        usage()
+        sys.exit(1)
+
+
+    for opt, arg in opts:
+        if opt in ('--help'):
+            usage()
+            sys.exit(0)
+
+        elif opt in ('--linotp'):
+            linotp_url = arg
+
+        elif opt in ('--admin'):
+            admin = arg
+            adminpw = getpass.getpass(prompt="Please enter password for '%s':"
+                                      % admin)
+            init_pparams['admin'] = admin
+            init_pparams['password'] = adminpw
+
+        elif opt in ('--username'):
+            pparams['username'] = arg
+
+        elif opt in ('--realm'):
+            pparams['realm'] = arg
+
+    if not linotp_url:
+        usage()
+        sys.stderr.write("No linotp url specified!\n")
+        sys.exit(-1)
+
+    r = Request(linotp_url, **init_pparams)
+
+    users = r.get_users(pparams)
+    for user in users:
+        params = {}
+        params['genkey'] = '1'
+        params['user'] = u"%s" % user.get('username')
+        if params['user'][0] == 'k':
+            pass
+        params['resConf'] = user.get('useridresolver').split('.')[-1]
+        params['phone'] = user.get('mobile',None)
+        if not params['phone']:
+            sys.stderr.write("SMS Token enrolled for user: %r: failed"
+                             " - missing mobile number!\n" % (params['user']))
+            continue
+
+        resp = r.enroll_token(typ='sms', params=params)
+        if resp is True:
+            resp = "success"
+        print "SMS Token enrolled for user: %r: %r\n" % (params['user'], resp)
+
+if __name__ == '__main__':
+    main()
+
