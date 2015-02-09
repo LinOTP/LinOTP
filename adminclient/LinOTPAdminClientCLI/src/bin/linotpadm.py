@@ -189,7 +189,8 @@ def yubi_mass_enroll(lotpc,
                      yubi_prefix_serial,
                      yubi_prefix,
                      yubi_prefix_random,
-                     yubi_cr):
+                     yubi_cr,
+                     ):
     '''
     Do the Yubikey mass enrollment
 
@@ -211,13 +212,22 @@ def yubi_mass_enroll(lotpc,
         #if "x" == input.lower():
         #    break
         ret = yp.wait_for_new_yubikey()
+
+        # if otplen is set and YUBI_OATH mode, we add the digits 
+        # parameter to the yubienroll
+        ykparams = {}
+        if (yubi_mode == YUBI_OATH_MODE and
+            'otplen' in proc_params and proc_params['otplen'] in ['6','8']):
+            ykparams['digits'] = proc_params['otplen']
+
         otpkey, serial = enrollYubikey(debug=False,
                                         prefix_serial=yubi_prefix_serial,
                                         fixed_string=yubi_prefix,
                                         len_fixed_string=yubi_prefix_random,
                                         slot=yubi_slot,
                                         mode=yubi_mode,
-                                        challenge_response=yubi_cr)
+                                        challenge_response=yubi_cr, **ykparams)
+
         description = proc_params.get('description', "mass enrolled")
         if yubi_mode == YUBI_OATH_MODE:
             # According to http://www.openauthentication.org/oath-id/prefixes/
@@ -226,6 +236,11 @@ def yubi_mass_enroll(lotpc,
             submit_param = {'serial':"UBOM%s_%s" % (serial, yubi_slot),
                      'otpkey':otpkey,
                      'description':description}
+
+            # add the otplen if set as ykparam 
+            if ykparams and 'digits' in ykparams:
+                submit_param['otplen'] = ykparams['digits']
+
             if yubi_cr:
                 submit_param['type'] = 'TOTP'
                 submit_param['timeStep'] = 30
@@ -496,6 +511,8 @@ def main():
                 config["yubi_mode"] = YUBI_AES_MODE
             elif arg.lower() == "static":
                 config["yubi_mode"] = YUBI_STATIC_MODE
+            elif arg.lower() == "oath":
+                config["yubi_mode"] = YUBI_OATH_MODE
             else:
                 print "No matching yubimode. Using OATH as default."
         elif opt in ('--yubislot='):
@@ -549,8 +566,10 @@ def main():
 ##### The commands
 
     if (config.get("command") == "listtoken"):
-        ## TODO: at the moment we support the export to cifs share or sending by mail only
-        ##       for the command "listtoken". The should be refactored one day...
+        # At the moment we support the export to cifs share or sending by mail
+        # for the command "listtoken". As fallback the listtoken result is
+        # written to stderr, so that it could be redirected to a dedicated file
+        # TODO: csv output to file
         if config.get("csv_format"):
             param['outform'] = 'csv'
             if config.get("export_fields"):
@@ -558,13 +577,15 @@ def main():
             r1 = lotpc.connect('/admin/show', {}, param, json_format=False)
             if config.get("mail_host") and config.get("mail_to"):
                 sendmail(config, r1)
-            if config.get("cifs_server") and config.get("cifs_user") and config.get("cifs_password"):
+            elif config.get("cifs_server") and config.get("cifs_user") and config.get("cifs_password"):
                 cifs_push(config, r1)
+            else:
+                sys.stderr.write(r1)
         else:
             r1 = lotpc.listtoken(param)
             result = r1['result']
 
-            tabsize = [4, 16, 12, 20, 20, 4, 4, 4, 4]
+            tabsize = [4, 25, 40, 25, 20, 4, 4, 4, 4]
             tabstr = ["%4s", "%16s", "%12s", "%20s", "%20s", "%4s", "%4s", "%4s", "%4s", "%4s"]
             tabdelim = '|'
             tabvisible = [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -627,7 +648,8 @@ def main():
                          config.get("yubi_prefix_serial"),
                          config.get("yubi_prefix"),
                          config.get("yubi_prefix_random"),
-                         config.get("yubi_cr"))
+                         config.get("yubi_cr"),
+                         )
 
 
     elif (config.get("command") == "etokenng_mass_enroll"):
