@@ -1,6 +1,24 @@
 linotp (2.7.1.2~0dev0-1~precise) precise; urgency=low
 
-  * Set new version 2.7.1.2~0dev0-1~precise
+  License
+  * hotfix for license values with whitespaces which let the license check fail
+
+  Server:
+  * some adjustments for pylons > 1.0.
+  * adjust the copyright date from 2014 to 2015
+
+  Audit:
+  * audit query with empty arguments fixed
+  * made selfservice history browsing working again
+
+  Tools and Resolver:
+  * enhanced password genenerating tool to gererate more secure passwords entries for usage via passwd and sql resolvers
+
+  Web UI:
+  * added ui hints for the sms and email token config
+  * use radius token config defualts for radius token enrollment
+  * use remote token config defaults for remote token enrollment
+  * searching for unknown users in tokenview, showed all tokens that had no user assigned.
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sun, 08 Feb 2015 12:18:54 +0100
 
@@ -260,7 +278,7 @@ linotp (2.5.2-1.rc8) lucid; urgency=low
   * Fixed export of empty policies                        #12099
   * Fixed of weird PKG-INFO from build                    #12098
   * Fixed for ad users with special char in dn for access to selfservice #12090
- 
+
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Jul 2013 00:53:29 +0200
 
@@ -324,7 +342,7 @@ linotp (2.5.2-0.rc3) precise; urgency=low
   * Bug #2969 Closed (fixed)  rewrite string handling in logging
   * Enhancement #2909 Closed (fixed) Better handling of HSM errors
   * Bug Closed #2864 (fixed)  Tokenrealm does not work with sqlite
- 
+
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Jun 2013 16:10:06 +0200
 
 
@@ -430,7 +448,7 @@ linotp (2.5.2-0.rc1) precise; urgency=low
   * set maximum auth count and validity period. (#743)
   * solve 2.6. compatibilty issue for time2float
   * the mobile number (instead of phone) will now be used in selfservice for SMS token
-  
+
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 02 Jun 2013 12:44:00 +0200
 
 linotp (2.5.1-1) lucid; urgency=low
@@ -478,7 +496,7 @@ linotp (2.5.0-6) lucid; urgency=low
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 22 Nov 2012 14:14:14 +0200
 
 linotp (2.5.0-5) lucid; urgency=low
- 
+
   * fixed ocra resync
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 22 Nov 2012 14:14:14 +0200
@@ -546,9 +564,9 @@ linotp (2.4.4-ocra-7) lucid; urgency=low
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 24 Oct 2012 13:30:14 +0200
 
 linotp (2.4.4-ocra-6) lucid; urgency=low
- 
+
   * improved automatic update
- 
+
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 22 Oct 2012 15:30:14 +0200
 
 linotp (2.4.4-ocra-5) lucid; urgency=low
@@ -565,7 +583,7 @@ linotp (2.4.4-ocra-4) lucid; urgency=low
 
 
 linotp (2.4.4-ocra-3) lucid; urgency=low
- 
+
   * delivery version with python 2.6 fix
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 09 Oct 2012 10:50:14 +0200
@@ -586,7 +604,7 @@ linotp (2.4.4-1) lucid; urgency=low
 
 linotp (2.4.4) lucid; urgency=low
 
-  * Added SMTP SMS gateway support 
+  * Added SMTP SMS gateway support
   * Added Authorization based on authenticating client IP address
   * Added functionality to retrieve OTPs to print One Time Password lists
   * Added test button to SQL Resolver
@@ -597,7 +615,7 @@ linotp (2.4.4) lucid; urgency=low
   * Improved search capabilitiestokenview and userview (WebUI)
   * Added possibility to turn off session protection
   * Added possibility to prefix name of audit table
-  * Improved the Oracle support 
+  * Improved the Oracle support
   * Several minor fixes
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 25 Jul 2012 11:20:14 +0200
@@ -777,7 +795,7 @@ linotp (2.2-rc2) stable; urgency=low
   * Added Test-LDAP-connection interface: /admin/testresolver
   * Fixed the Spass Token so it will _not_ require a PIN during rollout
   * Virtual Appliance: Added ldap-utils to the ISO
-  * WebUI: Fixed missing column "phone"  
+  * WebUI: Fixed missing column "phone"
   * WebUI: Fixed presetting of LDAP/AD attributes in the LDAP Resolver Dialog
   * WebUI: Fixed the refresh of the Realm combobox
 
