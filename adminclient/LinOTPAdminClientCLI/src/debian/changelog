@@ -1,3 +1,9 @@
+linotp-adminclient-cli (2.7.1.2~0dev0-1~precise) precise; urgency=low
+
+  * Set new version 2.7.1.2~0dev0-1~precise
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 10 Feb 2015 15:00:39 +0100
+
 linotp-adminclient-cli (2.7.1-1~precise) precise; urgency=low
 
   * Removed trailing slash on -U parameter to prevent 404-not found error

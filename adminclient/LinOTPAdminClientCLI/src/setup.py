@@ -53,7 +53,7 @@ def get_file_contents(file_path):
 
 setup(
     name='LinOTPAdminClientCLI',
-    version='2.7.1',
+    version='2.7.1.2.dev0',
     description='LinOTP command-line client',
     author='LSE Leading Security Experts GmbH',
     author_email='linotp-community@lsexperts.de',
