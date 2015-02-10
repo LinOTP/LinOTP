@@ -354,6 +354,29 @@ configure)
 			chown -R linotp $LOGDIR
 		fi
 		if ! check_apache_disabled; then
+			# Copy linotp2 VirtualHost from /etc/linotp2 to /etc/apache2 . Depending on
+			# the Apache version a different file is used.
+			APACHE2_VERSION=`dpkg -s apache2 | grep Version | cut -f2 -d' '`
+			dpkg --compare-versions ${APACHE2_VERSION} ge 2.4 && APV_RC=$? || APV_RC=$?
+			if [ ${APV_RC} == 0 ]
+			then
+				echo `print_timestamp` "INFO [linotp postinst] Using Apache 2.4 config" >&2
+				if [ ! -f /etc/apache2/sites-available/linotp2.conf ]
+				then
+					cp /etc/linotp2/apache2.4-example/linotp2.conf /etc/apache2/sites-available/
+				else
+					echo `print_timestamp` "INFO [linotp postinst] Apache linotp2.conf already present. Doing nothing." >&2
+				fi
+			else
+				echo `print_timestamp` "INFO [linotp postinst] Using Apache 2.2 config" >&2
+				if [ ! -f /etc/apache2/sites-available/linotp2 ]
+				then
+					cp /etc/linotp2/apache2.2-example/linotp2 /etc/apache2/sites-available/
+				else
+					echo `print_timestamp` "INFO [linotp postinst] Apache linotp2 already present. Doing nothing." >&2
+				fi
+			fi
+
 			a2ensite linotp2
 			a2enmod auth_digest
 			a2enmod wsgi
