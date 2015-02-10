@@ -443,8 +443,16 @@ class IdResolver (UserIdResolver):
 
         log.debug("[getUserId] type of LoginName %s" % type(LoginName))
 
-        # fil = self.filter % LoginName.decode(ENCODING)
-        fil = ldap.filter.filter_format(self.filter,
+        ufilter = self.filter
+        try:
+            special_dict ={}
+            special_dict['now'] = self.now_timestamp()
+            ufilter = ufilter % special_dict
+        except KeyError as key_error:
+            log.error('Key replacement error %r' % key_error)
+            raise key_error
+
+        fil = ldap.filter.filter_format(ufilter,
                                         [LoginName.decode(ENCODING)])
         fil = fil.encode(ENCODING)
         l_obj = self.bind()
@@ -1063,6 +1071,44 @@ class IdResolver (UserIdResolver):
         res = binascii.hexlify(guid)
         return res
 
+    def _is_ad(self):
+        """
+        this is a heuristic approach to check if we are running against an AD
+        check is running against the ldap config where we expect to have an 
+        sAMAccountname in any filter or login attribute
+        """
+        ret = False
+        if ('sAMAccountName' in self.loginnameattribute or
+            'sAMAccountName' in self.searchfilter or
+            'sAMAccountName' in self.filter
+            ):
+            ret = True
+        return ret
+
+    def now_timestamp(self):
+        """
+        now - insert the now timestamp
+
+        as AD starts it's time count at 31/12/1601, when the vigent gregorian
+        cycle in our calendar is started,  we have to add the diff to
+        the unix now timestamp, which starts at 1/1/1970
+
+        accExp: expiry date of an user, in which case we count since 31/12/1601,
+                not since 01/01/1601; so we add 86400 seconds to the final result.
+                As we use this timestamp only for the account expiry, we set
+                this as default
+        """
+        # unix timestamp, which starts at 1/1/1970
+        now = int(datetime.now().strftime("%s"))
+        if self._is_ad():
+            add_seconds = 116444736000000000 # 31/12/1601
+            account_expiry = True # we only care for account expiry
+            if account_expiry:
+                add_seconds += 86400
+            now = ((now *10000000) + add_seconds)
+        return now
+
+
     def getUserList(self, searchDict):
         '''
         retrieve a list of users
@@ -1072,24 +1118,30 @@ class IdResolver (UserIdResolver):
         :return: resultList, a dict with user info
         '''
 
-        # CKO: not sure if we want to activate this! :-/
-        #==================================================================
-        # if self.brokenconfig:
-        #   return [ { u'username':'BROKEN CONFIG!' },
-        #                           { u'username':self.brokenconfig_text} ]
-        #
         # TODO: check if field is searchable
         # several filters are & concatenated:
         #   (&(objectClass=inetOrgPerson)(uid=theodor))
         # if we got an empty search dictionary, we will get all users!
-        #==================================================================
 
         log.debug("[getUserList]")
 
+        # we support special replacements in search expressions like
+        # %(now)s which will be replaced by the windows or unix timestamp
+        special_dict ={}
+        special_dict['now'] = self.now_timestamp()
+
+        searchFilter = self.searchfilter
+        # add specialdict replacements, to support the "%(now)s" expression
         try:
-            searchFilter = u"(&"
-            searchFilter = searchFilter + self.searchfilter
-            log.debug("[getUserList] searchfilter: %r" % self.searchfilter)
+            searchFilter = searchFilter % special_dict
+        except KeyError as key_error:
+            log.error('Key replacement error %r' % key_error)
+            raise key_error
+
+        log.debug("[getUserList] searchfilter: %r" % searchFilter)
+
+        # add searchfilter attributes of searchDict
+        try:
             for skey, sval in searchDict.iteritems():
                 log.debug("[getUserList] searchekys: %r / %r" % (skey, sval))
                 if skey in self.userinfo:
@@ -1099,14 +1151,16 @@ class IdResolver (UserIdResolver):
                     searchFilter += u"(%s=%s)" % (key, value)
                 else:
                     log.warning("[getUserList] Unknown searchkey: %r" % skey)
-            searchFilter += ")"
+
+            # finaly embedd the filter in the ldap query string
+            searchFilter = u"(& %s )" % searchFilter
             log.debug("[getUserList] searchfilter: %r" % searchFilter)
         except Exception as exep:
             log.error("[getUserList] Error creating searchFilter: %r" % exep)
             log.error("[getUserList] %s" % traceback.format_exc())
+            raise exep
 
         resultList = []
-
         l_obj = self.bind()
 
         if l_obj:

@@ -429,7 +429,8 @@ class ManageController(BaseController):
             user = getUserFromParam(param, optional)
             # check admin authorization
             # check if we got a realm or resolver, that is ok!
-            checkPolicyPre('admin', 'userlist', { 'user': "dummy", 'realm' : c.realm })
+            checkPolicyPre('admin', 'userlist', { 'user': user.login,
+                                                 'realm' : c.realm })
 
             if c.filter == "":
                 c.filter = "*"
