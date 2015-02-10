@@ -217,7 +217,7 @@ def yubi_mass_enroll(lotpc,
         ykparams = {}
         if (yubi_mode == YUBI_OATH_MODE and
             'otplen' in proc_params and proc_params['otplen'] in ['6','8']):
-            ykparams['digits'] = proc_params['otplen']
+            ykparams['digits'] = int(proc_params['otplen'])
 
         otpkey, serial = enrollYubikey(debug=False,
                                         prefix_serial=yubi_prefix_serial,
