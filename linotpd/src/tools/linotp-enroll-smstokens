@@ -42,11 +42,14 @@ LOG = logging.getLogger(__name__)
 
 class Request(object):
 
-    def __init__(self, url, admin=None, password=None):
-
+    def __init__(self, url, admin=None, password=None, ssl_verify=True):
+        self.request_options = {}
         self.base_url = url
         self.session = None
         self.session_cookie = None
+
+        if ssl_verify is False:
+            self.request_options['verify'] = False
 
         self.admin = None
         self.password = None
@@ -65,8 +68,10 @@ class Request(object):
         if self.admin:
             auth=HTTPBasicAuth(self.admin, self.password)
             pparams['auth'] = auth
+        if self.request_options:
+            pparams.update(self.request_options)
 
-        response = requests.post(self.base_url+url, pparams)
+        response = requests.post(self.base_url+url, **pparams)
 
         cookies = response.cookies
         for cookie in cookies:
@@ -107,8 +112,8 @@ class Request(object):
         result = resp.get('result',{}).get('value',False)
         if result is False:
             raise Exception('Failed to %s: %r' % (url, response))
-
-        return result
+        serial = resp.get('detail',{}).get('serial','')
+        return serial
 
 
     def request(self,url, params=None):
@@ -125,6 +130,9 @@ class Request(object):
         if self.admin:
             auth=HTTPBasicAuth(self.admin, self.password)
             pparams['auth'] = auth
+        if self.request_options:
+            pparams.update(self.request_options)
+
         response = requests.post(self.base_url+url, params, cookies=cookies, **pparams)
         return response
 
@@ -140,6 +148,7 @@ def usage():
     --admin:            the admin user - will prompt for the admin password
     --username:         the username filter (optional)
     --realm:            the realm filter for the user selection (optional)
+    --no_ssl_verify     supress the verification of the ssl certificate
 
     
     """
@@ -154,8 +163,8 @@ def main():
     init_pparams  = {}
 
     try:
-        opts, args = getopt(sys.argv[1:], "hl:a:u:r:",
-                ["help", "linotp=", "admin=", "username=", "realm="])
+        opts, args = getopt(sys.argv[1:], "hl:a:u:r:n",
+                ["help", "no_ssl_verify","linotp=", "admin=", "username=", "realm="])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -180,6 +189,9 @@ def main():
 
         elif opt in ('--username'):
             pparams['username'] = arg
+
+        elif opt in ['-n','--no_ssl_verify']:
+            init_pparams['ssl_verify'] = False
 
         elif opt in ('--realm'):
             pparams['realm'] = arg
