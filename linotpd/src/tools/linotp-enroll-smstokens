@@ -24,10 +24,12 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-""" This tool is used to mass enroll sms tokens
+
+"""
+Tool to help mass enroll sms tokens
 """
 
-VERSION = '0.1'
+VERSION = '0.2'
 
 import getpass
 import json
@@ -41,8 +43,17 @@ import logging
 LOG = logging.getLogger(__name__)
 
 class Request(object):
+    """
+    Request class - to preserve settings for multiple requests to LinOTP
+    """
 
     def __init__(self, url, admin=None, password=None, ssl_verify=True):
+        """
+        :param url: set up the linOTP URL - required
+        :param admin: admin user - required for base authentication
+        :param password: password of the admin user
+        :param ssl_verify: switch to disable / enable the ssl cert verification
+        """
         self.request_options = {}
         self.base_url = url
         self.session = None
@@ -63,8 +74,19 @@ class Request(object):
             self.base_url = self.base_url[:-1]
 
     def get_session(self):
+        """
+        get the admin session context
+
+        - preserver the session context in self.session for further requests
+
+        :return session: return the session value
+        """
         url = "/admin/getsession"
         pparams = {}
+
+        if self.session:
+            return self.session
+
         if self.admin:
             auth=HTTPBasicAuth(self.admin, self.password)
             pparams['auth'] = auth
@@ -81,8 +103,17 @@ class Request(object):
                 break
 
         return self.session
-    
+
     def get_users(self,user_filter=None):
+        """
+        get a list of users according to the filter
+
+        the filter is a dict, which could contain as well the
+        realm of the users
+
+        :param filter: dict, to restrict the user search
+        :return: array of user description
+        """
         url = '/admin/userlist'
         if user_filter==None:
             user_filter = {'username':'*'}
@@ -98,6 +129,12 @@ class Request(object):
         return result
 
     def enroll_token(self, typ='hmac', params=None):
+        """
+        enroll a token
+        
+        :param params: dict with description of token specifica
+        :return: serial number on succcess, else raise exception
+        """
         url = '/admin/init'
 
         if params == None:
@@ -117,28 +154,40 @@ class Request(object):
 
 
     def request(self,url, params=None):
-        pparams = {}
+        """
+        base method to run requests
+
+        :param url: the sub url path - will be appended to the base url
+        :param params: request parameters for linotp
+
+        :return: the response object
+        """
+
         if params == None:
             params = {}
 
-        if not self.session:
-            self.get_session()
+        session = params.get('session',self.get_session())
 
-        if 'session' not in params:
-            params['session'] = self.session
-        cookies = dict(admin_session=self.session)
+        params['session'] = session 
+        cookies = dict(admin_session = session)
+
+        # request command options
+        pparams = {}
         if self.admin:
             auth=HTTPBasicAuth(self.admin, self.password)
             pparams['auth'] = auth
         if self.request_options:
             pparams.update(self.request_options)
 
-        response = requests.post(self.base_url+url, params, cookies=cookies, **pparams)
+        response = requests.post(self.base_url+url, params, 
+                                 cookies=cookies, **pparams)
         return response
 
 
 def usage():
     usage = """
+    linotp-enroll-smstoken v.(%s)
+
     Helper tool to massenroll sms tokens - for all specified users with 
     a specified mobile number
 
@@ -148,23 +197,21 @@ def usage():
     --admin:            the admin user - will prompt for the admin password
     --username:         the username filter (optional)
     --realm:            the realm filter for the user selection (optional)
-    --no_ssl_verify     supress the verification of the ssl certificate
+    --no-ssl-verify     supress the verification of the ssl certificate
 
-    
-    """
+    """ % VERSION
     print usage
 
 def main():
 
     linotp_url = None 
 
-    # dynamic parameters for userfilter and linotp connection
-    pparams = {}
+    user_filter = {}
     init_pparams  = {}
 
     try:
         opts, args = getopt(sys.argv[1:], "hl:a:u:r:n",
-                ["help", "no_ssl_verify","linotp=", "admin=", "username=", "realm="])
+                ["help", "no-ssl-verify","linotp=", "admin=", "username=", "realm="])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -187,14 +234,14 @@ def main():
             init_pparams['admin'] = admin
             init_pparams['password'] = adminpw
 
-        elif opt in ('--username'):
-            pparams['username'] = arg
-
-        elif opt in ['-n','--no_ssl_verify']:
+        elif opt in ['-n','--no-ssl-verify']:
             init_pparams['ssl_verify'] = False
 
+        elif opt in ('--username'):
+            user_filter['username'] = arg
+
         elif opt in ('--realm'):
-            pparams['realm'] = arg
+            user_filter['realm'] = arg
 
     if not linotp_url:
         usage()
@@ -203,24 +250,26 @@ def main():
 
     r = Request(linotp_url, **init_pparams)
 
-    users = r.get_users(pparams)
+    users = r.get_users(user_filter)
     for user in users:
-        params = {}
-        params['genkey'] = '1'
-        params['user'] = u"%s" % user.get('username')
-        if params['user'][0] == 'k':
-            pass
-        params['resConf'] = user.get('useridresolver').split('.')[-1]
-        params['phone'] = user.get('mobile',None)
-        if not params['phone']:
+
+        enroll_params = {}
+        enroll_params['genkey'] = '1'
+        enroll_params['user'] = u"%s" % user.get('username')
+        enroll_params['resConf'] = user.get('useridresolver').split('.')[-1]
+        enroll_params['phone'] = user.get('mobile',None)
+
+        if not enroll_params['phone']:
             sys.stderr.write("SMS Token enrolled for user: %r: failed"
-                             " - missing mobile number!\n" % (params['user']))
+                             " - missing mobile number!\n"
+                             % (enroll_params['user']))
             continue
 
-        resp = r.enroll_token(typ='sms', params=params)
+        resp = r.enroll_token(typ='sms', params=enroll_params)
         if resp is True:
             resp = "success"
-        print "SMS Token enrolled for user: %r: %r\n" % (params['user'], resp)
+        print ("SMS Token enrolled for user: %r: %r\n"
+               % (enroll_params['user'], resp))
 
 if __name__ == '__main__':
     main()
