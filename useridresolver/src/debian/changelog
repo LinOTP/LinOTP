@@ -1,7 +1,7 @@
 linotp-useridresolver (2.7.1.2~0dev0-1~precise) precise; urgency=low
 
   Tools and Resolver:
-  * enhanced password genenerating tool to gererate more secure passwords entries for usage via passwd and sql resolvers
+  * enhanced password genenerating tool to generate more secure passwords entries for usage via passwd and sql resolvers
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sun, 08 Feb 2015 12:18:54 +0100
 

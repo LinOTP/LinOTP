@@ -4,7 +4,6 @@ linotp (2.7.1.2~0dev0-1~precise) precise; urgency=low
   * hotfix for license values with whitespaces which let the license check fail
 
   Server:
-  * some adjustments for pylons > 1.0.
   * adjust the copyright date from 2014 to 2015
 
   Audit:
@@ -12,7 +11,7 @@ linotp (2.7.1.2~0dev0-1~precise) precise; urgency=low
   * made selfservice history browsing working again
 
   Tools and Resolver:
-  * enhanced password genenerating tool to gererate more secure passwords entries for usage via passwd and sql resolvers
+  * enhanced password genenerating tool to generate more secure passwords entries for usage via passwd and sql resolvers
 
   Web UI:
   * added ui hints for the sms and email token config

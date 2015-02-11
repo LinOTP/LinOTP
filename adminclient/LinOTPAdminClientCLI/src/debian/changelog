@@ -1,6 +1,5 @@
 linotp-adminclient-cli (2.7.1.2~0dev0-1~precise) precise; urgency=low
 
-  Adminclient:
   * removed length limititation for display of tokenserial number in listtoken
   * fallback csv output to stderr for listtoken --csv format
   * don't show 'no matching yubimode' message when using valid --yubimode=oath  command-line parameter
