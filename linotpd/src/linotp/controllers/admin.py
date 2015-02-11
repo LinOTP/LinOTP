@@ -1451,8 +1451,7 @@ class AdminController(BaseController):
             realm = getParam(param, "realm", optional)
             #_resolver = getParam(param, "resConf", optional)
 
-            checkPolicyPre('admin', 'userlist',
-                           { 'user': "dummy", 'realm':realm})
+            checkPolicyPre('admin', 'userlist', param)
 
             up = 0
             user = getUserFromParam(param, optional)

@@ -35,10 +35,12 @@ from pylons import tmpl_context as c
 from pylons import config
 from pylons import request
 
+
 from linotp.lib.config import initLinotpConfig
 from linotp.lib.resolver import initResolvers
 from linotp.lib.resolver import setupResolvers
 from linotp.lib.resolver import closeResolvers
+from linotp.lib.user import getUserFromRequest
 
 from linotp.lib.config import getGlobalObject
 
@@ -310,6 +312,9 @@ class BaseController(WSGIController):
         try:
             if environ:
                 path = environ.get("PATH_INFO", "") or ""
+
+            user_desc =getUserFromRequest(request)
+            self.base_auth_user = user_desc.get('login','')
 
             log.debug("request %r" % path)
             ret = WSGIController.__call__(self, environ, start_response)

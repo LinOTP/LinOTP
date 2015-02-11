@@ -466,6 +466,9 @@ def getResolversOfUser(user):
     if len(Resolvers) > 0:
         return Resolvers
 
+    if not login:
+        return Resolvers
+
     if realm is None or realm == "":
         realm = getDefaultRealm()
 
