@@ -88,12 +88,12 @@ class Request(object):
             return self.session
 
         if self.admin:
-            auth=HTTPBasicAuth(self.admin, self.password)
+            auth = HTTPBasicAuth(self.admin, self.password)
             pparams['auth'] = auth
         if self.request_options:
             pparams.update(self.request_options)
 
-        response = requests.post(self.base_url+url, **pparams)
+        response = self.request(url, pparams=pparams)
 
         cookies = response.cookies
         for cookie in cookies:
@@ -104,7 +104,17 @@ class Request(object):
 
         return self.session
 
-    def get_users(self,user_filter=None):
+
+    def load_json_response(self, response):
+        try:
+            resp = json.loads(response.text)
+        except Exception as exx:
+            sys.stderr.write("Exeption: %r\n%r" % (exx, response.text))
+            raise exx
+        return resp
+
+
+    def get_users(self, user_filter=None):
         """
         get a list of users according to the filter
 
@@ -115,23 +125,23 @@ class Request(object):
         :return: array of user description
         """
         url = '/admin/userlist'
-        if user_filter==None:
+        if user_filter == None:
             user_filter = {'username':'*'}
         response = self.request(url, params=user_filter)
-        resp = json.loads(response.text, encoding='UTF-8')
+        resp = self.load_json_response(response)
 
         # check for valid return status
-        status = resp.get('result',{}).get('status',False)
+        status = resp.get('result', {}).get('status', False)
         if status is False:
             raise Exception('Failed to %s: %r' % (url, response))
 
-        result = resp.get('result',{}).get('value',[])
+        result = resp.get('result', {}).get('value', [])
         return result
 
     def enroll_token(self, typ='hmac', params=None):
         """
         enroll a token
-        
+
         :param params: dict with description of token specifica
         :return: serial number on succcess, else raise exception
         """
@@ -143,17 +153,17 @@ class Request(object):
         params['type'] = typ
 
         response = self.request(url, params)
-        resp = json.loads(response.text, encoding='UTF-8')
+        resp = self.load_json_response(response)
 
         # check for valid return status
-        result = resp.get('result',{}).get('value',False)
+        result = resp.get('result', {}).get('value', False)
         if result is False:
             raise Exception('Failed to %s: %r' % (url, response))
-        serial = resp.get('detail',{}).get('serial','')
+        serial = resp.get('detail', {}).get('serial', '')
         return serial
 
 
-    def request(self,url, params=None):
+    def request(self, url, params=None, pparams=None):
         """
         base method to run requests
 
@@ -163,24 +173,58 @@ class Request(object):
         :return: the response object
         """
 
+        cookies = None
+
         if params == None:
             params = {}
 
-        session = params.get('session',self.get_session())
 
-        params['session'] = session 
-        cookies = dict(admin_session = session)
+        if 'admin/getsession' not in url:
+            session = params.get('session', self.get_session())
+            params['session'] = session
+            cookies = dict(admin_session=session)
 
         # request command options
-        pparams = {}
+        if pparams is None:
+            pparams = {}
+
         if self.admin:
-            auth=HTTPBasicAuth(self.admin, self.password)
+            auth = HTTPBasicAuth(self.admin, self.password)
             pparams['auth'] = auth
+
         if self.request_options:
             pparams.update(self.request_options)
 
-        response = requests.post(self.base_url+url, params, 
+        try:
+            response = requests.post(self.base_url + url, params,
                                  cookies=cookies, **pparams)
+
+        # All exceptions that Requests explicitly raises inherit from requests.exceptions.RequestException.
+
+        # In the event of a network problem (e.g. DNS failure, refused connection, etc),
+        # Requests will raise a ConnectionError exception.
+        except requests.exceptions.ConnectionError as exx:
+            sys.stderr.write("Connection Error: %r" % exx)
+            raise exx
+
+        # In the rare event of an invalid HTTP response, Requests will
+        # raise an HTTPError exception.
+        except requests.exceptions.HTTPError as exx:
+            sys.stderr.write("HTTPError %r" % exx)
+            raise exx
+
+        # If a request times out, a Timeout exception is raised.
+        except requests.exceptions.Timeout as exx:
+            sys.stderr.write("Request timed out %r" % exx)
+            raise exx
+
+        # If a request exceeds the configured number of maximum redirections,
+        # a TooManyRedirects exception is raised.
+        except requests.exceptions.TooManyRedirects as exx:
+            sys.stderr.write("Too many redirects %r" % exx)
+            raise exx
+
+
         return response
 
 
@@ -188,7 +232,7 @@ def usage():
     usage = """
     linotp-enroll-smstoken v.(%s)
 
-    Helper tool to massenroll sms tokens - for all specified users with 
+    Helper tool to massenroll sms tokens - for all specified users with
     a specified mobile number
 
     Parameters are:
@@ -204,14 +248,14 @@ def usage():
 
 def main():
 
-    linotp_url = None 
+    linotp_url = None
 
     user_filter = {}
-    init_pparams  = {}
+    init_pparams = {}
 
     try:
         opts, args = getopt(sys.argv[1:], "hl:a:u:r:n",
-                ["help", "no-ssl-verify","linotp=", "admin=", "username=", "realm="])
+                ["help", "no-ssl-verify", "linotp=", "admin=", "username=", "realm="])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -234,7 +278,7 @@ def main():
             init_pparams['admin'] = admin
             init_pparams['password'] = adminpw
 
-        elif opt in ['-n','--no-ssl-verify']:
+        elif opt in ['-n', '--no-ssl-verify']:
             init_pparams['ssl_verify'] = False
 
         elif opt in ('--username'):
@@ -248,6 +292,8 @@ def main():
         sys.stderr.write("No linotp url specified!\n")
         sys.exit(-1)
 
+# main  processing starts here
+
     r = Request(linotp_url, **init_pparams)
 
     users = r.get_users(user_filter)
@@ -257,7 +303,7 @@ def main():
         enroll_params['genkey'] = '1'
         enroll_params['user'] = u"%s" % user.get('username')
         enroll_params['resConf'] = user.get('useridresolver').split('.')[-1]
-        enroll_params['phone'] = user.get('mobile',None)
+        enroll_params['phone'] = user.get('mobile', None)
 
         if not enroll_params['phone']:
             sys.stderr.write("SMS Token enrolled for user: %r: failed"
