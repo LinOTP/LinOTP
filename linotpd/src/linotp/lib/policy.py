@@ -811,8 +811,10 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
         return fitAllRealms
 
-    # in case we got a user
-    if user.login != "":
+    # in case of the admin policies - no user name is verified:
+    # the username could be empty (not dummy) which prevents an
+    # unnecessar resolver lookup
+    if user:
         # default realm user
         if user.realm == "" and user.conf == "":
             return getDefaultRealm() in policies['realms']
