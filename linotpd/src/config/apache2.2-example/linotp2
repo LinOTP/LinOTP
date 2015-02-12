@@ -5,18 +5,22 @@
 
     Header always edit Set-Cookie ^(.*)$ $1;secure
 
-    DocumentRoot /var/www
-
     <Directory />
-        Options FollowSymLinks
         AllowOverride None
+        Order deny,allow
+        Deny from all
     </Directory>
 
-    <Directory /var/www/>
-        Options Indexes FollowSymLinks MultiViews
-        AllowOverride None
+    <Directory /etc/linotp2>
+        <Files linotpapp.wsgi>
+            Order allow,deny
+            Allow from all
+        </Files>
+    </Directory>
+
+    <Directory /usr/share/doc/linotpdoc/html>
         Order allow,deny
-        allow from all
+        Allow from all
     </Directory>
 
     Alias /doc/html         /usr/share/doc/linotpdoc/html
