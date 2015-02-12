@@ -248,6 +248,7 @@ class BaseController(WSGIController):
         """
         self.sep = None
         self.set_language(request.headers)
+        self.base_auth_user = ''
 
         self.parent = super(WSGIController, self)
         self.parent.__init__(*args, **kw)
@@ -313,8 +314,13 @@ class BaseController(WSGIController):
             if environ:
                 path = environ.get("PATH_INFO", "") or ""
 
-            user_desc =getUserFromRequest(request)
-            self.base_auth_user = user_desc.get('login','')
+            try:
+                user_desc = getUserFromRequest(request)
+                self.base_auth_user = user_desc.get('login', '')
+            except UnicodeDecodeError as exx:
+                # we supress Exception here as it will be handled in the
+                # controller which will return corresponding response
+                log.info('Failed to identify user due to %r' % exx)
 
             log.debug("request %r" % path)
             ret = WSGIController.__call__(self, environ, start_response)
