@@ -1,3 +1,9 @@
+linotp-adminclient-gui (2.7.3~0dev0-1~precise) precise; urgency=low
+
+  * Set new version 2.7.3~0dev0-1~precise
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 13 Feb 2015 18:27:50 +0100
+
 linotp-adminclient-gui (2.7.2~0dev0-1~precise) precise; urgency=low
 
   * Set new version 2.7.2.dev0
