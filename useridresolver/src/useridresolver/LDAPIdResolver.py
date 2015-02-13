@@ -442,16 +442,7 @@ class IdResolver (UserIdResolver):
             return userid
 
         log.debug("[getUserId] type of LoginName %s" % type(LoginName))
-
-        ufilter = self.filter
-        try:
-            special_dict ={}
-            special_dict['now'] = self.now_timestamp()
-            ufilter = ufilter % special_dict
-        except KeyError as key_error:
-            log.error('Key replacement error %r' % key_error)
-            raise key_error
-
+        ufilter = self._replace_macros(self.filter)
         fil = ldap.filter.filter_format(ufilter,
                                         [LoginName.decode(ENCODING)])
         fil = fil.encode(ENCODING)
@@ -1074,7 +1065,7 @@ class IdResolver (UserIdResolver):
     def _is_ad(self):
         """
         this is a heuristic approach to check if we are running against an AD
-        check is running against the ldap config where we expect to have an 
+        check is running against the ldap config where we expect to have an
         sAMAccountname in any filter or login attribute
         """
         ret = False
@@ -1105,9 +1096,32 @@ class IdResolver (UserIdResolver):
             account_expiry = True # we only care for account expiry
             if account_expiry:
                 add_seconds += 86400
-            now = ((now *10000000) + add_seconds)
+            now = ((now * 10000000) + add_seconds)
         return now
 
+    def _replace_macros(self, expression):
+        """
+        replace macros in string expression
+
+        we support special replacements in search expressions like
+        %(now)s which will be replaced by the windows or unix timestamp
+
+        :param expression: string where macros should be replaced
+        :return: substituted string
+        """
+        substitute = expression
+        special_dict = {}
+        special_dict['now'] = self.now_timestamp()
+
+        try:
+            for key, val in special_dict.items():
+                search_st = "%(" + key + ")s"
+                if search_st in substitute:
+                    substitute = substitute.replace(search_st, val)
+        except KeyError as key_error:
+            log.error('Key replacement error %r' % key_error)
+            raise key_error
+        return substitute
 
     def getUserList(self, searchDict):
         '''
@@ -1125,18 +1139,8 @@ class IdResolver (UserIdResolver):
 
         log.debug("[getUserList]")
 
-        # we support special replacements in search expressions like
-        # %(now)s which will be replaced by the windows or unix timestamp
-        special_dict ={}
-        special_dict['now'] = self.now_timestamp()
-
-        searchFilter = self.searchfilter
         # add specialdict replacements, to support the "%(now)s" expression
-        try:
-            searchFilter = searchFilter % special_dict
-        except KeyError as key_error:
-            log.error('Key replacement error %r' % key_error)
-            raise key_error
+        searchFilter = self._replace_macros(self.searchfilter)
 
         log.debug("[getUserList] searchfilter: %r" % searchFilter)
 
