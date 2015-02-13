@@ -341,3 +341,34 @@ def checksum(msg):
             if n != 0:
                 crc = crc ^ 0x8408
     return crc
+
+
+def str2unicode(input_str):
+    """
+    convert as binary string into a unicode string
+    :param input_str: input binary string
+    :return: unicode output
+    """
+    output_str = input_str
+    conversions = [{}, {'encoding':'utf-8'}]
+    for param in conversions:
+        try:
+            output_str = unicode(output_str, **param)
+            break
+        except UnicodeDecodeError as exx:
+            if param == conversions[-1]:
+                log.info('no unicode conversion found for %r' % input_str)
+                raise exx
+
+    return output_str
+
+
+def unicode_compare(x, y):
+    """
+    locale and unicode aware comparison operator - for usage in sorted()
+
+    :param x: left value
+    :param y: right value
+    :return: the locale aware comparison result
+    """
+    return cmp(str2unicode(x), str2unicode(y))
