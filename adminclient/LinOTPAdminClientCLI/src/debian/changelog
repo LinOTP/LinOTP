@@ -1,11 +1,12 @@
-linotp-adminclient-cli (2.7.1.2~0dev0-1~precise) precise; urgency=low
+linotp-adminclient-cli (2.7.1.2-1~precise) precise; urgency=low
 
   * removed length limititation for display of tokenserial number in listtoken
   * fallback csv output to stderr for listtoken --csv format
-  * don't show 'no matching yubimode' message when using valid --yubimode=oath  command-line parameter
+  * don't show 'no matching yubimode' message when using valid --yubimode=oath
+    command-line parameter
   * support yubikey OATH token enrollment with 6 or 8 digits
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 10 Feb 2015 15:00:39 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 13 Feb 2015 11:40:25 +0100
 
 linotp-adminclient-cli (2.7.1-1~precise) precise; urgency=low
 

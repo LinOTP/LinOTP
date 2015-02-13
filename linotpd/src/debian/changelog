@@ -1,7 +1,4 @@
-linotp (2.7.1.2~0dev0-1~precise) precise; urgency=low
-
-  License
-  * hotfix for license values with whitespaces which let the license check fail
+linotp (2.7.1.2-1~precise) precise; urgency=low
 
   Server:
   * adjust the copyright date from 2014 to 2015
@@ -11,15 +8,17 @@ linotp (2.7.1.2~0dev0-1~precise) precise; urgency=low
   * made selfservice history browsing working again
 
   Tools and Resolver:
-  * enhanced password genenerating tool to generate more secure passwords entries for usage via passwd and sql resolvers
+  * enhanced password genenerating tool to generate more secure passwords
+    entries for usage via passwd and sql resolvers
 
   Web UI:
   * added ui hints for the sms and email token config
-  * use radius token config defualts for radius token enrollment
+  * use radius token config defaults for radius token enrollment
   * use remote token config defaults for remote token enrollment
-  * searching for unknown users in tokenview, showed all tokens that had no user assigned.
+  * searching for unknown users in tokenview, showed all tokens that had no
+    user assigned.
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sun, 08 Feb 2015 12:18:54 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 13 Feb 2015 11:40:24 +0100
 
 linotp (2.7.1.1-1~precise) precise; urgency=low
 
