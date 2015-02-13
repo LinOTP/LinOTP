@@ -32,6 +32,8 @@
   Dependencies: UserIdResolver
 """
 
+from ldap.controls import SimplePagedResultsControl
+
 from useridresolver.UserIdResolver import (UserIdResolver,
                                            ResolverLoadConfigError
                                            )
@@ -322,9 +324,8 @@ class IdResolver (UserIdResolver):
         try:
             if self.l_obj is not None:
                 self.l_obj.unbind_s()
-
         except ldap.LDAPError as  error:
-            log.error("[unbind] LDAP error: %r" % error)
+            log.warning("[unbind] LDAP error: %r" % error)
         finally:
             self.l_obj = None
 
@@ -873,10 +874,10 @@ class IdResolver (UserIdResolver):
         if self.uidType == None or self.uidType.strip() == "":
             self.uidType = DEFAULT_UID_TYPE
         if type(self.uidType) in [unicode]:
-            log.warning("[loadConfig] conversion of self.uidType: %r to str()"
+            log.info("[loadConfig] conversion of self.uidType: %r to str()"
                                                                 % self.uidType)
             self.uidType = str(self.uidType)
-        # self.sizelimit      = float(sizelimit)
+
         try:
             self.sizelimit = int(sizelimit)
         except ValueError:
@@ -1249,6 +1250,259 @@ class IdResolver (UserIdResolver):
                 return resultList
 
         return ""
+
+    def _prepare_searchFilter(self, searchDict):
+        '''
+        prepare the search Expression for the userListIterator
+
+        :param searchDict: dictionary of the search criterias
+        :type  searchDict: dict
+        :return: resultList, a dict with user info
+        '''
+
+        # TODO: check if field is searchable
+        # several filters are & concatenated:
+        #   (&(objectClass=inetOrgPerson)(uid=theodor))
+        # if we got an empty search dictionary, we will get all users!
+
+        log.debug("[getUserList]")
+
+        # we support special replacements in search expressions like
+        # %(now)s which will be replaced by the windows or unix timestamp
+        special_dict = {}
+        special_dict['now'] = self.now_timestamp()
+
+        searchFilter = self.searchfilter
+        # add specialdict replacements, to support the "%(now)s" expression
+        try:
+            searchFilter = searchFilter % special_dict
+        except KeyError as key_error:
+            log.error('Key replacement error %r' % key_error)
+            raise key_error
+
+        log.debug("[getUserList] searchfilter: %r" % searchFilter)
+
+        # add searchfilter attributes of searchDict
+        try:
+            for skey, sval in searchDict.iteritems():
+                log.debug("[getUserList] searchekys: %r / %r" % (skey, sval))
+                if skey in self.userinfo:
+                    key = self.userinfo[skey]
+                    value = searchDict[skey]
+                    # value and searchFilter are Unicode!
+                    searchFilter += u"(%s=%s)" % (key, value)
+                else:
+                    log.warning("[getUserList] Unknown searchkey: %r" % skey)
+
+            # finaly embedd the filter in the ldap query string
+            searchFilter = u"(& %s )" % searchFilter
+            log.debug("[getUserList] searchfilter: %r" % searchFilter)
+        except Exception as exep:
+            log.error("[getUserList] Error creating searchFilter: %r" % exep)
+            log.error("[getUserList] %s" % traceback.format_exc())
+            raise exep
+        return searchFilter
+
+    def _set_cursor(self, searchFilter, attrlist, l_obj=None, lc=None,
+                       serverctrls=None, api_ver=2.4):
+        """
+        helper function to setup the paging query and shift the cursor
+
+        :param searchFilter: restict the search through the searchFilter
+        :param attrlist: list of attributes, which should be returned
+        :param l_obj: the ldap connection object - if none, we bind() it
+        :param lc: the page result controller
+        :param serverctrls: the srv.ctrl response of the ldap.result3
+        :param api_ver: either 2.3 or 2.4, the ldap api changed in between :-(
+        :return: tupple of (message id, ldap connection object and page
+                 controller)
+        """
+        page_size = 100
+        # we take the sizelimit as hint for the page size
+        if hasattr(self, "sizelimit"):
+            page_size = self.sizelimit / 4
+
+        # first request: if lc is not set, we are initializing
+        if lc is None:
+            l_obj = self.bind()
+            if api_ver == 2.4:
+                lc = SimplePagedResultsControl(True, size=page_size, cookie='')
+            elif api_ver == 2.3:
+                PAGE_OID = ldap.LDAP_CONTROL_PAGE_OID
+                lc = SimplePagedResultsControl(PAGE_OID, True, (page_size, ''))
+
+        else:
+            cookie = None
+            pctrls = []
+
+            if api_ver == 2.4:
+                for c in serverctrls:
+                    if c.controlType == SimplePagedResultsControl.controlType:
+                        pctrls.append(c)
+                        cookie = c.cookie
+                        lc.cookie = cookie
+
+            elif api_ver == 2.3:
+                for c in serverctrls:
+                    if c.controlType == ldap.LDAP_CONTROL_PAGE_OID:
+                        pctrls.append(c)
+                        cookie = c.controlValue[1]
+                        lc.controlValue = (page_size, cookie)
+
+            if not pctrls:
+                raise Exception("Warning: Server ignores RFC 2696 control.")
+
+            if not cookie:
+                return (None, None, None)
+
+        # submit search request
+        msgid = l_obj.search_ext(
+            self.base,
+            ldap.SCOPE_SUBTREE,
+            filterstr=searchFilter.encode(ENCODING),
+            attrlist=attrlist,
+            serverctrls=[lc]
+            )
+
+        return (msgid, l_obj, lc)
+
+    def _api_version(self):
+        """
+        helper method to detect if the python ldap module supports cursoring
+         * debian python-ldap==2.3.11 has support, while pip python-ldap-2.4.19
+           has not :-(
+        :return: True or False
+        """
+        ret = 2.3
+        try:
+            _PAGE_OID = ldap.LDAP_CONTROL_PAGE_OID
+        except AttributeError as _exx:
+            log.info('using the 2.4 cursoring api.')
+            ret = 2.4
+        return ret
+
+    def getUserListIterator(self, searchDict):
+        """
+        iterator based access to get the list of users
+        to prevent server response of sizelimit exceeded
+
+        :param searchDict: the dict with a search filter expression
+        :return: A generator object (that yields userlist arrays).
+        """
+        searchFilter = self._prepare_searchFilter(searchDict)
+        log.debug("[getUserListIterator] doing search with filter %r"
+                                                        % searchFilter)
+
+        attrlist = []
+        for _ukey, uval in self.userinfo.iteritems():
+            attrlist.append(str(uval))
+        # add the requested unique identifier if it is not the dn
+        if self.uidType.lower() != "dn":
+            attrlist.append(self.uidType)
+
+        # replace the method pointer to the right place
+        api_ver = self._api_version()
+
+        (msgid, l_obj, lc) = self._set_cursor(searchFilter,
+                                                          attrlist,
+                                                          api_ver=api_ver)
+
+        done = False
+
+        try:
+            log.debug('[getUserListIterator] uidType: %r' % self.uidType)
+            while not done:
+                result_type, result_data, _rmsgid, serverctrls = \
+                                    l_obj.result3(msgid)
+
+                # shift the cursor to the next page
+                (msgid, l_obj, lc) = \
+                    self._set_cursor(searchFilter, attrlist,
+                                        l_obj=l_obj, lc=lc,
+                                        serverctrls=serverctrls,
+                                        api_ver=api_ver)
+
+                if not msgid:
+                    done = True
+
+                if result_type != ldap.RES_SEARCH_RESULT:
+                    continue
+
+                # process the result into array of dict
+                user_list = []
+                for result_entry in result_data:
+                    user_info = self._process_result(result_entry)
+                    if user_info:
+                        user_list.append(user_info)
+
+                yield user_list
+
+        except ldap.LDAPError as exce:
+            log.error("[getUserListIterator] LDAP error: %r" % exce)
+            raise exce
+        except Exception as exce:
+            log.error("[getUserListIterator] error during LDAP access: %r"
+                            % exce)
+            log.error("[getUserListIterator] %s" % traceback.format_exc())
+            raise exce
+
+        # we do no unbind here, as this is done at the request end
+
+    def _process_result(self, result_data):
+        """
+        process the result of the iterator request into a user info dict
+
+        :param result_data: one data entry of the ldap search response
+        :return: userdata as dict
+        """
+        userdata = {}
+        # access account DN as 1. tupple member
+        # access account info dict as 2. tupple member
+        account_dn = result_data[0]
+        account_info = result_data[1]
+
+        # in case of no DN - we skip the object
+        if not account_dn:
+            return userdata
+
+        if self.uidType.lower() == "dn":
+            userdata["userid"] = unicode(account_dn, ENCODING)
+
+        elif self.uidType.lower() == "objectguid":
+            userid = None
+            # in case of objectguid, we have to
+            # check case insensitiv if objectGUID is in dict
+            for key in account_info:
+                if key.lower() == self.uidType.lower():
+                    res = account_info.get(key)[0]
+                    userid = self.guid2str(res)
+                    break
+            if userid:
+                userdata["userid"] = userid
+            else:
+                # should never be reached!!
+                raise Exception('No Userid found')
+        else:
+            # suport for arbitrary object identifyier like
+            # entryUUID, GUID, objectGUID
+            userdata["userid"] = \
+                account_info[self.uidType][0]
+
+        # finally add all existing userinfos (wrt the mapping)
+        for ukey, uval in self.userinfo.iteritems():
+            if uval in account_info:
+            # An attribute can hold more than 1 value
+            # So we only take the first one at the moment
+            #   result_data[0][1][v][0]
+            # If we want to get all
+            #   result_data[0][1][v] gives us a list
+                rdata = account_info[uval][0]
+                try:
+                    udata = rdata.decode(ENCODING)
+                except:
+                    udata = rdata
+                userdata[ukey] = udata
+        return userdata
 
 if __name__ == "__main__":
 
