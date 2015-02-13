@@ -4,6 +4,16 @@ linotp-adminclient-cli (2.7.2~0dev0-1~precise) precise; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 15 Dec 2014 16:56:27 +0100
 
+linotp-adminclient-cli (2.7.1.2-1~precise) precise; urgency=low
+
+  * removed length limititation for display of tokenserial number in listtoken
+  * fallback csv output to stderr for listtoken --csv format
+  * don't show 'no matching yubimode' message when using valid --yubimode=oath
+    command-line parameter
+  * support yubikey OATH token enrollment with 6 or 8 digits
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 13 Feb 2015 11:40:25 +0100
+
 linotp-adminclient-cli (2.7.1-1~precise) precise; urgency=low
 
   * Removed trailing slash on -U parameter to prevent 404-not found error
@@ -52,7 +62,7 @@ linotp-adminclient-ce (2.5.2-1.rc8) lucid; urgency=low
   * Fixed export of empty policies                        #12099
   * Fixed of weird PKG-INFO from build                    #12098
   * Fixed for ad users with special char in dn for access to selfservice #12090
-   
+
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Jul 2013 00:52:22 +0200
 
@@ -83,7 +93,7 @@ linotp-adminclient-ce (2.5.2-0.rc6) precise; urgency=low
   * Fixed the UI of the TOTP enrollment to honour the timestep #12080
   * Fixed the dependency for repoze.who #12081
   * Added multiple LDAPS useridresolvers #12065
-   
+
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 04 Jul 2013 00:28:36 +0200
 
@@ -104,7 +114,7 @@ linotp-adminclient-ce (2.5.2-0.rc3ubuntu1) precise; urgency=low
 linotp-adminclient-ce (2.5.2-0.rc3) lucid; urgency=low
 
   * added possibility to enroll yubikey in AES-OTP mode
-  
+
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Jun 2013 16:10:06 +0200
 
 
@@ -143,11 +153,11 @@ linotpadminclientce (2.4.4-ocra-5) lucid; urgency=low
   * added command for security modules
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Oct 2012 08:02:10 +0200
- 
+
 
 linotpadminclientce (2.4.4) lucid; urgency=low
 
-  * improved the login behavior 
+  * improved the login behavior
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 25 Jul 2012 11:21:10 +0200
 
@@ -170,7 +180,7 @@ linotpadminclientce (2.4.1) lucid; urgency=low
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Sat, 29 Oct 2011 19:30:00 +0200
 
 linotpadminclientce (2.4) lucid; urgency=low
-  
+
   * speed up of userview
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 15 Sep 2011 16:09:53 +0200

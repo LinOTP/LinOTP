@@ -4,6 +4,14 @@ linotp-useridresolver (2.7.2~0dev0-1~precise) precise; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 15 Dec 2014 16:56:27 +0100
 
+linotp-useridresolver (2.7.1.2-1~precise) precise; urgency=low
+
+  Tools and Resolver:
+  * enhanced password genenerating tool to generate more secure passwords
+    entries for usage via passwd and sql resolvers
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 13 Feb 2015 11:40:25 +0100
+
 linotp-useridresolver (2.7.1-1~precise) precise; urgency=low
 
   * Fixed LDAPIdResolver 'Size limit exceeded' error message that appeared
@@ -92,7 +100,7 @@ linotp-useridresolver (2.6-1) precise; urgency=low
 
 linotp-useridresolver (2.5.2.1-1) precise; urgency=low
 
-  * Change RC8 to the release version 
+  * Change RC8 to the release version
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Aug 2013 11:26:31 +0200
 
@@ -104,7 +112,7 @@ linotp-useridresolver (2.5.2-1.rc8) lucid; urgency=low
   * fix of missing manpage for source distribution #12100
   * fix export of empty policies #12099
   * fix of weird PKG-INFO from build #12098
-  * fix for ad users with special char in dn for access to selfservice #12090 
+  * fix for ad users with special char in dn for access to selfservice #12090
 
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Jul 2013 00:42:08 +0200
@@ -120,7 +128,7 @@ linotp-useridresolver (2.5.2-1.rc7) precise; urgency=low
 
 linotp-useridresolver (2.5.2-1) precise; urgency=low
 
-  * Release community edition 
+  * Release community edition
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 05 Jul 2013 11:55:38 +0200
 
@@ -136,7 +144,7 @@ linotp-useridresolver (2.5.2-0.rc6) precise; urgency=low
   * Fixed the UI of the TOTP enrollment to honour the timestep #12080
   * Fixed the dependency for repoze.who #12081
   * Added multiple LDAPS useridresolvers #12065
-   
+
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 04 Jul 2013 00:27:12 +0200
 
