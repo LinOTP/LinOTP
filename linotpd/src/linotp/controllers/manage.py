@@ -59,6 +59,7 @@ from linotp.lib.reply   import sendError
 
 from linotp.lib.util    import remove_empty_lines
 from linotp.lib.util import get_client
+from linotp.lib.util import unicode_compare
 from linotp.model.meta import Session
 
 from linotp.lib.policy import checkPolicyPre, PolicyException, getAdminPolicies, getPolicyDefinitions
@@ -478,7 +479,11 @@ class ManageController(BaseController):
                     'mobile' :5, 'phone' : 6, 'userid' : 7 }
             if c.dir == "desc":
                 reverse = True
-            lines = sorted(lines, key=lambda user: user['cell'][sortnames[c.sort]] , reverse=reverse)
+
+            lines = sorted(lines,
+                           key=lambda user: user['cell'][sortnames[c.sort]],
+                           reverse=reverse,
+                           cmp=unicode_compare)
             # end: sorting
 
             # reducing the page
