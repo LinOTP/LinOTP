@@ -70,7 +70,7 @@ def get_copyright_info():
     '''
     This returns the copyright information displayed in the WebUI and selfservice portal.
     '''
-    return "2010-2014 LSE Leading Security Experts GmbH"
+    return "2010-2015 LSE Leading Security Experts GmbH"
 
 def getParam(param, which, optional=True):
     """
