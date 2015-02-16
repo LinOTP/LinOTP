@@ -58,14 +58,17 @@ def create_google_authenticator(param):
     typ = param.get("type", 'hotp')
     if typ.lower() == 'hmac':
         typ = 'hotp'
+
     if not typ.lower() in ['totp', 'hotp']:
-        raise NoOtpAuthTokenException('not supported otpauth token type: %r' % typ)
+        raise NoOtpAuthTokenException('not supported otpauth token type: %r'
+                                      % typ)
 
     serial = param.get("serial", None)
-
     digits = param.get("otplen", None)
-
     otpkey = param.get("otpkey", None)
+
+    url_param = {}
+
     if len(otpkey) == 0:
         raise Exception('Failed to create token url due to missing seed!')
     key = base64.b32encode(binascii.unhexlify(otpkey))
@@ -73,16 +76,19 @@ def create_google_authenticator(param):
 
     algo = param.get("hashlib", "sha1") or "sha1"
     algo = algo.upper()
-    if algo not in['SHA1', 'SHA256', 'SHA512' , 'MD5']:
+    if algo not in['SHA1', 'SHA256', 'SHA512', 'MD5']:
         algo = 'SHA1'
 
-    url_param = {}
-    url_param['secret'] = key
-    if digits != '6':
-        url_param['digits'] = digits
-    url_param['counter'] = 0
     if algo != 'SHA1':
         url_param['algorithm'] = algo
+
+    url_param['secret'] = key
+
+    if digits != '6':
+        url_param['digits'] = digits
+
+    if typ not in ['totp']:
+        url_param['counter'] = 0
 
     if 'timeStep' in param:
         url_param['period'] = param.get('timeStep')
@@ -98,7 +104,12 @@ def create_google_authenticator(param):
 
     # show the user login in the token prefix
     if len(param.get('user.login', '')) > 0:
-        label = get_tokenlabel(param.get('user.login', ''), param.get('user.realm', ''), serial)
+        label = get_tokenlabel(param.get('user.login', ''),
+                               param.get('user.realm', ''), serial)
+
+        if len(param.get('description', '')) > 0 and '<d>' in label:
+            label = label.replace('<d>', param.get('description'))
+
         label = label[0:allowed_label_len]
     else:
         label = serial
@@ -110,15 +121,12 @@ def create_google_authenticator(param):
     ga = "otpauth://%s/%s" % (typ, url_label)
     ga = "%s?%s" % (ga, qg_param)
 
-    log.debug("[_create_google_authenticator] google authenticator: %r" % ga[:20])
+    log.debug("[_create_google_authenticator] google authenticator: %r"
+              % ga[:20])
     return ga
 
 
-
-
-
-
-def create_google_authenticator_url(user, realm, key, type="hmac", serial=""):
+def create_google_authenticator_url(user, realm, key, typ="hmac", serial=""):
     '''
     This creates the google authenticator URL.
     This url may only be 119 characters long.
@@ -129,27 +137,34 @@ def create_google_authenticator_url(user, realm, key, type="hmac", serial=""):
     '''
     # policy depends on some lib.util
 
-    if "hmac" == type.lower():
-        type = "hotp"
-
-    label = ""
-
     key_bin = binascii.unhexlify(key)
     # also strip the padding =, as it will get problems with the google app.
     otpkey = base64.b32encode(key_bin).strip('=')
 
-    # 'url' : "otpauth://hotp/%s?secret=%s&counter=0" % ( user@realm, otpkey )
-    base_len = len("otpauth://%s/?secret=%s&counter=0" % (type, otpkey))
+    base_url = "otpauth://%s/?secret=%s&counter=0"
+    if "hmac" == typ.lower():
+        typ = "hotp"
+
+    # for totp we need no counter returned
+    if typ.lower() in ['totp']:
+        base_url = "otpauth://%s/?secret=%s"
+
+    # we calculate the max for a token lable len as only 199  chars in the
+    # total len is supported
+    base_len = len(base_url % (typ, otpkey))
+
     max_len = 119
     allowed_label_len = max_len - base_len
-    log.debug("[create_google_authenticator_url] we got %s characters left for the token label" % str(allowed_label_len))
+    log.debug("[create_google_authenticator_url] we got %s characters left "
+              "for the token label" % str(allowed_label_len))
 
     label = get_tokenlabel(user, realm, serial)
     label = label[0:allowed_label_len]
 
     url_label = quote(label)
+    qurl = base_url % (typ, url_label, otpkey)
+    return qurl
 
-    return "otpauth://%s/%s?secret=%s&counter=0" % (type, url_label, otpkey)
 
 def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
     # 'url' : 'oathtoken:///addToken?name='+serial +
