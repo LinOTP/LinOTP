@@ -617,7 +617,7 @@ def getSearchFields(User):
 
     return searchFields
 
-def getUserList(param, User):
+def getUserList(param, search_user):
 
     users = []
 
@@ -636,14 +636,14 @@ def getUserList(param, User):
         searchDict[key] = lval
         log.debug("[getUserList] Parameter key:%r=%r" % (key, lval))
 
-    resolverrrs = getResolvers(User)
+    resolverrrs = getResolvers(search_user)
 
     for reso in resolverrrs:
-        (package, module, class_, conf) = splitResolver(reso)
+        (package, module, _class, conf) = splitResolver(reso)
         module = package + "." + module
 
-        if len(User.conf) > 0:
-            if conf.lower() != User.conf.lower():
+        if len(search_user.conf) > 0:
+            if conf.lower() != search_user.conf.lower():
                 continue
 
         # try to load the UserIdResolver Class
@@ -651,21 +651,25 @@ def getUserList(param, User):
 
             log.debug("[getUserList] Check for resolver class: %r" % reso)
             y = getResolverObject(reso)
-            log.debug("[getUserList] with this search dictionary: %r " % searchDict)
+            log.debug("[getUserList] with this search dictionary: %r "
+                      % searchDict)
 
             if hasattr(y, 'getUserListIterator'):
                 try:
                     ulist_gen = y.getUserListIterator(searchDict)
                     while True:
                         ulist = ulist_gen.next()
-                        log.debug("[getUserList] setting the resolver <%r> for each user" % reso)
+                        log.debug("[getUserList] setting the resolver <%r> "
+                                  "for each user" % reso)
                         for u in ulist:
                             u["useridresolver"] = reso
-                        log.debug("[getUserList] Found this userlist: %r" % ulist)
+                        log.debug("[getUserList] Found this userlist: %r"
+                                  % ulist)
                         users.extend(ulist)
 
                 except StopIteration as exx:
-                    # we are done and all users are fetched
+                    # we are done: all users are fetched or
+                    # page size limit reached
                     pass
             else:
                 ulist = y.getUserList(searchDict)
@@ -687,6 +691,60 @@ def getUserList(param, User):
     return users
 
 
+def getUserListIterators(param, search_user):
+    """
+    return a list of iterators for all userid resolvers
+
+    :param param: request params (dict), which might be realm or resolver conf
+    :param search_user: restrict the resolvers to those of the search_user
+    """
+    user_iters = []
+    searchDict = {}
+
+    log.debug("Entering function getUserListIterator")
+
+    searchDict.update(param)
+    if 'realm' in searchDict:
+        del searchDict['realm']
+    if 'resConf' in searchDict:
+        del searchDict['resConf']
+    log.debug("searchDict %r" % searchDict)
+
+    resolverrrs = getResolvers(search_user)
+    for reso in resolverrrs:
+        (package, module, _class, conf) = splitResolver(reso)
+        module = package + "." + module
+
+        if len(search_user.conf) > 0:
+            if conf.lower() != search_user.conf.lower():
+                continue
+
+        # try to load the UserIdResolver Class
+        try:
+            log.debug("Check for resolver class: %r" % reso)
+            y = getResolverObject(reso)
+            log.debug("With this search dictionary: %r " % searchDict)
+
+            if hasattr(y, 'getUserListIterator'):
+                uit = y.getUserListIterator(searchDict, limit_size=False)
+            else:
+                uit = iter(y.getUserList(searchDict))
+
+            user_iters.append((uit, reso))
+
+        except KeyError as exx:
+            log.error("[ module %r:%r ]" % (module, exx))
+            log.error("%s" % traceback.format_exc())
+            raise exx
+
+        except Exception as exx:
+            log.error("[ module %r:%r ]" % (module, exx))
+            log.error("%s" % traceback.format_exc())
+            continue
+
+    return user_iters
+
+
 def getUserInfo(userid, resolver, resolverC):
     log.debug("[getUserInfo] uid:%r resolver:%r class:%r" %
               (userid, resolver, resolverC))
@@ -698,7 +756,7 @@ def getUserInfo(userid, resolver, resolverC):
         return userInfo
 
     try:
-        (package, module, class_, conf) = splitResolver(resolverC)
+        (package, module, _class, _conf) = splitResolver(resolverC)
         module = package + "." + module
 
         y = getResolverObject(resolverC)
@@ -710,6 +768,7 @@ def getUserInfo(userid, resolver, resolverC):
         log.error("[getUserInfo][ module %r notfound! :%r ]" % (module, e))
 
     return userInfo
+
 
 def getUserPhone(user, phone_type='phone'):
     '''

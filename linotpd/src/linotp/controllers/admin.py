@@ -33,7 +33,7 @@ admin controller - interfaces to administrate LinOTP
 import logging
 
 from pylons import request, response, config, tmpl_context as c
-
+import json
 
 from linotp.lib.base import BaseController
 
@@ -50,11 +50,24 @@ from linotp.lib.error import ParameterError
 from linotp.lib.util import getParam, getLowerParams
 from linotp.lib.util import check_session, SESSION_KEY_LENGTH, remove_session_from_param
 from linotp.lib.util import get_client
-from linotp.lib.user import getSearchFields, getUserList, User, getUserFromParam, getUserFromRequest
+from linotp.lib.user import (getSearchFields,
+                             getUserList,
+                             getUserListIterators,
+                             User,
+                             getUserFromParam,
+                             getUserFromRequest
+                             )
+
 
 from linotp.lib.realm import getDefaultRealm
 
-from linotp.lib.reply import sendResult, sendError, sendXMLResult, sendXMLError, sendCSVResult
+from linotp.lib.reply import (sendResult,
+                              sendError,
+                              sendXMLResult,
+                              sendXMLError,
+                              sendCSVResult,
+                              sendResultIterator,
+                              )
 from linotp.lib.reply import sendQRImageResult
 
 from linotp.lib.validate import get_challenges
@@ -154,22 +167,22 @@ class AdminController(BaseController):
     def logout(self):
         # see http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
         c.audit['action_detail'] = "logout"
-        #response.status = "401 Not authenticated"
+        # response.status = "401 Not authenticated"
 
         nonce = request.environ.get("nonce")
         realm = request.environ.get("realm")
         detail = "401 Unauthorized"
-        #return HTTPUnauthorized(request=request)
+        # return HTTPUnauthorized(request=request)
         raise HTTPUnauthorized(
              unicode(detail),
              [('WWW-Authenticate', 'Digest realm="%s", nonce="%s", qop="auth"' % (realm, nonce))]
             )
 
-        #raise exc.HTTPUnauthorized(
+        # raise exc.HTTPUnauthorized(
         #                           str(detail),
         #                           [('WWW-Authenticate', 'Basic realm="%s"' % realm)]
         #                          )
-        #abort(401, "You are not authenticated")
+        # abort(401, "You are not authenticated")
 
 
     def getsession(self):
@@ -210,7 +223,7 @@ class AdminController(BaseController):
 
 
     def dropsession(self):
-        #request.cookies.pop( 'admin_session', None )
+        # request.cookies.pop( 'admin_session', None )
         # FIXME: Does not seem to work
         response.set_cookie('admin_session', None, expires=1)
         return
@@ -636,9 +649,9 @@ class AdminController(BaseController):
             serial = getParam(param, "serial", required)
 
             # check admin authorization
-            #try:
+            # try:
             #    checkPolicyPre('admin', 'disable', param )
-            #except PolicyException as pe:
+            # except PolicyException as pe:
             #    return sendError(response, str(pe), 1)
 
             log.info("[check_serial] checking serial %s" % serial)
@@ -728,7 +741,7 @@ class AdminController(BaseController):
                 helper_param['user.login'] = user.login
                 helper_param['user.realm'] = user.realm
 
-            ## for genkey, we have to transfer this to the lowest level
+            # # for genkey, we have to transfer this to the lowest level
             key_size = getParam(param, "keysize", optional) or 20
             helper_param['key_size'] = key_size
 
@@ -740,12 +753,12 @@ class AdminController(BaseController):
                 tokenrealm = res['realms']
 
 
-            ## look for the tokenclass to support a class init
-            ## the classInit could do a rewrite of the request parameters
-            ## which are then used in the tokenInit as parameters
-            ## this is for example
-            ##   to find all open init challenges of a token type and set the
-            ##   serial number in the parameter list
+            # # look for the tokenclass to support a class init
+            # # the classInit could do a rewrite of the request parameters
+            # # which are then used in the tokenInit as parameters
+            # # this is for example
+            # #   to find all open init challenges of a token type and set the
+            # #   serial number in the parameter list
 
             g = config['pylons.app_globals']
             tokenclasses = g.tokenclasses
@@ -769,9 +782,9 @@ class AdminController(BaseController):
             log.info("[init] initialize token. user: %s, serial: %s" % (user.login, serial))
             (ret, tokenObj) = initToken(helper_param, user, tokenrealm=tokenrealm)
 
-            ## result enrichment - if the token is sucessfully created,
-            ## some processing info is added to the result document,
-            ##  e.g. the otpkey :-) as qr code
+            # # result enrichment - if the token is sucessfully created,
+            # # some processing info is added to the result document,
+            # #  e.g. the otpkey :-) as qr code
             initDetail = tokenObj.getInitDetail(helper_param, user)
             response_detail.update(initDetail)
 
@@ -785,7 +798,7 @@ class AdminController(BaseController):
 
             # DeleteMe: This code will never run, since getUserFromParam
             # always returns a realm!
-            #if "" == c.audit['realm'] and "" != c.audit['user']:
+            # if "" == c.audit['realm'] and "" != c.audit['user']:
             #    c.audit['realm'] = getDefaultRealm()
 
             logTokenNum()
@@ -794,8 +807,8 @@ class AdminController(BaseController):
 
             Session.commit()
 
-            ## finally we render the info as qr immage, if the qr parameter
-            ## is provided and if the token supports this
+            # # finally we render the info as qr immage, if the qr parameter
+            # # is provided and if the token supports this
             if 'qr' in param and tokenObj is not None:
                 (rdata, hparam) = tokenObj.getQRImageData(response_detail)
                 hparam.update(response_detail)
@@ -997,7 +1010,7 @@ class AdminController(BaseController):
         try:
             param = getLowerParams(request.params)
 
-            ## if there is a pin
+            # # if there is a pin
             if param.has_key("userpin"):
                 msg = "setting userPin failed"
                 userPin = getParam(param, "userpin", required)
@@ -1127,7 +1140,7 @@ class AdminController(BaseController):
             # check admin authorization
             checkPolicyPre('admin', 'set', param, user=user)
 
-            ## if there is a pin
+            # # if there is a pin
             if param.has_key("pin"):
                 msg = "[set] setting pin failed"
                 upin = getParam(param, "pin", required)
@@ -1321,7 +1334,7 @@ class AdminController(BaseController):
 
             # DeleteMe: This code will never run, since getUserFromParam
             # always returns a realm!
-            #if "" == c.audit['realm'] and "" != c.audit['user']:
+            # if "" == c.audit['realm'] and "" != c.audit['user']:
             #    c.audit['realm'] = getDefaultRealm()
             Session.commit()
             return sendResult(response, res, 1)
@@ -1449,8 +1462,6 @@ class AdminController(BaseController):
         # check if we got a realm or resolver, that is ok!
         try:
             realm = getParam(param, "realm", optional)
-            #_resolver = getParam(param, "resConf", optional)
-
             checkPolicyPre('admin', 'userlist', param)
 
             up = 0
@@ -1462,24 +1473,34 @@ class AdminController(BaseController):
                 up = up + 1
             if (len(user.conf) > 0):
                 up = up + 1
-            # Here we need to list the users, that are only visible in the realm!!
-            #  we could also only list the users in the realm, if the admin got
-            #  the right "userlist".
 
-            ### list searchfields if no other param
+            # Here we need to list the users, that are only visible in the
+            # realm!! we could also only list the users in the realm, if the
+            # admin got the right "userlist".
+
             if len(param) == up:
-                usage = {"usage":"list available users matching the given search patterns:"}
+                usage = {"usage": "list available users matching the "
+                                    "given search patterns:"}
                 usage["searchfields"] = getSearchFields(user)
                 res = usage
+                Session.commit()
+                return sendResult(response, res)
+
             else:
-                users = getUserList(remove_session_from_param(param), user)
-                res = users
+                list_params = remove_session_from_param(param)
+                users_iters = getUserListIterators(list_params, user)
+                # TODO: check if admin is allowed to see the useridresolvers
+                # as users_iters is (user_iterator, resolvername)
+                # we could simply check if the admin is allowed to view the
+                # resolver
 
                 c.audit['success'] = True
                 c.audit['info'] = "realm: %s" % realm
 
-            Session.commit()
-            return sendResult(response, res)
+                Session.commit()
+
+                response.content_type = 'application/json'
+                return sendResultIterator(iterate_users(users_iters))
 
         except PolicyException as pe:
             log.error('[userlist] policy failed %r' % pe)
@@ -1590,7 +1611,7 @@ class AdminController(BaseController):
 
             # DeleteMe: This code will never run, since getUserFromParam
             # always returns a realm!
-            #if "" == c.audit['realm'] and "" != c.audit['user']:
+            # if "" == c.audit['realm'] and "" != c.audit['user']:
             #    c.audit['realm'] = getDefaultRealm()
 
             opt_result_dict = {}
@@ -1954,7 +1975,7 @@ class AdminController(BaseController):
                     TOKENS = parsePSKCdata(fileString, preshared_key_hex=pskc_preshared, do_checkserial=pskc_checkserial)
                 elif "password" == pskc_type:
                     TOKENS = parsePSKCdata(fileString, password=pskc_password, do_checkserial=pskc_checkserial)
-                    #log.debug(TOKENS)
+                    # log.debug(TOKENS)
                 elif "plain" == pskc_type:
                     TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
             elif typeString == "vasco":
@@ -1989,8 +2010,8 @@ class AdminController(BaseController):
 
                 log.info("[loadtokens] initialize token. serial: %s, realm: %s" % (serial, tokenrealm))
 
-                ## for the eToken dat we assume, that it brings all its
-                ## init parameters in correct format
+                # # for the eToken dat we assume, that it brings all its
+                # # init parameters in correct format
                 if typeString == "dat":
                     init_param = TOKENS[serial]
 
@@ -2194,12 +2215,12 @@ class AdminController(BaseController):
             serial = getParam(param, 'serial'          , optional)
 
             if transid is None and user.isEmpty() and serial is None:
-                ## raise exception
+                # # raise exception
                 log.error("[admin/checkstatus] : missing parameter: "
                              "transactionid, user or serial number for token")
                 raise ParameterError("Usage: %s" % description, id=77)
 
-            ## gather all challenges from serial, transactionid and user
+            # # gather all challenges from serial, transactionid and user
             challenges = set()
             if serial is not None:
                 challenges.update(get_challenges(serial=serial))
@@ -2207,7 +2228,7 @@ class AdminController(BaseController):
             if transid is not None :
                 challenges.update(get_challenges(transid=transid))
 
-            ## if we have a user
+            # # if we have a user
             if user.isEmpty() == False:
                 tokens = getTokens4UserOrSerial(user=user)
                 for token in tokens:
@@ -2219,23 +2240,23 @@ class AdminController(BaseController):
                 serials.add(challenge.getTokenSerial())
 
             status = {}
-            ## sort all information by token serial number
+            # # sort all information by token serial number
             for serial in serials:
                 stat = {}
                 chall_dict = {}
 
-                ## add the challenges info to the challenge dict
+                # # add the challenges info to the challenge dict
                 for challenge in challenges:
                     if challenge.getTokenSerial() == serial:
                         chall_dict[challenge.getTransactionId()] = challenge.get_vars(save=True)
                 stat['challenges'] = chall_dict
 
-                ## add the token info to the stat dict
+                # # add the token info to the stat dict
                 tokens = getTokens4UserOrSerial(serial=serial)
                 token = tokens[0]
                 stat['tokeninfo'] = token.get_vars(save=True)
 
-                ## add the local stat to the summary status dict
+                # # add the local stat to the summary status dict
                 status[serial] = stat
 
             res['values'] = status
@@ -2261,5 +2282,39 @@ class AdminController(BaseController):
             log.debug('[ocra/checkstatus] done')
 
 
-#eof###########################################################################
+def iterate_users(user_iterators):
+    """
+    build a userlist iterator / generator that returns the user data on demand
 
+    :param user_iterators: list of tuple (userlist iterators, resolver descr)
+    :return: generator of user data dicts (yield)
+    """
+
+    for itera in user_iterators:
+        user_iterator = itera[0]
+        reso = itera[1]
+        log.debug("iterating: %r" % reso)
+
+        try:
+            while True:
+                user_data = user_iterator.next()
+                if type(user_data) in [list]:
+                    for data in user_data:
+                        data['resolver'] = reso
+                        resp = "%s" % json.dumps(data)
+                        yield resp
+                else:
+                    user_data['resolver'] = reso
+                    resp = "%s" % json.dumps(user_data)
+                    yield resp
+        except StopIteration as exx:
+            # pass on to next iterator
+            pass
+        except Exception as exx:
+            log.error("Problem during iteration of userlist iterators: %r"
+                       % exx)
+            log.error("%s" % traceback.format_exc())
+
+    raise StopIteration()
+
+#eof###########################################################################

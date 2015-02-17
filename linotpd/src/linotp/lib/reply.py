@@ -211,7 +211,56 @@ def sendResult(response, obj, id=1, opt=None):
 
     return json.dumps(res, indent=3)
 
-def sendCSVResult(response, obj, flat_lines=False, filename="linotp-tokendata.csv"):
+
+def sendResultIterator(obj, id=1, opt=None):
+    '''
+        sendResultIterator - return an json result document in a streamed mode
+
+        :param obj: iterator of generator object like dict, sting or list
+        :param  id: id value, for future versions
+        :param opt: optional parameter, which allows to provide more detail
+
+        :return: generator of response data (yield)
+    '''
+
+    typ = "%s" % type(obj)
+    if 'generator' not in typ and 'iterator' not in typ:
+        raise Exception('no iterator method for object %r' % obj)
+
+    res = {"jsonrpc": "2.0",
+            "result": {"status": True,
+                       "value": "[DATA]",
+                      },
+           "version": get_version(),
+           "id": id}
+
+    if opt is not None and len(opt) > 0:
+        res["detail"] = opt
+
+    surrounding = json.dumps(res)
+    prefix, postfix = surrounding.split('"[DATA]"')
+
+    # first return the opening
+    yield prefix + " ["
+
+    sep = ""
+    try:
+        while True:
+            res = "%s%s\n" % (sep, obj.next())
+            sep = ','
+            yield res
+    except StopIteration as _stop:
+        log.debug('Result iteration finished!')
+
+    # last return the closing
+    yield "] " + postfix
+
+    # finally we signal end of result
+    raise StopIteration()
+
+
+def sendCSVResult(response, obj, flat_lines=False,
+                  filename="linotp-tokendata.csv"):
     '''
     returns a CSV document of the input data (like in /admin/show)
 

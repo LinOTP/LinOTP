@@ -1397,6 +1397,7 @@ class IdResolver (UserIdResolver):
         attrlist = []
         for _ukey, uval in self.userinfo.iteritems():
             attrlist.append(str(uval))
+
         # add the requested unique identifier if it is not the dn
         if self.uidType.lower() != "dn":
             attrlist.append(self.uidType)
