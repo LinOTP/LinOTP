@@ -1381,13 +1381,14 @@ class IdResolver (UserIdResolver):
             ret = 2.4
         return ret
 
-    def getUserListIterator(self, searchDict):
+    def getUserListIterator(self, searchDict, limit_size=True):
         """
         iterator based access to get the list of users
         to prevent server response of sizelimit exceeded
 
         :param searchDict: the dict with a search filter expression
-        :return: A generator object (that yields userlist arrays).
+        :param limit_size: restrict the returned data size to size_limit
+        :return: generator object (that yields userlist arrays).
         """
         searchFilter = self._prepare_searchFilter(searchDict)
         log.debug("[getUserListIterator] doing search with filter %r"
@@ -1404,14 +1405,19 @@ class IdResolver (UserIdResolver):
         api_ver = self._api_version()
 
         (msgid, l_obj, lc) = self._set_cursor(searchFilter,
-                                                          attrlist,
-                                                          api_ver=api_ver)
+                                              attrlist,
+                                              api_ver=api_ver)
 
         done = False
-
+        results_size = 0
         try:
-            log.debug('[getUserListIterator] uidType: %r' % self.uidType)
+
+            log.debug('uidType: %r' % self.uidType)
             while not done:
+
+                if limit_size and results_size >= self.sizelimit:
+                    raise StopIteration()
+
                 result_type, result_data, _rmsgid, serverctrls = \
                                     l_obj.result3(msgid)
 
@@ -1434,16 +1440,21 @@ class IdResolver (UserIdResolver):
                     user_info = self._process_result(result_entry)
                     if user_info:
                         user_list.append(user_info)
-
+                results_size = results_size + len(user_list)
                 yield user_list
 
         except ldap.LDAPError as exce:
-            log.error("[getUserListIterator] LDAP error: %r" % exce)
+            log.error("LDAP error: %r" % exce)
             raise exce
+
+        except StopIteration as exce:
+            log.info("page size reached: (%r) %r" % (results_size, exce))
+            raise exce
+
         except Exception as exce:
-            log.error("[getUserListIterator] error during LDAP access: %r"
+            log.error("Error during LDAP access: %r"
                             % exce)
-            log.error("[getUserListIterator] %s" % traceback.format_exc())
+            log.error("%s" % traceback.format_exc())
             raise exce
 
         # we do no unbind here, as this is done at the request end
