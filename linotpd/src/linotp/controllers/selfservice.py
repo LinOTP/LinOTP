@@ -185,6 +185,9 @@ class SelfserviceController(BaseController):
                     if uuser is not None:
                         (c.user, _foo, c.realm) = uuser.rpartition('@')
 
+                if c.user in ['--u--']:
+                    abort(401, "No valid session")
+
                 self.authUser = User(c.user, c.realm, '')
                 log.debug("[__before__] authenticating as %s in realm %s!" % (c.user, c.realm))
             else:
@@ -223,7 +226,8 @@ class SelfserviceController(BaseController):
 
             c.user = self.authUser.login
             c.realm = self.authUser.realm
-            c.tokenArray = getTokenForUser (self.authUser)
+
+            c.tokenArray = getTokenForUser(self.authUser)
 
             # only the defined actions should be displayed
             # - remark: the generic actions like enrollTT are allready approved
