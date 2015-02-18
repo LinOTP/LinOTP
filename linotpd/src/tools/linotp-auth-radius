@@ -39,6 +39,9 @@ from os import path, access, R_OK
 import traceback
 import getpass
 import ConfigParser
+import HTMLParser
+htmlparse = HTMLParser.HTMLParser()
+
 
 import pyrad.packet
 from pyrad.client import Client
@@ -310,7 +313,7 @@ class RadiusClient(object):
 
             request_params = {}
             request_params["code"] = pyrad.packet.AccessRequest
-            request_params["User_Name"] = user.encode('ascii')
+            request_params["User_Name"] = user
 
             if self.radius_nasid is not None:
                 request_params["NAS_Identifier"] = \
@@ -403,6 +406,38 @@ def authenticate(user, passw, otp, state, param, interactive=False):
 
     return ret
 
+def htmldecode(input_str):
+    """
+    decode html entities to unicode
+    """
+    return htmlparse.unescape(input_str)
+
+def str2unicode(input_str):
+    """
+    convert as binary string into a unicode string
+    :param input_str: input binary string
+    :return: unicode output
+    """
+    output_str = input_str
+
+    # support for cmdline tools that dont support unicode input
+    # which could now try to use a &uuml;
+    if '&' in output_str:
+        output_str = htmldecode(input_str)
+
+    conversions = [{}, {'encoding':'utf-8'}, {'encoding': 'iso8859_15'}]
+    for param in conversions:
+        try:
+            output_str = unicode(output_str, **param)
+            break
+        except UnicodeDecodeError as exx:
+            if param == conversions[-1]:
+                log.info('no unicode conversion found for %r' % input_str)
+                raise exx
+
+    return output_str
+
+
 def main():
     """
     main worker:
@@ -461,9 +496,9 @@ def main():
                 log.level = logging.WARNING
 
         elif opt in ('-u', '--user'):
-            user = arg
+            user = str2unicode(arg)
         elif opt in ('-p', '--password'):
-            passw = arg
+            passw = str2unicode(arg)
         elif opt in ('-o', '--otp'):
             otp = arg
         elif opt in ('-t', '--state'):
@@ -526,7 +561,6 @@ def main():
         sys.exit(-1)
 
     res = authenticate(user, passw, otp, state, param, interactive)
-
     return res
 
 
