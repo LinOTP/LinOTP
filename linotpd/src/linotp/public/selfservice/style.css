@@ -49,19 +49,19 @@ body {
 
 #main {
     float:right;
-    width:68%;
+    width:77%;
     background: #080808;
     padding: 3px;
 }
 
 #sidebar {
     float:left;
-    width:30%;
+    max-width:20%;
     display: block;
     min-height: 33em;
     background:#eeeeee;
     border-right: 1px solid #fe8625;
-    margin: 2px;
+    margin: auto;
     padding: 3px;
 }
 
