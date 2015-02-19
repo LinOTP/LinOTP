@@ -46,7 +46,7 @@ setup(
     author_email='linotp@lsexperts.de',
     url='http://www.linotp.org',
     install_requires=[
-        "Pylons>=0.9.7,<=1.0",
+        "Pylons>=0.9.7",
         "WebOb<1.4",
         "SQLAlchemy>=0.6",
         "docutils>=0.4",
@@ -105,12 +105,18 @@ setup(
                 ]
             ),
         (
-            get_debian_package() + 'etc/apache2/sites-available/',
+            get_debian_package() + 'etc/linotp2/apache2.2-example/',
             [
-                'config/linotp2',
-                'config/linotp2-radius',
-                'config/linotp2-certs',
-                'config/linotp2-ldap'
+                'config/apache2.2-example/linotp2',
+                'config/apache2.2-example/linotp2-radius',
+                'config/apache2.2-example/linotp2-certs',
+                'config/apache2.2-example/linotp2-ldap',
+                ]
+            ),
+        (
+            get_debian_package() + 'etc/linotp2/apache2.4-example/',
+            [
+                'config/apache2.4-example/linotp2.conf',
                 ]
             ),
         (

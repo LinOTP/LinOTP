@@ -11,8 +11,6 @@ all:
 	@echo "make buildrpm - Generate a rpm package"
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean    - Get rid of scratch and byte files"
-	@echo "make ppa      - PRODUCTIVE: upload package to ppa launchpad"
-	@echo "make ppa-dev  - upload package to ppa launchpad unstable"
 
 source:
 	$(PYTHON) setup.py sdist $(COMPILE)
@@ -59,10 +57,6 @@ ppa-preprocess:
 	rm -f ../*.upload
 	rm -f ../linotp-adminclient-cli_*_source.changes
 	debuild -S
-
-ppa-dev:
-	make ppa-preprocess
-	dput ppa:linotp/unstable ../linotp-adminclient-cli*_source.changes
 
 wine:
 	mkdir -p ../build

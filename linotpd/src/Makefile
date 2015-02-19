@@ -20,7 +20,6 @@ all:
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make translate"
-	@echo "make ppa-dev - Publish in ppa repository linotp-dev"
 
 
 extract:
@@ -80,10 +79,6 @@ ppa-preprocess:
 	cp -r $(COPYSTUFF) linotp-build
 	rm -f linotp_*_source.changes
 	(cd linotp-build; touch LINOTP_DEBIAN_PACKAGE;  debuild -S)
-
-ppa-dev:
-	make ppa-preprocess
-	dput ppa:linotp/unstable linotp_*_source.changes
 
 builddeblocal:
 	# build the source package in the parent directory

@@ -12,7 +12,6 @@ all:
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make test_sms - test the SMS provider"
-	@echo "make ppa-dev - Publish in ppa repository linotp-dev"
 
 source:
 	$(PYTHON) setup.py sdist $(COMPILE)
@@ -63,6 +62,3 @@ ppa-preprocess:
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	debuild -S
 
-ppa-dev:
-	make ppa-preprocess
-	dput ppa:linotp/unstable ../linotp-smsprovider_*_source.changes

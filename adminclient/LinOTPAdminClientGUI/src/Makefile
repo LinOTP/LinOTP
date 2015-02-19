@@ -78,9 +78,6 @@ ppa-preprocess:
 	rm -f ../linotp-adminclient-gui_*_source.changes
 	debuild -S
 
-ppa-dev:
-	make ppa-preprocess
-	dput ppa:linotp/unstable ../linotp-adminclient-gui*_source.changes
 wine:
 	mkdir -p ../build
 	wine c:\\python26\\python setup.py bdist --format=wininst
