@@ -112,6 +112,7 @@ def getPolicyDefinitions(scope=""):
             'import': {'type': 'bool'},
             'remove': {'type': 'bool'},
             'userlist': {'type': 'bool'},
+            'tokenowner': {'type': 'bool'},
             'checkstatus': {'type': 'bool'},
             'manageToken': {'type': 'bool'},
             'getserial': {'type': 'bool'},
@@ -1987,6 +1988,18 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
                             % (policies['admin'], user.realm, user.conf))
                 raise PolicyException(_("You do not have the administrative"
                                       " right to list users in realm %s(%s).")
+                                      % (user.realm, user.conf))
+
+        elif 'tokenowner' == method:
+            policies = getAdminPolicies("tokenowner")
+            # check if the admin may view the users in this realm
+            if (policies['active'] and
+                    not checkAdminAuthorization(policies, "", user)):
+                log.warning("[tokenowner] the admin >%s< is not allowed to get"
+                            " the token owner in realm %s(%s)!"
+                            % (policies['admin'], user.realm, user.conf))
+                raise PolicyException(_("You do not have the administrative"
+                                      " right to get the token owner in realm %s(%s).")
                                       % (user.realm, user.conf))
 
         elif 'checkstatus' == method:

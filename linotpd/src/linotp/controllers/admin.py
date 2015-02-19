@@ -44,7 +44,9 @@ from linotp.lib.token import resyncToken, resetToken, setPinUser, setPinSo, setH
 from linotp.lib.token import TokenIterator, initToken, setRealms, getTokenType, get_serial_by_otp
 from linotp.lib.token import getTokens4UserOrSerial, copyTokenPin, copyTokenUser, losttoken, check_serial
 from linotp.lib.token import genSerial
-from linotp.lib.token import newToken
+from linotp.lib.token import (newToken,
+                              getTokenOwner
+                              )
 
 from linotp.lib.error import ParameterError
 from linotp.lib.util import getParam, getLowerParams
@@ -221,13 +223,52 @@ class AdminController(BaseController):
             Session.close()
             log.debug("[getsession] done")
 
-
     def dropsession(self):
         # request.cookies.pop( 'admin_session', None )
         # FIXME: Does not seem to work
         response.set_cookie('admin_session', None, expires=1)
         return
 
+    def getTokenOwner(self):
+        """
+        provide the userinfo of the token, which is specified as serial
+        """
+        log.debug("get the owner as user info for a token")
+
+        param = {}
+        ret = {}
+        try:
+            param.update(request.params)
+            serial = param["serial"]
+
+            # check admin authorization
+            checkPolicyPre('admin', 'tokenowner', param)
+
+            owner = getTokenOwner(serial)
+            if owner.info:
+                ret = owner.info
+
+            c.audit['success'] = len(ret) > 0
+
+            Session.commit()
+            return sendResult(response, ret)
+
+        except PolicyException as pe:
+            log.error("policy failed %r" % pe)
+            log.error("%s" % traceback.format_exc())
+            Session.rollback()
+            return sendError(response, unicode(pe), 1)
+
+        except Exception as e:
+            log.error("failed: %r" % e)
+            log.error("%s" % traceback.format_exc())
+            Session.rollback()
+            log.error('error getting token owner')
+            return sendError(response, e, 1)
+
+        finally:
+            Session.close()
+            log.debug('[enable] done')
 
     def show(self):
         """
@@ -1799,6 +1840,9 @@ class AdminController(BaseController):
 
         arguments:
             * serial - serial of the old token
+            * type   - optional, email or sms
+            * email  - optional, email address, to overrule the owner email
+            * mobile - optional, mobile number, to overrule the owner mobile
 
         returns:
             a json result with the new serial an the password
@@ -1811,16 +1855,16 @@ class AdminController(BaseController):
 
         ret = 0
         res = {}
-        param = request.params
+        param = {}
 
         try:
-
-            serial = getParam(param, "serial", required)
+            param.update(request.params)
+            serial = param["serial"]
 
             # check admin authorization
             checkPolicyPre('admin', 'losttoken', param)
 
-            res = losttoken(serial)
+            res = losttoken(serial, param=param)
 
             c.audit['success'] = ret
             c.audit['serial'] = res.get('serial')

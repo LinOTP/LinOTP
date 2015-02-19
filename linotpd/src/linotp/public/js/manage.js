@@ -162,7 +162,7 @@ jQuery.validator.addMethod("ldap_uidtype", function(value,element,param){
 
 jQuery.validator.addMethod("sql_driver", function(value, element, param){
     return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(ibm_db_sa\+pyodbc)/);
-    }, 
+    },
     i18n.gettext("Please enter a valid driver specification like: mysql, postgres, mssql, oracle or ibm_db_sa+pyodbc")
 );
 
@@ -456,7 +456,7 @@ function get_scope_actions(scope) {
      */
     var actions = Array();
     var resp = clientUrlFetchSync("/system/getPolicyDef",
-                                  {"scope" : scope}, 
+                                  {"scope" : scope},
                                   true, "Error fetching policy definitions:");
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
@@ -476,12 +476,12 @@ function get_scope_actions(scope) {
 
 function get_policy(definition) {
     /*
-     * This function returns the policies which conform to the 
+     * This function returns the policies which conform to the
      * set of definitions: scope, action, user, realm
      */
     var policies = Array();
     var resp = clientUrlFetchSync("/system/getPolicy",
-                                  definition, 
+                                  definition,
                                   true, "Error fetching policy definitions:");
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
@@ -521,6 +521,20 @@ function get_selected_email() {
         selectedEmailItems.push(value);
     });
     return selectedEmailItems;
+}
+
+function get_token_owner(token_serial){
+
+    // sorry: we need to do this synchronously
+    var resp = clientUrlFetchSync('/admin/getTokenOwner',
+                                    {'serial': token_serial});
+    if (resp == undefined) {
+        alert('Server is not responding');
+        return 0;
+    }
+    var obj = jQuery.parseJSON(resp);
+    return obj.result.value;
+
 }
 
 function show_selected_status(){
@@ -1062,13 +1076,17 @@ function losttoken_callback(xhdr, textStatus){
     if (obj.result.status) {
         var serial = obj.result.value.serial;
         var end_date = obj.result.value.end_date;
-        var password = obj.result.value.password;
+        var password = '';
+        if ('password' in obj.result.value){
+            password = obj.result.value.password ;
+        }
         $('#temp_token_serial').html(serial);
-        $('#temp_token_password').html(password);
+
         $('#temp_token_enddate').html(end_date);
         $dialog_view_temporary_token.dialog("open");
     } else {
-        alert_info_text("text_losttoken_failed", obj.result.error.message, ERROR);
+        alert_info_text("text_losttoken_failed",
+                obj.result.error.message, ERROR);
     }
     $("#token_table").flexReload();
     $('#selected_tokens').html('');
@@ -1076,13 +1094,29 @@ function losttoken_callback(xhdr, textStatus){
     log('Token ' + tokens + ' lost.');
 }
 
-function token_losttoken() {
-    var tokentab = 0;
+function token_losttoken(token_type) {
+    /*
+     * token_losttoken - request enrollment of losttoken
+     */
     var tokens = get_selected_tokens();
     var count = tokens.length;
+
+    /* this for loop is unused as the gui allows only the losttoken action
+     * if only one token is selected */
     for (i = 0; i < count; i++) {
-        var serial = tokens[i];
-        resp = clientUrlFetch("/admin/losttoken", {"serial" : serial}, losttoken_callback);
+        var params = {"serial" : tokens[i]};
+
+        /* check for function arguments:
+         * if token_type is set, take it as parameter */
+        if (token_losttoken.length >0 ) {
+            if (token_type == 'email') {
+                params['type'] = 'email';
+            }else if (token_type === 'sms') {
+                params['type'] = 'sms';
+            }
+        }
+        resp = clientUrlFetch("/admin/losttoken",
+                                params, losttoken_callback);
     }
 }
 
@@ -1467,7 +1501,7 @@ function tokentype_changed(){
                     if (selected_users.length == 1) {
                         var policy_def = {'scope':'enrollment',
                                       'action': 'otp_pin_random'};
-                        policy_def['realm'] = selected_users[0].realm; 
+                        policy_def['realm'] = selected_users[0].realm;
                         policy_def['user']  = selected_users[0].login;
                         rand_pin = get_policy(policy_def).length;
                         options = {'otp_pin_random':rand_pin}
@@ -2645,26 +2679,66 @@ function tokenbuttons(){
         width: 400,
         modal: true,
         buttons: {
-            'Get temporary token': {click: function(){
-                token_losttoken();
-                $(this).dialog('close');
-                },
+
+            'Get temporary token': {click: function()
+                    {
+                    token_losttoken();
+                    $(this).dialog('close');
+                    },
                 id: "button_losttoken_ok",
-                text: "Get temporary token"
+                text: i18n.gettext("Password token")
                 },
+
+            'Get temporary email token': {click: function()
+                    {
+                    token_losttoken('email');
+                    $(this).dialog('close');
+                    },
+                id: "button_losttoken_email",
+                text: i18n.gettext("Email token")
+                },
+
+            'Get temporary sms token': {click: function()
+                    {
+                    token_losttoken('sms');
+                    $(this).dialog('close');
+                    },
+                id: "button_losttoken_sms",
+                text: i18n.gettext("Sms token")
+                },
+
             Cancel: {click: function(){
                 $(this).dialog('close');
                 },
                 id: "button_losttoken_cancel",
-                text: "Cancel"
+                text: i18n.gettext("Cancel")
                 }
         },
         open: function() {
-            tokens = get_selected_tokens();
-            token_string = tokens.join(" ");
-            $('#lost_token_serial').html(token_string);
-            translate_dialog_lost_token();
-            do_dialog_icons();
+            /* returns a list of tokens, but as the losttoken button is
+             * only selected token == 1, we can rely on the list to contain
+             * at max one element
+             */
+            var tokens = get_selected_tokens();
+            if (tokens.length == 1 ){
+                var token_string = tokens[0];
+                var user_info = get_token_owner(tokens[0]);
+                if ('email' in user_info) {
+                    $('#button_losttoken_email').removeAttr("disabled");
+                } else {
+                    $('#button_losttoken_email').attr("disabled","disabled");
+                }
+                if ('mobile' in user_info) {
+                    $('#button_losttoken_sms').removeAttr("disabled");
+                } else {
+                    $('#button_losttoken_sms').attr("disabled","disabled");
+                }
+                $('#lost_token_serial').html(token_string);
+                translate_dialog_lost_token();
+                do_dialog_icons();
+            } else {
+                $(this).dialog('close');
+            }
         }
     });
     $('#button_losttoken').click(function(){
@@ -3035,7 +3109,7 @@ $(document).ready(function(){
                 $(this).dialog('close');
                 },
                 id: "button_view_temporary_token_close",
-                text: "Close"
+                text: i18n.gettext("Close")
                 },
         },
         open: function() {

@@ -59,6 +59,7 @@ class User(object):
         self.login = ""
         self.realm = ""
         self.conf = ""
+        self.info = None
 
         if login is not None:
             self.login = login
