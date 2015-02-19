@@ -11,8 +11,6 @@ all:
 	@$(ECHO)               prior to doing this you may do a "make clean" to remove all compiled stuff.
 	@$(ECHO) "make builddeb - Generate a deb package of pam_linotp"
 	@$(ECHO) "make clean    - clean up"
-	@$(ECHO) "make ppa-dev  - upload to ppa unstable"
-	@$(ECHO) "make ppa      - upload to ppa stable"
 	@$(ECHO) .......
 
 create: clean
@@ -49,9 +47,4 @@ ppa-preprocess:
 	rm -f *.upload
 	(cd libpam-linotp; rm -f ../libpam-linotp_*_source.changes; debuild -S)
 	(cd freeradius_perl; rm -f ../linotp-freeradius-perl_*.changes; debuild -S)
-
-ppa-dev:
-	make ppa-preprocess
-	(cd libpam-linotp; dput ppa:linotp/unstable ../libpam-linotp_*_source.changes)
-	(cd freeradius_perl; dput ppa:linotp/unstable ../linotp-freeradius-perl_*.changes)
 

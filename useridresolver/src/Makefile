@@ -12,8 +12,6 @@ all:
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 	@echo "make test_resolver - Test the passwd resolver"
-	@echo "make ppa-dev       - upload to PPA unstable launchpad"
-	@echo "make ppa           - upload to PPA STABLE launchpad"
 
 source:
 	$(PYTHON) setup.py sdist $(COMPILE)
@@ -33,10 +31,6 @@ ppa-preprocess:
 	rm -f ../*.upload
 	rm -f ../linotp*useridresolver_*_source.changes
 	debuild -S
-
-ppa-dev:
-	make ppa-preprocess
-	dput ppa:linotp/unstable ../linotp-useridresolver_*_source.changes
 
 buildrpm:
 #	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
