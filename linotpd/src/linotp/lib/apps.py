@@ -46,8 +46,8 @@ from urllib import quote
 class NoOtpAuthTokenException(Exception):
     pass
 
-#######################################
-def create_google_authenticator(param):
+
+def create_google_authenticator(param, user=None):
     '''
     create url for google authenticator
 
@@ -64,12 +64,22 @@ def create_google_authenticator(param):
                                       % typ)
 
     serial = param.get("serial", None)
-    digits = param.get("otplen", None)
+    digits = param.get("otplen", '6')
     otpkey = param.get("otpkey", None)
+
+    login = ''
+    realm = ''
+
+    if user:
+        login = user.login or ''
+        realm = user.realm or ''
+
+    login = param.get('user.login', login) or ''
+    realm = param.get('user.realm', realm) or ''
 
     url_param = {}
 
-    if len(otpkey) == 0:
+    if not otpkey:
         raise Exception('Failed to create token url due to missing seed!')
     key = base64.b32encode(binascii.unhexlify(otpkey))
     key = key.strip("=")
@@ -84,6 +94,7 @@ def create_google_authenticator(param):
 
     url_param['secret'] = key
 
+    # dont add default
     if digits != '6':
         url_param['digits'] = digits
 
@@ -98,72 +109,28 @@ def create_google_authenticator(param):
 
     base_len = len(ga) + len(qg_param)
     max_len = 400
+
     allowed_label_len = max_len - base_len
     log.debug("[create_google_authenticator_url] we got %s characters"
               " left for the token label" % str(allowed_label_len))
 
     # show the user login in the token prefix
-    if len(param.get('user.login', '')) > 0:
-        label = get_tokenlabel(param.get('user.login', ''),
-                               param.get('user.realm', ''), serial)
-
+    if len(login) > 0:
+        label = get_tokenlabel(login, realm, serial)
         if len(param.get('description', '')) > 0 and '<d>' in label:
             label = label.replace('<d>', param.get('description'))
 
-        label = label[0:allowed_label_len]
     else:
-        label = serial
+        label = serial or ''
         if len(param.get('description', '')) > 0:
             label = label + ':' + param.get('description')
-        label = label[0:allowed_label_len]
 
-    url_label = quote(label)
-    ga = "otpauth://%s/%s" % (typ, url_label)
-    ga = "%s?%s" % (ga, qg_param)
-
-    log.debug("[_create_google_authenticator] google authenticator: %r"
-              % ga[:20])
-    return ga
-
-
-def create_google_authenticator_url(user, realm, key, typ="hmac", serial=""):
-    '''
-    This creates the google authenticator URL.
-    This url may only be 119 characters long.
-    Otherwise we qrcode.js can not create the qrcode.
-    If the URL would be longer, we shorten the username
-
-    We expect the key to be hexlified!
-    '''
-    # policy depends on some lib.util
-
-    key_bin = binascii.unhexlify(key)
-    # also strip the padding =, as it will get problems with the google app.
-    otpkey = base64.b32encode(key_bin).strip('=')
-
-    base_url = "otpauth://%s/?secret=%s&counter=0"
-    if "hmac" == typ.lower():
-        typ = "hotp"
-
-    # for totp we need no counter returned
-    if typ.lower() in ['totp']:
-        base_url = "otpauth://%s/?secret=%s"
-
-    # we calculate the max for a token lable len as only 199  chars in the
-    # total len is supported
-    base_len = len(base_url % (typ, otpkey))
-
-    max_len = 119
-    allowed_label_len = max_len - base_len
-    log.debug("[create_google_authenticator_url] we got %s characters left "
-              "for the token label" % str(allowed_label_len))
-
-    label = get_tokenlabel(user, realm, serial)
     label = label[0:allowed_label_len]
-
     url_label = quote(label)
-    qurl = base_url % (typ, url_label, otpkey)
-    return qurl
+
+    ga = "otpauth://%s/%s?%s" % (typ, url_label, qg_param)
+    log.debug("google authenticator: %r" % ga[:20])
+    return ga
 
 
 def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):

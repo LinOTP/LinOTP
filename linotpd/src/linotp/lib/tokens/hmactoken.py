@@ -39,7 +39,6 @@ from linotp.lib.validate import check_otp
 from linotp.lib.validate import split_pin_otp
 
 from linotp.lib.reply   import create_img
-from linotp.lib.apps    import create_google_authenticator_url
 from linotp.lib.apps    import create_google_authenticator
 from linotp.lib.apps    import NoOtpAuthTokenException
 from linotp.lib.apps    import create_oathtoken_url
@@ -640,7 +639,7 @@ class HmacTokenClass(TokenClass):
                 p['otpkey'] = otpkey
                 p['serial'] = self.getSerial()
                 # label
-                goo_url = create_google_authenticator(p)
+                goo_url = create_google_authenticator(p, user=user)
 
                 response_detail["googleurl"] = {
                       "order"      : '0',
