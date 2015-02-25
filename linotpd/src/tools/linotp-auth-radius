@@ -313,7 +313,7 @@ class RadiusClient(object):
 
             request_params = {}
             request_params["code"] = pyrad.packet.AccessRequest
-            request_params["User_Name"] = user
+            request_params["User_Name"] = user.encode('utf-8')
 
             if self.radius_nasid is not None:
                 request_params["NAS_Identifier"] = \
@@ -322,7 +322,7 @@ class RadiusClient(object):
             req = srv.CreateAuthPacket(**request_params)
 
             ## do the request
-            req["User-Password"] = req.PwCrypt(passw)
+            req["User-Password"] = req.PwCrypt(passw.encode('utf-8'))
             if state is not None:
                 req["State"] = state
 
