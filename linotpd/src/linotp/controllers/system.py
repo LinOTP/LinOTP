@@ -1518,14 +1518,18 @@ class SystemController(BaseController):
 
         """
         res = {}
+        ret = {}
+        param = {}
         try:
-            param = getLowerParams(request.params)
+            param.update(request.params)
             log.info("[delPolicy] deleting policy: %r" % param)
 
-            name = getParam(param, "name", required)
+            name_param = param["name"]
+            names = name_param.split(',')
+            for name in names:
+                log.debug("[delPolicy] trying to delete policy %s" % name)
+                ret.update(deletePolicy(name))
 
-            log.debug("[delPolicy] trying to delete policy %s" % name)
-            ret = deletePolicy(name)
             res["delPolicy"] = {"result": ret}
 
             c.audit['success'] = ret
