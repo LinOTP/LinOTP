@@ -81,9 +81,6 @@ from linotp.lib.util import check_selfservice_session
 from linotp.lib.util import generate_otpkey
 from linotp.lib.util import remove_empty_lines
 
-from linotp.lib.apps import create_google_authenticator_url
-from linotp.lib.apps import create_oathtoken_url
-
 from linotp.lib.reply import sendResult, sendError
 
 from linotp.lib.audit.base import logTokenNum

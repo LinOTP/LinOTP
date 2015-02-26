@@ -122,7 +122,7 @@ from linotp.lib.token import (enableToken,
 
 from linotp.lib.tokenclass import OcraTokenClass
 
-from linotp.lib.apps import (create_google_authenticator_url,
+from linotp.lib.apps import (create_google_authenticator,
                              create_oathtoken_url
                              )
 
@@ -1277,7 +1277,9 @@ class UserserviceController(BaseController):
                                 }, self.authUser)
 
                 if ret1:
-                    url = create_oathtoken_url(self.authUser.login, self.authUser.realm , otpkey, serial=serial)
+                    url = create_oathtoken_url(self.authUser.login,
+                                               self.authUser.realm ,
+                                               otpkey, serial=serial)
                     ret = {
                         'url' : url,
                         'img' : create_img(url, width=300, alt=serial),
@@ -1318,7 +1320,15 @@ class UserserviceController(BaseController):
                                 }, self.authUser)
 
                 if ret1:
-                        url = create_google_authenticator_url(self.authUser.login, self.authUser.realm, otpkey, serial=serial, type=t_type)
+                        pparam = {'user.login': self.authUser.login,
+                                  'user.login': self.authUser.realm,
+                                  'otpkey': otpkey,
+                                  'serial': serial,
+                                  'type': t_type,
+                                  'description': desc,
+                                  }
+                        url = create_google_authenticator(pparam,
+                                                          user=self.authUser)
                         label = "%s@%s" % (self.authUser.login, self.authUser.realm)
                         ret = {
                             'url' :     url,
