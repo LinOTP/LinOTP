@@ -46,6 +46,8 @@ except ImportError:
     alembic_available = False
 
 import os
+import pylons.test
+
 
 import logging
 log = logging.getLogger(__name__)
@@ -62,16 +64,18 @@ def setup_app(command, conf, param):
 
     :return: - nothing -
     '''
+    # from http://pylons-webframework.readthedocs.org/en/latest/upgrading.html
+    # Add under the 'def setup_app':
+    # Don't reload the app if it was loaded under the testing environment
+    if not pylons.test.pylonsapp:
+        load_environment(conf.global_conf, conf.local_conf)
 
-    load_environment(conf.global_conf, conf.local_conf)
     unitTest = conf.has_key('unitTest')
-
 
     import linotp.lib.base
     linotp.lib.base.setup_app(conf.local_conf, conf.global_conf, unitTest)
 
     if alembicconfig_available and alembic_available:
-
         upgrade_databases(conf.local_conf, conf.global_conf)
 
 

@@ -52,12 +52,12 @@ from paste.deploy import appconfig
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 
-from pylons import config, url
-from  pylons.configuration import config as env
+from pylons import url
+from pylons.configuration import config as env
 from routes.util import URLGenerator
 from webtest import TestApp
+import pylons.test
 
-from linotp.config.environment import load_environment
 
 import warnings
 warnings.filterwarnings(action='ignore', category=DeprecationWarning)
@@ -69,11 +69,13 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     fxn()
 
-from linotp.websetup import setup_app
-
 LOG = logging.getLogger(__name__)
 
 __all__ = ['environ', 'url', 'TestController']
+
+
+# Invoke websetup with the current config file
+config = pylons.test.pylonsapp.config
 SetupCommand('setup-app').run([config['__file__']])
 
 environ = {}
@@ -93,6 +95,8 @@ def tearDownPackage():
     '''
     return
 
+environ = {}
+
 class TestController(TestCase):
     '''
     the TestController, which loads the linotp app upfront
@@ -101,36 +105,18 @@ class TestController(TestCase):
         '''
         initialize the test class
         '''
-        TestCase.__init__(self, *args, **kwargs)
 
-        LOG.debug("ConfigFile: %s " % config['__file__'])
-
-        conffile = config['__file__']
-
-        if pylons.test.pylonsapp:
-            wsgiapp = pylons.test.pylonsapp
-        else:
-            wsgiapp = loadapp('config: %s' % config['__file__'])
-
+        wsgiapp = pylons.test.pylonsapp
         self.app = TestApp(wsgiapp)
 
-        conf = None
-        if conffile.startswith('/'):
-            conf = appconfig('config:%s' % config['__file__'], relative_to=None)
-        else:
-            raise Exception('dont know how to load the application relatively')
-         #conf = appconfig('config: %s' % config['__file__'], relative_to=rel)
-
-        load_environment(conf.global_conf, conf.local_conf)
-        self.appconf = conf
-
         url._push_object(URLGenerator(config['routes.map'], environ))
+        TestCase.__init__(self, *args, **kwargs)
 
         self.isSelfTest = False
         if env.has_key("linotp.selfTest"):
             self.isSelfTest = True
 
-        return
+        self.appconf = config
 
     @classmethod
     def setup_class(cls):
