@@ -809,6 +809,12 @@ class TokenClass(object):
             ret = info.get(key)
         return ret
 
+    def removeFromTokenInfo(self, key):
+        info = self.getTokenInfo()
+        if key in info:
+            del info[key]
+            self.setTokenInfo(info)
+
     # FIXME: we could store the
     #   count_auth_success_max
     #   count_auth_success
