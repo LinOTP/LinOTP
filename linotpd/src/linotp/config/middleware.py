@@ -36,6 +36,12 @@ from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 from linotp.config.environment import load_environment
 from contextlib import contextmanager
+
+try:
+    from pylons.configuration import PylonsConfig as PyConf
+except ImportError:
+    class PyConf(dict): pass
+
 import binascii
 import re
 import os
@@ -82,7 +88,7 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     """
     # Configure the Pylons environment
-    load_environment(global_conf, app_conf)
+    config = load_environment(global_conf, app_conf)
 
     # The Pylons WSGI app
     app = PylonsApp()
@@ -141,6 +147,20 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
                     who_config_lines.append(re.sub(r'^(secret)\s*=\s*.*$', r'\1 = %s' % secret, line))
             with tempinput(''.join(who_config_lines)) as who_config_file:
                 app = make_who_with_config(app, global_conf, who_config_file, app_conf['who.log_file'], app_conf['who.log_level'])
+
+
+    # this is a compatibility hack for pylons > 1.0!!!
+    conf = PyConf(config)
+
+    conf['global_conf'] = global_conf
+    conf['app_conf'] = app_conf
+    conf['__file__'] = global_conf['__file__']
+    conf['FILE'] = global_conf['__file__']
+    conf['routes.map'] = config['routes.map']
+
+    if not hasattr(conf, 'init_app'):
+        setattr(conf, 'init_app', config.init_app)
+    app.config = conf
 
     return app
 
