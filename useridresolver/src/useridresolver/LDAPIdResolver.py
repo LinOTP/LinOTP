@@ -64,6 +64,23 @@ DEFAULT_SIZELIMIT = 500
 BIND_NOT_POSSIBLE_TIMEOUT = 30
 
 
+def escape_filter_chars(filterstr):
+    """
+    Replace all special characters found in filterstr by quoted notation
+    - used especially for search with guid - which consists of binary data
+    from http://sourceforge.net/p/python-ldap/feature-requests/7/
+
+    :param filterstr: the unescaped filte string
+    :return: escaped filter string
+    """
+    ret = []
+    for c in filterstr:
+        if c < '0' or c > 'z' or c in "\\*()":
+            c = "\\%02x" % ord(c)
+        ret.append(c)
+    return ''.join(ret)
+
+
 def _set_cacertificate(cacertificates, ca_dir=None):
     '''
     This function sets the CA certfificate.
@@ -312,6 +329,7 @@ class IdResolver (UserIdResolver):
         self.brokenconfig_text = ""
         self.sizelimit = 5
         self.noreferrals = False
+        self.proxy = False
         self.uidType = DEFAULT_UID_TYPE
         self.l_obj = None
 
@@ -577,9 +595,17 @@ class IdResolver (UserIdResolver):
                                       sizelimit=self.sizelimit)
 
                 elif self.uidType.lower() == "objectguid":
-                    l_id = l_obj.search_ext("<guid=%s>" % (UserId),
-                                          ldap.SCOPE_BASE,
-                                          sizelimit=self.sizelimit)
+                    if not self.proxy:
+                        l_id = l_obj.search_ext("<guid=%s>" % (UserId),
+                                                ldap.SCOPE_BASE,
+                                                sizelimit=self.sizelimit)
+                    else:
+                        e_u = escape_filter_chars(binascii.unhexlify(UserId))
+                        filterstr = "(ObjectGUID=%s)" % (e_u)
+                        l_id = l_obj.search_ext(self.base,
+                                              ldap.SCOPE_SUBTREE,
+                                              filterstr=filterstr,
+                                              sizelimit=self.sizelimit)
                 else:
                     # Ticket #754
                     filterstr = "(%s=%s)" % (self.uidType, UserId)
@@ -891,6 +917,11 @@ class IdResolver (UserIdResolver):
                                 "linotp.ldapresolver.NOREFERRALS", conf,
                                 required=False, default="False")
         self.noreferrals = ("True" == noreferrals)
+
+        proxy = self.getConfigEntry(config,
+                                "linotp.ldapresolver.PROXY", conf,
+                                required=False, default="False")
+        self.proxy = ("True" == proxy)
 
         try:
             self.bindpw = self.getConfigEntry(config,
