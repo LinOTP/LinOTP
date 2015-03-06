@@ -120,9 +120,54 @@ def _get_httperror_from_params(pylons_request):
 
 def sendError(response, exception, id=1, context=None):
     '''
-    sendError - return a json error result document
+    sendError - return a HTML or JSON error result document
 
-    remark:
+    Default LinOTP behaviour in case of error is to try to always send a '200
+    OK' HTTP response that contains an error code and description in the body
+    (JSON data).  Some clients prefer a different HTTP status code, because
+    it allows response filtering without parsing the body. If the client
+    sends 'httperror=<INT>' in the request this will be honoured (in case of
+    error) and that HTTP status will be set. If 'httperror' is set without a
+    value (or an invalid value) status 500 will be used.
+    If you would like this to happen only in some error conditions but not
+    all you can set 'linotp.errors' in the LinOTP Config. Then the HTTP
+    status defined by 'httperror' will ONLY be sent when the error that
+    occurs in LinOTP matches one of the errors defined in 'linotp.errors'. In
+    other cases '200 OK' with error code and description in the body will be
+    returned.
+    If 'linotp.errors' is unset all errors will cause responses with HTTP
+    status 'httperror'.
+    For example:
+      Setup 1:
+        * The client sends httperror=777 in the request
+        * linotp.errors=233,567
+        Case 1.1: An exception is raised in LinOTP that has errId 233.
+          - LinOTP will return a response with HTTP status 777.
+        Case 1.2: An exception is raised with errId 555
+          - LinOTP will return a response with HTTP status 200.
+      Setup 2:
+        * The client sends httperror (empty) in the request
+        * linotp.errors=233,567
+        Case 2.1: An exception is raised in LinOTP that has errId 233.
+          - LinOTP will return a response with HTTP status 500.
+        Case 2.2: An exception is raised with errId 555
+          - LinOTP will return a response with HTTP status 200.
+      Setup 3:
+        * The client sends httperror (empty) in the request
+        * linotp.errors is not set
+        Case 3.1: An exception is raised in LinOTP that has errId 233.
+          - LinOTP will return a response with HTTP status 500.
+        Case 3.2: An exception is raised with errId 555
+          - LinOTP will return a response with HTTP status 500.
+      Setup 4:
+        * NO httperror in request
+        * linotp.errors=233,567 (or is unset, does not matter)
+        Case 4.1: An exception is raised in LinOTP that has errId 233.
+          - LinOTP will return a response with HTTP status 200.
+        Case 4.2: An exception is raised with errId 555
+          - LinOTP will return a response with HTTP status 200.
+
+    remark for 'context' parameter:
      the 'context' is especially required to catch errors from the _before_
      methods. The return of a _before_ must be of type response and
      must have the attribute response._exception set, to stop further
@@ -158,35 +203,36 @@ def sendError(response, exception, id=1, context=None):
     else:
         errDesc = u"%r" % exception
 
-    HTTP_ERROR = False
     ## check if we have an additional request parameter 'httperror'
     ## which triggers the error to be delivered as HTTP Error
     httperror = _get_httperror_from_params(request)
 
+    send_custom_http_status = False
     if httperror is not None:
-        ## now lookup in the config, which linotp errors should be shwon as
-        ## HTTP error
+        # Client wants custom HTTP status
         linotp_errors = c.linotpConfig.get('linotp.errors', None)
-        if linotp_errors is None:
-            HTTP_ERROR = True
+        if not linotp_errors:
+            # Send custom HTTP status in every error case
+            send_custom_http_status = True
         else:
-            linotp_errors = linotp_errors.split(',')
-            if unicode(errId) in linotp_errors:
-                HTTP_ERROR = True
+            # Only send custom HTTP status in defined error cases
+            if unicode(errId) in linotp_errors.split(','):
+                send_custom_http_status = True
             else:
-                HTTP_ERROR = False
+                send_custom_http_status = False
 
-    if HTTP_ERROR is True:
-        ## httperror as param exist but is not defined
-        ## so fallback to 500 - Internal Server Error
-        if len(httperror) == 0: httperror = '500'
+    if send_custom_http_status:
+        # Send HTML response with HTTP status 'httperror'
 
-        ## prepare the response to be of text/html
+        # Always set a reason, when no standard one found (e.g. custom HTTP
+        # code like 444) use 'LinOTP Error'
+        reason = httpErr.get(httperror, 'LinOTP Error')
+
         response.content_type = 'text/html'
-        response.status = httperror
+        response.status = "%s %s" % (httperror, reason)
 
         code = httperror
-        status = httpErr.get(httperror, '')
+        status = "%s %s" % (httperror, reason)
         desc = '[%s] %d: %s' % (get_version(), errId, errDesc)
         ret = resp % (code, status, code, status, desc)
 
@@ -194,8 +240,8 @@ def sendError(response, exception, id=1, context=None):
             response._exception = exception
             response.text = u'' + ret
             ret = response
-
     else:
+        # Send JSON response with HTTP status 200 OK
         response.content_type = 'application/json'
         res = { "jsonrpc": "2.0",
                 "result" :
