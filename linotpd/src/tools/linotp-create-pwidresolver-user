@@ -43,7 +43,8 @@ def usage():
 
     Parameter:
     -u username
-    -i uid (numerical)
+    -i uid (numerical)   : mandatory and unique for each passwd entry
+    -g guid (numerical)  : group id
     -s hash algorithm    : hash algorithm either SHA512 or SHA256
     -p password
     -d description    : passwd user description
@@ -75,7 +76,7 @@ def main():
     gid = None
 
     try:
-        opts, args = getopt(sys.argv[1:], "u:i:s:p:d:h", ["help"])
+        opts, args = getopt(sys.argv[1:], "u:i:g:s:p:d:h", ["help"])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -122,6 +123,10 @@ def main():
 
     if password == "":
         password = getpass.getpass("Please enter a password: ")
+
+    if not uid:
+        sys.stdout.write("Please enter the users unique id: ")
+        uid = sys.stdin.readline().strip()
 
     if not description:
         description = ("%(full_name)s,%(location)s,%(phone)s,%(mobile)s,%(email)s"
