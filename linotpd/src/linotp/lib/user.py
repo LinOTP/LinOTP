@@ -370,6 +370,7 @@ def getUserRealms(user):
 
     return Realms
 
+
 def getRealmBox():
     '''
     returns the config value of selfservice.realmbox.
@@ -384,6 +385,17 @@ def getRealmBox():
         return "True" == conf[rb_string]
     else:
         return False
+
+
+def getSplitAtSign():
+    '''
+    returns the config value of splitAtSign.
+    if True, the username should be split if there is an at sign.
+    if False, the username will be taken unchanged for loginname.
+    '''
+    splitAtSign = getFromConfig("splitAtSign", "true") or 'true'
+    return "true" == splitAtSign.lower()
+
 
 def getConf(Realms, Conf):
     """
