@@ -89,6 +89,8 @@ class TestController(TestCase):
 
         wsgiapp = pylons.test.pylonsapp
         self.app = TestApp(wsgiapp)
+        self.session = 'justatest'
+        self.app.set_cookie('admin_session', self.session)
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)
@@ -132,38 +134,66 @@ class TestController(TestCase):
     def __deleteAllRealms__(self):
         ''' get al realms and delete them '''
 
-        response = self.app.get(url(controller='system', action='getRealms'))
+        params = {
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='getRealms'),
+            params=params,
+            )
         jresponse = json.loads(response.body)
         result = jresponse.get("result")
         values = result.get("value", {})
         for realmId in values:
             realm_desc = values.get(realmId)
             realm_name = realm_desc.get("realmname")
-            parameters = {"realm":realm_name}
-            resp = self.app.get(url(controller='system', action='delRealm'),
-                                params=parameters)
+            params = {
+                "realm":realm_name,
+                'session': self.session,
+                }
+            resp = self.app.get(
+                url(controller='system', action='delRealm'),
+                params=params,
+                )
             assert('"result": true' in resp)
 
 
     def __deleteAllResolvers__(self):
         ''' get all resolvers and delete them '''
 
-        response = self.app.get(url(controller='system', action='getResolvers'))
+        params = {
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='getResolvers'),
+            params=params,
+            )
         jresponse = json.loads(response.body)
         result = jresponse.get("result")
         values = result.get("value", {})
         for realmId in values:
             resolv_desc = values.get(realmId)
             resolv_name = resolv_desc.get("resolvername")
-            parameters = {"resolver" : resolv_name}
-            resp = self.app.get(url(controller='system', action='delResolver'),
-                                params=parameters)
+            params = {
+                "resolver" : resolv_name,
+                'session': self.session,
+                }
+            resp = self.app.get(
+                url(controller='system', action='delResolver'),
+                params=params
+                )
             assert('"status": true' in resp)
 
     def deleteAllPolicies(self):
         '''
         '''
-        response = self.app.get(url(controller='system', action='getPolicy'),)
+        params = {
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='getPolicy'),
+            params=params,
+            )
         self.assertTrue('"status": true' in response, response)
 
         body = json.loads(response.body)
@@ -176,16 +206,18 @@ class TestController(TestCase):
 
     def delPolicy(self, name='otpPin', remoteurl=None):
 
-        parameters = {'name': name,
-                      'selftest_admin': 'superadmin'
-                      }
+        params = {
+            'name': name,
+            'selftest_admin': 'superadmin',
+            'session': self.session,
+            }
         r_url = url(controller='system', action='delPolicy')
 
         if remoteurl is not None:
             r_url = "%s/%s" % (remoteurl, "system/delPolicy")
-            response = do_http(r_url, params=parameters)
+            response = do_http(r_url, params=params)
         else:
-            response = self.app.get(r_url, params=parameters)
+            response = self.app.get(r_url, params=params)
 
 
         return response
@@ -195,8 +227,13 @@ class TestController(TestCase):
 
         serials = []
 
-        response = self.app.get(url(controller='admin', action='show'),
-                                )
+        params = {
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='show'),
+            params=params,
+            )
         self.assertTrue('"status": true' in response, response)
 
         body = json.loads(response.body)
@@ -213,32 +250,43 @@ class TestController(TestCase):
     def removeTokenBySerial(self, serial):
         ''' delete a token by its serial number '''
 
-        parameters = {"serial": serial}
+        params = {
+            'serial': serial,
+            'session': self.session,
+            }
 
-        response = self.app.get(url(controller='admin', action='remove'),
-                                params=parameters)
+        response = self.app.get(
+            url(controller='admin', action='remove'),
+            params=params
+            )
         return response
 
     def __createResolvers__(self):
         '''
         create all base test resolvers
         '''
-        parameters = {
+        params = {
             'name'      : 'myDefRes',
             'fileName'  : '%(here)s/../data/testdata/def-passwd',
-            'type'      : 'passwdresolver'
+            'type'      : 'passwdresolver',
+            'session': self.session,
             }
-        resp = self.app.get(url(controller='system', action='setResolver'),
-                                                            params=parameters)
+        resp = self.app.get(
+            url(controller='system', action='setResolver'),
+            params=params
+            )
         assert('"value": true' in resp)
 
-        parameters = {
+        params = {
             'name'      : 'myOtherRes',
             'fileName'  : '%(here)s/../data/testdata/myDom-passwd',
-            'type'      : 'passwdresolver'
+            'type'      : 'passwdresolver',
+            'session': self.session,
             }
-        resp = self.app.get(url(controller='system', action='setResolver'),
-                                                            params=parameters)
+        resp = self.app.get(
+            url(controller='system', action='setResolver'),
+            params=params
+            )
         assert('"value": true' in resp)
 
     def __createRealms__(self):
@@ -251,43 +299,70 @@ class TestController(TestCase):
                 search in the mix for the user root must find 2 users
         '''
 
-        parameters = {
+        params = {
             'realm'     :'myDefRealm',
-            'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myDefRes'
+            'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
+            'session': self.session,
         }
-        resp = self.app.get(url(controller='system', action='setRealm'),
-                                                            params=parameters)
+        resp = self.app.get(
+            url(controller='system', action='setRealm'),
+            params=params
+            )
         assert('"value": true' in resp)
 
-        resp = self.app.get(url(controller='system', action='getRealms'))
+        params = {
+            'session': self.session,
+            }
+        resp = self.app.get(
+            url(controller='system', action='getRealms'),
+            params=params
+            )
         assert('"default": "true"' in resp)
 
-        parameters = {
+        params = {
             'realm'     :'myOtherRealm',
-            'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myOtherRes'
+            'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
+            'session': self.session,
         }
-        resp = self.app.get(url(controller='system', action='setRealm'),
-                                                             params=parameters)
+        resp = self.app.get(
+            url(controller='system', action='setRealm'),
+            params=params
+            )
         assert('"value": true' in resp)
 
-        parameters = {
+        params = {
             'realm'     :'myMixRealm',
             'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.' +
                          'myOtherRes,useridresolver.PasswdIdResolver.' +
-                         'IdResolver.myDefRes'
+                         'IdResolver.myDefRes',
+            'session': self.session,
         }
-        resp = self.app.get(url(controller='system', action='setRealm'),
-                            params=parameters)
+        resp = self.app.get(
+            url(controller='system', action='setRealm'),
+            params=params
+            )
         assert('"value": true' in resp)
 
 
-        resp = self.app.get(url(controller='system', action='getRealms'))
+        params = {
+            'session': self.session,
+            }
+        resp = self.app.get(
+            url(controller='system', action='getRealms'),
+            params=params,
+            )
         #assert('"default": "true"' in resp)
 
-        resp = self.app.get(url(controller='system', action='getDefaultRealm'))
+        resp = self.app.get(
+            url(controller='system', action='getDefaultRealm'),
+            params=params,
+            )
         #assert('"default": "true"' in resp)
 
-        resp = self.app.get(url(controller='system', action='getConfig'))
+        resp = self.app.get(
+            url(controller='system', action='getConfig'),
+            params=params,
+            )
         #assert('"default": "true"' in resp)
 
 
