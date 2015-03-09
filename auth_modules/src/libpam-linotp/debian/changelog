@@ -1,8 +1,8 @@
-libpam-linotp (2.7.2~b0-1~precise) precise; urgency=low
+libpam-linotp (2.7.2~b1-1~precise) precise; urgency=low
 
   * Set new version 2.7.2.dev0
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 04 Mar 2015 10:15:48 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 09 Mar 2015 17:07:50 +0100
 
 libpam-linotp (2.7.1-1~precise) precise; urgency=low
 
