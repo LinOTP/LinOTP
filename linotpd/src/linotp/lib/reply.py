@@ -75,6 +75,49 @@ resp = """
 import logging
 log = logging.getLogger(__name__)
 
+
+def _get_httperror_from_params(pylons_request):
+    """
+    :param pylons_request: A Pylons request object
+    :return: The httperror parameter from the requests params, making sure it is
+        a valid integer. If the value is contained in params then it will be
+        returned. If it is an invalid value '500' will be returned instead.
+        This also applies if httperror was set without a value (empty string).
+        If httperror was not set or it cannot be determined if it was set, then
+        we assume it was NOT set and return None.
+    :rtype: string or None
+    """
+    httperror = None
+    try:
+        httperror = pylons_request.params.get('httperror', None)
+    except UnicodeDecodeError as exx:
+        log.exception("Could not extract 'httperror' from params because some "
+                "parameter contains invalid Unicode. Trying to extract "
+                "directly from query_string. Exception: %r", exx)
+        from urlparse import parse_qs
+        params = parse_qs(pylons_request.query_string)
+        if 'httperror' in params:
+            httperror_list = params['httperror']
+            if len(httperror_list) > 1:
+                log.warning("Parameter 'httperror' specified multiple times. "
+                        "Using last value '%r'. All values: %r",
+                        httperror_list[-1], httperror_list)
+            httperror = httperror_list[-1]
+    except Exception as exx:
+        log.exception("Exception while extracting 'httperror' from params. "
+                "Falling back to default LinOTP behaviour httperror=None. "
+                "Exception %r", exx)
+        httperror = None
+    if httperror is not None:
+        try:
+            httperror = str(int(httperror))
+        except ValueError as value_error:
+            log.warning("'%r' is not a valid integer. Using '500' as "
+                    "fallback. ValueError %r", httperror, value_error)
+            httperror = '500'
+    return httperror
+
+
 def sendError(response, exception, id=1, context=None):
     '''
     sendError - return a json error result document
@@ -118,10 +161,7 @@ def sendError(response, exception, id=1, context=None):
     HTTP_ERROR = False
     ## check if we have an additional request parameter 'httperror'
     ## which triggers the error to be delivered as HTTP Error
-    try:
-        httperror = request.params.get('httperror')
-    except Exception as exx:
-        httperror = "%r" % exx
+    httperror = _get_httperror_from_params(request)
 
     if httperror is not None:
         ## now lookup in the config, which linotp errors should be shwon as
