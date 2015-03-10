@@ -4,11 +4,11 @@ linotp (2.7.3~0dev0-1~precise) precise; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 13 Feb 2015 18:27:50 +0100
 
-linotp (2.7.2~b1-1~precise) precise; urgency=low
+linotp (2.7.2~b2-1~precise) precise; urgency=low
 
   * Set new version 2.7.2.dev0
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 09 Mar 2015 17:07:50 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 10 Mar 2015 17:26:46 +0100
 
 linotp (2.7.1.2-1~precise) precise; urgency=low
 
