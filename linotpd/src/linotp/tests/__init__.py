@@ -74,26 +74,7 @@ LOG = logging.getLogger(__name__)
 __all__ = ['environ', 'url', 'TestController']
 
 
-# Invoke websetup with the current config file
 config = pylons.test.pylonsapp.config
-SetupCommand('setup-app').run([config['__file__']])
-
-environ = {}
-
-def setUpPackage():
-    '''
-    setUpPackage is called before each test package / class
-
-    this hook is used to re-initialize the database
-    '''
-    SetupCommand('setup-app').run([config['__file__']])
-    return
-
-def tearDownPackage():
-    '''
-    tearDownPackage is called when a test package is finished
-    '''
-    return
 
 environ = {}
 
@@ -154,7 +135,6 @@ class TestController(TestCase):
         result = jresponse.get("result")
         values = result.get("value", {})
         for realmId in values:
-            print realmId
             realm_desc = values.get(realmId)
             realm_name = realm_desc.get("realmname")
             parameters = {"realm":realm_name}
@@ -171,7 +151,6 @@ class TestController(TestCase):
         result = jresponse.get("result")
         values = result.get("value", {})
         for realmId in values:
-            print realmId
             resolv_desc = values.get(realmId)
             resolv_name = resolv_desc.get("resolvername")
             parameters = {"resolver" : resolv_name}
