@@ -229,7 +229,7 @@ class RemoteTokenClass(TokenClass):
             (res, pin, otpval) = split_pin_otp(self, passw, user,
                                                options=options)
 
-            res = TokenClass.checkPin(self, pin)
+            res = check_pin(self, pin, user=user, options=options)
             if res is False:
                 return (res, otp_counter, reply)
 
