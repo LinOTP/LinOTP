@@ -95,10 +95,6 @@ class TestController(TestCase):
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)
 
-        self.isSelfTest = False
-        if env.has_key("linotp.selfTest"):
-            self.isSelfTest = True
-
         self.appconf = config
 
     @classmethod
@@ -130,6 +126,24 @@ class TestController(TestCase):
         #self.__deleteAllRealms__()
         #self.__deleteAllResolvers__()
         return
+
+    def set_config_selftest(self):
+        """
+        Set selfTest in LinOTP Config to 'True'
+        """
+        params = {
+            'selfTest': 'True',
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
+        content = response.json_body
+        self.assertTrue(content['result']['status'])
+        self.assertTrue('setConfig selfTest:True' in content['result']['value'])
+        self.assertTrue(content['result']['value']['setConfig selfTest:True'])
+        self.isSelfTest = True
 
     def __deleteAllRealms__(self):
         ''' get al realms and delete them '''
