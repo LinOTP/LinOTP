@@ -104,6 +104,8 @@ class TestController(TestCase):
         '''setup - create clean execution context by resetting database '''
         LOG.info("######## setup_class: %r" % cls)
         SetupCommand('setup-app').run([config['__file__']])
+        from linotp.lib.config import refreshConfig
+        refreshConfig()
         return
 
     @classmethod
