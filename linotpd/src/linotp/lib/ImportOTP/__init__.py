@@ -30,6 +30,7 @@ XML files, that hold the OTP secrets for eToken PASS.
 
 import xml.etree.ElementTree as etree
 import re
+import os
 import binascii
 from linotp.lib.util import modhex_decode
 from linotp.lib.util import modhex_encode
@@ -229,9 +230,9 @@ def parseYubicoCSV(csv):
 
                 if public_id == "":
                     log.warning("No public ID in line %r" % line)
-                    continue
-
-                serial_int = int(binascii.hexlify(modhex_decode(public_id)), 16)
+                    serial_int = int(binascii.hexlify(os.urandom(4)), 16)
+                else:
+                    serial_int = int(binascii.hexlify(modhex_decode(public_id)), 16)
 
                 if typ.lower() == "yubico otp":
                     ttype = "yubikey"
