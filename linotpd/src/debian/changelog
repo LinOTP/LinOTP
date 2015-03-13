@@ -1,3 +1,9 @@
+linotp (2.7.1.2+custom01-1~precise) precise; urgency=low
+
+  * Fix Remote Token so it takes the 'otppin' policy into account
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 13 Mar 2015 16:50:52 +0100
+
 linotp (2.7.1.2-1~precise) precise; urgency=low
 
   Server:
