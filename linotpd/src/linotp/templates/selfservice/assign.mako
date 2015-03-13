@@ -37,7 +37,7 @@
 		%if 'getserial' in c.actions:
 		<tr>
 		<td><label for=otp_serial>${_("The OTP value of the Token to assign")}</label></td>
-		<td><input type='text' id='otp_serial' class='text ui-widget-content ui-corner-all' value='' size="20" maxlength="20"/>
+		<td><input type='text' id='otp_serial' class='text ui-widget-content ui-corner-all' value='' size="20" />
 			<button class='action-button' id='button_otp_serial' onclick="getserial(); return false">
 				${_("determine serial number")}
 			</button>
