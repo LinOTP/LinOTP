@@ -115,16 +115,16 @@ class TestController(TestCase):
 
     def setUp(self):
         ''' here we do the system test init per test method '''
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
-        self.__createResolvers__()
-        self.__createRealms__()
+        #self.__deleteAllRealms__()
+        #self.__deleteAllResolvers__()
+        #self.__createResolvers__()
+        #self.__createRealms__()
 
         return
 
     def tearDown(self):
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        #self.__deleteAllRealms__()
+        #self.__deleteAllResolvers__()
         return
 
     def __deleteAllRealms__(self):
