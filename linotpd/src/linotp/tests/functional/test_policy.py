@@ -51,6 +51,8 @@ class TestPolicies(TestController):
         #self.__deleteAllResolvers__()
         #self.__createResolvers__()
         #self.__createRealms__()
+        TestController.setUp(self)
+        self.set_config_selftest()
         return
 
     def tearDown(self):

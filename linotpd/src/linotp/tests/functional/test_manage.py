@@ -49,6 +49,9 @@ class TestManageController(TestController):
         token: token1 (r1), token2 (r1), token3 (r2)
         '''
 
+        TestController.setUp(self)
+        self.set_config_selftest()
+
         ## remove all other tokens
         self.deleteAllTokens()
 

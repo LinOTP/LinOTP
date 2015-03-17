@@ -44,9 +44,14 @@ class TestPasswdController(TestController):
     '''
     def setUp(self):
         TestController.setUp(self)
+        self.__createResolvers__()
+        self.__createRealms__()
         self.serials = []
 
-
+    def tearDown(self):
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
 
     def test_resolver(self):
         '''

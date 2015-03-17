@@ -293,6 +293,10 @@ class LDAP(object):
 
 class TestLDAP(TestController):
 
+    def setUp(self):
+        TestController.setUp(self)
+        self.set_config_selftest()
+
     users = [
         {'dn'       : 'cn=Werner Braun,',
         'cn'        : 'Werner Braun',

@@ -334,9 +334,17 @@ class OcraTest(TestController):
 
     def setUp(self):
         TestController.setUp(self)
+        self.set_config_selftest()
+        self.__createResolvers__()
+        self.__createRealms__()
         self.removeTokens()
         self.setupPolicies()
         self.setupOcraPolicy()
+
+    def tearDown(self):
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
 
     def setupOcraPolicy(self):
         '''

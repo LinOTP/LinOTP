@@ -36,27 +36,46 @@ class TestYubikeyController(TestController):
 
     serials = set()
 
+    def setUp(self):
+        TestController.setUp(self)
+        self.__createResolvers__()
+        self.__createRealms__()
+
+    def tearDown(self):
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
+
     def init_token(self, serialnum="01382015",
                    yubi_slot=1,
                    otpkey="9163508031b20d2fbb1868954e041729",
                    public_uid="ecebeeejedecebeg"):
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)
 
-        parameters = {
+        params = {
             'type': 'yubikey',
             'serial': serial,
             'otpkey': otpkey,
             'otplen': 48,
-            'description': "Yubikey enrolled in functional tests"
+            'description': "Yubikey enrolled in functional tests",
+            'session': self.session,
         }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.app.get(
+            url(controller='admin', action='init'),
+            params=params
+            )
         self.assertTrue('"value": true' in response, "Response: %r" % response)
         ## test initial assign
-        parameters = {"serial": serial, "user": "root" }
-        response = self.app.get(url(controller='admin', action='assign'),
-                                params=parameters)
+        params = {
+            "serial": serial,
+            "user": "root",
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='assign'),
+            params=params
+            )
         # Test response...
         self.assertTrue('"value": true' in response, "Response: %r" % response)
 
@@ -112,16 +131,28 @@ class TestYubikeyController(TestController):
         otp1 = self.valid_otps[-2]
         otp2 = self.valid_otps[-1]
 
-        response = self.app.get(url(controller='admin', action='resync'),
-                                params={'serial': serial,
-                                        'otp1': otp1,
-                                        'otp2': otp2, })
+        params = {
+            'serial': serial,
+            'otp1': otp1,
+            'otp2': otp2,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='resync'),
+            params=params
+            )
         self.assertTrue('"value": true' in response, "Response: %r" % response)
 
-        response = self.app.get(url(controller='admin', action='resync'),
-                                params={'serial': serial,
-                                        'otp1': otp1,
-                                        'otp2': otp2, })
+        params = {
+            'serial': serial,
+            'otp1': otp1,
+            'otp2': otp2,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='resync'),
+            params=params,
+            )
         self.assertTrue('"value": false' in response, "Response: %r" % response)
 
         return

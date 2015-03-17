@@ -52,10 +52,17 @@ class TestHttpSmsController(TestController):
         This sets up all the resolvers and realms
         '''
         TestController.setUp(self)
+        self.set_config_selftest()
+        self.__createResolvers__()
+        self.__createRealms__()
         self.removeTokens()
         self.initToken()
         self.initProvider()
 
+    def tearDown(self):
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
 
 
 ###############################################################################

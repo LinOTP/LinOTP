@@ -39,6 +39,10 @@ class TestSystemController(TestController):
 
 
     ###############################################################################
+    def setUp(self):
+        TestController.setUp(self)
+        self.set_config_selftest()
+
     def test_setDefault(self):
         '''
         Testing setting default values
@@ -112,7 +116,8 @@ class TestSystemController(TestController):
 
 
     def test_001_realms(self):
-
+        self.__createResolvers__()
+        self.__createRealms__()
         response = self.app.get(url(controller='system', action='getRealms'))
         #log.info("response %s\n",response)
 
@@ -299,6 +304,8 @@ class TestSystemController(TestController):
         response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
         #log.info("response %s\n",response)
         assert '"description": "def User,,,,"'in response
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
 
 
 
