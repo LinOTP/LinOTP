@@ -98,6 +98,22 @@ def _set_cookie(app, key, value):
         app.cookies[key] = value
 
 
+def _get_json_body(response):
+    """
+    Parses the response body as JSON and returns it. WebOb added the property
+    json_body (alias json) in version 1.2
+
+    :param response: A WebOb response object
+    """
+    current_webob = LooseVersion(
+        pkg_resources.get_distribution('webob').version
+        )
+    if current_webob >= LooseVersion('1.2'):
+        return response.json_body
+    else:
+        return json.loads(response.body, encoding=response.charset)
+
+
 class TestController(TestCase):
     '''
     the TestController, which loads the linotp app upfront
@@ -159,7 +175,7 @@ class TestController(TestCase):
             url(controller='system', action='setConfig'),
             params=params,
             )
-        content = response.json_body
+        content = _get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue('setConfig selfTest:True' in content['result']['value'])
         self.assertTrue(content['result']['value']['setConfig selfTest:True'])
