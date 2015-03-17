@@ -55,8 +55,11 @@ from paste.script.appinstall import SetupCommand
 from pylons import url
 from pylons.configuration import config as env
 from routes.util import URLGenerator
-from webtest import TestApp
+import webtest
 import pylons.test
+from distutils.version import LooseVersion
+import pkg_resources
+
 
 
 import warnings
@@ -78,6 +81,23 @@ config = pylons.test.pylonsapp.config
 
 environ = {}
 
+
+def _set_cookie(app, key, value):
+    """
+    Sets a cookie on the TestApp 'app'.
+    The WebTest API changed with version 2.0.16
+
+    :param app: A webtest.TestApp object
+    """
+    current_webtest = LooseVersion(
+        pkg_resources.get_distribution('webtest').version
+        )
+    if current_webtest >= LooseVersion('2.0.16'):
+        app.set_cookie(key, value)
+    else:
+        app.cookies[key] = value
+
+
 class TestController(TestCase):
     '''
     the TestController, which loads the linotp app upfront
@@ -88,9 +108,9 @@ class TestController(TestCase):
         '''
 
         wsgiapp = pylons.test.pylonsapp
-        self.app = TestApp(wsgiapp)
+        self.app = webtest.TestApp(wsgiapp)
         self.session = 'justatest'
-        self.app.set_cookie('admin_session', self.session)
+        _set_cookie(self.app, 'admin_session', self.session)
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)
