@@ -1487,6 +1487,8 @@ class AdminController(BaseController):
             * <searchexpr> - will be retrieved from the UserIdResolverClass
             * realm	 - a realm, which is a collection of resolver configurations
             * resConf	 - a destinct resolver configuration
+            * page    - the number of page, which should be retrieved (optional)
+            * rp    - the number of users per page (optional)
 
         returns:
             a json result with a boolean
@@ -1528,7 +1530,21 @@ class AdminController(BaseController):
                 return sendResult(response, res)
 
             else:
-                list_params = remove_session_from_param(param)
+                list_params = {}
+                list_params.update(param)
+                if 'session' in list_params:
+                    del list_params['session']
+
+                rp = None
+                if "rp" in list_params:
+                    rp = list_params['rp']
+                    del list_params['rp']
+
+                page = None
+                if "page" in list_params:
+                    page = list_params['page']
+                    del list_params['page']
+
                 users_iters = getUserListIterators(list_params, user)
                 # TODO: check if admin is allowed to see the useridresolvers
                 # as users_iters is (user_iterator, resolvername)
@@ -1541,7 +1557,8 @@ class AdminController(BaseController):
                 Session.commit()
 
                 response.content_type = 'application/json'
-                return sendResultIterator(iterate_users(users_iters))
+                return sendResultIterator(iterate_users(users_iters),
+                                          rp=rp, page=page)
 
         except PolicyException as pe:
             log.error('[userlist] policy failed %r' % pe)

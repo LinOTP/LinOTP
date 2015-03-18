@@ -252,16 +252,52 @@ def sendResult(response, obj, id=1, opt=None):
     return json.dumps(res, indent=3)
 
 
-def sendResultIterator(obj, id=1, opt=None):
+def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
     '''
         sendResultIterator - return an json result document in a streamed mode
 
-        :param obj: iterator of generator object like dict, sting or list
+        :param obj: iterator of generator object like dict, string or list
         :param  id: id value, for future versions
         :param opt: optional parameter, which allows to provide more detail
+        :param rp: results per page
+        :param page: number of page
 
         :return: generator of response data (yield)
     '''
+    res = {"jsonrpc": "2.0",
+            "result": {"status": True,
+                       "value": "[DATA]",
+                      },
+           "version": get_version(),
+           "id": id}
+
+    err = {"jsonrpc": "2.0",
+            "result":
+                {"status": False,
+                 "error": {},
+                },
+            "version": get_version(),
+            "id": id
+        }
+
+    start_at = 0
+    stop_at = 0
+    if page:
+        if not rp:
+            rp = 16
+        try:
+            start_at = int(page) * int(rp)
+            stop_at = start_at + int(rp)
+        except ValueError as exx:
+            err['result']['error'] = {
+                            "code": 9876,
+                            "message": "%r" % exx,
+                            }
+            log.exception("failed to convert paging request parameters: %r"
+                          % exx)
+            yield json.dumps(err)
+            # finally we signal end of error result
+            raise StopIteration()
 
     typ = "%s" % type(obj)
     if 'generator' not in typ and 'iterator' not in typ:
@@ -273,6 +309,8 @@ def sendResultIterator(obj, id=1, opt=None):
                       },
            "version": get_version(),
            "id": id}
+    if page:
+        res['result']['page'] = int(page)
 
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
@@ -284,19 +322,32 @@ def sendResultIterator(obj, id=1, opt=None):
     yield prefix + " ["
 
     sep = ""
-    try:
-        while True:
-            res = "%s%s\n" % (sep, obj.next())
+    counter = 0
+    for next_one in obj:
+        counter = counter + 1
+        # are we running in paging mode?
+        if page:
+            if counter >= start_at and counter < stop_at:
+                res = "%s%s\n" % (sep, next_one)
+                sep = ','
+                yield res
+            if counter >= stop_at:
+                # stop iterating if we reached the last one of the page
+                break
+        else:
+            # no paging - no limit
+            res = "%s%s\n" % (sep, next_one)
             sep = ','
             yield res
-    except StopIteration as _stop:
-        log.debug('Result iteration finished!')
+
+    log.debug('Result iteration finished!')
+
+    # we add the amount of queried objects
+    total = '"queried" : %d' % counter
+    postfix = ', %s %s' % (total, postfix)
 
     # last return the closing
     yield "] " + postfix
-
-    # finally we signal end of result
-    raise StopIteration()
 
 
 def sendCSVResult(response, obj, flat_lines=False,

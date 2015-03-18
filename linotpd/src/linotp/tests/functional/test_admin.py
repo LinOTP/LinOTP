@@ -28,7 +28,7 @@
 """
 """
 
-
+import json
 import logging
 from linotp.tests import TestController, url
 
@@ -182,11 +182,66 @@ class TestAdminController(TestController):
         response = self.removeTokenByUser("root")
         self.assertTrue('"value": 2' in response, response)
 
-
     def test_remove(self):
         self.createToken()
         response = self.removeTokenByUser("root")
         log.debug(response)
+
+    def test_userlist(self):
+        """
+        test the admin/userlist for iteration reply and paging
+
+        scope of test:
+        - stabilty of the userlist api
+        - support of result paging
+
+        """
+        # first standard query for users
+        parameters = {"username": "*"}
+        response = self.app.get(url(controller='admin', action='userlist'),
+                                params=parameters)
+        self.assertTrue('"status": true,' in response, response)
+        resp = json.loads(response.body)
+        values = resp.get('result', {}).get('value', [])
+        self.assertTrue(len(values) > 15, "not enough users returned %r" % resp)
+
+        # paged query
+        parameters = {"username": "*", "rp": 5, "page": 2}
+        response = self.app.get(url(controller='admin', action='userlist'),
+                                params=parameters)
+        self.assertTrue('"status": true,' in response, response)
+        resp = json.loads(response.body)
+
+        entries = parameters['rp']
+        values = resp.get('result', {}).get('value', [])
+        self.assertEqual(len(values), parameters['rp'], resp)
+
+        num = parameters['rp'] * (parameters['page'] + 1)
+        queried = resp.get('result', {}).get('queried', 0)
+        self.assertEqual(queried, num, resp)
+
+        # test for optional pagesize, which falls back to the pagesize of 15
+        parameters = {"username": "*", "page": 0}
+        response = self.app.get(url(controller='admin', action='userlist'),
+                                params=parameters)
+        self.assertTrue('"status": true,' in response, response)
+        resp = json.loads(response.body)
+        values = resp.get('result', {}).get('value', [])
+        self.assertEqual(len(values), 15, resp)
+
+        # test for ValueError Exception if page or rp is not of int
+        # though the returned data is a json response
+        parameters = {"username": "*", "page": 'page'}
+        response = self.app.get(url(controller='admin', action='userlist'),
+                                params=parameters)
+        # check that status is false
+        self.assertTrue('"status": false,' in response, response)
+        # check for valid json
+        resp = json.loads(response.body)
+        value = resp.get('result', {}).get('error', {}).get("code", 0)
+        self.assertEqual(value, 9876, resp)
+
+        return
 
     def test_enable(self):
         self.createToken()
