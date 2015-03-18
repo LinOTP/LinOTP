@@ -452,7 +452,7 @@ sccSignature: MC4CFQDju23MCRqmkWC7Z9sVDB0y0TeEOwIVAOIibmqMFxhPiY7mLlkt5qmRT/xn  
         TOKENS = linotp.lib.ImportOTP.parseYubicoCSV(csv)
         print TOKENS
         print len(TOKENS)
-        assert len(TOKENS) == 3
+        assert len(TOKENS) == 5
 
     def test_parse_XML(self):
         '''
@@ -645,5 +645,5 @@ sccSignature: MC4CFQDju23MCRqmkWC7Z9sVDB0y0TeEOwIVAOIibmqMFxhPiY7mLlkt5qmRT/xn  
         '''
         response = self.app.post(url(controller='admin', action='loadtokens'), params={'file':csv, 'type':'yubikeycsv'})
         print response
-        assert '"imported": 3' in response
+        assert '"imported": 5' in response
         return
