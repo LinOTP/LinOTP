@@ -37,7 +37,7 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-from mock import MagicMock, Mock
+from mock import MagicMock, Mock, patch
 
 
 class U2FTokenClassTestCase(unittest.TestCase):
@@ -62,6 +62,10 @@ class U2FTokenClassTestCase(unittest.TestCase):
         model_token.getInfo.return_value = u'' + '{\n}'
         self.u2f_token = U2FTokenClass(model_token)
         model_token.setType.assert_called_once_with("u2f")
+
+    #
+    # Test the _verifyCounterValue function
+    #
 
     def test_verify_counter_decrease_in_overflow_range(self):
         """
@@ -188,6 +192,152 @@ class U2FTokenClassTestCase(unittest.TestCase):
         self.u2f_token.addToTokenInfo.assert_called_once_with('counter', 5000)
         self.assertTrue(self.u2f_token.token.LinOtpIsactive)
 
+    #
+    # Test the update function
+    #
+
+    def test_update_requested_phase_unknown_current_phase_None(self):
+        """
+        Test update function with an unknown requested_phase parameter and current_phase None
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value=None)
+        param = dict(description=None, phase='some_unknown_phase')
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_unknown_current_phase_registration(self):
+        """
+        Test update function with an unknown requested_phase parameter and current_phase 'registration'
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
+        param = dict(description=None, phase='some_unknown_phase')
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_unknown_current_phase_authentication(self):
+        """
+        Test update function with an unknown requested_phase parameter and current_phase 'authentication'
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
+        param = dict(description=None, phase='some_unknown_phase')
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_registration1_current_phase_None(self):
+        """
+        Test update function with requested_phase 'registration1' and current_phase None
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value=None)
+        self.u2f_token.addToTokenInfo = Mock()
+        param = dict(description=None, phase='registration1')
+        self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+        self.u2f_token.addToTokenInfo.assert_called_once_with('phase', 'registration')
+        self.assertFalse(self.u2f_token.token.LinOtpIsactive)
+
+    def test_update_requested_phase_registration1_current_phase_registration(self):
+        """
+        Test update function with requested_phase 'registration1' and current_phase 'registration'
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
+        param = dict(description=None, phase='registration1')
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_registration1_current_phase_authentication(self):
+        """
+        Test update function with requested_phase 'registration1' and current_phase 'authentication'
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
+        param = dict(description=None, phase='registration1')
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_registration2_current_phase_None(self):
+        """
+        Test update function with requested_phase 'registration2' and current_phase None
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value=None)
+        param = dict(description=None, phase='registration2')
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_registration2_current_phase_registration_correct_pin(self):
+        """
+        Test update function with requested_phase 'registration2' and current_phase registration
+        and a correct pin
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
+        patcher = patch('linotp.lib.tokens.u2ftoken.check_pin', spec=True)
+        check_pin_mock = patcher.start()
+        check_pin_mock.return_value = True
+        param = dict(description=None, phase='registration2', pin='test!pin')
+        self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+        check_pin_mock.assert_called_once_with(self.u2f_token, 'test!pin')
+        patcher.stop()
+
+    def test_update_requested_phase_registration2_current_phase_registration_wrong_pin(self):
+        """
+        Test update function with requested_phase 'registration2' and current_phase registration
+        and a wrong pin
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
+        patcher = patch('linotp.lib.tokens.u2ftoken.check_pin', spec=True)
+        check_pin_mock = patcher.start()
+        check_pin_mock.return_value = False
+        param = dict(description=None, phase='registration2', pin='test!pin')
+        with self.assertRaises(ValueError):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+        check_pin_mock.assert_called_once_with(self.u2f_token, 'test!pin')
+        patcher.stop()
+
+    def test_update_requested_phase_registration2_current_phase_authentication(self):
+        """
+        Test update function with requested_phase 'registration2' and current_phase 'authentication'
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
+        param = dict(description=None, phase='registration2')
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_None_current_phase_None(self):
+        """
+        Test update function with requested_phase None and current_phase None
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value=None)
+        param = dict(description=None, phase=None)
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_None_current_phase_registration(self):
+        """
+        Test update function with an requested_phase None and current_phase 'registration'
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='registration')
+        param = dict(description=None, phase=None)
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
+
+    def test_update_requested_phase_None_current_phase_authentication(self):
+        """
+        Test update function with requested_phase None and current_phase 'authentication'
+        """
+        self.u2f_token.getFromTokenInfo = Mock(return_value='authentication')
+        param = dict(description=None, phase=None)
+        with self.assertRaises(Exception):
+            self.u2f_token.update(param)
+        self.u2f_token.getFromTokenInfo.assert_called_once_with('phase', None)
 
 if __name__ == '__main__':
     unittest.main()
