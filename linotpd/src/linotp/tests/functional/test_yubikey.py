@@ -43,6 +43,8 @@ class TestYubikeyController(TestController):
         self.__createRealms__()
 
     def tearDown(self):
+        for serial in self.serials:
+            self.removeTokenBySerial(serial)
         self.__deleteAllRealms__()
         self.__deleteAllResolvers__()
         TestController.tearDown(self)
@@ -206,8 +208,3 @@ class TestYubikeyController(TestController):
                 self.assertEqual(serial, get_serial, resp)
 
         return
-
-    def tearDown(self):
-        for serial in self.serials:
-            self.removeTokenBySerial(serial)
-        TestController.tearDown(self)
