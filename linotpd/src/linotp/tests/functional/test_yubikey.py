@@ -29,6 +29,7 @@
   Test the Yubikey.
 """
 
+import json
 from linotp.tests import TestController, url
 
 
@@ -46,39 +47,7 @@ class TestYubikeyController(TestController):
         self.__deleteAllResolvers__()
         TestController.tearDown(self)
 
-    def init_token(self, serialnum="01382015",
-                   yubi_slot=1,
-                   otpkey="9163508031b20d2fbb1868954e041729",
-                   public_uid="ecebeeejedecebeg"):
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
-
-        params = {
-            'type': 'yubikey',
-            'serial': serial,
-            'otpkey': otpkey,
-            'otplen': 48,
-            'description': "Yubikey enrolled in functional tests",
-            'session': self.session,
-        }
-
-        response = self.app.get(
-            url(controller='admin', action='init'),
-            params=params
-            )
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
-        ## test initial assign
-        params = {
-            "serial": serial,
-            "user": "root",
-            'session': self.session,
-            }
-        response = self.app.get(
-            url(controller='admin', action='assign'),
-            params=params
-            )
-        # Test response...
-        self.assertTrue('"value": true' in response, "Response: %r" % response)
-
+    def init_otps(self, public_uid):
         self.valid_otps = [
             public_uid + "fcniufvgvjturjgvinhebbbertjnihit",
             public_uid + "tbkfkdhnfjbjnkcbtbcckklhvgkljifu",
@@ -94,31 +63,82 @@ class TestYubikeyController(TestController):
             public_uid + "ljlhjbkejkctubnejrhuvljkvglvvlbk",
             public_uid + "eihtnehtetluntirtirrvblfkttbjuih",
         ]
+        return
+
+    def init_token(self, serialnum="01382015",
+                   yubi_slot=1,
+                   otpkey="9163508031b20d2fbb1868954e041729",
+                   public_uid="ecebeeejedecebeg",
+                   use_public_id=False
+                   ):
+        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+
+        params = {
+            'type': 'yubikey',
+            'serial': serial,
+            'otpkey': otpkey,
+            'description': "Yubikey enrolled in functional tests",
+            'session': self.session
+        }
+
+        if not use_public_id:
+            params['otplen'] = 32 + len(public_uid)
+        else:
+            params['public_uid'] = public_uid
+
+        response = self.app.get(
+            url(controller='admin', action='init'),
+            params=params
+            )
+        self.assertTrue('"value": true' in response, "Response: %r" % response)
+
+        # test initial assign
+        params = {
+            "serial": serial,
+            "user": "root",
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='assign'),
+            params=params
+            )
+        # Test response...
+        self.assertTrue('"value": true' in response, "Response: %r" % response)
+
+        # setup the otp values, that we check against
+        self.init_otps(public_uid)
 
         self.serials.add(serial)
         return serial
 
     def test_yubico_mode(self):
         """
-        Enroll and test the Yubikey in yubico (AES) mode
+        Enroll and verify otp for the Yubikey in yubico (AES) mode
+
+        test with public_uid and without public_uid
+
         """
-        public_uid = "ecebeeejedecebeg"
+        public_uids = ["ecebeeejedecebeg", '']
+        for public_uid in public_uids:
 
-        serial = self.init_token(public_uid=public_uid)
+            serial = self.init_token(public_uid=public_uid)
 
-        for otp in self.valid_otps:
-            response = self.app.get(url(controller='validate', action='check_s'),
-                                    params={'serial': serial, 'pass': otp})
-            self.assertTrue('"value": true' in response, "Response: %r" % response)
+            for otp in self.valid_otps:
+                params = {'serial': serial, 'pass': otp}
+                response = self.app.get(url(controller='validate',
+                                            action='check_s'), params=params)
+                self.assertTrue('"value": true' in response, "Response: %r"
+                                % response)
 
-        # Repeat an old (therefore invalid) OTP value
-        invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params={'serial': serial, 'pass': invalid_otp})
-        self.assertTrue('"value": false' in response, "Response: %r" % response)
+            # Repeat an old (therefore invalid) OTP value
+            invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
+            params = {'serial': serial, 'pass': invalid_otp}
+            response = self.app.get(url(controller='validate',
+                                        action='check_s'), params=params)
+            self.assertTrue('"value": false' in response, "Response: %r"
+                            % response)
 
         return
-
 
     def test_yubico_resync(self):
         """
@@ -157,6 +177,31 @@ class TestYubikeyController(TestController):
 
         return
 
+    def test_yubico_getSerialByOtp(self):
+        """
+        getSerialByOtp test for yubikey token w. and wo. prefix
+        """
+        public_uids = ["ecebeeejedecebeg", '']
+
+        for public_uid in public_uids:
+
+            # preserve the serial number for later check
+            serial = self.init_token(public_uid=public_uid, use_public_id=True)
+            for otp in self.valid_otps:
+                params = {'otp': otp}
+                response = self.app.get(url(controller='admin',
+                                            action='getSerialByOtp'),
+                                        params=params)
+                self.assertTrue('"status": true' in response,
+                                "Response: %r" % response)
+
+                # now access the data / serial number
+                resp = json.loads(response.body)
+                data = resp.get("result", {}).get('value', {})
+                get_serial = data.get('serial')
+                self.assertEqual(serial, get_serial, resp)
+
+        return
 
     def tearDown(self):
         for serial in self.serials:

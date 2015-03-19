@@ -175,18 +175,50 @@ class YubikeyTokenClass(TokenClass):
 
         return ret
 
+    def update(self, param, reset_failcount=True):
+        '''
+        update - process the initialization parameters
+
+        :param param: dict of initialization parameters
+        :type param: dict
+
+        :return: nothing
+        '''
+
+        # we use the public_uid to calculate the otplen which is at 48 or 32
+        # the public_uid is stored and used in validation
+
+        if 'public_uid' in param:
+            otplen = 32 + len(param['public_uid'])
+        else:
+            otplen = 48
+
+        if 'otplen' not in param:
+            param['otplen'] = otplen
+
+        TokenClass.update(self, param, reset_failcount)
+
+        if 'public_uid' in param:
+            self.addToTokenInfo('public_uid', param['public_uid'])
+
+        log.debug("[update] end. Processing the initialization parameters done.")
+        return
+
     def resetTokenInfo(self):
         """
         resetTokenInfo - hook called during token init/update
 
         in yubikey we have to reset the tokeninfo as it preserves the
-        tokenid, which changes with an token update
+        tokenid and or public_uid which changes with an token update
         """
 
         info = self.getTokenInfo()
 
-        if info and "yubikey.tokenid" in info:
-            del info["yubikey.tokenid"]
+        if info:
+            if "yubikey.tokenid" in info:
+                del info["yubikey.tokenid"]
+            if "public_uid" in info:
+                del info["public_uid"]
             self.setTokenInfo(info)
 
         return
@@ -235,6 +267,11 @@ class YubikeyTokenClass(TokenClass):
         # The prefix is the characters in front of the last 32 chars
         # We can also check the PREFIX! At the moment, we do not use it!
         yubi_prefix = anOtpVal[:-32]
+
+        # verify the prefix if any
+        enroll_prefix = self.getFromTokenInfo('public_uid', None)
+        if enroll_prefix and enroll_prefix != yubi_prefix:
+            return res
 
         # The variable otp val is the last 32 chars
         yubi_otp = anOtpVal[-32:]
