@@ -194,6 +194,10 @@ XML_PSKC = '''<?xml version="1.0" encoding="UTF-8"?>
 
 class TestImportOTP(TestController):
 
+    def setUp(self):
+        TestController.setUp(self)
+        self.set_config_selftest()
+
     def test_parse_DAT(self):
         '''
         Test to parse of eToken dat file format - import

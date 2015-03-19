@@ -25,7 +25,15 @@
 #
 
 
-""" used to do functional testing of the remote token"""
+"""
+used to do functional testing of the remote token
+
+These tests will only pass if you start a LinOTP server on 127.0.0.1 port 5001.
+For example with paster:
+
+    paster serve test.ini
+
+"""
 
 import logging
 from linotp.tests import TestController, url
@@ -41,6 +49,8 @@ class TestRemoteToken(TestController):
         If the realms are deleted also the table TokenRealm gets deleted
         and we loose the information how many tokens are within a realm!
         '''
+        TestController.setUp(self)
+        self.set_config_selftest()
         return
 
     def tearDown(self):

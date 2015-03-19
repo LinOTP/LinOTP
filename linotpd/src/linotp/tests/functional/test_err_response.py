@@ -34,38 +34,68 @@ from linotp.tests import TestController, url
 
 log = logging.getLogger(__name__)
 
-class TestOrphanedTokens(TestController):
+class TestHTTPError(TestController):
 
+
+    def setUp(self):
+        TestController.setUp(self)
 
     def test_httperror(self):
 
-        param = { 'otpkey': 'AD8EABE235FC57C815B26CEF3709075580B44738',
-                  'user': 'root', 'pin':'pin', 'serial':'T2', 'type':'spass', 'resConf':'def'
-                 }
+        params = {
+            'otpkey': 'AD8EABE235FC57C815B26CEF3709075580B44738',
+            'user': 'root',
+            'pin':'pin',
+            'serial':'T2',
+            'type':'spass',
+            'resConf':'def',
+            'session': self.session,
+            }
 
-        response = self.app.get(url(controller='admin', action='init'), params=param)
+        response = self.app.get(
+            url(controller='admin', action='init'),
+            params=params,
+            )
         assert '"status": false,' in response
 
 
-        param = { 'otpkey': 'AD8EABE235FC57C815B26CEF3709075580B44738',
-                  'user': 'root', 'pin':'pin', 'serial':'T2', 'type':'spass', 'resConf':'def', 'httperror':'400'
-                 }
+        params = {
+            'otpkey': 'AD8EABE235FC57C815B26CEF3709075580B44738',
+            'user': 'root',
+            'pin': 'pin',
+            'serial': 'T2',
+            'type': 'spass',
+            'resConf': 'def',
+            'httperror': '400',
+            'session': self.session,
+            }
         try:
-            response = self.app.get(url(controller='admin', action='init'), params=param)
+            response = self.app.get(
+                url(controller='admin', action='init'),
+                params=params,
+                )
         except Exception as e:
             httperror = e.args[0]
-            assert "400 Bad Request" in httperror
+            self.assertTrue("400 Bad Request" in httperror)
 
+        params = {
+            'otpkey': 'AD8EABE235FC57C815B26CEF3709075580B44738',
+            'user': 'root',
+            'pin': 'pin',
+            'serial': 'T2',
+            'type': 'spass',
+            'resConf': 'def',
+            'httperror': '',
+            'session': self.session,
+            }
 
-        param = { 'otpkey': 'AD8EABE235FC57C815B26CEF3709075580B44738',
-                  'user': 'root', 'pin':'pin', 'serial':'T2', 'type':'spass', 'resConf':'def', 'httperror':''
-                 }
         try:
-            response = self.app.get(url(controller='admin', action='init'), params=param)
+            response = self.app.get(
+                url(controller='admin', action='init'),
+                params=params,
+                )
         except Exception as e:
             httperror = e.args[0]
-            assert "500 Internal Server Error" in httperror
+            self.assertTrue("500 Internal Server Error" in httperror)
 
         return
-
-

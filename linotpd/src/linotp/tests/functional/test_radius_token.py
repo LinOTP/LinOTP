@@ -35,6 +35,17 @@ class TestRadiusToken(TestController):
 
     p = None
 
+    def setUp(self):
+        TestController.setUp(self)
+        self.set_config_selftest()
+        self.__createResolvers__()
+        self.__createRealms__()
+
+    def tearDown(self):
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
+
     def test_00_create_radius_token(self):
         # The token with the remote PIN
         parameters1 = {

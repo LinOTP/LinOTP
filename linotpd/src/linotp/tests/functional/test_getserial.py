@@ -50,6 +50,8 @@ class TestGetSerialController(TestController):
 
 
     def setUp(self):
+        TestController.setUp(self)
+        self.set_config_selftest()
         self.initToken()
 
     def tearDown(self):

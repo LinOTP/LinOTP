@@ -37,6 +37,17 @@ log = logging.getLogger(__name__)
 class TestAdminController(TestController):
 
 
+    def setUp(self):
+        TestController.setUp(self)
+        self.set_config_selftest()
+        self.__createResolvers__()
+        self.__createRealms__()
+
+    def tearDown(self):
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
+
     def createToken3(self):
         parameters = {
                       "serial": "003e808e",

@@ -230,9 +230,16 @@ class TestTotpController(TestController):
     '''
     def setUp(self):
         TestController.setUp(self)
+        self.set_config_selftest()
+        self.__createResolvers__()
+        self.__createRealms__()
         self.serials = []
 
-
+    def tearDown(self):
+        self.removeTokens()
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
 
     def removeTokens(self):
         for serial in self.serials:
@@ -558,10 +565,3 @@ class TestTotpController(TestController):
             self.removeTokens()
 
         return
-
-
-
-    def tearDown(self):
-        self.removeTokens()
-
-        TestController.tearDown(self)

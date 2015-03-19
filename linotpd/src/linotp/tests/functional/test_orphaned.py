@@ -178,6 +178,7 @@ class TestOrphandTokens(TestController):
 
     def setUp(self):
         TestController.setUp(self)
+        self.set_config_selftest()
         self.setUpSQL()
 
     def setUpSQL(self):
@@ -353,38 +354,6 @@ class TestOrphandTokens(TestController):
         assert '"status": true,' in response
         return response
 
-
-    def __deleteAllRealms__(self):
-        ## get al realms
-        response = self.app.get(url(controller='system', action='getRealms'))
-        jResponse = json.loads(response.body)
-        result = jResponse.get("result")
-        values = result.get("value", {})
-        for realmId in values:
-            print realmId
-            realmDesc = values.get(realmId)
-            realmName = realmDesc.get("realmname")
-            parameters = {"realm":realmName}
-            resp = self.app.get(url(controller='system', action='delRealm'), params=parameters)
-            assert('"result": true' in resp)
-
-        return
-
-    def __deleteAllResolvers__(self):
-        ##http://127.0.0.1:5001/system/getResolvers
-        response = self.app.get(url(controller='system', action='getResolvers'))
-        jResponse = json.loads(response.body)
-        result = jResponse.get("result")
-        values = result.get("value", {})
-        for realmId in values:
-            print realmId
-            resolvDesc = values.get(realmId)
-            resolvName = resolvDesc.get("resolvername")
-            parameters = {"resolver" : resolvName}
-            resp = self.app.get(url(controller='system', action='delResolver'), params=parameters)
-            assert('"status": true' in resp)
-
-        return
 
     def test_orphandTokens_byUser(self):
         '''

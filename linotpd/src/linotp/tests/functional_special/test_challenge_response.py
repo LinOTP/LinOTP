@@ -144,20 +144,18 @@ def do_http(remoteServer, params=None):
         data = urllib.urlencode(params)
         request_url = "%s" % (remoteServer)
 
-        try:
-            ## prepare the submit and receive headers
-            headers = {"Content-type": "application/x-www-form-urlencoded",
-                       "Accept": "text/plain"}
+        ## prepare the submit and receive headers
+        headers = {"Content-type": "application/x-www-form-urlencoded",
+                    "Accept": "text/plain"}
+        if 'session' in params:
+            headers['Cookie'] = "admin_session=%s" % params['session']
 
-            ## submit the request
-            http = httplib2.Http()
-            (resp, content) = http.request(request_url,
-                                           method="POST",
-                                           body=data,
-                                           headers=headers)
-        except Exception as exx:
-            log.error("Error %r" % exx)
-
+        ## submit the request
+        http = httplib2.Http()
+        (resp, content) = http.request(request_url,
+                                        method="POST",
+                                        body=data,
+                                        headers=headers)
         return content
 
 class TestChallengeResponseController(TestController):
@@ -167,6 +165,8 @@ class TestChallengeResponseController(TestController):
         This sets up all the resolvers and realms
         '''
         TestController.setUp(self)
+        self.__createResolvers__()
+        self.__createRealms__()
 
         if hasattr(self, "policies") is False:
             setattr(self, "policies", [])
@@ -187,12 +187,19 @@ class TestChallengeResponseController(TestController):
             self.patch_smtp.stop()
         if self.patch_sms is not None:
             self.patch_sms.stop()
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
         TestController.tearDown(self)
 
     def deleteAllPolicies(self):
         '''
         '''
-        response = self.app.get(url(controller='system', action='getPolicy'),)
+        response = self.app.get(
+            url(controller='system', action='getPolicy'),
+            params={
+                'session': self.session,
+                },
+            )
         self.assertTrue('"status": true' in response, response)
 
         body = json.loads(response.body)
@@ -206,8 +213,12 @@ class TestChallengeResponseController(TestController):
     def deleteAllTokens(self):
         serials = []
 
-        response = self.app.get(url(controller='admin', action='show'),
-                                )
+        response = self.app.get(
+            url(controller='admin', action='show'),
+            params={
+                'session': self.session,
+                },
+            )
         self.assertTrue('"status": true' in response, response)
 
         body = json.loads(response.body)
@@ -232,55 +243,62 @@ class TestChallengeResponseController(TestController):
                     email_address=None
                     ):
 
-        parameters = {
-                        "serial"  : serial,
-                        "otpkey"  : otpkey,
-                        "user"    : user,
-                        "pin"     : pin,
-                        "type"    : typ,
-                        "description" : description,
-                      }
+        params = {
+            "serial": serial,
+            "otpkey": otpkey,
+            "user": user,
+            "pin": pin,
+            "type": typ,
+            "description": description,
+            'session': self.session,
+            }
         if phone is not None:
-            parameters['phone'] = phone
+            params['phone'] = phone
         if email_address is not None:
-            parameters['email_address'] = email_address
+            params['email_address'] = email_address
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.app.get(
+            url(controller='admin', action='init'),
+            params=params,
+            )
         self.assertTrue('"value": true' in response, response)
         self.serials.append(serial)
         return serial
 
     def removeTokenBySerial(self, serial):
-        parameters = {
-                      "serial": serial,
-                      }
+        params = {
+            "serial": serial,
+            'session': self.session,
+            }
 
-        response = self.app.get(url(controller='admin', action='remove'),
-                                params=parameters)
+        response = self.app.get(
+            url(controller='admin', action='remove'),
+            params=params,
+            )
         return response
 
     def setPinPolicy(self, name='otpPin', realm='ldap_realm',
                      action='otppin=1, ', scope='authentication',
                      active=True, remoteurl=None):
-        parameters = {
-                         'name'     : name,
-                         'user'     : '*',
-                         'action'   : action,
-                         'scope'    : scope,
-                         'realm'    : realm,
-                         'time'     : '',
-                         'client'   : '',
-                         'active'   : active,
-                         }
+        params = {
+            'name': name,
+            'user': '*',
+            'action': action,
+            'scope': scope,
+            'realm': realm,
+            'time': '',
+            'client': '',
+            'active': active,
+            'session': self.session,
+            }
 
         r_url = url(controller='system', action='setPolicy')
 
         if remoteurl is not None:
             r_url = "%s/%s" % (remoteurl, "system/setPolicy")
-            response = do_http(r_url, params=parameters)
+            response = do_http(r_url, params=params)
         else:
-            response = self.app.get(r_url, params=parameters)
+            response = self.app.get(r_url, params=params)
 
 
 
@@ -291,9 +309,9 @@ class TestChallengeResponseController(TestController):
 
         if remoteurl is not None:
             r_url = "%s/%s" % (remoteurl, "system/getPolicy")
-            response = do_http(r_url, params=parameters)
+            response = do_http(r_url, params=params)
         else:
-            response = self.app.get(r_url, params=parameters)
+            response = self.app.get(r_url, params=params)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -303,16 +321,18 @@ class TestChallengeResponseController(TestController):
 
     def delPolicy(self, name='otpPin', remoteurl=None):
 
-        parameters = {'name': name,
-                      'selftest_admin': 'superadmin'
-                      }
+        params = {
+            'name': name,
+            'selftest_admin': 'superadmin',
+            'session': self.session,
+            }
         r_url = url(controller='system', action='delPolicy')
 
         if remoteurl is not None:
             r_url = "%s/%s" % (remoteurl, "system/delPolicy")
-            response = do_http(r_url, params=parameters)
+            response = do_http(r_url, params=params)
         else:
-            response = self.app.get(r_url, params=parameters)
+            response = self.app.get(r_url, params=params)
 
 
         return response
@@ -325,7 +345,7 @@ class TestChallengeResponseController(TestController):
                            remoteurl="http://127.0.0.1:5001"):
         # local token
         serials = []
-        params = [
+        params_list = [
                   ## the token set with remote pin checking
                   {
                         "serial"  : "LSRE001",
@@ -338,6 +358,7 @@ class TestChallengeResponseController(TestController):
                         'remote.server' : remoteurl,
                         'remote.local_checkpin' : 0,
                         'remote.serial' : 'LSPW1',
+                        'session': self.session,
                       },
                   { # the target is accessed via serial, so no user is required
                         "serial"  : "LSPW1",
@@ -346,6 +367,7 @@ class TestChallengeResponseController(TestController):
                         "otppin"  : "",
                         "user"    : "",
                         "pin"     : "rpin",
+                        'session': self.session,
                   },
                   ## the token set with local pin checking
                   {
@@ -358,6 +380,7 @@ class TestChallengeResponseController(TestController):
                         'remote.server' : remoteurl,
                         'remote.local_checkpin' : 1,
                         'remote.serial' : 'LSPW2',
+                        'session': self.session,
                         },
                   { # the target is accessed via serial, so no user is required
                         "serial"  : "LSPW2",
@@ -366,23 +389,36 @@ class TestChallengeResponseController(TestController):
                         "otppin"  : "",
                         "user"    : "",
                         "pin"     : "",
+                        'session': self.session,
                          },
                   ]
-        for param in params:
-            serials.append(param.get('serial'))
-            response = self.app.get(url(controller='admin', action='init'),
-                                    params=param)
+        for params in params_list:
+            serials.append(params.get('serial'))
+            response = self.app.get(
+                url(controller='admin', action='init'),
+                params=params,
+                )
             self.assertTrue('"value": true' in response, response)
 
         ## enforce the awareness of policy changes
-        parameters = {'enableReplication' : 'true' }
-        resp = self.app.get(url(controller='system', action='setConfig'),
-                            params=parameters)
+        params = {
+            'enableReplication': 'true',
+            'session': self.session,
+            }
+        resp = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
         assert('"setConfig enableReplication:true": true' in resp)
 
-        parameters = {'enableReplication' : 'true' }
-        resp = do_http("%s/system/setConfig" % remoteurl,
-                            params=parameters)
+        params = {
+            'enableReplication': 'true',
+            'session': self.session,
+            }
+        resp = do_http(
+            "%s/system/setConfig" % remoteurl,
+            params=params,
+            )
         assert('"setConfig enableReplication:true": true' in resp)
 
         return serials
@@ -392,7 +428,7 @@ class TestChallengeResponseController(TestController):
         serials = []
 
         # The token with the remote PIN
-        parameters = [{
+        params_list = [{
                       "serial"  : "radius1",
                       "type"    : "radius",
                       "otpkey"  : "1234567890123456",
@@ -404,6 +440,7 @@ class TestChallengeResponseController(TestController):
                       'radius.local_checkpin' : 0,
                       'radius.user' : 'challenge',
                       'radius.secret' : 'testing123',
+                      'session': self.session,
                       },
 
                     # the token with the local PIN
@@ -419,13 +456,16 @@ class TestChallengeResponseController(TestController):
                       'radius.local_checkpin' : 1,
                       'radius.user' : 'user_no_pin',
                       'radius.secret' : 'testing123',
+                      'session': self.session,
                       },
                      ]
-        for param in parameters:
-            response = self.app.get(url(controller='admin', action='init'),
-                                    params=param)
+        for params in params_list:
+            response = self.app.get(
+                url(controller='admin', action='init'),
+                params=params,
+                )
             self.assertTrue('"value": true' in response, response)
-            serials.append(param.get("serial"))
+            serials.append(params.get("serial"))
 
         return serials
 
@@ -468,9 +508,9 @@ class TestChallengeResponseController(TestController):
 
         otp = self.calcOTP(otpkey, counter=counter)
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin" + otp}
+        params = {"user": "passthru_user1", "pass": "shortpin" + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": true' in response, response)
         self.removeTokenBySerial(serial)
 
@@ -481,9 +521,9 @@ class TestChallengeResponseController(TestController):
         serial = self.createToken(pin="otppin", user='passthru_user1')
 
         otp = self.calcOTP(otpkey, counter=counter)
-        parameters = {"user": "passthru_user1", "pass": "geheim1" + otp}
+        params = {"user": "passthru_user1", "pass": "geheim1" + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"value": true' in response, response)
         self.removeTokenBySerial(serial)
 
@@ -494,15 +534,15 @@ class TestChallengeResponseController(TestController):
 
         serial = self.createToken(pin="otppin", user='passthru_user1')
         otp = self.calcOTP(otpkey, counter=1)
-        parameters = {"user": "passthru_user1", "pass": otp}
+        params = {"user": "passthru_user1", "pass": otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"value": true' in response, response)
 
         ## finally otppin == 2 and wrong otp would trigger
-        parameters = {"user": "passthru_user1", "pass": "123456"}
+        params = {"user": "passthru_user1", "pass": "123456"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         if '"value": true' not in response:
             log.error(response)
         self.assertTrue('"value": false' in response, response)
@@ -512,9 +552,9 @@ class TestChallengeResponseController(TestController):
                                             action='challenge_response=hmac, ')
 
         ## no challenge request - empty pin + otp does not match
-        parameters = {"user": "passthru_user1", "pass": "123456"}
+        params = {"user": "passthru_user1", "pass": "123456"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         if '"value": true' not in response:
             log.error(response)
         self.assertTrue('"value": false' in response, response)
@@ -536,9 +576,9 @@ class TestChallengeResponseController(TestController):
                                                         user='passthru_user1')
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": true' in response, response)
         self.removeTokenBySerial(serial)
 
@@ -548,9 +588,9 @@ class TestChallengeResponseController(TestController):
         serial = self.createToken(pin="otppin", typ='spass',
                                   user='passthru_user1')
 
-        parameters = {"user": "passthru_user1", "pass": "geheim1"}
+        params = {"user": "passthru_user1", "pass": "geheim1"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"value": true' in response, response)
         self.removeTokenBySerial(serial)
         self.delPolicy()
@@ -560,9 +600,9 @@ class TestChallengeResponseController(TestController):
         serial = self.createToken(pin="otppin", typ='spass',
                                   user='passthru_user1')
 
-        parameters = {"user": "passthru_user1", "pass": ""}
+        params = {"user": "passthru_user1", "pass": ""}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"value": true' in response, response)
         self.removeTokenBySerial(serial)
         self.delPolicy()
@@ -576,13 +616,13 @@ class TestChallengeResponseController(TestController):
 
         serials = self.setup_remote_token()
 
-        parameters = {"user": "remoteuser", "pass": "rpin123456"}
+        params = {"user": "remoteuser", "pass": "rpin123456"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
-        parameters = {"user": "localuser", "pass": "lpin123456"}
+        params = {"user": "localuser", "pass": "lpin123456"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": true' in response, response)
 
@@ -606,9 +646,9 @@ class TestChallengeResponseController(TestController):
 
 
         otp = self.calcOTP(otpkey, counter=counter)
-        parameters = {"user": "passthru_user1", "pass": "geheim1" + otp}
+        params = {"user": "passthru_user1", "pass": "geheim1" + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"value": true' in response, response)
         self.removeTokenBySerial(serial)
 
@@ -619,9 +659,9 @@ class TestChallengeResponseController(TestController):
 
         otp = self.calcOTP(otpkey, counter=counter)
         serial = self.createToken(pin="otppin", user='passthru_user1')
-        parameters = {"user": "passthru_user1", "pass": otp}
+        params = {"user": "passthru_user1", "pass": otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"value": true' in response, response)
         self.removeTokenBySerial(serial)
 
@@ -640,9 +680,9 @@ class TestChallengeResponseController(TestController):
                                                     user='passthru_user1')
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' not in response, response)
 
@@ -650,9 +690,9 @@ class TestChallengeResponseController(TestController):
                                             action='challenge_response=hmac, ')
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
@@ -669,17 +709,17 @@ class TestChallengeResponseController(TestController):
 
         ## submit a otp only challenge response
         otp = self.calcOTP(otpkey, counter=counter)
-        parameters = {"user": "passthru_user1", "pass": otp}
-        parameters['transactionid'] = state
+        params = {"user": "passthru_user1", "pass": otp}
+        params['transactionid'] = state
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": true' in response, response)
 
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
@@ -692,18 +732,18 @@ class TestChallengeResponseController(TestController):
         ## submit a pin + otp challenge response
         counter = counter + 1
         otp = self.calcOTP(otpkey, counter=counter)
-        parameters = {"user": "passthru_user1", "pass": otp}
-        parameters['transactionid'] = state
+        params = {"user": "passthru_user1", "pass": otp}
+        params['transactionid'] = state
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": true' in response, response)
 
         ## now create two open challenges
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
@@ -713,9 +753,9 @@ class TestChallengeResponseController(TestController):
         state = body.get('detail').get('transactionid')
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
@@ -728,10 +768,10 @@ class TestChallengeResponseController(TestController):
         ## submit a pin + otp challenge response
         counter = counter + 1
         otp = self.calcOTP(otpkey, counter=counter)
-        parameters = {"user": "passthru_user1", "pass": otp}
-        parameters['transactionid'] = state
+        params = {"user": "passthru_user1", "pass": otp}
+        params['transactionid'] = state
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": true' in response, response)
 
 
@@ -764,18 +804,18 @@ class TestChallengeResponseController(TestController):
         ## submit a pin only request - to trigger a challenge
         for _i in range(1, 3):
 
-            parameters = {"user": "passthru_user1", "pass": "h1"}
+            params = {"user": "passthru_user1", "pass": "h1"}
             response = self.app.get(url(controller='validate',
-                                        action='check'), params=parameters)
+                                        action='check'), params=params)
 
             self.assertTrue('"value": false' in response, response)
             self.assertTrue('"transactionid":' in response, response)
 
 
             ## submit a pin only request - to trigger a challenge
-            parameters = {"user": "passthru_user1", "pass": "h2"}
+            params = {"user": "passthru_user1", "pass": "h2"}
             response2 = self.app.get(url(controller='validate',
-                                         action='check'), params=parameters)
+                                         action='check'), params=params)
 
             self.assertTrue('"value": false' in response2, response2)
             self.assertTrue('"transactionid":' in response2, response2)
@@ -790,49 +830,64 @@ class TestChallengeResponseController(TestController):
         state2 = body.get('detail').get('transactionid')
 
         #have a look, if all challenges are removed
-        parameters = {"user": "passthru_user1"}
-        response = self.app.get(url(controller='admin', action='checkstatus'),
-                                                            params=parameters)
+        params = {
+            "user": "passthru_user1",
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='checkstatus'),
+            params=params,
+            )
 
         self.assertTrue(state2 in response, response)
 
         #now check if the challenge could be identified by the last transaction
         otp = self.calcOTP(otpkey, counter=counter - 1)
-        parameters = {"user": "passthru_user1", "pass": otp, 'state':state2}
-        parameters['transactionid'] = state2
+        params = {"user": "passthru_user1", "pass": otp, 'state':state2}
+        params['transactionid'] = state2
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": true' in response, response)
 
         #have a look, if all challenges are removed
-        parameters = {"user": "passthru_user1"}
-        response = self.app.get(url(controller='admin', action='checkstatus'),
-                                                            params=parameters)
+        params = {
+            "user": "passthru_user1",
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='checkstatus'),
+            params=params,
+            )
 
         self.assertTrue(state2 not in response, response)
 
         #reusage of the challenge should not work
         otp = self.calcOTP(otpkey, counter=counter)
-        parameters = {"user": "passthru_user1", "pass": otp, 'state':state2}
-        parameters['transactionid'] = state2
+        params = {"user": "passthru_user1", "pass": otp, 'state':state2}
+        params['transactionid'] = state2
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": false' in response, response)
 
         #but the challenge for the other token should still be valid
         otp = self.calcOTP(otpkey, counter=counter)
-        parameters = {"user": "passthru_user1", "pass": otp, 'state':state1}
-        parameters['transactionid'] = state1
+        params = {"user": "passthru_user1", "pass": otp, 'state':state1}
+        params['transactionid'] = state1
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         #have a look, if all challenges are removed
-        parameters = {"user": "passthru_user1"}
-        response = self.app.get(url(controller='admin', action='checkstatus'),
-                                                            params=parameters)
+        params = {
+            "user": "passthru_user1",
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='checkstatus'),
+            params=params,
+            )
 
         ## assure that all challenges are removed
         self.assertTrue(state2 not in response, response)
@@ -850,12 +905,15 @@ class TestChallengeResponseController(TestController):
         '''
         Challenge Response Test: SMS token challenge with otppin=1
         '''
-        parameters = {
-                'SMSProvider' : 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-                'selftest_admin' : 'superadmin'
-                   }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                             params=parameters)
+        params = {
+            'SMSProvider' : 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'selftest_admin' : 'superadmin',
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
 
         sms_conf = { "URL" : "http://localhost:5001/testing/http2sms",
                      "PARAMETER" : { "account" : "clickatel",
@@ -866,12 +924,16 @@ class TestChallengeResponseController(TestController):
                     "RETURN_SUCCESS" : "ID"
                     }
 
-        parameters = { 'SMSProviderConfig' : json.dumps(sms_conf),
-                       'selftest_admin' : 'superadmin'
-                      }
+        params = {
+            'SMSProviderConfig': json.dumps(sms_conf),
+            'selftest_admin': 'superadmin',
+            'session': self.session,
+            }
 
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
         log.error(response)
         self.assertTrue('"status": true' in response, response)
 
@@ -893,16 +955,16 @@ class TestChallengeResponseController(TestController):
                                         otpkey=otpkey, user='passthru_user1')
 
         ## trigger challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": false' in response, response)
 
         otp = get_otp(counter, otpkey, mock_obj, sms_otp_func, typ)
-        parameters = {"user": "passthru_user1", "pass": "shortpin" + otp}
+        params = {"user": "passthru_user1", "pass": "shortpin" + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": true' in response, response)
 
@@ -911,17 +973,17 @@ class TestChallengeResponseController(TestController):
 
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "geheim1"}
+        params = {"user": "passthru_user1", "pass": "geheim1"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": false' in response, response)
 
         ## validate sms
         otp = get_otp(counter, otpkey, mock_obj, sms_otp_func, typ)
-        parameters = {"user": "passthru_user1", "pass": "geheim1" + otp}
+        params = {"user": "passthru_user1", "pass": "geheim1" + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"value": true' in response, response)
 
         self.removeTokenBySerial(serial)
@@ -955,17 +1017,17 @@ class TestChallengeResponseController(TestController):
         # 1. part - pin belongs to remote token
         ## check is simple auth works
         otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        parameters = {"user": user, "pass": "rpin" + otp}
+        params = {"user": user, "pass": "rpin" + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # 1.1 now trigger a challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
-        parameters = {"user": user, "pass": "rpin"}
+        params = {"user": user, "pass": "rpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -975,9 +1037,9 @@ class TestChallengeResponseController(TestController):
 
         # 1.2 check the challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
-        parameters = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state" : state}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         ## hey, if this ok, we are done for the remote pin check
         self.assertTrue('"value": true' in response, response)
 
@@ -1021,18 +1083,18 @@ class TestChallengeResponseController(TestController):
         # 1. part - pin belongs to local token - remote has no pin
         ## check is simple auth works
         otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        parameters = {"user": user, "pass": "lpin" + otp}
+        params = {"user": user, "pass": "lpin" + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # 2.1 now trigger a challenge
         counter = counter + 1
         otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        parameters = {"user": user, "pass": "lpin"}
+        params = {"user": user, "pass": "lpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -1043,9 +1105,9 @@ class TestChallengeResponseController(TestController):
         # 2.2 check the challenge
         counter = counter + 1
         otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        parameters = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state" : state}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         ## hey, if this ok, we are done for the remote pin check
         self.assertTrue('"value": true' in response, response)
 
@@ -1073,9 +1135,9 @@ class TestChallengeResponseController(TestController):
         self.assertTrue('"status": true,' in response, response)
 
         # 1.1 now trigger a challenge
-        parameters = {"user": user, "pass": "test"}
+        params = {"user": user, "pass": "test"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -1084,9 +1146,9 @@ class TestChallengeResponseController(TestController):
         self.assertTrue(state != '', response)
 
         # 1.2 check the challenge
-        parameters = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state" : state}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         ## hey, if this ok, we are done for the remote pin check
         self.assertTrue('"value": true' in response, response)
 
@@ -1113,9 +1175,9 @@ class TestChallengeResponseController(TestController):
         self.assertTrue('"status": true,' in response, response)
 
         # 1.1 now trigger a challenge
-        parameters = {"user": user, "pass": "local"}
+        params = {"user": user, "pass": "local"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -1124,9 +1186,9 @@ class TestChallengeResponseController(TestController):
         self.assertTrue(state != '', response)
 
         # 1.2 check the challenge
-        parameters = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state" : state}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         ## hey, if this ok, we are done for the remote pin check
         self.assertTrue('"value": true' in response, response)
 
@@ -1163,32 +1225,32 @@ class TestChallengeResponseController(TestController):
             #1 std auth with user with pin+otp
             counter = counter + 1
             otp = self.calcOTP(otpkey, counter=counter, typ=typ)
-            parameters = {"user": user, "pass": pin + otp}
+            params = {"user": user, "pass": pin + otp}
             response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
             self.assertTrue('"value": true' in response, response)
 
         #2. challenge response with pin+otp
         #2.1. challenge
-        parameters = {"user": user, "pass": pin, }
+        params = {"user": user, "pass": pin, }
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
 
         #2.2 response
         counter = counter + 1
         otp = get_otp(counter, otpkey, mock_obj, otp_func, typ=typ)
-        parameters = {"user": user, "pass": pin + otp}
+        params = {"user": user, "pass": pin + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         #3. challenge response with otp+state
         #3.1 trigger challenge
-        parameters = {"user": user, "pass": pin}
+        params = {"user": user, "pass": pin}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -1198,26 +1260,26 @@ class TestChallengeResponseController(TestController):
         #3.2 response
         counter = counter + 1
         otp = get_otp(counter, otpkey, mock_obj, otp_func, typ=typ)
-        parameters = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state" : state}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         #4 std auth with user with pin+otp though outstanding challenge
         #4.1 trigger challenge
-        parameters = {"user": user, "pass": pin}
+        params = {"user": user, "pass": pin}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": false' in response, response)
 
         #4.2 do std auth
         counter = counter + 1
         otp = get_otp(counter, otpkey, mock_obj, otp_func, typ=typ)
-        parameters = {"user": user, "pass": pin + otp}
+        params = {"user": user, "pass": pin + otp}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": true' in response, response)
 
@@ -1265,12 +1327,15 @@ class TestChallengeResponseController(TestController):
         Challenge Response Test: sms token challenge with otppin=1 + otppin=2
         '''
         typ = 'sms'
-        parameters = {
-                'SMSProvider' : 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-                'selftest_admin' : 'superadmin'
-                   }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                             params=parameters)
+        params = {
+            'SMSProvider' : 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'selftest_admin' : 'superadmin',
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
 
         sms_conf = { "URL" : "http://localhost:5001/testing/http2sms",
                      "PARAMETER" : { "account" : "clickatel",
@@ -1281,12 +1346,16 @@ class TestChallengeResponseController(TestController):
                     "RETURN_SUCCESS" : "ID"
                     }
 
-        parameters = { 'SMSProviderConfig' : json.dumps(sms_conf),
-                       'selftest_admin' : 'superadmin'
-                      }
+        params = {
+            'SMSProviderConfig': json.dumps(sms_conf),
+            'selftest_admin': 'superadmin',
+            'session': self.session,
+            }
 
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
         log.error(response)
         self.assertTrue('"status": true' in response, response)
 
@@ -1351,16 +1420,19 @@ class TestChallengeResponseController(TestController):
         """
         typ = 'email'
 
-        parameters = {
+        params = {
             'EmailProvider': 'linotp.lib.emailprovider.SMTPEmailProvider',
             'EmailProviderConfig': '{ "SMTP_SERVER": "mail.example.com",\
                                "SMTP_USER": "secret_user",\
                                "SMTP_PASSWORD": "secret_pasword" }',
             'EmailChallengeValidityTime': 300,
-            'EmailBlockingTimeout': 0
-        }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+            'EmailBlockingTimeout': 0,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
         self.assertTrue('"status": true' in response, response)
 
         # Patch (replace) smtplib.SMTP class to prevent e-mails from being sent out
@@ -1496,9 +1568,9 @@ class TestChallengeResponseController(TestController):
                         user='passthru_user1@myDefRealm')
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
@@ -1511,16 +1583,16 @@ class TestChallengeResponseController(TestController):
         counter2 = counter2 + 1
         otp = get_otp(counter2, otpkey2, None, None, typ)
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1", "pass": otp, "state":state}
+        params = {"user": "passthru_user1", "pass": otp, "state":state}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1@myMixRealm", "pass": "shortpin"}
+        params = {"user": "passthru_user1@myMixRealm", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
@@ -1533,17 +1605,17 @@ class TestChallengeResponseController(TestController):
         counter1 = counter1 + 1
         otp = get_otp(counter1, otpkey1, None, None, typ)
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1@myMixRealm",
+        params = {"user": "passthru_user1@myMixRealm",
                                                 "pass": otp, "state":state}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1@myDefRealm", "pass": "shortpin"}
+        params = {"user": "passthru_user1@myDefRealm", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
@@ -1556,10 +1628,10 @@ class TestChallengeResponseController(TestController):
         counter2 = counter2 + 1
         otp = get_otp(counter2, otpkey2, None, None, typ)
         ## submit a pin only request - to trigger a challenge
-        parameters = {"user": "passthru_user1@myDefRealm",
+        params = {"user": "passthru_user1@myDefRealm",
                                                 "pass": otp, "state":state}
         response = self.app.get(url(controller='validate', action='check'),
-                                                            params=parameters)
+                                                            params=params)
 
         self.assertTrue('"value": true' in response, response)
 
@@ -1655,10 +1727,10 @@ class TestChallengeResponseController(TestController):
         ## if the pin is a unique identifier a challenge should be triggered
         ## though there are two tokens belonging to one user and both are
         # active
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate',
                                     action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
@@ -1673,22 +1745,27 @@ class TestChallengeResponseController(TestController):
         ## now the pin is not a unique identifier anymore and both tokens are
         ## active an error will return because multiple challenges could have
         ## been triggered
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('processing of multiple challenges is '
                         'not supported!' in response, response)
 
-        parameters = {"serial": serial2}
-        response = self.app.get(url(controller='admin', action='disable'),
-                                params=parameters)
+        params = {
+            "serial": serial2,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='disable'),
+            params=params,
+            )
 
         self.assertTrue('"value": 1' in response, response)
 
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
@@ -1703,16 +1780,19 @@ class TestChallengeResponseController(TestController):
         '''
         typ = 'email'
 
-        parameters = {
+        params = {
             'EmailProvider': 'linotp.lib.emailprovider.SMTPEmailProvider',
             'EmailProviderConfig': '{ "SMTP_SERVER": "mail.example.com",\
                                "SMTP_USER": "secret_user",\
                                "SMTP_PASSWORD": "secret_pasword" }',
             'EmailChallengeValidityTime': 300,
-            'EmailBlockingTimeout': 0
-        }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+            'EmailBlockingTimeout': 0,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
         self.assertTrue('"status": true' in response, response)
 
         # Patch (replace) smtplib.SMTP class to prevent
@@ -1760,22 +1840,27 @@ class TestChallengeResponseController(TestController):
         ## now the pin is not a unique identifier anymore and both tokens are
         ## active an error will return because multiple challenges could have
         ## been triggered
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('processing of multiple challenges is '
                         'not supported!' in response, response)
 
-        parameters = {"serial": serial2}
-        response = self.app.get(url(controller='admin', action='disable'),
-                                params=parameters)
+        params = {
+            "serial": serial2,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='disable'),
+            params=params,
+            )
 
         self.assertTrue('"value": 1' in response, response)
 
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
@@ -1812,12 +1897,15 @@ class TestChallengeResponseController(TestController):
         Challenge Response Test: sms token challenge and error in config
         '''
         typ = 'sms'
-        parameters = {
-                'SMSProvider' : 'smsprovider.SmtpSMSProvider.SmtpSMSProvider',
-                'selftest_admin' : 'superadmin'
-                   }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                             params=parameters)
+        params = {
+            'SMSProvider': 'smsprovider.SmtpSMSProvider.SmtpSMSProvider',
+            'selftest_admin': 'superadmin',
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
 
         sms_conf = { "mailserver" : "somemailserverthatdoesntexist.com",
                       "mailsender" : "linotp-sms@lsexperts.de",
@@ -1827,12 +1915,16 @@ class TestChallengeResponseController(TestController):
                       "subject" : "<phone>",
                       "body" : "This is your OTP-value: <otp>" }
 
-        parameters = { 'SMSProviderConfig' : json.dumps(sms_conf),
-                       'selftest_admin' : 'superadmin'
-                      }
+        params = {
+            'SMSProviderConfig' : json.dumps(sms_conf),
+            'selftest_admin' : 'superadmin',
+            'session': self.session,
+            }
 
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
         log.error(response)
         self.assertTrue('"status": true' in response, response)
 
@@ -1845,9 +1937,9 @@ class TestChallengeResponseController(TestController):
         # as the config contains an error, the result message should contain
         # a error message and not the otppin
 
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue('the SMS could not be sent' in response, response)
 
@@ -1860,16 +1952,19 @@ class TestChallengeResponseController(TestController):
         '''
         typ = 'email'
 
-        parameters = {
+        params = {
             'EmailProvider': 'linotp.lib.emailprovider.SMTPEmailProvider',
             'EmailProviderConfig': '{ "SMTP_SERVER": "mailss.example.com",\
                                "SMTP_USER": "secret_user",\
                                "SMTP_PASSWORD": "secret_pasword" }',
             'EmailChallengeValidityTime': 300,
-            'EmailBlockingTimeout': 0
-        }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+            'EmailBlockingTimeout': 0,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='system', action='setConfig'),
+            params=params,
+            )
         self.assertTrue('"status": true' in response, response)
 
         otpkey1 = "AD8EABE235FC57C815B26CEF3709075580B44738"
@@ -1884,27 +1979,31 @@ class TestChallengeResponseController(TestController):
                                     user='passthru_user1@myDefRealm')
 
         # does validate/check displays an error and the status false
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+                                params=params)
         self.assertTrue('"message": "validate/check failed:' in response,
                         response)
         self.assertTrue('"status": false' in response, response)
 
 
         # check if simplecheck displays as well an error
-        parameters = {"user": "passthru_user1", "pass": "shortpin"}
+        params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate',
                                     action='simplecheck'),
-                                params=parameters)
+                                params=params)
 
         self.assertTrue(':-/' in response, response)
 
         # finally check, if there is no open challenge left
-        parameters = {"serial": serial1}
-        response = self.app.get(url(controller='admin',
-                                    action='checkstatus'),
-                                params=parameters)
+        params = {
+            "serial": serial1,
+            'session': self.session,
+            }
+        response = self.app.get(
+            url(controller='admin', action='checkstatus'),
+            params=params,
+            )
 
         self.assertTrue('"values": {}' in response, response)
 

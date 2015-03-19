@@ -38,6 +38,16 @@ log = logging.getLogger(__name__)
 
 class TestSelfserviceController(TestController):
 
+    def setUp(self):
+        TestController.setUp(self)
+        self.set_config_selftest()
+        self.__createResolvers__()
+        self.__createRealms__()
+
+    def tearDown(self):
+        self.__deleteAllRealms__()
+        self.__deleteAllResolvers__()
+        TestController.tearDown(self)
 
     def createPolicy(self, policy):
         response = self.app.get(url(controller='system', action='setPolicy'),
