@@ -128,7 +128,16 @@ class EmailTokenClass(HmacTokenClass):
                     'scope': 'config',
                 },
             },
-            'selfservice': {},
+           'selfservice': {
+               'enroll':
+                   {'page': {
+                      'html': 'emailtoken.mako',
+                      'scope': 'selfservice.enroll', },
+                    'title':{
+                        'html': 'emailtoken.mako',
+                        'scope': 'selfservice.title.enroll', },
+                      },
+                  },
             'policy': {},
         }
 
