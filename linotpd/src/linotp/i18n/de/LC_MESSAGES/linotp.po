@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2015-01-26 16:05+0100\n"
+"PO-Revision-Date: 2015-03-19 14:24+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -394,6 +394,14 @@ msgstr ""
 
 #, python-format
 msgid ""
+"You do not have the administrative right to get the token owner in realm %s"
+"(%s)."
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Anzeigen der Token Besitzer "
+"im Realm %s(%s)."
+
+#, python-format
+msgid ""
 "You do not have the administrative right to show status of token challenges "
 "in realm %s(%s)."
 msgstr ""
@@ -582,6 +590,24 @@ msgstr "PIN setzen"
 msgid "confirm PIN"
 msgstr "Pin bestätigen"
 
+msgid "Enroll EMail Token"
+msgstr "E-Mail Token ausrollen"
+
+msgid "Please enter a valid email address!"
+msgstr "Bitte eine gültige E-Mail Adresse eingeben!"
+
+msgid "Form data not valid."
+msgstr "Die Formulardaten sind ungültig."
+
+msgid "Enroll your email token"
+msgstr "Rollen Sie Ihren E-Mail Token aus"
+
+msgid "Your email address"
+msgstr "E-Mail Adresse"
+
+msgid "enroll email token"
+msgstr "E-Mail Token ausrollen"
+
 msgid "HMAC Token Settings"
 msgstr "HMAC Token Einstellungen"
 
@@ -650,9 +676,6 @@ msgid ""
 msgstr ""
 "Bitte geben Sie ein gültiges Initialisierungs-Seed ein. Es darf nur Nummern "
 "und die Buchstaben A bis F enthalten."
-
-msgid "Form data not valid."
-msgstr "Die Formulardaten sind ungültig."
 
 msgid "Enroll your HOTP token"
 msgstr "Rollen Sie Ihren HOTP Token aus"
@@ -1215,8 +1238,8 @@ msgid ""
 "Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
 "(objectClass=user))"
 msgstr ""
-"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: "
-"(&(sAMAccountName=%s)(objectClass=user))"
+"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: (&"
+"(sAMAccountName=%s)(objectClass=user))"
 
 msgid ""
 "Please enter a valid searchfilter like this: \n"
@@ -1274,7 +1297,7 @@ msgid "Contact name"
 msgstr "Kontakt"
 
 msgid "Contact EMail"
-msgstr "Kontakt Email"
+msgstr "Kontakt E-Mail"
 
 msgid "Contact phone"
 msgstr "Kontakt Telefon"
@@ -1333,6 +1356,21 @@ msgstr "über Telefon "
 
 msgid "or email"
 msgstr "oder E-Mail"
+
+msgid "Password token"
+msgstr "Passwort Token"
+
+msgid "Email token"
+msgstr "E-Mail Token"
+
+msgid "Sms token"
+msgstr "SMS Token"
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Close"
+msgstr "Schließen"
 
 msgid ""
 "LDAP Server, especially Active Directory, implement a default serverside "
@@ -1866,9 +1904,6 @@ msgstr "System Konfiguration"
 msgid "Save config"
 msgstr "Konfiguration speichern"
 
-msgid "Cancel"
-msgstr "Abbrechen"
-
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
 
@@ -1877,9 +1912,6 @@ msgstr "LSE LinOTP Support und Subskription "
 
 msgid "Set Support and Subscription"
 msgstr "Support und Subskription registrieren"
-
-msgid "Close"
-msgstr "Schließen"
 
 msgid "Please choose your support and subscription file"
 msgstr "Bitte wählen Sie eine Support- und Subskriptions-Datei"

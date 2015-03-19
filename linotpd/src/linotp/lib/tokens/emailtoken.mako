@@ -127,7 +127,7 @@ function email_enroll_setup_defaults(config, options){
         $("[name='set_pin_rows']").hide();
     } else {
         $("[name='set_pin_rows']").show();
-    }	
+    }
 }
 /*
  * 'typ'_get_enroll_params()
@@ -171,3 +171,94 @@ function email_get_enroll_params(){
 
 %endif
 
+#####
+%if c.scope == 'selfservice.title.enroll':
+${_("Enroll EMail Token")}
+%endif
+
+
+%if c.scope == 'selfservice.enroll':
+
+<%!
+    from linotp.lib.user import getUserDetail
+%>
+<%
+    try:
+        info = getUserDetail(c.authUser)
+        emailaddress = info.get("email",'')
+    except Exception as exx:
+        emailaddress = ''
+%>
+
+<script>
+
+    $('#form_register_email').validate({
+        rules: {
+            email_address: {
+                required: true,
+                minlength: 3,
+                email: true
+            }
+        }
+    });
+
+
+function self_email_get_param()
+{
+    var urlparam = {};
+    var emailaddress = $('#email_address').val();
+
+
+    urlparam['type'] = 'email';
+    urlparam['email_address'] = emailaddress;
+    urlparam['description'] = emailaddress + '_' + $("#email_self_desc").val();
+
+    return urlparam;
+}
+
+function self_email_clear()
+{
+    return true;
+}
+function self_email_submit(){
+
+    var ret = false;
+
+    if ($('#form_register_email').valid()) {
+        var params =  self_email_get_param();
+        enroll_token(params);
+        ret = true;
+    } else {
+        alert('${_("Input data is not valid!")}');
+    }
+    return ret;
+}
+
+</script>
+
+<h1>${_("Enroll your email token")}</h1>
+<div id='register_email_form'>
+    <form class="cmxform" id='form_register_email'>
+    <fieldset>
+        <table>
+        <tr>
+        <td><label for='email_address'>${_("Your email address")}</label></td>
+        <td><input id='email_address'
+                    name='email_address'
+                    class="required ui-widget-content ui-corner-all"
+                    value='${emailaddress}'
+                    />
+        </td>
+        </tr>
+        <tr>
+            <td><label for="email_self_desc" id='email_self_desc_label'>${_("Description")}</label></td>
+            <td><input type="text" name="email_self_desc" id="email_self_desc"
+                        value="self_registered"; class="text" /></td>
+        </tr>
+        </table>
+        <button class='action-button' id='button_register_email'
+                onclick="self_email_submit();">${_("enroll email token")}</button>
+    </fieldset>
+    </form>
+</div>
+% endif

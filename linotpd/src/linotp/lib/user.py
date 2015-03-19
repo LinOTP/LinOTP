@@ -808,6 +808,21 @@ def getUserPhone(user, phone_type='phone'):
                     "type %r." % (uid, resId, resClass, phone_type))
         return ""
 
+
+def getUserDetail(user):
+    '''
+    Returns userinfo of an user
+
+    :param user: the user
+    :returns: the userinfo dict
+    '''
+    (uid, resId, resClass) = getUserId(user)
+    log.debug("got uid %r, ResId %r, Class %r"
+              % (uid, resId, resClass))
+    userinfo = getUserInfo(uid, resId, resClass)
+    return userinfo
+
+
 def get_authenticated_user(username, realm, password):
     '''
     check the username and password against a userstore.
