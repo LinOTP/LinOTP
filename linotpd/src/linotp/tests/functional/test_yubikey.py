@@ -188,10 +188,14 @@ class TestYubikeyController(TestController):
             # preserve the serial number for later check
             serial = self.init_token(public_uid=public_uid, use_public_id=True)
             for otp in self.valid_otps:
-                params = {'otp': otp}
-                response = self.app.get(url(controller='admin',
-                                            action='getSerialByOtp'),
-                                        params=params)
+                params = {
+                    'otp': otp,
+                    'session': self.session,
+                    }
+                response = self.app.get(
+                    url(controller='admin', action='getSerialByOtp'),
+                    params=params,
+                    )
                 self.assertTrue('"status": true' in response,
                                 "Response: %r" % response)
 
