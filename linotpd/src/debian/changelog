@@ -1,8 +1,37 @@
-linotp (2.7.2~b2-1~precise) precise; urgency=low
+linotp (2.7.2-1~precise) precise; urgency=low
 
-  * Set new version 2.7.2.dev0
+  Enhancements:
+  * Server: Auto enrollment - enroll an email or sms token if user has no
+    token and authentication with password was correct
+  * Server: Support 'now()' in LDAP search expressions
+  * Selfservice: Split Selfservice into userservice controller and selfservice
+    renderer to support remote selfservice interface
+  * WebUI: SQL and LDAP resolver mapping validation (needs to be valid JSON)
+  * WebUI: E-mail and SMS provider definition validation (needs to be valid
+    JSON)
+  * Packaging: Support for Ubuntu 14.04 (with Apache 2.4)
+  * Packaging/Server: Support for Pylons 1.0.1
+  * Packaging: Internal package refactorization to unify structure and version
+    number handling
+  * Packaging: Apache linotp2 VirtualHost will no longer be overwritten during
+    Debian package upgrade. VirtualHost example files are copied to the same
+    location where the LinOTP package is installed and only afterwards it is
+    moved to /etc/apache2 (if it does not exist already)
+  * Packaging: Cleaned up and hardened Apache linotp2 VirtualHost files
+  * Tools: Improved linotp-create-pwidresolver-user and
+    linotp-create-sqliddresolver-user to to generates more secure passwords
+  * Tools: Added tool to massenroll SMS token
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 10 Mar 2015 17:26:46 +0100
+  Bug fixes:
+  * Server: Fixed support of old licenses, where the expiry is in the date
+    entry
+  * Server: Fixed error during token unassign (because of setPin call)
+  * Server: Fixed searching for a user in multiple realms
+  * Server: Fixed exact search for user in tokenlist
+  * Server: Fixed sorting of userlist with unicode
+  * Selfservice: Fixed selfservice history browsing
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 25 Mar 2015 13:46:31 +0100
 
 linotp (2.7.1.2-1~precise) precise; urgency=low
 

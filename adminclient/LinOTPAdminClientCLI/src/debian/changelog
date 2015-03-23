@@ -1,8 +1,14 @@
-linotp-adminclient-cli (2.7.2~b2-1~precise) precise; urgency=low
+linotp-adminclient-cli (2.7.2-1~precise) precise; urgency=low
 
-  * Set new version 2.7.2.dev0
+  Enhancements:
+  * Packaging: Internal package refactorization to unify structure and version
+    number handling
+  * Tools: Removed limits for tokenserial display in listtoken
+  * Tools: Added --csv option for listtoken (prints to stderr)
+  * Tools: Removed erroneous 'no matching yubimode' message
+  * Tools: Enabled otplen parameter for yubikey OATH token enrollment
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 10 Mar 2015 17:26:46 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 25 Mar 2015 13:46:31 +0100
 
 linotp-adminclient-cli (2.7.1.2-1~precise) precise; urgency=low
 
