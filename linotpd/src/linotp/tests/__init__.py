@@ -45,6 +45,7 @@ except ImportError:
 import pylons.test
 import os
 import logging
+import hashlib
 
 from unittest import TestCase
 
@@ -126,7 +127,6 @@ class TestController(TestCase):
         wsgiapp = pylons.test.pylonsapp
         self.app = webtest.TestApp(wsgiapp)
         self.session = 'justatest'
-        _set_cookie(self.app, 'admin_session', self.session)
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)
@@ -163,18 +163,149 @@ class TestController(TestCase):
         #self.__deleteAllResolvers__()
         return
 
+    def make_request(
+            self,
+            controller,
+            action,
+            method='GET',
+            params=None,
+            headers=None,
+            cookies=None,
+            ):
+        """
+        Makes a request using WebTest app self.app
+        """
+        assert controller and action
+        assert method in ['GET', 'POST']
+
+        # Clear state (e.g. cookies)
+        self.app.reset()
+
+        if cookies:
+            for key in cookies:
+                _set_cookie(self.app, key, cookies[key])
+        if method == 'GET':
+            return self.app.get(
+                url(controller=controller, action=action),
+                params=params,
+                headers=headers,
+                )
+        else:
+            return self.app.post(
+                url(controller=controller, action=action),
+                params=params,
+                headers=headers,
+                )
+
+    def _get_http_digest_header(self, username='admin'):
+        """
+        Returns a string to be used as 'Authorization' in the headers
+        dictionary. The values contained are basically bogus and we just aim to
+        simulate how a real header would look. In production LinOTP we rely on
+        Apache2 checking the authorization. In LinOTP only 'Digest username' is
+        relevant.
+
+        See for full example:
+            http://en.wikipedia.org/wiki/Digest_access_authentication
+        """
+        # Assuming following 401 response from server:
+        # 'www-authenticate': 'Digest realm="LinOTP2 admin area", nonce="hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae", algorithm=MD5, qop="auth"'
+        method = 'GET'
+        qop = 'auth'
+        digest_uri = "/random/wont/be/checked"
+        nonce = 'hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae'
+        password = "randompwd"
+        realm = "LinOTP2 admin area"
+        nonceCount = "00000001"
+        clientNonce = "0a4f113b"
+        ha1 = hashlib.md5("%s:%s:%s" % (username, realm, password)).hexdigest()
+        ha2 = hashlib.md5("%s:%s" % (method, digest_uri)).hexdigest()
+        response = hashlib.md5(
+            "%s:%s:%s:%s:%s:%s" % (
+                ha1,
+                nonce,
+                nonceCount,
+                clientNonce,
+                qop,
+                ha2
+                )
+            ).hexdigest()
+        auth_content = [
+            "Digest username=\"%s\"" % username,
+            "realm=\"%s\"" % realm,
+            "nonce=\"%s\"" % nonce,
+            "uri=\"%s\"" % digest_uri,
+            "qop=\"%s\"" % qop,
+            "nc=\"%s\"" % nonceCount,
+            "cnonce=\"%s\"" % clientNonce,
+            "response=\"%s\"" % response,
+            ]
+        return (', ').join(auth_content)
+
+
+    def make_authenticated_request(
+            self,
+            controller,
+            action,
+            method='GET',
+            params=None,
+            headers=None,
+            cookies=None,
+            ):
+        """
+        Makes an authenticated request (setting HTTP Digest header, cookie and
+        'session' parameter).
+        """
+        params = params or {}
+        headers = headers or {}
+        cookies = cookies or {}
+        if not 'session' in params:
+            params['session'] = self.session
+        if not 'admin_session' in cookies:
+            cookies['admin_session'] = self.session
+        if not 'Authorization' in headers:
+            headers['Authorization'] = self._get_http_digest_header(
+                username='admin'
+                )
+        return self.make_request(
+            controller,
+            action,
+            method=method,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            )
+
+    def make_admin_request(self, action, params, method='GET'):
+        """
+        Makes an authenticated GET request to /admin/'action'
+        """
+        return self.make_authenticated_request(
+            'admin',
+            action,
+            method=method,
+            params=params,
+            )
+
+    def make_system_request(self, action, params, method='GET'):
+        """
+        Makes an authenticated GET request to /admin/'action'
+        """
+        return self.make_authenticated_request(
+            'system',
+            action,
+            method=method,
+            params=params,
+            )
+
     def set_config_selftest(self):
         """
         Set selfTest in LinOTP Config to 'True'
         """
         params = {
             'selfTest': 'True',
-            'session': self.session,
             }
-        response = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params,
-            )
+        response = self.make_system_request('setConfig', params)
         content = _get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue('setConfig selfTest:True' in content['result']['value'])
@@ -184,13 +315,7 @@ class TestController(TestCase):
     def __deleteAllRealms__(self):
         ''' get al realms and delete them '''
 
-        params = {
-            'session': self.session,
-            }
-        response = self.app.get(
-            url(controller='system', action='getRealms'),
-            params=params,
-            )
+        response = self.make_system_request('getRealms', {})
         jresponse = json.loads(response.body)
         result = jresponse.get("result")
         values = result.get("value", {})
@@ -199,25 +324,15 @@ class TestController(TestCase):
             realm_name = realm_desc.get("realmname")
             params = {
                 "realm":realm_name,
-                'session': self.session,
                 }
-            resp = self.app.get(
-                url(controller='system', action='delRealm'),
-                params=params,
-                )
+            resp = self.make_system_request('delRealm', params)
             assert('"result": true' in resp)
 
 
     def __deleteAllResolvers__(self):
         ''' get all resolvers and delete them '''
 
-        params = {
-            'session': self.session,
-            }
-        response = self.app.get(
-            url(controller='system', action='getResolvers'),
-            params=params,
-            )
+        response = self.make_system_request('getResolvers', {})
         jresponse = json.loads(response.body)
         result = jresponse.get("result")
         values = result.get("value", {})
@@ -226,24 +341,14 @@ class TestController(TestCase):
             resolv_name = resolv_desc.get("resolvername")
             params = {
                 "resolver" : resolv_name,
-                'session': self.session,
                 }
-            resp = self.app.get(
-                url(controller='system', action='delResolver'),
-                params=params
-                )
+            resp = self.make_system_request('delResolver', params)
             assert('"status": true' in resp)
 
     def deleteAllPolicies(self):
         '''
         '''
-        params = {
-            'session': self.session,
-            }
-        response = self.app.get(
-            url(controller='system', action='getPolicy'),
-            params=params,
-            )
+        response = self.make_system_request('getPolicy', {})
         self.assertTrue('"status": true' in response, response)
 
         body = json.loads(response.body)
@@ -254,36 +359,18 @@ class TestController(TestCase):
 
         return
 
-    def delPolicy(self, name='otpPin', remoteurl=None):
-
+    def delPolicy(self, name='otpPin'):
         params = {
             'name': name,
-            'selftest_admin': 'superadmin',
-            'session': self.session,
             }
-        r_url = url(controller='system', action='delPolicy')
-
-        if remoteurl is not None:
-            r_url = "%s/%s" % (remoteurl, "system/delPolicy")
-            response = do_http(r_url, params=params)
-        else:
-            response = self.app.get(r_url, params=params)
-
-
-        return response
+        return self.make_system_request('delPolicy', params)
 
     def deleteAllTokens(self):
         ''' get all tokens and delete them '''
 
         serials = []
 
-        params = {
-            'session': self.session,
-            }
-        response = self.app.get(
-            url(controller='admin', action='show'),
-            params=params,
-            )
+        response = self.make_admin_request('show', {})
         self.assertTrue('"status": true' in response, response)
 
         body = json.loads(response.body)
@@ -302,13 +389,8 @@ class TestController(TestCase):
 
         params = {
             'serial': serial,
-            'session': self.session,
             }
-
-        response = self.app.get(
-            url(controller='admin', action='remove'),
-            params=params
-            )
+        response = self.make_admin_request('remove', params)
         return response
 
     def __createResolvers__(self):
@@ -319,24 +401,16 @@ class TestController(TestCase):
             'name'      : 'myDefRes',
             'fileName'  : '%(here)s/../data/testdata/def-passwd',
             'type'      : 'passwdresolver',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setResolver'),
-            params=params
-            )
+        resp = self.make_system_request('setResolver', params)
         assert('"value": true' in resp)
 
         params = {
             'name'      : 'myOtherRes',
             'fileName'  : '%(here)s/../data/testdata/myDom-passwd',
             'type'      : 'passwdresolver',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setResolver'),
-            params=params
-            )
+        resp = self.make_system_request('setResolver', params)
         assert('"value": true' in resp)
 
     def __createRealms__(self):
@@ -352,32 +426,18 @@ class TestController(TestCase):
         params = {
             'realm'     :'myDefRealm',
             'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
-            'session': self.session,
         }
-        resp = self.app.get(
-            url(controller='system', action='setRealm'),
-            params=params
-            )
+        resp = self.make_system_request('setRealm', params)
         assert('"value": true' in resp)
 
-        params = {
-            'session': self.session,
-            }
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params=params
-            )
+        resp = self.make_system_request('getRealms', {})
         assert('"default": "true"' in resp)
 
         params = {
             'realm'     :'myOtherRealm',
             'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
-            'session': self.session,
         }
-        resp = self.app.get(
-            url(controller='system', action='setRealm'),
-            params=params
-            )
+        resp = self.make_system_request('setRealm', params)
         assert('"value": true' in resp)
 
         params = {
@@ -385,34 +445,18 @@ class TestController(TestCase):
             'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.' +
                          'myOtherRes,useridresolver.PasswdIdResolver.' +
                          'IdResolver.myDefRes',
-            'session': self.session,
         }
-        resp = self.app.get(
-            url(controller='system', action='setRealm'),
-            params=params
-            )
+        resp = self.make_system_request('setRealm', params)
         assert('"value": true' in resp)
 
 
-        params = {
-            'session': self.session,
-            }
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params=params,
-            )
+        resp = self.make_system_request('getRealms', {})
         #assert('"default": "true"' in resp)
 
-        resp = self.app.get(
-            url(controller='system', action='getDefaultRealm'),
-            params=params,
-            )
+        resp = self.make_system_request('getDefaultRealm', {})
         #assert('"default": "true"' in resp)
 
-        resp = self.app.get(
-            url(controller='system', action='getConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('getConfig', {})
         #assert('"default": "true"' in resp)
 
 

@@ -173,12 +173,8 @@ class TestReplication(TestController):
             'pin':user,
             'serial': 's' + user,
             'type':'spass',
-            'session': self.session,
             }
-        response = self.app.get(
-            url(controller='admin', action='init'),
-            params=params,
-            )
+        response = self.make_admin_request('init', params)
         assert '"status": true,' in response
 
         return
@@ -191,13 +187,7 @@ class TestReplication(TestController):
 
     def showTokens(self):
 
-        params = {
-            'session': self.session,
-            }
-        response = self.app.get(
-            url(controller='admin', action='show'),
-            params=params
-            )
+        response = self.make_admin_request('show', {})
         assert '"status": true,' in response
         return response
 
@@ -218,24 +208,15 @@ class TestReplication(TestController):
         ''' 0. '''
         params = {
             'enableReplication' : 'true',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('setConfig', params)
         assert('"setConfig enableReplication:true": true' in resp)
 
         ''' 1. '''
         self.addData('replication', 'test1', 'test data')
 
         ''' 2. '''
-        resp = self.app.get(
-            url(controller='system', action='getConfig'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getConfig', {})
         assert('"replication": "test1"' in resp)
 
 
@@ -243,24 +224,15 @@ class TestReplication(TestController):
         self.delData('replication')
 
         ''' 4. '''
-        resp = self.app.get(
-            url(controller='system', action='getConfig'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getConfig', {})
         res = ('"replication": "test1"' in resp)
         assert (res == False)
 
         ''' 5 - cleanup'''
         params = {
             'key':'enableReplication',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='delConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('delConfig', params)
         assert('"delConfig enableReplication": true' in resp)
 
         return
@@ -284,24 +256,15 @@ class TestReplication(TestController):
         self.addData('replication', 'test1', 'test data')
 
         ''' 1. '''
-        resp = self.app.get(
-            url(controller='system', action='getConfig'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getConfig', {})
         res = ('"replication": "test1"' in resp)
         assert (res == False)
 
         ''' 2. '''
         params = {
             'enableReplication' : 'true',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('setConfig', params)
         assert('"setConfig enableReplication:true": true' in resp)
 
 
@@ -309,12 +272,7 @@ class TestReplication(TestController):
         self.delData('replication')
 
         ''' 3. '''
-        resp = self.app.get(
-            url(controller='system', action='getConfig'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getConfig', {})
         res = ('"replication": "test1"' in resp)
         assert (res == False)
 
@@ -322,12 +280,7 @@ class TestReplication(TestController):
         self.addData('replication', 'test1', 'test data')
 
         ''' 4. '''
-        resp = self.app.get(
-            url(controller='system', action='getConfig'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getConfig', {})
         res = ('"replication": "test1"' in resp)
         assert (res == True)
 
@@ -336,12 +289,7 @@ class TestReplication(TestController):
         self.delData('replication')
 
         ''' 3. '''
-        resp = self.app.get(
-            url(controller='system', action='getConfig'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getConfig', {})
         res = ('"replication": "test1"' in resp)
         assert (res == False)
 
@@ -349,12 +297,8 @@ class TestReplication(TestController):
         ''' 5 - cleanup'''
         params = {
             'key': 'enableReplication',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='delConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('delConfig', params)
         assert('"delConfig enableReplication": true' in resp)
 
         return
@@ -397,12 +341,8 @@ class TestReplication(TestController):
         ''' 0. '''
         params = {
             'enableReplication': 'true',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('setConfig', params)
         assert('"setConfig enableReplication:true": true' in resp)
 
         for k in sqlResolver:
@@ -410,12 +350,8 @@ class TestReplication(TestController):
 
         params = {
             'resolver':'mySQL',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='getResolver'),
-            params=params,
-            )
+        resp = self.make_system_request('getResolver', params)
         assert('"Database": "yourUserDB"' in resp)
 
         for k in sqlResolver:
@@ -423,24 +359,16 @@ class TestReplication(TestController):
 
         params = {
             'resolver':'mySQL',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='getResolver'),
-            params=params,
-            )
+        resp = self.make_system_request('getResolver', params)
         assert('"data": {}' in resp)
 
 
         ''' 5 - cleanup'''
         params = {
             'key':'enableReplication',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='delConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('delConfig', params)
         assert('"delConfig enableReplication": true' in resp)
 
 
@@ -463,21 +391,12 @@ class TestReplication(TestController):
 
         params = {
             'enableReplication' : 'true',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params
-            )
+        resp = self.make_system_request('setConfig', params)
         assert('"setConfig enableReplication:true": true' in resp)
 
 
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getRealms', {})
         res = '"realmname": "realm"' in resp
         assert res == False
 
@@ -485,12 +404,7 @@ class TestReplication(TestController):
         for k in realmDef:
             self.addData(k, realmDef.get(k), '')
 
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getRealms', {})
         res = '"realmname": "realm"' in resp
         assert res == True
 
@@ -499,24 +413,15 @@ class TestReplication(TestController):
         for k in realmDef:
             self.delData(k)
 
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getRealms', {})
         res = '"realmname": "realm"' in resp
         assert res == False
 
 
         params = {
             'key':'enableReplication',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='delConfig'),
-            params=params
-            )
+        resp = self.make_system_request('delConfig', params)
         assert('"delConfig enableReplication": true' in resp)
 
 
@@ -549,22 +454,13 @@ class TestReplication(TestController):
         ''' 1. switch on replication '''
         params = {
             'enableReplication' : 'true',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('setConfig', params)
         assert('"setConfig enableReplication:true": true' in resp)
 
 
         ''' 1.b check that realm is not defined '''
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getRealms', {})
         res = '"realmname": "realm"' in resp
         assert res == False
 
@@ -574,12 +470,7 @@ class TestReplication(TestController):
             self.addData(k, realmDef.get(k), '')
 
         ''' 3. lookup for the realm definition'''
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getRealms', {})
         res = '"realmname": "realm"' in resp
         assert res == True
 
@@ -594,23 +485,14 @@ class TestReplication(TestController):
             self.delData(k)
 
         ''' 5b. lookup for the realm definition'''
-        resp = self.app.get(
-            url(controller='system', action='getRealms'),
-            params={
-                'session': self.session,
-                },
-            )
+        resp = self.make_system_request('getRealms', {})
         res = '"realmname": "realm"' in resp
         assert res == False
 
         params = {
             'key':'enableReplication',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='delConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('delConfig', params)
         assert('"delConfig enableReplication": true' in resp)
 
 
@@ -634,12 +516,8 @@ class TestReplication(TestController):
         ''' 0 - cleanup'''
         params = {
             'key':'enableReplication',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='delConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('delConfig', params)
         assert('"delConfig enableReplication": true' in resp)
 
         for k in policyDef:
@@ -649,12 +527,8 @@ class TestReplication(TestController):
         ''' 1. switch on replication '''
         params = {
             'enableReplication' : 'true',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('setConfig', params)
         assert('"setConfig enableReplication:true": true' in resp)
 
         ''' 2  write sql data '''
@@ -664,12 +538,8 @@ class TestReplication(TestController):
         ''' 3. getPolicy '''
         params = {
             'name' : 'enrollPolicy',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='getPolicy'),
-            params=params,
-            )
+        resp = self.make_system_request('getPolicy', params)
         assert('"action": "maxtoken=3' in resp)
 
         ''' 5 - cleanup'''
@@ -679,24 +549,16 @@ class TestReplication(TestController):
         ''' 5b. lookup for the policy definition'''
         params = {
             'name' : 'enrollPolicy',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='getPolicy'),
-            params=params,
-            )
+        resp = self.make_system_request('getPolicy', params)
         res = ('"action": "maxtoken=3' in resp)
         assert res == False
 
         ''' 5c. reset replication '''
         params = {
             'key': 'enableReplication',
-            'session': self.session,
             }
-        resp = self.app.get(
-            url(controller='system', action='delConfig'),
-            params=params,
-            )
+        resp = self.make_system_request('delConfig', params)
         assert('"delConfig enableReplication": true' in resp)
 
 

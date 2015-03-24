@@ -57,12 +57,8 @@ class TestEmailtokenController(TestController):
                                "SMTP_PASSWORD": "secret_pasword" }',
             'EmailChallengeValidityTime': self.challenge_validity,
             'EmailBlockingTimeout': 0,
-            'session': self.session,
         }
-        response = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params
-            )
+        response = self.make_system_request('setConfig', params)
         assert '"status": true' in response
 
         # Enroll token
@@ -71,24 +67,16 @@ class TestEmailtokenController(TestController):
             'serial': self.token_serial,
             'description': "E-mail token enrolled in functional tests",
             'email_address': self.default_email_address,
-            'session': self.session,
         }
-        response = self.app.get(
-            url(controller='admin', action='init'),
-            params=params
-            )
+        response = self.make_admin_request('init', params)
         assert '"value": true' in response
 
         params = {
             "serial": self.token_serial,
             "user": "root",
             "pin": self.pin,
-            'session': self.session,
             }
-        response = self.app.get(
-            url(controller='admin', action='assign'),
-            params=params
-            )
+        response = self.make_admin_request('assign', params)
         assert '"value": true' in response
 
         # Patch (replace) smtplib.SMTP class to prevent e-mails from being sent out
@@ -127,12 +115,8 @@ class TestEmailtokenController(TestController):
         params = {
             'EmailChallengeValidityTime': 120,
             'EmailBlockingTimeout': 3,
-            'session': self.session
         }
-        response = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params
-            )
+        response = self.make_system_request('setConfig', params)
         assert '"status": true' in response
 
         # trigger 1st challenge
@@ -179,12 +163,8 @@ class TestEmailtokenController(TestController):
         """
         params = {
             'EmailBlockingTimeout': 3,
-            'session': self.session,
         }
-        response = self.app.get(
-            url(controller='system', action='setConfig'),
-            params=params
-            )
+        response = self.make_system_request('setConfig', params)
         assert '"status": true' in response
 
         # Trigger 1st challenge (that should send e-mail)
@@ -219,10 +199,7 @@ class TestEmailtokenController(TestController):
         # Get existing challenges (to verify later that no new ones were added)
         existing_challenges = {}
         try:
-            response_string = self.app.get(
-                url(controller='admin', action='checkstatus'),
-                params={'user': 'root', 'session': self.session}
-                )
+            response_string = self.make_admin_request('checkstatus', {'user': 'root'})
             response = response_string.json
             existing_challenges = response['result']['value']['values'][self.token_serial]['challenges']
         except KeyError:
@@ -246,10 +223,7 @@ class TestEmailtokenController(TestController):
         self.assertEqual(expected_error, response['detail']['message'], "Error message does not match")
 
         # Get new challenges
-        response_string = self.app.get(
-            url(controller='admin', action='checkstatus'),
-            params={'user': 'root', 'session': self.session}
-            )
+        response_string = self.make_admin_request('checkstatus', {'user': 'root'})
         response = response_string.json
         new_challenges = response['result']['value']['values'][self.token_serial]['challenges']
 
