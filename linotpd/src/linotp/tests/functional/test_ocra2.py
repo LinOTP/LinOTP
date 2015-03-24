@@ -3019,18 +3019,10 @@ class OcraTest(TestController):
                 is shown to the user!!! see ticket #12324
         """
 
-        # Start skip-block. Skip test if using the wrong database
         sqlconnect = self.appconf.get('sqlalchemy.url')
         if sqlconnect.startswith('sqlite://') or sqlconnect.startswith('mysql://'):
-            skip_reason = "SQLite and MySQL silently truncates the data. See #12324."
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_QR_rollout_w_long_message': " + skip_reason)
-                return
-        # End skip-block
+            skip_reason = "SQLite and MySQL silently truncate the data. See #12324."
+            self.skipTest(skip_reason)
 
         ocra = OcraOtp()
         counter = 0

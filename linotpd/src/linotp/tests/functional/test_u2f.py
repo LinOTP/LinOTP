@@ -447,15 +447,9 @@ class TestU2FController(TestController):
         Enroll a U2F token without a token pin and authenticate
         """
         if not self._has_EC_support():
-            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_u2f_registration_and_authentication_without_pin': "
-                          + skip_reason)
-                return
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
         self._registration()
         # Authenticate twice
         self._authentication()
@@ -466,15 +460,9 @@ class TestU2FController(TestController):
         Enroll a U2F token without a token pin and perform an invalid authentication
         """
         if not self._has_EC_support():
-            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_u2f_registration_and_wrong_authentication_"
-                          "without_pin': " + skip_reason)
-                return
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
         self._registration()
         self._authentication(correct=False)
 
@@ -483,15 +471,9 @@ class TestU2FController(TestController):
         Try an invalid registration of a U2F token without pin
         """
         if not self._has_EC_support():
-            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_u2f_wrong_registration_without_pin': "
-                          + skip_reason)
-                return
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
         self._registration(correct=False)
 
     def test_u2f_registration_and_authentication_with_pin(self):
@@ -499,15 +481,9 @@ class TestU2FController(TestController):
         Enroll a U2F token with a token pin and authenticate
         """
         if not self._has_EC_support():
-            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_u2f_registration_and_authentication_with_pin': "
-                          + skip_reason)
-                return
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
         # Authenticate twice
@@ -519,15 +495,9 @@ class TestU2FController(TestController):
         Enroll a U2F token with a token pin and authenticate
         """
         if not self._has_EC_support():
-            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_u2f_registration_and_wrong_authentication_with_"
-                          "_pin': " + skip_reason)
-                return
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
         self._authentication(pin=pin, correct=False)
@@ -537,15 +507,9 @@ class TestU2FController(TestController):
         Try an invalid registration of a U2F token with pin
         """
         if not self._has_EC_support():
-            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_u2f_wrong_registration_with_pin': "
-                          + skip_reason)
-                return
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, correct=False)
 
@@ -562,15 +526,10 @@ class TestU2FController(TestController):
         else:
             if match.group('version')[0] != '0':
                 # Supported OpenSSL version - skip test
-                skip_reason = "This test can only be run with an unsupported OpenSSL version!"
-                if sys.version_info[0:2] >= (2, 7):
-                    # skipTest() has the advantage that it is shown in the test summary
-                    # but it is only available in Python 2.7
-                    self.skipTest(skip_reason)
-                else:
-                    log.error("Skipping test 'test_u2f_not_supported_openssl_version': "
-                              + skip_reason)
-                    return
+                self.skipTest(
+                    "This test can only be run with an unsupported OpenSSL " \
+                    "version!"
+                    )
 
         # Initial token registration step
         response_registration1_JSON = self._registration1()
@@ -633,15 +592,10 @@ class TestU2FController(TestController):
                     skip_test = False
 
         if skip_test:
-            skip_reason = "This test can only be run with OpenSSL missing the NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_u2f_not_supported_openssl_version': "
-                          + skip_reason)
-                return
+            self.skipTest(
+                "This test can only be run with OpenSSL missing the " \
+                "NIST P-256 curve!"
+                )
 
         # Initial token registration step
         response_registration1_JSON = self._registration1()

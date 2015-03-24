@@ -535,14 +535,10 @@ class TestLDAP(TestController):
 
         # Skip test if no config found
         if ldapurl is None or serverIp is None:
-            skip_reason = "No ldap server test url like: ldap://cn=admin,dc=example,dc=com:test123!@192.168.0.2: defined in the *.ini file"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test 'test_one': " + skip_reason)
-                return
+            skip_reason = "No ldap server test url like: " \
+                "ldap://cn=admin,dc=example,dc=com:test123!@192.168.0.2: " \
+                "defined in the *.ini file"
+            self.skipTest(skip_reason)
 
         parameters = {'enableReplication' : 'true' }
         resp = self.app.get(url(controller='system', action='setConfig'), params=parameters)
