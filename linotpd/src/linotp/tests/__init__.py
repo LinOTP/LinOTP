@@ -47,7 +47,7 @@ import os
 import logging
 import hashlib
 
-from unittest import TestCase
+import unittest2
 
 from paste.deploy import appconfig
 from paste.deploy import loadapp
@@ -115,7 +115,7 @@ def _get_json_body(response):
         return json.loads(response.body, encoding=response.charset)
 
 
-class TestController(TestCase):
+class TestController(unittest2.TestCase):
     '''
     the TestController, which loads the linotp app upfront
     '''
@@ -129,7 +129,7 @@ class TestController(TestCase):
         self.session = 'justatest'
 
         url._push_object(URLGenerator(config['routes.map'], environ))
-        TestCase.__init__(self, *args, **kwargs)
+        unittest2.TestCase.__init__(self, *args, **kwargs)
 
         self.appconf = config
 
