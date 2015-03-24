@@ -28,6 +28,7 @@
 """
 """
 
+import os
 import datetime
 import binascii
 
@@ -478,8 +479,27 @@ class TestChallengeResponseController(TestController):
         """
         import subprocess
         try:
-            self.p = subprocess.Popen(["linotp/tests/tools/dummy_radius_server.py",
-                                       "-d", "config/dictionary"])
+            radius_server_file = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                '..',
+                'tools',
+                'dummy_radius_server.py',
+                )
+            dictionary_file = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                '..',
+                '..',
+                '..',
+                'config',
+                'dictionary',
+                )
+            self.p = subprocess.Popen(
+                [
+                    radius_server_file,
+                    "-d",
+                    dictionary_file
+                    ]
+                )
         except Exception as exx:
             raise exx
         assert self.p is not None

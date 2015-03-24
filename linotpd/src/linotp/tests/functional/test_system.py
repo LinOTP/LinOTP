@@ -29,6 +29,7 @@
 """
 
 
+import os
 import logging
 from linotp.tests import TestController, url
 
@@ -486,24 +487,28 @@ scope = gettoken
         '''
         Testing the deleting of a resolver
         '''
+        fixture_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'fixtures',
+            )
         response = self.app.get(url(controller='system', action='setResolver'),
                                 params={'name':'reso1',
                                         'type': 'passwdresolver',
-                                        'fileName': 'linotp/tests/functional/fixtures/my-pass2'})
+                                        'fileName': os.path.join(fixture_path, 'my-pass2')})
         print response
         assert '"value": true' in response
 
         response = self.app.get(url(controller='system', action='setResolver'),
                                 params={'name':'reso2',
                                         'type': 'passwdresolver',
-                                        'fileName': 'linotp/tests/functional/fixtures/my-pass2'})
+                                        'fileName': os.path.join(fixture_path, 'my-pass2')})
         print response
         assert '"value": true' in response
 
         response = self.app.get(url(controller='system', action='setResolver'),
                                 params={'name':'reso3',
                                         'type': 'passwdresolver',
-                                        'fileName': 'linotp/tests/functional/fixtures/my-pass2'})
+                                        'fileName': os.path.join(fixture_path, 'my-pass2')})
         print response
         assert '"value": true' in response
 

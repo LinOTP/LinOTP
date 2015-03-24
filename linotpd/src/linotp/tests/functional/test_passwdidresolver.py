@@ -35,6 +35,7 @@ from useridresolver.UserIdResolver import getResolverClass
 from linotp.tests import TestController
 
 
+import os
 import logging
 log = logging.getLogger(__name__)
 
@@ -47,6 +48,10 @@ class TestPasswdController(TestController):
         self.__createResolvers__()
         self.__createRealms__()
         self.serials = []
+        self.fixture_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'fixtures',
+            )
 
     def tearDown(self):
         self.__deleteAllRealms__()
@@ -58,7 +63,7 @@ class TestPasswdController(TestController):
         Testing PasswdIdResolver
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-passwd' }, "")
+        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-passwd') }, "")
 
         userlist = y.getUserList({'username':'*', "userid":"= 1000"})
         print userlist
@@ -102,7 +107,7 @@ class TestPasswdController(TestController):
         Testing checkpass with PasswdIdResolver with a shadow passwd file
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-passwd' }, "")
+        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-passwd') }, "")
 
         success = False
         try:
@@ -117,7 +122,7 @@ class TestPasswdController(TestController):
         Testing checkpass
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-pass2' }, "")
+        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-pass2') }, "")
 
         res = y.checkPass('2001', "geheim")
         print "result %r" % res
@@ -132,7 +137,7 @@ class TestPasswdController(TestController):
         Testing getSearchfields
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : 'linotp/tests/functional/fixtures/my-pass2' }, "")
+        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-pass2') }, "")
 
         s = y.getSearchFields()
         print s

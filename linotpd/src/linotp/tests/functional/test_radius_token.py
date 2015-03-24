@@ -114,7 +114,12 @@ class TestRadiusToken(TestController):
         import subprocess
         import os.path
 
-        radius_server_file = "linotp/tests/tools/dummy_radius_server.py"
+        radius_server_file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            '..',
+            'tools',
+            'dummy_radius_server.py',
+            )
         self.assertTrue(os.path.isfile(radius_server_file) == True,
                         "radius demo server not found: %s" % radius_server_file)
 
