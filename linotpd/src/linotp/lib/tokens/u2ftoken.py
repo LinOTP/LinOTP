@@ -797,13 +797,6 @@ class U2FTokenClass(TokenClass):
             if 'otpkey' in params:
                 otpkey = params.get('otpkey')
 
-            origin = None
-            if 'origin' in params:
-                origin = params.get('origin')
-            if origin is None:
-                log.error("[init]: No origin set!")
-                raise ValueError("No origin set")
-
             if otpkey is not None:
                 # otpkey holds the JSON RegisterResponse object as specified by the FIDO Alliance
                 try:
@@ -835,7 +828,7 @@ class U2FTokenClass(TokenClass):
                     self._parseRegistrationData(registrationData)
 
                 # check the received clientData object
-                self._checkClientData(
+                origin = self._checkClientData(
                     clientData, 'registration', self.getFromTokenInfo('challenge', None))
 
                 # prepare the applicationParameter and challengeParameter needed for

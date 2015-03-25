@@ -126,7 +126,6 @@ class TestU2FController(TestController):
         parameters = {
             'type': 'u2f',
             'phase': 'registration1',
-            'origin': self.origin,
             'user': 'root',
             'session': self.session
         }
@@ -147,7 +146,6 @@ class TestU2FController(TestController):
         parameters = {
             'type': 'u2f',
             'phase': 'registration2',
-            'origin': self.origin,
             'user': 'root',
             'otpkey': register_response_message,
             'serial': self.serial,
@@ -527,7 +525,7 @@ class TestU2FController(TestController):
             if match.group('version')[0] != '0':
                 # Supported OpenSSL version - skip test
                 self.skipTest(
-                    "This test can only be run with an unsupported OpenSSL " \
+                    "This test can only be run with an unsupported OpenSSL "
                     "version!"
                     )
 
@@ -593,7 +591,7 @@ class TestU2FController(TestController):
 
         if skip_test:
             self.skipTest(
-                "This test can only be run with OpenSSL missing the " \
+                "This test can only be run with OpenSSL missing the "
                 "NIST P-256 curve!"
                 )
 
