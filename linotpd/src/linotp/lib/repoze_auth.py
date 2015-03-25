@@ -31,6 +31,8 @@ log = logging.getLogger(__name__)
 from linotp.lib.user import getRealmBox, getSplitAtSign
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.selftest import isSelfTest
+from linotp.lib.util import str2unicode
+
 import traceback
 
 from linotp.lib.user import get_authenticated_user
@@ -80,9 +82,14 @@ class UserModelPlugin(object):
             log.error("[authenticate] %s" % traceback.format_exc())
             return None
 
+        # as repoze does not run through the std pylons middleware, we have to
+        # convert the input which might be UTF8 to unicode
+        username = str2unicode(username)
+        password = str2unicode(password)
+
         # check username/realm, password
         if isSelfTest():
-            authUser = "%s@%s" % (unicode(username), unicode(realm))
+            authUser = "%s@%s" % (username, realm)
         else:
             authUser = get_authenticated_user(username, realm, password)
 
