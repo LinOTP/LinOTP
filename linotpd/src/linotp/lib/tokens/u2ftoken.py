@@ -28,7 +28,8 @@ import json
 import base64
 import struct
 import binascii
-from M2Crypto import X509, EC
+import re
+from M2Crypto import X509, EC, m2
 from hashlib import sha256
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.validate import check_pin
@@ -267,6 +268,28 @@ class U2FTokenClass(TokenClass):
 
         return (True, message, data, attributes)
 
+    @staticmethod
+    def _is_supported_openssl_version():
+        """
+        check if the openssl version is supported by the U2FTokenClass
+
+        :return:          boolean - True if supported, False if unsupported
+        """
+        # U2F needs OpenSSL 1.0.0 or higher
+        # The EC OpenSSL API calls made by M2Crypto don't work with OpenSSl 0.9.8!
+        version_text = m2.OPENSSL_VERSION_TEXT
+        log.debug("OpenSSL version string: '%s'", version_text)
+
+        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
+        if match is None:
+            log.warning("Could not detect OpenSSL version - unknown version string format: '%s'",
+                        version_text
+                        )
+        else:
+            if match.group('version')[0] == '0':
+                return False
+        return True
+
     def _checkClientData(self,
                          clientData,
                          clientDataType,
@@ -430,17 +453,26 @@ class U2FTokenClass(TokenClass):
         PUB_KEY_ASN1_PREFIX = "3059301306072a8648ce3d020106082a8648ce3d030107034200".decode('hex')
         publicKey = PUB_KEY_ASN1_PREFIX + publicKey
 
+        # Check for OpenSSL version 1.0.0 or higher
+        if not self._is_supported_openssl_version():
+            log.error("This version of OpenSSL is not supported! OpenSSL version 1.0.0 or higher "
+                      "is required for the U2F token.")
+            raise Exception("This version of OpenSSL is not supported! OpenSSL version 1.0.0 or "
+                            "higher is required for the U2F token.")
+
         try:
-            # The following command needs support for ECDSA in openssl!
-            # Since Red Hat systems (including Fedora) use an openssl version without Elliptic
-            # Curves support (as of March 2015), this command will fail with a NULL pointer
-            # exception on these systems
+            # The following command needs support for ECDSA in OpenSSL!
+            # Since Red Hat systems (including Fedora) use an OpenSSL version without
+            # support for the NIST P-256 curve (as of March 2015), this command will fail
+            # with a NULL pointer exception on these systems
             ECPubKey = EC.pub_key_from_der(publicKey)
-        except Exception as ex:
-            log.exception(
-                "Could not get ECPubKey. Possibly missing ECDSA support in openssl? %r", ex)
+        except ValueError as ex:
+            log.error(
+                "Could not get ECPubKey. Possibly missing ECDSA support for the NIST P-256 "
+                "curve in OpenSSL? %r", ex)
             raise Exception(
-                "Could not get ECPubKey. Possibly missing ECDSA support in openssl? %r" % ex)
+                "Could not get ECPubKey. Possibly missing ECDSA support for the NIST P-256 "
+                "curve in OpenSSL? %r" % ex)
 
         # According to the FIDO U2F specification the signature is a ECDSA signature on the
         # NIST P-256 curve over the SHA256 hash of the following byte string
@@ -717,10 +749,22 @@ class U2FTokenClass(TokenClass):
                                     userPublicKey) != 1:
             log.error("Error on verify_update.")
             raise Exception("Error on verify_update.")
+
+        # Check for OpenSSL version 1.0.0 or higher
+        if not self._is_supported_openssl_version():
+            log.error("This version of OpenSSL is not supported! OpenSSL version 1.0.0 or "
+                      "higher is required for the U2F token.")
+            raise Exception("This version of OpenSSL is not supported! OpenSSL version 1.0.0 "
+                            "or higher is required for the U2F token.")
+
         if certPubKey.verify_final(signature) != 1:
-            log.error("Signature verification failed! Maybe someone is doing something nasty!")
-            raise Exception(
-                "Signature verification failed! Maybe someone is doing something nasty!")
+            log.error("Signature verification failed! Maybe someone is doing something "
+                      "nasty! However, this error could possibly also be related to missing "
+                      "ECDSA support for the NIST P-256 curve in OpenSSL.")
+            raise Exception("Signature verification failed! Maybe someone is doing "
+                            "something nasty! However, this error could possibly also be "
+                            "related to missing ECDSA support for the NIST P-256 curve in "
+                            "OpenSSL.")
 
     def getInitDetail(self, params, user=None):
         """

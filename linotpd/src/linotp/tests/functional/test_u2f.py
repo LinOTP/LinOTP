@@ -37,6 +37,7 @@ import binascii
 import base64
 import struct
 import sys
+import re
 import logging
 log = logging.getLogger(__name__)
 
@@ -74,6 +75,32 @@ class TestU2FController(TestController):
     # Generate ECC key, NIST P-256 elliptic curve
     ECC_KEY = EC.gen_params(EC.NID_X9_62_prime256v1)
     ECC_KEY.gen_key()
+
+    FAKE_REGISTRATION_DATA_HEX = '0504113fafb0da1a6a90bb3a017552c1561af88bfd02c36eec334551959' \
+                                 'ffe562a6f050b496545810b64b738e7673a314efd67216cc1b7c7e46f1b' \
+                                 '34dcd6212a36fe402a552dfdb7477ed65fd84133f86196010b2215b57da' \
+                                 '75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe' \
+                                 '6660e2e006f76868b772d70c2530820202308201a8a003020102020900b' \
+                                 'edc78032c47968b300a06082a8648ce3d040302305f310b300906035504' \
+                                 '06130244453113301106035504080c0a536f6d652d53746174653121301' \
+                                 'f060355040a0c18496e7465726e6574205769646769747320507479204c' \
+                                 '74643118301606035504030c0f4c696e4f5450205532462054657374301' \
+                                 'e170d3135303331383039353230315a170d343230383033303935323031' \
+                                 '5a305f310b30090603550406130244453113301106035504080c0a536f6' \
+                                 'd652d53746174653121301f060355040a0c18496e7465726e6574205769' \
+                                 '646769747320507479204c74643118301606035504030c0f4c696e4f545' \
+                                 '02055324620546573743056301006072a8648ce3d020106052b8104000a' \
+                                 '03420004e9601d6e8b048ab8dcf69d91d7b595373cfd85b213a51f7438c' \
+                                 '7ffb0afb59dc5cc88db74ea85c5ff4cf06271599646b818f441841b5359' \
+                                 'd81f7fe62cff724f2aa350304e301d0603551d0e04160414c17d9d52e8f' \
+                                 '4696d4f485353fa78e903dab72aae301f0603551d23041830168014c17d' \
+                                 '9d52e8f4696d4f485353fa78e903dab72aae300c0603551d13040530030' \
+                                 '101ff300a06082a8648ce3d0403020348003045022007e475efd0c9575e' \
+                                 '915ab89b5c8b1b436b2cc9a5cc4df37889e9511b1f7808f6022100c1faa' \
+                                 'a0fa5f36363962058a2e9f679338eca18b12725f807ffe68d1c05d3d35b' \
+                                 '30440220387f2d2927e4a2bb9053b4ac09b22cc4c1bac2987e868be6f22' \
+                                 '6a8f139171838022013e19c68829d52b2e5db0e80e2efb46738cc418ea9' \
+                                 'ef3b94664f3817e18ddc4d'
 
     serials = set()
 
@@ -390,14 +417,19 @@ class TestU2FController(TestController):
             self.assertTrue('"value": false' in response_authentication2_JSON,
                             "Response: %r" % response_authentication2_JSON)
 
-    def _has_EC_support(self, testname):
+    def _has_EC_support(self):
         has_ec_support = True
         # U2F needs OpenSSL 1.0.0 or higher
         # The EC OpenSSL API calls made by M2Crypto don't work with OpenSSl 0.9.8!
         version_text = m2.OPENSSL_VERSION_TEXT
-        version_text = version_text.replace('OpenSSL ', '')
-        if version_text[0] == '0':
-            has_ec_support = False
+        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
+        if match is None:
+            # Fail on unknown OpenSSL version string format
+            self.fail("Could not detect OpenSSL version - unknown version string format: '%s'"
+                      % version_text)
+        else:
+            if match.group('version')[0] == '0':
+                has_ec_support = False
 
         # The following command needs support for ECDSA in openssl!
         # Since Red Hat systems (including Fedora) use an openssl version without
@@ -408,23 +440,22 @@ class TestU2FController(TestController):
         except ValueError:
             has_ec_support = False
 
-        if not has_ec_support:
-            skip_reason = "Probably no openssl support for the needed NIST P-256 curve!"
-            if sys.version_info[0:2] >= (2, 7):
-                # skipTest() has the advantage that it is shown in the test summary
-                # but it is only available in Python 2.7
-                self.skipTest(skip_reason)
-            else:
-                log.error("Skipping test " + testname + ": " + skip_reason)
-                return False
-        return True
+        return has_ec_support
 
     def test_u2f_registration_and_authentication_without_pin(self):
         """
         Enroll a U2F token without a token pin and authenticate
         """
-        if not self._has_EC_support('test_u2f_registration_and_authentication_without_pin'):
-            return
+        if not self._has_EC_support():
+            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
+            if sys.version_info[0:2] >= (2, 7):
+                # skipTest() has the advantage that it is shown in the test summary
+                # but it is only available in Python 2.7
+                self.skipTest(skip_reason)
+            else:
+                log.error("Skipping test 'test_u2f_registration_and_authentication_without_pin': "
+                          + skip_reason)
+                return
         self._registration()
         # Authenticate twice
         self._authentication()
@@ -434,8 +465,16 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token without a token pin and perform an invalid authentication
         """
-        if not self._has_EC_support('test_u2f_registration_and_wrong_authentication_without_pin'):
-            return
+        if not self._has_EC_support():
+            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
+            if sys.version_info[0:2] >= (2, 7):
+                # skipTest() has the advantage that it is shown in the test summary
+                # but it is only available in Python 2.7
+                self.skipTest(skip_reason)
+            else:
+                log.error("Skipping test 'test_u2f_registration_and_wrong_authentication_"
+                          "without_pin': " + skip_reason)
+                return
         self._registration()
         self._authentication(correct=False)
 
@@ -443,16 +482,32 @@ class TestU2FController(TestController):
         """
         Try an invalid registration of a U2F token without pin
         """
-        if not self._has_EC_support('test_u2f_wrong_registration_without_pin'):
-            return
+        if not self._has_EC_support():
+            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
+            if sys.version_info[0:2] >= (2, 7):
+                # skipTest() has the advantage that it is shown in the test summary
+                # but it is only available in Python 2.7
+                self.skipTest(skip_reason)
+            else:
+                log.error("Skipping test 'test_u2f_wrong_registration_without_pin': "
+                          + skip_reason)
+                return
         self._registration(correct=False)
 
     def test_u2f_registration_and_authentication_with_pin(self):
         """
         Enroll a U2F token with a token pin and authenticate
         """
-        if not self._has_EC_support('test_u2f_registration_and_authentication_with_pin'):
-            return
+        if not self._has_EC_support():
+            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
+            if sys.version_info[0:2] >= (2, 7):
+                # skipTest() has the advantage that it is shown in the test summary
+                # but it is only available in Python 2.7
+                self.skipTest(skip_reason)
+            else:
+                log.error("Skipping test 'test_u2f_registration_and_authentication_with_pin': "
+                          + skip_reason)
+                return
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
         # Authenticate twice
@@ -463,8 +518,16 @@ class TestU2FController(TestController):
         """
         Enroll a U2F token with a token pin and authenticate
         """
-        if not self._has_EC_support('test_u2f_registration_and_wrong_authentication_with_pin'):
-            return
+        if not self._has_EC_support():
+            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
+            if sys.version_info[0:2] >= (2, 7):
+                # skipTest() has the advantage that it is shown in the test summary
+                # but it is only available in Python 2.7
+                self.skipTest(skip_reason)
+            else:
+                log.error("Skipping test 'test_u2f_registration_and_wrong_authentication_with_"
+                          "_pin': " + skip_reason)
+                return
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
         self._authentication(pin=pin, correct=False)
@@ -473,7 +536,148 @@ class TestU2FController(TestController):
         """
         Try an invalid registration of a U2F token with pin
         """
-        if not self._has_EC_support('test_u2f_wrong_registration_with_pin'):
-            return
+        if not self._has_EC_support():
+            skip_reason = "Probably no OpenSSL support for the needed NIST P-256 curve!"
+            if sys.version_info[0:2] >= (2, 7):
+                # skipTest() has the advantage that it is shown in the test summary
+                # but it is only available in Python 2.7
+                self.skipTest(skip_reason)
+            else:
+                log.error("Skipping test 'test_u2f_wrong_registration_with_pin': "
+                          + skip_reason)
+                return
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, correct=False)
+
+    def test_u2f_unsupported_openssl_version(self):
+        """
+        Try a registration with an unsupported OpenSSL version and check the error messages
+        """
+        version_text = m2.OPENSSL_VERSION_TEXT
+        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
+        if match is None:
+            # Fail on unknown OpenSSL version string format
+            self.fail("Could not detect OpenSSL version - unknown version string format: '%s'"
+                      % version_text)
+        else:
+            if match.group('version')[0] != '0':
+                # Supported OpenSSL version - skip test
+                skip_reason = "This test can only be run with an unsupported OpenSSL version!"
+                if sys.version_info[0:2] >= (2, 7):
+                    # skipTest() has the advantage that it is shown in the test summary
+                    # but it is only available in Python 2.7
+                    self.skipTest(skip_reason)
+                else:
+                    log.error("Skipping test 'test_u2f_not_supported_openssl_version': "
+                              + skip_reason)
+                    return
+
+        # Initial token registration step
+        response_registration1_JSON = self._registration1()
+        self.assertTrue('"value": true' in response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertTrue('"challenge":' in response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertTrue('"serial":' in response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+
+        response_registration1 = json.loads(response_registration1_JSON.body)
+        challenge_registration = response_registration1.get('detail', {}).get('challenge')
+        self.serial = response_registration1.get('detail', {}).get('serial')
+        self.serials.add(self.serial)
+
+        client_data_registration = self._createClientDataObject('registration',
+                                                                challenge_registration,
+                                                                )
+        # Since we have no supported OpenSSL version to calculate the registration response
+        # we use a hard-coded correctly-formed fake registration response
+        registration_response = binascii.unhexlify(self.FAKE_REGISTRATION_DATA_HEX)
+        registration_response_message = {
+            'registrationData': base64.urlsafe_b64encode(registration_response),
+            'clientData': base64.urlsafe_b64encode(client_data_registration)
+        }
+
+        # Complete the token registration
+        response_registration2_JSON = \
+            self._registration2(json.dumps(registration_response_message))
+
+        # Registration must fail
+        self.assertTrue('"status": false'in response_registration2_JSON,
+                        "Response: %r" % response_registration2_JSON)
+
+        # Check for correct error messages
+        self.assertTrue('"message": "This version of OpenSSL is not supported!' in
+                        response_registration2_JSON,
+                        "Response: %r" % response_registration2_JSON
+                        )
+
+    def test_u2f_unsupported_openssl_missing_curve(self):
+        """
+        Try registration with an OpenSSL missing the NIST P-256 curve and check the error messages
+        """
+        skip_test = True
+
+        # Only allow OpenSSL >=1.0.0 with missing EC support
+        version_text = m2.OPENSSL_VERSION_TEXT
+        match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
+        if match is None:
+            # Fail on unknown OpenSSL version string format
+            self.fail("Could not detect OpenSSL version - unknown version string format: '%s'"
+                      % version_text)
+        else:
+            if match.group('version')[0] != '0':
+                # Only run test on missing NIST P-256 curve support
+                try:
+                    EC.load_key_bio(BIO.MemoryBuffer(self.ATTESTATION_PRIVATE_KEY_PEM))
+                except ValueError:
+                    skip_test = False
+
+        if skip_test:
+            skip_reason = "This test can only be run with OpenSSL missing the NIST P-256 curve!"
+            if sys.version_info[0:2] >= (2, 7):
+                # skipTest() has the advantage that it is shown in the test summary
+                # but it is only available in Python 2.7
+                self.skipTest(skip_reason)
+            else:
+                log.error("Skipping test 'test_u2f_not_supported_openssl_version': "
+                          + skip_reason)
+                return
+
+        # Initial token registration step
+        response_registration1_JSON = self._registration1()
+        self.assertTrue('"value": true' in response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertTrue('"challenge":' in response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertTrue('"serial":' in response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+
+        response_registration1 = json.loads(response_registration1_JSON.body)
+        challenge_registration = response_registration1.get('detail', {}).get('challenge')
+        self.serial = response_registration1.get('detail', {}).get('serial')
+        self.serials.add(self.serial)
+
+        client_data_registration = self._createClientDataObject('registration',
+                                                                challenge_registration,
+                                                                )
+        # Since we have no supported OpenSSL version to calculate the registration response
+        # we use a hard-coded correctly-formed fake registration response
+        registration_response = binascii.unhexlify(self.FAKE_REGISTRATION_DATA_HEX)
+        registration_response_message = {
+            'registrationData': base64.urlsafe_b64encode(registration_response),
+            'clientData': base64.urlsafe_b64encode(client_data_registration)
+        }
+
+        # Complete the token registration
+        response_registration2_JSON = \
+            self._registration2(json.dumps(registration_response_message))
+
+        # Registration must fail
+        self.assertTrue('"status": false'in response_registration2_JSON,
+                        "Response: %r" % response_registration2_JSON)
+
+        # Check for correct error messages
+        self.assertTrue('missing ECDSA support for the NIST P-256 curve in OpenSSL' in
+                        response_registration2_JSON,
+                        "Response: %r" % response_registration2_JSON
+                        )
