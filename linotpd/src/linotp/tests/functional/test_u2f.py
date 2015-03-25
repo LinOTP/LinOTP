@@ -374,8 +374,6 @@ class TestU2FController(TestController):
                         "Response: %r" % response_authentication1_JSON)
         self.assertTrue('\\"keyHandle\\":' in response_authentication1_JSON,
                         "Response: %r" % response_authentication1_JSON)
-        self.assertTrue('\\"appId\\":' in response_authentication1_JSON,
-                        "Response: %r" % response_authentication1_JSON)
 
         response_authentication1 = json.loads(response_authentication1_JSON.body)
         transactionid_authentication = \

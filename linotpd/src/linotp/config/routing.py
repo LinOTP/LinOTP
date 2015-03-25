@@ -122,6 +122,13 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
+    # in case of u2f, we allow routes of type /u2f/realm/action
+    u2f = app_conf.get('service.u2f', 'True') == 'True'
+    if u2f:
+        for cont in ['u2f']:
+            routeMap.connect('/%s/{realm}/{action}' % cont, controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
+
     # linotp.selfTest
     self_test = global_conf.get('linotp.selfTest', 'True') == 'True'
     if self_test:

@@ -31,12 +31,13 @@ import binascii
 import re
 from M2Crypto import X509, EC, m2
 from hashlib import sha256
+from string import rfind
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp
 from linotp.lib.validate import get_challenges
 from linotp.lib.util import getParam
-from string import rfind
+from linotp.lib.policy import getPolicy, getPolicyActionValue
 """
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance
 """
@@ -132,7 +133,10 @@ class U2FTokenClass(TokenClass):
             #                     },
             #================================================================
             'selfservice': {},
-            'policy': {},
+            'policy': {
+                'enrollment':
+                {'u2f_valid_facets': {'type': 'str'}}
+                }
         }
 
         if key is not None and key in res:
@@ -261,7 +265,6 @@ class U2FTokenClass(TokenClass):
             'challenge': "%s" % challenge,
             'version': 'U2F_V2',
             'keyHandle': keyHandle,
-            'appId': self.getFromTokenInfo('appId')
         }
         message = json.dumps(data)
         attributes = None
@@ -289,6 +292,51 @@ class U2FTokenClass(TokenClass):
             if match.group('version')[0] == '0':
                 return False
         return True
+
+    def _is_valid_facet(self, origin):
+        """
+        check if origin is in the valid facets if the u2f_valid_facets policy is set.
+        Otherwise check if the origin matches the previously saved origin
+
+        :return:          boolean - True if supported, False if unsupported
+        """
+        is_valid = False
+
+        # Get the valid facets as specified in the enrollment policy 'u2f_valid_facets'
+        # for the specific realm
+        valid_facets_action_value = ''
+        realms = self.token.getRealmNames()
+        if len(realms) > 0:
+            get_policy_params = {
+                'action': 'u2f_valid_facets',
+                'scope': 'enrollment',
+                'realm': realms[0]
+                }
+            valid_facets_action_value = getPolicyActionValue(getPolicy(get_policy_params),
+                                                             'u2f_valid_facets',
+                                                             String=True
+                                                             )
+
+        if valid_facets_action_value != '':
+            # 'u2f_valid_facets' policy is set - check if origin is in valid facets list
+            valid_facets = valid_facets_action_value.split(';')
+            for facet in valid_facets:
+                facet = facet.strip()
+            if origin in valid_facets:
+                is_valid = True
+        else:
+            # 'u2f_valid_facets' policy is empty or not set
+            # check if origin matches the origin stored in the token info or save it if no origin
+            # is stored yet
+            appId = self.getFromTokenInfo('appId', None)
+            if appId is None:
+                self.addToTokenInfo('appId', origin)
+                is_valid = True
+            else:
+                if origin == appId:
+                    is_valid = True
+
+        return is_valid
 
     def _checkClientData(self,
                          clientData,
@@ -631,6 +679,11 @@ class U2FTokenClass(TokenClass):
             cdOrigin = self._checkClientData(
                 clientData, 'authentication', challenge['challenge'])
 
+            # check the received origin
+            if not self._is_valid_facet(cdOrigin):
+                log.error("Received origin not in the valid facets. Aborting...")
+                raise ValueError("Received origin not in the valid facets. Aborting...")
+
             # parse the received signatureData object
             (userPresenceByte, counter, signature) = self._parseSignatureData(signatureData)
 
@@ -642,7 +695,14 @@ class U2FTokenClass(TokenClass):
 
             # prepare the applicationParameter and challengeParameter needed for
             # verification of the registration signature
-            applicationParameter = sha256(cdOrigin).digest()
+            appId = cdOrigin
+            if 'appid' in options:
+                # The appid parameter is mandatory if a URL to the valid_facets action of
+                # the u2f controller is sent to the token device. Since the token device
+                # uses this given URL (and not the 'real' location origin as in the client
+                # data object) for the applicationParameter, we have to adapt this behavior.
+                appId = options.get('appid')
+            applicationParameter = sha256(appId).digest()
             challengeParameter = sha256(clientData).digest()
             publicKey = base64.urlsafe_b64decode(
                 self.getFromTokenInfo('publicKey', None).encode('ascii'))
@@ -831,9 +891,21 @@ class U2FTokenClass(TokenClass):
                 origin = self._checkClientData(
                     clientData, 'registration', self.getFromTokenInfo('challenge', None))
 
+                # Check the received origin
+                if not self._is_valid_facet(origin):
+                    log.error("Received origin not in the valid facets. Aborting...")
+                    raise ValueError("Received origin not in the valid facets. Aborting...")
+
                 # prepare the applicationParameter and challengeParameter needed for
                 # verification of the registration signature
-                applicationParameter = sha256(origin).digest()
+                appId = origin
+                if 'appid' in params:
+                    # The appid parameter is mandatory if a URL to the valid_facets action of
+                    # the u2f controller is sent to the token device. Since the token device
+                    # uses this given URL (and not the 'real' location origin as in the client
+                    # data object) for the applicationParameter, we have to adapt this behavior.
+                    appId = params.get('appid')
+                applicationParameter = sha256(appId).digest()
                 challengeParameter = sha256(clientData).digest()
 
                 # verify the registration signature
@@ -849,7 +921,6 @@ class U2FTokenClass(TokenClass):
                 # future use
                 self.addToTokenInfo('keyHandle', base64.urlsafe_b64encode(keyHandle))
                 self.addToTokenInfo('publicKey', base64.urlsafe_b64encode(userPublicKey))
-                self.addToTokenInfo('appId', origin)
                 self.addToTokenInfo('counter', '0')
                 self.addToTokenInfo('phase', 'authentication')
                 # remove the registration challenge from the token info
