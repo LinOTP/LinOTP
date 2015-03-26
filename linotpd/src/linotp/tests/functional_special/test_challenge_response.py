@@ -26,6 +26,15 @@
 
 
 """
+Test challenge response functionality
+
+These tests will only pass if you start a LinOTP server on 127.0.0.1.
+For example with paster:
+
+    paster serve test.ini
+
+We assume port 5001 is used (default). If you want to use another port you can
+specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 import os
@@ -40,6 +49,7 @@ except ImportError:
     import simplejson as json
 
 from linotp.tests import TestController, url
+
 from linotp.lib.HMAC import HmacOtp
 from mock import patch
 import smtplib
@@ -52,6 +62,21 @@ import smsprovider.SmtpSMSProvider
 
 import logging
 log = logging.getLogger(__name__)
+
+DEFAULT_NOSE_CONFIG = {
+    'radius': {
+        'authport': '18012',
+        'acctport': '18013',
+        },
+    'paster': {
+        'port': '5001',
+        }
+    }
+try:
+    from testconfig import config as nose_config
+except ImportError as exc:
+    print "You need to install nose-testconfig. Will use default values."
+    nose_config = None
 
 
 def email_otp_func(call_args):
@@ -180,6 +205,18 @@ class TestChallengeResponseController(TestController):
 
         self.deleteAllTokens()
         self.deleteAllPolicies()
+
+        if nose_config and 'radius' in nose_config:
+            self.radius_authport = nose_config['radius']['authport']
+            self.radius_acctport = nose_config['radius']['acctport']
+        else:
+            self.radius_authport = DEFAULT_NOSE_CONFIG['radius']['authport']
+            self.radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
+
+        if nose_config and 'paster' in nose_config:
+            self.paster_port = nose_config['paster']['port']
+        else:
+            self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
 
         return
 
@@ -343,7 +380,9 @@ class TestChallengeResponseController(TestController):
     def setup_remote_token(self,
                            typ="pw",
                            otpkey="123456",
-                           remoteurl="http://127.0.0.1:5001"):
+                           remoteurl=None):
+        if remoteurl is None:
+            remoteurl = "http://127.0.0.1:%s" % self.paster_port
         # local token
         serials = []
         params_list = [
@@ -437,7 +476,7 @@ class TestChallengeResponseController(TestController):
                       "user"    : "remoteuser",
                       "pin"     : "",
                       "description" : "RadiusToken1",
-                      'radius.server' : 'localhost:18012',
+                      'radius.server' : 'localhost:%s' % self.radius_authport,
                       'radius.local_checkpin' : 0,
                       'radius.user' : 'challenge',
                       'radius.secret' : 'testing123',
@@ -453,7 +492,7 @@ class TestChallengeResponseController(TestController):
                       "user"    : "localuser",
                       "pin"     : "local",
                       "description" : "RadiusToken2",
-                      'radius.server' : 'localhost:18012',
+                      'radius.server' : 'localhost:%s' % self.radius_authport,
                       'radius.local_checkpin' : 1,
                       'radius.user' : 'user_no_pin',
                       'radius.secret' : 'testing123',
@@ -496,8 +535,12 @@ class TestChallengeResponseController(TestController):
             self.p = subprocess.Popen(
                 [
                     radius_server_file,
-                    "-d",
-                    dictionary_file
+                    "--dict",
+                    dictionary_file,
+                    "--authport",
+                    self.radius_authport,
+                    "--acctport",
+                    self.radius_acctport,
                     ]
                 )
         except Exception as exx:
@@ -935,7 +978,7 @@ class TestChallengeResponseController(TestController):
             params=params,
             )
 
-        sms_conf = { "URL" : "http://localhost:5001/testing/http2sms",
+        sms_conf = { "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
                      "PARAMETER" : { "account" : "clickatel",
                                     "username" : "legit" },
                     "SMS_TEXT_KEY":"text",
@@ -1018,7 +1061,7 @@ class TestChallengeResponseController(TestController):
         counter = 0
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         user = "remoteuser"
-        remoteurl = "http://127.0.0.1:5001"
+        remoteurl = "http://127.0.0.1:%s" % self.paster_port
 
         ## setup the remote token pairs
         serials = self.setup_remote_token(typ="hmac", otpkey=otpkey,
@@ -1078,7 +1121,7 @@ class TestChallengeResponseController(TestController):
         counter = 0
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         user = "localuser"
-        remoteurl = "http://127.0.0.1:5001"
+        remoteurl = "http://127.0.0.1:%s" % self.paster_port
 
         ## setup the remote token pairs
         serials = self.setup_remote_token(typ="hmac",
@@ -1357,7 +1400,7 @@ class TestChallengeResponseController(TestController):
             params=params,
             )
 
-        sms_conf = { "URL" : "http://localhost:5001/testing/http2sms",
+        sms_conf = { "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
                      "PARAMETER" : { "account" : "clickatel",
                                     "username" : "legit" },
                     "SMS_TEXT_KEY":"text",
