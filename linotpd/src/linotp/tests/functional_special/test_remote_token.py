@@ -28,17 +28,31 @@
 """
 used to do functional testing of the remote token
 
-These tests will only pass if you start a LinOTP server on 127.0.0.1 port 5001.
+These tests will only pass if you start a LinOTP server on 127.0.0.1.
 For example with paster:
 
     paster serve test.ini
 
+We assume port 5001 is used (default). If you want to use another port you can
+specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 import logging
 from linotp.tests import TestController, url
 
 log = logging.getLogger(__name__)
+
+DEFAULT_NOSE_CONFIG = {
+    'paster': {
+        'port': '5001',
+        }
+    }
+try:
+    from testconfig import config as nose_config
+except ImportError as exc:
+    print "You need to install nose-testconfig. Will use default values."
+    nose_config = None
+
 
 class TestRemoteToken(TestController):
 
@@ -51,6 +65,10 @@ class TestRemoteToken(TestController):
         '''
         TestController.setUp(self)
         self.set_config_selftest()
+        if nose_config and 'paster' in nose_config:
+            self.paster_port = nose_config['paster']['port']
+        else:
+            self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
         return
 
     def tearDown(self):
@@ -99,7 +117,7 @@ class TestRemoteToken(TestController):
                       "user"    : "remoteuser",
                       "pin"     : "pin",
                       "description" : "RemoteToken1",
-                      'remote.server' : 'http://127.0.0.1:5001',
+                      'remote.server' : 'http://127.0.0.1:%s' % self.paster_port,
                       'remote.local_checkpin' : 0,
                       'remote.serial' : 'LSPW1',
                       }
@@ -113,7 +131,7 @@ class TestRemoteToken(TestController):
                       "user"    : "localuser",
                       "pin"     : "pin",
                       "description" : "RemoteToken2",
-                      'remote.server' : 'http://127.0.0.1:5001',
+                      'remote.server' : 'http://127.0.0.1:%s' % self.paster_port,
                       'remote.local_checkpin' : 1,
                       'remote.serial' : 'LSPW2',
                       }
@@ -300,7 +318,7 @@ class TestRemoteToken(TestController):
                       "user"    : "root",
                       "pin"     : "",
                       "description" : "RemoteToken",
-                      'remote.server' : 'http://127.0.0.1:5001',
+                      'remote.server' : 'http://127.0.0.1:%s' % self.paster_port,
                       'remote.local_checkpin' : 0,
                       'remote.serial' : serial,
                       }

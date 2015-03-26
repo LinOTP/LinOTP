@@ -26,6 +26,15 @@
 
 
 """
+Test HttpSms Gateway
+
+These tests will only pass if you start a LinOTP server on 127.0.0.1.
+For example with paster:
+
+    paster serve test.ini
+
+We assume port 5001 is used (default). If you want to use another port you can
+specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 
@@ -39,6 +48,17 @@ except ImportError:
 
 import logging
 log = logging.getLogger(__name__)
+
+DEFAULT_NOSE_CONFIG = {
+    'paster': {
+        'port': '5001',
+        }
+    }
+try:
+    from testconfig import config as nose_config
+except ImportError as exc:
+    print "You need to install nose-testconfig. Will use default values."
+    nose_config = None
 
 
 class TestHttpSmsController(TestController):
@@ -58,6 +78,10 @@ class TestHttpSmsController(TestController):
         self.removeTokens()
         self.initToken()
         self.initProvider()
+        if nose_config and 'paster' in nose_config:
+            self.paster_port = nose_config['paster']['port']
+        else:
+            self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
 
     def tearDown(self):
         self.__deleteAllRealms__()
@@ -137,7 +161,7 @@ class TestHttpSmsController(TestController):
         Missing parameter at the SMS Gateway config. send SMS will fail
         '''
         sms_conf = {
-                "URL" : "http://localhost:5001/testing/http2sms",
+                "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
                 "PARAMETER" :
                     {"account" : "clickatel", "username" : "legit"},
                 "SMS_TEXT_KEY":"text",
@@ -159,8 +183,11 @@ class TestHttpSmsController(TestController):
         response = self.app.get(url(controller='system', action='getConfig'),
                                 {'key' : 'SMSProviderConfig'})
 
-        self.assertTrue('http://localhost:5001/testing/http2sms' in response,
-                        response)
+        self.assertIn(
+            'http://localhost:%s/testing/http2sms' % self.paster_port,
+            response,
+            response
+            )
 
         response = self.app.get(url(controller='validate', action='smspin')
                                 , params={'user' : 'user1', 'pass' : '1234'})
@@ -188,7 +215,7 @@ class TestHttpSmsController(TestController):
         '''
         Successful SMS sending (via smspin) and authentication
         '''
-        sms_conf = { "URL" : "http://localhost:5001/testing/http2sms",
+        sms_conf = { "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
                      "PARAMETER" : { "account" : "clickatel",
                                     "username" : "legit" },
                     "SMS_TEXT_KEY":"text",
@@ -240,7 +267,7 @@ class TestHttpSmsController(TestController):
         Successful SMS sending (via validate) and authentication
         '''
         sms_conf = {
-            "URL" : "http://localhost:5001/testing/http2sms",
+            "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
             "PARAMETER" : { "account" : "clickatel", "username" : "legit" },
             "SMS_TEXT_KEY":"text",
             "SMS_PHONENUMBER_KEY":"destination",
@@ -280,7 +307,7 @@ class TestHttpSmsController(TestController):
         Successful SMS sending with RETURN_FAILED
         '''
         sms_conf = {
-            "URL" : "http://localhost:5001/testing/http2sms",
+            "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
             "PARAMETER" : { "account" : "clickatel", "username" : "legit" },
             "SMS_TEXT_KEY":"text",
             "SMS_PHONENUMBER_KEY":"destination",
@@ -307,7 +334,7 @@ class TestHttpSmsController(TestController):
         '''
         Failed SMS sending with RETURN_FAIL
         '''
-        sms_conf = { "URL" : "http://localhost:5001/testing/http2sms",
+        sms_conf = { "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
             "PARAMETER" : {"account" : "clickatel", "username" : "anotherone"},
             "SMS_TEXT_KEY":"text",
             "SMS_PHONENUMBER_KEY":"destination",
