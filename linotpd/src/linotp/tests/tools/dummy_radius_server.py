@@ -27,10 +27,16 @@
 
 
 '''
-Run Radiusserver on 18012 and authenticate successfully with user "tester"
+Run Radiusserver on some ports (default: 18012 and 18013) and authenticate
+successfully with user "tester"
 
-Check it with:
-echo "User-Name = tester@LOCAL, User-Password = megageheim" | radclient -s -x 127.0.0.1:18012 auth testing123
+Test it with:
+    echo "User-Name = tester@LOCAL, User-Password = secretpwd" | \
+        radclient -s -x 127.0.0.1:18012 auth testing123
+or:
+    echo "User-Name = user_with_pin, User-Password = test123456" | \
+        radclient -s -x 127.0.0.1:18012 auth testing123
+etc.
 '''
 
 from pyrad.server import Server as RadiusServer
@@ -119,7 +125,7 @@ class myRadiusServer(RadiusServer):
                 reply['Reply-Message'] = "Enter your challenge reply:"
             except Exception as exx:
                 print("Failed to add attribute State or Message")
-                print("Did you specify a radius dictonary file?")
+                print("Did you specify a radius dictionary file?")
                 raise exx
 
         reply.code = rcode
@@ -129,6 +135,22 @@ class myRadiusServer(RadiusServer):
         # FIXME: Is this always correct?
         # see: http://pastebin.com/v1X2jdTV
         self.SendReplyPacket(self._fdmap[self._realauthfds[0]], reply)
+
+
+def usage(prog):
+    """
+    Print usage information and exit
+    """
+    print """
+Usage:
+        %s [--dict=###] [--authport=###] [--acctport=###] [--help]
+
+        --dict=, -d         The path to a dictionary file (default is /etc/linotp2/dictionary)
+        --authport=, -t     Port used for RADIUS authentication packets (default is 18012)
+        --acctport=, -c     Port used for RADIUS accounting packets (default is 18013)
+        --help, -h          Show this message and exit
+""" % prog
+
 
 def main():
     """
@@ -141,13 +163,25 @@ def main():
 
     client1 = RemoteHost(myIP, "testing123", "lselap")
     client2 = RemoteHost("127.0.0.1", "testing123", "localhost")
+
+    # Set default values (overwritten by command-line args)
     r_dict = "/etc/linotp2/dictionary"
+    authport = 18012
+    acctport = 18013
 
     prog = sys.argv[0]
 
     try:
-        opts, args = getopt(sys.argv[1:], "d:",
-                        ["dict="])
+        opts, args = getopt(
+            sys.argv[1:],
+            "d:t:c:h",
+            [
+                "dict=",
+                "authport=",
+                "acctport=",
+                "help",
+                ],
+            )
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -155,16 +189,25 @@ def main():
         sys.exit(1)
 
     for opt, arg in opts:
-        if opt in ('-d', '--dict'):
+        if opt in ('-h', '--help'):
+            usage(prog)
+            sys.exit(0)
+        elif opt in ('-d', '--dict'):
             if os.path.isfile(arg):
                 r_dict = arg
             else:
                 print("radius dictionary file  <%r> not found!" % arg)
+        elif opt in ('-t', '--authport'):
+            authport = int(arg)
+        elif opt in ('-c', '--acctport'):
+            acctport = int(arg)
+        else:
+            print "Unknown option %s" % opt
 
     params = {
                 "addresses":["127.0.0.1", myIP],
-                "authport":18012,
-                "acctport":18013,
+                "authport": authport,
+                "acctport": acctport,
                 "hosts":{myIP:client1, "127.0.0.1":client2},
                 }
 
