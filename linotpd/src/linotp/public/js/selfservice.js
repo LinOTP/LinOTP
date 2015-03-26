@@ -292,6 +292,21 @@ function enroll_token(params) {
         var details = '<ul>';
         if (data.hasOwnProperty('detail')) {
             var detail = data.detail;
+
+            // Support challenge response enrollment of tokens
+            // Return the challenge and abort the enrollment of the token if a challenge property
+            // was created in the first step of the challenge/response enrollment
+            if (detail.hasOwnProperty('challenge')) {
+            	var returnObj = null;
+            	if (detail.hasOwnProperty('serial')) {
+            		returnObj = {challenge: detail.challenge, serial: detail.serial};
+            	}
+            	else {
+            		returnObj = {challenge: detail.challenge};
+            	}
+            	return returnObj;
+            }
+
             if (detail.hasOwnProperty('serial')) {
                 details = details + '<li>Serial number: ' + detail.serial + '</li>';
             }

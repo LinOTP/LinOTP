@@ -118,21 +118,17 @@ class U2FTokenClass(TokenClass):
                 Can be combined with the OTP PIN.'),
             'init': {},
             'config': {},
-            # selfservice enrollment is soon to come
-            #================================================================
-            # 'selfservice'   :  { 'enroll' :
-            #                     {'title'  :
-            #                      { 'html'      : 'u2ftoken.mako',
-            #                        'scope'     : 'selfservice.title.enroll',
-            #                        },
-            #                      'page' :
-            #                      {'html'       : 'u2ftoken.mako',
-            #                       'scope'      : 'selfservice.enroll',
-            #                       },
-            #                      }
-            #                     },
-            #================================================================
-            'selfservice': {},
+            'selfservice': {'enroll':
+                            {'title':
+                             {'html': 'u2ftoken.mako',
+                              'scope': 'selfservice.title.enroll',
+                              },
+                             'page':
+                                {'html': 'u2ftoken.mako',
+                                 'scope': 'selfservice.enroll',
+                                 },
+                             }
+                            },
             'policy': {
                 'enrollment':
                 {'u2f_valid_facets': {'type': 'str'}}
