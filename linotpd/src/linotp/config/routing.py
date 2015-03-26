@@ -34,6 +34,7 @@ refer to the routes manual at http://routes.groovie.org/docs/
 from pylons import config
 from routes import Mapper
 
+
 def make_map(global_conf, app_conf,):
     '''
     Create, configure and return the routes Mapper
@@ -43,7 +44,7 @@ def make_map(global_conf, app_conf,):
         /system
     '''
     routeMap = Mapper(directory=config['pylons.paths']['controllers'],
-                 always_scan=config['debug'])
+                      always_scan=config['debug'])
     routeMap.minimization = False
 
     # The ErrorController route (handles 404/500 error pages); it should
@@ -60,21 +61,21 @@ def make_map(global_conf, app_conf,):
     # in case of selfservice, we route the default / to selfservice
     selfservice = app_conf.get('service.selfservice', 'True') == 'True'
     if selfservice:
-        routeMap.connect('/selfservice/custom-style.css', controller='selfservice', action='custom_style')
+        routeMap.connect(
+            '/selfservice/custom-style.css', controller='selfservice', action='custom_style')
         routeMap.connect('/selfservice', controller='selfservice', action='index')
         routeMap.connect('/', controller='selfservice', action='index')
         for cont in ['selfservice', 'account']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
-    # in case of support for a remote selfservice, we have to enable this hook 
+    # in case of support for a remote selfservice, we have to enable this hook
     userservice = app_conf.get('service.userservice', 'True') == 'True'
     if userservice:
         routeMap.connect('/userservice', controller='userservice', action='index')
         for cont in ['userservice']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
-
 
     # in case of manage, we route the default / to manage
     manage = app_conf.get('service.manage', 'True') == 'True'
@@ -86,7 +87,7 @@ def make_map(global_conf, app_conf,):
         routeMap.connect('/', controller='manage', action='index')
 
         for cont in ['admin', 'system', 'manage', 'audit', 'auth']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # in case of validate, we route the default / to validate
@@ -95,7 +96,7 @@ def make_map(global_conf, app_conf,):
         routeMap.connect('/validate', controller='validate', action='check')
         routeMap.connect('/', controller='validate', action='check')
         for cont in ['validate']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # in case of validate, we route the default / to validate
@@ -103,7 +104,7 @@ def make_map(global_conf, app_conf,):
     if validate:
         routeMap.connect('/ocra', controller='ocra', action='checkstatus')
         for cont in ['ocra']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     openid = app_conf.get('service.openid', 'True') == 'True'
@@ -111,22 +112,21 @@ def make_map(global_conf, app_conf,):
         # the default openid will be the status
         routeMap.connect('/openid/', controller='openid', action='status')
         for cont in ['openid']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # linotpGetotp.active
     getotp = global_conf.get('linotpGetotp.active', 'True') == 'True'
     if getotp:
         for cont in ['gettoken']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # linotp.selfTest
     self_test = global_conf.get('linotp.selfTest', 'True') == 'True'
     if self_test:
         for cont in ['testing']:
-            routeMap.connect('/%s/{action}' % cont , controller=cont)
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
-
 
     return routeMap
