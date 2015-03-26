@@ -40,6 +40,7 @@ except ImportError:
     import simplejson as json
 
 from linotp.tests import TestController, url
+
 from linotp.lib.HMAC import HmacOtp
 from mock import patch
 import smtplib
@@ -52,6 +53,18 @@ import smsprovider.SmtpSMSProvider
 
 import logging
 log = logging.getLogger(__name__)
+
+DEFAULT_NOSE_CONFIG = {
+    'radius': {
+        'authport': '18012',
+        'acctport': '18013',
+        }
+    }
+try:
+    from testconfig import config as nose_config
+except ImportError as exc:
+    print "You need to install nose-testconfig. Will use default values."
+    nose_config = None
 
 
 def email_otp_func(call_args):
@@ -180,6 +193,13 @@ class TestChallengeResponseController(TestController):
 
         self.deleteAllTokens()
         self.deleteAllPolicies()
+
+        if nose_config and 'radius' in nose_config:
+            self.radius_authport = nose_config['radius']['authport']
+            self.radius_acctport = nose_config['radius']['acctport']
+        else:
+            self.radius_authport = DEFAULT_NOSE_CONFIG['radius']['authport']
+            self.radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
 
         return
 
@@ -437,7 +457,7 @@ class TestChallengeResponseController(TestController):
                       "user"    : "remoteuser",
                       "pin"     : "",
                       "description" : "RadiusToken1",
-                      'radius.server' : 'localhost:18012',
+                      'radius.server' : 'localhost:%s' % self.radius_authport,
                       'radius.local_checkpin' : 0,
                       'radius.user' : 'challenge',
                       'radius.secret' : 'testing123',
@@ -453,7 +473,7 @@ class TestChallengeResponseController(TestController):
                       "user"    : "localuser",
                       "pin"     : "local",
                       "description" : "RadiusToken2",
-                      'radius.server' : 'localhost:18012',
+                      'radius.server' : 'localhost:%s' % self.radius_authport,
                       'radius.local_checkpin' : 1,
                       'radius.user' : 'user_no_pin',
                       'radius.secret' : 'testing123',
@@ -496,8 +516,12 @@ class TestChallengeResponseController(TestController):
             self.p = subprocess.Popen(
                 [
                     radius_server_file,
-                    "-d",
-                    dictionary_file
+                    "--dict",
+                    dictionary_file,
+                    "--authport",
+                    self.radius_authport,
+                    "--acctport",
+                    self.radius_acctport,
                     ]
                 )
         except Exception as exx:
