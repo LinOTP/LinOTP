@@ -83,37 +83,6 @@ config = pylons.test.pylonsapp.config
 environ = {}
 
 
-def _set_cookie(app, key, value):
-    """
-    Sets a cookie on the TestApp 'app'.
-    The WebTest API changed with version 2.0.16
-
-    :param app: A webtest.TestApp object
-    """
-    current_webtest = LooseVersion(
-        pkg_resources.get_distribution('webtest').version
-        )
-    if current_webtest >= LooseVersion('2.0.16'):
-        app.set_cookie(key, value)
-    else:
-        app.cookies[key] = value
-
-
-def _get_json_body(response):
-    """
-    Parses the response body as JSON and returns it. WebOb added the property
-    json_body (alias json) in version 1.2
-
-    :param response: A WebOb response object
-    """
-    current_webob = LooseVersion(
-        pkg_resources.get_distribution('webob').version
-        )
-    if current_webob >= LooseVersion('1.2'):
-        return response.json_body
-    else:
-        return json.loads(response.body, encoding=response.charset)
-
 
 class TestController(unittest2.TestCase):
     '''
@@ -147,6 +116,38 @@ class TestController(unittest2.TestCase):
         '''teardown - cleanup of test class execution result'''
         LOG.info("######## teardown_class: %r" % cls)
         return
+
+    @staticmethod
+    def get_json_body(response):
+        """
+        Parses the response body as JSON and returns it. WebOb added the property
+        json_body (alias json) in version 1.2
+
+        :param response: A WebOb response object
+        """
+        current_webob = LooseVersion(
+            pkg_resources.get_distribution('webob').version
+            )
+        if current_webob >= LooseVersion('1.2'):
+            return response.json_body
+        else:
+            return json.loads(response.body, encoding=response.charset)
+
+    @staticmethod
+    def set_cookie(app, key, value):
+        """
+        Sets a cookie on the TestApp 'app'.
+        The WebTest API changed with version 2.0.16
+
+        :param app: A webtest.TestApp object
+        """
+        current_webtest = LooseVersion(
+            pkg_resources.get_distribution('webtest').version
+            )
+        if current_webtest >= LooseVersion('2.0.16'):
+            app.set_cookie(key, value)
+        else:
+            app.cookies[key] = value
 
 
     def setUp(self):
@@ -183,7 +184,7 @@ class TestController(unittest2.TestCase):
 
         if cookies:
             for key in cookies:
-                _set_cookie(self.app, key, cookies[key])
+                TestController.set_cookie(self.app, key, cookies[key])
         if method == 'GET':
             return self.app.get(
                 url(controller=controller, action=action),
@@ -197,7 +198,8 @@ class TestController(unittest2.TestCase):
                 headers=headers,
                 )
 
-    def _get_http_digest_header(self, username='admin'):
+    @staticmethod
+    def get_http_digest_header(username='admin'):
         """
         Returns a string to be used as 'Authorization' in the headers
         dictionary. The values contained are basically bogus and we just aim to
@@ -264,7 +266,7 @@ class TestController(unittest2.TestCase):
         if not 'admin_session' in cookies:
             cookies['admin_session'] = self.session
         if not 'Authorization' in headers:
-            headers['Authorization'] = self._get_http_digest_header(
+            headers['Authorization'] = TestController.get_http_digest_header(
                 username='admin'
                 )
         return self.make_request(
@@ -306,7 +308,7 @@ class TestController(unittest2.TestCase):
             'selfTest': 'True',
             }
         response = self.make_system_request('setConfig', params)
-        content = _get_json_body(response)
+        content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue('setConfig selfTest:True' in content['result']['value'])
         self.assertTrue(content['result']['value']['setConfig selfTest:True'])
