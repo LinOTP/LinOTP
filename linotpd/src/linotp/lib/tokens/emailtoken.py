@@ -38,7 +38,7 @@ from linotp.lib.HMAC import HmacOtp
 
 from linotp.lib.validate import split_pin_otp
 from linotp.lib.validate import check_pin
-from linotp.lib.validate import check_otp
+from linotp.lib.validate import check_otp, is_same_transaction
 
 if sys.version_info[0:2] >= (2, 6):
     from json import loads
@@ -427,7 +427,7 @@ class EmailTokenClass(HmacTokenClass):
             # challenge with that transaction_id thanks to
             # linotp.lib.validate.ValidateToken.get_challenges()
             assert(len(challenges) == 1)
-            assert(transaction_id == challenges[0].getTransactionId())
+            assert(is_same_transaction(challenges[0], transaction_id))
         else:
             # If no transaction_id is set the request came through the WebUI and
             # we have to check all challenges

@@ -36,7 +36,7 @@ from linotp.lib.tokenclass import TokenClass
 
 from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp
-from linotp.lib.validate import split_pin_otp
+from linotp.lib.validate import split_pin_otp, is_same_transaction
 
 from linotp.lib.reply   import create_img
 from linotp.lib.apps    import create_google_authenticator
@@ -254,14 +254,12 @@ class HmacTokenClass(TokenClass):
 
         if 'transactionid' in options or 'state' in options:
             ## fetch the transactionid
-            transid = options.get('transactionid', None)
-            if transid is None:
-                transid = options.get('state', None)
+            transid = options.get('transactionid', options.get('state', None))
 
-        ## check if the transactionid is in the list of challenges
+        # check if the transactionid is in the list of challenges
         if transid is not None:
             for challenge in challenges:
-                if challenge.getTransactionId() == transid:
+                if is_same_transaction(challenge, transid):
                     matching = challenge
                     break
             if matching is not None:

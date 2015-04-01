@@ -34,7 +34,7 @@ from hashlib import sha256
 from string import rfind
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.validate import check_pin
-from linotp.lib.validate import check_otp
+from linotp.lib.validate import check_otp, is_same_transaction
 from linotp.lib.validate import get_challenges
 from linotp.lib.util import getParam
 from linotp.lib.policy import getPolicy, getPolicyActionValue
@@ -561,7 +561,7 @@ class U2FTokenClass(TokenClass):
         # check if the transactionid is in the list of challenges
         if transid is not None:
             for challenge in challenges:
-                if challenge.getTransactionId() == transid:
+                if is_same_transaction(challenge, transid):
                     matching = challenge
                     break
             if matching is not None:

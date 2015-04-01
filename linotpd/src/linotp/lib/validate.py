@@ -27,6 +27,7 @@
 
 import logging
 
+from sqlalchemy import or_, and_, not_
 from sqlalchemy import desc
 
 from linotp.lib.user import getUserId
@@ -39,7 +40,7 @@ from linotp.model.meta import Session
 from linotp.lib.config  import getFromConfig
 from linotp.lib.resolver import getResolverObject
 
-LOG = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def transform_challenges(challenges):
@@ -54,8 +55,9 @@ def transform_challenges(challenges):
     channel_list = []
     for challenge in challenges:
         channel_list.append(challenge.get())
-    #return channel_list
+    # return channel_list
     return challenges
+
 
 def get_challenges(serial=None, transid=None):
     '''
@@ -65,7 +67,7 @@ def get_challenges(serial=None, transid=None):
     :param transid:  transaction id, if None, all will be retrieved
     :return:         return a list of challenge dict
     '''
-    LOG.debug('[get_challenges] %r' % (serial))
+    log.debug('[get_challenges] %r' % (serial))
 
     challenges = []
     if transid is None and serial is None:
@@ -77,17 +79,42 @@ def get_challenges(serial=None, transid=None):
             .order_by(desc(Challenge.id))\
             .all()
     else:
-        db_challenges = Session.query(Challenge)\
-            .filter(Challenge.transid == transid)\
-            .all()
+        transid_len = int(getFromConfig('TransactionIdLength', 12))
+        if len(transid) == transid_len:
+            db_challenges = Session.query(Challenge)\
+                .filter(Challenge.transid == transid)\
+                .all()
+        else:
+            db_challenges = Session.query(Challenge)\
+                .filter(Challenge.transid.startswith(transid))\
+                .all()
 
     challenges.extend(db_challenges)
 
-    LOG.debug('[getTransactions4serial] %r' % challenges)
+    log.debug('[getTransactions4serial] %r' % challenges)
     return challenges
 
 
-def create_challenge(token, options=None):
+def is_same_transaction(challenge, transaction_id):
+    """
+    helper method to check if challenge belongs to transaction set
+
+    :param challenge: a challenge object
+    :param transaction_id: the transaction id form the request
+
+    :return: boolean
+    """
+    c_id = challenge.getTransactionId()
+    if c_id == transaction_id:
+        return True
+    elif '.' in c_id:
+        (transid, postfix) = c_id.split('.')
+        if transid == transaction_id and len(postfix) == 2:
+            return True
+    return False
+
+
+def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
     """
     dedicated method to create a challenge to support the implementation
     of challenge policies in future
@@ -98,19 +125,24 @@ def create_challenge(token, options=None):
              {'challenge' : challenge} description)
     """
 
-    ## response dict, describing the challenge reply
+    # response dict, describing the challenge reply
     challenge = {}
-    ## the allocated db challenge object
+    # the allocated db challenge object
     challenge_obj = None
     retry_counter = 0
     reason = None
 
-    id_length = int(getFromConfig('TransactionIdLength', 12))
+    id_length = int(getFromConfig('TransactionIdLength', 12)) - len(id_postfix)
 
     while True:
         try:
+            if not challenge_id:
+                transactionid = "%s%s" % (Challenge.createTransactionId(
+                                                            length=id_length),
+                                                            id_postfix)
+            else:
+                transactionid = challenge_id
 
-            transactionid = Challenge.createTransactionId(length=id_length)
             num_challenges = Session.query(Challenge).\
                     filter(Challenge.transid == transactionid).count()
 
@@ -121,37 +153,37 @@ def create_challenge(token, options=None):
                 break
 
         except Exception as exce:
-            LOG.info("Failed to create Challenge: %r", exce)
+            log.info("Failed to create Challenge: %r", exce)
             reason = exce
 
-        ## prevent an unlimited loop
+        # prevent an unlimited loop
         retry_counter = retry_counter + 1
         if retry_counter > 100:
-            LOG.info("Failed to create Challenge for %d times: %r -quiting!",
+            log.info("Failed to create Challenge for %d times: %r -quiting!",
                      retry_counter, reason)
             raise Exception('Failed to create challenge %r' % reason)
 
     challenges = get_challenges(serial=token.getSerial())
 
-    ## carefully create a new challenge
+    # carefully create a new challenge
     try:
 
-        ## we got a challenge object allocated and initialize the challenge
+        # we got a challenge object allocated and initialize the challenge
         (res, open_transactionid, message, attributes) = \
                              token.initChallenge(transactionid,
                                                  challenges=challenges,
                                                  options=options)
 
         if res == False:
-            ## if a different transid is returned, this indicates, that there
-            ## is already an outstanding challenge we can refere to
+            # if a different transid is returned, this indicates, that there
+            # is already an outstanding challenge we can refere to
             if open_transactionid != transactionid:
                 transactionid = open_transactionid
 
         else:
-            ## in case the init was successfull, we preserve no the challenge data
-            ## to support the implementation of a blocking based on the previous
-            ## stored data
+            # in case the init was successfull, we preserve no the challenge data
+            # to support the implementation of a blocking based on the previous
+            # stored data
             challenge_obj.setChallenge(message)
             challenge_obj.save()
 
@@ -159,7 +191,7 @@ def create_challenge(token, options=None):
                         token.createChallenge(transactionid, options=options)
 
             if res == True:
-                ## persist the final challenge data + message
+                # persist the final challenge data + message
                 challenge_obj.setChallenge(message)
                 challenge_obj.setData(data)
                 challenge_obj.save()
@@ -170,28 +202,27 @@ def create_challenge(token, options=None):
         reason = exce
         res = False
 
-
-    ## if something goes wrong with the challenge, remove it
+    # if something goes wrong with the challenge, remove it
     if res == False and challenge_obj is not None:
         try:
-            LOG.debug("deleting session")
+            log.debug("deleting session")
             Session.delete(challenge_obj)
             Session.commit()
         except Exception as exx:
-            LOG.debug("deleting session failed: %r" % exx)
+            log.debug("deleting session failed: %r" % exx)
             try:
                 Session.expunge(challenge_obj)
                 Session.commit()
             except Exception as exx:
-                LOG.debug("expunge session failed: %r" % exx)
+                log.debug("expunge session failed: %r" % exx)
 
-    ## in case that create challenge fails, we must raise this reason
+    # in case that create challenge fails, we must raise this reason
     if reason is not None:
         message = "%r" % reason
-        LOG.error("Failed to create or init challenge %r " % reason)
+        log.error("Failed to create or init challenge %r " % reason)
         raise reason
 
-    ## prepare the response for the user
+    # prepare the response for the user
     if transactionid is not None:
         challenge['transactionid'] = transactionid
 
@@ -202,6 +233,7 @@ def create_challenge(token, options=None):
         challenge.update(attributes)
 
     return (res, challenge)
+
 
 def check_pin(token, passw, user=None, options=None):
     '''
@@ -219,7 +251,7 @@ def check_pin(token, passw, user=None, options=None):
 
     if 1 in pin_policies:
         # We check the Users Password as PIN
-        LOG.debug("[check_pin] pin policy=1: checking the users"
+        log.debug("[check_pin] pin policy=1: checking the users"
                                                     " password as pin")
         if (user is None):
             raise Exception("[check_pin] - fail for pin policy == 1 "
@@ -229,22 +261,63 @@ def check_pin(token, passw, user=None, options=None):
 
         r_obj = getResolverObject(resolver_class)
         if  r_obj.checkPass(uid, passw):
-            LOG.debug("[__checkToken] Successfully authenticated user %r."
+            log.debug("[__checkToken] Successfully authenticated user %r."
                                                                     % uid)
             res = True
         else:
-            LOG.info("[__checkToken] user %r failed to authenticate."
+            log.info("[__checkToken] user %r failed to authenticate."
                                                                     % uid)
 
     elif 2 in pin_policies:
         # NO PIN should be entered atall
-        LOG.debug("[__checkToken] pin policy=2: checking no pin")
+        log.debug("[__checkToken] pin policy=2: checking no pin")
         if len(passw) == 0:
             res = True
     else:
         # old stuff: We check The fixed OTP PIN
-        LOG.debug("[__checkToken] pin policy=0: checkin the PIN")
+        log.debug("[__checkToken] pin policy=0: checkin the PIN")
         res = token.checkPin(passw, options=options)
+
+    return res
+
+
+def delete_challenges(serial, challenges):
+    '''
+    delete some challenges of a token
+
+    :param serial: the serial number of the token
+    :param challenges: list of (dict|int|str|challenge objects)
+
+    :return: result of the delete operation
+    '''
+
+    challenge_ids = []
+    for challenge in challenges:
+        if type(challenge) == dict:
+            if 'id' in challenge:
+                challenge_id = challenge.get('id')
+        elif type(challenge) == Challenge:
+            challenge_id = challenge.get('id')
+        elif type(challenge) in (unicode, str, int):
+            challenge_id = challenge
+
+        try:
+            challenge_ids.append(int(challenge_id))
+        except ValueError:
+            # ignore
+            log.warning("failed to convert the challengeId %r to int()" %
+                        challenge_id)
+
+    res = 1
+    # gather all challenges with one sql 'in' statement
+    if len(challenge_ids) > 0:
+        del_challes = Session.query(Challenge).\
+            filter(Challenge.tokenserial == serial).\
+            filter(Challenge.id.in_(challenge_ids)).all()
+
+        # and delete them via session
+        for dell in del_challes:
+            Session.delete(dell)
 
     return res
 
@@ -259,10 +332,10 @@ def check_otp(token, otpval, options=None):
             the matching otpcounter or -1 if not valid
     '''
 
-    LOG.debug("[check_otp] entering function check_otp()")
-    LOG.debug("[check_otp] token  : %r" % token)
+    log.debug("[check_otp] entering function check_otp()")
+    log.debug("[check_otp] token  : %r" % token)
     # This is only the OTP value, not the OTP PIN
-    LOG.debug("[check_otp] OtpVal : %r" % otpval)
+    log.debug("[check_otp] OtpVal : %r" % otpval)
 
     res = -1
 
@@ -286,19 +359,19 @@ def split_pin_otp(token, passw, user=None, options=None):
     policy = 0
 
     if 1 in pin_policies:
-        LOG.debug("[split_pin_otp] pin policy=1: checking the "
+        log.debug("[split_pin_otp] pin policy=1: checking the "
                                                 "users password as pin")
         # split the passw into password and otp value
         (res, pin, otp) = token.splitPinPass(passw)
         policy = 1
     elif 2 in pin_policies:
         # NO PIN should be entered atall
-        LOG.debug("[split_pin_otp] pin policy=2: checking no pin")
+        log.debug("[split_pin_otp] pin policy=2: checking no pin")
         (res, pin, otp) = (0, "", passw)
         policy = 2
     else:
         # old stuff: We check The fixed OTP PIN
-        LOG.debug("[split_pin_otp] pin policy=0: checkin the PIN")
+        log.debug("[split_pin_otp] pin policy=0: checkin the PIN")
         (res, pin, otp) = token.splitPinPass(passw)
 
     if res != -1:
@@ -335,13 +408,14 @@ class ValidateToken(object):
         self.user = user
         self.pin_policies = None
 
-        ## these lists will be returned as result of the token check
+        # these lists will be returned as result of the token check
         self.challenge_token = []
         self.pin_matching_token = []
         self.invalid_token = []
         self.valid_token = []
+        self.related_challenges = []
 
-        ## support of context  : c.audit
+        # support of context : c.audit
         if context == None:
             self.context = self.Context()
         else:
@@ -377,15 +451,15 @@ class ValidateToken(object):
 
         :return: tuple of otpcounter and potential reply
         '''
-        LOG.debug("entering function checkToken(%r)" % self.token)
+        log.debug("entering function checkToken(%r)" % self.token)
         res = -1
         if options is None:
             options = {}
 
-        ## are there outstanding challenges
+        # are there outstanding challenges
         challenges = self.get_challenges(options)
 
-        ## is the request refering to a previous challenge
+        # is the request refering to a previous challenge
         if self.token.is_challenge_response(passw, user,
                                              options=options,
                                              challenges=challenges):
@@ -394,7 +468,7 @@ class ValidateToken(object):
                                         user, passw, options=options)
 
         else:
-            ## do the standard check
+            # do the standard check
             (res, reply) = self.check_standard(passw, user, options=options)
 
         return (res, reply)
@@ -415,11 +489,12 @@ class ValidateToken(object):
         :return: tuple of otpcount (as result of an internal token.checkOtp)
                  and additional optional reply
         '''
-        ## challenge reply will stay None as we are in the challenge response
-        ## mode
+        # challenge reply will stay None as we are in the challenge response
+        # mode
         reply = None
         matching_challenges = []
-        if options == None: options = {}
+        if options == None:
+            options = {}
 
         otp = passw
 
@@ -433,15 +508,28 @@ class ValidateToken(object):
         else:
             self.invalid_token.append(self.token)
 
-        ## delete all challenges, which belong to the token and
-        ## the token could decide on its own, which should be deleted
-        ## default is: challenges which are younger than the matching one
-        ## are to be deleted
+        # delete all challenges, which belong to the token and
+        # the token could decide on its own, which should be deleted
+        # default is: challenges which are younger than the matching one
+        # are to be deleted
 
         all_challenges = self.lookup_challenge()
         to_be_deleted = self.token.challenge_janitor(matching_challenges,
                                                       all_challenges)
-        self.delete_challenges(to_be_deleted)
+
+        # gather all related challenges, which as well must be deleted.
+        # (relatedby the means of having a '.dd' postfix in transaction id)
+        # These are then retrieved in the outer loop to call for each token
+        # the challenge janitor so that every token may decide which challenge
+        # to delete
+        for del_challenge in to_be_deleted:
+            if '.' in del_challenge.transid:
+                tran_id = del_challenge.transid.split('.')[0]
+                related_challenges = get_challenges(transid=tran_id)
+                self.related_challenges.extend(related_challenges)
+
+        delete_challenges(serial=self.token.getSerial(),
+                          challenges=to_be_deleted)
 
         return (otpcount, reply)
 
@@ -464,34 +552,34 @@ class ValidateToken(object):
 
         ttype = self.token.getType()
 
-        ## fallback eg. in case of check_s, which does not provide a user
+        # fallback eg. in case of check_s, which does not provide a user
         if user is None:
             user = linotp.lib.token.get_token_owner(self.token)
 
         support_challenge_response = \
                 linotp.lib.policy.get_auth_challenge_response(user, ttype)
 
-        ## special handling for tokens, who support only challenge modes
-        ## like the sms, email or ocra2 token
+        # special handling for tokens, who support only challenge modes
+        # like the sms, email or ocra2 token
         challenge_mode_only = False
 
         mode = self.token.mode
         if type(mode) == list and len(mode) == 1 and mode[0] == "challenge":
             challenge_mode_only = True
 
-        ## the support_challenge_response is overruled, if the token
-        ## supports only challenge processing
+        # the support_challenge_response is overruled, if the token
+        # supports only challenge processing
         if challenge_mode_only == True:
             support_challenge_response = True
 
         try:
-            ## call the token authentication
+            # call the token authentication
             (pin_match, otp_count, reply) = self.token.authenticate(passw, user,
                                                                 options=options)
         except Exception as exx:
             if (support_challenge_response == True and
                 self.token.is_challenge_request(passw, user, options=options)):
-                LOG.info("Retry on base of a challenge request:")
+                log.info("Retry on base of a challenge request:")
                 pin_match = False
                 otp_count = -1
             else:
@@ -505,7 +593,7 @@ class ValidateToken(object):
                 # we are in createChallenge mode
                 # fix for #12413:
                 # - moved the create_challenge call to the checkTokenList!
-                ## after all tokens are processed and only one is challengeing
+                # after all tokens are processed and only one is challengeing
                 # (_res, reply) = create_challenge(self.token, options=options)
                 self.challenge_token.append(self.token)
 
@@ -532,31 +620,28 @@ class ValidateToken(object):
         valid_challenges = []
 
         if (options is not None and
-            options.has_key("state") or options.has_key("transactionid")):
+            "state" in options or "transactionid" in options):
+            state = options.get('state', options.get('transactionid'))
 
-            if options.has_key("state"):
-                state = options.get('state')
-            elif options.has_key("transactionid"):
-                state = options.get('transactionid')
-
-            challenges = self.lookup_challenge(state)
+            challenges = self.lookup_challenge(serial=self.token.getSerial(),
+                                               state=state)
             if len(challenges) == 0 and self.token.getType() not in ['ocra']:
-                ## if state argument is given, but no open challenge found
-                ## this might be a problem, so make a log entry
-                LOG.info('no challenge with state %s found for %s'
+                # if state argument is given, but no open challenge found
+                # this might be a problem, so make a log entry
+                log.info('no challenge with state %s found for %s'
                             % (state, self.token.getSerial()))
 
         else:
-            challenges = self.lookup_challenge()
+            challenges = self.lookup_challenge(serial=self.token.getSerial())
 
-        ## now verify that the challenge is valid
+        # now verify that the challenge is valid
         for ch in challenges:
             if self.token.is_challenge_valid(ch):
                 valid_challenges.append(ch)
 
         return valid_challenges
 
-    def lookup_challenge(self, state=0):
+    def lookup_challenge(self, serial=None, state=None):
         '''
         database lookup to find all challenges belonging to a token and or
         if exist with a transaction state
@@ -566,60 +651,21 @@ class ValidateToken(object):
         :return: the list of challenges
         '''
 
-        challenges = []
+        conditions = ()
+        if serial:
+            conditions += (and_(Challenge.tokenserial == serial),)
+        if state:
+            transid_len = int(getFromConfig('TransactionIdLength', 12))
+            if len(state) == transid_len:
+                conditions += (and_(Challenge.transid == state),)
+            else:
+                conditions += (and_(Challenge.transid.startswith(state)),)
 
-        if state == 0:
-            challenges = Session.query(Challenge).\
-              filter(Challenge.tokenserial == self.token.getSerial()).\
-              all()
-        else:
-            challenges = Session.query(Challenge).\
-              filter(Challenge.tokenserial == self.token.getSerial()).\
-              filter(Challenge.transid == state).\
-              all()
-
+        # SQLAlchemy requires the conditions in one arg as tupple
+        condition = and_(*conditions)
+        challenges = Session.query(Challenge).filter(condition).all()
         return challenges
 
-    def delete_challenges(self, challenges):
-        '''
-        delete challenges, which match those listed ones
 
-        :param challenges: list of (dict|int|str) challenges
-        :return: result of the delete operation
-        '''
-
-        challenge_ids = []
-        for challenge in challenges:
-            if type(challenge) == dict:
-                if challenge.has_key('id'):
-                    challenge_id = challenge.get('id')
-            elif type(challenge) == Challenge:
-                challenge_id = challenge.get('id')
-            elif type(challenge) in (unicode , str , int):
-                challenge_id = challenge
-
-            try:
-                challenge_ids.append(int(challenge_id))
-            except ValueError:
-                ## ignore
-                LOG.warning("failed to concert the challengeId %r to int()" %
-                            challenge_id)
-
-        res = 1
-
-        # 1. get all challeges which are to be deleted
-        # 2. self.token.select_challenges()
-
-        if len(challenge_ids) > 0:
-
-            del_challes = Session.query(Challenge).\
-                filter(Challenge.tokenserial == u'' + self.token.getSerial()).\
-                filter(Challenge.id.in_(challenge_ids)).all()
-
-            for dell in del_challes:
-                Session.delete(dell)
-                #pass
-
-        return res
 
 #eof###########################################################################

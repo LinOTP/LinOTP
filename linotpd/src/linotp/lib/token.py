@@ -1350,11 +1350,22 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
     invalidTokenlist = []
     validTokenList = []
     auditList = []
-
-    chall_reply = None
+    related_challenges = []
 
     import linotp.lib.policy
     pin_policies = linotp.lib.policy.get_pin_policies(user) or []
+
+    # if we got a validation against a sub_challenge, we extend this to
+    # be a validation to all challenges of the transaction id
+    import copy
+    check_options = copy.deepcopy(options)
+    state = check_options.get('state', check_options.get('transactionid', ''))
+    if state and '.' in state:
+        transid = state.split('.')[0]
+        if 'state' in check_options:
+            check_options['state'] = transid
+        if 'transactionid' in check_options:
+            check_options['transactionid'] = transid
 
     for token in tokenList:
 
@@ -1369,7 +1380,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         #  check if the token is the list of supported tokens
         #  if not skip to the next token in list
         typ = token.getType()
-        if not tokenclasses.has_key(typ.lower()):
+        if typ.lower() not in tokenclasses:
             log.error('token typ %r not found in tokenclasses: %r' %
                       (typ, tokenclasses))
             continue
@@ -1379,24 +1390,25 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             t_realms = token.token.getRealmNames()
             u_realm = user.getRealm()
             if (len(t_realms) > 0 and len(u_realm) > 0 and
-                u_realm.lower() not in t_realms) :
+                u_realm.lower() not in t_realms):
                 continue
 
         tok_va = linotp.lib.validate.ValidateToken(token, context=c)
         #  in case of a failure during checking token, we log the error and
         #  continue with the next one
         try:
-            (ret, reply) = tok_va.checkToken(passw, user, options=options)
+            (ret, reply) = tok_va.checkToken(passw, user,
+                                             options=check_options)
         except Exception as exx:
             log.error("checking token %r failed: %r" % (token, exx))
             ret = -1
 
         (cToken, pToken, iToken, vToken) = tok_va.get_verification_result()
 
+        related_challenges.extend(tok_va.related_challenges)
         #  if we have a challenge, preserve the challenge response
         if len(cToken) > 0:
             challenge_tokens.extend(cToken)
-            chall_reply = reply
             audit['action_detail'] = 'challenge created'
             audit['weight'] = 20
 
@@ -1405,7 +1417,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             audit['action_detail'] = "wrong user password %r" % (ret)
             audit['weight'] = 10
 
-        elif len(iToken) == 1:  #  this means the pin is wrong
+        elif len(iToken) == 1:  # this means the pin is wrong
             #  check, if we should increment
             # do not overwrite other error details!
             audit['action_detail'] = "wrong otp pin %r" % (ret)
@@ -1417,7 +1429,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
                 # So we need the auditList!
                 invalidTokenlist.extend(iToken)
 
-        elif len(pToken) == 1 :  #  pin matches but the otp is wrong
+        elif len(pToken) == 1:  # pin matches but the otp is wrong
             pinMatchingTokenList.extend(pToken)
             audit['action_detail'] = "wrong otp value"
             audit['weight'] = 25
@@ -1449,6 +1461,25 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         # add the audit information to the auditList
         auditList.append(audit)
 
+    # if there are any related challenges, we have to call the
+    # token janitor, who decides if a challenge is still valid
+    # eg. expired
+    for related_challenge in related_challenges:
+        serial = related_challenge.tokenserial
+        transid = related_challenge.transid
+        token = getTokens4UserOrSerial(serial=serial)[0]
+
+        # get all challenges and the matching ones
+        all_challenges = linotp.lib.validate.get_challenges(serial=serial)
+        matching_challenges = linotp.lib.validate.get_challenges(serial=serial,
+                                                            transid=transid)
+
+        # call the janitor to select the invalid challenges
+        to_be_deleted = token.challenge_janitor(matching_challenges,
+                                                  all_challenges)
+        if to_be_deleted:
+            linotp.lib.validate.delete_challenges(serial, to_be_deleted)
+
     # compose one audit entry from all token audit information
     if len(auditList) > 0:
         # sort the list for the value of the key "weight"
@@ -1468,12 +1499,48 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
     #  handle the processing of challenge tokens
     if len(challenge_tokens) == 1:
         challenge_token = challenge_tokens[0]
-        (_res, reply) = linotp.lib.validate.create_challenge(challenge_token, options=options)
+        (_res, reply) = linotp.lib.validate.create_challenge(challenge_token,
+                                                             options=options)
         return (False, reply)
 
+    # processing of multiple challenges
     elif len(challenge_tokens) > 1:
-        raise Exception("processing of multiple challenges is not supported!")
+        # for each token, who can submit a challenge, we have to
+        # create the challenge. To mark the challenges as depending
+        # the transaction id will have an id that all sub transaction share
+        # and a postfix with their enumaration. Finally the result is
+        # composed by the top level transaction id and the message
+        # and below in a dict for each token a challenge description -
+        # the key is the token type combined with its token serial number
+        all_reply = {}
+        challenge_count = 0
+        transactionid = ''
+        challenge_id = ""
+        for challenge_token in challenge_tokens:
+            challenge_count = challenge_count + 1
+            id_postfix = ".%02d" % challenge_count
+            if transactionid:
+                challenge_id = "%s%s" % (transactionid, id_postfix)
 
+            (_res, reply) = linotp.lib.validate.create_challenge(
+                                            challenge_token, options=options,
+                                            challenge_id=challenge_id,
+                                            id_postfix=id_postfix
+                                            )
+            transactionid = reply.get('transactionid').rsplit('.')[0]
+
+            # compse the key of token type and token serial number
+            key = "%s_%s" % (challenge_token.type, challenge_token.getSerial())
+            all_reply[key] = reply
+
+        # finally add the root challenge response with top transaction id and
+        # message, that indicates that 'multiple challenges have been submitted
+        all_reply['transactionid'] = transactionid
+        all_reply['message'] = "Multiple challenges submitted."
+
+        log.debug("Multiple challenges submitted: %d" % len(challenge_tokens))
+
+        return (False, all_reply)
 
     log.debug("[checkTokenList] Number of valid tokens found "
               "(validTokenNum): %d" % len(validTokenList))

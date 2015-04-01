@@ -278,10 +278,12 @@ class TestController(unittest2.TestCase):
             cookies=cookies,
             )
 
-    def make_admin_request(self, action, params, method='GET'):
+    def make_admin_request(self, action, params=None, method='GET'):
         """
-        Makes an authenticated GET request to /admin/'action'
+        Makes an authenticated request to /admin/'action'
         """
+        if not params:
+            params = {}
         return self.make_authenticated_request(
             'admin',
             action,
@@ -289,10 +291,12 @@ class TestController(unittest2.TestCase):
             params=params,
             )
 
-    def make_system_request(self, action, params, method='GET'):
+    def make_system_request(self, action, params=None, method='GET'):
         """
-        Makes an authenticated GET request to /admin/'action'
+        Makes an authenticated request to /admin/'action'
         """
+        if not params:
+            params = {}
         return self.make_authenticated_request(
             'system',
             action,
