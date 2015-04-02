@@ -394,7 +394,7 @@ configure)
 		invoke-rc.d apache2 reload
 		echo "LinOTP2: done setting up apache with ssl"
 	else
-		a2dissite linotp2
+		a2dissite linotp2 || echo `print_timestamp` "WARNING [linotp postinst] Could not disable Apache linotp2 host (possibly it doesn't exist)" >&2
 	fi
 
 	########################################################################

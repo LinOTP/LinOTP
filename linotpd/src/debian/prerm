@@ -2,6 +2,10 @@
 
 . /usr/share/debconf/confmodule
 
+print_timestamp() {
+	date +"%Y/%m/%d - %T"
+}
+
 # check if linotp was run via apache
 db_get linotp/apache/activate || true
 
@@ -13,7 +17,7 @@ if [ ! -f /etc/apache2/sites-enabled/linotp2 ] &&
 fi
 
 if [ "$RET" = "true" ]; then
-	a2dissite linotp2
+	a2dissite linotp2 || echo `print_timestamp` "WARNING [linotp prerm] Could not disable Apache linotp2 host (possibly it doesn't exist)" >&2
 	invoke-rc.d apache2 reload
 fi
 
