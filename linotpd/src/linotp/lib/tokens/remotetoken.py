@@ -261,7 +261,7 @@ class RemoteTokenClass(TokenClass):
 
         return request_is_valid
 
-    def do_request(self, passw, transactionid=None, user=None):
+    def do_request(self, passw, transactionid=None, user=None, autoassign=False):
         """
         run the http request against the remote host
 
@@ -312,10 +312,18 @@ class RemoteTokenClass(TokenClass):
                   (len(otpval), remoteServer, remoteSerial, remoteUser))
         params = {}
 
-        if len(remoteSerial) > 0:
+        if autoassign:
+            params['user'] = user.login
+            params['realm'] = remoteRealm
+            user.realm = remoteRealm
+            if len(remotePath) == 0:
+                remotePath = "/validate/check"
+
+        elif len(remoteSerial) > 0:
             params['serial'] = remoteSerial
             if len(remotePath) == 0:
                 remotePath = "/validate/check_s"
+
         elif len(remoteUser) > 0:
             params['user'] = remoteUser
             params['realm'] = remoteRealm
@@ -336,7 +344,34 @@ class RemoteTokenClass(TokenClass):
         if transactionid is not None:
             params['state'] = transactionid
 
-        ## use a POST request to check the token
+#
+# as the httplib is blocking io, this local call was used in the dev setup
+#==============================================================================
+#        if remoteServer == 'http://localhost':
+#            otp_count = -1
+#            res = False
+#
+#            from linotp.lib import token
+#            if autoassign:
+#                user.realm = remoteRealm
+#                params['realm'] = remoteRealm
+#                (ok, opt) = token.checkUserPass(user, passw, options=params)
+#            elif len(remoteSerial) > 0:
+#                serial = remoteSerial
+#                (ok, opt) = token.checkSerialPass(serial, passw, options=params)
+#            elif len(remoteUser) > 0:
+#                (ok, opt) = token.checkUserPass(user, passw, options=params)
+#
+#            reply = opt
+#
+#            if ok:
+#                otp_count = 0
+#                res = True
+#
+#            return (res, otp_count, reply)
+#==============================================================================
+
+        # use a POST request to check the token
         data = urllib.urlencode(params)
         request_url = "%s%s" % (remoteServer, remotePath)
 
@@ -447,6 +482,17 @@ class RemoteTokenClass(TokenClass):
                     self.do_request(passw, transactionid=transid, user=user)
 
         return (otp_counter, matching_challenges)
+
+    def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
+        '''
+        checks if the given OTP value is/are values of this very token.
+        This is used to autoassign and to determine the serial number of
+        a token.
+        '''
+        (res, otp_count, reply) = self.do_request(otp, user=user,
+                                                  autoassign=autoassign)
+        return otp_count
+
 
     def checkPin(self, pin, options=None):
         """

@@ -160,8 +160,10 @@ function remote_enroll_setup_defaults(config, options){
     var pin_check = config['remote.remote_checkpin'];
     if (pin_check === '0') {
         $('#remote_local_checkpin option[value="0"]').prop('selected',true);
+        /*$("#remote_otplen").prop('disabled', true);*/
     } else {
         $('#remote_local_checkpin option[value="1"]').prop('selected',true);
+        /*$("#remote_otplen").prop('disabled', false);*/
     }
 }
 
@@ -172,18 +174,22 @@ function remote_enroll_setup_defaults(config, options){
  * - it will return a hash of parameters for admin/init call
  *
  */
-
 function remote_get_enroll_params(){
 	var params ={};
 
     //params['serial'] =  create_serial('LSRE');
     params['remote.server'] 		= $('#remote_server').val();
     params['remote.local_checkpin'] = $('#remote_local_checkpin').val();
+
+    if (params['remote.local_checkpin'] == 1 ){
+        params['otplen']            = $('#remote_otplen').val();
+    }
     params['remote.serial'] 		= $('#remote_serial').val();
     params['remote.user'] 			= $('#remote_user').val();
     params['remote.realm'] 			= $('#remote_realm').val();
     params['remote.resConf'] 		= $('#remote_resconf').val();
     params['description'] 			= "remote:" + $('#remote_server').val();
+
 
     jQuery.extend(params, add_user_data());
 
@@ -251,6 +257,9 @@ $("#form_enroll_token").validate({
 		<option ${sys_checkpin_local} value=1>${_("locally")}</option>
 	</select></td>
 	</tr><tr>
+    <td><label for="remote_otplen">${_("remote otp len")}</label></td>
+    <td><input type="text" name="remote_otplen" id="remote_otplen" value="" class="text ui-widget-content ui-corner-all" /></td>
+    </tr><tr>
 	<td><label for="remote_serial">${_("remote serial")}</label></td>
 	<td><input type="text" name="remote_serial" id="remote_serial" value="" class="text ui-widget-content ui-corner-all" /></td>
 	</tr><tr>
