@@ -187,15 +187,21 @@ def getPolicyDefinitions(scope=""):
             'tokenlabel': {
                 'type': 'str',
                 'desc': 'the label for the google authenticator.'},
+
             'autoenrollment': {
                 'type': 'str',
                 'desc': 'users can enroll a token just by using the '
                         'pin to authenticate and will an otp for authentication'},
+            'autoassignment_forward': {
+                'type': 'bool',
+                'desc': 'in case of an autoassignement with a remotetoken, '
+                        'the credentials are forwarded'},
             'autoassignment': {
 				'type': 'int',
                 'value': [6, 8, 32, 48],
-                'desc' : 'users can assign a token just by using the '
-                         'unassigned token to authenticate.'},
+                'desc': 'users can assign a token just by using the '
+                            'unassigned token to authenticate.'},
+
             'ignore_autoassignment_pin': {
 				'type': 'bool',
                 'desc' : "Do not set password from auto assignment as token pin."},
@@ -815,7 +821,7 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
     # in case of the admin policies - no user name is verified:
     # the username could be empty (not dummy) which prevents an
     # unnecessar resolver lookup
-    if user:
+    if user.realm:
         # default realm user
         if user.realm == "" and user.conf == "":
             return getDefaultRealm() in policies['realms']
@@ -1037,6 +1043,7 @@ def get_autoassignment(user):
 
     return ret, otplen
 
+
 def get_auto_enrollment(user):
     '''
     this function checks the policy scope=enrollment, action=autoenrollment
@@ -1057,6 +1064,24 @@ def get_auto_enrollment(user):
             token_typ = t_typ.lower()
 
     return ret, token_typ
+
+def autoassignment_forward(user):
+    '''
+    this function checks the policy scope=enrollment, action=autoassignment
+    This is a boolean policy.
+    The function returns true, if autoassignment is defined.
+    '''
+    ret = False
+
+    pol = get_client_policy(get_client(), scope='enrollment',
+                            action="autoassignment_forward",
+                            realm=user.realm, user=user.login, userObj=user)
+
+    if len(pol) > 0:
+        ret = True
+
+    return ret
+
 
 def ignore_autoassignment_pin(user):
     '''
@@ -2156,7 +2181,228 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
         log.debug("[checkPolicyPre] entering controller %s" % controller)
 
     elif 'selfservice' == controller:
-        ret = checkPolicyPreSelfservice(method, param=param, authUser=authUser, user=user)
+        log.debug("[checkPolicyPre] entering controller %s" % controller)
+
+        if 'max_count' == method[0: len('max_count')]:
+            ret = 0
+            serial = getParam(param, "serial", optional)
+            ttype = linotp.lib.token.getTokenType(serial).lower()
+            urealm = authUser.realm
+            pol_action = MAP_TYPE_GETOTP_ACTION.get(ttype, "")
+            if pol_action == "":
+                raise PolicyException(_("There is no policy selfservice/"
+                                      "max_count definable for the token "
+                                      "type %s.") % ttype)
+
+            policies = get_client_policy(get_client(), scope='selfservice',
+                                         realm=urealm, user=authUser.login,
+                                         userObj=authUser)
+            log.debug("[checkPolicyPre][seflservice][max_count] got a policy: "
+                      " %r" % policies)
+            if policies == {}:
+                raise PolicyException(_("There is no policy selfservice/"
+                                      "max_count defined for the tokentype "
+                                      "%s in realm %s.") % (ttype, urealm))
+
+            value = getPolicyActionValue(policies, pol_action)
+            log.debug("[checkPolicyPre][seflservice][max_count] "
+                      "got all policies: %r: %r" % (policies, value))
+            ret = value
+
+        elif 'usersetpin' == method:
+
+            if not 'setOTPPIN' in getSelfserviceActions(authUser):
+                log.warning("[usersetpin] user %s@%s is not allowed to call "
+                            "this function!" % (authUser.login,
+                                                authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'userreset' == method:
+
+            if not 'reset' in getSelfserviceActions(authUser):
+                log.warning("[userreset] user %s@%s is not allowed to call "
+                            "this function!" % (authUser.login,
+                                                authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'userresync' == method:
+
+            if not 'resync' in getSelfserviceActions(authUser):
+                log.warning("[userresync] user %s@%s is not allowed to call "
+                            "this function!" % (authUser.login,
+                                                authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'usersetmpin' == method:
+
+            if not 'setMOTPPIN' in getSelfserviceActions(authUser):
+                log.warning("[usersetmpin] user %r@%r is not allowed to call "
+                            "this function!" % (authUser.login,
+                                                authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'useractivateocratoken' == method:
+            user_selfservice_actions = getSelfserviceActions(authUser)
+            typ = param.get('type').lower()
+            if (typ == 'ocra'
+                    and 'activateQR' not in user_selfservice_actions):
+                log.warning("[activateQR] user %r@%r is not allowed to call "
+                            "this function!" % (authUser.login,
+                                                authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'useractivateocra2token' == method:
+            user_selfservice_actions = getSelfserviceActions(authUser)
+            typ = param.get('type').lower()
+            if (typ == 'ocra2'
+                    and 'activateQR2' not in user_selfservice_actions):
+                log.warning("[activateQR2 user %r@%r is not allowed to call "
+                            "this function!" % (authUser.login,
+                                                authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'userassign' == method:
+
+            if not 'assign' in getSelfserviceActions(authUser):
+                log.warning("[userassign] user %r@%r is not allowed to call "
+                            "this function!" % (authUser.login,
+                                                authUser.realm))
+                raise PolicyException(_('The policy settings do not allow '
+                                      'you to issue this request!'))
+
+            # Here we check, if the tokennum exceeds the tokens
+            if not checkTokenNum():
+                log.error("[init] The maximum token number "
+                          "is reached!")
+                raise PolicyException(_("You may not enroll any more tokens. "
+                                      "Your maximum token number "
+                                      "is reached!"))
+
+            if not checkTokenAssigned(authUser):
+                log.warning("[assign] the maximum number of allowed tokens is"
+                            " exceeded. Check the policies")
+                raise PolicyException(_("The maximum number of allowed tokens "
+                                      "is exceeded. Check the policies"))
+
+        elif 'usergetserialbyotp' == method:
+
+            if not 'getserial' in getSelfserviceActions(authUser):
+                log.warning("[usergetserialbyotp] user %s@%s is not allowed to"
+                            " call this function!" % (authUser.login,
+                                                      authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you to'
+                                      ' request a serial by OTP!'))
+
+        elif 'userdisable' == method:
+
+            if not 'disable' in getSelfserviceActions(authUser):
+                log.warning("[userdisable] user %r@%r is not allowed to call "
+                            "this function!"
+                            % (authUser.login, authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'userenable' == method:
+
+            if not 'enable' in getSelfserviceActions(authUser):
+                log.warning("[userenable] user %s@%s is not allowed to call "
+                            "this function!"
+                            % (authUser.login, authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you to'
+                                      ' issue this request!'))
+
+        elif 'userunassign' == method:
+
+            if not 'unassign' in getSelfserviceActions(authUser):
+                log.warning("[userunassign] user %r@%r is not allowed to call "
+                            "this function!"
+                            % (authUser.login, authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'userdelete' == method:
+
+            if not 'delete' in getSelfserviceActions(authUser):
+                log.warning("[userdelete] user %r@%r is not allowed to call "
+                            "this function!"
+                            % (authUser.login, authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'userwebprovision' == method:
+            user_selfservice_actions = getSelfserviceActions(authUser)
+            typ = param.get('type').lower()
+            if ((typ == 'oathtoken'
+                    and 'webprovisionOATH' not in user_selfservice_actions)
+                or (typ == 'googleauthenticator_time'and
+                    'webprovisionGOOGLEtime' not in user_selfservice_actions)
+                or (typ == 'googleauthenticator'
+                    and 'webprovisionGOOGLE' not in user_selfservice_actions)):
+                log.warning("[userwebprovision] user %r@%r is not allowed to "
+                            "call this function!" % (authUser.login,
+                                                     authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+            # Here we check, if the tokennum exceeds the allowed tokens
+            if not checkTokenNum():
+                log.error("[userwebprovision] The maximum token "
+                          "number is reached!")
+                raise PolicyException(_("You may not enroll any more tokens. "
+                                      "Your maximum token number "
+                                      "is reached!"))
+
+            if not checkTokenAssigned(authUser):
+                log.warning("[userwebprovision] the maximum number of allowed "
+                            "tokens is exceeded. Check the policies")
+                raise PolicyException(_("The maximum number of allowed tokens "
+                                      "is exceeded. Check the policies"))
+
+        elif 'userhistory' == method:
+            if not 'history' in getSelfserviceActions(authUser):
+                log.warning("[userhistory] user %r@%r is not allowed to call "
+                            "this function!"
+                            % (authUser.login, authUser.realm))
+                raise PolicyException(_('The policy settings do not allow you '
+                                      'to issue this request!'))
+
+        elif 'userinit' == method:
+
+            allowed_actions = getSelfserviceActions(authUser)
+            typ = param['type'].lower()
+            meth = 'enroll' + typ.upper()
+
+            if meth not in allowed_actions:
+                log.warning("[userinit] user %r@%r is not allowed to "
+                            "enroll %s!" % (authUser.login,
+                                            authUser.realm, typ))
+                raise PolicyException(_('The policy settings do not allow '
+                                      'you to issue this request!'))
+
+            # Here we check, if the tokennum exceeds the allowed tokens
+            if not checkTokenNum():
+                log.error("[userinit] The maximum token "
+                          "number is reached!")
+                raise PolicyException(_("You may not enroll any more tokens. "
+                                      "Your maximum token number "
+                                      "is reached!"))
+
+            if not checkTokenAssigned(authUser):
+                log.warning("[userinit] the maximum number of allowed tokens "
+                            "is exceeded. Check the policies")
+                raise PolicyException(_("The maximum number of allowed tokens "
+                                      "is exceeded. Check the policies"))
+
+        else:
+            log.error("[checkPolicyPre] Unknown method in "
+                      "selfservice: %s" % method)
+            raise PolicyException(_("Unknown method in selfservice: %s") % method)
 
     elif 'system' == controller:
         actions = {

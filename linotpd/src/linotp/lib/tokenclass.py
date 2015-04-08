@@ -1026,7 +1026,7 @@ class TokenClass(object):
         return self.token.LinOtpCount
 
 
-    def check_otp_exist(self, otp, window=None):
+    def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
         '''
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of

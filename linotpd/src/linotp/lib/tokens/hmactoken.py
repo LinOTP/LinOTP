@@ -338,7 +338,7 @@ class HmacTokenClass(TokenClass):
         log.debug("[checkOtp] end. otp verification result was: res %r" % (res))
         return res
 
-    def check_otp_exist(self, otp, window=10):
+    def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
         '''
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of

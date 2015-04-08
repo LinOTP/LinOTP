@@ -104,7 +104,7 @@ class YubikeyTokenClass(TokenClass):
         log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
-    def check_otp_exist(self, otp, window=None):
+    def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
         '''
         checks if the given OTP value is/are values of this very token.
         This is used to autoassign and to determine the serial number of
