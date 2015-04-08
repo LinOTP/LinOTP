@@ -607,6 +607,16 @@ def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True)
                             model.Token.LinOtpIdResClass.like(resolverClass))
 
             for token in sqlQuery:
+                # we have to check that the token is in the same realm as the user
+                t_realms = token.getRealmNames()
+                u_realm = user.getRealm()
+                if u_realm != '*':
+                    if len(t_realms) > 0 and len(u_realm) > 0:
+                        if u_realm.lower() not in t_realms:
+                            log.debug("user realm and token realm missmatch %r::%r"
+                                  % (u_realm, t_realms))
+                            continue
+
                 log.debug("[getTokens4UserOrSerial] user serial (user): %r"
                           % token.LinOtpTokenSerialnumber)
                 tokenList.append(token)
@@ -999,15 +1009,24 @@ def auto_assignToken(passw, user, pin="", param=None):
     matching_token = []
     pin = ""
 
-    ## get all tokens of the users realm, which are not assigned
+    # get all tokens of the users realm, which are not assigned
     tokens = getTokensOfType(typ=None, realm=user.realm, assigned="0")
     for token in tokens:
-        (res, pin, otp) = token.splitPinPass(passw)
-        if res >= 0:
-            r = token.check_otp_exist(otp=otp,
-                                      window=token.getOtpCountWindow())
-            if r >= 0:
-                matching_token.append(token)
+        r = -1
+        from linotp.lib import policy
+        if policy.autoassignment_forward(user) and token.type == 'remote':
+            ruser = User(user.login, user.realm)
+            r = token.check_otp_exist(otp=passw,
+                                      window=token.getOtpCountWindow(),
+                                      user=ruser, autoassign=True)
+            (res, pin, otp) = token.splitPinPass(passw)
+        else:
+            (res, pin, otp) = token.splitPinPass(passw)
+            if res >= 0:
+                r = token.check_otp_exist(otp=otp, window=token.getOtpCountWindow())
+
+        if r >= 0:
+            matching_token.append(token)
 
     if len(matching_token) != 1:
         log.warning("[auto_assignToken] %d tokens with "
