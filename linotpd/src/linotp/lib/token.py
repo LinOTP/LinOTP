@@ -897,7 +897,7 @@ def auto_enrollToken(passw, user, options=None):
     if not auto:
         msg = ("no auto_enrollToken configured")
         log.debug(msg)
-        return False, {"error" : msg}
+        return False, None
 
     uid, res, resc = getUserId(user)
     u_info = getUserInfo(uid, res, resc)
