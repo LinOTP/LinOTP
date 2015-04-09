@@ -874,6 +874,7 @@ def check_serial(serial):
 
     return (result, new_serial)
 
+
 def auto_enrollToken(passw, user, options=None):
     '''
     This function is called to auto_enroll a token:
@@ -899,15 +900,15 @@ def auto_enrollToken(passw, user, options=None):
     if not auto:
         msg = ("no auto_enrollToken configured")
         log.debug(msg)
-        return False, {"error" : msg}
+        return False, None
 
     uid, res, resc = getUserId(user)
     u_info = getUserInfo(uid, res, resc)
 
     # enroll token for user
     desc = 'auto enrolled for %s@%s' % (user.login, user.realm)
-    token_init = {'genkey' :1, "type" : token_type,
-                  'description' : desc[:80]}
+    token_init = {'genkey': 1, "type": token_type,
+                  'description': desc[:80]}
 
     # for sms get phone number of user
     if token_type == 'sms':
