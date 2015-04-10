@@ -26,6 +26,8 @@
 """  Pylons environment configuration """
 
 import os
+from os import listdir
+
 
 from mako.lookup import TemplateLookup
 from pylons import config
@@ -205,22 +207,9 @@ def get_token_list():
     # the loaded classes finally
     module_list.append("linotp.lib.tokenclass")
 
-    fallback_tokens = "linotp.lib.tokens.hmactoken, \
-                        linotp.lib.tokens.smstoken, \
-                        linotp.lib.tokens.totptoken, \
-                        linotp.lib.tokens.motptoken, \
-                        linotp.lib.tokens.radiustoken, \
-                        linotp.lib.tokens.remotetoken, \
-                        linotp.lib.tokens.vascotoken, \
-                        linotp.lib.tokens.passwordtoken, \
-                        linotp.lib.tokens.spasstoken, \
-                        linotp.lib.tokens.tagespassworttoken, \
-                        linotp.lib.tokens.yubicotoken, \
-                        linotp.lib.tokens.yubikeytoken, \
-                        linotp.lib.tokens.ocra2token, \
-                        linotp.lib.tokens.emailtoken"
+    fallback_tokens = get_default_tokens()
 
-    config_modules = config.get("linotpTokenModules", fallback_tokens)
+    config_modules = config.get("linotpTokenModules", ",".join(fallback_tokens))
     log.debug("[get_module_list] %s " % config_modules)
     if config_modules:
         # in the config *.ini files we have some line continuation slashes,
@@ -235,6 +224,26 @@ def get_token_list():
 
     return module_list
 
+
+def get_default_tokens():
+    """
+    get the list of the linotp default tokens from linotp.lib.tokens
+
+    :return: array of all token module names like
+             ["linotp.lib.tokens.smstoken", ..]
+    """
+    token_modules = []
+
+    import linotp.lib.tokens
+    module_loaction = linotp.lib.tokens.__file__
+    idx = module_loaction.rfind(os.sep)
+    base_dir = module_loaction[:idx]
+
+    for file_name in listdir(base_dir):
+        if file_name[-3:] == '.py' and file_name != '__init__.py':
+            token_modules.append("linotp.lib.tokens.%s" % file_name[:-3])
+
+    return token_modules
 
 def get_token_module_list():
     '''
