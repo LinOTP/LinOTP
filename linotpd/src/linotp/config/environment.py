@@ -261,18 +261,11 @@ def get_token_module_list():
         if mod_name == '\\' or len(mod_name.strip()) == 0:
             continue
 
-        # load all token class implementations
-        if sys.modules.has_key(mod_name):
-            module = sys.modules[mod_name]
-            log.debug('module %s loaded' % (mod_name))
-        else:
+        # load all token modules if not already loaded
+        if mod_name not in sys.modules:
             try:
-                # module = imp.load_module(mod_name,
-                # *imp.find_module(mod_name,pp))
-                log.debug("[get_token_class_list] import module: %s" % mod_name)
-                exec("import %s" % mod_name)
-                module = eval(mod_name)
-
+                log.debug("import module: %s" % mod_name)
+                __import__(mod_name)
             except Exception as exx:
                 module = None
                 log.debug('unable to load token module : %r (%r)'
@@ -280,8 +273,12 @@ def get_token_module_list():
                 raise Exception('unable to load token module : %r (%r)'
                                 % (mod_name, exx))
 
+        module = sys.modules[mod_name]
         if module is not None:
             modules.append(module)
+            log.debug('module %s loaded' % (mod_name))
+        else:
+            log.error('module %s failed to load!' % (mod_name))
 
     return modules
 
@@ -367,32 +364,29 @@ def get_resolver_module_list():
 
     # def load_resolver_modules
     module_list = get_resolver_list()
-    log.debug("[get_resolver_module_list] using the module list: %s" % module_list)
+    log.debug("using the module list: %s" % module_list)
 
     modules = []
     for mod_name in module_list:
         if mod_name == '\\' or len(mod_name.strip()) == 0:
             continue
 
-        # load all token class implementations
-        if sys.modules.has_key(mod_name):
-            module = sys.modules[mod_name]
-            log.debug('module %s loaded' % (mod_name))
-        else:
+        # load all resolver class implementations, if not already loaded
+        if mod_name not in sys.modules:
             try:
-                # module = imp.load_module(mod_name,
-                # *imp.find_module(mod_name,pp))
-                log.debug("[get_token_class_list] import module: %s" % mod_name)
-                exec("import %s" % mod_name)
-                module = eval(mod_name)
-
+                log.debug("import module: %s" % mod_name)
+                __import__(mod_name)
             except Exception as exx:
                 module = None
-                log.warning('unable to load token module : %r (%r)'
+                log.warning('unable to load resolver module : %r (%r)'
                             % (mod_name, exx))
 
+        module = sys.modules[mod_name]
         if module is not None:
             modules.append(module)
+            log.debug('module %s loaded' % (mod_name))
+        else:
+            log.error('module %s failed to load!' % (mod_name))
 
     return modules
 
