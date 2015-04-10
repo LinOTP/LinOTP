@@ -229,7 +229,7 @@ class RemoteTokenClass(TokenClass):
             (res, pin, otpval) = split_pin_otp(self, passw, user,
                                                options=options)
 
-            res = TokenClass.checkPin(self, pin)
+            res = check_pin(self, pin, user=user, options=options)
             if res is False:
                 return (res, otp_counter, reply)
 
@@ -344,41 +344,16 @@ class RemoteTokenClass(TokenClass):
         if transactionid is not None:
             params['state'] = transactionid
 
-#
-# as the httplib is blocking io, this local call was used in the dev setup
-#==============================================================================
-#        if remoteServer == 'http://localhost':
-#            otp_count = -1
-#            res = False
-#
-#            from linotp.lib import token
-#            if autoassign:
-#                user.realm = remoteRealm
-#                params['realm'] = remoteRealm
-#                (ok, opt) = token.checkUserPass(user, passw, options=params)
-#            elif len(remoteSerial) > 0:
-#                serial = remoteSerial
-#                (ok, opt) = token.checkSerialPass(serial, passw, options=params)
-#            elif len(remoteUser) > 0:
-#                (ok, opt) = token.checkUserPass(user, passw, options=params)
-#
-#            reply = opt
-#
-#            if ok:
-#                otp_count = 0
-#                res = True
-#
-#            return (res, otp_count, reply)
-#==============================================================================
-
         # use a POST request to check the token
+        otp_count = -1
+        res = False
         data = urllib.urlencode(params)
         request_url = "%s%s" % (remoteServer, remotePath)
 
         try:
             ## prepare the submit and receive headers
             headers = {"Content-type": "application/x-www-form-urlencoded",
-                       "Accept": "text/plain"}
+                       "Accept": "text/plain", 'Connection': 'close'}
 
             ## submit the request
             try:
