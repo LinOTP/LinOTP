@@ -46,6 +46,7 @@ import pylons.test
 import os
 import logging
 import hashlib
+import copy
 
 import unittest2
 
@@ -101,6 +102,24 @@ class TestController(unittest2.TestCase):
         unittest2.TestCase.__init__(self, *args, **kwargs)
 
         self.appconf = config
+
+        self.resolvers_params = {
+        'myDefRes': {
+            'name'      : 'myDefRes',
+            'fileName'  : '%(here)s/../data/testdata/def-passwd',
+            'type'      : 'passwdresolver',
+            },
+        'myOtherRes' : {
+            'name'      : 'myOtherRes',
+            'fileName'  : '%(here)s/../data/testdata/myDom-passwd',
+            'type'      : 'passwdresolver',
+            }
+        }
+        self.resolvers = {
+         'myOtherRes': 'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
+         'myDefRes': 'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
+        }
+
 
     @classmethod
     def setup_class(cls):
@@ -403,21 +422,33 @@ class TestController(unittest2.TestCase):
         '''
         create all base test resolvers
         '''
-        params = {
-            'name'      : 'myDefRes',
-            'fileName'  : '%(here)s/../data/testdata/def-passwd',
-            'type'      : 'passwdresolver',
-            }
-        resp = self.make_system_request('setResolver', params)
+
+        params = self.resolvers_params['myDefRes']
+        resp = self.createResolver(name='myDefRes', params=params)
         assert('"value": true' in resp)
 
-        params = {
-            'name'      : 'myOtherRes',
-            'fileName'  : '%(here)s/../data/testdata/myDom-passwd',
-            'type'      : 'passwdresolver',
-            }
-        resp = self.make_system_request('setResolver', params)
+        params = self.resolvers_params['myOtherRes']
+        resp = self.createResolver(name='myOtherRes', params=params)
         assert('"value": true' in resp)
+
+    def createResolver(self, name, params):
+        param = copy.deepcopy(params)
+        param['name'] = name
+        resp = self.make_system_request('setResolver', param)
+        return resp
+
+    def createRealm(self, realm, resolvers):
+
+        params = {}
+        params['realm'] = realm
+
+        if type(resolvers) == list:
+            params['resolvers'] = ','.join(resolvers)
+        else:
+            params['resolvers'] = resolvers
+
+        resp = self.make_system_request('setRealm', params)
+        return resp
 
     def __createRealms__(self):
         '''
@@ -429,32 +460,20 @@ class TestController(unittest2.TestCase):
                 search in the mix for the user root must find 2 users
         '''
 
-        params = {
-            'realm'     :'myDefRealm',
-            'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
-        }
-        resp = self.make_system_request('setRealm', params)
+        resp = self.createRealm(realm='myDefRealm',
+                                resolvers=self.resolvers['myDefRes'])
         assert('"value": true' in resp)
 
         resp = self.make_system_request('getRealms', {})
         assert('"default": "true"' in resp)
 
-        params = {
-            'realm'     :'myOtherRealm',
-            'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
-        }
-        resp = self.make_system_request('setRealm', params)
+        resp = self.createRealm(realm='myOtherRealm',
+                                resolvers=self.resolvers['myOtherRes'])
         assert('"value": true' in resp)
 
-        params = {
-            'realm'     :'myMixRealm',
-            'resolvers' :'useridresolver.PasswdIdResolver.IdResolver.' +
-                         'myOtherRes,useridresolver.PasswdIdResolver.' +
-                         'IdResolver.myDefRes',
-        }
-        resp = self.make_system_request('setRealm', params)
+        resp = self.createRealm(realm='myMixRealm',
+                                resolvers=','.join(self.resolvers.values()))
         assert('"value": true' in resp)
-
 
         resp = self.make_system_request('getRealms', {})
         #assert('"default": "true"' in resp)
