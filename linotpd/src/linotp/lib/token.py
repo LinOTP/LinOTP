@@ -88,6 +88,8 @@ required = False
 ENCODING = "utf-8"
 
 ###############################################
+
+
 def createTokenClassObject(token, typ=None):
     '''
     createTokenClassObject - create a token class object from a given type
@@ -553,7 +555,8 @@ def getAllTokenUsers():
 
     return users
 
-def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True):
+
+def getTokens4UserOrSerial(user=None, serial=None, _class=True):
     tokenList = []
     tokenCList = []
     tok = None
@@ -571,18 +574,14 @@ def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True)
         sqlQuery = Session.query(Token).filter(
                             Token.LinOtpTokenSerialnumber == serial)
 
-        if forUpdate == True:
-            sqlQuery = Session.query(Token).with_lockmode("update").filter(
-                            Token.LinOtpTokenSerialnumber == serial)
-
-        # for token in Session.query(Token).filter(Token.LinOtpTokenSerialnumber == serial):
         for token in sqlQuery:
             log.debug("[getTokens4UserOrSerial] user "
                       "serial (serial): %r" % token.LinOtpTokenSerialnumber)
             tokenList.append(token)
 
     if user is not None:
-        log.debug("[getTokens4UserOrSerial] getting token object 4 user: %r" % user)
+        log.debug("[getTokens4UserOrSerial] getting token object 4 user: %r"
+                  % user)
 
         if (user.isEmpty() == False):
             # the upper layer will catch / at least should
@@ -596,16 +595,14 @@ def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True)
             # Remark: when the token is loaded the response to the
             # resolver class is adjusted
 
-            resolverClass = resolverClass.replace('useridresolveree.', 'useridresolver.')
-            resolverClass = resolverClass.replace('useridresolver.', 'useridresolver%.')
+            resolverClass = resolverClass.replace('useridresolveree.',
+                                                  'useridresolver.')
+            resolverClass = resolverClass.replace('useridresolver.',
+                                                  'useridresolver%.')
 
             sqlQuery = Session.query(model.Token).filter(
                         model.Token.LinOtpUserid == uid).filter(
                         model.Token.LinOtpIdResClass.like(resolverClass))
-            if forUpdate == True:
-                sqlQuery = Session.query(model.Token).with_lockmode("update").filter(
-                            model.Token.LinOtpUserid == uid).filter(
-                            model.Token.LinOtpIdResClass.like(resolverClass))
 
             for token in sqlQuery:
                 # we have to check that the token is in the same realm as the user
@@ -1160,7 +1157,7 @@ def checkSerialPass(serial, passw, options=None, user=None):
 
     log.debug("[checkSerialPass] checking for serial %r"
               % (serial))
-    tokenList = getTokens4UserOrSerial(None, serial, forUpdate=True)
+    tokenList = getTokens4UserOrSerial(None, serial)
 
     if passw is None:
         #  other than zero or one token should not happen, as serial is unique
@@ -1281,7 +1278,7 @@ def checkUserPass(user, passw, options=None):
                 c.audit['action_detail'] = "User not found"
                 return (False, opt)
 
-    tokenList = getTokens4UserOrSerial(user, serial, forUpdate=True)
+    tokenList = getTokens4UserOrSerial(user, serial)
 
     if len(tokenList) == 0:
         c.audit['action_detail'] = "User has no tokens assigned"
@@ -1772,8 +1769,7 @@ def removeToken(user=None, serial=None):
         raise ParameterError("Parameter user or serial required!", id=1212)
 
     log.debug("[removeToken] for serial: %r, user: %r" % (serial, user))
-    tokenList = getTokens4UserOrSerial(user, serial,
-                                       forUpdate=True, _class=False)
+    tokenList = getTokens4UserOrSerial(user, serial, _class=False)
 
     serials = []
     tokens = []
@@ -2770,4 +2766,3 @@ class TokenIterator(object):
         return self
 
 #eof###########################################################################
-
