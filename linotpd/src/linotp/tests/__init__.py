@@ -323,6 +323,19 @@ class TestController(unittest2.TestCase):
             params=params,
             )
 
+    def make_validate_request(self, action, params=None, method='GET'):
+        """
+        Makes an unauthenticated request to /validate/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_request(
+            'validate',
+            action,
+            method=method,
+            params=params,
+            )
+
     def set_config_selftest(self):
         """
         Set selfTest in LinOTP Config to 'True'
