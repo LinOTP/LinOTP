@@ -1,3 +1,14 @@
+linotp (2.7.2+custom01-1~precise) precise; urgency=low
+
+  * fix for otppin awareness of remotetoken
+  * fix for false reply if autoenrollment is not configured
+  * fix for exception (uninitialized var) if http connection in remotetoken fails
+  * fix for webui remotetoken enrollment to support setting the otplen
+  * fix to support autoassigment of remotetoken by adding method check_otp_exists
+  * fix on token search: token must be in same realm as user and not only same resolver
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 14 Apr 2015 12:20:42 +0200
+
 linotp (2.7.2-1~precise) precise; urgency=low
 
   Enhancements:
