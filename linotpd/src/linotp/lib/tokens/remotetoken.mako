@@ -182,7 +182,19 @@ function remote_get_enroll_params(){
     params['remote.local_checkpin'] = $('#remote_local_checkpin').val();
 
     if (params['remote.local_checkpin'] == 1 ){
-        params['otplen']            = $('#remote_otplen').val();
+        otplen = $('#remote_otplen').val();
+        if (otplen.length == 0) {
+            otplen = 6;
+        }
+        var intValue = parseInt(otplen);
+        if (intValue == Number.NaN) {
+            otplen =  6;
+        }
+        if (intValue <= 0)
+        {
+            otplen = 6;
+        }
+        params['otplen']            = otplen;
     }
     params['remote.serial'] 		= $('#remote_serial').val();
     params['remote.user'] 			= $('#remote_user').val();
@@ -258,7 +270,7 @@ $("#form_enroll_token").validate({
 	</select></td>
 	</tr><tr>
     <td><label for="remote_otplen">${_("remote otp len")}</label></td>
-    <td><input type="text" name="remote_otplen" id="remote_otplen" value="" class="text ui-widget-content ui-corner-all" /></td>
+    <td><input type="text" name="remote_otplen" id="remote_otplen" value="6" class="text ui-widget-content ui-corner-all" /></td>
     </tr><tr>
 	<td><label for="remote_serial">${_("remote serial")}</label></td>
 	<td><input type="text" name="remote_serial" id="remote_serial" value="" class="text ui-widget-content ui-corner-all" /></td>
