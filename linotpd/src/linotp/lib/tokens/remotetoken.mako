@@ -182,7 +182,19 @@ function remote_get_enroll_params(){
     params['remote.local_checkpin'] = $('#remote_local_checkpin').val();
 
     if (params['remote.local_checkpin'] == 1 ){
-        params['otplen']            = $('#remote_otplen').val();
+        otplen = $('#remote_otplen').val();
+        if (otplen.length == 0) {
+            otplen = 6;
+        }
+        var intValue = parseInt(otplen);
+        if (intValue == Number.NaN) {
+            otplen =  6;
+        }
+        if (intValue <= 0)
+        {
+            otplen = 6;
+        }
+        params['otplen']            = otplen;
     }
     params['remote.serial'] 		= $('#remote_serial').val();
     params['remote.user'] 			= $('#remote_user').val();

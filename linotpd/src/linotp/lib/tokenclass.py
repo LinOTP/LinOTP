@@ -499,8 +499,6 @@ class TokenClass(object):
         Session.commit()
         return
 
-
-
     def update(self, param, reset_failcount=True):
 
         tdesc = getParam(param, "description", optional)
@@ -552,8 +550,8 @@ class TokenClass(object):
                 storeHashed = False
             self.token.setPin(pin, storeHashed)
 
-        otplen = getParam(param, 'otplen', optional)
-        if otplen is not None:
+        otplen = param.get('otplen', None)
+        if otplen:
             self.setOtpLen(otplen)
 
         self.resetTokenInfo()
