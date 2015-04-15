@@ -998,9 +998,7 @@ def auto_assignToken(passw, user, pin="", param=None):
                   "already has some tokens." % (user.login, user.realm))
         return False
 
-    matching_token_count = 0
-
-    token = None
+    matching_token = []
     pin = ""
 
     # get all tokens of the users realm, which are not assigned
@@ -1017,21 +1015,24 @@ def auto_assignToken(passw, user, pin="", param=None):
         else:
             (res, pin, otp) = token.splitPinPass(passw)
             if res >= 0:
-                r = token.check_otp_exist(otp=otp, window=token.getOtpCountWindow())
+                r = token.check_otp_exist(otp=otp,
+                                          window=token.getOtpCountWindow())
 
         if r >= 0:
-            matching_token_count += 1
+            matching_token.append(token)
 
-    if matching_token_count != 1:
+    if len(matching_token) != 1:
         log.warning("[auto_assignToken] %d tokens with "
-                    "the given OTP value found.", matching_token_count)
+                    "the given OTP value found." % len(matching_token))
         return False
 
     authUser = get_authenticated_user(user.login, user.realm, pin)
     if authUser is None:
-        log.error("[auto_assignToken] User %r@%r failed to authenticate against userstore" % (user.login, user.realm))
+        log.error("[auto_assignToken] User %r@%r failed to authenticate"
+                  " against userstore" % (user.login, user.realm))
         return False
 
+    token = matching_token[0]
     serial = token.getSerial()
 
     log.debug("[auto_assignToken] found serial number: %r" % serial)
