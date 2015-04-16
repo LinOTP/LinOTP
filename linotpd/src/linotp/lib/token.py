@@ -210,7 +210,7 @@ def getRealms4Token(user, tokenrealm=None):
     """
 
     realms = []
-    if user is not None and user.login != "" :
+    if user is not None and user.login != "":
         ## the getUserRealms should return the default realm if realm was empty
         realms = getUserRealms(user)
         ## hack: sometimes the realm of the user is not in the
@@ -224,10 +224,10 @@ def getRealms4Token(user, tokenrealm=None):
         # tokenrealm can either be a string or a list
         log.debug("[getRealms4Token] tokenrealm given (%r). We will add the "
                   "new token to this realm" % tokenrealm)
-        if isinstance(tokenrealm, str):
+        if type(tokenrealm) in [str, unicode]:
             log.debug("[getRealms4Token] String: adding realm: %r" % tokenrealm)
             realms.append(tokenrealm)
-        elif isinstance(tokenrealm, list):
+        elif type(tokenrealm) in [list]:
             for tr in tokenrealm:
                 log.debug("[getRealms4Token] List: adding realm: %r" % tr)
                 realms.append(tr)
@@ -235,6 +235,7 @@ def getRealms4Token(user, tokenrealm=None):
     realmList = realm2Objects(realms)
 
     return realmList
+
 
 def get_tokenserial_of_transaction(transId):
     '''
@@ -278,6 +279,18 @@ def initToken(param, user, tokenrealm=None):
     token = None
     tokenObj = None
 
+    # if we get a undefined tokenrealm , we create a list
+    if tokenrealm is None:
+        tokenrealm = []
+    # if we get a tokenrealm as string, we make an array out of this
+    elif type(tokenrealm) in [str, unicode]:
+        tokenrealm = [tokenrealm]
+    # if there is a realm as parameter, we assign the token to this realm
+    if 'realm' in param:
+        ## and append our parameter realm
+        tokenrealm.append(param.get('realm'))
+
+
     typ = getParam(param, "type", optional)
     if typ is None:
         typ = "hmac"
@@ -287,8 +300,6 @@ def initToken(param, user, tokenrealm=None):
     if serial is None:
         prefix = param.get('prefix', None)
         serial = genSerial(typ, prefix)
-
-
 
     # if a token was initialized for a user, the param "realm" might be contained.
     # otherwise - without a user the param tokenrealm could be contained.
@@ -330,18 +341,7 @@ def initToken(param, user, tokenrealm=None):
         else:
             raise TokenAdminError("cannot init! Unknown error!", id=1102)
 
-    ## if there is a realm as parameter, we assign the token to this realm
-    if 'realm' in param:
-        ## if we get a undefined tokenrealm , we create a list
-        if tokenrealm is None:
-            tokenrealm = []
-        ## if we get a tokenrealm as string, we make an array out of this
-        elif type(tokenrealm) in [str, unicode]:
-            tokenrealm = [tokenrealm]
-        ## and append our parameter realm
-        tokenrealm.append(param.get('realm'))
-
-    ## get the RealmObjects of the user and the tokenrealms
+    # get the RealmObjects of the user and the tokenrealms
     realms = getRealms4Token(user, tokenrealm)
     token.setRealms(realms)
 
@@ -354,7 +354,6 @@ def initToken(param, user, tokenrealm=None):
         tokenObj.setDefaults()
 
     tokenObj.update(param)
-
 
     if user is not None and user.login != "" :
         tokenObj.setUser(user, report=True)
