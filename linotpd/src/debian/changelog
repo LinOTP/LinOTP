@@ -1,8 +1,8 @@
 linotp (2.7.2+custom02-1~precise) precise; urgency=low
 
-  * fix for otppin awareness of remotetoken
+  * Fix token autoassignment
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 15 Apr 2015 18:34:42 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 15 Apr 2015 18:34:42 +0200
 
 linotp (2.7.2+custom01-1~precise) precise; urgency=low
 
