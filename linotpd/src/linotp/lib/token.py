@@ -780,11 +780,11 @@ def get_token_owner(token):
     :return: user object
     """
 
-    user = User()
+
 
     if token is None:
         ## for backward compatibility, we return here an empty user
-        return user
+        return User()
 
     serial = token.getSerial()
 
@@ -794,6 +794,9 @@ def get_token_owner(token):
     userInfo = getUserInfo(uid, resolver, resolverClass)
     log.debug("[get_token_owner] got the owner %r, %r, %r"
                % (uid, resolver, resolverClass))
+
+    if not userInfo:
+        return User()
 
     realms = getUserRealms(User(uid, "", resolverClass.split(".")[-1]))
     log.debug("[get_token_owner] got this realms: %r" % realms)
@@ -814,6 +817,7 @@ def get_token_owner(token):
     else:
         realm = realms[0]
 
+    user = User()
     user.realm = realm
     user.login = userInfo.get('username')
     user.conf = resolverClass
