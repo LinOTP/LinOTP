@@ -141,13 +141,18 @@ def do_http(remoteServer, params=None):
         if params is None:
             params = {}
 
+        if 'session' not in params:
+            params['session'] = 'mySession'
+
         data = urllib.urlencode(params)
         request_url = "%s" % (remoteServer)
 
         try:
             ## prepare the submit and receive headers
             headers = {"Content-type": "application/x-www-form-urlencoded",
-                       "Accept": "text/plain"}
+                       "Accept": "text/plain", }
+            headers['Cookie'] = ('admin_session=%s'
+                                % params.get('session', 'mySession'))
 
             ## submit the request
             http = httplib2.Http()
@@ -383,7 +388,8 @@ class TestChallengeResponseController(TestController):
         parameters = {'enableReplication' : 'true' }
         resp = do_http("%s/system/setConfig" % remoteurl,
                             params=parameters)
-        assert('"setConfig enableReplication:true": true' in resp)
+        self.assertTrue('"setConfig enableReplication:true": true' in resp,
+                        resp)
 
         return serials
 
