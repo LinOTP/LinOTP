@@ -1,6 +1,7 @@
 linotp (2.7.2+custom02-1~precise) precise; urgency=low
 
-  * Fix token autoassignment
+  * Fix for random token assignment in autoassignment
+  * Fix for the correct selection of the realm context for validate/check by serial
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 15 Apr 2015 18:34:42 +0200
 
