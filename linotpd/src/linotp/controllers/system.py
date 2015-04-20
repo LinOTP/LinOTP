@@ -1037,7 +1037,7 @@ class SystemController(BaseController):
             user = getParam(param, "user", optional)
             time = getParam(param, "time", optional)
             client = getParam(param, "client", optional)
-            active = getParam(param, "active", optional)
+            active = param.get("active", True)
 
             p_param = { 'name': name,
                       'action' : action,

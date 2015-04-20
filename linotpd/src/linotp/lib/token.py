@@ -226,10 +226,10 @@ def getRealms4Token(user, tokenrealm=None):
         # tokenrealm can either be a string or a list
         log.debug("[getRealms4Token] tokenrealm given (%r). We will add the "
                   "new token to this realm" % tokenrealm)
-        if isinstance(tokenrealm, str):
+        if type(tokenrealm) in [str, unicode]:
             log.debug("[getRealms4Token] String: adding realm: %r" % tokenrealm)
             realms.append(tokenrealm)
-        elif isinstance(tokenrealm, list):
+        elif type(tokenrealm) in [list]:
             for tr in tokenrealm:
                 log.debug("[getRealms4Token] List: adding realm: %r" % tr)
                 realms.append(tr)
@@ -237,6 +237,7 @@ def getRealms4Token(user, tokenrealm=None):
     realmList = realm2Objects(realms)
 
     return realmList
+
 
 def get_tokenserial_of_transaction(transId):
     '''
@@ -280,6 +281,18 @@ def initToken(param, user, tokenrealm=None):
     token = None
     tokenObj = None
 
+    # if we get a undefined tokenrealm , we create a list
+    if tokenrealm is None:
+        tokenrealm = []
+    # if we get a tokenrealm as string, we make an array out of this
+    elif type(tokenrealm) in [str, unicode]:
+        tokenrealm = [tokenrealm]
+    # if there is a realm as parameter, we assign the token to this realm
+    if 'realm' in param:
+        ## and append our parameter realm
+        tokenrealm.append(param.get('realm'))
+
+
     typ = getParam(param, "type", optional)
     if typ is None:
         typ = "hmac"
@@ -289,8 +302,6 @@ def initToken(param, user, tokenrealm=None):
     if serial is None:
         prefix = param.get('prefix', None)
         serial = genSerial(typ, prefix)
-
-
 
     # if a token was initialized for a user, the param "realm" might be contained.
     # otherwise - without a user the param tokenrealm could be contained.
@@ -332,18 +343,7 @@ def initToken(param, user, tokenrealm=None):
         else:
             raise TokenAdminError("cannot init! Unknown error!", id=1102)
 
-    #  if there is a realm as parameter, we assign the token to this realm
-    if 'realm' in param:
-        #  if we get a undefined tokenrealm , we create a list
-        if tokenrealm is None:
-            tokenrealm = []
-        #  if we get a tokenrealm as string, we make an array out of this
-        elif type(tokenrealm) in [str, unicode]:
-            tokenrealm = [tokenrealm]
-        #  and append our parameter realm
-        tokenrealm.append(param.get('realm'))
-
-    #  get the RealmObjects of the user and the tokenrealms
+    # get the RealmObjects of the user and the tokenrealms
     realms = getRealms4Token(user, tokenrealm)
     token.setRealms(realms)
 
@@ -356,7 +356,6 @@ def initToken(param, user, tokenrealm=None):
         tokenObj.setDefaults()
 
     tokenObj.update(param)
-
 
     if user is not None and user.login != "" :
         tokenObj.setUser(user, report=True)
@@ -784,11 +783,9 @@ def get_token_owner(token):
     :return: user object
     """
 
-    user = User()
-
     if token is None:
-        #  for backward compatibility, we return here an empty user
-        return user
+        # for backward compatibility, we return here an empty user
+        return User()
 
     serial = token.getSerial()
 
@@ -798,6 +795,9 @@ def get_token_owner(token):
     userInfo = getUserInfo(uid, resolver, resolverClass)
     log.debug("[get_token_owner] got the owner %r, %r, %r"
                % (uid, resolver, resolverClass))
+
+    if not userInfo:
+        return User()
 
     realms = getUserRealms(User(uid, "", resolverClass.split(".")[-1]))
     log.debug("[get_token_owner] got this realms: %r" % realms)
@@ -818,6 +818,7 @@ def get_token_owner(token):
     else:
         realm = realms[0]
 
+    user = User()
     user.realm = realm
     user.login = userInfo.get('username')
     user.conf = resolverClass
@@ -1005,15 +1006,14 @@ def auto_assignToken(passw, user, pin="", param=None):
                   "already has some tokens." % (user.login, user.realm))
         return False
 
-    matching_token_count = 0
-
-    token = None
+    matching_token = []
     pin = ""
 
     # get all tokens of the users realm, which are not assigned
 
     tokens = getTokensOfType(typ=None, realm=user.realm, assigned="0")
     for token in tokens:
+
         r = -1
         from linotp.lib import policy
         if policy.autoassignment_forward(user) and token.type == 'remote':
@@ -1028,18 +1028,21 @@ def auto_assignToken(passw, user, pin="", param=None):
                 r = token.check_otp_exist(otp=otp, window=token.getOtpCountWindow())
 
         if r >= 0:
-            matching_token_count += 1
+            matching_token.append(token)
 
-    if matching_token_count != 1:
+
+    if len(matching_token) != 1:
         log.warning("[auto_assignToken] %d tokens with "
-                    "the given OTP value found.", matching_token_count)
+                    "the given OTP value found.", len(matching_token))
         return False
 
     authUser = get_authenticated_user(user.login, user.realm, pin)
     if authUser is None:
-        log.error("[auto_assignToken] User %r@%r failed to authenticate against userstore" % (user.login, user.realm))
+        log.error("[auto_assignToken] User %r@%r failed to authenticate "
+                  "against userstore" % (user.login, user.realm))
         return False
 
+    token = matching_token[0]
     serial = token.getSerial()
 
     log.debug("[auto_assignToken] found serial number: %r" % serial)
@@ -2335,7 +2338,7 @@ def getTokenConfig(tok, section=None):
     return res
 
 
-# # TODO: move TokenIterator to dedicated file
+# TODO: move TokenIterator to dedicated file
 
 class TokenIterator(object):
     '''

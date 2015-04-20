@@ -552,9 +552,22 @@ class ValidateToken(object):
 
         ttype = self.token.getType()
 
-        # fallback eg. in case of check_s, which does not provide a user
+        # fallback in case of check_s, which does not provide a user
+        # but as for further prcessing a dummy user with only the realm defined
+        # is required for the policy evaluation
         if user is None:
-            user = linotp.lib.token.get_token_owner(self.token)
+            realms = linotp.lib.token.getTokenRealms(self.token.getSerial())
+            if len(realms) == 1:
+                user = linotp.lib.user.User(login='', realm=realms[0])
+            elif len(realms) == 0:
+                realm = linotp.lib.token.getDefaultRealm()
+                user = linotp.lib.user.User(login='', realm=realm)
+                log.info('No token realm found - using default realm.')
+            else:
+                msg = ('Multiple realms for token found. But one dedicated '
+                       'realm is required for further processing.')
+                log.error(msg)
+                raise Exception(msg)
 
         support_challenge_response = \
                 linotp.lib.policy.get_auth_challenge_response(user, ttype)
