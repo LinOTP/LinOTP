@@ -245,7 +245,9 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                                    base_url=self.base_url,
                                    url="https://billybones",
                                    remote_serial="LSSP0002F653",
-                                   pin="1234")
+                                   pin="1234",
+                                   remote_otp_length=6,
+                                   )
         serial_token_debussy = remote_token.serial
         remote_token_otp = "666666"
         time.sleep(1)
