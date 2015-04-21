@@ -52,7 +52,7 @@ from linotp.lib.util import check_session, SESSION_KEY_LENGTH, remove_session_fr
 from linotp.lib.util import get_client
 from linotp.lib.user import getSearchFields, getUserList, User, getUserFromParam, getUserFromRequest
 
-from linotp.lib.realm import getDefaultRealm
+from linotp.lib.realm import getDefaultRealm, getRealms
 
 from linotp.lib.reply import sendResult, sendError, sendXMLResult, sendXMLError, sendCSVResult
 from linotp.lib.reply import sendQRImageResult
@@ -1840,6 +1840,7 @@ class AdminController(BaseController):
         arguments:
             * file -  the file in a post request
             * type -  the file type.
+            * realm - the target real of the tokens
 
         returns:
             a json result with a boolean
@@ -1879,6 +1880,7 @@ class AdminController(BaseController):
             log.debug("[loadtokens] %r" % request.POST)
             tokenFile = request.POST['file']
             fileType = request.POST['type']
+            targetRealm = request.POST.get('realm', None)
 
             pskc_type = None
             pskc_password = None
@@ -1968,26 +1970,39 @@ class AdminController(BaseController):
                 TOKENS = parseVASCOdata(filename, int(vasco_otplen))
                 os.remove(filename)
                 if TOKENS is None:
-                    raise ImportException("Vasco DLL was not properly loaded. Importing of VASCO token not possible. Please check the log file for more details.")
+                    raise ImportException("Vasco DLL was not properly loaded. "
+                                          "Importing of VASCO token not "
+                                          "possible. Please check the log file"
+                                          " for more details.")
+
+            # determin the target realm
+            tokenrealm = None
+            # default for available realms if no admin policy is defined
+            available_realms = getRealms()
+
+            # this needs to return the valid realms of the admin.
+            # it also checks the token number
+            res = checkPolicyPre('admin', 'import', {})
+            if res['realms']:
+                # by defualt, wee put the token in the FIRST realm of the admin
+                # so tokenrealm will either be ONE realm or NONE
+                tokenrealm = res.get('realms')[0]
+                available_realms = res.get('realms')
+
+            # if parameter realm is provided, we have to check if this target
+            # realm exists and is in the set of the allowed realms
+            if targetRealm and targetRealm.lower() in available_realms:
+                    tokenrealm = targetRealm
+            log.info("[loadtokens] setting tokenrealm %s" % tokenrealm)
 
 
-            log.debug("[loadtokens] read %i tokens. starting import now" % len(TOKENS))
+            log.debug("[loadtokens] read %i tokens. starting import now"
+                      % len(TOKENS))
 
             # Now import the Tokens from the dictionary
             ret = ""
             for serial in TOKENS:
                 log.debug("[loadtokens] importing token %s" % TOKENS[serial])
-
-                # this needs to return the valid realms of the admin.
-                # it also checks the token number
-                res = checkPolicyPre('admin', 'import', {})
-                # we put the token in the FIRST realm of the admin.
-                # so tokenrealm will either be ONE realm or NONE
-                log.info("[loadtokens] setting tokenrealm %s" % res['realms'])
-                tokenrealm = None
-                if res['realms']:
-                    tokenrealm = res.get('realms')[0]
-
 
                 log.info("[loadtokens] initialize token. serial: %s, realm: %s" % (serial, tokenrealm))
 
@@ -1997,15 +2012,15 @@ class AdminController(BaseController):
                     init_param = TOKENS[serial]
 
                 else:
-                    init_param = {'serial':serial,
-                                    'type':TOKENS[serial]['type'],
-                                    'description': TOKENS[serial].get("description", "imported"),
-                                    'otpkey' : TOKENS[serial]['hmac_key'],
-                                    'otplen' : TOKENS[serial].get('otplen'),
-                                    'timeStep' : TOKENS[serial].get('timeStep'),
-                                    'hashlib' : TOKENS[serial].get('hashlib')}
-
-
+                    init_param = {
+                            'serial': serial,
+                            'type': TOKENS[serial]['type'],
+                            'description': TOKENS[serial].get("description", "imported"),
+                            'otpkey': TOKENS[serial]['hmac_key'],
+                            'otplen': TOKENS[serial].get('otplen'),
+                            'timeStep': TOKENS[serial].get('timeStep'),
+                            'hashlib': TOKENS[serial].get('hashlib')
+                            }
 
                 # add additional parameter for vasco tokens
                 if TOKENS[serial]['type'] == "vasco":
@@ -2023,7 +2038,7 @@ class AdminController(BaseController):
 
                 if tokenrealm:
                     checkPolicyPre('admin', 'loadtokens',
-                                   {'tokenrealm': tokenrealm })
+                                   {'tokenrealm': tokenrealm})
 
                 (ret, tokenObj) = initToken(init_param, User('', '', ''),
                                             tokenrealm=tokenrealm)

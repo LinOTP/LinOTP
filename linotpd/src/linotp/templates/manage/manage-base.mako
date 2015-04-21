@@ -740,15 +740,18 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <!-- ###################### import Yubikey CSV ####################### -->
 <div id='dialog_import_yubikey'>
-	<form id="load_tokenfile_form_yubikeycsv" action="/admin/loadtokens" method="post"
-			enctype="multipart/form-data" onsubmit="return false;">
-		<p>${_("Here you can upload a csv file for your Yubikey token. The file is supposed to contain one token per line")}:</p>
-  		<p>${_("Please choose the token file")}:
-    		<input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
-    		<input name="type" type="hidden" value="yubikeycsv">\
-    		<input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">\
-		</p>
-	</form>
+    <form id="load_tokenfile_form_yubikeycsv" action="/admin/loadtokens" method="post"
+             enctype="multipart/form-data" onsubmit="return false;">
+        <p>${_("Here you can upload a csv file for your Yubikey token. The file is supposed to contain one token per line")}:</p>
+        <p>${_("Please choose the token file")}:
+             <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
+             <input name="type" type="hidden" value="yubikeycsv">\
+             <input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">
+        </p><p>
+             <label for="target_realm" >${_("Enter the realm, the tokens should part of:")}</label>
+             <input id="target_realm" name="realm" type="text" value="">\
+        </p>
+    </form>
 </div>
 
 <script>
