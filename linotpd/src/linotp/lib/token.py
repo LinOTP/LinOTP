@@ -224,10 +224,10 @@ def getRealms4Token(user, tokenrealm=None):
         # tokenrealm can either be a string or a list
         log.debug("[getRealms4Token] tokenrealm given (%r). We will add the "
                   "new token to this realm" % tokenrealm)
-        if isinstance(tokenrealm, str):
+        if type(tokenrealm) in (str, unicode):
             log.debug("[getRealms4Token] String: adding realm: %r" % tokenrealm)
             realms.append(tokenrealm)
-        elif isinstance(tokenrealm, list):
+        elif type(tokenrealm) == list:
             for tr in tokenrealm:
                 log.debug("[getRealms4Token] List: adding realm: %r" % tr)
                 realms.append(tr)
