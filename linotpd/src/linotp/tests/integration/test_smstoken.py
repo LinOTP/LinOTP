@@ -50,7 +50,10 @@ class TestSmsToken(TestCase):
         """
 
         sms_provider_config = get_from_tconfig(['sms_token', 'sms_provider_config'])
-        radius_server = get_from_tconfig(['radius', 'server'], default=self.http_host)
+        radius_server = get_from_tconfig(
+            ['radius', 'server'],
+            default=self.http_host.split(':')[0],
+            )
         radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
         disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
 
