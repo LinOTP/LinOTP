@@ -272,8 +272,6 @@ class RemoteTokenClass(TokenClass):
 
         :return: Tuple of (success, otp_count= -1 or 0, reply=remote response)
         """
-
-        reply = {}
         otpval = passw.encode("utf-8")
 
         remoteServer = self.getFromTokenInfo("remote.server") or ""
@@ -349,6 +347,10 @@ class RemoteTokenClass(TokenClass):
         res = False
         data = urllib.urlencode(params)
         request_url = "%s%s" % (remoteServer, remotePath)
+
+        reply = {}
+        otp_count = -1
+        res = False
 
         try:
             ## prepare the submit and receive headers
