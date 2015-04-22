@@ -438,6 +438,24 @@ configure)
 				echo $GRANT_STRING2 >> /etc/linotp2/linotpcreatedb.sql
 				cp /etc/rc.local /etc/rc.local.linotp-dpkg
 				echo "#!/bin/sh -e" > /etc/rc.local
+
+				# In debian jessie, a MySQL systemd service file does not exist. Therefore, we
+				# cannot ensure that the rc.local script is executed after MySQL is successfully
+				# started. That's why we poll for MySQL.
+				DEBIAN_VERSION=`cat /etc/debian_version`
+				dpkg --compare-versions ${DEBIAN_VERSION} ge 8.0 && DEB_VER_GE_8=$? || DEB_VER_GE_8=$?
+				dpkg --compare-versions ${DEBIAN_VERSION} lt 9.0 && DEB_VER_LT_9=$? || DEB_VER_LT_9=$?
+				if [ ${DEB_VER_GE_8} == 0 ] && [ ${DEB_VER_LT_9} == 0 ]; then
+					echo "while ! mysqladmin ping --host=$DBHOST --user=root --password=${ROOTPW}; do" >> /etc/rc.local
+					echo "echo \"MySQL is not running, yet. Waiting...\"" >> /etc/rc.local
+					echo "sleep 1" >> /etc/rc.local
+					echo "done" >> /etc/rc.local
+				elif [ ${DEB_VER_LT_9} != 0 ]; then
+					# We are on debian 9 or higher. Since we don't know whether we will have a systemd
+					# service file or not (or whether debian 9 will ship MySQL at all) we log a warning.
+					echo `print_timestamp` "ERROR [linotp postinst] TODO: Check MySQL and systemd on debian 9 appliance install!" >&2
+				fi
+
 				echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" --execute=\"create database $DBNAME;\" || true" >> /etc/rc.local
 				echo "mysql --host=$DBHOST --user=root --password=\"${ROOTPW}\" < /etc/linotp2/linotpcreatedb.sql || true" >> /etc/rc.local
 				echo "rm /etc/linotp2/linotpcreatedb.sql" >> /etc/rc.local
