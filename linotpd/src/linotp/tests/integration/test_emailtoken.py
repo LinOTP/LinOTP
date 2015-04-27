@@ -51,7 +51,10 @@ class TestEmailToken(TestCase):
 
         email_provider_config = get_from_tconfig(['email_token', 'email_provider_config'])
         email_recipient = get_from_tconfig(['email_token', 'recipient'], required=True)
-        radius_server = get_from_tconfig(['radius', 'server'], default=self.http_host)
+        radius_server = get_from_tconfig(
+            ['radius', 'server'],
+            default=self.http_host.split(':')[0],
+            )
         radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
         disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
 
