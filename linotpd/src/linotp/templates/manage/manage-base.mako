@@ -491,7 +491,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     			</tr>
     			<tr><td> </td><td><input type='checkbox' id='ocra_key_cb' onclick="cb_changed('ocra_key_cb',['ocra_key','ocra_key_label','ocra_key_intro']);">
     				<label for=ocra_key_cb>${_("Generate OCRA key.")}</label></td></tr>
-                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>    				
+                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
                 <tr name="set_pin_rows" >
                     <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
@@ -740,15 +740,18 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <!-- ###################### import Yubikey CSV ####################### -->
 <div id='dialog_import_yubikey'>
-	<form id="load_tokenfile_form_yubikeycsv" action="/admin/loadtokens" method="post"
-			enctype="multipart/form-data" onsubmit="return false;">
-		<p>${_("Here you can upload a csv file for your Yubikey token. The file is supposed to contain one token per line")}:</p>
-  		<p>${_("Please choose the token file")}:
-    		<input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
-    		<input name="type" type="hidden" value="yubikeycsv">\
-    		<input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">\
-		</p>
-	</form>
+    <form id="load_tokenfile_form_yubikeycsv" action="/admin/loadtokens" method="post"
+             enctype="multipart/form-data" onsubmit="return false;">
+        <p>${_("Here you can upload a csv file for your Yubikey token. The file is supposed to contain one token per line")}:</p>
+        <p>${_("Please choose the token file")}:
+             <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
+             <input name="type" type="hidden" value="yubikeycsv">\
+             <input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">
+        </p><p>
+             <label for="target_realm" >${_("Enter the realm, the tokens should part of:")}</label>
+             <input id="target_realm" name="realm" type="text" value="">\
+        </p>
+    </form>
 </div>
 
 <script>
@@ -1335,7 +1338,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
     <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
     </fieldset>
-    
+
     <fieldset name='${_("SQL attributes")}'>
       <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
         <table>

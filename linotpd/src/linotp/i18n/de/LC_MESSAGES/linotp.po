@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2015-03-19 14:24+0100\n"
+"PO-Revision-Date: 2015-04-23 12:00+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -593,10 +593,7 @@ msgstr "Pin bestätigen"
 msgid "Enroll EMail Token"
 msgstr "E-Mail Token ausrollen"
 
-msgid "Please enter a valid email address!"
-msgstr "Bitte eine gültige E-Mail Adresse eingeben!"
-
-msgid "Form data not valid."
+msgid "Input data is not valid!"
 msgstr "Die Formulardaten sind ungültig."
 
 msgid "Enroll your email token"
@@ -676,6 +673,9 @@ msgid ""
 msgstr ""
 "Bitte geben Sie ein gültiges Initialisierungs-Seed ein. Es darf nur Nummern "
 "und die Buchstaben A bis F enthalten."
+
+msgid "Form data not valid."
+msgstr "Die Formulardaten sind ungültig."
 
 msgid "Enroll your HOTP token"
 msgstr "Rollen Sie Ihren HOTP Token aus"
@@ -982,6 +982,9 @@ msgstr ""
 msgid "remotely"
 msgstr "entfernt"
 
+msgid "remote otp len"
+msgstr "otp Länge des entfernten Tokens"
+
 msgid "remote serial"
 msgstr "entfernte Seriennummer"
 
@@ -1136,6 +1139,12 @@ msgstr ""
 
 msgid "enroll totp token"
 msgstr "TOTP Token ausrollen"
+
+msgid "Enroll FIDO U2F Token"
+msgstr "FIDO U2F Token ausrollen"
+
+msgid "Enroll token"
+msgstr "Token ausrollen"
 
 msgid "Vasco Token"
 msgstr "Vasco Token"
@@ -1991,9 +2000,6 @@ msgstr "OCRA Key"
 msgid "Generate OCRA key."
 msgstr "OCRA Key vom Server generieren lassen."
 
-msgid "Enroll token"
-msgstr "Token ausrollen"
-
 msgid "Enroll"
 msgstr "ausrollen"
 
@@ -2209,6 +2215,9 @@ msgstr ""
 "Hier können Sie eine CSV Datei importieren, die Yubikey Token Definitionen "
 "enthält. Diese Datei muss einen Token pro Zeile enthalten und wurde mit der "
 "Yubikey Personalisierungs GUI erstellt."
+
+msgid "Enter the realm, the tokens should part of:"
+msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
 
 msgid "Yubikey csv Token file"
 msgstr "Yubikey CSV Tokendatei"
@@ -3249,6 +3258,9 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "Please enter a valid email address!"
+#~ msgstr "Bitte eine gültige E-Mail Adresse eingeben!"
 
 #~ msgid "E-mail provider"
 #~ msgstr "E-Mail Provider"
