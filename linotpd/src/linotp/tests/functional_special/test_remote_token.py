@@ -194,7 +194,6 @@ class TestRemoteToken(TestController):
 
         return
 
-
     def test_03_check_token_remote_pin(self):
         '''
         Checking if remote PIN works
