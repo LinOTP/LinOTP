@@ -583,7 +583,7 @@ def getTokens4UserOrSerial(user=None, serial=None, forUpdate=False, _class=True)
     if user is not None:
         log.debug("[getTokens4UserOrSerial] getting token object 4 user: %r" % user)
 
-        if (user.isEmpty() == False):
+        if not user.isEmpty() and user.login:
             # the upper layer will catch / at least should
             (uid, resolver, resolverClass) = getUserId(user)
 
