@@ -133,6 +133,7 @@ class TestPolicies(TestController):
                        'scope' : 'system',
                        'realm' : '*',
                        'action' : 'read',
+                       'enforce': 'true',
                        'user' : 'adminR1',
                        'selftest_admin' : 'superadmin'
                       }
@@ -3136,8 +3137,9 @@ class TestPolicies(TestController):
         for name in names:
             if name in ["ManageAll", "sysSuper"]:
                 continue
-            parameters = { 'name' : name,
-                          'selftest_admin' : 'superadmin' }
+            parameters = {'name': name,
+                          'enforce': 'true',
+                          'selftest_admin': 'superadmin'}
             response = self.app.get(url(controller='system', action='delPolicy'), params=parameters)
 
             self.assertTrue('"status": true' in response, response)

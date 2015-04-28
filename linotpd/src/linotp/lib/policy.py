@@ -79,6 +79,10 @@ MAP_TYPE_GETOTP_ACTION = {"dpw": "max_count_dpw",
                           "totp": "max_count_totp"}
 
 
+class PolicyWarning(Exception):
+    pass
+
+
 class PolicyException(LinotpError):
     def __init__(self, description="unspecified error!", id=410):
         LinotpError.__init__(self, description=description, id=id)
@@ -375,6 +379,7 @@ def setPolicy(param):
       * client
     '''
     ret = {}
+
     name = param.get('name')
     action = param.get('action')
     scope = param.get('scope')
@@ -382,7 +387,12 @@ def setPolicy(param):
     user = param.get('user')
     time = param.get('time')
     client = param.get('client')
-    active = param.get('active', True)
+    active = param.get('active', "True")
+
+    # before storing the policy, we have to check the impact:
+    # if there is a problem, we will raise an exception with a warning
+    check_policy_impact(**param)
+
     ret["action"] = storeConfig("Policy.%s.action" % name,
                                 action, "", "a policy definition")
     ret["scope"] = storeConfig("Policy.%s.scope" % name,
@@ -399,6 +409,79 @@ def setPolicy(param):
                                 active, "", "a policy definition")
 
     return ret
+
+
+def check_policy_impact(scope='', action='', active='True', client='',
+                        realm='', time=None, user=None, name='',
+                        enforce=False):
+    """
+    check if applying the policy will lock the user out
+    """
+
+    # Currently only system policies are checked
+    if scope.lower() not in ['system']:
+        return
+
+    reason = ''
+    no_system_write_policy = True
+    active_system_policy = False
+
+    pol = {'scope': scope,
+           'action': action,
+           'active': active,
+           'client': client,
+           'realm': realm,
+           'user': user,
+           'time': time
+           }
+
+    policies = getPolicies()
+
+    # in case of a policy change exclude this one from comparison
+    if name in policies:
+        del policies[name]
+
+    # add the new policy and check the constrains
+    policies[name] = pol
+
+    for policy in policies.values():
+
+        # do we have a system policy that is active?
+        p_scope = policy['scope'].lower()
+        p_active = policy['active'].lower()
+
+        if p_scope == 'system' and p_active == 'true':
+            active_system_policy = True
+
+            # get the policy actions
+            p_actions = []
+            for act in policy.get('action', '').split(','):
+                p_actions.append(act.strip())
+
+            #check if there is a write in the actions
+            if '*' in p_actions or 'write' in p_actions:
+                no_system_write_policy = False
+                break
+
+    # for any system policy:
+    # if no user is defined defined this can as well result in a lockout
+    if not user.strip():
+        reason = "no user defined for system policy %s!" % name
+    # same for empty realm
+    if not realm.strip():
+        reason = "no realm defined for system policy %s!" % name
+
+    # if there has been no system policy with write option
+    # and there are active system policy left
+    if no_system_write_policy and active_system_policy:
+        reason = "no active system policy with 'write' permission defined!"
+
+    if reason and enforce is False:
+        raise PolicyWarning("Warning: potential lockout due to policy "
+                "defintion: %s" % reason)
+
+    # admin policy could as well result in lockout
+    return
 
 
 def create_policy_export_file(policy, filename):
@@ -426,6 +509,37 @@ def create_policy_export_file(policy, filename):
     return filename
 
 
+def getPolicies(config=None):
+    # First we load ALL policies from the Config
+    if not config:
+        lConfig = getLinotpConfig()
+    else:
+        lConfig = config
+
+    Policies = {}
+    for entry in lConfig:
+        if entry.startswith("linotp.Policy."):
+            #log.debug("[getPolicy] entry: %s" % entry )
+            policy = entry.split(".", 4)
+            if len(policy) == 4:
+                name = policy[2]
+                key = policy[3]
+                value = lConfig.get(entry)
+
+                # prepare the value to be at least an empty string
+                if value is None and key in ('user', 'client', 'realm'):
+                    value = ''
+                if key == "realm":
+                    value = value.lower()
+
+                if name in Policies:
+                    Policies[name][key] = value
+                else:
+                    Policies[name] = {key: value}
+
+    return Policies
+
+
 def getPolicy(param, display_inactive=False):
     '''
     Function to retrieve the list of policies.
@@ -440,42 +554,26 @@ def getPolicy(param, display_inactive=False):
          The action can also be something like "otppin" and will
          return policies containing "otppin = 2"
 
-    :return: a dictionary with the policies. The name of the policy being the key
+    :return: a dictionary with the policies. The name of the policy being
+             the key
     '''
-    Policies = {}
-
     #log.debug("[getPolicy] params %s" % str(param))
+    Policies = {}
 
     # First we load ALL policies from the Config
     lConfig = getLinotpConfig()
-    for entry in lConfig:
-        if entry.startswith("linotp.Policy."):
-            #log.debug("[getPolicy] entry: %s" % entry )
-            policy = entry.split(".", 4)
-            if len(policy) == 4:
-                # check if we should return this named policy
-                insert_this = True
-                if param.get('name', None) is not None:
-                    # If a named policy was requested, we do not want to add
-                    # the policy if the name does not match!
-                    insert_this = bool(param['name'].lower()
-                                       == policy[2].lower())
+    lPolicies = getPolicies(lConfig)
 
-                if insert_this:
-                    name = policy[2]
-                    key = policy[3]
-                    value = lConfig.get(entry)
-                    #log.debug("[getPolicy] found POL: %s, KEY: %s, VAL: %s"
-                    #          %(name, key, value))
+    if param.get('name', None):
+        # If a named policy was requested, we add
+        # the policy if the name does match case insensitiv
+        p_name = param['name'].lower()
+        for pol_name in lPolicies:
+            if pol_name.lower() == p_name:
+                Policies[pol_name] = lPolicies[pol_name]
+    else:
+        Policies = lPolicies
 
-                    if name in Policies:
-                        if key == "realm":
-                            if value is not None:
-                                value = value.lower()
-                        Policies[name][key] = value
-                    else:
-                        Policies[name] = {key: value}
-                    #log.debug( Policies )
     # Now we need to clean up policies, that are inactive
     if not display_inactive:
         pol2delete = []
@@ -585,7 +683,7 @@ def getPolicy(param, display_inactive=False):
     return Policies
 
 
-def deletePolicy(name):
+def deletePolicy(name, enforce=False):
     '''
     Function to delete one named policy
 
@@ -598,6 +696,17 @@ def deletePolicy(name):
                           "characters a-zA-Z0-9_", id=8888)
 
     Config = getLinotpConfig()
+
+    # check if due to delete of the policy a lockout could happen
+    policies = getPolicies(config=Config)
+    param = policies.get(name)
+    # delete is same as inactive ;-)
+    if param:
+        param['active'] = "False"
+        param['name'] = name
+        param['enforce'] = enforce
+        check_policy_impact(**param)
+
     delEntries = []
     for entry in Config:
         if entry.startswith("linotp.Policy.%s." % name):

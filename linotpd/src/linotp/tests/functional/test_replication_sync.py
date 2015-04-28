@@ -537,7 +537,7 @@ class TestReplication(TestController):
 
         ''' 3. getPolicy '''
         params = {
-            'name' : 'enrollPolicy',
+            'name': 'enrollPolicy',
             }
         resp = self.make_system_request('getPolicy', params)
         assert('"action": "maxtoken=3' in resp)
