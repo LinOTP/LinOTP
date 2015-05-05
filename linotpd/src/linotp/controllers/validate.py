@@ -257,6 +257,8 @@ class ValidateController(BaseController):
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt
+                    if 'transactionid' in opt:
+                        param['transactionid'] = opt['transactionid']
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)
@@ -513,6 +515,8 @@ class ValidateController(BaseController):
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt
+                    if 'transactionid' in opt:
+                        param['transactionid'] = opt['transactionid']
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)
@@ -606,6 +610,8 @@ class ValidateController(BaseController):
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt
+                    if 'transactionid' in opt:
+                        param['transactionid'] = opt['transactionid']
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)
