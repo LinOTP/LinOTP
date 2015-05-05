@@ -891,6 +891,17 @@ class Ocra2TokenClass(TokenClass):
         (res, pin, otpval) = self.splitPinPass(passw)
         res = self.checkPin(pin)
 
+        if res == False:
+            if 'transactionid' in options or 'state' in options:
+                transactionid = options.get('state', options.get('transactionid'))
+                for challenge in challenges:
+                    transid = challenge.get('transid', None)
+                    if transid == transactionid:
+                        res = True
+                        pin = None
+                        otpval = passw
+                        break
+
         if res == True:
             window = self.getCounterWindow()
             counter = self.getOtpCount()
