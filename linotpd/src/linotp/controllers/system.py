@@ -1027,9 +1027,10 @@ class SystemController(BaseController):
 
             # check that the name does not contain a .
             if not re.match('^[a-zA-Z0-9_]*$', name):
-                raise Exception (_("The name of the policy may only contain the characters a-zA-Z0-9_"))
+                raise Exception(_("The name of the policy may only contain "
+                                   "the characters a-zA-Z0-9_"))
             if not name:
-                raise Exception (_("The name of the policy must not be empty"))
+                raise Exception(_("The name of the policy must not be empty"))
 
             action = getParam(param, "action", required)
             scope = getParam(param, "scope", required)
@@ -1037,21 +1038,26 @@ class SystemController(BaseController):
             user = getParam(param, "user", optional)
             time = getParam(param, "time", optional)
             client = getParam(param, "client", optional)
-            active = param.get("active", True)
+            active = param.get("active", 'True')
 
-            p_param = { 'name': name,
-                      'action' : action,
-                      'scope' : scope,
-                      'realm' : realm,
-                      'user' : user,
-                      'time' : time,
+            p_param = {'name': name,
+                      'action': action,
+                      'scope': scope,
+                      'realm': realm,
+                      'user': user,
+                      'time': time,
                       'client': client,
-                      'active' : active}
+                      'active': active
+                      }
+
+            enforce = param.get('enforce', 'False')
+            if enforce.lower() == 'true':
+                enforce = True
+                p_param['enforce'] = enforce
 
             c.audit['action_detail'] = unicode(param)
 
             if len(name) > 0 and len(action) > 0:
-
                 log.debug("[setPolicy] saving policy %r" % p_param)
                 ret = setPolicy(p_param)
                 log.debug("[setPolicy] policy %s successfully saved." % name)
@@ -1524,11 +1530,18 @@ class SystemController(BaseController):
             param.update(request.params)
             log.info("[delPolicy] deleting policy: %r" % param)
 
+            # support the ignor of policy impact check
+            enforce = param.get("enforce", 'False')
+            if enforce.lower() == 'true':
+                enforce = True
+            else:
+                enforce = False
+
             name_param = param["name"]
             names = name_param.split(',')
             for name in names:
                 log.debug("[delPolicy] trying to delete policy %s" % name)
-                ret.update(deletePolicy(name))
+                ret.update(deletePolicy(name, enforce))
 
             res["delPolicy"] = {"result": ret}
 
