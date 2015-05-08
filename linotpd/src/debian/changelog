@@ -1,4 +1,4 @@
-linotp (2.7.2.1~b0-1) jessie; urgency=low
+linotp (2.7.2.1~b1-1) jessie; urgency=low
 
   Bug fixes:
   * Server: Token in autoassignment were assigned randomly instead of the one
@@ -15,8 +15,9 @@ linotp (2.7.2.1~b0-1) jessie; urgency=low
   * Packaging: Fix for LinOTP installation in a LSE Smart Virtual Appliance on
     Debian Jessie. Since MySQL lacks a systemd service file use polling to
     check when MySQL is brought up
+  * Server: Fix erroneous reply message about 'unconfigured autoenrollment'
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 28 Apr 2015 13:13:31 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 08 May 2015 11:58:23 +0200
 
 linotp (2.7.2-1~precise) precise; urgency=low
 
