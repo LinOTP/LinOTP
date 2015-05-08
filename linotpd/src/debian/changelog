@@ -1,3 +1,15 @@
+linotp (2.7.2+custom03-1) jessie; urgency=low
+
+  Enhancements:
+  * Add 'last access' timestamp to token info (to show when the token was last
+    used)
+  * Add target realm field to Yubikey token import
+
+  Bug fixes:
+  * Don't break off package install/remove if a2dissite fails
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 08 May 2015 09:16:55 +0200
+
 linotp (2.7.2+custom02-1~precise) precise; urgency=low
 
   * Fix for random token assignment in autoassignment
