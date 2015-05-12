@@ -988,6 +988,8 @@ class AdminController(BaseController):
             log.info("[assign] assigning token with serial %s to user %s@%s" % (serial, user.login, user.realm))
             res = assignToken(serial, user, upin, param)
 
+            checkPolicyPost('admin', 'assign', param, user)
+
             c.audit['success'] = res
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm
@@ -1182,7 +1184,7 @@ class AdminController(BaseController):
             checkPolicyPre('admin', 'set', param, user=user)
 
             # # if there is a pin
-            if param.has_key("pin"):
+            if 'pin' in param:
                 msg = "[set] setting pin failed"
                 upin = getParam(param, "pin", required)
                 log.info("[set] setting pin for token with serial %r" % serial)
@@ -1191,6 +1193,7 @@ class AdminController(BaseController):
                 ret = setPin(upin, user, serial, param)
                 res["set pin"] = ret
                 count = count + 1
+                checkPolicyPost('admin', 'setPin', param, user)
                 c.audit['action_detail'] += "pin, "
 
             if param.has_key("MaxFailCount".lower()):
