@@ -89,11 +89,9 @@ setup(
         ],
     setup_requires=[
         'PasteScript>=1.6.3',
-        'nose>=0.11'
         ],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
-    test_suite='nose.collector',
     data_files=[
         (
             get_debian_package() + 'etc/linotp2/',
@@ -229,6 +227,9 @@ setup(
         },
     zip_safe=False,
     paster_plugins=['PasteScript', 'Pylons'],
+    # The entry point for nose.plugins is required because otherwise nosetests
+    # complains "no such option 'with-pylons'".
+    # https://github.com/Pylons/pylons/issues/13
     entry_points="""
     [paste.app_factory]
     main = linotp.config.middleware:make_app
