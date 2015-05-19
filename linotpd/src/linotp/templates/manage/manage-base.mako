@@ -383,7 +383,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 	<a href="http://www.lsexperts.de/" target="_blank">http://www.lsexperts.de</a></p>
 	<p>${_("Authors:")}
 		<br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
-		<br>Rainer Endres, Stefan Pietsch, Eric Sesterhenn
+		<br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
+		<br>Stefan Pietsch, Eric Sesterhenn
 	</p>
 
 </div>
