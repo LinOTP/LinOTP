@@ -105,18 +105,18 @@ custom_templates = %(here)s/custom-templates/
 
 
 #
-#  Note: You should change the Logging Level from DEGUB to WARN
+## Note: For more detailed log messages change the level to INFO or DEBUG
 #
 # Logging configuration
 [loggers]
 keys = root, linotp, sqlalchemy
 
 [logger_root]
-level = DEBUG
+level = WARN
 handlers = file
 
 [logger_linotp]
-level = DEBUG
+level = WARN
 handlers = file
 qualname = linotp
 
@@ -136,7 +136,7 @@ class = handlers.RotatingFileHandler
 # Make the logfiles 10 MB
 # and rotate 4  files
 args = ('%(here)s/linotp.log','a', 10000000, 4)
-level = INFO
+level = WARN
 formatter = generic
 
 [formatters]
