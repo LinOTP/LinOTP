@@ -1689,7 +1689,7 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[isSupportValid] done")
+            log.debug("[isSupportValid] done")
 
     def setSupport(self):
         """
