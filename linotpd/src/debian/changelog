@@ -1,3 +1,9 @@
+linotp (2.7.2+custom04-1~trusty) trusty; urgency=low
+
+  * Fix: Don't break off package install/remove if a2dissite fails
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 22 May 2015 14:32:15 +0200
+
 linotp (2.7.2-1~precise) precise; urgency=low
 
   Enhancements:
