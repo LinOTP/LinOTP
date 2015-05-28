@@ -355,25 +355,32 @@ class BaseController(WSGIController):
 
     def set_language(self, headers):
         '''Invoke before everything else. And set the translation language'''
-        languages = headers.get('Accept-Language', '').split(';')
+        languages = headers.get('Accept-Language', '')
+
+        # HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
+        # de-DE, de; q=0.7, en; q=0.3
+        parse = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
         found_lang = False
 
-        for language in languages:
-            for lang in language.split(','):
-                try:
-                    if lang[:2] == "en":
-                        found_lang = True
-                        break
-                    set_lang(lang)
-                    found_lang = True
-                    break
-                except LanguageError as exx:
-                    pass
+        for match in parse.finditer(languages):
+            # make sure we have a correct language code format
+            language = match.group(1).replace('_', '-').lower()
 
-            if found_lang is True:
+            # en is the default language
+            if language.split('-')[0] == 'en':
+                found_lang = True
                 break
 
-        if found_lang is False:
+            try:
+                # set_lang needs a locale name formed parameter
+                set_lang(language.replace('-','_'))
+                found_lang = True
+                break
+            except LanguageError:
+                log.debug("Cannot set requested language: %s. Trying next language if available.",
+                          language)
+
+        if not found_lang:
             log.warning("Cannot set preferred language: %r" % languages)
 
         return
