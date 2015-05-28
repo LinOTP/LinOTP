@@ -32,8 +32,6 @@ from pylons.i18n.translation import _
 from linotp.lib.tokenclass import TokenClass
 
 from linotp.lib.ImportOTP.vasco import vasco_otp_check
-from linotp.lib.ImportOTP.vasco import compress
-from linotp.lib.ImportOTP.vasco import decompress
 
 import logging
 log = logging.getLogger(__name__)
@@ -142,15 +140,16 @@ class VascoTokenClass(TokenClass):
 
         secObject = self.token.getHOtpKey()
         otpkey = secObject.getKey()
-        data = decompress(otpkey)
         # let vasco handle the OTP checking
-        (res, data) = vasco_otp_check(data, anOtpVal)
+        (res, otpkey) = vasco_otp_check(otpkey, anOtpVal)
         # update the vasco data blob
-        self.update({"otpkey" : compress(data)})
+        self.update({"otpkey": otpkey})
 
         if res != 0:
-            log.warning("[checkOtp] Vasco token failed to authenticate. Vasco Error code: %d" % res)
-            # TODO: Vasco gives much more detailed error codes. But at the moment we do not handle more error codes!
+            log.warning("[checkOtp] Vasco token failed to authenticate. "
+                        "Vasco Error code: %d" % res)
+            # TODO: Vasco gives much more detailed error codes. But at the
+            # moment we do not handle more error codes!
             res = -1
 
         return res

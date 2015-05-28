@@ -28,8 +28,6 @@
 admin controller - interfaces to administrate LinOTP
 """
 
-
-
 import logging
 
 from pylons import request, response, config, tmpl_context as c
@@ -80,8 +78,6 @@ from linotp.lib.audit.base import logTokenNum
 # for loading XML file
 from linotp.lib.ImportOTP import parseSafeNetXML, parseOATHcsv, ImportException, parseYubicoCSV
 
-
-from tempfile import mkstemp
 import os
 import traceback
 
@@ -1965,6 +1961,11 @@ class AdminController(BaseController):
             fileType = request.POST['type']
             targetRealm = request.POST.get('realm', None)
 
+            # for encrypted token import data, this is the decryption key
+            transportkey = request.POST.get('transportkey', None)
+            if not transportkey:
+                transportkey = None
+
             pskc_type = None
             pskc_password = None
             pskc_preshared = None
@@ -2045,13 +2046,8 @@ class AdminController(BaseController):
                 elif "plain" == pskc_type:
                     TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
             elif typeString == "vasco":
-                vasco_otplen = request.POST['vasco_otplen']
-                (fh, filename) = mkstemp()
-                f = open(filename, "w")
-                f.write(fileString)
-                f.close()
-                TOKENS = parseVASCOdata(filename, int(vasco_otplen))
-                os.remove(filename)
+                vasco_otplen = int(request.POST.get('vasco_otplen', 6))
+                TOKENS = parseVASCOdata(fileString, vasco_otplen, transportkey)
                 if TOKENS is None:
                     raise ImportException("Vasco DLL was not properly loaded. "
                                           "Importing of VASCO token not "
@@ -2077,7 +2073,6 @@ class AdminController(BaseController):
             if targetRealm and targetRealm.lower() in available_realms:
                     tokenrealm = targetRealm
             log.info("[loadtokens] setting tokenrealm %s" % tokenrealm)
-
 
             log.debug("[loadtokens] read %i tokens. starting import now"
                       % len(TOKENS))

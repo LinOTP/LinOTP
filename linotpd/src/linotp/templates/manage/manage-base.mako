@@ -748,8 +748,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
              <input name="type" type="hidden" value="yubikeycsv">\
              <input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">
         </p><p>
-             <label for="target_realm" >${_("Enter the realm, the tokens should part of:")}</label>
-             <input id="target_realm" name="realm" type="text" value="">\
+             <label for="yubi_target_realm" >${_("Enter the realm, the tokens should part of:")}</label>
+             <input id="yubi_target_realm" name="realm" type="text" value="">\
         </p>
     </form>
 </div>
@@ -831,16 +831,30 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ################ import VASCO ################################## -->
 <div id='dialog_import_vasco'>
 	<form id="load_tokenfile_form_vasco" action="/admin/loadtokens" method="post"\
-				enctype="multipart/form-data" onsubmit="return false;">
-  				<p>${_("Here you can upload your Vasco dpx file.")}</p>
-				<p>${_("Please choose the token file")}:<br>
-    			<input name="file" type="file" size="30" maxlength="1000000" accept="text/*"></p>
-    			<input name="type" type="hidden" value="vasco">
-    			<p><label for=vasco_otplen>${_("OTP length")}:</label>
-    				 <select name='vasco_otplen' id='vasco_otplen'><option selected>6</option>
-    			<option>8</option></select>
-    			<input name="session" id="loadtokens_session_vasco" type="hidden" value="">
-    			</p></form>
+        enctype="multipart/form-data" onsubmit="return false;">
+        <p><b>${_("Import tokens from VASCO DPX file")}</b></p>
+        <p>
+            <table>
+            <tr><td><label for="vasco_file">${_("Please choose the token file")}:</label></td>
+                <td><input id="vasco_file" name="file" type="file" size="30" maxlength="1000000" accept="text/*"></td>
+            </tr>
+            <tr><td><label for=vasco_otplen>${_("OTP length")}:</label></td>
+                <td><select name='vasco_otplen' id='vasco_otplen'>
+                <option selected>6</option>
+                <option>8</option></select>
+                </td>
+            </tr>
+            <tr><td><label for="vasco_transportkey">${_("Transport key:")}</label></td>
+                <td><input id="vasco_transportkey" name="transportkey" value="" size="32"></td>
+            </tr>
+            <tr><td><label for="vasco_target_realm">${_("Target realm")}</label></td>
+                <td><input id="vasco_target_realm" name="realm" type="text" value="" size="32"></td>
+            </tr>
+            </table>
+            <input name="type" type="hidden" value="vasco">
+            <input name="session" id="loadtokens_session_vasco" type="hidden" value="">
+        </p>
+    </form>
 </div>
 <script>
 	function translate_import_vasco() {
