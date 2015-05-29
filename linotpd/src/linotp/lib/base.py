@@ -52,6 +52,9 @@ from linotp import model
 import logging
 log = logging.getLogger(__name__)
 
+# HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
+# de-DE, de; q=0.7, en; q=0.3
+accept_language_regexp = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
 
 def set_config(key, value, typ, description=None):
     '''
@@ -349,14 +352,14 @@ class BaseController(WSGIController):
         '''Invoke before everything else. And set the translation language'''
         languages = headers.get('Accept-Language', '')
 
-        # HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
-        # de-DE, de; q=0.7, en; q=0.3
-        parse = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
         found_lang = False
 
-        for match in parse.finditer(languages):
+        for match in accept_language_regexp.finditer(languages):
             # make sure we have a correct language code format
-            language = match.group(1).replace('_', '-').lower()
+            language = match.group(1)
+            if not language:
+                continue
+            language = language.replace('_', '-').lower()
 
             # en is the default language
             if language.split('-')[0] == 'en':
