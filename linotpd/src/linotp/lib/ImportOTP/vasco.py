@@ -23,29 +23,36 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-"""This parses the vasco dpx files """
+""" Import tokens from the vasco dpx files """
 
 import pickle
 import zlib
+import os
+from pylons import config
+
+from ctypes import *
+from tempfile import NamedTemporaryFile
 
 import logging
 log = logging.getLogger(__name__)
 
-from pylons import config
-
-from ctypes import *
 
 vasco_dll = None
 try:
+    # get the Vacman Controller lib
+    # /opt/vasco/Vacman_Controller-3.10.1/lib/libaal2sdk-3.10.1.so
+
     vasco_lib = config.get("linotpImport.vasco_dll")
-    #/opt/vasco/Vacman_Controller-3.10.1/lib/libaal2sdk-3.10.1.so
     if None == vasco_lib:
         log.warning("Missing linotpImport.vasco_dll in config file")
     else:
         log.info("loading vasco lib %s" % vasco_lib)
         vasco_dll = CDLL(vasco_lib)
-except Exception as  e:
-    log.error("cannot load vasco library: %s" % str(e))
+
+except Exception as exx:
+    log.info("cannot load vasco library: %r" % exx)
+
+__all__ = ["parseVASCOdata", "vasco_otp_check"]
 
 
 def check_vasco(fn):
@@ -68,38 +75,40 @@ class TDPXHandle(Structure):
                 ("pHandleDpxInitKey", c_void_p)
                 ]
 
+
 class TKernelParams(Structure):
-    _fields_ = [ ("ParmCount", c_ulong),
-                 ("ITimeWindow", c_ulong),
-                 ("STimeWindow", c_ulong),
-                 ("DiagLevel", c_ulong),
-                 ("GMTAdjust", c_ulong),
-                 ("CheckChallenge", c_ulong),
-                 ("IThreshold", c_ulong),
-                 ("SThreshold", c_ulong),
-                 ("ChkInactDays", c_ulong),
-                 ("DeriveVector", c_ulong),
-                 ("SyncWindow", c_ulong),
-                 ("OnLineSG", c_ulong),
-                 ("EventWindow", c_ulong),
-                 ("HSMSlotId", c_ulong),
-                 ("StorageKeyId", c_ulong),
-                 ("TransportKeyId", c_ulong),
-                 ("StorageDeriveKey1", c_ulong),
-                 ("StorageDeriveKey2", c_ulong),
-                 ("StorageDeriveKey3", c_ulong),
-                 ("StorageDeriveKey4", c_ulong),
-                 ]
+    _fields_ = [("ParmCount", c_ulong),
+                ("ITimeWindow", c_ulong),
+                ("STimeWindow", c_ulong),
+                ("DiagLevel", c_ulong),
+                ("GMTAdjust", c_ulong),
+                ("CheckChallenge", c_ulong),
+                ("IThreshold", c_ulong),
+                ("SThreshold", c_ulong),
+                ("ChkInactDays", c_ulong),
+                ("DeriveVector", c_ulong),
+                ("SyncWindow", c_ulong),
+                ("OnLineSG", c_ulong),
+                ("EventWindow", c_ulong),
+                ("HSMSlotId", c_ulong),
+                ("StorageKeyId", c_ulong),
+                ("TransportKeyId", c_ulong),
+                ("StorageDeriveKey1", c_ulong),
+                ("StorageDeriveKey2", c_ulong),
+                ("StorageDeriveKey3", c_ulong),
+                ("StorageDeriveKey4", c_ulong),
+                ]
 
 
 class TDigipassBlob(Structure):
-    _fields_ = [ ("Serial", c_char * 10),
-                 ("AppName", c_char * 12),
-                 ("DPFlags", c_byte * 2),
-                 ("Blob", c_char * 224)
+    _fields_ = [("Serial", c_char * 10),
+                ("AppName", c_char * 12),
+                ("DPFlags", c_byte * 2),
+                ("Blob", c_char * 224)
                 ]
-@check_vasco
-def vasco_dpxinit(filename="demovdp.dpx", transportkey="1"*32):
+
+
+def vasco_dpxinit(filename="demovdp.dpx", transportkey=None):
     '''
     This function returns
      - error code
@@ -108,6 +117,9 @@ def vasco_dpxinit(filename="demovdp.dpx", transportkey="1"*32):
      - application names
      - token counts
     '''
+    if not transportkey:
+        transportkey = "1" * 32
+
     c_filename = c_char_p(filename)
     c_transportkey = c_char_p(transportkey)
     # string with 97 bytes
@@ -133,14 +145,13 @@ def vasco_dpxinit(filename="demovdp.dpx", transportkey="1"*32):
     return (res, fh, appl_count, appl_names, token_count)
 
 
-@check_vasco
 def vasco_getstatic_vector(handle, params):
     '''
     '''
     vector = "." * 113
     p_vector = c_char_p(vector)
     vector_len = c_int(112)
-    p_vector_len = pointer (vector_len)
+    p_vector_len = pointer(vector_len)
     res = vasco_dll.AAL2DPXGetStaticVector(pointer(handle),
                                            pointer(params),
                                            p_vector,
@@ -148,12 +159,12 @@ def vasco_getstatic_vector(handle, params):
 
     return (res, vector, vector_len)
 
-@check_vasco
+
 def vasco_gettoken(handle, params, select_appl):
     dpdata = TDigipassBlob()
-    serial = "\0"*23
-    typ = "\0"*6
-    authmode = "\0"*3
+    serial = "\0" * 23
+    typ = "\0" * 6
+    authmode = "\0" * 3
     res = vasco_dll.AAL2DPXGetToken(pointer(handle),
                                     pointer(params),
                                     c_char_p(select_appl),
@@ -165,22 +176,21 @@ def vasco_gettoken(handle, params, select_appl):
     return (res, serial, typ, authmode, dpdata)
 
 
-@check_vasco
 def vasco_dpxclose(handle):
     res = vasco_dll.AAL2DPXClose(pointer(handle))
     return res
 
-@check_vasco
-def vasco_genpassword(data, params, challenge="\0"*16):
-    password = "\0"*41
+
+def vasco_genpassword(data, params, challenge="\0" * 16):
+    password = "\0" * 41
     res = vasco_dll.AAL2GenPassword(pointer(data),
                                      pointer(params),
                                      c_char_p(password),
                                      c_char_p(challenge))
     return (res, password)
 
-@check_vasco
-def vasco_verify(data, params, password, challenge="\0"*16):
+
+def vasco_verify(data, params, password, challenge="\0" * 16):
     res = vasco_dll.AAL2VerifyPassword(pointer(data),
                                            pointer(params),
                                            c_char_p(password),
@@ -189,7 +199,6 @@ def vasco_verify(data, params, password, challenge="\0"*16):
     return (res, data)
 
 
-@check_vasco
 def vasco_settokenproperty(data, params, prop, value):
     '''
     can be used to do not use a static PIN
@@ -201,11 +210,10 @@ def vasco_settokenproperty(data, params, prop, value):
                                         c_ulong(value))
     return (res, data)
 
-@check_vasco
+
 def vasco_gettokenproperty(data, params, prop):
     '''
     This function returns token properties.
-
     PIN_LEN: property = 10
     '''
     value = 0
@@ -215,8 +223,8 @@ def vasco_gettokenproperty(data, params, prop):
                                           pointer(c_ulong(value)))
     return (res, value)
 
-@check_vasco
-def compress(datablob):
+
+def vasco_compress(datablob):
     '''
     Compresses the data to be stored in the token database.
     The data object is pickled and compressed.
@@ -226,8 +234,8 @@ def compress(datablob):
     '''
     return zlib.compress(pickle.dumps(datablob))
 
-@check_vasco
-def decompress(tokendata):
+
+def vasco_decompress(tokendata):
     '''
     De-compresses the data when loaded from the token database.
     The data object is pickled and compressed.
@@ -237,104 +245,154 @@ def decompress(tokendata):
     '''
     return pickle.loads(zlib.decompress(tokendata))
 
+
 @check_vasco
-def parseVASCOdata(filename="Demo_GO6.DPX", arg_otplen=6):
+def parseVASCOdata(fileString=None, arg_otplen=6, transportkey=None):
     '''
-    This parses a DPX file and returns the dictionary with the Token Dictionary.
-    TOKENS[serial] = { hmac_key, type, otplen,
+    Parses the DPX data and returns the dictionary with the token description
+    for the token_init
+       TOKENS[serial] = { hmac_key, type, otplen, . . }
+
+    :param fileString: the dpx file as strings
+    :param arg_otplen: the otplen of the imported tokens
+    :param transportkey: the decryption key for crypted token files
     '''
     TOKENS = {}
 
     kp = TKernelParams()
-    kp.ParmCount = 19;
-    kp.ITimeWindow = 100;
-    kp.STimeWindow = 24;
-    kp.DiagLevel = 0;
-    kp.GMTAdjust = 0;
-    kp.CheckChallenge = 0;
+    kp.ParmCount = 19
+    kp.ITimeWindow = 100
+    kp.STimeWindow = 24
+    kp.DiagLevel = 0
+    kp.GMTAdjust = 0
+    kp.CheckChallenge = 0
     '''
     This is the failcounter! The failcounter needs to be reset manually
     When we set the failcounter=0 then we can rule the failcounter in LinOTP
     '''
-    kp.IThreshold = 0;
-    kp.SThreshold = 1;
-    kp.ChkInactDays = 0;
-    kp.DeriveVector = 0;
-    kp.SyncWindow = 2;
-    kp.OnLineSG = 1;
-    kp.EventWindow = 100;
-    kp.HSMSlotId = 0;
+    kp.IThreshold = 0
+    kp.SThreshold = 1
+    kp.ChkInactDays = 0
+    kp.DeriveVector = 0
+    kp.SyncWindow = 2
+    kp.OnLineSG = 1
+    kp.EventWindow = 100
+    kp.HSMSlotId = 0
 
+    # the vasco dpx parser requires an physical input file :-(
+    with  NamedTemporaryFile("w", delete=False) as dpxfile:
+        dpxfile.write(fileString)
+    filename = dpxfile.name
 
-    (res, fh, appl_count, appl_names, tokens) = vasco_dpxinit(filename=filename)
-    log.debug("[parseVASCOdata] found %s tokens." % tokens)
+    # we have to use a try - finally to guarante, that the tempfile is
+    # removed on completion
+    try:
+        (res, fh, _appl_count,
+         appl_names, tokens) = vasco_dpxinit(filename=filename,
+                                            transportkey=transportkey)
 
-    (res, vec, vec_len) = vasco_getstatic_vector(fh, kp)
-    log.debug("[parseVASCOdata] getstaticvector: %d" % res)
+        if res != 0:
+            if res in [-15, -14]:
+                res = "Error initkey"
 
-    # start getting tokens
-    res = 100
-    data = TDigipassBlob()
+            err = "Failed to initialize the import process! %r" % res
+            log.error("[parseVASCOdata] %s" % err)
+            raise Exception(err)
 
-    while 100 == res:
-        (res, serial, typ, auth, data) = vasco_gettoken(fh, kp, appl_names)
-        if 107 == res:
-            log.debug("[parseVASCOdata] SUCCESSfully reached the end of the file")
-        if 100 == res:
-            # remove the need for an otppin
-            (res, data) = vasco_settokenproperty(data, kp, 6, 2)
+        log.debug("found %s tokens." % tokens)
 
-            # TODO: Each token could have another OTP-length. At the moment we take the parameter
-            otplen = arg_otplen
+        (res, _vec, _vec_len) = vasco_getstatic_vector(fh, kp)
+        log.debug("getstaticvector: %d" % res)
 
-            #if type[:5] in ["DPGO6"] and auth[:2] in ["RO"]:
-            if auth[:2] in ["RO"]:
-                # yes, we support DPGO6
-                # and we support the response only (no signature and challenge)
-                otpkey = compress(data)
-                TOKENS["vc" + serial[:10]] = { 'type' : "vasco",
-                                    'hmac_key' : otpkey,
-                                    'tokeninfo' : { "application" : serial.strip("\0"),
-                                                    "type" : typ.strip("\0"),
-                                                    "auth" : auth.strip("\0"),
-                                                    #"data_Serial" : data.Serial,
-                                                    #"data_AppName" : data.AppName,
-                                                    #"data_DPFlags" : data.DPFlags
-                                                   },
-                                    'otplen' : otplen
-                                   }
-            else:
-                # We have not tested other tokens, so we do not import them!
-                log.warning("[parseVASCOdata] the tokentype %s, auth %s is not tested! The Token %s is not imported!" % (typ, auth, serial[:10]))
+        # start getting tokens
+        res = 100
+        data = TDigipassBlob()
 
-    res = vasco_dpxclose(fh)
+        while 100 == res:
+            (res, serial, typ, auth, data) = vasco_gettoken(fh, kp, appl_names)
+
+            if 107 == res:
+                log.debug("SUCCESSfully reached the end of the dpx file")
+
+            if 100 == res:
+                (pres, data) = vasco_settokenproperty(data, kp, 6, 2)
+                if pres != 0:
+                    log.error("Failed to set token properties %r" % pres)
+                    log.debug("Failing token properties %r" % kp)
+                    continue
+
+                # TODO: Each token could have another OTP-length.
+                # At the moment we take this as parameter
+                otplen = arg_otplen
+                idx = serial.index('APPL')
+                lin_serial = serial[:idx]
+
+                if auth[:2] in ["RO"]:
+                    # yes, we support DPGO6 and we support the
+                    # response only (no signature and challenge)
+                    otpkey = vasco_compress(data)
+                    TOKENS["vc" + lin_serial] = {
+                                        'type': "vasco",
+                                        'hmac_key': otpkey,
+                                        'tokeninfo': {
+                                            "application": serial.strip("\0"),
+                                            "type": typ.strip("\0"),
+                                            "auth": auth.strip("\0"),
+                                            #"data_Serial" : data.Serial,
+                                            #"data_AppName" : data.AppName,
+                                            #"data_DPFlags" : data.DPFlags
+                                            },
+                                        "description": typ.strip("\0"),
+                                        'otplen': otplen,
+                                       }
+                else:
+                    log.warning("The tokentype %s, auth %s is not tested! "
+                                "The Token %s is not imported!" %
+                                (typ, auth, lin_serial))
+
+        res = vasco_dpxclose(fh)
+
+    finally:
+        os.remove(filename)
 
     return TOKENS
 
 
 @check_vasco
-def vasco_otp_check(data, otp):
+def vasco_otp_check(otpkey, otp):
+    """
+    check the otp value
+
+    :param data: the vasco_token_data, stored in LinOTP database as otpkey
+    :param otp: the otp value
+    :return: tuple of (success and new_vasco_token_data)
+    """
     kp = TKernelParams()
-    kp.ParmCount = 19;
-    kp.ITimeWindow = 100;
-    kp.STimeWindow = 24;
-    kp.DiagLevel = 0;
-    kp.GMTAdjust = 0;
-    kp.CheckChallenge = 0;
+    kp.ParmCount = 19
+    kp.ITimeWindow = 100
+    kp.STimeWindow = 24
+    kp.DiagLevel = 0
+    kp.GMTAdjust = 0
+    kp.CheckChallenge = 0
     '''
     This is the failcounter! The failcounter needs to be reset manually
     When we set the failcounter=0 then we can rule the failcounter in LinOTP
     '''
-    kp.IThreshold = 0;
-    kp.SThreshold = 1;
-    kp.ChkInactDays = 0;
-    kp.DeriveVector = 0;
-    kp.SyncWindow = 2;
-    kp.OnLineSG = 1;
-    kp.EventWindow = 100;
-    kp.HSMSlotId = 0;
+    kp.IThreshold = 0
+    kp.SThreshold = 1
+    kp.ChkInactDays = 0
+    kp.DeriveVector = 0
+    kp.SyncWindow = 2
+    kp.OnLineSG = 1
+    kp.EventWindow = 100
+    kp.HSMSlotId = 0
 
-    return vasco_verify(data, kp, otp)
+    data = vasco_decompress(otpkey)
+    (res, data) = vasco_verify(data, kp, otp)
+    otpkey = vasco_compress(data)
+
+    return (res, otpkey)
+
 
 @check_vasco
 def test():
@@ -352,7 +410,4 @@ def test():
 
                 print res
 
-
-
-
-test()
+#eof###########################################################################
