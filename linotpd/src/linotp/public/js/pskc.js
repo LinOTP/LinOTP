@@ -66,6 +66,7 @@ function create_pskc_dialog() {
         },
         open: function(){
             translate_import_pskc();
+            _fill_realms($('#pskc_realm'),1);
             do_dialog_icons();
         }
     });

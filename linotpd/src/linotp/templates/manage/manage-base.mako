@@ -658,6 +658,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
 		<p>
     	<input name="type" type="hidden" value="aladdin-xml">
     	<input name="session" id="loadtokens_session_aladdin" type="hidden" value="">
+        <div id="safenet_realms" name="targetrealm">
+          <label for="safenet_realm">${_("Target realm")}:</label>
+          <select id="safenet_realm" name="realm"> </select>
+        </div>
+
     	</p>
 	</form>
 </div>
@@ -699,6 +704,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
 			<input id='pskc_preshared' name='pskc_preshared' size='32'>
 			</p>
 			<input name="session" id="loadtokens_session_pskc" type="hidden" value="">
+            <div id="pskc_realms" name="targetrealm">
+              <label for="pskc_realm">${_("Target realm")}:</label>
+              <select id="pskc_realm" name="realm"> </select>
+            </div>
 
     	</p>
 
@@ -728,6 +737,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
     		<input name="type" type="hidden" value="oathcsv">\
     		<input name="session" id="loadtokens_session_oathcsv" type="hidden" value="">\
 		</p>
+            <div id="oath_realms" name="targetrealm">
+              <label for="oath_realm">${_("Target realm")}:</label>
+              <select id="oath_realm" name="realm"> </select>
+            </div>
+
 	</form>
 </div>
 
@@ -748,9 +762,12 @@ ${c.version} --- &copy; ${c.licenseinfo}
              <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
              <input name="type" type="hidden" value="yubikeycsv">\
              <input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">
-        </p><p>
-             <label for="target_realm" >${_("Enter the realm, the tokens should part of:")}</label>
-             <input id="target_realm" name="realm" type="text" value="">\
+        </p>
+        <p>
+            <div id="yubi_realms" name="targetrealm">
+              <label for="yubi_realm">${_("Target realm")}:</label>
+              <select id="yubi_realm" name="realm"> </select>
+            </div>
         </p>
     </form>
 </div>
@@ -772,6 +789,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
     		<input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
     		<input name="type" type="hidden" value="dpw">
     		<input name="session" id="loadtokens_session_dpw" type="hidden" value="">
+            <div id="dpw_realms" name="targetrealm">
+              <label for="dpw_realm">${_("Target realm")}:</label>
+              <select id="dpw_realm" name="realm"> </select>
+            </div>
+
     	</p>
 	</form>
 </div>
@@ -798,6 +820,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </p>
         <input name="type" type="hidden" value="dat">
         <input name="session" id="loadtokens_session_dat" type="hidden" value="">
+        <div id="dat_realms" name="targetrealm">
+          <label for="dat_realm">${_("Target realm")}:</label>
+          <select id="dat_realm" name="realm"> </select>
+        </div>
+
     </form>
 </div>
 
@@ -819,6 +846,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
     			<input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
     			<input name="type" type="hidden" value="feitian">
     			<input name="session" id="loadtokens_session_feit" type="hidden" value="">
+                <div id="feitian_realms" name="targetrealm">
+                  <label for="feitian_realm">${_("Target realm")}:</label>
+                  <select id="feitian_realm" name="realm"> </select>
+                </div>
     			</p></form>
 </div>
 <script>
@@ -841,7 +872,13 @@ ${c.version} --- &copy; ${c.licenseinfo}
     				 <select name='vasco_otplen' id='vasco_otplen'><option selected>6</option>
     			<option>8</option></select>
     			<input name="session" id="loadtokens_session_vasco" type="hidden" value="">
-    			</p></form>
+                </p>
+                <div id="vasco_realms" name="targetrealm">
+                <label for="vasco_realm">${_("Target realm")}:</label>
+                <select id="vasco_realm" name="realm"> </select>
+                </div>
+            </form>
+
 </div>
 <script>
 	function translate_import_vasco() {

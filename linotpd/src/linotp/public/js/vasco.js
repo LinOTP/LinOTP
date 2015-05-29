@@ -48,6 +48,7 @@ function create_vasco_dialog() {
         },
         open: function(){
             translate_import_vasco();
+            _fill_realms($('#vasco_realm'),1);
             do_dialog_icons();
         }
        });
