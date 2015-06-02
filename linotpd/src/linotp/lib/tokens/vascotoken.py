@@ -141,7 +141,14 @@ class VascoTokenClass(TokenClass):
         secObject = self.token.getHOtpKey()
         otpkey = secObject.getKey()
         # let vasco handle the OTP checking
-        (res, otpkey) = vasco_otp_check(otpkey, anOtpVal)
+        ret = vasco_otp_check(otpkey, anOtpVal)
+        if ret is None:
+            log.info("Failed to authenticate due to missing vasco dll!")
+            return -1
+
+        # if all is ok, we get the result tupple from the return
+        (res, otpkey) = ret
+
         # update the vasco data blob
         self.update({"otpkey": otpkey})
 

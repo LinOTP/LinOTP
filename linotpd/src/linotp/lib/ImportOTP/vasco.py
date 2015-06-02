@@ -28,31 +28,62 @@
 import pickle
 import zlib
 import os
-from pylons import config
+import logging
 
-from ctypes import *
+# from ctypes import DLL import
+from ctypes import CDLL
+
+# from ctypes import C datatypes
+from ctypes import (c_byte,
+                    c_char,
+                    c_ulong,
+                    c_char_p,
+                    c_int,
+                    c_void_p,
+                    )
+
+# from ctypes import C Language parts
+from ctypes import (pointer,
+                    Structure,
+                    )
+
 from tempfile import NamedTemporaryFile
 
-import logging
+# module global var
+Vasco_DLL = None
+
+__all__ = ["parseVASCOdata", "vasco_otp_check", "load_Vasco_DLL"]
+
+
 log = logging.getLogger(__name__)
 
 
-vasco_dll = None
-try:
-    # get the Vacman Controller lib
-    # /opt/vasco/Vacman_Controller-3.10.1/lib/libaal2sdk-3.10.1.so
+def load_vasco_dll(config):
+    '''
+        load the Vacman Controller lib
 
-    vasco_lib = config.get("linotpImport.vasco_dll")
-    if None == vasco_lib:
-        log.warning("Missing linotpImport.vasco_dll in config file")
+        you can get it from the the Vacman Controller RPM package e.g.
+        /opt/vasco/Vacman_Controller-3.10.1/lib/libaal2sdk-3.10.1.so
+
+        :param config: the pylons config
+    '''
+
+    global Vasco_DLL
+
+    # we already tried to load it and failed :-(
+    if Vasco_DLL is False:
+        return
+
+    # check if it is defined in the pylons config
+    vasco_lib = config.get("linotpImport.vasco_dll", None)
+    if vasco_lib is None:
+        log.warning("Missing linotpImport.Vasco_DLL in config file")
+        Vasco_DLL = False
     else:
         log.info("loading vasco lib %s" % vasco_lib)
-        vasco_dll = CDLL(vasco_lib)
+        Vasco_DLL = CDLL(vasco_lib)
 
-except Exception as exx:
-    log.info("cannot load vasco library: %r" % exx)
-
-__all__ = ["parseVASCOdata", "vasco_otp_check"]
+    return
 
 
 def check_vasco(fn):
@@ -62,7 +93,7 @@ def check_vasco(fn):
     it then runs the function otherwise returns NONE
     '''
     def new(*args, **kw):
-        if None == vasco_dll:
+        if Vasco_DLL is False:
             log.error("[check_vasco] No vasco dll available!")
             return None
         else:
@@ -135,7 +166,7 @@ def vasco_dpxinit(filename="demovdp.dpx", transportkey=None):
     token_count = c_int(0)
     p_tcount = pointer(token_count)
 
-    res = vasco_dll.AAL2DPXInit(p_fh,
+    res = Vasco_DLL.AAL2DPXInit(p_fh,
                             c_filename,
                             c_transportkey,
                             p_acount,
@@ -152,7 +183,7 @@ def vasco_getstatic_vector(handle, params):
     p_vector = c_char_p(vector)
     vector_len = c_int(112)
     p_vector_len = pointer(vector_len)
-    res = vasco_dll.AAL2DPXGetStaticVector(pointer(handle),
+    res = Vasco_DLL.AAL2DPXGetStaticVector(pointer(handle),
                                            pointer(params),
                                            p_vector,
                                            p_vector_len)
@@ -165,7 +196,7 @@ def vasco_gettoken(handle, params, select_appl):
     serial = "\0" * 23
     typ = "\0" * 6
     authmode = "\0" * 3
-    res = vasco_dll.AAL2DPXGetToken(pointer(handle),
+    res = Vasco_DLL.AAL2DPXGetToken(pointer(handle),
                                     pointer(params),
                                     c_char_p(select_appl),
                                     c_char_p(serial),
@@ -177,13 +208,13 @@ def vasco_gettoken(handle, params, select_appl):
 
 
 def vasco_dpxclose(handle):
-    res = vasco_dll.AAL2DPXClose(pointer(handle))
+    res = Vasco_DLL.AAL2DPXClose(pointer(handle))
     return res
 
 
 def vasco_genpassword(data, params, challenge="\0" * 16):
     password = "\0" * 41
-    res = vasco_dll.AAL2GenPassword(pointer(data),
+    res = Vasco_DLL.AAL2GenPassword(pointer(data),
                                      pointer(params),
                                      c_char_p(password),
                                      c_char_p(challenge))
@@ -191,7 +222,7 @@ def vasco_genpassword(data, params, challenge="\0" * 16):
 
 
 def vasco_verify(data, params, password, challenge="\0" * 16):
-    res = vasco_dll.AAL2VerifyPassword(pointer(data),
+    res = Vasco_DLL.AAL2VerifyPassword(pointer(data),
                                            pointer(params),
                                            c_char_p(password),
                                            c_char_p(challenge)
@@ -204,7 +235,7 @@ def vasco_settokenproperty(data, params, prop, value):
     can be used to do not use a static PIN
     pin_supported (6) : enable=1, disable=2
     '''
-    res = vasco_dll.AAL2SetTokenProperty(pointer(data),
+    res = Vasco_DLL.AAL2SetTokenProperty(pointer(data),
                                         pointer(params),
                                         c_ulong(prop),
                                         c_ulong(value))
@@ -217,7 +248,7 @@ def vasco_gettokenproperty(data, params, prop):
     PIN_LEN: property = 10
     '''
     value = 0
-    res = vasco_dll.AAL2GetTokenProperty(pointer(data),
+    res = Vasco_DLL.AAL2GetTokenProperty(pointer(data),
                                           pointer(params),
                                           c_ulong(prop),
                                           pointer(c_ulong(value)))
@@ -284,7 +315,7 @@ def parseVASCOdata(fileString=None, arg_otplen=6, transportkey=None):
         dpxfile.write(fileString)
     filename = dpxfile.name
 
-    # we have to use a try - finally to guarante, that the tempfile is
+    # we have to use a try with a finally to guarantee, that the tempfile is
     # removed on completion
     try:
         (res, fh, _appl_count,
@@ -293,7 +324,7 @@ def parseVASCOdata(fileString=None, arg_otplen=6, transportkey=None):
 
         if res != 0:
             if res in [-15, -14]:
-                res = "Error initkey"
+                res = "Error initkey - transportkey mismatch!"
 
             err = "Failed to initialize the import process! %r" % res
             log.error("[parseVASCOdata] %s" % err)
@@ -311,47 +342,51 @@ def parseVASCOdata(fileString=None, arg_otplen=6, transportkey=None):
         while 100 == res:
             (res, serial, typ, auth, data) = vasco_gettoken(fh, kp, appl_names)
 
+            if res not in [107, 100]:
+                log.error("loading token failed for reason: %r" % res)
+                continue
+
             if 107 == res:
                 log.debug("SUCCESSfully reached the end of the dpx file")
+                continue
 
             if 100 == res:
-                (pres, data) = vasco_settokenproperty(data, kp, 6, 2)
-                if pres != 0:
-                    log.error("Failed to set token properties %r" % pres)
-                    log.debug("Failing token properties %r" % kp)
-                    continue
-
                 # TODO: Each token could have another OTP-length.
                 # At the moment we take this as parameter
                 otplen = arg_otplen
-                idx = serial.index('APPL')
-                lin_serial = serial[:idx]
+
+                # get the serial and the appl name form the data blob
+                lin_serial = data.Serial
+                lin_app = data.AppName
+                lin_typ = typ.strip('\0')
+
+                # disable the usage of the local vasco pin
+                # - if this is supported 8-[
+                (pres, data) = vasco_settokenproperty(data, kp, 6, 2)
+                if pres != 0:
+                    log.info("Disabling vasco pin failed %r" % pres)
 
                 if auth[:2] in ["RO"]:
                     # yes, we support DPGO6 and we support the
                     # response only (no signature and challenge)
                     otpkey = vasco_compress(data)
                     TOKENS["vc" + lin_serial] = {
-                                        'type': "vasco",
-                                        'hmac_key': otpkey,
-                                        'tokeninfo': {
-                                            "application": serial.strip("\0"),
-                                            "type": typ.strip("\0"),
-                                            "auth": auth.strip("\0"),
-                                            #"data_Serial" : data.Serial,
-                                            #"data_AppName" : data.AppName,
-                                            #"data_DPFlags" : data.DPFlags
-                                            },
-                                        "description": typ.strip("\0"),
-                                        'otplen': otplen,
-                                       }
+                            'type': "vasco",
+                            'hmac_key': otpkey,
+                            'otplen': otplen,
+                            "description": "%s - %s" % (lin_app, lin_typ),
+                            'tokeninfo': {
+                                "application": serial.strip("\0"),
+                                "type": lin_typ,
+                                "auth": auth.strip("\0"),
+                                },
+                            }
                 else:
                     log.warning("The tokentype %s, auth %s is not tested! "
                                 "The Token %s is not imported!" %
-                                (typ, auth, lin_serial))
+                                (lin_typ, auth, lin_serial))
 
         res = vasco_dpxclose(fh)
-
     finally:
         os.remove(filename)
 
@@ -409,5 +444,10 @@ def test():
                 (res, data) = vasco_otp_check(data, pw)
 
                 print res
+
+
+from pylons import config
+load_vasco_dll(config)
+
 
 #eof###########################################################################
