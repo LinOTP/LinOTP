@@ -380,11 +380,16 @@ class U2FTokenClass(TokenClass):
 
         # validate challenge
         if cdChallenge != challenge:
-            log.error('Challenge mismatch - The received challenge in the received client \
+            log.debug('Challenge mismatch - The received challenge in the received client \
                        data object does not match the sent challenge!')
-            raise Exception('Challenge mismatch!')
+            return False
 
-        return cdOrigin
+        # validate origin
+        if not self._is_valid_facet(cdOrigin):
+            log.debug('Facet "%s" is not in valid_facets.', cdOrigin)
+            return False
+
+        return True
 
     def _parseSignatureData(self, signatureData):
         """
@@ -523,8 +528,9 @@ class U2FTokenClass(TokenClass):
         toBeVerified = sha256(
             applicationParameter + userPresenceByte + counter + challengeParameter).digest()
         if ECPubKey.verify_dsa_asn1(toBeVerified, signature) != 1:
-            log.error("Signature verification failed!")
-            raise Exception("Signature verification failed!")
+            log.debug("Signature verification failed!")
+            return False
+        return True
 
     def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         """
@@ -567,15 +573,16 @@ class U2FTokenClass(TokenClass):
             if matching is not None:
                 # Split pin from otp and check the resulting pin and otpval
                 (res, pin, otpval) = self.splitPinPass(passw)
-                if res is True:
-                    if check_pin(self, pin, user=user, options=options) is True:
-                        # The U2F checkOtp functions needs to know the saved challenge
-                        # to compare the received challenge value to the saved one,
-                        # thus we add the transactionid to the options
-                        options['transactionid'] = transid
-                        otp_counter = check_otp(self, otpval, options=options)
-                        if otp_counter >= 0:
-                            matching_challenges.append(matching)
+                if not check_pin(self, pin, user=user, options=options):
+                    otpval = passw
+                # The U2F checkOtp functions needs to know the saved challenge
+                # to compare the received challenge value to the saved one,
+                # thus we add the transactionid to the options
+                options['transactionid'] = transid
+                options['challenges'] = challenges
+                otp_counter = check_otp(self, otpval, options=options)
+                if otp_counter >= 0:
+                    matching_challenges.append(matching)
 
         return (otp_counter, matching_challenges)
 
@@ -611,7 +618,12 @@ class U2FTokenClass(TokenClass):
             raise Exception("Could not checkOtp due to missing transaction id")
 
         # get all challenges with a matching trasactionid
-        challs = get_challenges(serial=serial, transid=transid)
+        if 'challenges' in options:
+            challs = options['challenges']
+        else:
+            challs = []
+            log.debug('Could not find a challenge')
+
         for chall in challs:
             (rec_tan, rec_valid) = chall.getTanStatus()
             if rec_tan is False:
@@ -667,21 +679,44 @@ class U2FTokenClass(TokenClass):
                 challenge['challenge'] = data.get('challenge')
 
             if challenge.get('challenge') is None:
-                log.error('could not checkOtp due to missing challenge in request: %r', ch)
-                raise Exception(
-                    'could not checkOtp due to missing challenge in request: %r' % ch)
+                log.debug('could not checkOtp due to missing challenge in request: %r', ch)
+                continue
 
-            # check the received clientData object and retrieve the appId
-            cdOrigin = self._checkClientData(
-                clientData, 'authentication', challenge['challenge'])
-
-            # check the received origin
-            if not self._is_valid_facet(cdOrigin):
-                log.error("Received origin not in the valid facets. Aborting...")
-                raise ValueError("Received origin not in the valid facets. Aborting...")
+            # prepare the applicationParameter and challengeParameter needed for
+            # verification of the registration signature
+            if 'appid' in options:
+                # The appid parameter is mandatory if a URL to the valid_facets action of
+                # the u2f controller is sent to the token device. Since the token device
+                # uses this given URL (and not the 'real' location origin as in the client
+                # data object) for the applicationParameter, we have to adapt this behavior.
+                appId = options.get('appid')
+            else:
+                appId = self.getFromTokenInfo('appId', None)
+                if not appId:
+                    log.debug('Could not find appId')
+                    continue
+            applicationParameter = sha256(appId).digest()
+            challengeParameter = sha256(clientData).digest()
+            publicKey = base64.urlsafe_b64decode(
+                self.getFromTokenInfo('publicKey', None).encode('ascii'))
 
             # parse the received signatureData object
             (userPresenceByte, counter, signature) = self._parseSignatureData(signatureData)
+
+            # verify the authentication signature
+            if not self._validateAuthenticationSignature(applicationParameter,
+                                                         userPresenceByte,
+                                                         counter,
+                                                         challengeParameter,
+                                                         publicKey,
+                                                         signature
+                                                         ):
+                continue
+
+            # check the received clientData object and retrieve the appId
+            if not self._checkClientData(
+                clientData, 'authentication', challenge['challenge']):
+                continue
 
             # the counter is interpreted as big-endian according to the U2F specification
             counterInt = struct.unpack('>I', counter)[0]
@@ -689,34 +724,10 @@ class U2FTokenClass(TokenClass):
             # verify that the counter value increased - prevent token device cloning
             self._verifyCounterValue(counterInt)
 
-            # prepare the applicationParameter and challengeParameter needed for
-            # verification of the registration signature
-            appId = cdOrigin
-            if 'appid' in options:
-                # The appid parameter is mandatory if a URL to the valid_facets action of
-                # the u2f controller is sent to the token device. Since the token device
-                # uses this given URL (and not the 'real' location origin as in the client
-                # data object) for the applicationParameter, we have to adapt this behavior.
-                appId = options.get('appid')
-            applicationParameter = sha256(appId).digest()
-            challengeParameter = sha256(clientData).digest()
-            publicKey = base64.urlsafe_b64decode(
-                self.getFromTokenInfo('publicKey', None).encode('ascii'))
-
-            # verify the authentication signature
-            self._validateAuthenticationSignature(applicationParameter,
-                                                  userPresenceByte,
-                                                  counter,
-                                                  challengeParameter,
-                                                  publicKey,
-                                                  signature
-                                                  )
-
             # U2F does not need an otp count
             ret = 0
 
         log.debug('%r', (ret))
-
         return ret
 
     def _parseRegistrationData(self, registrationData):
@@ -884,23 +895,23 @@ class U2FTokenClass(TokenClass):
                     self._parseRegistrationData(registrationData)
 
                 # check the received clientData object
-                origin = self._checkClientData(
-                    clientData, 'registration', self.getFromTokenInfo('challenge', None))
-
-                # Check the received origin
-                if not self._is_valid_facet(origin):
-                    log.error("Received origin not in the valid facets. Aborting...")
-                    raise ValueError("Received origin not in the valid facets. Aborting...")
+                if not self._checkClientData(
+                    clientData, 'registration', self.getFromTokenInfo('challenge', None)):
+                    raise ValueError("Received invalid clientData object. Aborting...")
 
                 # prepare the applicationParameter and challengeParameter needed for
                 # verification of the registration signature
-                appId = origin
                 if 'appid' in params:
                     # The appid parameter is mandatory if a URL to the valid_facets action of
                     # the u2f controller is sent to the token device. Since the token device
                     # uses this given URL (and not the 'real' location origin as in the client
                     # data object) for the applicationParameter, we have to adapt this behavior.
                     appId = params.get('appid')
+                else:
+                    appId = self.getFromTokenInfo('appId', None)
+                    if not appId:
+                        log.error('Could not find appId')
+                        raise Exception('Could not find appId')
                 applicationParameter = sha256(appId).digest()
                 challengeParameter = sha256(clientData).digest()
 

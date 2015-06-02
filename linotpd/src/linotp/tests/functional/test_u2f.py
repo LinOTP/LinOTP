@@ -69,12 +69,27 @@ class TestU2FController(TestController):
                            'eca18b12725f807ffe68d1c05d3d35b'
 
     # Example key handle taken from the FIDO U2F specification
-    KEY_HANDLE_HEX = '2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551ba' \
-                     'b61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25'
+    KEY_HANDLE_HEX1 = '2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551ba' \
+                      'b61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25'
+    # Random made up key handle
+    KEY_HANDLE_HEX2 = '2ae0b2f28fae6053fd697972ba7c81009137f4f46a764bc29751a28987d053ccfffb0687d' \
+                      'ef306f47fd45906e838401a6437270a45a37da9c25d8db8b559a888'
 
     # Generate ECC key, NIST P-256 elliptic curve
-    ECC_KEY = EC.gen_params(EC.NID_X9_62_prime256v1)
-    ECC_KEY.gen_key()
+    ECC_KEY1 = EC.gen_params(EC.NID_X9_62_prime256v1)
+    ECC_KEY1.gen_key()
+
+    ECC_KEY2 = EC.gen_params(EC.NID_X9_62_prime256v1)
+    ECC_KEY2.gen_key()
+
+    key_set = {1: (KEY_HANDLE_HEX1, ECC_KEY1),
+               2: (KEY_HANDLE_HEX2, ECC_KEY2)
+               }
+
+    key_handle_set = {
+                KEY_HANDLE_HEX1: ECC_KEY1,
+                KEY_HANDLE_HEX2: ECC_KEY2,
+               }
 
     FAKE_REGISTRATION_DATA_HEX = '0504113fafb0da1a6a90bb3a017552c1561af88bfd02c36eec334551959' \
                                  'ffe562a6f050b496545810b64b738e7673a314efd67216cc1b7c7e46f1b' \
@@ -164,9 +179,7 @@ class TestU2FController(TestController):
         """
         parameters = {
             'user': 'root',
-            'serial': self.serial,
-            'pass': '',
-            'session': self.session
+            'pass': ''
         }
         if pin is not None:
             parameters['pass'] = pin
@@ -177,23 +190,17 @@ class TestU2FController(TestController):
 
     def _authentication2(self,
                          transactionid,
-                         authentication_response_message,
-                         pin=None
+                         authentication_response_message
                          ):
         """
         Performs the second authentication step
         """
         parameters = {
             'user': 'root',
-            'serial': self.serial,
-            'transactionid': transactionid,
-            'pass': '',
-            'session': self.session
+            'transactionid': transactionid
         }
-        if pin is not None:
-            parameters['pass'] = pin
 
-        parameters['pass'] += authentication_response_message
+        parameters['pass'] = authentication_response_message
 
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
@@ -222,21 +229,26 @@ class TestU2FController(TestController):
 
     def _createRegistrationResponseMessage(self,
                                            client_data,
+                                           key_set=None,
                                            correct=True
                                            ):
         """
         Create a registration response message according to the FIDO U2F specification
         """
+        if not key_set:
+            raise ValueError("Unknown key number requested!")
+        (key_handle_hex, ecc_key) = key_set
+
         #
         # Create the registration_data object
         #
         registration_data = chr(0x05)  # First byte must be 0x05
 
         # The public key length is set to a fixed length of 65 characters in the U2F specification
-        public_key = str(self.ECC_KEY.pub().get_der())[-65:]
+        public_key = str(ecc_key.pub().get_der())[-65:]
         registration_data += public_key
 
-        key_handle = binascii.unhexlify(self.KEY_HANDLE_HEX)
+        key_handle = binascii.unhexlify(key_handle_hex)
         registration_data += chr(len(key_handle))
         registration_data += key_handle
 
@@ -273,11 +285,17 @@ class TestU2FController(TestController):
 
     def _createAuthenticationResponseMessage(self,
                                              client_data,
+                                             key_handle,
+                                             ecc_key=None,
                                              correct=True
                                              ):
         """
         Create an authentication response message according to the FIDO U2F specification
         """
+        # get the correct token for creating the response message
+        if not ecc_key:
+            raise ValueError("Unknown key handle received.")
+
         #
         # Create the signatureData object
         #
@@ -294,7 +312,7 @@ class TestU2FController(TestController):
                       struct.pack('>I', self.counter) +
                       sha256(client_data).digest()
                       )
-        signature = self.ECC_KEY.sign_dsa_asn1(digest.digest())
+        signature = ecc_key.sign_dsa_asn1(digest.digest())
 
         if correct is False:
             # Change the signature to create an invalid authentication response
@@ -305,22 +323,21 @@ class TestU2FController(TestController):
         #
         # Create the signResponse object
         #
-        key_handle_base64 = base64.urlsafe_b64encode(binascii.unhexlify(self.KEY_HANDLE_HEX))
         key_handle_index = 1
         # Remove trailing '=' characters
-        while key_handle_base64[-key_handle_index] == '=':
+        while key_handle[-key_handle_index] == '=':
             key_handle_index = key_handle_index + 1
         if key_handle_index > 1:
-            key_handle_base64 = key_handle_base64[:-(key_handle_index - 1)]
+            key_handle = key_handle[:-(key_handle_index - 1)]
         sign_response = {
-            'keyHandle': key_handle_base64,
+            'keyHandle': key_handle,
             'signatureData': base64.urlsafe_b64encode(authentication_data),
             'clientData': base64.urlsafe_b64encode(client_data)
         }
 
         return json.dumps(sign_response)
 
-    def _registration(self, pin=None, correct=True):
+    def _registration(self, pin=None, correct=True, key_num=1):
         """
         Enroll a U2F token with given token pin
         """
@@ -342,8 +359,14 @@ class TestU2FController(TestController):
         client_data_registration = self._createClientDataObject('registration',
                                                                 challenge_registration,
                                                                 )
+
+        key_set = self.key_set.get(key_num, None)
+
         registration_response_message = \
-            self._createRegistrationResponseMessage(client_data_registration, correct)
+            self._createRegistrationResponseMessage(client_data_registration,
+                                                    correct=correct,
+                                                    key_set=key_set
+                                                    )
 
         # Complete the token registration
         response_registration2_JSON = self._registration2(registration_response_message, pin)
@@ -356,7 +379,9 @@ class TestU2FController(TestController):
             self.assertTrue('"status": false' in response_registration2_JSON,
                             "Response: %r" % response_registration2_JSON)
 
-    def _authentication(self, pin=None, correct=True):
+        return
+
+    def _authentication_challenge(self, pin=None):
         """
         Test authentication of a previously registered token with given token pin
         """
@@ -376,33 +401,54 @@ class TestU2FController(TestController):
                         "Response: %r" % response_authentication1_JSON)
 
         response_authentication1 = json.loads(response_authentication1_JSON.body)
-        transactionid_authentication = \
-            response_authentication1.get('detail', {}).get('transactionid')
         message_authentication_JSON = response_authentication1.get('detail', {}).get('message')
-        message_authentication = json.loads(message_authentication_JSON)
-        challenge_authentication = message_authentication.get('challenge')
+
+        reply = []
+        if message_authentication_JSON == "Multiple challenges submitted.":
+            challenges = response_authentication1.get('detail')
+
+            del challenges['message']
+            del challenges['transactionid']
+
+            for challenge in challenges:
+                reply.append(response_authentication1.get('detail').get(challenge))
+        else:
+            reply.append(response_authentication1.get('detail'))
+        return reply
+
+    def _authentication_response(self, challenge, correct=True):
+        message_authentication = json.loads(challenge.get('message', ''))
+        challenge_authentication = message_authentication.get('challenge', {})
 
         # Does the received keyHandle match the sent one?
-        key_handle_authentication = message_authentication.get('keyHandle')
+        key_handle_authentication = message_authentication.get('keyHandle', '')
+        transactionid_authentication = challenge.get('transactionid')
         # Correct the padding
         key_handle_authentication = \
             key_handle_authentication + ('=' * (4 - (len(key_handle_authentication) % 4)))
         key_handle_authentication = key_handle_authentication.encode('ascii')
-        self.assertEqual(self.KEY_HANDLE_HEX,
-                         binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)))
+        self.assertTrue(binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)) in \
+                        [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2],
+                        "Message: %r" % message_authentication
+                        )
 
         # Construct the registration response message
         client_data_authentication = self._createClientDataObject('authentication',
                                                                   challenge_authentication,
                                                                   )
+
+        key_handle_hex = binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication))
+        ecc_key = self.key_handle_set.get(key_handle_hex, None)
+
         authentication_response_message = \
             self._createAuthenticationResponseMessage(client_data_authentication,
-                                                      correct
+                                                      key_handle_authentication,
+                                                      ecc_key=ecc_key,
+                                                      correct=correct
                                                       )
         # Complete the token authentication
         response_authentication2_JSON = self._authentication2(transactionid_authentication,
                                                               authentication_response_message,
-                                                              pin
                                                               )
         if correct is True:
             # Authentication should be successful
@@ -448,8 +494,33 @@ class TestU2FController(TestController):
                 )
         self._registration()
         # Authenticate twice
-        self._authentication()
-        self._authentication()
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[0])
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[0])
+        return
+
+    def test_u2f_multiple_registration_and_authentication_without_pin(self):
+        """
+        Enroll a U2F token without a token pin and authenticate
+        """
+        if not self._has_EC_support():
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
+        self._registration(key_num=1)
+        self._registration(key_num=2)
+
+        # Try authenticating twice with each token
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[1])
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[1])
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[0])
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[0])
+        return
 
     def test_u2f_registration_and_wrong_authentication_without_pin(self):
         """
@@ -460,7 +531,28 @@ class TestU2FController(TestController):
                 "Probably no OpenSSL support for the needed NIST P-256 curve!"
                 )
         self._registration()
-        self._authentication(correct=False)
+        # Authenticate twice
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[0], correct=False)
+        return
+
+    def test_u2f_multiple_registration_and_wrong_authentication_without_pin(self):
+        """
+        Enroll a U2F token without a token pin and authenticate
+        """
+        if not self._has_EC_support():
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
+        self._registration(key_num=1)
+        self._registration(key_num=2)
+
+        # Try authenticating twice with each token
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[0], correct=False)
+        challenges = self._authentication_challenge()
+        self._authentication_response(challenges[1], correct=False)
+        return
 
     def test_u2f_wrong_registration_without_pin(self):
         """
@@ -471,6 +563,7 @@ class TestU2FController(TestController):
                 "Probably no OpenSSL support for the needed NIST P-256 curve!"
                 )
         self._registration(correct=False)
+        return
 
     def test_u2f_registration_and_authentication_with_pin(self):
         """
@@ -483,8 +576,34 @@ class TestU2FController(TestController):
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
         # Authenticate twice
-        self._authentication(pin)
-        self._authentication(pin)
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0])
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0])
+        return
+
+    def test_u2f_multiple_registration_and_authentication_with_pin(self):
+        """
+        Enroll a U2F token without a token pin and authenticate
+        """
+        if not self._has_EC_support():
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
+        pin = 'test{pass}word_with{curly-braces{'
+        self._registration(pin=pin, key_num=1)
+        self._registration(pin=pin, key_num=2)
+
+        # Try authenticating twice with each token
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[1])
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[1])
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0])
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0])
+        return
 
     def test_u2f_registration_and_wrong_authentication_with_pin(self):
         """
@@ -496,7 +615,28 @@ class TestU2FController(TestController):
                 )
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin)
-        self._authentication(pin=pin, correct=False)
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0], correct=False)
+        return
+
+    def test_u2f_multiple_registration_and_wrong_authentication_with_pin(self):
+        """
+        Enroll a U2F token without a token pin and authenticate
+        """
+        if not self._has_EC_support():
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
+        pin = 'test{pass}word_with{curly-braces{'
+        self._registration(pin=pin, key_num=1)
+        self._registration(pin=pin, key_num=2)
+
+        # Try authenticating twice with each token
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0], correct=False)
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[1], correct=False)
+        return
 
     def test_u2f_wrong_registration_with_pin(self):
         """
@@ -508,6 +648,7 @@ class TestU2FController(TestController):
                 )
         pin = 'test{pass}word_with{curly-braces{'
         self._registration(pin=pin, correct=False)
+        return
 
     def test_u2f_unsupported_openssl_version(self):
         """
