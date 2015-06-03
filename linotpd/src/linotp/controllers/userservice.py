@@ -1339,6 +1339,7 @@ class UserserviceController(BaseController):
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
             c.audit['token_type'] = t_type
             c.audit['success'] = ret1
+            param['serial'] = serial
 
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
