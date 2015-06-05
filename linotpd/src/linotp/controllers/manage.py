@@ -43,7 +43,7 @@ from mako.exceptions import CompileException
 from paste.deploy.converters import asbool
 
 # Our Token stuff
-from linotp.lib.token   import TokenIterator
+from linotp.lib.tokeniterator   import TokenIterator
 from linotp.lib.token   import getTokenType
 from linotp.lib.token   import newToken
 

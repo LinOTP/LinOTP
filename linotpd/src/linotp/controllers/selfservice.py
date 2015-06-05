@@ -55,7 +55,8 @@ from linotp.lib.token import enableToken, assignToken, unassignToken
 from linotp.lib.token import initToken, removeToken
 from linotp.lib.token import setPin
 from linotp.lib.token import resyncToken, resetToken, setPinUser
-from linotp.lib.token import TokenIterator, isTokenOwner
+from linotp.lib.tokeniterator import TokenIterator
+from linotp.lib.token import isTokenOwner
 from linotp.lib.token import hasOwner, getTokenType
 from linotp.lib.token import getTokenRealms
 from linotp.lib.token import get_multi_otp

@@ -39,7 +39,8 @@ from linotp.lib.token import enableToken, assignToken , unassignToken, removeTok
 from linotp.lib.token import setPin, setMaxFailCount, setOtpLen, setSyncWindow, setCounterWindow
 from linotp.lib.token import setDescription
 from linotp.lib.token import resyncToken, resetToken, setPinUser, setPinSo, setHashLib, addTokenInfo
-from linotp.lib.token import TokenIterator, initToken, setRealms, getTokenType, get_serial_by_otp
+from linotp.lib.tokeniterator import TokenIterator
+from linotp.lib.token import initToken, setRealms, getTokenType, get_serial_by_otp
 from linotp.lib.token import getTokens4UserOrSerial, copyTokenPin, copyTokenUser, losttoken, check_serial
 from linotp.lib.token import genSerial
 from linotp.lib.token import (newToken,
