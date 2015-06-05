@@ -67,6 +67,7 @@ auth    [success=1 default=ignore] 	pam_linotp.so noosslhostnameverify \
 #include <string.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <errno.h> /* memset_s */
 
 
 #include <security/pam_modules.h>
@@ -142,28 +143,68 @@ static void do_log(int type, char * format, ...) {
 #define log_warning(format, ...) do_log(LOG_WARNING, "WARNING: " #format, ## __VA_ARGS__)
 #define log_info(format, ...)    do_log(LOG_INFO,    "INFO: "    #format, ## __VA_ARGS__)
 
-/* protect memset from compiler optimization  */
-void *memset_s(void *v, int c, size_t n) {
-  volatile unsigned char *p = v;
-  while (n--)
-    *p++ = c;
+/* The function "memset_s(void *s, rsize_t, int, rsize_t)" exists on Mac OS X
+   based operating systems, or in C11                                         */
+
+#ifndef memset_s
+/* protect memset_s from compiler optimization */
+int memset_s(void *s, size_t smax, int c, size_t n) {
+
+	int err = 0;
+
+	if (s == NULL) {
+		return EINVAL;
+	}
+	if (smax > SIZE_MAX) {
+		return E2BIG;
+	}
+	if (n > SIZE_MAX) {
+		err = E2BIG;
+		n = smax;
+	}
+	if (n > smax) {
+		err = EOVERFLOW;
+		n = smax;
+	}
+
+    volatile unsigned char *p = (unsigned char*)s;
+    while (n--)
+        *p++ = (unsigned char)c;
  
-  return v;
+	return err;
 }
+#endif 
+/* End #ifndef memset_s */
 
 char * erase_data(void * data, int len) {
 	/* wipe all data and free the memory */
-	memset_s(data, 0, len);
+
+	int ret = 0;
+	if (data!= NULL)
+		ret = memset_s(data, len, 0, len);
+	if(ret == EINVAL) {
+		log_warning(
+		"WARNING: %s()[%s:%d] memset_s was called to write on a NULL pointer!",
+		__FUNCTION__, __FILE__, __LINE__);
+	}
+	if(ret == E2BIG) {
+		if(len > SIZE_MAX) {
+			log_error(
+			"ERROR: %s()[%s:%d] memset_s argument len is greater than the \
+			<stdint.h> defined SIZE_MAX.  Something is really wrong here!\n", 
+			__FUNCTION__, __FILE__, __LINE__ );
+		}
+	}
+
 	free(data);
 	return NULL;
 }
+
 char * erase_string(char * string) {
 	/* wipe all data and free the memory */
-	if (string!= NULL)
-		memset_s(string, 0, strlen(string));
-	free(string);
-	return NULL;
+	return erase_data(string, strlen(string));
 }
+
 /***********************************************
  Curl stuff
  ***********************************************/
