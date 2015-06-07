@@ -375,7 +375,7 @@ class BaseController(WSGIController):
                 log.debug("Cannot set requested language: %s. Trying next language if available.",
                           language)
 
-        if not found_lang:
+        if not found_lang and languages:
             log.warning("Cannot set preferred language: %r" % languages)
 
         return

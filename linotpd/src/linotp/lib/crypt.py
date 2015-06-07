@@ -104,7 +104,7 @@ class SecretObj:
         self.preserve = preserve
 
     def getKey(self):
-        log.warn('Requesting secret key '
+        log.debug('Warning: Requesting secret key '
                             '- verify the usage scope and zero + free ')
         return decrypt(self.val, self.iv)
 
@@ -116,7 +116,6 @@ class SecretObj:
         enc_otp_key = encrypt(bhOtpKey, self.iv)
         otpKeyEnc = binascii.hexlify(enc_otp_key)
         return (otpKeyEnc == self.val)
-
 
     def hmac_digest(self, data_input, hash_algo):
         self._setupKey_()

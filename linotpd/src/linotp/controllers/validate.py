@@ -50,7 +50,7 @@ from linotp.lib.user    import User
 
 from linotp.lib.config  import getFromConfig
 
-from linotp.lib.token import checkUserPass, checkSerialPass
+from linotp.lib.token import TokenHandler, checkSerialPass
 from linotp.lib.token import get_tokenserial_of_transaction
 
 from linotp.lib.reply import sendResult, sendError
@@ -65,7 +65,6 @@ from linotp.lib.policy import AuthorizeException
 from linotp.lib.policy import set_realm
 from linotp.lib.policy import is_auth_return
 
-from linotp.lib.token import checkYubikeyPass
 from linotp.lib.token import getTokens4UserOrSerial
 
 from linotp.lib.error import ParameterError
@@ -166,8 +165,8 @@ class ValidateController(BaseController):
                 if options is None:
                     options = {}
                 options['initTime'] = initTime
-
-        (ok, opt) = checkUserPass(user, passw, options=options)
+        th = TokenHandler()
+        (ok, opt) = th.checkUserPass(user, passw, options=options)
 
         c.audit['success'] = ok
 
@@ -317,7 +316,8 @@ class ValidateController(BaseController):
 
             ok = False
             try:
-                ok, opt = checkYubikeyPass(passw)
+                th = TokenHandler()
+                ok, opt = th.checkYubikeyPass(passw)
                 c.audit['success'] = ok
 
             except AuthorizeException as exx:

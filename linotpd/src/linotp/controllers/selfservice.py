@@ -48,52 +48,26 @@ from mako.exceptions import CompileException
 
 from linotp.lib.base import BaseController
 from pylons.templating import render_mako as render
-from linotp.lib.token import genSerial
 
 
-from linotp.lib.token import enableToken, assignToken, unassignToken
-from linotp.lib.token import initToken, removeToken
-from linotp.lib.token import setPin
-from linotp.lib.token import resyncToken, resetToken, setPinUser
-from linotp.lib.tokeniterator import TokenIterator
-from linotp.lib.token import isTokenOwner
-from linotp.lib.token import hasOwner, getTokenType
-from linotp.lib.token import getTokenRealms
-from linotp.lib.token import get_multi_otp
-from linotp.lib.token import get_serial_by_otp
-
-from linotp.lib.token import get_tokenserial_of_transaction
+from linotp.lib.token import getTokenType
 
 from linotp.lib.token import getTokens4UserOrSerial
 
-from linotp.lib.token import checkSerialPass
-from linotp.lib.tokenclass import OcraTokenClass
-from linotp.lib.audit.base import search as audit_search
-
-from linotp.lib.policy import checkOTPPINPolicy, getRandomOTPPINLength
-from linotp.lib.policy import getRandomPin, getPolicy
-
-from linotp.lib.policy import getSelfserviceActions, checkPolicyPre
-from linotp.lib.policy import PolicyException, getOTPPINEncrypt
+from linotp.lib.policy import getSelfserviceActions
 
 from linotp.lib.util import getParam
-from linotp.lib.util import getLowerParams
 from linotp.lib.util import check_selfservice_session
-from linotp.lib.util import generate_otpkey
 from linotp.lib.util import remove_empty_lines
 
-from linotp.lib.reply import sendResult, sendError
+from linotp.lib.reply import sendError
 
-from linotp.lib.audit.base import logTokenNum
 from linotp.lib.util    import get_version
 from linotp.lib.util    import get_copyright_info
 from linotp.lib.util import get_client
-from linotp.lib.realm import getDefaultRealm
 
 from linotp.model.meta import Session
 
-from linotp.lib.reply import sendQRImageResult
-from linotp.lib.reply import create_img
 
 from linotp.lib.userservice import (add_dynamic_selfservice_enrollment,
                                     add_dynamic_selfservice_policies
@@ -101,30 +75,26 @@ from linotp.lib.userservice import (add_dynamic_selfservice_enrollment,
 
 
 from linotp.lib.selfservice import get_imprint
-from linotp.lib.user import getUserInfo, User
+from linotp.lib.user import User
 
-from linotp.lib.error import SelfserviceException
 
 import traceback
 # import datetime, random
 import copy
+import logging
 
 from linotp.lib.selftest import isSelfTest
-
 from linotp.lib.token import newToken
-
-from pylons.i18n.translation import _
-
-
-import logging
-log = logging.getLogger(__name__)
-
-audit = config.get('audit')
 
 ENCODING = "utf-8"
 
 optional = True
 required = False
+
+
+log = logging.getLogger(__name__)
+audit = config.get('audit')
+
 
 def getTokenForUser(user):
     """
@@ -152,11 +122,12 @@ class SelfserviceController(BaseController):
 
     authUser = None
 
-    def __before__(self, action, **params):
+    def __before__(self, action):
         '''
         This is the authentication to self service
-        If you want to do ANYTHING with selfservice, you need to be authenticated
-        The _before_ is executed before any other function in this controller.
+        If you want to do ANYTHING with selfservice, you need to be
+        authenticated.  The _before_ is executed before any other function
+        in this controller.
         '''
 
         try:
@@ -166,7 +137,6 @@ class SelfserviceController(BaseController):
             audit.initialize()
             c.audit['success'] = False
             c.audit['client'] = get_client()
-
 
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
@@ -187,25 +157,31 @@ class SelfserviceController(BaseController):
                     abort(401, "No valid session")
 
                 self.authUser = User(c.user, c.realm, '')
-                log.debug("[__before__] authenticating as %s in realm %s!" % (c.user, c.realm))
+                log.debug("[__before__] authenticating as %s in realm %s!"
+                          % (c.user, c.realm))
             else:
                 identity = request.environ.get('repoze.who.identity')
                 if identity is None:
                     abort(401, "You are not authenticated")
 
-                log.debug("[__before__] doing getAuthFromIdentity in action %s" % action)
+                log.debug("[__before__] doing getAuthFromIdentity in action %s"
+                          % action)
 
-                user_id = request.environ.get('repoze.who.identity').get('repoze.who.userid')
+                user_id = request.environ.get('repoze.who.identity')\
+                                         .get('repoze.who.userid')
                 if type(user_id) == unicode:
                     user_id = user_id.encode(ENCODING)
                 identity = user_id.decode(ENCODING)
-                log.debug("[__before__] getting identity from repoze.who: %r" % identity)
+                log.debug("[__before__] getting identity from repoze.who: %r"
+                           % identity)
 
                 (c.user, _foo, c.realm) = identity.rpartition('@')
                 self.authUser = User(c.user, c.realm, '')
 
-                log.debug("[__before__] set the self.authUser to: %s, %s " % (self.authUser.login, self.authUser.realm))
-                log.debug('[__before__] param for action %s: %s' % (action, param))
+                log.debug("[__before__] set the self.authUser to: %s, %s "
+                          % (self.authUser.login, self.authUser.realm))
+                log.debug('[__before__] param for action %s: %s'
+                          % (action, param))
 
                 # checking the session
                 if (False == check_selfservice_session(request.url,
@@ -244,10 +220,13 @@ class SelfserviceController(BaseController):
                         nval = val
                     c.__setattr__(name.strip(), nval)
 
-            c.dynamic_actions = add_dynamic_selfservice_enrollment(config, c.actions)
+            c.dynamic_actions = add_dynamic_selfservice_enrollment(config,
+                                                                   c.actions)
 
-            # we require to establish all token local defined policies to be initialiezd
-            additional_policies = add_dynamic_selfservice_policies(config, actions)
+            # we require to establish all token local defined
+            # policies to be initialiezd
+            additional_policies = add_dynamic_selfservice_policies(config,
+                                                                   actions)
             for policy in additional_policies:
                 c.__setattr__(policy, -1)
 
@@ -274,9 +253,7 @@ class SelfserviceController(BaseController):
         finally:
             log.debug('[__after__] done')
 
-
-
-    def __after__(self, action, **params):
+    def __after__(self, action,):
         '''
 
         '''
@@ -288,7 +265,10 @@ class SelfserviceController(BaseController):
                     log.debug("[__after__] Doing selftest!")
                     suser = getParam(param, "selftest_user", True)
                     if suser is not None:
-                        (c.user, _foo, c.realm) = getParam(param, "selftest_user", True).rpartition('@')
+                        (c.user, _foo, c.realm) = getParam(param,
+                                                           "selftest_user",
+                                                           True)\
+                                                           .rpartition('@')
                     else:
                         c.realm = ""
                         c.user = "--ua--"
@@ -297,13 +277,14 @@ class SelfserviceController(BaseController):
                         if uuser is not None:
                             (c.user, _foo, c.realm) = uuser.rpartition('@')
 
-                log.debug("[__after__] authenticating as %s in realm %s!" % (c.user, c.realm))
+                log.debug("[__after__] authenticating as %s in realm %s!"
+                          % (c.user, c.realm))
 
                 c.audit['user'] = c.user
                 c.audit['realm'] = c.realm
                 c.audit['success'] = True
 
-                if param.has_key('serial'):
+                if 'serial' in param:
                     c.audit['serial'] = param['serial']
                     c.audit['token_type'] = getTokenType(param['serial'])
 
@@ -517,8 +498,6 @@ class SelfserviceController(BaseController):
         finally:
             log.debug('[webprovisiongoogletoken] done')
 
-
-
     def usertokenlist(self):
         '''
         This returns a tokenlist as html output
@@ -530,4 +509,3 @@ class SelfserviceController(BaseController):
 
 
 #eof##########################################################################
-
