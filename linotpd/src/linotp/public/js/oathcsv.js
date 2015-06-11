@@ -45,7 +45,10 @@ function create_oathcsv_dialog() {
                 text: "Cancel"
                 }
         },
-        open: do_dialog_icons
+        open: function() {
+            _fill_realms($('#oath_realm'),1);
+            do_dialog_icons();
+        }
     });
     return $dialog_load_tokens_oathcsv ;
 }

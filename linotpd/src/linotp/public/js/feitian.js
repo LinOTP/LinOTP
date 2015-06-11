@@ -46,8 +46,9 @@ function create_feitian_dialog() {
 				}
         },
         open: function(){
-        	translate_import_feitian();
-        	do_dialog_icons();
+            translate_import_feitian();
+            _fill_realms($('#feitian_realm'),1);
+            do_dialog_icons();
         }
     });
     return $dialog_load_tokens_feitian;
