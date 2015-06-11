@@ -94,9 +94,13 @@ builddeblocal:
 builddeb:
 	mkdir -p ../build
 	make buildtranslation
+	# Apply quilt patches in the distribution's subdirectory if available
+	( if [ -f "debian/patches/`lsb_release -sc`/series" ]; then QUILT_PATCHES="debian/patches/`lsb_release -sc`" quilt push; fi )
 	mkdir -p linotp-build
 	cp -r $(COPYSTUFF)  linotp-build
 	(cd linotp-build ; make builddeblocal )
+	# Remove applied quilt patches
+	( if [ -f "debian/patches/`lsb_release -sc`/series" ]; then QUILT_PATCHES="debian/patches/`lsb_release -sc`" quilt pop; fi )
 	rm -fr linotp-build
 	mv linotp*.deb ../build
 

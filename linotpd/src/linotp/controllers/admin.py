@@ -1193,7 +1193,6 @@ class AdminController(BaseController):
                 ret = setPin(upin, user, serial, param)
                 res["set pin"] = ret
                 count = count + 1
-                checkPolicyPost('admin', 'setPin', param, user)
                 c.audit['action_detail'] += "pin, "
 
             if param.has_key("MaxFailCount".lower()):

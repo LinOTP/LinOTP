@@ -4,7 +4,7 @@ linotp (2.8~0dev0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 06 May 2015 16:09:53 +0200
 
-linotp (2.7.2.1~b1-1) jessie; urgency=low
+linotp (2.7.2.1~b2-1) jessie; urgency=low
 
   Bug fixes:
   * Server: Token in autoassignment were assigned randomly instead of the one
@@ -12,7 +12,7 @@ linotp (2.7.2.1~b1-1) jessie; urgency=low
   * Server: When using check_s the realm context was not correctly set. If the
     token is in a realm, that realm should be used not the default realm
   * Server: Uninitialized variables in remotetoken in case of connection error
-  * Server: Always set random PIN during token assign/setPin if the
+  * Server: Always set random PIN during token enroll/assign if the
     corresponding random PIN policy is set
   * Packaging: If a2dissite linotp2 is unsuccessful during package removal the
     uninstallation broke off. Now errors with 'a2dissite' are printed to
@@ -22,8 +22,11 @@ linotp (2.7.2.1~b1-1) jessie; urgency=low
     Debian Jessie. Since MySQL lacks a systemd service file use polling to
     check when MySQL is brought up
   * Server: Fix erroneous reply message about 'unconfigured autoenrollment'
+  * Server: Fix for enrolling tokens via the selfservice webprovision with
+    random pin policy set
+  * Packaging: Allow WebOb version 1.4 in debian 8 (jessie)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 08 May 2015 11:58:23 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Jun 2015 15:54:17 +0200
 
 linotp (2.7.2-1~precise) precise; urgency=low
 

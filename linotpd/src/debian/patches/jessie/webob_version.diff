@@ -1,0 +1,26 @@
+Index: src/setup.py
+===================================================================
+--- src.orig/setup.py
++++ src/setup.py
+@@ -47,7 +47,7 @@ setup(
+     url='http://www.linotp.org',
+     install_requires=[
+         "Pylons>=0.9.7",
+-        "WebOb<1.4",
++        "WebOb",
+         "SQLAlchemy>=0.6,<=0.9.99",
+         "docutils>=0.4",
+         "simplejson>=2.0",
+Index: src/debian/control
+===================================================================
+--- src.orig/debian/control
++++ src/debian/control
+@@ -14,7 +14,7 @@ Depends: ${misc:Depends}, ${python:Depen
+  linotp-useridresolver (>=2.7~)
+ Pre-Depends: python-simplejson, python-crypto, python-docutils,
+  python-sqlalchemy (>=0.6), python-sqlalchemy (<=0.9.99),
+- python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob (<1.4),
++ python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob,
+  python-mako, python-nose, python-decorator, python-formencode,
+  python-pastescript, python-pastedeploy, python-paste, python-beaker,
+  python-webhelpers, python-routes, python-pygments, python-ldap, adduser,
