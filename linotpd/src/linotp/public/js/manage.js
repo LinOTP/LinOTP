@@ -2019,8 +2019,17 @@ function load_system_config(){
         $('#ocra_max_challenge').val(data.result.value.OcraMaxChallenges);
         $('#ocra_challenge_timeout').val(data.result.value.OcraChallengeTimeout);
 
-        /*todo call the 'tok_fill_config.js */
 
+        $('#sys_x_forwarded_for').prop('checked', false);
+        if (data.result.value['client.X_FORWARDED_FOR'] == "True") {
+            $('#sys_x_forwarded_for').prop('checked', true);
+        }
+        $('#sys_forwarded').prop('checked', false);
+        if (data.result.value['client.FORWARDED'] == "True") {
+            $('#sys_forwarded').prop('checked', true);
+        }
+        $('#sys_forwarded_proxy').val(data.result.value['client.FORWARDED_PROXY']);
+        /*todo call the 'tok_fill_config.js */
     });
 }
 
@@ -2041,6 +2050,7 @@ function save_system_config(){
         'QrOcraDefaultSuite' : $('#ocra_default_qr_suite').val(),
         'OcraMaxChallenges' : $('#ocra_max_challenge').val(),
         'OcraChallengeTimeout' : $('#ocra_challenge_timeout').val(),
+        'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
         'session':getsession()},
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
@@ -2085,6 +2095,14 @@ function save_system_config(){
     if ($("#sys_realmbox").is(':checked')) {
         realmbox = "True";
     }
+    var client_forward = "False";
+    if ($("#sys_forwarded").is(':checked')) {
+        client_forward = "True";
+    }
+    var client_x_forward = "False";
+    if ($("#sys_x_forwarded_for").is(':checked')) {
+        client_x_forward = "True";
+    }
     $.get('/system/setConfig', { 'session':getsession(),
             'PrependPin' :prepend,
             'FailCounterIncOnFalsePin' : fcounter ,
@@ -2094,7 +2112,10 @@ function save_system_config(){
             'PassOnUserNotFound' : passOUNFound,
             'PassOnUserNoToken' : passOUNToken,
             'selfservice.realmbox' : realmbox,
-            'allowSamlAttributes' : allowsaml },
+            'allowSamlAttributes' : allowsaml,
+            'client.FORWARDED' : client_forward,
+            'client.X_FORWARDED_FOR' : client_x_forward,
+             },
      function(data, textStatus, XMLHttpRequest){
         if (data.result.status == false) {
             alert_info_text("text_system_save_error_checkbox", "", ERROR);

@@ -134,7 +134,7 @@ def generate_otpkey(key_size=20):
 
 def generate_password(size=6, characters=None):
     if not characters:
-        characters=string.ascii_lowercase + string.ascii_uppercase + string.digits
+        characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
     return ''.join(urandom.choice(characters) for _x in range(size))
 
 def check_session():
@@ -146,9 +146,13 @@ def check_session():
         return
 
     # check if the client is in the allowed IP range
-    no_session_clients = [c.strip() for c in config.get("linotpNoSessionCheck", "").split(",")]
+    no_session_clients = []
+    for no_session_client in config.get("linotpNoSessionCheck", "").split(","):
+        no_session_clients.append(no_session_client.strip())
+
     client = request.environ.get('REMOTE_ADDR', None)
-    log.debug("[check_session] checking %s in %s" % (client, no_session_clients))
+    log.debug("[check_session] checking %s in %s"
+              % (client, no_session_clients))
     for network in no_session_clients:
         if not network:
             continue
@@ -223,8 +227,52 @@ def get_client_from_request():
     This is the very HTTP client, that contacts the LinOTP server.
     '''
     client = request.environ.get('REMOTE_ADDR', None)
+
+    x_forwarded_for = config.get('client.X_FORWARDED_FOR', '')
+    if x_forwarded_for.lower().strip() == 'true':
+        # check, if the request passed by a qualified proxy
+        remote_addr = request.environ.get('REMOTE_ADDR', None)
+        x_forwarded_proxy = config.get('client.FORWARDED_PROXY', None)
+        if x_forwarded_proxy and x_forwarded_proxy == remote_addr:
+            ref_clients = request.environ.get('HTTP_X_FORWARDED_FOR', '')
+            for ref_client in ref_clients.split(','):
+                # the first ip in the list is the originator
+                client = ref_client.strip()
+                break
+
+    """
+    "Forwarded" Header
+
+    In 2014 RFC 7239 standardized a new Forwarded header with similar purpose
+    but more features compared to XFF.[28] An example of a Forwarded header
+    syntax:
+
+    Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
+    """
+    forwarded = config.get('client.FORWARDED', '')
+    if forwarded.lower().strip() == 'true':
+        # check, if the request passed by a qaulified proxy
+        remote_addr = request.environ.get('REMOTE_ADDR', None)
+        forwarded_proxy = config.get('client.FORWARDED_PROXY', None)
+        if forwarded_proxy and forwarded_proxy == remote_addr:
+            # example is:
+            # "Forwarded: for=192.0.2.43, for=198.51.100.17"
+            entries = request.environ.get('HTTP_FORWARDED', '')
+            forwarded_dict = {}
+            entries = entries.replace("Forwarded:", "")
+            for entry in entries.split(';'):
+                key, value = entry.split('=', 1)
+                forwarded_dict[key.strip().lower()] = value.strip()
+            if 'for' in forwarded_dict:
+                client = forwarded_dict.get('for')
+                # support for multiple 'for' format
+                # but we only take the first client
+                if 'for' in client and ',' in client:
+                    client = client.split(',', 1)[0]
+
     log.debug("[get_client_from_request] got the client %s" % client)
     return client
+
 
 def get_client_from_param():
     '''

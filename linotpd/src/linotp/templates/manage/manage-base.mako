@@ -200,6 +200,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 			<li><a href='#tab_content_system_settings'>${_("Settings")}</a></li>
 			<li><a href='#tab_content_system_defaults'>${_("Token defaults")}</a></li>
 			<li><a href='#tab_content_system_gui'>${_("GUI settings")}</a></li>
+			<li><a href='#tab_content_system_client'>${_("Client Identification")}</a></li>
 		</ul>
 		<div id="tab_content_system_settings">
 			<fieldset>
@@ -301,6 +302,26 @@ ${c.version} --- &copy; ${c.licenseinfo}
 		    		</table>
 		    </fieldset>
     	</div>  <!-- tab system settings gui -->
+        <div id='tab_content_system_client'>
+            <fieldset>
+                    <legend>${_("Client Identification with Proxy")}</legend>
+                    <table>
+                        <tr><td><label for="sys_x_forwarded_for">${_("Support for HTTP_X_FORWARDED_FOR")}</label></td>
+                        <td><input type='checkbox' name='sys_x_forwarded_for' id='sys_x_forwarded_for' value='sys_x_forwarded_for'
+                            title='${_("If checked a realm dropdown box will be displayed on the selfservice portal logon page.")}'></td></tr>
+
+                        <tr><td><label for="sys_forwarded">${_("Support for HTTP_FORWARDED")}</label></td>
+                        <td><input type='checkbox' name='sys_forwarded' id='sys_forwarded' value='sys_forwarded'
+                            title='${_("If checked a realm dropdown box will be displayed on the selfservice portal logon page.")}'></td></tr>
+
+                        <tr><td><label for=sys_forwarded_proxy> ${_("Trusted Forwarding Proxy")}: </label></td><td></td></tr>
+                        <tr><td colspan=2><input type="text" name="sys_forwarded_proxy" class="required"  id="sys_forwarded_proxy" size="35"
+                                title='${_("The ip address of the trusted forwarding proxy, which provides the REMOTE_ADDR.")}'></td></tr>
+
+                    </table>
+            </fieldset>
+        </div>  <!-- tab system settings gui -->
+
     </div> <!-- tab container system settings -->
     </form>
 </div>
