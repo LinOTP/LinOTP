@@ -720,7 +720,7 @@ def getUserPhone(user, phone_type='phone'):
                     "type %r." % (uid, resId, resClass, phone_type))
         return ""
 
-def get_authenticated_user(username, realm, password):
+def get_authenticated_user(username, realm, password, authenticate=True):
     '''
     check the username and password against a userstore.
 
@@ -730,46 +730,68 @@ def get_authenticated_user(username, realm, password):
 
     :return: None or user@realm of the authenticated user.
     '''
+
+    log.info("User %r from realm %r tries to authenticate to selfservice"
+             % (username, realm))
+
+    if type(username) != unicode:
+        username = username.decode(ENCODING)
+
+    users = []
+    user = User(username, realm, "")
+    users.append(user)
+
+
+    #special case: if realm is empty
+    if not realm:
+        if getDefaultRealm():
+            def_realm = getDefaultRealm()
+            if def_realm:
+                user = User(username, def_realm, "")
+                users.append(user)
+        if '@' in username:
+            u_name, u_realm = username.rsplit('@', 1)
+            user = User(u_name, u_realm, "")
+            users.append(user)
+
+    for user in users:
+        username = user.login
+        realm = user.realm
+        res = getResolversOfUser(user)
+        if (len(res) != 1):
+            if (len(res) == 0):
+                log.error("The username %r exists in NO resolver within the "
+                          "realm %r." % (username, realm))
+            else:
+                log.error("The username %r exists in more than one resolver "
+                          "within the realm %r" % (username, realm))
+                log.error(res)
+            continue
+
+        # we got one resolver, so lets check if user exists
+        (uid, resolver, resolverC) = getUserId(user)
+        log.info("the user resolves to %r" % uid)
+        log.info("The username is found within the resolver %r" % resolver)
+        break
+
+    # if only identify user, we are done here
+    if not authenticate:
+         auth_user = username + '@' + realm
+         return auth_user
+
+    # Authenticate user
     auth_user = None
     try:
-        log.info("User %r from realm %r tries to authenticate to selfservice"
-                 % (username, realm))
-        if type(username) != unicode:
-            username = username.decode(ENCODING)
-        u = User(username, realm, "")
-        res = getResolversOfUser(u)
-        # Now we know, the resolvers of this user and we can verify the password
-        if (len(res) == 1):
-            (uid, resolver, resolverC) = getUserId(u)
-            log.info("the user resolves to %r" % uid)
-            log.info("The username is found within the resolver %r" % resolver)
-            # Authenticate user
-            try:
-                (package, module, class_, conf) = splitResolver(resolverC)
-                module = package + "." + module
-                y = getResolverObject(resolverC)
-            except Exception as e:
-                log.error("[ module %r notfound! :%r ]" % (module, e))
-            try:
-                if  y.checkPass(uid, password):
-                    log.debug("Successfully authenticated user %r." % username)
-                    # try:
-                    #identity = self.add_metadata( environ, identity )
-                    auth_user = username + '@' + realm
-                else:
-                    log.info("user %r failed to authenticate." % username)
-            except Exception as e:
-                log.error("Error checking password within module %r:%r" 
-                          % (module, e))
-                log.error("%s" % traceback.format_exc())
+        (package, module, class_, conf) = splitResolver(resolverC)
+        module = package + "." + module
+        y = getResolverObject(resolverC)
 
-        elif (len(res) == 0):
-            log.error("The username %r exists in NO resolver within the "
-                      "realm %r." % (username, realm))
+        if  y.checkPass(uid, password):
+            log.debug("Successfully authenticated user %r." % username)
+            auth_user = username + '@' + realm
         else:
-            log.error("The username %r exists in more than one resolver "
-                      "within the realm %r" % (username, realm))
-            log.error(res)
+            log.info("user %r failed to authenticate." % username)
+
     except UserError as exx:
         log.error("Error while trying to verify the username: %r" % exx)
 

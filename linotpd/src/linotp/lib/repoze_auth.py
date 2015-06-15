@@ -45,40 +45,31 @@ class UserModelPlugin(object):
         username = None
         realm = None
         authUser = None
+
+        authenticate = True
+        if isSelfTest():
+            authenticate = False
+
         try:
             if isSelfTest():
-                if identity.has_key('login') == False and identity.has_key('repoze.who.plugins.auth_tkt.userid') == True:
+                if ('login' not in identity
+                    and 'repoze.who.plugins.auth_tkt.userid' in identity):
                     u = identity.get('repoze.who.plugins.auth_tkt.userid')
                     identity['login'] = u
                     identity['password'] = u
 
-            if getRealmBox():
-                username = identity['login']
-                realm = identity['realm']
-            else:
-                log.info("[authenticate] no realmbox, so we are trying to split the loginname")
-                m = re.match("(.*)\@(.*)", identity['login'])
-                if m:
-                    if 2 == len(m.groups()):
-                        username = m.groups()[0]
-                        realm = m.groups()[1]
-                        log.info("[authenticate] found @: username: %r, realm: %r" % (username, realm))
-                else:
-                    username = identity['login']
-                    realm = getDefaultRealm()
-                    log.info("[authenticate] using default Realm: username: %r, realm: %r" % (username, realm))
-
+            username = identity['login']
+            realm = identity['realm']
             password = identity['password']
+
         except KeyError as e:
             log.error("[authenticate] Keyerror in identity: %r." % e)
             log.error("[authenticate] %s" % traceback.format_exc())
             return None
 
         # check username/realm, password
-        if isSelfTest():
-            authUser = "%s@%s" % (unicode(username), unicode(realm))
-        else:
-            authUser = get_authenticated_user(username, realm, password)
+        authUser = get_authenticated_user(username, realm, password,
+                                              authenticate=authenticate)
 
         return authUser
 
