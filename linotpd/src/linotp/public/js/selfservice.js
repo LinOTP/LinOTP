@@ -23,6 +23,17 @@
  *    Support: www.lsexperts.de
  *
  */
+
+
+/* For compatibility with <=IE8 */
+if (!Object.keys) Object.keys = function(o) {
+	if (o !== Object(o))
+	throw new TypeError('Object.keys called on a non-object');
+	 var k=[],p;
+	for (p in o) if (Object.prototype.hasOwnProperty.call(o,p)) k.push(p);
+	return k;
+};
+
 window.onerror = error_handling;
 
 /* Use Jed for i18n. The correct JSON file is dynamically loaded later. */
@@ -239,7 +250,7 @@ function getserial() {
         alert(i18n.gettext("You need to enter an OTP value"));
         hide_waiting();
     } else {
-        var data = run_sync_request('/userservice/getSerialByOtp', 
+        var data = run_sync_request('/userservice/getSerialByOtp',
                             {'otp' : otp});
         if (data.result.status == true) {
             var serial = data.result.value.serial;
@@ -318,7 +329,7 @@ function enroll_token(params) {
 
         }
         details = details + '</ul>';
-        alert_box(i18n.gettext("Token enrollment result"), 
+        alert_box(i18n.gettext("Token enrollment result"),
                     i18n.gettext("Token enrolled successfully ") + details);
         /*
         * the dynamic tokens must provide a function to gather all data from the form
@@ -396,24 +407,24 @@ function getotp() {
                };
     var data = run_sync_request("/userservice/getmultiotp", params);
     if (data.result.status == true) {
-        var ht = "<h3>" + i18n.gettext("OTP values for token ") + data.result.value.serial +"</h3>"
+        var ht = "<h3>" + i18n.gettext("OTP values for token ") + data.result.value.serial +"</h3>";
         if (data.result.value.result === true) {
             ht += "<table class='getotp'>";
             var id_head = i18n.gettext('Time');
             if (data.result.value.type === 'HMAC') {
                 id_head = i18n.gettext('Counter');
             }
-            ht += "<tr><th>" + id_head + "</th>"
+            ht += "<tr><th>" + id_head + "</th>";
             ht +="<th>" + i18n.gettext('Otp Value') +"</th></tr>";
             var keys = Object.keys(data.result.value.otp);
             var i = 0;
             for (var id in keys) {
-                key = keys[id]
+                key = keys[id];
                 otp = data.result.value.otp[key];
                 if (i%2 == 0 ){
-                    ht += "<tr class='even'>"
+                    ht += "<tr class='even'>";
                 } else {
-                    ht += "<tr class='odd'>"
+                    ht += "<tr class='odd'>";
                 }
                 ht += "<td>" + key + "</td><td>" + otp +"</td></tr>";
                 i++;
@@ -645,29 +656,16 @@ function selectToken(serial) {
 }
 
 function showTokenlist() {
-    $.get('/selfservice/usertokenlist', {
-        session : get_selfservice_session()
-    }, function(data, textStatus, XMLHttpRequest) {
-        $('#tokenDiv').html(data);
-    });
-}
-
-function check_active_session() {
-    var active_session = true;
     $.ajax({
         url : '/selfservice/usertokenlist',
-        dataType : "json",
+        dataType : "html",
         data : { 'session' : get_selfservice_session() },
         cache : false,
-        async : false,
-        error : function(data) {
-                if (data.status == LOGIN_CODE) {
-                    alert(i18n.gettext("Your session has expired!"));
-                    active_session = false;
-                    location.reload();
-                }
-        }});
-    return active_session;
+        type: 'POST',
+        success: function(dataString) {
+             $('#tokenDiv').html(dataString);
+            }
+    });
 }
 
 // =================================================================
