@@ -423,8 +423,7 @@ class Audit(AuditBase):
         '''
         create the sqlalchemy condition from the params
         '''
-        condition = None
-
+        conditions = []
         boolCheck = and_
         if not AND:
             boolCheck = or_
@@ -435,47 +434,38 @@ class Audit(AuditBase):
         for k, v in param.items():
             if "" != v:
                 if "serial" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.serial.like(v))
+                    conditions.append(AuditTable.serial.like(v))
                 elif "user" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.user.like(v))
+                    conditions.append(AuditTable.user.like(v))
                 elif "realm" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.realm.like(v))
+                    conditions.append(AuditTable.realm.like(v))
                 elif "action" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.action.like(v))
+                    conditions.append(AuditTable.action.like(v))
                 elif "action_detail" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.action_detail.like(v))
+                    conditions.append(AuditTable.action_detail.like(v))
                 elif "date" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.timestamp.like(v))
+                    conditions.append(AuditTable.timestamp.like(v))
                 elif "number" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.id.like(v))
+                    conditions.append(AuditTable.id.like(v))
                 elif "success" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.success.like(v))
+                    conditions.append(AuditTable.success.like(v))
                 elif "tokentype" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.tokentype.like(v))
+                    conditions.append(AuditTable.tokentype.like(v))
                 elif "administrator" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.administrator.like(v))
+                    conditions.append(AuditTable.administrator.like(v))
                 elif "info" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.info.like(v))
+                    conditions.append(AuditTable.info.like(v))
                 elif "linotp_server" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.linotp_server.like(v))
+                    conditions.append(AuditTable.linotp_server.like(v))
                 elif "client" == k:
-                    condition = boolCheck(condition,
-                                      AuditTable.client.like(v))
+                    conditions.append(AuditTable.client.like(v))
 
-        log.debug("[_buildCondition] return %s" % condition)
-        return condition
+        all_conditions = None
+        if conditions:
+            all_conditions = boolCheck(*conditions)
+
+        log.debug("[_buildCondition] return %s" % all_conditions)
+        return all_conditions
 
     def row2dict(self, audit_line):
         """
