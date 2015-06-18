@@ -28,7 +28,7 @@
 import logging
 log = logging.getLogger(__name__)
 
-import re
+import base64
 
 from linotp.lib.user import getRealmBox
 from linotp.lib.realm import getDefaultRealm
@@ -44,7 +44,7 @@ class UserModelPlugin(object):
         #log.debug( identity )
         username = None
         realm = None
-        authUser = None
+        realm_box = getRealmBox()
 
         authenticate = True
         if isSelfTest():
@@ -68,9 +68,13 @@ class UserModelPlugin(object):
             return None
 
         # check username/realm, password
-        authUser = get_authenticated_user(username, realm, password,
-                                              authenticate=authenticate)
-
+        user = get_authenticated_user(username, realm, password,
+                                          realm_box=realm_box,
+                                          authenticate=authenticate)
+        if not user:
+            return None
+        authUser = "%s:%s" % (base64.b32encode(user.login), 
+                              base64.b32encode(user.realm))
         return authUser
 
     def add_metadata(self, environ, identity):

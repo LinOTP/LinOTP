@@ -446,7 +446,7 @@ def getResolvers(user):
 
     return Resolver
 
-def getResolversOfUser(user):
+def getResolversOfUser(user, use_default_realm=True):
     '''
     This returns the list of the Resolvers of a user in a given realm.
     Usually this should only return one resolver
@@ -470,7 +470,8 @@ def getResolversOfUser(user):
         return Resolvers
 
     if realm is None or realm == "":
-        realm = getDefaultRealm()
+        if use_default_realm:
+            realm = getDefaultRealm()
 
     #if realm is None or realm=="" or login is None or login == "":
     #    log.error("[getResolversOfUser] You need to specify the name ( %s) and the realm (%s) of a user with conf %s" % (login, realm, user.conf))
@@ -720,15 +721,22 @@ def getUserPhone(user, phone_type='phone'):
                     "type %r." % (uid, resId, resClass, phone_type))
         return ""
 
-def get_authenticated_user(username, realm, password, authenticate=True):
+
+def get_authenticated_user(username, realm, password,
+                           realm_box=False, authenticate=True):
     '''
     check the username and password against a userstore.
+
+    remark: the method is called in the context of repoze.who
+            during authentication and during auto_enrollToken/auto_assignToken
 
     :param username: the user login name
     :param realm: the realm, where the user belongs to
     :param password: the to be checked userstore password
+    :param realm_box: take the information, if realmbox is displayed
+    :parm authenticate: for the selftest, we skip the authentication
 
-    :return: None or user@realm of the authenticated user.
+    :return: None or authenticated user object
     '''
 
     log.info("User %r from realm %r tries to authenticate to selfservice"
@@ -738,46 +746,71 @@ def get_authenticated_user(username, realm, password, authenticate=True):
         username = username.decode(ENCODING)
 
     users = []
-    user = User(username, realm, "")
-    users.append(user)
+    uid = None
+    resolver = None
+    resolverC = None
 
+    # if we have an realmbox, we take the user as it is
+    # - the realm is always given
+    # - appended realms result in error
+    if realm_box:
+        user = User(username, realm, "")
+        users.append(user)
 
-    #special case: if realm is empty
-    if not realm:
-        if getDefaultRealm():
-            def_realm = getDefaultRealm()
-            if def_realm:
-                user = User(username, def_realm, "")
-                users.append(user)
-        if '@' in username:
-            u_name, u_realm = username.rsplit('@', 1)
-            user = User(u_name, u_realm, "")
+    # else if no realm box is given
+    #   and realm is not empty:
+    #    - create the user from the values (as we are in auto_assign, etc)
+    #   and the realm is empty! (s. login.mako
+    #    - the user either appends his realm
+    #    - or will get the realm appended
+    #
+    else:
+        if realm:
+            user = User(username, realm, "")
             users.append(user)
+        else:
+            if getDefaultRealm():
+                def_realm = getDefaultRealm()
+                if def_realm:
+                    user = User(username, def_realm, "")
+                    users.append(user)
+            if '@' in username:
+                u_name, u_realm = username.rsplit('@', 1)
+                user = User(u_name, u_realm, "")
+                users.append(user)
 
+    identified_users = []
     for user in users:
         username = user.login
         realm = user.realm
-        res = getResolversOfUser(user)
+        res = getResolversOfUser(user, use_default_realm=False)
         if (len(res) != 1):
             if (len(res) == 0):
-                log.error("The username %r exists in NO resolver within the "
+                log.info("The username %r exists in NO resolver within the "
                           "realm %r." % (username, realm))
             else:
-                log.error("The username %r exists in more than one resolver "
+                log.info("The username %r exists in more than one resolver "
                           "within the realm %r" % (username, realm))
-                log.error(res)
             continue
 
         # we got one resolver, so lets check if user exists
         (uid, resolver, resolverC) = getUserId(user)
+        identified_users.append((user, uid, resolver, resolverC))
         log.info("the user resolves to %r" % uid)
         log.info("The username is found within the resolver %r" % resolver)
-        break
 
-    # if only identify user, we are done here
+    ide_user = len(identified_users)
+    if ide_user != 1:
+        if ide_user > 1:
+            log.info("The username %s could not be identified uniquely" %
+                     username)
+        if ide_user == 0:
+            log.info("The username %s could not be found." % username)
+        return None
+
+    (user, uid, resolver, resolverC) = identified_users[0]
     if not authenticate:
-         auth_user = username + '@' + realm
-         return auth_user
+        return user
 
     # Authenticate user
     auth_user = None
@@ -788,14 +821,17 @@ def get_authenticated_user(username, realm, password, authenticate=True):
 
         if  y.checkPass(uid, password):
             log.debug("Successfully authenticated user %r." % username)
-            auth_user = username + '@' + realm
+            auth_user = user
         else:
             log.info("user %r failed to authenticate." % username)
 
     except UserError as exx:
-        log.error("Error while trying to verify the username: %r" % exx)
+        log.info("failed to verify the username: %s@%s" % (user.login,
+                                                           user.realm))
+
+    if not auth_user:
+        log.error("Error while trying to verify the username: %s" % username)
 
     return auth_user
 
 #eof###########################################################################
-

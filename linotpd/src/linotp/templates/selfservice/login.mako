@@ -63,7 +63,7 @@ $(document).ready(function() {
 <div id="sidebar">
 
 <P>
-${_("This is the LinOTP self service portal. You may login here with your username and realm.")} 
+${_("This is the LinOTP self service portal. You may login here with your username and realm.")}
 </P>
 <P>
 ${_("Within the self service portal you may reset the PINs of your tokens, assign new tokens or resync your tokens.")}
@@ -82,21 +82,27 @@ ${_("If you lost a token, you may also disable this token.")}
         <td><input type="text" id="login" name="login" value="" /></td></tr>
 		%if c.realmbox:
         	<tr>
+		      <td>${_("Realm")}:</td>
+              <td>
+        	    <select name="realm">
+        	        % for realm in c.realmArray:
+        	        %if c.defaultRealm == realm:
+        	        <option value="${realm}" selected>${realm}</option>
+        	        %else:
+        	        <option value="${realm}">${realm}</option>
+        	        %endif
+        	        %endfor
+                </select>
+             </td>
+          </tr>
         %else:
-			<tr style="display:none;">
-		%endif
-		<td>${_("Realm")}:</td>
-        <td>
-	    <select name="realm">
-	        % for realm in c.realmArray:
-	        %if c.defaultRealm == realm:
-	        <option value="${realm}" selected>${realm}</option>
-	        %else:
-	        <option value="${realm}">${realm}</option>
-	        %endif
-	        %endfor
-        </select>
-        </td></tr>
+            <tr style="display:none;">
+              <td>${_("Realm")}:</td>
+              <td><input type="text" id="realm" name="realm"
+                  value='' /></td>
+            </tr>
+        %endif
+
         <tr><td><label for=password>${_("Password")}:</label></td>
         <td><input autocomplete="off" type="password" id="password" name="password" value ="" /></td></tr>
         <tr><td></td>

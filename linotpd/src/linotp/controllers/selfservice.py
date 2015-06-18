@@ -40,7 +40,7 @@ except ImportError:
     import simplejson as json
 
 import webob
-
+import base64
 
 from pylons import request, response, config, tmpl_context as c
 from pylons.controllers.util import abort
@@ -188,23 +188,27 @@ class SelfserviceController(BaseController):
                 self.authUser = User(c.user, c.realm, '')
                 log.debug("[__before__] authenticating as %s in realm %s!" % (c.user, c.realm))
             else:
-                identity = request.environ.get('repoze.who.identity')
-                if identity is None:
+
+                user_id = request.environ.get('repoze.who.identity', {}).\
+                                          get('repoze.who.userid', None)
+
+                if not user_id:
                     abort(401, "You are not authenticated")
 
-                log.debug("[__before__] doing getAuthFromIdentity in action %s" % action)
+                log.debug("[__before__] doing getAuthFromIdentity in action %s"
+                          % action)
 
-                user_id = request.environ.get('repoze.who.identity').get('repoze.who.userid')
-                if type(user_id) == unicode:
-                    user_id = user_id.encode(ENCODING)
-                identity = user_id.decode(ENCODING)
-                log.debug("[__before__] getting identity from repoze.who: %r" % identity)
+                # from repoze, we receive the login + realm as base32 compound
+                (login, realm) = user_id.split(':')
+                c.user = base64.b32decode(login)
+                c.realm = base64.b32decode(realm)
 
-                (c.user, _foo, c.realm) = identity.rpartition('@')
                 self.authUser = User(c.user, c.realm, '')
 
-                log.debug("[__before__] set the self.authUser to: %s, %s " % (self.authUser.login, self.authUser.realm))
-                log.debug('[__before__] param for action %s: %s' % (action, param))
+                log.debug("[__before__] set the self.authUser to: %s, %s "
+                          % (self.authUser.login, self.authUser.realm))
+                log.debug('[__before__] param for action %s: %s'
+                          % (action, param))
 
                 # checking the session
                 if (False == check_selfservice_session(request.url,
@@ -223,7 +227,7 @@ class SelfserviceController(BaseController):
 
             c.user = self.authUser.login
             c.realm = self.authUser.realm
-            c.tokenArray = getTokenForUser (self.authUser)
+            c.tokenArray = getTokenForUser(self.authUser)
 
             # only the defined actions should be displayed
             # - remark: the generic actions like enrollTT are allready approved
