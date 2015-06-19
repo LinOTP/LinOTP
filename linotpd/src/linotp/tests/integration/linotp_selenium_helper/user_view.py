@@ -43,7 +43,7 @@ class UserView:
         self.realm_name = realm_name.lower()
 
     def _select_realm(self):
-        """We assume we are one the main page /manage/ and then select
+        """We assume we are one the main page /manage and then select
            the realm from the <select> dropdown on the left
         """
         realm_select = self.driver.find_element_by_id('realm')
@@ -64,7 +64,7 @@ class UserView:
 
     def get_num_users(self):
         """Return the number of users in the current realm"""
-        self.driver.get(self.base_url + "/manage/")
+        self.driver.get(self.base_url + "/manage")
         self._select_realm()
         tab_id = self._open_tab_user_view()
         time.sleep(2)
@@ -80,7 +80,7 @@ class UserView:
 
     def user_exists(self, username):
         """Return True if users exists in the current realm"""
-        self.driver.get(self.base_url + "/manage/")
+        self.driver.get(self.base_url + "/manage")
         self._select_realm()
         tab_id = self._open_tab_user_view()
         search_box = self.driver.find_element_by_css_selector("#%s > div.flexigrid "

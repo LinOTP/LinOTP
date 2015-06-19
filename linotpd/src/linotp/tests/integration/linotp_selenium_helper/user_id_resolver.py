@@ -44,7 +44,7 @@ class UserIdResolver:
         self.testbutton_id = ""
 
         #Open the LinOTP manage interface and the UserIdResolver menu
-        driver.get(self.base_url + "/manage/")
+        driver.get(self.base_url + "/manage")
         time.sleep(1)
         hover(self.driver, self.driver.find_element_by_css_selector('#menu > li'))
         time.sleep(1)
@@ -55,7 +55,7 @@ class UserIdResolver:
         """Test the connection with the corresponding button in the UI.
         Return the number of found users.
         """
-        self.driver.get(self.base_url + "/manage/")
+        self.driver.get(self.base_url + "/manage")
         time.sleep(1)
         hover(self.driver, self.driver.find_element_by_css_selector('#menu > li'))
         time.sleep(1)

@@ -41,7 +41,7 @@ class Realm:
 
     def create(self, driver, base_url):
         """Opens the LinOTP manage interface and the UserIdResolver menu"""
-        driver.get(base_url + "/manage/")
+        driver.get(base_url + "/manage")
         time.sleep(1)
         hover(driver, driver.find_element_by_css_selector('#menu > li'))
         time.sleep(1)
