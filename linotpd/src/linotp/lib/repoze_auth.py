@@ -73,8 +73,8 @@ class UserModelPlugin(object):
                                           authenticate=authenticate)
         if not user:
             return None
-        authUser = "%s:%s" % (base64.b32encode(user.login), 
-                              base64.b32encode(user.realm))
+
+        authUser = "%s@%s" % (user.login, user.realm)
         return authUser
 
     def add_metadata(self, environ, identity):

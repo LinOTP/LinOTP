@@ -112,6 +112,7 @@ import traceback
 import copy
 
 from linotp.lib.selftest import isSelfTest
+from linotp.controllers.userservice import get_auth_user
 
 from linotp.lib.token import newToken
 
@@ -169,47 +170,18 @@ class SelfserviceController(BaseController):
             c.audit['success'] = False
             c.audit['client'] = get_client()
 
-
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
-            if isSelfTest():
-                log.debug("[__before__] Doing selftest!")
-                uuser = getParam(param, "selftest_user", True)
-                if uuser is not None:
-                    (c.user, _foo, c.realm) = uuser.rpartition('@')
-                else:
-                    c.realm = ""
-                    c.user = "--u--"
-                    env = request.environ
-                    uuser = env.get('REMOTE_USER')
-                    if uuser is not None:
-                        (c.user, _foo, c.realm) = uuser.rpartition('@')
 
-                self.authUser = User(c.user, c.realm, '')
-                log.debug("[__before__] authenticating as %s in realm %s!" % (c.user, c.realm))
-            else:
+            (auth_type, auth_user) = get_auth_user(request)
 
-                user_id = request.environ.get('repoze.who.identity', {}).\
-                                          get('repoze.who.userid', None)
+            if not auth_user or auth_type not in ['repoze', 'selftest']:
+                abort(401, "You are not authenticated")
 
-                if not user_id:
-                    abort(401, "You are not authenticated")
+            (c.user, _foo, c.realm) = auth_user.rpartition('@')
+            self.authUser = User(c.user, c.realm, '')
 
-                log.debug("[__before__] doing getAuthFromIdentity in action %s"
-                          % action)
-
-                # from repoze, we receive the login + realm as base32 compound
-                (login, realm) = user_id.split(':')
-                c.user = base64.b32decode(login)
-                c.realm = base64.b32decode(realm)
-
-                self.authUser = User(c.user, c.realm, '')
-
-                log.debug("[__before__] set the self.authUser to: %s, %s "
-                          % (self.authUser.login, self.authUser.realm))
-                log.debug('[__before__] param for action %s: %s'
-                          % (action, param))
-
+            if auth_type == "repoze":
                 # checking the session
                 if (False == check_selfservice_session(request.url,
                                                        request.path,

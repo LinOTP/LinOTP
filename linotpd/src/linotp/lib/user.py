@@ -193,21 +193,26 @@ def getUserResolverId(user, report=False):
 
     return (uuserid, uidResolver, uidResolverClass)
 
+
 def splitUser(username):
+    """
+    split the username into the user and realm
+
+    :param username: the given username
+    :return: tuple of (user and group/realm)
+    """
 
     user = username.strip()
     group = ""
 
-    ## todo split the last
-    l = user.split('@')
-    if len(l) >= 2:
-        (user, group) = user.rsplit('@')
-    else:
-        l = user.split('\\')
-        if len(l) >= 2:
-            (group, user) = user.rsplit('\\')
+
+    if '@' in user:
+        (user, group) = user.rsplit('@', 1)
+    elif '\\' in user:
+        (group, user) = user.split('\\', 1)
 
     return (user, group)
+
 
 def getUserFromParam(param, optionalOrRequired):
     realm = ""
@@ -769,11 +774,10 @@ def get_authenticated_user(username, realm, password,
             user = User(username, realm, "")
             users.append(user)
         else:
-            if getDefaultRealm():
-                def_realm = getDefaultRealm()
-                if def_realm:
-                    user = User(username, def_realm, "")
-                    users.append(user)
+            def_realm = getDefaultRealm()
+            if def_realm:
+                user = User(username, def_realm, "")
+                users.append(user)
             if '@' in username:
                 u_name, u_realm = username.rsplit('@', 1)
                 user = User(u_name, u_realm, "")
