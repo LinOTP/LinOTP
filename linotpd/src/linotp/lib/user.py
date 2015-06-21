@@ -72,6 +72,7 @@ class User(object):
         self.resolverUid = {}
         self.resolverConf = {}
         self.resolvers_list = []
+        self._exists = None
 
     def getRealm(self):
         return self.realm
@@ -176,6 +177,52 @@ class User(object):
             conf = self.resolverConf.get(resolver)
 
         return conf
+
+    def exists(self):
+        """
+        check if a user exists in the given realm
+        """
+        if self._exists in [True, False]:
+            return self._exists
+
+        self._exists = False
+
+        realms = getRealms(self.realm)
+        if not realms:
+            return self._exists
+
+        found = []
+        for realm_name, definition in realms.items():
+            resolvers = definition.get('useridresolver', [])
+            for realm_resolver in resolvers:
+                log.debug("checking in %r" % realm_resolver)
+                y = getResolverObject(realm_resolver)
+                if y:
+                    log.debug("checking in module %r" % y)
+                    uid = y.getUserId(self.login)
+                    found.append((self.login, realm_name, uid, realm_resolver))
+                    log.debug("type of uid: %s" % type(uid))
+                    log.debug("type of realm_resolver: %s" % type(realm_resolver))
+                else:
+                    log.error("module %r not found!" % (realm_resolver))
+
+        if found:
+            self._exists = True
+            (self.login, self.realm, self.uid, self.resolver) = found[0]
+        return self._exists
+
+    def checkPass(self, password):
+        if self.exists() == False:
+            return False
+
+        res = False
+        try:
+            y = getResolverObject(self.resolver)
+            res = y.checkPass(self.uid, password)
+        except:
+            pass
+
+        return res
 
 def getUserResolverId(user, report=False):
     # here we call the userid resolver!!"
