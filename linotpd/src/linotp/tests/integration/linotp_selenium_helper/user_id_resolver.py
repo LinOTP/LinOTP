@@ -25,11 +25,14 @@
 #
 """Contains UserIdResolver class"""
 
-import time
 import re
+import time
 
-from selenium.webdriver.common.action_chains import ActionChains
-from helper import hover
+from linotp_selenium_helper.helper import (
+    find_by_css,
+    find_by_id,
+    hover,
+    )
 
 class UserIdResolver:
     """Base-Class for UserIdResolvers.
@@ -45,21 +48,18 @@ class UserIdResolver:
 
         #Open the LinOTP manage interface and the UserIdResolver menu
         driver.get(self.base_url + "/manage")
-        time.sleep(1)
-        hover(self.driver, self.driver.find_element_by_css_selector('#menu > li'))
-        time.sleep(1)
-        driver.find_element_by_id("menu_edit_resolvers").click()
-        driver.find_element_by_id("button_resolver_new").click()
+        hover(self.driver, find_by_css(driver, "#menu > li"))
+        find_by_id(driver, "menu_edit_resolvers").click()
+        find_by_id(driver, "button_resolver_new").click()
 
     def test_connection(self):
         """Test the connection with the corresponding button in the UI.
         Return the number of found users.
         """
+        driver = self.driver
         self.driver.get(self.base_url + "/manage")
-        time.sleep(1)
-        hover(self.driver, self.driver.find_element_by_css_selector('#menu > li'))
-        time.sleep(1)
-        self.driver.find_element_by_id("menu_edit_resolvers").click()
+        hover(self.driver, find_by_css(self.driver, "#menu > li"))
+        find_by_id(driver, "menu_edit_resolvers").click()
 
         resolvers = self.driver.find_elements_by_css_selector("#resolvers_list > ol > li")
 
@@ -68,11 +68,10 @@ class UserIdResolver:
                 resolver.click()
 
         self.driver.find_element_by_id("button_resolver_edit").click()
-        time.sleep(1)
-        self.driver.find_element_by_id(self.testbutton_id).click()
+        find_by_id(driver, self.testbutton_id).click()
 
         time.sleep(2)
-        alert_box = self.driver.find_element_by_id("alert_box_text")
+        alert_box = find_by_id(driver, "alert_box_text")
         alert_box_text = alert_box.text
         self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
 
