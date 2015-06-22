@@ -236,7 +236,7 @@ def getConfigSection(config, section):
 
 class RadiusClient(object):
     """
-    radius authetication client to support challenge response
+    radius authentication client to support challenge response
     """
 
     def __init__(self, rServer=None, rSecret=None, rNasId=None, rDict=None):
