@@ -79,7 +79,9 @@ _DEFAULT_FORM = """
 </html>
 """
 
+
 class FormPluginBase(object):
+
     def _get_rememberer(self, environ):
         rememberer = environ['repoze.who.plugins'][self.rememberer_name]
         return rememberer
@@ -97,6 +99,17 @@ class FormPluginBase(object):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__,
                             id(self))  #pragma NO COVERAGE
+
+    def _getCredentials(self, form):
+        """
+        extract the credentials from the form entries
+        """
+        credentials = {}
+        for entry in form:
+            credentials[entry] = form.get(entry, '')
+
+        return credentials
+
 
 class FormPlugin(FormPluginBase):
 
@@ -124,20 +137,17 @@ class FormPlugin(FormPluginBase):
             # this smells funny
             environ['wsgi.input'] = StringIO()
             form.update(query)
-            try:
-                login = form['login']
-                password = form['password']
-                realm = form['realm']
-            except KeyError:
-                return None
+
+            credentials = self._getCredentials(form)
+
             del query[self.login_form_qs]
             environ['QUERY_STRING'] = urllib.urlencode(query)
             environ['repoze.who.application'] = HTTPFound(
                                                     construct_url(environ))
-            credentials = {'login':login, 'password':password, 'realm':realm}
-            max_age = form.get('max_age', None)
-            if max_age is not None:
-                credentials['max_age'] = max_age
+
+            if 'login' not in credentials or 'password' not in credentials:
+                return None
+
             return credentials
 
         return None
@@ -153,6 +163,7 @@ class FormPlugin(FormPluginBase):
         form = self.formbody or _DEFAULT_FORM
         if self.formcallable is not None:
             form = self.formcallable(environ)
+
         def auth_form(environ, start_response):
             content_length = CONTENT_LENGTH.tuples(str(len(form)))
             content_type = CONTENT_TYPE.tuples('text/html')
@@ -161,6 +172,7 @@ class FormPlugin(FormPluginBase):
             return [form]
 
         return auth_form
+
 
 class RedirectingFormPlugin(FormPluginBase):
 
@@ -194,23 +206,13 @@ class RedirectingFormPlugin(FormPluginBase):
             # we've been asked to perform a login
             form = parse_formvars(environ)
             form.update(query)
-            try:
-                max_age = form.get('max_age', None)
-                credentials = {
-                    'login':form['login'],
-                    'password':form['password'],
-                    'realm':form['realm'],
-                    }
-            except KeyError:
-                credentials = None
 
-            if credentials is not None:
-                max_age = form.get('max_age', None)
-                if max_age is not None:
-                    credentials['max_age'] = max_age
+            credentials = self._getCredentials(form)
 
             referer = environ.get('HTTP_REFERER', '/')
             environ['repoze.who.application'] = HTTPFound(referer)
+            if 'login' not in credentials or 'password' not in credentials:
+                return None
             return credentials
 
     # IChallenger
@@ -223,10 +225,11 @@ class RedirectingFormPlugin(FormPluginBase):
             query_elements[self.reason_param] = reason
         url_parts[4] = urllib.urlencode(query_elements, doseq=True)
         login_form_url = urlparse.urlunparse(url_parts)
-        headers = [ ('Location', login_form_url) ]
+        headers = [('Location', login_form_url)]
         cookies = [(h, v) for (h, v) in app_headers if h.lower() == 'set-cookie']
         headers = headers + forget_headers + cookies
         return HTTPFound(headers=headers)
+
 
 def make_plugin(login_form_qs='__do_login',
                 rememberer_name=None,
@@ -242,6 +245,7 @@ def make_plugin(login_form_qs='__do_login',
         formcallable = _resolve(formcallable)
     plugin = FormPlugin(login_form_qs, rememberer_name, form, formcallable)
     return plugin
+
 
 def make_redirecting_plugin(login_form_url=None,
                             login_handler_path='/login_handler',
@@ -265,3 +269,4 @@ def make_redirecting_plugin(login_form_url=None,
                                    rememberer_name)
     return plugin
 
+#eof###########################################################################

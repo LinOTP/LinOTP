@@ -727,8 +727,9 @@ def getUserPhone(user, phone_type='phone'):
         return ""
 
 
-def get_authenticated_user(username, realm, password,
-                           realm_box=False, authenticate=True):
+def get_authenticated_user(username, realm, password=None,
+                           realm_box=False, authenticate=True,
+                           options=None):
     '''
     check the username and password against a userstore.
 
@@ -749,6 +750,10 @@ def get_authenticated_user(username, realm, password,
 
     if type(username) != unicode:
         username = username.decode(ENCODING)
+
+    # ease the handling of options
+    if not options:
+        options = {}
 
     users = []
     uid = None
@@ -774,7 +779,7 @@ def get_authenticated_user(username, realm, password,
             user = User(username, realm, "")
             users.append(user)
         else:
-            def_realm = getDefaultRealm()
+            def_realm = options.get('defaultRealm', getDefaultRealm())
             if def_realm:
                 user = User(username, def_realm, "")
                 users.append(user)

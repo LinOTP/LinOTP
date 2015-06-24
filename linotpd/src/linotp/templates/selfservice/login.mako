@@ -102,10 +102,12 @@ ${_("If you lost a token, you may also disable this token.")}
                   value='' /></td>
             </tr>
         %endif
-
+        <tr style="display:none;">
+            <td><input type="hidden" name="realmbox" value="${c.realmbox}"/></td>
+            <td><input type="hidden" name="defaultRealm" value="${c.defaultRealm}"/></td></tr>
         <tr><td><label for=password>${_("Password")}:</label></td>
         <td><input autocomplete="off" type="password" id="password" name="password" value ="" /></td></tr>
-        <tr><td></td>
+        <tr><td> </td>
         <td>   <input type="submit" value="Login" /></td></tr>
       </table>
     </form>

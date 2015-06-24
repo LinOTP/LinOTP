@@ -28,14 +28,12 @@
 import logging
 log = logging.getLogger(__name__)
 
-import base64
 
-from linotp.lib.user import getRealmBox
-from linotp.lib.realm import getDefaultRealm
 from linotp.lib.selftest import isSelfTest
 import traceback
 
 from linotp.lib.user import get_authenticated_user
+
 
 class UserModelPlugin(object):
 
@@ -44,7 +42,8 @@ class UserModelPlugin(object):
         #log.debug( identity )
         username = None
         realm = None
-        realm_box = getRealmBox()
+        options = {}
+        realmbox = "False"
 
         authenticate = True
         if isSelfTest():
@@ -61,16 +60,24 @@ class UserModelPlugin(object):
             username = identity['login']
             realm = identity['realm']
             password = identity['password']
+            options.update(identity)
+            realmbox = options.get("realmbox", "False")
 
         except KeyError as e:
             log.error("[authenticate] Keyerror in identity: %r." % e)
             log.error("[authenticate] %s" % traceback.format_exc())
             return None
 
+        # convert string to boolean
+        realm_mbox = False
+        if realmbox.lower() == 'true':
+            realm_mbox = True
+
         # check username/realm, password
         user = get_authenticated_user(username, realm, password,
-                                          realm_box=realm_box,
-                                          authenticate=authenticate)
+                                          realm_box=realm_mbox,
+                                          authenticate=authenticate,
+                                          options=options)
         if not user:
             return None
 
