@@ -1,4 +1,4 @@
-linotp (2.7.2.1~b5-1) jessie; urgency=low
+linotp (2.7.2.1~b6-1) jessie; urgency=low
 
   Bug fixes:
   * Server: Token in autoassignment were assigned randomly instead of the one
@@ -24,7 +24,7 @@ linotp (2.7.2.1~b5-1) jessie; urgency=low
   * WebUI: Fix for selfservice (Internet Explorer caches GET requests)
   * Server: Fix extended search in Audit Trail
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 22 Jun 2015 10:41:17 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 24 Jun 2015 12:14:32 +0200
 
 linotp (2.7.2-1~precise) precise; urgency=low
 
