@@ -987,9 +987,8 @@ def auto_assignToken(passw, user, pin="", param=None):
     if param is None:
         param = {}
 
-    # Fixme: circle dependency
     try:
-        auto, _otplen = linotp.lib.policy.get_autoassignment(user)
+        auto = linotp.lib.policy.get_autoassignment(user)
     except Exception as e:
         log.error("[auto_assignToken] %r" % e)
 
