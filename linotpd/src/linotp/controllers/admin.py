@@ -1511,11 +1511,12 @@ class AdminController(BaseController):
 
         """
         users = []
-        param = request.params
+        param = {}
 
         # check admin authorization
         # check if we got a realm or resolver, that is ok!
         try:
+            param.update(request.params)
             realm = getParam(param, "realm", optional)
             checkPolicyPre('admin', 'userlist', param)
 
@@ -2234,6 +2235,16 @@ class AdminController(BaseController):
                 param['CACERTIFICATE'] = getParam(param, "ldap_certificate", optional)
 
                 (status, desc) = useridresolver.LDAPIdResolver.IdResolver.testconnection(param)
+                res['result'] = status
+                res['desc'] = desc
+
+            elif typ == "http":
+                from useridresolver.HTTPIdResolver import (
+                                                IdResolver as HttpResolver
+                                                )
+                config_params = {}
+                config_params.update(param)
+                (status, desc) = HttpResolver.testconnection(config_params)
                 res['result'] = status
                 res['desc'] = desc
 

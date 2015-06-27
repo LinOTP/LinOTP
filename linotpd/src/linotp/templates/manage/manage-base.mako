@@ -977,7 +977,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 		$("#dialog_resolver_create" ).dialog( "option", "title", '${_("Creating a new UserIdResolver")}' );
 		$('#button_new_resolver_type_ldap .ui-button-text').html('${_("LDAP")}');
 		$('#button_new_resolver_type_sql .ui-button-text').html('${_("SQL")}');
-		$('#button_new_resolver_type_flatfile .ui-button-text').html('${_("Flatfile")}');
+        $('#button_new_resolver_type_http .ui-button-text').html('HTTP');
+        $('#button_new_resolver_type_flatfile .ui-button-text').html('${_("Flatfile")}');
 		$('#button_new_resolver_type_cancel .ui-button-text').html('${_("Cancel")}');
 	}
 </script>
@@ -1372,6 +1373,110 @@ ${c.version} --- &copy; ${c.licenseinfo}
 	}
 </script>
 
+
+<!-- ### -->
+<!-- ################## dialog HTTP resolver ######################### -->
+
+<div id='dialog_http_resolver'>
+    <form class="cmxform" id="form_httpconfig">
+        <fieldset name="Server config">
+            <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
+            <table>
+            <tr><td><label for=http_resolvername>${_("Resolver name:")}</label></td>
+                <td><input type="text" name="Resolvername" class="required"
+                    id="http_resolvername" size="35" maxlength="20"></td></tr>
+            <tr><td><label for=http_uri>${_("Server-URI:")}</label></td>
+                <td><input type="text" name="Uri" class="required"
+                    id="http_uri" size="35" maxlength="200"></td></tr>
+            <tr id="http_resolver_certificate"><td>
+                <label for="http_certificate">${_("CA Certificate:")}</label></td>
+                <td><textarea name="Certificate" id="http_certificate" cols="34" rows="5"
+                    title='If you are using HTTP you can enter the CA certificate in PEM format here.'> </textarea></td>
+                </tr>
+            <tr><td><label for=http_authuser>${_("Auth User:")}</label></td>
+                <td><input type="text" name="Authuser" id="http_authuser" size="35" maxlength="200"></td></tr>
+            <tr><td><label for=http_password>${_("Password")}</label>:</td>
+                <td><input type="password" autocomplete="off" name="Password" id="http_password" size="35" maxlength="60"></td></tr>
+            <tr><td><label for=http_timeout>${_("Timeout")}</label>:</td>
+                <td><input type="text" name="Timeout" class="required"  id="http_timeout" size="35" maxlength="5"></td></tr>
+            <tr><td> </td>
+                <td>
+                <button class="action-button" id="button_test_http">${_("Test HTTP Server connection")}</button>
+                <div id="progress_test_http"><img src="/images/ajax-loader.gif" border="0" alt="">${_("Testing connection ... ")}</div>
+                </td>
+            </tr>
+            </table>
+
+        </fieldset>
+        <fieldset name="URL config">
+        <legend class='resolver_dialog_label'>${_("JSON Configuration")}</legend>
+        <div id='http_setting_tabs'>
+            <ul id='http_settings_index'>
+                <li><a href='#http_userid_setting'>${_("UserId")}</a></li>
+                <li><a href='#http_username_setting'>${_("Username")}</a></li>
+                <li><a href='#http_userlist_setting'>${_("Userlist")}</a></li>
+            </ul>
+            <div id="http_userid_setting">
+                <table>
+                <tr><td><label for="http_userid_request_path">${_("URL path:")}</label></td>
+                    <td><input type="text" name="userid_request_path" class="required"
+                                           id="http_userid_request_path" size="25"></td></tr>
+                <tr><td><label for="http_userid_request_mapping">${_("Parameters:")}</label></td>
+                    <td><input type="text" name="userid_request_mapping" class="required"
+                                           id="http_userid_request_mapping" size="25"></td></tr>
+                <tr><td><label for="http_userid_result_path">${_("Result path:")}</label></td>
+                    <td><input type="text" name="userid_result_path" class="required"
+                                           id="http_userid_result_path" size="25"></td></tr>
+                <tr><td><label for="http_userid_result_mapping">${_("Attribute mapping:")}</label></td>
+                    <td><input type="text" name="userid_result_mapping" class="required"
+                                           id="http_userid_result_mapping" size="25"></td></tr>
+                </table>
+            </div>
+            <div id="http_username_setting">
+                <table>
+                <tr><td><label for="http_username_request_path">${_("URL path:")}</label></td>
+                    <td><input type="text" name="username_request_path" class="required"
+                                           id="http_username_request_path" size="25"></td></tr>
+                <tr><td><label for="http_username_request_mapping">${_("Parameters:")}</label></td>
+                    <td><input type="text" name="username_request_mapping" class="required"
+                                           id="http_username_request_mapping" size="25"></td></tr>
+                <tr><td><label for="http_username_result_path">${_("Result path:")}</label></td>
+                    <td><input type="text" name="username_result_path" class="required"
+                                           id="http_username_result_path" size="25"></td></tr>
+                <tr><td><label for="http_username_result_mapping">${_("Attribute mapping:")}</label></td>
+                    <td><input type="text" name="username_result_mapping" class="required"
+                                           id="http_username_result_mapping" size="25"></td></tr>
+                </table>
+            </div>
+            <div id="http_userlist_setting">
+                <table>
+                <tr><td><label for="http_userlist_request_path">${_("URL path:")}</label></td>
+                    <td><input type="text" name="userlist_request_path" class="required"
+                                           id="http_userlist_request_path" size="25"></td></tr>
+                <tr><td><label for="http_userlist_request_mapping">${_("Parameters:")}</label></td>
+                    <td><input type="text" name="userlist_request_mapping" class="required"
+                                           id="http_userlist_request_mapping" size="25"></td></tr>
+                <tr><td><label for="http_userlist_result_path">${_("Result path:")}</label></td>
+                    <td><input type="text" name="userlist_result_path" class="required"
+                                           id="http_userlist_result_path" size="25"></td></tr>
+                <tr><td><label for="http_userlist_result_mapping">${_("Attribute mapping:")}</label></td>
+                    <td><input type="text" name="userlist_result_mapping" class="required"
+                                           id="http_userlist_result_mapping" size="25"></td></tr>
+                </table>
+            </div>
+        </div>
+        </fieldset>
+    </form>
+</div>
+<script>
+    function translate_dialog_http_resolver() {
+        $("#dialog_http_resolver" ).dialog( "option", "title", 'HTTP Resolver');
+        $('#button_test_http .ui-button-text').html('Test HTTP connection');
+    }
+</script>
+
+
+
 <!-- #################### dialog SQL resolver #################################### -->
 
 <div id='dialog_sql_resolver'>
@@ -1490,6 +1595,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id="text_regexp_error">${_("Error in regular expression for")}: <span class="text_param1"> </span></div>
 <div id="text_ldap_config_success">${_("LDAP Server configuration seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
 <div id="text_ldap_load_error">${_("Error loading LDAP resolver")}: <span class="text_param1"> </span></div>
+<div id="text_http_config_success">${_("HTTP Server configuration seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
+<div id="text_http_load_error">${_("Error loading HTTP resolver")}: <span class="text_param1"> </span></div>
 <div id="text_sql_load_error">${_("Error loading SQL resolver")}: <span class="text_param1"> </span></div>
 <div id="text_sql_config_success">${_("SQL config seems to be OK! Number of users found")}: <span class="text_param1"> </span></div>
 <div id="text_sql_config_fail">${_("SQL config contains errors")}: <span class="text_param1"> </span></div>
