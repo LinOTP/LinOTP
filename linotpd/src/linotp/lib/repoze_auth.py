@@ -45,54 +45,46 @@ class UserModelPlugin(object):
         # log.debug( identity )
         username = None
         realm = None
-        authUser = None
+        options = {}
+        realmbox = "False"
+
+        authenticate = True
+        if isSelfTest():
+            authenticate = False
+
         try:
             if isSelfTest():
-                if ('login' not in identity and
-                    'repoze.who.plugins.auth_tkt.userid' in identity):
+                if ('login' not in identity
+                    and 'repoze.who.plugins.auth_tkt.userid' in identity):
+                    u = identity.get('repoze.who.plugins.auth_tkt.userid')
+                    identity['login'] = u
+                    identity['password'] = u
 
-                    uid = identity.get('repoze.who.plugins.auth_tkt.userid')
-                    identity['login'] = uid
-                    identity['password'] = uid
-
-            if getRealmBox():
-                username = identity['login']
-                realm = identity['realm']
-            else:
-                log.info("[authenticate] no realmbox")
-                if '@' in identity['login']:
-                    if getSplitAtSign():
-                        log.debug("trying to split the loginname")
-                        username, _at_, realm = identity['login'].rpartition('@')
-                    else:
-                        log.debug("no split for the @ of the loginname")
-                        username = identity['login']
-                        realm = identity.get('realm', getDefaultRealm())
-
-                else:
-                    username = identity['login']
-                    realm = getDefaultRealm()
-
-            log.info("[authenticate]: username: %r, realm: %r"
-                     % (username, realm))
+            username = identity['login']
+            realm = identity['realm']
             password = identity['password']
+            options.update(identity)
+            realmbox = options.get("realmbox", "False")
 
         except KeyError as e:
             log.error("[authenticate] Keyerror in identity: %r." % e)
             log.error("[authenticate] %s" % traceback.format_exc())
             return None
 
-        # as repoze does not run through the std pylons middleware, we have to
-        # convert the input which might be UTF8 to unicode
-        username = str2unicode(username)
-        password = str2unicode(password)
+        # convert string to boolean
+        realm_mbox = False
+        if realmbox.lower() == 'true':
+            realm_mbox = True
 
         # check username/realm, password
-        if isSelfTest():
-            authUser = "%s@%s" % (username, realm)
-        else:
-            authUser = get_authenticated_user(username, realm, password)
+        user = get_authenticated_user(username, realm, password,
+                                          realm_box=realm_mbox,
+                                          authenticate=authenticate,
+                                          options=options)
+        if not user:
+            return None
 
+        authUser = "%s@%s" % (user.login, user.realm)
         return authUser
 
     def add_metadata(self, environ, identity):

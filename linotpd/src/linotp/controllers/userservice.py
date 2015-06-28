@@ -159,6 +159,43 @@ audit = config.get('audit')
 ENCODING = "utf-8"
 
 
+def get_auth_user(request):
+    """
+    retrieve the authenticated user either from
+    - repoze or userservice or selftest
+
+    remark: should be moved in a utils thing, as it is used as well from
+            selfservice
+
+    :param request: the request object
+    :return: tuple of (authentication type and authenticated user)
+    """
+    auth_type = ''
+
+    repose_auth = request.environ.get('repoze.who.identity')
+    if repose_auth:
+        log.debug("getting identity from repoze.who: %r" % repose_auth)
+        user_id = request.environ.get('repoze.who.identity', {})\
+                                 .get('repoze.who.userid', '')
+        auth_type = "repoze"
+    else:
+        log.debug("getting identity from params: %r" % request.params)
+        user_id = request.params.get('user', None)
+        auth_type = "userservice"
+
+    if not user_id and isSelfTest():
+        user_id = request.params.get('selftest_user', '')
+        auth_type = "selftest"
+
+    if not user_id:
+        return ('unauthenticated', None)
+
+    if type(user_id) == unicode:
+        user_id = user_id.encode(ENCODING)
+    identity = user_id.decode(ENCODING)
+
+    return (auth_type, identity)
+
 
 class UserserviceController(BaseController):
     """
@@ -170,32 +207,6 @@ class UserserviceController(BaseController):
     request during which the auth_cookie and session is verified
     """
 
-    def _get_auth_user(self):
-        """
-        """
-        auth_type = ''
-
-        repose_auth = request.environ.get('repoze.who.identity')
-        if repose_auth:
-            log.debug("getting identity from repoze.who: %r" % repose_auth)
-            user_id = request.environ.get('repoze.who.identity', {}).get('repoze.who.userid', '')
-            auth_type = "repoze"
-        else:
-            log.debug("getting identity from params: %r" % request.params)
-            user_id = request.params.get('user', '')
-            auth_type = "userservice"
-
-        if not user_id and isSelfTest():
-            user_id = request.params.get('selftest_user', '')
-            auth_type = "selftest"
-
-        if type(user_id) == unicode:
-            user_id = user_id.encode(ENCODING)
-        identity = user_id.decode(ENCODING)
-
-        return (auth_type, identity)
-
-
     def __before__(self, action, **parameters):
         # if action is not an authentication request:
         # - check if there is a cookie in the headers and in the session param
@@ -205,7 +216,7 @@ class UserserviceController(BaseController):
         self.client = get_client()
 
         if action not in ['auth', 'pre_context']:
-            auth_type, identity = self._get_auth_user()
+            auth_type, identity = get_auth_user(request)
             if not identity:
                 abort(401, _("You are not authenticated"))
 
@@ -213,7 +224,8 @@ class UserserviceController(BaseController):
             self.authUser = User(login, realm)
 
             if auth_type == "userservice":
-                res = check_userservice_session(request, config, self.authUser, self.client)
+                res = check_userservice_session(request, config,
+                                                self.authUser, self.client)
             elif auth_type == 'repoze':
                 res = check_selfservice_session(request.url,
                                                        request.path,
