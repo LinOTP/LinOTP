@@ -1909,12 +1909,16 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
     :param new_serial: new serial number
     :param password: new password
     :param default_validity: set the token to be valid
-    :param param: additional arguments for the email or sms token as dict
+    :param param: additional arguments for the password, email or sms token
+           as dict
 
     :return: result dictionary
     """
 
     res = {}
+
+    if param is None:
+        param = {'type': 'password'}
 
     owner = getTokenOwner(serial)
     log.info("lost token for serial %r and owner %r@%r"
@@ -1936,7 +1940,6 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
         validity = 10
     if 0 != default_validity:
         validity = default_validity
-
     log.debug("losttoken: validity: %r" % (validity))
 
     if not new_serial:
@@ -1949,7 +1952,10 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
                     }
 
     if 'type' in param:
-        if param['type'] == 'email':
+        if param['type'] == 'password':
+            init_params['type'] = 'pw'
+
+        elif param['type'] == 'email':
             email = param.get('email', owner.info.get('email', None))
             if email:
                 init_params['type'] = 'email'
@@ -1995,7 +2001,6 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
             password = generate_password(size=pw_len,
                                          characters=character_pool)
 
-        init_params['type'] = 'pw'
         init_params["otpkey"] = password
 
     # now we got all info and can enroll the replacement token
@@ -2017,8 +2022,12 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
         res['valid_to'] = "xxxx"
         if init_params['type'] == 'pw':
             res['password'] = password
+        elif init_params['type'] == 'email':
+            res['password'] = "Please check your emails"
+        elif init_params['type'] == 'sms':
+            res['password'] = "Please check your phone"
         res['end_date'] = end_date
-
+        
         # we need to return the token type, so we can modify the
         # response according
         res['token_typ'] = init_params['type']
@@ -2027,7 +2036,6 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
         res['disable'] = enableToken(False, User('', '', ''), serial)
 
     return res
-
 
 def setPin(pin, user, serial, param=None):
     '''
@@ -2119,7 +2127,6 @@ def setCountAuth(count, user, serial, max=False, success=False):
                 token.set_count_auth(count)
 
     return len(tokenList)
-
 
 def addTokenInfo(info, value, user, serial):
     '''

@@ -1859,7 +1859,7 @@ class AdminController(BaseController):
 
         arguments:
             * serial - serial of the old token
-            * type   - optional, email or sms
+            * type   - optional, password, email or sms
             * email  - optional, email address, to overrule the owner email
             * mobile - optional, mobile number, to overrule the owner mobile
 

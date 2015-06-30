@@ -1028,14 +1028,30 @@ ${c.version} --- &copy; ${c.licenseinfo}
 -->
 <!-- #################### dialog lost token######################### -->
 <div id='dialog_lost_token'>
-	<p>${_("Token serial")} <span id='lost_token_serial'> </span> </p>
-	<p>${_("The token was lost? You may enroll a temporary token and automatically disable the lost token.")}</p>
+    <p>${_("Token serial: ")} <span id='lost_token_serial'> </span> </p>
+    <p>${_("The token was lost? You may enroll a temporary token and automatically disable the lost token.")}</p>
+
+    <select>
+        <option value="select_token">
+            ${_("- Select Temporary Token Type -")}
+        </option>
+        <option value="password_token">
+            ${_("Password Token")}
+        </option>
+        <option value="email_token">
+            ${_("Email Token")}
+        </option>
+        <option value="sms_token">
+            ${_("SMS Token")}
+        </option>
+    </select>
+
 </div>
 <script>
-	function translate_dialog_lost_token() {
-		$("#dialog_lost_token" ).dialog( "option", "title", '${_("Lost Token")}' );
-		$('#button_losttoken_ok .ui-button-text').html('${_("Get temporary token")}');
-		$('#button_losttoken_cancel .ui-button-text').html('${_("Cancel")}');
+    function translate_dialog_lost_token() {
+        $("#dialog_lost_token" ).dialog( "option", "title", '${_("Lost Token")}' );
+        $('#button_losttoken_ok .ui-button-text').html('${_("Get Temporary Token")}');
+        $('#button_losttoken_cancel .ui-button-text').html('${_("Cancel")}');
 	}
 </script>
 
@@ -1263,7 +1279,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ############# temp token dialog ############################ -->
 <div id='dialog_view_temporary_token'>
 	<p>
-		${_("Token enrolled. Use the old PIN with the password new password.")}
+		${_("Token enrolled. Use the old PIN with the new password.")}
 		${_("The temporary token can be used till the end date.")}
 	</p>
 	<p>
@@ -1273,7 +1289,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </div>
 <script>
 	function translate_dialog_view_temptoken() {
-		$("#dialog_view_temporary_token" ).dialog( "option", "title", '${_("New temporary token")}' );
+		$("#dialog_view_temporary_token" ).dialog( "option", "title", '${_("New Temporary Token")}' );
 		$('#button_view_temporary_token_close .ui-button-text').html('${_("Close")}');
 	}
 </script>
