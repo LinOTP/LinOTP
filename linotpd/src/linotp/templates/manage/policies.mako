@@ -36,7 +36,7 @@
     <tr>
         <td><label for=policy_active>${_("Active")}</label></td>
         <td><input type="checkbox" name="policy_active" id="policy_active" checked="checked"></td>
-    </tr>	
+    </tr>
     <tr>
         <td><label for=policy_name>${_("Policy name")}</label></td>
         <td><input type="text" class="required"  id="policy_name" size="40" maxlength="80" 
@@ -89,7 +89,7 @@
     </table>
 </form>
 <script type="text/javascript"> 
-	view_policy();
+    view_policy();
 </script>
 
 

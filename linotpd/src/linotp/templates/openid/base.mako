@@ -47,10 +47,10 @@
 <div id="wrap">
 
 <div id="header">
-	<div id="logo"></div>
-	<div class="float_right">
-	<span class=portalname>OpenID Service</span>
-	</div>
+    <div id="logo"></div>
+    <div class="float_right">
+    <span class=portalname>OpenID Service</span>
+    </div>
 </div>
 
 
@@ -58,22 +58,22 @@
 
 
 %if hasattr(c,"message"):
-	<p>${c.message}</p>
+    <p>${c.message}</p>
 %endif
 <P>
 %if c.logged_in:
-	You are logged in as: <tt>${c.login}</tt><br>
-	<form action="/openid/logout" method="GET">
-	% if hasattr(c,'p'):
-	%for k in c.p:
+    You are logged in as: <tt>${c.login}</tt><br>
+    <form action="/openid/logout" method="GET">
+    % if hasattr(c,'p'):
+    %for k in c.p:
       <input type="hidden" name="${k}" value="${c.p[k]}" />
     %endfor
     <p>If you log out, you have to restart your openid access request!</p>
     %endif
-	<input type="submit" value="Logout" />
-	</form>
+    <input type="submit" value="Logout" />
+    </form>
 %else:
-	You are not logged in. You may <a href=/openid/login>login</a>
+    You are not logged in. You may <a href=/openid/login>login</a>
 %endif
 </P>
 
