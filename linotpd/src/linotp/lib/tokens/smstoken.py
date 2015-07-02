@@ -45,6 +45,7 @@ from linotp.lib.config  import getFromConfig
 from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import get_auth_AutoSMSPolicy
+from linotp.lib.policy import trigger_sms
 
 import sys
 if sys.version_info[0:2] >= (2, 6):
