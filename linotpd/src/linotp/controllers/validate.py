@@ -600,6 +600,7 @@ class ValidateController(BaseController):
                         options = {}
                     options['initTime'] = initTime
 
+            options['scope'] = {"check_s": True}
             (ok, opt) = checkSerialPass(serial, passw, options=options)
 
             c.audit['success'] = ok

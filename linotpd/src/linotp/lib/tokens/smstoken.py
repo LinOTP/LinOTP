@@ -258,6 +258,11 @@ class SmsTokenClass(HmacTokenClass):
         request_is_valid = False
         # # do we need to call the
         # (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
+        realms = self.token.getRealmNames()
+        if trigger_sms(realms):
+            if 'check_s' in options.get('scope', {}) and 'challenge' in options:
+                request_is_valid = True
+                return request_is_valid
 
         pin_match = check_pin(self, passw, user=user, options=options)
         if pin_match is True:
@@ -278,9 +283,13 @@ class SmsTokenClass(HmacTokenClass):
         '''
         res = 0
         user = None
-        message = "<otp>"
 
-        # # it is configurable, if sms should be triggered by a valid pin
+        if options is None:
+            options = {}
+
+        message = options.get('challenge', None)
+
+        # it is configurable, if sms should be triggered by a valid pin
         send_by_PIN = getFromConfig("sms.sendByPin") or True
 
         if self.isActive() == True and send_by_PIN == True :
@@ -294,17 +303,24 @@ class SmsTokenClass(HmacTokenClass):
 
                 if options is not None and type(options) == dict:
                     user = options.get('user', None)
-                    if user:
+                    # a given message overrules the policy defined message
+                    if user and not message:
                         _sms_ret, message = get_auth_smstext(
                                                 realm=user.realm)
+
+                if not message:
+                    message = "<otp>"
+
                 res, message = self.sendSMS(message=message)
+                if res is None:
+                    res = False
+                    message = "failed to submitt sms"
                 self.info['info'] = "SMS sent: %r" % res
 
             except Exception as e:
                 # The PIN was correct, but the SMS could not be sent.
                 self.info['info'] = unicode(e)
-                info = ("The PIN was correct, but the"
-                          " SMS could not be sent: %r" % e)
+                info = ("The SMS could not be sent: %r" % e)
                 log.warning("[submitChallenge] %s" % info)
                 res = False
                 message = info
@@ -370,7 +386,7 @@ class SmsTokenClass(HmacTokenClass):
         success = False
         sms = ""
         message = ""
-        attributes = {'state':transactionid}
+        attributes = {'state': transactionid}
 
         success, sms = self.submitChallenge(options=options)
 

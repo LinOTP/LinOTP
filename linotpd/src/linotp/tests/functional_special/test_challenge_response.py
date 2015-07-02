@@ -268,7 +268,8 @@ class TestChallengeResponseController(TestController):
                     description="TestToken1", typ='hmac',
                     otpkey="AD8EABE235FC57C815B26CEF3709075580B44738",
                     phone=None,
-                    email_address=None
+                    email_address=None,
+                    realm=None
                     ):
 
         params = {
@@ -280,6 +281,8 @@ class TestChallengeResponseController(TestController):
             "description": description,
             'session': self.session,
             }
+        if realm:
+            params['realm'] = realm
         if phone is not None:
             params['phone'] = phone
         if email_address is not None:
@@ -1004,6 +1007,112 @@ class TestChallengeResponseController(TestController):
 
         self.removeTokenBySerial(serial)
         self.delPolicy()
+
+        return
+
+    def test_14_sms_with_check_s(self):
+        '''
+        CR: SMS token challenge without pin and check_s
+
+        check if it is possible to submitt sms by check_s with serial
+        and challenge - where the challenge is the received message
+            if policy 'trigger_sms' is not set: false
+            else: true, the otp_message contains the challenge data
+        '''
+        params = {
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'selftest_admin': 'superadmin',
+            'session': self.session,
+            }
+        _response = self.make_system_request(action='setConfig', params=params)
+        sms_conf = {"URL": "http://localhost:%s/testing/http2sms" %
+                        self.paster_port,
+                    "PARAMETER": {"account": "clickatel",
+                                 "username": "legit"},
+                           "SMS_TEXT_KEY": "text",
+                    "SMS_PHONENUMBER_KEY": "destination",
+                            "HTTP_Method": "GET",
+                         "RETURN_SUCCESS": "ID"
+                    }
+
+        params = {
+            'SMSProviderConfig': json.dumps(sms_conf),
+            'selftest_admin': 'superadmin',
+            'session': self.session,
+            }
+
+        response = self.make_system_request(action='setConfig', params=params)
+        log.error(response)
+        self.assertTrue('"status": true' in response, response)
+
+        # Patch (replace) smsprovider.HttpSMSProvider.HttpSMSProvider class
+        # class to prevent sms from being sent out
+        self.patch_sms = patch('smsprovider.HttpSMSProvider.HttpSMSProvider',
+                             spec=smsprovider.HttpSMSProvider.HttpSMSProvider)
+        mock_sms_class = self.patch_sms.start()
+        mock_sms_instance = mock_sms_class.return_value
+        mock_sms_instance.submitMessage.return_value = True
+        mock_obj = mock_sms_instance.submitMessage
+
+        typ = "sms"
+        counter = 0
+        otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
+
+        # normal test - no sms is send
+        serial = self.createToken(pin="shortpin", typ='sms', phone='12345',
+                                        otpkey=otpkey)
+
+        params = {"serial": serial,
+                  "realms": 'mydefrealm',
+                  'session': self.session, }
+        response = self.app.get(url(controller='admin', action='tokenrealm'),
+                                                            params=params)
+
+        self.assertTrue('"value": 1' in response, response)
+
+        # trigger challenge
+        message = "OTP <otp> submitted!"
+        params = {"serial": serial, "challenge": message}
+        response = self.app.get(url(controller='validate', action='check_s'),
+                                                            params=params)
+
+        self.assertTrue('Missing parameter: pass"' in response, response)
+
+        # now good case - with policy set to submit sms
+        params = {'name': 'trigger_sms',
+                  'scope': 'authentication',
+                  'realm': 'mydefrealm',
+                  'user': '*',
+                  'action': 'trigger_sms',
+                  'selftest_admin': 'superadmin',
+                  'session': self.session,
+               }
+
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params=params)
+
+        response = self.app.get(url(controller='system', action='getPolicy'),
+                                params={'name': 'trigger_sms',
+                                        'session': self.session})
+
+        self.assertTrue('"action": "trigger_sms"' in response, response)
+
+        # trigger challenge
+        message = "OTP <otp> submitted!"
+        params = {"serial": serial, "challenge": message}
+        response = self.app.get(url(controller='validate', action='check_s'),
+                                                            params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        # submit was ok, now check if our message was sent
+        otp_message = get_otp(counter, otpkey, mock_obj, sms_otp_func, typ)
+        cmp_values = message.replace('<otp>', '').split(' ')
+        for cmp_value in cmp_values:
+            self.assertIn(cmp_value, otp_message, response)
+
+        self.removeTokenBySerial(serial)
+        self.delPolicy(name='trigger_sms')
 
         return
 
@@ -1930,7 +2039,7 @@ class TestChallengeResponseController(TestController):
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
 
-        self.assertTrue('the SMS could not be sent' in response, response)
+        self.assertTrue('SMS could not be sent' in response, response)
 
         return
 
