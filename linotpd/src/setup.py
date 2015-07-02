@@ -84,7 +84,8 @@ setup(
         'tools/linotp-backup',
         'tools/linotp-decrypt-otpkey',
         'tools/linotp-convert-gemalto',
-        'tools/linotp-restore'
+        'tools/linotp-restore',
+        'tools/linotp-enroll-smstoken',
         ],
     setup_requires=[
         'PasteScript>=1.6.3',
