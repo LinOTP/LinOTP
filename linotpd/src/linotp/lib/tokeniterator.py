@@ -159,7 +159,11 @@ class TokenIterator(object):
                         allowed = True
 
             if allowed == True:
-                scondition = and_(Token.LinOtpTokenSerialnumber == serial)
+                if '*' in serial:
+                    serial = serial.replace('*', '%')
+                    scondition = and_(Token.LinOtpTokenSerialnumber.like(serial))
+                else:
+                    scondition = and_(Token.LinOtpTokenSerialnumber == serial)
 
         if user.isEmpty() == False and user is not None:
             log.debug('[TokenIterator::init] start search for username: >%r<'
