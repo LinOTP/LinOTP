@@ -80,18 +80,18 @@ ${_("If you lost a token, you may also disable this token.")}
       <table>
         <tr><td><label for=login>${_("Username")}:</label></td>
         <td><input type="text" id="login" name="login" value="" /></td></tr>
-		%if c.realmbox:
-        	<tr>
-		      <td>${_("Realm")}:</td>
+        %if c.realmbox:
+            <tr>
+              <td>${_("Realm")}:</td>
               <td>
-        	    <select name="realm">
-        	        % for realm in c.realmArray:
-        	        %if c.defaultRealm == realm:
-        	        <option value="${realm}" selected>${realm}</option>
-        	        %else:
-        	        <option value="${realm}">${realm}</option>
-        	        %endif
-        	        %endfor
+                <select name="realm">
+                    % for realm in c.realmArray:
+                    %if c.defaultRealm == realm:
+                    <option value="${realm}" selected>${realm}</option>
+                    %else:
+                    <option value="${realm}">${realm}</option>
+                    %endif
+                    %endfor
                 </select>
              </td>
           </tr>

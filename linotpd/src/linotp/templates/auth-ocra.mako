@@ -45,49 +45,49 @@ ${_('Enter your username, the OTP PIN and the OTP value.')}
 <div id="main">
 <h1>${_('OCRA Login')}</h1>
 <div id='register'>
-		<table>
-		<tr><td>
+        <table>
+        <tr><td>
         <form class="cmxform"  id="form_challenge_ocra" method="post">
-        	<frameset name=login>
+            <frameset name=login>
                 <table><tr>
-                	<td><h2>${_('Submit a challenge:')}</h2></td>
+                    <td><h2>${_('Submit a challenge:')}</h2></td>
                 </tr><tr>
                 <td>${_('username')}</td>
                 <td><input type='text' id='user' name="user" maxlength="200"  ></td>
                 </tr><tr>
-	                <td>${_('challenge')}</td>
-	                <td><textarea cols="40" rows="6" id='challenge' class="required"> </textarea></td>
+                    <td>${_('challenge')}</td>
+                    <td><textarea cols="40" rows="6" id='challenge' class="required"> </textarea></td>
                 </tr><tr>
-				<td> </td>
-				        <td>
-				        	<input type="submit" value="${_('get challenge')}"/>
+                <td> </td>
+                        <td>
+                            <input type="submit" value="${_('get challenge')}"/>
                 </tr></table>
                 </frameset>
-              	</form>
+                </form>
 
-		</td><td rowspan="3">
-		<div id='display'> </div>
+        </td><td rowspan="3">
+        <div id='display'> </div>
         </td>
         </tr><tr>
-        	<td>
-        		<h2>${_('Scan your challenge and get your OTP:')}</h2>
-        	</td>
-		</tr><tr>
+            <td>
+                <h2>${_('Scan your challenge and get your OTP:')}</h2>
+            </td>
+        </tr><tr>
         <td>
         <form class="cmxform"  id="form_login_ocra" method="post">
-        	<frameset name=login>
+            <frameset name=login>
                 <table><tr>
-				    <td><h2>${_('Login:')}</h2></td>
+                    <td><h2>${_('Login:')}</h2></td>
                 </tr><tr>
-	                <td>${_('username')}</td>
-	                <td><input type='text' id='user2' name="user" maxlength="200"  class="required"></td>
+                    <td>${_('username')}</td>
+                    <td><input type='text' id='user2' name="user" maxlength="200"  class="required"></td>
                 </tr><tr>
-	                <td>${_('OTP PIN and OTP value')}</td>
-	                <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
+                    <td>${_('OTP PIN and OTP value')}</td>
+                    <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
                 </tr></table>
                 </frameset>
                 <input type="submit"  value="${_('login')}" />
-              	</form>
+                </form>
         </td></tr>
         </table>
 
