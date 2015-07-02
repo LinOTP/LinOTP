@@ -36,7 +36,7 @@ import json
 import sys
 import requests
 
-from requests.auth import HTTPBasicAuth
+from requests.auth import HTTPDigestAuth
 from getopt import getopt, GetoptError
 
 import logging
@@ -88,7 +88,7 @@ class Request(object):
             return self.session
 
         if self.admin:
-            auth=HTTPBasicAuth(self.admin, self.password)
+            auth=HTTPDigestAuth(self.admin, self.password)
             pparams['auth'] = auth
         if self.request_options:
             pparams.update(self.request_options)
@@ -174,7 +174,7 @@ class Request(object):
         # request command options
         pparams = {}
         if self.admin:
-            auth=HTTPBasicAuth(self.admin, self.password)
+            auth=HTTPDigestAuth(self.admin, self.password)
             pparams['auth'] = auth
         if self.request_options:
             pparams.update(self.request_options)
