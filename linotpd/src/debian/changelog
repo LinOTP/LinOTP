@@ -1,3 +1,9 @@
+linotp (2.7.2.2~0dev0-1) jessie; urgency=low
+
+  * Set new version 2.7.2.2~0dev0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 03 Jul 2015 12:55:12 +0200
+
 linotp (2.7.2.1~b6-1) jessie; urgency=low
 
   Bug fixes:
