@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2015-04-23 12:00+0200\n"
+"PO-Revision-Date: 2015-07-03 12:03+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -1725,6 +1725,9 @@ msgstr "Token-Standardwerte"
 msgid "GUI settings"
 msgstr "GUI Einstellungen"
 
+msgid "Client Identification"
+msgstr "Client Identifikation"
+
 msgid "splitAtSign"
 msgstr "Trenne am @-Zeichen"
 
@@ -1906,6 +1909,25 @@ msgid ""
 msgstr ""
 "Eine Dropdown Liste wird angezeigt, aus der der Benutzer den Realm auswählen "
 "kann, in dem er sich im Selbstverwaltungsportal anmelden will."
+
+msgid "Client Identification with Proxy"
+msgstr "Client Identifikation über Proxy"
+
+msgid "Support for HTTP_X_FORWARDED_FOR"
+msgstr "Unterstützung von HTTP_X_FORWARDED_FOR"
+
+msgid "Support for HTTP_FORWARDED"
+msgstr "Unterstützung von HTTP_FORWARDED"
+
+msgid "Trusted Forwarding Proxy"
+msgstr "Vertrauens Proxy"
+
+msgid ""
+"The ip address of the trusted forwarding proxy, which provides the "
+"REMOTE_ADDR."
+msgstr ""
+"Die IP Adresse des weiterleitenden Proxies, der durch die REMOTE_ADDR "
+"bestimmt ist."
 
 msgid "System config"
 msgstr "System Konfiguration"
@@ -2143,6 +2165,9 @@ msgstr "Hash Algorithmus"
 msgid "automatic detection"
 msgstr "automatisch erkennen"
 
+msgid "Target realm"
+msgstr "Ziel Realm"
+
 msgid "Aladdin XML Token file"
 msgstr "Aladdin XML Tokendatei"
 
@@ -2216,9 +2241,6 @@ msgstr ""
 "enthält. Diese Datei muss einen Token pro Zeile enthalten und wurde mit der "
 "Yubikey Personalisierungs GUI erstellt."
 
-msgid "Enter the realm, the tokens should part of:"
-msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
-
 msgid "Yubikey csv Token file"
 msgstr "Yubikey CSV Tokendatei"
 
@@ -2242,11 +2264,14 @@ msgstr "Hier können Sie die XML-Datei für Ihre Feitian Token importieren."
 msgid "Feitian XML Token file"
 msgstr "Feitian XML Tokendatei"
 
-msgid "Here you can upload your Vasco dpx file."
-msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
+msgid "Import tokens from VASCO DPX file"
+msgstr "VASCO DPX Tokendatei importieren"
 
 msgid "OTP length"
 msgstr "OTP-Länge"
+
+msgid "Transport key:"
+msgstr "Transportschlüssel:"
 
 msgid "Vasco dpx file"
 msgstr "VASCO DPX-Datei"
@@ -3258,6 +3283,12 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "Enter the realm, the tokens should part of:"
+#~ msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
+
+#~ msgid "Here you can upload your Vasco dpx file."
+#~ msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
 
 #~ msgid "Please enter a valid email address!"
 #~ msgstr "Bitte eine gültige E-Mail Adresse eingeben!"
