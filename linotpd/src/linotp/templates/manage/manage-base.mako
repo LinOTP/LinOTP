@@ -403,7 +403,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <br/>${_("or")}<br/>
     <a href="http://www.lsexperts.de/" target="_blank">http://www.lsexperts.de</a></p>
     <p>${_("Authors:")}
-        <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
+        <br>Cornelius K��lbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
         <br>Stefan Pietsch, Eric Sesterhenn
     </p>
@@ -973,24 +973,14 @@ ${c.version} --- &copy; ${c.licenseinfo}
     ${_("Which type of resolver do you want to create?")}
 </div>
 <script>
-<<<<<<< HEAD
     function translate_dialog_resolver_create() {
         $("#dialog_resolver_create" ).dialog( "option", "title", '${_("Creating a new UserIdResolver")}' );
         $('#button_new_resolver_type_ldap .ui-button-text').html('${_("LDAP")}');
         $('#button_new_resolver_type_sql .ui-button-text').html('${_("SQL")}');
+        $('#button_new_resolver_type_http .ui-button-text').html('HTTP');
         $('#button_new_resolver_type_flatfile .ui-button-text').html('${_("Flatfile")}');
         $('#button_new_resolver_type_cancel .ui-button-text').html('${_("Cancel")}');
     }
-=======
-	function translate_dialog_resolver_create() {
-		$("#dialog_resolver_create" ).dialog( "option", "title", '${_("Creating a new UserIdResolver")}' );
-		$('#button_new_resolver_type_ldap .ui-button-text').html('${_("LDAP")}');
-		$('#button_new_resolver_type_sql .ui-button-text').html('${_("SQL")}');
-        $('#button_new_resolver_type_http .ui-button-text').html('HTTP');
-        $('#button_new_resolver_type_flatfile .ui-button-text').html('${_("Flatfile")}');
-		$('#button_new_resolver_type_cancel .ui-button-text').html('${_("Cancel")}');
-	}
->>>>>>> review/kay_winkler/http_resolver_v0
 </script>
 
 <!-- ################### edit realm ####################################### -->
