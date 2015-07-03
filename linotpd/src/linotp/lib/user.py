@@ -836,6 +836,20 @@ def getUserInfo(userid, resolver, resolverC):
     return userInfo
 
 
+def getUserDetail(user):
+    '''
+    Returns userinfo of an user
+
+    :param user: the user
+    :returns: the userinfo dict
+    '''
+    (uid, resId, resClass) = getUserId(user)
+    log.debug("got uid %r, ResId %r, Class %r"
+              % (uid, resId, resClass))
+    userinfo = getUserInfo(uid, resId, resClass)
+    return userinfo
+
+
 def getUserPhone(user, phone_type='phone'):
     '''
     Returns the phone numer of a user
