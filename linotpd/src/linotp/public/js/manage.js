@@ -131,6 +131,11 @@ jQuery.validator.addMethod("ldap_uri", function(value, element, param){
     },
     i18n.gettext("Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://")
 );
+jQuery.validator.addMethod("http_uri", function(value, element, param){
+    return value.match(param);
+    },
+    i18n.gettext("Please enter a valid http uri. It needs to start with http:// or https://")
+);
 
 // LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
 jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
@@ -178,6 +183,7 @@ jQuery.validator.addMethod("sql_mapping", function(value, element, param){
 // We need this dialogs globally, so that we do not create more than one instance!
 
 var $dialog_ldap_resolver;
+var $dialog_http_resolver;
 var $dialog_file_resolver;
 var $dialog_sql_resolver;
 var $dialog_edit_realms;
@@ -1747,6 +1753,21 @@ function ldap_resolver_ldaps() {
     return false;
 }
 
+function http_resolver_https() {
+    /*
+     * This function checks if the HTTP URI is using SSL.
+     * If so, it displays the CA certificate entry field.
+     */
+    var http_uri = $('#http_uri').val();
+    if (http_uri.toLowerCase().match(/^lhttpss:/)) {
+        $('#http_resolver_certificate').show();
+    } else {
+        $('#http_resolver_certificate').hide();
+    }
+    return false;
+}
+
+
 function parseXML(xml, textStatus){
     var version = $(xml).find('version').text();
     var status = $(xml).find('status').text();
@@ -2170,6 +2191,36 @@ function save_ldap_config(){
     return false;
 }
 
+
+function save_http_config(){
+    // Save all HTTP config
+    var resolvername = $('#http_resolvername').val();
+    var resolvertype = "httpresolver";
+
+    var url = '/system/setResolver';
+    var params = get_form_input('form_httpconfig')
+    params["session"] = getsession();
+    params['name'] = resolvername;
+    params['type'] = resolvertype;
+
+    show_waiting();
+    clientUrlFetch(url, params,
+         function(xhdr, textStatus, XMLHttpRequest){
+            hide_waiting();
+            var resp = xhdr.responseText;
+            var data = jQuery.parseJSON(resp);
+            if (data.result.status == false) {
+                alert_info_text("text_error_http", data.result.error.message, ERROR);
+            } else {
+                resolvers_load();
+                $dialog_http_resolver.dialog('close');
+            }
+        }
+    );
+    return false;
+}
+
+
 function save_realm_config(){
     check_license();
     var realm = $('#realm_name').val();
@@ -2421,6 +2472,9 @@ function resolver_edit_type(){
     switch (type) {
         case "ldapresolver":
             resolver_ldap(reso);
+            break;
+        case "httpresolver":
+            resolver_http(reso);
             break;
         case "sqlresolver":
             resolver_sql(reso);
@@ -2941,6 +2995,8 @@ $(document).ready(function(){
 
     $("button").button();
 
+    // install handler for https certificate entry field
+    $('#http_uri').keyup(http_resolver_https);
     /*
      $('ul.sf-menu').superfish({
      delay: 0,
@@ -3190,6 +3246,14 @@ $(document).ready(function(){
                     text: "LDAP"
 
             },
+            'HTTP': { click: function(){
+                        // calling with no parameter, creates a new resolver
+                        resolver_http("");
+                        $(this).dialog('close');
+                    },
+                    id: "button_new_resolver_type_http",
+                    text: "HTTP"
+            },
             'SQL': { click: function(){
                     // calling with no parameter, creates a new resolver
                     resolver_sql("");
@@ -3338,6 +3402,71 @@ $(document).ready(function(){
         $('#ldap_mapping').val('{ "username": "uid", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }');
         $('#ldap_uidtype').val('entryUUID');
         // CKO: we need to return false, otherwise the page will be reloaded!
+        return false;
+    });
+
+
+    $dialog_http_resolver = $('#dialog_http_resolver').dialog({
+        autoOpen: false,
+        title: 'HTTP Resolver',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Cancel': { click: function(){
+                $(this).dialog('close');
+                },
+                id: "button_http_resolver_cancel",
+                text: "Cancel"
+                },
+            'Save': { click: function(){
+                    // Save the LDAP configuration
+                    if ($("#form_httpconfig").valid()) {
+                        save_http_config();
+                        //$(this).dialog('close');
+                    }
+                },
+                id: "button_http_resolver_save",
+                text: "Save"
+            }
+        },
+        open: function() {
+            do_dialog_icons();
+            http_resolver_https();
+        }
+    });
+
+    $('#button_test_http').click(function(event){
+        $('#progress_test_http').show();
+
+        var params = get_form_input("form_httpconfig");
+
+        var url = '/admin/testresolver';
+        params['type']              = 'http';
+
+        clientUrlFetch(url, params, function(xhdr, textStatus) {
+                    var resp = xhdr.responseText;
+                    var obj = jQuery.parseJSON(resp);
+                    $('#progress_test_http').hide();
+                    if (obj.result.status == true) {
+                        result = obj.result.value.result;
+                        if (result.lastIndexOf("success", 0) === 0 ) {
+                            var limit = "";
+                            // show number of found users
+                            var userarray = obj.result.value.desc;
+                            var usr_msg = sprintf(i18n.gettext("Number of users found: %d"),userarray.length);
+                            var msg = i18n.gettext("Connection Test: successful") +
+                                      "<p>" + usr_msg + "</p><p class='hint'>" + limit + "</p>";
+                            alert_box(i18n.gettext("HTTP Connection Test"), msg);
+                        }
+                        else {
+                            alert_box("HTTP Test", obj.result.value.desc);
+                        }
+                    }
+                    else {
+                        alert_box("HTTP Test", obj.result.error.message);
+                    }
+                    return false;
+                 });
         return false;
     });
 
@@ -4368,6 +4497,9 @@ function realm_edit(name){
                         case 'ldapresolver':
                             g.resolvers_in_realm_to_edit += 'useridresolver.LDAPIdResolver.IdResolver.' + r;
                             break;
+                        case 'httpresolver':
+                            g.resolvers_in_realm_to_edit += 'useridresolver.HTTPIdResolver.IdResolver.' + r;
+                            break;
                         case 'sqlresolver':
                             g.resolvers_in_realm_to_edit += 'useridresolver.SQLIdResolver.IdResolver.' + r;
                             break;
@@ -4503,6 +4635,148 @@ function resolver_ldap(name){
     });
 
 }
+
+function set_form_input(form_name, data) {
+/*
+ * for all input fields of the form, set the corresponding
+ * values from the obj
+ *
+ * Assumption:
+ *   the input form names are the same as the config entries
+ */
+    var items = {};
+    $('#'+form_name).find(':input').each(
+        function (id, el) {
+            if (el.name != "") {
+                name = el.name;
+                id = el.id;
+                if (data.hasOwnProperty(name) ){
+                    var value = data[name];
+                    $('#'+id).val(value);
+                } else {
+                    $('#'+id).val('');
+            } } }
+    );
+
+    for (var i = 0; i < items.length; i++) {
+        var name = items[i];
+
+    }
+
+}
+
+function get_form_input(form_name) {
+/*
+ * for all input fields of the form, set the corresponding
+ * values from the obj
+ *
+ * Assumption:
+ *   the input form names are the same as the config entries
+ */
+    var items = {};
+    $('#'+form_name).find(':input').each(
+        function (id, el) {
+            if (el.name != "") {
+                items[el.name] = el.value;
+            }   }
+    );
+    return items;
+}
+
+function resolver_set_http(data) {
+    set_form_input('form_httpconfig', data)
+    http_resolver_https();
+}
+
+function resolver_http(name){
+
+    var obj = {
+        'result': {
+            'value': {
+                'data': {
+                    'AUTHUSER': 'administrator',
+                    'HTTPURI': 'http://linotpserver1,http://linotpserver2',
+                    'TIMEOUT': '5',
+                    'LOGINNAMEATTRIBUTE': '{ "path"="getUserId","searchstr"="username=%(username)s@%(realm)s"}',
+                    'HTTPSEARCHFILTER': '{ "path"="getUser","searchstr"="userid=%(userid)s"}',
+                    'HTTPFILTER': '{ "path"="admin/userlist","searchstr"="username=%(username)s"} "jsonpath"="/result/value"',
+                    'USERINFO': '{ "username": "login", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }',
+                    'CACERTIFICATE' : '',
+                }
+            }
+        }
+    };
+
+
+    if (name) {
+        // load the config of the resolver "name".
+        clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
+            var resp = xhdr.responseText;
+            var obj = jQuery.parseJSON(resp);
+            $('#http_resolvername').val(name);
+            if (obj.result.status) {
+                var data = obj.result.value.data;
+                resolver_set_http(data);
+            } else {
+                // error reading resolver
+                alert_box("", "text_http_load_error", obj.result.error.message);
+            }
+
+          });
+    } // end if
+    else {
+        $('#http_resolvername').val("");
+        var data = obj.result.value.data;
+        resolver_set_http(data);
+    }
+
+    $('#progress_test_http').hide();
+    $('#http_setting_tabs').tabs();
+    $dialog_http_resolver.dialog('open');
+
+
+    $("#form_httpconfig").validate({
+        rules: {
+            http_uri: {
+                required: true,
+                minlength: 8,
+                number: false,
+                http_uri: /^(http:\/\/|https:\/\/)/i
+            },
+            http_timeout: {
+                required: true,
+                minlength: 1,
+                number: true
+            },
+            http_resolvername: {
+                required: true,
+                minlength: 4,
+                resolvername: true
+            },
+            http_searchfilter: {
+                required: true,
+                minlength: 5,
+                http_searchfilter: true
+            },
+            http_userfilter: {
+                required: true,
+                minlength: 5,
+                http_userfilter: true
+            },
+            http_mapping: {
+                required: true,
+                valid_json: true,
+                minlength: 5,
+                http_mapping: true
+            },
+            http_uidtype: {
+                http_uidtype: true
+            }
+        }
+    });
+
+}
+
 
 
 function resolver_set_sql(obj) {
