@@ -49,18 +49,17 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
             <frameset name=login>
                 <table>
                 <tr>
-                <td>${_("username")}</td>
-                <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
+                    <td>${_("username")}</td>
+                    <td><input type='text' id='user' name="user" maxlength="200"  class="required"></td>
                 </tr>
                 <tr>
-                <td>${_("OTP PIN and OTP value")}</td>
-                <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
+                    <td>${_("OTP PIN and OTP value")}</td>
+                    <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
                 </tr>
                 </table>
-                </frameset>
-                <input type="submit" value="${_('login')}" />
-                </form>
-
+            </frameset>
+            <input type="submit" value="${_('login')}" />
+        </form>
 </div>
 <div id='errorDiv'></div>
 <div id='successDiv'></div>

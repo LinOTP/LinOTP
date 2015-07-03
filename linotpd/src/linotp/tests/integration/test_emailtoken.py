@@ -93,7 +93,7 @@ class TestEmailToken(TestCase):
             print "No email_provider_config in testconfig file. Using LinOTP default."
 
         # Enroll e-mail token
-        driver.get(self.base_url + "/manage/")
+        driver.get(self.base_url + "/manage")
         time.sleep(2)
         user_view = UserView(driver, self.base_url, realm_name)
         username = "hans"

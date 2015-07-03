@@ -25,6 +25,7 @@
 #
 """Contains helper functions"""
 
+import time
 import requests
 from requests.auth import HTTPDigestAuth
 import logging
@@ -32,14 +33,43 @@ from testconfig import config
 from urlparse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
 
 LOG = logging.getLogger(__name__)
+
+
+def _find_and_wait(driver, by, value):
+    """
+    Returns the element defined by 'by' and 'value', waiting up to 10 seconds
+    for it to appear.
+    """
+    return WebDriverWait(driver, 10).until(
+        expected_conditions.presence_of_element_located((by, value))
+        )
+
+def find_by_css(driver, selector):
+    """
+    Returns the element defined by the CSS selector, waiting up to 10 seconds
+    for it to appear.
+    """
+    return _find_and_wait(driver, By.CSS_SELECTOR, selector)
+
+def find_by_id(driver, id_value):
+    """
+    Returns the element defined by the HTML id, waiting up to 10 seconds for it
+    to appear.
+    """
+    return _find_and_wait(driver, By.ID, id_value)
+
 
 def hover(driver, element):
     """Allows the mouse to hover over 'element'"""
     hov = ActionChains(driver).move_to_element(element)
     hov.perform()
+    time.sleep(1)
 
 def select(driver, select_element, option_text):
     """Select an option from a HTML <select> (dropdown)"""

@@ -125,7 +125,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         self.assertTrue(r1['result']['value'], "Error enrolling Yubikey")
 
         driver = self.driver
-        driver.get(self.base_url + "/manage/")
+        driver.get(self.base_url + "/manage")
 
         user_view = UserView(driver, self.base_url, self.realm_name)
         user_view.select_user(self.user_name)

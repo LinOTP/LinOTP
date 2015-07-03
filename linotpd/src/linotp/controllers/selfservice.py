@@ -40,7 +40,7 @@ except ImportError:
     import simplejson as json
 
 import webob
-
+import base64
 
 from pylons import request, response, config, tmpl_context as c
 from pylons.controllers.util import abort
@@ -81,10 +81,19 @@ from linotp.lib.user import User
 import traceback
 # import datetime, random
 import copy
-import logging
 
 from linotp.lib.selftest import isSelfTest
+from linotp.controllers.userservice import get_auth_user
+
 from linotp.lib.token import newToken
+
+from pylons.i18n.translation import _
+
+
+import logging
+log = logging.getLogger(__name__)
+
+audit = config.get('audit')
 
 ENCODING = "utf-8"
 
@@ -140,49 +149,16 @@ class SelfserviceController(BaseController):
 
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
-            if isSelfTest():
-                log.debug("[__before__] Doing selftest!")
-                uuser = getParam(param, "selftest_user", True)
-                if uuser is not None:
-                    (c.user, _foo, c.realm) = uuser.rpartition('@')
-                else:
-                    c.realm = ""
-                    c.user = "--u--"
-                    env = request.environ
-                    uuser = env.get('REMOTE_USER')
-                    if uuser is not None:
-                        (c.user, _foo, c.realm) = uuser.rpartition('@')
 
-                if c.user in ['--u--']:
-                    abort(401, "No valid session")
+            (auth_type, auth_user) = get_auth_user(request)
 
-                self.authUser = User(c.user, c.realm, '')
-                log.debug("[__before__] authenticating as %s in realm %s!"
-                          % (c.user, c.realm))
-            else:
-                identity = request.environ.get('repoze.who.identity')
-                if identity is None:
-                    abort(401, "You are not authenticated")
+            if not auth_user or auth_type not in ['repoze', 'selftest']:
+                abort(401, "You are not authenticated")
 
-                log.debug("[__before__] doing getAuthFromIdentity in action %s"
-                          % action)
+            (c.user, _foo, c.realm) = auth_user.rpartition('@')
+            self.authUser = User(c.user, c.realm, '')
 
-                user_id = request.environ.get('repoze.who.identity')\
-                                         .get('repoze.who.userid')
-                if type(user_id) == unicode:
-                    user_id = user_id.encode(ENCODING)
-                identity = user_id.decode(ENCODING)
-                log.debug("[__before__] getting identity from repoze.who: %r"
-                           % identity)
-
-                (c.user, _foo, c.realm) = identity.rpartition('@')
-                self.authUser = User(c.user, c.realm, '')
-
-                log.debug("[__before__] set the self.authUser to: %s, %s "
-                          % (self.authUser.login, self.authUser.realm))
-                log.debug('[__before__] param for action %s: %s'
-                          % (action, param))
-
+            if auth_type == "repoze":
                 # checking the session
                 if (False == check_selfservice_session(request.url,
                                                        request.path,
@@ -200,7 +176,6 @@ class SelfserviceController(BaseController):
 
             c.user = self.authUser.login
             c.realm = self.authUser.realm
-
             c.tokenArray = getTokenForUser(self.authUser)
 
             # only the defined actions should be displayed

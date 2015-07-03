@@ -65,7 +65,7 @@ class TestAuth(TestCase):
 
         # Enroll HOTP token
         # Seed and OTP values: https://tools.ietf.org/html/rfc4226#appendix-D
-        driver.get(self.base_url + "/manage/")
+        driver.get(self.base_url + "/manage")
         time.sleep(2)
         user_view = UserView(driver, self.base_url, realm_name)
         username = "susi"

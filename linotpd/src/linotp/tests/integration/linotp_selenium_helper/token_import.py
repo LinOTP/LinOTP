@@ -52,7 +52,7 @@ class TokenImport:
             tf.close()
             self.file_path = tf.name
 
-        self.driver.get(self.base_url + "/manage/")
+        self.driver.get(self.base_url + "/manage")
         import_button = self.driver.find_element_by_xpath(u"//ul[@id='menu']//"
                                        "li[a[text()='Import Token File']]")
         time.sleep(1)

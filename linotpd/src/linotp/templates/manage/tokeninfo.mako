@@ -91,6 +91,6 @@
         %endif
 
     </td>
-    </tr>        
+    </tr>
     % endfor
 </table>

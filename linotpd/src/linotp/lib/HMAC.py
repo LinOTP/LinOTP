@@ -29,11 +29,9 @@ HMAC-OTP (RFC 4226)
 
 import hmac
 import logging
-import binascii
 import struct
 
 from hashlib import sha1
-from linotp.lib.crypt import zerome
 
 import sys
 (ma, mi, _, _, _,) = sys.version_info
@@ -51,13 +49,12 @@ class HmacOtp():
         self.digits = digits
         self.hashfunc = hashfunc
 
-
     def hmac(self, counter=None, key=None):
         #log.error("hmacSecret()")
         counter = counter or self.counter
 
         data_input = struct.pack(">Q", counter)
-        if key == None:
+        if key is None:
             dig = str(self.secretObj.hmac_digest(data_input, self.hashfunc))
         else:
             if pver > 2.6:
@@ -66,7 +63,6 @@ class HmacOtp():
                 dig = hmac.new(key, str(data_input), self.hashfunc).digest()
 
         return dig
-
 
     def truncate(self, digest):
         offset = ord(digest[-1:]) & 0x0f
@@ -78,7 +74,6 @@ class HmacOtp():
 
         return binary % (10 ** self.digits)
 
-
     def generate(self, counter=None, inc_counter=True, key=None):
         counter = counter or self.counter
 
@@ -89,7 +84,6 @@ class HmacOtp():
         if inc_counter:
             self.counter = counter + 1
         return sotp
-
 
     def checkOtp(self, anOtpVal, window, symetric=False):
         res = -1

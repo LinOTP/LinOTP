@@ -39,7 +39,7 @@ class Policy:
         self.action = action
         self.realm = realm
 
-        driver.get(base_url + "/manage/")
+        driver.get(base_url + "/manage")
         driver.find_element_by_xpath("//div[@id='tabs']/ul/li[3]/a").click()
         policy_active_cb = driver.find_element_by_id("policy_active")
         if not policy_active_cb.is_selected():
