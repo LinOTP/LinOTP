@@ -223,6 +223,10 @@ def getPolicyDefinitions(scope=""):
                         'token (in days).'},
             },
         'authentication': {
+            'trigger_sms': {
+                'type': 'bool',
+                'desc': 'should it be possible to trigger a sms challenge'
+                        'by check_s'},
             'smstext': {
                 'type': 'str',
                 'desc': 'The text that will be send via SMS for an SMS token. '
@@ -2956,6 +2960,31 @@ def get_auth_passOnNoToken(user):
                             user=user.login, userObj=user)
     if len(pol) > 0:
         ret = True
+    return ret
+
+
+def trigger_sms(realms=None):
+    """
+    returns true, if a check_s should be allowed to trigger an sms
+    """
+    client = get_client()
+    user = getUserFromParam(request.params, optional)
+    login = user.login
+    if realms is None:
+        realm = user.realm or getDefaultRealm()
+        realms = [realm]
+
+    ret = False
+    for realm in realms:
+        pol = get_client_policy(client, scope="authentication",
+                                action="trigger_sms", realm=realm,
+                                user=login, userObj=user)
+
+        if len(pol) > 0:
+            log.debug("[get_auth_AutoSMSPolicy] found policy in "
+                      "realm %s" % realm)
+            ret = True
+
     return ret
 
 
