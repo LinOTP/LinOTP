@@ -491,7 +491,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     			</tr>
     			<tr><td> </td><td><input type='checkbox' id='ocra_key_cb' onclick="cb_changed('ocra_key_cb',['ocra_key','ocra_key_label','ocra_key_intro']);">
     				<label for=ocra_key_cb>${_("Generate OCRA key.")}</label></td></tr>
-                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>    				
+                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
                 <tr name="set_pin_rows" >
                     <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
@@ -1312,7 +1312,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <tr><td><label for=sql_resolvername>${_("Resolver name")}:</label></td>
         	<td><input type="text" name="sql_resolvername" class="required"  id="sql_resolvername" size="30" maxlength="20"></td></tr>
         <tr><td><label for=sql_driver>${_("Driver")}:</label></td>
-        	<td><input type="text" name="sql_driver" class="required"  id="sql_driver" size="30" maxlength="40"></td></tr>
+            <td><input type="text" name="sql_driver" class="required"  id="sql_driver" size="30"></td></tr>
         <tr><td><label for=sql_server>${_("Server")}:</label></td>
         	<td><input type="text" name="sql_server"  id="sql_server" size="30" maxlength="80"></td></tr>
         <tr><td><label for=sql_port>${_("Port")}:</label></td>
@@ -1330,12 +1330,12 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <tr><td><label for=sql_encoding>${_("Database encoding")}:</label></td>
             <td><input type="text" name="sql_encoding" class="optional"  id="sql_encoding" size="30" maxlength="200"></td></tr>
         <tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
-            <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30" maxlength="200"></td></tr>
+            <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30"></td></tr>
     </table>
     <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
     <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
     </fieldset>
-    
+
     <fieldset name='${_("SQL attributes")}'>
       <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
         <table>

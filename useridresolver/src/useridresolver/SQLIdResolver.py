@@ -48,6 +48,8 @@ import re
 import base64
 import hashlib
 import sys
+import urllib
+
 
 import linotp.lib.phppass as phppass
 
@@ -89,7 +91,8 @@ def testconnection(params):
                                    params.get("Password"),
                                    params.get("Server"),
                                    params.get("Port"),
-                                   params.get("Database")
+                                   params.get("Database"),
+                                   conParams=params.get('ConnectionParams', "")
                                    )
 
         log.debug("[testconnection] testing connection with connect str: %r"
@@ -128,25 +131,47 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
     :type     db:     string
     :param    conParams: additional connection parameters
     :type     conParams: string
-
     '''
-    connect = driver + "://"
-    if len(user.strip()) > 0:
-        connect = connect + user
-    if len(pass_.strip()) > 0:
-        connect = connect + ":" + pass_
-    if len(server.strip()) > 0:
-        if len(user.strip()) > 0:
-            connect = connect + "@"
-        connect = connect + server
-    if len(port.strip()) > 0:
-        connect = connect + ":" + str(port)
-    # required db
-    if db != "":
-        connect = connect + "/" + db
 
-    if conParams != "":
-        connect = connect + "?" + conParams
+    connect = ""
+    if "?odbc_connect=" in driver:
+
+        # we have the need to support the odbc_connect mode
+        # where the parameters of the drivers will be concated
+        # The template for the odbc_connect string is submitted
+        # in the field "Additional connection parameters:"
+        param_str = conParams
+        settings = {}
+        settings["{PORT}"] = port
+        settings["{DBUSER}"] = user.strip()
+        settings["{SERVER}"] = server.strip()
+        settings["{PASSWORT}"] = pass_
+        settings["{DATABASE}"] = db
+        for key, value in settings.items():
+            param_str = param_str.replace(key, value)
+
+        url_quote = urllib.quote_plus(param_str)
+        connect = "%s%s" % (driver, url_quote)
+    else:
+        connect = driver + "://"
+        if len(user.strip()) > 0:
+            connect = connect + user
+        if len(pass_.strip()) > 0:
+            connect = connect + ":" + pass_
+        if len(server.strip()) > 0:
+            if len(user.strip()) > 0:
+                connect = connect + "@"
+            connect = connect + server
+        if len(port.strip()) > 0:
+            connect = connect + ":" + str(port)
+        # required db
+        if db != "":
+            connect = connect + "/" + db
+
+        if conParams != "":
+            connect = connect + "?" + conParams
+
+
     return connect
 
 
