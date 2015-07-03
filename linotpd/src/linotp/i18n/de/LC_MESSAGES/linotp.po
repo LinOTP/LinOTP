@@ -394,8 +394,8 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to get the token owner in realm %s"
-"(%s)."
+"You do not have the administrative right to get the token owner in realm "
+"%s(%s)."
 msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen der Token Besitzer "
 "im Realm %s(%s)."
@@ -1247,8 +1247,8 @@ msgid ""
 "Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
 "(objectClass=user))"
 msgstr ""
-"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: (&"
-"(sAMAccountName=%s)(objectClass=user))"
+"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: "
+"(&(sAMAccountName=%s)(objectClass=user))"
 
 msgid ""
 "Please enter a valid searchfilter like this: \n"
@@ -1366,14 +1366,8 @@ msgstr "über Telefon "
 msgid "or email"
 msgstr "oder E-Mail"
 
-msgid "Password token"
-msgstr "Passwort Token"
-
-msgid "Email token"
-msgstr "E-Mail Token"
-
-msgid "Sms token"
-msgstr "SMS Token"
+msgid "Get Temporary Token"
+msgstr "Temporären Token erzeugen"
 
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -2379,8 +2373,8 @@ msgstr "Token ausgerollt"
 msgid "OK"
 msgstr "OK"
 
-msgid "Token serial"
-msgstr "Seriennummer"
+msgid "Token serial: "
+msgstr "Seriennummer: "
 
 msgid ""
 "The token was lost? You may enroll a temporary token and automatically "
@@ -2389,11 +2383,17 @@ msgstr ""
 "Der Token ging verloren? Sie können einen neuen temporären Token ausrollen. "
 "Dabei wird der verlorene Token automatisch deaktiviert."
 
+msgid "- Select Temporary Token Type -"
+msgstr "- Temporären Token Typ wählen -"
+
+msgid "Password Token"
+msgstr "Passwort Token"
+
+msgid "Email Token"
+msgstr "E-Mail Token"
+
 msgid "Lost Token"
 msgstr "Verlorener Token"
-
-msgid "Get temporary token"
-msgstr "Temporären Token erzeugen"
 
 msgid "Token info"
 msgstr "Tokeninfo"
@@ -2528,7 +2528,7 @@ msgstr "Name"
 msgid "Deleting resolver"
 msgstr "Resolver löschen"
 
-msgid "Token enrolled. Use the old PIN with the password new password."
+msgid "Token enrolled. Use the old PIN with the new password."
 msgstr ""
 "Der temporärer Token wurde ausgerollt. Der Benutzer soll seine alte PIN "
 "zusammen mit dem neuen Passwort verwenden."
@@ -2545,7 +2545,7 @@ msgstr "Passwort"
 msgid "End date"
 msgstr "Ablaufdatum"
 
-msgid "New temporary token"
+msgid "New Temporary Token"
 msgstr "Neuer temporärer Token"
 
 msgid "Server Configuration"
@@ -3284,11 +3284,39 @@ msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
 
+#~ msgid "Sms token"
+#~ msgstr "SMS Token"
+
+#~ msgid "Client Identification"
+#~ msgstr "Client Identifikation"
+
+#~ msgid "Client Identification with Proxy"
+#~ msgstr "Client Identifikation über Proxy"
+
+#~ msgid "Support for HTTP_X_FORWARDED_FOR"
+#~ msgstr "Unterstützung von HTTP_X_FORWARDED_FOR"
+
+#~ msgid "Support for HTTP_FORWARDED"
+#~ msgstr "Unterstützung von HTTP_FORWARDED"
+
+#~ msgid "Trusted Forwarding Proxy"
+#~ msgstr "Vertrauens Proxy"
+
+#~ msgid ""
+#~ "The ip address of the trusted forwarding proxy, which provides the "
+#~ "REMOTE_ADDR."
+#~ msgstr ""
+#~ "Die IP Adresse des weiterleitenden Proxies, der durch die REMOTE_ADDR "
+#~ "bestimmt ist."
+
+#~ msgid "Import tokens from VASCO DPX file"
+#~ msgstr "VASCO DPX Tokendatei importieren"
+
+#~ msgid "Transport key:"
+#~ msgstr "Transportschlüssel:"
+
 #~ msgid "Enter the realm, the tokens should part of:"
 #~ msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
-
-#~ msgid "Here you can upload your Vasco dpx file."
-#~ msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
 
 #~ msgid "Please enter a valid email address!"
 #~ msgstr "Bitte eine gültige E-Mail Adresse eingeben!"

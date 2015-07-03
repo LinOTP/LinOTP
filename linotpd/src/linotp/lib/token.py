@@ -319,12 +319,16 @@ class TokenHandler(object):
         :param new_serial: new serial number
         :param password: new password
         :param default_validity: set the token to be valid
-        :param param: additional arguments for the email or sms token as dict
+        :param param: additional arguments for the password, email or sms token
+            as dict
 
         :return: result dictionary
         """
 
         res = {}
+
+        if param is None:
+            param = {'type': 'password'}
 
         owner = self.getTokenOwner(serial)
         log.info("lost token for serial %r and owner %r@%r"
@@ -360,7 +364,10 @@ class TokenHandler(object):
                         }
 
         if 'type' in param:
-            if param['type'] == 'email':
+            if param['type'] == 'password':
+                init_params['type'] = 'pw'
+
+            elif param['type'] == 'email':
                 email = param.get('email', owner.info.get('email', None))
                 if email:
                     init_params['type'] = 'email'
@@ -407,7 +414,6 @@ class TokenHandler(object):
                 password = generate_password(size=pw_len,
                                              characters=character_pool)
 
-            init_params['type'] = 'pw'
             init_params["otpkey"] = password
 
         # now we got all info and can enroll the replacement token
@@ -431,6 +437,10 @@ class TokenHandler(object):
             res['valid_to'] = "xxxx"
             if init_params['type'] == 'pw':
                 res['password'] = password
+            elif init_params['type'] == 'email':
+                res['password'] = "Please check your emails"
+            elif init_params['type'] == 'sms':
+                res['password'] = "Please check your phone"
             res['end_date'] = end_date
 
             # we need to return the token type, so we can modify the
@@ -2304,7 +2314,6 @@ def setCountAuth(count, user, serial, _max=False, success=False):
                 token.set_count_auth(count)
 
     return len(tokenList)
-
 
 ###############################################################################
 #  LinOtpTokenPinUser
