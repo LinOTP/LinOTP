@@ -1387,7 +1387,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <tr><td><label for=sql_encoding>${_("Database encoding")}:</label></td>
             <td><input type="text" name="sql_encoding" class="optional"  id="sql_encoding" size="30" maxlength="200"></td></tr>
         <tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
-            <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30" maxlength="200"></td></tr>
+            <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30"></td></tr>
     </table>
     <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
     <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
