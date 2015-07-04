@@ -40,6 +40,8 @@ from linotp.lib.validate import split_pin_otp
 from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp, is_same_transaction
 
+from pylons.i18n.translation import _
+
 if sys.version_info[0:2] >= (2, 6):
     from json import loads
 else:
@@ -138,7 +140,13 @@ class EmailTokenClass(HmacTokenClass):
                         'scope': 'selfservice.title.enroll', },
                       },
                   },
-            'policy': {},
+            'policy': {'selfservice':
+                       {'edit_email':
+                        {'type':'int',
+                         'value': [0, 1],
+                         'desc': _('define if the user should be allowed'
+                                    ' to define the email')
+                         }}}
         }
 
         # do we need to define the lost token policies here... [comment copied from sms token]

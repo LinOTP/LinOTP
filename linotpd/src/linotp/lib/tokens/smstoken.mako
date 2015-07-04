@@ -120,7 +120,7 @@ function sms_enroll_setup_defaults(config,options){
     } else {
         $("[name='set_pin_rows']").show();
     }
-}	
+}
 
 /*
  * 'typ'_get_enroll_params()
@@ -256,9 +256,15 @@ function self_sms_submit(){
 		<tr>
 		<td><label for='sms_mobilephone'>${_("Your mobile phone number")}</label></td>
 		<td><input id='sms_mobilephone'
-					name='sms_mobilephone'
-					class="required ui-widget-content ui-corner-all"
-					value='${phonenumber}'/>
+                    name='sms_mobilephone'
+                    class="required ui-widget-content ui-corner-all"
+                    value='${phonenumber}'
+
+                    %if c.edit_sms == 0:
+                           readonly  disabled
+                    %endif
+
+                    />
 		</td>
 		</tr>
 		<tr>
