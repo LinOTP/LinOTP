@@ -137,14 +137,18 @@ class AdminController(BaseController):
         finally:
             log.debug("[__before__::%r] done" % (action))
 
-
-    def __after__(self):
+    def __after__(self, action):
         '''
         '''
         params = {}
 
         try:
+            # prevent logging of getsession or other irrelevant requests
+            if action in ['getsession', 'dropsession']:
+                return request
+
             params.update(request.params)
+
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             if 'serial' in params:
                     serial = request.params['serial']
