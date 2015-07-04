@@ -247,6 +247,10 @@ function self_email_submit(){
                     name='email_address'
                     class="required ui-widget-content ui-corner-all"
                     value='${emailaddress}'
+
+                    %if c.edit_email == 0:
+                            readonly  disabled
+                    %endif
                     />
         </td>
         </tr>

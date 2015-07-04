@@ -52,7 +52,6 @@ if sys.version_info[0:2] >= (2, 6):
 else:
     from simplejson import loads, dumps
 
-
 from pylons.i18n.translation import _
 
 from linotp.lib.tokens.hmactoken import HmacTokenClass
@@ -169,6 +168,13 @@ class SmsTokenClass(HmacTokenClass):
                                      },
                                     },
                                   },
+            'policy': {'selfservice':
+                       {'edit_sms':
+                        {'type': 'int',
+                         'value': [0, 1],
+                         'desc': _('define if the user should be allowed'
+                                    ' to define the sms')
+                         }}}
 
 
 
