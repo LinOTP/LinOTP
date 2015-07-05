@@ -671,10 +671,12 @@ def getPolicy(param, display_inactive=False):
             delete_it = True
             for u in pol_users:
                 # log.debug("[getPolicy] User: %s" % u )
-                if u == param['user'].lower():
+                if u == param['user'].lower() or u == '*':
                     # log.debug("[getPolicy] setting delete_it to false."
                     #          "We are using policy %s" % str(polname))
                     delete_it = False
+                    break
+
             if delete_it:
                 pol2delete.append(polname)
         for polname in pol2delete:
