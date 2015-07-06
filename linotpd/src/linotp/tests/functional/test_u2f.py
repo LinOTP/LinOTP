@@ -405,13 +405,9 @@ class TestU2FController(TestController):
 
         reply = []
         if message_authentication_JSON == "Multiple challenges submitted.":
-            challenges = response_authentication1.get('detail')
-
-            del challenges['message']
-            del challenges['transactionid']
-
-            for challenge in challenges:
-                reply.append(response_authentication1.get('detail').get(challenge))
+            challenges = response_authentication1.get('detail', {})\
+                                                 .get('challenges', {})
+            reply.extend(challenges.values())
         else:
             reply.append(response_authentication1.get('detail'))
         return reply
