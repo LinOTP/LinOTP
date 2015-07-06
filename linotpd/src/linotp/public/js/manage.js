@@ -1685,6 +1685,26 @@ function get_realms(){
     };
     return realms;
 }
+
+function get_resolvers(){
+    /*
+     * return the list of the resolver names
+     */
+    var resolvers = new Array();
+    var resp = $.ajax({
+            url: '/system/getResolvers',
+            async: false,
+            data: { 'session':getsession()},
+            type: "POST"
+        }).responseText;
+    var data = jQuery.parseJSON(resp);
+    for (var i in data.result.value) {
+        resolvers.push(i);
+    };
+    return resolvers;
+}
+
+
 // ####################################################
 //
 //  jQuery stuff
@@ -3434,10 +3454,12 @@ $(document).ready(function(){
             },
             'Close': { click: function(){
                             $(this).dialog('close');
-                            var realms = get_realms();
-                            if (realms.length == 0) {
-                                $('#text_no_realm').dialog('open');
-                            }
+                            var resolvers = get_resolvers();
+                            if (resolvers.length > 0) {
+                                var realms = get_realms();
+                                if (realms.length == 0) {
+                                    $('#text_no_realm').dialog('open');
+                            }   }
                         },
                         id: "button_resolver_close",
                         text:"Close"
