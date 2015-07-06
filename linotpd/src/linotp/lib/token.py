@@ -1177,7 +1177,8 @@ def checkSerialPass(serial, passw, options=None, user=None):
             user.info = userInfo
 
             if theToken.is_challenge_request(passw, user, options=options):
-                (res, opt) = linotp.lib.validate.create_challenge(tokenList[0], options)
+                (res, opt) = linotp.lib.validate.create_challenge(theToken,
+                                                                  options)
             else:
                 raise ParameterError("Missing parameter: pass", id=905)
 
