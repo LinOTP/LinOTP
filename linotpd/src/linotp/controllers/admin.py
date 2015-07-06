@@ -1872,7 +1872,7 @@ class AdminController(BaseController):
 
         arguments:
             * serial - serial of the old token
-            * type   - optional, email or sms
+            * type   - optional, password, email or sms
             * email  - optional, email address, to overrule the owner email
             * mobile - optional, mobile number, to overrule the owner mobile
 
@@ -2259,6 +2259,7 @@ class AdminController(BaseController):
                 param["Password"] = getParam(param, "sql_password", required)
                 param["Table"] = getParam(param, "sql_table", required)
                 param["Where"] = getParam(param, "sql_where", optional)
+                param["ConnectionParams"] = getParam(param, "sql_conparams", optional)
 
                 (num, err_str) = useridresolver.SQLIdResolver.testconnection(param)
                 res['result'] = True

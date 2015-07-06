@@ -1085,9 +1085,9 @@ function losttoken_callback(xhdr, textStatus){
         var password = '';
         if ('password' in obj.result.value){
             password = obj.result.value.password ;
+            $('#temp_token_password').html(password);
         }
         $('#temp_token_serial').html(serial);
-
         $('#temp_token_enddate').html(end_date);
         $dialog_view_temporary_token.dialog("open");
     } else {
@@ -1097,7 +1097,7 @@ function losttoken_callback(xhdr, textStatus){
     $("#token_table").flexReload();
     $('#selected_tokens').html('');
     disable_all_buttons();
-    log('Token ' + tokens + ' lost.');
+    log('Token ' + serial + ' lost.');
 }
 
 function token_losttoken(token_type) {
@@ -1108,19 +1108,15 @@ function token_losttoken(token_type) {
     var count = tokens.length;
 
     /* this for loop is unused as the gui allows only the losttoken action
-     * if only one token is selected */
+     * if only one token is selected (count is 1) */
     for (i = 0; i < count; i++) {
         var params = {"serial" : tokens[i]};
 
-        /* check for function arguments:
-         * if token_type is set, take it as parameter */
-        if (token_losttoken.length >0 ) {
-            if (token_type == 'email') {
-                params['type'] = 'email';
-            }else if (token_type === 'sms') {
-                params['type'] = 'sms';
-            }
-        }
+        if (token_type === 'password' ||
+            token_type === 'email' ||
+            token_type === 'sms')
+            params['type'] = token_type;
+
         resp = clientUrlFetch("/admin/losttoken",
                                 params, losttoken_callback);
     }
@@ -2747,6 +2743,7 @@ function tokenbuttons(){
         }
     });
 
+
     var $dialog_losttoken = $('#dialog_lost_token').dialog({
         autoOpen: false,
         title: 'Lost Token',
@@ -2754,60 +2751,55 @@ function tokenbuttons(){
         width: 400,
         modal: true,
         buttons: {
-
-            'Get temporary token': {click: function()
-                    {
-                    token_losttoken();
-                    $(this).dialog('close');
-                    },
-                id: "button_losttoken_ok",
-                text: i18n.gettext("Password token")
-                },
-
-            'Get temporary email token': {click: function()
-                    {
+            'Get Temporary Token': {click: function() {
+                var token_type =  $('#dialog_lost_token select').val();
+                if (token_type == "password_token") {
+                    token_losttoken('password');
+                }
+                if (token_type == "email_token") {
                     token_losttoken('email');
-                    $(this).dialog('close');
-                    },
-                id: "button_losttoken_email",
-                text: i18n.gettext("Email token")
-                },
-
-            'Get temporary sms token': {click: function()
-                    {
+                }
+                if (token_type == "sms_token") {
                     token_losttoken('sms');
-                    $(this).dialog('close');
-                    },
-                id: "button_losttoken_sms",
-                text: i18n.gettext("Sms token")
+                }
+                $(this).dialog('close');
                 },
-
-            Cancel: {click: function(){
+                id: "button_losttoken_ok",
+                text: i18n.gettext("Get Temporary Token")
+            },
+            'Cancel': {click: function() {
                 $(this).dialog('close');
                 },
                 id: "button_losttoken_cancel",
                 text: i18n.gettext("Cancel")
                 }
-        },
+            },
         open: function() {
-            /* returns a list of tokens, but as the losttoken button is
-             * only selected token == 1, we can rely on the list to contain
-             * at max one element
+            /* get_selected_tokens() returns a list of tokens.
+             * We can only handle one selected token (token == 1).
              */
             var tokens = get_selected_tokens();
             if (tokens.length == 1 ){
                 var token_string = tokens[0];
                 var user_info = get_token_owner(tokens[0]);
-                if ('email' in user_info) {
-                    $('#button_losttoken_email').removeAttr("disabled");
+                if ('email' in user_info && "" != user_info['email']) {
+                    $("#dialog_lost_token select option[value=email_token]").
+                        removeAttr('disabled');
                 } else {
-                    $('#button_losttoken_email').attr("disabled","disabled");
+                // ToDo: if no email is given, let the user insert one.
+                    $("#dialog_lost_token select option[value=email_token]").
+                        attr('disabled','disabled');
                 }
-                if ('mobile' in user_info) {
-                    $('#button_losttoken_sms').removeAttr("disabled");
+                if ('mobile' in user_info && "" != user_info['mobile']) {
+                    $("#dialog_lost_token select option[value=sms_token]").
+                        removeAttr('disabled');
                 } else {
-                    $('#button_losttoken_sms').attr("disabled","disabled");
+                //ToDo: if no mobil entry is given, let the user insert one.
+                    $("#dialog_lost_token select option[value=sms_token]").
+                        attr('disabled','disabled');
                 }
+                $("#dialog_lost_token select option[value=select_token]").
+                    attr('selected',true);
                 $('#lost_token_serial').html(token_string);
                 translate_dialog_lost_token();
                 do_dialog_icons();
@@ -2819,6 +2811,7 @@ function tokenbuttons(){
     $('#button_losttoken').click(function(){
         $dialog_losttoken.dialog('open');
     });
+
 
     var $dialog_resync_token = $('#dialog_resync_token').dialog({
         autoOpen: false,
