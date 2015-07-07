@@ -1537,7 +1537,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         # composed by the top level transaction id and the message
         # and below in a dict for each token a challenge description -
         # the key is the token type combined with its token serial number
-        all_reply = {}
+        all_reply = {'challenges': {}}
         challenge_count = 0
         transactionid = ''
         challenge_id = ""
@@ -1554,9 +1554,11 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
                                             )
             transactionid = reply.get('transactionid').rsplit('.')[0]
 
-            # compse the key of token type and token serial number
-            key = "%s_%s" % (challenge_token.type, challenge_token.getSerial())
-            all_reply[key] = reply
+            # add token type and serial to ease the type specific processing
+            reply['linotp_tokentype'] = challenge_token.type
+            reply['linotp_tokenserial'] = challenge_token.getSerial()
+            key = challenge_token.getSerial()
+            all_reply['challenges'][key] = reply
 
         # finally add the root challenge response with top transaction id and
         # message, that indicates that 'multiple challenges have been submitted
@@ -2031,7 +2033,7 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
         elif init_params['type'] == 'sms':
             res['password'] = "Please check your phone"
         res['end_date'] = end_date
-        
+
         # we need to return the token type, so we can modify the
         # response according
         res['token_typ'] = init_params['type']
