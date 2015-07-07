@@ -403,7 +403,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <br/>${_("or")}<br/>
     <a href="http://www.lsexperts.de/" target="_blank">http://www.lsexperts.de</a></p>
     <p>${_("Authors:")}
-        <br>Cornelius K��lbel, Kay Winkler, Omar Kohl, Friedrich Weber,
+        <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
         <br>Stefan Pietsch, Eric Sesterhenn
     </p>
