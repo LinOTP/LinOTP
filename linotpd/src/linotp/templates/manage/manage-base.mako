@@ -24,6 +24,8 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
+<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1" />
+
 %if c.debug:
     <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.css" />
     <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.css" />
