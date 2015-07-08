@@ -378,15 +378,70 @@ class TestController(unittest2.TestCase):
         policies = body.get('result', {}).get('value', {}).keys()
 
         for policy in policies:
-            self.delPolicy(policy)
+            self.delete_policy(policy)
 
         return
 
-    def delPolicy(self, name='otpPin'):
+    def create_policy(self, params):
+        """
+        Create a policy. Following keys are expected in params: name, scope,
+        action, user, realm, client and time
+
+        user, realm, client and time can be omitted and will then default to *,
+        *, '' and ''
+        """
+        lparams = {
+            'user': '*',
+            'realm': '*',
+            'client': '',
+            'time': '',
+            }
+        lparams.update(params)
+        expected_keys = set(
+            ['name', 'scope', 'action', 'user', 'realm', 'client', 'time']
+            )
+        assert set(lparams.keys()) == expected_keys, "Some key is missing to create a policy"
+        response = self.make_system_request('setPolicy', lparams)
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        expected_value = {
+            u'setPolicy %s' % params['name']: {
+                u'realm': True,
+                u'active': True,
+                u'client': True,
+                u'user': True,
+                u'time': True,
+                u'action': True,
+                u'scope': True
+                }
+            }
+        self.assertDictEqual(expected_value, content['result']['value'])
+
+    def delete_policy(self, name):
+        """
+        Delete the policy with the given name
+        """
+        assert name, "Policy 'name' can't be empty or None"
         params = {
             'name': name,
             }
-        return self.make_system_request('delPolicy', params)
+        response = self.make_system_request('delPolicy', params)
+        content = TestController.get_json_body(response)
+        expected_value = {
+            u'delPolicy': {
+                u'result': {
+                    u'linotp.Policy.%s.action' % name: True,
+                    u'linotp.Policy.%s.active' % name: True,
+                    u'linotp.Policy.%s.client' % name: True,
+                    u'linotp.Policy.%s.realm' % name: True,
+                    u'linotp.Policy.%s.scope' % name: True,
+                    u'linotp.Policy.%s.time' % name: True,
+                    u'linotp.Policy.%s.user' % name: True
+                    }
+                }
+            }
+        self.assertTrue(content['result']['status'])
+        self.assertDictEqual(expected_value, content['result']['value'])
 
     def deleteAllTokens(self):
         ''' get all tokens and delete them '''

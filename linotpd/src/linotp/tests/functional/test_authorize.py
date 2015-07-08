@@ -112,13 +112,6 @@ class TestAuthorizeController(TestController):
         response = self.app.get(url(controller="admin", action="tokenrealm"), params=parameters)
         return response
 
-    def delPolicy(self, name):
-
-        response = self.app.get(url(controller="system", action="delPolicy"),
-                               params={"name": name})
-        print "delPolicy:" , response
-        assert '"status": true' in response
-
     def setPolicy(self, parameters):
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
         print "setPolicy:" , response
@@ -309,7 +302,7 @@ class TestAuthorizeController(TestController):
         '''
 
         #deleting authorization policy
-        self.delPolicy("authorization1")
+        self.delete_policy("authorization1")
 
         # setting pin policy
         parameters = { 'name' : 'pinpolicy1',
@@ -374,8 +367,8 @@ class TestAuthorizeController(TestController):
         Auth Test 10: client not in policy. So every tokentype should be able to authenticate
         '''
         # clear pin policy
-        self.delPolicy("pinpolicy1")
-        self.delPolicy("pinpolicy2")
+        self.delete_policy("pinpolicy1")
+        self.delete_policy("pinpolicy2")
         #
         #
         #
@@ -464,7 +457,7 @@ class TestAuthorizeController(TestController):
         print "validate/check: ", response
         assert '"value": true' in response
 
-        self.delPolicy("tokentypepolicy1")
+        self.delete_policy("tokentypepolicy1")
 
 ##############################################################################################
 #
@@ -582,7 +575,7 @@ class TestAuthorizeController(TestController):
         '''
         Auth Test 31: setrealm for a user in the not default realm.
         '''
-        self.delPolicy("tokentypepolicy1")
+        self.delete_policy("tokentypepolicy1")
 
         self.setPolicy({"name" : "setrealm",
                          "scope":"authorization",
