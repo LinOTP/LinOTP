@@ -203,7 +203,7 @@ $('#hmac_google_compliant').click(function() {
                 value="web ui generated" class="text" /></td>
 </tr>
 
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" 

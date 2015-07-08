@@ -79,6 +79,8 @@ function yubico_get_config_params(){
 </script>
 
 <form class="cmxform" id='form_config_yubico'>
+<fieldset>
+	<legend>${_("Yubico settings")}</legend>
 	<p>
 		${_("You get your own API key from the yubico website ")}
 		<a href="https://upgrade.yubico.com/getapikey/" target="yubico">upgrade.yubico.com</a>.
@@ -102,7 +104,7 @@ function yubico_get_config_params(){
 	</tr>
 
 	</table>
-
+</fieldset>
 </form>
 %endif
 
@@ -165,7 +167,7 @@ function yubico_get_enroll_params(){
     <td><label for="yubico_enroll_desc" id='yubico_enroll_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="yubico_enroll_desc" id="yubico_enroll_desc" value="Yubico Cloud token" class="text" /></td>
 </tr>
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="yubico_pin1" id="yubico_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin1" id="yubico_pin1"

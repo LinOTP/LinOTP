@@ -46,7 +46,7 @@
         <td><label for=policy_scope_combo>${_("Scope")}</label></td>
         <td>
         <select id='policy_scope_combo'>
-        <option value="_">${_("__undefined__")}</option>
+        <option value="_">${_("- Select scope -")}</option>
         %for scope in c.polDefs.keys():
         <option value="${scope}">${scope}</option>
         %endfor
@@ -81,9 +81,9 @@
     <tr>
         <td></td>
         <td>
-            <button id="button_policy_add">${_("set policy")}</button>
-            <button id="button_policy_delete">${_("delete policy")}</button>
-            <button id="button_policy_clear">${_("clear")}</button>
+            <button id="button_policy_add">${_("Set Policy")}</button>
+            <button id="button_policy_delete">${_("Delete Selected Policy")}</button>
+            <button id="button_policy_clear">${_("Clear Fields")}</button>
         </td>
     </tr>
     </table>

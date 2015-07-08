@@ -27,17 +27,17 @@
 function create_vasco_dialog() {
      var $dialog = $('#dialog_import_vasco').dialog({
         autoOpen: false,
-        title: 'Vasco dpx file',
+        title: 'Vasco DPX File',
         width: 600,
         modal: true,
         buttons: {
-            'load dpx file': { click: function(){
+            'Load DPX File': { click: function(){
                 $('#loadtokens_session_vasco').val(getsession());
                 load_tokenfile('vasco');
                 $(this).dialog('close');
                 },
                 id: "button_vasco_load",
-                text: "load dpx file"
+                text: "Load DPX File"
                 },
             Cancel: {click: function(){
                 $(this).dialog('close');

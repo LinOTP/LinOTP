@@ -52,7 +52,7 @@ def usage():
     instead of the generic description (-d) you can use:
     -f fullname
     -l location
-    -p phone
+    -t telephone
     -m mobile
     -e email
     '''
@@ -67,7 +67,7 @@ def main():
     user_description = {
                         'full_name': '',
                         'location': '',
-                        'phone': '',
+                        'telephone': '',
                         'mobile': '',
                         'email': '',
                         }
@@ -76,7 +76,7 @@ def main():
     gid = None
 
     try:
-        opts, args = getopt(sys.argv[1:], "u:i:g:s:p:d:h", ["help"])
+        opts, args = getopt(sys.argv[1:], "u:i:g:p:d:f:l:t:m:e:s:h", ["help"])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -100,8 +100,8 @@ def main():
             user_description['full_name'] = arg
         elif opt in ('-l'):
             user_description['location'] = arg
-        elif opt in ('-p'):
-            user_description['phone'] = arg
+        elif opt in ('-t'):
+            user_description['telephone'] = arg
         elif opt in ('-m'):
             user_description['mobile'] = arg
         elif opt in ('-e'):
@@ -129,7 +129,7 @@ def main():
         uid = sys.stdin.readline().strip()
 
     if not description:
-        description = ("%(full_name)s,%(location)s,%(phone)s,%(mobile)s,%(email)s"
+        description = ("%(full_name)s,%(location)s,%(telephone)s,%(mobile)s,%(email)s"
                         % user_description)
     # we use crypt type sha512, which is a secure and standard according to:
     # http://security.stackexchange.com/questions/20541/insecure-versions-of-crypt-hashes

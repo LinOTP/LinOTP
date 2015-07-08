@@ -2141,8 +2141,9 @@ class TestChallengeResponseController(TestController):
 
             # in the response we expect an transaction reference (=state)
             body = json.loads(response.body)
-            state1 = body.get('detail').get('HMAC_H1', {}).get('transactionid')
-            state2 = body.get('detail').get('HMAC_H2', {}).get('transactionid')
+            challenges = body.get('detail').get('challenges', {})
+            state1 = challenges.get('H1', {}).get('transactionid')
+            state2 = challenges.get('H2', {}).get('transactionid')
             transactionid = body.get('detail').get('transactionid')
 
             otp1 = self.calcOTP(otpkey, counter=counter)
@@ -2155,7 +2156,7 @@ class TestChallengeResponseController(TestController):
         # by top transactionid
         for (t, s1, s2, o1, o2) in transactions:
 
-            params = {"transactionid": t, 'session': self.session }
+            params = {"transactionid": t, 'session': self.session}
             response = self.make_admin_request(action='checkstatus',
                                                params=params)
             self.assertIn(s1, response, response)

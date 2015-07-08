@@ -84,8 +84,8 @@ function dpw_get_enroll_params(){
     <td><label for="enroll_dpw_desc" id='enroll_dpw_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="enroll_dpw_desc" id="enroll_dpw_desc" value="webGUI_generated" class="text" /></td>
 </tr>
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'>
-    <th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'>
+    <th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="dpw_pin1" id="dpw_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('dpw_pin1','dpw_pin2');" name="pin1" id="dpw_pin1"

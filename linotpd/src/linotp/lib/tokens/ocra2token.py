@@ -253,7 +253,7 @@ class Ocra2TokenClass(TokenClass):
 
         }
 
-        if key is not None and res.has_key(key):
+        if key and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':

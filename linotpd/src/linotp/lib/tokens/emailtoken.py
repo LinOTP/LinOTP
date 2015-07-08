@@ -36,9 +36,16 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.util import getParam
 from linotp.lib.HMAC import HmacOtp
 
+from linotp.lib.user import getUserDetail
+
 from linotp.lib.validate import split_pin_otp
 from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp, is_same_transaction
+
+from linotp.lib.policy import (getPolicy,
+                               getPolicyActionValue)
+
+from pylons.i18n.translation import _
 
 if sys.version_info[0:2] >= (2, 6):
     from json import loads
@@ -49,6 +56,28 @@ optional = True
 required = False
 
 LOG = logging.getLogger(__name__)
+
+
+def is_email_editable(user=""):
+    '''
+    this function checks the policy scope=selfservice, action=edit_email
+    This is a int policy, while the '0' is a deny
+    '''
+    ret = True
+    realm = user.realm
+    login = user.login
+
+    policies = getPolicy({'scope': 'selfservice',
+                          'realm': realm,
+                          "action": "edit_email",
+                          "user": login},
+                          )
+    if policies:
+        edit_email = getPolicyActionValue(policies, "edit_email")
+        if edit_email == 0:
+            ret = False
+
+    return ret
 
 
 class EmailTokenClass(HmacTokenClass):
@@ -138,7 +167,13 @@ class EmailTokenClass(HmacTokenClass):
                         'scope': 'selfservice.title.enroll', },
                       },
                   },
-            'policy': {},
+            'policy': {'selfservice':
+                       {'edit_email':
+                        {'type':'int',
+                         'value': [0, 1],
+                         'desc': _('define if the user should be allowed'
+                                    ' to define the email')
+                         }}}
         }
 
         # do we need to define the lost token policies here... [comment copied from sms token]
@@ -163,7 +198,17 @@ class EmailTokenClass(HmacTokenClass):
         LOG.debug("[update] begin. adjust the token class with: param %r" % param)
 
         # specific - e-mail
-        self._email_address = getParam(param, self.EMAIL_ADDRESS_KEY, optional=False)
+        self._email_address = param[self.EMAIL_ADDRESS_KEY]
+        # in scope selfservice - check if edit_email is allowed
+        # if not allowed to edit, check if the email is the same
+        # as from the user data
+        if param.get('::scope::', {}).get('selfservice', False):
+            user = param['::scope::']['user']
+            if not is_email_editable(user):
+                u_info = getUserDetail(user)
+                u_email = u_info.get('email', None)
+                if u_email == self._email_address:
+                    raise Exception(_('User is not allowed to set email address'))
 
         ## in case of the e-mail token, only the server must know the otpkey
         ## thus if none is provided, we let create one (in the TokenClass)
@@ -327,8 +372,7 @@ class EmailTokenClass(HmacTokenClass):
             raise ValueError('Failed to load provider config:%r %r'
                              % (tConfig, exx))
 
-
-        LOG.debug('[getEmailProviderConfig] e-mail provider config' +
+        LOG.debug('[getEmailProviderConfig] e-mail provider config'
                   ' found: config %r' % (config))
         return config
 
@@ -341,7 +385,7 @@ class EmailTokenClass(HmacTokenClass):
         checks, if the submitMessage method exists
         if not an error is thrown
         """
-        LOG.debug('[getEmailProviderClass] begin. get the e-mail Provider ' +
+        LOG.debug('[getEmailProviderClass] begin. get the e-mail Provider '
                   'class definition')
         email_provider = getFromConfig("EmailProvider", self.DEFAULT_EMAIL_PROVIDER)
         if not email_provider:

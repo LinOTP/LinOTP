@@ -1691,6 +1691,26 @@ function get_realms(){
     };
     return realms;
 }
+
+function get_resolvers(){
+    /*
+     * return the list of the resolver names
+     */
+    var resolvers = new Array();
+    var resp = $.ajax({
+            url: '/system/getResolvers',
+            async: false,
+            data: { 'session':getsession()},
+            type: "POST"
+        }).responseText;
+    var data = jQuery.parseJSON(resp);
+    for (var i in data.result.value) {
+        resolvers.push(i);
+    };
+    return resolvers;
+}
+
+
 // ####################################################
 //
 //  jQuery stuff
@@ -3584,10 +3604,12 @@ $(document).ready(function(){
             },
             'Close': { click: function(){
                             $(this).dialog('close');
-                            var realms = get_realms();
-                            if (realms.length == 0) {
-                                $('#text_no_realm').dialog('open');
-                            }
+                            var resolvers = get_resolvers();
+                            if (resolvers.length > 0) {
+                                var realms = get_realms();
+                                if (realms.length == 0) {
+                                    $('#text_no_realm').dialog('open');
+                            }   }
                         },
                         id: "button_resolver_close",
                         text:"Close"
@@ -4919,18 +4941,19 @@ function view_policy() {
             url : '/system/policies_flexi?session='+getsession(),
             method: 'GET',
             dataType : 'json',
-            colModel : [    {display: 'Active', name : 'active', width : 35, sortable : true},
-                            {display: 'Name', name : 'name', width : 100, sortable : true},
-                            {display: 'User', name : 'user', width : 80, sortable : true},
-                            {display: 'Scope', name : 'scope', width : 80, sortable : true},
-                            {display: 'Action', name : 'action', width : 200, sortable : true},
-                            {display: 'Realm', name : 'realm', width : 100, sortable : true},
-                            {display: 'Client', name : 'client', width : 200, sortable : true},
-                            {display: 'Time', name : 'time', width : 50, sortable : true}
-                                ],
+            colModel : [
+                {display: i18n.gettext('Active'), name : 'active', width : 35, sortable : true},
+                {display: i18n.gettext('Name'), name : 'name', width : 100, sortable : true},
+                {display: i18n.gettext('User'), name : 'user', width : 80, sortable : true},
+                {display: i18n.gettext('Scope'), name : 'scope', width : 80, sortable : true},
+                {display: i18n.gettext('Action'), name : 'action', width : 200, sortable : true},
+                {display: i18n.gettext('Realm'), name : 'realm', width : 100, sortable : true},
+                {display: i18n.gettext('Client'), name : 'client', width : 200, sortable : true},
+                {display: i18n.gettext('Time'), name : 'time', width : 50, sortable : true}
+                ],
             height: 200,
             searchitems : [
-                {display: 'in all columns', name : 'all', isdefault: true}
+                {display: i18n.gettext('All other columns'), name : 'all', isdefault: true}
                 ],
             rpOptions: [10,15,20,50,100],
             sortname: "name",
@@ -5025,25 +5048,26 @@ function view_token() {
             url : '/manage/tokenview_flexi?session='+getsession(),
             method: 'GET',
             dataType : 'json',
-            colModel : [ {display: 'serial number', name : 'TokenSerialnumber', width : 100, sortable : true, align: 'center'},
-                            {display: 'active', name : 'Isactive', width : 30, sortable : true, align: 'center'},
-                            {display: 'username', name : 'Username', width : 100, sortable : false, align: 'center'},
-                            {display: 'realm', name : 'realm', width : 100, sortable : false, align: 'center'},
-                            {display: 'type', name : 'TokenType', width : 50, sortable : true, align: 'center'},
-                            {display: 'counter login', name : 'FailCount', width : 30, sortable : true, align: 'center'},
-                            {display: 'description', name : 'TokenDesc', width : 100, sortable : true, align: 'center'},
-                            {display: 'maxfailcount', name : 'maxfailcount', width : 50, sortable : false, align: 'center'},
-                            {display: 'otplen', name : 'otplen', width : 50, sortable : false, align: 'center'},
-                            {display: 'countwindow', name : 'countwindow', width : 50, sortable : false, align: 'center'},
-                            {display: 'syncwindow', name : 'syncwindow', width : 50, sortable : false, align: 'center'},
-                            {display: 'userid', name : 'Userid', width : 100, sortable : true, align: 'center'},
-                            {display: 'resolver', name : 'IdResolver', width : 200, sortable : true, align: 'center'}
-                                ],
+            colModel : [
+                {display: i18n.gettext('Serial Number'), name : 'TokenSerialnumber', width : 100, sortable : true, align: 'center'},
+                {display: i18n.gettext('Active'), name : 'Isactive', width : 40, sortable : true, align: 'center'},
+                {display: i18n.gettext('Username'), name : 'Username', width : 100, sortable : false, align: 'center'},
+                {display: i18n.gettext('Realm'), name : 'realm', width : 100, sortable : false, align: 'center'},
+                {display: i18n.gettext('Type'), name : 'TokenType', width : 50, sortable : true, align: 'center'},
+                {display: i18n.gettext('Login Attempts Failed'), name : 'FailCount', width : 140, sortable : true, align: 'center'},
+                {display: i18n.gettext('Description'), name : 'TokenDesc', width : 100, sortable : true, align: 'center'},
+                {display: i18n.gettext('Max Login Attempts'), name : 'maxfailcount', width : 110, sortable : false, align: 'center'},
+                {display: i18n.gettext('OTP Length'), name : 'otplen', width : 75, sortable : false, align: 'center'},
+                {display: i18n.gettext('Count Window'), name : 'countwindow', width : 90, sortable : false, align: 'center'},
+                {display: i18n.gettext('Sync Window'), name : 'syncwindow', width : 80, sortable : false, align: 'center'},
+                {display: i18n.gettext('User ID'), name : 'Userid', width : 60, sortable : true, align: 'center'},
+                {display: i18n.gettext('Resolver'), name : 'IdResolver', width : 200, sortable : true, align: 'center'}
+                ],
             height: 400,
             searchitems : [
-                {display: 'in loginname', name: 'loginname', isdefault: true },
-                {display: 'in all other columns', name : 'all'},
-                {display: 'realm', name: 'realm' }
+                {display: i18n.gettext('Login Name'), name: 'loginname', isdefault: true },
+                {display: i18n.gettext('All other columns'), name : 'all'},
+                {display: i18n.gettext('Realm'), name: 'realm' }
                 ],
             rpOptions: [10,15,20,50,100],
             sortname: "TokenSerialnumber",
@@ -5070,25 +5094,26 @@ function view_user() {
             url : '/manage/userview_flexi?session='+getsession(),
             method: 'GET',
             dataType : 'json',
-            colModel : [ {display: 'username', name : 'username', width : 90, sortable : true, align:"left"},
-                        {display: 'useridresolver', name : 'useridresolver', width : 200, sortable : true, align:"left"},
-            {display: 'surname', name : 'surname', width : 100, sortable : true, align:"left"},
-            {display: 'givenname', name : 'givenname', width : 100, sortable : true, align:"left"},
-            {display: 'email', name : 'email', width : 100, sortable : false, align:"left"},
-                        {display: 'mobile', name : 'mobile', width : 50, sortable : true, align:"left"},
-            {display: 'phone', name : 'phone', width : 50, sortable : false, align:"left"},
-                        {display: 'userid', name : 'userid', width : 200, sortable : true, align:"left"}
+            colModel : [
+                {display: i18n.gettext('Username'), name : 'username', width : 90, sortable : true, align:"left"},
+                {display: i18n.gettext('User ID Resolver'), name : 'useridresolver', width : 200, sortable : true, align:"left"},
+                {display: i18n.gettext('Surname'), name : 'surname', width : 100, sortable : true, align:"left"},
+                {display: i18n.gettext('Given Name'), name : 'givenname', width : 100, sortable : true, align:"left"},
+                {display: i18n.gettext('Email'), name : 'email', width : 100, sortable : false, align:"left"},
+                {display: i18n.gettext('Mobile'), name : 'mobile', width : 50, sortable : true, align:"left"},
+                {display: i18n.gettext('Phone'), name : 'phone', width : 50, sortable : false, align:"left"},
+                {display: i18n.gettext('User ID'), name : 'userid', width : 200, sortable : true, align:"left"}
             ],
             height: 400,
             searchitems : [
-                {display: 'in username          ', name : 'username', isdefault: true},
-                {display: 'surname          ', name : 'surname'},
-                {display: 'given name           ', name : 'givenname'},
-                {display: 'description          ', name : 'description'},
-                {display: 'userid           ', name : 'userid'},
-                {display: 'email            ', name : 'email'},
-                {display: 'mobile           ', name : 'mobile'},
-                {display: 'phone            ', name : 'phone'}
+                {display: i18n.gettext('Username'), name : 'username', isdefault: true},
+                {display: i18n.gettext('Surname'), name : 'surname'},
+                {display: i18n.gettext('Given Name'), name : 'givenname'},
+                {display: i18n.gettext('Description'), name : 'description'},
+                {display: i18n.gettext('User ID'), name : 'userid'},
+                {display: i18n.gettext('Email'), name : 'email'},
+                {display: i18n.gettext('Mobile'), name : 'mobile'},
+                {display: i18n.gettext('Phone'), name : 'phone'}
                 ],
             rpOptions: [15,20,50,100],
             sortname: "username",
@@ -5117,40 +5142,41 @@ function view_audit() {
             url : '/audit/search?session='+getsession(),
             method: 'GET',
             dataType : 'json',
-            colModel : [ {display: 'number', name : 'number', width : 50, sortable : true},
-                        {display: 'date', name : 'date', width : 160, sortable : true},
-                        {display: 'signature', name : 'signature', width : 40, sortable : false},
-                        {display: 'missing lines', name : 'missing_lines', width : 40, sortable : false},
-                        {display: 'action', name : 'action', width : 120, sortable : true},
-                        {display: 'success', name : 'success', width : 40, sortable : true},
-                        {display: 'serial', name : 'serial', width : 100, sortable : true},
-                        {display: 'tokentype', name : 'tokentype', width : 50, sortable : true},
-                        {display: 'user', name : 'user', width : 100, sortable : true},
-                        {display: 'realm', name : 'realm', width : 100, sortable : true},
-                        {display: 'administrator', name : 'administrator', width : 100, sortable : true},
-                        {display: 'action_detail', name : 'action_detail', width : 200, sortable : true},
-                        {display: 'info', name : 'info', width : 200, sortable : true},
-                        {display: 'linotp_server', name : 'linotp_server', width : 100, sortable : true},
-                        {display: 'client', name : 'client', width : 100, sortable : true},
-                        {display: 'log_level', name : 'log_level', width : 40, sortable : true},
-                        {display: 'clearance_level', name : 'clearance_level', width : 20, sortable : true}
-            ],
+            colModel : [
+                {display: i18n.gettext('Number'), name : 'number', width : 50, sortable : true},
+                {display: i18n.gettext('Date'), name : 'date', width : 160, sortable : true},
+                {display: i18n.gettext('Signature'), name : 'signature', width : 60, sortable : false},
+                {display: i18n.gettext('Missing Lines'), name : 'missing_lines', width : 90, sortable : false},
+                {display: i18n.gettext('Action'), name : 'action', width : 120, sortable : true},
+                {display: i18n.gettext('Success'), name : 'success', width : 50, sortable : true},
+                {display: i18n.gettext('Serial'), name : 'serial', width : 100, sortable : true},
+                {display: i18n.gettext('Token Type'), name : 'tokentype', width : 80, sortable : true},
+                {display: i18n.gettext('User'), name : 'user', width : 100, sortable : true},
+                {display: i18n.gettext('Realm'), name : 'realm', width : 100, sortable : true},
+                {display: i18n.gettext('Administrator'), name : 'administrator', width : 100, sortable : true},
+                {display: i18n.gettext('Action Detail'), name : 'action_detail', width : 200, sortable : true},
+                {display: i18n.gettext('Info'), name : 'info', width : 200, sortable : true},
+                {display: i18n.gettext('LinOTP Server'), name : 'linotp_server', width : 100, sortable : true},
+                {display: i18n.gettext('Client'), name : 'client', width : 100, sortable : true},
+                {display: i18n.gettext('Log Level'), name : 'log_level', width : 40, sortable : true},
+                {display: i18n.gettext('Clearance Level'), name : 'clearance_level', width : 20, sortable : true}
+                ],
             height: 400,
             searchitems : [
-                {display: 'serial', name : 'serial', isdefault: true},
-                {display: 'user', name : 'user', isdefault: false},
-                {display: 'realm', name : 'realm', isdefault: false},
-                {display: 'action', name: 'action' },
-                {display: 'action detail', name: 'action_detail' },
-                {display: 'tokentype', name: 'token_type' },
-                {display: 'administrator', name: 'administrator' },
-                {display: 'successful action', name: 'success' },
-                {display: 'info', name: 'info' },
-                {display: 'LinOTP server', name: 'linotp_server' },
-                {display: 'Client', name: 'client' },
-                {display: 'date', name: 'date' },
-                {display: 'extended search', name: 'extsearch' }
-            ],
+                {display: i18n.gettext('Serial'), name : 'serial', isdefault: true},
+                {display: i18n.gettext('User'), name : 'user', isdefault: false},
+                {display: i18n.gettext('Realm'), name : 'realm', isdefault: false},
+                {display: i18n.gettext('Action'), name: 'action' },
+                {display: i18n.gettext('Action Detail'), name: 'action_detail' },
+                {display: i18n.gettext('Token Type'), name: 'token_type' },
+                {display: i18n.gettext('Administrator'), name: 'administrator' },
+                {display: i18n.gettext('Successful'), name: 'success' },
+                {display: i18n.gettext('Info'), name: 'info' },
+                {display: i18n.gettext('LinOTP Server'), name: 'linotp_server' },
+                {display: i18n.gettext('Client'), name: 'client' },
+                {display: i18n.gettext('Date'), name: 'date' },
+                {display: i18n.gettext('Extended Search'), name: 'extsearch' }
+                ],
             rpOptions: [10,15,30,50],
             sortname: "number",
             sortorder: "desc",

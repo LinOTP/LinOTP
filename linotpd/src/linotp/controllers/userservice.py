@@ -1146,8 +1146,8 @@ class UserserviceController(BaseController):
             param.update(request.params)
 
             # check selfservice authorization
-
             checkPolicyPre('selfservice', 'userinit', param, self.authUser)
+
             try:
                 tok_type = param["type"]
             except KeyError as exx:
@@ -1173,14 +1173,20 @@ class UserserviceController(BaseController):
             (serial, desc, otppin, self.authUser.login, self.authUser.realm))
             log.debug(param)
 
+            # extend the interface by parameters, so that decisssion could
+            # be made in the token update method
+            param['::scope::'] = {'selfservice': True,
+                                  'user': self.authUser
+                                  }
+
             (ret, tokenObj) = th.initToken(param, self.authUser)
             if tokenObj is not None and hasattr(tokenObj, 'getInfo'):
                 info = tokenObj.getInfo()
                 response_detail.update(info)
 
-            # # result enrichment - if the token is sucessfully created,
-            # # some processing info is added to the result document,
-            # #  e.g. the otpkey :-) as qr code
+            # result enrichment - if the token is sucessfully created,
+            # some processing info is added to the result document,
+            #  e.g. the otpkey :-) as qr code
             initDetail = tokenObj.getInitDetail(param, self.authUser)
             response_detail.update(initDetail)
 

@@ -189,7 +189,7 @@ function exportToken(attributes) {
 function create_tools_exporttoken_dialog() {
      var $dialog = $('#dialog_export_token').dialog({
         autoOpen: false,
-        title: 'Export token information',
+        title: 'Export Token Information',
         width: 600,
         modal: true,
         buttons: {
@@ -197,7 +197,7 @@ function create_tools_exporttoken_dialog() {
                         exportToken($('#exporttoken_attributes').val());
                         },
                     id: "button_export_token",
-                    text: "Export token"
+                    text: "Export Token"
             },
             'Close': { click: function(){
                             $(this).dialog('close');
@@ -237,7 +237,7 @@ function exportAudit(audit_num, audit_page) {
 function create_tools_exportaudit_dialog() {
      var $dialog = $('#dialog_export_audit').dialog({
         autoOpen: false,
-        title: 'Export audit information',
+        title: 'Export Audit Information',
         width: 600,
         modal: true,
         buttons: {

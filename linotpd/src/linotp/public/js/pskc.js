@@ -45,17 +45,17 @@ function pskc_type_changed(){
 function create_pskc_dialog() {
     var $dialog_load_tokens_pskc = $('#dialog_import_pskc').dialog({
         autoOpen: false,
-        title: 'PSKC Key file',
+        title: 'PSKC Key File',
         width: 600,
         modal: true,
         buttons: {
-            'load token file': { click: function(){
+            'Load Token File': { click: function(){
                 $('#loadtokens_session_pskc').val(getsession());
                 load_tokenfile('pskc');
                 $(this).dialog('close');
                 },
                 id: "button_pskc_load",
-                text: "load token file"
+                text: "Load Token File"
                 },
             Cancel: {click: function(){
                 $(this).dialog('close');

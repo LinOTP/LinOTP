@@ -741,8 +741,8 @@ class TokenHandler(object):
                       "He already has some tokens." % (user.login, user.realm))
             return False
 
-        matching_token = []
-        pin = ""
+        # List of (token, pin) pairs
+        matching_pairs = []
 
         # get all tokens of the users realm, which are not assigned
 
@@ -764,21 +764,21 @@ class TokenHandler(object):
                                               window=token.getOtpCountWindow())
 
             if token_exists >= 0:
-                matching_token.append(token)
+                matching_pairs.append((token, pin))
 
-        if len(matching_token) != 1:
+        if len(matching_pairs) != 1:
             log.warning("[auto_assignToken] %d tokens with "
-                        "the given OTP value found.", len(matching_token))
+                        "the given OTP value found.", len(matching_pairs))
             return False
+
+        token, pin = matching_pairs[0]
+        serial = token.getSerial()
 
         authUser = get_authenticated_user(user.login, user.realm, pin)
         if authUser is None:
             log.error("[auto_assignToken] User %r@%r failed to authenticate "
                       "against userstore" % (user.login, user.realm))
             return False
-
-        token = matching_token[0]
-        serial = token.getSerial()
 
         log.debug("[auto_assignToken] found serial number: %r" % serial)
 
@@ -1781,7 +1781,7 @@ def checkSerialPass(serial, passw, options=None, user=None):
             user.info = userInfo
 
             if theToken.is_challenge_request(passw, user, options=options):
-                (res, opt) = linotp.lib.validate.create_challenge(tokenList[0],
+                (res, opt) = linotp.lib.validate.create_challenge(theToken,
                                                                   options)
             else:
                 raise ParameterError("Missing parameter: pass", id=905)
@@ -1850,6 +1850,9 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             check_options['transactionid'] = transid
 
     for token in tokenList:
+
+        if not token.isActive():
+            continue
 
         audit = {}
         audit['serial'] = token.getSerial()
@@ -1998,7 +2001,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         # composed by the top level transaction id and the message
         # and below in a dict for each token a challenge description -
         # the key is the token type combined with its token serial number
-        all_reply = {}
+        all_reply = {'challenges': {}}
         challenge_count = 0
         transactionid = ''
         challenge_id = ""
@@ -2015,9 +2018,11 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
                                             )
             transactionid = reply.get('transactionid').rsplit('.')[0]
 
-            # compse the key of token type and token serial number
-            key = "%s_%s" % (challenge_token.type, challenge_token.getSerial())
-            all_reply[key] = reply
+            # add token type and serial to ease the type specific processing
+            reply['linotp_tokentype'] = challenge_token.type
+            reply['linotp_tokenserial'] = challenge_token.getSerial()
+            key = challenge_token.getSerial()
+            all_reply['challenges'][key] = reply
 
         # finally add the root challenge response with top transaction id and
         # message, that indicates that 'multiple challenges have been submitted

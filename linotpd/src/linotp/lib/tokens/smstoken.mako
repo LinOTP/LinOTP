@@ -82,7 +82,7 @@ $(document).ready(function () {
  </script>
 
 <form class="cmxform" id="form_smsconfig"><fieldset>
-<legend>${_("SMS Provider Config")}</legend>
+<legend>${_("SMS provider config")}</legend>
 <table><tr>
 	<td><label for="c_sms_provider">${_("Provider")}</label>: </td>
 	<td><input type="text" name="sms_provider" class="required"  id="c_sms_provider" size="37" maxlength="80"
@@ -120,7 +120,7 @@ function sms_enroll_setup_defaults(config,options){
     } else {
         $("[name='set_pin_rows']").show();
     }
-}	
+}
 
 /*
  * 'typ'_get_enroll_params()
@@ -157,7 +157,7 @@ function sms_get_enroll_params(){
     <td><label for="enroll_sms_desc" id='enroll_sms_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="enroll_sms_desc" id="enroll_sms_desc" value="webGUI_generated" class="text" /></td>
 </tr>
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="sms_pin1" id="sms_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('sms_pin1','sms_pin2');" name="pin1" id="sms_pin1"
@@ -256,9 +256,15 @@ function self_sms_submit(){
 		<tr>
 		<td><label for='sms_mobilephone'>${_("Your mobile phone number")}</label></td>
 		<td><input id='sms_mobilephone'
-					name='sms_mobilephone'
-					class="required ui-widget-content ui-corner-all"
-					value='${phonenumber}'/>
+                    name='sms_mobilephone'
+                    class="required ui-widget-content ui-corner-all"
+                    value='${phonenumber}'
+
+                    %if c.edit_sms == 0:
+                           readonly  disabled
+                    %endif
+
+                    />
 		</td>
 		</tr>
 		<tr>

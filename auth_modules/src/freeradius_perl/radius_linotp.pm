@@ -274,7 +274,7 @@ sub authenticate {
 
     my $ua     = LWP::UserAgent->new();
 	if ($check_ssl == false) {
-		$ua->ssl_opts( verify_hostname => 0 );
+		$ua->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);
 	}
     my $response = $ua->post( $URL, \%params );
     my $content  = $response->decoded_content();

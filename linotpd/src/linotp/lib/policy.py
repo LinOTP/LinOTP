@@ -349,14 +349,16 @@ def getPolicyDefinitions(scope=""):
         pol_keys = pol.keys()
 
         for pol_section in policy.keys():
-            ## if we have a dyn token definition of this section type
-            ## add this to this section - and make sure, that it is
-            ## then token type prefixed
+            # if we have a dyn token definition of this section type
+            # add this to this section - and make sure, that it is
+            # then token type prefixed
             if pol_section in pol_keys:
                 pol_entry = policy.get(pol_section)
                 for pol_def in pol_entry:
                     set_def = pol_def
-                    if pol_def.startswith(ttype) is not True:
+                    # check if the token type is already part of
+                    # the policy name
+                    if ttype.lower() not in set_def.lower():
                         set_def = '%s_%s' % (ttype, pol_def)
 
                     pol[pol_section][set_def] = pol_entry.get(pol_def)
@@ -673,10 +675,12 @@ def getPolicy(param, display_inactive=False):
             delete_it = True
             for u in pol_users:
                 # log.debug("[getPolicy] User: %s" % u )
-                if u == param['user'].lower():
+                if u == param['user'].lower() or u == '*':
                     # log.debug("[getPolicy] setting delete_it to false."
                     #          "We are using policy %s" % str(polname))
                     delete_it = False
+                    break
+
             if delete_it:
                 pol2delete.append(polname)
         for polname in pol2delete:
@@ -1800,7 +1804,7 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
                             % (policies['admin'], serial,
                                user.login, user.realm))
                 raise PolicyException(_("You do not have the administrative "
-                                      "right to copy pin of token %s. Check "
+                                      "right to copy PIN of token %s. Check "
                                       "the policies.") % serial)
 
         elif 'copytokenuser' == method:

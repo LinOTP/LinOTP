@@ -251,8 +251,8 @@ class ValidateController(BaseController):
 
             Session.commit()
 
-            qr = getParam(param, 'qr', optional)
-            if qr is not None and opt is not None and opt.has_key('message'):
+            qr = param.get('qr', None)
+            if qr and opt and 'message' in opt:
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt
@@ -510,8 +510,8 @@ class ValidateController(BaseController):
             #c.audit['info'] += "%s=%s, " % (k, value)
             Session.commit()
 
-            qr = getParam(param, 'qr', optional)
-            if qr is not None and opt is not None and opt.has_key('message'):
+            qr = param.get('qr', None)
+            if qr and opt and 'message' in opt:
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt
@@ -606,8 +606,8 @@ class ValidateController(BaseController):
             c.audit['success'] = ok
             Session.commit()
 
-            qr = getParam(param, 'qr', optional)
-            if qr is not None and opt is not None and opt.has_key('message'):
+            qr = param.get('qr', None)
+            if qr and opt and 'message' in opt:
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt

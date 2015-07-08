@@ -29,7 +29,7 @@
 
 
 %if c.scope == 'config.title' :
-${_("E-mail OTP token")}
+${_("E-mail OTP Token")}
 %endif
 
 
@@ -157,7 +157,7 @@ function email_get_enroll_params(){
     <td><label for="enroll_email_desc" id='enroll_email_desc_label'>${_("Description")}</label></td>
     <td><input type="text" name="enroll_email_desc" id="enroll_email_desc" value="webGUI_generated" class="text" /></td>
 </tr>
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr  name='set_pin_rows'>
     <td class="description"><label for="email_pin1" id="email_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin1" id="email_pin1"
@@ -247,6 +247,10 @@ function self_email_submit(){
                     name='email_address'
                     class="required ui-widget-content ui-corner-all"
                     value='${emailaddress}'
+
+                    %if c.edit_email == 0:
+                            readonly  disabled
+                    %endif
                     />
         </td>
         </tr>
