@@ -1006,8 +1006,8 @@ def auto_assignToken(passw, user, pin="", param=None):
                   "already has some tokens." % (user.login, user.realm))
         return False
 
-    matching_token = []
-    pin = ""
+    # List of (token, pin) pairs
+    matching_pairs = []
 
     # get all tokens of the users realm, which are not assigned
 
@@ -1029,14 +1029,15 @@ def auto_assignToken(passw, user, pin="", param=None):
                                           window=token.getOtpCountWindow())
 
         if r >= 0:
-            matching_token.append((token, pin))
+            matching_pairs.append((token, pin))
 
-    if len(matching_token) != 1:
+
+    if len(matching_pairs) != 1:
         log.warning("[auto_assignToken] %d tokens with "
-                    "the given OTP value found.", len(matching_token))
+                    "the given OTP value found.", len(matching_pairs))
         return False
 
-    token, pin = matching_token[0]
+    token, pin = matching_pairs[0]
     serial = token.getSerial()
 
     authUser = get_authenticated_user(user.login, user.realm, pin)
