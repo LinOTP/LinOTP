@@ -36,8 +36,6 @@ import logging
 import time
 import datetime
 
-import traceback
-
 from linotp.lib.config  import getFromConfig
 
 from linotp.lib.crypt   import decryptPin, encryptPin
@@ -580,9 +578,8 @@ class Ocra2TokenClass(TokenClass):
             ocraSuite.compute(c_data)
 
         except Exception as ex:
-            log.error("[Ocra2TokenClass] challenge verification failed: "
+            log.exception("[Ocra2TokenClass] challenge verification failed: "
                                 "%s,%r: " % (challenge, ex))
-            log.error("[Ocra2TokenClass] %r" % (traceback.format_exc()))
             ret = False
 
         return ret
@@ -765,7 +762,6 @@ class Ocra2TokenClass(TokenClass):
             ocraSuite.compute(c_data)
 
         except Exception as ex:
-            log.error("[Ocra2TokenClass] %r" % (traceback.format_exc()))
             raise Exception('[Ocra2TokenClass] Failed to create ocrasuite '
                                                         'challenge: %r' % (ex))
 
@@ -1087,7 +1083,7 @@ class Ocra2TokenClass(TokenClass):
             elif "false" == async.lower():
                 autosync = False
         except Exception as ex:
-            log.error('autosync check undefined %r' % (ex))
+            log.exception('autosync check undefined %r' % (ex))
             return res
 
         ' if autosync is not enabled: do nothing '
@@ -1132,7 +1128,7 @@ class Ocra2TokenClass(TokenClass):
                 otp0 = passw
                 count_0 = ocraSuite.checkOtp(otp0, counter, syncWindow, challenge, pin=ocraPin, timeshift=timeShift)
             except Exception as ex:
-                log.error(' error during autosync0 %r' % (ex))
+                log.exception(' error during autosync0 %r' % (ex))
 
             if count_0 != -1:
                 tinfo['lChallenge'] = {'otpc' : count_0}
@@ -1150,7 +1146,7 @@ class Ocra2TokenClass(TokenClass):
                 otp1 = passw
                 count_1 = ocraSuite.checkOtp(otp1, counter, syncWindow, challenge, pin=ocraPin, timeshift=timeShift)
             except Exception as ex:
-                log.error(' error during autosync1 %r' % (ex))
+                log.exception(' error during autosync1 %r' % (ex))
 
             if count_1 == -1:
                 del tinfo['lChallenge']
@@ -1232,8 +1228,7 @@ class Ocra2TokenClass(TokenClass):
                 log.info('rollout for token %r not completed' % (self.getSerial()))
 
         except Exception as ex:
-            log.error('[Ocra2TokenClass:statusValidationFail] Error during validation finalisation for token %r :%r' % (self.getSerial(), ex))
-            log.error("[Ocra2TokenClass:statusValidationFail] %r" % (traceback.format_exc()))
+            log.exception('[Ocra2TokenClass:statusValidationFail] Error during validation finalisation for token %r :%r' % (self.getSerial(), ex))
             raise Exception(ex)
 
         finally:
@@ -1390,7 +1385,7 @@ class Ocra2TokenClass(TokenClass):
                             ret = True
 
         except Exception as ex:
-            log.error('[Ocra2TokenClass:resync] unknown error: %r' % (ex))
+            log.exception('[Ocra2TokenClass:resync] unknown error: %r' % (ex))
             raise Exception('[Ocra2TokenClass:resync] unknown error: %s' % (ex))
 
         log.debug('[resync]: %r ' % (ret))

@@ -31,7 +31,6 @@ random, crypt, decrypt, sign
 import thread
 import time
 import logging
-import traceback
 
 from linotp.lib.crypt import zerome
 from linotp.lib.error import HSMException
@@ -127,8 +126,7 @@ class SecurityProvider(object):
                     except Exception as e:
                         error = ('[SecurityProvider:load_config] failed to '
                                  'identify config entry: %s ' % (unicode(key)))
-                        log.error(error)
-                        log.error("[SecurityProvider:load_config] %s" % traceback.format_exc())
+                        log.exception(error)
                         raise HSMException(error, id=707)
 
                     if self.config.has_key(id):
@@ -138,7 +136,7 @@ class SecurityProvider(object):
                         self.config[id] = {val:config.get(key) }
 
         except Exception as e:
-            log.error("[load_config] failed to identify module: %r " % e)
+            log.exception("[load_config] failed to identify module: %r " % e)
             error = "failed to identify module: %s " % unicode(e)
             raise HSMException(error, id=707)
 
@@ -232,8 +230,7 @@ class SecurityProvider(object):
             self.activeOne = hsm_id
         except Exception as e:
             error = "[setupModule] failed to load hsm : %s" % (unicode(e))
-            log.error(error)
-            log.error("[setupModule] %s" % traceback.format_exc())
+            log.exception(error)
             raise HSMException(error, id=707)
 
         finally:
@@ -273,8 +270,7 @@ class SecurityProvider(object):
                         hsm = self.loadSecurityModule(id)
                     except Exception as e:
                         error = u"%r" % e
-                        log.error("[createHSMPool] %r " % (e))
-                        log.error("[createHSMPool] %s" % traceback.format_exc())
+                        log.exception("[createHSMPool] %r " % (e))
                     pool.append({'obj': hsm , 'session': 0, 'error':error})
 
                 self.hsmpool[id] = pool

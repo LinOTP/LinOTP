@@ -151,7 +151,7 @@ def create_auth_cookie(config, user, client):
     try:
         enc = aes_encrypt_data(username + "|" + client, key, iv)
     except Exception as exx:
-        log.error("Failed to create encrypted cookie %r" % exx)
+        log.exception("Failed to create encrypted cookie %r" % exx)
 
     auth_cookie = "%s%s" % (binascii.hexlify(iv), binascii.hexlify(enc))
     return auth_cookie
@@ -177,7 +177,7 @@ def check_auth_cookie(config, cookie, user, client):
                                        binascii.unhexlify(iv))
         cookie_user, cookie_client = auth_cookie_val.split('|')
     except Exception as exx:
-        log.error("Failed to decode cookie - session key seems to be old")
+        log.exception("Failed to decode cookie - session key seems to be old")
         return False
 
     username = user

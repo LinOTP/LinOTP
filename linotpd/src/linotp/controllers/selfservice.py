@@ -236,8 +236,7 @@ class SelfserviceController(BaseController):
             raise acc
 
         except Exception as e:
-            log.error("[__before__] failed with error: %r" % e)
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__] failed with error: %r" % e)
             Session.rollback()
             Session.close()
             return sendError(response, e, context='before')
@@ -284,15 +283,13 @@ class SelfserviceController(BaseController):
 
         except webob.exc.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
-            log.error("[__after__::%r] webob.exception %r" % (action, acc))
-            log.error("[__after__] %s" % traceback.format_exc())
+            log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
             Session.close()
             raise acc
 
         except Exception as e:
-            log.error("[__after__] failed with error: %r" % e)
-            log.error("[__after__] %s" % traceback.format_exc())
+            log.exception("[__after__] failed with error: %r" % e)
             Session.rollback()
             Session.close()
             return sendError(response, e, context='after')
@@ -356,10 +353,9 @@ class SelfserviceController(BaseController):
             return res
 
         except CompileException as exx:
-            log.error("[load_form] compile error while processing %r.%r:" %
+            log.exception("[load_form] compile error while processing %r.%r:" %
                                                                 (tok, scope))
             log.error("[load_form] %r" % exx)
-            log.error("[load_form] %s" % traceback.format_exc())
             Session.rollback()
             raise Exception(exx)
 
@@ -367,8 +363,7 @@ class SelfserviceController(BaseController):
             Session.rollback()
             error = ('error (%r) accessing form data for: tok:%r, scope:%r'
                                 ', section:%r' % (exx, tok, scope, section))
-            log.error(error)
-            log.error("[load_form] %s" % traceback.format_exc())
+            log.exception(error)
             return '<pre>%s</pre>' % error
 
         finally:
@@ -481,8 +476,7 @@ class SelfserviceController(BaseController):
             return render('/selfservice/webprovisiongoogle.mako')
 
         except Exception as exx:
-            log.error("[webprovisiongoogletoken] failed with error: %r" % exx)
-            log.error("[webprovisiongoogletoken] %s" % traceback.format_exc())
+            log.exception("[webprovisiongoogletoken] failed with error: %r" % exx)
             return sendError(response, exx)
 
         finally:

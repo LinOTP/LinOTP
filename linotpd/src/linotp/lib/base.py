@@ -282,7 +282,7 @@ class BaseController(WSGIController):
             hsm = self.sep.getSecurityModule()
             c.hsm = hsm
         except Exception as exx:
-            log.error('failed to assign hsm device: %r' % exx)
+            log.exception('failed to assign hsm device: %r' % exx)
             raise exx
 
         l_config = initLinotpConfig()

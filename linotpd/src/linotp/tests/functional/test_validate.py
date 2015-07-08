@@ -1044,7 +1044,7 @@ please enable 'linotp.selfTest = True' in your *.ini
                     val = self.createTOtpValue(totp, T0)
                     assert otp == val
         except Exception as e:
-            log.error("Error in TOTP algorithm!!")
+            log.exception("Error in TOTP algorithm!!")
             raise Exception(e)
         return
 

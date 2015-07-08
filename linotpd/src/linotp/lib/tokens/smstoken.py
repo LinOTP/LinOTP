@@ -527,7 +527,7 @@ class SmsTokenClass(HmacTokenClass):
             # ## TODO - replace tokenLen
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.error("[getNextOtp] ValueError %r" % ex)
+            log.exception("[getNextOtp] ValueError %r" % ex)
             raise Exception(ex)
 
         secret_obj = self.token.getHOtpKey()
@@ -708,8 +708,7 @@ class SmsTokenClass(HmacTokenClass):
         try:
             sms = getSMSProviderClass(SMSProvider, SMSProviderClass)()
         except Exception as exc:
-            log.error("[sendSMS] Failed to load SMSProvider: %r" % exc)
-            log.error("[sendSMS] %s" % traceback.format_exc())
+            log.exception("[sendSMS] Failed to load SMSProvider: %r" % exc)
             raise exc
 
         try:
@@ -719,8 +718,7 @@ class SmsTokenClass(HmacTokenClass):
             log.debug("[sendSMS] config: %r" % config)
             sms.loadConfig(config)
         except Exception as exc:
-            log.error("[sendSMS] Failed to load SMSProviderConfig: %r" % exc)
-            log.error("[sendSMS] %s" % traceback.format_exc())
+            log.exception("[sendSMS] Failed to load SMSProviderConfig: %r" % exc)
             raise Exception("Failed to load SMSProviderConfig: %r" % exc)
 
         log.debug("[sendSMS] submitMessage: %r, to phone %r" % (message, phone))

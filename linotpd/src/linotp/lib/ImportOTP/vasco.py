@@ -45,7 +45,7 @@ try:
         log.info("loading vasco lib %s" % vasco_lib)
         vasco_dll = CDLL(vasco_lib)
 except Exception as  e:
-    log.error("cannot load vasco library: %s" % str(e))
+    log.exception("cannot load vasco library: %s" % str(e))
 
 
 def check_vasco(fn):

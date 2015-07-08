@@ -27,8 +27,6 @@
 
 import logging
 import copy
-import traceback
-
 
 import httplib2
 import urllib
@@ -402,9 +400,8 @@ class RemoteTokenClass(TokenClass):
                 self.remote_challenge_response = reply
 
         except Exception as exx:
-            log.error("[do_request] [RemoteToken] Error getting response from "
+            log.exception("[do_request] [RemoteToken] Error getting response from "
                       "remote Server (%r): %r" % (request_url, exx))
-            log.error("[do_request] %r" % (traceback.format_exc()))
 
         return (res, otp_count, reply)
 

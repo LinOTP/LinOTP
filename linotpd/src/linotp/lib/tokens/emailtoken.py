@@ -27,7 +27,6 @@
               - EmailTokenClass   (HOTP)
 """
 import logging
-import traceback
 import sys
 import datetime
 
@@ -335,8 +334,7 @@ class EmailTokenClass(HmacTokenClass):
             email_provider_class = self._getEmailProviderClass()
             email_provider = email_provider_class()
         except Exception as exc:
-            LOG.error("[sendEmail] Failed to load EmailProvider: %r" % exc)
-            LOG.error("[sendEmail] %s" % traceback.format_exc())
+            LOG.exception("[sendEmail] Failed to load EmailProvider: %r" % exc)
             raise exc
 
         ## now we need the config from the env

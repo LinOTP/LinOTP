@@ -347,7 +347,7 @@ class OcraSuite():
                 data_input.append(d)
 
         except Exception as e:
-            log.error('Failed to encode data %r: \n%r' % (e, h_data))
+            log.exception('Failed to encode data %r: \n%r' % (e, h_data))
 
         ## call the secret object to get the object
         ##    convert it to binary

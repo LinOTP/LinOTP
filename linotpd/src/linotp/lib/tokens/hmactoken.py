@@ -169,7 +169,7 @@ class HmacTokenClass(TokenClass):
         try:
             self.hashlibStr = getFromConfig("hotp.hashlib", u'sha1')
         except Exception as ex:
-            log.error('[init] Failed to get the hotp.hashlib (%r)' % (ex))
+            log.exception('[init] Failed to get the hotp.hashlib (%r)' % (ex))
             raise Exception(ex)
 
 
@@ -316,13 +316,13 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.getOtpLen())
         except ValueError as ex:
-            log.error('[checkOtp] failed to initialize otplen: ValueError %r %r' % (ex, self.token.LinOtpOtpLen))
+            log.exception('[checkOtp] failed to initialize otplen: ValueError %r %r' % (ex, self.token.LinOtpOtpLen))
             raise Exception(ex)
 
         try:
             self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
         except Exception as ex:
-            log.error('[checkOtp] failed to initialize hashlibStr: %r' % (ex))
+            log.exception('[checkOtp] failed to initialize hashlibStr: %r' % (ex))
             raise Exception(ex)
 
         secretHOtp = self.token.getHOtpKey()
@@ -554,7 +554,7 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.error("[getOtp]: Could not convert otplen - value error %r " % (ex))
+            log.exception("[getOtp]: Could not convert otplen - value error %r " % (ex))
             raise Exception(ex)
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
@@ -592,7 +592,7 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.error("[get_multi_otp]: Could not convert otplen - value error %r " % (ex))
+            log.exception("[get_multi_otp]: Could not convert otplen - value error %r " % (ex))
             raise Exception(ex)
         s_count = self.getOtpCount()
         secretHOtp = self.token.getHOtpKey()

@@ -85,15 +85,13 @@ class AccountController(BaseController):
 
         except webob.exc.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r" % (action, acc))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
             Session.close()
             raise acc
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
@@ -126,8 +124,7 @@ class AccountController(BaseController):
             return render('/selfservice/login.mako')
 
         except Exception as e:
-            log.error('[login] failed %r' % e)
-            log.error('[login] %s' % traceback.format_exc())
+            log.exception('[login] failed %r' % e)
             Session.rollback()
             return sendError(response, e)
 

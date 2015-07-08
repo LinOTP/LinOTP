@@ -363,8 +363,7 @@ class Audit(AuditBase):
             log.debug("[log] writing log done!")
 
         except Exception as  exx:
-            log.error("[log] error writing log message: %r" % exx)
-            log.error("[log] %s" % traceback.format_exc())
+            log.exception("[log] error writing log message: %r" % exx)
             self.session.rollback()
             raise exx
 

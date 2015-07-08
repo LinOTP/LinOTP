@@ -358,8 +358,7 @@ class TimeHmacTokenClass(HmacTokenClass):
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as ex:
-                log.error('[time2float] Error during conversion of datetime: %r' % (ex))
-                log.error("[time2float] %r" % traceback.format_exc())
+                log.exception('[time2float] Error during conversion of datetime: %r' % (ex))
                 raise Exception(ex)
         else:
             log.error("[time2float] invalid curTime: %s. You need to specify a datetime.datetime" % type(curTime))
@@ -518,7 +517,7 @@ class TimeHmacTokenClass(HmacTokenClass):
             elif "false" == async.lower():
                 autosync = False
         except Exception as e:
-            log.error('autosync check failed %r' % e)
+            log.exception('autosync check failed %r' % e)
             return res
 
         ' if autosync is not enabled: do nothing '

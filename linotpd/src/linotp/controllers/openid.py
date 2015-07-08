@@ -139,19 +139,16 @@ class OpenidController(BaseController):
             return response
 
         except PolicyException as pex:
-            log.error("[__before__::%r] policy exception %r" % (action, pex))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] policy exception %r" % (action, pex))
             return sendError(response, pex, context='before')
 
         except webob.exc.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r" % (action, acc))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] webob.exception %r" % (action, acc))
             raise acc
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             return sendError(response, exx, context='before')
 
         finally:
@@ -170,8 +167,7 @@ class OpenidController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__] exception %r" % (exx))
-            log.error("[__after__] %s" % traceback.format_exc())
+            log.exception("[__after__] exception %r" % (exx))
             self.storage.session.rollback()
             return sendError(response, exx, context='after')
 
@@ -561,8 +557,7 @@ class OpenidController(BaseController):
             do_redirect = url(str("%s?%s" % (redirect_to, urlencode(p))))
 
         except Exception as exx:
-            log.error("[check] openid/check failed: %r" % exx)
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[check] openid/check failed: %r" % exx)
             Session.rollback()
             return sendError(response, "openid/check failed: %r" % exx, 0)
 

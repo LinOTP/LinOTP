@@ -303,8 +303,7 @@ class RadiusTokenClass(RemoteTokenClass):
                 res = False
 
         except Exception as ex:
-            log.error("[do_request] [RadiusToken] Error contacting radius Server: %r" % (ex))
-            log.error("[do_request] [RadiusToken] %r" % traceback.format_exc())
+            log.exception("[do_request] [RadiusToken] Error contacting radius Server: %r" % (ex))
 
         return (res, otp_count, reply)
 

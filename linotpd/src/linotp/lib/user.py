@@ -26,7 +26,6 @@
 """ contains user - related functions """
 import logging
 import re
-import traceback
 import sys
 
 from linotp.lib.error   import UserError
@@ -187,8 +186,7 @@ def getUserResolverId(user, report=False):
         try:
             (uuserid, uidResolver, uidResolverClass) = getUserId(user)
         except Exception as e:
-            log.error('[getUserResolverId] for %r@%r failed: %r' % (user.login, user.realm, e))
-            log.error("[getUserResolverId] %s" % traceback.format_exc())
+            log.exception('[getUserResolverId] for %r@%r failed: %r' % (user.login, user.realm, e))
             if report == True:
                 raise UserError("getUserResolverId failed: %r" % e, id=1112)
 
@@ -314,7 +312,7 @@ def getUserFromRequest(request):
                        % d_auth)
 
     except Exception as e:
-        log.error("[getUserFromRequest] An error occurred when trying to fetch "
+        log.exception("[getUserFromRequest] An error occurred when trying to fetch "
                   "the user from the request: %r" % e)
         pass
 
@@ -539,9 +537,8 @@ def getResolversOfUser(user, use_default_realm=True):
                     log.debug("[getResolversOfUser] user %r not found"
                               " in resolver %r" % (login, realm_resolver))
             except Exception as e:
-                log.error("[getResolversOfUser] error searching user in"
+                log.exception("[getResolversOfUser] error searching user in"
                           " module %r:%r" % (module, e))
-                log.error("[getResolversOfUser] %s" % traceback.format_exc())
 
             log.debug("[getResolversOfUser] Resolvers: %r" % Resolvers)
 
@@ -598,7 +595,7 @@ def getUserId(user):
                 break;
 
         except Exception as e:
-            log.error("[getUserId] module %r: %r ]" % (module, e))
+            log.exception("[getUserId] module %r: %r ]" % (module, e))
             continue
 
     if (uid == ''):
@@ -698,13 +695,11 @@ def getUserList(param, search_user):
                 users.extend(ulist)
 
         except KeyError as exx:
-            log.error("[getUserList][ module %r:%r ]" % (module, exx))
-            log.error("[getUserList] %s" % traceback.format_exc())
+            log.exception("[getUserList][ module %r:%r ]" % (module, exx))
             raise exx
 
         except Exception as exx:
-            log.error("[getUserList][ module %r:%r ]" % (module, exx))
-            log.error("[getUserList] %s" % traceback.format_exc())
+            log.exception("[getUserList][ module %r:%r ]" % (module, exx))
             continue
 
     return users
@@ -752,13 +747,11 @@ def getUserListIterators(param, search_user):
             user_iters.append((uit, reso))
 
         except KeyError as exx:
-            log.error("[ module %r:%r ]" % (module, exx))
-            log.error("%s" % traceback.format_exc())
+            log.exception("[ module %r:%r ]" % (module, exx))
             raise exx
 
         except Exception as exx:
-            log.error("[ module %r:%r ]" % (module, exx))
-            log.error("%s" % traceback.format_exc())
+            log.exception("[ module %r:%r ]" % (module, exx))
             continue
 
     return user_iters
@@ -784,7 +777,7 @@ def getUserInfo(userid, resolver, resolverC):
         userInfo = y.getUserInfo(userid)
 
     except Exception as e:
-        log.error("[getUserInfo][ module %r notfound! :%r ]" % (module, e))
+        log.exception("[getUserInfo][ module %r notfound! :%r ]" % (module, e))
 
     return userInfo
 

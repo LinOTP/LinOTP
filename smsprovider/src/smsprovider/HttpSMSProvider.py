@@ -419,7 +419,7 @@ class HttpSMSProvider(ISMSProvider):
             ret = self._check_success(reply)
 
         except Exception as exc:
-            log.error("HttpSMSProvider %r" % exc)
+            log.exception("HttpSMSProvider %r" % exc)
             raise Exception("Failed to send SMS. %s" % str(exc))
 
         return ret
@@ -484,7 +484,7 @@ class HttpSMSProvider(ISMSProvider):
             ret = self._check_success(reply)
 
         except Exception as exc:
-            log.error("HttpSMSProvider %r" % exc)
+            log.exception("HttpSMSProvider %r" % exc)
             raise Exception("Failed to send SMS. %s" % str(exc))
 
         return ret

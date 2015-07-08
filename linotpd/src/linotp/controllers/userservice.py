@@ -48,7 +48,6 @@ Remarks:
 
 import copy
 import os
-import traceback
 import logging
 import base64
 
@@ -282,8 +281,7 @@ class UserserviceController(BaseController):
 
         except Exception as acc:
             # the exception, when an abort() is called if forwarded
-            log.error("[__after__::%r] webob.exception %r" % (action, acc))
-            log.error("[__after__] %s" % traceback.format_exc())
+            log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             raise acc
 
         finally:
@@ -450,8 +448,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             Session.rollback()
             error = ('error (%r) ' % exx)
-            log.error(error)
-            log.error("%s" % traceback.format_exc())
+            log.exception(error)
             return '<pre>%s</pre>' % error
 
         finally:
@@ -477,8 +474,7 @@ class UserserviceController(BaseController):
             return json.dumps(context, indent=3)
 
         except Exception as e:
-            log.error("failed with error: %r" % e)
-            log.error("%s" % traceback.format_exc())
+            log.exception("failed with error: %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -507,14 +503,12 @@ class UserserviceController(BaseController):
             return json.dumps(context, indent=3)
 
         except KeyError as err:
-            log.error("[context] failed with error: %r" % err)
-            log.error("[context] %s" % traceback.format_exc())
+            log.exception("[context] failed with error: %r" % err)
             Session.rollback()
             return sendError(response, "required parameter: %r" % err)
 
         except Exception as e:
-            log.error("[context] failed with error: %r" % e)
-            log.error("[context] %s" % traceback.format_exc())
+            log.exception("[context] failed with error: %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -583,10 +577,9 @@ class UserserviceController(BaseController):
             return res
 
         except CompileException as exx:
-            log.error("[load_form] compile error while processing %r.%r:" %
+            log.exception("[load_form] compile error while processing %r.%r:" %
                                                                 (tok, scope))
-            log.error("[load_form] %r" % exx)
-            log.error("[load_form] %s" % traceback.format_exc())
+            log.exception("[load_form] %r" % exx)
             Session.rollback()
             raise Exception(exx)
 
@@ -594,8 +587,7 @@ class UserserviceController(BaseController):
             Session.rollback()
             error = ('error (%r) accessing form data for: tok:%r, scope:%r'
                                 ', section:%r' % (exx, tok, scope, section))
-            log.error(error)
-            log.error("[load_form] %s" % traceback.format_exc())
+            log.exception(error)
             return '<pre>%s</pre>' % error
 
         finally:
@@ -644,14 +636,12 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[enable] policy failed %r" % pe)
-            log.error("[enable] %s" % traceback.format_exc())
+            log.exception("[enable] policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[enable] failed: %r" % e)
-            log.error("[enable] %s" % traceback.format_exc())
+            log.exception("[enable] failed: %r" % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -701,14 +691,12 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("policy failed %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("failed: %r" % e)
-            log.error("%s" % traceback.format_exc())
+            log.exception("failed: %r" % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -746,15 +734,13 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[userdelete] policy failed: %r" % pe)
-            log.error("[userdelete] %s" % traceback.format_exc())
+            log.exception("[userdelete] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[userdelete] deleting token %s of user %s failed! %r"
+            log.exception("[userdelete] deleting token %s of user %s failed! %r"
                       % (serial, c.user, e))
-            log.error("[userdelete] %s" % traceback.format_exc())
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -791,15 +777,13 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("error resetting token with serial %s: %r"
+            log.exception("error resetting token with serial %s: %r"
                       % (serial, e))
-            log.error("%s" % traceback.format_exc())
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -841,15 +825,13 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("unassigning token %s of user %s failed! %r"
+            log.exception("unassigning token %s of user %s failed! %r"
                        % (serial, c.user, e))
-            log.error("%s" % traceback.format_exc())
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -902,14 +884,12 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pex:
-            log.error("policy failed: %r" % pex)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pex)
             Session.rollback()
             return sendError(response, unicode(pex), 1)
 
         except Exception as exx:
-            log.error("Error setting OTP PIN: %r" % exx)
-            log.error("%s" % traceback.format_exc())
+            log.exception("Error setting OTP PIN: %r" % exx)
             Session.rollback()
             return sendError(response, exx, 1)
 
@@ -948,14 +928,12 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pex:
-            log.error("policy failed: %r" % pex)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pex)
             Session.rollback()
             return sendError(response, unicode(pex), 1)
 
         except Exception as exx:
-            log.error("Error setting the mOTP PIN %r" % exx)
-            log.error("%s" % traceback.format_exc())
+            log.exception("Error setting the mOTP PIN %r" % exx)
             Session.rollback()
             return sendError(response, exx, 1)
 
@@ -997,15 +975,13 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("error resyncing token with serial %s:%r"
+            log.exception("error resyncing token with serial %s:%r"
                        % (serial, e))
-            log.error("%s" % traceback.format_exc())
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -1059,14 +1035,12 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[userassign] policy failed: %r" % pe)
-            log.error("[userassign] %s" % traceback.format_exc())
+            log.exception("[userassign] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as exx:
-            log.error("[userassign] token assignment failed! %r" % exx)
-            log.error("[userassign] %s" % traceback.format_exc())
+            log.exception("[userassign] token assignment failed! %r" % exx)
             Session.rollback()
             return sendError(response, exx, 1)
 
@@ -1126,13 +1100,12 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as exx:
-            log.error("token getSerialByOtp failed! %r" % exx)
+            log.exception("token getSerialByOtp failed! %r" % exx)
             Session.rollback()
             return sendError(response, exx, 1)
 
@@ -1215,14 +1188,12 @@ class UserserviceController(BaseController):
                 return sendResult(response, ret, opt=response_detail)
 
         except PolicyException as pe:
-            log.error("[userinit] policy failed: %r" % pe)
-            log.error("[userinit] %s" % traceback.format_exc())
+            log.exception("[userinit] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[userinit] token initialization failed! %r" % e)
-            log.error("[userinit] %s" % traceback.format_exc())
+            log.exception("[userinit] token initialization failed! %r" % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -1376,14 +1347,12 @@ class UserserviceController(BaseController):
                                          'oathtoken' : ret})
 
         except PolicyException as pe:
-            log.error("[userwebprovision] policy failed: %r" % pe)
-            log.error("[userwebprovision] %s" % traceback.format_exc())
+            log.exception("[userwebprovision] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[userwebprovision] token initialization failed! %r" % e)
-            log.error("[userwebprovision] %s" % traceback.format_exc())
+            log.exception("[userwebprovision] token initialization failed! %r" % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -1450,14 +1419,12 @@ class UserserviceController(BaseController):
             return sendResult(response, ret , 0)
 
         except PolicyException as pe:
-            log.error("[usergetmultiotp] policy failed: %r" % pe)
-            log.error("[usergetmultiotp] %s" % traceback.format_exc())
+            log.exception("[usergetmultiotp] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
-            log.error("[usergetmultiotp] %s" % traceback.format_exc())
+            log.exception("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
             Session.rollback()
             return sendError(response, _(u"selfservice/usergetmultiotp failed: %s")
                              % unicode(e), 0)
@@ -1518,14 +1485,12 @@ class UserserviceController(BaseController):
             return json.dumps(res, indent=3)
 
         except PolicyException as pe:
-            log.error("[search] policy failed: %r" % pe)
-            log.error("[search] %s" % traceback.format_exc())
+            log.exception("[search] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as exx:
-            log.error("[search] audit/search failed: %r" % exx)
-            log.error("[search] %s" % traceback.format_exc())
+            log.exception("[search] audit/search failed: %r" % exx)
             Session.rollback()
             return sendError(response, _("audit/search failed: %s")
                                                         % unicode(exx), 0)
@@ -1623,14 +1588,12 @@ class UserserviceController(BaseController):
             return sendResult(response, {'activate': True, 'ocratoken': ret})
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("token initialization failed! %r" % e)
-            log.error(" %s" % traceback.format_exc())
+            log.exception("token initialization failed! %r" % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -1725,15 +1688,13 @@ class UserserviceController(BaseController):
             return sendResult(response, value, opt)
 
         except PolicyException as pe:
-            log.error("policy failed: %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
             error = "token finitialization failed! %r" % e
-            log.error(" %s" % traceback.format_exc())
-            log.error(error)
+            log.exception(error)
             Session.rollback()
             return sendError(response, error, 1)
 
@@ -1839,15 +1800,13 @@ class UserserviceController(BaseController):
             return sendResult(response, value, opt)
 
         except PolicyException as pe:
-            log.error("[userfinshocra2token] policy failed: %r" % pe)
-            log.error("[userfinshocratoken] %s" % traceback.format_exc())
+            log.exception("[userfinshocra2token] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
             error = "[userfinshocra2token] token initialization failed! %r" % e
-            log.error("[userfinshocra2token] %s" % traceback.format_exc())
-            log.error(error)
+            log.exception(error)
             Session.rollback()
             return sendError(response, error, 1)
 
@@ -1929,15 +1888,13 @@ class UserserviceController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[token_call] policy failed: %r" % pe)
-            log.error("[token_call] %s" % traceback.format_exc())
+            log.exception("[token_call] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[token_call] calling method %s.%s of user %s failed! %r"
+            log.exception("[token_call] calling method %s.%s of user %s failed! %r"
                       % (typ, method, c.user, e))
-            log.error("[token_call] %s" % traceback.format_exc())
             Session.rollback()
             return sendError(response, e, 1)
 

@@ -151,7 +151,7 @@ def load_environment(global_conf, app_conf):
         g = config['pylons.app_globals']
         g.security_provider.load_config(config)
     except Exception as e:
-        log.error("Failed to load security provider definition: %r" % e)
+        log.exception("Failed to load security provider definition: %r" % e)
         raise e
 
     # load the list of tokenclasses
@@ -166,7 +166,7 @@ def load_environment(global_conf, app_conf):
         g.setTokenprefixes(tpl)
 
     except Exception as e:
-        log.error("Failed to load token class list: %r" % e)
+        log.exception("Failed to load token class list: %r" % e)
         raise e
 
     # load the list of resolvers
@@ -179,7 +179,7 @@ def load_environment(global_conf, app_conf):
         g.setResolverTypes(rname)
 
     except Exception as exx:
-        log.error("Faild to load the list of resolvers: %r" % exx)
+        log.exception("Faild to load the list of resolvers: %r" % exx)
         raise exx
 
     # get the help url

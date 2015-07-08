@@ -47,8 +47,6 @@ import time
 import hashlib
 import datetime
 
-import traceback
-
 
 from linotp.lib.error import TokenAdminError
 from linotp.lib.error import ParameterError
@@ -719,7 +717,7 @@ class TokenClass(object):
         try:
             self.token.storeToken()
         except:
-            log.error('update failed')
+            log.exception('update failed')
             raise TokenAdminError("Token Fail Counter update failed", id=1106)
 
         return self.token.LinOtpFailCount
@@ -774,7 +772,7 @@ class TokenClass(object):
             try:
                 info = json.loads(tokeninfo)
             except Exception as e:
-                log.error('getTokenInfo %r' % (e))
+                log.exception('getTokenInfo %r' % (e))
 
         return info
 
@@ -1020,7 +1018,7 @@ class TokenClass(object):
             self.token.storeToken()
 
         except Exception as ex :
-            log.error("Token Counter update failed: %r" % (ex))
+            log.exception("Token Counter update failed: %r" % (ex))
             raise TokenAdminError("Token Counter update failed: %r" % (ex), id=1106)
 
         log.debug("[incOtpCounter] now got counter %s, %s" % (self.token.LinOtpCount, counter))
@@ -1614,7 +1612,7 @@ class OcraTokenClass(TokenClass):
             ocraSuite.compute(c_data)
 
         except Exception as ex:
-            log.error("[OcraTokenClass] %r" % (traceback.format_exc()))
+            log.exception("[OcraTokenClass]")
             raise Exception('[OcraTokenClass] Failed to create ocrasuite challenge: %r' % (ex))
 
         ##  save the object
@@ -1647,7 +1645,7 @@ class OcraTokenClass(TokenClass):
 
         except Exception as ex:
             ##  this might happen if we have a db problem or the uniqnes constrain does not fit
-            log.error("[OcraTokenClass] %r" % (traceback.format_exc()))
+            log.exception("[OcraTokenClass]")
             raise Exception('[OcraTokenClass] Failed to create challenge object: %s' % (ex))
 
         realm = None
@@ -1804,7 +1802,7 @@ class OcraTokenClass(TokenClass):
             elif "false" == async.lower():
                 autosync = False
         except Exception as ex:
-            log.error('autosync check undefined %r' % (ex))
+            log.exception('autosync check undefined %r' % (ex))
             return res
 
         ' if autosync is not enabled: do nothing '
@@ -1849,7 +1847,7 @@ class OcraTokenClass(TokenClass):
                 otp0 = passw
                 count_0 = ocraSuite.checkOtp(otp0, counter, syncWindow, challenge, pin=ocraPin, timeshift=timeShift)
             except Exception as ex:
-                log.error(' error during autosync0 %r' % (ex))
+                log.exception(' error during autosync0 %r' % (ex))
 
             if count_0 != -1:
                 tinfo['lChallenge'] = {'otpc' : count_0}
@@ -1867,7 +1865,7 @@ class OcraTokenClass(TokenClass):
                 otp1 = passw
                 count_1 = ocraSuite.checkOtp(otp1, counter, syncWindow, challenge, pin=ocraPin, timeshift=timeShift)
             except Exception as ex:
-                log.error(' error during autosync1 %r' % (ex))
+                log.exception(' error during autosync1 %r' % (ex))
 
             if count_1 == -1:
                 del tinfo['lChallenge']
@@ -1962,8 +1960,7 @@ class OcraTokenClass(TokenClass):
                 log.info('rollout for token %r not completed' % (self.getSerial()))
 
         except Exception as ex:
-            log.error('[OcraTokenClass:statusValidationFail] Error during validation finalisation for token %r :%r' % (self.getSerial(), ex))
-            log.error("[OcraTokenClass:statusValidationFail] %r" % (traceback.format_exc()))
+            log.exception('[OcraTokenClass:statusValidationFail] Error during validation finalisation for token %r :%r' % (self.getSerial(), ex))
             raise Exception(ex)
 
         finally:
@@ -2113,7 +2110,7 @@ class OcraTokenClass(TokenClass):
                             ret = True
 
         except Exception as ex:
-            log.error('[OcraTokenClass:resync] unknown error: %r' % (ex))
+            log.exception('[OcraTokenClass:resync] unknown error: %r' % (ex))
             raise Exception('[OcraTokenClass:resync] unknown error: %s' % (ex))
 
         log.debug('[resync]: %r ' % (ret))
@@ -2251,7 +2248,7 @@ class OcraTokenClass(TokenClass):
         try:
             ones = int(maxChallDef)
         except ValueError as ex:
-            log.error('[OcraTokrenClass:maxChallengeJanitor] Faild to convert OcraMaxChallenges value from config: %r :%r' % (maxChallDef, ex))
+            log.exception('[OcraTokrenClass:maxChallengeJanitor] Faild to convert OcraMaxChallenges value from config: %r :%r' % (maxChallDef, ex))
             ones = 3
 
         if ones <= 0:

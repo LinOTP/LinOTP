@@ -36,7 +36,6 @@ import sys
 import os
 from os import path, access, R_OK
 
-import traceback
 import getpass
 import ConfigParser
 import HTMLParser
@@ -179,8 +178,7 @@ def saveConfig(config_file, section, config_dict):
         config.write(cfgfile)
 
     except Exception as exx:
-        log.error("Failed to save config %r" % exx)
-        log.error(traceback.format_exc())
+        log.exception("Failed to save config %r" % exx)
 
     finally:
         if cfgfile is not None:
@@ -348,8 +346,7 @@ class RadiusClient(object):
                 res = False
 
         except Exception as exx:
-            log.error("Error contacting radius Server: %r" % (exx))
-            log.error(traceback.format_exc())
+            log.exception("Error contacting radius Server: %r" % (exx))
 
         return (res, opt)
 

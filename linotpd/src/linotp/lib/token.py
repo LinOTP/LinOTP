@@ -363,8 +363,7 @@ def initToken(param, user, tokenrealm=None):
     try:
         token.storeToken()
     except Exception as e:
-        log.error('[initToken] token create failed!')
-        log.error("[initToken] %r" % (traceback.format_exc()))
+        log.exception('[initToken] token create failed!')
         raise TokenAdminError("token create failed %r" % e, id=1112)
 
     log.debug("[initToken] end. created tokenObject %r and returning status %r "
@@ -892,7 +891,7 @@ def auto_enrollToken(passw, user, options=None):
     try:
         auto, token_type = linotp.lib.policy.get_auto_enrollment(user)
     except Exception as exx:
-        log.error("%r" % exx)
+        log.exception("%r" % exx)
         raise Exception("[auto_enrollToken] %r" % exx)
 
     if not auto:
@@ -966,7 +965,7 @@ def auto_enrollToken(passw, user, options=None):
             raise Exception(error)
 
     except Exception as exx:
-        log.error("%r" % exx)
+        log.exception("%r" % exx)
         # we have to commit our token delete as the rollback
         # on exception does not :-(
         Session.delete(tokenObj.token)
@@ -990,7 +989,7 @@ def auto_assignToken(passw, user, pin="", param=None):
     try:
         auto = linotp.lib.policy.get_autoassignment(user)
     except Exception as e:
-        log.error("[auto_assignToken] %r" % e)
+        log.exception("[auto_assignToken] %r" % e)
 
     # check if autoassignment is configured
     if not auto:
@@ -1057,7 +1056,7 @@ def auto_assignToken(passw, user, pin="", param=None):
         c.audit['token_type'] = token.getType()
         ret = True
     except Exception as e:
-        log.error("[auto_assignToken] Failed to assign token: %r" % e)
+        log.exception("[auto_assignToken] Failed to assign token: %r" % e)
         return False
 
     return ret
@@ -1102,7 +1101,7 @@ def assignToken(serial, user, pin, param=None):
     try:
         token.storeToken()
     except Exception as e:
-        log.error('[assign Token] update Token DB failed')
+        log.exception('[assign Token] update Token DB failed')
         raise TokenAdminError("Token assign failed for %s/%s : %r"
                               % (user.login, serial, e), id=1105)
 
@@ -1138,7 +1137,7 @@ def unassignToken(serial, user=None, pin=None):
     try:
         token.storeToken()
     except Exception as e:
-        log.error('[unassignToken] update token DB failed')
+        log.exception('[unassignToken] update token DB failed')
         raise TokenAdminError("Token unassign failed for %r/%r: %r"
                               % (user, serial, e), id=1105)
 
@@ -1212,7 +1211,7 @@ def checkYubikeyPass(passw):
     try:
         serialnum = "UBAM" + modhex_decode(modhex_serial)
     except TypeError as exx:
-        log.error("Failed to convert serialnumber: %r" % exx)
+        log.exception("Failed to convert serialnumber: %r" % exx)
         return res, opt
 
     #  build list of possible yubikey tokens
@@ -1434,7 +1433,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         except Exception as exx:
             # in case of a failure during checking token, we log the error and
             # continue with the next one
-            log.error("checking token %r failed: %r" % (token, exx))
+            log.exception("checking token %r failed: %r" % (token, exx))
             ret = -1
             reply = "%r" % exx
             continue
@@ -1966,7 +1965,7 @@ def removeToken(user=None, serial=None):
 
 
     except Exception as e:
-        log.error('[removeToken] update token DB failed')
+        log.exception('[removeToken] update token DB failed')
         raise TokenAdminError("removeToken: Token update failed: %r" % e, id=1132)
 
 
@@ -2695,7 +2694,7 @@ class TokenIterator(object):
                             if logRe.match(u'' + tokenUser) is not None:
                                 serials.append(ser)
                         except Exception as e:
-                            log.error('error no express %r ' % e)
+                            log.exception('error no express %r ' % e)
 
                     #  to prevent warning, we check is serials are found
                     #  SAWarning: The IN-predicate on

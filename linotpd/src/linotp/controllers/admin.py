@@ -83,7 +83,6 @@ from linotp.lib.ImportOTP import parseSafeNetXML, parseOATHcsv, ImportException,
 
 from tempfile import mkstemp
 import os
-import traceback
 
 
 # For logout
@@ -128,8 +127,7 @@ class AdminController(BaseController):
             return request
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
@@ -160,8 +158,7 @@ class AdminController(BaseController):
             return request
 
         except Exception as e:
-            log.error("[__after__] unable to create a session cookie: %r" % e)
-            log.error("[__after__] %s" % traceback.format_exc())
+            log.exception("[__after__] unable to create a session cookie: %r" % e)
             Session.rollback()
             return sendError(response, e, context='after')
 
@@ -218,8 +215,7 @@ class AdminController(BaseController):
             return sendResult(response, True)
 
         except Exception as e:
-            log.error("[getsession] unable to create a session cookie: %r" % e)
-            log.error("[getsession] %s" % traceback.format_exc())
+            log.exception("[getsession] unable to create a session cookie: %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -258,14 +254,12 @@ class AdminController(BaseController):
             return sendResult(response, ret)
 
         except PolicyException as pe:
-            log.error("policy failed %r" % pe)
-            log.error("%s" % traceback.format_exc())
+            log.exception("policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("failed: %r" % e)
-            log.error("%s" % traceback.format_exc())
+            log.exception("failed: %r" % e)
             Session.rollback()
             log.error('error getting token owner')
             return sendError(response, e, 1)
@@ -371,14 +365,12 @@ class AdminController(BaseController):
                 return sendResult(response, result)
 
         except PolicyException as pe:
-            log.error('[show] policy failed: %r' % pe)
-            log.error("[show] %s" % traceback.format_exc())
+            log.exception('[show] policy failed: %r' % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error('[show] failed: %r' % e)
-            log.error("[show] %s" % traceback.format_exc())
+            log.exception('[show] failed: %r' % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -439,14 +431,12 @@ class AdminController(BaseController):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.error("[remove] policy failed %r" % pe)
-            log.error("[remove] %s" % traceback.format_exc())
+            log.exception("[remove] policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[remove] failed! %r" % e)
-            log.error("[remove] %s" % traceback.format_exc())
+            log.exception("[remove] failed! %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -507,14 +497,12 @@ class AdminController(BaseController):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.error("[enable] policy failed %r" % pe)
-            log.error("[enable] %s" % traceback.format_exc())
+            log.exception("[enable] policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[enable] failed: %r" % e)
-            log.error("[enable] %s" % traceback.format_exc())
+            log.exception("[enable] failed: %r" % e)
             Session.rollback()
             log.error('[enable] error enabling token')
             return sendError(response, e, 1)
@@ -583,16 +571,14 @@ class AdminController(BaseController):
             return sendResult(response, ret, 1)
 
         except PolicyException as pe:
-            log.error("[disable] policy failed %r" % pe)
-            log.error("[disable] %s" % traceback.format_exc())
+            log.exception("[disable] policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
             c.audit['success'] = 0
             Session.rollback()
-            log.error('[getSerialByOtp] error: %r' % e)
-            log.error("[getSerialByOtp] %s" % traceback.format_exc())
+            log.exception('[getSerialByOtp] error: %r' % e)
             return sendError(response, e, 1)
 
         finally:
@@ -650,14 +636,12 @@ class AdminController(BaseController):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.error("[disable] policy failed %r" % pe)
-            log.error("[disable] %s" % traceback.format_exc())
+            log.exception("[disable] policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[disable] failed! %r" % e)
-            log.error("[disable] %s" % traceback.format_exc())
+            log.exception("[disable] failed! %r" % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -710,14 +694,12 @@ class AdminController(BaseController):
             return sendResult(response, {"unique":unique, "new_serial":new_serial}, 1)
 
         except PolicyException as pe:
-            log.error("[check_serial] policy failed %r" % pe)
-            log.error("[check_serial] %s" % traceback.format_exc())
+            log.exception("[check_serial] policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[check_serial] failed! %r" % e)
-            log.error("[check_serial] %s" % traceback.format_exc())
+            log.exception("[check_serial] failed! %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -863,14 +845,12 @@ class AdminController(BaseController):
                 return sendResult(response, ret, opt=response_detail)
 
         except PolicyException as pe:
-            log.error("[init] policy failed %r" % pe)
-            log.error("[init] %s" % traceback.format_exc())
+            log.exception("[init] policy failed %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[init] token initialization failed! %r" % e)
-            log.error("[init] %s" % traceback.format_exc())
+            log.exception("[init] token initialization failed! %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -936,14 +916,12 @@ class AdminController(BaseController):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.error('[unassign] policy failed %r' % pe)
-            log.error("[unassign] %s" % traceback.format_exc())
+            log.exception('[unassign] policy failed %r' % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[unassign] failed! %r" % e)
-            log.error("[unassign] %s" % traceback.format_exc())
+            log.exception("[unassign] failed! %r" % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -1004,14 +982,12 @@ class AdminController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[assign] policy failed %r' % pe)
-            log.error("[assign] %s" % traceback.format_exc())
+            log.exception('[assign] policy failed %r' % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e :
-            log.error('[assign] token assignment failed! %r' % e)
-            log.error("[assign] %s" % traceback.format_exc())
+            log.exception('[assign] token assignment failed! %r' % e)
             Session.rollback()
             return sendError(response, e, 0)
 
@@ -1096,15 +1072,13 @@ class AdminController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[setPin] policy failed %r, %r' % (msg, pe))
-            log.error("[setPin] %s" % traceback.format_exc())
+            log.exception('[setPin] policy failed %r, %r' % (msg, pe))
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
 
         except Exception as e :
-            log.error('[setPin] %s :%r' % (msg, e))
-            log.error("[setPin] %s" % traceback.format_exc())
+            log.exception('[setPin] %s :%r' % (msg, e))
             Session.rollback()
             return sendError(response, unicode(e), 0)
 
@@ -1387,14 +1361,12 @@ class AdminController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[set] policy failed: %s, %r' % (msg, pe))
-            log.error("[set] %s" % traceback.format_exc())
+            log.exception('[set] policy failed: %s, %r' % (msg, pe))
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e :
-            log.error('%s :%r' % (msg, e))
-            log.error("[set] %s" % traceback.format_exc())
+            log.exception('%s :%r' % (msg, e))
             Session.rollback()
             return sendError(response, e)
 
@@ -1464,14 +1436,12 @@ class AdminController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error('[resync] policy failed %r' % pe)
-            log.error("[resync] %s" % traceback.format_exc())
+            log.exception('[resync] policy failed %r' % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error('[resync] resyncing token failed %r' % e)
-            log.error("[resync] %s" % traceback.format_exc())
+            log.exception('[resync] resyncing token failed %r' % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -1567,14 +1537,12 @@ class AdminController(BaseController):
                                           rp=rp, page=page)
 
         except PolicyException as pe:
-            log.error('[userlist] policy failed %r' % pe)
-            log.error("[userlist] %s" % traceback.format_exc())
+            log.exception('[userlist] policy failed %r' % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[userlist] failed %r" % e)
-            log.error("[userlist] %s" % traceback.format_exc())
+            log.exception("[userlist] failed %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -1617,14 +1585,12 @@ class AdminController(BaseController):
             return sendResult(response, ret, 1)
 
         except PolicyException as pe:
-            log.error('[tokenrealm] policy failed %r' % pe)
-            log.error("[tokenrealm] %s" % traceback.format_exc())
+            log.exception('[tokenrealm] policy failed %r' % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error('[tokenrealm] error setting realms for token %r' % e)
-            log.error("[tokenrealm] %s" % traceback.format_exc())
+            log.exception('[tokenrealm] error setting realms for token %r' % e)
             Session.rollback()
             return sendError(response, e, 1)
 
@@ -1688,14 +1654,12 @@ class AdminController(BaseController):
             return sendResult(response, ret, opt=opt_result_dict)
 
         except PolicyException as pe:
-            log.error('[reset] policy failed %r' % pe)
-            log.error("[reset] %s" % traceback.format_exc())
+            log.exception('[reset] policy failed %r' % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as exx:
-            log.error("[reset] Error resetting failcounter %r" % exx)
-            log.error("[reset] %s" % traceback.format_exc())
+            log.exception("[reset] Error resetting failcounter %r" % exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1762,13 +1726,12 @@ class AdminController(BaseController):
                 return sendError(response, "copying token pin failed: %s" % err_string)
 
         except PolicyException as pe:
-            log.error("[losttoken] Error doing losttoken %r" % pe)
-            log.error("[losttoken] %s" % traceback.format_exc())
+            log.exception("[losttoken] Error doing losttoken %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[copyTokenPin] Error copying token pin")
+            log.exception("[copyTokenPin] Error copying token pin")
             Session.rollback()
             return sendError(response, e)
 
@@ -1835,13 +1798,12 @@ class AdminController(BaseController):
                 return sendError(response, "copying token user failed: %s" % err_string)
 
         except PolicyException as pe:
-            log.error("[losttoken] Error doing losttoken %r" % pe)
-            log.error("[losttoken] %s" % traceback.format_exc())
+            log.exception("[losttoken] Error doing losttoken %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[copyTokenUser] Error copying token user")
+            log.exception("[copyTokenUser] Error copying token user")
             Session.rollback()
             return sendError(response, e)
 
@@ -1897,14 +1859,12 @@ class AdminController(BaseController):
             return sendResult(response, res)
 
         except PolicyException as pe:
-            log.error("[losttoken] Error doing losttoken %r" % pe)
-            log.error("[losttoken] %s" % traceback.format_exc())
+            log.exception("[losttoken] Error doing losttoken %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[losttoken] Error doing losttoken %r" % e)
-            log.error("[losttoken] %s" % traceback.format_exc())
+            log.exception("[losttoken] Error doing losttoken %r" % e)
             Session.rollback()
             return sendError(response, unicode(e))
 
@@ -2141,14 +2101,12 @@ class AdminController(BaseController):
             return sendResultMethod(response, res)
 
         except PolicyException as pe:
-            log.error("[loadtokens] Failed checking policy: %r" % pe)
-            log.error("[loadtokens] %s" % traceback.format_exc())
+            log.exception("[loadtokens] Failed checking policy: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[loadtokens] failed! %r" % e)
-            log.error("[loadtokens] %s" % traceback.format_exc())
+            log.exception("[loadtokens] failed! %r" % e)
             Session.rollback()
             return sendErrorMethod(response, unicode(e))
 
@@ -2251,8 +2209,7 @@ class AdminController(BaseController):
             return sendResult(response, res)
 
         except Exception as e:
-            log.error("[testresolver] failed: %r" % e)
-            log.error("[testresolver] %s" % traceback.format_exc())
+            log.exception("[testresolver] failed: %r" % e)
             Session.rollback()
             return sendError(response, unicode(e), 1)
 
@@ -2299,7 +2256,7 @@ class AdminController(BaseController):
 
             if transid is None and user.isEmpty() and serial is None:
                 # # raise exception
-                log.error("[admin/checkstatus] : missing parameter: "
+                log.exception("[admin/checkstatus] : missing parameter: "
                              "transactionid, user or serial number for token")
                 raise ParameterError("Usage: %s" % description, id=77)
 
@@ -2349,14 +2306,12 @@ class AdminController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[checkstatus] policy failed: %r" % pe)
-            log.error("[checkstatus] %s" % traceback.format_exc())
+            log.exception("[checkstatus] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe))
 
         except Exception as exx:
-            log.error("[checkstatus] failed: %r" % exx)
-            log.error("[checkstatus] %s" % traceback.format_exc())
+            log.exception("[checkstatus] failed: %r" % exx)
             Session.rollback()
             return sendResult(response, unicode(exx), 0)
 
@@ -2394,9 +2349,8 @@ def iterate_users(user_iterators):
             # pass on to next iterator
             pass
         except Exception as exx:
-            log.error("Problem during iteration of userlist iterators: %r"
+            log.exception("Problem during iteration of userlist iterators: %r"
                        % exx)
-            log.error("%s" % traceback.format_exc())
 
     raise StopIteration()
 

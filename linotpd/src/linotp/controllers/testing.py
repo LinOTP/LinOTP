@@ -102,8 +102,7 @@ class TestingController(BaseController):
             return sendResult(response, ok, 0)
 
         except Exception as e:
-            log.error("[autosms] validate/check failed: %r", e)
-            log.error("[autosms] %s" % traceback.format_exc())
+            log.exception("[autosms] validate/check failed: %r", e)
             Session.rollback()
             return sendError(response, "validate/check failed:" + unicode(e), 0)
 
@@ -184,8 +183,7 @@ class TestingController(BaseController):
             return "Missing account info."
 
         except Exception as e:
-            log.error('[http2sms] %r' % e)
-            log.error("[http2sms] %s" % traceback.format_exc())
+            log.exception('[http2sms] %r' % e)
             Session.rollback()
             return sendError(response, unicode(e), 0)
 

@@ -263,7 +263,7 @@ def splitResolver(resolver):
         elif len(l) == 4:  # all the rest
             conf = l[3]
     except Exception as e:
-        log.error("[splitResolver] split of resolver failed %s : %r " % (reso, e))
+        log.exception("[splitResolver] split of resolver failed %s : %r " % (reso, e))
         raise Exception("invalid resolver class specification" + reso)
     return (package, module, class_, conf)
 
@@ -399,7 +399,7 @@ def deleteResolver(resolvername):
                 log.debug("[deleteResolver] removing key: %s" % entry)
                 res = True
         except Exception as e:
-            log.error("deleteResolver: %r" % e)
+            log.exception("deleteResolver: %r" % e)
             res = False
 
 
@@ -486,7 +486,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
             try:
                 resolver_clazz.setup(config=config, cache_dir=cache_dir)
             except Exception as exx:
-                log.error("failed to call setup of %r" % resolver_clazz)
+                log.exception("failed to call setup of %r" % resolver_clazz)
 
     return
 
@@ -508,7 +508,7 @@ def initResolvers():
         setattr(context, 'resolvers_loaded', {})
 
     except Exception as exx:
-        log.error("Failed to initialize resolver in context %r" % exx)
+        log.exception("Failed to initialize resolver in context %r" % exx)
     return
 
 # external lib/base.py
@@ -524,7 +524,7 @@ def closeResolvers():
                     resolver.close()
 
         except Exception as exx:
-            log.error("Failed to close resolver in context %r" % exx)
+            log.exception("Failed to close resolver in context %r" % exx)
     return
 
 
