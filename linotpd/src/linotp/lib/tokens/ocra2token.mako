@@ -28,21 +28,24 @@
 </%doc>
 
 %if c.scope == 'config.title' :
- ${_("OCRA2 settings")}
+ ${_("OCRA2 Token")}
 %endif
 
 
 %if c.scope == 'config' :
 
+
+<fieldset>
+	<legend>${_("OCRA2 token settings")}</legend>
 <table>
-	<tr><td><label for=ocra2_max_challenge>${_("maximum concurrent OCRA2 challenges")}</label></td>
+	<tr><td><label for=ocra2_max_challenge>${_("Maximum concurrent OCRA2 challenges")}</label></td>
 		<td><input type="text" id="ocra2_max_challenge" maxlength="4" class=integer
 			title='${_("This is the maximum concurrent challenges per OCRA2 Token.")}'/></td></tr>
 	<tr><td><label for=ocra2_challenge_timeout>${_("OCRA2 challenge timeout")}</label></td>
 		<td><input type="text" id="ocra2_challenge_timeout" maxlength="6"
 			title='${_("After this time a challenge can not be used anymore. Valid entries are like 1D, 2H or 5M where D=day, H=hour, M=minute.")}'></td></tr>
 </table>
-
+</fieldset>
 %endif
 
 
@@ -114,7 +117,7 @@ function ocra2_get_enroll_params(){
 	    <label for=ocra2_key_cb>${_("Generate OCRA2 key.")}</label></td>
 </tr>
 <tr>
-	<td><label for="ocrasuite_algorithm">${_("Ocra suite")}</label></td>
+	<td><label for="ocrasuite_algorithm">${_("OCRA suite")}</label></td>
 	<td><select name="algorithm" id='ocrasuite_algorithm' >
             <option selected value="OCRA-1:HOTP-SHA256-8:C-QN08">SHA256 - otplen 8 digits - numeric challenge 8 digits</option>
             <option value="OCRA-1:HOTP-SHA256-8:C-QA64">SHA256 - otplen 8 digits - numeric challenge 64 chars</option>
@@ -125,7 +128,7 @@ function ocra2_get_enroll_params(){
     <td><input type="text" name="enroll_ocra2_desc" id="enroll_ocra2_desc" value="webGUI_generated" class="text" /></td>
 </tr>
 
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="ocra2_pin1" id="ocra2_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin1" id="ocra2_pin1"

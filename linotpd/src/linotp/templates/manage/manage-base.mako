@@ -89,8 +89,8 @@ if isinstance(lang, list):
     <ul id='menu' class='sf-menu sf-vertical'>
         <li><a href='#'>${_("LinOTP Config")}</a>
             <ul>
-                <li><a href='#' id='menu_edit_resolvers'>${_("useridresolvers")}</a></li>
-                <li><a href='#' id='menu_edit_realms'>${_("realms")}</a></li>
+                <li><a href='#' id='menu_edit_resolvers'>${_("User ID Resolvers")}</a></li>
+                <li><a href='#' id='menu_edit_realms'>${_("Realms")}</a></li>
                 <li><a href='#' id='menu_system_config'>${_("System Config")}</a></li>
                 <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
                 <li><a href='#' id='menu_policies'>${_("Policies")}</a></li>
@@ -101,15 +101,15 @@ if isinstance(lang, list):
                 <li><a href='#' id='menu_tools_getserial'>${_("Get Serial by OTP")}</a></li>
                 <li><a href='#' id='menu_tools_copytokenpin'>${_("Copy Token PIN")}</a></li>
                 <li><a href='#' id='menu_tools_checkpolicy'>${_("Check Policy")}</a></li>
-                <li><a href='#' id='menu_tools_exporttoken'>${_("Export Token information")}</a></li>
-                <li><a href='#' id='menu_tools_exportaudit'>${_("Export Audit information")}</a></li>
+                <li><a href='#' id='menu_tools_exporttoken'>${_("Export Token Info")}</a></li>
+                <li><a href='#' id='menu_tools_exportaudit'>${_("Export Audit Trail")}</a></li>
             </ul>
         </li>
         <li><a href='#'>${_("Import Token File")}</a>
             <ul>
                 <li><a href='#' id='menu_load_aladdin_xml_tokenfile'>${_("SafeNet/ Aladdin XML")}</a></li>
-                <li><a href='#' id='menu_load_oath_csv_tokenfile'>${_("OATH csv")}</a></li>
-                <li><a href='#' id='menu_load_yubikey_csv_tokenfile'>${_("Yubikey csv")}</a></li>
+                <li><a href='#' id='menu_load_oath_csv_tokenfile'>${_("OATH CSV")}</a></li>
+                <li><a href='#' id='menu_load_yubikey_csv_tokenfile'>${_("Yubikey CSV")}</a></li>
 
             % for id in c.importers:
             <li><a href='#' id='menu_load_${id}'>${c.importers[id]}</a></li>
@@ -142,26 +142,26 @@ if isinstance(lang, list):
 <div id="left_and_right">
 <div id="sidebar">
     <div class="sel_box">
-        <fieldset name="${_('Selected user')}" class="ui-corner-all ui-widget-content">
-        <legend id="selected_users_header" class="legend">${_("Selected user")}</legend>
+        <fieldset name="${_('Selected User')}" class="ui-corner-all ui-widget-content">
+        <legend id="selected_users_header" class="legend">${_("Selected User")}</legend>
         <div id="selected_users" class="sel_user_box"> </div>
         </fieldset>
-        <fieldset name="${_('Selected tokens')}" class="ui-corner-all ui-widget-content">
-        <legend id="selected_tokens_header" class="legend">${_("Selected token")}</legend>
+        <fieldset name="${_('Selected Token')}" class="ui-corner-all ui-widget-content">
+        <legend id="selected_tokens_header" class="legend">${_("Selected Token")}</legend>
         <div id="selected_tokens" class='sel_tok_box'> </div>
         </fieldset>
     </div>
     <div id="realms">
     ${_("Realms")}: <select id="realm"> </select>
     </div>
-    <button class='action-button' id='button_enroll'>${_("enroll")}</button>
-    <button class='action-button' id='button_assign'>${_("assign")}</button>
-    <button class='action-button' id='button_unassign'>${_("unassign")}</button>
-    <button class='action-button' id='button_enable'>${_("enable")}</button>
-    <button class='action-button' id='button_disable'>${_("disable")}</button>
-    <button class='action-button' id='button_setpin'>${_("set PIN")}</button>
-    <button class='action-button' id='button_resetcounter'>${_("reset failcounter")}</button>
-    <button class='action-button' id='button_delete'>${_("delete")}</button>
+    <button class='action-button' id='button_enroll'>${_("Enroll")}</button>
+    <button class='action-button' id='button_assign'>${_("Assign")}</button>
+    <button class='action-button' id='button_unassign'>${_("Unassign")}</button>
+    <button class='action-button' id='button_enable'>${_("Enable")}</button>
+    <button class='action-button' id='button_disable'>${_("Disable")}</button>
+    <button class='action-button' id='button_setpin'>${_("Set PIN")}</button>
+    <button class='action-button' id='button_resetcounter'>${_("Reset Failcounter")}</button>
+    <button class='action-button' id='button_delete'>${_("Delete")}</button>
 </div> <!-- sidebar -->
 
 <div id="main">
@@ -206,10 +206,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <div id="tab_content_system_settings">
             <fieldset>
                 <table>
-                    <tr><td><label for="sys_splitAtSign">${_("splitAtSign")}</label>: </td>
+                    <tr><td><label for="sys_splitAtSign">${_("Split at @ sign (splitAtSign)")}</label>: </td>
                         <td><input type="checkbox" name="sys_splitAtSign" id="sys_splitAtSign" value="sys_splitAtSign"
                             title="${_('This will use the part right of an @-sign as realm')}"></td></tr>\
-                    <tr><td><label for="sys_allowSamlAttributes">${_("Return SAML Attributes")}</label>: </td>
+                    <tr><td><label for="sys_allowSamlAttributes">${_("Return SAML attributes")}</label>: </td>
                         <td><input type="checkbox" name="sys_allowSamlAttributes" id="sys_allowSamlAttributes" value="sys_allowSamlAttributes"
                             title="${_('The /validate/samlcheck controller will also return user attributes')}"></td></tr>\
                     <tr><td><label for="sys_failCounterInc">${_("FailCounterIncOnFalsePin")}</label>: </td>
@@ -240,14 +240,14 @@ ${c.version} --- &copy; ${c.licenseinfo}
             </fieldset>
             <fieldset>
                 <legend>${_("Authorization")}</legend>
-                    <label for=sys_mayOverwriteClient>${_("Override Authentication client")}:</label>
+                    <label for=sys_mayOverwriteClient>${_("Override authentication client")}:</label>
                     <input type='text' name='sys_mayOverwriteClient' id='sys_mayOverwriteClient' size='40'
                     title="${_('This is a comma separated list of clients, that may send another client IP for authorization policies.')}">
             </fieldset>
             <fieldset id='ocra_config'>
                 <legend>${_("OCRA settings")}</legend>
                 <table>
-                    <tr><td><label for=ocra_max_challenge>${_("maximum concurrent OCRA challenges")}</label></td>
+                    <tr><td><label for=ocra_max_challenge>${_("Maximum concurrent OCRA challenges")}</label></td>
                         <td><input type="text" id="ocra_max_challenge" maxlength="4" class=integer
                             title='${_("This is the maximum concurrent challenges per OCRA Token.")}'/></td></tr>
                     <tr><td><label for=ocra_challenge_timeout>${_("OCRA challenge timeout")}</label></td>
@@ -284,10 +284,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <fieldset>
                 <legend>${_("OCRA settings")}</legend>
                 <table>
-                    <tr><td><label for=ocra_default_suite>${_("default OCRA suite")}</label></td>
+                    <tr><td><label for=ocra_default_suite>${_("Default OCRA suite")}</label></td>
                         <td><input type="text" name="ocra_default_suite" id="ocra_default_suite" size='30' maxlength="40"
                             title="${_('This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-SHA256-8:C-QA08')}"></td></tr>
-                    <tr><td><label for=ocra_default_qr_suite>${_("default QR suite")}</label></td>
+                    <tr><td><label for=ocra_default_qr_suite>${_("Default QR suite")}</label></td>
                         <td><input type="text" name="ocra_default_qr_suite" id="ocra_default_qr_suite" maxlength=40 size=30
                             title='${_("This is the suite for newly enrolled QR tokens. Default is OCRA-1:HOTP-SHA256-6:C-QA64")}'></td></tr>
                 </table>
@@ -297,7 +297,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <fieldset>
                     <legend>${_("Selfservice portal")}</legend>
                     <table>
-                        <tr><td><label for=sys_realmbox>${_("display realm select box")}</label></td>
+                        <tr><td><label for=sys_realmbox>${_("Display realm select box")}</label></td>
                         <td><input type='checkbox' name='sys_realmbox' id='sys_realmbox' value='sys_realmbox'
                             title='${_("If checked a realm dropdown box will be displayed on the selfservice portal logon page.")}'></td></tr>
                     </table>
@@ -309,8 +309,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_system_settings() {
-        $("#dialog_system_settings" ).dialog( "option", "title", '${_("System config")}' );
-        $('#button_system_save .ui-button-text').html('${_("Save config")}');
+        $("#dialog_system_settings" ).dialog( "option", "title", '${_("System Config")}' );
+        $('#button_system_save .ui-button-text').html('${_("Save Config")}');
         $('#button_system_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -335,7 +335,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_token_settings() {
         $("#dialog_token_settings" ).dialog( "option", "title", '${_("Tokentype Configuration")}' );
-        $('#button_token_save .ui-button-text').html('${_("Save config")}');
+        $('#button_token_save .ui-button-text').html('${_("Save Config")}');
         $('#button_token_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -494,7 +494,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 </tr>
                 <tr><td> </td><td><input type='checkbox' id='ocra_key_cb' onclick="cb_changed('ocra_key_cb',['ocra_key','ocra_key_label','ocra_key_intro']);">
                     <label for=ocra_key_cb>${_("Generate OCRA key.")}</label></td></tr>
-                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
+                <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
                 <tr name="set_pin_rows" >
                     <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
@@ -531,7 +531,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         "You need to enter the current OTP value, and choose where you want to search for this token.")}</p>
         <p>${_("Beware: This can be time consuming!")}</p>
         <p><label for="tools_getserial_type">${_("Type")}</label> <input id='tools_getserial_type'></p>
-        <p><label for="tools_getserial_assigned">${_("Assigned Token")}</label>
+        <p><label for="tools_getserial_assigned">${_("Assigned token")}</label>
             <select id='tools_getserial_assigned'><option> </option>
                 <option value="1">${_("assigned")}</option>
                 <option value="0">${_("not assigned")}</option>
@@ -555,7 +555,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("You can enter the corresponding values and the system will check, if there is any matching policy for this scenario.")}</p>
     <form class="cmxform" id="form_check_policy">
     <table>
-        <tr><td><label for=cp_scope>${_("scope")}</label></td>
+        <tr><td><label for=cp_scope>${_("Scope")}</label></td>
             <td>
                 <select id='cp_scope'>
                     %for scope in c.polDefs.keys():
@@ -563,13 +563,13 @@ ${c.version} --- &copy; ${c.licenseinfo}
                     %endfor
                 </select>
             </td></tr>
-        <tr><td><label for="cp_realm">${_("realm")}</label></td>
+        <tr><td><label for="cp_realm">${_("Realm")}</label></td>
             <td><input id="cp_realm" class="required"></td></tr>
-        <tr><td><label for="cp_action">${_("action")}</label></td>
+        <tr><td><label for="cp_action">${_("Action")}</label></td>
             <td><input id="cp_action" class="required"></td></tr>
-        <tr><td><label for="cp_user">${_("user")}</label></td>
+        <tr><td><label for="cp_user">${_("User")}</label></td>
             <td><input id="cp_user" class="required"></td></tr>
-        <tr><td><label for="cp_client">${_("client")}</label></td>
+        <tr><td><label for="cp_client">${_("Client")}</label></td>
             <td><input id="cp_client"></td></tr>
     </table>
     <hr>
@@ -599,7 +599,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_export_token() {
-        $("#dialog_export_token" ).dialog( "option", "title", '${_("Export token information")}' );
+        $("#dialog_export_token" ).dialog( "option", "title", '${_("Export Token Info")}' );
         $('#button_export_token .ui-button-text').html('${_("Export")}');
     }
 </script>
@@ -620,7 +620,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_export_audit() {
-        $("#dialog_export_audit" ).dialog( "option", "title", '${_("Export audit information")}' );
+        $("#dialog_export_audit" ).dialog( "option", "title", '${_("Export Audit Trail")}' );
         $('#button_export_audit .ui-button-text').html('${_("Export")}');
     }
 </script>
@@ -630,8 +630,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_copy_token'>
     <p>${_("Here you can copy the OTP PIN from one token to the other.")}</p>
     <p>${_("Please enter the serial number of the token with the existing PIN and the serial number of the token, that should get the same PIN.")}</p>
-    <p><label for=copy_from_token>${_("from token")}</label> <input id='copy_from_token'></p>
-    <p><label for=copy_to_token>${_("to token")}</label> <input id='copy_to_token'></p>
+    <p><label for=copy_from_token>${_("From token")}</label> <input id='copy_from_token'></p>
+    <p><label for=copy_to_token>${_("To token")}</label> <input id='copy_to_token'></p>
 </div>
 
 <script>
@@ -650,7 +650,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <p>${_("Please choose the token file")}:<br>
         <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
         <p>
-            <label for=aladdin_hashlib>${_("Hash Algorithm")}:</label>
+            <label for=aladdin_hashlib>${_("Hash algorithm")}:</label>
              <select id='aladdin_hashlib' name=aladdin_hashlib >
                 <option value="auto">${_("automatic detection")}</option>
                 <option value="sha1">sha1</option>
@@ -671,8 +671,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_import_safenet() {
-        $("#dialog_import_safenet" ).dialog( "option", "title", '${_("Aladdin XML Token file")}' );
-        $('#button_aladdin_load .ui-button-text').html('${_("load token file")}');
+        $("#dialog_import_safenet" ).dialog( "option", "title", '${_("Aladdin XML Token File")}' );
+        $('#button_aladdin_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_aladdin_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -718,8 +718,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_import_pskc() {
-        $("#dialog_import_pskc" ).dialog( "option", "title", '${_("PSKC Key file")}' );
-        $('#button_pskc_load .ui-button-text').html('${_("load token file")}');
+        $("#dialog_import_pskc" ).dialog( "option", "title", '${_("PSKC Key File")}' );
+        $('#button_pskc_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_pskc_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -728,12 +728,20 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_import_oath'>
     <form id="load_tokenfile_form_oathcsv" action="/admin/loadtokens" method="post"
             enctype="multipart/form-data" onsubmit="return false;">
-        <p>${_("Here you can upload a csv file for your OATH token. The file is supposed to contain one token per line")}:</p>
+        <p>${_("Here you can upload a CSV file for your OATH token. The file is supposed to contain one token per line")}:</p>
         <p>${_("For HOTP and TOTP tokens:")}</p>
-        <p>${_("serial number, seed, type, otplen, timeStep")}</p>
+        <p>${_("Serial Number, Seed, Type, OTP Length, Time Step")}</p>
         <p>${_("For OCRA tokens:")}</p>
-        <p>${_("serial number, seed, type, ocrasuite")}</p>
-        <p>${_("type (default hotp), otplen (default 6), timeStep (default 30) and ocrasuite are optional.")}</p>
+        <p>${_("Serial Number, Seed, Type, Ocra Suite")}</p>
+        <fieldset>
+	        <legend>${_("Default Values:")}</legend>
+            <table>
+                <tr><td>${_("Type")}</td><td>-></td><td>${_("HOTP")}</td></tr>
+                <tr><td>${_("OTP Length")}</td><td>-></td><td>6</td></tr>
+                <tr><td>${_("Time Step")}</td><td>-></td><td>30</td></tr>
+                <tr><td>${_("OCRA Suite")}</td><td>-></td><td>${_("optional")}</td></tr>
+            </table>
+        </fieldset>
         <p>${_("Please choose the token file")}:
             <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
             <input name="type" type="hidden" value="oathcsv">\
@@ -749,8 +757,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_import_oath() {
-        $("#dialog_import_oath" ).dialog( "option", "title", '${_("OATH csv Token file")}' );
-        $('#button_oathcsv_load .ui-button-text').html('${_("load token file")}');
+        $("#dialog_import_oath" ).dialog( "option", "title", '${_("OATH CSV Token File")}' );
+        $('#button_oathcsv_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_oathcsv_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -759,7 +767,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_import_yubikey'>
     <form id="load_tokenfile_form_yubikeycsv" action="/admin/loadtokens" method="post"
              enctype="multipart/form-data" onsubmit="return false;">
-        <p>${_("Here you can upload a csv file for your Yubikey token. The file is supposed to contain one token per line")}:</p>
+        <p>${_("Here you can upload a CSV file for your Yubikey token. The file is supposed to contain one token per line")}:</p>
         <p>${_("Please choose the token file")}:
              <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
              <input name="type" type="hidden" value="yubikeycsv">\
@@ -776,8 +784,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_import_yubikey() {
-        $("#dialog_import_yubikey" ).dialog( "option", "title", '${_("Yubikey csv Token file")}' );
-        $('#button_yubikeycsv_load .ui-button-text').html('${_("load token file")}');
+        $("#dialog_import_yubikey" ).dialog( "option", "title", '${_("Yubikey CSV Token File")}' );
+        $('#button_yubikeycsv_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_yubikeycsv_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -802,13 +810,13 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_import_dpw() {
-        $("#dialog_import_dpw" ).dialog( "option", "title", '${_("Tagespasswort Token file")}' );
-        $('#button_dpw_load .ui-button-text').html('${_("load token file")}');
+        $("#dialog_import_dpw" ).dialog( "option", "title", '${_("Tagespasswort Token File")}' );
+        $('#button_dpw_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_dpw_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
 
-<!-- ##################### import eToken dat file ######################## -->
+<!-- ##################### import eToken DAT file ######################## -->
 <div id='dialog_import_dat'>
     <form id="load_tokenfile_form_dat" action="/admin/loadtokens" method="post"
             enctype="multipart/form-data" onsubmit="return false;">
@@ -832,8 +840,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_import_dat() {
-        $("#dialog_import_dat" ).dialog( "option", "title", '${_("eToken dat file")}' );
-        $('#button_dat_load .ui-button-text').html('${_("load token file")}');
+        $("#dialog_import_dat" ).dialog( "option", "title", '${_("eToken DAT File")}' );
+        $('#button_dat_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_dat_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -857,7 +865,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_feitian() {
         $("#dialog_import_feitian" ).dialog( "option", "title", '${_("Feitian XML Token file")}' );
-        $('#button_feitian_load .ui-button-text').html('${_("load token file")}');
+        $('#button_feitian_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_feitian_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -866,7 +874,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_import_vasco'>
     <form id="load_tokenfile_form_vasco" action="/admin/loadtokens" method="post"\
                 enctype="multipart/form-data" onsubmit="return false;">
-                <p>${_("Here you can upload your Vasco dpx file.")}</p>
+                <p>${_("Here you can upload your Vasco DPX file.")}</p>
                 <p>${_("Please choose the token file")}:<br>
                 <input name="file" type="file" size="30" maxlength="1000000" accept="text/*"></p>
                 <input name="type" type="hidden" value="vasco">
@@ -884,8 +892,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </div>
 <script>
     function translate_import_vasco() {
-        $("#dialog_import_vasco" ).dialog( "option", "title", '${_("Vasco dpx file")}' );
-        $('#button_vasco_load .ui-button-text').html('${_("load token file")}');
+        $("#dialog_import_vasco" ).dialog( "option", "title", '${_("Vasco DPX File")}' );
+        $('#button_vasco_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_vasco_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
@@ -928,7 +936,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </script>
 <!-- ######################### resolvers ############################## -->
 <div id='dialog_resolvers'>
-    <p>${_("Create a new or select one available UserIdResolver")}:</p>
+    <p>${_("Create a new or select one available User ID Resolver")}:</p>
     <div id='resolvers_list'> </div>
 </div>
 <script>
@@ -1062,10 +1070,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </div>
 <script>
     function translate_dialog_token_info() {
-        $("#dialog_token_info" ).dialog( "option", "title", '${_("Token info")}' );
+        $("#dialog_token_info" ).dialog( "option", "title", '${_("Token Info")}' );
         $('#button_ti_hashlib .ui-button-text').html('${_("Hashlib")}');
         $('#button_ti_close .ui-button-text').html('${_("Close")}');
-        $('#button_ti_otplength .ui-button-text').html('${_("OTP length")}');
+        $('#button_ti_otplength .ui-button-text').html('${_("OTP Length")}');
         $('#button_ti_counterwindow .ui-button-text').html('${_("Counter Window")}');
         $('#button_ti_failcount .ui-button-text').html('${_("Max Fail Counter")}');
         $('#button_ti_countauthmax .ui-button-text').html('${_("Max Auth Count")}');

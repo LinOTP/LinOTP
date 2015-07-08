@@ -197,7 +197,7 @@ class RemoteTokenClass(TokenClass):
         local_check = False
         if 1 == int(self.getFromTokenInfo("remote.local_checkpin")):
             local_check = True
-        log.debug(" local checking pin? %r" % local_check)
+        log.debug(" local checking PIN? %r" % local_check)
 
         return local_check
 
