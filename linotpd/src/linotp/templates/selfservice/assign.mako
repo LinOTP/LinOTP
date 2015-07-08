@@ -39,7 +39,7 @@
         <td><label for=otp_serial>${_("The OTP value of the Token to assign")}</label></td>
         <td><input type='text' id='otp_serial' class='text ui-widget-content ui-corner-all' value='' size="20" />
             <button class='action-button' id='button_otp_serial' onclick="getserial(); return false">
-                ${_("determine serial number")}
+                ${_("Determine Serial Number")}
             </button>
         </td>
         </tr>
@@ -50,7 +50,7 @@
         <td><input type='text' id='assign_serial' class="text ui-widget-content ui-corner-all" value='' /></td>
         </tr>
         </table>
-        <button class='action-button' id='button_assign' onclick="assign(); return false">${_("assign Token")}</button>
+        <button class='action-button' id='button_assign' onclick="assign(); return false">${_("Assign Token")}</button>
     </fieldset>
     </form>
 </div>

@@ -1800,7 +1800,7 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
                             % (policies['admin'], serial,
                                user.login, user.realm))
                 raise PolicyException(_("You do not have the administrative "
-                                      "right to copy pin of token %s. Check "
+                                      "right to copy PIN of token %s. Check "
                                       "the policies.") % serial)
 
         elif 'copytokenuser' == method:

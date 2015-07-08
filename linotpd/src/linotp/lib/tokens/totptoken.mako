@@ -29,7 +29,7 @@
 
 
 %if c.scope == 'config.title' :
- ${_("TOTP Token Settings")}
+ ${_("TOTP Token")}
 %endif
 
 
@@ -78,7 +78,7 @@ function totp_get_config_params(){
 </script>
 
 <fieldset>
-	<legend>${_("TOTP settings")}</legend>
+	<legend>${_("TOTP token settings")}</legend>
 	<table>
 		<tr><td><label for='totp_timeStep'> ${_("time step")}: </label></td>
 		<td><input type="text" name="tot_timeStep" class="required"  id="totp_timeStep" size="2" maxlength="2"
@@ -288,7 +288,7 @@ $('#totp_google_compliant').click(function() {
 
 
 
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>                 
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows" >
     <td class="description"><label for="totp_pin1" id="totp_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin1" id="totp_pin1"

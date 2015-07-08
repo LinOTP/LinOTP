@@ -96,42 +96,44 @@ $("#form_config_remote").validate({
 </script>
 
 <form class="cmxform" id='form_config_remote'>
+<fieldset>
+	<legend>${_("Remote token settings")}</legend>
 	<table>
 	<tr>
 	<td><label for="sys_remote_server" title='${_("You need to enter the remote LinOTP server like https://remotelinotp")}'>
-		${_("REMOTE server")}</label></td>
+		${_("Remote server")}</label></td>
 	<td><input class="required" type="text" name="sys_remote_server" id="sys_remote_server"
 		class="text ui-widget-content ui-corner-all"/></td>
 	</tr>
 
 	<tr><td><label for="sys_remote_local_checkpin" title='${_("The PIN can either be verified on this local LinOTP server or forwarded to the remote server")}'>
-		${_("check PIN")}</label></td>
+		${_("Check PIN")}</label></td>
 	<td><select name="sys_remote_local_checkpin" id="sys_remote_local_checkpin"
 		title='${_("The PIN can either be verified on this local LinOTP server or on the remote server")}'>
-			<option value=0>${_("on REMOTE server")}</option>
+			<option value=0>${_("on remote server")}</option>
 			<option value=1>${_("locally")}</option>
 		</select></td>
 	</tr>
 
 	<tr>
-	<td><label for="sys_remote_realm">${_("Remote Realm")}</label></td>
+	<td><label for="sys_remote_realm">${_("Remote realm")}</label></td>
 	<td><input type="text" name="sys_remote_realm" id="sys_remote_realm"
 		class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
 
 	<tr>
-	<td><label for="sys_remote_resConf">${_("Remote Resolver")}</label></td>
+	<td><label for="sys_remote_resConf">${_("Remote resolver")}</label></td>
 	<td><input type="text" name="sys_remote_resConf" id="sys_remote_resConf"
 		class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
 	</table>
-
+</fieldset>
 </form>
 %endif
 
 
 %if c.scope == 'enroll.title' :
-${_("REMOTE token")}
+${_("Remote token")}
 %endif
 
 %if c.scope == 'enroll' :
@@ -262,7 +264,7 @@ $("#form_enroll_token").validate({
 		value="${sys_remote_server}" class="text ui-widget-content ui-corner-all"/></td>
 	</tr><tr>
 	<td><label for="remote_local_checkpin" title='{_("The PIN can either be verified on this local LinOTP server or on the remote LinOTP server")}'>
-		${_("check PIN")}</label></td>
+		${_("Check PIN")}</label></td>
 	<td><select name="remote_local_checkpin" id="remote_local_checkpin"
 		title='${_("The PIN can either be verified on this local LinOTP server or on the remote LinOTP server")}'>
 		<option ${sys_checkpin_remote} value=0>${_("remotely")}</option>
@@ -286,7 +288,7 @@ $("#form_enroll_token").validate({
 	<td><input type="text" name="remote_resconf" id="remote_resconf"
 		value="${sys_remote_resConf}" class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>	
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 	<tr name="set_pin_rows">
     <td class="description"><label for="remote_pin1" id="remote_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('remote_pin1','remote_pin2');" name="pin1" id="remote_pin1"

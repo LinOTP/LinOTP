@@ -46,8 +46,8 @@ def getKnownTypes():
 def getImportText():
     return { 'feitian' : 'Feitian XML',
         'pskc' : 'OATH compliant PSKC',
-        'dpw' : 'Tagespasswort file',
-        'dat' : 'eToken dat file',
+        'dpw' : 'Tagespasswort Token File',
+        'dat' : 'eToken DAT File',
         'vasco' : 'Vasco DPX' }
 
 def create_static_password(key_hex):
