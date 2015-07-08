@@ -313,6 +313,7 @@ def main():
                                  default="5000",
                                  ini_file=ini_file))
 
+    SQL_EXPORT = None
     if export_csv:
         SQL_EXPORT = config_get(section="DEFAULT",
                                 option="linotpAudit.janitor.dir",
