@@ -2453,8 +2453,8 @@ msgstr ""
 msgid "- Select Temporary Token Type -"
 msgstr "- Temporären Token Typ wählen -"
 
-msgid "Password Token"
-msgstr "Passwort Token"
+msgid "Simple Password Token"
+msgstr "Einfacher Passwort Token"
 
 msgid "Email Token"
 msgstr "E-Mail Token"
@@ -3314,6 +3314,9 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "Password Token"
+#~ msgstr "Passwort Token"
 
 #~ msgid "__undefined__"
 #~ msgstr "__inaktiv__"

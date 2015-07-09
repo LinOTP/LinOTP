@@ -1046,7 +1046,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             ${_("- Select Temporary Token Type -")}
         </option>
         <option value="password_token">
-            ${_("Password Token")}
+            ${_("Simple Password Token")}
         </option>
         <option value="email_token">
             ${_("Email Token")}
