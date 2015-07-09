@@ -1636,8 +1636,6 @@ class TestChallengeResponseController(TestController):
 
         self.assertTrue('"value": true' in response, response)
 
-        self.delete_policy('otpPin')
-
         counter2 = self.do_auth("shortpin", counter2 + 1 , otpkey=otpkey2,
                                 user="passthru_user1@myDefRealm")
 

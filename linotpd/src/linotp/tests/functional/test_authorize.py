@@ -575,8 +575,6 @@ class TestAuthorizeController(TestController):
         '''
         Auth Test 31: setrealm for a user in the not default realm.
         '''
-        self.delete_policy("tokentypepolicy1")
-
         self.setPolicy({"name" : "setrealm",
                          "scope":"authorization",
                          "realm":"*",
