@@ -127,17 +127,6 @@ class TestGetOtpController(TestController):
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
         assert '"value": true' in response
 
-
-    def removeTokenBySerial(self, serial):
-
-        parameters = {
-                      "serial": serial,
-                      }
-
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        return response
-
-
     def setTokenRealm(self, serial, realms):
         parameters = { "serial" : serial,
                        "realms" : realms}

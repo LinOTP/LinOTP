@@ -127,15 +127,6 @@ class TestAdminController(TestController):
         #log.error("response %s\n",response)
         self.assertTrue('"value": true' in response, response)
 
-    def removeTokenBySerial(self, serial):
-
-        parameters = {
-                      "serial": serial,
-                      }
-
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        return response
-
     def removeTokenByUser(self, user):
         ### final delete all tokens of user root
         parameters = {
@@ -151,7 +142,7 @@ class TestAdminController(TestController):
         return response
 
     def test_0000_000(self):
-        self.deleteAllTokens()
+        self.delete_all_token()
 
     def test_set(self):
         self.createToken()
@@ -188,8 +179,7 @@ class TestAdminController(TestController):
         self.assertTrue('"set OtpLen": 3' in response, response)
         self.assertTrue('"set MaxFailCount": 3' in response, response)
 
-        response = self.removeTokenBySerial("F722362")
-        self.assertTrue('"value": 1' in response, response)
+        self.delete_token("F722362")
         response = self.removeTokenByUser("root")
         self.assertTrue('"value": 2' in response, response)
 
@@ -296,9 +286,9 @@ class TestAdminController(TestController):
         self.assertTrue('"value": true' in response, response)
 
 
-        self.removeTokenBySerial("F722364")
-        self.removeTokenBySerial("F722363")
-        self.removeTokenBySerial("F722362")
+        self.delete_token("F722364")
+        self.delete_token("F722363")
+        self.delete_token("F722362")
 
     def test_resync_sha256(self):
         self.createTokenSHA256(serial="SHA256")
@@ -307,7 +297,7 @@ class TestAdminController(TestController):
         response = self.app.get(url(controller="admin", action="resync"), params=parameters)
 
         self.assertTrue('"value": true' in response, response)
-        self.removeTokenBySerial("SHA256")
+        self.delete_token("SHA256")
 
 
     def test_setPin(self):
@@ -321,7 +311,7 @@ class TestAdminController(TestController):
         self.assertTrue('"set sopin": 1' in response, response)
         self.assertTrue('"set userpin": 1' in response, response)
 
-        self.removeTokenBySerial("003e808e")
+        self.delete_token("003e808e")
 
 
     def test_assign(self):
@@ -371,7 +361,7 @@ class TestAdminController(TestController):
 
 
 
-        self.removeTokenBySerial(serial)
+        self.delete_token(serial)
 
     def test_assign_umlaut(self):
         self.createTokenSHA256(serial="umlauttoken")
@@ -381,7 +371,7 @@ class TestAdminController(TestController):
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-        self.removeTokenBySerial("umlauttoken")
+        self.delete_token("umlauttoken")
         return
 
     def test_losttoken_email(self):
@@ -442,8 +432,8 @@ class TestAdminController(TestController):
         ttype = data.get("LinOtp.TokenType", '')
         self.assertEqual(ttype, 'email', response)
 
-        self.removeTokenBySerial(token_name)
-        self.removeTokenBySerial(lost_token_name)
+        self.delete_token(token_name)
+        self.delete_token(lost_token_name)
         return
 
     def test_losttoken_sms(self):
@@ -504,8 +494,8 @@ class TestAdminController(TestController):
         ttype = data.get("LinOtp.TokenType", '')
         self.assertEqual(ttype, 'sms', response)
 
-        self.removeTokenBySerial(token_name)
-        self.removeTokenBySerial(lost_token_name)
+        self.delete_token(token_name)
+        self.delete_token(lost_token_name)
         return
 
     def test_losttoken_fail(self):
@@ -567,8 +557,8 @@ class TestAdminController(TestController):
         ttype = data.get("LinOtp.TokenType", '')
         self.assertEqual(ttype, 'pw', response)
 
-        self.removeTokenBySerial(token_name)
-        self.removeTokenBySerial(lost_token_name)
+        self.delete_token(token_name)
+        self.delete_token(lost_token_name)
         return
 
     def test_enroll_umlaut(self):
@@ -582,7 +572,7 @@ class TestAdminController(TestController):
                       }
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
         self.assertTrue('"value": true' in response, response)
-        self.removeTokenBySerial("umlauttoken")
+        self.delete_token("umlauttoken")
 
     def test_session(self):
         '''

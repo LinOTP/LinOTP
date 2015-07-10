@@ -44,7 +44,7 @@ class TestYubikeyController(TestController):
 
     def tearDown(self):
         for serial in self.serials:
-            self.removeTokenBySerial(serial)
+            self.delete_token(serial)
         self.__deleteAllRealms__()
         self.__deleteAllResolvers__()
         TestController.tearDown(self)

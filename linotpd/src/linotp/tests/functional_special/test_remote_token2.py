@@ -81,7 +81,7 @@ class TestRemoteToken2(TestController):
         Init the tests....
         '''
         self.deleteAllPolicies()
-        self.deleteAllTokens()
+        self.delete_all_token()
 
         self.__deleteAllRealms__()
         self.__deleteAllResolvers__()

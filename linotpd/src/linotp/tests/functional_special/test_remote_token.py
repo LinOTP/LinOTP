@@ -82,7 +82,7 @@ class TestRemoteToken(TestController):
         Init the tests....
         '''
         self.deleteAllPolicies()
-        self.deleteAllTokens()
+        self.delete_all_token()
 
         self.__createResolvers__()
         self.__createRealms__()
@@ -275,15 +275,6 @@ class TestRemoteToken(TestController):
         self.assertTrue('"value": true' in response, response)
         return serial
 
-    def delete_tokens(self, serial):
-        ##
-        param_local_1 = {'serial' : serial}
-
-        response = self.app.get(url(controller='admin', action='remove'),
-                                params=param_local_1)
-        self.assertTrue('"value": 1' in response, response)
-        return
-
     def test_07_fix_12061(self):
         '''
         ticket 12061: timeout with remote tokens: many tokens + unicode pins
@@ -343,7 +334,7 @@ class TestRemoteToken(TestController):
             self.assertTrue('"value": true' in response, response)
 
         for serial in serials:
-            self.delete_tokens(serial)
+            self.delete_token(serial)
 
         return
 
