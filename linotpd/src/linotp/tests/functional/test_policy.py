@@ -2791,6 +2791,158 @@ class TestPolicies(TestController):
 
         return
 
+    def test_712b_autoassignment_for_users(self):
+        '''
+        Policy 712:\
+        Testing scope=enrollment, autoassignment(as true) for different users
+
+        Remark: added multiple tokens to the test case
+                useing the autoassignment policy without value
+
+        max1/password1
+        max2/password2
+        '''
+
+        tokens = {
+            'token1': {'type': 'hmac',
+                       'otpkey': 'd9848218d9977592fa70522579ec00e30adc490a',
+                       'otpval': '585489',
+                    },
+            'token2': {'type': 'hmac',
+                       'otpkey': '6b9c172fd7a521e57891f758141ce66741694c59',
+                       'otpval': '843851',
+                    },
+            }
+
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params={'name': 'autoassignment_user',
+                                       'scope': 'enrollment',
+                                       'realm': 'myOtherRealm',
+                                       'user': 'max1',
+                                       'action': 'autoassignment',
+                                       'client': '',
+                                       'selftest_admin': 'superadmin',
+                                       })
+
+        self.assertTrue('"status": true' in response, response)
+
+        # generate dummy tokens from template token1
+        token_template = tokens['token1']
+
+        for i in range(0, 5):
+            serial = "token0%d" % i
+            descr = copy.deepcopy(token_template)
+            descr['otpkey'] = "%s%d" % (token_template['otpkey'][:-1], i)
+            tokens[serial] = descr
+
+        for i in range(0, 5):
+            serial = "token1%d" % i
+            descr = copy.deepcopy(token_template)
+            descr['otpkey'] = "%s%d" % (token_template['otpkey'][:-1], i)
+            tokens[serial] = descr
+
+        for serial, descr in tokens.items():
+        # enroll tokens in realm myOtherRealm
+            params = {'type': 'hmac',
+                    'serial': serial,
+                    'otpkey': descr['otpkey'],
+                    'realm': 'myOtherRealm',
+                    'selftest_admin': 'superadmin'
+                    }
+            response = self.app.get(url(controller='admin', action='init'),
+                                        params=params)
+
+            self.assertTrue('"value": true' in response, response)
+
+        for serial, descr in tokens.items():
+            # set realm of tokens
+            params = {'serial': serial,
+                    'realms': 'myOtherRealm',
+                    'selftest_admin': 'superadmin'
+                    }
+            response = self.app.get(url(controller='admin',
+                                        action='tokenrealm'),
+                                    params=params)
+
+            self.assertTrue('"status": true' in response, response)
+            self.assertTrue('"value": 1' in response, response)
+
+            # check tokens in realm
+            params = {'selftest_admin': 'superadmin',
+                      'serial': serial,
+                    }
+            response = self.app.get(url(controller='admin', action='show'),
+                                params=params)
+
+            serial_str = '"LinOtp.TokenSerialnumber": "%s"' % serial
+            self.assertTrue(serial_str in response, response)
+            self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
+            self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
+            self.assertTrue('"User.description": ""' in response, response)
+            self.assertTrue('"LinOtp.IdResClass": ""' in response, response)
+
+            self.assertTrue('"myotherrealm"' in response, response)
+
+        # authenticate max1, gets the token assigned.
+        serial = 'token1'
+        descr = tokens[serial]
+        params = {'user': 'max1',
+                  'realm': 'myotherrealm',
+                  'pass': 'password%s' % descr['otpval']
+                  }
+        response = self.app.get(url(controller='validate', action='check'),
+                                params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        # check tokens belongs to max
+        params = {'selftest_admin': 'superadmin',
+                  'serial': serial,
+                }
+        response = self.app.get(url(controller='admin', action='show'),
+                            params=params)
+
+        serial_str = '"LinOtp.TokenSerialnumber": "%s"' % serial
+        self.assertTrue(serial_str in response, response)
+        self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
+        self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
+        self.assertTrue('"User.username": "max1"' in response, response)
+        self.assertTrue('"myotherrealm"' in response, response)
+
+        serial = 'token2'
+        descr = tokens[serial]
+        params = {'user': 'max2',
+                  'realm': 'myotherrealm',
+                  'pass': 'password%s' % descr['otpval']
+                  }
+
+        # max 2 can not autoassign a token pw2
+        response = self.app.get(url(controller='validate', action='check'),
+                                params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        # delete the tokens of the user
+        for serial in tokens.keys():
+            params = {'serial': serial,
+                    'selftest_admin': 'superadmin'
+                    }
+            response = self.app.get(url(controller='admin', action='remove'),
+                                    params=params)
+
+            self.assertTrue('"status": true' in response, response)
+
+        # delete the policy
+        params = {'name': 'autoassignment_user',
+                'selftest_admin': 'superadmin'
+                }
+        response = self.app.get(url(controller='system', action='delPolicy'),
+                                params=params)
+
+        self.assertTrue('"status": true' in response, response)
+
+        return
+
     def test_713_losttoken_for_users(self):
         '''
         Policy 713: Testing scope=enrollment, losttoken for different users.

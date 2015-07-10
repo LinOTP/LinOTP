@@ -201,8 +201,8 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'in case of an autoassignement with a remotetoken, '
                         'the credentials are forwarded'},
             'autoassignment': {
-				'type': 'int',
-                'value': [6, 8, 32, 48],
+				'type': 'bool',
+                #'value': [6, 8, 32, 48],
                 'desc': 'users can assign a token just by using the '
                             'unassigned token to authenticate.'},
 
@@ -752,11 +752,18 @@ def getPolicyActionValue(policies, action, max=True, String=False):
     if String:
         ret = ""
     for _polname, pol in policies.items():
-        for a in [p.strip() for p in pol['action'].split(',')]:
+        actions = [p.strip() for p in pol['action'].split(',')]
+        for a in actions:
             log.debug("[getPolicyActionValue] Investigating %s (string=%s)"
                       % (a, unicode(String)))
-            split_action = [ca.strip() for ca in a.rsplit('=', 1)]
-            if len(split_action) > 1:
+
+            # if there is a boolean action, there is only the test for
+            # existance, which here should return true
+            if  '=' not in a:
+                if action == a:
+                    ret = True
+            else:
+                split_action = [ca.strip() for ca in a.split('=', 1)]
                 (name, value) = split_action
                 log.debug("[getPolicyActionValue] splitting <<%s>> <<%s>>"
                           % (name, unicode(value)))
@@ -1143,24 +1150,28 @@ def get_autoassignment(user):
     The function returns true, if autoassignment is defined.
     '''
     ret = False
-    otplen = 6
 
     pol = get_client_policy(get_client(), scope='enrollment',
                             realm=user.realm, user=user.login, userObj=user)
 
     if len(pol) > 0:
-        otplen = getPolicyActionValue(pol, "autoassignment")
-        log.debug("[get_autoassigmnet] got the otplen = %s" % str(otplen))
-        if type(otplen) == int and otplen > 0:
+        val = getPolicyActionValue(pol, "autoassignment")
+        # with  LinOTP 2.7 the autassign policy is treated as boolean
+        if val == True:
+            ret = True
+        # for backwar compatibility, we accept any values
+        # other than -1, which indicates an error
+        elif val != -1:
             ret = True
 
-    return ret, otplen
+    log.debug("got the autoassignement %r", ret)
+    return ret
 
 
 def get_auto_enrollment(user):
     '''
     this function checks the policy scope=enrollment, action=autoenrollment
-    This policy policy returns the tokentyp: sms or email 
+    This policy policy returns the tokentyp: sms or email
     The function returns true, if autoenrollment is defined.
     '''
     ret = False
@@ -1401,7 +1412,7 @@ def checkOTPPINPolicy(pin, user):
                                  'letters. Check policy otp_pin_contents.')}
             if (policy_n and not contains_n):
                 return {'success': False,
-                        'error': _('The provided PIN does not contain any ' 
+                        'error': _('The provided PIN does not contain any '
                                  'numbers. Check policy otp_pin_contents.')}
             if (policy_s and not contains_s):
                 return {'success': False,
@@ -2255,7 +2266,7 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
             pol_action = MAP_TYPE_GETOTP_ACTION.get(ttype, "")
             admin_user = getUserFromRequest(request)
             if pol_action == "":
-                raise PolicyException( _("There is no policy gettoken/"
+                raise PolicyException(_("There is no policy gettoken/"
                                       "max_count definable for the "
                                       "tokentype %r") % ttype)
 
