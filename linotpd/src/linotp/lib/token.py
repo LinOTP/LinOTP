@@ -722,9 +722,8 @@ class TokenHandler(object):
         if param is None:
             param = {}
 
-        # Fixme: circle dependency
         try:
-            auto, _otplen = linotp.lib.policy.get_autoassignment(user)
+            auto = linotp.lib.policy.get_autoassignment(user)
         except Exception as exx:
             log.error("[auto_assignToken] %r" % exx)
 

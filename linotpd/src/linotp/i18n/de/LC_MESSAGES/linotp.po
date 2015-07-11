@@ -2487,8 +2487,8 @@ msgstr ""
 msgid "- Select Temporary Token Type -"
 msgstr "- Temporären Token Typ wählen -"
 
-msgid "Password Token"
-msgstr "Passwort Token"
+msgid "Simple Password Token"
+msgstr "Einfacher Passwort Token"
 
 msgid "Email Token"
 msgstr "E-Mail Token"
@@ -3401,6 +3401,9 @@ msgstr ""
 
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
+
+#~ msgid "Password Token"
+#~ msgstr "Passwort Token"
 
 #~ msgid "__undefined__"
 #~ msgstr "__inaktiv__"

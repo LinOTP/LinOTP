@@ -407,7 +407,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
-        <br>Stefan Pietsch, Eric Sesterhenn
+        <br>Stefan Pietsch, Eric Sesterhenn, Marian Pascalau
     </p>
 
 </div>
@@ -1076,7 +1076,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             ${_("- Select Temporary Token Type -")}
         </option>
         <option value="password_token">
-            ${_("Password Token")}
+            ${_("Simple Password Token")}
         </option>
         <option value="email_token">
             ${_("Email Token")}

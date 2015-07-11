@@ -196,6 +196,10 @@ class IdResolver (UserIdResolver):
         """
         import crypt
 
+        if type(password) is unicode:
+            log.debug("Password is a unicode string. Encoding to UTF-8 for \
+                       crypt.crypt() function.")
+            password = password.encode('utf-8')
         log.info("[checkPass] checking password for user uid %s" % uid)
         cryptedpasswd = self.passDict[uid]
         log.debug("[checkPass] We found the crypted pass %s for uid %s"

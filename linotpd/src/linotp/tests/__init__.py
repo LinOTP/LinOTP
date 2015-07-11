@@ -97,28 +97,13 @@ class TestController(unittest2.TestCase):
         wsgiapp = pylons.test.pylonsapp
         self.app = webtest.TestApp(wsgiapp)
         self.session = 'justatest'
+        self.resolvers = {} # Set up in __createResolvers__
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         unittest2.TestCase.__init__(self, *args, **kwargs)
 
         self.appconf = config
 
-        self.resolvers_params = {
-        'myDefRes': {
-            'name'      : 'myDefRes',
-            'fileName'  : '%(here)s/../data/testdata/def-passwd',
-            'type'      : 'passwdresolver',
-            },
-        'myOtherRes' : {
-            'name'      : 'myOtherRes',
-            'fileName'  : '%(here)s/../data/testdata/myDom-passwd',
-            'type'      : 'passwdresolver',
-            }
-        }
-        self.resolvers = {
-         'myOtherRes': 'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
-         'myDefRes': 'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
-        }
 
 
     @classmethod
@@ -393,15 +378,70 @@ class TestController(unittest2.TestCase):
         policies = body.get('result', {}).get('value', {}).keys()
 
         for policy in policies:
-            self.delPolicy(policy)
+            self.delete_policy(policy)
 
         return
 
-    def delPolicy(self, name='otpPin'):
+    def create_policy(self, params):
+        """
+        Create a policy. Following keys are expected in params: name, scope,
+        action, user, realm, client and time
+
+        user, realm, client and time can be omitted and will then default to *,
+        *, '' and ''
+        """
+        lparams = {
+            'user': '*',
+            'realm': '*',
+            'client': '',
+            'time': '',
+            }
+        lparams.update(params)
+        expected_keys = set(
+            ['name', 'scope', 'action', 'user', 'realm', 'client', 'time']
+            )
+        assert set(lparams.keys()) == expected_keys, "Some key is missing to create a policy"
+        response = self.make_system_request('setPolicy', lparams)
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        expected_value = {
+            u'setPolicy %s' % params['name']: {
+                u'realm': True,
+                u'active': True,
+                u'client': True,
+                u'user': True,
+                u'time': True,
+                u'action': True,
+                u'scope': True
+                }
+            }
+        self.assertDictEqual(expected_value, content['result']['value'])
+
+    def delete_policy(self, name):
+        """
+        Delete the policy with the given name
+        """
+        assert name, "Policy 'name' can't be empty or None"
         params = {
             'name': name,
             }
-        return self.make_system_request('delPolicy', params)
+        response = self.make_system_request('delPolicy', params)
+        content = TestController.get_json_body(response)
+        expected_value = {
+            u'delPolicy': {
+                u'result': {
+                    u'linotp.Policy.%s.action' % name: True,
+                    u'linotp.Policy.%s.active' % name: True,
+                    u'linotp.Policy.%s.client' % name: True,
+                    u'linotp.Policy.%s.realm' % name: True,
+                    u'linotp.Policy.%s.scope' % name: True,
+                    u'linotp.Policy.%s.time' % name: True,
+                    u'linotp.Policy.%s.user' % name: True
+                    }
+                }
+            }
+        self.assertTrue(content['result']['status'])
+        self.assertDictEqual(expected_value, content['result']['value'])
 
     def deleteAllTokens(self):
         ''' get all tokens and delete them '''
@@ -432,17 +472,43 @@ class TestController(unittest2.TestCase):
         return response
 
     def __createResolvers__(self):
-        '''
-        create all base test resolvers
-        '''
+        """
+        Create 2 PasswdIdResolvers named myDefRes and myOtherRes
+        """
 
-        params = self.resolvers_params['myDefRes']
-        resp = self.createResolver(name='myDefRes', params=params)
-        assert('"value": true' in resp)
+        resolver_params = {
+            'myDefRes': {
+                'name'      : 'myDefRes',
+                'fileName'  : '%(here)s/../data/testdata/def-passwd',
+                'type'      : 'passwdresolver',
+                },
+            'myOtherRes' : {
+                'name'      : 'myOtherRes',
+                'fileName'  : '%(here)s/../data/testdata/myDom-passwd',
+                'type'      : 'passwdresolver',
+                }
+            }
+        self.resolvers = {
+            'myOtherRes': 'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
+            'myDefRes': 'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
+            }
+        params = resolver_params['myDefRes']
+        response = self.createResolver(
+            name='myDefRes',
+            params=params,
+            )
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        self.assertTrue(content['result']['value'])
 
-        params = self.resolvers_params['myOtherRes']
-        resp = self.createResolver(name='myOtherRes', params=params)
-        assert('"value": true' in resp)
+        params = resolver_params['myOtherRes']
+        response = self.createResolver(
+            name='myOtherRes',
+            params=params,
+            )
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        self.assertTrue(content['result']['value'])
 
     def createResolver(self, name, params):
         param = copy.deepcopy(params)
@@ -464,40 +530,51 @@ class TestController(unittest2.TestCase):
         return resp
 
     def __createRealms__(self):
-        '''
+        """
             Idea: build out of two resolvers
                 3 realms
                 - 1 per resolver
                 - 1 which contains both
             Question:
                 search in the mix for the user root must find 2 users
-        '''
+        """
 
-        resp = self.createRealm(realm='myDefRealm',
-                                resolvers=self.resolvers['myDefRes'])
-        assert('"value": true' in resp)
+        # Create 'myDefRealm' realm
+        response = self.createRealm(
+            realm='myDefRealm',
+            resolvers=self.resolvers['myDefRes'],
+            )
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        self.assertTrue(content['result']['value'])
 
-        resp = self.make_system_request('getRealms', {})
-        assert('"default": "true"' in resp)
+        # Create 'myOtherRealm' realm
+        response = self.createRealm(
+            realm='myOtherRealm',
+            resolvers=self.resolvers['myOtherRes'],
+            )
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        self.assertTrue(content['result']['value'])
 
-        resp = self.createRealm(realm='myOtherRealm',
-                                resolvers=self.resolvers['myOtherRes'])
-        assert('"value": true' in resp)
+        # Create mixed realm
+        response = self.createRealm(
+            realm='myMixRealm',
+            resolvers=','.join(self.resolvers.values()),
+            )
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        self.assertTrue(content['result']['value'])
 
-        resp = self.createRealm(realm='myMixRealm',
-                                resolvers=','.join(self.resolvers.values()))
-        assert('"value": true' in resp)
-
-        resp = self.make_system_request('getRealms', {})
-        #assert('"default": "true"' in resp)
-
-        resp = self.make_system_request('getDefaultRealm', {})
-        #assert('"default": "true"' in resp)
-
-        resp = self.make_system_request('getConfig', {})
-        #assert('"default": "true"' in resp)
-
-
+        # Assert 'myDefRealm' is default
+        response = self.make_system_request('getRealms', {})
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        realms = content['result']['value']
+        self.assertEqual(len(realms), 3)
+        self.assertIn('mydefrealm', realms)
+        self.assertIn('default', realms['mydefrealm'])
+        self.assertTrue(realms['mydefrealm']['default'])
 
 ###eof#########################################################################
 
