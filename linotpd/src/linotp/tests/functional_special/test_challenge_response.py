@@ -191,8 +191,8 @@ class TestChallengeResponseController(TestController):
         This sets up all the resolvers and realms
         '''
         TestController.setUp(self)
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
 
         if hasattr(self, "policies") is False:
             setattr(self, "policies", [])
@@ -204,7 +204,7 @@ class TestChallengeResponseController(TestController):
         self.patch_sms = None
 
         self.delete_all_token()
-        self.deleteAllPolicies()
+        self.delete_all_policies()
 
         if nose_config and 'radius' in nose_config:
             self.radius_authport = nose_config['radius']['authport']
@@ -225,11 +225,11 @@ class TestChallengeResponseController(TestController):
             self.patch_smtp.stop()
         if self.patch_sms is not None:
             self.patch_sms.stop()
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
-    def deleteAllPolicies(self):
+    def delete_all_policies(self):
         '''
         '''
         response = self.make_system_request(action='getPolicy')

@@ -81,11 +81,11 @@ class TestRemoteToken(TestController):
         '''
         Init the tests....
         '''
-        self.deleteAllPolicies()
+        self.delete_all_policies()
         self.delete_all_token()
 
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
 
         return
 

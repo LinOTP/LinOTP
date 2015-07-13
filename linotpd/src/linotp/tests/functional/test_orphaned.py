@@ -373,8 +373,8 @@ class TestOrphandTokens(TestController):
         '''
         self.setUpSQL()
 
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
 
         resolverName = 'MySQLResolver'
@@ -426,8 +426,8 @@ class TestOrphandTokens(TestController):
         '''
         self.setUpSQL()
 
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
 
         resolverName = 'MySQLResolver'
@@ -484,8 +484,8 @@ class TestOrphandTokens(TestController):
 
         self.setUpSQL()
 
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
         resolverName = 'MySQLResolver'
         realmName = 'sqlrealm'.lower()
