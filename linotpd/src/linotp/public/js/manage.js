@@ -4801,7 +4801,7 @@ function view_user() {
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Username'), name : 'username', width : 90, sortable : true, align:"left"},
-                {display: i18n.gettext('User ID Resolver'), name : 'useridresolver', width : 200, sortable : true, align:"left"},
+                {display: i18n.gettext('UserIdResolver'), name : 'useridresolver', width : 200, sortable : true, align:"left"},
                 {display: i18n.gettext('Surname'), name : 'surname', width : 100, sortable : true, align:"left"},
                 {display: i18n.gettext('Given Name'), name : 'givenname', width : 100, sortable : true, align:"left"},
                 {display: i18n.gettext('Email'), name : 'email', width : 100, sortable : false, align:"left"},
