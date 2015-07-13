@@ -443,33 +443,34 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['status'])
         self.assertDictEqual(expected_value, content['result']['value'])
 
-    def deleteAllTokens(self):
-        ''' get all tokens and delete them '''
+    def delete_all_token(self):
+        """
+        Get all token and delete them
+        """
+        serials = set()
 
-        serials = []
-
-        response = self.make_admin_request('show', {})
-        self.assertTrue('"status": true' in response, response)
-
-        body = json.loads(response.body)
-        tokens = body.get('result', {}).get('value', {}).get('data', {})
-        for token in tokens:
-            serial = token.get("LinOtp.TokenSerialnumber")
-            serials.append(serial)
+        response = self.make_admin_request('show', params={})
+        content = TestController.get_json_body(response)
+        err_msg = "Error getting token list. Response %s" % (content)
+        self.assertTrue(content['result']['status'], err_msg)
+        data = content['result']['value']['data']
+        for entry in data:
+            serials.add(entry['LinOtp.TokenSerialnumber'])
 
         for serial in serials:
-            self.removeTokenBySerial(serial)
+            self.delete_token(serial)
 
-        return
-
-    def removeTokenBySerial(self, serial):
+    def delete_token(self, serial):
         ''' delete a token by its serial number '''
-
+        assert serial, "serial can not be empty or None"
         params = {
             'serial': serial,
             }
-        response = self.make_admin_request('remove', params)
-        return response
+        response = self.make_admin_request('remove', params=params)
+        content = TestController.get_json_body(response)
+        err_msg = "Error deleting token %s. Response %s" % (serial, content)
+        self.assertTrue(content['result']['status'], err_msg)
+        self.assertEqual(1, content['result']['value'], err_msg)
 
     def __createResolvers__(self):
         """

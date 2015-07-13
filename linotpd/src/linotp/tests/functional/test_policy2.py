@@ -34,6 +34,7 @@ things. If test_policy.py is cleaned up they can be merged.
 """
 
 import unittest2
+from copy import deepcopy
 
 from linotp.tests import TestController
 
@@ -86,15 +87,25 @@ class TestAutoassignmentController(TestController):
                 ],
             },
         ]
+    # set up in setUp
+    policies_for_deletion = None
+    token_for_deletion = None
 
     def setUp(self):
         TestController.setUp(self)
         self.__createResolvers__()
         self.__createRealms__()
+        self.token_for_deletion = set()
+        self.policies_for_deletion = set()
         self._enroll_token(self.token_list)
 
     def tearDown(self):
-        self._delete_token(self.token_list)
+        # Delete policies
+        for policy in self.policies_for_deletion:
+            self.delete_policy(policy)
+        # Delete token
+        for token in self.token_for_deletion:
+            self.delete_token(token)
         self.__deleteAllRealms__()
         self.__deleteAllResolvers__()
         TestController.tearDown(self)
@@ -110,7 +121,7 @@ class TestAutoassignmentController(TestController):
         corresponding to that token.
         """
 
-        token_list = self.token_list
+        token_list = deepcopy(self.token_list)
 
         self._create_autoassignment_policy('my_autoassign_policy', 'mydefrealm')
         self._set_token_realm(token_list, 'mydefrealm')
@@ -148,14 +159,13 @@ class TestAutoassignmentController(TestController):
                     user_name,
                     user_pwd + token['otps'][j],
                     )
-        self.delete_policy('my_autoassign_policy')
 
     def test_cant_autoassign_assigned_token(self):
         """
         It is not possible to autoassign a token that has already been assigned.
         """
         # Only one token required for this test
-        token_list = self.token_list[0:1]
+        token_list = deepcopy(self.token_list[0:1])
 
         # Put all token in the same realm
         self._create_autoassignment_policy('my_autoassign_policy', 'mydefrealm')
@@ -206,7 +216,6 @@ class TestAutoassignmentController(TestController):
             expected='value-false',
             )
 
-        self.delete_policy('my_autoassign_policy')
 
     def test_only_autoassign_with_no_other_token(self):
         """
@@ -214,7 +223,7 @@ class TestAutoassignmentController(TestController):
         """
         self._create_autoassignment_policy('my_autoassign_policy', 'mydefrealm')
         # Only two token required for this test
-        token_list = self.token_list[0:2]
+        token_list = deepcopy(self.token_list[0:2])
 
         # Put all token in the same realm
         self._set_token_realm(token_list, 'mydefrealm')
@@ -263,14 +272,12 @@ class TestAutoassignmentController(TestController):
             expected='value-false',
             )
 
-        self.delete_policy('my_autoassign_policy')
-
     def test_no_policy_no_autoassign(self):
         """
         Without the autoassign policy autoassignment does not work.
         """
         # Only one token required for this test
-        token_list = self.token_list[0:1]
+        token_list = deepcopy(self.token_list[0:1])
 
         # (user, password) pairs from myDefRealm
         users = [
@@ -298,7 +305,7 @@ class TestAutoassignmentController(TestController):
         test_policy_negative_action).
         """
         # Only one token required for this test
-        token_list = self.token_list[0:1]
+        token_list = deepcopy(self.token_list[0:1])
 
         # (user, password) pairs from myDefRealm
         users = [
@@ -314,6 +321,7 @@ class TestAutoassignmentController(TestController):
             'realm': 'mydefrealm',
         }
         self.create_policy(params)
+        self.policies_for_deletion.add('int_autoassignment')
 
         self._set_token_realm(token_list, 'mydefrealm')
 
@@ -324,8 +332,6 @@ class TestAutoassignmentController(TestController):
             user_pwd + token['otps'][0],
             )
 
-        self.delete_policy('int_autoassignment')
-
     def test_policy_negative_action(self):
         """
         If autoassigment=-1 the policy will not be active.
@@ -333,7 +339,7 @@ class TestAutoassignmentController(TestController):
         This is due to backwards compatibility.
         """
         # Only one token required for this test
-        token_list = self.token_list[0:1]
+        token_list = deepcopy(self.token_list[0:1])
 
         # (user, password) pairs from myDefRealm
         users = [
@@ -349,6 +355,7 @@ class TestAutoassignmentController(TestController):
             'realm': 'mydefrealm',
         }
         self.create_policy(params)
+        self.policies_for_deletion.add('negative_autoassignment')
 
         self._set_token_realm(token_list, 'mydefrealm')
 
@@ -360,8 +367,6 @@ class TestAutoassignmentController(TestController):
             expected='value-false',
             )
 
-        self.delete_policy('negative_autoassignment')
-
     @unittest2.skip(
         "Currently broken because the counter for all matching token is "
         "increased even if autoassignment fails. See issue #13134."
@@ -370,7 +375,7 @@ class TestAutoassignmentController(TestController):
         """
         If the OTP value matches for several token autoassignment fails
         """
-        token_list = self.token_list[0:1]
+        token_list = deepcopy(self.token_list[0:1])
         # Enroll new token with duplicate first OTP
         token = {
             'key': '0f51c51a55a3c2736ecd0c022913d541b25734b5',
@@ -389,6 +394,7 @@ class TestAutoassignmentController(TestController):
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
         token['serial'] = content['detail']['serial']
+        self.token_for_deletion.add(token['serial'])
         token_list.append(token)
 
         # (user, password) pairs from myDefRealm
@@ -440,19 +446,6 @@ class TestAutoassignmentController(TestController):
             user_pwd + token['otps'][0],
             )
 
-        # Cleanup
-        # Delete token
-        token = token_list[1]
-        params = {
-            'serial': token['serial'],
-        }
-        response = self.make_admin_request('remove', params=params)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertEqual(1, content['result']['value'])
-
-        self.delete_policy('my_autoassign_policy')
-
 
     # -------- Private helper methods --------
 
@@ -460,6 +453,9 @@ class TestAutoassignmentController(TestController):
         """
         Enroll all token in token_list. Update the list with the serial number
         returned by LinOTP.
+
+        Adds the token to self.token_for deletion so it is cleaned up on
+        tearDown.
         """
         for token in token_list:
             params = {
@@ -472,20 +468,7 @@ class TestAutoassignmentController(TestController):
             self.assertTrue(content['result']['status'])
             self.assertTrue(content['result']['value'])
             token['serial'] = content['detail']['serial']
-
-    def _delete_token(self, token_list):
-        """
-        Delete all token in token_list
-        """
-        for token in token_list:
-            self.assertIsNotNone(token['serial'])
-            params = {
-                'serial': token['serial'],
-            }
-            response = self.make_admin_request('remove', params=params)
-            content = TestController.get_json_body(response)
-            self.assertTrue(content['result']['status'])
-            self.assertEqual(1, content['result']['value'])
+            self.token_for_deletion.add(token['serial'])
 
     def _set_token_realm(self, token_list, realm_name):
         """
@@ -505,6 +488,9 @@ class TestAutoassignmentController(TestController):
     def _create_autoassignment_policy(self, name, realm):
         """
         Create an autoassignment policy with name 'name' for realm 'realm'.
+
+        Adds the policy to self.policies_for deletion so it is cleaned up on
+        tearDown.
         """
         params = {
             'name': name,
@@ -514,6 +500,7 @@ class TestAutoassignmentController(TestController):
             'realm': realm,
         }
         self.create_policy(params)
+        self.policies_for_deletion.add(name)
 
     def _validate(self, user, pwd, expected='success', err_msg=None):
         """

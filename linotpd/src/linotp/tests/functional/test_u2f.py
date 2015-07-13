@@ -117,7 +117,8 @@ class TestU2FController(TestController):
                                  '6a8f139171838022013e19c68829d52b2e5db0e80e2efb46738cc418ea9' \
                                  'ef3b94664f3817e18ddc4d'
 
-    serials = set()
+    # set up in setUp method
+    serials = None
 
     def setUp(self):
         self.serial = ''
@@ -126,10 +127,11 @@ class TestU2FController(TestController):
         TestController.setUp(self)
         self.__createResolvers__()
         self.__createRealms__()
+        self.serials = set()
 
     def tearDown(self):
         for serial in self.serials:
-            self.removeTokenBySerial(serial)
+            self.delete_token(serial)
         self.__deleteAllRealms__()
         self.__deleteAllResolvers__()
         TestController.tearDown(self)
