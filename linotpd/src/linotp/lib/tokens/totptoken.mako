@@ -223,20 +223,20 @@ $('#totp_google_compliant').click(function() {
 <tr><td colspan="2">${_("Create a new OATH token - HMAC time based")}</td></tr>
 <tr class="space">
     <th colspan="2" title='${_("The token seed is the secret that is used in the hmac algorithm to make your token unique. So please take care!")}'
-    >Token Seed:</th>
+    >Token seed:</th>
 </tr>
 
 <tr>
     <td class="description" colspan='2'>
         <input type="radio" name="totp_rbg_key_gen" value="gen_key" id='totp_rb_key_gen'/>
-        <label for"hmac_key_cb">${_("generate random seed")}</label></td>
+        <label for"hmac_key_cb">${_("Generate random seed")}</label></td>
  </tr>
 
 
 <tr>
     <td class="description" >
         <input type="radio" name="totp_rbg_key_gen" value='no_gen_key' id='totp_rb_key_gen_no'/>
-        <label for"totp_rb_key_gen_no">${_("enter seed")}</label></td>
+        <label for"totp_rb_key_gen_no">${_("Enter seed")}</label></td>
     <td>
         <input type="text" name="totp_key" id="totp_key" value="" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
@@ -244,7 +244,7 @@ $('#totp_google_compliant').click(function() {
 
 <tr class="space">
     <th colspan="2" title='${_("The hmac algorithm could be controlled by the following settings. Make sure that these settings match your hardware token or software token capabilities.")}'>
-    Token Settings:</th>
+    Token settings:</th>
 </tr>
 <tr>
 
@@ -256,7 +256,7 @@ $('#totp_google_compliant').click(function() {
     </td>
 </tr>
 <tr>
-    <td class="description"><label for="totp_otplen">${_("OTP Digits")}</label></td>
+    <td class="description"><label for="totp_otplen">${_("OTP digits")}</label></td>
     <td><select name="pintype" id="totp_otplen">
             <option  selected value="6">6</option>
             <option  value="8">8</option>
@@ -273,8 +273,8 @@ $('#totp_google_compliant').click(function() {
 <tr>
     <td class="description">
         <label for='totp_timestep' 
-               title='${_("The :timestep: defines the granularity of the time in seconds that is used in the hmac algorithm.")}'>
-        ${_("Time Step")}</label></td>
+               title='${_("The :time step: defines the granularity of the time in seconds that is used in the HMAC algorithm.")}'>
+        ${_("Time step")}</label></td>
     <td>
     	<select id='totp_timestep'>
     	<option value='60' >60 ${_("seconds")}</option>
@@ -290,12 +290,12 @@ $('#totp_google_compliant').click(function() {
 
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows" >
-    <td class="description"><label for="totp_pin1" id="totp_pin1_label">${_("enter PIN")}:</label></td>
+    <td class="description"><label for="totp_pin1" id="totp_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin1" id="totp_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr name="set_pin_rows" >
-    <td class="description"><label for="totp_pin2" id="totp_pin2_label">${_("confirm PIN")}:</label></td>
+    <td class="description"><label for="totp_pin2" id="totp_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin2" id="totp_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 </tr>
@@ -499,7 +499,7 @@ $( document ).ready(function() {
         %endif
         %if c.totp_timestep == -1:
             <tr>
-            <td class="description"><label for='totp_self_timestep'>${_("Time Step")}</label></td>
+            <td class="description"><label for='totp_self_timestep'>${_("Time step")}</label></td>
             <td><select id='totp_self_timestep' name='totp_self_timestep'>
                 <option value='30' selected>30 ${_("seconds")}</option>
                 <option value='60'>60 ${_("seconds")}</option>

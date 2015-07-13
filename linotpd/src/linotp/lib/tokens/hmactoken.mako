@@ -150,7 +150,7 @@ $('#hmac_google_compliant').click(function() {
 <tr><td colspan=2><span id='hmac_key_intro'>${_("Create a new OATH token - HMAC event based")}</span></td></tr>
 <tr class="space">
     <th colspan="2" title='${_("The token seed is the secret that is used in the hmac algorithm to make your token unique. So please take care!")}'
-    >${_("Token Seed:")}</th>
+    >${_("Token seed:")}</th>
 </tr>
 
 <tr>
@@ -163,14 +163,14 @@ $('#hmac_google_compliant').click(function() {
 <tr>
     <td class="description" >
         <input type="radio" name="hmac_seed_gen_radiogroup" value='no_gen_key' id='hmac_key_rb_no'/>
-        <label for"hmac_key_rb_no">${_("enter seed")}</label></td>
+        <label for"hmac_key_rb_no">${_("Enter seed")}</label></td>
     <td>
         <input type="text" name="hmac_key" id="hmac_key" value="" class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 
 <tr class="space">
     <th colspan="2" title='${_("The hmac algorithm could be controlled by the following settings. Make sure that these settings match your hardware token or software token capabilities.")}'>
-    ${_("Token Settings:")}</th>
+    ${_("Token settings:")}</th>
 </tr>
 <tr>
     <td colspan="2" class="description description_w_space">
@@ -205,13 +205,13 @@ $('#hmac_google_compliant').click(function() {
 
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
-    <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("enter PIN")}:</label></td>
+    <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" 
                 onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin1" id="hmac_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr name="set_pin_rows">
-    <td class="description"><label for="hmac_pin2" id="hmac_pin2_label">${_("confirm PIN")}:</label></td>
+    <td class="description"><label for="hmac_pin2" id="hmac_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin2" id="hmac_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 </tr>
@@ -358,14 +358,14 @@ $( document ).ready(function() {
         <tr>
             <td class="description" >
                 <input type='radio' id='hmac_key_rb2_gen' name='hmac_seed_gen_radiogroup2' selected="selected">
-                <label for='hmac_key_rb2_gen'>${_("generate random seed")}</label>
+                <label for='hmac_key_rb2_gen'>${_("Generate random seed")}</label>
             </td>
         </tr>
         <tr>
             <td class="description">
                 <input type='radio' id='hmac_key_rb2_no' name='hmac_seed_gen_radiogroup2'>
                 <label id='hmac_self_secret_label'
-                    for='hmac_key_rb2_no'>${_("enter token seed")}</label></td>
+                    for='hmac_key_rb2_no'>${_("Enter token seed")}</label></td>
             <td><input id='hmac_self_secret' name='hmac_self_secret' disabled="disabled"
                 class="required ui-widget-content ui-corner-all"/></td>
         </tr>
@@ -381,7 +381,7 @@ $( document ).ready(function() {
         </tr>
         %if c.otplen == -1:
         <tr>
-            <td class='description'><label for='hmac_self_otplen'>${_("OTP Digits")}</label></td>
+            <td class='description'><label for='hmac_self_otplen'>${_("OTP digits")}</label></td>
             <td><select id='hmac_self_otplen' name='hmac_self_otplen'>
                 <option value='6' selected>6</option>
                 <option value='8'>8</option>

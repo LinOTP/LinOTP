@@ -34,7 +34,7 @@
 %endif
 
 %if c.scope == 'selfservice.title.enroll':
-${_("Enroll Yubikey")}
+${_("Enroll YubiKey")}
 %endif
 
 %if c.scope == 'config' :
@@ -110,7 +110,7 @@ function yubico_get_config_params(){
 
 
 %if c.scope == 'enroll.title' :
-${_("Yubikey")}
+${_("YubiKey")}
 %endif
 
 %if c.scope == 'enroll' :
@@ -154,11 +154,11 @@ function yubico_get_enroll_params(){
 
 </script>
 <hr>
-<p>${_("Here you need to enter the token ID of the Yubikey.")}</p>
-<p>${_("You can do this by inserting the Yubikey and simply push the button.")}</p>
+<p>${_("Here you need to enter the token ID of the YubiKey.")}</p>
+<p>${_("You can do this by inserting the YubiKey and simply push the button.")}</p>
 <table>
 <tr>
-	<td><label for="yubico_token_id" title='${_("You need to enter the Yubikey token ID")}'>
+	<td><label for="yubico_token_id" title='${_("You need to enter the YubiKey token ID")}'>
 		${_("Token ID")}</label></td>
 	<td><input class="required" type="text" name="yubico_token_id" id="yubico_token_id" min=12
 		class="text ui-widget-content ui-corner-all"/></td>
@@ -169,12 +169,12 @@ function yubico_get_enroll_params(){
 </tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
-    <td class="description"><label for="yubico_pin1" id="yubico_pin1_label">${_("enter PIN")}:</label></td>
+    <td class="description"><label for="yubico_pin1" id="yubico_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin1" id="yubico_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr name="set_pin_rows">
-    <td class="description"><label for="yubico_pin2" id="yubico_pin2_label">${_("confirm PIN")}:</label></td>
+    <td class="description"><label for="yubico_pin2" id="yubico_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin2" id="yubico_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 </tr>
@@ -216,16 +216,16 @@ function self_yubico_submit(){
 
 </script>
 
-<h1>${_("Enroll your Yubikey")}</h1>
+<h1>${_("Enroll your YubiKey")}</h1>
 <div id='enroll_yubico_form'>
 	<form class="cmxform" id='form_enroll_yubico'>
 		<p>
-			${_("Enter the TokenId of your Yubikey. Simply insert the Yubikey and press the button.")}
+			${_("Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the button.")}
 		</p>
 	<fieldset>
 		<table>
 		<tr>
-			<td><label for='yubico_tokenid'>${_("Yubikey TokenId")+':'}</label></td>
+			<td><label for='yubico_tokenid'>${_("YubiKey TokenId")+':'}</label></td>
 			<td><input id='yubico_tokenid' name='yubico_tokenid'
 				class="required ui-widget-content ui-corner-all" min="12" maxlength='44'/></td>
 		</tr>

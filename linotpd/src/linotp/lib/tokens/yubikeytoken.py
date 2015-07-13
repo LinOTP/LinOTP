@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-""" This file contains the Yubikey token class where the Yubikey is
+""" This file contains the YubiKey token class where the YubiKey is
     run in Yubico Mode"""
 
 import logging
@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
 ###############################################
 class YubikeyTokenClass(TokenClass):
     """
-    The Yubikey Token in the Yubico AES mode
+    The YubiKey Token in the Yubico AES mode
     """
 
     def __init__(self, aToken):
@@ -88,7 +88,7 @@ class YubikeyTokenClass(TokenClass):
 
         res = {
             'type':          'yubikey',
-            'title':         'Yubikey in Yubico Mode',
+            'title':         'YubiKey in Yubico Mode',
             'description':   ('Yubico token to run the AES OTP mode.'),
             'init':          {},
             'config':        {},
@@ -230,11 +230,11 @@ class YubikeyTokenClass(TokenClass):
         :param otpVal: the to be verified otpvalue
         :type otpVal:  string
 
-        :param counter: the counter state. It is not used by the Yubikey because the current counter value
+        :param counter: the counter state. It is not used by the YubiKey because the current counter value
         is sent encrypted inside the OTP value
         :type counter: int
 
-        :param window: the counter +window, which is not used in the Yubikey because the current
+        :param window: the counter +window, which is not used in the YubiKey because the current
         counter value is sent encrypted inside the OTP, allowing a simple comparison between the encrypted
         counter value and the stored counter value
         :type window: int
