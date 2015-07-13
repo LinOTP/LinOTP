@@ -89,14 +89,14 @@ class TestAutoassignmentController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         self._enroll_token(self.token_list)
 
     def tearDown(self):
         self._delete_token(self.token_list)
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
     def test_autoassign_mixed_token(self):

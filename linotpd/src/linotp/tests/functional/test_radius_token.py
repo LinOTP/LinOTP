@@ -51,8 +51,8 @@ class TestRadiusToken(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.set_config_selftest()
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         if nose_config and 'radius' in nose_config:
             self.radius_authport = nose_config['radius']['authport']
             self.radius_acctport = nose_config['radius']['acctport']
@@ -61,8 +61,8 @@ class TestRadiusToken(TestController):
             self.radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
 
     def tearDown(self):
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
     def test_00_create_radius_token(self):

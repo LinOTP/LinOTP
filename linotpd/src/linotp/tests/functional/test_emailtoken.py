@@ -48,8 +48,8 @@ class TestEmailtokenController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         params = {
             'EmailProvider': 'linotp.lib.emailprovider.SMTPEmailProvider',
             'EmailProviderConfig': '{ "SMTP_SERVER": "mail.example.com",\
@@ -87,8 +87,8 @@ class TestEmailtokenController(TestController):
 
     def tearDown(self):
         self.patch_smtp.stop()
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
     def test_default(self):

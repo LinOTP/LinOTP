@@ -92,15 +92,15 @@ class TestFixesController(TestController):
         ''' setup the Test Controller'''
         TestController.setUp(self)
         self.set_config_selftest()
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         self.serials = []
 
     def tearDown(self):
         ''' make the dishes'''
         self.remove_tokens()
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
         return
 

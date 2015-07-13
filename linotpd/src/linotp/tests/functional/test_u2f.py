@@ -125,15 +125,15 @@ class TestU2FController(TestController):
         self.counter = 0
         self.origin = 'https://u2f-fakeurl.com'
         TestController.setUp(self)
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         self.serials = set()
 
     def tearDown(self):
         for serial in self.serials:
             self.delete_token(serial)
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
     def _registration1(self, pin=None):
