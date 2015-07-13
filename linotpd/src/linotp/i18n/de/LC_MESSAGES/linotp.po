@@ -584,10 +584,10 @@ msgstr "Schützen Sie ihren Token durch einen festen PIN:"
 msgid "Token PIN:"
 msgstr "Token PIN:"
 
-msgid "enter PIN"
+msgid "Enter PIN"
 msgstr "PIN setzen"
 
-msgid "confirm PIN"
+msgid "Confirm PIN"
 msgstr "PIN bestätigen"
 
 msgid "Enroll EMail Token"
@@ -629,13 +629,13 @@ msgstr ""
 "Der Token Schlüssel ist das Geheimnis, dass in dem hmac Algorithmus "
 "verwendet wird und den Token einzigartig macht. Bitte darauf achten!"
 
-msgid "Token Seed:"
-msgstr "Token Schlüssel:"
+msgid "Token seed:"
+msgstr "Token seed:"
 
 msgid "generate random seed"
 msgstr "ein zufälliges Seed generieren"
 
-msgid "enter seed"
+msgid "Enter seed"
 msgstr "Seed eingeben"
 
 msgid ""
@@ -646,7 +646,7 @@ msgstr ""
 "werden. Bitte stellen Sie sicher, dass diese Einstellungen zu ihrem Hardware "
 "Token bzw. zu den Fähigkeiten ihres Softtokens passen."
 
-msgid "Token Settings:"
+msgid "Token settings:"
 msgstr "Token Einstellungen:"
 
 msgid "The Google Authenticator supports only 6 digits and SHA1 hashing."
@@ -688,8 +688,20 @@ msgstr "Die Formulardaten sind ungültig."
 msgid "Enroll your HOTP token"
 msgstr "Rollen Sie Ihren HOTP Token aus"
 
-msgid "enter token seed"
+msgid "Token Seed:"
+msgstr "Token Schlüssel:"
+
+msgid "Generate random seed"
+msgstr "Ein zufälliges Seed generieren"
+
+msgid "Enter token seed"
 msgstr "Token Seed eingeben"
+
+msgid "Token Settings:"
+msgstr "Token Einstellungen:"
+
+msgid "OTP digits"
+msgstr "OTP Ziffern"
 
 msgid "self enrolled"
 msgstr "selbst erstellt"
@@ -901,7 +913,7 @@ msgid "RADIUS user"
 msgstr "RADIUS Benutzer"
 
 msgid "Remote Token"
-msgstr "REMOTE Token"
+msgstr "Remote Token"
 
 msgid ""
 "Please enter a valid remote server specification. It needs to be of the form "
@@ -916,7 +928,7 @@ msgstr "Remote Token Einstellungen"
 msgid "You need to enter the remote LinOTP server like https://remotelinotp"
 msgstr ""
 "Sie müssen den remote LinOTP Server im Format 'https://linotp2."
-"entfernterserver.local' angeben."
+"remoteserver.local' angeben."
 
 msgid "Remote server"
 msgstr "Remote Server"
@@ -933,7 +945,7 @@ msgid ""
 "server"
 msgstr ""
 "Die PIN kann entweder auf diesem lokalen Server überprüft werden oder auf "
-"dem entfernten LinOTP Server."
+"dem remote LinOTP Server."
 
 msgid "on remote server"
 msgstr "auf dem Remote Server"
@@ -964,49 +976,46 @@ msgstr ""
 msgid ""
 "You can either forward the OTP to a remote serial number or to a remote user."
 msgstr ""
-"Die Authentsierungsanfrage kann entweder an eine entfernte Seriennummer oder "
-"an einen entfernten Benutzer weitergeleitet werden."
+"Die Authentsierungsanfrage kann entweder an eine remote Seriennummer oder "
+"an einen remote Benutzer weitergeleitet werden."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
-"forwarded to the remote user with the same username"
+"forwarded to the remote user with the same username."
 msgstr ""
-"Wenn Sie keine entfernte Seriennumer und auch keinen entfernten "
+"Wenn Sie keine remote Seriennumer und auch keinen remote "
 "Benutzernamen angeben, dann wird die Authentisierungsanfrage an den Benutzer "
 "mit dem gleichen Benutzernamen weitergeleitet."
 
 msgid "You need to enter the server like 'https://linotp2.my.domain'"
 msgstr ""
-"Sie müssen den Server im Format 'https://linotp2.entfernterserver.local' "
+"Sie müssen den Server im Format 'https://linotp2.remoteserver.local' "
 "angeben."
-
-msgid "remote server"
-msgstr "Remote Server"
 
 msgid ""
 "The PIN can either be verified on this local LinOTP server or on the remote "
 "LinOTP server"
 msgstr ""
 "Die PIN kann entweder auf diesem lokalen Server überprüft werden oder auf "
-"dem entfernten LinOTP Server."
+"dem remote LinOTP Server."
 
 msgid "remotely"
 msgstr "entfernt"
 
-msgid "remote otp len"
-msgstr "otp Länge des entfernten Tokens"
+msgid "Remote OTP len"
+msgstr "Remote OTP Länge"
 
-msgid "remote serial"
-msgstr "entfernte Seriennummer"
+msgid "Remote serial"
+msgstr "Remote Seriennummer"
 
-msgid "remote user"
-msgstr "entfernter Benutzer"
+msgid "Remote user"
+msgstr "Remote Benutzer"
 
-msgid "remote user realm"
-msgstr "Realm des entfernten Benutzers"
+msgid "Remote user realm"
+msgstr "Realm des remote Benutzers"
 
-msgid "remote user useridresolver"
-msgstr "UserIdResolver des entfernten Benutzers"
+msgid "Remote user UserIdResolver"
+msgstr "UserIdResolver des remote Benutzers"
 
 msgid "SMS OTP Token"
 msgstr "SMS OTP Token"
@@ -1029,7 +1038,7 @@ msgstr "SMS OTP"
 msgid "Please enter the mobile phone number for the SMS token"
 msgstr "Bitten geben Sie die Mobiltelefonnummer für den SMS Token ein."
 
-msgid "phone number"
+msgid "Phone number"
 msgstr "Mobiltelefonnummer"
 
 msgid "Register SMS"
@@ -1130,13 +1139,13 @@ msgid "Create a new OATH token - HMAC time based"
 msgstr "Einen neuen OATH token anlegen - HMAC Zeit basiert"
 
 msgid ""
-"The :timestep: defines the granularity of the time in seconds that is used "
-"in the hmac algorithm."
+"The :time step: defines the granularity of the time in seconds that is used "
+"in the HMAC algorithm."
 msgstr ""
 "Der :Zeitschritt: definiert die Granularität der Zeit in Sekunden die in dem "
 "HMAC Algorithmus verwendet werden."
 
-msgid "Time Step"
+msgid "Time step"
 msgstr "Zeitschritt"
 
 msgid "seconds"
@@ -1147,6 +1156,9 @@ msgstr "TOTP Token ausrollen"
 
 msgid "Enroll your TOTP token"
 msgstr "Rollen Sie Ihren TOTP Token aus"
+
+msgid "enter token seed"
+msgstr "Token Seed eingeben"
 
 msgid ""
 "The Google Authenticator supports only 6 digits, SHA1 hashing and time step "
@@ -1173,8 +1185,8 @@ msgstr "Vasco Digipass Token Klasse - Proprietäre zeitbasierte Token"
 msgid "Yubico"
 msgstr "Yubico"
 
-msgid "Enroll Yubikey"
-msgstr "Yubikey ausrollen"
+msgid "Enroll YubiKey"
+msgstr "YubiKey ausrollen"
 
 msgid "Yubico settings"
 msgstr "Yubico Einstellungen"
@@ -1200,35 +1212,35 @@ msgstr "Sie müssen einen gültigen API Key eingeben."
 msgid "Yubico API key"
 msgstr "Yubico API Key"
 
-msgid "Yubikey"
-msgstr "Yubikey"
+msgid "YubiKey"
+msgstr "YubiKey"
 
-msgid "Here you need to enter the token ID of the Yubikey."
-msgstr "Hier müssen Sie die TokenID des Yubikeys eingeben."
+msgid "Here you need to enter the token ID of the YubiKey."
+msgstr "Hier müssen Sie die Token ID des YubiKeys eingeben."
 
-msgid "You can do this by inserting the Yubikey and simply push the button."
+msgid "You can do this by inserting the YubiKey and simply push the button."
 msgstr ""
-"Sie können dies tun, indem Sie einfach Ihren Yubikey einstecken und auf den "
+"Sie können dies tun, indem Sie einfach Ihren YubiKey einstecken und auf den "
 "Knopf drücken."
 
-msgid "You need to enter the Yubikey token ID"
-msgstr "Sie müssen die Yubikey Token ID eingeben."
+msgid "You need to enter the YubiKey token ID"
+msgstr "Sie müssen die YubiKey Token ID eingeben."
 
 msgid "Token ID"
 msgstr "Token ID"
 
-msgid "Enroll your Yubikey"
-msgstr "Rollen Sie Ihren Yubikey aus"
+msgid "Enroll your YubiKey"
+msgstr "Rollen Sie Ihren YubiKey aus"
 
 msgid ""
-"Enter the TokenId of your Yubikey. Simply insert the Yubikey and press the "
+"Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the "
 "button."
 msgstr ""
-"Geben Sie die Token ID Ihres Yubikeys ein. Stecken Sie einfach Ihren Yubikey "
+"Geben Sie die Token ID Ihres YubiKeys ein. Stecken Sie einfach Ihren Yubikey "
 "ein und drücken Sie den Knopf."
 
-msgid "Yubikey TokenId"
-msgstr "Yubikey Token ID"
+msgid "YubiKey TokenId"
+msgstr "YubiKey TokenId"
 
 msgid "enroll yubico token"
 msgstr "Yubikey ausrollen"
@@ -1481,8 +1493,8 @@ msgstr "Resolver"
 msgid "Login Name"
 msgstr "Login Name"
 
-msgid "User ID Resolver"
-msgstr "User ID Resolver"
+msgid "UserIdResolver"
+msgstr "UserIdResolver"
 
 msgid "Surname"
 msgstr "Nachname"
@@ -1729,8 +1741,8 @@ msgstr "LinOTP Management"
 msgid "LinOTP Config"
 msgstr "LinOTP Konfiguration"
 
-msgid "User ID Resolvers"
-msgstr "User ID Resolver"
+msgid "UserIdResolvers"
+msgstr "UserIdResolvers"
 
 msgid "Realms"
 msgstr "Realms"
@@ -1771,8 +1783,8 @@ msgstr "SafeNet XML (Aladdin)"
 msgid "OATH CSV"
 msgstr "OATH CSV"
 
-msgid "Yubikey CSV"
-msgstr "Yubikey CSV"
+msgid "YubiKey CSV"
+msgstr "YubiKey CSV"
 
 msgid "Help"
 msgstr "Hilfe"
@@ -2120,6 +2132,15 @@ msgstr "OCRA Key"
 msgid "Generate OCRA key."
 msgstr "OCRA Key vom Server generieren lassen."
 
+msgid "enter PIN"
+msgstr "PIN setzen"
+
+msgid "confirm PIN"
+msgstr "PIN bestätigen"
+
+msgid "Enroll Token"
+msgstr "Token ausrollen"
+
 msgid ""
 "Here you can search for the serial of a token.You need to enter the current "
 "OTP value, and choose where you want to search for this token."
@@ -2279,7 +2300,7 @@ msgstr ""
 msgid "For HOTP and TOTP tokens:"
 msgstr "Für HOTP und TOTP Token:"
 
-msgid "Serial Number, Seed, Type, OTP Length, Time Step"
+msgid "Serial number, Seed, Type, OTP length, Time step"
 msgstr "Seriennummer, Seed, Typ, OTP-Länge, Zeitschritt"
 
 msgid "For OCRA tokens:"
@@ -2294,8 +2315,8 @@ msgstr "Standardwerte:"
 msgid "HOTP"
 msgstr "HOTP"
 
-msgid "OCRA Suite"
-msgstr "OCRA Suite"
+msgid "OTP length"
+msgstr "OTP-Länge"
 
 msgid "optional"
 msgstr "Optional"
@@ -2304,15 +2325,15 @@ msgid "OATH CSV Token File"
 msgstr "OATH CSV Tokendatei"
 
 msgid ""
-"Here you can upload a CSV file for your Yubikey token. The file is supposed "
+"Here you can upload a CSV file for your YubiKey token. The file is supposed "
 "to contain one token per line"
 msgstr ""
-"Hier können Sie eine CSV Datei importieren, die Yubikey Token Definitionen "
+"Hier können Sie eine CSV Datei importieren, die YubiKey Token Definitionen "
 "enthält. Diese Datei muss einen Token pro Zeile enthalten und kann mit der "
 "'Yubikey-personalization-gui' erstellt werden."
 
-msgid "Yubikey CSV Token File"
-msgstr "Yubikey CSV Tokendatei"
+msgid "YubiKey CSV Token File"
+msgstr "YubiKey CSV Tokendatei"
 
 msgid ""
 "Here you can upload the data file that came with your Tagespasswort tokens."
@@ -2336,9 +2357,6 @@ msgstr "Feitian XML Tokendatei"
 
 msgid "Here you can upload your Vasco DPX file."
 msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
-
-msgid "OTP length"
-msgstr "OTP-Länge"
 
 msgid "Vasco DPX File"
 msgstr "VASCO DPX-Datei"
@@ -2371,7 +2389,7 @@ msgstr "Als Standard-Realm setzen"
 msgid "Clear Default"
 msgstr "Standard entfernen"
 
-msgid "Create a new or select one available User ID Resolver"
+msgid "Create a new or select one available UserIdResolver"
 msgstr ""
 "Hier können Sie einen neuen Resolver anlegen oder einen existierenden "
 "bearbeiten"
@@ -2491,6 +2509,9 @@ msgstr "Zeitfenster"
 
 msgid "Time Shift"
 msgstr "Zeitversatz"
+
+msgid "Time Step"
+msgstr "Zeitschritt"
 
 msgid "set Hashlib"
 msgstr "setze Hash Algorithmus"
@@ -3314,6 +3335,15 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "OCRA Suite"
+#~ msgstr "OCRA Suite"
+
+#~ msgid "remote server"
+#~ msgstr "Remote Server"
+
+#~ msgid "remote otp len"
+#~ msgstr "otp Länge des entfernten Tokens"
 
 #~ msgid "Password Token"
 #~ msgstr "Passwort Token"
