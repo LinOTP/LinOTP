@@ -26,7 +26,7 @@
 function create_yubikeycsv_dialog() {
  var $dialog_load_tokens_yubikeycsv = $('#dialog_import_yubikey').dialog({
         autoOpen: false,
-        title: 'Yubikey CSV Token File',
+        title: 'YubiKey CSV Token File',
         width: 600,
         modal: true,
         buttons: {
