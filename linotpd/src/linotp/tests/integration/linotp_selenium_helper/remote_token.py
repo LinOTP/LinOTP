@@ -40,7 +40,7 @@ class RemoteToken(Token):
         """
         Token.__init__(self, driver=driver, base_url=base_url)
         select_tag = driver.find_element_by_id("tokentype")
-        select(driver, select_element=select_tag, option_text="REMOTE token")
+        select(driver, select_element=select_tag, option_text="Remote token")
         driver.find_element_by_id("remote_server").clear()
         driver.find_element_by_id("remote_server").send_keys(url)
         driver.find_element_by_id("remote_otplen").clear()
