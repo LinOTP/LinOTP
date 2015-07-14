@@ -49,10 +49,10 @@ class TestPolicies(TestController):
         '''
         ## here we do the system test init per test method
         #self._setLicense()
-        #self.__deleteAllRealms__()
-        #self.__deleteAllResolvers__()
-        #self.__createResolvers__()
-        #self.__createRealms__()
+        #self.delete_all_realms()
+        #self.delete_all_resolvers()
+        #self.create_common_resolvers()
+        #self.create_common_realms()
         TestController.setUp(self)
         self.set_config_selftest()
         return
@@ -67,8 +67,8 @@ class TestPolicies(TestController):
         '''
         Policy 00: Init the tests....
         '''
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
 
     def test_01createPolicy_Super(self):
         '''

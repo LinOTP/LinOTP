@@ -195,7 +195,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         full_class_info = {
             'selfservice': {},
             'description': 'Yubico token to run the AES OTP mode.',
-            'title': 'Yubikey in Yubico Mode',
+            'title': 'YubiKey in Yubico Mode',
             'type': 'yubikey',
             'init': {},
             'policy': {},
@@ -204,7 +204,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         class_info = YubikeyTokenClass.getClassInfo()
         self.assertEquals(full_class_info, class_info)
         self.assertEquals(
-            "Yubikey in Yubico Mode",
+            "YubiKey in Yubico Mode",
             YubikeyTokenClass.getClassInfo(key='title')
             )
         self.assertEquals(

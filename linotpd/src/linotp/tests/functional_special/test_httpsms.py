@@ -73,8 +73,8 @@ class TestHttpSmsController(TestController):
         '''
         TestController.setUp(self)
         self.set_config_selftest()
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         self.removeTokens()
         self.initToken()
         self.initProvider()
@@ -84,8 +84,8 @@ class TestHttpSmsController(TestController):
             self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
 
     def tearDown(self):
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
 

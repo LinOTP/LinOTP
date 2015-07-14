@@ -60,16 +60,16 @@ class TestAuthorizeController(TestController):
         '''
         TestController.setUp(self)
         self.set_config_selftest()
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
 
         self.curTime = datetime.datetime(2012, 5, 16, 9, 0, 52, 227413)
         self.TOTPcurTime = datetime.datetime.fromtimestamp(1337292860.585256)
         self.initToken()
 
     def tearDown(self):
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
 
@@ -92,17 +92,6 @@ class TestAuthorizeController(TestController):
 
         response = self.app.get(url(controller='admin', action='init'), params=parameters)
         assert '"value": true' in response
-
-
-
-    def removeTokenBySerial(self, serial):
-
-        parameters = {
-                      "serial": serial,
-                      }
-
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        return response
 
 
     def setTokenRealm(self, serial, realms):

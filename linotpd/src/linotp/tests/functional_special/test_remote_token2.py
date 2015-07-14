@@ -80,13 +80,13 @@ class TestRemoteToken2(TestController):
         '''
         Init the tests....
         '''
-        self.deleteAllPolicies()
-        self.deleteAllTokens()
+        self.delete_all_policies()
+        self.delete_all_token()
 
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
-        self.__createResolvers__()
+        self.create_common_resolvers()
         self.create_realms()
         return
 
@@ -265,11 +265,11 @@ class TestRemoteToken2(TestController):
     def create_realms(self):
         # define new realms: nopin and withpin
         resolvers = self.resolvers['myDefRes']
-        response = self.createRealm('nopin', resolvers)
+        response = self.create_realm('nopin', resolvers)
         self.assertIn('"value": true', response, "Response: %r" % response)
 
         resolvers = self.resolvers['myDefRes']
-        response = self.createRealm('withpin', resolvers)
+        response = self.create_realm('withpin', resolvers)
         self.assertIn('"value": true', response, "Response: %r" % response)
 
         return

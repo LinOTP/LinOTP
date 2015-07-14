@@ -97,7 +97,7 @@ class TestController(unittest2.TestCase):
         wsgiapp = pylons.test.pylonsapp
         self.app = webtest.TestApp(wsgiapp)
         self.session = 'justatest'
-        self.resolvers = {} # Set up in __createResolvers__
+        self.resolvers = {} # Set up in create_common_resolvers
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         unittest2.TestCase.__init__(self, *args, **kwargs)
@@ -156,16 +156,16 @@ class TestController(unittest2.TestCase):
 
     def setUp(self):
         ''' here we do the system test init per test method '''
-        #self.__deleteAllRealms__()
-        #self.__deleteAllResolvers__()
-        #self.__createResolvers__()
-        #self.__createRealms__()
+        #self.delete_all_realms()
+        #self.delete_all_resolvers()
+        #self.create_common_resolvers()
+        #self.create_common_realms()
 
         return
 
     def tearDown(self):
-        #self.__deleteAllRealms__()
-        #self.__deleteAllResolvers__()
+        #self.delete_all_realms()
+        #self.delete_all_resolvers()
         return
 
     def make_request(
@@ -324,6 +324,22 @@ class TestController(unittest2.TestCase):
     def set_config_selftest(self):
         """
         Set selfTest in LinOTP Config to 'True'
+
+        --------------------------------------------------------------------
+        | Should not be used and is kept to ease refactoring of old tests. |
+        --------------------------------------------------------------------
+
+        'selfTest' mode enables to use the LinOTP API without 'session'
+        parameter and cookie, but since using these extra values is not a
+        problem and then tests are closer to the real code running on productive
+        servers it is preferred NOT to set 'selfTest'.
+
+        Use the methods make_admin_request(), make_system_request or
+        make_authenticated_request() and 'session' Parameter and Cookie will be
+        set for you!
+
+        All tests that still use set_config_selftest() should be slowly
+        refactored to instead use the above mentioned methods.
         """
         params = {
             'selfTest': 'True',
@@ -335,7 +351,7 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['value']['setConfig selfTest:True'])
         self.isSelfTest = True
 
-    def __deleteAllRealms__(self):
+    def delete_all_realms(self):
         ''' get al realms and delete them '''
 
         response = self.make_system_request('getRealms', {})
@@ -352,7 +368,7 @@ class TestController(unittest2.TestCase):
             assert('"result": true' in resp)
 
 
-    def __deleteAllResolvers__(self):
+    def delete_all_resolvers(self):
         ''' get all resolvers and delete them '''
 
         response = self.make_system_request('getResolvers', {})
@@ -368,15 +384,15 @@ class TestController(unittest2.TestCase):
             resp = self.make_system_request('delResolver', params)
             assert('"status": true' in resp)
 
-    def deleteAllPolicies(self):
-        '''
-        '''
+    def delete_all_policies(self):
+        """
+        Get all policies and delete them
+        """
         response = self.make_system_request('getPolicy', {})
-        self.assertTrue('"status": true' in response, response)
-
-        body = json.loads(response.body)
-        policies = body.get('result', {}).get('value', {}).keys()
-
+        content = TestController.get_json_body(response)
+        err_msg = "Error getting all policies. Response %s" % (content)
+        self.assertTrue(content['result']['status'], err_msg)
+        policies = content.get('result', {}).get('value', {}).keys()
         for policy in policies:
             self.delete_policy(policy)
 
@@ -443,35 +459,38 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['status'])
         self.assertDictEqual(expected_value, content['result']['value'])
 
-    def deleteAllTokens(self):
-        ''' get all tokens and delete them '''
+    def delete_all_token(self):
+        """
+        Get all token and delete them
+        """
+        serials = set()
 
-        serials = []
-
-        response = self.make_admin_request('show', {})
-        self.assertTrue('"status": true' in response, response)
-
-        body = json.loads(response.body)
-        tokens = body.get('result', {}).get('value', {}).get('data', {})
-        for token in tokens:
-            serial = token.get("LinOtp.TokenSerialnumber")
-            serials.append(serial)
+        response = self.make_admin_request('show', params={})
+        content = TestController.get_json_body(response)
+        err_msg = "Error getting token list. Response %s" % (content)
+        self.assertTrue(content['result']['status'], err_msg)
+        data = content['result']['value']['data']
+        for entry in data:
+            serials.add(entry['LinOtp.TokenSerialnumber'])
 
         for serial in serials:
-            self.removeTokenBySerial(serial)
+            self.delete_token(serial)
 
-        return
-
-    def removeTokenBySerial(self, serial):
-        ''' delete a token by its serial number '''
-
+    def delete_token(self, serial):
+        """
+        Delete a token identified by its serial number
+        """
+        assert serial, "serial can not be empty or None"
         params = {
             'serial': serial,
             }
-        response = self.make_admin_request('remove', params)
-        return response
+        response = self.make_admin_request('remove', params=params)
+        content = TestController.get_json_body(response)
+        err_msg = "Error deleting token %s. Response %s" % (serial, content)
+        self.assertTrue(content['result']['status'], err_msg)
+        self.assertEqual(1, content['result']['value'], err_msg)
 
-    def __createResolvers__(self):
+    def create_common_resolvers(self):
         """
         Create 2 PasswdIdResolvers named myDefRes and myOtherRes
         """
@@ -493,7 +512,7 @@ class TestController(unittest2.TestCase):
             'myDefRes': 'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
             }
         params = resolver_params['myDefRes']
-        response = self.createResolver(
+        response = self.create_resolver(
             name='myDefRes',
             params=params,
             )
@@ -502,7 +521,7 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['value'])
 
         params = resolver_params['myOtherRes']
-        response = self.createResolver(
+        response = self.create_resolver(
             name='myOtherRes',
             params=params,
             )
@@ -510,13 +529,13 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
 
-    def createResolver(self, name, params):
+    def create_resolver(self, name, params):
         param = copy.deepcopy(params)
         param['name'] = name
         resp = self.make_system_request('setResolver', param)
         return resp
 
-    def createRealm(self, realm, resolvers):
+    def create_realm(self, realm, resolvers):
 
         params = {}
         params['realm'] = realm
@@ -529,7 +548,7 @@ class TestController(unittest2.TestCase):
         resp = self.make_system_request('setRealm', params)
         return resp
 
-    def __createRealms__(self):
+    def create_common_realms(self):
         """
             Idea: build out of two resolvers
                 3 realms
@@ -540,7 +559,7 @@ class TestController(unittest2.TestCase):
         """
 
         # Create 'myDefRealm' realm
-        response = self.createRealm(
+        response = self.create_realm(
             realm='myDefRealm',
             resolvers=self.resolvers['myDefRes'],
             )
@@ -549,7 +568,7 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['value'])
 
         # Create 'myOtherRealm' realm
-        response = self.createRealm(
+        response = self.create_realm(
             realm='myOtherRealm',
             resolvers=self.resolvers['myOtherRes'],
             )
@@ -558,7 +577,7 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['value'])
 
         # Create mixed realm
-        response = self.createRealm(
+        response = self.create_realm(
             realm='myMixRealm',
             resolvers=','.join(self.resolvers.values()),
             )

@@ -101,7 +101,7 @@ class TestSystemController(TestController):
         assert '"set DefaultCountWindow": true'in response
 
     def test_001_resolvers(self):
-        self.__deleteAllRealms__()
+        self.delete_all_realms()
         parameters = {
                               "username":"root",
                      }
@@ -117,8 +117,8 @@ class TestSystemController(TestController):
 
 
     def test_001_realms(self):
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         response = self.app.get(url(controller='system', action='getRealms'))
         #log.info("response %s\n",response)
 
@@ -305,8 +305,8 @@ class TestSystemController(TestController):
         response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
         #log.info("response %s\n",response)
         assert '"description": "def User,,,,"'in response
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
 
 
 

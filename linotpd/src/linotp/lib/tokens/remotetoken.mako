@@ -256,10 +256,10 @@ $("#form_enroll_token").validate({
 <hr>
 <p>${_("Here you can define to which LinOTP Server the authentication request should be forwarded.")}</p>
 <p>${_("You can either forward the OTP to a remote serial number or to a remote user.")}</p>
-<p>${_("If you do not enter a remote serial or a remote user, the request will be forwarded to the remote user with the same username")}</p>
+<p>${_("If you do not enter a remote serial or a remote user, the request will be forwarded to the remote user with the same username.")}</p>
 <table><tr>
 	<td><label for="remote_server" title='${_("You need to enter the server like \'https://linotp2.my.domain\'")}'>
-		${_("remote server")}</label></td>
+		${_("Remote server")}</label></td>
 	<td><input class="required" type="text" name="remote_server" id="remote_server"
 		value="${sys_remote_server}" class="text ui-widget-content ui-corner-all"/></td>
 	</tr><tr>
@@ -271,31 +271,31 @@ $("#form_enroll_token").validate({
 		<option ${sys_checkpin_local} value=1>${_("locally")}</option>
 	</select></td>
 	</tr><tr>
-    <td><label for="remote_otplen">${_("remote otp len")}</label></td>
+    <td><label for="remote_otplen">${_("Remote OTP len")}</label></td>
     <td><input type="text" name="remote_otplen" id="remote_otplen" value="6" class="text ui-widget-content ui-corner-all" /></td>
     </tr><tr>
-	<td><label for="remote_serial">${_("remote serial")}</label></td>
+	<td><label for="remote_serial">${_("Remote serial")}</label></td>
 	<td><input type="text" name="remote_serial" id="remote_serial" value="" class="text ui-widget-content ui-corner-all" /></td>
 	</tr><tr>
-	<td><label for="remote_user">${_("remote user")}</label></td>
+	<td><label for="remote_user">${_("Remote user")}</label></td>
 	<td><input type="text" name="remote_user" id="remote_user" value="" class="text ui-widget-content ui-corner-all" /></td>
 	</tr><tr>
-	<td><label for="remote_realm">${_("remote user realm")}</label></td>
+	<td><label for="remote_realm">${_("Remote user realm")}</label></td>
 	<td><input type="text" name="remote_realm" id="remote_realm"
 		value="${sys_remote_realm}" class="text ui-widget-content ui-corner-all" /></td>
 	</tr><tr>
-	<td><label for="remote_resconf">${_("remote user useridresolver")}</label></td>
+	<td><label for="remote_resconf">${_("Remote user UserIdResolver")}</label></td>
 	<td><input type="text" name="remote_resconf" id="remote_resconf"
 		value="${sys_remote_resConf}" class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 	<tr name="set_pin_rows">
-    <td class="description"><label for="remote_pin1" id="remote_pin1_label">${_("enter PIN")}:</label></td>
+    <td class="description"><label for="remote_pin1" id="remote_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('remote_pin1','remote_pin2');" name="pin1" id="remote_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 	</tr>
 	<tr name="set_pin_rows">
-    <td class="description"><label for="remote_pin2" id="remote_pin2_label">${_("confirm PIN")}:</label></td>
+    <td class="description"><label for="remote_pin2" id="remote_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('remote_pin1','remote_pin2');" name="pin2" id="remote_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 	</tr></table>

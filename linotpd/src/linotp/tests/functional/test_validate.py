@@ -135,12 +135,12 @@ class TestValidateController(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.set_config_selftest()
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
 
     def tearDown(self):
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
     def createMOtpToken(self):
@@ -272,7 +272,7 @@ class TestValidateController(TestController):
         self.assertTrue('"value": true' in response, response)
 
     def createToken(self):
-        serials = []
+        serials = set()
         parameters = {
                       "serial": "F722362",
                       "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
@@ -285,7 +285,7 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-        serials.append(parameters.get('serial'))
+        serials.add(parameters.get('serial'))
 
         parameters = {
                   "serial": "F722363",
@@ -299,7 +299,7 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-        serials.append(parameters.get('serial'))
+        serials.add(parameters.get('serial'))
 
         # # test the update
         parameters = {
@@ -314,7 +314,7 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-        serials.append(parameters.get('serial'))
+        serials.add(parameters.get('serial'))
 
         parameters = {
                       "serial": "F722364",
@@ -328,7 +328,7 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-        serials.append(parameters.get('serial'))
+        serials.add(parameters.get('serial'))
 
         return serials
 
@@ -404,17 +404,8 @@ class TestValidateController(TestController):
         # assert '"value": true' in response
 
         serial = self.createSpassToken("mySpass")
-        self.removeTokenBySerial(serial)
+        self.delete_token(serial)
 
-    def removeTokenBySerial(self, serial):
-
-        parameters = {
-                      "serial": serial,
-                      }
-
-        response = self.app.get(url(controller='admin', action='remove'),
-                                params=parameters)
-        return response
     #
     #    Use case:
     #        user:                 w.Token / wo.Token / unknown
@@ -665,7 +656,7 @@ class TestValidateController(TestController):
         self.assertTrue('"delConfig PassOnUserNoToken": true' in response,
                         response)
 
-        self.removeTokenBySerial("F722362")
+        self.delete_token("F722362")
 
     def test_check(self):
         '''
@@ -730,9 +721,9 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"LinOtp.FailCount": 10' in response, response)
 
-        self.removeTokenBySerial("F722364")
-        self.removeTokenBySerial("F722363")
-        self.removeTokenBySerial("F722362")
+        self.delete_token("F722364")
+        self.delete_token("F722363")
+        self.delete_token("F722362")
 
     def test_resync(self):
 
@@ -764,7 +755,7 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"LinOtp.Count": 41' in response, response)
 
-        self.removeTokenBySerial("T2")
+        self.delete_token("T2")
 
     def test_resync2(self):
         '''
@@ -815,8 +806,8 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"LinOtp.Count": 41' in response, response)
 
-        self.removeTokenBySerial("T2")
-        self.removeTokenBySerial("T3")
+        self.delete_token("T2")
+        self.delete_token("T3")
 
     def test_autoresync(self):
         '''
@@ -869,7 +860,7 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-        self.removeTokenBySerial("T2")
+        self.delete_token("T2")
 
         ###############################################
         # no test
@@ -896,7 +887,7 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"value": false' in response, response)
 
-        self.removeTokenBySerial("T2")
+        self.delete_token("T2")
 
         ###############################################
         # no test
@@ -960,7 +951,7 @@ please enable 'linotp.selfTest = True' in your *.ini
 """)
             self.assertTrue('"value": false' in response, response)
 
-        self.removeTokenBySerial("M722362")
+        self.delete_token("M722362")
 
     def test_checkOTPAlgo(self):
 
@@ -1134,7 +1125,7 @@ please enable 'linotp.selfTest = True' in your *.ini
 """)
             self.assertTrue('"value": false' in response, response)
 
-        self.removeTokenBySerial("TOTP")
+        self.delete_token("TOTP")
 
         #
         # |      59     |  1970-01-01  | 0000000000000001 | 46119246 | SHA256 |
@@ -1158,7 +1149,7 @@ please enable 'linotp.selfTest = True' in your *.ini
 """)
             self.assertTrue('"value": false' in response, response)
 
-        self.removeTokenBySerial("TOTP")
+        self.delete_token("TOTP")
 
         self.createTOtpToken("SHA512")
 
@@ -1177,12 +1168,12 @@ please enable 'linotp.selfTest = True' in your *.ini
 """)
             self.assertTrue('"value": false' in response, response)
 
-        self.removeTokenBySerial("TOTP")
+        self.delete_token("TOTP")
 
     def test_totp_resync(self):
 
         try:
-            self.removeTokenBySerial("TOTP")
+            self.delete_token("TOTP")
         except Exception as exx:
             log.debug("Token does not existed: %r" % exx)
 
@@ -1247,7 +1238,7 @@ please enable 'linotp.selfTest = True' in your *.ini
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-        self.removeTokenBySerial("TOTP")
+        self.delete_token("TOTP")
 
     def test_totp_autosync(self):
         '''
@@ -1266,7 +1257,7 @@ please enable 'linotp.selfTest = True' in your *.ini
                         response)
 
         try:
-            self.removeTokenBySerial("TOTP")
+            self.delete_token("TOTP")
         except Exception as exx:
             log.debug("Token does not existed: %r" % exx)
 
@@ -1285,7 +1276,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        self.removeTokenBySerial("TOTP")
+        self.delete_token("TOTP")
 
     def test_failCount(self):
         """
@@ -1383,7 +1374,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         self.assertTrue('"LinOtp.Count": 8' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
-        self.removeTokenBySerial("F722362")
+        self.delete_token("F722362")
 
     def test_samlcheck(self):
         """
@@ -1411,7 +1402,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         self.assertTrue('"auth": true' in response, response)
         self.assertTrue('"username": "root"' in response, response)
 
-        self.removeTokenBySerial("saml0001")
+        self.delete_token("saml0001")
 
     def test_unicode(self):
         '''
@@ -1427,7 +1418,7 @@ please enable 'linotp.selfTest = True' in your *.ini
                         '"status": false' in response, response)
 
         for serial in serials:
-            self.removeTokenBySerial(serial)
+            self.delete_token(serial)
 
         return
 

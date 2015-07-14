@@ -56,7 +56,7 @@ class TestManageController(TestController):
         self.set_config_selftest()
 
         ## remove all other tokens
-        self.deleteAllTokens()
+        self.delete_all_token()
 
         fixture_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),

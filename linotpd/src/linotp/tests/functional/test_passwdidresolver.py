@@ -45,8 +45,8 @@ class TestPasswdController(TestController):
     '''
     def setUp(self):
         TestController.setUp(self)
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
         self.serials = []
         self.fixture_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
@@ -54,8 +54,8 @@ class TestPasswdController(TestController):
             )
 
     def tearDown(self):
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
     def test_resolver(self):

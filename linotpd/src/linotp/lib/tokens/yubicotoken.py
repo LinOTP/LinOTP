@@ -133,8 +133,8 @@ class YubicoTokenClass(TokenClass):
 
         tokenid = getParam(param, "yubico.tokenid", required)
         if len(tokenid) < YUBICO_LEN_ID:
-            log.error("[update] The tokenid needs to be %i characters long!" % YUBICO_LEN_ID)
-            raise Exception("The Yubikey token ID needs to be %i characters long!" % YUBICO_LEN_ID)
+            log.error("[update] The token ID needs to be %i characters long!" % YUBICO_LEN_ID)
+            raise Exception("The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID)
 
         if len(tokenid) > YUBICO_LEN_ID:
             tokenid = tokenid[:YUBICO_LEN_ID]

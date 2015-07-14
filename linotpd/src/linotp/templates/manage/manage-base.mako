@@ -89,7 +89,7 @@ if isinstance(lang, list):
     <ul id='menu' class='sf-menu sf-vertical'>
         <li><a href='#'>${_("LinOTP Config")}</a>
             <ul>
-                <li><a href='#' id='menu_edit_resolvers'>${_("User ID Resolvers")}</a></li>
+                <li><a href='#' id='menu_edit_resolvers'>${_("UserIdResolvers")}</a></li>
                 <li><a href='#' id='menu_edit_realms'>${_("Realms")}</a></li>
                 <li><a href='#' id='menu_system_config'>${_("System Config")}</a></li>
                 <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
@@ -965,7 +965,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </script>
 <!-- ######################### resolvers ############################## -->
 <div id='dialog_resolvers'>
-    <p>${_("Create a new or select one available User ID Resolver")}:</p>
+    <p>${_("Create a new or select one available UserIdResolver")}:</p>
     <div id='resolvers_list'> </div>
 </div>
 <script>

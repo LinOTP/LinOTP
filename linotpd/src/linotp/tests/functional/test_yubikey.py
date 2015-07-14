@@ -39,14 +39,14 @@ class TestYubikeyController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        self.__createResolvers__()
-        self.__createRealms__()
+        self.create_common_resolvers()
+        self.create_common_realms()
 
     def tearDown(self):
         for serial in self.serials:
-            self.removeTokenBySerial(serial)
-        self.__deleteAllRealms__()
-        self.__deleteAllResolvers__()
+            self.delete_token(serial)
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         TestController.tearDown(self)
 
     def init_otps(self, public_uid):
