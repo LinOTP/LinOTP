@@ -442,6 +442,42 @@ class TestAutoassignmentController(TestController):
             user_pwd + token['otps'][0],
             )
 
+    def test_with_ignore_autoassignment_pin(self):
+        """
+        Test PIN is empty when ignore_autoassignment_pin policy is set
+        """
+        token_list = deepcopy(self.token_list[0:1])
+
+        self._create_autoassignment_policy('my_autoassign_policy', 'mydefrealm')
+        self._set_token_realm(token_list, 'mydefrealm')
+
+        # (user, password) pairs from myDefRealm
+        users = [
+            (u'molière', u'molière'),
+        ]
+
+        self._create_ignore_autoassignment_pin_policy('mydefrealm')
+
+        # autoassign token to users
+        user_name, user_pwd = users[0]
+        token = token_list[0]
+        self._validate(
+            user_name,
+            user_pwd + token['otps'][0],
+            )
+
+        # Assert the token was assigned to the correct user
+        response = self.make_admin_request('getTokenOwner', {'serial': token['serial']})
+        content = TestController.get_json_body(response)
+        self.assertTrue(content['result']['status'])
+        self.assertEqual(user_name, content['result']['value']['username'])
+
+        # Validate the remaining OTP values (note PIN is empty)
+        for j in range(1, 3):
+            self._validate(
+                user_name,
+                token['otps'][j],
+                )
 
     # -------- Private helper methods --------
 
@@ -497,6 +533,22 @@ class TestAutoassignmentController(TestController):
         }
         self.create_policy(params)
         self.policies_for_deletion.add(name)
+
+    def _create_ignore_autoassignment_pin_policy(self, realm):
+        """
+        Create an ignore_autoassignment_pin policy for realm 'realm'.
+
+        Adds the policy to self.policies_for deletion so it is cleaned up on
+        tearDown.
+        """
+        params = {
+            'name': 'ignore_autoassignment_pin',
+            'scope': 'enrollment',
+            'action': 'ignore_autoassignment_pin',
+            'realm': realm,
+        }
+        self.create_policy(params)
+        self.policies_for_deletion.add('ignore_autoassignment_pin')
 
     def _validate(self, user, pwd, expected='success', err_msg=None):
         """
