@@ -58,15 +58,27 @@ therefore used by default.
 You can specify a different driver by editing the config file (server_cfg.ini)
 or using the option --tc=selenium.driver:firefox
 
-To install the Chrome driver follow these steps (tested on Ubuntu 13.10 64bit):
 
+To install the Chrome driver on Ubuntu (14.04 and higher) follow these steps:
+$ sudo apt-get install chromium-chromedriver
+$ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+
+On Debian jessie the the Chrome driver package is named 'chromedriver'.
+$ sudo apt-get install chromedriver
+$ sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+
+If the Chrome driver is not available in your package management system use
+these steps:
 $ cd /usr/local/bin/
-$ wget http://chromedriver.storage.googleapis.com/2.9/chromedriver_linux64.zip
+Check for the latest Chromium driver:
+  https://sites.google.com/a/chromium.org/chromedriver/downloads
+At time of writing 2.16 is the newest.
+$ wget http://chromedriver.storage.googleapis.com/2.16/chromedriver_linux64.zip
 $ unzip chromedriver_linux64.zip
 $ rm chromedriver_linux64.zip
-$ mv chromedriver chromedriver-2.9
-$ chmod 755 chromedriver-2.9
-$ ln -s chromedriver-2.9 chromedriver
+$ mv chromedriver chromedriver-2.16
+$ chmod 755 chromedriver-2.16
+$ ln -s chromedriver-2.16 chromedriver
 $ cd /usr/bin/
 $ ln -s chromium-browser google-chrome
 
