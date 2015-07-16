@@ -1521,6 +1521,21 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             c.audit['serial'] = ''
             c.audit['token_type'] = ''
 
+    # if token_last_access is defined in the config,
+    # we add this entry to the token info but only for token, where at least
+    # the pin has matched
+    token_last_access = getFromConfig('token.last_access', None)
+    if token_last_access:
+        stampTokens = []
+        for token_list in [pinMatchingTokenList, challenge_tokens, validTokenList]:
+            if len(token_list) > 0:
+                stampTokens.extend(token_list)
+
+        now = datetime.datetime.now()
+        acces_info = now.strftime(token_last_access)
+        for token in stampTokens:
+            token.addToTokenInfo('last_access', acces_info)
+
     #  handle the processing of challenge tokens
     if len(challenge_tokens) == 1:
         challenge_token = challenge_tokens[0]
@@ -1568,6 +1583,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         log.debug("Multiple challenges submitted: %d" % len(challenge_tokens))
 
         return (False, all_reply)
+
 
     log.debug("[checkTokenList] Number of valid tokens found "
               "(validTokenNum): %d" % len(validTokenList))
