@@ -2883,7 +2883,7 @@ class TestPolicies(TestController):
 
 
         from linotp.lib.policy import get_qrtan_url
-        u = get_qrtan_url("testrealm")
+        u = get_qrtan_url(["testrealm"])
         self.assertTrue(u == URL, u)
 
     def test_802_getqrtanurl(self):
@@ -2901,7 +2901,7 @@ class TestPolicies(TestController):
 
 
         from linotp.lib.policy import get_qrtan_url
-        u = get_qrtan_url("testrealm")
+        u = get_qrtan_url(["testrealm"])
         self.assertTrue(u == URL, u)
 
     def test_803_getqrtanurl(self):
@@ -2919,7 +2919,7 @@ class TestPolicies(TestController):
 
 
         from linotp.lib.policy import get_qrtan_url
-        u = get_qrtan_url("testrealm")
+        u = get_qrtan_url(["testrealm"])
         self.assertTrue(u == URL, u)
 
     def test_804_ocra_policy(self):
