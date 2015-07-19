@@ -1661,14 +1661,12 @@ class OcraTokenClass(TokenClass):
             log.exception("[OcraTokenClass]")
             raise Exception('[OcraTokenClass] Failed to create challenge object: %s' % (ex))
 
-        realm = None
-        realms = self.token.getRealms()
-        if len(realms) > 0:
-            realm = realms[0]
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
 
-        url = ''
-        if realm is not None:
-            url = get_qrtan_url(realm.name)
+        url = get_qrtan_url(realms)
 
         log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)

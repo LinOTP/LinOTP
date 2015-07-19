@@ -378,7 +378,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
     serials = []
     tokens = []
 
-    if user is not None and user.isEmpty() == False:
+    if user is not None and user.isEmpty() == False and user.resolverUid:
         resolverUid = user.resolverUid
         v = None
         k = None
