@@ -252,11 +252,13 @@ class ValidateController(BaseController):
 
             Session.commit()
 
-            qr = getParam(param, 'qr', optional)
-            if qr is not None and opt is not None and opt.has_key('message'):
+            qr = param.get('qr', None)
+            if qr and opt and 'message' in opt:
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt
+                    if 'transactionid' in opt:
+                        param['transactionid'] = opt['transactionid']
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)
@@ -601,11 +603,13 @@ class ValidateController(BaseController):
             c.audit['success'] = ok
             Session.commit()
 
-            qr = getParam(param, 'qr', optional)
-            if qr is not None and opt is not None and opt.has_key('message'):
+            qr = param.get('qr', None)
+            if qr and opt and 'message' in opt:
                 try:
                     dataobj = opt.get('message')
                     param['alt'] = "%s" % opt
+                    if 'transactionid' in opt:
+                        param['transactionid'] = opt['transactionid']
                     return sendQRImageResult(response, dataobj, param)
                 except Exception as exc:
                     log.warning("failed to send QRImage: %r " % exc)

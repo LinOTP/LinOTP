@@ -165,7 +165,8 @@ class Ocra2TokenClass(TokenClass):
         if activationcode is not None:
             ## dont create a new key
             genkey = None
-            serial = getRolloutToken4User(user=user, serial=serial, tok_type=tok_type)
+            serial = getRolloutToken4User(user=user, serial=serial,
+                                          tok_type=tok_type)
             if serial is None:
                 raise Exception('no token found for user: %r or serial: %r' % (user, serial))
             helper_param['serial'] = serial
@@ -297,7 +298,6 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[update] %r: %r: ' % (params, reset_failcount))
 
-
         if params.has_key('ocrasuite'):
             self.ocraSuite = params.get('ocrasuite')
         else:
@@ -317,7 +317,6 @@ class Ocra2TokenClass(TokenClass):
                 log.warning('[Ocra2TokenClass:update] missing parameter genkey\
                              to complete the rollout 2!')
                 params['genkey'] = 1
-
 
         TokenClass.update(self, params, reset_failcount=reset_failcount)
 
@@ -339,8 +338,6 @@ class Ocra2TokenClass(TokenClass):
 
         log.debug('[update]:')
         return
-
-
 
     def _rollout_1(self, params):
         '''
@@ -387,6 +384,20 @@ class Ocra2TokenClass(TokenClass):
 
             info['serial'] = self.getSerial()
             uInfo['se'] = self.getSerial()
+
+            # insert the callback from the params
+            callback = params.get('callback', '')
+            if not callback:
+                realms = []
+                tokenrealms = self.token.getRealms()
+                for realm in tokenrealms:
+                    realms.append(realm.name)
+                callback = get_qrtan_url(realms)
+
+            if callback:
+                callback = callback.replace('<serial>', self.getSerial())
+                info["url"] = callback
+                uInfo['u'] = callback
 
             info['app_import'] = 'lseqr://init?%s' % (urllib.urlencode(uInfo))
             del info['ocrasuite']
@@ -442,7 +453,6 @@ class Ocra2TokenClass(TokenClass):
             elif self.ocraSuite.find('-SHA512'):
                 key_len = 64
 
-
             newkey = kdf2(sharedSecret, nonce, activationcode, key_len)
             self.setOtpKey(binascii.hexlify(newkey))
 
@@ -455,8 +465,10 @@ class Ocra2TokenClass(TokenClass):
             (res, opt) = create_challenge(self, options=params)
 
             challenge = opt.get('challenge')
-            url = opt.get('url')
             transid = opt.get('transactionid')
+            url = opt.get('url')
+            url = url.replace('<serial>', self.getSerial())
+            url = url.replace('<transactionid>', transid)
 
             ##  generate response
             info = {}
@@ -642,14 +654,26 @@ class Ocra2TokenClass(TokenClass):
 
         res = self.verify_challenge_is_valid(challenge, session)
 
-        ## add Info: so depending on the Info, the rendering could be done
-        ##          as a callback into the token via
-        ##          token.getQRImageData(opt=details)
-        realms = self.token.getRealms()
-        if len(realms) > 0:
-            store_data["url"] = get_qrtan_url(realms[0].name)
+        # add Info: so depending on the Info, the rendering could be done
+        #   as a callback into the token via
+        #       token.getQRImageData(opt=details)
 
-        ## we will return a dict of all
+        # do we have a callback url, that will receive the otp value
+        callback = options.get('callback', '')
+        if not callback:
+            realms = []
+            tokenrealms = self.token.getRealms()
+            for realm in tokenrealms:
+                realms.append(realm.name)
+            callback = get_qrtan_url(realms)
+
+        if callback:
+            callback = callback.replace('<transactionid>', state)
+            callback = callback.replace('<serial>', self.token.getSerial())
+
+        store_data["url"] = callback
+
+        # we will return a dict of all
         attributes = self.prepare_message(store_data, state)
         attributes['challenge'] = challenge
 
@@ -681,8 +705,8 @@ class Ocra2TokenClass(TokenClass):
                  'ch': challenge,
                  'me': str(input.encode("utf-8")),
                  'u': str(u[2:])}
-        detail = {'request'         : str(input.encode("utf-8")),
-                  'url'             : str(url.encode("utf-8")),
+        detail = {'request': str(input.encode("utf-8")),
+                  'url': str(url.encode("utf-8")),
                  }
 
         ## create the app_url from the data
@@ -694,6 +718,10 @@ class Ocra2TokenClass(TokenClass):
         dataobj = '%s&%s' % (dataobj, str(urllib.urlencode(signature)))
 
         detail["data"] = dataobj
+        detail["ocraurl"] = {
+                    "value": detail.get('url'),
+                    "img": create_img(detail.get('url'), width=250)
+                    }
 
         return detail
 
@@ -784,14 +812,12 @@ class Ocra2TokenClass(TokenClass):
             raise Exception('[Ocra2TokenClass] Failed to create '
                                                 'challenge object: %s' % (ex))
 
-        realm = None
-        realms = self.token.getRealms()
-        if len(realms) > 0:
-            realm = realms[0]
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
 
-        url = ''
-        if realm is not None:
-            url = get_qrtan_url(realm.name)
+        url = get_qrtan_url(realms)
 
         log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)
@@ -1180,10 +1206,6 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[autosync]: %r ' % (res))
         return res
 
-
-
-
-
     def statusValidationFail(self):
         '''
         statusValidationFail - callback to enable a status change,
@@ -1196,7 +1218,7 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[statusValidationFail]')
         challenge = None
 
-        if self.transId == 0 :
+        if self.transId == 0:
             return
         try:
 
@@ -1205,24 +1227,29 @@ class Ocra2TokenClass(TokenClass):
                 challenge = challenges[0]
                 challenge.setTanStatus(received=True, valid=False)
 
-
             ##  still in rollout state??
             rolloutState = self.getFromTokenInfo('rollout', '0')
 
             if rolloutState == '1':
-                log.info('rollout state 1 for token %r not completed' % (self.getSerial()))
+                log.info('rollout state 1 for token %r not completed'
+                         % (self.getSerial()))
 
             elif rolloutState == '2':
                 if challenge.received_count >= int(getFromConfig("OcraMaxChallengeRequests", '3')):
                     ##  after 3 fails in rollout state 2 - reset to rescan
                     self.addToTokenInfo('rollout', '1')
-                    log.info('rollout for token %r reset to phase 1:' % (self.getSerial()))
+                    log.info('rollout for token %r reset to phase 1:'
+                             % (self.getSerial()))
 
-                log.info('rollout for token %r not completed' % (self.getSerial()))
+                log.info('rollout for token %r not completed'
+                         % (self.getSerial()))
 
         except Exception as ex:
-            log.error('[Ocra2TokenClass:statusValidationFail] Error during validation finalisation for token %r :%r' % (self.getSerial(), ex))
-            log.error("[Ocra2TokenClass:statusValidationFail] %r" % (traceback.format_exc()))
+            log.error('[Ocra2TokenClass:statusValidationFail] Error during'
+                      ' validation finalisation for token %r :%r'
+                      % (self.getSerial(), ex))
+            log.error("[Ocra2TokenClass:statusValidationFail] %r"
+                      % (traceback.format_exc()))
             raise Exception(ex)
 
         finally:
@@ -1231,7 +1258,6 @@ class Ocra2TokenClass(TokenClass):
 
         log.debug('[statusValidationFail]')
         return
-
 
     def statusValidationSuccess(self):
         '''
@@ -1244,7 +1270,7 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[statusValidationSuccess]')
 
-        if self.transId == 0 :
+        if self.transId == 0:
             return
 
         challenges = get_challenges(self.getSerial(), transid=self.transId)
@@ -1324,8 +1350,6 @@ class Ocra2TokenClass(TokenClass):
             error = "No challeges found!"
             log.error('[Ocra2TokenClass:resync] %s' % (error))
             raise Exception('[Ocra2TokenClass:resync] %s' % (error))
-
-
 
         secretHOtp = self.token.getHOtpKey()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
