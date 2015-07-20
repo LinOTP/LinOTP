@@ -126,6 +126,19 @@ class TokenClass(object):
     def getClassPrefix(cls):
         return "UNK"
 
+    def getRealms(self):
+
+        if hasattr(self, 'realms'):
+            return self.realms
+
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
+
+        self.realms = realms
+        return self.realms
+
     def getType(self):
         return self.token.getType()
 
