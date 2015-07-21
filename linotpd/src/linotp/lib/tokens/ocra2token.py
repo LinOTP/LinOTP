@@ -44,7 +44,11 @@ from linotp.lib.crypt   import decryptPin, encryptPin
 from linotp.lib.crypt   import kdf2
 from linotp.lib.crypt   import createNonce
 
-from linotp.lib.policy  import get_qrtan_url
+from linotp.lib.policy  import (get_qrtan_url,
+                                get_qrtan_init_url,
+                                qrtan_url_as_param
+                                )
+
 
 
 ### TODO: move this as ocra specific methods
@@ -385,19 +389,13 @@ class Ocra2TokenClass(TokenClass):
             info['serial'] = self.getSerial()
             uInfo['se'] = self.getSerial()
 
-            # insert the callback from the params
-            callback = params.get('callback', '')
-            if not callback:
-                realms = []
-                tokenrealms = self.token.getRealms()
-                for realm in tokenrealms:
-                    realms.append(realm.name)
-                callback = get_qrtan_url(realms)
+            callback = self._prepare_callback_url(params, get_qrtan_init_url)
 
             if callback:
-                callback = callback.replace('<serial>', self.getSerial())
-                info["url"] = callback
                 uInfo['u'] = callback
+
+            # the info url must be provided in any case
+            info["url"] = callback
 
             info['app_import'] = 'lseqr://init?%s' % (urllib.urlencode(uInfo))
             del info['ocrasuite']
@@ -407,6 +405,60 @@ class Ocra2TokenClass(TokenClass):
 
         log.debug('[_rollout_1]:')
         return
+
+    def _prepare_callback_url(self, params, policy_lookup_funtion,
+                               transactionid=None):
+        """
+        prepare the callback url
+        - check if it is allowed to get the callback from the parameters
+        - get callback url from parameters or as fallback, from policy value
+
+        finaly replace <user>, <password>, <transactionid>, <serial> in the url
+
+        :param params: the dict of calling parameters
+        :param policy_lookup_funtion: function to check for the policy defined
+                    callback, either standard callback or rollout callback
+        :param transactionid: optional the transactionid, if not in rollout
+                              scope
+        :return: the callback url or an empty string
+
+        """
+        callback = ''
+
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
+
+        # insert the callback from the params
+        if qrtan_url_as_param(realms):
+            callback = params.get('callback', '')
+
+        if not callback:
+            callback = policy_lookup_funtion(realms)
+
+        # is the callback supressed for the current request?
+        if 'no_callback' in params or 'suppress_callback' in params:
+            callback = ''
+
+        # now adjust the callback with replacements
+        if callback:
+            callback = callback.replace('<serial>', self.getSerial())
+
+            if '<transactionid>' in callback and transactionid:
+                callback = callback.replace('<transactionid>', transactionid)
+
+            # now handle the replacement parts for the authetication
+            callback_pass = params.get('callback.password', '')
+            callback_user = params.get('callback.user', '')
+
+            if "<user>" in callback and callback_user:
+                callback = callback.replace('<user>', callback_user)
+
+            if "<password>" in callback and callback_pass:
+                callback = callback.replace('<password>', callback_pass)
+
+        return callback
 
     def _rollout_2(self, params):
         '''
@@ -659,17 +711,8 @@ class Ocra2TokenClass(TokenClass):
         #       token.getQRImageData(opt=details)
 
         # do we have a callback url, that will receive the otp value
-        callback = options.get('callback', '')
-        if not callback:
-            realms = []
-            tokenrealms = self.token.getRealms()
-            for realm in tokenrealms:
-                realms.append(realm.name)
-            callback = get_qrtan_url(realms)
-
-        if callback:
-            callback = callback.replace('<transactionid>', state)
-            callback = callback.replace('<serial>', self.token.getSerial())
+        callback = self._prepare_callback_url(options, get_qrtan_url,
+                                          transactionid=state)
 
         store_data["url"] = callback
 
@@ -699,13 +742,15 @@ class Ocra2TokenClass(TokenClass):
         u = urllib.urlencode({'u': "%s" % (url.encode("utf-8"))})
 
         challenge = data.get('challenge')
-        input = data.get('input')
+        input_data = data.get('input')
 
         uInfo = {'tr': transId,
                  'ch': challenge,
-                 'me': str(input.encode("utf-8")),
-                 'u': str(u[2:])}
-        detail = {'request': str(input.encode("utf-8")),
+                 'me': str(input_data.encode("utf-8")),
+                 }
+        if url:
+            uInfo['u'] = str(u[2:])
+        detail = {'request': str(input_data.encode("utf-8")),
                   'url': str(url.encode("utf-8")),
                  }
 
