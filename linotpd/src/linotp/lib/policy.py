@@ -253,14 +253,10 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The URL for the half automatic mode that should be '
                         'used in a QR Token'
                 },
-            'qrtan_init_url': {
+            'qrtanurl_init': {
                 'type': 'str',
                 'desc': 'The URL for rollout in the half automatic mode that '
                         'should be used in a QR Token rollout.'
-                },
-            'qrtanurl_as_param': {
-                'type': 'bool',
-                'desc': 'is it allowed to define the callback url as parameter'
                 },
             'challenge_response': {
                 'type': 'str',
@@ -734,7 +730,28 @@ def deletePolicy(name, enforce=False):
     return res
 
 
-def getPolicyActionValue(policies, action, max=True, String=False):
+def parse_action_value(action_value):
+    """
+    parsing the policy action value by an regular expression
+    """
+    params = {}
+    key_vals = action_value.split(',')
+    for ke_val in key_vals:
+        res = ke_val.split('=', 1)
+
+        # if we have a boolean value, there is only one arg
+        if len(res) == 1:
+            key = res[0].strip()
+            if key:
+                params[key] = True
+        else:
+            key = res[0].strip()
+            val = res[1].strip()
+            params[key] = val
+
+    return params
+
+def getPolicyActionValue(policies, action, max=True, is_string=False, subkey=None):
     """
     This function retrieves the int value of an action from a list of policies
     input
@@ -745,7 +762,7 @@ def getPolicyActionValue(policies, action, max=True, String=False):
     :param max: if True, it will return the highest value, if there are
         multiple policies if False, it will return the lowest value, if there
         are multiple policies
-    :param String: if True, the value is a string and not an integer
+    :param is_string: if True, the value is a string and not an integer
 
     Example policy::
 
@@ -757,37 +774,43 @@ def getPolicyActionValue(policies, action, max=True, String=False):
             time: ""
            }
     """
-    ret = -1
-    if String:
-        ret = ""
-    for _polname, pol in policies.items():
-        actions = [p.strip() for p in pol['action'].split(',')]
-        for a in actions:
-            log.debug("[getPolicyActionValue] Investigating %s (string=%s)"
-                      % (a, unicode(String)))
+    results = {}
 
-            # if there is a boolean action, there is only the test for
-            # existance, which here should return true
-            if  '=' not in a:
-                if action == a:
-                    ret = True
-            else:
-                split_action = [ca.strip() for ca in a.split('=', 1)]
-                (name, value) = split_action
-                log.debug("[getPolicyActionValue] splitting <<%s>> <<%s>>"
-                          % (name, unicode(value)))
-                if name == action:
-                    if String:
-                        ret = value
-                    else:
-                        if not String:
-                            value = int(value)
-                        if max:
-                            if value > ret:
-                                ret = value
-                        else:
-                            if value < ret or -1 == ret:
-                                ret = value
+    for _polname, pol in policies.items():
+
+        action_value = pol['action'].strip()
+        # the regex requires a trailing ','
+        if action_value[-1:] != ',':
+            action_value = action_value + ','
+        values = parse_action_value(action_value)
+
+        if subkey:
+            action = "%s.%s" % (action, subkey)
+
+        ret = values.get(action, None)
+
+        # the parameter String=False enforces a conversion into an int
+        if type(ret) in [str, unicode] and is_string == False:
+            try:
+                ret = int(ret)
+            except ValueError:
+                pass
+
+        if ret:
+            results[_polname] = ret
+
+    if len(results) > 1:
+        for val in results.values():
+            if val != results.values()[0]:
+                log. error("multiple different action value matches exists %r"
+                           % results)
+
+    ret = -1
+    if is_string:
+        ret = ""
+
+    if results:
+        ret = results.values()[0]
 
     return ret
 
@@ -1139,7 +1162,7 @@ def get_tokenlabel(user="", realm="", serial=""):
         tokenlabel = serial
 
     else:
-        string_label = getPolicyActionValue(pol, "tokenlabel", String=True)
+        string_label = getPolicyActionValue(pol, "tokenlabel", is_string=True)
         if "" == string_label:
             # empty label, so we use the serial
             tokenlabel = serial
@@ -1190,7 +1213,7 @@ def get_auto_enrollment(user):
                             realm=user.realm, user=user.login, userObj=user)
 
     if len(pol) > 0:
-        t_typ = getPolicyActionValue(pol, "autoenrollment", String=True)
+        t_typ = getPolicyActionValue(pol, "autoenrollment", is_string=True)
         log.debug("[get_autoenrollment] got the token type = %s" % t_typ)
         if type(t_typ) in [str, unicode] and t_typ.lower() in ['sms', 'email']:
             ret = True
@@ -1318,7 +1341,7 @@ def getOTPPINPolicies(user, scope="selfservice"):
             return ret
         n_max = getPolicyActionValue(pol, "otp_pin_maxlength")
         n_min = getPolicyActionValue(pol, "otp_pin_minlength", max=False)
-        n_contents = getPolicyActionValue(pol, "otp_pin_contents", String=True)
+        n_contents = getPolicyActionValue(pol, "otp_pin_contents", is_string=True)
 
         # find the maximum length
         log.debug("[getOTPPINPolicies] find the maximum length for OTP PINs.")
@@ -2906,7 +2929,7 @@ def set_realm(login, realm, exception=False):
                                  user=login, find_resolver=False)
 
     if len(policies):
-        realm = getPolicyActionValue(policies, "setrealm", String=True)
+        realm = getPolicyActionValue(policies, "setrealm", is_string=True)
 
     log.debug("[set_realm] users %s new realm is %s" % (login, realm))
     return realm
@@ -3044,7 +3067,7 @@ def get_auth_challenge_response(user, ttype):
     log.debug("[get_auth_challenge_response] got policy %r for user "
               "%r@%r from client %r" % (pol, p_user, p_realm, client))
 
-    Token_Types = getPolicyActionValue(pol, "challenge_response", String=True)
+    Token_Types = getPolicyActionValue(pol, "challenge_response", is_string=True)
     token_types = [t.lower() for t in Token_Types.split()]
 
     if ttype.lower() in token_types or '*' in token_types:
@@ -3118,7 +3141,7 @@ def get_qrtan_url(realms):
 
     for realm in realms:
         pol = getPolicy({"scope": "authentication", 'realm': realm})
-        url = getPolicyActionValue(pol, "qrtanurl", String=True)
+        url = getPolicyActionValue(pol, "qrtanurl", is_string=True)
         if url:
             urls.append(url)
 
@@ -3130,65 +3153,6 @@ def get_qrtan_url(realms):
     return url
 
 
-def get_qrtan_init_url(realms):
-    '''
-    Returns the URL for the half automatic mode for the QR TAN token
-    for the given realm
-
-    :remark: there might be more than one url, if the token
-             belongs to more than one realm
-
-    :param realms: list of realms or None
-
-    :return: url string
-
-    '''
-    log.debug("getting qrtan callback url ")
-    url = ''
-    urls = []
-
-    if realms is None:
-        realms = []
-
-    for realm in realms:
-        pol = getPolicy({"scope": "authentication", 'realm': realm})
-        url = getPolicyActionValue(pol, "qrtan_init_url", String=True)
-        if url:
-            urls.append(url)
-
-    if len(urls) > 1:
-        raise Exception('multiple enrollement urls %r found for realm set: %r'
-                        % (urls, realms))
-
-    log.debug("got callback url %s for realms %r" % (url, realms))
-    return url
-
-
-def qrtan_url_as_param(realms):
-    """
-    is it supported to provide the callbackurl as parameter?
-
-    :param realms: list of realms, the token or the token owner belongs to
-    :return: True, if callbacks could be provided as url, else False
-    """
-    ret = False
-
-    log.debug("getting qrtan callback support ")
-
-    if realms is None:
-        realms = []
-
-    for realm in realms:
-        pol = getPolicy({"scope": "authentication", 'realm': realm})
-        ret = getPolicyActionValue(pol, "qrtanurl_as_param")
-        if ret == True:
-            break
-
-    if ret is not True:
-        ret = False
-
-    log.debug("callback url as param <%r> for realms %r" % (ret, realms))
-    return ret
 
 
 ###############################################################################
@@ -3224,7 +3188,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
     log.debug("[check_auth_tokentype] got policy %s"
               "  for user %s@%s  client %s" % (pol, login, realm, client))
 
-    t_type = getPolicyActionValue(pol, "tokentype", max=False, String=True)
+    t_type = getPolicyActionValue(pol, "tokentype", max=False, is_string=True)
     if len(t_type) > 0:
         tokentypes = [t.strip() for t in t_type.lower().split(" ")]
 
@@ -3306,7 +3270,7 @@ def check_auth_serial(serial, exception=False, user=None):
               "  for user %s@%s  client %s" % (pol, login, realm, client))
 
     # extract the value from the policy
-    serial_regexp = getPolicyActionValue(pol, "serial", max=False, String=True)
+    serial_regexp = getPolicyActionValue(pol, "serial", max=False, is_string=True)
     log.debug("[check_auth_serial] found this regexp /%r/ for the serial %r"
               % (serial_regexp, serial))
 

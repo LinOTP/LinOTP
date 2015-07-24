@@ -65,7 +65,7 @@ class U2FController(BaseController):
             }
         valid_facets_action_value = getPolicyActionValue(getPolicy(get_policy_params),
                                                          'u2f_valid_facets',
-                                                         String=True
+                                                         is_string=True
                                                          )
         # the action value contains the semicolon-separated list of valid facets
         valid_facets = valid_facets_action_value.split(';')
