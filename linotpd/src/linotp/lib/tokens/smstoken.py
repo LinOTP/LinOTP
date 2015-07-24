@@ -161,7 +161,7 @@ def get_auth_smstext(realm="", user=None):
                       "action": "smstext"})
 
     if len(pol) > 0:
-        smstext = getPolicyActionValue(pol, "smstext", String=True)
+        smstext = getPolicyActionValue(pol, "smstext", is_string=True)
         log.debug("[get_auth_smstext] got the smstext = %s" % smstext)
         ret = True
 
