@@ -29,7 +29,7 @@ import base64
 import struct
 import binascii
 import re
-from M2Crypto import X509, EC, m2
+from M2Crypto import X509, m2
 from hashlib import sha256
 from string import rfind
 from linotp.lib.tokenclass import TokenClass
@@ -38,6 +38,15 @@ from linotp.lib.validate import check_otp, is_same_transaction
 from linotp.lib.validate import get_challenges
 from linotp.lib.util import getParam
 from linotp.lib.policy import getPolicy, getPolicyActionValue
+from linotp.lib.error import TokenTypeNotSupportedError
+
+# Elliptic Curves support is not available on all platforms
+try:
+    from M2Crypto import EC
+except ImportError:
+    raise TokenTypeNotSupportedError("Missing EC support in M2Crypto (openssl). FIDO U2F token " \
+                                     "can't be used.")
+
 """
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance
 """
