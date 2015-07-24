@@ -55,7 +55,7 @@
     </tr>
         <tr>
         <td><label for="policy_action">${_("Action")}</label></td>
-        <td><input type="text" class="required"  id="policy_action" size="40" maxlength="200" 
+        <td><input type="text" class="required"  id="policy_action" size="40" maxlength="2000" 
             title='${_("The action that should be allowed. These are actions like: enrollSMS, enrollMOTP...The actions may be comma separated.")}'></td>
     </tr>
     <tr>

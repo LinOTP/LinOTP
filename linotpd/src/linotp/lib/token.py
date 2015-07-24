@@ -1843,7 +1843,7 @@ def losttoken(serial, new_serial="", password="", default_validity=0):
     validity = linotp.lib.policy.getPolicyActionValue(pol, "lostTokenValid",
                                                       max=False)
     contents = linotp.lib.policy.getPolicyActionValue(pol,
-                                            "lostTokenPWContents", String=True)
+                                        "lostTokenPWContents", is_string=True)
 
     log.debug("losttoken: length: %r, "
               "validity: %r, contents: %r" % (pw_len, validity, contents))
