@@ -453,10 +453,12 @@ class Ocra2TokenClass(TokenClass):
             callback_user = params.get('callback.user', '')
 
             if "<user>" in callback and callback_user:
-                callback = callback.replace('<user>', callback_user)
+                user = urllib.quote(callback_user)
+                callback = callback.replace('<user>', user)
 
             if "<password>" in callback and callback_pass:
-                callback = callback.replace('<password>', callback_pass)
+                passw = urllib.quote(callback_pass)
+                callback = callback.replace('<password>', passw)
 
         return callback
 

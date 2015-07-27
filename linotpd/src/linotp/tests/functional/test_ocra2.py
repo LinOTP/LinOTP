@@ -32,6 +32,7 @@ import logging
 import binascii
 import random
 import sys
+import urllib
 
 from linotp.lib.ext.pbkdf2 import PBKDF2
 
@@ -3612,7 +3613,7 @@ This is a very long message text, which should be used as the data for the chall
         enroll_param = {'callback':
                 'https://<user>:<password>@myLocal.host.de/callback/<serial>/',
                 'callback.user': 'hugo',
-                'callback.password': 'abracadabra123',
+                'callback.password': 'abracad:abra123',
                 }
         response1 = self.init_0_QR_Token(serial=serial, pin=pin,
                                          realm='mydefrealm',
@@ -3627,7 +3628,8 @@ This is a very long message text, which should be used as the data for the chall
         # and if the replacements went right
         self.assertTrue(serial in curl, curl)
         self.assertTrue(enroll_param['callback.user'] in curl, curl)
-        self.assertTrue(enroll_param['callback.password'] in curl, curl)
+        self.assertTrue(urllib.quote(enroll_param['callback.password'])
+                                          in curl, curl)
 
         ocra.init_1(response1)
 
