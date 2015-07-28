@@ -204,8 +204,15 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
     log.debug("getting qrtan callback url ")
     urls = []
 
-    if realms is None:
-        realms = []
+    # Policies defintions with wildcard defintions '*'
+    # if there is no realm defined, we can catch by this trick the
+    # policy definition, which have an realm wildcard definition '*'
+    # so that the wildcard will match as well the empty realm
+    # By setting the realm to '/:no realm:/' there is no collission with
+    # any realm as this string contains characters, which are not allowed in
+    # realm names
+    if realms is None or len(realms) == 0:
+        realms = ['/:no realm:/']
 
     for realm in realms:
         pol = getPolicy({"scope": "authentication", 'realm': realm})
