@@ -3602,12 +3602,9 @@ This is a very long message text, which should be used as the data for the chall
 
         self.setupPolicies()
 
-
-        enroll_param = {'callback':
-                'https://<user>:<password>@myLocal.host.de/callback/<serial>/',
-                'callback.user': 'hugo',
-                'callback.password': 'abracad:abra123',
-
+        enroll_param = {'callback.id': 'one',
+                        'callback.user': 'hugo',
+                        'callback.password': 'abracad:abra123',
                 }
         response1 = self.init_0_QR_Token(serial=serial, pin=pin,
                                          realm='mydefrealm',
