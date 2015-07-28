@@ -27,12 +27,10 @@
 """
 Verify LinOTP for UserPrincipal (user@domain) authentication
 
-the test will create a static-password token, and 
+the test will create a static-password token, and
 will try to verify the user in different situations.
 """
 
-import warnings
-import re
 
 import __builtin__
 __builtin__.use_standalone_advanced_controller = True
@@ -43,6 +41,7 @@ from linotp.tests.tools.json_utils    import JsonUtils
 import logging
 log = logging.getLogger(__name__)
 
+
 class TestUserPrincipalController(TestAdvancedController):
     def __init__(self, *args, **kwargs):
         super(TestUserPrincipalController, self).__init__(*args, **kwargs)
@@ -50,61 +49,69 @@ class TestUserPrincipalController(TestAdvancedController):
     def setUp(self):
         super(TestUserPrincipalController, self).setUp()
 
-        self.setAuthorization(self.getDefaultAuthorization())            
+        self.setAuthorization(self.getDefaultAuthorization())
         self.createDefaultResolvers()
         self.createDefaultRealms()
+
+        self.splitVal = self.getConfiguration(
+                                    result_path="result/value/splitAtSign")
+        self.setConfiguration(splitAtSign="False")
         self.setAuthorization(None)
+
     def tearDown(self):
-        self.setAuthorization(self.getDefaultAuthorization())            
+        self.setAuthorization(self.getDefaultAuthorization())
+
+        if not self.splitVal:
+            self.delConfiguration(key="splitAtSign")
+        else:
+            self.setConfiguration(splitAtSign=self.splitVal)
+
+        self.deleteAllTokens()
         self.deleteAllRealms()
         self.deleteAllResolvers()
+
         self.setAuthorization(None)
-        
         super(TestUserPrincipalController, self).tearDown()
 
     def test_userprincipal(self):
         """
         Verify LinOTP for UserPrincipal (user@domain) authentication
 
-        the test will create a static-password token, and 
+        the test will create a static-password token, and
         will try to verify the user in different situations.
-        
+
         2015.07.10: due to lack of information about what is
                     the purpose of this test, only one case
-                    is implemented (with user@domain + realm 
+                    is implemented (with user@domain + realm
                     specified)
 
         """
-        user  = "pass@user"
-        pin   = "1234"
+        user = "pass@user"
+        pin = "1234"
         realm = 'myDefRealm'
-        
-        # Initialize authorization (we need authorization in 
+
+        # Initialize authorization (we need authorization in
         # token creation/deletion)...
-        self.setAuthorization(self.getDefaultAuthorization())            
+        self.setAuthorization(self.getDefaultAuthorization())
         # Create test token...
-        res = self.createToken(user    = user,
-                               realm   = realm,
-                               serial  = "F722362",
-                               pin     = pin,
-                               otpkey  = "AD8EABE235FC57C815B26CEF37090755",
-                               type    = 'spass')
+        res = self.createToken(user=user,
+                               realm=realm,
+                               serial="F722362",
+                               pin=pin,
+                               otpkey="AD8EABE235FC57C815B26CEF37090755",
+                               type='spass')
         serial = JsonUtils.getJson(res, ['detail', 'serial'])
-        try:
-            # although not needed, we assign token...
-            self.assignToken(serial = serial, user = user, realm = realm) # pin = pin, 
-            self.enableToken(serial = serial)
-                        
-            # Revoke authorization...
-            self.setAuthorization(None)
 
-            
-            # test user-principal authentication
-            self.validateCheck(user = user, password = pin, realm = realm)
+        # although not needed, we assign token...
+        self.assignToken(serial=serial, user=user, realm=realm)
+        self.enableToken(serial=serial)
 
-            pass # at this moment, the test was successful!
-        finally:
-            # Reactivate authentication
-            self.setAuthorization(self.getDefaultAuthorization())            
-            self.removeTokenBySerial(serial)
-        pass
+        # Revoke authorization...
+        self.setAuthorization(None)
+
+        # test user-principal authentication
+        self.validateCheck(user=user, password=pin, realm=realm)
+
+        # Reactivate authentication
+        self.setAuthorization(self.getDefaultAuthorization())
+        self.removeTokenBySerial(serial)
