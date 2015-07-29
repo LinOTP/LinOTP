@@ -53,18 +53,15 @@ class TestUserPrincipalController(TestAdvancedController):
         self.createDefaultResolvers()
         self.createDefaultRealms()
 
-        self.splitVal = self.getConfiguration(
-                                    result_path="result/value/splitAtSign")
-        self.setConfiguration(splitAtSign="False")
+        self.splitVal = self.getConfiguration(key='splitAtSign')
+        self.setConfiguration('splitAtSign', False)
         self.setAuthorization(None)
 
     def tearDown(self):
         self.setAuthorization(self.getDefaultAuthorization())
 
-        if not self.splitVal:
-            self.delConfiguration(key="splitAtSign")
-        else:
-            self.setConfiguration(splitAtSign=self.splitVal)
+        # The new setConfiguration will remove setting if Value is "None" or "Empty"
+        self.setConfiguration('splitAtSign', self.splitVal)
 
         self.deleteAllTokens()
         self.deleteAllRealms()

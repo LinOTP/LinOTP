@@ -43,6 +43,8 @@ values and in all of the cases the result values are tested by
 default (for success).
 """
 
+from _pyio import __metaclass__
+
 import unittest2
 import warnings
 import json
@@ -100,6 +102,21 @@ else:
 
 
 
+# This is an utility class used to "seal" class implementation (forbid inheritance).
+class Final(type):
+    def __new__(cls, name, bases, classdict):
+        for b in bases:
+            if isinstance(b, Final):
+                raise TypeError("type '{0}' is not an acceptable base type".format(b.__name__))
+        return type.__new__(cls, name, bases, dict(classdict))
+    
+# The class DefaultValue is used internally by TestAdvancedController as 
+# placeholder for default values for all methods where expectedValue is used.
+class DefaultValue:
+    __metaclass__ = Final
+
+
+
 class TestAdvancedController(TestController2):
     def __init__(self, *args, **kwargs):
         super(TestAdvancedController, self).__init__(*args, **kwargs)
@@ -111,6 +128,7 @@ class TestAdvancedController(TestController2):
         super(TestAdvancedController, self).setUp()
         # On startup, initialize the session cookie...
         self.Cookies['session'] = self.session
+        
     def tearDown(self):
         self.setAuthorization(None)
         # On finish, delete the session variable...
@@ -199,11 +217,11 @@ class TestAdvancedController(TestController2):
     # Setup web-api credential information (use None for clear).
     def setAuthorization(self, authorization, session=None):
         if authorization is None:
-            self.GlobalParams['session'] = None
+            self.GlobalParams['session']  = None
             self.Cookies['admin_session'] = None
             self.Headers['Authorization'] = None
         else:
-            self.GlobalParams['session'] = session or self.session
+            self.GlobalParams['session']  = session or self.session
             self.Cookies['admin_session'] = session or self.session
             self.Headers['Authorization'] = authorization
         return
@@ -224,8 +242,15 @@ class TestAdvancedController(TestController2):
             for temp in anotherDict:
                 if not temp is None:
                     for key in temp.keys():
-                        value = temp[key] or ''
-                        retDict[key.encode(encoding)] = unicode(value).encode(encoding)
+                        value = temp[key]
+                        if isinstance(key,   unicode):
+                            key   = key.encode(encoding)
+                        if isinstance(value, unicode):
+                            value = value.encode(encoding)
+                        elif not isinstance(value, basestring):
+                            value = str(value)   
+                             
+                        retDict[key] = value
             return retDict;
 
         # By default we perform only get requests
@@ -239,8 +264,8 @@ class TestAdvancedController(TestController2):
         # Process params and headers...
         #     We do not allow transport of Unicode strings. If Unicode string
         #     is provided, we convert the unicode value to utf-8 string!
-        req_params = encodeDict('utf-8', self.GlobalParams.get(), params)
-        req_headers = encodeDict('utf-8', self.Headers.get(), headers)
+        req_params  = encodeDict('utf-8', self.GlobalParams.get(), params)
+        req_headers = encodeDict('utf-8', self.Headers.get(),      headers)
 
         # Perform the web-request...
         if postMethod:
@@ -259,7 +284,8 @@ class TestAdvancedController(TestController2):
         res = JsonUtils.getBody(rsp)  # rsp.json_body
         # result Status must be always True!
         self.assertTrue(JsonUtils.getJson(res, ['result', 'status']) == True,
-                        rsp)
+            ("Failed LinOTP %s.%s invocation (result: %s)" 
+                % (linotpController, linotpAction, str(rsp))))
         if not expectedValue is None:
             # If an explicit value is expected, then we compare the value
             value = JsonUtils.getJson(res, ['result', 'value'])
@@ -284,54 +310,80 @@ class TestAdvancedController(TestController2):
     # *********************************************************************
 
     #region Configuration wrappers
-    def getConfiguration(self, defaultValue=None, result_path="result/value",
+    def getConfiguration(self, key=None, defaultValue=None,
                          **extraParams):
         res = self.invokeLinotp('system', 'getConfig',
                                 expectedValue={}, # dictionary expected.
                                 **extraParams)
-        inf = JsonUtils.getJson(res, result_path)
-        if defaultValue is None:
-            return inf
-        return TestAdvancedController.appendDict(defaultValue, inf)
-
-    def setConfiguration(self, defaultValue=None,
-                         **extraParams):
-        res = self.invokeLinotp('system', 'setConfig',
-                                expectedValue={}, # dictionary expected.
-                                **extraParams)
+        if not key is None:
+            path = ['result', 'value']
+            if isinstance(key, list):
+                path.extend(key)
+            else: 
+                path.append(key)
+            return JsonUtils.getJson(res, path, defaultValue)
+            
         inf = JsonUtils.getJson(res, ['result', 'value'])
         if defaultValue is None:
             return inf
         return TestAdvancedController.appendDict(defaultValue, inf)
 
-    def delConfiguration(self, defaultValue=None,
+    def setConfiguration(self, key, value,
+                         expectedValue=DefaultValue,
                          **extraParams):
+        if not value is None:
+            if expectedValue is DefaultValue:
+                expectedValue = {re.compile('^setConfig (?P<key>.*)$'): True}
+            params          = extraParams
+            params['key']   = key
+            params['value'] = value
+            self.invokeLinotp('system', 'setConfig',
+                              expectedValue=expectedValue,
+                              **params)
+        else:
+            if expectedValue is DefaultValue:
+                expectedValue = {re.compile('^delConfig (?P<key>.*)$'): True}
+            self.invokeLinotp('system', 'delConfig',
+                              key=key,
+                              expectedValue=expectedValue)
+
+    def deleteConfiguration(self, key, 
+                            expectedValue=DefaultValue):
+        if expectedValue is DefaultValue:
+            expectedValue = {re.compile('^delConfig (?P<key>.*)$'): True}
         self.invokeLinotp('system', 'delConfig',
-                          expectedValue={}, # dictionary expected.
-                          **extraParams)
+                          key=key,
+                          expectedValue=expectedValue)
     #endregion
 
     #region Resolver support
     def createResolver(self, name, type,
-                       expectedValue=True, valueErrorMessage=None,
+                       expectedValue=DefaultValue, valueErrorMessage=None,
                        **params):
+        if expectedValue is DefaultValue:
+            expectedValue = True
         return self.invokeLinotp('system', 'setResolver',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  name=name, type=type,
                                  **params)
+        
     def deleteResolver(self, name,
-                       expectedValue=True, valueErrorMessage=None):
+                       expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = True
         return self.invokeLinotp('system', 'delResolver',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  resolver=name)
+        
     def getResolvers(self, defaultValue={}, **extraParams):
         ''' get all resolvers and delete them '''
         res = self.invokeLinotp('system', 'getResolvers',
                                  expectedValue=None,
                                  **extraParams)
         return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+    
     def getResolverUsers(self, resolver, username=None, defaultValue={},
                          **extraParams):
         res = self.invokeLinotp('admin', 'userlist',
@@ -340,25 +392,33 @@ class TestAdvancedController(TestController2):
         return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
     #endregion
 
+
     #region Realm support
     def createRealm(self, name, resolvers,
-                    expectedValue=True, valueErrorMessage=None):
+                    expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = True
         return self.invokeLinotp('system', 'setRealm',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  realm=name, resolvers=resolvers)
+    
     def deleteRealm(self, name,
-                    expectedValue={'delRealm': {'result': True}},
+                    expectedValue=DefaultValue,
                     valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = {'delRealm': {'result': True}}
         return self.invokeLinotp('system', 'delRealm',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  realm=name)
+    
     def getRealms(self, defaultValue={}, **extraParams):
         res = self.invokeLinotp('system', 'getRealms',
                                  expectedValue=None,
                                  **extraParams)
-        data = JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+        return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+    
     def getRealmUsers(self, realm, username=None, defaultValue={},
                       **extraParams):
         res = self.invokeLinotp('admin', 'userlist',
@@ -369,42 +429,57 @@ class TestAdvancedController(TestController2):
 
     #region Policy support
     def createPolicy(self, name, scope, action,
-                     expectedValue={re.compile('^setPolicy (?P<name>.*)$'): {
-                                      'realm' : True,
-                                      'active': True,
-                                      'client': True,
-                                      'user'  : True,
-                                      'time'  : True,
-                                      'action': True,
-                                      'scope' : True}}, valueErrorMessage=None,
+                     expectedValue=DefaultValue, valueErrorMessage=None,
                      **params):
-        parameters = {'name'  : name,
-                      'scope' : scope,
-                      'action': action,
-                      'user'  : '*',
-                      'realm' : '*',
-                      'client': '',
-                      'time'  : ''}
+        if expectedValue is DefaultValue:
+            expectedValue = {
+                re.compile('^setPolicy (?P<name>.*)$'): {
+                    'realm' : True,
+                    'active': True,
+                    'client': True,
+                    'user'  : True,
+                    'time'  : True,
+                    'action': True,
+                    'scope' : True
+                }
+            }
+        parameters = {
+            'name'  : name,
+            'scope' : scope,
+            'action': action,
+            'user'  : '*',
+            'realm' : '*',
+            'client': '',
+            'time'  : ''
+        }
         parameters.update(params)
         return self.invokeLinotp('system', 'setPolicy',
                                  expectedValue=expectedValue,
                                  valueErrorMesage=valueErrorMessage,
                                  **parameters)
+        
     def deletePolicy(self, name,
-                     expectedValue={'delPolicy': {
-                        'result': {
-                          re.compile('^linotp\.Policy\.(?P<name>.*)\.action$'): True,
-                          re.compile('^linotp\.Policy\.(?P<name>.*)\.active$'): True,
-                          re.compile('^linotp\.Policy\.(?P<name>.*)\.client$'): True,
-                          re.compile('^linotp\.Policy\.(?P<name>.*)\.realm$') : True,
-                          re.compile('^linotp\.Policy\.(?P<name>.*)\.scope$') : True,
-                          re.compile('^linotp\.Policy\.(?P<name>.*)\.time$')  : True,
-                          re.compile('^linotp\.Policy\.(?P<name>.*)\.user$')  : True}}},
+                     expectedValue=DefaultValue,
                      valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = {
+                'delPolicy': {
+                    'result': {
+                        re.compile('^linotp\.Policy\.(?P<name>.*)\.action$'): True,
+                        re.compile('^linotp\.Policy\.(?P<name>.*)\.active$'): True,
+                        re.compile('^linotp\.Policy\.(?P<name>.*)\.client$'): True,
+                        re.compile('^linotp\.Policy\.(?P<name>.*)\.realm$') : True,
+                        re.compile('^linotp\.Policy\.(?P<name>.*)\.scope$') : True,
+                        re.compile('^linotp\.Policy\.(?P<name>.*)\.time$')  : True,
+                        re.compile('^linotp\.Policy\.(?P<name>.*)\.user$')  : True
+                    }
+                }
+            }
         return self.invokeLinotp('system', 'delPolicy',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  name=name)
+        
     def getPolicies(self, defaultValue={}, **extraParams):
         res = self.invokeLinotp('system', 'getPolicy',
                                  expectedValue=None,
@@ -414,8 +489,10 @@ class TestAdvancedController(TestController2):
 
     #region Token support
     def createToken(self,
-                    expectedValue=True, valueErrorMessage=None,
+                    expectedValue=DefaultValue, valueErrorMessage=None,
                     **params):
+        if expectedValue is DefaultValue:
+            expectedValue = True
         parameters = TestAdvancedController.appendDict({}, params)
         if 'serial' is params and not 'description' in params:
             parameters['description'] = "TestToken " + params['serial']
@@ -423,8 +500,11 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  **parameters)
+        
     def assignToken(self, serial, user, pin=None, realm=None,
-                    expectedValue=True, valueErrorMessage=None):
+                    expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = True
         parameters = {'serial': serial, 'user': user}
         if not pin is None:
             parameters['pin'] = pin
@@ -434,46 +514,62 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  **parameters)
+        
     def enableToken(self, serial,
-                    expectedValue=1, valueErrorMessage=None):
+                    expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = 1
         return self.invokeLinotp("admin", "enable",
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  serial=serial)
+        
     def disableToken(self, serial,
-                    expectedValue=1, valueErrorMessage=None):
+                    expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = 1
         return self.invokeLinotp("admin", "disable",
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  serial=serial)
 
     def removeTokenBySerial(self, serial,
-                            expectedValue=1, valueErrorMessage=None):
+                            expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = 1
         return self.invokeLinotp('admin', 'remove',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  serial=serial)
 
     def removeTokenByUser(self, user,
-                          expectedValue=1, valueErrorMessage=None):
+                          expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = 1
         return self.invokeLinotp('admin', 'remove',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  user=user)
 
     def getTokenOwner(self, serial,
-                      expectedValue={'username': re.compile('.*')},
+                      expectedValue=DefaultValue,
                       valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = {'username': re.compile('.*')}
         return self.invokeLinotp('admin', 'getTokenOwner',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  serial=serial)
+        
     def setTokenRealm(self, serial, realm,
-                      expectedValue=1, valueErrorMessage=None):
+                      expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = 1
         return self.invokeLinotp('admin', 'tokenrealm',
                                  expectedValue=expectedValue,
                                  valueErrorMesage=valueErrorMessage,
                                  serial=serial, realms=realm)
+        
     def getTokens(self, defaultValue={}, **extraParams):
         res = self.invokeLinotp('admin', 'show',
                                  expectedValue=None,
@@ -482,7 +578,9 @@ class TestAdvancedController(TestController2):
     #endregion
 
     def validateCheck(self, user, password, realm=None,
-                     expectedValue=True, valueErrorMessage=None):
+                     expectedValue=DefaultValue, valueErrorMessage=None):
+        if expectedValue is DefaultValue:
+            expectedValue = True
         parameters = {'user': user,
                       'pass': password }
         if not realm is None:
@@ -530,6 +628,7 @@ class TestAdvancedController(TestController2):
             self.createResolver(name=resolver['name'],
                                 type=resolver['type'],
                                 fileName=resolver['fileName'])
+            
     def createDefaultRealms(self):
         """
             Idea: build out of two resolvers
@@ -555,20 +654,17 @@ class TestAdvancedController(TestController2):
             })
         for realm in realm_infos:
             # Create test realms
-            self.createRealm(name=realm['name'],
-                             resolvers=realm['resolverId'])
-        #self.createRealm(
-        #    name      = 'myMixRealm',
-        #    resolvers = ','.join(map(lambda r: r['resolverId'], realm_infos)))
+            self.createRealm(name      = realm['name'],
+                             resolvers = realm['resolverId'])
 
+        realms = self.getRealms()
+        errmsg = 'Internal error, program not properly initialized'
+        self.assertIsInstance(realms, dict)
+        self.assertItemsEqual(realms.keys(), ['mydefrealm', 'myotherrealm', 'mymixrealm'], 
+                              'A non-expected list of realms returned')
         # Assert 'myDefRealm' is default
-        res = self.invokeLinotp('system', 'getRealms',
-                                 expectedValue=None)
-        realms = JsonUtils.getJson(res, ['result', 'value'])
-        self.assertEqual(len(realms), 3)
-        self.assertIn('mydefrealm', realms)
-        self.assertIn('default', realms['mydefrealm'])
-        self.assertTrue(realms['mydefrealm']['default'])
+        self.assertIn('default', realms['mydefrealm'],   errmsg)
+        self.assertTrue(realms['mydefrealm']['default'], errmsg)
 
     # clear installation (delete all objects)...
     def deleteAllResolvers(self):
@@ -580,9 +676,7 @@ class TestAdvancedController(TestController2):
 
     def deleteAllRealms(self):
         ''' get all realms and delete them '''
-        res = self.invokeLinotp('system', 'getRealms',
-                                 expectedValue=None)
-        data = JsonUtils.getJson(res, ['result', 'value'], {})
+        data = self.getRealms()
         for realmId in data.keys():
             realm = data[realmId]
             self.deleteRealm(name=realm['realmname'])
@@ -595,6 +689,7 @@ class TestAdvancedController(TestController2):
 
     def deleteAllTokens(self):
         ''' get all tokens and delete them '''
-        data = self.getTokens().get('data')
+        vals = self.getTokens()
+        data = JsonUtils.getJson(vals, ['data'])
         for token in data:
             self.removeTokenBySerial(serial=token['LinOtp.TokenSerialnumber'])
