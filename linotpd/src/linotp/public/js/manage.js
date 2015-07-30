@@ -4113,7 +4113,7 @@ $(document).ready(function(){
     }
     var $dialog_enroll_token = $('#dialog_token_enroll').dialog({
         autoOpen: false,
-        title: 'Enroll token',
+        title: 'Enroll Token',
         resizeable: false,
         width: 600,
         modal: true,

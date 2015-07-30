@@ -43,22 +43,29 @@ class TestCase(unittest.TestCase):
         self.http_host = get_from_tconfig(['linotp', 'host'], required=True)
         self.http_protocol = get_from_tconfig(['linotp', 'protocol'], default="https")
         self.base_url = self.http_protocol + "://" + self.http_username + \
-                        ":" + self.http_password + "@" + self.http_host
+            ":" + self.http_password + "@" + self.http_host
         self.driver = None
         selenium_driver = get_from_tconfig(['selenium', 'driver'],
                                            default="firefox").lower()
+        selenium_driver_language = get_from_tconfig(['selenium', 'language'],
+                                                    default="en_us").lower()
+        fp = webdriver.FirefoxProfile()
+        fp.set_preference("intl.accept_languages", selenium_driver_language);
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--lang=' + selenium_driver_language )
+
         if selenium_driver == 'chrome':
             try:
-                self.driver = webdriver.Chrome()
+                self.driver = webdriver.Chrome(chrome_options=chrome_options)
             except WebDriverException:
                 warnings.warn("Error creating Chrome driver. Maybe you forgot installing"
                               " 'chromedriver'. If you wanted to use another Browser please"
                               " adapt your config file.")
         elif selenium_driver == 'firefox':
-            self.driver = webdriver.Firefox()
+            self.driver = webdriver.Firefox(firefox_profile=fp)
         if self.driver is None:
             warnings.warn("Falling back to Firefox driver.")
-            self.driver = webdriver.Firefox()
+            self.driver = webdriver.Firefox(firefox_profile=fp)
         self.driver.implicitly_wait(30)
         self.verification_errors = []
         self.accept_next_alert = True

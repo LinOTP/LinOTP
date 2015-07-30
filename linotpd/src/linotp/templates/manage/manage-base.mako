@@ -109,7 +109,7 @@ if isinstance(lang, list):
             <ul>
                 <li><a href='#' id='menu_load_aladdin_xml_tokenfile'>${_("SafeNet/ Aladdin XML")}</a></li>
                 <li><a href='#' id='menu_load_oath_csv_tokenfile'>${_("OATH CSV")}</a></li>
-                <li><a href='#' id='menu_load_yubikey_csv_tokenfile'>${_("Yubikey CSV")}</a></li>
+                <li><a href='#' id='menu_load_yubikey_csv_tokenfile'>${_("YubiKey CSV")}</a></li>
 
             % for id in c.importers:
             <li><a href='#' id='menu_load_${id}'>${c.importers[id]}</a></li>
@@ -539,7 +539,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_token_enroll() {
-        $("#dialog_token_enroll" ).dialog( "option", "title", '${_("Enroll token")}' );
+        $("#dialog_token_enroll" ).dialog( "option", "title", '${_("Enroll Token")}' );
         $('#button_enroll_enroll .ui-button-text').html('${_("Enroll")}');
         $('#button_enroll_cancel .ui-button-text').html('${_("Cancel")}');
     }
@@ -751,16 +751,16 @@ ${c.version} --- &copy; ${c.licenseinfo}
             enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Here you can upload a CSV file for your OATH token. The file is supposed to contain one token per line")}:</p>
         <p>${_("For HOTP and TOTP tokens:")}</p>
-        <p>${_("Serial Number, Seed, Type, OTP Length, Time Step")}</p>
+        <p>${_("Serial number, Seed, Type, OTP length, Time step")}</p>
         <p>${_("For OCRA tokens:")}</p>
         <p>${_("Serial Number, Seed, Type, Ocra Suite")}</p>
         <fieldset>
 	        <legend>${_("Default Values:")}</legend>
             <table>
                 <tr><td>${_("Type")}</td><td>-></td><td>${_("HOTP")}</td></tr>
-                <tr><td>${_("OTP Length")}</td><td>-></td><td>6</td></tr>
-                <tr><td>${_("Time Step")}</td><td>-></td><td>30</td></tr>
-                <tr><td>${_("OCRA Suite")}</td><td>-></td><td>${_("optional")}</td></tr>
+                <tr><td>${_("OTP length")}</td><td>-></td><td>6</td></tr>
+                <tr><td>${_("Time step")}</td><td>-></td><td>30</td></tr>
+                <tr><td>${_("OCRA suite")}</td><td>-></td><td>${_("optional")}</td></tr>
             </table>
         </fieldset>
         <p>${_("Please choose the token file")}:
@@ -784,11 +784,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
     }
 </script>
 
-<!-- ###################### import Yubikey CSV ####################### -->
+<!-- ###################### import YubiKey CSV ####################### -->
 <div id='dialog_import_yubikey'>
     <form id="load_tokenfile_form_yubikeycsv" action="/admin/loadtokens" method="post"
              enctype="multipart/form-data" onsubmit="return false;">
-        <p>${_("Here you can upload a CSV file for your Yubikey token. The file is supposed to contain one token per line")}:</p>
+        <p>${_("Here you can upload a CSV file for your YubiKey token. The file is supposed to contain one token per line")}:</p>
         <p>${_("Please choose the token file")}:
              <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
              <input name="type" type="hidden" value="yubikeycsv">\
@@ -805,7 +805,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_import_yubikey() {
-        $("#dialog_import_yubikey" ).dialog( "option", "title", '${_("Yubikey CSV Token File")}' );
+        $("#dialog_import_yubikey" ).dialog( "option", "title", '${_("YubiKey CSV Token File")}' );
         $('#button_yubikeycsv_load .ui-button-text').html('${_("Load Token File")}');
         $('#button_yubikeycsv_cancel .ui-button-text').html('${_("Cancel")}');
     }

@@ -129,6 +129,10 @@ class TestController(unittest2.TestCase):
 
         :param response: A WebOb response object
         """
+        if response.content_type != 'application/json':
+            raise ValueError(
+                "Content type is not JSON. Response: %r" % response
+                )
         current_webob = LooseVersion(
             pkg_resources.get_distribution('webob').version
             )

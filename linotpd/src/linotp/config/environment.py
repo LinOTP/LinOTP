@@ -39,6 +39,7 @@ import linotp.lib.helpers
 
 from useridresolver.UserIdResolver import UserIdResolver
 from linotp.config.routing import make_map
+from linotp.lib.error import TokenTypeNotSupportedError
 
 
 import sys
@@ -266,6 +267,9 @@ def get_token_module_list():
             try:
                 log.debug("import module: %s" % mod_name)
                 __import__(mod_name)
+            except TokenTypeNotSupportedError as exx:
+                module = None
+                log.warning('Token type not supported on this setup: %s', mod_name)
             except Exception as exx:
                 module = None
                 log.debug('unable to load token module : %r (%r)'
