@@ -26,10 +26,10 @@
 #
 """This is the SMSClass to send SMS via HTTP Gateways"""
 
-from smsprovider.SMSProvider import getSMSProviderClass
 from smsprovider.SMSProvider import ISMSProvider
 
 import base64
+import re
 
 import urllib
 import httplib2
@@ -121,26 +121,48 @@ class HttpSMSProvider(ISMSProvider):
         if url.startswith('https:'):
             https = True
 
-        lib = 'urllib'
-        try:
-            if basic_auth == True and https == True:
-                lib = 'httplib'
-                ret = self.httplib_request(url, parameter, username=username,
-                                           password=password, method=method)
-            else:
-                ret = self.urllib_request(url, parameter, username=username,
-                                           password=password, method=method)
-        except Exception as exx:
+        prefered_lib = self.config.get('PREFERED_HTTPLIB', '').strip().lower()
 
+        if prefered_lib and prefered_lib in ['requests', 'urllib', 'httplib']:
+            lib = prefered_lib
+        else:
+            # try to use the request lib, which makes our live easier ;-)
+            try:
+                import requests
+                # we need at least the requests version 1.x.x
+                version = requests.__version__
+                version = version.split('.')
+                if int(version[0]) < 1:
+                    raise ImportError()
+                lib = 'requests'
+            except ImportError:
+                log.info("No 'requests' found: falling back to urllib / httplib")
+                lib = 'urllib'
+
+            if lib == 'urllib':
+                if basic_auth == True and https == True:
+                    lib = 'httplib'
+
+        if lib == 'requests':
+            fallback = 'httplib'
+        elif  lib == 'httplib':
+            fallback = 'urllib'
+        else:
+            fallback = 'httplib'
+
+        # setup
+        http_lib = getattr(self, lib + '_request')
+        http_fallback_lib = getattr(self, fallback + '_request')
+
+        try:
+            ret = http_lib(url, parameter, username, password, method)
+            return ret
+        except Exception as exx:
             log.warning("Failed to access the HTTP SMS Service with %s: %r"
                         % (lib, exx))
             try:
-                if lib == 'httplib':
-                    ret = self.urllib_request(url, parameter, username=username,
-                                               password=password, method=method)
-                else:
-                    ret = self.httplib_request(url, parameter, username=username,
-                                               password=password, method=method)
+                http_fallback_lib(url, parameter, username, password, method)
+                return ret
             except Exception as new_exx:
                 ## if we as well get an error, we raise the first exception
                 ## to be more authentic ;-)
@@ -148,8 +170,7 @@ class HttpSMSProvider(ISMSProvider):
                         % new_exx)
                 raise exx
 
-
-        return ret
+        return False
 
     def getParameters(self, message, phone):
 
@@ -172,37 +193,65 @@ class HttpSMSProvider(ISMSProvider):
 
         return urldata
 
-
     def _check_success(self, reply):
         '''
         Check the success according to the reply
-        1. if RETURN_SUCCESS is defined
-        2. if RETURN_FAIL is defined
+
+        if RETURN_SUCCESS_REGEX, RETURN_SUCCES,
+            RETURN_FAIL_REGEX or RETURN_FAIL is defined
+        :param reply: the reply from the http request
+
+        :return: True or raises an Exception
         '''
-        ret = False
+
         log.debug("[_check_success] entering with config %s" % self.config)
-        if "RETURN_SUCCESS" in self.config:
+        log.debug("[_check_success] entering with reply %s" % reply)
+
+        if "RETURN_SUCCESS_REGEX" in self.config:
+            ret = re.search(self.config["RETURN_SUCCESS_REGEX"], reply)
+            if ret is not None:
+                log.debug("[_check_success] sending SMS success")
+            else:
+                log.warning("[_check_success] failed to send SMS. "
+                            "Reply does not match the RETURN_SUCCESS_REGEX "
+                            "definition")
+                raise Exception("We received a none success reply from the "
+                                "SMS Gateway.")
+
+        elif "RETURN_FAIL_REGEX" in self.config:
+            ret = re.search(self.config["RETURN_FAIL_REGEX"], reply)
+            if ret is not None:
+                log.warning("[_check_success] sending SMS fail")
+                raise Exception("We received a predefined error from the "
+                                "SMS Gateway.")
+            else:
+                log.debug("[_check_success] sending sms success full. "
+                            "The reply does not match the RETURN_FAIL_REGEX "
+                            "definition")
+
+        elif "RETURN_SUCCESS" in self.config:
             success = self.config.get("RETURN_SUCCESS")
             log.debug("[_check_success] success: %s" % success)
             if reply[:len(success)] == success:
-                log.debug("[_check_success] sending sms success")
-                ret = True
+                log.debug("[_check_success] sending SMS success")
             else:
-                log.warning("[_check_success] failed to send sms. Reply does not match the RETURN_SUCCESS definition")
-                raise Exception("We received a none success reply from the SMS Gateway.")
+                log.warning("[_check_success] failed to send SMS. Reply does "
+                            "not match the RETURN_SUCCESS definition")
+                raise Exception("We received a none success reply from the "
+                                "SMS Gateway.")
 
         elif "RETURN_FAIL" in self.config:
             fail = self.config.get("RETURN_FAIL")
             log.debug("[_check_success] fail: %s" % fail)
             if reply[:len(fail)] == fail:
-                log.warning("[_check_success] sending sms fail")
-                raise Exception("We received a predefined error from the SMS Gateway.")
+                log.warning("[_check_success] sending SMS fail")
+                raise Exception("We received a predefined error from the "
+                                "SMS Gateway.")
             else:
-                log.warning("[_check_success] sending sms success full. The reply does not match the RETURN_FAIL definition")
-                ret = True
-        else:
-            ret = True
-        return ret
+                log.debug("[_check_success] sending sms success full. "
+                            "The reply does not match the RETURN_FAIL "
+                            "definition")
+        return True
 
     def get_proxy_info(self, proxy):
         """
@@ -243,6 +292,26 @@ class HttpSMSProvider(ISMSProvider):
                                         proxy_port=proxy_port,
                                         **proxy_params)
         return proxy_info
+
+    def requests_request(self, url, parameter,
+                       username=None, password=None, method='GET'):
+
+        try:
+            import requests
+            call = getattr(requests, method.lower())
+            response = call(url,
+                            auth=(username, password),
+                            data=parameter)
+            reply = response.text
+            # some providers like clickatell have no response.status!
+            log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
+            ret = self._check_success(reply)
+
+        except Exception as exc:
+            log.error("HttpSMSProvider %r" % exc)
+            raise Exception("Failed to send SMS. %s" % str(exc))
+
+        return ret
 
     def httplib_request(self, url, parameter,
                        username=None, password=None, method='GET'):
