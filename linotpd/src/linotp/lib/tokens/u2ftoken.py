@@ -40,13 +40,6 @@ from linotp.lib.util import getParam
 from linotp.lib.policy import getPolicy, getPolicyActionValue
 from linotp.lib.error import TokenTypeNotSupportedError
 
-# Elliptic Curves support is not available on all platforms
-try:
-    from M2Crypto import EC
-except ImportError:
-    raise TokenTypeNotSupportedError("Missing EC support in M2Crypto (openssl). FIDO U2F token " \
-                                     "can't be used.")
-
 """
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance
 """
@@ -57,6 +50,13 @@ required = False
 import logging
 log = logging.getLogger(__name__)
 
+# Elliptic Curves support is not available on all platforms
+try:
+    from M2Crypto import EC
+except (ImportError, AttributeError) as exx:
+    log.debug("Could not import EC from M2Crypto: %r", exx)
+    raise TokenTypeNotSupportedError("Missing EC support in M2Crypto (openssl). FIDO U2F token " \
+                                     "can't be used.")
 
 class U2FTokenClass(TokenClass):
 
