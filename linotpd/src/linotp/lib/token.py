@@ -2535,13 +2535,12 @@ class TokenIterator(object):
                             log.debug('[TokenIterator::init] %r' % ex)
 
                     if len(serials) > 0:
-                        #  if tokens found, search for their serials
+                        # if tokens found, search for their serials
                         ucondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
                     else:
-                        #  if no token is found, block search for user
-                        #  and return nothing
-                        ucondition = and_(or_(Token.LinOtpUserid == u'',
-                                              Token.LinOtpUserid == None))
+                        # if no token is found, block search for user
+                        # and return nothing
+                        ucondition = and_(Token.LinOtpTokenSerialnumber == u'')
 
                 #  handle case, when nothing found in former cases
                 if searchType == "wildcard":
