@@ -270,6 +270,7 @@ def get_token_module_list():
             except TokenTypeNotSupportedError as exx:
                 module = None
                 log.warning('Token type not supported on this setup: %s', mod_name)
+                continue
             except Exception as exx:
                 module = None
                 log.debug('unable to load token module : %r (%r)'
