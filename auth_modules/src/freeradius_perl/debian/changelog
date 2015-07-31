@@ -1,3 +1,10 @@
+linotp-freeradius-perl (1.5~b0-1) jessie; urgency=low
+
+  * Bug fix: Add 'SSL_verify_mode=0' to really disable certificate
+    verification (if the SSL_CHECK=False option is set)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 15 Jul 2015 15:12:30 +0200
+
 linotp-freeradius-perl (1.4-2~precise) precise; urgency=low
 
   * Added missing file that caused the debian package to be empty
