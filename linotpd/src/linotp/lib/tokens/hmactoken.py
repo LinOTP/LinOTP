@@ -329,7 +329,8 @@ class HmacTokenClass(TokenClass):
         #serialNum   = self.token.LinOtpTokenSerialnumber
         #log.debug("serial: %s",serialNum)
 
-        hmac2Otp = HmacOtp(secretHOtp, counter, otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(secretHOtp, counter, otplen,
+                           self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, window)
 
         if -1 == res:
@@ -436,7 +437,7 @@ class HmacTokenClass(TokenClass):
         #if yes:
         if res != -1:
             # if former is defined
-            if (info.has_key("otp1c")):
+            if "otp1c" in info:
                 #check if this is consecutive
                 otp1c = info.get("otp1c")
                 otp2c = res
@@ -444,7 +445,7 @@ class HmacTokenClass(TokenClass):
                 if (otp1c + 1) != otp2c:
                     res = -1
 
-                if info.has_key("dueDate"):
+                if "dueDate" in info:
                     dueDate = info.get("dueDate")
                     now = int(time.time())
                     if dueDate <= now:

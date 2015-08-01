@@ -975,7 +975,7 @@ class TokenClass(object):
 
         return True
 
-    def incOtpCounter(self, counter, reset=True):
+    def incOtpCounter(self, counter=None, reset=True):
         '''
         method
             incOtpCounter(aToken, counter)
@@ -995,6 +995,9 @@ class TokenClass(object):
         log.debug('incOtpCounter')
 
         resetCounter = False
+
+        if counter is None:
+            counter = self.token.LinOtpCount
 
         #CKO, FIX: in case of SMS Token, we always get a counter==0 ???
         #if 0 == counter:
