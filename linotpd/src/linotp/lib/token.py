@@ -2415,8 +2415,8 @@ class TokenIterator(object):
                     if len(serials) > 0:
                         ucondition = and_(Token.LinOtpTokenSerialnumber.in_(serials))
                     else:
-                        ucondition = and_(or_(Token.LinOtpUserid == u'',
-                                              Token.LinOtpUserid == None))
+                        ucondition = and_(Token.LinOtpTokenSerialnumber == u'')
+
 
         if filter is None:
             condition = None
