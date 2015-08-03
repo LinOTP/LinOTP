@@ -1,4 +1,4 @@
-linotp-freeradius-perl (1.5~b0-1) jessie; urgency=low
+linotp-freeradius-perl (1.5~b0) jessie; urgency=low
 
   * Bug fix: Add 'SSL_verify_mode=0' to really disable certificate
     verification (if the SSL_CHECK=False option is set)
