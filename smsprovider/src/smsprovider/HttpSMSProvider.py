@@ -121,10 +121,10 @@ class HttpSMSProvider(ISMSProvider):
         if url.startswith('https:'):
             https = True
 
-        prefered_lib = self.config.get('PREFERED_HTTPLIB', '').strip().lower()
+        preferred_lib = self.config.get('PREFERRED_HTTPLIB', '').strip().lower()
 
-        if prefered_lib and prefered_lib in ['requests', 'urllib', 'httplib']:
-            lib = prefered_lib
+        if preferred_lib and preferred_lib in ['requests', 'urllib', 'httplib']:
+            lib = preferred_lib
         else:
             # try to use the request lib, which makes our live easier ;-)
             try:
