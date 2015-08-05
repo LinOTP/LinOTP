@@ -226,11 +226,17 @@ class AdminController(BaseController):
 
         arguments:
             * serial  - optional: only this serial will be displayed
-            * user    - optional: only the tokens of this user will be displayed. If the user does not exist,
-              linotp will search tokens of users, who contain this substring.
-              **TODO:** This can be very time consuming an will be changed in the next release to use wildcards.
-            * filter  - optional: takes a substring to search in table token columns
-            * viewrealm - optional: takes a realm, only the tokens in this realm will be displayed
+            * user    - optional: only the tokens of this user will be
+                                  displayed. If the user does not exist,
+                                  linotp will search tokens of users, who
+                                  contain this substring.
+                        **TODO:** This can be very time consuming an will be
+                                  changed in the next release to use wildcards.
+            * filter  - optional: takes a substring to search in table token
+                                  columns
+            * viewrealm - optional: takes a realm, only the tokens in this
+                                    realm will be displayed
+            * realm - - optional: alias to the viewrealm
             * sortby  - optional: sort the output by column
             * sortdir - optional: asc/desc
             * page    - optional: reqeuest a certain page
@@ -256,7 +262,7 @@ class AdminController(BaseController):
             sort = getParam(param, "sortby", optional)
             dir = getParam(param, "sortdir", optional)
             psize = getParam(param, "pagesize", optional)
-            realm = getParam(param, "viewrealm", optional)
+            realm = param.get("viewrealm", param.get("realm", ''))
             ufields = getParam(param, "user_fields", optional)
             output_format = getParam(param, "outform", optional)
 
