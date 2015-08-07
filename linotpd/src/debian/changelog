@@ -11,9 +11,7 @@ linotp (2.7.2.2~rc0-1) jessie; urgency=low
     dependencies are missing
   * Tools: Fix linotp-sql-janitor crash when executed without --export option
   * Server: Fix for wildcard search with available unassigned tokens
-  * Server: Fix for failing HTTPSMSProvider with Twilio requests
   * Server: Fix LinOTP on pylons 0.9.7
-  * Packaging: Remove Debian revision from linotp-freeradius-perl package
   * Packaging: Remove nose dependency from linotp install process
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Aug 2015 10:03:55 +0200
