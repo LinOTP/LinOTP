@@ -500,19 +500,13 @@ class OcraTest(TestController):
         return
 
     def randOTP(self, otp):
-        ''' randomly change the chars in an otp - to gen a wron otp '''
+        ''' randomly change the chars in an otp - to gen a wrong otp '''
         rotp = otp
-        lenotp = len(unicode(otp))
-        if lenotp > 1:
-            while rotp == otp:
-                for i in range(0, 3):
-                    idx1 = random.randint(0, lenotp - 1)
-                    idx2 = random.randint(0, lenotp - 1)
-                    if idx1 != idx2:
-                        c1 = rotp[idx1]
-                        c2 = rotp[idx2]
-                        rotp = rotp[:idx1] + c2 + rotp[idx1 + 1:]
-                        rotp = rotp[:idx2] + c1 + rotp[idx2 + 1:]
+        text = list(otp)
+        while rotp == otp:
+            random.shuffle(text)
+            rotp = ''.join(text)
+
         return rotp
 
     def init_0_QR_Token(self, tokentype='ocra2', ocrapin='',
@@ -3181,15 +3175,14 @@ This is a very long message text, which should be used as the data for the chall
                 break
 
         (response2, activationkey) = self.init_1_QR_Token(user='root', message='TestTTT', activationkey=wrongactivationkey)
-        print "response2:" , response2
-        assert '"status": false' in response2
-        assert '"message": "Non-base32 digit found",' or 'activation code checksum error' in response2
-
+        self.assertTrue('"status": false' in response2, response2)
+        stat = ('Non-base32 digit found' in response2 or
+                'activation code checksum error' in response2)
+        self.assertTrue(stat, response2)
 
         activationkey = createActivationCode()
         (response2, activationkey) = self.init_1_QR_Token(user='root', message='TestTTT', activationkey=activationkey)
         assert 'app_import' in response2
-
 
         (challenge, transid) = ocra.init_2(response2, activationkey)
 

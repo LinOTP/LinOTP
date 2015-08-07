@@ -2511,6 +2511,11 @@ class TokenIterator(object):
         if self.user_fields == None:
             self.user_fields = []
 
+        condition = None
+        ucondition = None
+        scondition = None
+        r_condition = None
+
         if type(filterRealm) in (str, unicode):
             filterRealm = filterRealm.split(',')
 
