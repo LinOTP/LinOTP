@@ -16,12 +16,12 @@ linotp-useridresolver (2.8~0dev0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 06 May 2015 16:09:53 +0200
 
-linotp-useridresolver (2.7.2.2~b0-1) jessie; urgency=low
+linotp-useridresolver (2.7.2.2~rc1-1) jessie; urgency=low
 
   Enhancements:
   * Add support for odbc_connect in SQLIdResolver
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 15 Jul 2015 15:03:28 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Aug 2015 11:05:44 +0200
 
 linotp-useridresolver (2.7.2-1~precise) precise; urgency=low
 
