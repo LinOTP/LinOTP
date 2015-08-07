@@ -1,4 +1,4 @@
-linotp (2.7.2.2~b0-1) jessie; urgency=low
+linotp (2.7.2.2~rc0-1) jessie; urgency=low
 
   Enhancements:
   * UserIdResolver: Add support for odbc_connect in SQLIdResolver
@@ -10,8 +10,13 @@ linotp (2.7.2.2~b0-1) jessie; urgency=low
   * Tools: Display an error message in linotp-enroll-smstoken when
     dependencies are missing
   * Tools: Fix linotp-sql-janitor crash when executed without --export option
+  * Server: Fix for wildcard search with available unassigned tokens
+  * Server: Fix for failing HTTPSMSProvider with Twilio requests
+  * Server: Fix LinOTP on pylons 0.9.7
+  * Packaging: Remove Debian revision from linotp-freeradius-perl package
+  * Packaging: Remove nose dependency from linotp install process
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 15 Jul 2015 15:03:28 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Aug 2015 10:03:55 +0200
 
 linotp (2.7.2.1-1) jessie; urgency=low
 
