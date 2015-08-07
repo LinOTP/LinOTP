@@ -37,10 +37,19 @@ from routes.middleware import RoutesMiddleware
 from linotp.config.environment import load_environment
 from contextlib import contextmanager
 
-try:
+from distutils.version import LooseVersion
+
+
+from pylons import __version__ as pylons_version
+
+# for pylons versions lower or equesl to 0.9.8
+# we have to use a dummy class based on dict
+if LooseVersion(pylons_version) > LooseVersion('0.9.7'):
     from pylons.configuration import PylonsConfig as PyConf
-except ImportError:
-    class PyConf(dict): pass
+else:
+    class PyConf(dict):
+        pass
+
 
 import binascii
 import re
