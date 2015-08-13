@@ -1,6 +1,10 @@
-linotp (2.7.2.2~rc1-1) jessie; urgency=low
+linotp (2.7.2.1+custom01-1) jessie; urgency=low
 
   Enhancements:
+  * Server: OCRA2: Add ability to select the callback url by id
+  * Server: OCRA2: Add policies to control the handling of the qrtan callback url
+  * Server: OCRA2: Add support for username and password in the QR code for basic auth
+  * Server: Add ability to define SMS messagetext as parameter
   * UserIdResolver: Add support for odbc_connect in SQLIdResolver
 
   Bug fixes:
@@ -14,7 +18,7 @@ linotp (2.7.2.2~rc1-1) jessie; urgency=low
   * Server: Fix LinOTP on pylons 0.9.7
   * Packaging: Remove nose dependency from linotp install process
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Aug 2015 11:05:44 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 13 Aug 2015 14:58:32 +0200
 
 linotp (2.7.2.1-1) jessie; urgency=low
 
