@@ -914,8 +914,8 @@ class Ocra2TokenClass(TokenClass):
 
         detail["data"] = dataobj
         detail["ocraurl"] = {
-                    "value": detail.get('url'),
-                    "img": create_img(detail.get('url'), width=250)
+                    "value": detail.get('data'),
+                    "img": create_img(detail.get('data'), width=250)
                     }
 
         return detail
