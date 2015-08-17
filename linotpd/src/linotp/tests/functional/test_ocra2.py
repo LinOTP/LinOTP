@@ -35,6 +35,8 @@ import sys
 import urllib
 
 from linotp.lib.ext.pbkdf2 import PBKDF2
+from linotp.lib.reply import create_img
+
 
 from Crypto.Hash import SHA256 as SHA256
 
@@ -48,7 +50,6 @@ from linotp.tests import TestController, url
 
 from datetime import datetime
 from datetime import timedelta
-
 
 try:
     import json
@@ -426,7 +427,10 @@ class OcraTest(TestController):
             app_import_1 = unicode(jresp.get('detail').get('app_import'))
 
             message = 'abc'
-            (response2, activationkey) = self.init_1_QR_Token(user='root', message=message, activationkey='GEZDGNBVGY3TQOJQ01', ocrasuite=test['ocrasuite'])
+            (response2, activationkey) = self.init_1_QR_Token(user='root',
+                                                              message=message,
+                                                              activationkey='GEZDGNBVGY3TQOJQ01',
+                                                              ocrasuite=test['ocrasuite'])
             (challenge, transid) = ocra.init_2(response2, activationkey)
 
             jresp = json.loads(response2.body)
@@ -3856,12 +3860,132 @@ This is a very long message text, which should be used as the data for the chall
         assert '"value": true' in response
 
         ## to be tested: checkStatus, resync, challenge as parameter
+        self.removeTokens(serial=ocra.serial)
+        return
 
+    def test_qr_code(self):
+        '''
+        check the response qrcode to contain the same value as the lsqr url
+        - derived from test_serial_based_w_callbackid
+        '''
+        ocrasuite = 'OCRA-1:HOTP-SHA256-8:C-QA64'
+        message = 'Transaktion: Ausrollen eines OCRA2 Tokens'
+        serial = "ExternalManagedOcraToken"
 
+        pin = ''
+
+        ocra = OcraOtp()
+
+        self.setupPolicies()
+
+        enroll_param = {'callback.id': 'one',
+                        'callback.user': 'hugo',
+                        'callback.password': 'abracad:abra123',
+                }
+        response1 = self.init_0_QR_Token(serial=serial, pin=pin,
+                                         realm='mydefrealm',
+                                         params=enroll_param,
+                                         ocrasuite=ocrasuite)
+
+        # now verify that the qrcode image is the same
+        # as the qr code generated from the lseqr value
+        resp = json.loads(response1.body)
+
+        qr_img = resp.get('detail', {}).get('ocraurl', {}).get('img', '')
+        qr_img = qr_img.split('rc="data:image/png;base64,')[1]
+
+        qr_data = resp.get('detail', {}).get('ocraurl', {}).get('value', '')
+        qr_code = create_img(qr_data)
+        qr_code = qr_code.split('rc="data:image/png;base64,')[1]
+
+        self.assertEqual(qr_img, qr_code, resp)
+
+        self.assertTrue('lseqr://init' in qr_data, resp)
+        self.assertTrue(serial in qr_data, resp)
+
+        ocra.init_1(response1)
+
+        (response2, activationkey) = self.init_1_QR_Token(serial=serial,
+                                                          pin=pin,
+                                                          message=message,
+                                                          realm='mydefrealm',
+                                                          params=enroll_param)
+
+        # now verify that the qrcode image is the same
+        # as the qr code generated from the lseqr value
+        resp = json.loads(response2.body)
+
+        qr_img = resp.get('detail', {}).get('ocraurl', {}).get('img', '')
+        qr_img = qr_img.split('rc="data:image/png;base64,')[1]
+
+        qr_data = resp.get('detail', {}).get('ocraurl', {}).get('value', '')
+        qr_code = create_img(qr_data)
+        qr_code = qr_code.split('rc="data:image/png;base64,')[1]
+
+        self.assertEqual(qr_img, qr_code, resp)
+
+        self.assertTrue('lseqr://nonce' in qr_data, resp)
+        self.assertTrue(serial in qr_data, resp)
+
+        (challenge, transid) = ocra.init_2(response2, activationkey)
+
+        # finish rollout
+        otp = ocra.callcOtp(challenge)
+
+        response = self.check_otp(transid, otp, pin=pin, params=enroll_param)
+
+        self.assertTrue('"value": true' in response, response)
+
+        for i in range(1, 5):
+            message = ('Veränderung %d am System durchgeführt! '
+                      'Bitte bestätigen!' % i)
+
+            if i == 3:
+                enroll_param['no_callback'] = True
+
+            if i == 4:
+                del enroll_param['callback.id']
+                del enroll_param['no_callback']
+
+            (response, challenge, transid) = self.get_challenge(ocra.serial,
+                                                    challenge_data=message,
+                                                    params=enroll_param)
+
+            self.assertTrue('"value": true' in response, response)
+
+            # now verify that the qrcode image is the same
+            # as the qr code generated from the lseqr value
+            resp = json.loads(response.body)
+
+            qr_img = resp.get('detail', {}).get('ocraurl', {}).get('img', '')
+            qr_img = qr_img.split('rc="data:image/png;base64,')[1]
+
+            qr_data = resp.get('detail', {}).get('ocraurl', {}).get('value', '')
+            qr_code = create_img(qr_data)
+            qr_code = qr_code.split('rc="data:image/png;base64,')[1]
+
+            self.assertEqual(qr_img, qr_code, resp)
+
+            self.assertTrue('lseqr://req' in qr_data, resp)
+            self.assertTrue(transid in qr_data, resp)
+
+            # now check if this is the same as the returned message
+            self.assertEqual(qr_data,
+                             resp.get('detail', {}).get('message', ''),
+                             resp)
+
+            otp = ocra.callcOtp(challenge, counter=i)
+
+            parameters = {'pass': otp,
+                          'transactionid': transid,
+                         }
+
+            response = self.app.get(url(controller='validate', action='check_t'),
+                                    params=parameters)
+
+            self.assertTrue('"value": true' in response, response)
 
         self.removeTokens(serial=ocra.serial)
         return
 
-
-
-
+##eof##########################################################################
