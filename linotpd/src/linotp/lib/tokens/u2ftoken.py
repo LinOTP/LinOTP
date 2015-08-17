@@ -267,10 +267,13 @@ class U2FTokenClass(TokenClass):
         if keyHandleIndex > 1:
             keyHandle = keyHandle[:-(keyHandleIndex - 1)]
 
+        appId = self._get_app_id()
+
         data = {
             'challenge': "%s" % challenge,
             'version': 'U2F_V2',
             'keyHandle': keyHandle,
+            'appId': appId
         }
         message = json.dumps(data)
         attributes = None
