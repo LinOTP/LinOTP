@@ -346,12 +346,14 @@ class TestU2FController(TestController):
         """
         # Initial token registration step
         response_registration1_JSON = self._registration1(pin)
-        self.assertTrue('"value": true' in response_registration1_JSON,
+        self.assertIn('"value": true', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
-        self.assertTrue('"challenge":' in response_registration1_JSON,
+        self.assertIn('"challenge":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
-        self.assertTrue('"serial":' in response_registration1_JSON,
+        self.assertIn('"serial":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
+        self.assertIn('"message":', response_registration1_JSON,
+                        "Message: %r" % response_registration1_JSON)
 
         response_registration1 = json.loads(response_registration1_JSON.body)
         challenge_registration = response_registration1.get('detail', {}).get('challenge')
