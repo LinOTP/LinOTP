@@ -610,7 +610,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 		}
 		if (!vp) {
 			log_error("Found no IPv4 address");
-		else {
+		} else {
 			snprintf(client_ip, size-1, "%s", inet_ntoa(request->packet->src_ipaddr.ipaddr.ip4addr));
 		}
 		break;
