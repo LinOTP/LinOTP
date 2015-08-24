@@ -144,7 +144,8 @@ class TestU2FController(TestController):
             'type': 'u2f',
             'phase': 'registration1',
             'user': 'root',
-            'session': self.session
+            'session': self.session,
+            'appid': self.origin
         }
         if pin is not None:
             parameters['pin'] = pin
