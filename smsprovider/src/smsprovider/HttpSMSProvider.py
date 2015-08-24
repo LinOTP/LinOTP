@@ -298,10 +298,14 @@ class HttpSMSProvider(ISMSProvider):
 
         try:
             import requests
-            call = getattr(requests, method.lower())
-            response = call(url,
-                            auth=(username, password),
-                            data=parameter)
+            if method == 'GET':
+                response = requests.get(url,
+                                        auth=(username, password),
+                                        params=parameter)
+            else:
+                response = requests.post(url,
+                                         auth=(username, password),
+                                         data=parameter)
             reply = response.text
             # some providers like clickatell have no response.status!
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
