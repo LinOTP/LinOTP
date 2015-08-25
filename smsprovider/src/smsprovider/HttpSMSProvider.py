@@ -379,7 +379,7 @@ class HttpSMSProvider(ISMSProvider):
             http.add_credentials(name=url_user, password=url_pass)
 
         ##! the parameters to the httplib / proxy must be of type str()
-        encoded_params = str(urllib.urlencode(parameter))
+        encoded_params = self.urlencode(parameter)
         call_url = str(url)
 
         try:
@@ -389,7 +389,7 @@ class HttpSMSProvider(ISMSProvider):
                 call_data = None
                 if len(encoded_params) > 0:
                     ## extend the url with our parameters
-                    call_url = str("%s?%s" % (call_url, encoded_params))
+                    call_url = "%s?%s" % (call_url, encoded_params)
 
             ## or do a POST request - the more secure default and fallback
             else:
@@ -449,13 +449,13 @@ class HttpSMSProvider(ISMSProvider):
 
             full_url = str(url)
             encoded_params = None
-            if parameter is not None and len(parameter) > 0 :
-                encoded_params = str(urllib.urlencode(parameter))
+            if parameter is not None and len(parameter) > 0:
+                encoded_params = self.urlencode(parameter)
 
             if method == 'GET':
                 c_data = None
                 if encoded_params:
-                    full_url = str("%s?%s" % (url, encoded_params))
+                    full_url = "%s?%s" % (url, encoded_params)
             else:
                 c_data = encoded_params
 
@@ -476,6 +476,29 @@ class HttpSMSProvider(ISMSProvider):
             raise Exception("Failed to send SMS. %s" % str(exc))
 
         return ret
+
+    @staticmethod
+    def urlencode(parameter):
+        """
+        helper method:
+          urllib.urlencode does by default url_quote, which converts ' ' spaces
+          into '+' symbol, which is not understood by all HTTPSMSProviders
+          This helper uses urllibquote to build the encoded parameter string
+
+        :param parameter: dictionary
+        :return: urlencoded string of type str() as unicode is not supported
+
+        """
+        encoded_params = ''
+        if type(parameter) == dict:
+            params = []
+            for key, value in parameter.items():
+                value = unicode(value).encode('utf-8')
+                key = unicode(key).encode('utf-8')
+                params.append("%s=%s" % (key, urllib.quote(value)))
+            encoded_params = "&".join(params)
+        return str(encoded_params)
+
 
 
     def loadConfig(self, configDict):
