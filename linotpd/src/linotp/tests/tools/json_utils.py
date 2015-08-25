@@ -67,6 +67,9 @@ class JsonUtils:
     # intermediate object must be a non-empty dictionary). 
     @staticmethod
     def getJson(object, path, defaultValue = None):
+        if object is None:
+            return defaultValue
+        
         if isinstance(path, basestring):
             path = path.split('/')
         else:

@@ -77,11 +77,6 @@ class TestUserPrincipalController(TestAdvancedController):
         the test will create a static-password token, and
         will try to verify the user in different situations.
 
-        2015.07.10: due to lack of information about what is
-                    the purpose of this test, only one case
-                    is implemented (with user@domain + realm
-                    specified)
-
         """
         user = "pass@user"
         pin = "1234"
