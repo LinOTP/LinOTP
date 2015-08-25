@@ -97,7 +97,7 @@ class TestUserPrincipalController(TestAdvancedController):
                                pin=pin,
                                otpkey="AD8EABE235FC57C815B26CEF37090755",
                                type='spass')
-        serial = JsonUtils.getJson(res, ['detail', 'serial'])
+        serial = JsonUtils.getJson(res, ['serial'])
 
         # although not needed, we assign token...
         self.assignToken(serial=serial, user=user, realm=realm)
