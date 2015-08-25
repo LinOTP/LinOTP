@@ -401,7 +401,7 @@ class HttpSMSProvider(ISMSProvider):
                 call_data = None
                 if len(encoded_params) > 0:
                     ## extend the url with our parameters
-                    call_url = str("%s?%s" % (call_url, encoded_params))
+                    call_url = "%s?%s" % (call_url, encoded_params)
 
             ## or do a POST request - the more secure default and fallback
             else:
@@ -470,7 +470,7 @@ class HttpSMSProvider(ISMSProvider):
             if method == 'GET':
                 c_data = None
                 if encoded_params:
-                    full_url = str("%s?%s" % (url, encoded_params))
+                    full_url = "%s?%s" % (url, encoded_params)
             else:
                 headers["Content-type"] = "application/x-www-form-urlencoded"
                 c_data = encoded_params
@@ -509,9 +509,13 @@ class HttpSMSProvider(ISMSProvider):
         if type(parameter) == dict:
             params = []
             for key, value in parameter.items():
+                value = unicode(value).encode('utf-8')
+                key = unicode(key).encode('utf-8')
                 params.append("%s=%s" % (key, urllib.quote(value)))
             encoded_params = "&".join(params)
         return str(encoded_params)
+
+
 
     def loadConfig(self, configDict):
         self.config = configDict
