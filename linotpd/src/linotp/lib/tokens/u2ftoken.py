@@ -275,8 +275,9 @@ class U2FTokenClass(TokenClass):
             'keyHandle': keyHandle,
             'appId': appId
         }
-        message = json.dumps(data)
-        attributes = None
+        message = "U2F challenge"
+        attributes = dict()
+        attributes['signrequest'] = data
 
         return (True, message, data, attributes)
 
@@ -866,7 +867,6 @@ class U2FTokenClass(TokenClass):
             # which is used as the registration challenge
             challenge = base64.urlsafe_b64encode(binascii.unhexlify(self._genOtpKey_(32)))
             self.addToTokenInfo('challenge', challenge)
-            response_detail['challenge'] = challenge
 
             # save the appId to the TokenInfo
             # An appId passed as parameter is preferred over an appId defined in a policy
@@ -909,7 +909,7 @@ class U2FTokenClass(TokenClass):
                                 'version': 'U2F_V2',
                                 'appId': appId
                                 }
-            response_detail['message'] = json.dumps(register_request)
+            response_detail['registerrequest'] = register_request
 
         elif requested_phase == "registration2":
             # We are in registration phase 2

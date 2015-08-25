@@ -348,15 +348,21 @@ class TestU2FController(TestController):
         response_registration1_JSON = self._registration1(pin)
         self.assertIn('"value": true', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
+        self.assertIn('"registerrequest":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
         self.assertIn('"challenge":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"version":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"appId":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
         self.assertIn('"serial":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
-        self.assertIn('"message":', response_registration1_JSON,
-                        "Message: %r" % response_registration1_JSON)
 
         response_registration1 = json.loads(response_registration1_JSON.body)
-        challenge_registration = response_registration1.get('detail', {}).get('challenge')
+        challenge_registration = response_registration1.get('detail', {})\
+                                                       .get('registerrequest', {})\
+                                                       .get('challenge')
         self.serial = response_registration1.get('detail', {}).get('serial')
         self.serials.add(self.serial)
 
@@ -392,17 +398,21 @@ class TestU2FController(TestController):
         """
         # Initial authentication phase
         response_authentication1_JSON = self._authentication1(pin)
-        self.assertTrue('"value": false' in response_authentication1_JSON,
+        self.assertIn('"value": false', response_authentication1_JSON,
                         "Response: %r" % response_authentication1_JSON)
-        self.assertTrue('"transactionid":' in response_authentication1_JSON,
+        self.assertIn('"transactionid":', response_authentication1_JSON,
                         "Response: %r" % response_authentication1_JSON)
-        self.assertTrue('"message":' in response_authentication1_JSON,
+        self.assertIn('"signrequest":', response_authentication1_JSON,
                         "Response: %r" % response_authentication1_JSON)
-        self.assertTrue('\\"challenge\\":' in response_authentication1_JSON,
+        self.assertIn('"challenge":', response_authentication1_JSON,
                         "Response: %r" % response_authentication1_JSON)
-        self.assertTrue('\\"version\\":' in response_authentication1_JSON,
+        self.assertIn('"version":', response_authentication1_JSON,
                         "Response: %r" % response_authentication1_JSON)
-        self.assertTrue('\\"keyHandle\\":' in response_authentication1_JSON,
+        self.assertIn('"appId":', response_authentication1_JSON,
+                        "Response: %r" % response_authentication1_JSON)
+        self.assertIn('"keyHandle":', response_authentication1_JSON,
+                        "Response: %r" % response_authentication1_JSON)
+        self.assertIn('"message":', response_authentication1_JSON,
                         "Response: %r" % response_authentication1_JSON)
 
         response_authentication1 = json.loads(response_authentication1_JSON.body)
@@ -418,11 +428,11 @@ class TestU2FController(TestController):
         return reply
 
     def _authentication_response(self, challenge, correct=True):
-        message_authentication = json.loads(challenge.get('message', ''))
-        challenge_authentication = message_authentication.get('challenge', {})
+        signrequest_authentication = challenge.get('signrequest', {})
+        challenge_authentication = signrequest_authentication.get('challenge', '')
 
         # Does the received keyHandle match the sent one?
-        key_handle_authentication = message_authentication.get('keyHandle', '')
+        key_handle_authentication = signrequest_authentication.get('keyHandle', '')
         transactionid_authentication = challenge.get('transactionid')
         # Correct the padding
         key_handle_authentication = \
@@ -430,7 +440,7 @@ class TestU2FController(TestController):
         key_handle_authentication = key_handle_authentication.encode('ascii')
         self.assertTrue(binascii.hexlify(base64.urlsafe_b64decode(key_handle_authentication)) in \
                         [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2],
-                        "Message: %r" % message_authentication
+                        "signrequest: %r" % signrequest_authentication
                         )
 
         # Construct the registration response message
@@ -671,15 +681,23 @@ class TestU2FController(TestController):
 
         # Initial token registration step
         response_registration1_JSON = self._registration1()
-        self.assertTrue('"value": true' in response_registration1_JSON,
+        self.assertIn('"value": true', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
-        self.assertTrue('"challenge":' in response_registration1_JSON,
+        self.assertIn('"registerrequest":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
-        self.assertTrue('"serial":' in response_registration1_JSON,
+        self.assertIn('"challenge":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"version":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"appId":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"serial":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
 
         response_registration1 = json.loads(response_registration1_JSON.body)
-        challenge_registration = response_registration1.get('detail', {}).get('challenge')
+        challenge_registration = response_registration1.get('detail', {})\
+                                                       .get('registerrequest', {})\
+                                                       .get('challenge')
         self.serial = response_registration1.get('detail', {}).get('serial')
         self.serials.add(self.serial)
 
@@ -737,11 +755,17 @@ class TestU2FController(TestController):
 
         # Initial token registration step
         response_registration1_JSON = self._registration1()
-        self.assertTrue('"value": true' in response_registration1_JSON,
+        self.assertIn('"value": true', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
-        self.assertTrue('"challenge":' in response_registration1_JSON,
+        self.assertIn('"registerrequest":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
-        self.assertTrue('"serial":' in response_registration1_JSON,
+        self.assertIn('"challenge":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"version":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"appId":', response_registration1_JSON,
+                        "Response: %r" % response_registration1_JSON)
+        self.assertIn('"serial":', response_registration1_JSON,
                         "Response: %r" % response_registration1_JSON)
 
         response_registration1 = json.loads(response_registration1_JSON.body)
