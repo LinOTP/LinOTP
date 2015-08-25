@@ -43,7 +43,11 @@ values and in all of the cases the result values are tested by
 default (for success).
 """
 
-from _pyio import __metaclass__
+try:
+    # The following import may fail on older python versions...
+    from _pyio import __metaclass__
+except:
+    pass
 
 import unittest2
 import warnings
