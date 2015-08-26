@@ -43,8 +43,6 @@ values and in all of the cases the result values are tested by
 default (for success).
 """
 
-from _pyio import __metaclass__
-
 import unittest2
 import warnings
 import json
@@ -233,7 +231,7 @@ class TestAdvancedController(TestController2):
     # Supplementary, this method has support for regular-expressions,
     # which also compare name-captures against the current request parameters.
     def invokeLinotp(self, linotpController, linotpAction,
-                     expectedValue=None, valueErrorMessage=None,
+                     expectedValue=None, valueErrorMessage=None, passResponse=False,
                      headers=None, **params):
         # Append dictionaries and convert all unicode names or values
         # to predefined encoded string (in praxis utf-8).
@@ -278,7 +276,7 @@ class TestAdvancedController(TestController2):
                     params=req_params, headers=req_headers)
 
         # The web-request must not fail!
-        self.assertTrue(rsp.status_int == 200, rsp.status)
+        self.assertEqual(rsp.status_int, 200, rsp.status)
 
         # The result is always json!
         res = JsonUtils.getBody(rsp)  # rsp.json_body
@@ -286,9 +284,13 @@ class TestAdvancedController(TestController2):
         self.assertTrue(JsonUtils.getJson(res, ['result', 'status']) == True,
             ("Failed LinOTP %s.%s invocation (result: %s)" 
                 % (linotpController, linotpAction, str(rsp))))
-        if not expectedValue is None:
+        value = JsonUtils.getJson(res, ['result', 'value'])
+        if value is None:
+            self.fail(
+                ("The LinOTP %s.%s invocation returned no value (result: %s)" 
+                    % (linotpController, linotpAction, str(rsp))))
+        elif not expectedValue is None:
             # If an explicit value is expected, then we compare the value
-            value = JsonUtils.getJson(res, ['result', 'value'])
             if not JsonUtils.checkJsonValues(value, expectedValue, params):
                 # Ups, the invocation failed!
                 if valueErrorMessage is None or len(valueErrorMessage) == 0:
@@ -296,10 +298,30 @@ class TestAdvancedController(TestController2):
                                          ' value: %s (expected was: %s)'
                         % (linotpController, linotpAction, str(value),
                            str(expectedValue)))
-                self.assertTrue(False, valueErrorMessage)
-
-        # Return the JSON object
-        return res
+                self.fail(valueErrorMessage)
+        else:
+            if passResponse is None or \
+               isinstance(passResponse, bool):
+                if passResponse:
+                    return res
+                else:
+                    # If no value is expected and the full response is not needed,
+                    # then return only the value!
+                    return value
+            else:
+                # return both value and passResponse lookup value..
+                return (value, JsonUtils.getJson(res, passResponse))
+        
+        if passResponse is None or \
+           isinstance(passResponse, bool):
+            if passResponse:
+                # return full response
+                return res
+            else:
+                pass # return nothing
+        else:
+            # value is Ok, then return only the passResponse lookup value...
+            return JsonUtils.getJson(res, passResponse)
 
 
     # *********************************************************************
@@ -316,7 +338,7 @@ class TestAdvancedController(TestController2):
                                 expectedValue={}, # dictionary expected.
                                 **extraParams)
         if not key is None:
-            path = ['result', 'value']
+            path = [] #['result', 'value']
             if isinstance(key, list):
                 path.extend(key)
             else: 
@@ -382,14 +404,18 @@ class TestAdvancedController(TestController2):
         res = self.invokeLinotp('system', 'getResolvers',
                                  expectedValue=None,
                                  **extraParams)
-        return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+        if res is None:
+            return defaultValue
+        return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
     
     def getResolverUsers(self, resolver, username=None, defaultValue={},
                          **extraParams):
         res = self.invokeLinotp('admin', 'userlist',
                                 resConf=resolver, username=username or '*',
                                 **extraParams)
-        return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+        if res is None:
+            return defaultValue
+        return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
     #endregion
 
 
@@ -417,14 +443,18 @@ class TestAdvancedController(TestController2):
         res = self.invokeLinotp('system', 'getRealms',
                                  expectedValue=None,
                                  **extraParams)
-        return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+        if res is None:
+            return defaultValue
+        return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
     
     def getRealmUsers(self, realm, username=None, defaultValue={},
                       **extraParams):
         res = self.invokeLinotp('admin', 'userlist',
                                 realm=realm, username=username or '*',
                                 **extraParams)
-        return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+        if res is None:
+            return defaultValue
+        return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
     #endregion
 
     #region Policy support
@@ -484,7 +514,9 @@ class TestAdvancedController(TestController2):
         res = self.invokeLinotp('system', 'getPolicy',
                                  expectedValue=None,
                                  **extraParams)
-        return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+        if res is None:
+            return defaultValue
+        return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
     #endregion
 
     #region Token support
@@ -496,9 +528,21 @@ class TestAdvancedController(TestController2):
         parameters = TestAdvancedController.appendDict({}, params)
         if 'serial' is params and not 'description' in params:
             parameters['description'] = "TestToken " + params['serial']
+        if expectedValue is None:
+            (val, res) = self.invokeLinotp('admin', 'init',
+                                           expectedValue=None,
+                                           valueErrorMessage=valueErrorMessage,
+                                           passResponse=['detail'],
+                                           **parameters)
+            if val == True:
+                return res
+            else:
+                return None
+        
         return self.invokeLinotp('admin', 'init',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
+                                 passResponse=['detail'],
                                  **parameters)
         
     def assignToken(self, serial, user, pin=None, realm=None,
@@ -574,7 +618,9 @@ class TestAdvancedController(TestController2):
         res = self.invokeLinotp('admin', 'show',
                                  expectedValue=None,
                                  **extraParams)
-        return JsonUtils.getJson(res, ['result', 'value'], defaultValue)
+        if res is None:
+            return defaultValue
+        return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
     #endregion
 
     def validateCheck(self, user, password, realm=None,
@@ -585,10 +631,22 @@ class TestAdvancedController(TestController2):
                       'pass': password }
         if not realm is None:
             parameters['realm'] = realm
+        if expectedValue is None:
+            (val, res) = self.invokeLinotp('validate', 'check',
+                                           expectedValue=expectedValue,
+                                           valueErrorMessage=valueErrorMessage,
+                                           passResponse=['details'],
+                                           **parameters)
+            if val == True:
+                return res
+            else:
+                return None
+            
         return self.invokeLinotp('validate', 'check',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
-                                 **parameters)
+                                 passResponse=['details'],
+                                 **parameters)            
 
 
     # *********************************************************************

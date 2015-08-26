@@ -298,10 +298,14 @@ class HttpSMSProvider(ISMSProvider):
 
         try:
             import requests
-            call = getattr(requests, method.lower())
-            response = call(url,
-                            auth=(username, password),
-                            data=parameter)
+            if method == 'GET':
+                response = requests.get(url,
+                                        auth=(username, password),
+                                        params=parameter)
+            else:
+                response = requests.post(url,
+                                         auth=(username, password),
+                                         data=parameter)
             reply = response.text
             # some providers like clickatell have no response.status!
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
@@ -333,6 +337,7 @@ class HttpSMSProvider(ISMSProvider):
 
         ret = False
         http_params = {}
+        headers = {}
 
         log.debug("Do the request to %s with %s" % (url, parameter))
 
@@ -378,8 +383,11 @@ class HttpSMSProvider(ISMSProvider):
         elif url_user and url_pass is not None:
             http.add_credentials(name=url_user, password=url_pass)
 
-        ##! the parameters to the httplib / proxy must be of type str()
-        encoded_params = str(urllib.urlencode(parameter))
+        #! the parameters to the httplib / proxy must be of type str()
+        encoded_params = ''
+        if parameter is not None and len(parameter) > 0:
+            encoded_params = self.urlencode(parameter)
+
         call_url = str(url)
 
         try:
@@ -394,6 +402,7 @@ class HttpSMSProvider(ISMSProvider):
             ## or do a POST request - the more secure default and fallback
             else:
                 method = 'POST'
+                headers["Content-type"] = "application/x-www-form-urlencoded"
                 call_data = encoded_params
 
             # using httplib2:
@@ -402,7 +411,8 @@ class HttpSMSProvider(ISMSProvider):
             # : GeneralProxyError: (5, 'bad input') :
 
             (_resp, reply) = http.request(call_url, method=method,
-                                         body=call_data)
+                                          headers=headers,
+                                          body=call_data)
 
             # some providers like clickatell have no response.status!
             log.debug("HttpSMSProvider >>%s...%s<<", reply[:20], reply[-20:])
@@ -429,7 +439,7 @@ class HttpSMSProvider(ISMSProvider):
         :return: False or True
         """
         try:
-
+            headers = {}
             handlers = []
             if 'PROXY' in self.config and self.config['PROXY']:
                 # for simplicity we set both protocols
@@ -448,18 +458,20 @@ class HttpSMSProvider(ISMSProvider):
             urllib2.install_opener(opener)
 
             full_url = str(url)
+
             encoded_params = None
-            if parameter is not None and len(parameter) > 0 :
-                encoded_params = str(urllib.urlencode(parameter))
+            if parameter is not None and len(parameter) > 0:
+                encoded_params = self.urlencode(parameter)
 
             if method == 'GET':
                 c_data = None
                 if encoded_params:
                     full_url = str("%s?%s" % (url, encoded_params))
             else:
+                headers["Content-type"] = "application/x-www-form-urlencoded"
                 c_data = encoded_params
 
-            requ = urllib2.Request(full_url, data=c_data, headers={})
+            requ = urllib2.Request(full_url, data=c_data, headers=headers)
             if username and password is not None:
                 base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
                 requ.add_header("Authorization", "Basic %s" % base64string)
@@ -477,6 +489,25 @@ class HttpSMSProvider(ISMSProvider):
 
         return ret
 
+    @staticmethod
+    def urlencode(parameter):
+        """
+        helper method:
+          urllib.urlencode does by default url_quote, which converts ' ' spaces
+          into '+' symbol, which is not understood by all HTTPSMSProviders
+          This helper uses urllibquote to build the encoded parameter string
+
+        :param parameter: dictionary
+        :return: urlencoded string of type str() as unicode is not supported
+
+        """
+        encoded_params = ''
+        if type(parameter) == dict:
+            params = []
+            for key, value in parameter.items():
+                params.append("%s=%s" % (key, urllib.quote(value)))
+            encoded_params = "&".join(params)
+        return str(encoded_params)
 
     def loadConfig(self, configDict):
         if configDict:

@@ -140,7 +140,8 @@ class U2FTokenClass(TokenClass):
                             },
             'policy': {
                 'enrollment':
-                {'u2f_valid_facets': {'type': 'str'}}
+                {'u2f_valid_facets': {'type': 'str'},
+                 'u2f_app_id': {'type': 'str'}}
                 }
         }
 
@@ -266,13 +267,17 @@ class U2FTokenClass(TokenClass):
         if keyHandleIndex > 1:
             keyHandle = keyHandle[:-(keyHandleIndex - 1)]
 
+        appId = self._get_app_id()
+
         data = {
             'challenge': "%s" % challenge,
             'version': 'U2F_V2',
             'keyHandle': keyHandle,
+            'appId': appId
         }
-        message = json.dumps(data)
-        attributes = None
+        message = "U2F challenge"
+        attributes = dict()
+        attributes['signrequest'] = data
 
         return (True, message, data, attributes)
 
@@ -333,15 +338,24 @@ class U2FTokenClass(TokenClass):
             # 'u2f_valid_facets' policy is empty or not set
             # check if origin matches the origin stored in the token info or save it if no origin
             # is stored yet
-            appId = self.getFromTokenInfo('appId', None)
-            if appId is None:
-                self.addToTokenInfo('appId', origin)
+            appId = self._get_app_id()
+            if appId == origin:
                 is_valid = True
-            else:
-                if origin == appId:
-                    is_valid = True
 
         return is_valid
+
+    def _get_app_id(self):
+        """
+        Get the appId saved in the TokenInfo.
+        :return: appId
+        """
+        # Get the appId from TokenInfo
+        appId = self.getFromTokenInfo('appId', '')
+        if appId == '':
+            log.error("appId could not be determined.")
+            raise Exception("appId could not be determined.")
+
+        return appId
 
     def _checkClientData(self,
                          clientData,
@@ -693,17 +707,8 @@ class U2FTokenClass(TokenClass):
 
             # prepare the applicationParameter and challengeParameter needed for
             # verification of the registration signature
-            if 'appid' in options:
-                # The appid parameter is mandatory if a URL to the valid_facets action of
-                # the u2f controller is sent to the token device. Since the token device
-                # uses this given URL (and not the 'real' location origin as in the client
-                # data object) for the applicationParameter, we have to adapt this behavior.
-                appId = options.get('appid')
-            else:
-                appId = self.getFromTokenInfo('appId', None)
-                if not appId:
-                    log.debug('Could not find appId')
-                    continue
+
+            appId = self._get_app_id()
             applicationParameter = sha256(appId).digest()
             challengeParameter = sha256(clientData).digest()
             publicKey = base64.urlsafe_b64decode(
@@ -862,7 +867,49 @@ class U2FTokenClass(TokenClass):
             # which is used as the registration challenge
             challenge = base64.urlsafe_b64encode(binascii.unhexlify(self._genOtpKey_(32)))
             self.addToTokenInfo('challenge', challenge)
-            response_detail['challenge'] = challenge
+
+            # save the appId to the TokenInfo
+            # An appId passed as parameter is preferred over an appId defined in a policy
+            appId = ''
+            if 'appid' in params:
+                appId = params.get('appid')
+            else:
+                # No appId passed as parameter - fall back to the policy
+                # Get the appId as specified in the enrollment policy 'u2f_app_id'
+                # for the specific realm
+                # If the token has multiple realms, the appIds are checked for conflicts.
+                # It could be discussed whether the token should use the appId of the default
+                # realm, when the token is not attached to any realms
+                realms = self.token.getRealmNames()
+                for realm in realms:
+                    get_policy_params = {
+                        'action': 'u2f_app_id',
+                        'scope': 'enrollment',
+                        'realm': realm
+                        }
+                    policy_value = getPolicyActionValue(getPolicy(get_policy_params),
+                                                        'u2f_app_id',
+                                                        String=True
+                                                        )
+                    # Check for appId conflicts
+                    if appId and policy_value:
+                        if appId != policy_value:
+                            log.error("Conflicting appId values in u2f policies.")
+                            raise Exception("Conflicting appId values in u2f policies.")
+                    appId = policy_value
+
+            if not appId:
+                log.error("No appId defined.")
+                raise Exception("No appId defined.")
+            self.addToTokenInfo('appId', appId)
+
+            # create U2F RegisterRequest object and append it to the response as 'message'
+            appId = self._get_app_id()
+            register_request = {'challenge': challenge,
+                                'version': 'U2F_V2',
+                                'appId': appId
+                                }
+            response_detail['registerrequest'] = register_request
 
         elif requested_phase == "registration2":
             # We are in registration phase 2
@@ -910,17 +957,7 @@ class U2FTokenClass(TokenClass):
 
                 # prepare the applicationParameter and challengeParameter needed for
                 # verification of the registration signature
-                if 'appid' in params:
-                    # The appid parameter is mandatory if a URL to the valid_facets action of
-                    # the u2f controller is sent to the token device. Since the token device
-                    # uses this given URL (and not the 'real' location origin as in the client
-                    # data object) for the applicationParameter, we have to adapt this behavior.
-                    appId = params.get('appid')
-                else:
-                    appId = self.getFromTokenInfo('appId', None)
-                    if not appId:
-                        log.error('Could not find appId')
-                        raise Exception('Could not find appId')
+                appId = self._get_app_id()
                 applicationParameter = sha256(appId).digest()
                 challengeParameter = sha256(clientData).digest()
 
