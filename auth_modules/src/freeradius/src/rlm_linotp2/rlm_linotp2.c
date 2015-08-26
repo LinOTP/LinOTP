@@ -590,6 +590,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 	switch (request->packet->src_ipaddr.af) {
 	case AF_INET:
 		log_debug("got a IPv4 client address");
+		/* check for the nas ip or as fallback the request client ip*/
 		vp = pairfind(request->packet->vps, PW_NAS_IP_ADDRESS);
 		if (!vp) {
 			log_debug("found PW_NAS_IP_ADDRESS");
@@ -597,15 +598,15 @@ static int lotp_auth(void *instance, REQUEST *request)
 			                       PW_NAS_IP_ADDRESS,
 			                       PW_TYPE_IPADDR);
 			vp->vp_ipaddr = request->packet->src_ipaddr.ipaddr.ip4addr.s_addr;
-		}
-
-		vp = pairfind(request->packet->vps, PW_PACKET_SRC_IP_ADDRESS);
-		if (!vp) {
-			log_debug("found PW_PACKET_SRC_IP_ADDRESS");
-			vp = radius_paircreate(request, &request->packet->vps,
-			                       PW_PACKET_SRC_IP_ADDRESS,
-			                       PW_TYPE_IPADDR);
-			vp->vp_ipaddr = request->packet->src_ipaddr.ipaddr.ip4addr.s_addr;
+		} else {
+			vp = pairfind(request->packet->vps, PW_PACKET_SRC_IP_ADDRESS);
+			if (!vp) {
+				log_debug("found PW_PACKET_SRC_IP_ADDRESS");
+				vp = radius_paircreate(request, &request->packet->vps,
+									   PW_PACKET_SRC_IP_ADDRESS,
+									   PW_TYPE_IPADDR);
+				vp->vp_ipaddr = request->packet->src_ipaddr.ipaddr.ip4addr.s_addr;
+			}
 		}
 		if (!vp) {
 			log_error("Found no IPv4 address");
@@ -613,8 +614,9 @@ static int lotp_auth(void *instance, REQUEST *request)
 			snprintf(client_ip, size-1, "%s", inet_ntoa(request->packet->src_ipaddr.ipaddr.ip4addr));
 		}
 		break;
- 	case AF_INET6:
+	case AF_INET6:
 		log_debug("got a IPv6 client address");
+		/* check for the nas ip or as fallback the request client ip*/
 		vp = pairfind(request->packet->vps, PW_NAS_IPV6_ADDRESS);
 		if (!vp) {
 			log_debug("found PW_NAS_IPV6_ADDRESS");
@@ -624,18 +626,18 @@ static int lotp_auth(void *instance, REQUEST *request)
 			memcpy(vp->vp_strvalue,
 						&request->packet->src_ipaddr.ipaddr,
 						sizeof(request->packet->src_ipaddr.ipaddr));
+		} else {
+			vp = pairfind(request->packet->vps, PW_PACKET_SRC_IPV6_ADDRESS);
+			if (!vp) {
+				log_debug("found PW_PACKET_SRC_IPV6_ADDRESS");
+				vp = radius_paircreate(request, &request->packet->vps,
+							PW_PACKET_SRC_IPV6_ADDRESS,
+							PW_TYPE_IPV6ADDR);
+				memcpy(vp->vp_strvalue,
+							&request->packet->src_ipaddr.ipaddr,
+							sizeof(request->packet->src_ipaddr.ipaddr));
+			}
  		}
-
-		vp = pairfind(request->packet->vps, PW_PACKET_SRC_IPV6_ADDRESS);
-		if (!vp) {
-			log_debug("found PW_PACKET_SRC_IPV6_ADDRESS");
-			vp = radius_paircreate(request, &request->packet->vps,
-						PW_PACKET_SRC_IPV6_ADDRESS,
-						PW_TYPE_IPV6ADDR);
-			memcpy(vp->vp_strvalue,
-						&request->packet->src_ipaddr.ipaddr,
-						sizeof(request->packet->src_ipaddr.ipaddr));
-		}
 		if (!vp) {
 			log_error("Found no IPv6 address");
 		} else {

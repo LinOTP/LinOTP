@@ -5,6 +5,22 @@ COMMENT="added LinOTP2 module rlm_linotp"
 info:
 	@echo "make clean     -- this will delete the sandbox, needed to build the deb packages"
 	@echo "make deb       -- this will build debian packages containig linotp module"
+	@echo "make getsource -- fetch the freeradius sources and put in the sandbox"
+	@echo "make build     -- copy the rlm_linotp.c in the freeradius and run the make"
+
+getsource:
+	mkdir -p sandbox
+	( cd sandbox &&  apt-get source freeradius )
+	cp -r src/rlm_linotp2 $(FREERADDIR)/src/modules/
+	cp -r src/rlm_linotp2/linotp2.conf $(FREERADDIR)/raddb/modules/linotp
+	cp -r src/rlm_linotp2/linotp $(FREERADDIR)/raddb/sites-available/
+	echo "rlm_linotp2" >> $(FREERADDIR)/src/modules/stable
+	( cd $(FREERADDIR) && ./configure )
+
+build: 
+	cp -r src/rlm_linotp2 $(FREERADDIR)/src/modules/ 
+	( cd $(FREERADDIR) && make )
+
 deb:
 	make clean
 	mkdir -p sandbox

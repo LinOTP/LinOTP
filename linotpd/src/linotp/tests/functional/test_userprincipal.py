@@ -77,11 +77,6 @@ class TestUserPrincipalController(TestAdvancedController):
         the test will create a static-password token, and
         will try to verify the user in different situations.
 
-        2015.07.10: due to lack of information about what is
-                    the purpose of this test, only one case
-                    is implemented (with user@domain + realm
-                    specified)
-
         """
         user = "pass@user"
         pin = "1234"
@@ -97,7 +92,7 @@ class TestUserPrincipalController(TestAdvancedController):
                                pin=pin,
                                otpkey="AD8EABE235FC57C815B26CEF37090755",
                                type='spass')
-        serial = JsonUtils.getJson(res, ['detail', 'serial'])
+        serial = JsonUtils.getJson(res, ['serial'])
 
         # although not needed, we assign token...
         self.assignToken(serial=serial, user=user, realm=realm)
