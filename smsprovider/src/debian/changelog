@@ -1,3 +1,9 @@
+linotp-smsprovider (2.7.2.1+custom02-1) jessie; urgency=low
+
+  * Fix: urlencode expects UTF-8 instead of unicode
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Aug 2015 09:35:03 +0200
+
 linotp-smsprovider (2.7.2.2~rc1-1) jessie; urgency=low
 
   * Fix for failing HTTPSMSProvider with Twilio requests
