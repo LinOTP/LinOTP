@@ -657,7 +657,7 @@ def getPolicyActionValue(policies, action, max=True, is_string=False, subkey=Non
     results = {}
 
     for _polname, pol in policies.items():
-
+        action_key = action
         action_value = pol['action'].strip()
         # the regex requires a trailing ','
         if action_value[-1:] != ',':
@@ -665,9 +665,9 @@ def getPolicyActionValue(policies, action, max=True, is_string=False, subkey=Non
         values = parse_action_value(action_value)
 
         if subkey:
-            action = "%s.%s" % (action, subkey)
+            action_key = "%s.%s" % (action, subkey)
 
-        ret = values.get(action, None)
+        ret = values.get(action_key, None)
 
         # the parameter String=False enforces a conversion into an int
         if type(ret) in [str, unicode] and is_string == False:
