@@ -542,6 +542,7 @@ class Ocra2TokenClass(TokenClass):
             uInfo['se'] = self.getSerial()
 
             callback = self._prepare_callback_url(params, qrtanurl_init)
+            callback = callback.encode('utf-8')
 
             if callback:
                 uInfo['u'] = callback
@@ -689,8 +690,9 @@ class Ocra2TokenClass(TokenClass):
                 uInfo['me'] = str(message.encode("utf-8"))
 
             ustr = urllib.urlencode({'u': str(url.encode("utf-8"))})
-            uInfo['u'] = ustr[2:]
-            info['url'] = str(url.encode("utf-8"))
+            if ustr[2:]:
+                uInfo['u'] = ustr[2:]
+                info['url'] = str(url.encode("utf-8"))
 
             app_import = 'lseqr://nonce?%s' % (urllib.urlencode(uInfo))
 
@@ -863,6 +865,7 @@ class Ocra2TokenClass(TokenClass):
         # do we have a callback url, that will receive the otp value
         callback = self._prepare_callback_url(options, qrtan_url,
                                           transactionid=state)
+        callback = callback.encode('utf-8')
 
         store_data["url"] = callback
 
