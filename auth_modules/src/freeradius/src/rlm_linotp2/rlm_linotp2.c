@@ -43,8 +43,6 @@
 
 #define log(level, format, ...) \
 	radlog(level, "rlm_linotp: " format, ## __VA_ARGS__)
-#define error(format, ...) \
-	log(L_ERR, format, ## __VA_ARGS__)
 
 #define log_info(format, ...) \
 	log(L_INFO, format, ## __VA_ARGS__)
@@ -52,8 +50,10 @@
 #define log_error(format, ...) \
 	log(L_ERR, format, ## __VA_ARGS__)	
 
-#define debug(format, ...) \
-	log(L_ERR, "(%s) " format, __FUNCTION__, ## __VA_ARGS__)
+#define log_debug(format, ...) \
+	log(L_DBG, "(%s) " format, __FUNCTION__, ## __VA_ARGS__)
+
+
 
 // libltdl is so buggy...add this in radius.h
 
@@ -277,7 +277,7 @@ static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *da
 	/* failsafe */
 	if (realsize > 1024*1024)
 	{
-		error("The linotpd responded to our authentication request with more than 1MB of data! Something is really wrong here!");
+		log_error("The linotpd responded to our authentication request with more than 1MB of data! Something is really wrong here!");
 		return mem->size;
 	}
 
@@ -592,7 +592,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 		log_debug("got a IPv4 client address");
 		/* check for the nas ip or as fallback the request client ip*/
 		vp = pairfind(request->packet->vps, PW_NAS_IP_ADDRESS);
-		if (!vp) {
+		if (vp != NULL) {
 			log_debug("found PW_NAS_IP_ADDRESS");
 			vp = radius_paircreate(request, &request->packet->vps,
 			                       PW_NAS_IP_ADDRESS,
@@ -600,7 +600,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 			vp->vp_ipaddr = request->packet->src_ipaddr.ipaddr.ip4addr.s_addr;
 		} else {
 			vp = pairfind(request->packet->vps, PW_PACKET_SRC_IP_ADDRESS);
-			if (!vp) {
+			if (vp != NULL) {
 				log_debug("found PW_PACKET_SRC_IP_ADDRESS");
 				vp = radius_paircreate(request, &request->packet->vps,
 									   PW_PACKET_SRC_IP_ADDRESS,
@@ -608,7 +608,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 				vp->vp_ipaddr = request->packet->src_ipaddr.ipaddr.ip4addr.s_addr;
 			}
 		}
-		if (!vp) {
+		if (vp == NULL) {
 			log_error("Found no IPv4 address");
 		} else {
 			snprintf(client_ip, size-1, "%s", inet_ntoa(request->packet->src_ipaddr.ipaddr.ip4addr));
@@ -648,7 +648,6 @@ static int lotp_auth(void *instance, REQUEST *request)
 		log_error("Unknown address family for packet source.");
 		break;
 	}
-	log_info("something");
 	log_info("got client ip: %s.", client_ip);
 
 
