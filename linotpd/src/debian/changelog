@@ -1,3 +1,9 @@
+linotp (2.7.2.1+custom03-1) jessie; urgency=low
+
+  * Server: OCRA2: Fix erroneous QRTan enrollment URLs
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 27 Aug 2015 13:54:51 +0200
+
 linotp (2.7.2.1+custom02-1) jessie; urgency=low
 
   * Increase version number due to changes in package linotp-smsprovider
