@@ -1008,7 +1008,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
 	char *user          = NULL;
 	char *password      = NULL;
 	char *cleanpassword = NULL;
-	int ret /*= PAM_AUTH_ERR*/;
+	int   ret /*= PAM_AUTH_ERR*/;
 
 	ret = pam_linotp_get_config(argc, argv, &config);
 	if (ret != PAM_SUCCESS) {
@@ -1041,10 +1041,13 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
 	// Check otp/password...
 	int_array tok = get_possibtok(config.tokenlength);
 	log_info("<token-lengths length='%i'>", tok.length);
-	for (int i = 0; i < tok.length; i++)
-		log_debug("array %i:%i", i, tok.buff[i]);
+	int x;
+	for (x = 0; x < tok.length; x++)
+		log_debug("  length[%i]=%i", x, tok.buff[x]);
 	log_info("</token-lengths>");
-	for (int i = 0; i < tok.length; i++) {
+	
+	int i;
+	for (i = 0; i < tok.length; i++) {
 		//log_debug("array %i:%i", i, tok.buff[i]);
 
 		log_debug("Getting password");
