@@ -218,14 +218,16 @@ class U2FTokenClass(TokenClass):
         # Split OTP from pin
         # Since we know that the OTP has to be valid JSON  with format {"a":"b", "b":"c", ...}
         # we can parse the OTP for '{' beginning at the end of the OTP string
-        res = False
         splitIndex = rfind(passw, "{")
         if splitIndex != -1:
-            res = True
             pin = passw[:splitIndex]
             otpval = passw[splitIndex:]
+        else:
+            # no valid JSON format - assume we got no otpval
+            pin = passw
+            otpval = ""
 
-        return (res, pin, otpval)
+        return pin, otpval
 
     def is_challenge_request(self, passw, user, options=None):
         """
@@ -595,7 +597,7 @@ class U2FTokenClass(TokenClass):
                     break
             if matching is not None:
                 # Split pin from otp and check the resulting pin and otpval
-                (res, pin, otpval) = self.splitPinPass(passw)
+                (pin, otpval) = self.splitPinPass(passw)
                 if not check_pin(self, pin, user=user, options=options):
                     otpval = passw
                 # The U2F checkOtp functions needs to know the saved challenge
