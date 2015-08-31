@@ -822,10 +822,11 @@ int_array get_possibtok(char* token_length){
 	int  len = strlen(token_length);
 	int* tmp = malloc(len * sizeof(int)); // allocate enough data...
 
-	int j = 0;
-	int v = 0;
 	int sep = -1;
-	for (int i = 0; i < len; i++) {
+	int cnt = 0;
+	int val = 0;
+	int i;
+	for (i = 0; i < len; i++) {
 		if (isdigit(token_length[i])) {
 			/* a Digit... */
 			if (sep < 0) {
@@ -837,17 +838,17 @@ int_array get_possibtok(char* token_length){
 			}
 
 
-			v = v * 10 + (token_length[i] - '0');
+			val = val * 10 + (token_length[i] - '0');
 		} else if (token_length[i] == ',' ||
 		           token_length[i] == ';') {
 			/* Token separator... */
-			if (j > 0 && tmp[j - 1] >= v) {
+			if (cnt > 0 && tmp[cnt - 1] >= val) {
 				/* Ups, length list not sorted; Abort scan... */
 				break;
 			}
 
-			tmp[j++] = v; /* new length value... */
-			v   = 0;
+			tmp[cnt++] = val; /* new length value... */
+			val = 0;
 			sep = -1;
 		} else if (isblank(token_length[i]) && sep == 0) {
 			/* empty space after value will require a token separator... */
@@ -858,15 +859,16 @@ int_array get_possibtok(char* token_length){
 		}
 	}
 	if (sep >= 0) {
-		if (j == 0 || tmp[j - 1] < v) {
-			tmp[j++] = v;
+		if (cnt == 0 || tmp[cnt - 1] < val) {
+			tmp[cnt++] = val;
 		}
 	}
 
-	if (j > 0) {
-		ret.buff   = malloc(j * sizeof(int));
-		ret.length = j;
-		for (int k = 0; k < j; k++)
+	if (cnt > 0) {
+		ret.buff   = malloc(cnt * sizeof(int));
+		ret.length = cnt;
+		int k;
+		for (k = 0; k < cnt; k++)
 			ret.buff[k] = tmp[k];
 	}
 
