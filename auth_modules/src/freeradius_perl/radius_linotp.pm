@@ -202,12 +202,12 @@ sub authenticate {
     my $RESCONF = $Config->{RESCONF};
     
     my $debug   = false;
-    if ( $Config->{Debug} =~ /true/i ) {
+    if ( $Config->{Debug} =~ /^\s*true\s*$/i ) {
         $debug = true;
     }
 
     my $check_ssl = false;
-    if ( $Config->{SSL_CHECK} =~ /true/i ) {
+    if ( $Config->{SSL_CHECK} =~ /^\s*true\s*$/i ) {
         $check_ssl = true;
     }
 
