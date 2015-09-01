@@ -1112,7 +1112,7 @@ class UserserviceController(BaseController):
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            ttype = param.get("type", 'hmac')
+            ttype = param.get("type", None)
 
             c.audit['token_type'] = ttype
             serial, _username, _resolverClass = get_serial_by_otp(None,
