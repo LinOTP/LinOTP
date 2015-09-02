@@ -888,7 +888,7 @@ class Ocra2TokenClass(TokenClass):
         if 'session' in loptions:
             del loptions['session']
 
-        (res, pin, otpval) = self.splitPinPass(passw)
+        (pin, otpval) = self.splitPinPass(passw)
         res = self.checkPin(pin)
 
         if res == False:

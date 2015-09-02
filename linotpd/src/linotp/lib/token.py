@@ -1020,12 +1020,10 @@ def auto_assignToken(passw, user, pin="", param=None):
             r = token.check_otp_exist(otp=passw,
                                       window=token.getOtpCountWindow(),
                                       user=ruser, autoassign=True)
-            (res, pin, otp) = token.splitPinPass(passw)
+            (pin, otp) = token.splitPinPass(passw)
         else:
-            (res, pin, otp) = token.splitPinPass(passw)
-            if res >= 0:
-                r = token.check_otp_exist(otp=otp,
-                                          window=token.getOtpCountWindow())
+            (pin, otp) = token.splitPinPass(passw)
+            r = token.check_otp_exist(otp=otp, window=token.getOtpCountWindow())
 
         if r >= 0:
             matching_pairs.append((token, pin))

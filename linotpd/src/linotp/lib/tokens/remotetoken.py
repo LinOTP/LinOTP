@@ -532,19 +532,16 @@ class RemoteTokenClass(TokenClass):
         :return: tupple of the (success, pin and otpvalue)
 
         """
-        res = 0
-
         local_check = self.check_pin_local()
 
-
         if local_check:
-            (res, pin, otpval) = TokenClass.splitPinPass(self, passw)
+            (pin, otpval) = TokenClass.splitPinPass(self, passw)
         else:
             pin = ""
             otpval = passw
 
         log.debug("[splitPinPass] [remotetoken] returnung (len:%r) (len:%r)"
                   % (len(pin), len(otpval)))
-        return (res, pin, otpval)
+        return pin, otpval
 
 ###eof#########################################################################

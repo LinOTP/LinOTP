@@ -1037,8 +1037,6 @@ class TokenClass(object):
 
 
     def splitPinPass(self, passw):
-
-        res = 0
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError:
@@ -1051,9 +1049,7 @@ class TokenClass(object):
             pin = passw[otplen:]
             otpval = passw[0:otplen]
 
-        #log.error("Pin: %s, otpval:%s",pin,otpval)
-
-        return (res, pin, otpval)
+        return pin, otpval
 
 
     def checkPin(self, pin, options=None):
