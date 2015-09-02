@@ -133,3 +133,4 @@ useridresolver/src/debian/linotp-useridresolver.prerm.debhelper
 useridresolver/src/debian/linotp-useridresolver.substvars
 useridresolver/src/debian/linotp-useridresolver/
 useridresolver/src/debian/python-module-stampdir/
+linotpd/src/.eggs/*
