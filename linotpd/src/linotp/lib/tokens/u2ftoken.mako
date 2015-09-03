@@ -44,9 +44,6 @@ ${_("Enroll FIDO U2F Token")}
         realm += '/'
 %>
 
-## Chrome/Chromium U2F extension - will be obsolete in some future Chrome/Chromium release
-<script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
-
 <script>
     function self_u2f_get_param()
     {

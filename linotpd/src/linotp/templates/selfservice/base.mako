@@ -66,6 +66,10 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/js/linotp_utils.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
 
+% if "enrollU2F" in c.actions:
+<script type="text/javascript" src="/js/u2f-api.js"></script>
+% endif
+
 <!-- load language settings befor selfservice.js -->
 <script type="text/javascript">
     window.CURRENT_LANGUAGE = "${lang}";
