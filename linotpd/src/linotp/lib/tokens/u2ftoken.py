@@ -359,6 +359,31 @@ class U2FTokenClass(TokenClass):
 
         return appId
 
+    @staticmethod
+    def _handle_client_errors(client_response):
+        """
+        Check the U2F client response for U2F client errors.
+        Raises an Exception if an U2F client error code was found.
+        :param client_response: U2F client response object
+        :return:
+        """
+        error_codes = {0: 'OK',
+                       1: 'OTHER_ERROR',
+                       2: 'BAD_REQUEST',
+                       3: 'CONFIGURATION_UNSUPPORTED',
+                       4: 'DEVICE_INELIGIBLE',
+                       5: 'TIMEOUT'}
+
+        if "errorCode" in client_response:
+            error_code = client_response['errorCode']
+            error_text = error_codes.get(error_code, '')
+            error_msg = client_response.get('errorMessage', '')
+            log.info("U2F client error code received: %s (%d): %s", error_text,
+                     error_code, error_msg)
+            raise Exception("U2F client error code: %s (%d): %s" % (error_text,
+                                                                    error_code,
+                                                                    error_msg))
+
     def _checkClientData(self,
                          clientData,
                          clientDataType,
@@ -670,6 +695,8 @@ class U2FTokenClass(TokenClass):
             log.exception("Invalid JSON format - value error %r", (ex))
             raise Exception("Invalid JSON format")
 
+        self._handle_client_errors(authResponse)
+
         try:
             signatureData = authResponse.get('signatureData', None)
             clientData = authResponse['clientData']
@@ -929,6 +956,8 @@ class U2FTokenClass(TokenClass):
                 except ValueError as ex:
                     log.error("Invalid JSON format - value error %r", (ex))
                     raise Exception('Invalid JSON format')
+
+                self._handle_client_errors(registerResponse)
 
                 try:
                     registrationData = registerResponse['registrationData']
