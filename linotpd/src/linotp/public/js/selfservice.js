@@ -304,18 +304,17 @@ function enroll_token(params) {
         if (data.hasOwnProperty('detail')) {
             var detail = data.detail;
 
-            // Support challenge response enrollment of tokens
-            // Return the challenge and abort the enrollment of the token if a challenge property
-            // was created in the first step of the challenge/response enrollment
-            if (detail.hasOwnProperty('challenge')) {
-            	var returnObj = null;
-            	if (detail.hasOwnProperty('serial')) {
-            		returnObj = {challenge: detail.challenge, serial: detail.serial};
-            	}
-            	else {
-            		returnObj = {challenge: detail.challenge};
-            	}
-            	return returnObj;
+            /*
+             * Support U2F token enrollment (challenge response enrollment)
+             * Return the registerrequest and abort the enrollment of the token
+             * in the first step of the challenge/response enrollment
+             */
+            if (detail.hasOwnProperty('registerrequest')) {
+                var returnObj = null;
+                if (detail.hasOwnProperty('serial')) {
+                    returnObj = {registerrequest: detail.registerrequest, serial: detail.serial};
+                }
+                return returnObj;
             }
 
             if (detail.hasOwnProperty('serial')) {

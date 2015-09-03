@@ -64,16 +64,13 @@ ${_("Enroll FIDO U2F Token")}
         params['phase'] = 'registration2';
         params['otpkey'] = deviceResponse;
         params['serial'] = serial;
-        params['appid'] = window.location.origin + '/u2f/${realm}valid_facets';
         enroll_token(params);
     }
 
     function self_u2f_submit(){
         var params =  self_u2f_get_param();
         var returnObj = enroll_token(params);
-        var chal = {challenge: returnObj.challenge,
-                    version: "U2F_V2",
-                    appId: window.location.origin + '/u2f/${realm}valid_facets'};
+        var chal = returnObj.registerrequest;
 
         var self_u2f_device_response_callback = function(deviceResponseJSON) {
             var serial = returnObj.serial;
