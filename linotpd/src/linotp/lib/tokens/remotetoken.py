@@ -354,7 +354,7 @@ class RemoteTokenClass(TokenClass):
         otp_count = -1
         res = False
         data = urllib.urlencode(params)
-        request_url = "%s%s" % (remoteServer, remotePath)
+        request_url = "%s/%s" % (remoteServer.rstrip('/'), remotePath.lstrip('/'))
 
         reply = {}
         otp_count = -1
