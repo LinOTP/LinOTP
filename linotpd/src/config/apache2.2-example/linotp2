@@ -95,10 +95,6 @@
     SSLCertificateFile    /etc/ssl/certs/linotpserver.pem
     SSLCertificateKeyFile /etc/ssl/private/linotpserver.key
 
-    BrowserMatch ".*MSIE.*" \
-        nokeepalive ssl-unclean-shutdown \
-        downgrade-1.0 force-response-1.0
-
     ErrorDocument 500 "<h1>Internal Server Error</h1> Possible reasons can be missing modules or bad access rights on LinOTP configuration files or log files. Please check the apache logfile <pre>/var/log/apache2/error.log</pre> for more details."
 
 </VirtualHost>
