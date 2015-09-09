@@ -44,7 +44,6 @@ log = logging.getLogger(__name__)
 
 class TestManageController(TestController):
 
-
     def setUp(self):
         '''
         resolver: reso1 (my-passwd), reso2 (my-pass2)
@@ -64,85 +63,85 @@ class TestManageController(TestController):
             )
         # create resolvers
         response = self.app.get(url(controller='system', action='setResolver'),
-                                params={'name':'reso1',
+                                params={'name': 'reso1',
                                         'type': 'passwdresolver',
-                                        'fileName': os.path.join(fixture_path, 'my-passwd')})
-        print response
-        assert '"value": true' in response
+                                        'fileName': os.path.join(fixture_path,
+                                                                 'my-passwd')})
+        self.assertTrue('"value": true'in response, response)
 
         response = self.app.get(url(controller='system', action='setResolver'),
-                                params={'name':'reso2',
+                                params={'name': 'reso2',
                                         'type': 'passwdresolver',
-                                        'fileName': os.path.join(fixture_path, 'my-pass2')})
-        print response
-        assert '"value": true' in response
+                                        'fileName': os.path.join(fixture_path,
+                                                                 'my-pass2')})
+        self.assertTrue('"value": true'in response, response)
 
         # create realms
-
         response = self.app.get(url(controller='system', action='setRealm'),
                                 params={'realm': 'realm1',
-                                        'resolvers': 'useridresolver.PasswdIdResolver.IdResolver.reso1'})
-        print response
-        assert '"value": true' in response
+                                        'resolvers':
+                        'useridresolver.PasswdIdResolver.IdResolver.reso1'})
+
+        log.info(response)
+        self.assertTrue('"value": true'in response, response)
 
         response = self.app.get(url(controller='system', action='setRealm'),
                                 params={'realm': 'realm2',
-                                        'resolvers': 'useridresolver.PasswdIdResolver.IdResolver.reso2'})
-        print response
-        assert '"value": true' in response
+                                        'resolvers':
+                        'useridresolver.PasswdIdResolver.IdResolver.reso2'})
+        log.info(response)
+        self.assertTrue('"value": true'in response, response)
 
         # create token
         response = self.app.get(url(controller='admin', action='init'),
-                                params={'serial' : 'token1',
-                                        'type' : 'spass',
-                                        'pin' : 'secret',
+                                params={'serial': 'token1',
+                                        'type': 'spass',
+                                        'pin': 'secret',
                                         'user': 'heinz',
                                         'realm': 'realm1'
                                         })
-        print response
-        assert '"value": true' in response
+        log.info(response)
+        self.assertTrue('"value": true'in response, response)
 
         response = self.app.get(url(controller='admin', action='init'),
-                                params={'serial' : 'token2',
-                                        'type' : 'spass',
-                                        'pin' : 'secret',
+                                params={'serial': 'token2',
+                                        'type': 'spass',
+                                        'pin': 'secret',
                                         'user': 'nick',
                                         'realm': 'realm1'
                                         })
-        print response
-        assert '"value": true' in response
-
+        log.info(response)
+        self.assertTrue('"value": true'in response, response)
 
         response = self.app.get(url(controller='admin', action='init'),
-                                params={'serial' : 'token3',
-                                        'type' : 'spass',
-                                        'pin' : 'secret',
+                                params={'serial': 'token3',
+                                        'type': 'spass',
+                                        'pin': 'secret',
                                         'user': 'renate',
                                         'realm': 'realm2'
                                         })
-        print response
-        assert '"value": true' in response
+        log.info(response)
+        self.assertTrue('"value": true'in response, response)
 
     def tearDown(self):
-        """
+        '''
         make the dishes
-        """
+        '''
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
         return TestController.tearDown(self)
 
-
-    ###############################################################################
+    ###########################################################################
     def test_index(self):
         '''
         Manage: testing index access
         '''
         response = self.app.get(url(controller='manage', action='index'),
                                 params={})
-        print "index response: %r" % response
-        assert '<title>LinOTP 2 Management</title>' in response
-
+        log.info("index response: %r" % response)
+        self.assertTrue('<title>LinOTP 2 Management</title>'in response,
+                        response)
 
     def test_policies(self):
         '''
@@ -150,10 +149,11 @@ class TestManageController(TestController):
         '''
         response = self.app.get(url(controller='manage', action='policies'),
                                 params={})
-        print "policies response: %r" % response
-        assert '<a id=policy_export>' in response
-        assert '<button id=policy_import>' in response
-        assert '<button id="button_policy_delete">' in response
+        log.info("policies response: %r" % response)
+        self.assertTrue('<a id=policy_export>'in response, response)
+        self.assertTrue('<button id=policy_import>'in response, response)
+        self.assertTrue('<button id="button_policy_delete">'in response,
+                        response)
 
     def test_audit(self):
         '''
@@ -161,9 +161,9 @@ class TestManageController(TestController):
         '''
         response = self.app.get(url(controller='manage', action='audittrail'),
                                 params={})
-        print "audit response: %r" % response
-        assert 'table id="audit_table"' in response
-        assert 'view_audit();' in response
+        log.info("audit response: %r" % response)
+        self.assertTrue('table id="audit_table"'in response, response)
+        self.assertTrue('view_audit();'in response, response)
 
     def test_tokenview(self):
         '''
@@ -171,14 +171,14 @@ class TestManageController(TestController):
         '''
         response = self.app.get(url(controller='manage', action='tokenview'),
                                 params={})
-        print "token response: %r" % response
-        assert 'button_losttoken' in response
-        assert 'button_tokeninfo' in response
-        assert 'button_resync' in response
-        assert 'button_tokenrealm' in response
-        assert 'table id="token_table"' in response
-        assert 'view_token();' in response
-        assert 'tokenbuttons();' in response
+        log.info("token response: %r" % response)
+        self.assertTrue('button_losttoken'in response, response)
+        self.assertTrue('button_tokeninfo'in response, response)
+        self.assertTrue('button_resync'in response, response)
+        self.assertTrue('button_tokenrealm'in response, response)
+        self.assertTrue('table id="token_table"'in response, response)
+        self.assertTrue('view_token();'in response, response)
+        self.assertTrue('tokenbuttons();' in response, response)
 
     def test_userview(self):
         '''
@@ -186,100 +186,118 @@ class TestManageController(TestController):
         '''
         response = self.app.get(url(controller='manage', action='userview'),
                                 params={})
-        print "user response: %r" % response
-        assert 'table id="user_table"' in response
-        assert 'view_user();' in response
+        log.info("user response: %r" % response)
+        self.assertTrue('table id="user_table"' in response, response)
+        self.assertTrue('view_user();' in response, response)
 
     def test_tokenflexi(self):
         '''
         Manage: testing the tokenview_flexi method
         '''
-        response = self.app.get(url(controller='manage', action='tokenview_flexi'),
+        response = self.app.get(url(controller='manage',
+                                    action='tokenview_flexi'),
                                 params={})
 
-        testbody = response.body.replace('\n', ' ').replace('\r', '').replace("  ", " ")
-        print "token flexi response 1: %r" % response
-        assert '"total": 3' in testbody
-        assert '"token1",       true,       "heinz"' in testbody
-        assert '"token2",       true,       "nick"' in testbody
-        assert '"token3",       true,       "renate"' in testbody
+        testbody = response.body.replace('\n', ' ').replace('\r', '').\
+                                        replace("  ", " ")
+        log.info("token flexi response 1: %r" % response)
+        self.assertTrue('"total": 3' in testbody, testbody)
+        self.assertTrue('"token1",       true,       "heinz"' in testbody,
+                                                                    testbody)
+        self.assertTrue('"token2",       true,       "nick"' in testbody,
+                                                                    testbody)
+        self.assertTrue('"token3",       true,       "renate"' in testbody,
+                                                                    testbody)
 
         # only renates token
-        response = self.app.get(url(controller='manage', action='tokenview_flexi'),
-                                params={'qtype' : 'loginname',
-                                        'query' : 'renate'})
-        testbody = response.body.replace('\n', ' ').replace('\r', '').replace("  ", " ")
-        print "token flexi response 2: %r" % response
-        assert '"total": 1' in testbody
-        assert '"token3",       true,       "renate"' in testbody
+        response = self.app.get(url(controller='manage',
+                                    action='tokenview_flexi'),
+                                params={'qtype': 'loginname',
+                                        'query': 'renate'})
+        testbody = response.body.replace('\n', ' ').replace('\r', '').\
+                                                        replace("  ", " ")
+        log.info("token flexi response 2: %r" % response)
+        self.assertTrue('"total": 1' in testbody, testbody)
+        self.assertTrue('"token3",       true,       "renate"' in testbody,
+                                                                    testbody)
 
         # only tokens in realm1
-        response = self.app.get(url(controller='manage', action='tokenview_flexi'),
-                                params={'qtype' : 'realm',
-                                        'query' : 'realm1'})
-        print "token flexi response 3: %r" % response
-        assert '"total": 2' in response
-        testbody = response.body.replace('\n', ' ').replace('\r', '').replace("  ", " ")
-        assert '"token1",       true,       "heinz"' in testbody
-        assert '"token2",       true,       "nick"' in testbody
+        response = self.app.get(url(controller='manage',
+                                    action='tokenview_flexi'),
+                                params={'qtype': 'realm',
+                                        'query': 'realm1'})
+        log.info("token flexi response 3: %r" % response)
+        self.assertTrue('"total": 2' in response, response)
+        testbody = response.body.replace('\n', ' ').replace('\r', '').\
+                                                            replace("  ", " ")
+        self.assertTrue('"token1",       true,       "heinz"' in testbody,
+                                                                    testbody)
+        self.assertTrue('"token2",       true,       "nick"' in testbody,
+                                                                    testbody)
 
         # search in all columns
-        response = self.app.get(url(controller='manage', action='tokenview_flexi'),
-                                params={'qtype' : 'all',
-                                        'query' : 'token2'})
-        print "token flexi response 4: %r" % response
-        assert '"total": 1' in response
-        testbody = response.body.replace('\n', ' ').replace('\r', '').replace("  ", " ")
-        assert '"token2",       true,       "nick"' in testbody
+        response = self.app.get(url(controller='manage',
+                                    action='tokenview_flexi'),
+                                params={'qtype': 'all',
+                                        'query': 'token2'})
+        log.info("token flexi response 4: %r" % response)
+        self.assertTrue('"total": 1' in response, response)
+        testbody = response.body.replace('\n', ' ').replace('\r', '').\
+                                                            replace("  ", " ")
+        self.assertTrue('"token2",       true,       "nick"' in testbody,
+                                                                    testbody)
 
     def test_userflexi(self):
         '''
         Manage: testing the userview_flexi method
         '''
         # No realm, no user
-        response = self.app.get(url(controller='manage', action='userview_flexi'),
+        response = self.app.get(url(controller='manage',
+                                    action='userview_flexi'),
                                 params={})
-        print "user flexi response 1: %r" % response
-        assert '"total": 0' in response
+        log.info("user flexi response 1: %r" % response)
+        self.assertTrue('"total": 0' in response, response)
 
         # No realm, no user
 
-        response = self.app.get(url(controller='manage', action='userview_flexi'),
-                                params={"page" :1,
+        response = self.app.get(url(controller='manage',
+                                    action='userview_flexi'),
+                                params={"page": 1,
                                         "rp": 15,
                                         "sortname": "username",
                                         "sortorder": "asc",
                                         "query": "",
                                         "qtype": "username",
                                         "realm": "realm1"})
-        print "user flexi response 2: %r" % response
-        assert '"id": "heinz"' in response
+        log.info("user flexi response 2: %r" % response)
+        self.assertTrue('"id": "heinz"' in response, response)
 
-
-        response = self.app.get(url(controller='manage', action='userview_flexi'),
-                                params={"page" :1,
+        response = self.app.get(url(controller='manage',
+                                    action='userview_flexi'),
+                                params={"page": 1,
                                         "rp": 15,
                                         "sortname": "username",
                                         "sortorder": "desc",
                                         "query": "",
                                         "qtype": "username",
                                         "realm": "realm2"})
-        print "user flexi response 3: %r" % response
-        assert '"id": "renate"' in response
-
+        log.info("user flexi response 3: %r" % response)
+        self.assertTrue('"id": "renate"' in response, response)
 
     def test_tokeninfo(self):
         '''
         Manage: Testing tokeninfo dialog
         '''
         response = self.app.get(url(controller='manage', action='tokeninfo'),
-                                params={"serial" : "token1"})
-        print "tokeninfo response: %r" % response
-        assert 'class=tokeninfoOuterTable' in response
-        assert 'Heinz Hirtz' in response
-        assert 'Heinz Hirtz' in response
-        assert '<td class=tokeninfoOuterTable>LinOtp.TokenSerialnumber</td> <!-- middle column --> <td class=tokeninfoOuterTable> token1 </td> <!-- right column -->' in response
-
+                                params={"serial": "token1"})
+        log.info("tokeninfo response: %r" % response)
+        self.assertTrue('class=tokeninfoOuterTable' in response, response)
+        self.assertTrue('Heinz Hirtz' in response, response)
+        self.assertTrue('Heinz Hirtz' in response, response)
+        self.assertTrue('<td class=tokeninfoOuterTable>LinOtp.'
+                        'TokenSerialnumber</td> <!-- middle column --> <td '
+                        'class=tokeninfoOuterTable> token1 </td> <!-- right '
+                        'column -->' in response, response)
 
     def test_logout(self):
         '''
@@ -287,6 +305,6 @@ class TestManageController(TestController):
         '''
         response = self.app.get(url(controller='manage', action='logout'),
                                 params={})
-        print "logout response: %r" % response
-        assert '302 Found The resource was found at' in response
-
+        log.info("logout response: %r" % response)
+        self.assertTrue('302 Found The resource was found at' in response,
+                        response)
