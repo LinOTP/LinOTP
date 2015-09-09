@@ -1041,7 +1041,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("Token serial: ")} <span id='lost_token_serial'> </span> </p>
     <p>${_("The token was lost? You may enroll a temporary token and automatically disable the lost token.")}</p>
 
-    <select>
+    <select id="dialog_lost_token_select">
         <option value="select_token">
             ${_("- Select Temporary Token Type -")}
         </option>
