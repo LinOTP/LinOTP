@@ -42,6 +42,7 @@ ${_("Day OTP Token / Tagespasswort")}
  *
  */
 function dpw_enroll_setup_defaults(config, options){
+    dpw_clear_input_fields();
     var rand_pin = options['otp_pin_random'];
     if (rand_pin > 0) {
         $("[name='set_pin_rows']").hide();
@@ -70,7 +71,15 @@ function dpw_get_enroll_params(){
         params['pin'] = $('#dpw_pin1').val();
     }
 
+    dpw_clear_input_fields();
     return params;
+}
+
+function dpw_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#dpw_key').val('');
+    $('#dpw_pin1').val('');
+    $('#dpw_pin2').val('');
 }
 </script>
 <hr>

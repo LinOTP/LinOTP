@@ -135,6 +135,7 @@ ${_("RADIUS token")}
  *
  */
 function radius_enroll_setup_defaults(config, options){
+    radius_clear_input_fields();
     var rand_pin = options['otp_pin_random'];
     if (rand_pin > 0) {
         $("[name='set_pin_rows']").hide();
@@ -175,7 +176,15 @@ function radius_get_enroll_params(){
         params['pin'] = $('#radius_pin1').val();
     }
 
+    radius_clear_input_fields();
     return params;
+}
+
+function radius_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#radius_secret').val('');
+    $('#radius_pin1').val('');
+    $('#radius_pin2').val('');
 }
 
 jQuery.validator.addMethod("radius_server", function(value, element, param){

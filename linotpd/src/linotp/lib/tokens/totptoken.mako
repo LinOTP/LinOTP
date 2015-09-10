@@ -112,6 +112,7 @@ ${_("HMAC time based")}
  *
  */
 function totp_enroll_setup_defaults(config, options){
+    totp_clear_input_fields();
 	for (var key in config) {
 		if (key == "totp.timeStep")
 		{
@@ -119,7 +120,6 @@ function totp_enroll_setup_defaults(config, options){
 			$('#totp_timestep').val($totp_timeStep);
 		}
 	}
-	$('#totp_key').val('');
     $('#totp_rb_key_gen').prop('checked', true);
     $('#totp_google_compliant').prop('checked', false);
     cb_changed_deactivate('totp_rb_key_gen',['totp_key']);
@@ -199,8 +199,17 @@ function totp_get_enroll_params(){
         params['pin'] = $('#totp_pin1').val();
     }
 
+    totp_clear_input_fields();
     return params;
 }
+
+function totp_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#totp_key').val('');
+    $('#totp_pin1').val('');
+    $('#totp_pin2').val('');
+}
+
 $( document ).ready(function() {
 
 $('input[name="totp_rbg_key_gen"]').click(function() {

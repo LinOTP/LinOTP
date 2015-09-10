@@ -119,6 +119,7 @@ ${_("E-mail token")}
 %if c.scope == 'enroll' :
 <script>
 function email_enroll_setup_defaults(config, options){
+    email_clear_input_fields();
 	// in case we enroll e-mail otp, we get the e-mail address of the user
 	email_addresses = get_selected_email();
 	$('#email_address').val($.trim(email_addresses[0]));
@@ -145,7 +146,14 @@ function email_get_enroll_params(){
     if ($('#email_pin1').val() != '') {
         params['pin'] = $('#email_pin1').val();
     }
+    email_clear_input_fields();
     return params;
+}
+
+function email_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#email_pin1').val('');
+    $('#email_pin2').val('');
 }
 </script>
 <hr>
