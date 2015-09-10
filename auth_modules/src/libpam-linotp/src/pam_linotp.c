@@ -85,6 +85,11 @@ auth    [success=1 default=ignore]     pam_linotp.so noosslhostnameverify \
 
 #include <curl/curl.h>
 
+#ifdef pam_prompt
+/* Fedora needs this */
+#include <security/pam_ext.h>
+#endif
+
 #define PAM_LINO_CHALLENGE 99
 #define LINOTPD_OK         ":-)"
 #define LINOTPD_REJECT     ":-("
@@ -135,6 +140,8 @@ int pam_local_get_authtok(pam_handle_t *pamh, int item, char **password,
 int pam_linotp_validate_password(pam_handle_t *pamh,
         char *user, char *password,
         LinOTPConfig *config);
+
+int pam_prompt(const pam_handle_t *_pamh, int _style, char **_resp, const char *_fmt, ...);
 
 /************** syslog stuff **********************/
 
