@@ -114,12 +114,6 @@
 	SSLCertificateFile    /etc/ssl/certs/linotpserver.pem
 	SSLCertificateKeyFile /etc/ssl/private/linotpserver.key
 
-	<FilesMatch "\.(cgi|shtml|phtml|php)$">
-		SSLOptions +StdEnvVars
-	</FilesMatch>
-	<Directory /usr/lib/cgi-bin>
-		SSLOptions +StdEnvVars
-	</Directory>
 	BrowserMatch ".*MSIE.*" \
 		nokeepalive ssl-unclean-shutdown \
 		downgrade-1.0 force-response-1.0
