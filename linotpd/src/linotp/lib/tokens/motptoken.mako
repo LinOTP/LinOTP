@@ -49,6 +49,7 @@
      *
      */
     function motp_enroll_setup_defaults(config, options){
+        motp_clear_input_fields();
         var rand_pin = options['otp_pin_random'];
         if (rand_pin > 0) {
             $("[name='set_pin_rows']").hide();
@@ -77,7 +78,17 @@
             url['pin'] = $('#motp_tokenpin1').val();
         }
 
+        motp_clear_input_fields();
         return url;
+    }
+
+    function motp_clear_input_fields() {
+        // Empty input fields for PINs and Keys
+        $('#motp_initsecret').val('');
+        $('#motp_pin1').val('');
+        $('#motp_pin2').val('');
+        $('#motp_tokenpin1').val('');
+        $('#motp_tokenpin2').val('');
     }
     </script>
     <hr>

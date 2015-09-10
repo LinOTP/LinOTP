@@ -62,6 +62,7 @@ ${_("OCRA2 - challenge/response Token")}
  *
  */
 function ocra2_enroll_setup_defaults(config, options){
+    ocra2_clear_input_fields();
     var rand_pin = options['otp_pin_random'];
     if (rand_pin > 0) {
         $("[name='set_pin_rows']").hide();
@@ -100,7 +101,15 @@ function ocra2_get_enroll_params(){
         url['pin'] = $('#ocra2_pin1').val();
     }
 
+    ocra2_clear_input_fields();
     return url;
+}
+
+function ocra2_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#ocra2_key').val('');
+    $('#ocra2_pin1').val('');
+    $('#ocra2_pin2').val('');
 }
 </script>
 <hr>
