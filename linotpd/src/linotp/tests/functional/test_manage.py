@@ -123,7 +123,14 @@ class TestManageController(TestController):
         print response
         assert '"value": true' in response
 
-
+    def tearDown(self):
+        """
+        make the dishes
+        """
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+        return TestController.tearDown(self)
 
 
     ###############################################################################
