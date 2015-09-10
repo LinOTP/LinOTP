@@ -253,9 +253,10 @@ def check_pin(token, passw, user=None, options=None):
         # We check the Users Password as PIN
         log.debug("[check_pin] pin policy=1: checking the users"
                                                     " password as pin")
-        if (user is None):
-            raise Exception("[check_pin] - fail for pin policy == 1 "
+        if (user is None or not user.login):
+            log.info("[check_pin] - fail for pin policy == 1 "
                                                       "with user = None")
+            return False
 
         (uid, _resolver, resolver_class) = getUserId(user)
 
