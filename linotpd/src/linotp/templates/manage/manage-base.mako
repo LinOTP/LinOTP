@@ -125,7 +125,7 @@ if isinstance(lang, list):
             </ul>
         </li>
     </ul>
-    <div id="logo"><img src="/images/linotp_logo_103x35.png" alt="LinOTP"/></div>
+    <div id="logo"></div>
 </div> <!-- header -->
 <div align="right" style="font-size: 70%">
     <p>${_("Logged in as")}: ${c.admin} | <a href="${c.logout_url}">${_("Logout")}</a>
