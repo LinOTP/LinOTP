@@ -133,7 +133,7 @@ typedef struct {
 } LinOTPConfig ;
 
 int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char ** cleanpassword,
-        const char * prompt, int use_first_pass, int *token_length);
+        const char * prompt, int use_first_pass, size_t *token_length);
 
 int pam_local_get_authtok(pam_handle_t *pamh, int item, char **password,
         char * prompt, int use_first_pass);
@@ -155,17 +155,17 @@ static void do_log(int type, char * format, ...) {
         va_end(args);
 }
 
-#define log_error(format, ...)   do_log(LOG_ERR,     "linotp:ERROR: "   #format, ## __VA_ARGS__)
-#define log_debug(format, ...)   do_log(LOG_DEBUG,   "linotp:DEBUG: "   #format, ## __VA_ARGS__)
-#define log_warning(format, ...) do_log(LOG_WARNING, "linotp:WARNING: " #format, ## __VA_ARGS__)
-#define log_info(format, ...)    do_log(LOG_INFO,    "linotp:INFO: "    #format, ## __VA_ARGS__)
-
-/* for debugging:
+#ifdef DEBUG
 #define log_error(format, ...)   do_log(LOG_ERR,     "linotp:ERROR: "   #format, ## __VA_ARGS__)
 #define log_debug(format, ...)   do_log(LOG_ERR,   "linotp:DEBUG: "   #format, ## __VA_ARGS__)
 #define log_warning(format, ...) do_log(LOG_ERR, "linotp:WARNING: " #format, ## __VA_ARGS__)
 #define log_info(format, ...)    do_log(LOG_ERR,    "linotp:INFO: "    #format, ## __VA_ARGS__)
-*/
+#else
+#define log_error(format, ...)   do_log(LOG_ERR,     "linotp:ERROR: "   #format, ## __VA_ARGS__)
+#define log_debug(format, ...)   do_log(LOG_DEBUG,   "linotp:DEBUG: "   #format, ## __VA_ARGS__)
+#define log_warning(format, ...) do_log(LOG_WARNING, "linotp:WARNING: " #format, ## __VA_ARGS__)
+#define log_info(format, ...)    do_log(LOG_INFO,    "linotp:INFO: "    #format, ## __VA_ARGS__)
+#endif
 /* The function "memset_s(void *s, rsize_t, int, rsize_t)" exists on Mac OS X
    based operating systems, or in C11                                         */
 
@@ -199,39 +199,37 @@ int memset_s(void *s, size_t smax, int c, size_t n) {
 #endif
 /* End #ifndef memset_s */
 
-char * erase_data(void * data, int len) {
+static char * erase_data(void * data, size_t len) {
+    if(!data){
+        return NULL;
+    }
     /* wipe all data and free the memory */
     int ret = 0;
-    if(data){
-        //log_debug("remove data");
-        ret = memset_s(data, len, 0, len);
-        if(ret){
-            log_warning("Cleaning data!2\n");
-            if(ret == EINVAL) {
-                log_warning(
-                "WARNING: %s()[%s:%d] memset_s was called to write on a NULL pointer!",
-                __FUNCTION__, __FILE__, __LINE__);
+    ret = memset_s(data, len, 0, len);
+    if(!ret){
+        log_warning("memset_s failed, using memset instead!");
+        memset(data, len, len);
+    } else {
+        log_warning("Cleaning data!\n");
+        if(ret == E2BIG) {
+            if(len > SIZE_MAX) {
+                log_error(
+                "ERROR: %s()[%s:%d] memset_s argument len is greater than the \
+                <stdint.h> defined SIZE_MAX.  Something is really wrong here!",
+                __FUNCTION__, __FILE__, __LINE__ );
             }
-            if(ret == E2BIG) {
-                if(len > SIZE_MAX) {
-                    log_error(
-                    "ERROR: %s()[%s:%d] memset_s argument len is greater than the \
-                    <stdint.h> defined SIZE_MAX.  Something is really wrong here!\n",
-                    __FUNCTION__, __FILE__, __LINE__ );
-                }
-            }
-            free(data);
         }
     }
+    free(data);
     return NULL;
 }
 
-char * erase_string(char * string) {
+static char * erase_string(char * string) {
     /* wipe all data and free the memory */
     if(string){
             return erase_data(string, strlen(string));
     }
-    return (char*) NULL;
+    return NULL;
 }
 
 /***********************************************
@@ -277,8 +275,14 @@ static size_t curl_write_memory_callback(void *ptr, size_t size, size_t nmemb,
      */
 
     struct MemoryStruct *mem = (struct MemoryStruct *) data;
-    size_t realsize = size * nmemb;
-
+    long long int protectit;
+    protectit = (size_t)(size * nmemb);
+    size_t realsize = (size_t) protectit;
+    if(realsize != protectit){
+        log_debug("Integer overflow detected @ curl_write_memory_callback");
+        return 0;
+    }
+    char *tmp;
 
     /*Check for Max_size*/
     if (realsize > MAXMEMSIZE) {
@@ -290,18 +294,11 @@ static size_t curl_write_memory_callback(void *ptr, size_t size, size_t nmemb,
         return mem->size;
     }
     /* do the alloc or realloc*/
-    char * tmp;
-    if (mem->memory == NULL) {
-        tmp = malloc(mem->size + realsize + 1);
-    }
-    else {
-        tmp = realloc(mem->memory, mem->size + realsize + 1);
-    }
-    if (tmp == NULL) {
+    tmp = realloc(mem->memory, mem->size + realsize + 1);
+    if (!tmp) {
         /* wipe and free */
         mem->memory = erase_data(mem->memory, mem->size);
         mem->size = 0;
-
         log_error("re-allocation during the write memory callback failed!");
         return 0;
     }
@@ -333,14 +330,17 @@ void linotp_split_stat_and_message(char * s, char ** stat, char ** msg)
     char * fin = NULL;
 
     /* return, if there is nothing more than an ok */
-    if (strlen(LINOTPD_REJECT) >= strlen(s)) return;
+    if (strlen(LINOTPD_OK) >= strlen(s)){
+        return;
+    }
 
     fin = strchr(s+strlen(LINOTPD_REJECT), ' ');
-    if (fin == NULL) return;
+    if (!fin){
+        return;
+    }
 
     /*now search start of stat */
-    while(*fin != '\0')
-    {
+    while(*fin != '\0') {
         if (*fin == ' ')
             fin++;
         else
@@ -362,7 +362,7 @@ void linotp_split_stat_and_message(char * s, char ** stat, char ** msg)
 
     return;
 }
-char * linotp_create_url_params(CURL *curl_handle,int number_of_pairs, ...)
+char * linotp_create_url_params(CURL *curl_handle, size_t number_of_pairs, ...)
 {
     /*
     doing a post request requires for curl to have all the parameters
@@ -378,8 +378,8 @@ char * linotp_create_url_params(CURL *curl_handle,int number_of_pairs, ...)
     all parameter values are first url escaped and will be freed after
     the concatenation.
     */
-    int     i = 0;
-    int  size = 0;
+    unsigned int i = 0;
+    size_t size = 0;
 
     /*** initialize array****/
     char * arry[number_of_pairs][2];
@@ -410,8 +410,12 @@ char * linotp_create_url_params(CURL *curl_handle,int number_of_pairs, ...)
     size = size +1;
     log_debug("allocating %d chars", size);
     param = (char*) calloc(size, sizeof(char));
-
-    /* concat the values in the param string*/
+    if(!param){
+        log_debug("ERROR: calloc param in linotp_create_url_params failed");
+        va_end(ap);
+        return NULL;
+    }
+        /* concat the values in the param string*/
     for (i= 0; i< number_of_pairs; i++){
 
         if (arry[i][0] != NULL && arry[i][1] != NULL) {
@@ -423,14 +427,12 @@ char * linotp_create_url_params(CURL *curl_handle,int number_of_pairs, ...)
             /* finally clean up the escaped data*/
             log_debug("freeing escaped value for %s", arry[i][0]);
 
-            /* memset the data before - so no pass etc. will be in memory */
-            memset(arry[i][0],0, strlen(arry[i][0]));
-            curl_free(arry[i][0]);
-
-            memset(arry[i][1],0, strlen(arry[i][1]));
-            curl_free(arry[i][1]);
+            /* erase the data - so no pass etc. will be in memory */
+            erase_data(arry[i][0], strlen(arry[i][0]));
+            erase_data(arry[i][1], strlen(arry[i][1]));
         }
     }
+    va_end(ap);
     return param;
 }
 
@@ -608,7 +610,6 @@ int linotp_auth(char *user, char *password,
         log_error("An error occured for '%s' on '%s'\n %.10s\n", user,
                 config->url,chunk.memory);
         returnValue = PAM_AUTH_ERR;
-        goto cleanup;
     }
 
     cleanup:
@@ -649,7 +650,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config) {
     config->debug = 0;
     config->prompt = strdup(password_prompt);
     config->tokenlength=0;
-    int i = 0;
+    unsigned int i = 0;
 
     for ( i = 0; i < argc; i++ ) {
         if (strcmp(argv[i], "debug") == 0)
@@ -812,28 +813,41 @@ int pam_linotp_validate_password(pam_handle_t *pamh,
 
 typedef struct _int_array {
     int* buff;
-    int  length;
+    size_t length;
 } int_array;
+
 int_array get_possibtok(char* token_length){
     int_array ret;
     ret.buff   = NULL;
     ret.length = 0;
 
+    int_array error;
+    error.buff = NULL;
+    error.length = 0;
+
+
      /* returns an integer array with parsed digits from string */
     if (!token_length) {
         ret.buff    = malloc(sizeof(int));
+        if(!ret.buff){
+            log_debug("ERROR: malloc ret.buff in get_possibtok failed");
+            return error;
+        }
         ret.length  = 1;
         ret.buff[0] = 0;
         return ret;
     }
 
-    int  len = strlen(token_length);
-    int* tmp = malloc(len * sizeof(int)); // allocate enough data...
-
+    size_t  len = strlen(token_length);
+    size_t* tmp = malloc(len * sizeof(int)); // allocate enough data...
+    if(!(tmp)){
+        log_debug("ERROR: malloc tmp in get_possibtok failed");
+        return error;
+    }
     int sep = -1;
     int cnt = 0;
     int val = 0;
-    int i;
+    unsigned int i;
     for (i = 0; i < len; i++) {
         if (isdigit(token_length[i])) {
             /* a Digit... */
@@ -874,18 +888,24 @@ int_array get_possibtok(char* token_length){
 
     if (cnt > 0) {
         ret.buff   = malloc(cnt * sizeof(int));
+        if(!ret.buff){
+            log_debug("ERROR: malloc ret.buff in get_possibtok failed");
+            int buff = 0;
+            ret.buff = &buff;
+            return ret;
+        }
         ret.length = cnt;
         int k;
         for (k = 0; k < cnt; k++)
             ret.buff[k] = tmp[k];
     }
 
-    erase_data(tmp, len * sizeof(char));
+    erase_data(tmp, len * sizeof(int));
     return ret;
 }
 
 int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpassword,
-        const char * prompt, int use_first_pass, int* token_length)
+        const char * prompt, int use_first_pass, size_t* token_length)
 {
     /** method to get the password from the pam console
      * which hides the openpam / not openpam differences
@@ -907,6 +927,13 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
     log_debug("Not using OPENPAM");
 #endif
 
+    /* tokenlength is 0, if there was no configurated token_length,
+     * so we cant ask for !(*token_length).
+     */
+    if(!(token_length)) {
+        log_debug("ERROR: No token length given (pam_linotp_get_authtok)");
+        return PAM_AUTH_ERR;
+    }
     int ret = PAM_AUTHTOK_ERR;
     if (use_first_pass) {
         /*
@@ -928,6 +955,10 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
             /* if password isnt received, we have to allocate the space */
             if (strlen(*password)) {
                 *password    = malloc(sizeof(char));
+                if(!*password){
+                    log_debug("ERROR: malloc password in pam_linotp_get_authtok failed");
+                    return PAM_AUTHTOK_ERR;
+                }
                 *password[0] = '\0';
             }
             log_debug("ok, password received");
@@ -941,12 +972,12 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
             prompt = "Your OTP: ";
         }
         ret = pam_prompt(pamh, PAM_PROMPT_ECHO_ON, (char **)password, "%s", prompt);
-        if (!password && ret != PAM_SUCCESS){
+        if (!password || ret != PAM_SUCCESS){
             log_debug("cant get password");
             return PAM_AUTHTOK_ERR;
         }
         log_debug("OTP received successfully %s", *password);
-        *token_length = (int)strlen(*password);
+        *token_length = (size_t)strlen(*password);
         return ret;
     }
 
@@ -958,13 +989,13 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
         log_debug("error - there is no password given");
         exit(PAM_AUTH_ERR);
     }
-    int length = (int)strlen(*password);
+    size_t length = (size_t)strlen(*password);
     if (!length){
         log_error("no password given");
         return PAM_AUTH_ERR;
     }
     int n = 0;
-    if (token_length && token_length > 0) {
+    if (token_length && *token_length > 0) {
         n = *token_length;
     }
     if (n > length) {
@@ -983,22 +1014,19 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
 
     strncpy(cleanpw, *password, (length - n) * sizeof(char));
     cleanpw[length - n] = '\0';
-    log_debug("Clean Password received: %s", cleanpw);
     strncpy(otp, *password + length - n, n);
     otp[n] = '\0';
     log_debug("OTP received: %s", otp);
     *cleanpassword = strdup(cleanpw);
     *password      = strdup(otp);
     ret = PAM_SUCCESS;
-    goto cleanup;
 
-cleanup:
     log_debug("freeing data");
     /** Dont clean password, its used within the next PAM module
     erase_string(password);*/
     pam_set_data(pamh, "linotp_setcred_return", (void*) (intptr_t) &ret, NULL);
     erase_string(cleanpw);
-      erase_string(otp);
+    erase_string(otp);
     return ret;
 }
 
@@ -1023,7 +1051,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
     char *user          = NULL;
     char *password      = NULL;
     char *cleanpassword = NULL;
-    int   ret /*= PAM_AUTH_ERR*/;
+    int   ret = PAM_AUTH_ERR;
 
     ret = pam_linotp_get_config(argc, argv, &config);
     if (ret != PAM_SUCCESS) {
@@ -1043,7 +1071,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
         log_error("Failed to read the username");
         return ret;
     }
-    if (user == NULL) {
+    if (!user) {
         log_error("Invalid Username, username cannot be null");
         return PAM_AUTH_ERR;
     }
@@ -1056,17 +1084,15 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
     // Check otp/password...
     int_array tok = get_possibtok(config.tokenlength);
     log_info("<token-lengths length='%i'>", tok.length);
-    int x;
+    unsigned int x;
     for (x = 0; x < tok.length; x++)
         log_debug("  length[%i]=%i", x, tok.buff[x]);
     log_info("</token-lengths>");
 
-    int i;
+    unsigned int i;
     for (i = 0; i < tok.length; i++) {
-        //log_debug("array %i:%i", i, tok.buff[i]);
-
         log_debug("Getting password");
-        int token_len = tok.buff[i];
+        size_t token_len = tok.buff[i];
         ret = pam_linotp_get_authtok(pamh, &password, &cleanpassword, config.prompt, config.use_first_pass, &token_len);
         log_debug("End of password fetching.");
 
@@ -1089,6 +1115,10 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
                     log_debug("set the password for next pam module");
 
                     char *pw2stack = strdup(cleanpassword);
+                    if(!pw2stack){
+                        log_debug("pw2stack was empty");
+                        break;
+                    }
                     if (pam_set_item(pamh, PAM_AUTHTOK, pw2stack) == PAM_SUCCESS) {
                         // Login successful, remove password and exit for!
                         erase_string(password);
