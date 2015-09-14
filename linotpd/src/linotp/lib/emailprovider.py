@@ -35,12 +35,12 @@ LOG = logging.getLogger(__name__)
 
 class IEmailProvider:
     """
-    An abstract class that has to be implemented by every e-mail provider class.
+    An abstract class that has to be implemented by ever e-mail provider class
     """
     def __init__(self):
         pass
 
-    def submitMessage(self, email_to, message):
+    def submitMessage(self, email_to, message, subject=None):
         """
         This method has to be implemented by every subclass of IEmailProvider.
         It will be called to send out the e-mail.
@@ -54,15 +54,16 @@ class IEmailProvider:
         :return: A tuple of success and a message
         :rtype: bool, string
         """
-        raise NotImplementedError("Every subclass of IEmailProvider has to implement this method.")
+        raise NotImplementedError("Every subclass of IEmailProvider has to "
+                                  "implement this method.")
 
     def loadConfig(self, configDict):
         """
-        If you implement an e-mail provider that does not require configuration entries,
-        then you may leave this method unimplemented.
+        If you implement an e-mail provider that does not require configuration
+        entries, then you may leave this method unimplemented.
 
-        :param configDict: A dictionary that contains all configuration entries you defined
-            (e.g. in the linotp.ini file)
+        :param configDict: A dictionary that contains all configuration
+                           entries you defined (e.g. in the linotp.ini file)
         :type configDict: dict
         """
         pass
@@ -87,8 +88,8 @@ class SMTPEmailProvider(IEmailProvider):
         """
         Loads the configuration for this e-mail e-mail provider
 
-        :param configDict: A dictionary that contains all configuration entries you defined
-            (e.g. in the linotp.ini file)
+        :param configDict: A dictionary that contains all configuration entries
+                          you defined (e.g. in the linotp.ini file)
         :type configDict: dict
 
         """
@@ -98,7 +99,7 @@ class SMTPEmailProvider(IEmailProvider):
         self.email_from = configDict.get('EMAIL_FROM')
         self.email_subject = configDict.get('EMAIL_SUBJECT')
 
-    def submitMessage(self, email_to, message):
+    def submitMessage(self, email_to, message, subject=None):
         """
         Sends out the e-mail.
 
@@ -108,22 +109,32 @@ class SMTPEmailProvider(IEmailProvider):
         :param message: The message sent to the recipient
         :type message: string
 
+        :param subject: otional the subject sent to the recipient
+        :type subject: string
+
         :return: A tuple of success and a message
         :rtype: bool, string
         """
+
         if not self.smtp_server:
-            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is required")
+            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is "
+                            "required")
         if not self.email_from:
             self.email_from = self.DEFAULT_EMAIL_FROM
-        if not self.email_subject:
-            self.email_subject = self.DEFAULT_EMAIL_SUBJECT
+
+        email_subject = self.DEFAULT_EMAIL_SUBJECT
+
+        if subject:
+            email_subject = subject
+        elif self.email_subject:
+            email_subject = self.email_subject
 
         status_message = "e-mail sent successfully"
         success = True
 
         # Create a text/plain message
         msg = MIMEText(message)
-        msg['Subject'] = self.email_subject
+        msg['Subject'] = email_subject
         msg['From'] = self.email_from
         msg['To'] = email_to
 
@@ -133,12 +144,17 @@ class SMTPEmailProvider(IEmailProvider):
         try:
             errors = s.sendmail(self.email_from, email_to, msg.as_string())
             if len(errors) > 0:
-                LOG.error("[submitMessage] error(s) sending e-mail %r" % errors)
-                success, status_message = False, "error sending e-mail %s" % errors
-        except (smtplib.SMTPHeloError, smtplib.SMTPRecipientsRefused, smtplib.SMTPSenderRefused,
-                smtplib.SMTPDataError) as smtplib_exception:
-            LOG.error("[submitMessage] error(s) sending e-mail. Caught exception: %r" %
-                      smtplib_exception)
-            success, status_message = False, "error sending e-mail %r" % smtplib_exception
+                LOG.error("[submitMessage] error(s) sending e-mail %r"
+                          % errors)
+                success, status_message = False, ("error sending e-mail %s"
+                                                 % errors)
+
+        except (smtplib.SMTPHeloError, smtplib.SMTPRecipientsRefused,
+                smtplib.SMTPSenderRefused, smtplib.SMTPDataError
+                ) as smtplib_exception:
+            LOG.error("[submitMessage] error(s) sending e-mail. Caught "
+                      "exception: %r" % smtplib_exception)
+            success, status_message = False, ("error sending e-mail %r"
+                                             % smtplib_exception)
         s.quit()
         return success, status_message
