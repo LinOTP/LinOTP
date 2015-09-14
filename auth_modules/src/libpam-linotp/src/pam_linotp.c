@@ -68,6 +68,8 @@ auth    [success=1 default=ignore]     pam_linotp.so noosslhostnameverify \
  http://www.freebsd.org/doc/en/articles/pam/pam-sample-module.html
 
  *****************************************************************************/
+#define __USE_BSD
+#define _DEFAULT_SOURCE
 
 #include <pwd.h>
 #include <stdlib.h>
@@ -107,6 +109,7 @@ auth    [success=1 default=ignore]     pam_linotp.so noosslhostnameverify \
 /*****************************************************************************/
 
 static char password_prompt[] = "Your OTP: ";
+int debugflag = 0;
 
 /*
  config options which could be set in the pam configuration:
@@ -147,12 +150,14 @@ int pam_prompt(const pam_handle_t *_pamh, int _style, char **_resp, const char *
 /************** syslog stuff **********************/
 
 static void do_log(int type, char * format, ...) {
+    if(debugflag){
         va_list args;
         va_start(args, format);
         openlog("pam_linotp", LOG_PID, LOG_AUTHPRIV);
         vsyslog(type, format, args);
         closelog();
         va_end(args);
+    }
 }
 
 #ifdef DEBUG
@@ -362,7 +367,7 @@ void linotp_split_stat_and_message(char * s, char ** stat, char ** msg)
 
     return;
 }
-char * linotp_create_url_params(CURL *curl_handle, size_t number_of_pairs, ...)
+char * linotp_create_url_params(CURL *curl_handle, int number_of_pairs, ...)
 {
     /*
     doing a post request requires for curl to have all the parameters
@@ -623,7 +628,7 @@ int linotp_auth(char *user, char *password,
     return (returnValue);
 }
 
-int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config) {
+int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, int debugflag_pam) {
     /*
      * now check the config options:
      *  config options to be set in the pam configuration:
@@ -634,6 +639,9 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config) {
      *  resConf=<specialResolverConfig>
      *  use_first_pass - use the first parameters as pass
      *  debug - print out debug switch
+     *
+     *  :param config: struct with LinOTP configuration
+     *  :param debugflag_pam: flag, if PAM asked to be silent (1 == please be silent)
      */
 
     int ret = PAM_SUCCESS;
@@ -664,6 +672,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config) {
             config->nosslcertverify = 1;
         } else if (strcmp(argv[i], "debug") == 0) {
             config->debug = 1;
+            debugflag  = 1;
         } else if (strcmp(argv[i], "use_first_pass") == 0) {
             config->use_first_pass = 1;
         }
@@ -716,6 +725,11 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config) {
                 config->prompt = (char*) argv[i] + strlen("prompt=");
             }
         }
+        /* if PAM asked for to be silent, disable debugging messages */
+        if(1 == debugflag_pam){
+            config->debug = 0;
+            debugflag = 0;
+        }
 
     }
     if (config->debug) {
@@ -736,8 +750,6 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config) {
         if (config->nosslcertverify == 1) {
             log_debug("found 'nosslcertverify', we will not verify the certificate.");
         }
-
-
     }
     return ret;
 }
@@ -805,7 +817,6 @@ int pam_linotp_validate_password(pam_handle_t *pamh,
     state = erase_string(state);
     response = erase_string(response);
 
-
     log_debug("all memory freed");
 
     return ret;
@@ -817,6 +828,15 @@ typedef struct _int_array {
 } int_array;
 
 int_array get_possibtok(char* token_length){
+    /** Method to convert the configured token_length string into an int array.
+     *
+     * :param token_length: String of configured token_lenths
+     *
+     * :return: struct with an int array of token lengths,
+     *          if there are no configured token legths,
+     *          it returns an struct with length 0.
+     */
+
     int_array ret;
     ret.buff   = NULL;
     ret.length = 0;
@@ -904,97 +924,30 @@ int_array get_possibtok(char* token_length){
     return ret;
 }
 
-int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpassword,
-        const char * prompt, int use_first_pass, size_t* token_length)
+int pam_linotp_extract_authtok(
+        pam_handle_t *pamh,
+        char **password,
+        char **cleanpassword,
+        size_t *token_length)
 {
-    /** method to get the password from the pam console
-     * which hides the openpam / not openpam differences
-     * it cuts the password for next pam module at given length to remove the otp
-     * if there is no given length - it has to be parsed and cleaned from pam_sm_authenticate
-     *
-     * :param pamh: pam handle
-     * :param item: return type, which is meant to be PAM_AUTHTOK
-     * :param password: reference to the password pointer
-     * :param prompt: what to show to the user
-     * :param use_first: special case for the apple password catch
-     *
-     * :return: int success / fail and in the password reference the catched password
-     */
-
-#ifdef _OPENPAM
-    log_debug("Using OPENPAM");
-#else
-    log_debug("Not using OPENPAM");
-#endif
-
-    /* tokenlength is 0, if there was no configurated token_length,
-     * so we cant ask for !(*token_length).
-     */
-    if(!(token_length)) {
-        log_debug("ERROR: No token length given (pam_linotp_get_authtok)");
-        return PAM_AUTH_ERR;
-    }
-    int ret = PAM_AUTHTOK_ERR;
-    if (use_first_pass) {
-        /*
-         * We do not ask for the password, but we get it ftom the PAM stack
-         * use_first_pass is the only way it works for the MAC GUI
-         */
-        log_debug("Getting password from PAM stack using first pass");
-        ret = pam_get_item(pamh, PAM_AUTHTOK, (const void **)password);
-        if (!password || !*password) {
-#ifdef _OPENPAM
-            log_debug("Error: password is null after get_item, lets try pam_get_authtok...");
-            ret = pam_get_authtok(pamh, PAM_AUTHTOK, (const char **)password, NULL);
-#endif
-            if (!password || !*password) {
-                log_debug("Error: get_authtok failed");
-                return PAM_AUTHTOK_ERR;
-            }
-
-            /* if password isnt received, we have to allocate the space */
-            if (strlen(*password)) {
-                *password    = malloc(sizeof(char));
-                if(!*password){
-                    log_debug("ERROR: malloc password in pam_linotp_get_authtok failed");
-                    return PAM_AUTHTOK_ERR;
-                }
-                *password[0] = '\0';
-            }
-            log_debug("ok, password received");
-        }
-    } else {
-        /* Using prompt to ask for password */
-        log_debug("Using Prompt to get login data");
-        ret = pam_get_item(pamh, PAM_AUTHTOK, (const void **)cleanpassword);
-        log_debug("There is no given otp on stack, lets ask for it");
-        if (!prompt){
-            prompt = "Your OTP: ";
-        }
-        ret = pam_prompt(pamh, PAM_PROMPT_ECHO_ON, (char **)password, "%s", prompt);
-        if (!password || ret != PAM_SUCCESS){
-            log_debug("cant get password");
-            return PAM_AUTHTOK_ERR;
-        }
-        log_debug("OTP received successfully %s", *password);
-        *token_length = (size_t)strlen(*password);
-        return ret;
-    }
-
     /* Received password from stack using first_pass, so we have to extract
     the otp and write the clean password back to the stack */
+    int n = 0;
+    int ret = PAM_AUTHTOK_ERR;
+    size_t length = 0;
+
     if (!*password) {
         *password      = "\n";
         *cleanpassword = "\n";
         log_debug("error - there is no password given");
         exit(PAM_AUTH_ERR);
     }
-    size_t length = (size_t)strlen(*password);
+    length = (size_t)strlen(*password);
     if (!length){
         log_error("no password given");
         return PAM_AUTH_ERR;
     }
-    int n = 0;
+
     if (token_length && *token_length > 0) {
         n = *token_length;
     }
@@ -1009,8 +962,6 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
         log_debug("no tokenlength received, password will be cleaned from pam_sm_authenticate()");
     }
     log_debug("Token length = %i", n);
-    log_debug("Your Password is %s", *password);
-
 
     strncpy(cleanpw, *password, (length - n) * sizeof(char));
     cleanpw[length - n] = '\0';
@@ -1030,6 +981,142 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
     return ret;
 }
 
+int pam_linotp_get_pw_use_first_pass(
+        pam_handle_t *pamh,
+        char **password,
+        char **cleanpassword,
+        size_t *token_length,
+        int use_first_pass)
+{
+    /** method to get the password from pam stack, mostly used for Apple computers
+     * be careful: the use_first_pass option manipulates the pam stack,
+     *             which is not allowed by most Linux systems.
+     *
+     * :param pamh: pam handle
+     * :param password: reference to the password pointer
+     * :param cleanpassword: reference to the cleaned password pointer
+     * :param token_length: the expected token length
+     * :param use_first_pass: to ensure
+     * :return: int success / fail and in the password reference
+     *          the catched password and cleaned password
+     */
+
+    int ret = PAM_AUTHTOK_ERR;
+    if (!use_first_pass) {
+        return PAM_AUTH_ERR;
+    }
+
+    /*
+     * We do not ask for the password, but we get it from the PAM stack
+     * use_first_pass is the only way it works for the MAC GUI
+     */
+    log_debug("Getting password from PAM stack using first pass");
+    ret = pam_get_item(pamh, PAM_AUTHTOK, (const void **)password);
+    if (!password || !*password) {
+#ifdef _OPENPAM
+        log_debug("Error: password is null after get_item, lets try pam_get_authtok...");
+        ret = pam_get_authtok(pamh, PAM_AUTHTOK, (const char **)password, NULL);
+#endif
+        if (!password || !*password) {
+            log_debug("Error: get_authtok failed");
+            return PAM_AUTHTOK_ERR;
+        }
+
+        /* if password isnt received, we have to allocate the space */
+        if (strlen(*password)) {
+            *password    = malloc(sizeof(char));
+            if(!*password){
+                log_debug("ERROR: malloc password in pam_linotp_get_authtok failed");
+                return PAM_AUTHTOK_ERR;
+            }
+        *password[0] = '\0';
+        }
+    log_debug("ok, password received");
+    }
+    pam_linotp_extract_authtok(pamh, password, cleanpassword, token_length);
+    return ret;
+}
+
+int pam_linotp_get_authtok_no_use_first_pass(
+        pam_handle_t *pamh,
+        char **password,
+        char **cleanpassword,
+        const char * prompt,
+        size_t* token_length)
+{
+    /** method to get the password via challenge response mode
+     *
+     * :param pamh: pam handle
+     * :param password: reference to the password pointer
+     * :param cleanpassword: reference to the cleaned password pointer
+     * :param prompt: what to show to the user
+     * :param token_length: the expected token length
+     *
+     * :return: int success / fail and in the password reference
+     *          the catched password and cleaned password
+     */
+
+    int ret = PAM_AUTHTOK_ERR;
+    /* tokenlength is 0, if there was no configurated token_length,
+     * so we cant ask for !(*token_length).
+     */
+    if(!(token_length)) {
+        log_debug("ERROR: No token length given (pam_linotp_get_authtok)");
+        return PAM_AUTH_ERR;
+    } else {
+        /* Using prompt to ask for password */
+        log_debug("Using Prompt to get login data");
+        ret = pam_get_item(pamh, PAM_AUTHTOK, (const void **)cleanpassword);
+        log_debug("There is no given otp on stack, lets ask for it");
+        if (!prompt){
+            prompt = "Your OTP: ";
+        }
+        ret = pam_prompt(pamh, PAM_PROMPT_ECHO_ON, (char **)password, "%s", prompt);
+        if (!password || ret != PAM_SUCCESS){
+            log_debug("cant get password");
+            return PAM_AUTHTOK_ERR;
+        }
+        log_debug("OTP received successfully %s", *password);
+        *token_length = (size_t)strlen(*password);
+        return ret;
+    }
+}
+
+int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpassword,
+        const char * prompt, int use_first_pass, size_t* token_length)
+{
+    /** method to get the password from the pam console
+     * which hides the use_fist_pass / challange respone differences
+     *
+     * :param pamh: pam handle
+     * :param password: reference to the password pointer
+     * :param cleanpassword: reference to the cleaned password pointer
+     * :param prompt: what to show to the user
+     * :param use_first_pass: special case for the apple password catch
+     *
+     * :return: int success / fail and in the password reference
+     *          the catched password and cleaned password
+     */
+
+    int ret = PAM_AUTHTOK_ERR;
+    if(use_first_pass){
+        ret = pam_linotp_get_pw_use_first_pass(
+            pamh,
+            password,
+            cleanpassword,
+            token_length,
+            use_first_pass);
+    } else {
+        ret = pam_linotp_get_authtok_no_use_first_pass(
+            pamh,
+            password,
+            cleanpassword,
+            prompt,
+            token_length);
+    }
+    return ret;
+}
+
 /*****************************************************************************
  * linotp PAM callbacks and module definitions
 *****************************************************************************/
@@ -1037,14 +1124,20 @@ PAM_EXTERN int
 pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[]) {
 
     /**
-     *  pam authentication callback
+     *  pam authentication callback, its called from PAM to authenticate
+     *  the user with a one time password
      *
      *  :param *pamh: handler to the pam context
-     *  :param flags: ??
+     *  :param flags: PAM_SILENT - defines the debug message behavior
+     *                PAM_DISALLOW_NULL_AUTHTOK - will be ignored,
+                      because it doesn't matter for OTP Athentications
      *  :param argc: counter of the provided arguments
      *  :param argv: pointer to the array of arguments
      */
-
+    int debugflag_pam = 0;
+    if(flags && PAM_SILENT == flags){
+            debugflag_pam = 1;
+    }
     log_info("Authentication stated...");
 
     LinOTPConfig config;
@@ -1053,7 +1146,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
     char *cleanpassword = NULL;
     int   ret = PAM_AUTH_ERR;
 
-    ret = pam_linotp_get_config(argc, argv, &config);
+    ret = pam_linotp_get_config(argc, argv, &config, debugflag_pam);
     if (ret != PAM_SUCCESS) {
         log_error("Failed to read the linOTP pam config");
         return ret;
@@ -1076,11 +1169,9 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
         return PAM_AUTH_ERR;
     }
 
-    /** Now get the password, it will try all configured token length values, if tokenlength == 0, we have
-     *  to ask the Appliance for it
-        */
-    ret = PAM_AUTH_ERR;
-
+    /** Now get the password, it will try all configured token length values,
+     *  if tokenlength == 0, we have to ask the Appliance for it
+     */
     // Check otp/password...
     int_array tok = get_possibtok(config.tokenlength);
     log_info("<token-lengths length='%i'>", tok.length);
@@ -1131,7 +1222,6 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
                     erase_string(pw2stack);
                     log_debug("Login canceled, cant update password");
                 }
-
                 erase_string(password);
                 erase_string(cleanpassword);
             } else {
