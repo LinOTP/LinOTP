@@ -1544,10 +1544,9 @@ class FinishTokens(object):
             self.finish_invalid_tokens()
 
             # check for the global settings, if we increment in wrong pin
-            incOnFalsePin = getFromConfig("FailCounterIncOnFalsePin", "False")
+            incOnFalsePin = getFromConfig("FailCounterIncOnFalsePin", "True")
             if incOnFalsePin.strip().lower() == 'true':
                 self.increment_failcounters(self.invalid_tokens)
-            self.increment_counters(self.invalid_tokens, reset=False)
             create_audit_entry(detail, self.pin_matching_tokens)
             return ret, reply
 
