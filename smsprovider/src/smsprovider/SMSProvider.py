@@ -26,78 +26,73 @@
 
 """ the SMS Provider Interface """
 
+
 class ISMSProvider:
+    """
+    Interface class for the SMS providers
+    """
     def __init__(self):
         self.config = {}
+
     def submitMessage(self, phone, message):
         pass
+
     def loadConfig(self, configDict):
         self.config = configDict
         pass
 
+    @staticmethod
+    def _get_msisdn_phonenumber(phonenumber):
+        """
+        convert the phone number to something more msisdn compliant
+
+        from http://www.msisdn.org/:
+          In GSM standard 1800, this number is built up as
+            MSISDN = CC + NDC + SN
+            CC = Country Code
+            NDC = National Destination Code
+            SN = Subscriber Number
+
+        there are two version of the msisdn: the global definition and
+        the local definition, with the difference, that the global definition
+        might start with an +CC country code. in this conversion routine, the
+        global prefixing is ignored
+        """
+        msisdn = []
+        prefix = False
+        if phonenumber.strip()[0] == '+':
+            prefix = True
+        for character in phonenumber:
+            if character.isdigit():
+                msisdn.append(character)
+
+        phone = "".join(msisdn)
+        if prefix:
+            return "+" + phone
+        else:
+            return phone
 
 
-
-
-
-
-
-""" getSMSProviderClass(packageName, className):
-
-helper method to load the SMSProvider class from a given
-package in literal:
-
-example:
-
-    getResolverClass("SkypeSMSProvider", "SMSProvider")()
-
-check:
-    checks, if the submittMessage method exists
-    if not an error is thrown
-
-"""
 def getSMSProviderClass(packageName, className):
+    """
+    helper method to load the SMSProvider class from a given
+    package in literal: checks, if the submittMessage method exists
+    else an error is thrown
+
+    example:
+        getResolverClass("SkypeSMSProvider", "SMSProvider")()
+
+    :return: the SMS provider object
+
+    """
+
     mod = __import__(packageName, globals(), locals(), [className])
     klass = getattr(mod, className)
     if not hasattr(klass, "submitMessage"):
-        raise NameError("SMSProvider AttributeError: " + packageName + "." + \
-              className + " instance of SMSProvider has no method 'submitMessage'")
-        return ""
+        raise NameError("SMSProvider AttributeError: %r.%r "
+                        "instance of SMSProvider has no method 'submitMessage'"
+                        % (packageName, className))
     else:
         return klass
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def main(phone, message):
-    print "SMSProvider - class load test "
-
-    config = {'nothing':'defined'}
-    #sms = ISMSProvider()
-
-    sms = getSMSProviderClass("SMSProvider", "ISMSProvider")()
-
-    sms.loadConfig(config)
-    sms.submitMessage(phone, message)
-    print sms
-
-
-if __name__ == "__main__":
-    phone = "015154294800"
-    message = "my test sms"
-    main(phone, message)
-    print "... done!"
-
+## eof ########################################################################

@@ -66,6 +66,10 @@ class HttpSMSProvider(ISMSProvider):
         if url is None:
             return
 
+        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
+        if msisdn:
+            phone = self._get_msisdn_phonenumber(phone)
+
         log.debug("[submitMessage] submitting message "
                   "%s to %s" % (message, phone))
 

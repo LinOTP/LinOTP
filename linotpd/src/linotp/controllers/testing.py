@@ -53,6 +53,42 @@ log = logging.getLogger(__name__)
 
 #from paste.debug.profile import profile_decorator
 
+# some twilio like test data
+twilio_ok = """<?xml version='1.0' encoding='UTF-8'?>\
+<TwilioResponse>\
+<Message>\
+<Sid>SM6552db38d10548cd4161826fa5754530</Sid>\
+<DateCreated>Mon,10 Aug 2015 08:43:33 +0000</DateCreated>\
+<DateUpdated>Mon, 10 Aug 2015 08:43:33+0000</DateUpdated>\
+<DateSent/>\
+<AccountSid>AC710548cd4161826fa5754530ea71fb03</AccountSid>\
+<To>+491171410210</To>\
+<From>+4911714102109</From><Body>testmessage</Body>\
+<Status>queued</Status><NumSegments>1</NumSegments><NumMedia>0</NumMedia>\
+<Direction>outbound-api</Direction><ApiVersion>2010-04-01</ApiVersion>\
+<Price/>\
+<PriceUnit>USD</PriceUnit><ErrorCode/><ErrorMessage/>\
+<Uri>/2010-04-01/Accounts/AC710548cd4161826fa5754530ea71fb03/Messages/SM65af\
+852db38d10548cd4161826fa5754</Uri>\
+<SubresourceUris>\
+<Media>/2010-04-01/Accounts/AC710548cd4161826fa5754530ea71fb03/Messages/SM65af\
+852db38d10548cd4161826fa5754/Media</Media>\
+</SubresourceUris>\
+</Message>\
+</TwilioResponse>\
+"""
+twilio_fail = """<?xml version='1.0' encoding='UTF-8'?>\
+<TwilioResponse>\
+<RestException>\
+<Code>21603</Code>\
+<Message>A 'From' phone number is required.</Message>\
+<MoreInfo>https://www.twilio.com/docs/errors/21603</MoreInfo>\
+<Status>400</Status>\
+</RestException>\
+</TwilioResponse>\
+"""
+
+
 class TestingController(BaseController):
 
     '''
@@ -146,9 +182,11 @@ class TestingController(BaseController):
                 -> Response Success: "FAILED" (Text)
         '''
         log.debug('[http2sms]')
-        param = request.params
+        param = {}
 
         try:
+            param.update(request.params)
+
             account = getParam(param, "account", optional=False)
             sender = getParam(param, "sender", optional=True)
             username = getParam(param, "username", optional=True)
@@ -173,11 +211,17 @@ class TestingController(BaseController):
                 else:
                     return "Failed"
 
-            if account == "clickatel":
+            elif account == "clickatel":
                 if username == "legit":
                     return "ID %i" % int(urandom.randint(1000))
                 else:
                     return "FAILED"
+
+            elif account == "twilio":
+                if username == "legit":
+                    return twilio_ok
+                else:
+                    return twilio_fail
 
             Session.commit()
             return "Missing account info."

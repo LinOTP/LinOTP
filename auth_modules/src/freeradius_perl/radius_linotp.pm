@@ -186,7 +186,7 @@ else {
     $Config->{REALM}   = '';
     $Config->{RESCONF} = "";
     $Config->{Debug}   = "FALSE";
-	$Config->{SSL_CHECK} = "FALSE";
+    $Config->{SSL_CHECK} = "FALSE";
 }
 
 # Function to handle authenticate
@@ -202,14 +202,14 @@ sub authenticate {
     my $RESCONF = $Config->{RESCONF};
     
     my $debug   = false;
-    if ( $Config->{Debug} =~ /true/i ) {
+    if ( $Config->{Debug} =~ /^\s*true\s*$/i ) {
         $debug = true;
     }
 
-	my $check_ssl = false;
-    if ( $Config->{SSL_CHECK} =~ /true/i ) {
-		$check_ssl = true;
-	}
+    my $check_ssl = false;
+    if ( $Config->{SSL_CHECK} =~ /^\s*true\s*$/i ) {
+        $check_ssl = true;
+    }
 
     &radiusd::radlog( Info, "Default URL $URL " );
 
@@ -253,6 +253,8 @@ sub authenticate {
     }
     if ( exists( $RAD_REQUEST{'NAS-IP-Address'} ) ) {
         $params{"client"} = $RAD_REQUEST{'NAS-IP-Address'};
+    } elsif ( exists( $RAD_REQUEST{'NAS-IPv6-Address'} ) ) {
+        $params{"client"} = $RAD_REQUEST{'NAS-IPv6-Address'};
     }
     if ( length($REALM) > 0 ) {
         $params{"realm"} = $REALM;
@@ -273,15 +275,21 @@ sub authenticate {
     }
 
     my $ua     = LWP::UserAgent->new();
-	if ($check_ssl == false) {
-		$ua->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);
-	}
+    if ($check_ssl == false) {
+        $ua->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);
+    }
     my $response = $ua->post( $URL, \%params );
+    ### An exit with "die" will crash the freeradius server...
+    #die "Error at $URL\n ", $response->status_line, "\n Aborting"
+    #  unless $response->is_success;
+    if (not $response->is_success) {
+    &radiusd::radlog( Info, "LinOTP Request failed: at $URL\nDetails: " . $response->status_line );
+        $RAD_REPLY{'Reply-Message'} = "LinOTP server is not available!";
+        return RLM_MODULE_FAIL;
+    }
+    ###
+
     my $content  = $response->decoded_content();
-
-    die "Error at $URL\n ", $response->status_line, "\n Aborting"
-      unless $response->is_success;
-
     if ( $debug == true ) {
         &radiusd::radlog( Debug, "Content $content" );
     }
