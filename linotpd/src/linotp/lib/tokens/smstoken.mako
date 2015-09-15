@@ -111,6 +111,7 @@ ${_("SMS OTP")}
 <script>
 
 function sms_enroll_setup_defaults(config,options){
+    sms_clear_input_fields();
 	// in case we enroll sms otp, we get the mobile number of the user
 	mobiles = get_selected_mobile();
 	$('#sms_phone').val($.trim(mobiles[0]));
@@ -144,7 +145,14 @@ function sms_get_enroll_params(){
         params['pin'] = $('#sms_pin1').val();
     }
 
+    sms_clear_input_fields();
     return params;
+}
+
+function sms_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#sms_pin1').val('');
+    $('#sms_pin2').val('');
 }
 </script>
 <hr>

@@ -67,8 +67,7 @@ class UserModelPlugin(object):
             realmbox = options.get("realmbox", "False")
 
         except KeyError as e:
-            log.error("[authenticate] Keyerror in identity: %r." % e)
-            log.error("[authenticate] %s" % traceback.format_exc())
+            log.exception("[authenticate] Keyerror in identity: %r." % e)
             return None
 
         # convert string to boolean

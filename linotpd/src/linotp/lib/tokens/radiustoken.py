@@ -162,10 +162,11 @@ class RadiusTokenClass(RemoteTokenClass):
 
         if 1 == int(self.getFromTokenInfo("radius.local_checkpin")):
             local_check = True
+
+        self.local_pin_check = local_check
         log.debug(" local checking pin? %r" % local_check)
 
         return local_check
-
 
     def checkPin(self, pin, options=None):
         '''
@@ -191,7 +192,6 @@ class RadiusTokenClass(RemoteTokenClass):
         Split the PIN and the OTP value.
         Only if it is locally checked and not remotely.
         '''
-        res = 0
         pin = ""
         otpval = ""
 
@@ -201,14 +201,14 @@ class RadiusTokenClass(RemoteTokenClass):
 
         if self.check_pin_local():
             log.debug("[splitPinPass] [radiustoken] locally checked")
-            (res, pin, otpval) = TokenClass.splitPinPass(self, passw)
+            (pin, otpval) = TokenClass.splitPinPass(self, passw)
         else:
             log.debug("[splitPinPass] [radiustoken] remotely checked")
             pin = ""
             otpval = passw
 
         log.debug("[splitPinPass] [radiustoken] returning (len:%s) (len:%s)" % (len(pin), len(otpval)))
-        return (res, pin, otpval)
+        return pin, otpval
 
     def do_request(self, anOtpVal, transactionid=None, user=None):
         '''
@@ -283,8 +283,13 @@ class RadiusTokenClass(RemoteTokenClass):
                 ## now we map this to a linotp challenge
                 if "State" in opt:
                     reply["transactionid"] = opt["State"][0]
+
                 if "Reply-Message" in opt:
                     reply["message"] = opt["Reply-Message"][0]
+
+                # preserve challenge reply for later
+                self.isRemoteChallengeRequest = True
+                self.remote_challenge_response = reply
 
             elif response.code == pyrad.packet.AccessAccept:
                 log.info("[do_request] [RadiusToken] Radiusserver %s granted "
@@ -298,8 +303,7 @@ class RadiusTokenClass(RemoteTokenClass):
                 res = False
 
         except Exception as ex:
-            log.error("[do_request] [RadiusToken] Error contacting radius Server: %r" % (ex))
-            log.error("[do_request] [RadiusToken] %r" % traceback.format_exc())
+            log.exception("[do_request] [RadiusToken] Error contacting radius Server: %r" % (ex))
 
         return (res, otp_count, reply)
 

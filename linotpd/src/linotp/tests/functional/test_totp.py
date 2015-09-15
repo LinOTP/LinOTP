@@ -268,8 +268,7 @@ class TestTotpController(TestController):
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as e:
-                log.error('[time2float] Error during conversion of datetime: %r' % e)
-                log.error("[time2float] %s" % traceback.format_exc())
+                log.exception('[time2float] Error during conversion of datetime: %r' % e)
                 raise Exception(e)
         else:
             log.error("[time2float] invalid curTime: %s. You need to specify a datetime.datetime" % type(curTime))

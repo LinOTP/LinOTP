@@ -2829,6 +2829,7 @@ function tokenbuttons(){
         }
     });
     $('#button_losttoken').click(function(){
+        $('#dialog_lost_token_select').prop('selectedIndex',0);
         $dialog_losttoken.dialog('open');
     });
 

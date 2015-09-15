@@ -182,7 +182,7 @@ class TagespasswortTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.error("[get_multi_otp] %r" % ex)
+            log.exception("[get_multi_otp] %r" % ex)
             return (False, unicode(ex), otp_dict)
 
         secretHOtp = self.token.getHOtpKey()

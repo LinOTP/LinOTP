@@ -27,8 +27,6 @@
 
 import logging
 import copy
-import traceback
-
 
 import httplib2
 import urllib
@@ -80,6 +78,9 @@ class RemoteTokenClass(TokenClass):
         self.remoteRealm = None
         self.remoteResConf = None
         self.mode = ['authenticate', 'challenge']
+
+        self.isRemoteChallengeRequest = False
+        self.local_pin_check = None
 
     @classmethod
     def getClassType(cls):
@@ -197,10 +198,12 @@ class RemoteTokenClass(TokenClass):
         local_check = False
         if 1 == int(self.getFromTokenInfo("remote.local_checkpin")):
             local_check = True
+
+        # preserve this info for later uasge
+        self.local_pin_check = local_check
         log.debug(" local checking PIN? %r" % local_check)
 
         return local_check
-
 
     def authenticate(self, passw, user, options=None):
         """
@@ -258,6 +261,9 @@ class RemoteTokenClass(TokenClass):
             pin_match = check_pin(self, passw, user=user, options=options)
             if pin_match is True:
                 request_is_valid = True
+
+        elif self.isRemoteChallengeRequest:
+            request_is_valid = True
 
         return request_is_valid
 
@@ -346,7 +352,7 @@ class RemoteTokenClass(TokenClass):
         otp_count = -1
         res = False
         data = urllib.urlencode(params)
-        request_url = "%s%s" % (remoteServer, remotePath)
+        request_url = "%s/%s" % (remoteServer.rstrip('/'), remotePath.lstrip('/'))
 
         reply = {}
         otp_count = -1
@@ -390,13 +396,32 @@ class RemoteTokenClass(TokenClass):
                 reply = copy.deepcopy(result["detail"])
                 otp_count = -1
                 res = False
+                self.isRemoteChallengeRequest = True
+                self.remote_challenge_response = reply
 
         except Exception as exx:
-            log.error("[do_request] [RemoteToken] Error getting response from "
+            log.exception("[do_request] [RemoteToken] Error getting response from "
                       "remote Server (%r): %r" % (request_url, exx))
-            log.error("[do_request] %r" % (traceback.format_exc()))
 
         return (res, otp_count, reply)
+
+    def createChallenge(self, transactionid, options=None):
+        """
+        for every remote challenge we have to create a local challenge
+        e.g. to support multiple challenges
+
+        remark: we might call the super of this method first
+        """
+
+        message = 'Remote Otp: '
+        data = {'serial': self.token.getSerial()}
+
+        if self.isRemoteChallengeRequest:
+            data['remote_reply'] = self.remote_challenge_response
+
+        attributes = None
+
+        return (True, message, data, attributes)
 
     def checkResponse4Challenge(self, user, passw, options=None,
                                 challenges=None):
@@ -436,27 +461,37 @@ class RemoteTokenClass(TokenClass):
             transid = options.get('transactionid', options.get('state', None))
 
         if transid is not None:
+            # lookup if there is a transaction with this transaction id
+            for challenge in challenges:
+                if challenge.transid == transid:
+                    matching_challenge = challenge
+                    break
+            if matching_challenge is None:
+                return (otp_counter, matching_challenges)
+
             ## in case of a local pin check, we the transaction is a local one
             ## and we must not forward this!!
             if self.check_pin_local():
                 ## check if transaction id is in list of challengens
-                for challenge in challenges:
-                    if challenge.transid == transid:
-                        matching_challenge = challenge
-                        break
-
-                if matching_challenge is not None:
-                    (res, otp_counter, reply) = \
-                        self.do_request(passw, user=user)
-
-                    ## everything is ok, we remove the challenge
-                    if res is True and otp_counter >= 0:
-                        matching_challenges.append(matching_challenge)
-
-            ## in case of remote check pin, we just forward everything
-            else:
                 (res, otp_counter, reply) = \
-                    self.do_request(passw, transactionid=transid, user=user)
+                    self.do_request(passw, user=user)
+
+                ## everything is ok, we remove the challenge
+                if res is True and otp_counter >= 0:
+                    matching_challenges.append(matching_challenge)
+
+            # in case of remote check pin, we lookup in the local challenge
+            # to extract the replyed challenge
+            else:
+                remote_transid = matching_challenge.get('data', {}).\
+                                            get('remote_reply', {}).\
+                                            get('transactionid', '')
+                (res, otp_counter, reply) = \
+                    self.do_request(passw, transactionid=remote_transid,
+                                    user=user)
+                ## everything is ok, we remove the challenge
+                if res and otp_counter >= 0:
+                    matching_challenges.append(matching_challenge)
 
         return (otp_counter, matching_challenges)
 
@@ -494,19 +529,16 @@ class RemoteTokenClass(TokenClass):
         :return: tupple of the (success, pin and otpvalue)
 
         """
-        res = 0
-
         local_check = self.check_pin_local()
 
-
         if local_check:
-            (res, pin, otpval) = TokenClass.splitPinPass(self, passw)
+            (pin, otpval) = TokenClass.splitPinPass(self, passw)
         else:
             pin = ""
             otpval = passw
 
         log.debug("[splitPinPass] [remotetoken] returnung (len:%r) (len:%r)"
                   % (len(pin), len(otpval)))
-        return (res, pin, otpval)
+        return pin, otpval
 
 ###eof#########################################################################

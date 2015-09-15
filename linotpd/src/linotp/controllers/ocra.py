@@ -94,15 +94,13 @@ class OcraController(BaseController):
 
         except webob.exc.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r" % (action, acc))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] webob.exception %r" % (action, acc))
             Session.rollback()
             Session.close()
             raise acc
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
@@ -186,7 +184,7 @@ class OcraController(BaseController):
 
             if user.isEmpty() and serial is None:
                 ## raise exception
-                log.error("[request] user or serial is required")
+                log.exception("[request] user or serial is required")
                 raise ParameterError("Usage: %s" % description, id=77)
 
             message = getParam(param, 'data'  , optional)
@@ -243,14 +241,12 @@ class OcraController(BaseController):
                 return sendResult(response, res, 1, opt=detail)
 
         except PolicyException as pe:
-            log.error("[request] policy failed: %r" % pe)
-            log.error("[request] %s" % traceback.format_exc())
+            log.exception("[request] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe))
 
         except Exception as exx:
-            log.error("[request] failed: %r" % exx)
-            log.error("[request] %s" % traceback.format_exc())
+            log.exception("[request] failed: %r" % exx)
             Session.rollback()
             return sendError(response, unicode(exx))
 
@@ -308,13 +304,13 @@ class OcraController(BaseController):
             passw = getParam(param, 'pass'  , optional)
             if passw is None:
                 ## raise exception'''
-                log.error("[check_t] missing pass ")
+                log.exception("[check_t] missing pass ")
                 raise ParameterError("Usage: %s Missing parameter 'pass'." % description, id=77)
 
             transid = getParam(param, 'transactionid', optional)
             if transid is None:
                 ## raise exception'''
-                log.error("[check_t] missing transactionid, user or serial number of token")
+                log.exception("[check_t] missing transactionid, user or serial number of token")
                 raise ParameterError("Usage: %s Missing parameter 'transactionid'." % description, id=77)
 
             ## if we have a transaction, get serial from this challenge
@@ -360,8 +356,7 @@ class OcraController(BaseController):
             return sendResult(response, value, 1)
 
         except Exception as e :
-            log.error("[check_t] failed: %r" % e)
-            log.error("[check_t] %s" % traceback.format_exc())
+            log.exception("[check_t] failed: %r" % e)
             Session.rollback()
             return sendResult(response, unicode(e), 0)
 
@@ -451,7 +446,7 @@ class OcraController(BaseController):
 
             if transid is None and user.isEmpty() and serial is None:
                 ## raise exception
-                log.error("[ocra/checkstatus] : missing transactionid, user or serial number for token")
+                log.exception("[ocra/checkstatus] : missing transactionid, user or serial number for token")
                 raise ParameterError("Usage: %s" % description, id=77)
 
             tokens = []
@@ -504,14 +499,12 @@ class OcraController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[checkstatus] policy failed: %r" % pe)
-            log.error("[checkstatus] %s" % traceback.format_exc())
+            log.exception("[checkstatus] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe))
 
         except Exception as exx:
-            log.error("[checkstatus] failed: %r" % exx)
-            log.error("[checkstatus] %s" % traceback.format_exc())
+            log.exception("[checkstatus] failed: %r" % exx)
             Session.rollback()
             return sendResult(response, unicode(exx), 0)
 
@@ -554,14 +547,12 @@ class OcraController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[getActivationCode] policy failed: %r" % pe)
-            log.error("[getActivationCode] %s" % traceback.format_exc())
+            log.exception("[getActivationCode] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe))
 
         except Exception as exx:
-            log.error("[getActivationCode] failed: %r" % exx)
-            log.error("[getActivationCode] %s" % traceback.format_exc())
+            log.exception("[getActivationCode] failed: %r" % exx)
             Session.rollback()
             return sendError(response, unicode(exx), 0)
 
@@ -700,14 +691,12 @@ class OcraController(BaseController):
             return sendResult(response, res, 1)
 
         except PolicyException as pe:
-            log.error("[ocra/calculateOtp] policy failed: %r" % pe)
-            log.error("[ocra/calculateOtp] %s" % traceback.format_exc())
+            log.exception("[ocra/calculateOtp] policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, pe)
 
         except Exception as e:
-            log.error("[ocra/calculateOtp] failed: %r" % e)
-            log.error("[ocra/calculateOtp] %s" % traceback.format_exc())
+            log.exception("[ocra/calculateOtp] failed: %r" % e)
             Session.rollback()
             return sendError(response, unicode(e), 0)
 

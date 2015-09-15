@@ -43,7 +43,6 @@ import ldap
 import ldap.filter
 
 import sys
-import traceback
 import binascii
 from hashlib import sha1
 import tempfile
@@ -114,7 +113,7 @@ def _set_cacertificate(cacertificates, ca_dir=None):
                 fil.write("\n")
         fil.close()
     except Exception as exc:
-        log.error("[_set_cacertificate] Error creating CA certificate file: "
+        log.exception("[_set_cacertificate] Error creating CA certificate file: "
                                                     "%r. %r" % (ca_file, exc))
         raise exc
 
@@ -296,8 +295,7 @@ class IdResolver (UserIdResolver):
 
         except ldap.LDAPError as  e:
             status = "error"
-            log.error("[testconnection] LDAP Error: %s\n%s"
-                                            % (str(e), traceback.format_exc()))
+            log.exception("[testconnection] LDAP Error: %s" % str(e))
             return (status, str(e))
 
         finally:
@@ -407,9 +405,7 @@ class IdResolver (UserIdResolver):
                 self.l_obj = l_obj
                 return l_obj
             except ldap.LDAPError as  e:
-                log.error("[bind] LDAP error: %r" % e)
-                log.error("[bind] LDAPURI   : %r" % uri)
-                log.error("[bind] %s" % traceback.format_exc())
+                log.exception("[bind] LDAP error: %r" % e)
                 i = i + 1
         # We were not able to do a successful bind! :-(
         self.bind_not_possible = True
@@ -484,7 +480,7 @@ class IdResolver (UserIdResolver):
                               attrlist=attrlist)
             resultList = l_obj.result(l_id, all=1)[1]
         except ldap.LDAPError as exc:
-            log.error("[getUserId] LDAP error: %r" % exc)
+            log.exception("[getUserId] LDAP error: %r" % exc)
             resultList = None
 
         finally:
@@ -663,8 +659,7 @@ class IdResolver (UserIdResolver):
                         resultList[key] = rval
 
             except ldap.LDAPError as  e:
-                log.error("[getUserLDAPInfo] LDAP error: %s" % str(e))
-                log.error("[getUserLDAPInfo] %s" % traceback.format_exc())
+                log.exception("[getUserLDAPInfo] LDAP error: %s" % str(e))
 
             finally:
                 if l_obj != None:
@@ -983,7 +978,7 @@ class IdResolver (UserIdResolver):
                         if result_type == ldap.RES_SEARCH_ENTRY:
                             resultList.append(result_data)
             except ldap.LDAPError as exc:
-                log.error("[searchLDAPUserList] LDAP error: %r" % exc)
+                log.exception("[searchLDAPUserList] LDAP error: %r" % exc)
 
             self.unbind(l_obj)
             if resultList:
@@ -1151,7 +1146,7 @@ class IdResolver (UserIdResolver):
                 if search_st in substitute:
                     substitute = substitute.replace(search_st, val)
         except KeyError as key_error:
-            log.error('Key replacement error %r' % key_error)
+            log.exception('Key replacement error %r' % key_error)
             raise key_error
         return substitute
 
@@ -1192,8 +1187,7 @@ class IdResolver (UserIdResolver):
             searchFilter = u"(& %s )" % searchFilter
             log.debug("[getUserList] searchfilter: %r" % searchFilter)
         except Exception as exep:
-            log.error("[getUserList] Error creating searchFilter: %r" % exep)
-            log.error("[getUserList] %s" % traceback.format_exc())
+            log.exception("[getUserList] Error creating searchFilter: %r" % exep)
             raise exep
 
         resultList = []
@@ -1270,10 +1264,9 @@ class IdResolver (UserIdResolver):
 
                             resultList.append(userdata)
             except ldap.LDAPError as exce:
-                log.error("[getUserList] LDAP error: %r" % exce)
+                log.exception("[getUserList] LDAP error: %r" % exce)
             except Exception as exce:
-                log.error("[getUserList] error during LDAP access: %r" % exce)
-                log.error("[getUserList] %s" % traceback.format_exc())
+                log.exception("[getUserList] error during LDAP access: %r" % exce)
 
             self.unbind(l_obj)
 
@@ -1308,7 +1301,7 @@ class IdResolver (UserIdResolver):
         try:
             searchFilter = searchFilter % special_dict
         except KeyError as key_error:
-            log.error('Key replacement error %r' % key_error)
+            log.exception('Key replacement error %r' % key_error)
             raise key_error
 
         log.debug("[getUserList] searchfilter: %r" % searchFilter)
@@ -1329,8 +1322,7 @@ class IdResolver (UserIdResolver):
             searchFilter = u"(& %s )" % searchFilter
             log.debug("[getUserList] searchfilter: %r" % searchFilter)
         except Exception as exep:
-            log.error("[getUserList] Error creating searchFilter: %r" % exep)
-            log.error("[getUserList] %s" % traceback.format_exc())
+            log.exception("[getUserList] Error creating searchFilter: %r" % exep)
             raise exep
         return searchFilter
 
@@ -1476,7 +1468,7 @@ class IdResolver (UserIdResolver):
                 yield user_list
 
         except ldap.LDAPError as exce:
-            log.error("LDAP error: %r" % exce)
+            log.exception("LDAP error: %r" % exce)
             raise exce
 
         except StopIteration as exce:
@@ -1484,9 +1476,8 @@ class IdResolver (UserIdResolver):
             raise exce
 
         except Exception as exce:
-            log.error("Error during LDAP access: %r"
+            log.exception("Error during LDAP access: %r"
                             % exce)
-            log.error("%s" % traceback.format_exc())
             raise exce
 
         # we do no unbind here, as this is done at the request end

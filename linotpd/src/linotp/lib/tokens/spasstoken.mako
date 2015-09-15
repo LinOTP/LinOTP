@@ -41,6 +41,7 @@ ${_("Simple Pass Token")}
  *
  */
 function spass_enroll_setup_defaults(config, options){
+    spass_clear_input_fields();
     var rand_pin = options['otp_pin_random'];
     if (rand_pin > 0) {
         $("[name='set_pin_rows']").hide();
@@ -69,7 +70,14 @@ function spass_get_enroll_params(){
         params['pin'] = $('#spass_pin1').val();
     }
 
+    spass_clear_input_fields();
     return params;
+}
+
+function spass_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#spass_pin1').val('');
+    $('#spass_pin2').val('');
 }
 </script>
 <hr>

@@ -66,6 +66,10 @@ class HttpSMSProvider(ISMSProvider):
         if url is None:
             return
 
+        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
+        if msisdn:
+            phone = self._get_msisdn_phonenumber(phone)
+
         log.debug("[submitMessage] submitting message "
                   "%s to %s" % (message, phone))
 
@@ -419,7 +423,7 @@ class HttpSMSProvider(ISMSProvider):
             ret = self._check_success(reply)
 
         except Exception as exc:
-            log.error("HttpSMSProvider %r" % exc)
+            log.exception("HttpSMSProvider %r" % exc)
             raise Exception("Failed to send SMS. %s" % str(exc))
 
         return ret
@@ -484,7 +488,7 @@ class HttpSMSProvider(ISMSProvider):
             ret = self._check_success(reply)
 
         except Exception as exc:
-            log.error("HttpSMSProvider %r" % exc)
+            log.exception("HttpSMSProvider %r" % exc)
             raise Exception("Failed to send SMS. %s" % str(exc))
 
         return ret

@@ -248,13 +248,15 @@ z-index: 1;
  }
 
  #header #logo {
-	float: right;
-	margin-right: 5px;
-	margin-top: 5px;
- }
-
- #header #logo img {
-	display: block;
+    background-image: url(/images/linotp_logo_103x35.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    display: block;
+    float: right;
+    height: 35px;
+    width: 103px;
+    margin-top: 5px;
+    margin-right: 5px;
  }
 
  #header .sf-menu {

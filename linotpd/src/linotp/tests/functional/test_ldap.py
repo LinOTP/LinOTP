@@ -40,7 +40,6 @@ try:
 except ImportError:
     import simplejson as json
 
-import traceback
 import hashlib
 import base64
 
@@ -159,9 +158,8 @@ class LDAP(object):
                     self.lobj = l_obj
                     break
                 except ldap.LDAPError as e:
-                    log.error("[bind] LDAP error: %r" % e)
+                    log.exception("[bind] LDAP error: %r" % e)
                     log.error("[bind] LDAPURI   : %r" % uri)
-                    log.error("[bind] %s" % traceback.format_exc())
                     raise Exception(e)
 
         return self.lobj
@@ -175,7 +173,7 @@ class LDAP(object):
                 self.lobj.unbind_s()
 
         except ldap.LDAPError as e:
-            log.error("[unbind] LDAP error: %r" % e)
+            log.exception("[unbind] LDAP error: %r" % e)
 
         self.lobj = None
         return ""
@@ -486,7 +484,7 @@ class TestLDAP(TestController):
                 incDict = cfgParse.defaults()
                 self.ldapurl = incDict.get('linotp.ldapTestServerIp.'.lower() + hostname, None)
             except Exception as e:
-                log.error('Error parsing include file: %r' % e)
+                log.exception('Error parsing include file: %r' % e)
         else:
                 log.warning('no ldap Test server specified in the ini file!!')
 
@@ -601,8 +599,7 @@ class TestLDAP(TestController):
 
 
         except Exception as e:
-            log.error("%r" % e)
-            log.error("%s" % traceback.format_exc())
+            log.exception("%r" % e)
 
             msg = unicode(e)
             if "Can't contact LDAP server" in msg:
@@ -688,8 +685,7 @@ class TestLDAP(TestController):
 
 
         except Exception as e:
-            log.error(e)
-            log.error("%s" % traceback.format_exc())
+            log.exception(e)
             raise Exception(e)
 
         finally:

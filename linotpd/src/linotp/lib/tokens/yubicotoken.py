@@ -223,7 +223,6 @@ class YubicoTokenClass(TokenClass):
                     # https://github.com/Yubico/yubikey-val/wiki/ValidationProtocolV20
                     log.warning("[checkOtp] failed with %r" % result)
             except Exception as ex:
-                log.error("[checkOtp] Error getting response from Yubico Cloud Server (%r): %r" % (URL, ex))
-                log.error("[checkOtp] %r" % traceback.format_exc())
+                log.exception("[checkOtp] Error getting response from Yubico Cloud Server (%r): %r" % (URL, ex))
 
         return res

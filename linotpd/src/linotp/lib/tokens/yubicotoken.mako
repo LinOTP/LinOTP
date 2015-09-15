@@ -122,6 +122,7 @@ ${_("YubiKey")}
  *
  */
 function yubico_enroll_setup_defaults(config, options){
+    yubico_clear_input_fields();
     var rand_pin = options['otp_pin_random'];
     if (rand_pin > 0) {
         $("[name='set_pin_rows']").hide();
@@ -149,9 +150,16 @@ function yubico_get_enroll_params(){
         params['pin'] = $('#yubico_pin1').val();
     }
 
+    yubico_clear_input_fields();
 	return params;
 }
 
+function yubico_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#yubico_token_id').val('');
+    $('#yubico_pin1').val('');
+    $('#yubico_pin2').val('');
+}
 </script>
 <hr>
 <p>${_("Here you need to enter the token ID of the YubiKey.")}</p>

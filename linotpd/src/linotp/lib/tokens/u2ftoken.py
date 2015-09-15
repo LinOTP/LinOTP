@@ -218,14 +218,16 @@ class U2FTokenClass(TokenClass):
         # Split OTP from pin
         # Since we know that the OTP has to be valid JSON  with format {"a":"b", "b":"c", ...}
         # we can parse the OTP for '{' beginning at the end of the OTP string
-        res = False
         splitIndex = rfind(passw, "{")
         if splitIndex != -1:
-            res = True
             pin = passw[:splitIndex]
             otpval = passw[splitIndex:]
+        else:
+            # no valid JSON format - assume we got no otpval
+            pin = passw
+            otpval = ""
 
-        return (res, pin, otpval)
+        return pin, otpval
 
     def is_challenge_request(self, passw, user, options=None):
         """
@@ -357,6 +359,31 @@ class U2FTokenClass(TokenClass):
 
         return appId
 
+    @staticmethod
+    def _handle_client_errors(client_response):
+        """
+        Check the U2F client response for U2F client errors.
+        Raises an Exception if an U2F client error code was found.
+        :param client_response: U2F client response object
+        :return:
+        """
+        error_codes = {0: 'OK',
+                       1: 'OTHER_ERROR',
+                       2: 'BAD_REQUEST',
+                       3: 'CONFIGURATION_UNSUPPORTED',
+                       4: 'DEVICE_INELIGIBLE',
+                       5: 'TIMEOUT'}
+
+        if "errorCode" in client_response:
+            error_code = client_response['errorCode']
+            error_text = error_codes.get(error_code, '')
+            error_msg = client_response.get('errorMessage', '')
+            log.info("U2F client error code received: %s (%d): %s", error_text,
+                     error_code, error_msg)
+            raise Exception("U2F client error code: %s (%d): %s" % (error_text,
+                                                                    error_code,
+                                                                    error_msg))
+
     def _checkClientData(self,
                          clientData,
                          clientDataType,
@@ -374,7 +401,7 @@ class U2FTokenClass(TokenClass):
         try:
             clientData = json.loads(clientData)
         except ValueError as ex:
-            log.error("Invalid client data JSON format - value error %r", (ex))
+            log.exception("Invalid client data JSON format - value error %r", (ex))
             raise Exception("Invalid client data JSON format")
 
         try:
@@ -383,7 +410,7 @@ class U2FTokenClass(TokenClass):
             cdOrigin = clientData['origin']
             # TODO: Check for optional cid_pubkey
         except KeyError as err:
-            log.error("Wrong client data format %s: ", err)
+            log.exception("Wrong client data format %s: ", err)
             raise Exception('Wrong client data format!')
 
         # validate typ
@@ -539,7 +566,7 @@ class U2FTokenClass(TokenClass):
             # with a NULL pointer exception on these systems
             ECPubKey = EC.pub_key_from_der(publicKey)
         except ValueError as ex:
-            log.error(
+            log.exception(
                 "Could not get ECPubKey. Possibly missing ECDSA support for the NIST P-256 "
                 "curve in OpenSSL? %r", ex)
             raise Exception(
@@ -595,7 +622,7 @@ class U2FTokenClass(TokenClass):
                     break
             if matching is not None:
                 # Split pin from otp and check the resulting pin and otpval
-                (res, pin, otpval) = self.splitPinPass(passw)
+                (pin, otpval) = self.splitPinPass(passw)
                 if not check_pin(self, pin, user=user, options=options):
                     otpval = passw
                 # The U2F checkOtp functions needs to know the saved challenge
@@ -667,6 +694,8 @@ class U2FTokenClass(TokenClass):
         except ValueError as ex:
             log.exception("Invalid JSON format - value error %r", (ex))
             raise Exception("Invalid JSON format")
+
+        self._handle_client_errors(authResponse)
 
         try:
             signatureData = authResponse.get('signatureData', None)
@@ -925,14 +954,16 @@ class U2FTokenClass(TokenClass):
                 try:
                     registerResponse = json.loads(otpkey)
                 except ValueError as ex:
-                    log.error("Invalid JSON format - value error %r", (ex))
+                    log.exception("Invalid JSON format - value error %r", (ex))
                     raise Exception('Invalid JSON format')
+
+                self._handle_client_errors(registerResponse)
 
                 try:
                     registrationData = registerResponse['registrationData']
                     clientData = registerResponse['clientData']
                 except AttributeError as ex:
-                    log.error(
+                    log.exception(
                         "Couldn't find keyword in JSON object - attribute error %r ", (ex))
                     raise Exception("Couldn't find keyword in JSON object")
 

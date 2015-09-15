@@ -90,7 +90,7 @@ def getLinotpConfig():
             try:
                 c.linotpConfig = LinOtpConfig()
             except Exception as e:
-                log.error("Linotp Definition Error")
+                log.exception("Linotp Definition Error")
                 raise Exception(e)
         ret = c.linotpConfig
 
@@ -453,7 +453,7 @@ def _getConfigFromEnv():
                 linotpConfig[entry] = env.config[entry]
         _releaseConfigLock()
     except Exception as e:
-        log.error('Error while reading Config: %r' % e)
+        log.exception('Error while reading Config: %r' % e)
         _releaseConfigLock()
     return linotpConfig
 
@@ -516,7 +516,7 @@ def _removeConfigDB(key):
             Session.delete(theConf)
 
         except Exception as e:
-            log.error('[removeConfigDB] failed')
+            log.exception('[removeConfigDB] failed')
             raise ConfigAdminError("remove Config failed for %r: %r"
                                    % (key, e), id=1133)
 

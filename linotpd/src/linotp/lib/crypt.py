@@ -461,7 +461,7 @@ def uencode(value):
         try:
             ret = json.dumps(value)[1:-1]
         except Exception as exx:
-            log.error("Failed to encode value %r : %r" % (value, exx))
+            log.exception("Failed to encode value %r : %r" % (value, exx))
 
     return ret
 
@@ -536,7 +536,7 @@ def udecode(value):
             # # add surrounding "" for correct decoding
             ret = json.loads('"%s"' % value)
         except Exception as exx:
-            log.error("Failed to decode value %r : %r" % (value, exx))
+            log.exception("Failed to decode value %r : %r" % (value, exx))
     return ret
 
 def geturandom(len=20):

@@ -50,7 +50,7 @@ ${_("HMAC eventbased")}
  *
  */
 function hmac_enroll_setup_defaults(config, options){
-    $('#hmac_key').val('');
+    hmac_clear_input_fields();
     $('#hmac_key_rb_gen').prop('checked', true);
     $('#hmac_google_compliant').prop('checked', false);
     cb_changed_deactivate('hmac_key_rb_gen',['hmac_key']);
@@ -94,6 +94,13 @@ function google_constrains() {
     }
 }
 
+function hmac_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#hmac_key').val('');
+    $('#hmac_pin1').val('');
+    $('#hmac_pin2').val('');
+}
+
 /*
  * 'typ'_get_enroll_params()
  *
@@ -124,6 +131,7 @@ function hmac_get_enroll_params(){
         url['pin'] = $('#hmac_pin1').val();
     }
 
+    hmac_clear_input_fields();
     return url;
 }
 $( document ).ready(function() {

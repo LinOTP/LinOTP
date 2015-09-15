@@ -125,7 +125,7 @@ if isinstance(lang, list):
             </ul>
         </li>
     </ul>
-    <div id="logo"><img src="/images/linotp_logo_103x35.png" alt="LinOTP"/></div>
+    <div id="logo"></div>
 </div> <!-- header -->
 <div align="right" style="font-size: 70%">
     <p>${_("Logged in as")}: ${c.admin} | <a href="${c.logout_url}">${_("Logout")}</a>
@@ -1071,7 +1071,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("Token serial: ")} <span id='lost_token_serial'> </span> </p>
     <p>${_("The token was lost? You may enroll a temporary token and automatically disable the lost token.")}</p>
 
-    <select>
+    <select id="dialog_lost_token_select">
         <option value="select_token">
             ${_("- Select Temporary Token Type -")}
         </option>
