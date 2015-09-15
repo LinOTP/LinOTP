@@ -134,14 +134,14 @@ jQuery.validator.addMethod("ldap_uri", function(value, element, param){
 
 // LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
 jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
-    return value.match(/(\(\S+=\S+\))+/);
+    return value.match(/(\(\S+=(\S+).*\))+/);
     },
     i18n.gettext("Please enter a valid searchfilter like this: (sAMAccountName=*)(objectClass=user)")
 );
 
 // LDAPFILTER: "(&(sAMAccountName=%s)(objectClass=user))"
 jQuery.validator.addMethod("ldap_userfilter", function(value, element, param){
-    return value.match(/\(\&(\(\S+=\S+\))+\)/);
+    return value.match(/\(\&(\(\S+=(\S+).*\))+\)/);
     },
     i18n.gettext("Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)(objectClass=user))")
 );
