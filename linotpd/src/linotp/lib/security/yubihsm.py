@@ -200,7 +200,7 @@ class YubiSecurityModule(SecurityModule):
             log.debug("[login] key store unlocked")
             self.is_ready = True
         except pyhsm.exception.YHSM_Error as  e:
-            log.error("[login] Failed to unlock key store: %s" % e)
+            log.exception("[login] Failed to unlock key store: %s" % e)
 
 
     def logout(self):
@@ -261,7 +261,7 @@ class YubiSecurityModule(SecurityModule):
         try:
             s = self.hsm.aes_ecb_decrypt(handle, data)
         except pyhsm.exception.YHSM_Error as  e:
-            log.error("[decrypt] Failed to decrypt data: %s" % e)
+            log.exception("[decrypt] Failed to decrypt data: %s" % e)
 
         s = self.unpad(s)
         return s
@@ -284,7 +284,7 @@ class YubiSecurityModule(SecurityModule):
         try:
             encrypted_data = self.hsm.aes_ecb_encrypt(handle, data)
         except pyhsm.exception.YHSM_Error as  e:
-            log.error("[encrypt] Failed to encrypt data: %s" % str(e))
+            log.exception("[encrypt] Failed to encrypt data: %s" % str(e))
 
         return encrypted_data
 

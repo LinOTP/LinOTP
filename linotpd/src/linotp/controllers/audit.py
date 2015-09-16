@@ -84,8 +84,7 @@ class AuditController(BaseController):
             check_session()
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
@@ -170,14 +169,12 @@ class AuditController(BaseController):
             return audit_iterator
 
         except PolicyException as pe:
-            log.error("[getotp] gettoken/getotp policy failed: %r" % pe)
-            log.error("[getotp] %s" % traceback.format_exc())
+            log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[search] audit/search failed: %r" % e)
-            log.error("[search] %s" % traceback.format_exc())
+            log.exception("[search] audit/search failed: %r" % e)
             Session.rollback()
             return sendError(response, "audit/search failed: %s" % unicode(e), 0)
 

@@ -253,9 +253,10 @@ def check_pin(token, passw, user=None, options=None):
         # We check the Users Password as PIN
         log.debug("[check_pin] pin policy=1: checking the users"
                                                     " password as pin")
-        if (user is None):
-            raise Exception("[check_pin] - fail for pin policy == 1 "
+        if (user is None or not user.login):
+            log.info("[check_pin] - fail for pin policy == 1 "
                                                       "with user = None")
+            return False
 
         (uid, _resolver, resolver_class) = getUserId(user)
 
@@ -362,20 +363,19 @@ def split_pin_otp(token, passw, user=None, options=None):
         log.debug("[split_pin_otp] pin policy=1: checking the "
                                                 "users password as pin")
         # split the passw into password and otp value
-        (res, pin, otp) = token.splitPinPass(passw)
+        (pin, otp) = token.splitPinPass(passw)
         policy = 1
     elif 2 in pin_policies:
         # NO PIN should be entered atall
         log.debug("[split_pin_otp] pin policy=2: checking no pin")
-        (res, pin, otp) = (0, "", passw)
+        (pin, otp) = ("", passw)
         policy = 2
     else:
         # old stuff: We check The fixed OTP PIN
         log.debug("[split_pin_otp] pin policy=0: checkin the PIN")
-        (res, pin, otp) = token.splitPinPass(passw)
+        (pin, otp) = token.splitPinPass(passw)
 
-    if res != -1:
-        res = policy
+    res = policy
     return (res, pin, otp)
 
 

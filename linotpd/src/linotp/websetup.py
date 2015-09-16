@@ -157,7 +157,7 @@ def upgrade_databases(local_conf, global_conf):
         if config.get('alembic.auto_update', 'false').lower() == 'true':
             command.upgrade(alembic_cfg, "head")
     except Exception as exx:
-        log.error('error during upgrade %r' % exx)
+        log.exception('error during upgrade %r' % exx)
 
     return
 ###eof#########################################################################

@@ -272,7 +272,7 @@ def verify_volume(lic_dict):
     try:
         token_volume = int(lic_dict.get('token-num', 0))
     except TypeError as err:
-        log.error("failed to convert license token num value:%r :%r" %
+        log.exception("failed to convert license token num value:%r :%r" %
                   (lic_dict.get('token-num'), err))
         return False, "max %d" % token_volume
 
@@ -358,7 +358,7 @@ def get_public_keys():
                     pem_lines.append(line)
 
         except Exception as exx:
-            log.error("[get_public_keys] error during reading "
+            log.exception("[get_public_keys] error during reading "
                       "public key file (%s): %r" % (pem_file, exx))
 
         # only add keys, which contain key defintion at start and at end

@@ -755,12 +755,11 @@ class TokenHandler(object):
                 token_exists = token.check_otp_exist(otp=passw,
                                           window=token.getOtpCountWindow(),
                                           user=ruser, autoassign=True)
-                (res, pin, otp) = token.splitPinPass(passw)
+                (pin, otp) = token.splitPinPass(passw)
             else:
-                (res, pin, otp) = token.splitPinPass(passw)
-                if res >= 0:
-                    token_exists = token.check_otp_exist(otp=otp,
-                                              window=token.getOtpCountWindow())
+                (pin, otp) = token.splitPinPass(passw)
+                token_exists = token.check_otp_exist(otp=otp,
+                                          window=token.getOtpCountWindow())
 
             if token_exists >= 0:
                 matching_pairs.append((token, pin))
@@ -1823,18 +1822,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
 
     options['user'] = user
 
-    b = getFromConfig("FailCounterIncOnFalsePin", "False")
-    b = b.lower()
-
     #  if there has been one token in challenge mode, we only handle challenges
-    challenge_tokens = []
-    pinMatchingTokenList = []
-    invalidTokenlist = []
-    validTokenList = []
-    auditList = []
-    related_challenges = []
-
-    pin_policies = linotp.lib.policy.get_pin_policies(user) or []
 
     # if we got a validation against a sub_challenge, we extend this to
     # be a validation to all challenges of the transaction id
@@ -1848,28 +1836,21 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         if 'transactionid' in check_options:
             check_options['transactionid'] = transid
 
+    challenge_tokens = []
+    pin_matching_tokens = []
+    invalid_tokens = []
+    valid_tokens = []
+    audit_entries = []
+    related_challenges = []
+
+    # we have to preserve the result / reponse for token counters
+    validation_results = {}
+
     for token in tokenList:
-
-        if not token.isActive():
-            continue
-
-        audit = {}
-        audit['serial'] = token.getSerial()
-        audit['token_type'] = token.getType()
-        audit['weight'] = 0
-
         log.debug("[__checkTokenList] Found user with loginId %r: %r:\n"
                    % (token.getUserId(), token.getSerial()))
 
-        #  check if the token is the list of supported tokens
-        #  if not skip to the next token in list
-        typ = token.getType()
-        if typ.lower() not in tokenclasses:
-            log.error('token typ %r not found in tokenclasses: %r' %
-                      (typ, tokenclasses))
-            continue
-
-        #  now check if the token is in the same realm as the user
+        # preselect: the token must be in the same realm as the user
         if user is not None:
             t_realms = token.token.getRealmNames()
             u_realm = user.getRealm()
@@ -1877,75 +1858,364 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
                 u_realm.lower() not in t_realms):
                 continue
 
+        audit = {}
+        audit['serial'] = token.getSerial()
+        audit['token_type'] = token.getType()
+        audit['weight'] = 0
+
+        #  check if the token is the list of supported tokens
+        #  if not skip to the next token in list
+        typ = token.getType()
+        if typ.lower() not in tokenclasses:
+            log.error('token typ %r not found in tokenclasses: %r' %
+                      (typ, tokenclasses))
+            audit['action_detail'] = "Unknown Token type"
+            continue
+
+        if not token.isActive():
+            audit['action_detail'] = "Token inactive"
+            continue
+        if token.getFailCount() >= token.getMaxFailCount():
+            audit['action_detail'] = "Failcounter exceeded"
+            continue
+        if not token.check_auth_counter():
+            audit['action_detail'] = "Authentication counter exceeded"
+            continue
+        if not token.check_validity_period():
+            audit['action_detail'] = "validity period mismatch"
+            continue
+
+        # start the token validation
         tok_va = linotp.lib.validate.ValidateToken(token, context=c)
-        #  in case of a failure during checking token, we log the error and
-        #  continue with the next one
+
         try:
             (ret, reply) = tok_va.checkToken(passw, user,
                                              options=check_options)
         except Exception as exx:
-            log.error("checking token %r failed: %r" % (token, exx))
+            # in case of a failure during checking token, we log the error and
+            # continue with the next one
+            log.exception("checking token %r failed: %r" % (token, exx))
             ret = -1
+            reply = "%r" % exx
+            continue
+        finally:
+            validation_results[token.getSerial()] = (ret, reply)
 
         (cToken, pToken, iToken, vToken) = tok_va.get_verification_result()
-
         related_challenges.extend(tok_va.related_challenges)
-        #  if we have a challenge, preserve the challenge response
-        if len(cToken) > 0:
-            challenge_tokens.extend(cToken)
-            audit['action_detail'] = 'challenge created'
-            audit['weight'] = 20
 
-        # this means, the resolver password was wrong
-        if len(pToken) == 1 and 1 in pin_policies:
-            audit['action_detail'] = "wrong user password %r" % (ret)
-            audit['weight'] = 10
 
-        elif len(iToken) == 1:  # this means the pin is wrong
-            #  check, if we should increment
-            # do not overwrite other error details!
-            audit['action_detail'] = "wrong otp pin %r" % (ret)
-            audit['weight'] = 15
+        challenge_tokens.extend(cToken)
+        pin_matching_tokens.extend(pToken)
+        invalid_tokens.extend(iToken)
+        valid_tokens.extend(vToken)
 
-            if b == "true":
-                # We do not have a complete list of all invalid tokens, if
-                # FailCounterIncOnFalsePin is False!
-                # So we need the auditList!
-                invalidTokenlist.extend(iToken)
+    # end of token verification loop
+    audit_messages = {
+        'challenge': 'challenge created',
+        'pinpolicy': "wrong user password %r",
+        'invalid': "wrong otp pin %r",
+        'pinmatch': "wrong otp value"
+    }
 
-        elif len(pToken) == 1:  # pin matches but the otp is wrong
-            pinMatchingTokenList.extend(pToken)
-            audit['action_detail'] = "wrong otp value"
-            audit['weight'] = 25
+    # if there are related / sub challenges, we have to call their janitor
+    handle_related_challenge(related_challenges)
 
-        # any valid otp increments, independend of the tokens state !!
-        elif len(vToken) > 0:
-            audit['weight'] = 30
-            matchinCounter = ret
+    # now we finalize the token validation result
+    fh = FinishTokens(valid_tokens,
+                      challenge_tokens,
+                      pin_matching_tokens,
+                      invalid_tokens,
+                      validation_results,
+                      user, options)
 
-            # any valid otp increments, independend of the tokens state !!
-            token.incOtpCounter(matchinCounter)
+    (res, reply) = fh.finish_checked_tokens()
 
-            if (token.isActive() == True):
-                if token.getFailCount() < token.getMaxFailCount():
-                    if token.check_auth_counter():
-                        if token.check_validity_period():
-                            token.inc_count_auth()
-                            token.inc_count_auth_success()
-                            validTokenList.extend(vToken)
-                        else:
-                            audit['action_detail'] = "validity period mismatch"
-                    else:
-                        audit['action_detail'] = ("Authentication counter"
-                                                    " exceeded")
-                else:
-                    audit['action_detail'] = "Failcounter exceeded"
+    # add to all tokens the last accessd time stamp
+    add_last_accessed_info([valid_tokens, pin_matching_tokens,
+                            challenge_tokens, valid_tokens])
+
+    log.debug("[checkTokenList] Number of valid tokens found "
+              "(validTokenNum): %d" % len(valid_tokens))
+
+    return (res, reply)
+
+
+class FinishTokens(object):
+
+    def __init__(self, valid_tokens, challenge_tokens,
+                        pin_matching_tokens, invalid_tokens,
+                        validation_results,
+                        user, options):
+        """
+        create the finalisation object, that finishes the token processing
+
+        :param valid_tokens: list of valid tokens
+        :param challenge_tokens: list of the tokens, that trigger a challenge
+        :param pin_matching_tokens: list of tokens with a matching pin
+        :param invalid_tokens: list of the invalid tokens
+        :param validation_results: dict of the verification response
+        :param user: the requesting user
+        :param options: request options - additional parameters
+        """
+
+        self.valid_tokens = valid_tokens
+        self.challenge_tokens = challenge_tokens
+        self.pin_matching_tokens = pin_matching_tokens
+        self.invalid_tokens = invalid_tokens
+        self.validation_results = validation_results
+        self.user = user
+        self.options = options
+
+    def finish_checked_tokens(self):
+        """
+        main entry to finalise the involved tokens
+        """
+
+        # do we have any valid tokens?
+        if self.valid_tokens:
+            (ret, reply, detail) = self.finish_valid_tokens()
+            self.reset_failcounter(self.valid_tokens
+                                   + self.invalid_tokens
+                                   + self.pin_matching_tokens
+                                   + self.challenge_tokens)
+
+            create_audit_entry(detail, self.valid_tokens)
+            return ret, reply
+
+        # next handle the challenges
+        if self.challenge_tokens:
+            (ret, reply, detail) = self.finish_challenge_token()
+            # do we have to increment the counter to prevent a replay???
+            #self.increment_counters(self.challenge_tokens)
+            create_audit_entry(detail, self.challenge_tokens)
+            return ret, reply
+
+        if self.user:
+            log.warning("user %r@%r failed to authenticate."
+                        % (self.user.login, self.user.realm))
+        else:
+            log.warning("serial %r failed to authenticate."
+                        % (self.pin_matching_tokens +
+                           self.invalid_tokens)[0].getSerial())
+
+        if self.pin_matching_tokens:
+            (ret, reply, detail) = self.finish_pin_matching_tokens()
+            # in case of pin matching, we have to treat as well the invalid
+            self.increment_failcounters(self.pin_matching_tokens)
+            self.finish_invalid_tokens()
+
+            # check for the global settings, if we increment in wrong pin
+            incOnFalsePin = getFromConfig("FailCounterIncOnFalsePin", "True")
+            if incOnFalsePin.strip().lower() == 'true':
+                self.increment_failcounters(self.invalid_tokens)
+            create_audit_entry(detail, self.pin_matching_tokens)
+            return ret, reply
+
+        if self.invalid_tokens:
+            (ret, reply, detail) = self.finish_invalid_tokens()
+            self.increment_failcounters(self.invalid_tokens)
+
+            create_audit_entry(detail, self.invalid_tokens)
+            return ret, reply
+
+        # if there is no token left, we hend up here
+        create_audit_entry("no token found", [])
+        return False, None
+
+    def finish_valid_tokens(self):
+        """
+        processing of the valid tokens
+        """
+        valid_tokens = self.valid_tokens
+        validation_results = self.validation_results
+        user = self.user
+
+        if len(valid_tokens) == 1:
+            token = valid_tokens[0]
+            if user:
+                action_detail = ("user %r@%r successfully authenticated."
+                                 % (user.login, user.realm))
             else:
-                audit['action_detail'] = "Token inactive"
+                action_detail = ("serial %r successfully authenticated."
+                                 % token.getSerial())
 
-        # add the audit information to the auditList
-        auditList.append(audit)
+            log.info(action_detail)
 
+            # there could be a match in the window ahead,
+            # so we need the last valid counter here
+            (counter, _reply) = validation_results[token.getSerial()]
+            token.setOtpCount(counter + 1)
+            token.statusValidationSuccess()
+            return (True, None, action_detail)
+
+        else:
+            # we have to set the matching counter to prevent replay one one
+            # single token
+            for token in valid_tokens:
+                (res, _reply) = validation_results[token.getSerial()]
+                token.setOtpCount(res)
+
+            c.audit['action_detail'] = "Multiple valid tokens found!"
+            if user:
+                log.error("[__checkTokenList] multiple token match error: "
+                          "Several Tokens matching with the same OTP PIN "
+                          "and OTP for user %r. Not sure how to authenticate",
+                          user.login)
+            raise UserError("multiple token match error", id= -33)
+
+
+    def finish_challenge_token(self):
+        """
+        processing of the challenge tokens
+        """
+        challenge_tokens = self.challenge_tokens
+        options = self.options
+        if not options:
+            options = {}
+
+        action_detail = 'challenge created'
+
+        if len(challenge_tokens) == 1:
+            challenge_token = challenge_tokens[0]
+            _res, reply = linotp.lib.validate.create_challenge(challenge_token,
+                                                               options=options)
+            return (False, reply, action_detail)
+
+        # processing of multiple challenges
+        else:
+            # for each token, who can submit a challenge, we have to
+            # create the challenge. To mark the challenges as depending
+            # the transaction id will have an id that all sub transaction share
+            # and a postfix with their enumaration. Finally the result is
+            # composed by the top level transaction id and the message
+            # and below in a dict for each token a challenge description -
+            # the key is the token type combined with its token serial number
+            all_reply = {'challenges': {}}
+            challenge_count = 0
+            transactionid = ''
+            challenge_id = ""
+            for challenge_token in challenge_tokens:
+                challenge_count = challenge_count + 1
+                id_postfix = ".%02d" % challenge_count
+                if transactionid:
+                    challenge_id = "%s%s" % (transactionid, id_postfix)
+
+                (_res, reply) = linotp.lib.validate.create_challenge(
+                                                challenge_token,
+                                                options=options,
+                                                challenge_id=challenge_id,
+                                                id_postfix=id_postfix
+                                                )
+                transactionid = reply.get('transactionid').rsplit('.')[0]
+
+                # add token type and serial to ease the type specific processing
+                reply['linotp_tokentype'] = challenge_token.type
+                reply['linotp_tokenserial'] = challenge_token.getSerial()
+                key = challenge_token.getSerial()
+                all_reply['challenges'][key] = reply
+
+            # finally add the root challenge response with top transaction id
+            # and message, that indicates that 'multiple challenges have been
+            # submitted
+            all_reply['transactionid'] = transactionid
+            all_reply['message'] = "Multiple challenges submitted."
+
+            log.debug("Multiple challenges submitted: %d",
+                      len(challenge_tokens))
+
+            return (False, all_reply, action_detail)
+
+    def finish_pin_matching_tokens(self):
+        """
+            check, if there have been some tokens
+            where the pin matched (but OTP failed
+            and increment only these
+        """
+        pin_matching_tokens = self.pin_matching_tokens
+        action_detail = "wrong otp value"
+
+        for tok in pin_matching_tokens:
+            tok.statusValidationFail()
+            tok.inc_count_auth()
+
+        return (False, None, action_detail)
+
+    def finish_invalid_tokens(self):
+        """
+        """
+        invalid_tokens = self.invalid_tokens
+        user = self.user
+
+        for tok in invalid_tokens:
+            tok.statusValidationFail()
+
+        import linotp.lib.policy
+        pin_policies = linotp.lib.policy.get_pin_policies(user) or []
+
+        if 1 in pin_policies:
+            action_detail = "wrong user password -1"
+        else:
+            action_detail = "wrong otp pin -1"
+
+        return (False, None, action_detail)
+
+    @staticmethod
+    def reset_failcounter(all_tokens):
+        for token in all_tokens:
+            token.reset()
+
+    @staticmethod
+    def increment_counters(all_tokens, reset=True):
+        for token in all_tokens:
+            token.incOtpCounter(reset=reset)
+
+    @staticmethod
+    def increment_failcounters(all_tokens):
+        for token in all_tokens:
+            token.incOtpFailCounter()
+
+def create_audit_entry(action_detail, tokens):
+    """
+    setting global audit entry
+    """
+    c.audit['action_detail'] = action_detail
+
+    if len(tokens) == 1:
+        c.audit['serial'] = tokens[0].getSerial()
+        c.audit['token_type'] = tokens[0].getType()
+    else:
+        # no or multiple tokens
+        c.audit['serial'] = ''
+        c.audit['token_type'] = ''
+
+    return
+
+
+
+
+def add_last_accessed_info(list_of_tokenlist):
+    """
+    if token_last_access is defined in the config, add this to the token info
+    """
+
+    token_last_access = getFromConfig('token.last_access', None)
+    if not token_last_access:
+        return
+
+    stampTokens = []
+    for token_list in list_of_tokenlist:
+        stampTokens.extend(token_list)
+
+    now = datetime.datetime.now()
+    acces_info = now.strftime(token_last_access)
+    for token in stampTokens:
+        token.addToTokenInfo('last_access', acces_info)
+
+    return
+
+
+def handle_related_challenge(related_challenges):
     # if there are any related challenges, we have to call the
     # token janitor, who decides if a challenge is still valid
     # eg. expired
@@ -1965,149 +2235,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         if to_be_deleted:
             linotp.lib.validate.delete_challenges(serial, to_be_deleted)
 
-    # compose one audit entry from all token audit information
-    if len(auditList) > 0:
-        # sort the list for the value of the key "weight"
-        sortedAuditList = sorted(auditList, key=lambda audit_entry:
-                                    audit_entry.get("weight", 0))
-        highest_audit = sortedAuditList[-1]
-        c.audit['action_detail'] = highest_audit.get('action_detail', '')
-        # check how many highest_audit values entries exist!
-        highest_list = filter(lambda audit_entry: audit_entry.get("weight", 0)
-                            == highest_audit.get("weight", 0), sortedAuditList)
-        if len(highest_list) == 1:
-            c.audit['serial'] = highest_audit.get('serial', '')
-            c.audit['token_type'] = highest_audit.get('token_type', '')
-        else:
-            # multiple tokens that might contain "wrong otp value"
-            # or "wrong otp pin"
-            c.audit['serial'] = ''
-            c.audit['token_type'] = ''
-
-    # if token_last_access is defined in the config,
-    # we add this entry to the token info but only for token, where at least
-    # the pin has matched
-    token_last_access = getFromConfig('token.last_access', None)
-    if token_last_access:
-        stampTokens = []
-        for token_list in [pinMatchingTokenList, challenge_tokens, validTokenList]:
-            if len(token_list) > 0:
-                stampTokens.extend(token_list)
-
-        now = datetime.datetime.now()
-        acces_info = now.strftime(token_last_access)
-        for token in stampTokens:
-            token.addToTokenInfo('last_access', acces_info)
-
-    #  handle the processing of challenge tokens
-    if len(challenge_tokens) == 1:
-        challenge_token = challenge_tokens[0]
-        (_res, reply) = linotp.lib.validate.create_challenge(challenge_token,
-                                                             options=options)
-        return (False, reply)
-
-    # processing of multiple challenges
-    elif len(challenge_tokens) > 1:
-        # for each token, who can submit a challenge, we have to
-        # create the challenge. To mark the challenges as depending
-        # the transaction id will have an id that all sub transaction share
-        # and a postfix with their enumaration. Finally the result is
-        # composed by the top level transaction id and the message
-        # and below in a dict for each token a challenge description -
-        # the key is the token type combined with its token serial number
-        all_reply = {'challenges': {}}
-        challenge_count = 0
-        transactionid = ''
-        challenge_id = ""
-        for challenge_token in challenge_tokens:
-            challenge_count = challenge_count + 1
-            id_postfix = ".%02d" % challenge_count
-            if transactionid:
-                challenge_id = "%s%s" % (transactionid, id_postfix)
-
-            (_res, reply) = linotp.lib.validate.create_challenge(
-                                            challenge_token, options=options,
-                                            challenge_id=challenge_id,
-                                            id_postfix=id_postfix
-                                            )
-            transactionid = reply.get('transactionid').rsplit('.')[0]
-
-            # add token type and serial to ease the type specific processing
-            reply['linotp_tokentype'] = challenge_token.type
-            reply['linotp_tokenserial'] = challenge_token.getSerial()
-            key = challenge_token.getSerial()
-            all_reply['challenges'][key] = reply
-
-        # finally add the root challenge response with top transaction id and
-        # message, that indicates that 'multiple challenges have been submitted
-        all_reply['transactionid'] = transactionid
-        all_reply['message'] = "Multiple challenges submitted."
-
-        log.debug("Multiple challenges submitted: %d" % len(challenge_tokens))
-
-        return (False, all_reply)
-
-
-    log.debug("[checkTokenList] Number of valid tokens found "
-              "(validTokenNum): %d" % len(validTokenList))
-
-    res = finish_check_TokenList(validTokenList, pinMatchingTokenList,
-                                 invalidTokenlist, user)
-
-    return (res, reply)
-
-
-# local
-def finish_check_TokenList(validTokenList, pinMatchingTokenList,
-                                    invalidTokenlist, user):
-
-    validTokenNum = len(validTokenList)
-
-    if validTokenNum > 1:
-        c.audit['action_detail'] = "Multiple token found!"
-        if user:
-            log.error("[__checkTokenList] multiple token match error: "
-                      "Several Tokens matching with the same OTP PIN and OTP "
-                      "for user %r. Not sure how to authenticate", user.login)
-        raise UserError("multiple token match error", id= -33)
-        # return jsonError(-36,"multiple token match error",0)
-
-    elif validTokenNum == 1:
-        token = validTokenList[0]
-
-        if user:
-            log.info("user %r@%r successfully authenticated."
-                      % (user.login, user.realm))
-        else:
-            log.info("serial %r successfully authenticated."
-                      % c.audit.get('serial'))
-        token.statusValidationSuccess()
-        return True
-
-    elif validTokenNum == 0:
-        if user:
-            log.warning("[__checkTokenList] user %r@%r failed to authenticate."
-                        % (user.login, user.realm))
-        else:
-            log.warning("[__checkTokenList] serial %r failed to authenticate."
-                        % c.audit.get('serial'))
-        pinMatching = False
-
-        # check, if there have been some tokens
-        # where the pin matched (but OTP failed
-        # and increment only these
-        for tok in pinMatchingTokenList:
-            tok.incOtpFailCounter()
-            tok.statusValidationFail()
-            tok.inc_count_auth()
-            pinMatching = True
-
-        if pinMatching == False:
-            for tok in invalidTokenlist:
-                tok.incOtpFailCounter()
-                tok.statusValidationFail()
-
-    return False
+    return
 
 
 def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
@@ -2216,9 +2344,8 @@ def get_token_by_otp(token_list=None, otp="", window=10, typ=u"HMAC",
     '''
     result_token = None
 
-    resultList = []
-    log.debug("[get_token_by_otp] entering function. Searching for otp=%r"
-              % otp)
+    validation_results = []
+    log.debug("[get_token_by_otp] entering function. Searching for otp=%r" % otp)
 
     if token_list is None:
         token_list = getTokensOfType(typ, realm, assigned)
@@ -2228,13 +2355,12 @@ def get_token_by_otp(token_list=None, otp="", window=10, typ=u"HMAC",
         r = token.check_otp_exist(otp=otp, window=window)
         log.debug("[get_token_by_otp] result = %d" % int(r))
         if r >= 0:
-            resultList.append(token)
+            validation_results.append(token)
 
-    if len(resultList) == 1:
-        result_token = resultList[0]
-    elif len(resultList) > 1:
-        raise TokenAdminError("get_token_by_otp: multiple tokens are matching"
-                              " this OTP value!", id=1200)
+    if len(validation_results) == 1:
+        result_token = validation_results[0]
+    elif len(validation_results) > 1:
+        raise TokenAdminError("get_token_by_otp: multiple tokens are matching this OTP value!", id=1200)
 
     return result_token
 

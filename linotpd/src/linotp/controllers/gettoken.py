@@ -87,8 +87,7 @@ class GettokenController(BaseController):
             check_session()
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
@@ -156,14 +155,12 @@ class GettokenController(BaseController):
                 return sendResult(response, ret , 0)
 
         except PolicyException as pe:
-            log.error("[getotp] gettoken/getotp policy failed: %r" % pe)
-            log.error("[getotp] %s" % traceback.format_exc())
+            log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[getmultiotp] gettoken/getmultiotp failed: %r" % e)
-            log.error("[getmultiotp] %s" % traceback.format_exc())
+            log.exception("[getmultiotp] gettoken/getmultiotp failed: %r" % e)
             Session.rollback()
             return sendError(response, "gettoken/getmultiotp failed: %s"
                              % unicode(e), 0)
@@ -267,14 +264,12 @@ class GettokenController(BaseController):
             return sendResult(response, ret , 0)
 
         except PolicyException as pe:
-            log.error("[getotp] gettoken/getotp policy failed: %r" % pe)
-            log.error("[getotp] %s" % traceback.format_exc())
+            log.exception("[getotp] gettoken/getotp policy failed: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[getotp] gettoken/getotp failed: %r" % e)
-            log.error("[getotp] %s" % traceback.format_exc())
+            log.exception("[getotp] gettoken/getotp failed: %r" % e)
             Session.rollback()
             return sendError(response, "gettoken/getotp failed: %s" % unicode(e), 0)
 

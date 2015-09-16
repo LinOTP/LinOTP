@@ -27,7 +27,6 @@
               - EmailTokenClass   (HOTP)
 """
 import logging
-import traceback
 import sys
 import datetime
 
@@ -207,7 +206,7 @@ class EmailTokenClass(HmacTokenClass):
             if not is_email_editable(user):
                 u_info = getUserDetail(user)
                 u_email = u_info.get('email', None)
-                if u_email == self._email_address:
+                if u_email.strip() != self._email_address.strip():
                     raise Exception(_('User is not allowed to set email address'))
 
         ## in case of the e-mail token, only the server must know the otpkey
@@ -335,8 +334,7 @@ class EmailTokenClass(HmacTokenClass):
             email_provider_class = self._getEmailProviderClass()
             email_provider = email_provider_class()
         except Exception as exc:
-            LOG.error("[sendEmail] Failed to load EmailProvider: %r" % exc)
-            LOG.error("[sendEmail] %s" % traceback.format_exc())
+            LOG.exception("[sendEmail] Failed to load EmailProvider: %r" % exc)
             raise exc
 
         ## now we need the config from the env

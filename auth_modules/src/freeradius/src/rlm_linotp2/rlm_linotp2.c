@@ -43,8 +43,6 @@
 
 #define log(level, format, ...) \
 	radlog(level, "rlm_linotp: " format, ## __VA_ARGS__)
-#define error(format, ...) \
-	log(L_ERR, format, ## __VA_ARGS__)
 
 #define log_info(format, ...) \
 	log(L_INFO, format, ## __VA_ARGS__)
@@ -52,8 +50,10 @@
 #define log_error(format, ...) \
 	log(L_ERR, format, ## __VA_ARGS__)	
 
-#define debug(format, ...) \
-	log(L_ERR, "(%s) " format, __FUNCTION__, ## __VA_ARGS__)
+#define log_debug(format, ...) \
+	log(L_DBG, "(%s) " format, __FUNCTION__, ## __VA_ARGS__)
+
+
 
 // libltdl is so buggy...add this in radius.h
 
@@ -76,6 +76,7 @@ typedef struct LOTPInstance {
 	int logpassword;
 	int restrictusername;
 	int allowemptypassword;
+	int prefer_nas_identifier;
 } lotp_inst_t;
 
 /* A mapping of configuration file names to internal variables. */
@@ -99,6 +100,8 @@ static const CONF_PARSER module_config[] =
 							offsetof(lotp_inst_t, restrictusername),	NULL, "yes" },
 	{ "allowemptypassword",	PW_TYPE_BOOLEAN,
 							offsetof(lotp_inst_t, allowemptypassword),	NULL, "no" },
+	{ "prefer_nas_identifier",	PW_TYPE_BOOLEAN,
+							offsetof(lotp_inst_t, prefer_nas_identifier),	NULL, "no" },
 	{ NULL, -1, 0, NULL, NULL }
 };
 
@@ -277,7 +280,7 @@ static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *da
 	/* failsafe */
 	if (realsize > 1024*1024)
 	{
-		error("The linotpd responded to our authentication request with more than 1MB of data! Something is really wrong here!");
+		log_error("The linotpd responded to our authentication request with more than 1MB of data! Something is really wrong here!");
 		return mem->size;
 	}
 
@@ -568,89 +571,44 @@ static int lotp_auth(void *instance, REQUEST *request)
 	lotp_inst_t *lotp 		= instance;
 	int nosslhostnameverify = ( !lotp->sslhostnameverify );
  	int nosslcertverify		= ( !lotp->sslcertverify );
+	int prefer_nas_identifier = (lotp->prefer_nas_identifier);
 
 	int returnValue		    	= RLM_MODULE_REJECT;
 	char *params 			= NULL;
 	
 	char * shortname	= request->client->shortname;  // maybe we can use this (the definition from clients.conf) one day
-	char * client_ip    = NULL;
-	int size = 100;
-	int nchars = 0;
-	
-	// allocate the memory for client_ip string
-	log_info("getting client ip now.");
-	client_ip = (char*) malloc (size);
-	if (client_ip == NULL)
-	{
-		log_error("could not allocate size for client_ip");
-		goto cleanup;
-	}
-	memset(client_ip,'\0',size);
-	VALUE_PAIR *vp;
-	switch (request->packet->src_ipaddr.af) {
-	case AF_INET:
-		log_debug("got a IPv4 client address");
-		/* check for the nas ip or as fallback the request client ip*/
-		vp = pairfind(request->packet->vps, PW_NAS_IP_ADDRESS);
-		if (!vp) {
-			log_debug("found PW_NAS_IP_ADDRESS");
-			vp = radius_paircreate(request, &request->packet->vps,
-			                       PW_NAS_IP_ADDRESS,
-			                       PW_TYPE_IPADDR);
-			vp->vp_ipaddr = request->packet->src_ipaddr.ipaddr.ip4addr.s_addr;
-		} else {
-			vp = pairfind(request->packet->vps, PW_PACKET_SRC_IP_ADDRESS);
-			if (!vp) {
-				log_debug("found PW_PACKET_SRC_IP_ADDRESS");
-				vp = radius_paircreate(request, &request->packet->vps,
-									   PW_PACKET_SRC_IP_ADDRESS,
-									   PW_TYPE_IPADDR);
-				vp->vp_ipaddr = request->packet->src_ipaddr.ipaddr.ip4addr.s_addr;
-			}
-		}
-		if (!vp) {
-			log_error("Found no IPv4 address");
-		} else {
-			snprintf(client_ip, size-1, "%s", inet_ntoa(request->packet->src_ipaddr.ipaddr.ip4addr));
-		}
-		break;
-	case AF_INET6:
-		log_debug("got a IPv6 client address");
-		/* check for the nas ip or as fallback the request client ip*/
-		vp = pairfind(request->packet->vps, PW_NAS_IPV6_ADDRESS);
-		if (!vp) {
-			log_debug("found PW_NAS_IPV6_ADDRESS");
-			vp = radius_paircreate(request, &request->packet->vps,
-						PW_NAS_IPV6_ADDRESS,
-						PW_TYPE_IPV6ADDR);
-			memcpy(vp->vp_strvalue,
-						&request->packet->src_ipaddr.ipaddr,
-						sizeof(request->packet->src_ipaddr.ipaddr));
-		} else {
-			vp = pairfind(request->packet->vps, PW_PACKET_SRC_IPV6_ADDRESS);
-			if (!vp) {
-				log_debug("found PW_PACKET_SRC_IPV6_ADDRESS");
-				vp = radius_paircreate(request, &request->packet->vps,
-							PW_PACKET_SRC_IPV6_ADDRESS,
-							PW_TYPE_IPV6ADDR);
-				memcpy(vp->vp_strvalue,
-							&request->packet->src_ipaddr.ipaddr,
-							sizeof(request->packet->src_ipaddr.ipaddr));
-			}
- 		}
-		if (!vp) {
-			log_error("Found no IPv6 address");
-		} else {
-			snprintf(client_ip, size-1, "%s", vp->vp_strvalue);
-		}
-		break;
-	default:
-		log_error("Unknown address family for packet source.");
-		break;
-	}
-	log_info("something");
-	log_info("got client ip: %s.", client_ip);
 
+	/*
+	 * find the client ip or use the nas ip if it is prefered and available
+	 */
+	char *client_ip;
+	log_info("getting client ip now.");
+
+	/* check for the nas ip */
+	log_debug("prefer_nas_identifier %d", prefer_nas_identifier);
+
+	VALUE_PAIR *vp = NULL;
+	char buffer[INET6_ADDRSTRLEN];
+	if (prefer_nas_identifier && 
+	    (vp = pairfind(request->packet->vps, PW_NAS_IP_ADDRESS)) != NULL) {
+		log_debug("using NAS_IP_ADDRESS");
+		client_ip = inet_ntop(AF_INET,
+					&(vp->vp_ipaddr),        /* src  */
+					buffer, sizeof(buffer)); /* dest */
+	} else if (prefer_nas_identifier &&
+                   (vp = pairfind(request->packet->vps, PW_NAS_IPV6_ADDRESS)) != NULL) {
+		log_debug("using NAS_IPV6_ADDRESS");
+		client_ip = inet_ntop(AF_INET6,
+					&(vp->vp_ipv6addr),      /* src  */
+					buffer, sizeof(buffer)); /* dest */
+	} else {
+		/* or as fallback the request client ip (can be of type IPv4 or IPv6) */
+		log_debug("using CLIENT_IP_ADDRESS");
+		client_ip = inet_ntop(request->packet->src_ipaddr.af,
+					&(request->packet->src_ipaddr.ipaddr), /* src  */
+					buffer, sizeof(buffer));	       /* dest */
+	}
+	log_info("got client ip: %s.", (client_ip != NULL ? client_ip : ""));
 
 	struct MemoryStruct chunk;
 		chunk.memory		= NULL; /* we expect realloc(NULL, size) to work */
@@ -676,7 +634,6 @@ static int lotp_auth(void *instance, REQUEST *request)
 		returnValue = RLM_MODULE_INVALID;
 		goto cleanup;
 	}
-
 	if (lotp->restrictusername)
 	{
 		if (!valid_username(request->username->vp_strvalue))
@@ -863,10 +820,6 @@ static int lotp_auth(void *instance, REQUEST *request)
 	if (chunk.memory != NULL)
 	{
 		free(chunk.memory);
-	}
-	if (client_ip != NULL)
-	{
-		free(client_ip);
 	}
 	return returnValue;
 }

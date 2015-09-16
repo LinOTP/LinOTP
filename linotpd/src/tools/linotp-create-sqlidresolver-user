@@ -86,9 +86,8 @@ def _check_hash_type(password, hash_type, hash_value):
             hashed_password = base64.b64encode(H.digest())
             res = (hashed_password == hash_value)
         except ValueError:
-            log.error("[_check_hash_type] Unsupported Hash type: %r"
+            log.exception("[_check_hash_type] Unsupported Hash type: %r"
                                                                 % hash_type)
-            log.error("[_check_hash_type] %s" % traceback.format_exc())
 
     elif (hash_type.lower()[0:4] == "ssha"):
         log.debug("[_check_hash_type] found a salted hash.")
@@ -109,9 +108,8 @@ def _check_hash_type(password, hash_type, hash_value):
             res = (bin_hashed_password == bin_hash)
 
         except ValueError:
-            log.error("[_check_hash_type] Unsupported Hash type: %r"
+            log.exception("[_check_hash_type] Unsupported Hash type: %r"
                                                                 % hash_type)
-            log.error("[_check_hash_type] %s" % traceback.format_exc())
 
     return res
 

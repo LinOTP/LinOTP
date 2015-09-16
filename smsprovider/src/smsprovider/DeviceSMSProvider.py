@@ -59,6 +59,10 @@ class DeviceSMSProvider(ISMSProvider):
             - send out a message to a phone
 
         '''
+        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
+        if msisdn:
+            phone = self._get_msisdn_phonenumber(phone)
+
         if (not self.config.has_key('CONFIGFILE')):
             log.error("[submitMessage] No config key CONFIGFILE found!")
             return

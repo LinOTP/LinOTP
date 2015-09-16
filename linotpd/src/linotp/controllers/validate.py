@@ -105,8 +105,7 @@ class ValidateController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
@@ -266,8 +265,7 @@ class ValidateController(BaseController):
                 return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.error("[check] validate/check failed: %r" % exx)
-            log.error("[check] %s" % traceback.format_exc())
+            log.exception("[check] validate/check failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
             c.audit['info'] = unicode(exx)
 
@@ -331,8 +329,7 @@ class ValidateController(BaseController):
             return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.error("[check_yubikey] validate/check_yubikey failed: %r" % exx)
-            log.error("[check_yubikey] %s" % traceback.format_exc())
+            log.exception("[check_yubikey] validate/check_yubikey failed: %r" % exx)
             c.audit['info'] = unicode(exx)
             Session.rollback()
             return sendError(response, u"validate/check_yubikey failed: %s"
@@ -370,14 +367,12 @@ class ValidateController(BaseController):
 
         except webob.exc.HTTPUnauthorized as acc:
             ## the exception, when an abort() is called if forwarded
-            log.error("[__before__::%r] webob.exception %r" % acc)
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] webob.exception %r" % acc)
             Session.rollback()
             raise acc
 
         except Exception as exx:
-            log.error("[check_url] validate/check_url failed: %r" % exx)
-            log.error("[check_url] %s" % traceback.format_exc())
+            log.exception("[check_url] validate/check_url failed: %r" % exx)
             Session.rollback()
             return sendError(response, u"validate/check_url failed: %s"
                              % unicode(exx), 0)
@@ -441,8 +436,7 @@ class ValidateController(BaseController):
             return sendResult(response, { 'auth': ok, 'attributes' : attributes } , 0, opt)
 
         except Exception as exx:
-            log.error("[samlcheck] validate/check failed: %r" % exx)
-            log.error("[samlcheck] %s" % traceback.format_exc())
+            log.exception("[samlcheck] validate/check failed: %r" % exx)
             Session.rollback()
             return sendError(response, "validate/samlcheck failed: %s"
                              % unicode(exx), 0)
@@ -525,8 +519,7 @@ class ValidateController(BaseController):
                 return sendResult(response, value, 1, opt=opt)
 
         except Exception as exx:
-            log.error("[check_t] validate/check_t failed: %r" % exx)
-            log.error("[check_t] %s" % traceback.format_exc())
+            log.exception("[check_t] validate/check_t failed: %r" % exx)
             c.audit['info'] = unicode(exx)
             Session.rollback()
             return sendError(response, "validate/check_t failed: %s"
@@ -621,8 +614,7 @@ class ValidateController(BaseController):
                 return sendResult(response, ok, 0, opt=opt)
 
         except Exception as exx:
-            log.error("[check_s] validate/check_s failed: %r" % exx)
-            log.error("[check_s] %s" % traceback.format_exc())
+            log.exception("[check_s] validate/check_s failed: %r" % exx)
             c.audit['info'] = unicode(exx)
             Session.rollback()
             return sendError(response, "validate/check_s failed: %s"
@@ -692,8 +684,7 @@ class ValidateController(BaseController):
             return " ".join(res).strip()
 
         except Exception as exx:
-            log.error("[simplecheck] failed: %r" % exx)
-            log.error("[simplecheck] %s" % traceback.format_exc())
+            log.exception("[simplecheck] failed: %r" % exx)
             Session.rollback()
             return u":-/"
 
@@ -763,8 +754,7 @@ class ValidateController(BaseController):
             return sendResult(response, ret, opt)
 
         except Exception as exx:
-            log.error("[smspin] validate/smspin failed: %r" % exx)
-            log.error("[smspin] %s" % traceback.format_exc())
+            log.exception("[smspin] validate/smspin failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
             c.audit['info'] = unicode(exx)
             Session.rollback()

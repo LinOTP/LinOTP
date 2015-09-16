@@ -145,6 +145,7 @@ ${_("Remote token")}
  *
  */
 function remote_enroll_setup_defaults(config, options){
+    remote_clear_input_fields();
     var rand_pin = options['otp_pin_random'];
     if (rand_pin > 0) {
         $("[name='set_pin_rows']").hide();
@@ -211,9 +212,15 @@ function remote_get_enroll_params(){
         params['pin'] = $('#remote_pin1').val();
     }
 
+    remote_clear_input_fields();
 	return params;
 }
 
+function remote_clear_input_fields() {
+    // Empty input fields for PINs and Keys
+    $('#remote_pin1').val('');
+    $('#remote_pin2').val('');
+}
 
 jQuery.validator.addMethod("remote_server", function(value, element, param){
     return value.match(param);

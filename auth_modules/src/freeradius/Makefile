@@ -1,4 +1,4 @@
-FREERADDIR=`find sandbox -name freeradius\* -type d`
+FREERADDIR=`find sandbox -maxdepth 1 -name freeradius\* -type d`
 LINOTP_VERSION=2.8.2.dev0
 
 COMMENT="added LinOTP2 module rlm_linotp"
@@ -17,9 +17,18 @@ getsource:
 	echo "rlm_linotp2" >> $(FREERADDIR)/src/modules/stable
 	( cd $(FREERADDIR) && ./configure )
 
-build: 
-	cp -r src/rlm_linotp2 $(FREERADDIR)/src/modules/ 
+build: src/rlm_linotp2/rlm_linotp2.c
+	cp -r src/rlm_linotp2 $(FREERADDIR)/src/modules/
+	(cd $(FREERADDIR)/src/modules/rlm_linotp2/ && make)
 	( cd $(FREERADDIR) && make )
+
+
+pkg:
+	cp -r src/rlm_linotp2 $(FREERADDIR)/src/modules/
+	cp -r src/rlm_linotp2/linotp2.conf $(FREERADDIR)/raddb/modules/linotp
+	cp -r src/rlm_linotp2/linotp $(FREERADDIR)/raddb/sites-available/
+	echo "rlm_linotp2" >> $(FREERADDIR)/src/modules/stable
+	( cd $(FREERADDIR) && dpkg-buildpackage -b )
 
 deb:
 	make clean

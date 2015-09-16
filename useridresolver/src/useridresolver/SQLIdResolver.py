@@ -102,8 +102,7 @@ def testconnection(params):
         num = dbObj.count(table, params.get("Where", ""))
 
     except Exception as e:
-        log.error('[testconnection] Exception: %r' % e)
-        log.error("[testconnection] %s" % traceback.format_exc())
+        log.exception('[testconnection] Exception: %r' % e)
         err_str = "%r" % e
     finally:
         dbObj.close()
@@ -270,9 +269,8 @@ def _check_hash_type(password, hash_type, hash_value):
             hashed_password = base64.b64encode(H.digest())
             res = (hashed_password == hash_value)
         except ValueError:
-            log.error("[_check_hash_type] Unsupported Hash type: %r"
+            log.exception("[_check_hash_type] Unsupported Hash type: %r"
                                                                 % hash_type)
-            log.error("[_check_hash_type] %s" % traceback.format_exc())
 
     elif (hash_type.lower()[0:4] == "ssha"):
         log.debug("[_check_hash_type] found a salted hash.")
@@ -293,9 +291,8 @@ def _check_hash_type(password, hash_type, hash_value):
 
             res = (bin_hashed_password == bin_hash)
         except ValueError:
-            log.error("[_check_hash_type] Unsupported Hash type: %r"
+            log.exception("[_check_hash_type] Unsupported Hash type: %r"
                                                                 % hash_type)
-            log.error("[_check_hash_type] %s" % traceback.format_exc())
 
     return res
 
@@ -608,8 +605,7 @@ class IdResolver (UserIdResolver):
             else:
                 log.info('Valid mapping: %r' % self.sqlUserInfo)
         except Exception as e:
-            log.error('[checkMapping] Exception: %s' % (str(e)))
-            log.error("[checkMapping] %s" % traceback.format_exc())
+            log.exception('[checkMapping] Exception: %s' % (str(e)))
 
         log.debug('[checkMapping] done')
         return
@@ -649,8 +645,7 @@ class IdResolver (UserIdResolver):
                 log.info("[getUserId] getting userid %s for user %s" %
                                                         (userId, loginName))
         except Exception as e:
-            log.error('[getUserId] Exception: %s' % (str(e)))
-            log.error("[getUserId] %s" % traceback.format_exc())
+            log.exception('[getUserId] Exception: %s' % (str(e)))
 
         log.debug('[getUserId] done')
         return userId
@@ -680,8 +675,7 @@ class IdResolver (UserIdResolver):
                 userName = row[colName]
 
         except Exception as e:
-            log.error('[getUsername] Exception: %s' % (str(e)))
-            log.error("[getUsername] %s" % traceback.format_exc())
+            log.exception('[getUsername] Exception: %s' % (str(e)))
 
         log.debug('[getUsername] done')
 
@@ -710,8 +704,7 @@ class IdResolver (UserIdResolver):
                 userInfo = self.__getUserInfo(dbObj, row)
 
         except Exception as e:
-            log.error('[getUserInfo] Exception: %s' % (str(e)))
-            log.error("[getUserInfo] %s" % traceback.format_exc())
+            log.exception('[getUserInfo] Exception: %s' % (str(e)))
 
         log.debug('[getUserInfo] done')
         return userInfo
@@ -746,8 +739,7 @@ class IdResolver (UserIdResolver):
                 sf[key] = typ
 
         except Exception as e:
-            log.error('[getSearchFields] Exception: %s' % (str(e)))
-            log.error("[getSearchFields] %s" % traceback.format_exc())
+            log.exception('[getSearchFields] Exception: %s' % (str(e)))
 
         log.debug('[getSearchFields] done')
         return sf
@@ -807,13 +799,11 @@ class IdResolver (UserIdResolver):
                             users[userid] = ui
 
         except KeyError as exx:
-            log.error('[getUserList] Invalid Mapping Error %r' % exx)
-            log.error("[getUserList] %s" % traceback.format_exc())
+            log.exception('[getUserList] Invalid Mapping Error %r' % exx)
             raise KeyError("Invalid Mapping %r " % exx)
 
         except Exception as exx:
-            log.error('[getUserList] Exception: %r' % exx)
-            log.error("[getUserList] %s" % traceback.format_exc())
+            log.exception('[getUserList] Exception: %r' % exx)
 
         log.debug("[getUserList] returning userlist %s" % users.values())
         return users.values()
@@ -877,7 +867,7 @@ class IdResolver (UserIdResolver):
                 value = "-ERR: encoding-"
 
             except NoSuchColumnError as  e:
-                log.error("[__getUserInfo] %s" % traceback.format_exc())
+                log.exception("[__getUserInfo]")
                 value = "-ERR: column mapping-"
 
             userInfo[key] = value

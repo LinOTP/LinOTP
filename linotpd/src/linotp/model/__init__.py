@@ -999,8 +999,7 @@ class Challenge(object):
             log.debug('save challenge : success')
 
         except Exception as exce:
-            log.error('[save]Error during saving challenge: %r' % exce)
-            log.error("[save] %s" % traceback.format_exc())
+            log.exception('[save]Error during saving challenge: %r' % exce)
 
         return self.transid
 

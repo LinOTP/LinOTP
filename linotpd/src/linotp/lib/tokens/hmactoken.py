@@ -169,7 +169,7 @@ class HmacTokenClass(TokenClass):
         try:
             self.hashlibStr = getFromConfig("hotp.hashlib", u'sha1')
         except Exception as ex:
-            log.error('[init] Failed to get the hotp.hashlib (%r)' % (ex))
+            log.exception('[init] Failed to get the hotp.hashlib (%r)' % (ex))
             raise Exception(ex)
 
 
@@ -316,20 +316,21 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.getOtpLen())
         except ValueError as ex:
-            log.error('[checkOtp] failed to initialize otplen: ValueError %r %r' % (ex, self.token.LinOtpOtpLen))
+            log.exception('[checkOtp] failed to initialize otplen: ValueError %r %r' % (ex, self.token.LinOtpOtpLen))
             raise Exception(ex)
 
         try:
             self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
         except Exception as ex:
-            log.error('[checkOtp] failed to initialize hashlibStr: %r' % (ex))
+            log.exception('[checkOtp] failed to initialize hashlibStr: %r' % (ex))
             raise Exception(ex)
 
         secretHOtp = self.token.getHOtpKey()
         #serialNum   = self.token.LinOtpTokenSerialnumber
         #log.debug("serial: %s",serialNum)
 
-        hmac2Otp = HmacOtp(secretHOtp, counter, otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(secretHOtp, counter, otplen,
+                           self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, window)
 
         if -1 == res:
@@ -436,7 +437,7 @@ class HmacTokenClass(TokenClass):
         #if yes:
         if res != -1:
             # if former is defined
-            if (info.has_key("otp1c")):
+            if "otp1c" in info:
                 #check if this is consecutive
                 otp1c = info.get("otp1c")
                 otp2c = res
@@ -444,7 +445,7 @@ class HmacTokenClass(TokenClass):
                 if (otp1c + 1) != otp2c:
                     res = -1
 
-                if info.has_key("dueDate"):
+                if "dueDate" in info:
                     dueDate = info.get("dueDate")
                     now = int(time.time())
                     if dueDate <= now:
@@ -553,7 +554,7 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.error("[getOtp]: Could not convert otplen - value error %r " % (ex))
+            log.exception("[getOtp]: Could not convert otplen - value error %r " % (ex))
             raise Exception(ex)
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
@@ -591,7 +592,7 @@ class HmacTokenClass(TokenClass):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
-            log.error("[get_multi_otp]: Could not convert otplen - value error %r " % (ex))
+            log.exception("[get_multi_otp]: Could not convert otplen - value error %r " % (ex))
             raise Exception(ex)
         s_count = self.getOtpCount()
         secretHOtp = self.token.getHOtpKey()

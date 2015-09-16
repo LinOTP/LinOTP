@@ -68,7 +68,6 @@ from pylons.i18n.translation import _
 
 audit = config.get('audit')
 
-import traceback
 import logging
 
 log = logging.getLogger(__name__)
@@ -114,8 +113,7 @@ class ManageController(BaseController):
                 check_session()
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r" % (action, exx))
-            log.error("[__before__] %s" % traceback.format_exc())
+            log.exception("[__before__::%r] exception %r" % (action, exx))
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
@@ -209,14 +207,12 @@ class ManageController(BaseController):
             return ren
 
         except PolicyException as pe:
-            log.error("[index] Error during checking policies: %r" % pe)
-            log.error("[index] %s" % traceback.format_exc())
+            log.exception("[index] Error during checking policies: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as ex:
-            log.error("[index] failed! %r" % ex)
-            log.error("[index] %s" % traceback.format_exc())
+            log.exception("[index] failed! %r" % ex)
             Session.rollback()
             return sendError(response, ex)
 
@@ -393,14 +389,12 @@ class ManageController(BaseController):
             return json.dumps(res, indent=3)
 
         except PolicyException as pe:
-            log.error("[tokenview_flexi] Error during checking policies: %r" % pe)
-            log.error("[tokenview_flexi] %s" % traceback.format_exc())
+            log.exception("[tokenview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[tokenview_flexi] failed: %r" % e)
-            log.error("[tokenview_flexi] %s" % traceback.format_exc())
+            log.exception("[tokenview_flexi] failed: %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -506,14 +500,12 @@ class ManageController(BaseController):
             return json.dumps(res, indent=3)
 
         except PolicyException as pe:
-            log.error("[userview_flexi] Error during checking policies: %r" % pe)
-            log.error("[userview_flexi] %s" % traceback.format_exc())
+            log.exception("[userview_flexi] Error during checking policies: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[userview_flexi] failed: %r" % e)
-            log.error("[userview_flexi] %s" % traceback.format_exc())
+            log.exception("[userview_flexi] failed: %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -568,14 +560,12 @@ class ManageController(BaseController):
             return render('/manage/tokeninfo.mako')
 
         except PolicyException as pe:
-            log.error("[tokeninfo] Error during checking policies: %r" % pe)
-            log.error("[tokeninfo] %s" % traceback.format_exc())
+            log.exception("[tokeninfo] Error during checking policies: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.error("[tokeninfo] failed! %r" % e)
-            log.error("[tokeninfo] %s" % traceback.format_exc())
+            log.exception("[tokeninfo] failed! %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -623,8 +613,7 @@ class ManageController(BaseController):
             return wsgi_app(request.environ, self.start_response)
 
         except Exception as e:
-            log.error("[help] Error loading helpfile: %r" % e)
-            log.error("[help] %s" % traceback.format_exc())
+            log.exception("[help] Error loading helpfile: %r" % e)
             Session.rollback()
             return sendError(response, e)
 
@@ -702,9 +691,8 @@ def _getTokenTypeConfig(section='config'):
                 t_html = remove_empty_lines(t_html)
 
             except CompileException as ex:
-                log.error("[_getTokenTypeConfig] compile error while processing %r.%r:" % (tok, section))
+                log.exception("[_getTokenTypeConfig] compile error while processing %r.%r:" % (tok, section))
                 log.error("[_getTokenTypeConfig] %r" % ex)
-                log.error("[_getTokenTypeConfig] %s" % traceback.format_exc())
                 raise Exception(ex)
 
             except Exception as e:

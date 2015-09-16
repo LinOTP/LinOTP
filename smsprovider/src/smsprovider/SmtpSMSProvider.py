@@ -70,6 +70,10 @@ class SmtpSMSProvider(ISMSProvider):
             log.error("[submitMessage] incomplete config: %s. mailserver, mailsender and mailto needed." % self.config)
             return ret
 
+        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
+        if msisdn:
+            phone = self._get_msisdn_phonenumber(phone)
+
         server = self.config.get("mailserver")
         user = self.config.get("mailuser")
         password = self.config.get("mailpassword")

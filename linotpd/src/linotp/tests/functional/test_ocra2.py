@@ -1847,6 +1847,8 @@ class OcraTest(TestController):
                                         action='remove'), params=parameters)
             self.assertTrue('"value": 1' in response, response)
 
+        return
+
     def test_OCRA_token_failcounterInc(self):
         '''
             test_OCRA_token_failcounterInc: failcounter increment
@@ -3028,9 +3030,11 @@ class OcraTest(TestController):
         sqlconnect = self.appconf.get('sqlalchemy.url')
         if (sqlconnect.startswith('sqlite://') or
             sqlconnect.startswith('mysql://')):
-            skip_reason = ("SQLite and MySQL silently truncate "
-                           "the data. See #12324.")
-            self.skipTest(skip_reason)
+            pass
+
+        skip_reason = ("SQLite and MySQL silently truncate "
+                       "the data. See #12324.")
+        self.skipTest(skip_reason)
 
         ocra = OcraOtp()
         counter = 0
@@ -3572,7 +3576,7 @@ class OcraTest(TestController):
 
         return
 
-    def test_0000_ocra_challenge_check_s(self):
+    def test_ocra_challenge_check_s(self):
         '''
         Test support for challenges in validate/check_s on timebased ocra
         '''
