@@ -399,29 +399,20 @@ class OcraTest(TestController):
                 'scope': 'authentication',
                 'realm': 'mydefrealm',
         }
-        params['action'] = 'qrtanurl=%s' % (unicode(check_url))
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params=params)
+        params['action'] = (
+'qrtanurl.one=https://<user>:<password>@my.one.de/callback/<serial>/<transactionid>/, '
+'qrtanurl=%s, '
+'qrtanurl_init=https://<user>:<password>@my.default.de/ini/callback/<serial>/,'
+'qrtanurl_init.one=https://<user>:<password>@my.one.de/ini/callback/<serial>/,'
+        % (unicode(check_url))
+        )
+
+        response = self.app.get(url(controller='system', action='setPolicy'), params=params)
 
         self.assertTrue('"setPolicy CheckURLPolicy"' in response, response)
         self.assertTrue('"status": true' in response, response)
         return response
 
-    def setupQRTanCallbackPolicies(self):
-
-        params = {
-                'name': 'qrtan_url_as_param',
-                'scope': 'authentication',
-                'realm': 'mydefrealm',
-        }
-        params['action'] = 'qrtanurl_as_param'
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params=params)
-
-        log.error(response)
-        assert '"setPolicy qrtan_url_as_param"' in response
-        assert '"status": true' in response
-        return response
 
     def check_otp(self, transid, otp, pin='pin', params=None):
         ''' -3.a- verify the otp value to finish the rollout '''
@@ -3657,9 +3648,9 @@ class OcraTest(TestController):
 
         return
 
-    def test_serial_based_w_callbackurl_param(self):
+    def test_serial_based_w_callbackid(self):
         '''
-        ocra2 token with check_s and check_t and callback url as parameter
+        ocra2 token with check_s and check_t and callback_id as parameter
         with replacements for transactionis and serial number
         '''
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:C-QA64'
@@ -3670,12 +3661,11 @@ class OcraTest(TestController):
 
         ocra = OcraOtp()
 
-        self.setupQRTanCallbackPolicies()
+        self.setupPolicies()
 
-        enroll_param = {'callback':
-                'https://<user>:<password>@myLocal.host.de/callback/<serial>/',
-                'callback.user': 'hugo',
-                'callback.password': 'abracadabra123',
+        enroll_param = {'callback.id': 'one',
+                        'callback.user': 'hugo',
+                        'callback.password': 'abracadabra123',
                 }
         response1 = self.init_0_QR_Token(serial=serial, pin=pin,
                                          realm='mydefrealm',
@@ -3686,17 +3676,16 @@ class OcraTest(TestController):
         curl = resp.get('detail', {}).get('url', '')
 
         # now check
-        # was the callback parameter used
+        # was the callback.id used
         # and if the replacements went right
+        self.assertTrue('one' in curl, curl)
+        self.assertTrue('ini' in curl, curl)
         self.assertTrue(serial in curl, curl)
         self.assertTrue(enroll_param['callback.user'] in curl, curl)
         self.assertTrue(enroll_param['callback.password'] in curl, curl)
 
         ocra.init_1(response1)
 
-        enroll_param = {'callback':
-                        'https://myLocal.host.de/callback/'
-                        '<serial>/<transactionid>/'}
         (response2, activationkey) = self.init_1_QR_Token(serial=serial,
                                                           pin=pin,
                                                           message=message,
@@ -3706,21 +3695,29 @@ class OcraTest(TestController):
         transid = resp.get('detail', {}).get('transactionid', '')
         curl = resp.get('detail', {}).get('url', '')
         self.assertTrue(transid in curl, curl)
+        self.assertTrue('one' in curl, curl)
+        self.assertTrue('ini' not in curl, curl)
 
         (challenge, transid) = ocra.init_2(response2, activationkey)
 
         ''' finish rollout '''
         otp = ocra.callcOtp(challenge)
+
         response = self.check_otp(transid, otp, pin=pin, params=enroll_param)
 
         self.assertTrue('"value": true' in response, response)
 
-        for i in range(1, 4):
+        for i in range(1, 5):
             message = ('Veränderung %d am System durchgeführt! '
                       'Bitte bestätigen!' % i)
 
             if i == 3:
-                enroll_param['suppress_callback'] = True
+                enroll_param['no_callback'] = True
+
+            if i == 4:
+                del enroll_param['callback.id']
+                del enroll_param['no_callback']
+
             (response, challenge, transid) = self.get_challenge(ocra.serial,
                                                     challenge_data=message,
                                                     params=enroll_param)
@@ -3731,8 +3728,10 @@ class OcraTest(TestController):
             if i < 3:
                 self.assertTrue(transid in curl, curl)
                 self.assertTrue(serial in curl, curl)
-            else:
-                self.assertTrue(transid not in curl, curl)
+            if i == 3:
+                self.assertTrue(curl == '', curl)
+            if i == 4:
+                self.assertTrue("validate/check_t" in curl, curl)
 
             self.assertTrue('"value": true' in response, response)
 

@@ -326,7 +326,7 @@ class U2FTokenClass(TokenClass):
                 }
             valid_facets_action_value = getPolicyActionValue(getPolicy(get_policy_params),
                                                              'u2f_valid_facets',
-                                                             String=True
+                                                             is_string=True
                                                              )
 
         if valid_facets_action_value != '':
@@ -918,7 +918,7 @@ class U2FTokenClass(TokenClass):
                         }
                     policy_value = getPolicyActionValue(getPolicy(get_policy_params),
                                                         'u2f_app_id',
-                                                        String=True
+                                                        is_string=True
                                                         )
                     # Check for appId conflicts
                     if appId and policy_value:

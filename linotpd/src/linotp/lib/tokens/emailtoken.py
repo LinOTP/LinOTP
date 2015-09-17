@@ -357,7 +357,7 @@ class EmailTokenClass(HmacTokenClass):
                               "user": login},
                              )
         if policies:
-            message = getPolicyActionValue(policies, "emailtext", String=True)
+            message = getPolicyActionValue(policies, "emailtext", is_string=True)
 
         return message
 
@@ -386,7 +386,7 @@ class EmailTokenClass(HmacTokenClass):
                              )
         if policies:
             subject = getPolicyActionValue(policies, "emailsubject",
-                                           String=True)
+                                           is_string=True)
 
         return subject
 

@@ -2138,7 +2138,7 @@ def losttoken(serial, new_serial=None, password=None, default_validity=0,
             pw_len = 10
 
         contents = linotp.lib.policy.getPolicyActionValue(pol,
-                                            "lostTokenPWContents", String=True)
+                                            "lostTokenPWContents", is_string=True)
 
         character_pool = "%s%s%s" % (string.ascii_lowercase,
                                      string.ascii_uppercase, string.digits)
