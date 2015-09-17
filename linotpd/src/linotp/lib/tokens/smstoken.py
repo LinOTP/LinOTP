@@ -69,10 +69,9 @@ except ImportError as exx:
     log.warning("Failed to import SMSProvider %s" % exx)
     SMSPROVIDER_IMPORTED = False
 
-
-keylen = {'sha1'    : 20,
-          'sha256'  : 32,
-          'sha512'  : 64,
+keylen = {'sha1': 20,
+          'sha256': 32,
+          'sha512': 64,
           }
 
 
@@ -250,7 +249,8 @@ class SmsTokenClass(HmacTokenClass):
         log.debug("[update] end. all token parameters are set.")
         return
 
-    def is_challenge_response(self, passw, user, options=None, challenges=None):
+    def is_challenge_response(self, passw, user, options=None,
+                              challenges=None):
         '''
         check, if the request contains the result of a challenge
 
@@ -266,8 +266,8 @@ class SmsTokenClass(HmacTokenClass):
         if "state" in options or "transactionid" in options:
             challenge_response = True
 
-        # # it as well might be a challenge response,
-        # # if the passw is longer than the pin
+        # it as well might be a challenge response,
+        # if the passw is longer than the pin
         if challenge_response == False:
             (res, pin, otpval) = split_pin_otp(self, passw, user=user,
                                                             options=options)
@@ -298,15 +298,16 @@ class SmsTokenClass(HmacTokenClass):
         # # do we need to call the
         # (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
 
+        # if its a challenge, the passw contains only the pin
         pin_match = check_pin(self, passw, user=user, options=options)
         if pin_match is True:
             request_is_valid = True
 
         return request_is_valid
 
-    # #
-    ##!!! this function is to be called in the sms controller !!!
-    # #
+    #
+    #!!! this function is to be called in the sms controller !!!
+    #
     def submitChallenge(self, options=None):
         '''
         submit the sms message - former method name was checkPin
@@ -317,27 +318,46 @@ class SmsTokenClass(HmacTokenClass):
         '''
         res = 0
         user = None
+        result = _("sending sms failed")
         message = "<otp>"
 
-        # # it is configurable, if sms should be triggered by a valid pin
+        if not options:
+            options = {}
+
+        # it is configurable, if sms should be triggered by a valid pin
         send_by_PIN = getFromConfig("sms.sendByPin") or True
 
         if self.isActive() == True and send_by_PIN == True:
             counter = self.getOtpCount()
             log.debug("[submitChallenge] counter=%r" % counter)
-            self.incOtpCounter(counter, reset=False)
-            # At this point we must not bail out in case of an
-            # Gateway error, since checkPIN is successful. A bail
+
+            # At this point we MUST NOT bail out in case of an
+            # Gateway error, since checkPIN is successful, as the bail
             # out would cancel the checking of the other tokens
             try:
+                realms = self.getRealms()
+                if realms:
+                    sms_ret, new_message = get_auth_smstext(realm=realms[0])
+                    if sms_ret:
+                        message = new_message
 
-                if options is not None and type(options) == dict:
-                    user = options.get('user', None)
-                    if user:
-                        _sms_ret, message = get_auth_smstext(
-                                                realm=user.realm)
-                res, message = self.sendSMS(message=message)
+                user = options.get('user', '')
+                if user:
+                    sms_ret, new_message = get_auth_smstext(
+                                            realm=user.realm)
+                    if sms_ret:
+                        message = new_message
+
+                if 'data' in options or 'message' in options:
+                    message = options.get('data',
+                                          options.get('message', '<otp>'))
+
+                transactionid = options.get('transactionid', None)
+                res, result = self.sendSMS(message=message,
+                                              transactionid=transactionid)
+
                 self.info['info'] = "SMS sent: %r" % res
+                log.debug('SMS sent: %s', result)
 
             except Exception as e:
                 # The PIN was correct, but the SMS could not be sent.
@@ -346,11 +366,14 @@ class SmsTokenClass(HmacTokenClass):
                           " SMS could not be sent: %r" % e)
                 log.warning("[submitChallenge] %s" % info)
                 res = False
-                message = info
-        if len(message) == 0:
-            pass
+                result = info
 
-        return res, message
+            finally:
+                # we increment the otp in any case, independend if sending
+                # of the sms was sucsessful
+                self.incOtpCounter(counter, reset=False)
+
+        return res, result
 
     def initChallenge(self, transactionid, challenges=None, options=None):
         """
@@ -410,6 +433,7 @@ class SmsTokenClass(HmacTokenClass):
         message = ""
         attributes = {'state': transactionid}
 
+        options['state'] = transactionid
         success, sms = self.submitChallenge(options=options)
 
         if success is True:
@@ -418,11 +442,11 @@ class SmsTokenClass(HmacTokenClass):
         else:
             attributes = {'state': ''}
             message = 'sending sms failed'
-            if len('sms') > 0:
+            if sms:
                 message = sms
 
-        # # after submit set validity time in readable
-        # # datetime format in the storeing data
+        # after submit set validity time in readable
+        # datetime format in the storeing data
         timeScope = self.loadLinOtpSMSValidTime()
         expiryDate = datetime.datetime.now() + \
                                     datetime.timedelta(seconds=timeScope)
@@ -491,22 +515,40 @@ class SmsTokenClass(HmacTokenClass):
                   " %r, counter: %r, window: %r, options: %r "
                   % (anOtpVal, counter, window, options))
 
+        if not options:
+            options = {}
+
         ret = HmacTokenClass.checkOtp(self, anOtpVal, counter, window)
         if ret != -1:
             if self.isValid() == False:
                 ret = -1
 
         if ret >= 0:
+            # checko if autosms is defined
+            # if so, autamatical send an new otp after successful login
             if get_auth_AutoSMSPolicy():
                 user = None
                 message = "<otp>"
-                if options is not None and type(options) == dict:
+                realms = self.getRealms()
+                if realms:
+                    _sms_ret, message = get_auth_smstext(realm=realms[0])
+
+                if 'user' in options:
                     user = options.get('user', None)
                     if user:
-                        sms_ret, message = get_auth_smstext(realm=user.realm)
-                self.incOtpCounter(ret, reset=False)
-                success, message = self.sendSMS(message=message)
+                        _sms_ret, message = get_auth_smstext(realm=user.realm)
+                realms = self.getRealms()
 
+                if 'data' in options or 'message' in options:
+                    message = options.get('data',
+                                          options.get('message', '<otp>'))
+
+                try:
+                    _success, message = self.sendSMS(message=message)
+                except Exception as exx:
+                    log.exception(exx)
+                finally:
+                    self.incOtpCounter(ret, reset=False)
         if ret >= 0:
             msg = "otp verification was successful!"
         else:
@@ -541,8 +583,8 @@ class SmsTokenClass(HmacTokenClass):
                                                                     % nextotp)
         return nextotp
 
-    # ## in the SMS token we use the generic TokenInfo
-    # ## to store the phone number
+    # in the SMS token we use the generic TokenInfo
+    # to store the phone number
     def setPhone(self, phone):
         '''
         setter for the phone number
@@ -629,10 +671,8 @@ class SmsTokenClass(HmacTokenClass):
                   " %r, until: %r)" % (phone, until))
         return (phone, until)
 
-
-    # ## we take the countWindow.column to store the time
-    # #  in int format (cut off the .2 from the time() )
-    # ##
+    # we take the countWindow.column to store the time
+    #  in int format (cut off the .2 from the time() )
 
     def setValidUntil(self):
         '''
@@ -671,7 +711,7 @@ class SmsTokenClass(HmacTokenClass):
         log.debug("[isValid] %s: ret: %r" % (msg, ret))
         return ret
 
-    def sendSMS(self, message="<otp>"):
+    def sendSMS(self, message="<otp>", transactionid=None):
         '''
         send sms
 
@@ -697,8 +737,15 @@ class SmsTokenClass(HmacTokenClass):
         otp = self.getNextOtp()
         serial = self.getSerial()
 
+        if '<otp>' not in message:
+            log.error('Message unconfigured: could not send <otp> value')
+            message = "<otp> %r" % message
+
         message = message.replace("<otp>", otp)
         message = message.replace("<serial>", serial)
+
+        if transactionid:
+            message = message.replace("<transactionid>", transactionid)
 
         log.debug("[sendSMS] sending SMS to phone number %s " % phone)
         (SMSProvider, SMSProviderClass) = self.loadLinOtpSMSProvider()
@@ -721,8 +768,10 @@ class SmsTokenClass(HmacTokenClass):
             log.exception("[sendSMS] Failed to load SMSProviderConfig: %r" % exc)
             raise Exception("Failed to load SMSProviderConfig: %r" % exc)
 
-        log.debug("[sendSMS] submitMessage: %r, to phone %r" % (message, phone))
+        log.debug("[sendSMS] submitMessage: %r, to phone %r", (message, phone))
         ret = sms.submitMessage(phone, message)
+        if not ret:
+            raise Exception("Failed to submit message")
         log.debug("[sendSMS] message submitted")
 
         # # after submit set validity time
