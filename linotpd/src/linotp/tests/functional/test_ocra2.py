@@ -31,6 +31,7 @@
 import logging
 import binascii
 import random
+import urllib
 
 from linotp.lib.ext.pbkdf2 import PBKDF2
 
@@ -3665,7 +3666,7 @@ class OcraTest(TestController):
 
         enroll_param = {'callback.id': 'one',
                         'callback.user': 'hugo',
-                        'callback.password': 'abracadabra123',
+                        'callback.password': 'abracad:abra123',
                 }
         response1 = self.init_0_QR_Token(serial=serial, pin=pin,
                                          realm='mydefrealm',
@@ -3682,7 +3683,8 @@ class OcraTest(TestController):
         self.assertTrue('ini' in curl, curl)
         self.assertTrue(serial in curl, curl)
         self.assertTrue(enroll_param['callback.user'] in curl, curl)
-        self.assertTrue(enroll_param['callback.password'] in curl, curl)
+        self.assertTrue(urllib.quote(enroll_param['callback.password'])
+                                          in curl, curl)
 
         ocra.init_1(response1)
 
