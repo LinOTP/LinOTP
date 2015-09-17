@@ -30,13 +30,22 @@
  *******************************************************************
 
  * create a
-      /etc/pam.d/common-linotp
+    /etc/pam.d/common-linotp
 
  * with the following content
 
-auth    [success=1 default=ignore]     pam_linotp.so noosslhostnameverify \
-            nosslcertverify url=http://linotpserver/validate/simplecheck \
-            realm=mydefrealm
+    auth    [success=1 default=ignore] pam_linotp.so \
+        url=http://linotpserver/validate/simplecheck noosslhostnameverify nosslcertverify \
+        realm=mydefrealm
+		
+   or
+   
+    auth    [success=1 default=ignore] pam_linotp.so \
+        url=https://linotpserver/validate/simplecheck ca_file=/etc/ssl/ssl.crt/linotp-ca.cer \
+        realm=mydefrealm
+		
+	and deploy the CA-file into folder /etc/ssl/ssl.crt/
+		
  *
  * parmeters are here:
  *
@@ -44,6 +53,10 @@ auth    [success=1 default=ignore]     pam_linotp.so noosslhostnameverify \
  *                            in most cases
  *  url=https://l...        - the reference to your linotp server
  *  realm=..                - the default realm, where the user is to be searched
+ *  ca_file=fullpath-cafile - added support for sslopt CURLOPT_CAINFO. This option 
+ *                            is not needed on MacOS installations. There, the 
+ *                            certificate must be installed in System-Key-Store.
+ *  ca_path=fullpath-cadir  - added support for sslopt CURLOPT_CAPATH
  *  noosslhostnameverify    - when using ssl, switch the ssl host verification off
  *  nosslcertverify         - when using ssl, switch the ssl cert verification off
  *  tokenlength=4,6,8       - the possible used token length, sepperated with ","
@@ -132,7 +145,8 @@ typedef struct {
     int debug;
     char * prompt;
     char * tokenlength;
-
+    char * ca_file;
+    char * ca_path;
 } LinOTPConfig ;
 
 int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char ** cleanpassword,
@@ -442,7 +456,8 @@ char * linotp_create_url_params(CURL *curl_handle, int number_of_pairs, ...)
 
 int linotp_send_request(CURL *curl_handle, char * url, char * params,
         struct MemoryStruct * chunk,
-        int nosslhostnameverify, int nosslcertverify) {
+        int nosslhostnameverify, int nosslcertverify, 
+        char * ca_file, char * ca_path) {
     /**
      *  submit an http request using curl to linotp
      *
@@ -489,6 +504,13 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
         status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 1L);
     all_status += status;
 
+    if (ca_file != NULL && strlen(ca_file) > 0) {
+        status = curl_easy_setopt(curl_handle, CURLOPT_CAINFO, ca_file);
+    }
+    if (ca_path != NULL && strlen(ca_path) > 0) {
+        status = curl_easy_setopt(curl_handle, CURLOPT_CAPATH, ca_path);
+    }
+
     status = curl_easy_perform(curl_handle);
     all_status += status;
 
@@ -499,7 +521,8 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
 }
 /********** LinOTP stuff ***************************/
 int linotp_auth(char *user, char *password,
-        LinOTPConfig *config, char ** state, char ** challenge ) {
+        LinOTPConfig *config, char ** state, char ** challenge, 
+        char * ca_file, char * ca_path) {
     /**
      * do the authentication check against linotp
      *
@@ -549,9 +572,8 @@ int linotp_auth(char *user, char *password,
     if (config->debug) {
         log_debug("connecting to url:%s with parameters %s", config->url, param);
     }
-
     all_status = linotp_send_request(curl_handle, config->url, param, (void *) &chunk,
-            config->nosslhostnameverify, config->nosslcertverify);
+            config->nosslhostnameverify, config->nosslcertverify, ca_file, ca_path);
 
     if (config->debug) {
         log_debug("result %s", chunk.memory);
@@ -626,6 +648,19 @@ int linotp_auth(char *user, char *password,
     return (returnValue);
 }
 
+int checkPrefix(const char *text, const char *prefix, char **rest) {
+    int lenprefix;
+    lenprefix = prefix == NULL ? 0 : strlen(prefix);
+    // Check prefix with case insensitive comparison...
+	if (lenprefix == 0 || strncasecmp(text, prefix, lenprefix) != 0) {
+        // If prefix was empty or not found, then return 0
+		if (rest != NULL) *rest = NULL;
+        return 0;
+    }
+    if (rest != NULL) *rest = (char*)text + lenprefix;
+    return lenprefix; // return the length of prefix (offset of rest)...
+}
+
 int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, int debugflag_pam) {
     /*
      * now check the config options:
@@ -656,73 +691,84 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
     config->debug = 0;
     config->prompt = strdup(password_prompt);
     config->tokenlength=0;
+    config->ca_file=NULL;
+    config->ca_path=NULL;
     unsigned int i = 0;
 
     for ( i = 0; i < argc; i++ ) {
-        if (strcmp(argv[i], "debug") == 0)
-            config->debug = 1;
-    }
-
-    for ( i = 0; i < argc; i++ ) {
-        if (strcmp(argv[i], "nosslhostnameverify") == 0) {
-            config->nosslhostnameverify = 1;
-        } else if (strcmp(argv[i], "nosslcertverify") == 0) {
-            config->nosslcertverify = 1;
-        } else if (strcmp(argv[i], "debug") == 0) {
+        char *temp;
+        if (strcasecmp(argv[i], "debug") == 0) {
             config->debug = 1;
             debugflag  = 1;
-        } else if (strcmp(argv[i], "use_first_pass") == 0) {
+        } else if (strcasecmp(argv[i], "use_first_pass") == 0) {
             config->use_first_pass = 1;
         }
         /* check for validate url */
-        else if (strncmp(argv[i], "url=", strlen("url=")) == 0) {
+        else if (checkPrefix(argv[i], "url=", &temp) > 0) {
             // this is the validateurl
-            if (strlen(argv[i]) > URLMAXLEN) {
+            if (strlen(temp) > URLMAXLEN) {
                 log_error("Your url is to long: %s (max %d)", argv[i],
                         URLMAXLEN);
                 return (PAM_AUTH_ERR);
             } else {
-                config->url = (char*) argv[i] + strlen("url=");
+                config->url = temp;
             }
 
         }
         /* check for realm */
-        else if (strncmp(argv[i], "realm=",strlen("realm=")) == 0) {
-            if (strlen(argv[i]) > REALMMAXLEN) {
+        else if (checkPrefix(argv[i], "realm=", &temp) > 0) {
+            if (strlen(temp) > REALMMAXLEN) {
                 log_error("Your realmname is to long: %s (max %d)", argv[i],
                         REALMMAXLEN);
                 return (PAM_AUTH_ERR);
             } else {
-                config->realm = (char*) argv[i] + strlen("realm=");
+                config->realm = temp;
             }
         }
         /* check for resolver */
-        else if (strncmp(argv[i], "resConf=", strlen("resConf=")) == 0) {
-            if (strlen(argv[i]) > RESMAXLEN) {
+        else if (checkPrefix(argv[i], "resConf=", &temp) > 0) {
+            if (strlen(temp) > RESMAXLEN) {
                 log_error("Your resolver config name is to long: %s", argv[i]);
                 return (PAM_AUTH_ERR);
             } else {
-                config->resConf = (char*) argv[i] + strlen("resConf=");
+                config->resConf = temp;
             }
         }
+        /*check for SSL options*/
+        else if (strcasecmp(argv[i], "nosslhostnameverify") == 0) {
+            config->nosslhostnameverify = 1;
+        } 
+        else if (strcasecmp(argv[i], "nosslcertverify") == 0) {
+            config->nosslcertverify = 1;
+        }
+        else if (checkPrefix(argv[i], "CA_file=", &temp) > 0) {
+            config->ca_file = temp;
+        }
+        else if (checkPrefix(argv[i], "CA_path=", &temp) > 0) {
+            config->ca_path = temp;
+        }
         /* check for tokenlength */
-        else if (strncmp(argv[i], "tokenlength=", strlen("tokenlength=")) == 0) {
-            if (strlen(argv[i]) > TOKENMAXLEN) {
+        else if (checkPrefix(argv[i], "tokenlength=", &temp) > 0) {
+            if (strlen(temp) > TOKENMAXLEN) {
                 log_error("Your token config length is to long: %s", argv[i]);
                 return (PAM_AUTH_ERR);
             } else {
-                config->tokenlength = (char*) argv[i] + strlen("tokenlength=");
+                config->tokenlength = temp;
             }
         }
         /* check for prompt */
-        else if (strncmp(argv[i], "prompt=", strlen("prompt=")) == 0) {
-            if (strlen(argv[i]) > RESMAXLEN) {
+        else if (checkPrefix(argv[i], "prompt=", &temp) > 0) {
+            if (strlen(temp) > RESMAXLEN) {
                 log_error("Your prompt definition is to long: %s [%]", argv[i], RESMAXLEN);
                 return (PAM_AUTH_ERR);
             } else {
-                config->prompt = (char*) argv[i] + strlen("prompt=");
+                config->prompt = temp;
             }
         }
+        else {
+            log_debug("unkown configuration prameter %s", argv[i]);
+        }
+        
         /* if PAM asked for to be silent, disable debugging messages */
         if(1 == debugflag_pam){
             if(config->debug==1){
@@ -734,10 +780,12 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
 
     }
     if (config->debug) {
-        log_debug("realm: %s", config->realm);
-        log_debug("resConf: %s", config->resConf);
+        log_debug("realm: %s",        config->realm);
+        log_debug("resConf: %s",      config->resConf);
         log_debug("validate url: %s", config->url);
-        log_debug("prompt: %s", config->prompt);
+        log_debug("ca_file: %s",      config->ca_file);
+        log_debug("ca_path: %s",      config->ca_path);
+        log_debug("prompt: %s",       config->prompt);
 
         log_debug("'use_first_pass' %d ,", config->use_first_pass);
         if (config->use_first_pass > 0) {
@@ -774,11 +822,14 @@ int pam_linotp_validate_password(pam_handle_t *pamh,
     log_debug("pam_linotp_validate_password");
     log_debug("user: %s", user);
     log_debug("url : %s", config->url);
+    if (config->ca_path && *(config->ca_path) != '\0') {
+        log_debug("with ca_path: %s", config->ca_path);
+    }
 
     char * state = NULL;
     char * challenge  = NULL;
 
-    int ret = linotp_auth(user, password, config, &state, &challenge);
+    int ret = linotp_auth(user, password, config, &state, &challenge, config->ca_file, config->ca_path);
     if (ret != PAM_LINO_CHALLENGE){
         return ret;
     }
@@ -805,7 +856,7 @@ int pam_linotp_validate_password(pam_handle_t *pamh,
     if (config->debug)
         log_debug("submitting challenge response: %s ", response);
 
-    ret = linotp_auth(user, response, config, &state, &challenge);
+    ret = linotp_auth(user, response, config, &state, &challenge, config->ca_file, config->ca_path);
 
     if (config->debug)
         log_debug("reply to response of challenge >%.10s< state >%.10s< : %d",
