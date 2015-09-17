@@ -253,6 +253,15 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The URL for the half automatic mode that should be '
                         'used in a QR Token'
                 },
+            'qrtan_init_url': {
+                'type': 'str',
+                'desc': 'The URL for rollout in the half automatic mode that '
+                        'should be used in a QR Token rollout.'
+                },
+            'qrtanurl_as_param': {
+                'type': 'bool',
+                'desc': 'is it allowed to define the callback url as parameter'
+                },
             'challenge_response': {
                 'type': 'str',
                 'desc': 'A list of tokentypes for which challenge response '
@@ -3119,6 +3128,67 @@ def get_qrtan_url(realms):
 
     log.debug("got callback url %s for realms %r" % (url, realms))
     return url
+
+
+def get_qrtan_init_url(realms):
+    '''
+    Returns the URL for the half automatic mode for the QR TAN token
+    for the given realm
+
+    :remark: there might be more than one url, if the token
+             belongs to more than one realm
+
+    :param realms: list of realms or None
+
+    :return: url string
+
+    '''
+    log.debug("getting qrtan callback url ")
+    url = ''
+    urls = []
+
+    if realms is None:
+        realms = []
+
+    for realm in realms:
+        pol = getPolicy({"scope": "authentication", 'realm': realm})
+        url = getPolicyActionValue(pol, "qrtan_init_url", String=True)
+        if url:
+            urls.append(url)
+
+    if len(urls) > 1:
+        raise Exception('multiple enrollement urls %r found for realm set: %r'
+                        % (urls, realms))
+
+    log.debug("got callback url %s for realms %r" % (url, realms))
+    return url
+
+
+def qrtan_url_as_param(realms):
+    """
+    is it supported to provide the callbackurl as parameter?
+
+    :param realms: list of realms, the token or the token owner belongs to
+    :return: True, if callbacks could be provided as url, else False
+    """
+    ret = False
+
+    log.debug("getting qrtan callback support ")
+
+    if realms is None:
+        realms = []
+
+    for realm in realms:
+        pol = getPolicy({"scope": "authentication", 'realm': realm})
+        ret = getPolicyActionValue(pol, "qrtanurl_as_param")
+        if ret == True:
+            break
+
+    if ret is not True:
+        ret = False
+
+    log.debug("callback url as param <%r> for realms %r" % (ret, realms))
+    return ret
 
 
 ###############################################################################

@@ -407,6 +407,22 @@ class OcraTest(TestController):
         self.assertTrue('"status": true' in response, response)
         return response
 
+    def setupQRTanCallbackPolicies(self):
+
+        params = {
+                'name': 'qrtan_url_as_param',
+                'scope': 'authentication',
+                'realm': 'mydefrealm',
+        }
+        params['action'] = 'qrtanurl_as_param'
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params=params)
+
+        log.error(response)
+        assert '"setPolicy qrtan_url_as_param"' in response
+        assert '"status": true' in response
+        return response
+
     def check_otp(self, transid, otp, pin='pin', params=None):
         ''' -3.a- verify the otp value to finish the rollout '''
         parameters = {}
@@ -3653,7 +3669,14 @@ class OcraTest(TestController):
         pin = ''
 
         ocra = OcraOtp()
-        enroll_param = {'callback': 'https://myLocal.host.de/callback/<serial>/'}
+
+        self.setupQRTanCallbackPolicies()
+
+        enroll_param = {'callback':
+                'https://<user>:<password>@myLocal.host.de/callback/<serial>/',
+                'callback.user': 'hugo',
+                'callback.password': 'abracadabra123',
+                }
         response1 = self.init_0_QR_Token(serial=serial, pin=pin,
                                          realm='mydefrealm',
                                          params=enroll_param,
@@ -3661,7 +3684,13 @@ class OcraTest(TestController):
 
         resp = json.loads(response1.body)
         curl = resp.get('detail', {}).get('url', '')
+
+        # now check
+        # was the callback parameter used
+        # and if the replacements went right
         self.assertTrue(serial in curl, curl)
+        self.assertTrue(enroll_param['callback.user'] in curl, curl)
+        self.assertTrue(enroll_param['callback.password'] in curl, curl)
 
         ocra.init_1(response1)
 
@@ -3690,14 +3719,20 @@ class OcraTest(TestController):
             message = ('Veränderung %d am System durchgeführt! '
                       'Bitte bestätigen!' % i)
 
+            if i == 3:
+                enroll_param['suppress_callback'] = True
             (response, challenge, transid) = self.get_challenge(ocra.serial,
                                                     challenge_data=message,
                                                     params=enroll_param)
 
             resp = json.loads(response.body)
             curl = resp.get('detail', {}).get('url', '')
-            self.assertTrue(transid in curl, curl)
-            self.assertTrue(serial in curl, curl)
+
+            if i < 3:
+                self.assertTrue(transid in curl, curl)
+                self.assertTrue(serial in curl, curl)
+            else:
+                self.assertTrue(transid not in curl, curl)
 
             self.assertTrue('"value": true' in response, response)
 
