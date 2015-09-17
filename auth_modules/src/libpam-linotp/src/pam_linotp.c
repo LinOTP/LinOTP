@@ -161,9 +161,9 @@ static void do_log(int type, char * format, ...) {
 }
 
 #ifdef DEBUG
-#define log_error(format, ...)   do_log(LOG_ERR,     "linotp:ERROR: "   #format, ## __VA_ARGS__)
-#define log_debug(format, ...)   do_log(LOG_ERR,   "linotp:DEBUG: "   #format, ## __VA_ARGS__)
-#define log_warning(format, ...) do_log(LOG_ERR, "linotp:WARNING: " #format, ## __VA_ARGS__)
+#define log_error(format, ...)   do_log(LOG_ERR,    "linotp:ERROR: "   #format, ## __VA_ARGS__)
+#define log_debug(format, ...)   do_log(LOG_ERR,    "linotp:DEBUG: "   #format, ## __VA_ARGS__)
+#define log_warning(format, ...) do_log(LOG_ERR,    "linotp:WARNING: " #format, ## __VA_ARGS__)
 #define log_info(format, ...)    do_log(LOG_ERR,    "linotp:INFO: "    #format, ## __VA_ARGS__)
 #else
 #define log_error(format, ...)   do_log(LOG_ERR,     "linotp:ERROR: "   #format, ## __VA_ARGS__)
@@ -209,17 +209,15 @@ static char * erase_data(void * data, size_t len) {
         return NULL;
     }
     /* wipe all data and free the memory */
-    int ret = 0;
+    int ret = EINVAL;
     ret = memset_s(data, len, 0, len);
-    if(!ret){
-        log_warning("memset_s failed, using memset instead!");
+    if(ret!=0){
+        log_warning("memset_s failed, using memset instead! (ERROR: %d)",ret);
         memset(data, len, len);
-    } else {
-        log_warning("Cleaning data!\n");
         if(ret == E2BIG) {
             if(len > SIZE_MAX) {
                 log_error(
-                "ERROR: %s()[%s:%d] memset_s argument len is greater than the \
+                "ERROR: %s()[%s:%d] memset_s argument len or is greater than the \
                 <stdint.h> defined SIZE_MAX.  Something is really wrong here!",
                 __FUNCTION__, __FILE__, __LINE__ );
             }
@@ -231,7 +229,7 @@ static char * erase_data(void * data, size_t len) {
 
 static char * erase_string(char * string) {
     /* wipe all data and free the memory */
-    if(string){
+    if(string && *string){
             return erase_data(string, strlen(string));
     }
     return NULL;
@@ -581,7 +579,6 @@ int linotp_auth(char *user, char *password,
         char * stat = "";
         char * msg = "";
 
-        //log_debug("Challenge response:'%s'", chunk.memory);
         linotp_split_stat_and_message(chunk.memory,&stat,&msg);
 
         /* we have to create duplicates, as they start as pointers into the
@@ -592,6 +589,9 @@ int linotp_auth(char *user, char *password,
         /* msg and stat are never NULL*/
         *challenge = strdup(msg);
         *state = strdup(stat);
+        if(!(*state)){
+            erase_string(*challenge);
+        }
         if ((*challenge) || (*stat)) {
             log_error("strdup failed during linotp_auth!");
             returnValue = PAM_ABORT;
@@ -611,11 +611,9 @@ int linotp_auth(char *user, char *password,
         goto cleanup;
     }
     // default
-    {
-        log_error("An error occured for '%s' on '%s'\n %.10s\n", user,
-                config->url,chunk.memory);
-        returnValue = PAM_AUTH_ERR;
-    }
+    log_error("An error occured for '%s' on '%s'\n %.10s\n", user,
+            config->url,chunk.memory);
+    returnValue = PAM_AUTH_ERR;
 
     cleanup:
     chunk.memory = erase_data(chunk.memory, chunk.size);
@@ -727,8 +725,11 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
         }
         /* if PAM asked for to be silent, disable debugging messages */
         if(1 == debugflag_pam){
-            config->debug = 0;
-            debugflag = 0;
+            if(config->debug==1){
+                debugflag  =1;
+            } else {
+                debugflag = 0;
+            }
         }
 
     }
@@ -932,10 +933,9 @@ int pam_linotp_extract_authtok(
 {
     /* Received password from stack using first_pass, so we have to extract
     the otp and write the clean password back to the stack */
-    int n = 0;
+    int n = 6;
     int ret = PAM_AUTHTOK_ERR;
     size_t length = 0;
-
     if (!*password) {
         *password      = "\n";
         *cleanpassword = "\n";
@@ -956,8 +956,17 @@ int pam_linotp_extract_authtok(
         return PAM_AUTH_ERR;
     }
 
-    char otp[length - n * sizeof(char)];
-    char cleanpw[length * sizeof(char)];
+    char *otp = malloc(length - n * sizeof(char));
+    if(otp==NULL){
+        log_debug("Not enougth memory for OTP");
+        return PAM_AUTH_ERR;
+    }
+    char *cleanpw = malloc(length * sizeof(char));
+    if(cleanpw==NULL){
+        free(otp);
+        log_debug("Not enougth memory for clean password");
+        return PAM_AUTH_ERR;
+    }
     if (length < n || n <= 0){
         log_debug("no tokenlength received, password will be cleaned from pam_sm_authenticate()");
     }
@@ -976,8 +985,8 @@ int pam_linotp_extract_authtok(
     /** Dont clean password, its used within the next PAM module
     erase_string(password);*/
     pam_set_data(pamh, "linotp_setcred_return", (void*) (intptr_t) &ret, NULL);
-    erase_string(cleanpw);
-    erase_string(otp);
+    erase_data(cleanpw, sizeof(cleanpw));
+    erase_data(otp, sizeof(cleanpw));
     return ret;
 }
 
@@ -1001,7 +1010,6 @@ int pam_linotp_get_pw_use_first_pass(
      *          the catched password and cleaned password
      */
 
-    int ret = PAM_AUTHTOK_ERR;
     if (!use_first_pass) {
         return PAM_AUTH_ERR;
     }
@@ -1011,11 +1019,11 @@ int pam_linotp_get_pw_use_first_pass(
      * use_first_pass is the only way it works for the MAC GUI
      */
     log_debug("Getting password from PAM stack using first pass");
-    ret = pam_get_item(pamh, PAM_AUTHTOK, (const void **)password);
+    pam_get_item(pamh, PAM_AUTHTOK, (const void **)password);
     if (!password || !*password) {
 #ifdef _OPENPAM
         log_debug("Error: password is null after get_item, lets try pam_get_authtok...");
-        ret = pam_get_authtok(pamh, PAM_AUTHTOK, (const char **)password, NULL);
+        pam_get_authtok(pamh, PAM_AUTHTOK, (const char **)password, NULL);
 #endif
         if (!password || !*password) {
             log_debug("Error: get_authtok failed");
@@ -1025,16 +1033,15 @@ int pam_linotp_get_pw_use_first_pass(
         /* if password isnt received, we have to allocate the space */
         if (strlen(*password)) {
             *password    = malloc(sizeof(char));
-            if(!*password){
+            if(NULL==password){
                 log_debug("ERROR: malloc password in pam_linotp_get_authtok failed");
                 return PAM_AUTHTOK_ERR;
             }
-        *password[0] = '\0';
+            *password[0] = '\0';
         }
-    log_debug("ok, password received");
+        log_debug("ok, password received");
     }
-    pam_linotp_extract_authtok(pamh, password, cleanpassword, token_length);
-    return ret;
+    return pam_linotp_extract_authtok(pamh, password, cleanpassword, token_length);
 }
 
 int pam_linotp_get_authtok_no_use_first_pass(
@@ -1066,8 +1073,6 @@ int pam_linotp_get_authtok_no_use_first_pass(
     } else {
         /* Using prompt to ask for password */
         log_debug("Using Prompt to get login data");
-        ret = pam_get_item(pamh, PAM_AUTHTOK, (const void **)cleanpassword);
-        log_debug("There is no given otp on stack, lets ask for it");
         if (!prompt){
             prompt = "Your OTP: ";
         }
@@ -1193,20 +1198,15 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
             //ASSERT(cleanpassword != NULL);
             if (password) {  // <- valid auth information
                 /** we got the password, so we will check it against LinOTP **/
-                if (config.debug) {
-                    log_debug("Ok, you are debugging - here your pass: '%s' / '%s'",
-                        password, cleanpassword != NULL ? cleanpassword : "{clean-password-null}"); // :-)))
-                }
-
                 ret = pam_linotp_validate_password(pamh, user, password, &config);
                 log_info("pam_linotp_validate callback done. [%i]", ret);
 
-                if (PAM_SUCCESS == ret && cleanpassword) {
+                if (cleanpassword && *cleanpassword) {
                     /* Set the clean PW for the next PAM module */
                     log_debug("set the password for next pam module");
 
                     char *pw2stack = strdup(cleanpassword);
-                    if(!pw2stack){
+                    if(!pw2stack || !*pw2stack){
                         log_debug("pw2stack was empty");
                         break;
                     }
@@ -1214,16 +1214,19 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
                         // Login successful, remove password and exit for!
                         erase_string(password);
                         erase_string(cleanpassword);
-                        log_info("pam_sm_authenticate: success!");
+                        if (PAM_SUCCESS == ret) {
+                            log_info("pam_sm_authenticate: success!");
+                        }
                         break;
                     }
 
                     // Ups, we were unable to store password. Remove buffer and try next :-(
                     erase_string(pw2stack);
                     log_debug("Login canceled, cant update password");
+
                 }
-                erase_string(password);
                 erase_string(cleanpassword);
+                erase_string(password);
             } else {
                 ret = PAM_AUTH_ERR;
                 log_debug("password was null");
