@@ -201,14 +201,13 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'in case of an autoassignement with a remotetoken, '
                         'the credentials are forwarded'},
             'autoassignment': {
-				'type': 'bool',
-                #'value': [6, 8, 32, 48],
+                'type': 'bool',
                 'desc': 'users can assign a token just by using the '
                             'unassigned token to authenticate.'},
 
             'ignore_autoassignment_pin': {
-				'type': 'bool',
-                'desc' : "Do not set password from auto assignment as token pin."},
+                'type': 'bool',
+                'desc': "Do not set password from auto assignment as token pin."},
             'lostTokenPWLen': {
                 'type': 'int',
                 'desc': 'The length of the password in case of '

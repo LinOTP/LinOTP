@@ -349,8 +349,6 @@ class RemoteTokenClass(TokenClass):
             params['state'] = transactionid
 
         # use a POST request to check the token
-        otp_count = -1
-        res = False
         data = urllib.urlencode(params)
         request_url = "%s/%s" % (remoteServer.rstrip('/'), remotePath.lstrip('/'))
 
