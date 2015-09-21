@@ -36,15 +36,15 @@
     auth    [success=1 default=ignore] pam_linotp.so \
         url=http://linotpserver/validate/simplecheck noosslhostnameverify nosslcertverify \
         realm=mydefrealm
-		
+
    or
-   
+
     auth    [success=1 default=ignore] pam_linotp.so \
         url=https://linotpserver/validate/simplecheck ca_file=/etc/ssl/ssl.crt/linotp-ca.cer \
         realm=mydefrealm
-		
+
 	and deploy the CA-file into folder /etc/ssl/ssl.crt/
-		
+
  *
  * parmeters are here:
  *
@@ -52,8 +52,8 @@
  *                            in most cases
  *  url=https://l...        - the reference to your linotp server
  *  realm=..                - the default realm, where the user is to be searched
- *  ca_file=fullpath-cafile - added support for sslopt CURLOPT_CAINFO. This option 
- *                            is not needed on MacOS installations. There, the 
+ *  ca_file=fullpath-cafile - added support for sslopt CURLOPT_CAINFO. This option
+ *                            is not needed on MacOS installations. There, the
  *                            certificate must be installed in System-Key-Store.
  *  ca_path=fullpath-cadir  - added support for sslopt CURLOPT_CAPATH
  *  noosslhostnameverify    - when using ssl, switch the ssl host verification off
@@ -455,7 +455,7 @@ char * linotp_create_url_params(CURL *curl_handle, int number_of_pairs, ...)
 
 int linotp_send_request(CURL *curl_handle, char * url, char * params,
         struct MemoryStruct * chunk,
-        int nosslhostnameverify, int nosslcertverify, 
+        int nosslhostnameverify, int nosslcertverify,
         char * ca_file, char * ca_path) {
     /**
      *  submit an http request using curl to linotp
@@ -520,7 +520,7 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
 }
 /********** LinOTP stuff ***************************/
 int linotp_auth(char *user, char *password,
-        LinOTPConfig *config, char ** state, char ** challenge, 
+        LinOTPConfig *config, char ** state, char ** challenge,
         char * ca_file, char * ca_path) {
     /**
      * do the authentication check against linotp
@@ -647,17 +647,33 @@ int linotp_auth(char *user, char *password,
     return (returnValue);
 }
 
-int checkPrefix(const char *text, const char *prefix, char **rest) {
-    int lenprefix;
-    lenprefix = prefix == NULL ? 0 : strlen(prefix);
-    // Check prefix with case insensitive comparison...
-	if (lenprefix == 0 || strncasecmp(text, prefix, lenprefix) != 0) {
-        // If prefix was empty or not found, then return 0
-		if (rest != NULL) *rest = NULL;
+int check_prefix(const char *text, const char *prefix, char **rest) {
+    /**
+     * Checks prefix with case insensitive comparison
+     *
+     * :param text: text to compare with
+     * :param prefix: String of configuration name we are looking for
+     * :param rest: result of searched configuration
+     * :return: returns the length of prefix (offset of rest)
+     */
+
+    int lenprefix = 0;
+    if(prefix){
+        lenprefix = strlen(prefix);
+    }
+
+	if (!lenprefix || strncasecmp(text, prefix, lenprefix) != 0) {
+        /* If prefix was empty or not found, then return 0*/
+		if (rest != NULL) {
+            *rest = NULL;
+        }
         return 0;
     }
-    if (rest != NULL) *rest = (char*)text + lenprefix;
-    return lenprefix; // return the length of prefix (offset of rest)...
+    if (rest) {
+        *rest = (char*)text + lenprefix;
+    }
+    /* returns the length of prefix (offset of rest)...*/
+    return lenprefix;
 }
 
 int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, int debugflag_pam) {
@@ -703,7 +719,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
             config->use_first_pass = 1;
         }
         /* check for validate url */
-        else if (checkPrefix(argv[i], "url=", &temp) > 0) {
+        else if (check_prefix(argv[i], "url=", &temp) > 0) {
             // this is the validateurl
             if (strlen(temp) > URLMAXLEN) {
                 log_error("Your url is to long: %s (max %d)", argv[i],
@@ -715,7 +731,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
 
         }
         /* check for realm */
-        else if (checkPrefix(argv[i], "realm=", &temp) > 0) {
+        else if (check_prefix(argv[i], "realm=", &temp) > 0) {
             if (strlen(temp) > REALMMAXLEN) {
                 log_error("Your realmname is to long: %s (max %d)", argv[i],
                         REALMMAXLEN);
@@ -725,7 +741,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
             }
         }
         /* check for resolver */
-        else if (checkPrefix(argv[i], "resConf=", &temp) > 0) {
+        else if (check_prefix(argv[i], "resConf=", &temp) > 0) {
             if (strlen(temp) > RESMAXLEN) {
                 log_error("Your resolver config name is to long: %s", argv[i]);
                 return (PAM_AUTH_ERR);
@@ -736,18 +752,18 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
         /*check for SSL options*/
         else if (strcasecmp(argv[i], "nosslhostnameverify") == 0) {
             config->nosslhostnameverify = 1;
-        } 
+        }
         else if (strcasecmp(argv[i], "nosslcertverify") == 0) {
             config->nosslcertverify = 1;
         }
-        else if (checkPrefix(argv[i], "CA_file=", &temp) > 0) {
+        else if (check_prefix(argv[i], "CA_file=", &temp) > 0) {
             config->ca_file = temp;
         }
-        else if (checkPrefix(argv[i], "CA_path=", &temp) > 0) {
+        else if (check_prefix(argv[i], "CA_path=", &temp) > 0) {
             config->ca_path = temp;
         }
         /* check for tokenlength */
-        else if (checkPrefix(argv[i], "tokenlength=", &temp) > 0) {
+        else if (check_prefix(argv[i], "tokenlength=", &temp) > 0) {
             if (strlen(temp) > TOKENMAXLEN) {
                 log_error("Your token config length is to long: %s", argv[i]);
                 return (PAM_AUTH_ERR);
@@ -756,7 +772,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
             }
         }
         /* check for prompt */
-        else if (checkPrefix(argv[i], "prompt=", &temp) > 0) {
+        else if (check_prefix(argv[i], "prompt=", &temp) > 0) {
             if (strlen(temp) > RESMAXLEN) {
                 log_error("Your prompt definition is to long: %s [%]", argv[i], RESMAXLEN);
                 return (PAM_AUTH_ERR);
@@ -767,7 +783,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
         else {
             log_debug("unkown configuration prameter %s", argv[i]);
         }
-        
+
         /* if PAM asked for to be silent, disable debugging messages */
         if(1 == debugflag_pam){
             if(config->debug==1){
