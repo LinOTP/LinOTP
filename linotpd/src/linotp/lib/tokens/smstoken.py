@@ -40,7 +40,7 @@ from linotp.lib.user import getUserDetail
 from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp
 from linotp.lib.validate import split_pin_otp
-from linotp.lib.validate import get_challenges
+#from linotp.lib.validate import get_challenges
 
 from linotp.lib.config  import getFromConfig
 

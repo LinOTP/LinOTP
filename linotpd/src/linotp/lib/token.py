@@ -25,15 +25,16 @@
 #
 """ contains several token api functions"""
 
-import traceback
-import string
-import datetime
-import sys
 import binascii
+import datetime
+import logging
+import string
+import sys
+import traceback
 
 import os
-import logging
 
+from linotp.lib.challenges import Challenges
 
 try:
     import json
@@ -77,7 +78,9 @@ from linotp.lib.resolver import getResolverObject
 from linotp.lib.realm import createDBRealm, getRealmObject
 from linotp.lib.realm import getDefaultRealm
 
-from linotp.lib.util import get_client
+# from linotp.lib.tokenclass import (check_token,
+#                                   get_verification_result,
+#                                   related_challenges)
 
 log = logging.getLogger(__name__)
 
@@ -295,8 +298,8 @@ class TokenHandler(object):
         # exception and we have to drop the created token
         try:
             # trigger challenge for user
-            (_res, reply) = linotp.lib.validate.create_challenge(tokenObj,
-                                                            options=options)
+            (_res, reply) = Challenges.create_challenge(tokenObj, self.context,
+                                             options=options)
             if _res is not True:
                 error = ('failed to create challenge for user %s@%s during '
                          'autoenrollment' % (user.login, user.realm))
@@ -1041,8 +1044,7 @@ class TokenHandler(object):
             challenges = set()
             for serial in serials:
                 serial = linotp.lib.crypt.uencode(serial)
-                challenges.update(linotp.lib.validate.get_challenges(
-                                                                serial=serial))
+                challenges.update(Challenges.get_challenges(self.context, serial=serial))
 
             for chall in challenges:
                 Session.delete(chall)
@@ -1904,8 +1906,8 @@ def checkSerialPass(serial, passw, options=None, user=None, context=None):
             user.info = userInfo
 
             if theToken.is_challenge_request(passw, user, options=options):
-                (res, opt) = linotp.lib.validate.create_challenge(theToken,
-                                                                  options)
+                (res, opt) = Challenges.create_challenge(
+                    theToken, context, options)
             else:
                 raise ParameterError("Missing parameter: pass", id=905)
 
@@ -2016,9 +2018,9 @@ def checkTokenList(tokenList, passw, user=User(), options=None, context=None):
         context['audit'] = audit
         tok_va = linotp.lib.validate.ValidateToken(token, context=context)
 
+
         try:
-            (ret, reply) = tok_va.checkToken(passw, user,
-                                             options=check_options)
+            (ret, reply) = tok_va.check_token(passw, user, options=check_options)
         except Exception as exx:
             # in case of a failure during checking token, we log the error and
             # continue with the next one
@@ -2046,7 +2048,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None, context=None):
     }
 
     # if there are related / sub challenges, we have to call their janitor
-    handle_related_challenge(related_challenges)
+    Challenges.handle_related_challenge(related_challenges, context)
 
     # now we finalize the token validation result
     fh = FinishTokens(valid_tokens,
@@ -2212,7 +2214,7 @@ class FinishTokens(object):
 
         if len(challenge_tokens) == 1:
             challenge_token = challenge_tokens[0]
-            _res, reply = linotp.lib.validate.create_challenge(challenge_token,
+            _res, reply = Challenges.create_challenge(challenge_token, self.context,
                                                                options=options)
             return (False, reply, action_detail)
 
@@ -2235,12 +2237,13 @@ class FinishTokens(object):
                 if transactionid:
                     challenge_id = "%s%s" % (transactionid, id_postfix)
 
-                (_res, reply) = linotp.lib.validate.create_challenge(
-                                                challenge_token,
-                                                options=options,
-                                                challenge_id=challenge_id,
-                                                id_postfix=id_postfix
-                                                )
+                (_res, reply) = Challenges.create_challenge(
+                    challenge_token,
+                    self.context,
+                    options=options,
+                    challenge_id=challenge_id,
+                    id_postfix=id_postfix
+                )
                 transactionid = reply.get('transactionid').rsplit('.')[0]
 
                 # add token type and serial to ease the type specific processing
@@ -2344,29 +2347,6 @@ def add_last_accessed_info(list_of_tokenlist):
     acces_info = now.strftime(token_last_access)
     for token in stampTokens:
         token.addToTokenInfo('last_access', acces_info)
-
-    return
-
-
-def handle_related_challenge(related_challenges):
-    # if there are any related challenges, we have to call the
-    # token janitor, who decides if a challenge is still valid
-    # eg. expired
-    for related_challenge in related_challenges:
-        serial = related_challenge.tokenserial
-        transid = related_challenge.transid
-        token = getTokens4UserOrSerial(serial=serial)[0]
-
-        # get all challenges and the matching ones
-        all_challenges = linotp.lib.validate.get_challenges(serial=serial)
-        matching_challenges = linotp.lib.validate.get_challenges(serial=serial,
-                                                            transid=transid)
-
-        # call the janitor to select the invalid challenges
-        to_be_deleted = token.challenge_janitor(matching_challenges,
-                                                  all_challenges)
-        if to_be_deleted:
-            linotp.lib.validate.delete_challenges(serial, to_be_deleted)
 
     return
 

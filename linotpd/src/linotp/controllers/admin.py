@@ -70,7 +70,7 @@ from linotp.lib.reply import (sendResult,
                               )
 from linotp.lib.reply import sendQRImageResult
 
-from linotp.lib.validate import get_challenges
+from linotp.lib.challenges import Challenges
 
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error
@@ -2317,17 +2317,18 @@ class AdminController(BaseController):
             # # gather all challenges from serial, transactionid and user
             challenges = set()
             if serial is not None:
-                challenges.update(get_challenges(serial=serial))
+                challenges.update(Challenges.get_challenges(self.request_contextcontext, serial=serial))
 
             if transid is not None :
-                challenges.update(get_challenges(transid=transid))
+                challenges.update(Challenges.get_challenges(self.request_context, transid=transid))
 
             # # if we have a user
             if user.isEmpty() == False:
                 tokens = getTokens4UserOrSerial(user=user, context=self.request_context)
                 for token in tokens:
                     serial = token.getSerial()
-                    challenges.update(get_challenges(serial=serial))
+                    challenges.update(
+                        Challenges.get_challenges(self.request_context, serial=serial))
 
             serials = set()
             for challenge in challenges:
