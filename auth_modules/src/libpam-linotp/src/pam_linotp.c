@@ -466,54 +466,74 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
      *
      *  :return: success status
      */
-    int all_status = 0;
-    int status = 0;
-
+     int status = 0;
     /* Setup the base url */
     status = curl_easy_setopt(curl_handle, CURLOPT_URL, url);
-    all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
     /* Now specify the POST data */
     status = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, params);
-     all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
     status = curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
             curl_write_memory_callback);
-    all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
     status = curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, chunk);
-    all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
     status = curl_easy_setopt(curl_handle, CURLOPT_USERAGENT,
             "libcurl-pam-agent/1.0");
-    all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
     if (nosslhostnameverify)
         status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
     else
         status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 2L);
-    all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
     if (nosslcertverify)
         status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
     else
         status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 1L);
-    all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
     if (ca_file != NULL && strlen(ca_file) > 0) {
         status = curl_easy_setopt(curl_handle, CURLOPT_CAINFO, ca_file);
+        if(CURLE_OK != status) {
+            goto cleanup;
+        }
     }
+
     if (ca_path != NULL && strlen(ca_path) > 0) {
         status = curl_easy_setopt(curl_handle, CURLOPT_CAPATH, ca_path);
+        if(CURLE_OK != status) {
+            goto cleanup;
+        }
     }
 
     status = curl_easy_perform(curl_handle);
-    all_status += status;
+    if(CURLE_OK != status) {
+        goto cleanup;
+    }
 
+cleanup:
     curl_easy_cleanup(curl_handle);
-
-    return all_status;
-
+    return status;
 }
 /********** LinOTP stuff ***************************/
 int linotp_auth(char *user, char *password,
@@ -1328,4 +1348,3 @@ struct pam_module _pam_linotp_modstruct = {
     NULL
 };
 #endif
-
