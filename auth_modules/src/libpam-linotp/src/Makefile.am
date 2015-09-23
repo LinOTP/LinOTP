@@ -25,7 +25,7 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-AM_CFLAGS = -Wall -fPIC
+AM_CFLAGS = -Wall -fPIC -I/usr/local/include
 AM_LDFLAGS = -module -avoid-version
 
 lib_LTLIBRARIES = pam_linotp.la
