@@ -80,9 +80,6 @@
  http://www.freebsd.org/doc/en/articles/pam/pam-sample-module.html
 
  *****************************************************************************/
-#define __USE_BSD
-#define _DEFAULT_SOURCE
-
 #include <pwd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -1331,3 +1328,4 @@ struct pam_module _pam_linotp_modstruct = {
     NULL
 };
 #endif
+
