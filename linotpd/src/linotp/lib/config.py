@@ -310,7 +310,9 @@ class LinOtpConfig(dict):
         if (self.parent.has_key(key) == False
                 and key.startswith('linotp.') == False):
             key = 'linotp.' + key
-        res = self.parent.get(key) or default
+
+        # return default only if key does not exist
+        res = self.parent.get(key, default)
         return res
 
     def has_key(self, key):
