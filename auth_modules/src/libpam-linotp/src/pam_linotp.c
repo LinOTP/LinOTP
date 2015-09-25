@@ -470,29 +470,34 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
     /* Setup the base url */
     status = curl_easy_setopt(curl_handle, CURLOPT_URL, url);
     if(CURLE_OK != status) {
+        log_error("curl_easy_setopt CURLOPT_URL from linotp_send_request failed");
         goto cleanup;
     }
 
     /* Now specify the POST data */
     status = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, params);
     if(CURLE_OK != status) {
+        log_error("curl_easy_setopt CURLOPT_POSTFIELDS from linotp_send_request failed");
         goto cleanup;
     }
 
     status = curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
             curl_write_memory_callback);
     if(CURLE_OK != status) {
+        log_error("curl_easy_setopt CURLOPT_WRITEFUNCTION from linotp_send_request failed");
         goto cleanup;
     }
 
     status = curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, chunk);
     if(CURLE_OK != status) {
+        log_error("curl_easy_setopt CURLOPT_WRITEDATA from linotp_send_request failed");
         goto cleanup;
     }
 
     status = curl_easy_setopt(curl_handle, CURLOPT_USERAGENT,
             "libcurl-pam-agent/1.0");
     if(CURLE_OK != status) {
+        log_error("curl_easy_setopt CURLOPT_USERAGENT from linotp_send_request failed");
         goto cleanup;
     }
 
@@ -501,6 +506,7 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
     else
         status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 2L);
     if(CURLE_OK != status) {
+        log_error("curl_easy_setopt CURLOPT_SSL_VERIFYHOST from linotp_send_request failed");
         goto cleanup;
     }
 
@@ -509,12 +515,14 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
     else
         status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 1L);
     if(CURLE_OK != status) {
+        log_error("curl_easy_setopt CURLOPT_SSL_VERIFYPEER from linotp_send_request failed");
         goto cleanup;
     }
 
     if (ca_file != NULL && strlen(ca_file) > 0) {
         status = curl_easy_setopt(curl_handle, CURLOPT_CAINFO, ca_file);
         if(CURLE_OK != status) {
+            log_error("curl_easy_setopt CURLOPT_CAINFO from linotp_send_request failed");
             goto cleanup;
         }
     }
@@ -522,12 +530,14 @@ int linotp_send_request(CURL *curl_handle, char * url, char * params,
     if (ca_path != NULL && strlen(ca_path) > 0) {
         status = curl_easy_setopt(curl_handle, CURLOPT_CAPATH, ca_path);
         if(CURLE_OK != status) {
+            log_error("curl_easy_setopt CURLOPT_CAPATH from linotp_send_request failed");
             goto cleanup;
         }
     }
 
     status = curl_easy_perform(curl_handle);
     if(CURLE_OK != status) {
+        log_error("curl_easy_perform from linotp_send_request failed");
         goto cleanup;
     }
 
@@ -934,7 +944,7 @@ int_array get_possibtok(char* token_length){
     if (!token_length) {
         ret.buff    = malloc(sizeof(int));
         if(!ret.buff){
-            log_debug("ERROR: malloc ret.buff in get_possibtok failed");
+            log_error("malloc ret.buff in get_possibtok failed");
             return error;
         }
         ret.length  = 1;
@@ -945,7 +955,7 @@ int_array get_possibtok(char* token_length){
     size_t  len = strlen(token_length);
     size_t* tmp = malloc(len * sizeof(int)); // allocate enough data...
     if(!(tmp)){
-        log_debug("ERROR: malloc tmp in get_possibtok failed");
+        log_error("malloc tmp in get_possibtok failed");
         return error;
     }
     int sep = -1;
@@ -993,7 +1003,7 @@ int_array get_possibtok(char* token_length){
     if (cnt > 0) {
         ret.buff   = malloc(cnt * sizeof(int));
         if(!ret.buff){
-            log_debug("ERROR: malloc ret.buff in get_possibtok failed");
+            log_error("malloc ret.buff in get_possibtok failed");
             int buff = 0;
             ret.buff = &buff;
             return ret;
@@ -1022,7 +1032,7 @@ int pam_linotp_extract_authtok(
     if (!*password) {
         *password      = "\n";
         *cleanpassword = "\n";
-        log_debug("error - there is no password given");
+        log_error("there is no password given");
         exit(PAM_AUTH_ERR);
     }
     length = (size_t)strlen(*password);
@@ -1041,13 +1051,13 @@ int pam_linotp_extract_authtok(
 
     char *otp = malloc(length - n * sizeof(char));
     if(otp==NULL){
-        log_debug("Not enougth memory for OTP");
+        log_error("Not enougth memory for OTP");
         return PAM_AUTH_ERR;
     }
     char *cleanpw = malloc(length * sizeof(char));
     if(cleanpw==NULL){
         free(otp);
-        log_debug("Not enougth memory for clean password");
+        log_error("Not enougth memory for clean password");
         return PAM_AUTH_ERR;
     }
     if (length < n || n <= 0){
@@ -1117,7 +1127,7 @@ int pam_linotp_get_pw_use_first_pass(
         if (strlen(*password)) {
             *password    = malloc(sizeof(char));
             if(NULL==password){
-                log_debug("ERROR: malloc password in pam_linotp_get_authtok failed");
+                log_error("malloc password in pam_linotp_get_authtok failed");
                 return PAM_AUTHTOK_ERR;
             }
             *password[0] = '\0';
@@ -1151,7 +1161,7 @@ int pam_linotp_get_authtok_no_use_first_pass(
      * so we cant ask for !(*token_length).
      */
     if(!(token_length)) {
-        log_debug("ERROR: No token length given (pam_linotp_get_authtok)");
+        log_error("no token length given (pam_linotp_get_authtok)");
         return PAM_AUTH_ERR;
     } else {
         /* Using prompt to ask for password */
@@ -1305,7 +1315,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
 
                     // Ups, we were unable to store password. Remove buffer and try next :-(
                     erase_string(pw2stack);
-                    log_debug("Login canceled, cant update password");
+                    log_error("Login canceled, cant update password");
 
                 }
                 erase_string(cleanpassword);
