@@ -43,7 +43,7 @@ LT_INIT([shared])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([curl.h string.h syslog.h fcntl.h unistd.h security/pam_ext.h])
+AC_CHECK_HEADERS([string.h syslog.h fcntl.h unistd.h security/pam_ext.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -56,15 +56,18 @@ AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([memset strdup strerror])
 
+# Check for curl
+AC_PATH_PROGS(CURL_CONFIG, curl-config, no)
+if test "x$CURL_CONFIG" = "xno"; then
+    AC_MSG_ERROR(could not locate curl libraries)
+fi
+CURL_LDADD=$($CURL_CONFIG --libs)
+AC_SUBST(CURL_LDADD)
+CURL_CFLAGS=$($CURL_CONFIG --cflags)
+AC_SUBST(CURL_CFLAGS)
+
 # Checks for libraries.
 AC_CHECK_LIB(pam, pam_get_item, , AC_MSG_ERROR(could not locate pam libraries))
-AC_CHECK_LIB(curl,curl_easy_setopt,  , AC_MSG_ERROR(could not locate curl libraries))
-AC_CHECK_LIB(curl,curl_easy_escape,  , AC_MSG_ERROR(could not locate curl libraries))
-AC_CHECK_LIB(curl,curl_easy_perform,  , AC_MSG_ERROR(could not locate curl libraries))
-AC_CHECK_LIB(curl,curl_global_init,  , AC_MSG_ERROR(could not locate curl libraries))
-AC_CHECK_LIB(curl,curl_easy_init,  , AC_MSG_ERROR(could not locate curl libraries))
-AC_CHECK_LIB(curl,curl_global_cleanup,  , AC_MSG_ERROR(could not locate curl libraries))
-
 
 # Check and set OpenSSL paths
 PKG_CHECK_MODULES(OPENSSL, openssl, [], [ AC_MSG_ERROR(openssl not found) ])
@@ -74,4 +77,3 @@ Makefile
 src/Makefile
 ])
 AC_OUTPUT
-
