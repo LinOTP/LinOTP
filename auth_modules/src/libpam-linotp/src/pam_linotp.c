@@ -955,8 +955,8 @@ int_array get_possibtok(char* token_length){
         return ret;
     }
 
-    size_t  len = strlen(token_length);
-    size_t* tmp = malloc(len * sizeof(size_t)); // allocate enough data...
+    size_t len = strlen(token_length);
+    int*   tmp = malloc(len * sizeof(int)); // allocate enough data...
     if(!(tmp)){
         log_error("malloc tmp in get_possibtok failed");
         return error;
@@ -964,7 +964,7 @@ int_array get_possibtok(char* token_length){
     int sep = -1;
     int cnt = 0;
     int val = 0;
-    unsigned int i;
+    size_t i;
     for (i = 0; i < len; i++) {
         if (isdigit(token_length[i])) {
             /* a Digit... */
