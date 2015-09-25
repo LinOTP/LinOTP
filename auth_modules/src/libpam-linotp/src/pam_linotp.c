@@ -956,7 +956,7 @@ int_array get_possibtok(char* token_length){
     }
 
     size_t  len = strlen(token_length);
-    size_t* tmp = malloc(len * sizeof(int)); // allocate enough data...
+    size_t* tmp = malloc(len * sizeof(size_t)); // allocate enough data...
     if(!(tmp)){
         log_error("malloc tmp in get_possibtok failed");
         return error;
