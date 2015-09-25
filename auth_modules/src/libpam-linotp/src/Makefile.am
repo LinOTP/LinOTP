@@ -30,7 +30,7 @@ AM_LDFLAGS = -module -avoid-version
 
 lib_LTLIBRARIES = pam_linotp.la
 
-pam_linotp_la_SOURCES = pam_linotp.c
+pam_linotp_la_SOURCES = pam_linotp.c zeromem.c
 pam_linotp_la_LIBADD = $(OPENSSL_LIBS) $(CURL_LDADD)
 
 

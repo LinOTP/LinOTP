@@ -21,5 +21,8 @@
 #     Contact: www.linotp.org
 #     Support: www.lsexperts.de
 #
+
+### ACLOCAL_AMFLAGS = -I m4 ###
+
 SUBDIRS = \
 	src/
