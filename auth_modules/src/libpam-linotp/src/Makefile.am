@@ -2,15 +2,13 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-AM_CFLAGS = -Wall -fPIC -I/usr/local/include
+AM_CFLAGS = -Wall -fPIC $(CURL_CFLAGS)
 AM_LDFLAGS = -module -avoid-version
 
 lib_LTLIBRARIES = pam_linotp.la
 
-CURL_LIBS = -lcurl
-
-pam_linotp_la_SOURCES =  pam_linotp.c
-pam_linotp_la_LIBADD = $(OPENSSL_LIBS) $(CURL_LIBS)
+pam_linotp_la_SOURCES =  pam_linotp.c memset_s.c
+pam_linotp_la_LIBADD = $(OPENSSL_LIBS) $(CURL_LDADD)
 
 
 install:       
