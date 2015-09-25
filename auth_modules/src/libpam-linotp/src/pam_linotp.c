@@ -873,6 +873,8 @@ int pam_linotp_validate_password(pam_handle_t *pamh,
 
     int ret = linotp_auth(user, password, config, &state, &challenge, config->ca_file, config->ca_path);
     if (ret != PAM_LINO_CHALLENGE){
+        erase_string(state);
+        erase_string(challenge);
         return ret;
     }
 
@@ -1329,7 +1331,9 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
     if (tok.buff != NULL) {
         erase_data(tok.buff, tok.length);
     }
-
+    if (config.prompt != NULL) {
+        erase_string(config.prompt);
+    }
     /* Dont clean pw2stack, its used within the next PAM module. */
     if (PAM_SUCCESS!=ret) {
         log_info("pam_linotp callback done. [%s]", pam_strerror (pamh, ret));
