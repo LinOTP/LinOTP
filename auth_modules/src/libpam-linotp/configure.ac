@@ -4,6 +4,7 @@ AC_PREREQ(2.52)
 # Process this file with autoconf to produce a configure script.
 AC_INIT(pam_linotp,[2.2],[linotp-community@lsexperts.de])
 AC_CONFIG_SRCDIR([src/pam_linotp.c])
+### AC_CONFIG_MACRO_DIR([m4]) ###
 AC_CANONICAL_TARGET([])
 AM_INIT_AUTOMAKE
 
@@ -20,7 +21,7 @@ LT_INIT([shared])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([string.h syslog.h fcntl.h unistd.h security/pam_ext.h])
+AC_CHECK_HEADERS([errno.h string.h syslog.h fcntl.h unistd.h security/pam_ext.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -32,6 +33,20 @@ AC_FUNC_REALLOC
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([memset strdup strerror])
+AC_CHECK_FUNCS([memset_s explicit_bzero])
+
+### AX_GCC_FUNC_ATTRIBUTE([optimize]) ###
+
+# <Debug note="Provide more infos about local OS cappabilities...">
+# This test is optional; it is used only to provide extra information about memset_s function...
+AC_CHECK_DECLS([memset_s], [], [], [[
+#include <errno.h>
+#include <string.h>]])
+# This test is optional; it is used only to provide extra information about explicit_bzero function...
+AC_CHECK_DECLS([explicit_bzero], [], [], [[
+#include <errno.h>
+#include <string.h>]])
+# </Debug>
 
 # Check for curl
 AC_PATH_PROGS(CURL_CONFIG, curl-config, no)

@@ -87,9 +87,10 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdint.h>
-#include <errno.h> /* memset_s */
 #include <unistd.h>
 #include <dirent.h>
+
+#include "zeromem.h"
 
 #include <security/pam_modules.h>
 #include <security/pam_appl.h>
@@ -182,38 +183,6 @@ static void do_log(int type, char * format, ...) {
 #define log_warning(format, ...) do_log(LOG_WARNING, "linotp:WARNING: " #format, ## __VA_ARGS__)
 #define log_info(format, ...)    do_log(LOG_INFO,    "linotp:INFO: "    #format, ## __VA_ARGS__)
 #endif
-/* The function "memset_s(void *s, rsize_t, int, rsize_t)" exists on Mac OS X
-   based operating systems, or in C11                                         */
-
-#ifndef memset_s
-/* protect memset_s from compiler optimization */
-int memset_s(void *s, size_t smax, int c, size_t n) {
-
-    int err = 0;
-
-    if (s == NULL) {
-        return EINVAL;
-    }
-    if (smax > SIZE_MAX) {
-        return E2BIG;
-    }
-    if (n > SIZE_MAX) {
-        err = E2BIG;
-        n = smax;
-    }
-    if (n > smax) {
-        err = EOVERFLOW;
-        n = smax;
-    }
-
-    volatile unsigned char *p = (unsigned char*)s;
-    while (n--)
-        *p++ = (unsigned char)c;
-
-    return err;
-}
-#endif
-/* End #ifndef memset_s */
 
 static char * erase_data(void * data, size_t len) {
     if(!data){
