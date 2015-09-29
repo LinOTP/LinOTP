@@ -27,7 +27,7 @@ AC_PREREQ(2.52)
 # Process this file with autoconf to produce a configure script.
 AC_INIT(pam_linotp,[2.2],[linotp-community@lsexperts.de])
 AC_CONFIG_SRCDIR([src/pam_linotp.c])
-### AC_CONFIG_MACRO_DIR([m4]) ###
+AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_TARGET([])
 AM_INIT_AUTOMAKE
 
