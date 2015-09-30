@@ -64,6 +64,8 @@
  *                            only use use_fist_pass for GUI login, because there
  *                            the PAM module hat to use the password from stack
  *
+ *  hide_otp_input          - hide the entered otp chars (is a bugfix for broken kdm GUI login, too)
+ *
  *  prompt=OTP:             - defines prompt text, default text is "Your OTP:"
  *
  *  debug                   - shows additional login infromation
@@ -140,6 +142,7 @@ typedef struct {
     char * resConf;
     int use_first_pass;
     int debug;
+    int hide_otp_input;
     char * prompt;
     char * tokenlength;
     char * ca_file;
@@ -147,7 +150,7 @@ typedef struct {
 } LinOTPConfig ;
 
 int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char ** cleanpassword,
-        const char * prompt, int use_first_pass, size_t *token_length);
+        const char * prompt, int hide_otp_input, int use_first_pass, size_t *token_length);
 
 int pam_local_get_authtok(pam_handle_t *pamh, int item, char **password,
         char * prompt, int use_first_pass);
@@ -700,6 +703,7 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
     config->resConf = NULL;
     config->use_first_pass = 0;
     config->debug = 0;
+    config->hide_otp_input = 0;
     config->prompt = strdup(password_prompt);
     config->tokenlength=0;
     config->ca_file=NULL;
@@ -735,6 +739,11 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
             } else {
                 config->realm = temp;
             }
+        }
+
+        /* check if OTP prompt should be turned off */
+        else if (strcasecmp(argv[i], "hide_otp_input") == 0) {
+            config->hide_otp_input = 1;
         }
         /* check for resolver */
         else if (check_prefix(argv[i], "resConf=", &temp) > 0) {
@@ -857,7 +866,7 @@ int pam_linotp_validate_password(pam_handle_t *pamh,
 
     char * response = NULL;
     char * cleanresponse = NULL;
-    ret = pam_linotp_get_authtok(pamh, &response, &cleanresponse, challenge, 0, 0);
+    ret = pam_linotp_get_authtok(pamh, &response, &cleanresponse, challenge, config->hide_otp_input, 0, 0);
 
     /* now the challenge is done, we can clean the dishes
      * :: challenge is not more required, but state is used as
@@ -1113,6 +1122,7 @@ int pam_linotp_get_authtok_no_use_first_pass(
         char **password,
         char **cleanpassword,
         const char * prompt,
+        int hide_otp_input,
         size_t* token_length)
 {
     /** method to get the password via challenge response mode
@@ -1140,7 +1150,11 @@ int pam_linotp_get_authtok_no_use_first_pass(
         if (!prompt){
             prompt = "Your OTP: ";
         }
-        ret = pam_prompt(pamh, PAM_PROMPT_ECHO_ON, (char **)password, "%s", prompt);
+        if(hide_otp_input){
+            ret = pam_prompt(pamh, PAM_PROMPT_ECHO_OFF, (char **)password, "%s", prompt);
+        } else {
+            ret = pam_prompt(pamh, PAM_PROMPT_ECHO_ON, (char **)password, "%s", prompt);
+        }
         if (!password || ret != PAM_SUCCESS){
             log_debug("cant get password");
             return PAM_AUTHTOK_ERR;
@@ -1152,7 +1166,7 @@ int pam_linotp_get_authtok_no_use_first_pass(
 }
 
 int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpassword,
-        const char * prompt, int use_first_pass, size_t* token_length)
+        const char * prompt, int hide_otp_input, int use_first_pass, size_t* token_length)
 {
     /** method to get the password from the pam console
      * which hides the use_fist_pass / challange respone differences
@@ -1181,6 +1195,7 @@ int pam_linotp_get_authtok(pam_handle_t *pamh, char **password, char **cleanpass
             password,
             cleanpassword,
             prompt,
+            hide_otp_input,
             token_length);
     }
     return ret;
@@ -1253,7 +1268,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char *argv[])
     for (i = 0; i < tok.length; i++) {
         log_debug("Getting password");
         size_t token_len = tok.buff[i];
-        ret = pam_linotp_get_authtok(pamh, &password, &cleanpassword, config.prompt, config.use_first_pass, &token_len);
+        ret = pam_linotp_get_authtok(pamh, &password, &cleanpassword, config.prompt, config.hide_otp_input, config.use_first_pass, &token_len);
         log_debug("End of password fetching.");
 
         /* validate password */
