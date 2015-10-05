@@ -269,6 +269,8 @@ class LinOtpConfig(dict):
         :type  des: string
         '''
 
+        now = datetime.now()
+
         if typ == 'password':
 
             # # in case we have a password type, we have to put
@@ -286,8 +288,12 @@ class LinOtpConfig(dict):
             res = self.parent.__setitem__(key, nVal)
             self.glo.setConfig({key:nVal})
 
+        # syncronize as well the global timestamp
+        self.glo.setConfig({'linotp.Config': unicode(now)})
+
         _storeConfigDB(key, val, typ, des)
-        _storeConfigDB('linotp.Config', datetime.now())
+        _storeConfigDB('linotp.Config', now)
+
         return res
 
     def get(self, key, default=None):
