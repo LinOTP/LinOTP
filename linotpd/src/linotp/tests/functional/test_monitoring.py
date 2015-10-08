@@ -28,7 +28,13 @@
 
 import json
 import logging
+
+from pylons import config
+
 from linotp.tests import TestController, url
+
+from linotp.lib.config import removeFromConfig
+from linotp.lib.support import setSupportLicense
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +52,7 @@ class TestMonitoringController(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        removeFromConfig('linotp.license')
         TestController.tearDown(self)
         return
 
@@ -154,6 +161,41 @@ class TestMonitoringController(TestController):
         self.assertEqual(values.get('Realms').get('/:no realm:/').get('total'),
                          1, response)
         self.assertEqual(values.get('Summary').get('total'), 6, response)
+        return
+
+    def test_nolicense(self):
+        response = self.app.get(url(
+            controller='monitoring', action='license'), params={})
+        resp = json.loads(response.body)
+        self.assertEqual(resp.get('result').get('value'), {} , response)
+        return
+
+    def test_license(self):
+        self.create_token(serial='0031')
+        self.create_token(serial='0032', user='root')
+        self.create_token(serial='0033', realm='mydefrealm')
+        self.create_token(serial='0034', realm='myotherrealm')
+        self.create_token(serial='0035', realm='myotherrealm', active=False)
+        self.create_token(serial='0036', realm='myotherrealm', user='max2',
+                          active=False)
+
+        licpath = config.get('monitoringTests.licfile', '')
+        self.assertTrue(licpath, 'Path to test license file is not configured, '
+                                 'check test.ini!')
+        with open(licpath, 'r') as licfile:
+            data = licfile.readlines()
+
+        licstring = ''
+        for line in data:
+            licstring += line
+        res, msg = setSupportLicense(licstring)
+
+        response = self.app.get(url(
+            controller='monitoring', action='license'), params={})
+        resp = json.loads(response.body)
+        value = resp.get('result').get('value')
+        self.assertEqual(value.get('token-num'), '10', response)
+        self.assertEqual(value.get('token-left'), '6', response)
         return
 
 ## eof ########################################################################

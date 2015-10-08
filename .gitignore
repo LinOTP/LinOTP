@@ -134,3 +134,6 @@ useridresolver/src/debian/linotp-useridresolver.substvars
 useridresolver/src/debian/linotp-useridresolver/
 useridresolver/src/debian/python-module-stampdir/
 linotpd/src/.eggs/*
+
+# License file for test cases, never commit!
+linotpd/src/data/testdata/testlicense*.pem

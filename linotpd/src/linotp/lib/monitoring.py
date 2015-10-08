@@ -85,7 +85,6 @@ class MonitorHandler(object):
             else:
                 # handle single expressions like
                 # status=unassigned,active
-                conditions = (and_(r_condition),)
                 if 'assigned' == stat:
                     conditions += (and_(Token.LinOtpUserid != u''),)
                 elif 'unassigned' == stat:

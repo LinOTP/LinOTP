@@ -46,8 +46,13 @@ from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.model.meta import Session
 from linotp.model import Config as config_model
+from linotp.model import Token
 
 from linotp.lib.policy import (PolicyException, getPolicies)
+
+from sqlalchemy import and_
+
+from linotp.lib.support import getSupportLicenseInfo
 
 from linotp.lib.monitoring import MonitorHandler
 
@@ -272,6 +277,40 @@ class MonitoringController(BaseController):
                 result['total'] - ldap - sql - passwd - policies - realms
 
             return sendResult(response, result)
+
+        except Exception as exception:
+            log.exception(exception)
+            return sendError(response, exception)
+
+        finally:
+            Session.close()
+            log.debug('[__after__] done')
+
+    def license(self):
+        """
+        return
+        return the support status, which is community support by default
+        or the support subscription info, which could be the old license
+
+
+        """
+        res = {}
+        try:
+            license_info = getSupportLicenseInfo()
+
+            if license_info == {}:
+                return sendResult(response, res, 1)
+
+            res['token-num'] = license_info.get('token-num', 0)
+
+            # get all active tokens from all realms (including norealm)
+            active = Token.LinOtpIsactive == True
+            token_assigned = Session.query(Token).filter(active).count()
+            res['token-active'] = str(token_assigned)
+
+            res['token-left'] = str(int(res['token-num']) - token_assigned)
+
+            return sendResult(response, res, 1)
 
         except Exception as exception:
             log.exception(exception)
