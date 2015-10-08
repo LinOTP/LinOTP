@@ -54,7 +54,6 @@ from linotp.lib.config  import removeFromConfig
 from linotp.lib.realm  import setDefaultRealm
 from linotp.lib.realm  import isRealmDefined
 
-
 from linotp.lib.util  import check_session
 from linotp.lib.util import get_client
 from linotp.lib.util import get_version_number
@@ -77,15 +76,17 @@ from linotp.lib.user    import getUserFromRequest
 from linotp.lib.realm   import deleteRealm
 from linotp.lib.token   import newToken
 
+from linotp.lib.policy import getPolicies
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import checkPolicyPost
 from linotp.lib.policy import PolicyException
 
 from linotp.lib.policy import getPolicy
-from linotp.lib.policy import setPolicy
-from linotp.lib.policy import deletePolicy
-from linotp.lib.policy import getPolicyDefinitions
-from linotp.lib.policy import create_policy_export_file
+from linotp.lib.policy.manage import setPolicy
+from linotp.lib.policy.manage import deletePolicy
+from linotp.lib.policy.definitions import getPolicyDefinitions
+
+from linotp.lib.policy.manage import create_policy_export_file
 from linotp.lib.policy import get_client_policy
 
 import linotp.lib.support
@@ -133,15 +134,16 @@ class SystemController(BaseController):
 
             audit.initialize()
             c.audit['success'] = False
-            c.audit['client'] = get_client()
+            c.audit['client'] = get_client(request)
 
             # check session might raise an abort()
-            check_session()
+            check_session(request)
+            self.request_context['Audit'] = audit
 
             # check authorization
             if action not in ["_add_dynamic_tokens", 'setupSecurityModule',
                               'getSupportInfo', 'isSupportValid']:
-                checkPolicyPre('system', action)
+                checkPolicyPre('system', action, context=self.request_context)
 
             # default return for the __before__ and __after__
             return response
@@ -502,7 +504,8 @@ class SystemController(BaseController):
             # If the admin is not allowed to see all realms, (policy scope=system, action=read)
             # the realms, where he has no administrative rights need, to be stripped.
 
-            polPost = checkPolicyPost('system', 'getRealms', { 'realms' : res })
+            polPost = checkPolicyPost('system', 'getRealms', {'realms': res },
+                                      context=self.request_context)
             res = polPost['realms']
 
             Session.commit()
@@ -1039,7 +1042,7 @@ class SystemController(BaseController):
 
             if len(name) > 0 and len(action) > 0:
                 log.debug("[setPolicy] saving policy %r" % p_param)
-                ret = setPolicy(p_param)
+                ret = setPolicy(p_param, context=self.request_context)
                 log.debug("[setPolicy] policy %s successfully saved." % name)
 
                 string = "setPolicy " + name
@@ -1088,10 +1091,12 @@ class SystemController(BaseController):
             sortname = getParam(param, "sortname", optional)
             sortorder = getParam(param, "sortorder", optional)
 
-
-            log.debug("[policies_flexi] retrieving policy name: %s, realm: %s, scope: %s, sort:%s by %s"
+            log.debug("[policies_flexi] retrieving policy name: %s, realm:"
+                      " %s, scope: %s, sort:%s by %s"
                 % (name, realm, scope, sortorder, sortname))
-            pols = getPolicy({'name':name, 'realm':realm, 'scope': scope}, display_inactive=True)
+            pols = getPolicy({'name': name, 'realm': realm, 'scope': scope},
+                             display_inactive=True,
+                             context=self.request_context)
 
             lines = []
             for pol in pols:
@@ -1274,7 +1279,8 @@ class SystemController(BaseController):
                               'realm' : policies[policy_name].get('realm', ""),
                               'user' : policies[policy_name].get('user', ""),
                               'time' : policies[policy_name].get('time', ""),
-                              'client': policies[policy_name].get('client', "")})
+                              'client': policies[policy_name].get('client', "")},
+                                context=self.request_context)
                 log.debug("[importPolicy] import policy %s: %s" % (policy_name, ret))
 
             c.audit['info'] = "Policies imported from file %s" % policy_file
@@ -1328,7 +1334,7 @@ class SystemController(BaseController):
 
             pol = {}
             if scope in ["admin", "system"]:
-                pol = getPolicy({"scope":scope})
+                pol = getPolicy({"scope": scope}, context=self.request_context)
                 log.debug("CKO %s" % pol)
                 if len(pol) > 0:
                     # Policy active for this scope!
@@ -1336,7 +1342,9 @@ class SystemController(BaseController):
                                       "realm":realm,
                                       "scope":scope,
                                       "action":action,
-                                      "client":client})
+                                      "client":client},
+                                    context=self.request_context
+                                    )
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
@@ -1350,7 +1358,8 @@ class SystemController(BaseController):
                 log.debug("[checkPolicy] checking policy for client %s, scope %s, action %s, realm %s and user %s" %
                           (client, scope, action, realm, user))
 
-                pol = get_client_policy(client, scope, action, realm, user)
+                pol = get_client_policy(client, scope, action, realm, user,
+                                        context=self.request_context)
                 res["allowed"] = len(pol) > 0
                 res["policy"] = pol
                 if len(pol) > 0:
@@ -1434,13 +1443,17 @@ class SystemController(BaseController):
                     search_param = {'name':nam, 'realm':realm, 'scope': scope}
                     if action:
                         search_param['action'] = action
-                    poli = getPolicy(search_param, display_inactive=display_inactive)
+                    poli = getPolicy(search_param,
+                                     display_inactive=display_inactive,
+                                     context=self.request_context)
                     pol.update(poli)
             else:
                 search_param = {'name':name, 'realm':realm, 'scope': scope}
                 if action:
                     search_param['action'] = action
-                pol = getPolicy(search_param, display_inactive=display_inactive)
+                pol = getPolicy(search_param,
+                                display_inactive=display_inactive,
+                                context=self.request_context)
 
             # due to bug in getPolicy we have to post check if user is in policy!
             if user:
@@ -1515,7 +1528,7 @@ class SystemController(BaseController):
             names = name_param.split(',')
             for name in names:
                 log.debug("[delPolicy] trying to delete policy %s" % name)
-                ret.update(deletePolicy(name, enforce))
+                ret.update(deletePolicy(name, enforce, context=self.request_context))
 
             res["delPolicy"] = {"result": ret}
 

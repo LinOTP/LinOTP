@@ -42,36 +42,10 @@ export PYTHONPATH=$PYTHONPATH:${PWD}/../../smsprovider/src/SMSProvider:${PWD}/..
 
 
 TEST_INI=test.ini
-TT=`cat<<EOG
-#test_adminclientutils.py
-test_admin.py
-test_authorize.py
-test_challenge_response.py
-test_emailtoken.py
-test_err_response.py
-test_fixes.py
-test_getotp.py
-test_getserial.py
-test_httpsms.py
-test_importotp.py
-test_ldap.py
-#test_license.py
-test_manage.py
-test_ocra2.py
-test_ocra.py
-test_orphaned.py
-test_passwdidresolver.py
-test_policy.py
-test_radius_token.py
-test_remote_token.py
-test_replication_sync.py
-test_selfservice.py
-test_system.py
-test_totp.py
-test_validate.py
-test_yubikey.py
-EOG
-`
+
+FUNKDIR=`find . -name 'functional' -type d`
+TT=`find $FUNKDIR -name "test_*.py" | sed -e "s|$FUNKDIR/||"`
+
 TEST_ALL=0
 
 while getopts “s:i:rhta” OPTION
@@ -133,6 +107,7 @@ then
    rm -f $TOKENDB
    echo "## token db cleaned"
 fi
+
 
 
 export TPATH=linotp/tests/functional/

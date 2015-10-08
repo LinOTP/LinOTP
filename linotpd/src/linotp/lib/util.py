@@ -30,7 +30,7 @@ import string
 import re
 import netaddr
 
-from pylons import request
+
 from pylons import config
 from pylons.controllers.util import abort
 
@@ -54,23 +54,29 @@ log = logging.getLogger(__name__)
 optional = True
 required = False
 
+
 def get_version_number():
     '''
     returns the linotp version
     '''
     return linotp_version
 
+
 def get_version():
     '''
-    This returns the version, that is displayed in the WebUI and self service portal.
+    This returns the version, that is displayed in the WebUI and
+    self service portal.
     '''
     return "%s %s" % (linotp_product, linotp_version)
 
+
 def get_copyright_info():
     '''
-    This returns the copyright information displayed in the WebUI and selfservice portal.
+    This returns the copyright information displayed in the WebUI
+    and selfservice portal.
     '''
     return linotp_copyright
+
 
 def getParam(param, which, optional=True):
     """
@@ -88,13 +94,14 @@ def getParam(param, which, optional=True):
     """
     ret = None
 
-    if param.has_key(which):
+    if which in param:
         ret = param[which]
     else:
         if (optional == False):
             raise ParameterError("Missing parameter: %r" % which, id=905)
 
     return ret
+
 
 def getLowerParams(param):
     ret = {}
@@ -108,12 +115,6 @@ def getLowerParams(param):
     return ret
 
 
-def getUserRealm(param, optional):
-    user = ""
-    realm = ""
-    return (user, realm)
-
-
 def uniquify(doubleList):
     # uniquify the realm list
     uniqueList = []
@@ -122,6 +123,7 @@ def uniquify(doubleList):
             uniqueList.append(e.lower())
 
     return uniqueList
+
 
 def generate_otpkey(key_size=20):
     '''
@@ -134,10 +136,12 @@ def generate_otpkey(key_size=20):
 
 def generate_password(size=6, characters=None):
     if not characters:
-        characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
+        characters = string.ascii_lowercase + \
+                     string.ascii_uppercase + string.digits
     return ''.join(urandom.choice(characters) for _x in range(size))
 
-def check_session():
+
+def check_session(request):
     '''
     This function checks the session cookie for management API
     and compares it to the session parameter
@@ -158,10 +162,12 @@ def check_session():
             continue
         try:
             if netaddr.IPAddress(client) in netaddr.IPNetwork(network):
-                log.debug("[check_session] skipping session check since client %s in allowed: %s" % (client, no_session_clients))
+                log.debug("skipping session check since client"
+                          " %s in allowed: %s" % (client, no_session_clients))
                 return
         except Exception as ex:
-            log.warning("[check_session] misconfiguration in linotpNoSessionCheck: %r - %r" % (network, ex))
+            log.warning("misconfiguration in linotpNoSessionCheck: "
+                        "%r - %r" % (network, ex))
 
     if request.path.lower() == '/admin/getsession':
         log.debug('[check_session] requesting a new session cookie')
@@ -172,11 +178,12 @@ def check_session():
         log.debug("[check_session]: session: %s" % session)
         log.debug("[check_session]: cookie:  %s" % cookie)
         if session is None or session == "" or session != cookie:
-            log.error("[check_session] The request did not pass a valid session!")
+            log.error("The request did not pass a valid session!")
             abort(401, "You have no valid session!")
             pass
 
-def check_selfservice_session(url, path, cookies, params):
+
+def check_selfservice_session(request, url, path, cookies, params):
     '''
     This function checks the session cookie for the
     selfservcice session
@@ -185,23 +192,24 @@ def check_selfservice_session(url, path, cookies, params):
     cookie = None
     session = None
     log.debug(request.path.lower())
-    # All functions starting with /selfservice/user are data functions and protected
-    # by the session key
+    # All functions starting with /selfservice/user are data functions
+    # and protected by the session key
     if path.lower()[:17] != "/selfservice/user":
-        log.info('[check_selfservice_session] nothing to check')
+        log.info('nothing to check')
     else:
         try:
             cookie = cookies.get('linotp_selfservice')[0:40]
             session = params.get('session')[0:40]
         except Exception as e:
-            log.warning("[check_selfservice_session] failed to check selfservice session: %r" % e)
+            log.warning("failed to check selfservice session: %r" % e)
             res = False
-        log.info("[check_selfservice_session]: session: %s" % session)
-        log.info("[check_selfservice_session]: cookie:  %s" % cookie)
+        log.info("session: %s" % session)
+        log.info("cookie:  %s" % cookie)
         if session is None or session != cookie:
-            log.error("[check_selfservice_session] The request %s did not pass a valid session!" % url)
+            log.error("The request %s did not pass a valid session!" % url)
             res = False
     return res
+
 
 def remove_session_from_param(param):
     '''
@@ -217,11 +225,9 @@ def remove_session_from_param(param):
     return return_param
 
 
-#########################################################################################
+###############################################################################
 # Client overwriting stuff
-#
-
-def get_client_from_request():
+def _get_client_from_request(request=None):
     '''
     This function returns the client as it is passed in the HTTP Request.
     This is the very HTTP client, that contacts the LinOTP server.
@@ -240,15 +246,14 @@ def get_client_from_request():
                 client = ref_client.strip()
                 break
 
-    """
-    "Forwarded" Header
+    #"Forwarded" Header
+    #
+    # In 2014 RFC 7239 standardized a new Forwarded header with similar purpose
+    # but more features compared to XFF.[28] An example of a Forwarded header
+    # syntax:
+    #
+    # Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
 
-    In 2014 RFC 7239 standardized a new Forwarded header with similar purpose
-    but more features compared to XFF.[28] An example of a Forwarded header
-    syntax:
-
-    Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
-    """
     forwarded = config.get('client.FORWARDED', '')
     if forwarded.lower().strip() == 'true':
         # check, if the request passed by a qaulified proxy
@@ -270,50 +275,47 @@ def get_client_from_request():
                 if 'for' in client and ',' in client:
                     client = client.split(',', 1)[0]
 
-    log.debug("[get_client_from_request] got the client %s" % client)
+    log.debug("got the client %s" % client)
     return client
 
 
-def get_client_from_param():
-    '''
-    This function returns the client, that is passed with the GET/POST parameter "client"
-    '''
-    param = request.params
-    client = getParam(param, "client", optional)
-    log.debug("[get_client_from_param] got the client %s" % client)
-    return client
-
-def get_client():
+def get_client(request):
     '''
     This function returns the client.
 
-    It first tries to get the client as it is passed as the HTTP Client via REMOTE_ADDR.
+    It first tries to get the client as it is passed as the HTTP Client
+    via REMOTE_ADDR.
 
-    If this client Address is in a list, that is allowed to overwrite its client address (like e.g.
-    a FreeRADIUS server, which will always pass the FreeRADIUS address but not the address of the
-    RADIUS client) it checks for the existance of the client parameter.
+    If this client Address is in a list, that is allowed to overwrite its
+    client address (like e.g. a FreeRADIUS server, which will always pass the
+    FreeRADIUS address but not the address of the RADIUS client) it checks for
+    the existance of the client parameter.
     '''
     may_overwrite = []
     over_client = getFromConfig("mayOverwriteClient", "")
-    log.debug("[get_client] config entry mayOverwriteClient: %s" % over_client)
+    log.debug("config entry mayOverwriteClient: %s" % over_client)
     try:
-        may_overwrite = [ c.strip() for c in over_client.split(',') ]
+        may_overwrite = [c.strip() for c in over_client.split(',')]
     except Exception as e:
-        log.warning("[get_client] evaluating config entry 'mayOverwriteClient': %r" % e)
+        log.warning("evaluating config entry 'mayOverwriteClient': %r" % e)
 
-    client = get_client_from_request()
-    log.debug("[get_client] got the original client %s" % client)
+    client = _get_client_from_request(request)
+    log.debug("got the original client %s" % client)
 
+    params = {}
+    params.update(request.params)
     if client in may_overwrite or client == None:
-        log.debug("[get_client] client %s may overwrite!" % client)
-        if get_client_from_param():
-            client = get_client_from_param()
-            log.debug("[get_client] client overwritten to %s" % client)
+        log.debug("client %s may overwrite!" % client)
+        if "client" in params:
+            client = params["client"]
+            log.debug("client overwritten to %s" % client)
 
-    log.debug("[get_client] returning %s" % client)
+    log.debug("returning %s" % client)
     return client
 
-def normalize_activation_code(activationcode, upper=True, convert_o=True, convert_0=True):
+
+def normalize_activation_code(activationcode, upper=True, convert_o=True,
+                              convert_0=True):
     '''
     This normalizes the activation code.
     1. lower letters are capitaliezed
@@ -323,9 +325,11 @@ def normalize_activation_code(activationcode, upper=True, convert_o=True, conver
     if upper:
         activationcode = activationcode.upper()
     if convert_o:
-        activationcode = activationcode[:-2] + activationcode[-2:].replace("O", "0")
+        activationcode = activationcode[:-2] + \
+                         activationcode[-2:].replace("O", "0")
     if convert_0:
-        activationcode = activationcode[:-2].replace("0", "O") + activationcode[-2:]
+        activationcode = activationcode[:-2].replace("0", "O") + \
+                         activationcode[-2:]
 
     return activationcode
 
@@ -338,8 +342,10 @@ def is_valid_fqdn(hostname, split_port=False):
         hostname = hostname.split(':')[0]
     if len(hostname) > 255:
         return False
+    # strip exactly one dot from the right, if present
     if hostname[-1:] == ".":
-        hostname = hostname[:-1]  # strip exactly one dot from the right, if present
+        hostname = hostname[:-1]
+
     allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
     return all(allowed.match(x) for x in hostname.split("."))
 
@@ -366,24 +372,27 @@ modHexChars = 'cbdefghijklnrtuv'
 hex2ModDict = dict(zip(hexHexChars, modHexChars))
 mod2HexDict = dict(zip(modHexChars, hexHexChars))
 
+
 def modhex_encode(s):
     return ''.join(
-        [ hex2ModDict[c] for c in s.encode('hex') ]
+        [hex2ModDict[c] for c in s.encode('hex')]
     )
 # end def modhex_encode
 
+
 def modhex_decode(m):
     return ''.join(
-        [ mod2HexDict[c] for c in m ]
+        [mod2HexDict[c] for c in m]
     ).decode('hex')
 # end def modhex_decode
 
+
 def checksum(msg):
-    crc = 0xffff;
+    crc = 0xffff
     for i in range(0, len(msg) / 2):
         b = int(msg[i * 2] + msg[(i * 2) + 1], 16)
         crc = crc ^ (b & 0xff)
-        for j in range(0, 8):
+        for _j in range(0, 8):
             n = crc & 1
             crc = crc >> 1
             if n != 0:

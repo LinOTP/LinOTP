@@ -56,8 +56,8 @@ VOID_RADIUS_SECRET = "voidRadiusSecret"
 ###############################################
 class RadiusTokenClass(RemoteTokenClass):
 
-    def __init__(self, aToken):
-        RemoteTokenClass.__init__(self, aToken)
+    def __init__(self, aToken, context=None):
+        RemoteTokenClass.__init__(self, aToken, context=context)
         self.setType(u"radius")
 
         self.radiusServer = ""

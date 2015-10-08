@@ -72,7 +72,7 @@ class U2FTokenClass(TokenClass):
     registration.
     """
 
-    def __init__(self, aToken):
+    def __init__(self, aToken, context=None):
         """
         constructor - create a token object
 
@@ -82,7 +82,7 @@ class U2FTokenClass(TokenClass):
         """
         log.debug("Create a token object with: aToken %r", (aToken))
 
-        TokenClass.__init__(self, aToken)
+        TokenClass.__init__(self, aToken, context=context)
         self.setType(u"u2f")
         self.mode = ['challenge']  # This is a challenge response token
 
@@ -324,7 +324,8 @@ class U2FTokenClass(TokenClass):
                 'scope': 'enrollment',
                 'realm': realms[0]
                 }
-            valid_facets_action_value = getPolicyActionValue(getPolicy(get_policy_params),
+            policies = getPolicy(get_policy_params, context=self.context)
+            valid_facets_action_value = getPolicyActionValue(policies,
                                                              'u2f_valid_facets',
                                                              String=True
                                                              )
@@ -916,7 +917,8 @@ class U2FTokenClass(TokenClass):
                         'scope': 'enrollment',
                         'realm': realm
                         }
-                    policy_value = getPolicyActionValue(getPolicy(get_policy_params),
+                    policies = getPolicy(get_policy_params, context=self.context)
+                    policy_value = getPolicyActionValue(policies,
                                                         'u2f_app_id',
                                                         String=True
                                                         )

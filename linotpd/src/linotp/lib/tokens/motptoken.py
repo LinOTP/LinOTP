@@ -116,7 +116,7 @@ class MotpTokenClass(TokenClass):
         return ret
 
 
-    def __init__(self, a_token):
+    def __init__(self, a_token, context=None):
         '''
         constructor - create a token object
 
@@ -124,7 +124,7 @@ class MotpTokenClass(TokenClass):
         :type a_token:  orm object
         '''
         log.debug("[__init__] begin. entering constructor with param: a_token %r" % (a_token))
-        TokenClass.__init__(self, a_token)
+        TokenClass.__init__(self, a_token, context=context)
         self.setType(u"mOTP")
 
         return

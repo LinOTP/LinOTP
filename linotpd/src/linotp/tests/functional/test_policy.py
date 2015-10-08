@@ -33,6 +33,11 @@ import json
 import copy
 import logging
 
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
+from linotp.lib.policy import get_qrtan_url
+
+
 from linotp.tests import TestController, url
 
 log = logging.getLogger(__name__)
@@ -2793,8 +2798,7 @@ class TestPolicies(TestController):
 
     def test_712b_autoassignment_for_users(self):
         '''
-        Policy 712:\
-        Testing scope=enrollment, autoassignment(as true) for different users
+        Policy 712: Testing scope=enrollment, autoassignment(as true) for different users
 
         Remark: added multiple tokens to the test case
                 useing the autoassignment policy without value
@@ -3015,30 +3019,39 @@ class TestPolicies(TestController):
 
         # delete the policy
         for p in ["losttoken_user_1", "losttoken_user_2"]:
-            response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : p,
-                                                                                         'selftest_admin' : 'superadmin'
-                                                                                       })
+            response = self.app.get(url(controller='system',
+                                        action='delPolicy'),
+                                     params={'name': p,
+                                             'selftest_admin': 'superadmin'
+                                            })
 
             self.assertTrue('"status": true' in response, response)
-
-
 
     def test_801_getqrtanurl(self):
         '''
         Policy 801: Testing Authentication Scope: the QR-TAN Url with * realms
         '''
         URL = "https://testserver/ocra/check_t"
-        parameters = { 'name' : 'authQRTAN',
-                       'scope' : 'authentication',
-                       'realm' : '*',
-                       'action' : 'qrtanurl=%s' % URL,
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'authQRTAN',
+                      'scope': 'authentication',
+                      'realm': '*',
+                      'action': 'qrtanurl=%s' % URL,
+                      'selftest_admin': 'superadmin'
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        self.app.get(url(controller='system', action='setPolicy'),
+                                params=parameters)
 
+        response = self.app.get(url(controller='system', action='getPolicy'))
+        self.assertIn(URL, response.body, response.body)
 
-        from linotp.lib.policy import get_qrtan_url
-        u = get_qrtan_url("testrealm")
+        linotp_config = getLinotpConfig()
+        linotp_policies = getPolicies(config=linotp_config)
+
+        context = {}
+        context['Config'] = linotp_config
+        context['Policies'] = linotp_policies
+
+        u = get_qrtan_url("testrealm", context=context)
         self.assertTrue(u == URL, u)
 
     def test_802_getqrtanurl(self):
@@ -3046,17 +3059,23 @@ class TestPolicies(TestController):
         Policy 802: Testing Authentication Scope: the QR-TAN Url with a single realm
         '''
         URL = "https://testserver/ocra/check_t"
-        parameters = { 'name' : 'authQRTAN',
-                       'scope' : 'authentication',
-                       'realm' : 'testrealm',
-                       'action' : 'qrtanurl=%s' % URL,
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name' : 'authQRTAN',
+                      'scope' : 'authentication',
+                      'realm' : 'testrealm',
+                      'action' : 'qrtanurl=%s' % URL,
+                      'selftest_admin' : 'superadmin'
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params=parameters)
 
+        linotp_config = getLinotpConfig()
+        linotp_policies = getPolicies(config=linotp_config)
 
-        from linotp.lib.policy import get_qrtan_url
-        u = get_qrtan_url("testrealm")
+        context = {}
+        context['Config'] = linotp_config
+        context['Policies'] = linotp_policies
+
+        u = get_qrtan_url("testrealm", context=context)
         self.assertTrue(u == URL, u)
 
     def test_803_getqrtanurl(self):
@@ -3072,9 +3091,14 @@ class TestPolicies(TestController):
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
 
+        linotp_config = getLinotpConfig()
+        linotp_policies = getPolicies(config=linotp_config)
 
-        from linotp.lib.policy import get_qrtan_url
-        u = get_qrtan_url("testrealm")
+        context = {}
+        context['Config'] = linotp_config
+        context['Policies'] = linotp_policies
+
+        u = get_qrtan_url("testrealm", context=context)
         self.assertTrue(u == URL, u)
 
     def test_804_ocra_policy(self):

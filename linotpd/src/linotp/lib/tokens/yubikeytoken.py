@@ -45,20 +45,18 @@ from linotp.lib.util import checksum
 log = logging.getLogger(__name__)
 
 
-
 ###############################################
 class YubikeyTokenClass(TokenClass):
     """
     The YubiKey Token in the Yubico AES mode
     """
 
-    def __init__(self, aToken):
-        TokenClass.__init__(self, aToken)
+    def __init__(self, aToken, context=None):
+        TokenClass.__init__(self, aToken, context=context)
         self.setType(u"yubikey")
 
         self.hKeyRequired = True
         return
-
 
     @classmethod
     def getClassType(cls):

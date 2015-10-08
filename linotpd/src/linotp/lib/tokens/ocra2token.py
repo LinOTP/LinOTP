@@ -261,7 +261,7 @@ class Ocra2TokenClass(TokenClass):
 
 
 
-    def __init__(self, aToken):
+    def __init__(self, aToken, context=None):
         '''
         getInfo - return the status of the token rollout
 
@@ -270,7 +270,7 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[__init__]')
 
-        TokenClass.__init__(self, aToken)
+        TokenClass.__init__(self, aToken, context=context)
         self.setType(u"ocra2")
         self.transId = 0
 
@@ -644,7 +644,8 @@ class Ocra2TokenClass(TokenClass):
         ##          token.getQRImageData(opt=details)
         realms = self.token.getRealms()
         if len(realms) > 0:
-            store_data["url"] = get_qrtan_url(realms[0].name)
+            store_data["url"] = get_qrtan_url(realms[0].name,
+                                              context=self.context)
 
         ## we will return a dict of all
         attributes = self.prepare_message(store_data, state)
@@ -776,7 +777,7 @@ class Ocra2TokenClass(TokenClass):
         except Exception as ex:
             ##  this might happen if we have a db problem or
             ##   the uniqnes constrain does not fit
-            log.error("[Ocra2TokenClass] %r" % (traceback.format_exc()))
+            log.exception("[Ocra2TokenClass] %r" % ex)
             raise Exception('[Ocra2TokenClass] Failed to create '
                                                 'challenge object: %s' % (ex))
 
@@ -787,7 +788,7 @@ class Ocra2TokenClass(TokenClass):
 
         url = ''
         if realm is not None:
-            url = get_qrtan_url(realm.name)
+            url = get_qrtan_url(realm.name, context=self.context)
 
         log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)

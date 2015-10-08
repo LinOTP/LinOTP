@@ -104,7 +104,7 @@ log = logging.getLogger(__name__)
 
 class TokenClass(object):
 
-    def __init__(self, token):
+    def __init__(self, token, context=None):
         self.type = ''
         self.token = token
         ## the info is a generic container, to store token specific processing info
@@ -112,6 +112,7 @@ class TokenClass(object):
         self.info = {}
         self.hKeyRequired = False
         self.mode = ['authenticate', 'challenge']
+        self.context = context
 
     def setType(self, typ):
         typ = u'' + typ
@@ -1101,6 +1102,8 @@ class TokenClass(object):
         ldict = {}
         for attr in self.__dict__:
             key = attr
+            if key == 'context':
+                continue
             val = getattr(self, attr)
             if type(val) in [list, dict, str, unicode, int, float, bool]:
                 ldict[key] = val
@@ -1265,7 +1268,7 @@ class OcraTokenClass(TokenClass):
     def getClassPrefix(cls):
         return "ocra"
 
-    def __init__(self, aToken):
+    def __init__(self, aToken, context=None):
         '''
         getInfo - return the status of the token rollout
 
@@ -1274,7 +1277,7 @@ class OcraTokenClass(TokenClass):
         '''
         log.debug('[__init__]')
 
-        TokenClass.__init__(self, aToken)
+        TokenClass.__init__(self, aToken, context=context)
         self.setType(u"ocra")
         self.transId = 0
 
@@ -1536,8 +1539,6 @@ class OcraTokenClass(TokenClass):
         log.debug('[signData]: %r:' % (signature))
         return signature
 
-
-
     def challenge(self, data, session='', typ='raw', challenge=None):
         '''
         the challenge method is for creating an transaction / challenge object
@@ -1655,13 +1656,12 @@ class OcraTokenClass(TokenClass):
 
         url = ''
         if realm is not None:
-            url = get_qrtan_url(realm.name)
+            url = get_qrtan_url(realm.name, context=self.context)
 
         log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)
 
-
-    def checkOtp(self, passw , counter , window , options=None):
+    def checkOtp(self, passw, counter, window, options=None):
         '''
         checkOtp - standard callback of linotp to verify the token
 
@@ -1671,8 +1671,9 @@ class OcraTokenClass(TokenClass):
         :type counter:     int
         :param  window:    the window, in which the token is valid
         :type  window:     int
-        :param options:    options contains the transaction id, eg. if check_t checks one transaction
-                           this will support assynchreonous otp checks (when check_t is used)
+        :param options:    options contains the transaction id, eg. if check_t
+                           checks one transaction this will support
+                           assynchreonous otp checks (when check_t is used)
         :type options:     dict
 
         :return:           verification counter or -1

@@ -66,7 +66,9 @@ import linotp.lib.policy
 
 from linotp import model
 from linotp.model import Token, createToken, Realm, TokenRealm
-from linotp.model.meta import Session
+import linotp.model.meta
+Session = linotp.model.meta.Session
+
 from linotp.model import Challenge
 
 from linotp.lib.config  import getFromConfig
@@ -89,8 +91,8 @@ ENCODING = "utf-8"
 
 class TokenHandler(object):
 
-    def __init__(self):
-        self.context = None
+    def __init__(self, context=None):
+        self.context = context
 
     def initToken(self, param, user, tokenrealm=None):
         '''
@@ -182,7 +184,7 @@ class TokenHandler(object):
         token.setRealms(realms)
 
         #  on behalf of the type, the class is created
-        tokenObj = createTokenClassObject(token, typ)
+        tokenObj = createTokenClassObject(token, typ, context=self.context)
 
         if tokenNum == 0:
             # if this token is a newly created one, we have to setup the
@@ -224,7 +226,8 @@ class TokenHandler(object):
         # check if autoenrollt is configured
         auto = False
         try:
-            auto, token_type = linotp.lib.policy.get_auto_enrollment(user)
+            auto, token_type = linotp.lib.policy.get_auto_enrollment(user,
+                                                        context=self.context)
         except Exception as exx:
             log.error("%r" % exx)
             raise Exception("[auto_enrollToken] %r" % exx)
@@ -339,9 +342,12 @@ class TokenHandler(object):
             log.warning("%s" % err)
             raise Exception(err)
 
-        pol = linotp.lib.policy.get_client_policy(get_client(),
+        client = self.context['Client']
+
+        pol = linotp.lib.policy.get_client_policy(client,
                                         scope="enrollment", realm=owner.realm,
-                                        user=owner.login, userObj=owner)
+                                        user=owner.login, userObj=owner,
+                                        context=self.context)
 
         validity = linotp.lib.policy.getPolicyActionValue(pol,
                                                           "lostTokenValid",
@@ -486,7 +492,7 @@ class TokenHandler(object):
                     c.audit['action_detail'] = "User not found"
                     return (False, opt)
 
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
 
         if len(tokenList) == 0:
             c.audit['action_detail'] = "User has no tokens assigned"
@@ -515,7 +521,7 @@ class TokenHandler(object):
 
             #  Check if there is an authentication policy passthru
             from linotp.lib.policy import get_auth_passthru
-            if get_auth_passthru(user):
+            if get_auth_passthru(user, context=self.context):
                 log.debug("[checkUserPass] user %r has no token. Checking for "
                           "passthru in realm %r" % (user.login, user.realm))
                 y = getResolverObject(resolverClass)
@@ -525,7 +531,7 @@ class TokenHandler(object):
 
             #  Check if there is an authentication policy passOnNoToken
             from linotp.lib.policy import get_auth_passOnNoToken
-            if get_auth_passOnNoToken(user):
+            if get_auth_passOnNoToken(user, context=self.context):
                 log.info("[checkUserPass] user %r has not token. PassOnNoToken"
                          " set - authenticated!")
                 c.audit['action_detail'] = ("Authenticated by "
@@ -537,7 +543,8 @@ class TokenHandler(object):
         if passw is None:
             raise ParameterError(u"Missing parameter:pass", id=905)
 
-        (res, opt) = checkTokenList(tokenList, passw, user, options=options)
+        (res, opt) = checkTokenList(tokenList, passw, user, options=options,
+                                    context=self.context)
         log.debug("[checkUserPass] return of __checkTokenList: %r " % (res,))
 
         return (res, opt)
@@ -559,7 +566,7 @@ class TokenHandler(object):
             log.info("[isTokenOwner] no user found %r", user.login)
             raise TokenAdminError("no user found %s" % user.login, id=1104)
 
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = getTokens4UserOrSerial(None, serial, context=self.context)
 
         if len(toks) > 1:
             log.info("[isTokenOwner] multiple tokens found for user %r"
@@ -588,7 +595,7 @@ class TokenHandler(object):
 
         log.debug('[hasOwner] entering function hasOwner()')
 
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = getTokens4UserOrSerial(None, serial, context=self.context)
 
         if len(toks) > 1:
             log.info("[hasOwner] multiple tokens found with serial %r"
@@ -619,7 +626,7 @@ class TokenHandler(object):
                   % serial)
         token = None
 
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = getTokens4UserOrSerial(None, serial, context=self.context)
         if len(toks) > 0:
             token = toks[0]
 
@@ -658,7 +665,7 @@ class TokenHandler(object):
             serials.append("%s_%s" % (serialnum, i))
 
         for serial in serials:
-            tokens = getTokens4UserOrSerial(serial=serial)
+            tokens = getTokens4UserOrSerial(serial=serial, context=self.context)
             tokenList.extend(tokens)
 
         if len(tokenList) == 0:
@@ -670,7 +677,7 @@ class TokenHandler(object):
         # the PIN for authentication, we need to do something different here...
         #  and avoid PIN checking in __checkToken.
         #  We could pass an "option" to __checkToken.
-        (res, opt) = checkTokenList(tokenList, passw)
+        (res, opt) = checkTokenList(tokenList, passw, context=self.context)
 
         # Now we need to get the user
         if res is not False and 'serial' in c.audit:
@@ -703,7 +710,7 @@ class TokenHandler(object):
         log.debug("[check_serial] check if token %r already exists" % serial)
 
         i = 0
-        while len(getTokens4UserOrSerial(None, new_serial)) > 0:
+        while len(getTokens4UserOrSerial(None, new_serial, context=self.context)) > 0:
             # as long as we find a token, modify the serial:
             i = i + 1
             result = False
@@ -723,7 +730,8 @@ class TokenHandler(object):
             param = {}
 
         try:
-            auto = linotp.lib.policy.get_autoassignment(user)
+            auto = linotp.lib.policy.get_autoassignment(user,
+                                                        context=self.context)
         except Exception as exx:
             log.error("[auto_assignToken] %r" % exx)
 
@@ -734,7 +742,7 @@ class TokenHandler(object):
 
         # check if user has a token
         # TODO: this may dependend on a policy definition
-        tokens = getTokens4UserOrSerial(user, "")
+        tokens = getTokens4UserOrSerial(user, "", context=self.context)
         if len(tokens) > 0:
             log.debug("[auto_assignToken] no auto_assigment for user %r@%r. "
                       "He already has some tokens." % (user.login, user.realm))
@@ -745,12 +753,13 @@ class TokenHandler(object):
 
         # get all tokens of the users realm, which are not assigned
 
-        tokens = getTokensOfType(typ=None, realm=user.realm, assigned="0")
+        tokens = self.getTokensOfType(typ=None, realm=user.realm, assigned="0")
         for token in tokens:
 
             token_exists = -1
             from linotp.lib import policy
-            if policy.autoassignment_forward(user) and token.type == 'remote':
+            if (policy.autoassignment_forward(user, context=self.context)
+                        and token.type == 'remote'):
                 ruser = User(user.login, user.realm)
                 token_exists = token.check_otp_exist(otp=passw,
                                           window=token.getOtpCountWindow(),
@@ -781,7 +790,8 @@ class TokenHandler(object):
         log.debug("[auto_assignToken] found serial number: %r" % serial)
 
         # should the password of the autoassignement be used as pin??
-        if True == linotp.lib.policy.ignore_autoassignment_pin(user):
+        if True == linotp.lib.policy.ignore_autoassignment_pin(user,
+                                                        context=self.context):
             pin = None
 
         # if found, assign the found token to the user.login
@@ -805,7 +815,7 @@ class TokenHandler(object):
             param = {}
 
         log.debug('[assignToken] entering function assignToken()')
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = getTokens4UserOrSerial(None, serial, context=self.context)
         # toks  = Session.query(Token).filter(
         #  Token.LinOtpTokenSerialnumber == serial)
 
@@ -852,7 +862,7 @@ class TokenHandler(object):
         unassignToken - used to assign and to unassign token
         '''
         log.debug('[unassignToken] entering function unassignToken()')
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = getTokens4UserOrSerial(None, serial, context=self.context)
         # toks  = Session.query(Token).filter(
         #               Token.LinOtpTokenSerialnumber == serial)
 
@@ -904,7 +914,8 @@ class TokenHandler(object):
         username = ""
         resolverClass = ""
 
-        token = get_token_by_otp(token_list, otp, window, typ, realm, assigned)
+        token = self.get_token_by_otp(token_list, otp, window, typ, realm,
+                                      assigned)
 
         if token is not None:
             serial = token.getSerial()
@@ -914,6 +925,90 @@ class TokenHandler(object):
             username = userInfo.get("username", "")
 
         return serial, username, resolverClass
+
+# local
+    def get_token_by_otp(self, token_list=None, otp="", window=10, typ=u"HMAC",
+                         realm=None, assigned=None):
+        '''
+        method
+            get_token_by_otp    - from the given token list this function returns
+                                  the token, that generates the given OTP value
+        :param token_list:        - the list of token objects to be investigated
+        :param otpval:            - the otp value, that needs to be found
+        :param window:            - the window of search
+        :param assigned:          - or unassigned tokens (1/0)
+
+        :return:         returns the token object.
+        '''
+        result_token = None
+
+        validation_results = []
+        log.debug("[get_token_by_otp] entering function. Searching for otp=%r" % otp)
+
+        if token_list is None:
+            token_list = self.getTokensOfType(typ, realm, assigned)
+
+        for token in token_list:
+            log.debug("[get_token_by_otp] checking token %r" % token.getSerial())
+            r = token.check_otp_exist(otp=otp, window=window)
+            log.debug("[get_token_by_otp] result = %d" % int(r))
+            if r >= 0:
+                validation_results.append(token)
+
+        if len(validation_results) == 1:
+            result_token = validation_results[0]
+        elif len(validation_results) > 1:
+            raise TokenAdminError("get_token_by_otp: multiple tokens are "
+                                  "matching this OTP value!", id=1200)
+
+        return result_token
+
+    # local method
+    def getTokensOfType(self, typ=None, realm=None, assigned=None):
+        '''
+        This function returns a list of token objects of the following type.
+
+        here we need to create the token list.
+           1. all types (if typ==None)
+           2. realms
+           3. assigned or unassigned tokens (1/0)
+        TODO: rename function to "getTokens"
+        '''
+        tokenList = []
+        log.debug("[getTokensOfType] searching tokens type=%r, realm=%r,"
+                  " assigned=%r" % (typ, realm, assigned))
+        sqlQuery = Session.query(Token)
+        if typ is not None:
+            # filter for type
+            sqlQuery = sqlQuery.\
+                filter(func.lower(Token.LinOtpTokenType) == typ.lower())
+        if assigned is not None:
+            # filter if assigned or not
+            if "0" == unicode(assigned):
+                sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid == None,
+                                               Token.LinOtpUserid == ""))
+            elif "1" == unicode(assigned):
+                sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
+            else:
+                log.warning("[getTokensOfType] assigned value not in [0,1] %r"
+                            % assigned)
+
+        if realm is not None:
+            # filter for the realm
+            sqlQuery = sqlQuery\
+                .filter(and_(func.lower(Realm.name) == realm.lower(),
+                        TokenRealm.realm_id == Realm.id,
+                        TokenRealm.token_id == Token.LinOtpTokenId)).distinct()
+
+        for token in sqlQuery:
+            log.debug("[getTokensOfType] adding token with serial %r"
+                      % token.LinOtpTokenSerialnumber)
+            # the token is the database object, but we want
+            # an instance of the tokenclass!
+            tokenList.append(createTokenClassObject(token,
+                                                    context=self.context))
+
+        return tokenList
 
     def removeToken(self, user=None, serial=None):
         """
@@ -972,6 +1067,54 @@ class TokenHandler(object):
 
         return len(tokenList)
 
+    def setCounterWindow(self, countWindow, user, serial):
+
+        if user is None and serial is None:
+            log.warning("[setCounterWindow] Parameter serial or user required!")
+            raise ParameterError("Parameter user or serial required!", id=1212)
+
+        log.debug("[setCounterWindow] setting count window for serial %r" % serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
+
+        for token in tokenList:
+            token.addToSession(Session)
+            token.setCounterWindow(countWindow)
+
+        return len(tokenList)
+
+    def setDescription(self, description, user, serial):
+
+        if user is None and serial is None:
+            log.warning("[setDescription] Parameter serial or user required!")
+            raise ParameterError("Parameter user or serial required!", id=1212)
+
+        log.debug("[setDescription] setting count window for serial %r" % serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
+
+        for token in tokenList:
+            token.addToSession(Session)
+            token.setDescription(description)
+
+        return len(tokenList)
+
+    def setHashLib(self, hashlib, user, serial):
+        '''
+        sets the Hashlib in the tokeninfo
+        '''
+        if user is None and serial is None:
+            log.warning("[setHashLib] Parameter user or serial required!")
+            raise ParameterError("Parameter user or serial required!", id=1212)
+
+        if serial is not None:
+            log.debug("[setHashLib] setting hashlib for serial %r" % serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
+
+        for token in tokenList:
+            token.addToSession(Session)
+            token.setHashLib(hashlib)
+
+        return len(tokenList)
+
     def setMaxFailCount(self, maxFail, user, serial):
 
         if (user is None) and (serial is None):
@@ -980,11 +1123,42 @@ class TokenHandler(object):
 
         log.debug("[setMaxFailCount] for serial: %r, user: %r"
                   % (serial, user))
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
 
         for token in tokenList:
             token.addToSession(Session)
             token.setMaxFail(maxFail)
+
+        return len(tokenList)
+
+    def setSyncWindow(self, syncWindow, user, serial):
+
+        if user is None and serial is None:
+            log.warning("[setSyncWindow] Parameter serial or user required!")
+            raise ParameterError("Parameter user or serial required!", id=1212)
+
+        log.debug("[setSyncWindow] setting syncwindow for serial %r" % serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
+
+        for token in tokenList:
+            token.addToSession(Session)
+            token.setSyncWindow(syncWindow)
+
+        return len(tokenList)
+
+    def setOtpLen(self, otplen, user, serial):
+
+        if (user is None) and (serial is None):
+            log.warning("[setOtpLen] Parameter user or serial required!")
+            raise ParameterError("Parameter user or serial required!", id=1212)
+
+        if (serial is not None):
+            log.debug("[setOtpLen] setting OTP length for serial %r" % serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
+
+        for token in tokenList:
+            token.addToSession(Session)
+            token.setOtpLen(otplen)
 
         return len(tokenList)
 
@@ -1003,7 +1177,7 @@ class TokenHandler(object):
 
         log.debug("[enableToken] enable=%r, user=%r, serial=%r"
                   % (enable, user, serial))
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
 
         for token in tokenList:
             token.addToSession(Session)
@@ -1025,8 +1199,8 @@ class TokenHandler(object):
         '''
         log.debug("[copyTokenPin] copying PIN from token %r to token %r"
                   % (serial_from, serial_to))
-        tokens_from = getTokens4UserOrSerial(None, serial_from)
-        tokens_to = getTokens4UserOrSerial(None, serial_to)
+        tokens_from = getTokens4UserOrSerial(None, serial_from, context=self.context)
+        tokens_to = getTokens4UserOrSerial(None, serial_to, context=self.context)
         if len(tokens_from) != 1:
             log.error("[copyTokenPin] not a unique token to copy from found")
             return -1
@@ -1049,8 +1223,8 @@ class TokenHandler(object):
         '''
         log.debug("[copyTokenUser] copying user from token %r to token %r"
                   % (serial_from, serial_to))
-        tokens_from = getTokens4UserOrSerial(None, serial_from)
-        tokens_to = getTokens4UserOrSerial(None, serial_to)
+        tokens_from = getTokens4UserOrSerial(None, serial_from, context=self.context)
+        tokens_to = getTokens4UserOrSerial(None, serial_to, context=self.context)
         if len(tokens_from) != 1:
             log.error("[copyTokenUser] not a unique token to copy from found")
             return -1
@@ -1079,7 +1253,7 @@ class TokenHandler(object):
         if serial is not None:
             log.debug("[setTokenInfo] setting tokeninfo %r for serial %r"
                       % (info, serial))
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
 
         for token in tokenList:
             token.addToSession(Session)
@@ -1103,7 +1277,7 @@ class TokenHandler(object):
             raise ParameterError("Parameter user or serial required!", id=1212)
 
         log.debug("[resyncToken] resync token with serial %r" % serial)
-        tokenList = getTokens4UserOrSerial(user, serial)
+        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
 
         for token in tokenList:
             token.addToSession(Session)
@@ -1156,7 +1330,7 @@ class TokenHandler(object):
 
 
 # local
-def createTokenClassObject(token, typ=None):
+def createTokenClassObject(token, typ=None, context=None):
     '''
     createTokenClassObject - create a token class object from a given type
 
@@ -1184,7 +1358,7 @@ def createTokenClassObject(token, typ=None):
     if typ.lower() in tokenclasses:
         try:
             token_class = tokenclasses.get(typ)
-            tok = newToken(token_class)(token)
+            tok = newToken(token_class)(token, context=context)
         except Exception as exx:
             log.debug('createTokenClassObject failed!')
             raise TokenAdminError("createTokenClassObject failed:  %r"
@@ -1199,7 +1373,7 @@ def createTokenClassObject(token, typ=None):
         #  delete this 'abandoned token'
         #
         from linotp.lib.tokenclass import TokenClass
-        tok = TokenClass(token)
+        tok = TokenClass(token, context=context)
         log.error("[createTokenClassObject] failed: unknown token type %r. \
                  Using fallback 'TokenClass' for %r" % (typ, token))
 
@@ -1530,8 +1704,7 @@ def getAllTokenUsers():
 
     return users
 
-
-def getTokens4UserOrSerial(user=None, serial=None, _class=True):
+def getTokens4UserOrSerial(user=None, serial=None, _class=True, context=None):
     tokenList = []
     tokenCList = []
     tok = None
@@ -1597,58 +1770,10 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
 
     if _class == True:
         for tok in tokenList:
-            tokenCList.append(createTokenClassObject(tok))
+            tokenCList.append(createTokenClassObject(tok, context=context))
         return tokenCList
     else:
         return tokenList
-
-
-# local method
-def getTokensOfType(typ=None, realm=None, assigned=None):
-    '''
-    This function returns a list of token objects of the following type.
-
-    here we need to create the token list.
-       1. all types (if typ==None)
-       2. realms
-       3. assigned or unassigned tokens (1/0)
-    TODO: rename function to "getTokens"
-    '''
-    tokenList = []
-    log.debug("[getTokensOfType] searching tokens type=%r, realm=%r,"
-              " assigned=%r" % (typ, realm, assigned))
-    sqlQuery = Session.query(Token)
-    if typ is not None:
-        # filter for type
-        sqlQuery = sqlQuery.\
-            filter(func.lower(Token.LinOtpTokenType) == typ.lower())
-    if assigned is not None:
-        # filter if assigned or not
-        if "0" == unicode(assigned):
-            sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid == None,
-                                           Token.LinOtpUserid == ""))
-        elif "1" == unicode(assigned):
-            sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
-        else:
-            log.warning("[getTokensOfType] assigned value not in [0,1] %r"
-                        % assigned)
-
-    if realm is not None:
-        # filter for the realm
-        sqlQuery = sqlQuery\
-            .filter(and_(func.lower(Realm.name) == realm.lower(),
-                    TokenRealm.realm_id == Realm.id,
-                    TokenRealm.token_id == Token.LinOtpTokenId)).distinct()
-
-    for token in sqlQuery:
-        log.debug("[getTokensOfType] adding token with serial %r"
-                  % token.LinOtpTokenSerialnumber)
-        # the token is the database object, but we want
-        # an instance of the tokenclass!
-        tokenList.append(createTokenClassObject(token))
-
-    return tokenList
-
 
 def setDefaults(token):
     #  set the defaults
@@ -1661,13 +1786,13 @@ def setDefaults(token):
     token.LinOtpTokenType = u"HMAC"
 
 
-def tokenExist(serial):
+def tokenExist(serial, context=None):
     '''
     returns true if the token exists
     '''
     log.debug("[tokenExist] checking if Token %r exists" % serial)
     if serial:
-        toks = getTokens4UserOrSerial(None, serial)
+        toks = getTokens4UserOrSerial(None, serial, context=context)
         return (len(toks) > 0)
     else:
         # If we have no serial we return false anyway!
@@ -1750,7 +1875,7 @@ def getTokenType(serial):
     return typ
 
 
-def checkSerialPass(serial, passw, options=None, user=None):
+def checkSerialPass(serial, passw, options=None, user=None, context=None):
     '''
     This function checks the otp for a given serial
 
@@ -1761,7 +1886,7 @@ def checkSerialPass(serial, passw, options=None, user=None):
 
     log.debug("[checkSerialPass] checking for serial %r"
               % (serial))
-    tokenList = getTokens4UserOrSerial(None, serial)
+    tokenList = getTokens4UserOrSerial(None, serial, context=context)
 
     if passw is None:
         #  other than zero or one token should not happen, as serial is unique
@@ -1793,12 +1918,12 @@ def checkSerialPass(serial, passw, options=None, user=None):
               % (len(passw), serial))
 
         (res, opt) = checkTokenList(tokenList, passw, user=user,
-                                    options=options)
+                                    options=options, context=context)
 
     return (res, opt)
 
 
-def checkTokenList(tokenList, passw, user=User(), options=None):
+def checkTokenList(tokenList, passw, user=User(), options=None, context=None):
     '''
     identify a matching token and test, if the token is valid, locked ..
     This function is called by checkSerialPass and checkUserPass to
@@ -1811,6 +1936,8 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
     :return: tuple of boolean and optional response
     '''
     log.debug("[__checkTokenList] checking tokenlist: %r" % (tokenList))
+    if not context:
+        context = {}
     reply = None
 
     tokenclasses = config['tokenclasses']
@@ -1886,7 +2013,8 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             continue
 
         # start the token validation
-        tok_va = linotp.lib.validate.ValidateToken(token, context=c)
+        context['audit'] = audit
+        tok_va = linotp.lib.validate.ValidateToken(token, context=context)
 
         try:
             (ret, reply) = tok_va.checkToken(passw, user,
@@ -1903,7 +2031,6 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
 
         (cToken, pToken, iToken, vToken) = tok_va.get_verification_result()
         related_challenges.extend(tok_va.related_challenges)
-
 
         challenge_tokens.extend(cToken)
         pin_matching_tokens.extend(pToken)
@@ -1927,7 +2054,9 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
                       pin_matching_tokens,
                       invalid_tokens,
                       validation_results,
-                      user, options)
+                      user, options,
+                      context=context
+                      )
 
     (res, reply) = fh.finish_checked_tokens()
 
@@ -1946,7 +2075,8 @@ class FinishTokens(object):
     def __init__(self, valid_tokens, challenge_tokens,
                         pin_matching_tokens, invalid_tokens,
                         validation_results,
-                        user, options):
+                        user, options,
+                        context=None):
         """
         create the finalisation object, that finishes the token processing
 
@@ -1966,6 +2096,7 @@ class FinishTokens(object):
         self.validation_results = validation_results
         self.user = user
         self.options = options
+        self.context = context
 
     def finish_checked_tokens(self):
         """
@@ -2151,7 +2282,8 @@ class FinishTokens(object):
             tok.statusValidationFail()
 
         import linotp.lib.policy
-        pin_policies = linotp.lib.policy.get_pin_policies(user) or []
+        pin_policies = linotp.lib.policy.get_pin_policies(user,
+                                                context=self.context) or []
 
         if 1 in pin_policies:
             action_detail = "wrong user password -1"
@@ -2190,8 +2322,6 @@ def create_audit_entry(action_detail, tokens):
         c.audit['token_type'] = ''
 
     return
-
-
 
 
 def add_last_accessed_info(list_of_tokenlist):
@@ -2238,7 +2368,8 @@ def handle_related_challenge(related_challenges):
     return
 
 
-def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
+def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None,
+                  context=None):
     '''
     This function returns a list of OTP values for the given Token.
     Please note, that this controller needs to be activated and
@@ -2260,7 +2391,11 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
     '''
     ret = {"result": False}
     log.debug("[get_multi_otp] retrieving OTP values for token %r" % serial)
-    toks = getTokens4UserOrSerial(None, serial)
+    toks = getTokens4UserOrSerial(None, serial, context=context)
+
+
+
+
     if len(toks) > 1:
         log.error("[get_multi_otp] multiple tokens with serial %r found"
                   " - cannot get OTP!" % serial)
@@ -2293,7 +2428,7 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
     return ret
 
 
-def getOtp(serial, curTime=None):
+def getOtp(serial, curTime=None, context=None):
     '''
     This function returns the current OTP value for a given Token.
     Please note, that this controller needs to be activated and
@@ -2311,7 +2446,7 @@ def getOtp(serial, curTime=None):
 
     '''
     log.debug("[getOtp] retrieving OTP value for token %r" % serial)
-    toks = getTokens4UserOrSerial(None, serial)
+    toks = getTokens4UserOrSerial(None, serial, context=context)
 
     if len(toks) > 1:
         raise TokenAdminError("multiple tokens found - cannot get OTP!",
@@ -2328,44 +2463,7 @@ def getOtp(serial, curTime=None):
         return token.getOtp(curTime=curTime)
 
 
-# local
-def get_token_by_otp(token_list=None, otp="", window=10, typ=u"HMAC",
-                     realm=None, assigned=None):
-    '''
-    method
-        get_token_by_otp    - from the given token list this function returns
-                              the token, that generates the given OTP value
-    :param token_list:        - the list of token objects to be investigated
-    :param otpval:            - the otp value, that needs to be found
-    :param window:            - the window of search
-    :param assigned:          - or unassigned tokens (1/0)
-
-    :return:         returns the token object.
-    '''
-    result_token = None
-
-    validation_results = []
-    log.debug("[get_token_by_otp] entering function. Searching for otp=%r" % otp)
-
-    if token_list is None:
-        token_list = getTokensOfType(typ, realm, assigned)
-
-    for token in token_list:
-        log.debug("[get_token_by_otp] checking token %r" % token.getSerial())
-        r = token.check_otp_exist(otp=otp, window=window)
-        log.debug("[get_token_by_otp] result = %d" % int(r))
-        if r >= 0:
-            validation_results.append(token)
-
-    if len(validation_results) == 1:
-        result_token = validation_results[0]
-    elif len(validation_results) > 1:
-        raise TokenAdminError("get_token_by_otp: multiple tokens are matching this OTP value!", id=1200)
-
-    return result_token
-
-
-def setPin(pin, user, serial, param=None):
+def setPin(pin, user, serial, param=None, context=None):
     '''
     set the PIN
     '''
@@ -2384,7 +2482,7 @@ def setPin(pin, user, serial, param=None):
     if (serial is not None):
         log.info("[setPin] setting Pin for token with serial %r" % serial)
 
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = getTokens4UserOrSerial(user, serial, context=context)
 
     for token in tokenList:
         token.addToSession(Session)
@@ -2392,79 +2490,12 @@ def setPin(pin, user, serial, param=None):
 
     return len(tokenList)
 
-
-def setOtpLen(otplen, user, serial):
-
-    if (user is None) and (serial is None):
-        log.warning("[setOtpLen] Parameter user or serial required!")
-        raise ParameterError("Parameter user or serial required!", id=1212)
-
-    if (serial is not None):
-        log.debug("[setOtpLen] setting OTP length for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
-
-    for token in tokenList:
-        token.addToSession(Session)
-        token.setOtpLen(otplen)
-
-    return len(tokenList)
-
-
-def setHashLib(hashlib, user, serial):
-    '''
-    sets the Hashlib in the tokeninfo
-    '''
-    if user is None and serial is None:
-        log.warning("[setHashLib] Parameter user or serial required!")
-        raise ParameterError("Parameter user or serial required!", id=1212)
-
-    if serial is not None:
-        log.debug("[setHashLib] setting hashlib for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
-
-    for token in tokenList:
-        token.addToSession(Session)
-        token.setHashLib(hashlib)
-
-    return len(tokenList)
-
-
 # local
-def setCountAuth(count, user, serial, _max=False, success=False):
-    '''
-    sets either of the counters:
-        count_auth
-        count_auth_max
-        count_auth_success
-        count_auth_success_max
-    '''
-    if user is None and serial is None:
-        log.warning("[setCountAuth] Parameter user or serial required!")
-        raise ParameterError("Parameter user or serial required!", id=1212)
-
-    if serial is not None:
-        log.debug("[setCountAuth] setting authcount for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
-
-    for token in tokenList:
-        token.addToSession(Session)
-        if max:
-            if success:
-                token.set_count_auth_success_max(count)
-            else:
-                token.set_count_auth_max(count)
-        else:
-            if success:
-                token.set_count_auth_success(count)
-            else:
-                token.set_count_auth(count)
-
-    return len(tokenList)
 
 ###############################################################################
 #  LinOtpTokenPinUser
 ###############################################################################
-def setPinUser(userPin, serial):
+def setPinUser(userPin, serial, context=None):
 
     user = None
 
@@ -2473,7 +2504,7 @@ def setPinUser(userPin, serial):
         raise ParameterError("Parameter 'serial' is required!", id=1212)
 
     log.debug("[setPin] setting Pin for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = getTokens4UserOrSerial(user, serial, context=context)
 
     for token in tokenList:
         token.addToSession(Session)
@@ -2485,7 +2516,7 @@ def setPinUser(userPin, serial):
 ###############################################################################
 #  LinOtpTokenPinSO
 ###############################################################################
-def setPinSo(soPin, serial):
+def setPinSo(soPin, serial, context=None):
     user = None
 
     if serial is None:
@@ -2493,7 +2524,7 @@ def setPinSo(soPin, serial):
         raise ParameterError("Parameter 'serial' is required!", id=1212)
 
     log.debug("[setPinSo] setting Pin for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = getTokens4UserOrSerial(user, serial, context=context)
 
     for token in tokenList:
         token.addToSession(Session)
@@ -2502,62 +2533,19 @@ def setPinSo(soPin, serial):
     return len(tokenList)
 
 
-def setSyncWindow(syncWindow, user, serial):
-
-    if user is None and serial is None:
-        log.warning("[setSyncWindow] Parameter serial or user required!")
-        raise ParameterError("Parameter user or serial required!", id=1212)
-
-    log.debug("[setSyncWindow] setting syncwindow for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
-
-    for token in tokenList:
-        token.addToSession(Session)
-        token.setSyncWindow(syncWindow)
-
-    return len(tokenList)
 
 
-def setCounterWindow(countWindow, user, serial):
-
-    if user is None and serial is None:
-        log.warning("[setCounterWindow] Parameter serial or user required!")
-        raise ParameterError("Parameter user or serial required!", id=1212)
-
-    log.debug("[setCounterWindow] setting count window for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
-
-    for token in tokenList:
-        token.addToSession(Session)
-        token.setCounterWindow(countWindow)
-
-    return len(tokenList)
 
 
-def setDescription(description, user, serial):
 
-    if user is None and serial is None:
-        log.warning("[setDescription] Parameter serial or user required!")
-        raise ParameterError("Parameter user or serial required!", id=1212)
-
-    log.debug("[setDescription] setting count window for serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
-
-    for token in tokenList:
-        token.addToSession(Session)
-        token.setDescription(description)
-
-    return len(tokenList)
-
-
-def resetToken(user=None, serial=None):
+def resetToken(user=None, serial=None, context=None):
 
     if (user is None) and (serial is None):
         log.warning("[resetToken] Parameter serial or user required!")
         raise ParameterError("Parameter user or serial required!", id=1212)
 
     log.debug("[resetToken] reset token with serial %r" % serial)
-    tokenList = getTokens4UserOrSerial(user, serial)
+    tokenList = getTokens4UserOrSerial(user, serial, context=context)
 
     for token in tokenList:
         token.addToSession(Session)

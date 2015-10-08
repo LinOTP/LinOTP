@@ -247,7 +247,8 @@ def check_pin(token, passw, user=None, options=None):
     :return: boolean, if pin matched True
     '''
     res = False
-    pin_policies = linotp.lib.policy.get_pin_policies(user)
+    context = token.context
+    pin_policies = linotp.lib.policy.get_pin_policies(user, context=context)
 
     if 1 in pin_policies:
         # We check the Users Password as PIN
@@ -355,7 +356,8 @@ def split_pin_otp(token, passw, user=None, options=None):
                     token.splitPinPass
     :return: tuple of (split status, pin and otpval)
     '''
-    pin_policies = linotp.lib.policy.get_pin_policies(user)
+    context = token.context
+    pin_policies = linotp.lib.policy.get_pin_policies(user, context=context)
 
     policy = 0
 
@@ -384,16 +386,6 @@ class ValidateToken(object):
     class to manage the validation of a token
     '''
 
-    class Context(object):
-        '''
-        little helper class to prove the interface calls valid
-        '''
-        def __init__(self):
-            '''
-            initlize the only api member
-            '''
-            self.audit = {}
-
 
     def __init__(self, token, user=None, context=None):
         '''
@@ -416,9 +408,7 @@ class ValidateToken(object):
         self.related_challenges = []
 
         # support of context : c.audit
-        if context == None:
-            self.context = self.Context()
-        else:
+        if context:
             self.context = context
 
     def get_verification_result(self):
@@ -570,7 +560,8 @@ class ValidateToken(object):
                 raise Exception(msg)
 
         support_challenge_response = \
-                linotp.lib.policy.get_auth_challenge_response(user, ttype)
+                linotp.lib.policy.get_auth_challenge_response(user, ttype,
+                                                        context=self.context)
 
         # special handling for tokens, who support only challenge modes
         # like the sms, email or ocra2 token

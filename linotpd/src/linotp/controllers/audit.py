@@ -40,7 +40,8 @@ from linotp.lib.base import BaseController
 
 from linotp.lib.util import  check_session
 from linotp.lib.user import  getUserFromRequest
-from linotp.lib.policy import checkPolicyPre, PolicyException
+from linotp.lib.policy import checkPolicyPre
+from linotp.lib.policy import PolicyException
 
 from linotp.lib.reply import sendError
 from linotp.lib.audit.base import search as audit_search
@@ -52,6 +53,9 @@ from linotp.lib.util import getParam
 from linotp.lib.util import get_client
 
 from linotp.model.meta import Session
+
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
 
 import traceback
 
@@ -80,8 +84,10 @@ class AuditController(BaseController):
 
         try:
             audit.initialize()
-            c.audit['client'] = get_client()
-            check_session()
+            c.audit['client'] = get_client(request)
+            check_session(request)
+            self.request_context['Audit'] = audit
+
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
@@ -133,7 +139,7 @@ class AuditController(BaseController):
             log.debug("[search] params: %s" % param)
 
 
-            checkPolicyPre('audit', 'view', {})
+            checkPolicyPre('audit', 'view', {}, context=self.request_context)
 
             log.debug("[search] params %r" % param)
 
@@ -141,7 +147,7 @@ class AuditController(BaseController):
             # be used for search!
             search_params = {}
             search_params.update(param)
-            for key in ["outform", 'delimiter']: 
+            for key in ["outform", 'delimiter']:
                 if key in search_params:
                     del search_params[key]
 
