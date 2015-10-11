@@ -1,0 +1,257 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
+
+
+VERSION = '0.1'
+import os, sys
+from getopt import getopt, GetoptError
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+
+
+def getConfigKey(file, option, section=None, autoResolvePath=False):
+    config  = ConfigParser()
+    cfgfile = open(file, 'r')
+    try:
+        config.readfp(cfgfile)
+    finally:
+        cfgfile.close()
+
+    if option:
+        if not section:
+            section = 'DEFAULT'
+
+        try:
+            if autoResolvePath:
+                config_path = os.path.abspath(os.path.dirname(file))
+
+                value = config.get(section, option, 0, {'here': config_path})
+            else:
+                value = config.get(section, option, 1)
+        except NoSectionError:
+            return False
+        except NoOptionError:
+            return False
+
+        print value
+    else:
+        if not section:
+            list = config.sections()
+        else:
+            try:
+                list  = config.options(section)
+            except NoSectionError:
+                return False
+
+        for elem in list:
+            print elem
+
+    return True
+
+
+def setConfigKey(file, option, value, section=None):
+    config  = ConfigParser()
+    cfgfile = open(file, 'r')
+    try:
+        config.readfp(cfgfile)
+    finally:
+        cfgfile.close()
+
+    if not section:
+        section = 'DEFAULT'
+
+    try:
+        temp = config.get(section, option, 1)
+    except NoSectionError:
+        config.add_section(section)
+        temp = None
+    except NoOptionError:
+        temp = None
+
+    if not (temp is None) and temp == value:
+        return False
+
+    config.set(section, option, value)
+    cfgfile = open(file, 'w')
+    try:
+        config.write(cfgfile)
+    finally:
+        cfgfile.close()
+    return True
+
+
+def delConfigKey(file, option, section=None):
+    config  = ConfigParser()
+    cfgfile = open(file, 'r')
+    try:
+        config.readfp(cfgfile)
+    finally:
+        cfgfile.close()
+
+    if not section:
+        section = 'DEFAULT'
+
+    if not config.has_section(section): 
+        return False
+
+    if option:
+        if not config.has_option(section, option):
+            return False
+
+        config.remove_option(section, option)
+    else:
+        config.remove_section(section)
+
+    cfgfile = open(file, 'w')
+    try:
+        config.write(cfgfile)
+    finally:
+        cfgfile.close()
+    return True
+
+
+def usage():
+    print  '''
+    Parameter:
+    -f|--file|--config-file  <configfile.ini>
+    [-s|--section-name <name>]
+    [ -r|--read-key   <name> [--auto-resolve]] |
+      -w|--write-key  <name>  -v|--value <value> |
+      -d|--delete-key <name>  |
+         --delete-section ]
+    -h|--help : help
+    '''
+
+
+def main():
+    frce = False
+    file = None
+    oper = None
+    sctn = None
+    skey = None
+    kval = None
+    rslv = False
+    try:
+        opts, args = getopt(sys.argv[1:], 'f:s:r:w:v:d:', [ 'help', 'force', \
+            'file=',    'config-file=',   \
+            'section=', 'section-name=',  \
+            'read=',    'read-key=',      \
+            'write=',   'write-key=',     \
+                        'delete-key=',    \
+                        'delete-section', \
+            'value=',   'auto-resolve' ])
+    except GetoptError:
+        print "There is an error in your parameter syntax:"
+        usage()
+        sys.exit(1)
+
+    for opt, arg in opts:
+        if opt in ('-h', '--help'):
+            usage()
+            sys.exit(255)
+        # common options...
+        elif opt in ('-f', '--file', '--config-file'):
+            if not (file is None):
+                print "Dupplicate option: " + opt
+                sys.exit(254)
+            file = arg
+        elif opt in ('--force'):
+            frce = True
+        elif opt in ('-s', '--section', '--section-name'):
+            if not (sctn is None):
+                print "Dupplicate option: " + opt
+                sys.exit(254)
+            sctn = arg
+        # operation...
+        elif opt in ('-r', '--read', '--read-key'):
+            if not (oper is None):
+                print "Invalid option: " + opt
+                sys.exit(254)
+            oper = 1
+            skey = arg
+        elif opt in ('-w', '--write', '--write-key'):
+            if not (oper is None):
+                print "Invalid option: " + opt
+                sys.exit(254)
+            oper = 2
+            skey = arg
+        elif opt in ('-d', '--delete-key'):
+            if not (oper is None):
+                print "Invalid option: " + opt
+                sys.exit(254)
+            oper = 3
+            skey = arg
+        elif opt in ('--delete-section'):
+            if not (oper is None):
+                print "Invalid option: " + opt
+                sys.exit(254)
+            oper = 3
+            skey = None
+        # specific options...
+        elif opt in ('--auto-resolve'):
+            if oper <> 1 or rslv:
+                print "Unexpected option: " + opt
+                sys.exit(254)
+            rslv = True
+        elif opt in ('-v', '--value'):
+            if oper <> 2 or kval:
+                print "Unexpected option: " + opt
+                sys.exit(254)
+            kval = arg
+        else:
+            print "Unsupported option: " + opt
+            usage()
+            sys.exit(254)
+
+    if args:
+        print "Unexpeted argument: " + args[0]
+        usage()
+        sys.exit(254)
+    elif file is None:
+        print "Required argument missing: file"
+        sys.exit(254)
+
+    retval = 0
+    try:
+        if oper is None or oper == 1:
+            if not getConfigKey(file=file, section=sctn, option=skey, autoResolvePath=rslv) and not frce:
+                retval = 1
+        elif oper == 2:
+            if not setConfigKey(file=file, section=sctn, option=skey, value=kval) and not frce:
+                retval = 1
+        elif oper == 3:
+            if not delConfigKey(file=file, section=sctn, option=skey) and not frce:
+                retval = 1
+        else:
+            raise AttributeError('Internal error, operation not supported: ' + oper)
+    except:
+        print sys.exc_info()[0]
+        retval = 2
+        #raise
+    sys.exit(retval)
+
+if __name__ == '__main__':
+    main()
