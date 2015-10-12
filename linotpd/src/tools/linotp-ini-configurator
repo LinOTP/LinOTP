@@ -32,8 +32,24 @@ from getopt import getopt, GetoptError
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 
-def getConfigKey(file, option, section=None, autoResolvePath=False):
+def findConfigSection(config, name, defaultSection=None):
+    for temp in config.sections():
+        if temp.lower() == name.lower():
+            return temp
+    return defaultSection
+
+def findConfigOption(config, section, name, defaultOption=None):
+    for temp in config.options(section):
+        if temp.lower() == name.lower():
+            return temp
+    return defaultOption
+
+
+def getConfigKey(file, option, section=None, autoResolvePath=False, caseSensitive=False):
     config  = ConfigParser()
+    if not caseSensitive:
+        config.optionxform = str
+
     cfgfile = open(file, 'r')
     try:
         config.readfp(cfgfile)
@@ -44,27 +60,43 @@ def getConfigKey(file, option, section=None, autoResolvePath=False):
         if not section:
             section = 'DEFAULT'
 
-        try:
-            if autoResolvePath:
-                config_path = os.path.abspath(os.path.dirname(file))
+        if caseSensitive:
+            if not config.has_section(section):
+                return False
+            if not config.has_option(section, option):
+                return False
+            tmp1 = section
+            tmp2 = option
+        else:
+            tmp1 = findConfigSection(config, section)
+            if tmp1 is None:
+                return False
+            tmp2 = findConfigOption(config, tmp1, option)
+            if tmp2 is None:
+                return False
 
-                value = config.get(section, option, 0, {'here': config_path})
-            else:
-                value = config.get(section, option, 1)
-        except NoSectionError:
-            return False
-        except NoOptionError:
-            return False
+        if autoResolvePath:
+            config_path = os.path.abspath(os.path.dirname(file))
+
+            value = config.get(section, option, 0, {'here': config_path})
+        else:
+            value = config.get(section, option, 1)
 
         print value
     else:
         if not section:
             list = config.sections()
         else:
-            try:
-                list  = config.options(section)
-            except NoSectionError:
-                return False
+            if caseSensitive:
+                if not config.has_section(section):
+                    return False
+                tmp1 = section
+            else:
+                tmp1 = findConfigSection(config, section)
+                if tmp1 is None:
+                    return False
+
+            list = config.options(tmp1)
 
         for elem in list:
             print elem
@@ -72,8 +104,11 @@ def getConfigKey(file, option, section=None, autoResolvePath=False):
     return True
 
 
-def setConfigKey(file, option, value, section=None):
+def setConfigKey(file, option, value, section=None, caseSensitive=False):
     config  = ConfigParser()
+    if not caseSensitive:
+        config.optionxform = str
+
     cfgfile = open(file, 'r')
     try:
         config.readfp(cfgfile)
@@ -83,18 +118,37 @@ def setConfigKey(file, option, value, section=None):
     if not section:
         section = 'DEFAULT'
 
-    try:
-        temp = config.get(section, option, 1)
-    except NoSectionError:
-        config.add_section(section)
-        temp = None
-    except NoOptionError:
-        temp = None
+    if caseSensitive:
+        try:
+            temp = config.get(section, option, 1)
+            if not (temp is None) and temp == value:
+                # No change, return
+                return False
+        except NoSectionError:
+            config.add_section(section)
+        except NoOptionError:
+            pass
 
-    if not (temp is None) and temp == value:
-        return False
+        tmp1 = section
+        tmp2 = option
+    else:
+        # Find section...
+        tmp1 = findConfigSection(config, section)
+        if tmp1 is None:
+            config.add_section(section)
+            tmp1 = section
+        # Find option...
+        tmp2 = findConfigOption(config, tmp1, option)
+        if tmp2 is None:
+            tmp2 = option
+        else:
+            temp = config.get(tmp1, tmp2, 1)
+            if temp == value:
+                # No change, return
+                return False
 
-    config.set(section, option, value)
+    # Write the new entry...
+    config.set(tmp1, tmp2, value)
     cfgfile = open(file, 'w')
     try:
         config.write(cfgfile)
@@ -103,8 +157,11 @@ def setConfigKey(file, option, value, section=None):
     return True
 
 
-def delConfigKey(file, option, section=None):
+def delConfigKey(file, option, section=None, caseSensitive=False):
     config  = ConfigParser()
+    if not caseSensitive:
+        config.optionxform = str
+
     cfgfile = open(file, 'r')
     try:
         config.readfp(cfgfile)
@@ -114,16 +171,28 @@ def delConfigKey(file, option, section=None):
     if not section:
         section = 'DEFAULT'
 
-    if not config.has_section(section): 
-        return False
-
-    if option:
-        if not config.has_option(section, option):
+    if caseSensitive:
+        if not config.has_section(section): 
+            return False
+        tmp1 = section
+    else:
+        tmp1 = findConfigSection(config, section)
+        if tmp1 is None:
             return False
 
-        config.remove_option(section, option)
+    if option:
+        if caseSensitive:
+            if not config.has_option(tmp1, option):
+                return False
+            tmp2 = option
+        else:
+            tmp2 = findConfigOption(config, tmp1, option)
+            if tmp2 is None:
+                return False
+
+        config.remove_option(tmp1, tmp2)
     else:
-        config.remove_section(section)
+        config.remove_section(tmp1)
 
     cfgfile = open(file, 'w')
     try:
@@ -137,11 +206,12 @@ def usage():
     print  '''
     Parameter:
     -f|--file|--config-file  <configfile.ini>
-    [-s|--section-name <name>]
-    [ -r|--read-key   <name> [--auto-resolve]] |
+    [ -s|--section-name <name> ]
+    [ -r|--read-key   <name> [--auto-resolve] ] |
       -w|--write-key  <name>  -v|--value <value> |
       -d|--delete-key <name>  |
-         --delete-section ]
+         --delete-section ] |
+    [--case-sensitive]
     -h|--help : help
     '''
 
@@ -154,6 +224,7 @@ def main():
     skey = None
     kval = None
     rslv = False
+    ignc = True
     try:
         opts, args = getopt(sys.argv[1:], 'f:s:r:w:v:d:', [ 'help', 'force', \
             'file=',    'config-file=',   \
@@ -162,7 +233,9 @@ def main():
             'write=',   'write-key=',     \
                         'delete-key=',    \
                         'delete-section', \
-            'value=',   'auto-resolve' ])
+            'value=',                     \
+                        'auto-resolve',   \
+                        'case-sensitive' ])
     except GetoptError:
         print "There is an error in your parameter syntax:"
         usage()
@@ -216,6 +289,8 @@ def main():
                 print "Unexpected option: " + opt
                 sys.exit(254)
             rslv = True
+        elif opt in ('--case-sensitive'):
+            ignc = False
         elif opt in ('-v', '--value'):
             if oper <> 2 or kval:
                 print "Unexpected option: " + opt
@@ -237,13 +312,16 @@ def main():
     retval = 0
     try:
         if oper is None or oper == 1:
-            if not getConfigKey(file=file, section=sctn, option=skey, autoResolvePath=rslv) and not frce:
+            if not getConfigKey(file=file, section=sctn, option=skey, \
+                                caseSensitive=not ignc, autoResolvePath=rslv) and not frce:
                 retval = 1
         elif oper == 2:
-            if not setConfigKey(file=file, section=sctn, option=skey, value=kval) and not frce:
+            if not setConfigKey(file=file, section=sctn, option=skey, value=kval, \
+                                caseSensitive=not ignc) and not frce:
                 retval = 1
         elif oper == 3:
-            if not delConfigKey(file=file, section=sctn, option=skey) and not frce:
+            if not delConfigKey(file=file, section=sctn, option=skey, \
+                                caseSensitive=not ignc) and not frce:
                 retval = 1
         else:
             raise AttributeError('Internal error, operation not supported: ' + oper)
