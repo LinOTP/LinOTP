@@ -99,7 +99,7 @@ Cornelius Koelbel (cornelius.koelbel@lsexperts.de)
 
 =head1 COPYRIGHT
 
-Copyright 2013 
+Copyright 2013-2015
 
 This library is free software; you can redistribute it 
 under the GPLv2.
@@ -111,6 +111,7 @@ perl(1).
 =cut
 
 use strict;
+#use IO::Socket::SSL qw(debug3); # <- enable SSL debugging!
 use LWP 5.64;
 use Config::File;
 use Data::Dumper;
@@ -178,14 +179,13 @@ our $Config = {};
 
 if ( -e $CONFIG_FILE ) {
     $Config = Config::File::read_config_file($CONFIG_FILE);
-    $Config->{FSTAT} = "found!";
-}
-else {
-    $Config->{FSTAT} = "not found!";
-    $Config->{URL}     = 'https://localhost/validate/simplecheck';
-    $Config->{REALM}   = '';
-    $Config->{RESCONF} = "";
-    $Config->{Debug}   = "FALSE";
+    $Config->{FSTAT}     = "found!";
+} else {
+    $Config->{FSTAT}     = "not found!";
+    $Config->{URL}       = 'https://localhost/validate/simplecheck';
+    $Config->{REALM}     = '';
+    $Config->{RESCONF}   = "";
+    $Config->{Debug}     = "FALSE";
     $Config->{SSL_CHECK} = "FALSE";
 }
 
@@ -201,14 +201,22 @@ sub authenticate {
     my $REALM   = $Config->{REALM};
     my $RESCONF = $Config->{RESCONF};
     
-    my $debug   = false;
-    if ( $Config->{Debug} =~ /^\s*true\s*$/i ) {
-        $debug = true;
+    # Ssl support...
+    my $cafile = $Config->{HTTPS_CA_FILE} or ""; # <- ca certificate file
+    my $capath = $Config->{HTTPS_CA_DIR}  or ""; # <- ca certificate dir
+    my $chkssl = true; # <- for security reasons, chkssl is true by default
+    if ( $Config->{SSL_CHECK} =~ /^\s*false\s*$/i ) {
+        $chkssl = false;
     }
 
-    my $check_ssl = false;
-    if ( $Config->{SSL_CHECK} =~ /^\s*true\s*$/i ) {
-        $check_ssl = true;
+    my $useNasIdentifier = true;
+    if ( $Config->{PREFER_NAS_IDENTIFIER} =~ /^\s*false\s*$/i ) {
+        $useNasIdentifier = false;
+    }
+
+    my $debug = false;
+    if ( $Config->{Debug} =~ /^\s*true\s*$/i ) {
+        $debug = true;
     }
 
     &radiusd::radlog( Info, "Default URL $URL " );
@@ -226,10 +234,9 @@ sub authenticate {
         if ( exists( $Config->{$auth_type}{RESCONF} ) ) {
             $RESCONF = $Config->{$auth_type}{RESCONF};
         }
-      }
-      catch {
+    } catch {
         &radiusd::radlog( Error, "error: $@" );
-      };
+    };
 
     if ( $debug == true ) {
         &log_request_attributes;
@@ -245,17 +252,28 @@ sub authenticate {
         }
         $params{'state'} = pack 'H*', $hexState;
     }
+
+    # Username and password...
     if ( exists( $RAD_REQUEST{'User-Name'} ) ) {
         $params{"user"} = $RAD_REQUEST{'User-Name'};
     }
     if ( exists( $RAD_REQUEST{'User-Password'} ) ) {
         $params{"pass"} = $RAD_REQUEST{'User-Password'};
     }
-    if ( exists( $RAD_REQUEST{'NAS-IP-Address'} ) ) {
+
+    # IP Address of client...
+    if      ( $useNasIdentifier and exists( $RAD_REQUEST{'NAS-IP-Address'} ) ) {
         $params{"client"} = $RAD_REQUEST{'NAS-IP-Address'};
-    } elsif ( exists( $RAD_REQUEST{'NAS-IPv6-Address'} ) ) {
+    } elsif ( $useNasIdentifier and exists( $RAD_REQUEST{'NAS-IPv6-Address'} ) ) {
         $params{"client"} = $RAD_REQUEST{'NAS-IPv6-Address'};
+    } elsif ( exists( $RAD_REQUEST{'Packet-Src-IP-Address'} ) ) {
+        $params{"client"} = $RAD_REQUEST{'Packet-Src-IP-Address'};
+    } elsif ( exists( $RAD_REQUEST{'Packet-Src-IPv6-Address'} ) ) {
+        $params{"client"} = $RAD_REQUEST{'Packet-Src-IPv6-Address'};
+    } else {
+        &radiusd::radlog( Info, "Warning, PACKET_SRC_IP_ADDRESS not available" );
     }
+
     if ( length($REALM) > 0 ) {
         $params{"realm"} = $REALM;
     }
@@ -268,26 +286,37 @@ sub authenticate {
     &radiusd::radlog( Info, "User: $RAD_REQUEST{'User-Name'}" );
     if ( $debug == true ) {
         &radiusd::radlog( Debug, "urlparam $_ = $params{$_}\n" )
-          for ( keys %params );
+            for ( keys %params );
     }
     else {
-        &radiusd::radlog( Info, "urlparam $_ \n" ) for ( keys %params );
+        &radiusd::radlog( Info, "urlparam $_ \n" )
+            for ( keys %params );
     }
 
-    my $ua     = LWP::UserAgent->new();
-    if ($check_ssl == false) {
+    my $ua = LWP::UserAgent->new();
+    if ($chkssl == false) {
         $ua->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);
+    } else {
+        $ua->ssl_opts(verify_hostname => 1);
+        if (length $cafile) {
+            if ( $debug == true ) {
+                &radiusd::radlog( Info, "ssl_opts(SSL_ca_file => '$cafile')" );
+            }
+            $ua->ssl_opts(SSL_ca_file => $cafile);
+        }
+        if (length $capath) {
+            if ( $debug == true ) {
+                &radiusd::radlog( Info, "ssl_opts(SSL_ca_path => '$capath')" );
+            }
+            $ua->ssl_opts(SSL_ca_path => $capath);
+        }
     }
     my $response = $ua->post( $URL, \%params );
-    ### An exit with "die" will crash the freeradius server...
-    #die "Error at $URL\n ", $response->status_line, "\n Aborting"
-    #  unless $response->is_success;
     if (not $response->is_success) {
-    &radiusd::radlog( Info, "LinOTP Request failed: at $URL\nDetails: " . $response->status_line );
+        &radiusd::radlog( Info, "LinOTP Request failed: at $URL\nDetails: " . $response->status_line );
         $RAD_REPLY{'Reply-Message'} = "LinOTP server is not available!";
         return RLM_MODULE_FAIL;
     }
-    ###
 
     my $content  = $response->decoded_content();
     if ( $debug == true ) {
@@ -337,6 +366,16 @@ sub authenticate {
 }
 
 sub log_request_attributes {
+
+    #for ( keys %ENV ) {
+    #    &radiusd::radlog( Debug, "ENV_VARIABLE: $_ = $ENV{$_}" );
+    #    ;
+    #}
+
+    #for ( keys %RAD_CONFIG ) {
+    #    &radiusd::radlog( Debug, "RAD_CONFIG: $_ = $RAD_CONFIG{$_}" );
+    #    ;
+    #}
 
     # This shouldn't be done in production environments!
     # This is only meant for debugging!
