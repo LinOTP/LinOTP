@@ -27,8 +27,12 @@
 library for monitoring controller
 """
 
-from linotp.model import Token, Session, Realm, TokenRealm
-from sqlalchemy import or_, and_, not_
+from linotp.model import Token, Realm, TokenRealm
+from linotp.model import Config as config_model
+from linotp.model.meta import Session
+from linotp.lib.config import LinOtpConfig
+
+from sqlalchemy import and_, not_
 
 
 class MonitorHandler(object):
@@ -131,3 +135,73 @@ class MonitorHandler(object):
             realm_whitelist = self.context['all_realms'].keys()
 
         return realm_whitelist
+
+    def get_sync_status(self):
+        """
+        check if cache and config db are synced
+
+        if sync is True, the synctime is returned
+        :return: dict with keys 'sync' and 'synctime'
+        """
+        result = {'sync': False}
+
+        linotp_conf = LinOtpConfig()
+        linotp_time = linotp_conf.get('linotp.Config')
+
+        # get db entry for config
+        entry = Session.query(config_model).filter(
+            config_model.Key == 'linotp.Config').one()
+        db_time = entry.Value
+
+        # if the times are not in syc, LinOTP keeps its status
+        # cached but does not update its timestamp of sync
+        if db_time == linotp_time:
+            result['sync'] = True
+            result['synctime'] = db_time
+
+        return result
+
+    def get_config_info(self):
+        """
+        get some counts from config db
+        :return: dict with keys 'total', 'ldapresolver', 'sqlresolver',
+            'passwdresolver', 'policies', 'realms'
+        """
+        result = {}
+        # the number of config entries
+        result['total'] = Session.query(config_model).count()
+
+        # the number of resolver defintions
+        ldap = Session.query(config_model).filter(
+            config_model.Key.like('linotp.ldapresolver.%')).count()
+        result['ldapresolver'] = ldap / 13
+
+        sql = Session.query(config_model).filter(
+            config_model.Key.like('linotp.sqlresolver.%')).count()
+        result['sqlresolver'] = sql / 12
+
+        passwd = Session.query(config_model).filter(
+            config_model.Key.like('linotp.passwdresolver.%')).count()
+        result['passwdresolver'] = passwd
+
+        # the number of policy definitions
+        policies = Session.query(config_model).filter(
+            config_model.Key.like('linotp.Policy.%')).count()
+        result['policies'] = policies / 7
+
+        # the number of realm definition (?)
+        realms = Session.query(config_model).filter(
+            config_model.Key.like('linotp.useridresolver.group.%')).count()
+        result['realms'] = realms
+
+        return result
+
+    def get_active_tokencount(self):
+        """
+        get the number of active tokens from all realms (including norealm)
+
+        :return: number of active tokens
+        """
+        active = Token.LinOtpIsactive == True
+        token_active = Session.query(Token).filter(active).count()
+        return token_active
