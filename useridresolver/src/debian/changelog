@@ -1,8 +1,8 @@
-linotp-useridresolver (2.8~0dev0-1) jessie; urgency=low
+linotp-useridresolver (2.8~rc0-1) jessie; urgency=low
 
-  * Set new version 2.7.3~0dev0-1~precise
+  * Set new version 2.8~rc0-1~jessie
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 06 May 2015 16:09:53 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 13 Oct 2015 14:55:58 +0200
 
 linotp-useridresolver (2.7.2.2-1) jessie; urgency=low
 
