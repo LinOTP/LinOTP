@@ -354,6 +354,10 @@ class TestController(unittest2.TestCase):
         self.assertTrue('setConfig selfTest:True' in content['result']['value'])
         self.assertTrue(content['result']['value']['setConfig selfTest:True'])
         self.isSelfTest = True
+        
+        # *********************************************************************** #
+        warnings.warn("The self-test modus is not recommended (anymore)!")
+        # *********************************************************************** #
 
     def delete_all_realms(self):
         ''' get al realms and delete them '''

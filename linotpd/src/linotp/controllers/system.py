@@ -89,8 +89,9 @@ from linotp.lib.policy.definitions import getPolicyDefinitions
 from linotp.lib.policy.manage import create_policy_export_file
 from linotp.lib.policy import get_client_policy
 
-import linotp.lib.support
-
+from linotp.lib.support import InvalidLicenseException, \
+                               getSupportLicenseInfo, verifyLicenseInfo, \
+                               setSupportLicense
 
 from paste.fileapp import FileApp
 from cgi import escape
@@ -1623,13 +1624,29 @@ class SystemController(BaseController):
         return the support status, which is community support by default
         or the support subscription info, which could be the old license
         """
-        res = {}
         try:
 
-            res = linotp.lib.support.getSupportLicenseInfo()
+            details = None
+            try:
+                (lic, sig) = getSupportLicenseInfo(validate=False)
+            except InvalidLicenseException as err:
+                if err.type <> 'UNLICENSED':
+                    raise # Certificate "formating" errors are not ignored!
+                # When no certificate was installed, then return an empty dictiuonary...
+                lic, sig = {}, None
+                details  = { 'valid': False, 'message': str(err) }
+            
+            ### if you do not want details, just set "details = None"!
+            if details is None:
+                (chk, msg) = verifyLicenseInfo(lic, sig)
+                if chk:
+                    details = { 'valid': chk }
+                else:
+                    details = { 'valid': chk, 'message': msg }
+            ###
 
             c.audit['success'] = True
-            return sendResult(response, res, 1)
+            return sendResult(response, lic, 1, opt=details)
 
         except Exception as exx:
             log.exception("[getSupportInfo] : failed to access support info: %r" % exx)
@@ -1649,21 +1666,19 @@ class SystemController(BaseController):
         else
             value is false and the detail is returned as detail in the response
         """
-        res = {}
-        message = None
         try:
-            license_txt = getFromConfig('license', '')
+            
+            chk = False
+            opt = None
             try:
-                licString = binascii.unhexlify(license_txt)
-            except TypeError:
-                licString = license_txt
-
-            (res, msg) = linotp.lib.support.isSupportLicenseValid(licString)
-            if res == False:
-                message = {'reason':msg}
-
-            c.audit['success'] = res
-            return sendResult(response, res, 1, opt=message)
+                # getSupportLicenseInfo will return only if certificate is valid...
+                getSupportLicenseInfo()
+                chk = True
+            except InvalidLicenseException as err:
+                opt = { 'reason': str(err) }
+                
+            c.audit['success'] = chk
+            return sendResult(response, chk, 1, opt=opt)
 
         except Exception as exx:
             log.exception("[isSupportValid] failed verify support info: %r" % exx)
@@ -1698,7 +1713,7 @@ class SystemController(BaseController):
             log.debug("[setSupport] license %s", support_description)
 
 
-            res, msg = linotp.lib.support.setSupportLicense(support_description)
+            res, msg = setSupportLicense(support_description)
             if res == False:
                 message = {'reason' : msg}
 

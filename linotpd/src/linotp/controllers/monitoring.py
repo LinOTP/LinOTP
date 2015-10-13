@@ -47,7 +47,8 @@ from linotp.model.meta import Session
 
 from linotp.lib.policy import (PolicyException, getPolicies)
 
-from linotp.lib.support import getSupportLicenseInfo
+from linotp.lib.support import InvalidLicenseException, \
+                               getSupportLicenseInfo, verifyLicenseInfo
 
 from linotp.lib.monitoring import MonitorHandler
 
@@ -71,6 +72,7 @@ class MonitoringController(BaseController):
             audit.initialize()
             c.audit['success'] = False
             c.audit['client'] = get_client()
+            
             # Session handling
             check_session()
 
@@ -261,11 +263,22 @@ class MonitoringController(BaseController):
         """
         res = {}
         try:
-            license_info = getSupportLicenseInfo()
+            try:
+                license_info, license_sig = getSupportLicenseInfo(validate=False)
+            except InvalidLicenseException as err:
+                if err.type <> 'UNLICENSED':
+                    raise # Certificate "formating" errors are not ignored!
+                return sendResult(response, {}, 1, 
+                                  opt={ 'valid': False, 'message': str(err) })
 
-            if license_info == {}:
-                return sendResult(response, res, 1)
-
+            ### Add Extra infos (if needed; use details = None ... for no details!)...
+            license_chk, license_msg = verifyLicenseInfo(license_info, license_sig)
+            if license_chk:
+                details = { 'valid': license_chk }
+            else:
+                details = { 'valid': license_chk, 'message': license_msg }
+            ###
+			
             res['token-num'] = license_info.get('token-num', 0)
 
             # get all active tokens from all realms (including norealm)
@@ -275,7 +288,7 @@ class MonitoringController(BaseController):
 
             res['token-left'] = str(int(res['token-num']) - active_tokencount)
 
-            return sendResult(response, res, 1)
+            return sendResult(response, res, 1, opt=details)
 
         except Exception as exception:
             log.exception(exception)

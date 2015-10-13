@@ -118,6 +118,39 @@ def _get_httperror_from_params(pylons_request):
     return httperror
 
 
+class LinOTPJsonEncoder(json.JSONEncoder):
+    __global_jsonencoders = {}
+    
+    def __init__(self, *args, **kwds):
+        super(LinOTPJsonEncoder, self).__init__(*args, **kwds)
+
+    @staticmethod
+    def registerEncoder(atype, aconvertor):
+        if atype in LinOTPJsonEncoder.__global_jsonencoders:
+            raise ValueError("Type json-encoder already registered")
+        LinOTPJsonEncoder.__global_jsonencoders[atype] = aconvertor
+
+    @staticmethod
+    def unregisterEncoder(atype):
+        del LinOTPJsonEncoder.__global_jsonencoders[atype]
+
+    def default(self, obj):
+        #encdict = LinOTPJsonEncoder.__global_jsonencoders
+        for atype, afunction in LinOTPJsonEncoder.__global_jsonencoders.items():
+            if isinstance(obj, atype):
+                try:
+                    # The first convertor which succeed, will also win!
+                    res = afunction(obj)
+                    if not res is None:
+                        return res
+                except Exception as err:
+                    log.debug('[LinOTPJsonEncoder.default] Error, the jsonencoder for type:%s failed with error: ' % (type(err).__name__, str(err)))
+                    pass
+
+        # Let the base class default method raise the TypeError
+        return super(LinOTPJsonEncoder, self).default(obj)
+
+
 def sendError(response, exception, id=1, context=None):
     '''
     sendError - return a HTML or JSON error result document
@@ -255,7 +288,7 @@ def sendError(response, exception, id=1, context=None):
                  "id": id
             }
 
-        ret = json.dumps(res, indent=3)
+        ret = json.dumps(res, indent=3, cls=LinOTPJsonEncoder)
 
         if context in ['before', 'after']:
             response._exception = exception
@@ -295,7 +328,7 @@ def sendResult(response, obj, id=1, opt=None):
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
 
-    return json.dumps(res, indent=3)
+    return json.dumps(res, indent=3, cls=LinOTPJsonEncoder)
 
 
 def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
@@ -341,7 +374,7 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
                             }
             log.exception("failed to convert paging request parameters: %r"
                           % exx)
-            yield json.dumps(err)
+            yield json.dumps(err, cls=LinOTPJsonEncoder)
             # finally we signal end of error result
             raise StopIteration()
 
@@ -361,7 +394,7 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
 
-    surrounding = json.dumps(res)
+    surrounding = json.dumps(res, cls=LinOTPJsonEncoder)
     prefix, postfix = surrounding.split('"[DATA]"')
 
     # first return the opening

@@ -32,18 +32,23 @@ import logging
 from pylons import config
 
 from linotp.tests import TestController, url
-
-from linotp.lib.config import removeFromConfig
-from linotp.lib.support import setSupportLicense
+from linotp.lib.support import \
+    getSupportLicenseInfo, setSupportLicenseInfo, removeSupportLicenseInfo, \
+    readLicenseInfo, InvalidLicenseException
 
 log = logging.getLogger(__name__)
 
 
-class TestMonitoringController(TestController):
+class TestMonitoringController(TestController): 
 
     def setUp(self):
-        TestController.setUp(self)
-        self.set_config_selftest()
+        super(TestMonitoringController, self).setUp()
+        
+        # *************************************************** #
+        # WARNING: das darfst du nicht (so sagte mir Omar)
+        #self.set_config_selftest()
+        # *************************************************** #
+        
         self.create_common_resolvers()
         self.create_common_realms()
         return
@@ -52,11 +57,52 @@ class TestMonitoringController(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        removeFromConfig('linotp.license')
-        TestController.tearDown(self)
-        return
+        
+        super(TestMonitoringController, self).tearDown()
 
-    # helper function:
+
+    '''### helper functions: ###'''
+    def checkCurrentLicense(self):
+        try:
+            # Test current license...
+            getSupportLicenseInfo(validate=True, raiseException=True)
+            return 1 # support license available...
+        except InvalidLicenseException as err:
+            if err.type <> 'UNLICENSED':
+                return -1 # support license is invalid
+            else:
+                return  0 # support license not available
+        
+    def getCurrentLicense(self):
+        try:
+            # Test current license...
+            lic, sig = getSupportLicenseInfo(validate=True, raiseException=True)
+            return (lic, sig) # support license available and valid...
+        except InvalidLicenseException as err:
+            if err.type <> 'UNLICENSED':
+                self.fail("LinOTP support-license is invalid\nDetails: " + str(err))
+                raise # support license is invalid
+            return (None, None) # support license not available
+        
+    def setCurrentLicense(self, old_lic, old_sig):
+        if old_lic is None and old_sig is None:
+            removeSupportLicenseInfo
+        else:
+            setSupportLicenseInfo(old_lic, old_sig)
+
+    def installLicense(self, licfile):
+        try:
+            new_lic, new_sig = readLicenseInfo(licfile)
+        except Exception as err:
+            self.fail("Invalid license-file: " + licfile + "\nReason: " + str(err))
+            raise # paranoia: the call must end here!
+
+        try:
+            setSupportLicenseInfo(new_lic, new_sig)
+        except Exception as err:
+            self.fail("Invalid license-file: " + licfile + "\nReason: " + str(err))
+            raise # paranoia: the call must end here!
+
     def create_token(self, serial="1234567", realm=None, user=None,
                      active=True):
         """
@@ -77,24 +123,22 @@ class TestMonitoringController(TestController):
             parameters['realm'] = realm
         if user:
             parameters['user'] = user
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_authenticated_request(controller='admin', action='init', params=parameters)
         self.assertTrue('"value": true' in response, response)
         if active is False:
-            response = self.app.get(url(controller='admin', action='disable'),
-                                    params={'serial': serial})
+            response = self.make_authenticated_request(controller='admin', action='disable', params={'serial': serial})
             self.assertTrue('"value": 1' in response, response)
         return serial
 
-    # tests:
+    '''### UnitTests... ###'''
     def test_config(self):
-        response = self.app.get(url(
-            controller='monitoring', action='config'), params={})
+        response = self.make_authenticated_request(
+            controller='monitoring', action='config', params={})
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('realms'), 3, response)
         self.assertEqual(values.get('passwdresolver'), 2, response)
-        self.assertEqual(values.get('sync'), True, response)
+        # self.assertEqual(values.get('sync'), True, response)
         return
 
     def test_token_realm_list(self):
@@ -104,8 +148,8 @@ class TestMonitoringController(TestController):
         self.create_token(serial='0004', realm='myotherrealm')
         # test what happens if first realm is empty:git add
         parameters = {'realms': ',mydefrealm,myotherrealm'}
-        response = self.app.get(url(
-            controller='monitoring', action='tokens'), params=parameters)
+        response = self.make_authenticated_request(
+            controller='monitoring', action='tokens', params=parameters)
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('Realms').get('mydefrealm').get('total'), 2,
@@ -119,8 +163,8 @@ class TestMonitoringController(TestController):
         self.create_token(serial='0013', realm='mydefrealm', active=True)
         self.create_token(serial='0014', realm='myotherrealm', active=False)
         parameters = {'realms': ',mydefrealm,myotherrealm', 'status': 'active'}
-        response = self.app.get(url(
-            controller='monitoring', action='tokens'), params=parameters)
+        response = self.make_authenticated_request(
+            controller='monitoring', action='tokens', params=parameters)
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('Realms').get('mydefrealm').get('total'),
@@ -147,8 +191,8 @@ class TestMonitoringController(TestController):
             'realms': '*',
             'status': 'unassigned&inactive'
         }
-        response = self.app.get(url(
-            controller='monitoring', action='tokens'), params=parameters)
+        response = self.make_authenticated_request(
+            controller='monitoring', action='tokens', params=parameters)
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('Realms').get('mydefrealm').get('total'),
@@ -163,40 +207,51 @@ class TestMonitoringController(TestController):
         self.assertEqual(values.get('Summary').get('total'), 6, response)
         return
 
+
     def test_nolicense(self):
-        response = self.app.get(url(
-            controller='monitoring', action='license'), params={})
-        resp = json.loads(response.body)
-        self.assertEqual(resp.get('result').get('value'), {} , response)
-        return
-
+        old_lic, old_sig = self.getCurrentLicense()
+        try:
+            # Remove previous license...
+            self.setCurrentLicense(None, None)
+            
+            response = self.make_authenticated_request(
+                controller='monitoring', action='license', params={})
+            resp = json.loads(response.body)
+            self.assertEqual(resp.get('result').get('value'), {} , response)
+            
+            pass # test is a pass
+        finally:
+            # restore previous license...
+            self.setCurrentLicense(old_lic, old_sig)
+        
     def test_license(self):
-        # Todo: skipp this test if no licensefile is available
-        self.create_token(serial='0031')
-        self.create_token(serial='0032', user='root')
-        self.create_token(serial='0033', realm='mydefrealm')
-        self.create_token(serial='0034', realm='myotherrealm')
-        self.create_token(serial='0035', realm='myotherrealm', active=False)
-        self.create_token(serial='0036', realm='myotherrealm', user='max2',
-                          active=False)
-
-        licpath = config.get('monitoringTests.licfile', '')
-        self.assertTrue(licpath, 'Path to test license file is not configured, '
-                                 'check test.ini!')
-        with open(licpath, 'r') as licfile:
-            data = licfile.readlines()
-
-        licstring = ''
-        for line in data:
-            licstring += line
-        res, msg = setSupportLicense(licstring)
-
-        response = self.app.get(url(
-            controller='monitoring', action='license'), params={})
-        resp = json.loads(response.body)
-        value = resp.get('result').get('value')
-        self.assertEqual(value.get('token-num'), '10', response)
-        self.assertEqual(value.get('token-left'), '6', response)
-        return
+        old_lic, old_sig = self.getCurrentLicense()
+        try:
+            # Load the license file...
+            licfile = config.get('monitoringTests.licfile', '')
+            self.assertTrue(licfile, 'Path to test license file is not configured, '
+                                     'check your configuration (test.ini)!')
+            
+            self.installLicense(licfile)
+                    
+            self.create_token(serial='0031')
+            self.create_token(serial='0032', user='root')
+            self.create_token(serial='0033', realm='mydefrealm')
+            self.create_token(serial='0034', realm='myotherrealm')
+            self.create_token(serial='0035', realm='myotherrealm', active=False)
+            self.create_token(serial='0036', realm='myotherrealm', user='max2',
+                              active=False)
+                              
+            response = self.make_authenticated_request(
+                controller='monitoring', action='license', params={})
+            resp = json.loads(response.body)
+            value = resp.get('result').get('value')
+            self.assertEqual(value.get('token-num'), '10', response)
+            self.assertEqual(value.get('token-left'), '6', response)
+            
+            pass # test is a pass
+        finally:
+            # restore previous license...
+            self.setCurrentLicense(old_lic, old_sig)
 
 ## eof ########################################################################
