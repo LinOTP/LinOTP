@@ -34,7 +34,6 @@ from pylons.i18n.translation import _
 
 from linotp.lib.base import BaseController
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.config import LinOtpConfig
 
 from linotp.lib.realm import getRealms
 
@@ -45,12 +44,8 @@ from linotp.lib.user import (getUserFromRequest, )
 from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.model.meta import Session
-from linotp.model import Config as config_model
-from linotp.model import Token
 
 from linotp.lib.policy import (PolicyException, getPolicies)
-
-from sqlalchemy import and_
 
 from linotp.lib.support import getSupportLicenseInfo
 
@@ -228,53 +223,25 @@ class MonitoringController(BaseController):
         exception:
             if an error occurs an exception is serialized and returned
         """
-        result = {'sync': False}
-
+        result = {}
         try:
-            linotp_conf = LinOtpConfig()
-            linotp_time = linotp_conf.get('linotp.Config')
+            monit_handler = MonitorHandler(context=self.context)
 
-            # get db entry for config
-            entry = Session.query(config_model).filter(
-                config_model.Key == 'linotp.Config').one()
-            db_time = entry.Value
-
-            # if the times are not in syc, LinOTP keeps its status
-            # cached but does not update its timestamp of sync
-            if db_time == linotp_time:
-                result['sync'] = True
-                result['synctime'] = db_time
+            result = monit_handler.get_sync_status()
 
             # useful counts:
-            # the number of config entries
-            result['total'] = Session.query(config_model).count()
+            counts = monit_handler.get_config_info()
 
-            # the number of resolver defintions
-            ldap = Session.query(config_model).filter(
-                config_model.Key.like('linotp.ldapresolver.%')).count()
-            result['ldapresolver'] = ldap / 13
+            result.update(counts)
 
-            sql = Session.query(config_model).filter(
-                config_model.Key.like('linotp.sqlresolver.%')).count()
-            result['sqlresolver'] = sql / 12
+            ldap = 13 * result['ldapresolver']
+            sql = 12 * result['sqlresolver']
+            policies = 7 * result['policies']
+            realms = result['realms']
+            passwd = result['passwdresolver']
+            total = result['total']
 
-            passwd = Session.query(config_model).filter(
-                config_model.Key.like('linotp.passwdresolver.%')).count()
-            result['passwdresolver'] = passwd
-
-            # the number of policy definitions
-            policies = Session.query(config_model).filter(
-                config_model.Key.like('linotp.Policy.%')).count()
-            result['Policy'] = policies / 7
-
-            # the number of realm definition (?)
-            realms = Session.query(config_model).filter(
-                config_model.Key.like('linotp.useridresolver.group.%')) \
-                .count()
-            result['realms'] = realms
-
-            result['netto'] = \
-                result['total'] - ldap - sql - passwd - policies - realms
+            result['netto'] = total - ldap - sql - passwd - policies - realms
 
             return sendResult(response, result)
 
@@ -291,8 +258,6 @@ class MonitoringController(BaseController):
         return
         return the support status, which is community support by default
         or the support subscription info, which could be the old license
-
-
         """
         res = {}
         try:
@@ -304,11 +269,11 @@ class MonitoringController(BaseController):
             res['token-num'] = license_info.get('token-num', 0)
 
             # get all active tokens from all realms (including norealm)
-            active = Token.LinOtpIsactive == True
-            token_assigned = Session.query(Token).filter(active).count()
-            res['token-active'] = str(token_assigned)
+            monit_handler = MonitorHandler(context=self.context)
+            active_tokencount = monit_handler.get_active_tokencount()
+            res['token-active'] = str(active_tokencount)
 
-            res['token-left'] = str(int(res['token-num']) - token_assigned)
+            res['token-left'] = str(int(res['token-num']) - active_tokencount)
 
             return sendResult(response, res, 1)
 

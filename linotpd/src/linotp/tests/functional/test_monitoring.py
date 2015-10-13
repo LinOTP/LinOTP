@@ -94,7 +94,7 @@ class TestMonitoringController(TestController):
         values = resp.get('result').get('value')
         self.assertEqual(values.get('realms'), 3, response)
         self.assertEqual(values.get('passwdresolver'), 2, response)
-        # self.assertEqual(values.get('sync'), True, response)
+        self.assertEqual(values.get('sync'), True, response)
         return
 
     def test_token_realm_list(self):
@@ -171,6 +171,7 @@ class TestMonitoringController(TestController):
         return
 
     def test_license(self):
+        # Todo: skipp this test if no licensefile is available
         self.create_token(serial='0031')
         self.create_token(serial='0032', user='root')
         self.create_token(serial='0033', realm='mydefrealm')
