@@ -2790,8 +2790,8 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
     log.debug("[get_client_policy] got policies %s " % Pols)
 
     def get_array(policy, attribute="client", marks=False):
-        ## This function returns the parameter "client" or
-        ## "user" in a policy as an array
+        # This function returns the parameter "client" or
+        # "user" in a policy as an array
         attrs = policy.get(attribute, "")
         if attrs == "None" or attrs is None:
             attrs = ""
@@ -2842,69 +2842,67 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
             if len(get_array(policy, attribute="client")) == 0:
                 Policies[pol] = policy
 
-    ## 2. Within those policies select the policy with the user.
-    ##     if there is a policy with this very user, return only
-    ##     these policies, otherwise return all policies
+    # 2. Within those policies select the policy with the user.
+    #     if there is a policy with this very user, return only
+    #     these policies, otherwise return all policies
     if user:
-        user_policy_found = False
-        own_policies = {}
-        default_policies = {}
-        for polname, pol in Policies.items():
-            users = get_array(pol, attribute="user")
-            log.debug("[get_client_policy] search user %s in users %s "
-                      "of policy %s" % (user, users, polname))
-            if user in users or '*' in users:
-                log.debug("[get_client_policy] adding %s to "
-                          "own_policies" % polname)
-                own_policies[polname] = pol
-            elif len(users) == 0:
-                log.debug("[get_client_policy] adding %s to "
-                          "default_policies" % polname)
-
-                default_policies[polname] = pol
-            else:
-                log.debug("[get_client_policy] policy %s contains only users "
-                          "(%s) other than %s" % (polname, users, user))
-
-        if len(own_policies):
-            Policies = own_policies
-            user_policy_found = True
-        else:
-            Policies = default_policies
-
-        ##3. If no user specific policy was found, we now take a look,
-        ##   if we find a policy with the matching resolver.
-        if not user_policy_found and realm and find_resolver:
-            ## get the resolver of the user in the realm and search for this
-            ## resolver in the policies
+        user_resolvers = []
+        if find_resolver:
             if userObj is not None:
                 resolvers = getResolversOfUser(userObj)
             else:
                 resolvers = getResolversOfUser(User(login=user, realm=realm))
-            own_policies = {}
-            default_policies = {}
-            for polname, pol in Policies.items():
-                resolvs = get_array(pol, attribute="user", marks=True)
-                for r in resolvers:
-                    # trim the resolver useridresolver.LDAPIdResolver.\
-                    # IdResolver.local to its name
-                    r = r[r.rfind('.') + 1:]
-                    if r in resolvs:
-                        log.debug("[get_client_policy] adding %s to "
-                                  "own_policies" % polname)
+            for resolver in resolvers:
+                user_resolvers.append(resolver.split('.')[-1])
+
+        own_policies = {}
+        default_policies = {}
+        for polname, pol in Policies.items():
+            # lookup the user defintions and resolver defintion in the policy
+            policy_users = get_array(pol, attribute="user")
+            policy_resolvers = get_array(pol, attribute="user", marks=True)
+
+            log.debug("[get_client_policy] search user %s in users %r or "
+                      "resolvers %r of policy %s" %
+                      (user, policy_users, policy_resolvers, polname))
+
+            # if there is no user or resolver defintion in policy: skip
+            if not policy_users and not policy_resolvers:
+                log.debug("[get_client_policy] adding %s to "
+                          "default_policies" % polname)
+                default_policies[polname] = pol
+
+            # if there is a wildcard, we grant access
+            elif '*' in policy_users:
+                log.debug("[get_client_policy] wildcard match: adding %s to "
+                          "own_policies" % polname)
+                own_policies[polname] = pol
+
+            # if there is a users defintion, check if user is in this list
+            elif user in policy_users:
+                log.debug("[get_client_policy] user match: adding %s to "
+                          "own_policies" % polname)
+                own_policies[polname] = pol
+
+            # if there is a resolver definition, check if one of
+            #  the users resolvers is in this policy resolver list
+            elif realm and find_resolver and policy_resolvers:
+                for user_resolver in user_resolvers:
+                    if user_resolver in policy_resolvers:
+                        log.debug("[get_client_policy] resolver match:"
+                                  " adding %s to own_policies" % polname)
                         own_policies[polname] = pol
-                    elif len(resolvs) == 0:
-                        log.debug("[get_client_policy] adding %s (no "
-                                  "resolvers) to default_policies" % polname)
-                        default_policies[polname] = pol
-                    else:
-                        log.debug("[get_client_policy] policy %s contains "
-                                  "only resolvers (%s) other than %s" %
-                                  (polname, resolvs, r))
-            if len(own_policies):
-                Policies = own_policies
+
+            # else nothing has matched, we grumble a little
             else:
-                Policies = default_policies
+                log.debug("[get_client_policy] policy %s contains only users "
+                          "(%s) or resolvers (%r) other than for user %s"
+                          % (polname, policy_users, policy_resolvers, user))
+
+        if len(own_policies):
+            Policies = own_policies
+        else:
+            Policies = default_policies
 
     return Policies
 
