@@ -86,6 +86,8 @@ environ = {}
 
 
 class TestController(unittest2.TestCase):
+    DEFAULT_WEB_METHOD = 'POST'
+    
     '''
     the TestController, which loads the linotp app upfront
     '''
@@ -185,7 +187,7 @@ class TestController(unittest2.TestCase):
         Makes a request using WebTest app self.app
         """
         if method is None:
-            method = 'POST'
+            method = TestController.DEFAULT_WEB_METHOD
         assert controller and action
         assert method in ['GET', 'POST']
 
@@ -220,7 +222,8 @@ class TestController(unittest2.TestCase):
         See for full example:
             http://en.wikipedia.org/wiki/Digest_access_authentication
         """
-        
+        if method is None:
+            method = TestController.DEFAULT_WEB_METHOD
         assert username
         assert method in ['GET', 'POST']
 
