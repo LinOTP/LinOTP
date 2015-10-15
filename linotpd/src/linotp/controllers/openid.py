@@ -73,6 +73,9 @@ from linotp.lib.openid import OPENID_1_0_TYPE
 
 from urllib import urlencode
 
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
+
 audit = config.get('audit')
 
 optional = True
@@ -99,9 +102,9 @@ class OpenidController(BaseController):
             for key, value in params.items():
                 log.debug("[__before__::%r:%r]" % (key, value))
 
-
             audit.initialize()
-            c.audit['client'] = get_client()
+            c.audit['client'] = get_client(request)
+            self.request_context['Audit'] = audit
 
             self.storage = config.get('openid_sql')
 
@@ -136,6 +139,7 @@ class OpenidController(BaseController):
             ## default return for the __before__ and __after__
             log.debug("[__before__::%r]" % (response))
             valid_request = True
+
             return response
 
         except PolicyException as pex:

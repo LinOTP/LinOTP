@@ -47,12 +47,18 @@ from linotp.lib.user import  getDefaultRealm
 from linotp.lib.user import  getUserFromRequest
 
 
-from linotp.lib.token import getTokenType, getOtp, get_multi_otp, getTokens4UserOrSerial
+from linotp.lib.token import getTokenType
+from linotp.lib.token import getOtp
+from linotp.lib.token import get_multi_otp
+from linotp.lib.token import getTokens4UserOrSerial
+
 from linotp.lib.policy import checkPolicyPre, PolicyException
 from linotp.lib.reply import sendResult, sendError
 
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
+
 from linotp.model.meta import Session
-import traceback
 
 audit = config.get('audit')
 
@@ -77,14 +83,14 @@ class GettokenController(BaseController):
     The functions are described below in more detail.
     '''
 
-    def __before__(self, action, **params):
+    def __before__(self, action):
 
         log.debug("[__before__]")
 
         try:
             audit.initialize()
-            c.audit['client'] = get_client()
-            check_session()
+            c.audit['client'] = get_client(request)
+            check_session(request)
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
@@ -133,16 +139,18 @@ class GettokenController(BaseController):
             curTime = getParam(param, "curTime", optional)
             view = getParam(param, "view", optional)
 
-            r1 = checkPolicyPre('admin', 'getotp', param)
+            r1 = checkPolicyPre('admin', 'getotp', param, context=self.request_context)
             log.debug("[getmultiotp] admin-getotp returned %s" % r1)
 
-            max_count = checkPolicyPre('gettoken', 'max_count', param)
+            max_count = checkPolicyPre('gettoken', 'max_count', param,
+                                       context=self.request_context)
             log.debug("[getmultiotp] checkpolicypre returned %s" % max_count)
             if count > max_count:
                 count = max_count
 
             log.debug("[getmultiotp] retrieving OTP value for token %s" % serial)
-            ret = get_multi_otp(serial, count=int(count), curTime=curTime)
+            ret = get_multi_otp(serial, count=int(count), curTime=curTime,
+                                context=self.request_context)
             ret["serial"] = serial
 
             c.audit['success'] = True
@@ -213,7 +221,7 @@ class GettokenController(BaseController):
                 log.debug("[getotp] retrieving OTP value for token %s" % serial)
             elif user.login:
                 log.debug("[getotp] retrieving OTP value for token for user %s@%s" % (user.login, user.realm))
-                toks = getTokens4UserOrSerial(user, serial)
+                toks = getTokens4UserOrSerial(user, serial, context=self.request_context)
                 tokennum = len(toks)
                 if tokennum > 1:
                     log.debug("[getotp] The user has more than one token. Returning the list of serials")
@@ -232,12 +240,14 @@ class GettokenController(BaseController):
 
             # if a serial was given or a unique serial could be received from the given user.
             if serial:
-                max_count = checkPolicyPre('gettoken', 'max_count', param)
+                max_count = checkPolicyPre('gettoken', 'max_count', param,
+                                           context=self.request_context)
                 log.debug("[getmultiotp] checkpolicypre returned %s" % max_count)
                 if max_count <= 0:
                     return sendError(response, "The policy forbids receiving OTP values for the token %s in this realm" % serial , 1)
 
-                (res, pin, otpval, passw) = getOtp(serial, curTime=curTime)
+                (res, pin, otpval, passw) = getOtp(serial, curTime=curTime,
+                                                   context=self.request_context)
 
             c.audit['success'] = True
 

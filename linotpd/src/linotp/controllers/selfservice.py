@@ -51,7 +51,6 @@ from pylons.templating import render_mako as render
 
 
 from linotp.lib.token import getTokenType
-
 from linotp.lib.token import getTokens4UserOrSerial
 
 from linotp.lib.policy import getSelfserviceActions
@@ -62,8 +61,8 @@ from linotp.lib.util import remove_empty_lines
 
 from linotp.lib.reply import sendError
 
-from linotp.lib.util    import get_version
-from linotp.lib.util    import get_copyright_info
+from linotp.lib.util import get_version
+from linotp.lib.util import get_copyright_info
 from linotp.lib.util import get_client
 
 from linotp.model.meta import Session
@@ -73,10 +72,11 @@ from linotp.lib.userservice import (add_dynamic_selfservice_enrollment,
                                     add_dynamic_selfservice_policies
                                     )
 
-
 from linotp.lib.selfservice import get_imprint
 from linotp.lib.user import User
 
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
 
 import traceback
 # import datetime, random
@@ -145,10 +145,12 @@ class SelfserviceController(BaseController):
 
             audit.initialize()
             c.audit['success'] = False
-            c.audit['client'] = get_client()
+            c.audit['client'] = get_client(request)
 
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
+
+            self.request_context['Audit'] = audit
 
             (auth_type, auth_user) = get_auth_user(request)
 
@@ -160,7 +162,8 @@ class SelfserviceController(BaseController):
 
             if auth_type == "repoze":
                 # checking the session
-                if (False == check_selfservice_session(request.url,
+                if (False == check_selfservice_session(request,
+                                                       request.url,
                                                        request.path,
                                                        request.cookies,
                                                        request.params
@@ -181,7 +184,8 @@ class SelfserviceController(BaseController):
             # only the defined actions should be displayed
             # - remark: the generic actions like enrollTT are allready approved
             #   to have a rendering section and included
-            actions = getSelfserviceActions(self.authUser)
+            actions = getSelfserviceActions(self.authUser,
+                                            context=self.request_context)
             c.actions = actions
             for policy in actions:
                 if "=" in policy:
@@ -207,6 +211,7 @@ class SelfserviceController(BaseController):
 
             c.otplen = -1
             c.totp_len = -1
+
 
             return response
 
@@ -457,7 +462,8 @@ class SelfserviceController(BaseController):
         This is the form for an google token to do web provisioning.
         '''
         try:
-            c.actions = getSelfserviceActions(self.authUser)
+            c.actions = getSelfserviceActions(self.authUser,
+                                              context=self.request_context)
             return render('/selfservice/webprovisiongoogle.mako')
 
         except Exception as exx:

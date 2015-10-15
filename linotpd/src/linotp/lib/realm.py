@@ -109,7 +109,7 @@ def getRealmObject(name=u"", id=0):
             realmObj = realmObjects[0]
     return realmObj
 
-def getRealms(aRealmName=""):
+def getRealms(aRealmName="", context=None):
     '''
     lookup for a defined realm or all realms
 
@@ -135,17 +135,20 @@ def getRealms(aRealmName=""):
     '''
     ret = {}
 
-    config = getLinotpConfig()
-
+    if not context:
+        config = getLinotpConfig()
+    else:
+        config = context["Config"]
     realms = config.getRealms()
-    ''' only parse once per session '''
+
+    # only parse once per session
     if realms is None:
         realms = _initalGetRealms()
         config.setRealms(realms)
 
     ''' check if only one realm is searched '''
     if aRealmName != "" :
-        if realms.has_key(aRealmName):
+        if aRealmName in realms:
             ret[aRealmName] = realms.get(aRealmName)
     else:
         ret.update(realms)
@@ -275,7 +278,8 @@ def setDefaultRealm(defaultRealm):
         storeConfig(u"linotp.DefaultRealm", defaultRealm);
     return ret
 
-def getDefaultRealm():
+
+def getDefaultRealm(config=None):
     """
     return the default realm
     - lookup in the config for the DefaultRealm key
@@ -285,7 +289,10 @@ def getDefaultRealm():
     """
 
     defaultRealmDef = "linotp.DefaultRealm"
-    defaultRealm = getFromConfig(defaultRealmDef, "")
+    if not config:
+        defaultRealm = getFromConfig(defaultRealmDef, "")
+    else:
+        defaultRealm = config.get(defaultRealmDef, "")
 
     if defaultRealm is None or defaultRealm == "":
         log.info("Configuration issue: no Default Realm defined!")

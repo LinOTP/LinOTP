@@ -232,7 +232,8 @@ class TestGetOtpController(TestController):
         parameters = {'serial' : 'dpw1',
                       'curTime' : self.curTime,
                       'selftest_admin' : 'admin' }
-        response = self.app.get(url(controller='gettoken', action='getotp'), params=parameters)
+        response = self.app.get(url(controller='gettoken', action='getotp'),
+                                params=parameters)
         print "current time %s" % self.curTime
         print response
         assert '"otpval": "427701"' in response
@@ -343,7 +344,8 @@ class TestGetOtpController(TestController):
                       'curTime' : self.TOTPcurTime,
                       'count' : "20",
                       'selftest_user' : 'localuser@mydefrealm' }
-        response = self.app.get(url(controller='userservice', action='getmultiotp'), params=parameters)
+        response = self.app.get(url(controller='userservice',
+                                    action='getmultiotp'), params=parameters)
         print "test_09: ", response
         assert '"message": "ERR410:' in response
 

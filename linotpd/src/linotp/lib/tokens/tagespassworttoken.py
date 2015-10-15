@@ -50,8 +50,8 @@ class TagespasswortTokenClass(TokenClass):
 
     '''
 
-    def __init__(self, aToken):
-        TokenClass.__init__(self, aToken)
+    def __init__(self, aToken, context=None):
+        TokenClass.__init__(self, aToken, context=context)
         self.setType(u"DPW")
 
         self.hKeyRequired = True

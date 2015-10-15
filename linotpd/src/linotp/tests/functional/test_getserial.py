@@ -168,21 +168,21 @@ class TestGetSerialController(TestController):
         test for the otp of the first token, with all realms
         '''
 
-        parameters = {'otp' : '359152'}
-        response = self.app.get(url(controller='admin', action='getSerialByOtp'), params=parameters)
+        parameters = {'otp': '359152'}
+        response = self.app.get(url(controller='admin',
+                                    action='getSerialByOtp'),
+                                params=parameters)
         print response
         assert '"serial": "oath_mydef"' in response
 
+        # test for the otp of the first token, with only in realm mydef
+        # But it fails, due to same OTP value!
 
-
-        '''
-        test for the otp of the first token, with only in realm mydef
-        But it fails, due to same OTP value!
-        '''
-
-        parameters = {'otp' : '359152',
+        parameters = {'otp': '359152',
                       'realm': 'mydef'}
-        response = self.app.get(url(controller='admin', action='getSerialByOtp'), params=parameters)
+        response = self.app.get(url(controller='admin',
+                                    action='getSerialByOtp'),
+                                params=parameters)
         print response
         assert '"serial": ""' in response
 

@@ -260,9 +260,14 @@ def splitUser(username):
     return (user, group)
 
 
-def getUserFromParam(param, optionalOrRequired):
+def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
     realm = ""
     conf = ""
+
+    if optional:
+        optionalOrRequired = True
+    if required:
+        optionalOrRequired = False
 
     log.debug("[getUserFromParam] entering function")
     user = getParam(param, "user", optionalOrRequired)
@@ -276,7 +281,7 @@ def getUserFromParam(param, optionalOrRequired):
         if splitAtSign.lower() == "true":
             (user, realm) = splitUser(user)
 
-    if param.has_key("realm"):
+    if "realm" in param:
         realm = param["realm"]
 
     if user != "":
@@ -285,7 +290,7 @@ def getUserFromParam(param, optionalOrRequired):
 
     usr = User(user, realm, "")
 
-    if param.has_key("resConf"):
+    if "resConf" in param:
         conf = param["resConf"]
         # with the short resolvernames, we have to extract the
         # configuration name from the resolver spec
@@ -392,14 +397,22 @@ def setRealm(realm, resolvers):
 
     return True
 
-def getUserRealms(user):
+
+def getUserRealms(user, allRealms=None, defaultRealm=None):
     '''
     Returns the realms, a user belongs to.
     If the user has no realm but only a useridresolver, than all realms, containing this
     resolver are returned.
     This function is used for the policy module
     '''
-    allRealms = getRealms()
+    if not allRealms:
+        allRealms = getRealms()
+
+    if not defaultRealm:
+        defRealm = getDefaultRealm().lower()
+    else:
+        defRealm = defaultRealm.lower()
+
     Realms = []
     if user.realm == "" and user.conf == "":
         defRealm = getDefaultRealm().lower()
@@ -509,7 +522,7 @@ def getResolvers(user):
 
     return Resolver
 
-def getResolversOfUser(user, use_default_realm=True):
+def getResolversOfUser(user, use_default_realm=True, allRealms=None, defaultRealm=None):
     '''
     This returns the list of the Resolvers of a user in a given realm.
     Usually this should only return one resolver
@@ -524,6 +537,9 @@ def getResolversOfUser(user, use_default_realm=True):
     login = user.login
     realm = user.realm
 
+    if not defaultRealm:
+        defaultRealm = getDefaultRealm()
+
     Resolvers = user.getResolvers()
 
     if len(Resolvers) > 0:
@@ -534,12 +550,14 @@ def getResolversOfUser(user, use_default_realm=True):
 
     if realm is None or realm == "":
         if use_default_realm:
-            realm = getDefaultRealm()
+            realm = defaultRealm
 
     # if realm is None or realm=="" or login is None or login == "":
     #    log.error("[getResolversOfUser] You need to specify the name ( %s) and the realm (%s) of a user with conf %s" % (login, realm, user.conf))
+    if not allRealms:
+        allRealms = getRealms()
 
-    realms = getRealms();
+    realms = allRealms
 
     if user.conf != "":
         reso = getConf(realms, user.conf)
@@ -591,6 +609,7 @@ def getResolversOfUser(user, use_default_realm=True):
 
     log.debug("[getResolversOfUser] Found the user %r in %r" % (login, Resolvers))
     return Resolvers
+
 
 def getUserId(user):
     """

@@ -47,7 +47,7 @@ class NoOtpAuthTokenException(Exception):
     pass
 
 
-def create_google_authenticator(param, user=None):
+def create_google_authenticator(param, user=None, context=None):
     '''
     create url for google authenticator
 
@@ -116,7 +116,7 @@ def create_google_authenticator(param, user=None):
 
     # show the user login in the token prefix
     if len(login) > 0:
-        label = get_tokenlabel(login, realm, serial)
+        label = get_tokenlabel(login, realm, serial, context=context)
         if len(param.get('description', '')) > 0 and '<d>' in label:
             label = label.replace('<d>', param.get('description'))
 
@@ -133,7 +133,8 @@ def create_google_authenticator(param, user=None):
     return ga
 
 
-def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
+def create_oathtoken_url(user, realm, otpkey, type="hmac", serial="",
+                         context=None):
     # 'url' : 'oathtoken:///addToken?name='+serial +
     #                '&key='+otpkey+
     #                '&timeBased=false&counter=0&numDigites=6&lockdown=true',
@@ -142,7 +143,7 @@ def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
     if "totp" == type.lower():
         timebased = "&timeBased=true"
 
-    label = get_tokenlabel(user, realm, serial)
+    label = get_tokenlabel(user, realm, serial, context=context)
     url_label = quote(label)
 
     url = "oathtoken:///addToken?name=%s&lockdown=true&key=%s%s" % (

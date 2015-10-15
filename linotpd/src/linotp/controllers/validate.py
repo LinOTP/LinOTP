@@ -65,6 +65,9 @@ from linotp.lib.policy import AuthorizeException
 from linotp.lib.policy import set_realm
 from linotp.lib.policy import is_auth_return
 
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
+
 from linotp.lib.token import getTokens4UserOrSerial
 
 from linotp.lib.error import ParameterError
@@ -101,7 +104,9 @@ class ValidateController(BaseController):
 
         try:
             audit.initialize()
-            c.audit['client'] = get_client()
+            c.audit['client'] = get_client(request)
+            if self.request_context:
+                self.request_context['Audit'] = audit
             return response
 
         except Exception as exx:
@@ -155,8 +160,10 @@ class ValidateController(BaseController):
 
         # AUTHORIZATION Pre Check
         # we need to overwrite the user.realm in case the user does not exist in the original realm (setrealm-policy)
-        user.realm = set_realm(user.login, realm, exception=True)
-        check_user_authorization(user.login, user.realm, exception=True)
+        user.realm = set_realm(user.login, realm, exception=True,
+                               context=self.request_context)
+        check_user_authorization(user.login, user.realm, exception=True,
+                                 context=self.request_context)
 
         if isSelfTest() == True:
             initTime = getParam(param, "init", optional)
@@ -164,18 +171,20 @@ class ValidateController(BaseController):
                 if options is None:
                     options = {}
                 options['initTime'] = initTime
-        th = TokenHandler()
+        th = TokenHandler(context=self.request_context)
         (ok, opt) = th.checkUserPass(user, passw, options=options)
 
         c.audit['success'] = ok
 
         if ok:
             # AUTHORIZATION post check
-            check_auth_tokentype(c.audit['serial'], exception=True, user=user)
-            check_auth_serial(c.audit['serial'], exception=True, user=user)
+            check_auth_tokentype(c.audit['serial'], exception=True, user=user,
+                                 context=self.request_context)
+            check_auth_serial(c.audit['serial'], exception=True, user=user,
+                              context=self.request_context)
 
         # add additional details
-        if is_auth_return(ok, user=user):
+        if is_auth_return(ok, user=user, context=self.request_context):
             if opt == None:
                 opt = {}
             if ok:
@@ -243,7 +252,7 @@ class ValidateController(BaseController):
                 c.audit['success'] = False
                 c.audit['info'] = unicode(exx)
                 ok = False
-                if is_auth_return(ok):
+                if is_auth_return(ok, context=self.request_context):
                     if opt == None:
                         opt = {}
                     opt['error'] = c.audit.get('info')
@@ -314,7 +323,7 @@ class ValidateController(BaseController):
 
             ok = False
             try:
-                th = TokenHandler()
+                th = TokenHandler(context=self.request_context)
                 ok, opt = th.checkYubikeyPass(passw)
                 c.audit['success'] = ok
 
@@ -477,7 +486,7 @@ class ValidateController(BaseController):
             else:
                 param['serial'] = serial
 
-                tokens = getTokens4UserOrSerial(serial=serial)
+                tokens = getTokens4UserOrSerial(serial=serial, context=self.request_context)
                 if len(tokens) == 0 or len(tokens) > 1:
                     raise Exception('tokenmismatch for token serial: %s'
                                     % (unicode(serial)))
@@ -494,7 +503,7 @@ class ValidateController(BaseController):
                 user = User(login=userInfo.get('username'), realm=realm)
 
                 (ok, opt) = checkSerialPass(serial, passw, user=user,
-                                     options=param)
+                                     options=param, context=self.request_context)
 
                 value['value'] = ok
                 failcount = theToken.getFailCount()
@@ -565,7 +574,7 @@ class ValidateController(BaseController):
                 user = getParam(param, 'user', optional)
                 if user is  not None:
                     user = getUserFromParam(param, optional)
-                    toks = getTokens4UserOrSerial(user=user)
+                    toks = getTokens4UserOrSerial(user=user, context=self.request_context)
                     if len(toks) == 0:
                         raise Exception("No token found!")
                     elif len(toks) > 1:
@@ -594,7 +603,8 @@ class ValidateController(BaseController):
                     options['initTime'] = initTime
 
             options['scope'] = {"check_s": True}
-            (ok, opt) = checkSerialPass(serial, passw, options=options)
+            (ok, opt) = checkSerialPass(serial, passw, options=options,
+                                        context=self.request_context)
 
             c.audit['success'] = ok
             Session.commit()

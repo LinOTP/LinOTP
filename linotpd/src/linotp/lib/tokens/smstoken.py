@@ -78,7 +78,7 @@ keylen = {'sha1'    : 20,
 
 
 ##################################################################
-def get_auth_smstext(user="", realm=""):
+def get_auth_smstext(user="", realm="", context=None):
     '''
     this function checks the policy scope=authentication, action=smstext
     This is a string policy
@@ -92,7 +92,8 @@ def get_auth_smstext(user="", realm=""):
 
     pol = getPolicy({'scope': 'authentication',
                      'realm': realm,
-                     "action": "smstext"})
+                     "action": "smstext"},
+                    context=context)
 
     if len(pol) > 0:
         smstext = getPolicyActionValue(pol, "smstext", String=True)
@@ -102,7 +103,7 @@ def get_auth_smstext(user="", realm=""):
     return ret, smstext
 
 
-def is_phone_editable(user=""):
+def is_phone_editable(user="", context=None):
     '''
     this function checks the policy scope=selfservice, action=edit_sms
     This is a int policy, while the '0' is a deny
@@ -116,7 +117,7 @@ def is_phone_editable(user=""):
                           'realm': realm,
                           "action": "edit_sms",
                           "user": login},
-                          )
+                          context=context)
     if policies:
         edit_sms = getPolicyActionValue(policies, "edit_sms")
         if edit_sms == 0:
@@ -129,8 +130,8 @@ class SmsTokenClass(HmacTokenClass):
     '''
     implementation of the sms token class
     '''
-    def __init__(self, aToken):
-        HmacTokenClass.__init__(self, aToken)
+    def __init__(self, aToken, context=None):
+        HmacTokenClass.__init__(self, aToken, context=context)
         self.setType(u"sms")
         self.hKeyRequired = False
 
@@ -232,7 +233,7 @@ class SmsTokenClass(HmacTokenClass):
         # as from the user data
         if param.get('::scope::', {}).get('selfservice', False):
             user = param['::scope::']['user']
-            if not is_phone_editable(user):
+            if not is_phone_editable(user, context=self.context):
                 u_info = getUserDetail(user)
                 u_phone = u_info.get('mobile', u_info.get('phone', None))
                 if u_phone != phone:
@@ -299,7 +300,7 @@ class SmsTokenClass(HmacTokenClass):
         # # do we need to call the
         # (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
         realms = self.token.getRealmNames()
-        if trigger_sms(realms):
+        if trigger_sms(realms, context=self.context):
             if 'check_s' in options.get('scope', {}) and 'challenge' in options:
                 request_is_valid = True
                 return request_is_valid
@@ -346,7 +347,8 @@ class SmsTokenClass(HmacTokenClass):
                     # a given message overrules the policy defined message
                     if user and not message:
                         _sms_ret, message = get_auth_smstext(
-                                                realm=user.realm)
+                                                realm=user.realm,
+                                                context=self.context)
 
                 if not message:
                     message = "<otp>"
@@ -514,7 +516,7 @@ class SmsTokenClass(HmacTokenClass):
                 ret = -1
 
         if ret >= 0:
-            if get_auth_AutoSMSPolicy():
+            if get_auth_AutoSMSPolicy(context=self.context):
                 user = None
                 message = "<otp>"
                 if options is not None and type(options) == dict:

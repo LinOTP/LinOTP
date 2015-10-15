@@ -27,6 +27,7 @@
 import os
 import re
 
+from pylons.i18n.translation import _ as translate
 from pylons.i18n.translation import set_lang
 from pylons.i18n import LanguageError
 
@@ -41,6 +42,9 @@ from linotp.lib.resolver import initResolvers
 from linotp.lib.resolver import setupResolvers
 from linotp.lib.resolver import closeResolvers
 from linotp.lib.user import getUserFromRequest
+from linotp.lib.user import getUserFromParam
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.realm import getRealms
 
 from linotp.lib.config import getGlobalObject
 
@@ -48,6 +52,12 @@ from linotp.model import meta
 from linotp.lib.openid import SQLStorage
 from linotp.model.meta import Session
 from linotp import model
+
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
+from linotp.lib.util import get_client
+
+
 
 import logging
 log = logging.getLogger(__name__)
@@ -252,6 +262,7 @@ class BaseController(WSGIController):
         self.sep = None
         self.set_language(request.headers)
         self.base_auth_user = ''
+        self.context = None
 
         self.parent = super(WSGIController, self)
         self.parent.__init__(*args, **kw)
@@ -313,6 +324,8 @@ class BaseController(WSGIController):
 
         path = ""
 
+        self.create_context(request)
+
         try:
             if environ:
                 path = environ.get("PATH_INFO", "") or ""
@@ -368,7 +381,7 @@ class BaseController(WSGIController):
 
             try:
                 # set_lang needs a locale name formed parameter
-                set_lang(language.replace('-','_'))
+                set_lang(language.replace('-', '_'))
                 found_lang = True
                 break
             except LanguageError:
@@ -380,5 +393,68 @@ class BaseController(WSGIController):
 
         return
 
+    def create_context(self, request):
+        """
+        create the request context for all controllers
+        """
+
+        linotp_config = getLinotpConfig()
+
+        self.request_context = {}
+        self.request_context['Config'] = linotp_config
+        self.request_context['Policies'] = getPolicies(config=linotp_config)
+        self.request_context['translate'] = translate
+
+        request_params = {}
+
+        try:
+            request_params.update(request.params)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['Params'] = request_params
+
+        authUser = None
+        try:
+            authUser = getUserFromRequest(request)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['AuthUser'] = authUser
+
+        requestUser = None
+        try:
+            requestUser = getUserFromParam(request_params, True)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+        self.request_context['RequestUser'] = requestUser
+
+        client = None
+        try:
+            client = get_client(request=request)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['Client'] = client
+
+        self.request_context['audit'] = {}
+
+        defaultRealm = ""
+        try:
+            defaultRealm = getDefaultRealm(linotp_config)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['defaultRealm'] = defaultRealm
+
+        realms = None
+        try:
+            realms = getRealms(context=self.request_context)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['Realms'] = realms
+
+        return
 
 ###eof#########################################################################

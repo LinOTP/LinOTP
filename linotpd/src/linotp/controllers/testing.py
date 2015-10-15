@@ -46,6 +46,9 @@ from linotp.lib.policy import get_auth_AutoSMSPolicy
 import traceback
 from linotp.lib.crypt import urandom
 
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
+
 optional = True
 required = False
 
@@ -92,7 +95,8 @@ twilio_fail = """<?xml version='1.0' encoding='UTF-8'?>\
 class TestingController(BaseController):
 
     '''
-    The linotp.controllers are the implementation of the web-API to talk to the LinOTP server.
+    The linotp.controllers are the implementation of the web-API to talk to
+    the LinOTP server.
 
         https://server/testing/<functionname>
 
@@ -102,10 +106,8 @@ class TestingController(BaseController):
     def __before__(self):
         return response
 
-
     def __after__(self):
         return response
-
 
     def autosms(self):
         '''
@@ -132,7 +134,7 @@ class TestingController(BaseController):
                 return sendError(response, "The testing controller can only be used in SelfTest mode!", 0)
 
             user = getUserFromParam(param, required)
-            ok = get_auth_AutoSMSPolicy()
+            ok = get_auth_AutoSMSPolicy(context=self.request_context)
 
             Session.commit()
             return sendResult(response, ok, 0)

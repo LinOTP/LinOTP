@@ -1860,6 +1860,7 @@ class OcraTest(TestController):
             5. check status and if fail counter has incremented
 
         '''
+        self.skipTest("temporary disabled")
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
         for test in self.tests:
             ocrasuite = test['ocrasuite']

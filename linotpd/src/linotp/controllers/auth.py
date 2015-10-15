@@ -41,7 +41,8 @@ from linotp.lib.reply import sendError
 from pylons import response
 from linotp.model.meta import Session
 
-import traceback
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
 
 log = logging.getLogger(__name__)
 
@@ -51,8 +52,7 @@ required = False
 
 class AuthController(BaseController):
 
-
-    def __before__(self, action, **params):
+    def __before__(self, action,):
 
         log.debug("[__before__]")
 
@@ -80,7 +80,6 @@ class AuthController(BaseController):
         log.debug("[index] index, authenticating user")
         return render("/auth.mako")
 
-
     def index3(self):
         '''
         This is the method for testing authentication
@@ -90,7 +89,6 @@ class AuthController(BaseController):
         '''
         log.debug("[index3] index, authenticating user")
         return render("/auth3.mako")
-
 
     def ocra(self):
         '''
@@ -102,7 +100,6 @@ class AuthController(BaseController):
         log.debug("[ocra] authenticating user")
         return render("/auth-ocra.mako")
 
-
     def ocra2(self):
         '''
         This is the method for testing ocra2 tokens
@@ -113,6 +110,4 @@ class AuthController(BaseController):
         log.debug("[ocra2] authenticating user")
         return render("/auth-ocra2.mako")
 
-
 #eof##########################################################################
-

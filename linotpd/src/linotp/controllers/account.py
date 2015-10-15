@@ -25,11 +25,8 @@
 #
 
 """
-account controller - used for loggin in to the selfservice
+account controller - used for to test the login via interface
 """
-
-
-import traceback
 
 from pylons import request, response, tmpl_context as c
 from pylons.controllers.util import abort, redirect
@@ -47,7 +44,8 @@ from linotp.lib.realm    import getRealms
 from linotp.lib.realm    import getDefaultRealm
 from linotp.lib.user     import getRealmBox
 
-
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.policy import getPolicies
 
 import logging
 import webob
@@ -73,7 +71,6 @@ class AccountController(BaseController):
         /account/login
         /account/dologin
     '''
-
 
     def __before__(self, action, **params):
 

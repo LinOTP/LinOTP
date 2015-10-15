@@ -394,6 +394,7 @@ class SecurityProvider(object):
         return found
         #return self.loadSecurityModule(id)
 
+
 def main():
     ## hook for local provider test
     sep = SecurityProvider()
@@ -430,4 +431,3 @@ if __name__ == '__main__':
     main()
 
 #eof###########################################################################
-

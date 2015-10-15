@@ -88,8 +88,8 @@ class EmailTokenClass(HmacTokenClass):
     DEFAULT_EMAIL_PROVIDER = "linotp.lib.emailprovider.SMTPEmailProvider"
     DEFAULT_EMAIL_BLOCKING_TIMEOUT = 120
 
-    def __init__(self, aToken):
-        HmacTokenClass.__init__(self, aToken)
+    def __init__(self, aToken, context=None):
+        HmacTokenClass.__init__(self, aToken, context=context)
         self.setType(u"email")
         self.hKeyRequired = False
 

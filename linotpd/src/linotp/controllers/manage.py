@@ -62,7 +62,16 @@ from linotp.lib.util import get_client
 from linotp.lib.util import unicode_compare
 from linotp.model.meta import Session
 
-from linotp.lib.policy import checkPolicyPre, PolicyException, getAdminPolicies, getPolicyDefinitions
+from linotp.lib.config import getLinotpConfig
+
+from linotp.lib.policy import getPolicies
+from linotp.lib.policy import checkPolicyPre
+from linotp.lib.policy import PolicyException
+from linotp.lib.policy import getAdminPolicies
+from linotp.lib.policy.definitions import getPolicyDefinitions
+
+
+
 
 from pylons.i18n.translation import _
 
@@ -90,7 +99,7 @@ class ManageController(BaseController):
         try:
             audit.initialize()
             c.audit['success'] = False
-            c.audit['client'] = get_client()
+            c.audit['client'] = get_client(request)
 
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
@@ -110,7 +119,7 @@ class ManageController(BaseController):
                                         '/manage/custom-style.css']:
                 pass
             else:
-                check_session()
+                check_session(request)
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
@@ -328,12 +337,13 @@ class ManageController(BaseController):
                 filter_realm = c.filter
 
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param , user=user)
+            res = checkPolicyPre('admin', 'show', param , user=user,
+                                 context=self.request_context)
 
             filterRealm = res['realms']
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            pol = getAdminPolicies("show")
+            pol = getAdminPolicies("show", context=self.request_context)
             # If there are no admin policies, we are allowed to see all realms
             if not pol['active']:
                 filterRealm = ["*"]
@@ -425,7 +435,8 @@ class ManageController(BaseController):
             # check admin authorization
             # check if we got a realm or resolver, that is ok!
             checkPolicyPre('admin', 'userlist', { 'user': user.login,
-                                                 'realm' : c.realm })
+                                                 'realm' : c.realm },
+                           context=self.request_context)
 
             if c.filter == "":
                 c.filter = "*"
@@ -525,12 +536,12 @@ class ManageController(BaseController):
 
             filterRealm = ""
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param)
+            res = checkPolicyPre('admin', 'show', param, context=self.request_context)
 
             filterRealm = res['realms']
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            pol = getAdminPolicies("show")
+            pol = getAdminPolicies("show", context=self.request_context)
             if not pol['active']:
                 filterRealm = ["*"]
 

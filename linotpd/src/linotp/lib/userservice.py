@@ -223,7 +223,7 @@ def check_userservice_session(request, config, user, client):
 
     return ret
 
-def get_pre_context(client):
+def get_pre_context(client, context=None):
     """
     get the rendering context before the login is shown, so the rendering
     of the login page could be controlled if realm_box or otpLogin is
@@ -233,44 +233,48 @@ def get_pre_context(client):
     :return: context dict, with all rendering attributes
     """
 
-    context = {}
-    context["version"] = get_version()
-    context["licenseinfo"] = get_copyright_info()
+    pre_context = {}
+    pre_context["version"] = get_version()
+    pre_context["licenseinfo"] = get_copyright_info()
 
-    context["default_realm"] = getDefaultRealm()
-    context["realm_box"] = getRealmBox()
+    pre_context["default_realm"] = getDefaultRealm()
+    pre_context["realm_box"] = getRealmBox()
 
-    context["realms"] = json.dumps(_get_realms_())
+    pre_context["realms"] = json.dumps(_get_realms_())
 
 
     """
     check for otpLogin, autoassign and autoenroll in policy definition
     """
 
-    context['otpLogin'] = False
+    pre_context['otpLogin'] = False
     policy = get_client_policy(client=client,
                                 scope='selfservice',
-                                action='otpLogin')
+                                action='otpLogin',
+                                context=context)
     if policy:
-        context['otpLogin'] = True
+        pre_context['otpLogin'] = True
 
-    context['autoassign'] = False
+    pre_context['autoassign'] = False
     policy = get_client_policy(client=client,
                                 scope='enrollment',
-                                action='autoassignment')
+                                action='autoassignment',
+                                context=context)
     if policy:
-        context['autoassign'] = True
+        pre_context['autoassign'] = True
 
-    context['autoenroll'] = False
+    pre_context['autoenroll'] = False
     policy = get_client_policy(client=client,
                                 scope='enrollment',
-                                action='autoenrollment')
+                                action='autoenrollment',
+                                context=context)
     if policy:
-        context['autoenroll'] = True
+        pre_context['autoenroll'] = True
 
-    return context
+    return pre_context
 
-def get_context(config, user, realm, client):
+
+def get_context(config, user, realm, client, context=None):
     """
     get the user dependend rendering context
 
@@ -281,18 +285,17 @@ def get_context(config, user, realm, client):
 
     """
 
+    req_context = get_pre_context(client)
 
-    context = get_pre_context(client)
-
-    context["user"] = user
-    context["realm"] = realm
+    req_context["user"] = user
+    req_context["realm"] = realm
     authUser = User(user, realm)
-    context["imprint"] = get_imprint(context["realm"])
-    context["tokenArray"] = getTokenForUser(authUser)
+    req_context["imprint"] = get_imprint(req_context["realm"])
+    req_context["tokenArray"] = getTokenForUser(authUser)
 
     # show the defined actions, which have a rendering
-    actions = getSelfserviceActions(authUser)
-    context["actions"] = actions
+    actions = getSelfserviceActions(authUser, context=context)
+    req_context["actions"] = actions
     for policy in actions:
         if "=" in policy:
             (name, val) = policy.split('=')
@@ -303,20 +306,20 @@ def get_context(config, user, realm, client):
                 nval = int(val)
             except:
                 nval = val
-            context[name.strip()] = nval
+            req_context[name.strip()] = nval
 
-    context["dynamic_actions"] = add_dynamic_selfservice_enrollment(config, actions)
+    req_context["dynamic_actions"] = add_dynamic_selfservice_enrollment(config, actions)
 
     # TODO: to establish all token local defined policies
     additional_policies = add_dynamic_selfservice_policies(config, actions)
     for policy in additional_policies:
-        context[policy] = -1
+        req_context[policy] = -1
 
     # TODO: add_local_policies() currently not implemented!!
-    context["otplen"] = -1
-    context["totp_len"] = -1
+    req_context["otplen"] = -1
+    req_context["totp_len"] = -1
 
-    return context
+    return req_context
 
 
 ##############################################################################
