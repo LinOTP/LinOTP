@@ -2597,7 +2597,7 @@ class TestPolicies(TestController):
 
     def test_711_get_tokenlabel_for_users(self):
         '''
-        Policy 711: Testing scope=enrollment, tokenlabel for different users
+        Policy 711: Testing scope=enrollment, tokenlabel/tokenissuer for different users
         '''
         response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'tokenlabel_per_user',
                                                                                        'scope' : 'enrollment',
@@ -2630,21 +2630,47 @@ class TestPolicies(TestController):
 
         self.assertTrue('value": "otpauth://hotp/hmac2?' in response, response)
 
+        # add tokenissuer policy
+        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'tokenissuer_with_realm',
+                                                                                       'scope' : 'enrollment',
+                                                                                       'realm' : 'myOtherRealm',
+                                                                                       'user' : 'max1',
+                                                                                       'action' : 'tokenissuer=fakeissuer-<r>',
+                                                                                       'client' : '',
+                                                                                       'selftest_admin' : 'superadmin'
+                                                                                       })
+
+        # enroll another token for max1, now with issuer
+        response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
+                                                                               'realm':'myOtherRealm',
+                                                                               'serial' : 'hmac3',
+                                                                               'type' : 'hmac',
+                                                                                'genkey' : 1,
+                                                                                'selftest_admin' : 'superadmin'})
+
+        self.assertTrue('"value": "otpauth://hotp/fakeissuer-myOtherRealm:max1?' in response, response)
+        self.assertTrue('issuer=fakeissuer-myOtherRealm' in response, response)
 
         # delete the tokens of the user
-        for serial in ["hmac1", "hmac2"]:
+        for serial in ["hmac1", "hmac2", "hmac3"]:
             response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
                                                                                  'selftest_admin' : 'superadmin'
                                                                                   })
 
             self.assertTrue('"status": true' in response, response)
 
-        # delete the policy
+        # delete the policies
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'tokenlabel_per_user',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
 
         self.assertTrue('"status": true' in response, response)
+        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'tokenissuer_with_realm',
+                                                                                       'selftest_admin' : 'superadmin'
+                                                                                       })
+
+        self.assertTrue('"status": true' in response, response)
+
 
     def test_712_autoassignment_for_users(self):
         '''
