@@ -40,7 +40,7 @@ import urllib
 import logging
 log = logging.getLogger(__name__)
 
-from linotp.lib.policy import get_tokenlabel
+from linotp.lib.policy import get_tokenlabel, get_tokenissuer
 from urllib import quote
 
 class NoOtpAuthTokenException(Exception):
@@ -104,6 +104,10 @@ def create_google_authenticator(param, user=None, context=None):
     if 'timeStep' in param:
         url_param['period'] = param.get('timeStep')
 
+    issuer = get_tokenissuer(login, realm, serial, context=context)
+    if issuer:
+        url_param['issuer'] = quote(issuer)
+
     ga = "otpauth://%s/%s" % (typ, serial)
     qg_param = urllib.urlencode(url_param)
 
@@ -125,8 +129,10 @@ def create_google_authenticator(param, user=None, context=None):
         if len(param.get('description', '')) > 0:
             label = label + ':' + param.get('description')
 
+    if issuer:
+        label = issuer + ':' + label
     label = label[0:allowed_label_len]
-    url_label = quote(label)
+    url_label = quote(label, ':')
 
     ga = "otpauth://%s/%s?%s" % (typ, url_label, qg_param)
     log.debug("google authenticator: %r" % ga[:20])
