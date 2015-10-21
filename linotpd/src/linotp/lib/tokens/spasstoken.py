@@ -108,6 +108,10 @@ class SpassTokenClass(TokenClass):
         if not param.has_key('otpkey'):
             param['genkey'] = 1
 
+        ## mark this spass token as usable exactly once
+        if param.has_key('onetime'):
+            TokenClass.set_count_auth_success_max(self, 1)
+
         TokenClass.update(self, param)
 
     ## the spass token does not suport challenge response
