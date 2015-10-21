@@ -126,6 +126,9 @@ def getPolicyDefinitions(scope=""):
             'tokenlabel': {
                 'type': 'str',
                 'desc': 'the label for the google authenticator.'},
+            'tokenissuer': {
+                 'type': 'str',
+                 'desc': 'the issuer label for the google authenticator.'},
 
             'autoenrollment': {
                 'type': 'str',
