@@ -61,7 +61,6 @@ class MonitoringController(BaseController):
     """
     monitoring
     """
-    context = {}
 
     def __before__(self, action, **params):
         """
@@ -71,19 +70,13 @@ class MonitoringController(BaseController):
 
             audit.initialize()
             c.audit['success'] = False
-            c.audit['client'] = get_client()
-            
-            # Session handling
-            check_session()
 
-            # TODO call methode to build context
-            # First we load the Config
-            l_config = getLinotpConfig()
-            self.context['user'] = getUserFromRequest(request)
-            self.context['policies'] = getPolicies(l_config)
-            # TODO add client to context (for policies)
-            # this calls getLinotpConfig() again!!
-            self.context['all_realms'] = getRealms()
+            c.audit['client'] = get_client(request)
+
+            # Session handling
+            check_session(request)
+
+            self.request_context['Audit'] = audit
 
             return request
 
@@ -149,7 +142,7 @@ class MonitoringController(BaseController):
                 status = status.split(',')
             request_realms = param.get('realms', '').split(',')
 
-            monit_handler = MonitorHandler(context=self.context)
+            monit_handler = MonitorHandler(context=self.request_context)
             realm_whitelist = monit_handler.get_allowed_realms()
 
             # by default we show all allowed realms
@@ -227,7 +220,7 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            monit_handler = MonitorHandler(context=self.context)
+            monit_handler = MonitorHandler(context=self.request_context)
 
             result = monit_handler.get_sync_status()
 
@@ -255,38 +248,62 @@ class MonitoringController(BaseController):
             Session.close()
             log.debug('[__after__] done')
 
+    def encryption(self):
+        """
+        check if hsm encrypts value before storing it to config db
+        :return:
+        """
+        try:
+            monit_handler = MonitorHandler(context=self.request_context)
+            res = {'encryption': monit_handler.check_encryption()}
+
+            return sendResult(response, res, 1)
+
+        except Exception as exception:
+            log.exception(exception)
+            return sendError(response, exception)
+
+        finally:
+            Session.close()
+            log.debug('[__after__] done')
+
     def license(self):
         """
-        return
+        license
         return the support status, which is community support by default
         or the support subscription info, which could be the old license
         """
         res = {}
         try:
             try:
-                license_info, license_sig = getSupportLicenseInfo(validate=False)
+                license_info, license_sig = getSupportLicenseInfo()
             except InvalidLicenseException as err:
-                if err.type <> 'UNLICENSED':
-                    raise # Certificate "formating" errors are not ignored!
-                return sendResult(response, {}, 1, 
-                                  opt={ 'valid': False, 'message': str(err) })
+                if err.type != 'UNLICENSED':
+                    raise err
+                opt = {'valid': False,
+                       'message': "%r" % err
+                       }
+                return sendResult(response, {}, 1, opt=opt)
 
-            ### Add Extra infos (if needed; use details = None ... for no details!)...
-            license_chk, license_msg = verifyLicenseInfo(license_info, license_sig)
-            if license_chk:
-                details = { 'valid': license_chk }
+            # Add Extra info
+            # if needed; use details = None ... for no details!)...
+            license_ok, license_msg = verifyLicenseInfo(license_info,
+                                                        license_sig)
+            if not license_ok:
+                details = {'valid': license_ok,
+                           'message': license_msg
+                           }
             else:
-                details = { 'valid': license_chk, 'message': license_msg }
-            ###
-			
-            res['token-num'] = license_info.get('token-num', 0)
+                details = {'valid': license_ok}
 
-            # get all active tokens from all realms (including norealm)
-            monit_handler = MonitorHandler(context=self.context)
-            active_tokencount = monit_handler.get_active_tokencount()
-            res['token-active'] = str(active_tokencount)
+                res['token-num'] = int(license_info.get('token-num', 0))
 
-            res['token-left'] = str(int(res['token-num']) - active_tokencount)
+                # get all active tokens from all realms (including norealm)
+                monit_handler = MonitorHandler(context=self.request_context)
+                active_tokencount = monit_handler.get_active_tokencount()
+                res['token-active'] = active_tokencount
+
+                res['token-left'] = res['token-num'] - active_tokencount
 
             return sendResult(response, res, 1, opt=details)
 

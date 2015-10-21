@@ -80,7 +80,7 @@ def make_map(global_conf, app_conf,):
     # in case of support for monitoring, we have to enable this hook
     monitoring = app_conf.get('service.monitoring', 'True') == 'True'
     if monitoring:
-        routeMap.connect('/monitoring', controller='monitoring', action='index')
+        routeMap.connect('/monitoring', controller='monitoring', action='config')
         for cont in ['monitoring']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)

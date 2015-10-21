@@ -1628,14 +1628,14 @@ class SystemController(BaseController):
 
             details = None
             try:
-                (lic, sig) = getSupportLicenseInfo(validate=False)
+                (lic, sig) = getSupportLicenseInfo()
             except InvalidLicenseException as err:
                 if err.type <> 'UNLICENSED':
                     raise # Certificate "formating" errors are not ignored!
                 # When no certificate was installed, then return an empty dictiuonary...
                 lic, sig = {}, None
                 details  = { 'valid': False, 'message': str(err) }
-            
+
             ### if you do not want details, just set "details = None"!
             if details is None:
                 (chk, msg) = verifyLicenseInfo(lic, sig)
@@ -1667,7 +1667,7 @@ class SystemController(BaseController):
             value is false and the detail is returned as detail in the response
         """
         try:
-            
+
             chk = False
             opt = None
             try:
@@ -1676,7 +1676,7 @@ class SystemController(BaseController):
                 chk = True
             except InvalidLicenseException as err:
                 opt = { 'reason': str(err) }
-                
+
             c.audit['success'] = chk
             return sendResult(response, chk, 1, opt=opt)
 
@@ -1703,7 +1703,8 @@ class SystemController(BaseController):
             licField = request.POST['license']
             log.info("[setSupport] setting support: %s" % (licField))
 
-            # In case of normal post requests, it is a "instance" of FieldStorage
+            # In case of normal post requests, it is a "instance" of
+            # FieldStorage
             if type(licField).__name__ == 'instance':
                 log.debug("[setSupport] Field storage: %s", licField)
                 support_description = licField.value
@@ -1712,10 +1713,9 @@ class SystemController(BaseController):
                 support_description = licField.encode('utf-8')
             log.debug("[setSupport] license %s", support_description)
 
-
             res, msg = setSupportLicense(support_description)
-            if res == False:
-                message = {'reason' : msg}
+            if res is False:
+                message = {'reason': msg}
 
             c.audit['success'] = res
 

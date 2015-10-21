@@ -27,10 +27,13 @@
 library for monitoring controller
 """
 
+import datetime
+
 from linotp.model import Token, Realm, TokenRealm
 from linotp.model import Config as config_model
 from linotp.model.meta import Session
-from linotp.lib.config import LinOtpConfig
+
+from linotp.lib.config import LinOtpConfig, storeConfig, getFromConfig
 
 from sqlalchemy import and_, not_
 
@@ -115,13 +118,14 @@ class MonitorHandler(object):
 
         :return: list of realms that user may access
         """
-        user = self.context['user'].get('login', '') or ''
+
+        user = self.context['AuthUser'].get('login', '')
 
         # parse policies and extract realms:
         # TODO: implement scope Monitoring to policies and use them here
         # here: admin policies are used for testing purposes
         realm_whitelist = []
-        for pol in self.context['policies'].itervalues():
+        for pol in self.context['Policies'].itervalues():
             if pol['active'] == u'True':
                 if u'show' in pol['action'] and pol['scope'] == u'admin':
                     if user in pol['user'] or pol['user'] is u'*':
@@ -132,7 +136,7 @@ class MonitorHandler(object):
 
         # If there are no policies for us, we are allowed to see all realms
         if not realm_whitelist:
-            realm_whitelist = self.context['all_realms'].keys()
+            realm_whitelist = self.context['Realms'].keys()
 
         return realm_whitelist
 
@@ -205,3 +209,32 @@ class MonitorHandler(object):
         active = Token.LinOtpIsactive == True
         token_active = Session.query(Token).filter(active).count()
         return token_active
+
+    def check_encryption(self):
+        """
+        check if a value, which got written into config, got encrypted
+        :return:
+        """
+        test_key = 'linotp.testkey'
+
+        linotp_conf = LinOtpConfig()
+
+        if test_key not in linotp_conf:
+            storeConfig(test_key, '', typ='password', desc=None)
+
+        old_value = getFromConfig(test_key, defVal=None)
+
+        now = datetime.datetime
+        new_value_plain = str(now)
+
+        storeConfig(test_key, new_value_plain, typ='password', desc=None)
+
+        new_value_enc = getFromConfig(test_key, defVal=None)
+
+        # if new_value_enc != old_value: something new was written into db
+        # if new_value_enc != new_value_plain: the new value got encrypted
+        if new_value_enc and new_value_plain != new_value_enc != old_value:
+            return True
+
+        return False
+

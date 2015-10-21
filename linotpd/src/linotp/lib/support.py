@@ -25,7 +25,7 @@
 #
 """ methods to handle support files """
 
-import sys, os
+import os
 
 from pylons.i18n.translation import _
 
@@ -33,21 +33,23 @@ import base64
 import binascii
 import M2Crypto
 
-from linotp.lib        import deprecated  
-from linotp.lib.config import refreshConfig, getFromConfig, storeConfig, removeFromConfig
-from linotp.lib.util   import get_version_number
-from linotp.lib.token  import getTokenNumResolver
-from linotp.lib.reply  import LinOTPJsonEncoder
+from linotp.lib.config import refreshConfig
+from linotp.lib.config import getFromConfig
+from linotp.lib.config import storeConfig
+from linotp.lib.config import removeFromConfig
+
+from linotp.lib.token import getTokenNumResolver
 
 
 import logging
 log = logging.getLogger(__name__)
 
-__all__ = ["parseSupportLicense", "getSupportLicenseInfo",
-           "setSupportLicense", "isSupportLicenseValid"]
+__all__ = ["parseSupportLicense", "getSupportLicenseInfo", "readLicenseInfo",
+           "setSupportLicense", "isSupportLicenseValid",
+           "removeSupportLicenseInfo"]
 
-PUB_KEY_DIRS   = ['/etc/lseappliance/pubkeys']
-PUB_KEY_EXTS   = ['.pem']
+PUB_KEY_DIRS = ['/etc/lseappliance/pubkeys']
+PUB_KEY_EXTS = ['.pem']
 PUB_KEY_LINOTP = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoqgA4ium1T+0UafBjenx
 Dclj79Nj/g55iA+hH8dsP/rIMLjwe8kimikhhXqkTKz1qHQvBF00DLy3L/aGbnKk
@@ -59,182 +61,31 @@ BbKBUlx/8GqnwpftJjOmH3qQUjQistt0XJvAOBk2G+jfLMknQmK+KmfzrCxkY1t7
 -----END PUBLIC KEY-----"""
 
 
-if sys.version_info < (2,7,0):
-    class LegacyLicenseInfo:
-        class OrderedItem:
-            def __init__(self, value, key=None, oprev=None, onext=None):
-                self.value = value
-                self.key   = key
-                self.prev  = oprev
-                self.next  = onext
-                
-        def __init__(self, *args, **kwds):
-            if len(args) > 1:
-                raise TypeError('expected maximal 1 argument, specified were %d' % len(args))
-            self.__root = None
-            self.__last = None
-            self.__map  = {}
-            self.update(*args, **kwds)
-    
-        def has_key(self, key):
-            return self.__map.has_key(key)
-    
-        def __len__(self):
-            return len(self.__map)
-        
-        def __getitem__(self, key):
-            oitem = self.__map[key]
-            if oitem is None:
-                return None
-            return oitem.value
-            
-        def __setitem__(self, key, value):
-            if key in self.__map:
-                oitem = self.__map[key]
-                oitem.value = value
-            else:
-                olast       = self.__last
-                self.__last = LegacyLicenseInfo.OrderedItem(value, key=key, prev=olast)
-                if not (olast is None):
-                    olast.next  = self.__last
-                if self.__root is None:
-                    # assert(last is None)
-                    self.__root = self.__last
-                self.__map[key] = self.__last
-    
-        def __delitem__(self, key):
-            oitem = self.__map.pop(key)
-            if oitem is None:
-                return
-            
-            oprev = oitem.prev
-            onext = oitem.next
-            if oprev is None:
-                self.__root = onext
-            else:
-                oprev.next  = onext
-            if onext is None:
-                self.__last = oprev
-            else:
-                onext.prev  = oprev
-            
-        def __iter__(self):
-            oitem = self.__root
-            while not (oitem is None):
-                yield oitem.key
-                oitem = oitem.next
-    
-        def __reversed__(self):
-            oitem = self.__last
-            while not (oitem is None):
-                yield oitem.key
-                oitem = oitem.prev
-    
-        def clear(self):
-            self.__root = None
-            self.__last = None
-            self.__map.clear()
-            dict.clear(self)
-    
-        def get(self, key, default=None):
-            if self.__map.has_key(key):
-                return self.__map[key].value
-            return default
-        
-        def popitem(self, last=True):
-            if not self:
-                raise KeyError('dictionary is empty')
-            if last:
-                oitem = self.__last
-                otemp = oitem.prev
-                if not (otemp is None):
-                    otemp.next = None
-                self.__last = otemp
-            else:
-                oitem = self.__root
-                otemp = oitem.next
-                if not (otemp is None):
-                    otemp.prev = None
-                self.__root = otemp
-            del self.__map[oitem.key]
-            value = dict.pop(self, oitem.key)
-            return oitem.key, value
-    
-        def keys(self):
-            return list(self)
-        
-        def values(self):
-            return [self[key] for key in self]
-        
-        def items(self):
-            return [(key, self[key]) for key in self]
+class LicenseInfo(dict):
+    """
+    LicenseIfo
+    special dict, which is able to return the original input strings,
+    which is required to verify the License Signature
+    """
+    def __init__(self, *args, **kwargs):
+        self.parent = super(LicenseInfo, self)
+        self.parent.__init__(*args, **kwargs)
+        self._list = []
 
-        def copy(self):
-            return self.__class__(self)
-    
-        def update(self, *args, **kwds):
-            if len(args) > 1:
-                raise TypeError('update() takes maximal 1 positional '
-                                'argument (%d given)' % (len(args),))
-            
-            if len(args) > 0:
-                other = args[0]
-                if isinstance(other, dict):
-                    for key in other:
-                        self[key] = other[key]
-                elif hasattr(other, 'keys'):
-                    for key in other.keys():
-                        self[key] = other[key]
-                else:
-                    for key, value in other:
-                        self[key] = value
-                        
-            for key, value in kwds.items():
-                self[key] = value
-                
-        __marker = object()
-        def pop(self, key, default=__marker):
-            if key in self:
-                result = self[key]
-                del self[key]
-                return result
-            if default is self.__marker:
-                raise KeyError(key)
-            return default
-    
-        def setdefault(self, key, default=None):
-            if key in self:
-                return self[key]
-            self[key] = default
-            return default
-        
-        def __eq__(self, other):
-            if isinstance(other, LegacyLicenseInfo):
-                return len(self)==len(other) and self.items() == other.items()
-            if isinstance(other, dict):
-                return len(self)==len(other) and self.items() == other.items()
-            return False #dict.__eq__(self, other)
-    
-        def __ne__(self, other):
-            return not self == other
-        
-    def licenseJsonEncoder(licinfo):
-        return licinfo.items()
-    
-    # Register our own "LicenseInfo" Json-Encoder...
-    LinOTPJsonEncoder.registerEncoder(LegacyLicenseInfo, licenseJsonEncoder)
-    
-    LicenseInfo = LegacyLicenseInfo
-else:
-    from collections import OrderedDict
-    LicenseInfo = OrderedDict
+    def add(self, line):
+        self._list.append(line+'\n')
+        key, val = line.split("=", 2)
+        self[key.strip()] = val.strip()
+
+    def info(self):
+        return "".join(self._list)
 
 
 class InvalidLicenseException(Exception):
     def __init__(self, message, type=None):
         super(InvalidLicenseException, self).__init__(message)
         self.type = type
-        
+
 
 def parseSupportLicense(licString):
     """
@@ -246,26 +97,29 @@ def parseSupportLicense(licString):
                       against
     """
     if not licString:
-        log.error('Format error - license file is empty!')
-        raise Exception('Format error - license file is empty!')
+        error = _("Support not available, your product is unlicensed")
+        log.error("[parseSupportLicense] Verification of support "
+                  "license failed! %s" % (error))
+        raise InvalidLicenseException(error, type='UNLICENSED')
 
-    licInfo   = LicenseInfo()
+    licInfo = LicenseInfo()
     signature = ""
 
     log.debug("[parseSupportLicense] license received: %r" % licString)
     licArry = licString.splitlines()
 
-    if (licArry[ 0].strip() != "-----BEGIN LICENSE-----" and
-        licArry[-1].strip() != "-----END LICENSE SIGNATURE-----"):
+    if (licArry[0].strip() != "-----BEGIN LICENSE-----" and
+            licArry[-1].strip() != "-----END LICENSE SIGNATURE-----"):
         log.error('Format error - not a valid license file! %r'
                   % licString[0:40])
-        raise InvalidLicenseException('Format error - not a valid license file!', type='INVALID_FORMAT')
+        raise InvalidLicenseException('Format error - not a valid license '
+                                      'file!', type='INVALID_FORMAT')
 
-    read_license   = 0
+    read_license = 0
     read_signature = 0
     for line in licArry:
         l = line.strip()
-        if   l == "-----BEGIN LICENSE-----":
+        if l == "-----BEGIN LICENSE-----":
             read_license = 1
         elif l == "-----END LICENSE-----":
             read_license = 0
@@ -276,19 +130,21 @@ def parseSupportLicense(licString):
         else:
             if 1 == read_license:
                 try:
-                    key, val = l.split("=", 2)
-                    licInfo[key] = val
-                except:
-                    log.debug("->parseLicense - %s", l)
+                    licInfo.add(line)
+                except Exception as exx:
+                    log.debug("->parseLicense - %s: %r" % (l, exx))
             if 1 == read_signature:
                 signature += l.rstrip()
 
-    if len(signature) < 20 or len(licInfo) < 10: #or len(licStr) < 20:
+    if len(signature) < 20 or len(licInfo) < 10:
         log.error('Format error - not a valid license file! %r'
                   % licString[0:40])
-        raise InvalidLicenseException('Format error - not a valid license file!', type='INVALID_FORMAT')
+        raise InvalidLicenseException('Format error - not a valid '
+                                      'license file!',
+                                      type='INVALID_FORMAT')
 
     return (licInfo, base64.b64decode(signature))
+
 
 def readLicenseInfo(filename):
     """
@@ -302,9 +158,9 @@ def readLicenseInfo(filename):
     with open(filename, 'r') as f:
         return parseSupportLicense(f.read())
 
-        
-@deprecated
-def isSupportLicenseValid(licString, raiseException=False):
+
+def isSupportLicenseValid(licString=None, lic_dict=None, lic_sign=None,
+                          raiseException=False):
     """
     verify the support subscription
     with respect to signature validity, expriration and volume
@@ -316,8 +172,10 @@ def isSupportLicenseValid(licString, raiseException=False):
     :return: tuple with validity and reason, if invalid
     """
 
-    lic_dict, lic_sign = parseSupportLicense(licString)
+    if not lic_dict or not lic_sign:
+        lic_dict, lic_sign = parseSupportLicense(licString)
     return verifyLicenseInfo(lic_dict, lic_sign, raiseException=raiseException)
+
 
 def setSupportLicense(licString):
     """
@@ -326,44 +184,40 @@ def setSupportLicense(licString):
     :param licString: the license with description and signature
     :return: tuple with status (boolean) and if faild, the reason
     """
+    ret = True
+    msg = ''
     lic_dict, lic_sign = parseSupportLicense(licString)
-    setSupportLicenseInfo(lic_dict, lic_sign)
+    try:
+        setSupportLicenseInfo(lic_dict, lic_sign)
+    except Exception as exx:
+        ret = False
+        msg = "%s" % exx.message
+
+    return ret, msg
 
 
-def getSupportLicenseInfo(validate=True, raiseException=True):
+def getSupportLicenseInfo():
     """
     get the current support and subscription information
 
     :param validate: inform program to validate or not the license info
-    :return: dict with the license informstion
+    :return: tuple of dict with the license information and signature
+             in case of an error, the dict and the signature are empty
     """
-
     refreshConfig()
-    licString = getFromConfig("license", None)
-    try:
-        if licString:
-            licString = binascii.unhexlify(licString)
-    except TypeError:
-        pass
-            
-    try:
-        if not licString:
-            raise InvalidLicenseException('Support not available, your product is unlicensed', type='UNLICENSED')
+    lic_dict = LicenseInfo()
+    lic_sign = ""
 
-        lic_dict, lic_sign = parseSupportLicense(licString)
-        if not validate:
-            return lic_dict, lic_sign
-    except InvalidLicenseException as err:
-        if not validate or raiseException:
-            raise
-        return False, str(err)
-        
-    valid, msg = verifyLicenseInfo(lic_dict, lic_sign, raiseException=raiseException)
-    if raiseException:
-        return lic_dict
-    elif not valid:
-        return False, msg
-    return True, lic_dict
+    try:
+        licString = getFromConfig("license", '')
+        if licString:
+            licBin = binascii.unhexlify(licString)
+            lic_dict, lic_sign = parseSupportLicense(licBin)
+    except InvalidLicenseException as exx:
+        log.info('invalid license error %r' % exx)
+
+    return lic_dict, lic_sign
+
 
 def setSupportLicenseInfo(lic_dict, lic_sign):
     """
@@ -374,15 +228,14 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
     :return: tuple with status (boolean) and if faild, the reason
     """
 
-    #valid, msg = 
     verifyLicenseInfo(lic_dict, lic_sign, raiseException=True)
 
-    lic_str = packLicenseInfo(lic_dict)
+    lic_str = lic_dict.info()
     log.debug("[setSupportLicense] license %r", lic_str)
 
-    licTemp  = "-----BEGIN LICENSE-----\n"
-    licTemp += lic_str 
-    licTemp += "-----END LICENSE-----\n" 
+    licTemp = "-----BEGIN LICENSE-----\n"
+    licTemp += lic_str
+    licTemp += "-----END LICENSE-----\n"
     licTemp += "-----BEGIN LICENSE SIGNATURE-----\n"
     licTemp += base64.b64encode(lic_sign)
     licTemp += "\n-----END LICENSE SIGNATURE-----"
@@ -390,11 +243,15 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
     storeConfig("license", binascii.hexlify(licTemp))
     log.info("[setLicense] license saved!")
 
+    return True
+
+
 def removeSupportLicenseInfo():
     removeFromConfig('license')
-    
 
-def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False, checkVolume=True): 
+
+def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False,
+                      checkVolume=True):
     """
     verify the license information
 
@@ -405,28 +262,19 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False, checkVolume=True
     :return: tuple with validity and reason, if invalid
     """
     if not lic_dict:
-        error = "license file is empty!"
-        try:
-            error = _(error)
-        except TypeError:
-            pass
-        log.error("[isSupportLicenseValid] Verification of support license failed! %s"
-                  % (error))
+        error = _("license file is empty!")
+        log.error("[isSupportLicenseValid] Verification of support "
+                  "license failed! %s" % (error))
         if raiseException:
             raise InvalidLicenseException(error, type='UNLICENSED')
         return False, error
 
     # ToDo: probably, we need to check the version number too!
-
     valid = verify_signature(lic_dict, lic_sign)
     if not valid:
-        error = "signature could not be verified!"
-        try:
-            error = _(error)
-        except TypeError:
-            pass
-        log.error("[isSupportLicenseValid] Verification of support license failed! %s\n %r"
-                  % (error, packLicenseInfo(lic_dict)))
+        error = _("signature could not be verified!")
+        log.error("[isSupportLicenseValid] Verification of support license"
+                  " failed! %s\n %r" % (error, lic_dict.info()))
         if raiseException:
             raise InvalidLicenseException(error, type='INVALID_SIGNATURE')
         return False, error
@@ -434,8 +282,8 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False, checkVolume=True
     (valid, msg) = verify_expiration(lic_dict)
     if not valid:
         error = "%s" % msg
-        log.error("[isSupportLicenseValid] Verification of support license failed! %s\n %r"
-                  % (error, packLicenseInfo(lic_dict)))
+        log.error("[isSupportLicenseValid] Verification of support license "
+                  "failed! %s\n %r" % (error, lic_dict.info()))
         if raiseException:
             raise InvalidLicenseException(error, type='EXPIRED')
         return False, error
@@ -449,15 +297,16 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False, checkVolume=True
             except:
                 pass
             error = error + detail
-            log.error("[isSupportLicenseValid] Verification of support license failed! %s\n %r"
-                      % (error, packLicenseInfo(lic_dict)))
+            log.error("[isSupportLicenseValid] Verification of support license"
+                      " failed! %s\n %r" % (error, lic_dict.info()))
             if raiseException:
                 raise InvalidLicenseException(error, type='INVALID_VOLUME')
             return False, error
 
     return True, "license OK"
 
-def verify_signature(lic_dict, lic_sign):
+
+def verify_signature(lic_dict, lic_sign, licStr=None):
     """
     verfiy the license signature with the m2crypto
 
@@ -470,15 +319,18 @@ def verify_signature(lic_dict, lic_sign):
         return False
 
     ret = False
-    
-    lic_str = packLicenseInfo(lic_dict)
+
+    if not licStr:
+        lic_str = lic_dict.info()
+    else:
+        lic_str = licStr
 
     log.debug("[verify_signature] license text: %r", lic_str)
     log.debug("[verify_signature] signature: %r",    lic_sign)
 
     pub_keys = get_public_keys()
 
-    # verfify signature with M2Crypto
+    # verfiy signature with M2Crypto
     for pub_key in pub_keys:
         bio = M2Crypto.BIO.MemoryBuffer(pub_key)
         rsa = M2Crypto.RSA.load_pub_key_bio(bio)
@@ -495,6 +347,7 @@ def verify_signature(lic_dict, lic_sign):
     log.debug("[verify_signature] signature is %r" % ret)
     return ret
 
+
 def verify_expiration(lic_dic):
     """
     verify that license has not expired by now
@@ -504,36 +357,39 @@ def verify_expiration(lic_dic):
     """
 
     if "expire" not in lic_dic:
-        msg = "no license expiration information in license  %r" % lic_dic
+        msg = "%s %r" % (_("no license expiration information in license "),
+                         lic_dic.info())
         log.error(msg)
         return (False, msg)
 
     if "subscription" not in lic_dic:
-        msg = "no license subscription information in license  %r" % lic_dic
+        msg = "%s %r" % (_("no license subscription information in license"),
+                         lic_dic.info())
         log.error(msg)
         return (False, msg)
 
     # we check only for the date string which has to be the first part of
     # the expiration date definition
-    temp = (lic_dic.get('expire','') or '').strip()
+    temp = (lic_dic.get('expire', '') or '').strip()
     if temp:
         expire = temp.split()[0].strip()
         if expire.lower() not in ('never'):
             return check_date('expire', expire)
 
-    temp = (lic_dic.get('subscription','') or '').strip() 
+    temp = (lic_dic.get('subscription', '') or '').strip()
     if temp:
         subscription = temp.split()[0].strip()
         return check_date('subscription', subscription)
 
     # old style license, we have to check the date entry for the subscription
-    temp = (lic_dic.get('date','') or '').strip() 
+    temp = (lic_dic.get('date', '') or '').strip()
     if temp:
         subscription = temp.split()[0].strip()
         return check_date('date', subscription)
-    
-    msg = "invalid license (old license style)"
+
+    msg = _("invalid license (old license style)")
     return (False, msg)
+
 
 def verify_volume(lic_dict):
 
@@ -544,7 +400,7 @@ def verify_volume(lic_dict):
         token_volume = int(lic_dict.get('token-num', 0))
     except TypeError as err:
         log.exception("failed to convert license token num value:%r :%r" %
-                  (lic_dict.get('token-num'), err))
+                      (lic_dict.get('token-num'), err))
         return False, "max %d" % token_volume
 
     if num >= token_volume:
@@ -562,10 +418,10 @@ def get_public_keys():
     get a list of all public keys, which could be used to verify
     a linOTP license
 
-    :return: list with uniq public keys
+    :return: list with unique public keys
     """
 
-    pubKeys = set()  # we use a set to get only uniq keys
+    pubKeys = set()  # we use a set to get only unique keys
     pubKeys.add(PUB_KEY_LINOTP)
 
     key_files = []
@@ -583,10 +439,10 @@ def get_public_keys():
                 pubKeys.add(key_text)
             else:
                 log.error("[get_public_keys] public key file is not valid"
-                          " (%s)" % key_file)   
+                          " (%s)" % key_file)
         except Exception as exx:
             log.exception("[get_public_keys] error during reading "
-                      "public key file (%s): %r" % (key_file, exx))
+                          "public key file (%s): %r" % (key_file, exx))
 
     return list(pubKeys)
 
@@ -607,34 +463,23 @@ def check_date(expire_type, expire):
             expiration_date = None
 
     if not expiration_date:
-        msg = "unsuported date format date %r" % (expire)
+        msg = "%s %r" % (_("unsupported date format date %r"), expire)
         log.error("check of %s failed: %s" % (expire_type, msg))
         return (False, msg)
 
     if today > expiration_date:
-        msg_txt = "expired - valid till"
-        try:
-            msg_txt = _(msg_txt)
-        except TypeError:
-            pass
-        msg = "%s %r" % (msg_txt, expire)
+        msg = "%s %r" % (_("expired - valid till"), expire)
         log.error("check of %s failed: %s" % (expiration_date, msg))
         return (False, msg)
 
-    return (True,'')
+    return (True, '')
 
-def packLicenseInfo(lic_dict):
-    if not lic_dict:
-        return None
-    lic_str = ''
-    for k, v in lic_dict.items():
-        lic_str += "%s=%s\n" % (k, v)
-    return lic_str
-    
-def isRangeSeparator(line, key):
+
+def _isRangeSeparator(line, key):
     if line.startswith('---') and line.endsswith('---'):
         return line.strip(['-']).strip().lower() == key.lower()
     return False
+
 
 def readPublicKey(filename, decode=False):
     pem_lines = []
@@ -645,11 +490,11 @@ def readPublicKey(filename, decode=False):
         for line in f:
             temp = line.strip()
             if len(temp) > 0:
-                if not record: 
-                    if isRangeSeparator(temp, 'BEGIN PUBLIC KEY'):
+                if not record:
+                    if _isRangeSeparator(temp, 'BEGIN PUBLIC KEY'):
                         pem_lines.append(temp)
                         record = True
-                elif isRangeSeparator(temp, 'END PUBLIC KEY'):
+                elif _isRangeSeparator(temp, 'END PUBLIC KEY'):
                     pem_lines.append(temp)
                     break
                 else:
@@ -659,10 +504,10 @@ def readPublicKey(filename, decode=False):
 
     if len(pem_lines) == 0:
         return None
-    
+
     txt_lines = os.linesep.join(pem_lines)
-    if decode: 
+    if decode:
         return base64.b64decode(txt_lines)
     return txt_lines
 
-#eof###########################################################################
+# eof #########################################################################

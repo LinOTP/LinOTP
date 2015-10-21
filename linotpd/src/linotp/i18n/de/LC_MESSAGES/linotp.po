@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2015-07-04 04:29+0200\n"
+"PO-Revision-Date: 2015-10-24 00:08+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -36,6 +36,18 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#, python-format
+msgid ""
+"You do not have the rights to monitor these realms: %r. Check the policies!"
+msgstr ""
+"Sie haben keine Rechte in diesen Realms: %r. Überprüfen Sie die Richtlinien."
+
+msgid "Summary"
+msgstr "Übersicht"
+
+msgid "Realms"
+msgstr "Realms"
 
 msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
 msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
@@ -92,6 +104,59 @@ msgstr "Fehler bei der Suche im Audit Log: %s"
 #, python-format
 msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
 msgstr "Gültige Werte sind 'ocra' oder 'ocra2'. Sie gaben %s an"
+
+msgid "Support not available, your product is unlicensed"
+msgstr "Sie haben keinen Support, sie benutzen dieses Produkt unlizensiert"
+
+msgid "license file is empty!"
+msgstr "Die Lizenzdatei ist leer!"
+
+msgid "signature could not be verified!"
+msgstr "Die Signatur ist nicht gültig!"
+
+msgid "no license expiration information in license "
+msgstr "Keine Lizenz-Ablauf-Information in der Lizenz"
+
+msgid "no license subscription information in license"
+msgstr "Keine Lizenz-Subskription-Information in der Lizenz"
+
+msgid "invalid license (old license style)"
+msgstr "Ungülitige Lizenz (altes Lizenzformat)"
+
+msgid "tokens used"
+msgstr "verwendete Token"
+
+msgid "tokens supported"
+msgstr "lizensierte Token"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "nicht unterstütztes Datumsformat %r"
+
+msgid "expired - valid till"
+msgstr "abgelaufen - gültig bis"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr ""
+"getTokenOwner: Der Benutzer %s/%s und der Token %s sind in mehreren Realms "
+"enthalten: %s."
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr ""
+"getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
+"Realm gefunden werden!"
+
+msgid "OTP seed"
+msgstr "OTP Seed"
+
+msgid "URL for OCRA token"
+msgstr "URL für OCRA-Token"
 
 #, python-format
 msgid "The provided PIN is too short. It should be at least %i characters."
@@ -155,43 +220,6 @@ msgstr "Der PIN beinhaltet Sonderzeichen obwohl dies nicht so sein sollte (%s)"
 msgid "The PIN contains other characters, although it should not! (%s)"
 msgstr ""
 "Der PIN beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s definiert."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s im Realm %s definiert."
-
-msgid "The policy settings do not allow you to issue this request!"
-msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
-
-msgid ""
-"You may not enroll any more tokens. Your maximum token number is reached!"
-msgstr ""
-"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
-"ausrollen."
-
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
-"ggf. die Richtlinien."
-
-msgid "The policy settings do not allow you to request a serial by OTP!"
-msgstr ""
-"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
-
-#, python-format
-msgid "Unknown method in selfservice: %s"
-msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr ""
@@ -299,6 +327,12 @@ msgstr ""
 "Sie haben nicht die administrativen Rechte um den Token %s vom Typ %s "
 "auszurollen."
 
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr ""
+"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
+"ausrollen."
+
 #, python-format
 msgid ""
 "The maximum allowed number of tokens for the realm %s was reached. You can "
@@ -345,6 +379,10 @@ msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 msgstr ""
 "Die Maimalzahl an lizensierten Token wurde überschritten - überprüfen Sie "
 "ggf. die Richtlinien."
+
+#, python-format
+msgid "Missing parameter: %r"
+msgstr "Fehlender Parameter: %r"
 
 #, python-format
 msgid ""
@@ -394,8 +432,8 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to get the token owner in realm "
-"%s(%s)."
+"You do not have the administrative right to get the token owner in realm %s"
+"(%s)."
 msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen der Token Besitzer "
 "im Realm %s(%s)."
@@ -478,6 +516,37 @@ msgstr ""
 "dazu ein Richtlinie mit 'scope=audit' und 'action=view'."
 
 #, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s definiert."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s im Realm %s definiert."
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr ""
+"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
+"ggf. die Richtlinien."
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr ""
+"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
+
+#, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
 msgstr ""
 "Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die System "
@@ -513,43 +582,6 @@ msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter controller %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
-
-msgid "signature could not be verified!"
-msgstr "Die Signatur ist nicht gültig!"
-
-msgid "volume exceeded:"
-msgstr "Volumen überschritten:"
-
-msgid "expired - valid till"
-msgstr "abgelaufen - gültig bis"
-
-msgid "tokens used"
-msgstr "verwendete Token"
-
-msgid "tokens supported"
-msgstr "lizensierte Token"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
-msgstr ""
-"getTokenOwner: Der Benutzer %s/%s und der Token %s sind in mehreren Realms "
-"enthalten: %s."
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr ""
-"getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
-"Realm gefunden werden!"
-
-msgid "OTP seed"
-msgstr "OTP Seed"
-
-msgid "URL for OCRA token"
-msgstr "URL für OCRA-Token"
 
 msgid "E-mail OTP Token"
 msgstr "E-Mail OTP Token"
@@ -927,8 +959,8 @@ msgstr "Remote Token Einstellungen"
 
 msgid "You need to enter the remote LinOTP server like https://remotelinotp"
 msgstr ""
-"Sie müssen den remote LinOTP Server im Format 'https://linotp2."
-"remoteserver.local' angeben."
+"Sie müssen den remote LinOTP Server im Format 'https://linotp2.remoteserver."
+"local' angeben."
 
 msgid "Remote server"
 msgstr "Remote Server"
@@ -976,21 +1008,20 @@ msgstr ""
 msgid ""
 "You can either forward the OTP to a remote serial number or to a remote user."
 msgstr ""
-"Die Authentsierungsanfrage kann entweder an eine remote Seriennummer oder "
-"an einen remote Benutzer weitergeleitet werden."
+"Die Authentsierungsanfrage kann entweder an eine remote Seriennummer oder an "
+"einen remote Benutzer weitergeleitet werden."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
 "forwarded to the remote user with the same username."
 msgstr ""
-"Wenn Sie keine remote Seriennumer und auch keinen remote "
-"Benutzernamen angeben, dann wird die Authentisierungsanfrage an den Benutzer "
-"mit dem gleichen Benutzernamen weitergeleitet."
+"Wenn Sie keine remote Seriennumer und auch keinen remote Benutzernamen "
+"angeben, dann wird die Authentisierungsanfrage an den Benutzer mit dem "
+"gleichen Benutzernamen weitergeleitet."
 
 msgid "You need to enter the server like 'https://linotp2.my.domain'"
 msgstr ""
-"Sie müssen den Server im Format 'https://linotp2.remoteserver.local' "
-"angeben."
+"Sie müssen den Server im Format 'https://linotp2.remoteserver.local' angeben."
 
 msgid ""
 "The PIN can either be verified on this local LinOTP server or on the remote "
@@ -1286,8 +1317,8 @@ msgid ""
 "Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
 "(objectClass=user))"
 msgstr ""
-"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: "
-"(&(sAMAccountName=%s)(objectClass=user))"
+"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: (&"
+"(sAMAccountName=%s)(objectClass=user))"
 
 msgid ""
 "Please enter a valid searchfilter like this: \n"
@@ -1752,9 +1783,6 @@ msgstr "LinOTP Konfiguration"
 
 msgid "UserIdResolvers"
 msgstr "UserIdResolvers"
-
-msgid "Realms"
-msgstr "Realms"
 
 msgid "System Config"
 msgstr "System-konfiguration"
@@ -2768,13 +2796,13 @@ msgid "Userlist"
 msgstr "Benutzerliste"
 
 msgid "URL path:"
-msgstr ""
+msgstr "URL Pfad:"
 
 msgid "Parameters:"
-msgstr ""
+msgstr "Parameter:"
 
 msgid "Result path:"
-msgstr ""
+msgstr "Zielpfad: "
 
 msgid "Attribute mapping:"
 msgstr "Attributszuordnung"
@@ -3416,6 +3444,9 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "volume exceeded:"
+#~ msgstr "Volumen überschritten:"
 
 #~ msgid "System config"
 #~ msgstr "System Konfiguration"
