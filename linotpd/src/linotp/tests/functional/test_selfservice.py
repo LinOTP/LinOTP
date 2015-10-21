@@ -527,6 +527,54 @@ class TestSelfserviceController(TestController):
         assert '"LinOtp.TokenSerialnumber": "token01",' in response
         assert '"LinOtp.Isactive": true' in response
 
+    def test_enroll_onetime_spass(self):
+        '''
+        selfservice: testing enrollment of a onetime spass token as normal user
+        '''
+        self.deleteToken('token01')
+
+        ''' Verify that the relevant policy is required '''
+        response = self.app.get(url(controller='userservice', action='enroll'),
+                                params={'serial':'token01',
+                                        'type': 'spass',
+                                        'pin': '!token0secret!',
+                                        'selftest_user': 'root@myDefRealm'
+                                        })
+        print response
+        assert '"message": "ERR410: The policy settings do not allow you to issue this request!"' in response
+
+        ''' Verify that a spass token is properly created '''
+        self.createPolicy('enrollSPASS')
+
+        response = self.app.get(url(controller='userservice', action='enroll'),
+                                params={'serial':'token01',
+                                        'type': 'spass',
+                                        'onetime': 'true',
+                                        'pin': '!token0secret!',
+                                        'selftest_user': 'root@myDefRealm'
+                                        })
+        print response
+        assert '"status": true' in response
+
+        response = self.app.get(url(controller='admin', action='show'),
+                                params={'serial': 'token01'})
+        print response
+        assert '"LinOtp.TokenSerialnumber": "token01",' in response
+        assert '"LinOtp.Isactive": true' in response
+
+        ''' Verify this spass works once... '''
+        parameters = {
+                      "user"     : 'root',
+                      "pass"     : '!token0secret!',
+                      }
+        response = self.app.get(url(controller='validate', action='check'), params=parameters)
+        assert '"status": true' in response
+        assert '"value": true'  in response
+
+        ''' ... and exactly once '''
+        response = self.app.get(url(controller='validate', action='check'), params=parameters)
+        assert '"status": true' in response
+        assert '"value": false'  in response
 
     def test_webprovision(self):
         '''
