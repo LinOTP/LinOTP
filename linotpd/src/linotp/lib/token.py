@@ -1538,29 +1538,22 @@ class FinishTokens(object):
                         % (self.pin_matching_tokens +
                            self.invalid_tokens)[0].getSerial())
 
-        if self.pin_matching_tokens:
-            (ret, reply, detail) = self.finish_pin_matching_tokens()
-            # in case of pin matching, we have to treat as well the invalid
-            self.increment_failcounters(self.pin_matching_tokens)
-            self.finish_invalid_tokens()
-
-            # check for the global settings, if we increment in wrong pin
-            incOnFalsePin = getFromConfig("FailCounterIncOnFalsePin", "True")
-            if incOnFalsePin.strip().lower() == 'true':
-                self.increment_failcounters(self.invalid_tokens)
-            create_audit_entry(detail, self.pin_matching_tokens)
-            return ret, reply
+        # if there is no token left, we end up here
+        if not (self.pin_matching_tokens + self.invalid_tokens):
+            create_audit_entry("no token found", [])
+            return False, None
 
         if self.invalid_tokens:
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
-
             create_audit_entry(detail, self.invalid_tokens)
-            return ret, reply
 
-        # if there is no token left, we hend up here
-        create_audit_entry("no token found", [])
-        return False, None
+        if self.pin_matching_tokens:
+            (ret, reply, detail) = self.finish_pin_matching_tokens()
+            self.increment_failcounters(self.pin_matching_tokens)
+            create_audit_entry(detail, self.pin_matching_tokens)
+
+        return ret, reply
 
     def finish_valid_tokens(self):
         """
@@ -1676,7 +1669,6 @@ class FinishTokens(object):
 
         for tok in pin_matching_tokens:
             tok.statusValidationFail()
-            tok.inc_count_auth()
 
         return (False, None, action_detail)
 
