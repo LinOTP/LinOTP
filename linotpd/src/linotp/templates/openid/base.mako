@@ -37,6 +37,8 @@
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
+<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1" />
+
 <link type="text/css" rel="stylesheet" href="/openid/style.css" />
 <link type="text/css" rel="stylesheet" href="/openid/custom-style.css" />
 
