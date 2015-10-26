@@ -170,7 +170,6 @@ class MonitoringController(BaseController):
                                             'Check the policies!')
                                           % invalid_realms)
 
-            # if there was realm or no argument given:
             totals = {}
             realm_info = {}
             for a_realm in realms:
@@ -246,7 +245,7 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[__after__] done')
+            log.debug('[config] done')
 
     def encryption(self):
         """
@@ -265,7 +264,7 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[__after__] done')
+            log.debug('[encryption] done')
 
     def license(self):
         """
@@ -313,4 +312,82 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[__after__] done')
+            log.debug('[license] done')
+
+    def resolver(self):
+        """
+        method:
+            monitoring/resolver
+
+        description:
+            for each reealm, display the resolvers and the number of users
+            per resolver
+
+        arguments:
+            * realms - optional: takes a realm, only information on this realm
+            will be displayed
+
+        returns:
+            a json result with:
+            { "head": [],
+            "data": [ [row1], [row2] .. ]
+            }
+
+        """
+        result = {}
+        try:
+            param = request.params
+            status = param.get('status')
+            request_realms = param.get('realms', '').split(',')
+
+            monit_handler = MonitorHandler(context=self.request_context)
+            realm_whitelist = monit_handler.get_allowed_realms()
+
+            # by default we show all allowed realms
+            realms = realm_whitelist
+
+            # support for empty realms or no realms by realm = *
+            if '*' in request_realms:
+                realms = realm_whitelist
+                realms.append('/:no realm:/')
+            # other cases, we iterate through the realm list
+            elif len(request_realms) > 0 and not (request_realms == ['']):
+                realms = []
+                invalid_realms = []
+                for search_realm in request_realms:
+                    search_realm = search_realm.strip()
+                    if search_realm in realm_whitelist:
+                        realms.append(search_realm)
+                    elif search_realm == '/:no realm:/':
+                        realms.append(search_realm)
+                    else:
+                        invalid_realms.append(search_realm)
+                if not realms and invalid_realms:
+                    raise PolicyException(_('You do not have the rights to '
+                                            'monitor these realms: %r. '
+                                            'Check the policies!')
+                                          % invalid_realms)
+
+            realm_info = {}
+            for a_realm in realms:
+
+                realm_info[a_realm] = monit_handler.resolverinfo(a_realm)
+
+            result[_('Realms')] = realm_info
+
+            Session.commit()
+            return sendResult(response, result)
+
+        except PolicyException as policy_exception:
+            log.exception(policy_exception)
+            Session.rollback()
+            return sendError(response, unicode(policy_exception), 1)
+
+        except Exception as exc:
+            log.exception(exc)
+            Session.rollback()
+            return sendError(response, exc)
+
+        finally:
+            Session.close()
+            log.debug('[resolvers] done')

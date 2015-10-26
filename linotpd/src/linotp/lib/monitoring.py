@@ -28,12 +28,17 @@ library for monitoring controller
 """
 
 import datetime
+from linotp.lib.resolver import splitResolver
 
 from linotp.model import Token, Realm, TokenRealm
 from linotp.model import Config as config_model
 from linotp.model.meta import Session
 
 from linotp.lib.config import LinOtpConfig, storeConfig, getFromConfig
+
+from linotp.lib.useriterator import iterate_users
+
+from linotp.lib.user import getUserListIterators, getUserFromParam
 
 from sqlalchemy import and_, not_
 
@@ -53,7 +58,6 @@ class MonitorHandler(object):
             assigned, unassigned, total
         """
         result = {}
-
         # if no realm or empty realm is specified
         if realm.strip() == '' or realm.strip() == '/:no realm:/':
             #  get all tokenrealm ids
@@ -238,3 +242,26 @@ class MonitorHandler(object):
 
         return False
 
+    def resolverinfo(self, realm):
+        """
+        get the resolvers for one realm and the number of users per resolver
+        :param realm: the realm to query
+        :return: dict with resolvernames as keys and number of users as value
+        """
+        realminfo = self.context.get('Config').getRealms().get(realm)
+        resolvers = realminfo.get('useridresolver', '')
+        realmdict = {}
+
+        for resolver in resolvers:
+            package, module, classs, conf = splitResolver(resolver)
+            realmdict[conf] = 0
+
+        user = getUserFromParam({'realm': realm}, optionalOrRequired=True)
+        users_iters = iterate_users(getUserListIterators({'realm': realm}, user))
+
+        for next_one in users_iters:
+            for key in realmdict:
+                if key in next_one:
+                    realmdict[key] += 1
+
+        return realmdict

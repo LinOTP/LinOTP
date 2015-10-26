@@ -46,16 +46,15 @@ log = logging.getLogger(__name__)
 class TestMonitoringController(TestController):
 
     def setUp(self):
-        self.delete_all_token()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
-
         super(TestMonitoringController, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         return
 
     def tearDown(self):
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         super(TestMonitoringController, self).tearDown()
 
     # helper functions
@@ -298,5 +297,18 @@ class TestMonitoringController(TestController):
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('encryption'), True, response)
+
+    def test_resolvers(self):
+        response = self.make_authenticated_request(
+            controller='monitoring', action='resolver', params={})
+        resp = json.loads(response.body)
+        myotherrealm = resp.get('result').get('value').get('Realms').get(
+            'myotherrealm')
+        self.assertEqual(myotherrealm.get('myOtherRes'), 8, response)
+        mymixrealm = resp.get('result').get('value').get('Realms').get(
+            'mymixrealm')
+        self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
+        self.assertEqual(mymixrealm.get('myDefRes'), 24, response)
+
 
 # eof ########################################################################
