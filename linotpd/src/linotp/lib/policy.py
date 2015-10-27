@@ -2657,7 +2657,7 @@ def checkPolicyPost(controller, method, param=None, user=None):
         if user is None:
             user = getUserFromParam(param, optional)
 
-        if method in ['init', 'assign', 'setPin']:
+        if method in ['init', 'assign', 'setPin', 'loadtokens']:
             # check if we are supposed to genereate a random OTP PIN
             randomPINLength = getRandomOTPPINLength(user)
             if randomPINLength > 0:

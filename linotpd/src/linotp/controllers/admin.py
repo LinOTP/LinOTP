@@ -2095,6 +2095,10 @@ class AdminController(BaseController):
                 (ret, tokenObj) = initToken(init_param, User('', '', ''),
                                             tokenrealm=tokenrealm)
 
+                checkPolicyPost('admin', 'loadtokens',
+                               {'serial': serial})
+
+
             log.info ("[loadtokens] %i tokens imported." % len(TOKENS))
             res = { 'value' : True, 'imported' : len(TOKENS) }
 
