@@ -1416,7 +1416,6 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             audit['action_detail'] = "Token inactive"
             continue
         if token.getFailCount() >= token.getMaxFailCount():
-            token.incOtpFailCounter()
             audit['action_detail'] = "Failcounter exceeded"
             continue
         if not token.check_auth_counter():

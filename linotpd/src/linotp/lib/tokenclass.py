@@ -724,7 +724,8 @@ class TokenClass(object):
     def incOtpFailCounter(self):
         log.debug('incOtpFailCounter')
 
-        self.token.LinOtpFailCount = self.token.LinOtpFailCount + 1
+        if self.token.LinOtpFailCount < self.token.LinOtpMaxFail:
+            self.token.LinOtpFailCount = self.token.LinOtpFailCount + 1
 
         try:
             self.token.storeToken()
