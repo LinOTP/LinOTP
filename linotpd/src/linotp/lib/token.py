@@ -1370,7 +1370,9 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         if 'transactionid' in check_options:
             check_options['transactionid'] = transid
 
-    audit_entry = None
+    audit_entry = {}
+    audit_entry['action_detail'] = "no token found!"
+
     # token container for the finalisation
     challenge_tokens = []
     pin_matching_tokens = []
@@ -1386,7 +1388,6 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         log.debug("[__checkTokenList] Found user with loginId %r: %r:\n"
                    % (token.getUserId(), token.getSerial()))
 
-        audit_entry = {}
         audit_entry['serial'] = token.getSerial()
         audit_entry['token_type'] = token.getType()
 
@@ -1486,6 +1487,7 @@ class FinishTokens(object):
         :param validation_results: dict of the verification response
         :param user: the requesting user
         :param options: request options - additional parameters
+        :param audit_entry: audit_entry reference 
         """
 
         self.valid_tokens = valid_tokens
@@ -1524,6 +1526,11 @@ class FinishTokens(object):
                                tokens=self.challenge_tokens)
             return ret, reply
 
+        # if there is no token left, we end up here
+        if not (self.pin_matching_tokens + self.invalid_tokens):
+            create_audit_entry(audit_entry=self.audit_entry)
+            return False, None
+
         if self.user:
             log.warning("user %r@%r failed to authenticate."
                         % (self.user.login, self.user.realm))
@@ -1531,11 +1538,6 @@ class FinishTokens(object):
             log.warning("serial %r failed to authenticate."
                         % (self.pin_matching_tokens +
                            self.invalid_tokens)[0].getSerial())
-
-        # if there is no token left, we end up here
-        if not (self.pin_matching_tokens + self.invalid_tokens):
-            create_audit_entry(audit_entry=self.audit_entry)
-            return False, None
 
         if self.invalid_tokens:
             (ret, reply, detail) = self.finish_invalid_tokens()
