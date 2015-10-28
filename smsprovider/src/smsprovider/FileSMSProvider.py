@@ -29,8 +29,9 @@
 from smsprovider.SMSProvider import ISMSProvider
 
 import os
-
 import logging
+
+from linotp.lib.util import str2unicode
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +54,10 @@ class FileSMSProvider(ISMSProvider):
 
     def submitMessage(self, phone, message):
         """
+        write the message down to the given file
 
+        :param phone: given phone number
+        :param message: the provided message, containing the otp
         """
         ret = False
 
@@ -68,7 +72,8 @@ class FileSMSProvider(ISMSProvider):
             filename = "%s%s%s" % (here, os.path.sep, filename)
         try:
             with open(filename, "w") as f:
-                f.write("%s:%s" % (phone, message))
+                msg = u"%s:%s" % (str2unicode(phone), str2unicode(message))
+                f.write(msg.encode('utf-8'))
             ret = True
         except Exception as exx:
             log.exception(exx)
