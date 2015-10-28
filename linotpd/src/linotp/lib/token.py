@@ -1413,14 +1413,20 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         if not token.isActive():
             audit_entry['action_detail'] = "Token inactive"
             continue
+
         if token.getFailCount() >= token.getMaxFailCount():
             audit_entry['action_detail'] = "Failcounter exceeded"
+            token.incOtpFailCounter()
             continue
+
         if not token.check_auth_counter():
             audit_entry['action_detail'] = "Authentication counter exceeded"
+            token.set_count_auth(token.get_count_auth() + 1)
             continue
+
         if not token.check_validity_period():
             audit_entry['action_detail'] = "validity period mismatch"
+            token.incOtpFailCounter()
             continue
 
         # start the token validation
