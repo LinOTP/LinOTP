@@ -400,6 +400,17 @@
 				this.rePosDrag();
 			},
 			addData: function (data) { //parse data
+				function sanitize (data) {
+					//HTML-sanitize data
+					data = String(data);
+					data = data.replace(/&/g, '&amp;');
+					data = data.replace(/</g, '&lt;');
+					data = data.replace(/>/g, '&gt;');
+					data = data.replace(/"/g, '&quot;');
+					data = data.replace(/'/g, '&#x27;');
+					return data;
+				}
+
 				if (p.dataType == 'json') {
 					data = $.extend({rows: [], page: 0, total: 0}, data);
 				}
@@ -458,7 +469,7 @@
 								td.align = this.align;
 								// If each row is the object itself (no 'cell' key)
 								if (typeof row.cell == 'undefined') {
-									td.innerHTML = row[p.colModel[idx].name];
+									td.innerHTML = sanitize(row[p.colModel[idx].name]);
 								} else {
 									// If the json elements aren't named (which is typical), use numeric order
                                     var iHTML = '';
@@ -467,7 +478,7 @@
                                     } else {
                                         iHTML = row.cell[p.colModel[idx].name];
                                     }
-                                    td.innerHTML = p.__mw.datacol(p, $(this).attr('abbr'), iHTML); //use middleware datacol to format cols
+                                    td.innerHTML = sanitize(p.__mw.datacol(p, $(this).attr('abbr'), iHTML)); //use middleware datacol to format cols
 								}
 								// If the content has a <BGCOLOR=nnnnnn> option, decode it.
 								var offs = td.innerHTML.indexOf( '<BGCOLOR=' );
@@ -485,9 +496,9 @@
 								var td = document.createElement('td');
 								// If the json elements aren't named (which is typical), use numeric order
 								if (typeof row.cell[idx] != "undefined") {
-									td.innerHTML = (row.cell[idx] != null) ? row.cell[idx] : '';//null-check for Opera-browser
+									td.innerHTML = sanitize((row.cell[idx] != null) ? row.cell[idx] : '');//null-check for Opera-browser
 								} else {
-									td.innerHTML = row.cell[p.colModel[idx].name];
+									td.innerHTML = sanitize(row.cell[p.colModel[idx].name]);
 								}
 								$(tr).append(td);
 								td = null;
@@ -523,7 +534,7 @@
 							if( offs >0 ) {
 								$(td).css('background',	 text.substr(offs+7,7) );
 							}
-                            td.innerHTML = p.__mw.datacol(p, $(this).attr('abbr'), text); //use middleware datacol to format cols
+                            td.innerHTML = sanitize(p.__mw.datacol(p, $(this).attr('abbr'), text)); //use middleware datacol to format cols
 							$(td).attr('abbr', $(this).attr('abbr'));
 							$(tr).append(td);
 							td = null;
@@ -531,7 +542,7 @@
 						if ($('thead', this.gDiv).length < 1) {//handle if grid has no headers
 							$('cell', this).each(function () {
 								var td = document.createElement('td');
-								td.innerHTML = $(this).text();
+								td.innerHTML = sanitize($(this).text());
 								$(tr).append(td);
 								td = null;
 							});
