@@ -2,7 +2,7 @@ ECHO    = echo
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/linotp
-VERSION = 2.7.1.2
+VERSION = 2.7.1.3
 PROJECT=LinOTP
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
 

@@ -37,7 +37,7 @@ def get_debian_package():
 
 setup(
     name='LinOTP',
-    version='2.7.1.2',
+    version='2.7.1.3',
     description='LinOTP Service',
     author='LSE Leading Security Experts GmbH',
     license='AGPL v3, (C) LSE Leading Security Experts GmbH',
