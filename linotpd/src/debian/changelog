@@ -1,3 +1,9 @@
+linotp (2.7.0.3-1~precise) precise; urgency=low
+
+  * Fix XSS vulnerabilities in manage WebUI
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 02 Nov 2015 17:51:40 +0100
+
 linotp (2.7.0.2-1~precise) precise; urgency=low
 
   * Fixed PSKC import with plain input
