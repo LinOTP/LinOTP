@@ -258,16 +258,18 @@ static size_t curl_write_memory_callback(void *ptr, size_t size, size_t nmemb,
     header data passed into it. This usually means 100K.*
      *
      */
-
+    char *tmp;
     struct MemoryStruct *mem = (struct MemoryStruct *) data;
-    long long int protectit;
-    protectit = (size_t)(size * nmemb);
-    size_t realsize = (size_t) protectit;
-    if(realsize != protectit){
+
+    /* Integer overflow protection */
+    if(size && nmemb > INT_MAX / size){
         log_debug("Integer overflow detected @ curl_write_memory_callback");
         return 0;
     }
-    char *tmp;
+    size_t realsize = (size * nmemb);
+    if(!realsize){
+    	log_debug("realsize of curl_write_memory_callback was 0");
+    }
 
     /*Check for Max_size*/
     if (realsize > MAXMEMSIZE) {
@@ -933,6 +935,15 @@ int_array get_possibtok(char* token_length){
     }
 
     size_t len = strlen(token_length);
+    if(len && len > INT_MAX / sizeof(int)){
+        log_debug("Integer overflow detected @  get_possibtok");
+        return ret;
+    }
+  
+    if(!len){
+    	log_debug("len was 0 @ get_possibtok!");
+        return ret;
+    }
     int*   tmp = malloc(len * sizeof(int)); // allocate enough data...
     if(!(tmp)){
         log_error("malloc tmp in get_possibtok failed");
