@@ -1,3 +1,9 @@
+linotp (2.7.2.2+custom03-1) jessie; urgency=low
+
+  * Fix XSS vulnerabilities in manage WebUI
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 03 Nov 2015 15:20:17 +0100
+
 linotp (2.7.2.2+custom01-1) jessie; urgency=low
 
   * Fix to get the serial number from otp for Yubikeys in selfservice
