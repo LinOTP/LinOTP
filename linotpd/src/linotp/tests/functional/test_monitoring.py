@@ -286,21 +286,24 @@ class TestMonitoringController(TestController):
 
     def test_check_encryption(self):
         response = self.make_authenticated_request(
-            controller='monitoring', action='encryption', params={})
+            controller='monitoring', action='storageEncryption', params={})
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('encryption'), True, response)
+        self.assertEqual(values.get('cryptmodul_name'), 'Default', response)
+        self.assertEqual(values.get('cryptmodul_type'), 'DefaultSecurityModule',
+                         response)
 
         # and one more time:
         response = self.make_authenticated_request(
-            controller='monitoring', action='encryption', params={})
+            controller='monitoring', action='storageEncryption', params={})
         resp = json.loads(response.body)
         values = resp.get('result').get('value')
         self.assertEqual(values.get('encryption'), True, response)
 
-    def test_resolvers(self):
+    def test_userinfo(self):
         response = self.make_authenticated_request(
-            controller='monitoring', action='resolver', params={})
+            controller='monitoring', action='userinfo', params={})
         resp = json.loads(response.body)
         myotherrealm = resp.get('result').get('value').get('Realms').get(
             'myotherrealm')
