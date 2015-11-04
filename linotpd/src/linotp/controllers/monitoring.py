@@ -33,9 +33,7 @@ from pylons import request, response, config, tmpl_context as c
 from pylons.i18n.translation import _
 
 from linotp.lib.base import BaseController
-from linotp.lib.config import getLinotpConfig
-
-from linotp.lib.realm import getRealms
+from linotp.lib.error import HSMException
 
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
@@ -45,7 +43,7 @@ from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.model.meta import Session
 
-from linotp.lib.policy import (PolicyException, getPolicies)
+from linotp.lib.policy import PolicyException
 
 from linotp.lib.support import InvalidLicenseException, \
                                getSupportLicenseInfo, verifyLicenseInfo
@@ -247,14 +245,27 @@ class MonitoringController(BaseController):
             Session.close()
             log.debug('[config] done')
 
-    def encryption(self):
+    def storageEncryption(self):
         """
-        check if hsm encrypts value before storing it to config db
-        :return:
+        check if hsm/enckey encrypts value before storing it to config db
+        :return: true if a new value gets encryptet before beeing stored in db
         """
         try:
+            if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+                raise HSMException('no hsm defined in execution context!')
+
+            hsm = c.hsm.get('obj')
+            if hsm is None or hsm.isReady() == False:
+                raise HSMException('hsm not ready!')
+
+            hsm_class = str(type(hsm))
+            enc_type = hsm_class.split('.')[-1]
+            enc_type = enc_type.strip("'>")
+            enc_name = hsm.name
+            res = {'cryptmodul_type': enc_type, 'cryptmodul_name': enc_name}
+
             monit_handler = MonitorHandler(context=self.request_context)
-            res = {'encryption': monit_handler.check_encryption()}
+            res['encryption'] = monit_handler.check_encryption()
 
             return sendResult(response, res, 1)
 
@@ -271,6 +282,7 @@ class MonitoringController(BaseController):
         license
         return the support status, which is community support by default
         or the support subscription info, which could be the old license
+        :return: json result with license info
         """
         res = {}
         try:
@@ -314,18 +326,18 @@ class MonitoringController(BaseController):
             Session.close()
             log.debug('[license] done')
 
-    def resolver(self):
+    def userinfo(self):
         """
         method:
-            monitoring/resolver
+            monitoring/userinfo
 
         description:
-            for each reealm, display the resolvers and the number of users
+            for each realm, display the resolvers and the number of users
             per resolver
 
         arguments:
             * realms - optional: takes a realm, only information on this realm
-            will be displayed
+                will be displayed
 
         returns:
             a json result with:
