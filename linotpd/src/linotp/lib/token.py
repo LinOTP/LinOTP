@@ -2178,6 +2178,9 @@ class FinishTokens(object):
             (counter, _reply) = validation_results[token.getSerial()]
             token.setOtpCount(counter + 1)
             token.statusValidationSuccess()
+            if token.getFromTokenInfo('count_auth_success_max', default=None):
+                auth_count = token.get_count_auth_success()
+                token.set_count_auth_success(auth_count + 1)
             return (True, None, action_detail)
 
         else:
