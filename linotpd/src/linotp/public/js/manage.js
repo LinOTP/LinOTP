@@ -3162,6 +3162,10 @@ $(document).ready(function(){
             },
             'Save': { click: function(){
                     if ($("#form_realmconfig").valid()) {
+                        if (!g.resolvers_in_realm_to_edit.length) {
+                            alert_box("Cannot save realm", "Please select at least one UserIdResolver from the list");
+                            return;
+                        }
                         save_realm_config();
                         $(this).dialog('close');
                     }
