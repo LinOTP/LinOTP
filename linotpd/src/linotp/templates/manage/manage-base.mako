@@ -135,10 +135,6 @@ if isinstance(lang, list):
     ${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
 </div>
 
-<div id="do_waiting">
-    <img src="/images/ajax-loader.gif" border="0" alt="" /><span>${_("Communicating with LinOTP server...")}</span>
-</div>
-
 <div id="left_and_right">
 <div id="sidebar">
     <div class="sel_box">
@@ -1653,6 +1649,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id="alert_box">
     <span id="alert_box_text"> </span>
 </div>
+
+<div id="do_waiting">
+    <img src="/images/ajax-loader.gif" border="0" alt="" /><span>${_("Communicating with LinOTP server...")}</span>
+</div>
+
 
 </body>
 </html>
