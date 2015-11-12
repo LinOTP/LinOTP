@@ -1,3 +1,9 @@
+linotp (2.7.2.2-1) jessie; urgency=low
+
+  * Fix XSS vulnerabilities in manage WebUI
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 12 Nov 2015 11:57:17 +0100
+
 linotp (2.7.2.1-1) jessie; urgency=low
 
   Bug fixes:
