@@ -3725,17 +3725,13 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'New': { click: function(){
-                realm_edit('');
-                realms_load();
-                fill_realms();
+                    realm_modify('');
                 },
                 id: "button_realms_new",
                 text: "New"
                 },
             'Edit': { click: function(){
-                realm_edit(g.realm_to_edit);
-                realms_load();
-                fill_realms();
+                    realm_modify(g.realm_to_edit);
                 },
                 id: "button_realms_edit",
                 text: "Edit"
@@ -4442,7 +4438,16 @@ function resolver_file(name){
     });
 }
 
-
+function realm_modify(name) {
+    var resolvers = get_resolvers();
+    if (resolvers.length === 0) {
+        alert_box("Cannot " + (name.length === 0 ? "create" : "edit") + " a realm", "Please create a UserIdResolver first");
+    } else {
+        realm_edit(name);
+        realms_load();
+        fill_realms();
+    }
+}
 
 function realm_edit(name){
 
