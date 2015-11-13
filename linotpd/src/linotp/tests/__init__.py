@@ -78,7 +78,7 @@ LOG = logging.getLogger(__name__)
 
 __all__ = ['environ', 'url', 'TestController']
 
-
+assert pylons.test.pylonsapp, "Pylons app must be loaded ('nosetests --with-pylons=test.ini')"
 config = pylons.test.pylonsapp.config
 
 environ = {}
