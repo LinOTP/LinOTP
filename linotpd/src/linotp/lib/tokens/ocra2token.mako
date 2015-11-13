@@ -167,7 +167,7 @@ ${_("Enroll your OCRA2 Token")}
 		required: "${_('required input field')}",
 		minlength: "${_('minimum length must be greater than {0}')}",
 		maxlength: "${_('maximum length must be lower than {0}')}",
-
+		range: '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}',
 	});
 
 jQuery.validator.addMethod("ocra2_secret", function(value, element, param){
@@ -176,7 +176,7 @@ jQuery.validator.addMethod("ocra2_secret", function(value, element, param){
     return  res1 || res2 ;
 }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}'  );
 
-$('#form_enroll_ocra2').validate({
+var ocra2_self_validator = $('#form_enroll_ocra2').validate({
     debug: true,
     rules: {
         ocra2_secret: {
@@ -214,19 +214,24 @@ function self_ocra2_get_param()
 function self_ocra2_clear()
 {
 	$('#ocra2_secret').val('');
-
+	ocra2_self_validator.resetForm();
 }
+
 function self_ocra2_submit(){
 
 	var ret = false;
 	var params =  self_ocra2_get_param();
 
-	if  ( $('#ocra2_key_cb2').is(':checked') === undefined && $('#form_enroll_ocra2').valid() === false) {
+	if  (( $('#ocra2_key_cb2').is(':checked') === false 
+		 && $('#form_enroll_ocra2').valid() === false)) {
 		alert('${_("Form data not valid.")}');
+		return ret;
+
 	} else {
 		enroll_token( params );
-		$("#ocra2_key_cb2").prop("checked", false);
-		cb_changed('ocra2_key_cb2',['ocra2_secret','ocra2_key_label2']);
+		$("#ocra2_key_cb2").prop("checked", true);
+		$('#ocra2_secret').val('');
+		cb_changed_deactivate('ocra2_key_cb2',['ocra2_secret','ocra2_key_label2']);
 		ret = true;
 	}
 	return ret;
@@ -237,24 +242,39 @@ function self_ocra2_enroll_details(data) {
 	return;
 };
 
+$( document ).ready(function() {
+
+	ocra2_self_validator.resetForm();
+	$("#ocra2_key_cb2").prop("checked", true);
+	cb_changed_deactivate('ocra2_key_cb2',['ocra2_secret','ocra2_key_label2']);
+	
+    $('input[name="ocra2_key_cb2"]').click(function() {
+        ocra2_self_validator.resetForm();
+		cb_changed_deactivate('ocra2_key_cb2',['ocra2_secret','ocra2_key_label2']);
+    });
+    $('#button_enroll_ocra2').click(function (e){
+        e.preventDefault();
+        self_ocra2_submit();
+    });
+});
+
 </script>
 <h1>${_("Enroll your OCRA2 Token")}</h1>
 <div id='enroll_ocra2_form'>
 	<form class="cmxform" id='form_enroll_ocra2'>
 	<fieldset>
 		<table><tr>
-			<td><label id='ocra2_key_label2' for='ocra2_secret'>${_("Enter seed for the new OCRA2 token:")}</label></td>
-			<td><input id='ocra2_secret' name='ocra2_secret' class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
-		</tr><tr>
-			<td><label for='ocra2_key_cb'>${_("Generate OCRA2 seed")+':'}</label></td>
-			<td><input type='checkbox' name='ocra2_key_cb2' id='ocra2_key_cb2' onclick="cb_changed('ocra2_key_cb2',['ocra2_secret','ocra2_key_label2']);"></td>
-		</tr><tr>
 			<td><label id='ocra2_desc_label2' for='ocra2_desc'>${_("Token description")}</label></td>
 			<td><input id='ocra2_desc' name='ocra2_desc' class="ui-widget-content ui-corner-all" value='self enrolled'/></td>
+		</tr><tr>
+			<td><label for='ocra2_key_cb'>${_("Generate OCRA2 seed")+':'}</label></td>
+			<td><input type='checkbox' name='ocra2_key_cb2' id='ocra2_key_cb2' ></td>
+		</tr><tr>
+			<td><label id='ocra2_key_label2' for='ocra2_secret'>${_("Enter seed for the new OCRA2 token:")}</label></td>
+			<td><input id='ocra2_secret' name='ocra2_secret' class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
 		</tr>
         </table>
-	    <button class='action-button' id='button_enroll_ocra2'
-	    	    onclick="self_ocra2_submit();">${_("enroll ocra2 token")}</button>
+	    <button class='action-button' id='button_enroll_ocra2'>${_("enroll ocra2 token")}</button>
     </fieldset>
     </form>
 </div>
@@ -346,7 +366,7 @@ function provisionOcra2() {
 				var url = data.result.value.ocratoken.url;
 				var trans = data.result.value.ocratoken.transaction;
 				$('#ocra2_link').attr("href", url);
-				$('#ocra2_qr_code').html(img);
+				$('#ocra2_qr_code').html($.parseHTML(img));
 				$('#qr2_activate').hide();
 				//$('#activationcode').attr("disabled","disabled");
 				$('#transactionid2').attr("value", trans);
@@ -355,7 +375,7 @@ function provisionOcra2() {
 				$('#qr2_confirm2').show();
 			}
 		} else {
-			alert(activation_fail + " \n" + data.result.error.message);
+			alert(escape(activation_fail) + " \n" + escape(data.result.error.message));
 		}
 	});
 }
@@ -386,17 +406,17 @@ function finishOcra2() {
 			// if not (false) display an ocra_finish_fail message for retry
 			showTokenlist();
 			if (data.result.value.result == false) {
-				alert(ocra_finish_fail);
+				alert(escape(ocra_finish_fail));
 			} else {
-				alert(String.sprintf(ocra_finish_ok, serial));
+				alert(escape(String.sprintf(ocra_finish_ok, serial)));
 				$('#qr2_completed').show();
 				$('#qr2_finish').hide();
 				//$('#ocra_check').attr("disabled","disabled");
 				$('#ocra2_qr_code').html('<div/>');
-				$('#qr2_completed').html(String.sprintf(ocra_finish_ok, serial));
+				$('#qr2_completed').html(escape(String.sprintf(ocra_finish_ok, serial)));
 			}
 		} else {
-			alert("Failed to enroll token!\n" + data.result.error.message);
+			alert("Failed to enroll token!\n" + escape(data.result.error.message));
 		}
 	});
 

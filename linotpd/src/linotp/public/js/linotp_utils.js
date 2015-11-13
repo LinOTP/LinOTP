@@ -118,10 +118,57 @@ function getcookie(search_key) {
 }
 
 function console_log(msg) {
+    var log_msg = escape(msg);
     if (window.console && window.console.log) {
-        window.console.log(msg);
+        window.console.log(log_msg);
     }
     else if (window.opera && window.opera.postError) {
-        window.opera.postError(msg);
+        window.opera.postError(log_msg);
     }
+}
+
+
+function entity_decode(msg) {
+    var type = typeof msg;
+    if (type == 'string') {
+        msg = msg.replace(/&gt;/g, '>');
+        msg = msg.replace(/&lt;/g, '<');
+        msg = msg.replace(/&quot;/g, '"');
+        msg = msg.replace(/&#39;/g, "'");
+        msg = msg.replace(/&amp;/g, '&');
+    }
+    return msg;
+}
+function entity_encode(msg) {
+    var type = typeof msg;
+    if (type == 'string') {
+        msg = msg.replace(/&/g, '&amp;');
+        msg = msg.replace(/>/g, '&gt;');
+        msg = msg.replace(/</g, '&lt;');
+        msg = msg.replace(/"/g, '&quot;');
+        msg = msg.replace(/'/g, '&#39;');
+    }
+    return msg;
+}
+/*
+treewalk an json document and execute the callback on every leave
+*/
+function traverse(jData, callback) {
+  var type = typeof jData;
+    if (type == 'object') {
+        for (var key in jData) {
+            jData[key] = traverse(jData[key], callback);
+        }
+        return jData;
+    } else {
+        return callback(jData);
+    }
+}
+
+function escape(data) {
+	return traverse(data, entity_encode);
+}
+
+function descape(data) {
+	return traverse(data, entity_decode);
 }

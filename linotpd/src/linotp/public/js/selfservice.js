@@ -51,24 +51,43 @@ if (!String.sprintf) {
 LOGIN_CODE = 576
 
 
-function alert_box(p_title, s, param1) {
-    /*
-     * If the parameter is the ID of an element, we pass the text of this very element
-     */
+function alert_box(params /* dict or parameters */){
+	/*
+	 * alert_box - pop up an dialog to show some info, which could contain html
+	 *
+	 * :param params: the dictionary with the parameters, which could be 
+	 * 				  - title: the title to show
+	 *                - text: the text to show
+	 *                - param1: which is a replacement parameter
+	 *                - escaped (bool): if the text++ contains pre escaped text
+	 */
+	var escaped = params['escaped'] || false;
+    var p_title = params['title'] || '';
+    var s = params['text'] || '';
+    var param1 = params['param1'] || '';
+
+    if (escaped == false)
+    {
+    	p_title = escape(p_title);
+		s = escape(s);
+		param1 = escape(param1);
+	}
+
     var str = s;
     try {
-        if (param1) {
-            $('#'+s+' .text_param1').html(param1);
-        }
+		s = str;
+
+	    // If the parameter is the ID of an element, we pass the text of this very element
         if ( $('#'+s).length > 0 ) { // Element exists!
+	        if (param1) {
+	            $('#'+s+' .text_param1').html(param1);
+	        }
             s=$('#'+s).html();
-        } else {
-            s = str;
         }
 
     }
     catch (e) {
-        s=str;
+        s = str;
     }
 
     $('#alert_box_text').html(s);
@@ -105,25 +124,6 @@ function get_selfservice_session() {
         }
     }
     return session;
-}
-
-function log(text) {
-    var time = new Date();
-    var hours = time.getHours();
-    var minutes = time.getMinutes();
-    minutes = ((minutes < 10) ? "0" : "") + minutes;
-    var seconds = time.getSeconds();
-    seconds = ((seconds < 10) ? "0" : "") + seconds;
-
-    var day = time.getDate();
-    day = ((day < 10) ? "0" : "") + day;
-    var month = time.getMonth();
-    month = ((month < 10) ? "0" : "") + month;
-    var year = time.getFullYear();
-
-    var datum = year + '/' + month + '/' + day + ' ' + hours + ':' + minutes + ':' + seconds;
-
-    $('#logText').html(datum + ": " + text + '<br>' + $('#logText').html());
 }
 
 function run_sync_request(url,params){
@@ -165,7 +165,7 @@ function run_sync_request(url,params){
         }).responseJSON;
     }
     catch(e) {
-        alert(i18n.gettext('Error ') + e);
+        alert(i18n.gettext('Error ') + escape(e));
         resp = def_resp;
     }
     finally {
@@ -203,7 +203,7 @@ function resync() {
                 alert(i18n.gettext("Failed to resync Token"));
             }
         } else {
-            alert(i18n.gettext("Error resyncing Token: ") + data.result.error.message);
+            alert(i18n.gettext("Error resyncing Token: ") + escape(data.result.error.message));
         }
     }
     return false;
@@ -216,7 +216,7 @@ function assign() {
         alert(i18n.gettext("You need to enter a serial number"));
         hide_waiting();
     } else {
-        Check = confirm(i18n.gettext("You are going to assign a new token to you. Is this the correct serial: ") + serial + "?");
+        Check = confirm(i18n.gettext("You are going to assign a new token to you. Is this the correct serial: ") + escape(serial) + "?");
         if (Check == false) {
             hide_waiting();
             return false;
@@ -232,7 +232,7 @@ function assign() {
                 showTokenlist();
                 $('#assign_serial').val('');
             } else {
-                alert(i18n.gettext("Error assigning Token: ") + data.result.error.message);
+                alert(i18n.gettext("Error assigning Token: ") + escape(data.result.error.message));
             }
         } // end of else
     }
@@ -260,7 +260,7 @@ function getserial() {
                 alert(i18n.gettext("No Token with this OTP value found!"));
             }
         } else {
-            alert(i18n.gettext("Error getting serial: ") + data.result.error.message);
+            alert(i18n.gettext("Error getting serial: ") + escape(data.result.error.message));
         }
     }
     return false;
@@ -276,7 +276,7 @@ function token_call(formid, params) {
         if (data.result.status == true) {
             showTokenlist();
         } else {
-            alert(i18n.gettext("Error calling token:") + data.result.error.message);
+            alert(i18n.gettext("Error calling token:") + escape(data.result.error.message));
         }
     } else {
         alert(i18n.gettext("Form data not valid."));
@@ -318,20 +318,21 @@ function enroll_token(params) {
             }
 
             if (detail.hasOwnProperty('serial')) {
-                details = details + '<li>Serial number: ' + detail.serial + '</li>';
+                details = details + '<li>Serial number: ' + escape(detail.serial) + '</li>';
             }
             if (detail.hasOwnProperty('otpkey')) {
                 try {
                     if (detail.hasOwnProperty('googleurl')) {
-                        details = details + '<li> Enrollment: <br><a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
-                        details = details + '<br><a href="' + detail.googleurl.value + '">' +
-                                                 detail.googleurl.value + '</a></li>';
+                        details = details + '<li> Enrollment: <br>';
+                        details = details + '<a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
+                        details = details + '<br><a href="' + detail.googleurl.value + '">' + detail.googleurl.value + '</a></li>';
                         details = details + '<li> Seed: ' +
-                            detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length) + '</li>';
+                            escape(detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length)) + 
+                            '</li>';
                     }
                 }
                 catch (e){
-                    details = details + '<li> otpkey: ' + detail.otpkey + '</li>';
+                    details = details + '<li> otpkey: ' + escape(detail.otpkey) + '</li>';
                 }
             }
             if (detail.hasOwnProperty('ocraurl')) {
@@ -343,8 +344,9 @@ function enroll_token(params) {
 
         }
         details = details + '</ul>';
-        alert_box(i18n.gettext("Token enrollment result"),
-                    i18n.gettext("Token enrolled successfully ") + details);
+        alert_box({'title':i18n.gettext("Token enrollment result"),
+                   'text': i18n.gettext("Token enrolled successfully ") + details, 
+                   'escaped': true});
         /*
         * the dynamic tokens must provide a function to gather all data from the form
         */
@@ -355,7 +357,7 @@ function enroll_token(params) {
             var res = window[functionString](data);
         }
     } else {
-        alert(i18n.gettext("Failed to enroll token: ") + data.result.error.message);
+        alert(i18n.gettext("Failed to enroll token: ") + escape(data.result.error.message));
     };
 
 
@@ -375,7 +377,7 @@ function reset_failcounter() {
         showTokenlist();
         $('.selectedToken').val("");
     } else {
-        alert(i18n.gettext("Failed to reset failcounter!\n") + data.result.error.message);
+        alert(i18n.gettext("Failed to reset failcounter!\n") + escape(data.result.error.message));
     }
     return false;
 }
@@ -390,7 +392,7 @@ function disable() {
         showTokenlist();
         $('.selectedToken').val("");
     } else {
-        alert(i18n.gettext("Error disabling Token!\n") + data.result.error.message);
+        alert(i18n.gettext("Error disabling Token!\n") + escape(data.result.error.message));
     }
     return false;
 }
@@ -405,7 +407,7 @@ function enable() {
         showTokenlist();
         $('.selectedToken').val("");
     } else {
-        alert(i18n.gettext("Error enabling Token!\n") + data.result.error.message);
+        alert(i18n.gettext("Error enabling Token!\n") + escape(data.result.error.message));
     }
 
     return false;
@@ -421,20 +423,20 @@ function getotp() {
                };
     var data = run_sync_request("/userservice/getmultiotp", params);
     if (data.result.status == true) {
-        var ht = "<h3>" + i18n.gettext("OTP values for token ") + data.result.value.serial +"</h3>";
+        var ht = "<h3>" + i18n.gettext("OTP values for token ") + escape(data.result.value.serial) +"</h3>";
         if (data.result.value.result === true) {
             ht += "<table class='getotp'>";
             var id_head = i18n.gettext('Time');
             if (data.result.value.type === 'HMAC') {
                 id_head = i18n.gettext('Counter');
             }
-            ht += "<tr><th>" + id_head + "</th>";
+            ht += "<tr><th>" + escape(id_head) + "</th>";
             ht +="<th>" + i18n.gettext('Otp Value') +"</th></tr>";
             var keys = Object.keys(data.result.value.otp);
             var i = 0;
             for (var id in keys) {
-                key = keys[id];
-                otp = data.result.value.otp[key];
+                key = escape(keys[id]);
+                otp = escape(data.result.value.otp[key]);
                 if (i%2 == 0 ){
                     ht += "<tr class='even'>";
                 } else {
@@ -444,14 +446,14 @@ function getotp() {
                 i++;
             }
             ht += "</table>";
-            alert_box("OTP Values", ht);
+            alert_box({'title': "OTP Values", 'text': ht, 'escaped': true});
         } else {
-            alert(i18n.gettext("Error getting otp values") + ":\n" + data.result.value.error);
+            alert(i18n.gettext("Error getting otp values") + ":\n" + escape(data.result.value.error));
         }
         showTokenlist();
         $('.selectedToken').val("");
     } else {
-        alert(i18n.gettext("Error getting otp values") + ":\n" + data.result.error.message);
+        alert(i18n.gettext("Error getting otp values") + ":\n" + escape(data.result.error.message));
     }
     return false;
 }
@@ -467,7 +469,7 @@ function unassign() {
         showTokenlist();
         $('.selectedToken').val("");
     } else {
-        alert(i18n.gettext("Error unassigning Token!\n") + data.result.error.message);
+        alert(i18n.gettext("Error unassigning Token!\n") + escape(data.result.error.message));
     }
     return false;
 }
@@ -482,7 +484,7 @@ function token_delete() {
         showTokenlist();
         $('.selectedToken').val("");
     } else {
-        alert(i18n.gettext("Failed to delete token!\n") + data.result.error.message);
+        alert(i18n.gettext("Failed to delete token!\n") + escape(data.result.error.message));
     }
     return false;
 }
@@ -499,12 +501,12 @@ function provisionOath() {
             var url = data.result.value.oathtoken.url;
             var img = data.result.value.oathtoken.img;
             $('#oath_link').attr("href", url);
-            $('#oath_qr_code').html(img);
+            $('#oath_qr_code').html($.parseHTML(img));
             $('#provisionresultDiv').show();
             $('#qr_code_iphone_download_oath').hide();
         }
     } else {
-        alert(i18n.gettext("Failed to enroll token!\n") + data.result.error.message);
+        alert(i18n.gettext("Failed to enroll token!\n") + escape(data.result.error.message));
     }
 }
 
@@ -531,7 +533,7 @@ function provisionOcra() {
             var url = data.result.value.ocratoken.url;
             var trans = data.result.value.ocratoken.transaction;
             $('#ocra_link').attr("href", url);
-            $('#ocra_qr_code').html(img);
+            $('#ocra_qr_code').html($.parseHTML(img));
             $('#qr_activate').hide();
             //$('#activationcode').attr("disabled","disabled");
             $('#transactionid').attr("value", trans);
@@ -540,7 +542,7 @@ function provisionOcra() {
             $('#qr_confirm2').show();
         }
     } else {
-        alert(i18n.gettext("Failed to activate token! \n") + data.result.error.message);
+        alert(i18n.gettext("Failed to activate token! \n") + escape(data.result.error.message));
     }
 }
 
@@ -571,10 +573,10 @@ function finishOcra() {
             $('#qr_finish').hide();
             //$('#ocra_check').attr("disabled","disabled");
             $('#ocra_qr_code').html('<div/>');
-            $('#qr_completed').html(String.sprintf(ocra_finish_ok, serial));
+            $('#qr_completed').html(escape(String.sprintf(ocra_finish_ok, serial)));
         }
     } else {
-        alert(i18n.gettext("Failed to enroll token!\n") + data.result.error.message);
+        alert(i18n.gettext("Failed to enroll token!\n") + escape(data.result.error.message));
     }
 }
 
@@ -595,12 +597,12 @@ function provisionGoogle() {
             var url = data.result.value.oathtoken.url;
             var img = data.result.value.oathtoken.img;
             $('#google_link').attr("href", url);
-            $('#google_qr_code').html(img);
+            $('#google_qr_code').html($.parseHTML(img));
             $('#provisionGoogleResultDiv').show();
             $('#qr_code_iphone_download').hide();
         }
     } else {
-        alert(i18n.gettext("Failed to enroll token!\n") + data.result.error.message);
+        alert(i18n.gettext("Failed to enroll token!\n") + escape(data.result.error.message));
     }
 }
 
@@ -627,7 +629,7 @@ function setpin() {
             $('#pin1').val("");
             $('#pin2').val("");
         } else {
-            alert(setpin_error + data.result.error.message);
+            alert(setpin_error + escape(data.result.error.message));
         };
 
     }
@@ -657,7 +659,7 @@ function setmpin() {
             $('#mpin1').val("");
             $('#mpin2').val("");
         } else {
-            alert(setpin_error + data.result.error.message);
+            alert(setpin_error + escape(data.result.error.message));
         }
     }
     return false;
@@ -677,7 +679,7 @@ function showTokenlist() {
         cache : false,
         type: 'POST',
         success: function(dataString) {
-             $('#tokenDiv').html(dataString);
+             $('#tokenDiv').html($.parseHTML(dataString));
             }
     });
 }
@@ -726,7 +728,7 @@ $(document).ready(function() {
                         alert(i18n.gettext("Your session has expired!"));
                         location.reload();
                     } else {
-                        ui.panel.html("Couldn't load this tab. Please respond to the administrator:" + jqXHR.statusText + " (" + jqXHR.status + ")");
+                        ui.panel.html(escape("Couldn't load this tab. Please respond to the administrator:" + jqXHR.statusText + " (" + jqXHR.status + ")"));
                     }
                 });
             }
@@ -764,7 +766,7 @@ function error_flexi(data){
         alert(i18n.gettext("Your session has expired!"));
         location.reload();
     } else {
-        alert(i18n.gettext("Error loading history:\n") + data.status);
+        alert(i18n.gettext("Error loading history:\n") + escape(data.status));
     }
 }
 
@@ -772,7 +774,7 @@ function pre_flexi(data){
     // we might do some mods here...
     if (data.result) {
         if (data.result.status == false) {
-            alert(data.result.error.message);
+            alert(escape(data.result.error.message));
         }
     }
     else {
@@ -842,7 +844,7 @@ if (browser_lang && browser_lang !== 'en') {
             "json"
         );
     } catch(e) {
-        alert('Unsupported localisation for ' + browser_lang);
+        alert('Unsupported localisation for ' + escape(browser_lang));
     }
 }
 

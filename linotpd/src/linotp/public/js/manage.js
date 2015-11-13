@@ -94,7 +94,7 @@ encodings = [
 function error_handling(message, file, line){
     Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line +
     "\nTo go on, reload this web page.";
-    alert(Fehler);
+    alert(escape(Fehler));
     return true;
 }
 
@@ -234,26 +234,6 @@ function len(obj) {
 }
 
 
-function log(text){
-    var time = new Date();
-    var hours = time.getHours();
-    var minutes = time.getMinutes();
-    minutes = ((minutes < 10) ? "0" : "") + minutes;
-    var seconds = time.getSeconds();
-    seconds = ((seconds < 10) ? "0" : "") + seconds;
-
-    var day = time.getDate();
-    day = ((day < 10) ? "0" : "") + day;
-    var month = time.getMonth();
-    month = ((month < 10) ? "0" : "") + month;
-    var year = time.getFullYear();
-
-    var datum = year + '/' + month + '/' + day + ' ' + hours + ':' + minutes + ':' + seconds;
-
-    $('#logText').html(datum + ": " + text + '<br>' + $('#logText').html());
-}
-
-
 function error_flexi(data){
     // we might do some mods here...
     alert_info_text("text_error_fetching_list", "", ERROR);
@@ -290,17 +270,17 @@ function alert_info_text(s, text_container, display_type) {
     str = s;
     try {
         if (text_container) {
-            $('#'+s+' .text_param1').html(text_container);
+            $('#'+s+' .text_param1').html(escape(text_container));
         }
         if ( $('#'+s).length > 0 ) { // Element exists!
-            s=$('#'+s).html();
+            s = $('#'+s).html();
         } else {
-            s = str;
+            s = escape(str);
         }
 
     }
     catch (e) {
-        s=str;
+        s = escape(str);
     }
 
     new_info_bar = $('#info_bar').clone(true,true)
@@ -355,27 +335,27 @@ function alert_box(title, s, param1) {
     str = s;
     try {
         if (param1) {
-            $('#'+s+' .text_param1').html(param1);
+            $('#'+s+' .text_param1').html(escape(param1));
         }
         if ( $('#'+s).length > 0 ) { // Element exists!
             s=$('#'+s).html();
         } else {
-            s = str;
+            s = escape(str);
         }
 
     }
     catch (e) {
-        s=str;
+        s = escape(str);
     }
     title_t = title;
     try {
         if ($('#'+title).length > 0 ) {
             title_t=$('#'+title).text();
         } else {
-            title_t = title;
+            title_t = escape(title);
         }
     } catch(e) {
-        title_t = title;
+        title_t = escape(title);
     }
 
      $('#alert_box').dialog("option", "title", title_t);
@@ -427,7 +407,8 @@ function get_selected_user(){
         column.each(function(){
             var attr = $(this).attr("abbr");
             if (attr == "useridresolver") {
-                var resolver = $('div', $(this)).html().split('.');
+                var loc = $('div', $(this)).html();
+                var resolver = escape(loc.split('.'));
                 user.resolver = resolver[resolver.length-1];
             }
         });
@@ -540,23 +521,23 @@ function get_token_owner(token_serial){
 function show_selected_status(){
     var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
-    document.getElementById('selected_tokens').innerHTML = selectedTokenItems.join(", ");
+    $('#selected_tokens').html(escape(selectedTokenItems.join(", ")));
     // we can only select a single user
     if ( selectedUserItems.length > 0 )
-        document.getElementById('selected_users').innerHTML = selectedUserItems[0].login;
+        $('#selected_users').html(escape(selectedUserItems[0].login));
     else
-        document.getElementById('selected_users').innerHTML = "";
+        $('#selected_users').html("");
 }
 
 function get_selected(){
     var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
-    document.getElementById('selected_tokens').innerHTML = selectedTokenItems.join(", ");
+    $('#selected_tokens').html(escape(selectedTokenItems.join(", ")));
     // we can only select a single user
     if ( selectedUserItems.length > 0 )
-        document.getElementById('selected_users').innerHTML = selectedUserItems[0].login;
+        $('#selected_users').html(escape(selectedUserItems[0].login));
     else
-        document.getElementById('selected_users').innerHTML = "";
+        $('#selected_users').html("");
 
     if (selectedTokenItems.length > 0) {
         if (selectedUserItems.length == 1) {
@@ -573,13 +554,23 @@ function get_selected(){
         $("#button_delete").button("enable");
         $("#button_setpin").button("enable");
         $("#button_resetcounter").button("enable");
-        if (selectedTokenItems.length == 1) {
+
+        if (selectedTokenItems.length == 0) {
+            $("#button_tokenrealm").button("disable");
+            $("#button_resync").button("disable");
+            $("#button_losttoken").button("disable");
+            $('#button_getmulti').button("disable");
+            $("#button_tokeninfo").button("disable");
+        }
+        else if (selectedTokenItems.length == 1) {
+            $("#button_tokenrealm").button("enable");
             $("#button_resync").button("enable");
             $('#button_losttoken').button("enable");
             $('#button_getmulti').button("enable");
             $("#button_tokeninfo").button("enable");
           }
-        else {
+        else if (selectedTokenItems.length > 1) {
+            $("#button_tokenrealm").button("enable");
             $("#button_resync").button("disable");
             $("#button_losttoken").button("disable");
             $('#button_getmulti').button("disable");
@@ -903,8 +894,8 @@ function check_license(){
     var resp = clientUrlFetchSync('/system/isSupportValid',{});
     var obj = jQuery.parseJSON(resp);
     if (obj.result.value === false) {
-       message = obj.detail.reason
-       intro = $('#text_support_lic_error').html()
+       message = escape(obj.detail.reason);
+       intro = escape($('#text_support_lic_error').html());
        alert_info_text(intro + " " + message, '' ,ERROR);
        return;
     }
@@ -1079,10 +1070,10 @@ function losttoken_callback(xhdr, textStatus){
         var password = '';
         if ('password' in obj.result.value){
             password = obj.result.value.password ;
-            $('#temp_token_password').html(password);
+            $('#temp_token_password').text(password);
         }
-        $('#temp_token_serial').html(serial);
-        $('#temp_token_enddate').html(end_date);
+        $('#temp_token_serial').html(escape(serial));
+        $('#temp_token_enddate').html(escape(end_date));
         $dialog_view_temporary_token.dialog("open");
     } else {
         alert_info_text("text_losttoken_failed",
@@ -1091,7 +1082,6 @@ function losttoken_callback(xhdr, textStatus){
     $("#token_table").flexReload();
     $('#selected_tokens').html('');
     disable_all_buttons();
-    log('Token ' + serial + ' lost.');
 }
 
 function token_losttoken(token_type) {
@@ -1162,7 +1152,7 @@ function view_setpin_dialog(tokens) {
      * Parameter: array of serial numbers
      */
     var token_string = tokens.join(", ");
-    $('#dialog_set_pin_token_string').html(token_string);
+    $('#dialog_set_pin_token_string').html(escape(token_string));
     $('#setpin_tokens').val(tokens);
     $dialog_setpin_token.dialog('open');
 }
@@ -1237,7 +1227,7 @@ function get_token_type(){
 
 function tokeninfo_redisplay() {
     var tokeninfo = token_info();
-    $dialog_token_info.html(tokeninfo);
+    $dialog_token_info.html($.parseHTML(tokeninfo));
     set_tokeninfo_buttons();
 }
 
@@ -1259,7 +1249,7 @@ function token_info_save(){
         var resp = clientUrlFetchSync("/admin/set", param);
         var rObj = jQuery.parseJSON(resp);
         if (rObj.result.status == false) {
-            alert(rObj.result.error.message);
+            alert(escape(rObj.result.error.message));
         }
     }
     // re-display
@@ -1273,7 +1263,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
     var obj = jQuery.parseJSON(resp);
     var serial = p_serial;
 
-    //alert('TODO: enroll_callback - return from init the values, which makes this easier')
+    //enroll_callback - return from init the values, which makes this easier
 
     $('#dialog_enroll').hide();
     if (obj.result.status) {
@@ -1289,9 +1279,16 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             // display the QR-Code of the URL. tab
             var users = get_selected_user();
             var emails = get_selected_email();
-            $('#token_enroll_serial').html(serial);
+            $('#token_enroll_serial').html(escape(serial));
             if (users.length >= 1) {
-                $('#token_enroll_user').html("<a href=mailto:" +emails[0]+">"+users[0].login+"</a>");
+                var login = escape(users[0].login);
+                var user = login;
+                var email = escape(emails[0].trim())
+                if (email.length > 0) {
+                    user = "<a href=mailto:" +email+">"+login+"</a>"
+                }
+                // the input parts for the fragment are already escaped
+                $('#token_enroll_user').html(user);
             } else {
                 $('#token_enroll_user').html("---");
             }
@@ -1299,6 +1296,8 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             var dia_tabs = {};
             var dia_tabs_content = {};
 
+			// here we compose the HMAC reply dialog with multiple tabs
+			// while the content is defined in mako files
             for (var k in obj.detail) {
                 var theDetail = obj.detail[k];
                 if (theDetail != null && theDetail.hasOwnProperty('description') ){
@@ -1308,9 +1307,10 @@ function enroll_callback(xhdr, textStatus, p_serial) {
                     } else {
                         order = k;
                     }
-                    var description = theDetail.description;
+                    var description = escape(theDetail.description);
                     if ( $("#description_" +k ).length !== 0) {
-                        description = $("#description_" +k ).html();
+                    	// we only require the text value of the description
+                        description = $("#description_" +k ).text();
                     }
                     dia_tabs[order] = '<li><a href="#url_content_'+k+'">'+ description + '</a></li>';
                     dia_tabs_content[order] = _extract_tab_content(theDetail, k);
@@ -1342,7 +1342,8 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             // end of qr_url_tabs
             dia_text += '</div>';
 
-            $('#enroll_url').html(dia_text);
+			// the output fragments of dia_text ae already escaped
+            $('#enroll_url').html($.parseHTML(dia_text));
             $('#qr_url_tabs').tabs();
             $dialog_show_enroll_url.dialog("open");
         }
@@ -1361,6 +1362,7 @@ function _extract_tab_content(theDetail, k) {
     if($('#annotation_' + k).length !== 0) {
         annotation = $('#annotation_' + k).html();
     }
+	annotation = escape(annotation);
 
     var dia_text ='';
     dia_text += '<div id="url_content_'+k+'">';
@@ -1420,7 +1422,8 @@ function token_enroll(){
                 var exi = typeof funct;
 
                 if (exi == 'undefined') {
-                    alert('undefined function '+ functionString + ' for tokentype ' + typ  );
+                    alert('undefined function '+ escape(functionString) +
+                          ' for tokentype ' + escape(typ)  );
                 }
                 if (exi == 'function') {
                     params = window[functionString]();
@@ -1445,7 +1448,9 @@ function get_enroll_infotext(){
     $("#enroll_info_text_multiuser").hide();
     if (users.length == 1) {
         $("#enroll_info_text_user").show();
-        $('#enroll_info_user').html(users[0].login+" ("+users[0].resolver+")");
+        var login = escape(users[0].login);
+        var resolver = escape(users[0].resolver);
+        $('#enroll_info_user').html($.parseHTML( login +" ("+resolver+")"));
     }
     else
         if (users.length == 0) {
@@ -1625,21 +1630,22 @@ function _fill_realms(widget, also_none_realm){
         }
         var defaultRealm;
         for (var i in value) {
+			var realm_val = escape(i);
             if (value[i]['default']) {
                 realms += "<option selected>";
-                defaultRealm = i;
+                defaultRealm = realm_val;
             }
             else
                 if (realmCount == 1) {
                     realms += "<option selected>";
-                    defaultRealm = i;
+                    defaultRealm = realm_val;
                 }
                 else {
                     realms += "<option>";
                 }
             //realms += data.result.value[i].realmname;
             // we use the lowercase realm name
-            realms += i;
+            realms += realm_val;
             realms += "</option>";
         }
 
@@ -1962,7 +1968,7 @@ function support_view(){
             var info = "";
             info += '<h2 class="contact_info">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
             info += i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact <p class="contact_info"><a href="mailto:sales@lsexperts.de">LSE Leading Security Experts GmbH</a></p> for support agreement purchase.');
-            $("#dialog_support_view").html(info);
+            $("#dialog_support_view").html($.parseHTML(info));
 
         } else {
             var info = "";
@@ -1981,7 +1987,7 @@ function support_view(){
                 i18n.gettext("For support and subscription please contact us at") +
                 " <a href='https://www.lsexperts.de/service-support.html' target='_blank'>https://www.lsexperts.de</a> <br>" +
                 i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
-            $("#dialog_support_view").html(info);
+            $("#dialog_support_view").html($.parseHTML(info));
         }
     });
     return false;
@@ -2296,16 +2302,18 @@ function realms_load(){
             if (data.result.value[key]['default']) {
                 default_realm = " (Default) ";
             }
-
-            realms += '<li class="ui-widget-content">' + key + default_realm + ' [' + resolvers + ']</li>';
+			var e_key = escape(key);
+			var e_default_realm = escape(default_realm);
+			var e_resolvers = escape(resolvers)
+            realms += '<li class="ui-widget-content">' + e_key + e_default_realm + ' [' + e_resolvers + ']</li>';
         }
         realms += '</ol>';
-        $('#realm_list').html(realms);
+        $('#realm_list').html($.parseHTML(realms));
         $('#realms_select').selectable({
             stop: function(){
                 $(".ui-selected", this).each(function(){
                     var index = $("#realms_select li").index(this);
-                    g.realm_to_edit = this.innerHTML;
+                    g.realm_to_edit = escape($(this).html());
                 }); // end of each
             } // end of stop function
         }); // end of selectable
@@ -2318,7 +2326,7 @@ function realm_ask_delete(){
     // replace in case of default realm
     realm = realm.replace(/^(\S+)\s+\(Default\)\s+\[(.*)$/, "$1");
 
-    $('#realm_delete_name').html(realm);
+    $('#realm_delete_name').html(escape(realm));
     $dialog_realm_ask_delete.dialog('open');
 }
 
@@ -2336,7 +2344,9 @@ function resolvers_load(){
         for (var key in data.result.value) {
             //resolvers += '<input type="radio" id="resolver" name="resolver" value="'+key+'">';
             //resolvers += key+' ('+data.result.value[key].type+')<br>';
-            resolvers += '<li class="ui-widget-content">' + key + ' [' + data.result.value[key].type + ']</li>';
+            var e_key = escape(key);
+            var e_reolver_type = escape(data.result.value[key].type);
+            resolvers += '<li class="ui-widget-content">' + e_key + ' [' + e_reolver_type + ']</li>';
             count = count +1 ;
         }
         resolvers += '</ol>';
@@ -2346,7 +2356,7 @@ function resolvers_load(){
                 stop: function(){
                     $(".ui-selected", this).each(function(){
                         var index = $("#resolvers_select li").index(this);
-                        g.resolver_to_edit = this.innerHTML;
+                        g.resolver_to_edit = escape($(this).html());
                     }); // end of each
                 } // end of stop function
             }); // end of selectable
@@ -2400,8 +2410,8 @@ function resolver_ask_delete(){
         var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
         var type = g.resolver_to_edit.replace(/\S+\s+(\S+)/, "$1");
 
-        $('#delete_resolver_type').html(type);
-        $('#delete_resolver_name').html(reso);
+        $('#delete_resolver_type').html(escape(type));
+        $('#delete_resolver_name').html(escape(reso));
         $dialog_resolver_ask_delete.dialog('open');
     }
     else {
@@ -2564,9 +2574,9 @@ function set_tokeninfo_buttons(){
         label: "auth max_success"
     });
     $('#ti_button_count_auth_max_success').click(function(){
-        $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="countAuthSuccessMax">\
+        $dialog_tokeninfo_set.html($.parseHTML('<input type="hidden" name="info_type" value="countAuthSuccessMax">\
             <input id=info_value name=info_value></input>\
-            ');
+            '));
         translate_dialog_ti_countauthsuccessmax();
         $dialog_tokeninfo_set.dialog('open');
     });
@@ -2688,6 +2698,7 @@ function tokenbuttons(){
         }
     });
 
+	disable_all_buttons();
 
     var $dialog_losttoken = $('#dialog_lost_token').dialog({
         autoOpen: false,
@@ -2745,7 +2756,7 @@ function tokenbuttons(){
                 }
                 $("#dialog_lost_token select option[value=select_token]").
                     attr('selected',true);
-                $('#lost_token_serial').html(token_string);
+                $('#lost_token_serial').html(escape(token_string));
                 translate_dialog_lost_token();
                 do_dialog_icons();
             } else {
@@ -2786,7 +2797,7 @@ function tokenbuttons(){
             /* delete otp values in dialog */
             $("#otp1").val("");
             $("#otp2").val("");
-            $('#tokenid_resync').html(token_string);
+            $('#tokenid_resync').html(escape(token_string));
             translate_dialog_resync_token();
             do_dialog_icons();
         }
@@ -2800,7 +2811,8 @@ function tokenbuttons(){
     $('#button_tokeninfo').click(function () {
         var tokeninfo = token_info();
         if (false != tokeninfo) {
-            $dialog_token_info.html(tokeninfo);
+            var pHtml = $.parseHTML(tokeninfo);
+            $dialog_token_info.html(pHtml);
             set_tokeninfo_buttons();
             buttons = {
                 Close: {click: function(){
@@ -2837,7 +2849,7 @@ function tokenbuttons(){
                             $(this).dialog('close');
                             },
                     id: "button_tokenrealm_save",
-                    text: "Save"
+                    text: "Set Realm"
             }
         },
         open: function() {
@@ -2873,7 +2885,7 @@ function tokenbuttons(){
         open: function() {
             do_dialog_icons();
             token_string = get_selected_tokens()[0];
-            $('#tokenid_getmulti').html(token_string);
+            $('#tokenid_getmulti').html(escape(token_string));
             translate_dialog_getmulti();
         }
     });
@@ -2882,8 +2894,8 @@ function tokenbuttons(){
     });
 
     $('#button_tokenrealm').click(function(event){
-        tokens = get_selected_tokens();
-        token_string = tokens.join(", ");
+        var tokens = get_selected_tokens();
+        var token_string = tokens.join(", ");
         g.realms_of_token = Array();
 
         // get all realms the admin is allowed to view
@@ -2893,11 +2905,12 @@ function tokenbuttons(){
             realms = '<ol id="tokenrealm_select" class="select_list" class="ui-selectable">';
             for (var key in data.result.value) {
                 var klass = 'class="ui-widget-content"';
-                realms += '<li ' + klass + '>' + key + '</li>';
+                var e_key = escape(key);
+                realms += '<li ' + klass + '>' + e_key + '</li>';
             }
             realms += '</ol>';
 
-            $('#tokenid_realm').html(token_string);
+            $('#tokenid_realm').html(escape(token_string));
             $('#realm_name').val(token_string);
             $('#token_realm_list').html(realms);
 
@@ -2906,14 +2919,18 @@ function tokenbuttons(){
                     $(".ui-selected", this).each(function(){
                         // fill realms of token
                         var index = $("#tokenrealm_select li").index(this);
-                        var realm = this.innerHTML;
+                        var realm = escape($(this).html());
                         g.realms_of_token.push(realm);
 
                     }); // end of stop function
                 } // end stop function
             }); // end of selectable
         }); // end of $.get
-        $dialog_edit_tokenrealm.dialog('open');
+        if (tokens.length === 0) {
+            alert_box(i18n.gettext("Set Token Realm"), i18n.gettext("Please select the token first."));
+        } else {
+            $dialog_edit_tokenrealm.dialog('open');
+        }
         return false;
     });
 }
@@ -2931,9 +2948,8 @@ $(document).ready(function(){
 
     // hide the javascrip message
     $('#javascript_error').hide();
-
+	
     $("button").button();
-
     /*
      $('ul.sf-menu').superfish({
      delay: 0,
@@ -3033,7 +3049,6 @@ $(document).ready(function(){
         $(this).parent().hide('blind', {}, 500, toggle_close_all_link);
     });
 
-    disable_all_buttons();
 
     /*****************************************************************************************
      * Realms editing dialog
@@ -4001,7 +4016,7 @@ $(document).ready(function(){
         });
         $('#user_table').flexReload();
         // remove the selected user display
-        document.getElementById('selected_users').innerHTML = "";
+        $('#selected_users').html("");
     });
 
     $dialog_setpin_token = $('#dialog_set_pin').dialog({
@@ -4064,7 +4079,7 @@ $(document).ready(function(){
             translate_dialog_unassign();
             tokens = get_selected_tokens();
             token_string = tokens.join(", ");
-            $('#tokenid_unassign').html(token_string);
+            $('#tokenid_unassign').html(escape(token_string));
         }
     });
     $('#button_unassign').click(function(){
@@ -4096,7 +4111,7 @@ $(document).ready(function(){
         },
         open: function(){
             tokens = get_selected_tokens();
-            $('#delete_info').html( tokens.join(", "));
+            $('#delete_info').html(escape(tokens.join(", ")));
             translate_dialog_delete_token();
             do_dialog_icons();
         }
@@ -4233,6 +4248,8 @@ $(document).ready(function(){
      minHeight: 60
      });
      */
+
+
 });
 //--------------------------------------------------------------------------------------
 // End of document ready
@@ -4303,7 +4320,7 @@ function realm_edit(name){
         else {
             alert_info_text("text_realm_name_error", "", ERROR);
         }
-        $('#realm_edit_realm_name').html(realm);
+        $('#realm_edit_realm_name').html(escape(realm));
         $('#realm_name').val(realm);
         $('#realm_intro_edit').show();
     }
@@ -4336,8 +4353,10 @@ function realm_edit(name){
                     klass = 'class="ui-selected" class="ui-widget-content" ';
                 }
             }
-            var id = "id=realm_edit_click_" + key;
-            resolvers += '<li '+id+' '+ klass + '>' + key + ' [' + data.result.value[key].type + ']</li>';
+            var e_key = escape(key);
+            var id = "id=realm_edit_click_" + e_key;
+            var e_resolver_type = escape(data.result.value[key].type);
+            resolvers += '<li '+id+' '+ klass + '>' + e_key + ' [' + e_resolver_type + ']</li>';
         }
         resolvers += '</ol>';
 
@@ -4351,7 +4370,7 @@ function realm_edit(name){
                         g.resolvers_in_realm_to_edit += ',';
                     }
                     var index = $("#resolvers_in_realms_select li").index(this);
-                    var reso = this.innerHTML;
+                    var reso = escape($(this).html());
                     if (reso.match(/(\S+)\s\[(\S+)\]/)) {
                         var r = reso.replace(/(\S+)\s+\S+/, "$1");
                         var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
@@ -4917,6 +4936,6 @@ if (browser_lang && browser_lang !== 'en') {
             "json"
         );
     } catch(e) {
-        alert('Unsupported localisation for ' + browser_lang);
+        alert('Unsupported localisation for ' + escape(browser_lang));
     }
 }
