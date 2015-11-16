@@ -1,10 +1,10 @@
-linotp-smsprovider (2.8~rc0-1) jessie; urgency=low
+linotp-smsprovider (2.8~rc1-1) jessie; urgency=low
 
   * Encode spaces in request params as '%20', not as '+'
   * Fix GET requests using the requests library
   * Add ability to convert the phone number to MSISDN format
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 13 Oct 2015 14:55:58 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 16 Nov 2015 15:23:11 +0100
 
 linotp-smsprovider (2.7.2.2-1) jessie; urgency=low
 
