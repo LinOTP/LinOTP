@@ -134,7 +134,7 @@ def generate_otpkey(key_size=20):
 
 def generate_password(size=6, characters=None):
     if not characters:
-        characters=string.ascii_lowercase + string.ascii_uppercase + string.digits
+        characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
     return ''.join(urandom.choice(characters) for _x in range(size))
 
 def check_session():
@@ -345,15 +345,20 @@ def checksum(msg):
 
 def str2unicode(input_str):
     """
-    convert as binary string into a unicode string
+    convert as binary string into a unicode string by trying various encodings
     :param input_str: input binary string
     :return: unicode output
     """
+
     output_str = input_str
-    conversions = [{}, {'encoding':'utf-8'}]
+    conversions = [{},
+                   {'encoding':'utf-8'},
+                   {'encoding':'iso-8859-1'},
+                   {'encoding':'iso-8859-15'}
+                   ]
     for param in conversions:
         try:
-            output_str = unicode(output_str, **param)
+            output_str = unicode(input_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:
