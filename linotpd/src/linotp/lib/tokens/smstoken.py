@@ -783,7 +783,7 @@ class SmsTokenClass(HmacTokenClass):
         log.debug("[isValid] %s: ret: %r" % (msg, ret))
         return ret
 
-    def sendSMS(self, message="<otp>", transactionid=None):
+    def sendSMS(self, message=None, transactionid=None):
         '''
         send sms
 
@@ -800,6 +800,9 @@ class SmsTokenClass(HmacTokenClass):
 
         ret = None
 
+        if not message:
+            message = "<otp>"
+
         if not SMSPROVIDER_IMPORTED:
             raise Exception("The SMSProvider could not be imported. Maybe you "
                             "didn't install the package (Debian "
@@ -810,8 +813,11 @@ class SmsTokenClass(HmacTokenClass):
         serial = self.getSerial()
 
         if '<otp>' not in message:
-            log.error('Message unconfigured: could not send <otp> value')
-            message = "<otp> %r" % message
+            log.error('Message unconfigured: prepending <otp> to message')
+            if isinstance(message, basestring):
+                message = "<otp> %s" % message
+            else:
+                message = "<otp> %r" % message
 
         message = message.replace("<otp>", otp)
         message = message.replace("<serial>", serial)
