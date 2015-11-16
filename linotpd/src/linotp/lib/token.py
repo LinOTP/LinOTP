@@ -26,7 +26,7 @@
 """ contains several token api functions"""
 
 import fnmatch
-import traceback
+import copy
 import string
 import datetime
 import sys
@@ -1348,7 +1348,6 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
     '''
     log.debug("[__checkTokenList] checking tokenlist: %r" % (tokenList))
 
-    res = False
     reply = None
 
     tokenclasses = config['tokenclasses']
@@ -1358,15 +1357,10 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
     if options:
         options['user'] = user
     else:
-        options = { 'user' : user }
-
-
-    #  if there has been one token in challenge mode, we only handle challenges
-
+        options = {'user': user}
 
     # if we got a validation against a sub_challenge, we extend this to
     # be a validation to all challenges of the transaction id
-    import copy
     check_options = copy.deepcopy(options)
     state = check_options.get('state', check_options.get('transactionid', ''))
     if state and '.' in state:
@@ -1376,19 +1370,25 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         if 'transactionid' in check_options:
             check_options['transactionid'] = transid
 
+    audit_entry = None
+    # token container for the finalisation
     challenge_tokens = []
     pin_matching_tokens = []
     invalid_tokens = []
     valid_tokens = []
-    audit_entries = []
     related_challenges = []
 
     # we have to preserve the result / reponse for token counters
     validation_results = {}
 
+    # iterate through all tokens
     for token in tokenList:
         log.debug("[__checkTokenList] Found user with loginId %r: %r:\n"
                    % (token.getUserId(), token.getSerial()))
+
+        audit_entry = {}
+        audit_entry['serial'] = token.getSerial()
+        audit_entry['token_type'] = token.getType()
 
         # preselect: the token must be in the same realm as the user
         if user is not None:
@@ -1396,12 +1396,9 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
             u_realm = user.getRealm()
             if (len(t_realms) > 0 and len(u_realm) > 0 and
                 u_realm.lower() not in t_realms):
+                audit_entry['action_detail'] = ("Realm mismatch for "
+                                                "token and user")
                 continue
-
-        audit = {}
-        audit['serial'] = token.getSerial()
-        audit['token_type'] = token.getType()
-        audit['weight'] = 0
 
         #  check if the token is the list of supported tokens
         #  if not skip to the next token in list
@@ -1409,20 +1406,20 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         if typ.lower() not in tokenclasses:
             log.error('token typ %r not found in tokenclasses: %r' %
                       (typ, tokenclasses))
-            audit['action_detail'] = "Unknown Token type"
+            audit_entry['action_detail'] = "Unknown Token type"
             continue
 
         if not token.isActive():
-            audit['action_detail'] = "Token inactive"
+            audit_entry['action_detail'] = "Token inactive"
             continue
         if token.getFailCount() >= token.getMaxFailCount():
-            audit['action_detail'] = "Failcounter exceeded"
+            audit_entry['action_detail'] = "Failcounter exceeded"
             continue
         if not token.check_auth_counter():
-            audit['action_detail'] = "Authentication counter exceeded"
+            audit_entry['action_detail'] = "Authentication counter exceeded"
             continue
         if not token.check_validity_period():
-            audit['action_detail'] = "validity period mismatch"
+            audit_entry['action_detail'] = "validity period mismatch"
             continue
 
         # start the token validation
@@ -1449,14 +1446,6 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
         invalid_tokens.extend(iToken)
         valid_tokens.extend(vToken)
 
-    # end of token verification loop
-    audit_messages = {
-        'challenge': 'challenge created',
-        'pinpolicy': "wrong user password %r",
-        'invalid': "wrong otp pin %r",
-        'pinmatch': "wrong otp value"
-    }
-
     # if there are related / sub challenges, we have to call their janitor
     handle_related_challenge(related_challenges)
 
@@ -1466,7 +1455,8 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
                       pin_matching_tokens,
                       invalid_tokens,
                       validation_results,
-                      user, options)
+                      user, options,
+                      audit_entry=audit_entry)
 
     (res, reply) = fh.finish_checked_tokens()
 
@@ -1485,7 +1475,7 @@ class FinishTokens(object):
     def __init__(self, valid_tokens, challenge_tokens,
                         pin_matching_tokens, invalid_tokens,
                         validation_results,
-                        user, options):
+                        user, options, audit_entry=None):
         """
         create the finalisation object, that finishes the token processing
 
@@ -1505,6 +1495,7 @@ class FinishTokens(object):
         self.validation_results = validation_results
         self.user = user
         self.options = options
+        self.audit_entry = audit_entry
 
     def finish_checked_tokens(self):
         """
@@ -1519,15 +1510,18 @@ class FinishTokens(object):
                                    + self.pin_matching_tokens
                                    + self.challenge_tokens)
 
-            create_audit_entry(detail, self.valid_tokens)
+            create_audit_entry(audit_entry=self.audit_entry,
+                               action_detail=detail,
+                               tokens=self.valid_tokens)
             return ret, reply
 
         # next handle the challenges
         if self.challenge_tokens:
             (ret, reply, detail) = self.finish_challenge_token()
-            # do we have to increment the counter to prevent a replay???
-            #self.increment_counters(self.challenge_tokens)
-            create_audit_entry(detail, self.challenge_tokens)
+
+            create_audit_entry(audit_entry=self.audit_entry,
+                               action_detail=detail,
+                               tokens=self.challenge_tokens)
             return ret, reply
 
         if self.user:
@@ -1540,18 +1534,24 @@ class FinishTokens(object):
 
         # if there is no token left, we end up here
         if not (self.pin_matching_tokens + self.invalid_tokens):
-            create_audit_entry("no token found", [])
+            create_audit_entry(audit_entry=self.audit_entry)
             return False, None
 
         if self.invalid_tokens:
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
-            create_audit_entry(detail, self.invalid_tokens)
+
+            create_audit_entry(audit_entry=self.audit_entry,
+                               action_detail=detail,
+                               tokens=self.invalid_tokens)
 
         if self.pin_matching_tokens:
             (ret, reply, detail) = self.finish_pin_matching_tokens()
             self.increment_failcounters(self.pin_matching_tokens)
-            create_audit_entry(detail, self.pin_matching_tokens)
+
+            create_audit_entry(audit_entry=self.audit_entry,
+                               action_detail=detail,
+                               tokens=self.pin_matching_tokens)
 
         return ret, reply
 
@@ -1594,8 +1594,8 @@ class FinishTokens(object):
                           "Several Tokens matching with the same OTP PIN "
                           "and OTP for user %r. Not sure how to authenticate",
                           user.login)
-            raise UserError("multiple token match error", id= -33)
 
+            raise UserError("multiple token match error", id= -33)
 
     def finish_challenge_token(self):
         """
@@ -1706,23 +1706,32 @@ class FinishTokens(object):
         for token in all_tokens:
             token.incOtpFailCounter()
 
-def create_audit_entry(action_detail, tokens):
+
+def create_audit_entry(audit_entry=None, action_detail=None, tokens=None):
     """
     setting global audit entry
     """
-    c.audit['action_detail'] = action_detail
+    if audit_entry:
+        c.audit.update(audit_entry)
 
-    if len(tokens) == 1:
-        c.audit['serial'] = tokens[0].getSerial()
-        c.audit['token_type'] = tokens[0].getType()
-    else:
-        # no or multiple tokens
-        c.audit['serial'] = ''
-        c.audit['token_type'] = ''
+    if action_detail:
+        c.audit['action_detail'] = action_detail
+
+    if tokens:
+        if len(tokens) == 1:
+            c.audit['serial'] = tokens[0].getSerial()
+            c.audit['token_type'] = tokens[0].getType()
+        else:
+            # no or multiple tokens
+            serials = []
+            types = []
+            for token in tokens:
+                serials.append(token.getSerial())
+                types.append(token.getType())
+            c.audit['serial'] = ' '.join(serials)[:29]
+            c.audit['token_type'] = ' '.join(types)[:39]
 
     return
-
-
 
 
 def add_last_accessed_info(list_of_tokenlist):
