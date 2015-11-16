@@ -1,6 +1,10 @@
 linotp-useridresolver (2.8~rc0-1) jessie; urgency=low
 
-  * Set new version 2.8~rc0-1~jessie
+  Enhancements:
+  * Add support for Unicode passwords in PasswdIdResolver
+  * Add LDAP proxy support
+  * Support for LDAP cursoring during fetch of userlist
+  * Add support for odbc_connect in SQLIdResolver
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 13 Oct 2015 14:55:58 +0200
 

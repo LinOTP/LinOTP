@@ -1,6 +1,6 @@
 linotp-adminclient-gui (2.8~rc0-1) jessie; urgency=low
 
-  * Set new version 2.7.3~0dev0-1~precise
+  * Set new version 2.8
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 13 Oct 2015 15:29:54 +0200
 
