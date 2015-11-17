@@ -1,4 +1,4 @@
-linotp-freeradius-perl (1.6~rc0-1) jessie; urgency=low
+linotp-freeradius-perl (1.6~rc0) jessie; urgency=low
 
   * Add option 'PREFER_NAS_IDENTIFIER' to ignore the NAT IP address package
   * Add support for SSL custom CA certificates
