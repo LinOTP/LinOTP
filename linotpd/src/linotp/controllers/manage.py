@@ -56,6 +56,7 @@ from linotp.lib.util    import check_session
 from linotp.lib.util    import get_version
 from linotp.lib.util    import get_copyright_info
 from linotp.lib.reply   import sendError
+from linotp.lib.reply import sendResult
 
 from linotp.lib.util    import remove_empty_lines
 from linotp.lib.util import get_client
@@ -293,14 +294,14 @@ class ManageController(BaseController):
         return ''
 
     def _flexi_error(self, error):
-        return json.dumps({ "page": 1,
+        res = { "page": 1,
                 "total": 1,
                 "rows": [
                  { 'id' : 'error',
                     'cell' : ['E r r o r', error,
                     '', '', '', '', '', ''
                  ] } ] }
-                , indent=3)
+        return sendResult(response,res)
 
 
     def tokenview_flexi(self):
@@ -388,7 +389,6 @@ class ManageController(BaseController):
                     )
 
             # We need to return 'page', 'total', 'rows'
-            response.content_type = 'application/json'
             res = { "page": int(c.page),
                 "total": c.resultset['tokens'],
                 "rows": lines }
@@ -396,7 +396,7 @@ class ManageController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return json.dumps(res, indent=3)
+            return sendResult(response, res)
 
         except PolicyException as pe:
             log.exception("[tokenview_flexi] Error during checking policies: %r" % pe)
@@ -508,7 +508,7 @@ class ManageController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
-            return json.dumps(res, indent=3)
+            return sendResult(response, res)
 
         except PolicyException as pe:
             log.exception("[userview_flexi] Error during checking policies: %r" % pe)

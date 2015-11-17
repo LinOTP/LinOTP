@@ -266,15 +266,19 @@ function error_flexi(data){
 }
 
 function pre_flexi(data){
-    // we might do some mods here...
+    // adjust the input for the linotp api version >= 2.0
     if (data.result) {
-        if (data.result.status == false) {
+        if (data.result.status === false) {
             alert_info_text(data.result.error.message);
+            return;
+        } else if (data.jsonrpc) {
+            var api_version = parseFloat(data.jsonrpc);
+            if (api_version >= 2.0) {
+                return data.result.value;
+            }
         }
     }
-    else {
-        return data;
-    }
+    return data;
 }
 
 function load_flexi(){
