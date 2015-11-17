@@ -37,8 +37,9 @@ except ImportError:
 from pylons import request
 from pylons import tmpl_context as c
 
-from linotp.lib.error       import LinotpError
-from linotp.lib.util        import get_version
+from linotp.lib.error import LinotpError
+from linotp.lib.util import get_version
+from linotp.lib.util import get_api_version
 
 
 optional = True
@@ -276,7 +277,7 @@ def sendError(response, exception, id=1, context=None):
     else:
         # Send JSON response with HTTP status 200 OK
         response.content_type = 'application/json'
-        res = { "jsonrpc": "2.0",
+        res = { "jsonrpc": get_api_version(),
                 "result" :
                     {"status": False,
                         "error": {
@@ -318,7 +319,7 @@ def sendResult(response, obj, id=1, opt=None):
 
     response.content_type = 'application/json'
 
-    res = { "jsonrpc": "2.0",
+    res = { "jsonrpc": get_api_version(),
             "result": { "status": True,
                         "value": obj,
                       },
@@ -343,19 +344,22 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
 
         :return: generator of response data (yield)
     '''
-    res = {"jsonrpc": "2.0",
+    api_version = get_api_version()
+    linotp_version = get_version()
+
+    res = {"jsonrpc": api_version,
             "result": {"status": True,
                        "value": "[DATA]",
                       },
-           "version": get_version(),
+           "version": linotp_version,
            "id": id}
 
-    err = {"jsonrpc": "2.0",
+    err = {"jsonrpc": api_version,
             "result":
                 {"status": False,
                  "error": {},
                 },
-            "version": get_version(),
+            "version": linotp_version,
             "id": id
         }
 
@@ -382,11 +386,11 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
     if 'generator' not in typ and 'iterator' not in typ:
         raise Exception('no iterator method for object %r' % obj)
 
-    res = {"jsonrpc": "2.0",
+    res = {"jsonrpc": api_version,
             "result": {"status": True,
                        "value": "[DATA]",
                       },
-           "version": get_version(),
+           "version": linotp_version,
            "id": id}
     if page:
         res['result']['page'] = int(page)
@@ -473,14 +477,14 @@ def sendCSVResult(response, obj, flat_lines=False,
 def sendXMLResult(response, obj, id=1):
     response.content_type = 'text/xml'
     res = '<?xml version="1.0" encoding="UTF-8"?>\
-            <jsonrpc version="2.0">\
+            <jsonrpc version="%s">\
             <result>\
                 <status>True</status>\
                 <value>%s</value>\
             </result>\
             <version>%s</version>\
             <id>%s</id>\
-            </jsonrpc>' % (obj, get_version(), id)
+            </jsonrpc>' % (get_api_version(), obj, get_version(), id)
     return res
 
 
@@ -493,7 +497,7 @@ def sendXMLError(response, exception, id=1):
         errId = exception.getId()
         errDesc = exception.getDescription()
     res = '<?xml version="1.0" encoding="UTF-8"?>\
-            <jsonrpc version="2.0">\
+            <jsonrpc version="%s">\
             <result>\
                 <status>False</status>\
                 <error>\
@@ -503,7 +507,7 @@ def sendXMLError(response, exception, id=1):
             </result>\
             <version>%s</version>\
             <id>%s</id>\
-            </jsonrpc>' % (errId, errDesc, get_version(), id)
+            </jsonrpc>' % (get_api_version(), errId, errDesc, get_version(), id)
     return res
 
 

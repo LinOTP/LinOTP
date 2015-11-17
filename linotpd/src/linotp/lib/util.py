@@ -46,6 +46,11 @@ from linotp import (__version__ as linotp_version,
                     __copyright__ as linotp_copyright,
                     __product__ as linotp_product,
                     )
+try:
+    from linotp import __api__ as linotp_api
+except ImportError:
+    linotp_api = 2.0
+
 SESSION_KEY_LENGTH = 32
 
 import logging
@@ -54,6 +59,12 @@ log = logging.getLogger(__name__)
 optional = True
 required = False
 
+
+def get_api_version():
+    '''
+    return the api version number
+    '''
+    return linotp_api
 
 def get_version_number():
     '''
