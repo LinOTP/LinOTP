@@ -56,11 +56,14 @@ def make_map(global_conf, app_conf,):
     # routeMap.connect('/{controller}/{action}')
     # routeMap.connect('/{controller}/{action}/{id}')
 
-    # the first / - default will be taken!!
+    # check if we are in migration mode -
+    # ! this will disable most other controllers !
+    migrate = app_conf.get('service.migrate', 'False') == 'True'
 
+    # the first / - default will be taken!!
     # in case of selfservice, we route the default / to selfservice
     selfservice = app_conf.get('service.selfservice', 'True') == 'True'
-    if selfservice:
+    if selfservice and not migrate:
         routeMap.connect(
             '/selfservice/custom-style.css', controller='selfservice', action='custom_style')
         routeMap.connect('/selfservice', controller='selfservice', action='index')
@@ -71,7 +74,7 @@ def make_map(global_conf, app_conf,):
 
     # in case of support for a remote selfservice, we have to enable this hook
     userservice = app_conf.get('service.userservice', 'True') == 'True'
-    if userservice:
+    if userservice and not migrate:
         routeMap.connect('/userservice', controller='userservice', action='index')
         for cont in ['userservice']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
@@ -100,7 +103,7 @@ def make_map(global_conf, app_conf,):
 
     # in case of validate, we route the default / to validate
     validate = app_conf.get('service.validate', 'True') == 'True'
-    if validate:
+    if validate and not migrate:
         routeMap.connect('/validate', controller='validate', action='check')
         routeMap.connect('/', controller='validate', action='check')
         for cont in ['validate']:
@@ -108,15 +111,15 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # in case of validate, we route the default / to validate
-    validate = app_conf.get('service.ocra', 'True') == 'True'
-    if validate:
+    ocra = app_conf.get('service.ocra', 'True') == 'True'
+    if ocra and not migrate:
         routeMap.connect('/ocra', controller='ocra', action='checkstatus')
         for cont in ['ocra']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     openid = app_conf.get('service.openid', 'True') == 'True'
-    if openid:
+    if openid and not migrate:
         # the default openid will be the status
         routeMap.connect('/openid/', controller='openid', action='status')
         for cont in ['openid']:
@@ -125,23 +128,29 @@ def make_map(global_conf, app_conf,):
 
     # linotpGetotp.active
     getotp = global_conf.get('linotpGetotp.active', 'True') == 'True'
-    if getotp:
+    if getotp and not migrate:
         for cont in ['gettoken']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # in case of u2f, we allow routes of type /u2f/realm/action
     u2f = app_conf.get('service.u2f', 'True') == 'True'
-    if u2f:
+    if u2f and not migrate:
         for cont in ['u2f']:
             routeMap.connect('/%s/{realm}/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}' % cont, controller=cont)
 
     # linotp.selfTest
     self_test = global_conf.get('linotp.selfTest', 'True') == 'True'
-    if self_test:
+    if self_test and not migrate:
         for cont in ['testing']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
+    if migrate:
+        for cont in ['migrate']:
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
 
     return routeMap

@@ -86,6 +86,8 @@ environ = {}
 
 
 class TestController(unittest2.TestCase):
+    DEFAULT_WEB_METHOD = 'POST'
+    
     '''
     the TestController, which loads the linotp app upfront
     '''
@@ -176,7 +178,7 @@ class TestController(unittest2.TestCase):
             self,
             controller,
             action,
-            method='GET',
+            method=None,
             params=None,
             headers=None,
             cookies=None,
@@ -184,6 +186,8 @@ class TestController(unittest2.TestCase):
         """
         Makes a request using WebTest app self.app
         """
+        if method is None:
+            method = TestController.DEFAULT_WEB_METHOD
         assert controller and action
         assert method in ['GET', 'POST']
 
@@ -207,7 +211,7 @@ class TestController(unittest2.TestCase):
                 )
 
     @staticmethod
-    def get_http_digest_header(username='admin'):
+    def get_http_digest_header(username='admin', method='GET'):
         """
         Returns a string to be used as 'Authorization' in the headers
         dictionary. The values contained are basically bogus and we just aim to
@@ -218,9 +222,13 @@ class TestController(unittest2.TestCase):
         See for full example:
             http://en.wikipedia.org/wiki/Digest_access_authentication
         """
+        if method is None:
+            method = TestController.DEFAULT_WEB_METHOD
+        assert username
+        assert method in ['GET', 'POST']
+
         # Assuming following 401 response from server:
         # 'www-authenticate': 'Digest realm="LinOTP2 admin area", nonce="hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae", algorithm=MD5, qop="auth"'
-        method = 'GET'
         qop = 'auth'
         digest_uri = "/random/wont/be/checked"
         nonce = 'hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae'
@@ -229,7 +237,7 @@ class TestController(unittest2.TestCase):
         nonceCount = "00000001"
         clientNonce = "0a4f113b"
         ha1 = hashlib.md5("%s:%s:%s" % (username, realm, password)).hexdigest()
-        ha2 = hashlib.md5("%s:%s" % (method, digest_uri)).hexdigest()
+        ha2 = hashlib.md5("%s:%s"    % (method, digest_uri)).hexdigest()
         response = hashlib.md5(
             "%s:%s:%s:%s:%s:%s" % (
                 ha1,
@@ -257,7 +265,7 @@ class TestController(unittest2.TestCase):
             self,
             controller,
             action,
-            method='GET',
+            method=None,
             params=None,
             headers=None,
             cookies=None,
@@ -266,7 +274,7 @@ class TestController(unittest2.TestCase):
         Makes an authenticated request (setting HTTP Digest header, cookie and
         'session' parameter).
         """
-        params = params or {}
+        params  = params  or {}
         headers = headers or {}
         cookies = cookies or {}
         if not 'session' in params:
@@ -275,8 +283,7 @@ class TestController(unittest2.TestCase):
             cookies['admin_session'] = self.session
         if not 'Authorization' in headers:
             headers['Authorization'] = TestController.get_http_digest_header(
-                username='admin'
-                )
+                username='admin', method=method)
         return self.make_request(
             controller,
             action,
@@ -286,7 +293,7 @@ class TestController(unittest2.TestCase):
             cookies=cookies,
             )
 
-    def make_admin_request(self, action, params=None, method='GET'):
+    def make_admin_request(self, action, params=None, method=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -299,7 +306,7 @@ class TestController(unittest2.TestCase):
             params=params,
             )
 
-    def make_system_request(self, action, params=None, method='GET'):
+    def make_system_request(self, action, params=None, method=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -312,7 +319,7 @@ class TestController(unittest2.TestCase):
             params=params,
             )
 
-    def make_validate_request(self, action, params=None, method='GET'):
+    def make_validate_request(self, action, params=None, method=None):
         """
         Makes an unauthenticated request to /validate/'action'
         """
