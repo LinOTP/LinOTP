@@ -940,7 +940,7 @@ int_array get_possibtok(char* token_length){
         log_debug("Integer overflow detected @  get_possibtok");
         return ret;
     }
-  
+
     if(!len){
     	log_debug("len was 0 @ get_possibtok!");
         return ret;
@@ -1021,6 +1021,8 @@ int pam_linotp_extract_authtok(
     int n = 6;
     int ret = PAM_AUTHTOK_ERR;
     size_t length = 0;
+    size_t cleanpw_size = 0;
+    size_t otp_size = 0;
     if (!*password) {
         *password      = "\n";
         *cleanpassword = "\n";
@@ -1040,13 +1042,14 @@ int pam_linotp_extract_authtok(
         log_error("password to short");
         return PAM_AUTH_ERR;
     }
-
-    char *otp = malloc(length - n * sizeof(char));
+    otp_size = (n+1) * sizeof(char);
+    char *otp = malloc(otp_size);
     if(otp==NULL){
         log_error("Not enougth memory for OTP");
         return PAM_AUTH_ERR;
     }
-    char *cleanpw = malloc(length * sizeof(char));
+    cleanpw_size = (length+1) * sizeof(char);
+    char *cleanpw = malloc(cleanpw_size);
     if(cleanpw==NULL){
         free(otp);
         log_error("Not enougth memory for clean password");
@@ -1070,8 +1073,8 @@ int pam_linotp_extract_authtok(
     /** Dont clean password, its used within the next PAM module
     erase_string(password);*/
     pam_set_data(pamh, "linotp_setcred_return", (void*) (intptr_t) &ret, NULL);
-    erase_data(cleanpw, sizeof(cleanpw));
-    erase_data(otp, sizeof(cleanpw));
+    erase_data(cleanpw, cleanpw_size);
+    erase_data(otp, otp_size);
     return ret;
 }
 
