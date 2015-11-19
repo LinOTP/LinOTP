@@ -51,11 +51,11 @@ if (!String.sprintf) {
 LOGIN_CODE = 576
 
 
-function alert_box(params /* dict or parameters */){
+function self_alert_box(params /* dict or parameters */){
 	/*
 	 * alert_box - pop up an dialog to show some info, which could contain html
 	 *
-	 * :param params: the dictionary with the parameters, which could be 
+	 * :param params: the dictionary with the parameters, which could be
 	 * 				  - title: the title to show
 	 *                - text: the text to show
 	 *                - param1: which is a replacement parameter
@@ -327,7 +327,7 @@ function enroll_token(params) {
                         details = details + '<a href="' + detail.googleurl.value +'">' + detail.googleurl.img + '</a>';
                         details = details + '<br><a href="' + detail.googleurl.value + '">' + detail.googleurl.value + '</a></li>';
                         details = details + '<li> Seed: ' +
-                            escape(detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length)) + 
+                            escape(detail.otpkey.value.substring('seed://'.length, detail.otpkey.value.length)) +
                             '</li>';
                     }
                 }
@@ -344,8 +344,8 @@ function enroll_token(params) {
 
         }
         details = details + '</ul>';
-        alert_box({'title':i18n.gettext("Token enrollment result"),
-                   'text': i18n.gettext("Token enrolled successfully ") + details, 
+        self_alert_box({'title':i18n.gettext("Token enrollment result"),
+                   'text': i18n.gettext("Token enrolled successfully ") + details,
                    'escaped': true});
         /*
         * the dynamic tokens must provide a function to gather all data from the form
@@ -446,7 +446,7 @@ function getotp() {
                 i++;
             }
             ht += "</table>";
-            alert_box({'title': "OTP Values", 'text': ht, 'escaped': true});
+            self_alert_box({'title': "OTP Values", 'text': ht, 'escaped': true});
         } else {
             alert(i18n.gettext("Error getting otp values") + ":\n" + escape(data.result.value.error));
         }
