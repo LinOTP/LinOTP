@@ -32,27 +32,22 @@
 """
 
 import binascii
+import datetime
 import logging
 import time
-import datetime
 
 from linotp.lib.config  import getFromConfig
-
+from linotp.lib.crypt   import createNonce
 from linotp.lib.crypt   import decryptPin, encryptPin
 from linotp.lib.crypt   import kdf2
-from linotp.lib.crypt   import createNonce
-
 from linotp.lib.policy  import get_qrtan_url
-
-
 ### TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
 from linotp.lib.util import normalize_activation_code
 
 from linotp.lib.ocra    import OcraSuite
 
-from linotp.lib.validate import create_challenge
-from linotp.lib.validate import get_challenges
+from linotp.lib.challenges import Challenges
 from linotp.lib.reply   import create_img
 
 from pylons.i18n.translation import _
@@ -64,9 +59,9 @@ import urllib
 
 import sys
 if sys.version_info[0:2] >= (2, 6):
-    from json import loads, dumps
+    pass
 else:
-    from simplejson import loads, dumps
+    pass
 
 
 optional = True
@@ -450,7 +445,7 @@ class Ocra2TokenClass(TokenClass):
             #(transid, challenge, _ret, url) = self.challenge(message)
 
             #self.createChallenge()
-            (res, opt) = create_challenge(self, options=params)
+            (res, opt) = Challenges.create_challenge(self, self.context, options=params)
 
             challenge = opt.get('challenge')
             url = opt.get('url')
@@ -769,7 +764,7 @@ class Ocra2TokenClass(TokenClass):
         ##  create a non exisiting challenge
         try:
 
-            (res, opt) = create_challenge(self, options={'messgae': data})
+            (res, opt) = Challenges.create_challenge(self, self.context, options={'messgae': data})
 
             transid = opt.get('transactionid')
             challenge = opt.get('challenge')
@@ -962,7 +957,8 @@ class Ocra2TokenClass(TokenClass):
 
         if 'transactionid' in options:
             transid = options.get('transactionid', None)
-            challs = get_challenges(serial=serial, transid=transid)
+            challs = Challenges.get_challenges(self.context, serial=serial,
+                                    transid=transid)
             for chall in challs:
                 (rec_tan, rec_valid) = chall.getTanStatus()
                 if rec_tan == False:
@@ -978,7 +974,7 @@ class Ocra2TokenClass(TokenClass):
             challenges.append(options)
 
         if len(challenges) == 0:
-            challs = get_challenges(serial=serial)
+            challs = Challenges.get_challenges(self.context, serial=serial)
             for chall in challs:
                 (rec_tan, rec_valid) = chall.getTanStatus()
                 if rec_tan == False:
@@ -1208,7 +1204,8 @@ class Ocra2TokenClass(TokenClass):
             return
         try:
 
-            challenges = get_challenges(self.getSerial(), transid=self.transId)
+            challenges = Challenges.get_challenges(self.context, self.getSerial(),
+                                        transid=self.transId)
             if len(challenges) == 1:
                 challenge = challenges[0]
                 challenge.setTanStatus(received=True, valid=False)
@@ -1254,7 +1251,8 @@ class Ocra2TokenClass(TokenClass):
         if self.transId == 0 :
             return
 
-        challenges = get_challenges(self.getSerial(), transid=self.transId)
+        challenges = Challenges.get_challenges(self.context, self.getSerial(),
+                                    transid=self.transId)
         if len(challenges) == 1:
             challenge = challenges[0]
             challenge.setTanStatus(True, True)
@@ -1294,7 +1292,7 @@ class Ocra2TokenClass(TokenClass):
         challenges = []
 
         ## the challenges are orderd, the first one is the newest
-        challenges = get_challenges(self.getSerial())
+        challenges = Challenges.get_challenges(self.context, self.getSerial())
 
         ##  check if there are enough challenges around
         if len(challenges) < 2:
@@ -1414,7 +1412,8 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[getStatus] %r' % (transactionId))
 
         statusDict = {}
-        challenge = get_challenges(self.getSerial(), transid=transactionId)
+        challenge = Challenges.get_challenges(self.context, self.getSerial(),
+                                   transid=transactionId)
         if challenge is not None:
             statusDict['serial'] = challenge.tokenserial
             statusDict['transactionid'] = challenge.transid

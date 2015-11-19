@@ -66,6 +66,8 @@ from linotp.lib.crypt import createNonce
 
 from linotp.lib.policy  import get_qrtan_url
 
+from linotp.lib.challenges import Challenges
+
 
 ### TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
@@ -77,7 +79,7 @@ from linotp.model       import OcraChallenge
 from linotp.model.meta  import Session
 from linotp.lib.reply   import create_img
 
-from linotp.lib.validate import check_pin, is_same_transaction
+from linotp.lib.validate import check_pin
 from linotp.lib.validate import check_otp
 from linotp.lib.validate import split_pin_otp
 
@@ -417,7 +419,7 @@ class TokenClass(object):
         ## check if the transactionid is in the list of challenges
         if transid is not None:
             for challenge in challenges:
-                if is_same_transaction(challenge, transid):
+                if Challenges.is_same_transaction(challenge, transid):
                     matching = challenge
                     break
             if matching is not None:
