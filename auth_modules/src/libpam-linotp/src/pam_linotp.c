@@ -606,14 +606,14 @@ int linotp_auth(char *user, char *password,
 
         /* we have to create duplicates, as they start as pointers into the
          * chunk memory, which will be freed at the end of this function
+         * msg and stat are never NULL
          * */
-        log_info("Challenge authentication:'%.8s...' '%.8s...'",
-                                                        *challenge, *state);
-        /* msg and stat are never NULL*/
         *challenge = strdup(msg);
         *state = strdup(stat);
         if(!(*state)){
-            erase_string(*challenge);
+            if(*challenge){
+                erase_string(*challenge);
+            }
         }
         if ((*challenge) || (*stat)) {
             log_error("strdup failed during linotp_auth!");
