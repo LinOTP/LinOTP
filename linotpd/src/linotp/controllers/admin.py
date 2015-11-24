@@ -2317,7 +2317,7 @@ class AdminController(BaseController):
             # # gather all challenges from serial, transactionid and user
             challenges = set()
             if serial is not None:
-                challenges.update(Challenges.get_challenges(self.request_contextcontext, serial=serial))
+                challenges.update(Challenges.get_challenges(self.request_context, serial=serial))
 
             if transid is not None :
                 challenges.update(Challenges.get_challenges(self.request_context, transid=transid))
