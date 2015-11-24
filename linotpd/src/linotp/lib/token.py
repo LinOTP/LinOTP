@@ -1044,7 +1044,8 @@ class TokenHandler(object):
             challenges = set()
             for serial in serials:
                 serial = linotp.lib.crypt.uencode(serial)
-                challenges.update(Challenges.get_challenges(self.context, serial=serial))
+                challenges.update(Challenges.lookup_challenges(self.context,
+                                                               serial=serial))
 
             for chall in challenges:
                 Session.delete(chall)
@@ -2016,11 +2017,12 @@ def checkTokenList(tokenList, passw, user=User(), options=None, context=None):
 
         # start the token validation
         context['audit'] = audit
-        tok_va = linotp.lib.validate.ValidateToken(token, context=context)
-
 
         try:
-            (ret, reply) = tok_va.check_token(passw, user, options=check_options)
+            # are there outstanding challenges
+            challenges = token.get_token_challenges(options)
+            (ret, reply) = token.check_token(passw, user, options=check_options,
+                                             challenges=challenges)
         except Exception as exx:
             # in case of a failure during checking token, we log the error and
             # continue with the next one
@@ -2031,8 +2033,8 @@ def checkTokenList(tokenList, passw, user=User(), options=None, context=None):
         finally:
             validation_results[token.getSerial()] = (ret, reply)
 
-        (cToken, pToken, iToken, vToken) = tok_va.get_verification_result()
-        related_challenges.extend(tok_va.related_challenges)
+        (cToken, pToken, iToken, vToken) = token.get_verification_result()
+        related_challenges.extend(token.related_challenges)
 
         challenge_tokens.extend(cToken)
         pin_matching_tokens.extend(pToken)

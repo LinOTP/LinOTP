@@ -25,16 +25,14 @@
 #
 
 import logging
-
-from sqlalchemy import desc
-
+from sqlalchemy import desc, and_
 import linotp
 from linotp.model import Session, Challenge
 
 log = logging.getLogger(__name__)
 
-class Challenges(object):
 
+class Challenges(object):
     @staticmethod
     def transform_challenges(challenges):
         '''
@@ -52,40 +50,41 @@ class Challenges(object):
         return challenges
 
     @staticmethod
-    def get_challenges(context, serial=None, transid=None):
-        '''
-        get_challenges - give all challenges for a given token
+    def lookup_challenges(context, serial=None, transid=None):
+        """
+        database lookup to find all challenges belonging to a token and or
+        if exist with a transaction state
+
 
         :param context:
         :param serial:   serial of the token
         :param transid:  transaction id, if None, all will be retrieved
         :return:         return a list of challenge dict
-        '''
-        log.debug('[get_challenges] %r' % (serial))
+        """
+        log.debug('%r' % (serial))
 
-        challenges = []
         if transid is None and serial is None:
-            return challenges
+            log.debug(
+                'Called without serial or transid! Returning all Challenges')
+        # return []
 
-        if transid is None:
-            db_challenges = Session.query(Challenge)\
-                .filter(Challenge.tokenserial == u'' + serial)\
-                .order_by(desc(Challenge.id))\
-                .all()
-        else:
-            transid_len = int(context.get('Config').get('TransactionIdLength', 12))
+        conditions = ()
+        if serial:
+            conditions += (and_(Challenge.tokenserial == serial),)
+        if transid:
+            transid_len = int(
+                context.get('Config').get('TransactionIdLength', 12))
             if len(transid) == transid_len:
-                db_challenges = Session.query(Challenge)\
-                    .filter(Challenge.transid == transid)\
-                    .all()
+                conditions += (and_(Challenge.transid == transid),)
             else:
-                db_challenges = Session.query(Challenge)\
-                    .filter(Challenge.transid.startswith(transid))\
-                    .all()
+                conditions += (and_(Challenge.transid.startswith(transid)),)
 
-        challenges.extend(db_challenges)
+        # SQLAlchemy requires the conditions in one arg as tupple
+        condition = and_(*conditions)
+        challenges = Session.query(Challenge). \
+            filter(condition).order_by(desc(Challenge.id)).all()
 
-        log.debug('[getTransactions4serial] %r' % challenges)
+        log.debug('%r' % challenges)
         return challenges
 
     @staticmethod
@@ -108,7 +107,8 @@ class Challenges(object):
         return False
 
     @staticmethod
-    def create_challenge(token, context, options=None, challenge_id=None, id_postfix=''):
+    def create_challenge(token, context, options=None, challenge_id=None,
+                         id_postfix=''):
         """
         dedicated method to create a challenge to support the implementation
         of challenge policies in future
@@ -126,23 +126,24 @@ class Challenges(object):
         retry_counter = 0
         reason = None
 
-        id_length = int(context.get('Config', None).get('TransactionIdLength', 12)) - len(id_postfix)
+        id_length = int(
+            context.get('Config', None).get('TransactionIdLength', 12)) - \
+                    len(id_postfix)
 
         while True:
             try:
                 if not challenge_id:
-                    transactionid = "%s%s" % (Challenge.createTransactionId(
-                                                                length=id_length),
-                                                                id_postfix)
+                    transactionid = "%s%s" % (
+                    Challenge.createTransactionId(length=id_length), id_postfix)
                 else:
                     transactionid = challenge_id
 
-                num_challenges = Session.query(Challenge).\
-                        filter(Challenge.transid == transactionid).count()
+                num_challenges = Session.query(Challenge). \
+                    filter(Challenge.transid == transactionid).count()
 
                 if num_challenges == 0:
                     challenge_obj = Challenge(transid=transactionid,
-                                                    tokenserial=token.getSerial())
+                                              tokenserial=token.getSerial())
                 if challenge_obj is not None:
                     break
 
@@ -153,20 +154,22 @@ class Challenges(object):
             # prevent an unlimited loop
             retry_counter = retry_counter + 1
             if retry_counter > 100:
-                log.info("Failed to create Challenge for %d times: %r -quiting!",
-                         retry_counter, reason)
+                log.info(
+                    "Failed to create Challenge for %d times: %r -quiting!",
+                    retry_counter, reason)
                 raise Exception('Failed to create challenge %r' % reason)
 
-        challenges = Challenges.get_challenges(context, serial=token.getSerial())
+        challenges = Challenges.lookup_challenges(context,
+                                                  serial=token.getSerial())
 
         # carefully create a new challenge
         try:
 
             # we got a challenge object allocated and initialize the challenge
             (res, open_transactionid, message, attributes) = \
-                                 token.initChallenge(transactionid,
-                                                     challenges=challenges,
-                                                     options=options)
+                token.initChallenge(transactionid,
+                                    challenges=challenges,
+                                    options=options)
 
             if res == False:
                 # if a different transid is returned, this indicates, that there
@@ -182,7 +185,7 @@ class Challenges(object):
                 challenge_obj.save()
 
                 (res, message, data, attributes) = \
-                            token.createChallenge(transactionid, options=options)
+                    token.createChallenge(transactionid, options=options)
 
                 if res == True:
                     # persist the final challenge data + message
@@ -259,8 +262,8 @@ class Challenges(object):
         res = 1
         # gather all challenges with one sql 'in' statement
         if len(challenge_ids) > 0:
-            del_challes = Session.query(Challenge).\
-                filter(Challenge.tokenserial == serial).\
+            del_challes = Session.query(Challenge). \
+                filter(Challenge.tokenserial == serial). \
                 filter(Challenge.id.in_(challenge_ids)).all()
 
             # and delete them via session
@@ -280,13 +283,15 @@ class Challenges(object):
             token = linotp.lib.token.getTokens4UserOrSerial(serial=serial)[0]
 
             # get all challenges and the matching ones
-            all_challenges = Challenges.get_challenges(context, serial=serial)
-            matching_challenges = Challenges.get_challenges(context, serial=serial,
-                                                 transid=transid)
+            all_challenges = Challenges.lookup_challenges(context,
+                                                          serial=serial)
+            matching_challenges = Challenges.lookup_challenges(context,
+                                                               serial=serial,
+                                                               transid=transid)
 
             # call the janitor to select the invalid challenges
             to_be_deleted = token.challenge_janitor(matching_challenges,
-                                                      all_challenges)
+                                                    all_challenges)
             if to_be_deleted:
                 Challenges.delete_challenges(serial, to_be_deleted)
 

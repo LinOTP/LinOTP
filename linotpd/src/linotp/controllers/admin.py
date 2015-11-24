@@ -829,8 +829,7 @@ class AdminController(BaseController):
             th = TokenHandler(context=self.request_context)
             if not serial:
                 serial = th.genSerial(tok_type, prefix)
-
-            helper_param['serial'] = serial
+                helper_param['serial'] = serial
 
             log.info("[init] initialize token. user: %s, serial: %s"
                      % (user.login, serial))
@@ -2317,18 +2316,22 @@ class AdminController(BaseController):
             # # gather all challenges from serial, transactionid and user
             challenges = set()
             if serial is not None:
-                challenges.update(Challenges.get_challenges(self.request_context, serial=serial))
+                challenges.update(Challenges.lookup_challenges(
+                                    self.request_context, serial=serial))
 
             if transid is not None :
-                challenges.update(Challenges.get_challenges(self.request_context, transid=transid))
+                challenges.update(Challenges.lookup_challenges(
+                                    self.request_context, transid=transid))
 
             # # if we have a user
             if user.isEmpty() == False:
-                tokens = getTokens4UserOrSerial(user=user, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user=user,
+                                                context=self.request_context)
                 for token in tokens:
                     serial = token.getSerial()
                     challenges.update(
-                        Challenges.get_challenges(self.request_context, serial=serial))
+                        Challenges.lookup_challenges(self.request_context,
+                                                     serial=serial))
 
             serials = set()
             for challenge in challenges:

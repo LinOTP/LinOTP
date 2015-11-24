@@ -957,8 +957,8 @@ class Ocra2TokenClass(TokenClass):
 
         if 'transactionid' in options:
             transid = options.get('transactionid', None)
-            challs = Challenges.get_challenges(self.context, serial=serial,
-                                    transid=transid)
+            challs = Challenges.lookup_challenges(self.context, serial=serial,
+                                                  transid=transid)
             for chall in challs:
                 (rec_tan, rec_valid) = chall.getTanStatus()
                 if rec_tan == False:
@@ -974,7 +974,7 @@ class Ocra2TokenClass(TokenClass):
             challenges.append(options)
 
         if len(challenges) == 0:
-            challs = Challenges.get_challenges(self.context, serial=serial)
+            challs = Challenges.lookup_challenges(self.context, serial=serial)
             for chall in challs:
                 (rec_tan, rec_valid) = chall.getTanStatus()
                 if rec_tan == False:
@@ -1204,8 +1204,8 @@ class Ocra2TokenClass(TokenClass):
             return
         try:
 
-            challenges = Challenges.get_challenges(self.context, self.getSerial(),
-                                        transid=self.transId)
+            challenges = Challenges.lookup_challenges(self.context, self.getSerial(),
+                                                      transid=self.transId)
             if len(challenges) == 1:
                 challenge = challenges[0]
                 challenge.setTanStatus(received=True, valid=False)
@@ -1251,8 +1251,8 @@ class Ocra2TokenClass(TokenClass):
         if self.transId == 0 :
             return
 
-        challenges = Challenges.get_challenges(self.context, self.getSerial(),
-                                    transid=self.transId)
+        challenges = Challenges.lookup_challenges(self.context, self.getSerial(),
+                                                  transid=self.transId)
         if len(challenges) == 1:
             challenge = challenges[0]
             challenge.setTanStatus(True, True)
@@ -1292,7 +1292,7 @@ class Ocra2TokenClass(TokenClass):
         challenges = []
 
         ## the challenges are orderd, the first one is the newest
-        challenges = Challenges.get_challenges(self.context, self.getSerial())
+        challenges = Challenges.lookup_challenges(self.context, self.getSerial())
 
         ##  check if there are enough challenges around
         if len(challenges) < 2:
@@ -1412,8 +1412,8 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[getStatus] %r' % (transactionId))
 
         statusDict = {}
-        challenge = Challenges.get_challenges(self.context, self.getSerial(),
-                                   transid=transactionId)
+        challenge = Challenges.lookup_challenges(self.context, self.getSerial(),
+                                                 transid=transactionId)
         if challenge is not None:
             statusDict['serial'] = challenge.tokenserial
             statusDict['transactionid'] = challenge.transid

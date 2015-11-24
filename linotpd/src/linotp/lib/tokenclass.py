@@ -47,6 +47,8 @@ import time
 import hashlib
 import datetime
 
+import linotp
+
 
 from linotp.lib.error import TokenAdminError
 from linotp.lib.error import ParameterError
@@ -88,8 +90,6 @@ from sqlalchemy         import asc, desc
 
 from pylons.i18n.translation import _
 
-
-
 # needed for ocra token
 import urllib
 
@@ -115,6 +115,12 @@ class TokenClass(object):
         self.hKeyRequired = False
         self.mode = ['authenticate', 'challenge']
         self.context = context
+        # these lists will be returned as result of the token check
+        self.challenge_token = []
+        self.pin_matching_token = []
+        self.invalid_token = []
+        self.valid_token = []
+        self.related_challenges = []
 
     def setType(self, typ):
         typ = u'' + typ
@@ -466,9 +472,8 @@ class TokenClass(object):
 
         return to_be_deleted
 
-
     def createChallenge(self, transactionid, options=None):
-        '''
+        """
         This method creates a challenge, which is submitted to the user.
         The submitted challenge will be preserved in the challenge
         database.
@@ -487,12 +492,249 @@ class TokenClass(object):
         ``message`` which is displayed in the JSON response;
         ``data`` is preserved in the challenge;
         additional ``attributes``, which are displayed in the JSON response.
+        """
 
-        '''
         message = 'Otp: '
-        data = {'serial' : self.token.getSerial()}
+        data = {'serial': self.token.getSerial()}
         attributes = None
         return (True, message, data, attributes)
+
+    def check_token(self, passw, user, options=None, challenges=None):
+        """
+        validate a token against the provided pass
+
+        :raises: "challenge not found",
+                 if a state is given and no challenge is found for this
+                 challenge id
+
+        :param passw: the password, which could either be a pin, a pin+otp
+                       or otp
+        :param user: the user which the token belongs to
+        :param options: dict with additional request parameters
+        :param challenges:
+
+        :return: tuple of otpcounter and potential reply
+        """
+        log.debug("entering function checkToken(%r)" % self)
+        res = -1
+        if options is None:
+            options = {}
+
+        # is the request refering to a previous challenge
+        if self.is_challenge_response(passw, user, options=options,
+                                      challenges=challenges):
+
+            (res, reply) = self.check_challenges(challenges, user, passw,
+                                                 options=options)
+        else:
+            # do the standard check
+            (res, reply) = self.check_standard(passw, user, options=options)
+
+        return (res, reply)
+
+    def get_token_challenges(self, options=None):
+        """
+        get all challenges, defined either by the option=state
+        or identified by the token serial reference
+
+        :param options: the request options
+
+        :return: a list of challenges
+        """
+        challenges = []
+        valid_challenges = []
+
+        if (options is not None and
+                    "state" in options or "transactionid" in options):
+            state = options.get('state', options.get('transactionid'))
+
+            challenges = Challenges.lookup_challenges(
+                self.context, serial=self.getSerial(), transid=state)
+            if len(challenges) == 0 and self.getType() not in ['ocra']:
+                # if state argument is given, but no open challenge found
+                # this might be a problem, so make a log entry
+                log.info('no challenge with state %s found for %s'
+                         % (state, self.getSerial()))
+        else:
+            challenges = Challenges.lookup_challenges(
+                self.context, serial=self.getSerial())
+
+        # now verify that the challenge is valid
+        for ch in challenges:
+            if self.is_challenge_valid(ch):
+                valid_challenges.append(ch)
+
+        return valid_challenges
+
+    def check_challenges(self, challenges, user, passw, options=None):
+        """
+        This function checks, if the given response (passw) matches
+        any of the open challenges
+
+        to prevent the token author to deal with the database layer, the
+        token.checkResponse4Challenge will recieve only the dictionary of the
+        challenge data
+
+        :param challenges: the list of database challenges
+        :param user: the requesting use
+        :param passw: the to password of the request, which must be pin+otp
+        :param options: the addtional request parameters
+        :return: tuple of otpcount (as result of an internal token.checkOtp)
+                 and additional optional reply
+        """
+        # challenge reply will stay None as we are in the challenge response
+        # mode
+        reply = None
+        if options is None:
+            options = {}
+
+        otp = passw
+
+        (otpcount, matching_challenges) = self.checkResponse4Challenge(
+            user, otp, options=options,
+            challenges=challenges)
+        if otpcount >= 0:
+            self.valid_token.append(self)
+            if len(self.invalid_token) > 0:
+                del self.invalid_token[0]
+        else:
+            self.invalid_token.append(self)
+
+        # delete all challenges, which belong to the token and
+        # the token could decide on its own, which should be deleted
+        # default is: challenges which are younger than the matching one
+        # are to be deleted
+
+        all_challenges = Challenges.lookup_challenges(self.context)
+        to_be_deleted = self.challenge_janitor(matching_challenges,
+                                               all_challenges)
+
+        # gather all related challenges, which as well must be deleted.
+        # (relatedby the means of having a '.dd' postfix in transaction id)
+        # These are then retrieved in the outer loop to call for each token
+        # the challenge janitor so that every token may decide which challenge
+        # to delete
+        for del_challenge in to_be_deleted:
+            if '.' in del_challenge.transid:
+                tran_id = del_challenge.transid.split('.')[0]
+                related_challenges = Challenges.lookup_challenges(
+                    self.context, transid=tran_id)
+                self.related_challenges.extend(related_challenges)
+
+        Challenges.delete_challenges(serial=self.getSerial(),
+                                     challenges=to_be_deleted)
+
+        return (otpcount, reply)
+
+    def check_standard(self, passw, user, options=None):
+        """
+        do a standard verification, as we are not in a challengeResponse mode
+
+        the upper interfaces expect in the success the otp counter or at
+        least 0 if we have a success. A -1 identifies an error
+
+        :param passw: the password, which should be checked
+        :param options: dict with additional request parameters
+
+        :return: tuple of matching otpcounter and a potential reply
+        """
+
+        otp_count = -1
+        pin_match = False
+        reply = None
+
+        ttype = self.getType()
+
+        # fallback in case of check_s, which does not provide a user
+        # but as for further prcessing a dummy user with only the realm defined
+        # is required for the policy evaluation
+        if user is None:
+            realms = linotp.lib.token.getTokenRealms(self.getSerial())
+            if len(realms) == 1:
+                user = linotp.lib.user.User(login='', realm=realms[0])
+            elif len(realms) == 0:
+                realm = linotp.lib.token.getDefaultRealm()
+                user = linotp.lib.user.User(login='', realm=realm)
+                log.info('No token realm found - using default realm.')
+            else:
+                msg = ('Multiple realms for token found. But one dedicated '
+                       'realm is required for further processing.')
+                log.error(msg)
+                raise Exception(msg)
+
+        support_challenge_response = \
+            linotp.lib.policy.get_auth_challenge_response(user, ttype,
+                                                          context=self.context)
+
+        # special handling for tokens, who support only challenge modes
+        # like the sms, email or ocra2 token
+        challenge_mode_only = False
+
+        mode = self.mode
+        if type(mode) == list and len(mode) == 1 and mode[0] == "challenge":
+            challenge_mode_only = True
+
+        # the support_challenge_response is overruled, if the token
+        # supports only challenge processing
+        if challenge_mode_only is True:
+            support_challenge_response = True
+
+        try:
+            # call the token authentication
+            (pin_match, otp_count, reply) = self.authenticate(passw, user,
+                                                              options=options)
+        except Exception as exx:
+            if (support_challenge_response is True and
+                    self.is_challenge_request(passw, user, options=options)):
+                log.info("Retry on base of a challenge request:")
+                pin_match = False
+                otp_count = -1
+            else:
+                raise Exception(exx)
+
+        if otp_count < 0 or pin_match == False:
+
+            if (support_challenge_response == True and
+                    self.isActive() and
+                    self.is_challenge_request(passw, user,
+                                              options=options)):
+                # we are in createChallenge mode
+                # fix for #12413:
+                # - moved the create_challenge call to the checkTokenList!
+                # after all tokens are processed and only one is challengeing
+                # (_res, reply) = create_challenge(self.token, options=options)
+                self.challenge_token.append(self)
+
+        if len(self.challenge_token) == 0:
+            if otp_count >= 0:
+                self.valid_token.append(self)
+            elif pin_match is True:
+                self.pin_matching_token.append(self)
+            else:
+                self.invalid_token.append(self)
+
+        return (otp_count, reply)
+
+    def get_related_challenges(self):
+        """
+        :return: list of related challenges
+        """
+        return self.related_challenges
+
+    def get_verification_result(self):
+        """
+        return the internal result representation of the token verification
+        which are a set of list, which stand for the challenge, pinMatching
+        or invalid or valid token list
+
+        - the lists are returned as they easily could be joined into the final
+          token list, independent of they are empty or contain a token obj
+
+        :return: tuple of token lists
+        """
+
+        return (self.challenge_token, self.pin_matching_token,
+                self.invalid_token, self.valid_token)
 
     def flush(self):
         self.token.storeToken()
