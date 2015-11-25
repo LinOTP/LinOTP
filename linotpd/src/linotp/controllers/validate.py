@@ -50,7 +50,9 @@ from linotp.lib.user    import User
 
 from linotp.lib.config  import getFromConfig
 
-from linotp.lib.token import TokenHandler, checkSerialPass
+from linotp.lib.validate import ValidationHandler
+
+from linotp.lib.token import TokenHandler
 from linotp.lib.token import get_tokenserial_of_transaction
 
 from linotp.lib.reply import sendResult, sendError
@@ -171,8 +173,8 @@ class ValidateController(BaseController):
                 if options is None:
                     options = {}
                 options['initTime'] = initTime
-        th = TokenHandler(context=self.request_context)
-        (ok, opt) = th.checkUserPass(user, passw, options=options)
+        vh = ValidationHandler(context=self.request_context)
+        (ok, opt) = vh.checkUserPass(user, passw, options=options)
 
         c.audit['success'] = ok
 
@@ -502,8 +504,10 @@ class ValidateController(BaseController):
                 userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                (ok, opt) = checkSerialPass(serial, passw, user=user,
-                                     options=param, context=self.request_context)
+                validation_handler = ValidationHandler(self.request_context)
+                (ok, opt) = validation_handler.checkSerialPass(serial, passw,
+                                                               user=user,
+                                                               options=param)
 
                 value['value'] = ok
                 failcount = theToken.getFailCount()
@@ -603,8 +607,9 @@ class ValidateController(BaseController):
                     options['initTime'] = initTime
 
             options['scope'] = {"check_s": True}
-            (ok, opt) = checkSerialPass(serial, passw, options=options,
-                                        context=self.request_context)
+            validation_handler = ValidationHandler(self.request_context)
+            (ok, opt) = validation_handler.checkSerialPass(serial, passw,
+                                                           options=options)
 
             c.audit['success'] = ok
             Session.commit()

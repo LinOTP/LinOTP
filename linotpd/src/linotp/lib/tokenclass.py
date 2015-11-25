@@ -495,7 +495,7 @@ class TokenClass(object):
         """
 
         message = 'Otp: '
-        data = {'serial': self.token.getSerial()}
+        data = {'serial': self.getSerial()}
         attributes = None
         return (True, message, data, attributes)
 
@@ -591,8 +591,7 @@ class TokenClass(object):
         otp = passw
 
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
-            user, otp, options=options,
-            challenges=challenges)
+            user, otp, options=options, challenges=challenges)
         if otpcount >= 0:
             self.valid_token.append(self)
             if len(self.invalid_token) > 0:
@@ -643,8 +642,6 @@ class TokenClass(object):
         pin_match = False
         reply = None
 
-        ttype = self.getType()
-
         # fallback in case of check_s, which does not provide a user
         # but as for further prcessing a dummy user with only the realm defined
         # is required for the policy evaluation
@@ -663,20 +660,12 @@ class TokenClass(object):
                 raise Exception(msg)
 
         support_challenge_response = \
-            linotp.lib.policy.get_auth_challenge_response(user, ttype,
+            linotp.lib.policy.get_auth_challenge_response(user, self.getType(),
                                                           context=self.context)
 
-        # special handling for tokens, who support only challenge modes
-        # like the sms, email or ocra2 token
-        challenge_mode_only = False
-
-        mode = self.mode
-        if type(mode) == list and len(mode) == 1 and mode[0] == "challenge":
-            challenge_mode_only = True
-
-        # the support_challenge_response is overruled, if the token
-        # supports only challenge processing
-        if challenge_mode_only is True:
+        if len(self.mode) == 1 and self.mode[0] == "challenge":
+            # the support_challenge_response is overruled, if the token
+            # supports only challenge processing
             support_challenge_response = True
 
         try:
@@ -692,12 +681,10 @@ class TokenClass(object):
             else:
                 raise Exception(exx)
 
-        if otp_count < 0 or pin_match == False:
-
-            if (support_challenge_response == True and
+        if otp_count < 0 or pin_match is False:
+            if (support_challenge_response is True and
                     self.isActive() and
-                    self.is_challenge_request(passw, user,
-                                              options=options)):
+                    self.is_challenge_request(passw, user, options=options)):
                 # we are in createChallenge mode
                 # fix for #12413:
                 # - moved the create_challenge call to the checkTokenList!
@@ -732,7 +719,6 @@ class TokenClass(object):
 
         :return: tuple of token lists
         """
-
         return (self.challenge_token, self.pin_matching_token,
                 self.invalid_token, self.valid_token)
 

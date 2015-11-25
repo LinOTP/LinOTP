@@ -31,10 +31,7 @@ import logging
 import string
 import sys
 import traceback
-
 import os
-
-from linotp.lib.challenges import Challenges
 
 try:
     import json
@@ -48,6 +45,8 @@ from sqlalchemy import func
 from pylons import tmpl_context as c
 from pylons.i18n.translation import _
 from pylons import config
+
+from linotp.lib.challenges import Challenges
 
 from linotp.lib.error import TokenAdminError
 from linotp.lib.error import UserError
@@ -77,10 +76,6 @@ from linotp.lib.resolver import getResolverObject
 
 from linotp.lib.realm import createDBRealm, getRealmObject
 from linotp.lib.realm import getDefaultRealm
-
-# from linotp.lib.tokenclass import (check_token,
-#                                   get_verification_result,
-#                                   related_challenges)
 
 log = logging.getLogger(__name__)
 
@@ -461,96 +456,6 @@ class TokenHandler(object):
 
         return res
 
-    def checkUserPass(self, user, passw, options=None):
-        '''
-        :param user: the to be identified user
-        :param passw: the identifiaction pass
-        :param options: optional parameters, which are provided
-                    to the token checkOTP / checkPass
-
-        :return: tuple of True/False and optional information
-        '''
-
-        log.debug("[checkUserPass] entering function checkUserPass(%r)"
-                  % (user.login))
-        # the upper layer will catch / at least should ;-)
-
-        opt = None
-        serial = None
-        resolverClass = None
-        uid = None
-
-        if user is not None and (user.isEmpty() == False):
-        # the upper layer will catch / at least should
-            try:
-                (uid, _resolver, resolverClass) = getUserId(user)
-            except:
-                passOnNoUser = "PassOnUserNotFound"
-                passOn = getFromConfig(passOnNoUser, False)
-                if False != passOn and "true" == passOn.lower():
-                    c.audit['action_detail'] = ("authenticated by"
-                                                " PassOnUserNotFound")
-                    return (True, opt)
-                else:
-                    c.audit['action_detail'] = "User not found"
-                    return (False, opt)
-
-        tokenList = getTokens4UserOrSerial(user, serial, context=self.context)
-
-        if len(tokenList) == 0:
-            c.audit['action_detail'] = "User has no tokens assigned"
-
-            # here we check if we should to autoassign and try to do it
-            log.debug("[checkUserPass] about to check auto_assigning")
-
-            auto_assign_return = self.auto_assignToken(passw, user)
-            if auto_assign_return == True:
-                # We can not check the token, as the OTP value is already used!
-                # but we will authenticate the user....
-                return (True, opt)
-
-            auto_enroll_return, opt = self.auto_enrollToken(passw, user,
-                                                            options=options)
-            if auto_enroll_return is True:
-                # we always have to return a false, as
-                # we have a challenge tiggered
-                return (False, opt)
-
-            passOnNoToken = "PassOnUserNoToken"
-            passOn = getFromConfig(passOnNoToken, False)
-            if passOn != False and "true" == passOn.lower():
-                c.audit['action_detail'] = "authenticated by PassOnUserNoToken"
-                return (True, opt)
-
-            #  Check if there is an authentication policy passthru
-            from linotp.lib.policy import get_auth_passthru
-            if get_auth_passthru(user, context=self.context):
-                log.debug("[checkUserPass] user %r has no token. Checking for "
-                          "passthru in realm %r" % (user.login, user.realm))
-                y = getResolverObject(resolverClass)
-                c.audit['action_detail'] = "Authenticated against Resolver"
-                if  y.checkPass(uid, passw):
-                    return (True, opt)
-
-            #  Check if there is an authentication policy passOnNoToken
-            from linotp.lib.policy import get_auth_passOnNoToken
-            if get_auth_passOnNoToken(user, context=self.context):
-                log.info("[checkUserPass] user %r has not token. PassOnNoToken"
-                         " set - authenticated!")
-                c.audit['action_detail'] = ("Authenticated by "
-                                            "passOnNoToken policy")
-                return (True, opt)
-
-            return (False, opt)
-
-        if passw is None:
-            raise ParameterError(u"Missing parameter:pass", id=905)
-
-        (res, opt) = checkTokenList(tokenList, passw, user, options=options,
-                                    context=self.context)
-        log.debug("[checkUserPass] return of __checkTokenList: %r " % (res,))
-
-        return (res, opt)
 
     def isTokenOwner(self, serial, user):
         ret = False
@@ -1878,54 +1783,6 @@ def getTokenType(serial):
     return typ
 
 
-def checkSerialPass(serial, passw, options=None, user=None, context=None):
-    '''
-    This function checks the otp for a given serial
-
-    :attention: the parameter user must be set, as the pin policy==1 will
-                verify the user pin
-
-    '''
-
-    log.debug("[checkSerialPass] checking for serial %r"
-              % (serial))
-    tokenList = getTokens4UserOrSerial(None, serial, context=context)
-
-    if passw is None:
-        #  other than zero or one token should not happen, as serial is unique
-        if len(tokenList) == 1:
-            theToken = tokenList[0]
-            tok = theToken.token
-            realms = tok.getRealmNames()
-            if realms is None or len(realms) == 0:
-                realm = getDefaultRealm()
-            elif len(realms) > 0:
-                realm = realms[0]
-            userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver,
-                                   tok.LinOtpIdResClass)
-            user = User(login=userInfo.get('username'), realm=realm)
-            user.info = userInfo
-
-            if theToken.is_challenge_request(passw, user, options=options):
-                (res, opt) = Challenges.create_challenge(
-                    theToken, context, options)
-            else:
-                raise ParameterError("Missing parameter: pass", id=905)
-
-        else:
-            raise Exception('No token found: unable to create challenge for %s'
-                             % serial)
-
-    else:
-        log.debug("[checkSerialPass] checking len(pass)=%r for serial %r"
-              % (len(passw), serial))
-
-        (res, opt) = checkTokenList(tokenList, passw, user=user,
-                                    options=options, context=context)
-
-    return (res, opt)
-
-
 def checkTokenList(tokenList, passw, user=User(), options=None, context=None):
     '''
     identify a matching token and test, if the token is valid, locked ..
@@ -2516,7 +2373,6 @@ def setPinSo(soPin, serial, context=None):
         token.setSoPin(soPin)
 
     return len(tokenList)
-
 
 
 

@@ -39,6 +39,7 @@ from linotp.lib.base import BaseController
 from linotp.lib.util  import check_session
 from linotp.lib.util import get_client
 from linotp.lib.error   import ParameterError
+from linotp.lib.validate import ValidationHandler
 
 from linotp.lib.util    import getParam, getLowerParams
 from linotp.lib.reply   import sendResult, sendError
@@ -56,7 +57,6 @@ from linotp.lib.policy  import PolicyException
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.tokenclass import OcraTokenClass
 
-from linotp.lib.token import checkSerialPass
 from linotp.lib.user import  getUserFromParam
 import webob
 
@@ -340,9 +340,10 @@ class OcraController(BaseController):
                 userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                (ok, opt) = checkSerialPass(serial, passw, user=user,
-                                     options={'transactionid':transid},
-                                     context=self.request_context)
+                validation_handler = ValidationHandler(self.request_context)
+                (ok, opt) = validation_handler.checkSerialPass(serial, passw,
+                                            user=user,
+                                            options={'transactionid': transid})
 
                 failcount = theToken.getFailCount()
                 value['result'] = ok

@@ -116,7 +116,7 @@ class YubikeyTokenClass(TokenClass):
         res = self.checkOtp(otp, counter=counter, window=window, options=None)
 
         if res >= 0:
-            # As usually the counter is increased in lib.token.checkUserPass, we
+            # As usually the counter is increased in lib.validate.checkUserPass, we
             # need to do this manually here:
             self.incOtpCounter(res)
 

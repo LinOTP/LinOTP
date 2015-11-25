@@ -37,7 +37,6 @@ import webob
 import traceback
 
 
-
 from pylons import tmpl_context as c
 from pylons import request, response
 from pylons.controllers.util import redirect
@@ -61,7 +60,7 @@ from pylons.templating import render_mako as render
 from webob.exc import HTTPBadRequest
 
 
-from linotp.lib.token import TokenHandler
+from linotp.lib.validate import ValidationHandler
 from linotp.lib.reply import sendError
 from linotp.model.meta import Session
 
@@ -522,9 +521,9 @@ class OpenidController(BaseController):
 
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm or getDefaultRealm()
-            th = TokenHandler()
+            vh = ValidationHandler(context=self.request_context)
             if same_user is True:
-                (ok, opt) = th.checkUserPass(user, passw)
+                (ok, opt) = vh.checkUserPass(user, passw)
 
             c.audit['success'] = ok
 

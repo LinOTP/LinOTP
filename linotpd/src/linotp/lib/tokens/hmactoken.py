@@ -377,7 +377,7 @@ class HmacTokenClass(TokenClass):
         res = hmac2Otp.checkOtp(otp, window)
 
         if res >= 0:
-            # As usually the counter is increased in lib.token.checkUserPass, we
+            # As usually the counter is increased in lib.validate.checkUserPass, we
             # need to do this manually here:
             self.incOtpCounter(res)
         if res == -1:

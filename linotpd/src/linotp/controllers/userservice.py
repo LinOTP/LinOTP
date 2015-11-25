@@ -71,6 +71,7 @@ from mako.exceptions import CompileException
 from linotp.model.meta import Session
 
 from linotp.lib.base import BaseController
+from linotp.lib.validate import ValidationHandler
 
 from linotp.lib.policy import (checkPolicyPre,
                                checkPolicyPost,
@@ -106,7 +107,6 @@ from linotp.lib.token import (resetToken,
                               newToken,
                               get_tokenserial_of_transaction,
                               getTokens4UserOrSerial,
-                              checkSerialPass,
                               )
 
 from linotp.lib.token import TokenHandler
@@ -392,10 +392,11 @@ class UserserviceController(BaseController):
 
         if passwd_match:
             toks = getTokenForUser(user)
-            th = TokenHandler(context=self.request_context)
 
             # if user has no token, we check for auto assigneing one to him
             if len(toks) == 0:
+                th = TokenHandler(context=self.request_context)
+
                 # if no token and otp, we might do an auto assign
                 if self.autoassign and otp:
                     ret = th.auto_assignToken(password + otp, user)
@@ -414,7 +415,8 @@ class UserserviceController(BaseController):
 
             # user has at least one token, so we do a check on pin + otp
             else:
-                (ret, _reply) = th.checkUserPass(user, otp)
+                vh = ValidationHandler(context=self.request_context)
+                (ret, _reply) = vh.checkUserPass(user, otp)
         return ret
 
     def userinfo(self):
@@ -1712,9 +1714,10 @@ class UserserviceController(BaseController):
                                                         tok.LinOtpIdResClass)
             user = User(login=userInfo.get('username'), realm=realm)
 
-            (ok, opt) = checkSerialPass(serial, passw, user=user,
-                                            options={'transactionid': transid},
-					context=self.request_context)
+            validation_handler = ValidationHandler(self.request_context)
+            (ok, opt) = validation_handler.checkSerialPass(serial, passw,
+                                            user=user,
+                                            options={'transactionid': transid})
 
             failcount = tokens[0].getFailCount()
             typ = tokens[0].type
@@ -1826,8 +1829,9 @@ class UserserviceController(BaseController):
                                        tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                (ok, opt) = checkSerialPass(serial, passw, user=user,
-                                     		options=param, context=self.request_context)
+                validation_handler = ValidationHandler(self.request_context)
+                (ok, opt) = validation_handler.checkSerialPass(serial, passw,
+                                                user=user, options=param)
 
                 value['value'] = ok
                 failcount = theToken.getFailCount()

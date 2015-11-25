@@ -35,14 +35,14 @@ log = logging.getLogger(__name__)
 class Challenges(object):
     @staticmethod
     def transform_challenges(challenges):
-        '''
+        """
         small helper to transfor a set of DB Challenges to a list
         of challenge data as dicts
 
         :param challenges: list of database challenges
-
         :return: a list with challenge data dicts
-        '''
+        """
+
         channel_list = []
         for challenge in challenges:
             channel_list.append(challenge.get())
@@ -54,7 +54,6 @@ class Challenges(object):
         """
         database lookup to find all challenges belonging to a token and or
         if exist with a transaction state
-
 
         :param context:
         :param serial:   serial of the token
@@ -233,14 +232,13 @@ class Challenges(object):
 
     @staticmethod
     def delete_challenges(serial, challenges):
-        '''
+        """
         delete some challenges of a token
 
         :param serial: the serial number of the token
         :param challenges: list of (dict|int|str|challenge objects)
-
         :return: result of the delete operation
-        '''
+        """
 
         challenge_ids = []
         for challenge in challenges:
@@ -274,6 +272,8 @@ class Challenges(object):
 
     @staticmethod
     def handle_related_challenge(related_challenges, context):
+        """
+        """
         # if there are any related challenges, we have to call the
         # token janitor, who decides if a challenge is still valid
         # eg. expired
