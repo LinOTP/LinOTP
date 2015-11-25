@@ -343,7 +343,7 @@ class TestHTTPError(TestController):
             'type': 'spass',
             'genkey': 1,
             }
-        response = self.make_admin_request('init', params)
+        response = self.make_admin_request('init', params, method='GET')
         content = self.get_json_body(response)
 
         self.assertEqual(_get_status_code(response), 200)
