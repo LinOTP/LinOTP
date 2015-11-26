@@ -152,17 +152,36 @@ class SelfserviceController(BaseController):
 
     authUser = None
 
-    def __before__(self, action, **params):
+    # the following actions don't require a session parameter
+    # as they are only callbacks to render a form
+    form_access_methods = [
+            "activateqrtoken",
+            "assign",
+            "custom_style",
+            "delete",
+            "disable",
+            "enable",
+            "getotp",
+            "history",
+            "index",
+            "load_form",
+            "reset",
+            "resync",
+            "setmpin",
+            "setpin",
+            "unassign",
+            "webprovisiongoogletoken",
+            "webprovisionoathtoken"
+            ]
+
+    def __before__(self, action):
         '''
-        This is the authentication to self service
-        If you want to do ANYTHING with selfservice, you need to be authenticated
-        The _before_ is executed before any other function in this controller.
+        This is the authentication to self service. If you want to do
+        ANYTHING with the selfservice, you need to be authenticated. The
+        _before_ is executed before any other function in this controller.
         '''
 
         try:
-
-            param = request.params
-
             audit.initialize()
             c.audit['success'] = False
             c.audit['client'] = get_client()
@@ -179,16 +198,17 @@ class SelfserviceController(BaseController):
             self.authUser = User(c.user, c.realm, '')
 
             if auth_type == "repoze":
-                # checking the session
-                if (False == check_selfservice_session(request.url,
-                                                       request.path,
-                                                       request.cookies,
-                                                       request.params
-                                                       )):
-                    c.audit['action'] = request.path[1:]
-                    c.audit['info'] = "session expired"
-                    audit.log(c.audit)
-                    abort(401, "No valid session")
+                # checking the session only for not_form_access actions
+                if action not in self.form_access_methods:
+                    call_url = "selfservice/%s" % action
+                    valid_session = check_selfservice_session(url=call_url,
+                                                    cookies=request.cookies,
+                                                    params=request.params)
+                    if not valid_session:
+                        c.audit['action'] = request.path[1:]
+                        c.audit['info'] = "session expired"
+                        audit.log(c.audit)
+                        abort(401, "No valid session")
 
             c.imprint = get_imprint(c.realm)
 
@@ -432,7 +452,6 @@ class SelfserviceController(BaseController):
         delete this token.
         '''
         return render('/selfservice/delete.mako')
-
 
     def setpin(self):
         '''
