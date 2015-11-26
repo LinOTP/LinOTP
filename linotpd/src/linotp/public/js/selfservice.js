@@ -788,8 +788,9 @@ function load_flexi(){
 
 function view_audit_selfservice() {
        $("#audit_selfservice_table").flexigrid({
-            url : '/userservice/history?session='+ get_selfservice_session(),
-            method: 'GET',
+            url : '/userservice/history',
+            method: 'POST',
+            params: [{name:'session', value: get_selfservice_session()}],
             dataType : 'json',
             colModel : [{display: 'date', name : 'date', width : 160, sortable : true},
                         {display: 'action', name : 'action', width : 120, sortable : true},

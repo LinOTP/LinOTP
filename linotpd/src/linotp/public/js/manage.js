@@ -2268,22 +2268,26 @@ function save_ldap_config(){
         '#ldap_noreferrals' : 'NOREFERRALS',
         '#ldap_certificate': 'CACERTIFICATE',
     };
-    var url = '/system/setResolver?name='+resolvername+'&type='+resolvertype+'&';
+    var url = '/system/setResolver';
+    var params = {}
+    params['name']= resolvername;
+    params['type'] = resolvertype;
     for (var key in ldap_map) {
-        var data = $(key).serialize();
-        var new_data = data.replace(/^.*=/, ldap_map[key] + '=');
-        url += new_data + "&";
+        var new_key = ldap_map[key];
+        var value = $(key).val();
+        params[new_key] = value;
     }
     // checkboxes
     var noreferrals="False";
     if ($("#ldap_noreferrals").is(':checked')) {
         noreferrals = "True";
     }
-    url += "NOREFERRALS="+noreferrals+"&";
+    params["NOREFERRALS"] = noreferrals;
 
-    url += "session="+getsession();
+    params["session"] = getsession();
     show_waiting();
-    $.get(url,
+
+    $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -2397,15 +2401,18 @@ function save_sql_config(){
         '#sql_conparams': 'conParams',
         '#sql_encoding' : 'Encoding'
     };
-    var url = '/system/setResolver?name='+resolvername+'&type='+resolvertype+'&';
+    var url = '/system/setResolver';
+    var params = {};
+    params['name'] = resolvername;
+    params['type'] = resolvertype;
     for (var key in map) {
-        var data = $(key).serialize();
-        var new_data = data.replace(/^.*=/, map[key] + '=');
-        url += new_data + "&";
+        var value = $(key).val();
+        var new_key = map[key];
+        params[new_key] = value;
     }
-    url += '&session='+getsession();
+    params['session'] = getsession();
     show_waiting();
-    $.get(url,
+    $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -4866,8 +4873,9 @@ function define_policy_action_autocomplete(availableActions) {
 function view_policy() {
 
     $("#policy_table").flexigrid({
-            url : '/system/policies_flexi?session='+getsession(),
-            method: 'GET',
+            url : '/system/policies_flexi',
+            method: 'POST',
+            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Active'), name : 'active', width : 35, sortable : true},
@@ -4981,8 +4989,9 @@ function view_policy() {
 
 function view_token() {
         $("#token_table").flexigrid({
-            url : '/manage/tokenview_flexi?session='+getsession(),
-            method: 'GET',
+            url : '/manage/tokenview_flexi',
+            method: 'POST',
+            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Serial Number'), name : 'TokenSerialnumber', width : 100, sortable : true, align: 'center'},
@@ -5027,8 +5036,9 @@ function view_token() {
 
 function view_user() {
         $("#user_table").flexigrid({
-            url : '/manage/userview_flexi?session='+getsession(),
-            method: 'GET',
+            url : '/manage/userview_flexi',
+            method: 'POST',
+            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Username'), name : 'username', width : 90, sortable : true, align:"left"},
@@ -5075,8 +5085,9 @@ function view_user() {
 
 function view_audit() {
        $("#audit_table").flexigrid({
-            url : '/audit/search?session='+getsession(),
-            method: 'GET',
+            url : '/audit/search',
+            method: 'POST',
+            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Number'), name : 'number', width : 50, sortable : true},
