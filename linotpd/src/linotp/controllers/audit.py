@@ -176,7 +176,7 @@ class AuditController(BaseController):
         except Exception as e:
             log.exception("[search] audit/search failed: %r" % e)
             Session.rollback()
-            return sendError(response, "audit/search failed: %s" % unicode(e), 0)
+            return sendError(response, "audit/search failed", 0)
 
         finally:
             Session.close()
