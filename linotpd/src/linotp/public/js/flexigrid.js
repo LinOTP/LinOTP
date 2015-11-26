@@ -82,7 +82,7 @@
 			resizable: true, //allow table resizing
 			url: false, //URL if using data from AJAX
 			method: 'POST', //data sending method
-			dataType: 'xml', //type of data for AJAX, either xml or json
+			dataType: 'json', //type of data for AJAX, either xml or json
 			errormsg: 'Connection Error',
 			usepager: false,
 			nowrap: true,
@@ -109,7 +109,7 @@
 			hideOnSubmit: true,
 			autoload: true,
 			blockOpacity: 0.5,
-			preProcess: false,
+			preProcess: true,
 			addTitleToCell: false, // add a title attr to cells with truncated contents
 			dblClickResize: false, //auto resize column by double clicking
 			onDragCol: false,

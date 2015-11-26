@@ -197,17 +197,25 @@ class TestManageController(TestController):
         response = self.app.get(url(controller='manage',
                                     action='tokenview_flexi'),
                                 params={})
+        self.assertTrue('"total": 3' in response, response)
 
-        testbody = response.body.replace('\n', ' ').replace('\r', '').\
-                                        replace("  ", " ")
-        log.info("token flexi response 1: %r" % response)
-        self.assertTrue('"total": 3' in testbody, testbody)
-        self.assertTrue('"token1",       true,       "heinz"' in testbody,
-                                                                    testbody)
-        self.assertTrue('"token2",       true,       "nick"' in testbody,
-                                                                    testbody)
-        self.assertTrue('"token3",       true,       "renate"' in testbody,
-                                                                    testbody)
+        # analyse the reply for token info
+        resp = json.loads(response.body)
+        tokens = resp.get('result', {}).get('value', {}).get('rows', [])
+
+        match_count = 0
+        for token in tokens:
+            if token.get('id') == 'token1':
+                self.assertTrue("heinz" in token['cell'], resp)
+                match_count += 1
+            elif token.get('id') == 'token2':
+                self.assertTrue("nick" in token['cell'], resp)
+                match_count += 1
+            elif token.get('id') == 'token3':
+                self.assertTrue("renate" in token['cell'], resp)
+                match_count += 1
+        self.assertTrue(match_count == 3,
+                        "Not all matches found in resp %r" % resp)
 
         # only renates token
         response = self.app.get(url(controller='manage',
@@ -216,36 +224,62 @@ class TestManageController(TestController):
                                         'query': 'renate'})
         testbody = response.body.replace('\n', ' ').replace('\r', '').\
                                                         replace("  ", " ")
-        log.info("token flexi response 2: %r" % response)
         self.assertTrue('"total": 1' in testbody, testbody)
-        self.assertTrue('"token3",       true,       "renate"' in testbody,
-                                                                    testbody)
+
+        # analyse the reply for token info
+        resp = json.loads(response.body)
+        tokens = resp.get('result', {}).get('value', {}).get('rows', [])
+
+        match_count = 0
+        for token in tokens:
+            if token.get('id') == 'token3':
+                self.assertTrue("renate" in token['cell'], resp)
+                match_count += 1
+        self.assertTrue(match_count == 1,
+                        "Not all matches found in resp %r" % resp)
 
         # only tokens in realm1
         response = self.app.get(url(controller='manage',
                                     action='tokenview_flexi'),
                                 params={'qtype': 'realm',
                                         'query': 'realm1'})
-        log.info("token flexi response 3: %r" % response)
         self.assertTrue('"total": 2' in response, response)
-        testbody = response.body.replace('\n', ' ').replace('\r', '').\
-                                                            replace("  ", " ")
-        self.assertTrue('"token1",       true,       "heinz"' in testbody,
-                                                                    testbody)
-        self.assertTrue('"token2",       true,       "nick"' in testbody,
-                                                                    testbody)
+
+        # analyse the reply for token info
+        resp = json.loads(response.body)
+        tokens = resp.get('result', {}).get('value', {}).get('rows', [])
+
+        match_count = 0
+        for token in tokens:
+            if token.get('id') == 'token1':
+                self.assertTrue("heinz" in token['cell'], resp)
+                match_count += 1
+            elif token.get('id') == 'token2':
+                self.assertTrue("nick" in token['cell'], resp)
+                match_count += 1
+        self.assertTrue(match_count == 2,
+                        "Not all matches found in resp %r" % resp)
 
         # search in all columns
         response = self.app.get(url(controller='manage',
                                     action='tokenview_flexi'),
                                 params={'qtype': 'all',
                                         'query': 'token2'})
-        log.info("token flexi response 4: %r" % response)
         self.assertTrue('"total": 1' in response, response)
-        testbody = response.body.replace('\n', ' ').replace('\r', '').\
-                                                            replace("  ", " ")
-        self.assertTrue('"token2",       true,       "nick"' in testbody,
-                                                                    testbody)
+
+        # analyse the reply for token info
+        resp = json.loads(response.body)
+        tokens = resp.get('result', {}).get('value', {}).get('rows', [])
+
+        match_count = 0
+        for token in tokens:
+            if token.get('id') == 'token2':
+                self.assertTrue("nick" in token['cell'], resp)
+                match_count += 1
+        self.assertTrue(match_count == 1,
+                        "Not all matches found in resp %r" % resp)
+
+        return
 
     def test_userflexi(self):
         '''
@@ -269,7 +303,6 @@ class TestManageController(TestController):
                                         "query": "",
                                         "qtype": "username",
                                         "realm": "realm1"})
-        log.info("user flexi response 2: %r" % response)
         self.assertTrue('"id": "heinz"' in response, response)
 
         response = self.app.get(url(controller='manage',
@@ -281,8 +314,10 @@ class TestManageController(TestController):
                                         "query": "",
                                         "qtype": "username",
                                         "realm": "realm2"})
-        log.info("user flexi response 3: %r" % response)
+
         self.assertTrue('"id": "renate"' in response, response)
+
+        return
 
     def test_tokeninfo(self):
         '''
@@ -299,6 +334,8 @@ class TestManageController(TestController):
                         'class=tokeninfoOuterTable> token1 </td> <!-- right '
                         'column -->' in response, response)
 
+        return
+
     def test_logout(self):
         '''
         Manage: testing logout
@@ -308,3 +345,5 @@ class TestManageController(TestController):
         log.info("logout response: %r" % response)
         self.assertTrue('302 Found The resource was found at' in response,
                         response)
+
+        return
