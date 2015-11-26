@@ -2,6 +2,10 @@
 	ServerAdmin webmaster@localhost
 
     Header always edit Set-Cookie ^(.*)$ $1;secure
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Strict-Transport-Security "max-age=315360000; includeSubDomains"
+    Header always set X-Content-Type-Options "nosniff"
 
 	DocumentRoot /var/www
 	<Directory />
