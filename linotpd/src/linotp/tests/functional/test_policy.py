@@ -1469,8 +1469,38 @@ class TestPolicies(TestController):
 
         self.assertTrue('"value": false' in response, response)
 
+        # now test for this user a second wildcard policy
+        params = {'name': 'authorize_user2',
+                  'scope': 'authorization',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user2',
+                  'action': 'authorize',
+                  'client': '*',
+                  'selftest_admin': 'superadmin'
+                  }
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params=params)
+
+        self.assertTrue('"status": true' in response, response)
+
+        # user2 may login at other clients
+        params = {'user': 'passthru_user2',
+                'pass': 'otppin',
+                'client': '192.168.17.16'}
+
+        response = self.app.get(url(controller='validate', action='check'),
+                                params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
         # delete the policy
         response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user1',
+                                                                                       'selftest_admin' : 'superadmin'
+                                                                                       })
+
+        self.assertTrue('"status": true' in response, response)
+
+        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user2',
                                                                                        'selftest_admin' : 'superadmin'
                                                                                        })
 

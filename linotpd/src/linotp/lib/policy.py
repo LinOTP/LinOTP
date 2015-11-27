@@ -2815,6 +2815,12 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
         clients_array = get_array(policy, attribute="client")
         log.debug("[get_client_policy] the policy %s has these clients: %s. "
                   "checking against %s." % (pol, clients_array, client))
+
+        # accept wildcards for clients
+        if '*' in clients_array:
+            Policies[pol] = policy
+            continue
+
         client_found = False
         client_excluded = False
         for cl in clients_array:
