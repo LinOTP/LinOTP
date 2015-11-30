@@ -1,3 +1,11 @@
+linotp (2.8.0.1-1) jessie; urgency=low
+
+  Enhancements:
+  * Server: Add support for '*' wildcard in policy client definition
+  * Server: Add support to set random pin on token import
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 30 Nov 2015 09:56:09 +0100
+
 linotp (2.8-1) jessie; urgency=low
 
   Enhancements:
