@@ -125,6 +125,10 @@ def get_from_tconfig(key_array, default=None, required=False):
     """
     assert key_array is not None and len(key_array) > 0
     current_config = config
+
+    if not len(current_config):
+        raise Exception("Testconfig is empty. See Readme for details (--tc-file)")
+
     try:
         for key in key_array:
             current_config = current_config[key]
