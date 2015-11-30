@@ -150,3 +150,8 @@ def get_from_tconfig(key_array, default=None, required=False):
         else:
             raise Exception("Testconfig entry %s is required" % '.'.join(key_array))
 
+# Helper for skipping tests if there is no radius server
+def is_radius_disabled():
+    disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
+    return disable_radius.lower() == 'true'
+

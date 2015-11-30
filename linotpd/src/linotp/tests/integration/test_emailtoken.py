@@ -26,9 +26,10 @@
 """LinOTP Selenium Test for e-mail token"""
 
 import time
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 import re
 import mailbox
+import unittest
 from email.utils import parsedate
 
 from linotp_selenium_helper import TestCase
@@ -36,33 +37,34 @@ from linotp_selenium_helper.user_view import UserView
 from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.email_token import EmailToken
 from linotp_selenium_helper.set_config import SetConfig
-from linotp_selenium_helper.helper import get_from_tconfig
+from linotp_selenium_helper.helper import get_from_tconfig, is_radius_disabled
 from linotp_selenium_helper.validate import Validate
 
+import integration_data as data
 
 class TestEmailToken(TestCase):
 
-    def test_enroll(self):
-        """
-        Enroll e-mail token. After enrolling it verifies that the token info contains the
-        correct e-mail. Then a user is authenticated using challenge response over RADIUS
-        and Web API.
-        """
+    def setUp(self):
+        TestCase.setUp(self)
+        self.realm_name = "SE_emailtoken"
+        self.username = "hans"
 
-        email_provider_config = get_from_tconfig(['email_token', 'email_provider_config'])
-        email_recipient = get_from_tconfig(['email_token', 'recipient'], required=True)
-        radius_server = get_from_tconfig(
-            ['radius', 'server'],
-            default=self.http_host.split(':')[0],
-            )
-        radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
-        disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
         self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
 
+        self.set_email_config()
+
+        self.token_view = TokenView(self)
+        self.token_view.delete_all_tokens()
+
+    def set_email_config(self):
+        self.email_provider_config = get_from_tconfig(['email_token', 'email_provider_config'])
+        self.email_recipient = get_from_tconfig(['email_token', 'recipient'], required=True)
+        self.email_token_pin = "1234"
+
         # Set SMTP e-mail config
-        if email_provider_config:
+        if self.email_provider_config:
             parameters = {
-                'EmailProviderConfig': email_provider_config
+                'EmailProviderConfig': self.email_provider_config
             }
             set_config = SetConfig(self.http_protocol, self.http_host, self.http_port,
                                    self.http_username, self.http_password)
@@ -71,59 +73,94 @@ class TestEmailToken(TestCase):
         else:
             print "No email_provider_config in testconfig file. Using LinOTP default."
 
+    def enroll_email_token(self):
+
         # Enroll e-mail token
-        driver.get(self.base_url + "/manage")
+        self.driver.get(self.base_url + "/manage")
         time.sleep(2)
-        user_view = UserView(driver, self.base_url, realm_name)
-        username = "hans"
-        user_view.select_user(username)
-        email_token_pin = "1234"
+        user_view = UserView(self.driver, self.base_url, self.realm_name)
+        user_view.select_user(self.username)
         description = "Rolled out by Selenium"
-        expected_email_address = email_recipient
+        expected_email_address = self.email_recipient
         email_token = EmailToken(driver=self.driver,
                                  base_url=self.base_url,
-                                 pin=email_token_pin,
+                                 pin=self.email_token_pin,
                                  email=expected_email_address,
                                  description=description)
-        token_view = TokenView(self.driver, self.base_url)
-        token_info = token_view.get_token_info(email_token.serial)
+        return email_token
+
+class TestEmailTokenEnroll(TestEmailToken):
+
+    def test_enroll_token(self):
+        """
+        Enroll e-mail token.
+
+        After enrolling it verifies that the token info contains the
+        correct e-mail. 
+        """
+        expected_email_address = self.email_recipient
+        email_token = self.enroll_email_token()
+
+        token_info = self.token_view.get_token_info(email_token.serial)
+        description = "Rolled out by Selenium"
         expected_description = expected_email_address + " " + description
         self.assertEqual(expected_email_address, token_info['LinOtp.TokenInfo']['email_address'],
                          "Wrong e-mail address was set for e-mail token.")
         self.assertEqual(expected_description, token_info['LinOtp.TokenDesc'],
                          "Token description doesn't match")
 
+class TestEmailTokenAuth(TestEmailToken):
+    def setUp(self):
+        TestEmailToken.setUp(self)
+        self.enroll_email_token()
+
+    @unittest.skipIf(is_radius_disabled(), True)
+    def test_radius_auth(self):
+        def radius_auth(username, realm_name, pin, radius_secret, radius_server, state=None):
+            call_array = "python ../../../tools/linotp-auth-radius -f ../../../test.ini".split()
+            call_array.extend(['-u', username + "@" + realm_name,
+                               '-p', pin,
+                               '-s', radius_secret,
+                               '-r', radius_server])
+            if state:
+                call_array.extend('-t', state)
+
+            print "Executing %s" % ' '.join(call_array)
+            try:
+                return check_output(call_array)
+            except CalledProcessError, e:
+                assert e.returncode == 0, \
+                    "radius auth process exit code %s. Command:%s Ouptut:%s" % \
+                        (e.returncode, ' '.join(e.cmd), e.output)
+
+
+        radius_server = get_from_tconfig(
+            ['radius', 'server'],
+            default=self.http_host.split(':')[0],
+            )
+        radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
+
         # Authenticate with RADIUS
-        if disable_radius.lower() == 'true':
-            print "Testconfig option radius.disable is set to True. Skipping RADIUS test!"
-        else:
-            call_array = "linotp-auth-radius -f ../../../test.ini".split()
-            call_array.extend(['-u', username + "@" + realm_name,
-                               '-p', '1234',
-                               '-s', radius_secret,
-                               '-r', radius_server])
-            rad1 = check_output(call_array)
-            m = re.search(r"State:\['(\d+)'\]", rad1)
-            self.assertTrue(m is not None,
-                            "'State' not found in linotp-auth-radius output. %r" % rad1)
-            state = m.group(1)
-            print "State: %s" % state
-            otp = self._get_otp()
-            call_array = "linotp-auth-radius -f ../../../test.ini".split()
-            call_array.extend(['-u', username + "@" + realm_name,
-                               '-p', otp,
-                               '-t', state,
-                               '-s', radius_secret,
-                               '-r', radius_server])
-            rad2 = check_output(call_array)
-            self.assertTrue("Access granted to user " + username in rad2,
-                            "Access not granted to user. %r" % rad2)
+        rad1 = radius_auth(self.username, self.realm_name, self.email_token_pin, radius_secret, radius_server)
+        m = re.search(r"State:\['(\d+)'\]", rad1)
+        self.assertTrue(m is not None,
+                        "'State' not found in linotp-auth-radius output. %r" % rad1)
+        state = m.group(1)
+        print "State: %s" % state
+
+        otp = self._get_otp()
+
+        rad2 = radius_auth(self.username, self.realm_name, otp, radius_secret, radius_server, state)
+        self.assertTrue("Access granted to user " + self.username in rad2,
+                        "Access not granted to user. %r" % rad2)
+
+    def test_web_api_auth(self):
 
         # Authenticate over Web API
         validate = Validate(self.http_protocol, self.http_host, self.http_port, self.http_username,
                             self.http_password)
-        access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
-                                                           password=email_token_pin)
+        access_granted, validate_resp = validate.validate(user=self.username + "@" + self.realm_name,
+                                                           password=self.email_token_pin)
         self.assertFalse(access_granted,
                          "Should return false because this request only triggers the challenge.")
         try:
@@ -134,10 +171,10 @@ class TestEmailToken(TestCase):
                          "e-mail sent successfully",
                          "Wrong validate response %r" % validate_resp)
         otp = self._get_otp()
-        access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
-                                                           password=email_token_pin + otp)
+        access_granted, validate_resp = validate.validate(user=self.username + "@" + self.realm_name,
+                                                           password=self.email_token_pin + otp)
         self.assertTrue(access_granted,
-                        "Could not authenticate user %s %r" % (username, validate_resp))
+                        "Could not authenticate user %s %r" % (self.username, validate_resp))
 
     def _get_otp(self):
         """Internal method to get the OTP, either interactively over the commandline or
@@ -147,18 +184,18 @@ class TestEmailToken(TestCase):
         mbox_filepath = get_from_tconfig(['email_token', 'mbox_filepath'],
                                          default="/var/mail/jenkins")
         otp = None
-        if interactive.lower() == 'true':
-            otp = raw_input("OTP (check your e-mail): ")
-        else:
-            time.sleep(10) # Wait for e-mail to arrive
+
+        def get_mail_delivery_date(key_mail_pair):
+            mail = key_mail_pair[1]
+            date_tuple = parsedate(mail['Date'])
+            return time.mktime(date_tuple)
+        def check_mail():
             mybox = mailbox.mbox(mbox_filepath)
             mybox.lock()
             try:
-                print "Mailbox length: " + str(len(mybox))
-                def get_mail_delivery_date(key_mail_pair):
-                    mail = key_mail_pair[1]
-                    date_tuple = parsedate(mail['Delivery-date'])
-                    return time.mktime(date_tuple)
+                mbox_len = len(mybox)
+                print "Mailbox length: %s" % (mbox_len)
+                self.assertGreater(len(mybox), 0, "Email box must contain at least one message")
                 newest_mail_key, newest_mail = max(mybox.iteritems(), key=get_mail_delivery_date)
                 self.assertTrue(newest_mail is not None, "No e-mail in mbox")
                 payload = newest_mail.get_payload()
@@ -166,10 +203,22 @@ class TestEmailToken(TestCase):
                 self.assertTrue(matches is not None, "No OTP in e-mail message %r" % newest_mail)
                 otp = matches.group(0)
                 mybox.remove(newest_mail_key)
-            except Exception as exc:
-                raise exc
             finally:
                 mybox.close()
                 mybox.unlock()
-        return otp
+            return otp
 
+        if interactive.lower() == 'true':
+            otp = raw_input("OTP (check your e-mail): ")
+        else:
+            wait_count = 10
+            while wait_count:
+                time.sleep(1)  # Wait for e-mail to arrive
+                try:
+                    otp = check_mail()
+                except AssertionError, mailbox.ExternalClashError:
+                    if wait_count == 0:
+                        raise
+                wait_count -= 1
+
+        return otp
