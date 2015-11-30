@@ -26,7 +26,11 @@
 """Contains Validate class to verify OTP values"""
 
 import requests
+import logging
+
 from requests.auth import HTTPDigestAuth
+
+logger = logging.getLogger(__name__)
 
 class Validate:
     """Creates a LinOTP Validate class"""
@@ -56,11 +60,17 @@ class Validate:
         if r.status_code != 200:
             return False
         return_json = r.json()
-        if (return_json is None or
-               'result' not in return_json or
-               'value' not in return_json['result'] or
-               'status' not in return_json['result']):
-            raise Exception("Invalid return value: %r" % return_json)
-        access_granted = return_json['result']['value'] and return_json['result']['status']
+        assert return_json is not None, "Json response may not be empty %s" % return_json
+        assert 'result' in return_json, "Missing result in Json %s" % return_json
+
+        result = return_json['result']
+
+        if not result['status']:
+            logger.debug("Failed validate (user=%s), result: %s" % (user, result))
+            return False, return_json
+
+        logger.debug("validate (user=%s), result: %s" % (user, result))
+        assert 'value' in result, "Missing value in result %s" % (result)
+        access_granted = result['value']
         return access_granted, return_json
 
