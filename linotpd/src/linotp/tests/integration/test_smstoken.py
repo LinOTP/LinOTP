@@ -30,6 +30,7 @@ from subprocess import check_output
 import re
 import mailbox
 from email.utils import parsedate
+import unittest
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.user_view import UserView
@@ -41,6 +42,10 @@ from linotp_selenium_helper.validate import Validate
 
 import integration_data as data
 
+def is_sms_disabled():
+    disable_sms = get_from_tconfig(['sms_token', 'disable'], default='False')
+    return disable_sms.lower() == 'true'
+
 class TestSmsToken(TestCase):
 
     def setUp(self):
@@ -48,6 +53,7 @@ class TestSmsToken(TestCase):
         self.realm_name = "SE_smstoken"
         self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
 
+    @unittest.skipIf(is_sms_disabled(), True)
     def test_enroll(self):
         """
         Enroll sms token. After enrolling it verifies that the token info contains the
