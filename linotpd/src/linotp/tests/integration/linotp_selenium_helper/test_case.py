@@ -42,8 +42,11 @@ class TestCase(unittest.TestCase):
         self.http_password = get_from_tconfig(['linotp', 'password'], required=True)
         self.http_host = get_from_tconfig(['linotp', 'host'], required=True)
         self.http_protocol = get_from_tconfig(['linotp', 'protocol'], default="https")
+        self.http_port = get_from_tconfig(['linotp', 'port'])
         self.base_url = self.http_protocol + "://" + self.http_username + \
             ":" + self.http_password + "@" + self.http_host
+        if self.http_port:
+            self.base_url += ":" + self.http_port
         self.driver = None
         selenium_driver = get_from_tconfig(['selenium', 'driver'],
                                            default="firefox").lower()

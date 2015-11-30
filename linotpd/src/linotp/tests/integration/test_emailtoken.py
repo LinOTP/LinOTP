@@ -85,8 +85,8 @@ class TestEmailToken(TestCase):
             parameters = {
                 'EmailProviderConfig': email_provider_config
             }
-            set_config = SetConfig(self.http_protocol, self.http_host, self.http_username,
-                                   self.http_password)
+            set_config = SetConfig(self.http_protocol, self.http_host, self.http_port,
+                                   self.http_username, self.http_password)
             result = set_config.setConfig(parameters)
             self.assertTrue(result, "It was not possible to set the config")
         else:
@@ -141,7 +141,7 @@ class TestEmailToken(TestCase):
                             "Access not granted to user. %r" % rad2)
 
         # Authenticate over Web API
-        validate = Validate(self.http_protocol, self.http_host, self.http_username,
+        validate = Validate(self.http_protocol, self.http_host, self.http_port, self.http_username,
                             self.http_password)
         access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
                                                            password=email_token_pin)

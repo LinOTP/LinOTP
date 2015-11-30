@@ -31,12 +31,15 @@ from requests.auth import HTTPDigestAuth
 class Validate:
     """Creates a LinOTP Validate class"""
 
-    def __init__(self, http_protocol, http_host, http_username, http_password):
+    def __init__(self, http_protocol, http_host, http_port, http_username, http_password):
         """Initializes the class with the required values to call
            https://.../validate/check
         """
         self.auth = HTTPDigestAuth(http_username, http_password)
-        self.validate_url = http_protocol + "://" + http_host + "/validate/check?"
+        self.validate_url = http_protocol + "://" + http_host
+        if http_port:
+            self.validate_url += ':' + http_port
+        self.validate_url += "/validate/check?"
 
     def validate(self, user, password):
         """Validates 'user' with 'password' (PIN+OTP)

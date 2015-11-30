@@ -137,8 +137,8 @@ class TestSmsToken(TestCase):
                             "Access not granted to user. %r" % rad2)
 
         # Authenticate over Web API
-        validate = Validate(self.http_protocol, self.http_host, self.http_username,
-                            self.http_password)
+        validate = Validate(self.http_protocol, self.http_host, self.http_port,
+                            self.http_username, self.http_password)
         access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
                                             password=sms_token_pin)
         self.assertFalse(access_granted,

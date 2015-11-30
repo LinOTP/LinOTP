@@ -104,9 +104,12 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         """
         Enrolls a Yubikey in YUBICO mode and verifies OTPs against it
         """
+        url = self.http_host
+        if self.http_port:
+            url = '%s:%s' % (self.http_host, self.http_port)
         # Enroll Yubikey
         lotpc = linotpclient(self.http_protocol,
-                             self.http_host,
+                             url,
                              admin=self.http_username,
                              adminpw=self.http_password)
         serialnum = "01382015"
@@ -141,8 +144,8 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("button_setpin_setpin").click()
         time.sleep(1)
 
-        validate = Validate(self.http_protocol, self.http_host, self.http_username,
-                            self.http_password)
+        validate = Validate(self.http_protocol, self.http_host, self.http_port,
+                            self.http_username, self.http_password)
 
         valid_otps = [
             public_uid + "fcniufvgvjturjgvinhebbbertjnihit",
@@ -168,7 +171,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         # validate/check_yubikey
         password = pin + public_uid + "eihtnehtetluntirtirrvblfkttbjuih"
         cy_auth = HTTPDigestAuth(self.http_username, self.http_password)
-        cy_validate_url = self.http_protocol + "://" + self.http_host + "/validate/check_yubikey?"
+        cy_validate_url = self.http_protocol + "://" + url + "/validate/check_yubikey?"
         response = requests.get(cy_validate_url,
                                 params={'pass': password},
                                 auth=cy_auth,

@@ -36,14 +36,17 @@ LOG = logging.getLogger(__name__)
 
 class SetConfig:
 
-    def __init__(self, http_protocol, http_host, http_username, http_password):
+    def __init__(self, http_protocol, http_host, http_port, http_username, http_password):
         """Initializes the class with the required values to call
            https://.../system/setConfig
         """
         self.auth = HTTPDigestAuth(http_username, http_password)
-        self.set_config_url = http_protocol + "://" + http_host + "/system/setConfig?"
-        self.session = get_session(http_protocol + "://" + http_host + "/",
-                                   http_username, http_password)
+        url = http_protocol + "://" + http_host
+        if http_port:
+            url += ':' + http_port
+        url += '/'
+        self.set_config_url = url + "system/setConfig?"
+        self.session = get_session(url, http_username, http_password)
 
     def setConfig(self, parameters):
         """Sets the config with the parameters
