@@ -25,7 +25,6 @@
 #
 """Contains helper functions"""
 
-import time
 import requests
 from requests.auth import HTTPDigestAuth
 import logging
@@ -34,8 +33,7 @@ from urlparse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 LOG = logging.getLogger(__name__)
@@ -47,7 +45,7 @@ def _find_and_wait(driver, by, value):
     for it to appear.
     """
     return WebDriverWait(driver, 10).until(
-        expected_conditions.presence_of_element_located((by, value))
+        EC.presence_of_element_located((by, value))
         )
 
 def find_by_css(driver, selector):
@@ -64,12 +62,25 @@ def find_by_id(driver, id_value):
     """
     return _find_and_wait(driver, By.ID, id_value)
 
+def fill_form_element(driver, element_id, data):
+    """ Clear element and fill with values """
+    e = find_by_id(driver, element_id)
+    e.clear()
+    e.send_keys(data)
+
+def fill_element_from_dict(driver, element_id, name, data_dict):
+    """
+    Verify that we have the named element in dict. Then clear the element
+    and fill with the value in the data dict
+    """
+    assert name in data_dict, 'Data dict needs element %s' % name
+    return fill_form_element(driver, element_id, data_dict[name])
+
 
 def hover(driver, element):
     """Allows the mouse to hover over 'element'"""
     hov = ActionChains(driver).move_to_element(element)
     hov.perform()
-    time.sleep(1)
 
 def select(driver, select_element, option_text):
     """Select an option from a HTML <select> (dropdown)"""
