@@ -226,11 +226,10 @@ class UserserviceController(BaseController):
                 res = check_userservice_session(request, config,
                                                 self.authUser, self.client)
             elif auth_type == 'repoze':
-                res = check_selfservice_session(request.url,
-                                                       request.path,
-                                                       request.cookies,
-                                                       request.params
-                                                       )
+                call_url = "userservice/%s" % action
+                res = check_selfservice_session(url=call_url,
+                                                cookies=request.cookies,
+                                                params=request.params)
             elif auth_type == 'selftest':
                 res = True
             else:

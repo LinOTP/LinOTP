@@ -172,32 +172,27 @@ def check_session():
             abort(401, "You have no valid session!")
             pass
 
-def check_selfservice_session(url, path, cookies, params):
+
+def check_selfservice_session(cookies=None, params=None, url=None):
     '''
     This function checks the session cookie for the
-    selfservcice session
+    selfservice / userservice session
     '''
-    res = True
-    cookie = None
-    session = None
-    log.debug(request.path.lower())
-    # All functions starting with /selfservice/user are data functions and protected
-    # by the session key
-    if path.lower()[:17] != "/selfservice/user":
-        log.info('[check_selfservice_session] nothing to check')
-    else:
-        try:
-            cookie = cookies.get('linotp_selfservice')[0:40]
-            session = params.get('session')[0:40]
-        except Exception as e:
-            log.warning("[check_selfservice_session] failed to check selfservice session: %r" % e)
-            res = False
-        log.info("[check_selfservice_session]: session: %s" % session)
-        log.info("[check_selfservice_session]: cookie:  %s" % cookie)
-        if session is None or session != cookie:
-            log.error("[check_selfservice_session] The request %s did not pass a valid session!" % url)
-            res = False
-    return res
+    cookie = cookies.get('linotp_selfservice')
+    session = params.get('session')
+
+    log.debug("session: %r" % session)
+    log.debug("cookie:  %r" % cookie)
+
+    if not session or not cookie:
+        log.warning("failed to check selfservice session")
+        return False
+
+    if session[:40] != cookie[:40]:
+        log.error("The request %r did not pass a valid session!" % url)
+        return False
+
+    return True
 
 def remove_session_from_param(param):
     '''
