@@ -46,10 +46,11 @@ Remarks:
 
 """
 
-import copy
-import os
-import logging
 import base64
+import copy
+import logging
+
+import os
 
 try:
     import json
@@ -67,11 +68,8 @@ from pylons.controllers.util import abort
 from pylons.templating import render_mako as render
 from mako.exceptions import CompileException
 
-
-from linotp.model.meta import Session
-
 from linotp.lib.base import BaseController
-from linotp.lib.validate import ValidationHandler
+from linotp.auth.validate import ValidationHandler
 
 from linotp.lib.policy import (checkPolicyPre,
                                checkPolicyPost,
@@ -1714,9 +1712,8 @@ class UserserviceController(BaseController):
                                                         tok.LinOtpIdResClass)
             user = User(login=userInfo.get('username'), realm=realm)
 
-            validation_handler = ValidationHandler(self.request_context)
-            (ok, opt) = validation_handler.checkSerialPass(serial, passw,
-                                            user=user,
+            vh= ValidationHandler(self.request_context)
+            (ok, opt) = vh.checkSerialPass(serial, passw, user=user,
                                             options={'transactionid': transid})
 
             failcount = tokens[0].getFailCount()
@@ -1829,9 +1826,9 @@ class UserserviceController(BaseController):
                                        tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                validation_handler = ValidationHandler(self.request_context)
-                (ok, opt) = validation_handler.checkSerialPass(serial, passw,
-                                                user=user, options=param)
+                vh = ValidationHandler(self.request_context)
+                (ok, opt) = vh.checkSerialPass(
+                                        serial, passw, user=user, options=param)
 
                 value['value'] = ok
                 failcount = theToken.getFailCount()

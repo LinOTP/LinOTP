@@ -26,17 +26,15 @@
 """ This file contains the YubiKey token class where the YubiKey is
     run in Yubico Mode"""
 
-import logging
 
-import traceback
 from Crypto.Cipher import AES
-
 import binascii
+import logging
 
 optional = True
 required = False
 
-from linotp.lib.validate import check_pin
+from linotp.auth.validate import check_pin
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.util import modhex_decode

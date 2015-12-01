@@ -28,53 +28,40 @@
 validate controller - to check the authentication request
 """
 
-
-
-
-
 import logging
+
 import webob
-
-from pylons import tmpl_context as c
 from pylons import request, response, config
+from pylons import tmpl_context as c
 from pylons.controllers.util import abort
+
+from linotp.auth.validate import ValidationHandler
 from linotp.lib.base import BaseController
-
-from linotp.lib.util import get_client
-from linotp.lib.util import  getParam
-from linotp.lib.user import  getUserFromParam
-from linotp.lib.realm import  getDefaultRealm
-from linotp.lib.user import  getUserInfo
-from linotp.lib.user import  getUserId
-from linotp.lib.user    import User
-
-from linotp.lib.config  import getFromConfig
-
-from linotp.lib.validate import ValidationHandler
-
-from linotp.lib.token import TokenHandler
-from linotp.lib.token import get_tokenserial_of_transaction
-
-from linotp.lib.reply import sendResult, sendError
-from linotp.lib.reply import sendQRImageResult
-
-from linotp.model.meta import Session
-from linotp.lib.selftest import isSelfTest
-from linotp.lib.policy import check_user_authorization
-from linotp.lib.policy import check_auth_tokentype
-from linotp.lib.policy import check_auth_serial
-from linotp.lib.policy import AuthorizeException
-from linotp.lib.policy import set_realm
-from linotp.lib.policy import is_auth_return
-
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
-
-from linotp.lib.token import getTokens4UserOrSerial
-
+from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
 
-import traceback
+from linotp.lib.policy import AuthorizeException
+from linotp.lib.policy import check_auth_serial
+from linotp.lib.policy import check_auth_tokentype
+from linotp.lib.policy import check_user_authorization
+from linotp.lib.policy import is_auth_return
+from linotp.lib.policy import set_realm
+
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.reply import sendQRImageResult
+from linotp.lib.reply import sendResult, sendError
+from linotp.lib.selftest import isSelfTest
+from linotp.lib.token import getTokens4UserOrSerial
+from linotp.lib.token import get_tokenserial_of_transaction
+
+from linotp.lib.user import User
+from linotp.lib.user import getUserFromParam
+from linotp.lib.user import getUserId
+from linotp.lib.user import getUserInfo
+from linotp.lib.util import getParam
+from linotp.lib.util import get_client
+
+from linotp.model.meta import Session
 
 audit = config.get('audit')
 
@@ -82,9 +69,6 @@ optional = True
 required = False
 
 log = logging.getLogger(__name__)
-
-
-#from paste.debug.profile import profile_decorator
 
 
 class ValidateController(BaseController):
@@ -180,9 +164,10 @@ class ValidateController(BaseController):
 
         if ok:
             # AUTHORIZATION post check
-            check_auth_tokentype(c.audit['serial'], exception=True, user=user,
+            serial = self.request_context.get('audit').get('serial', '')
+            check_auth_tokentype(serial, exception=True, user=user,
                                  context=self.request_context)
-            check_auth_serial(c.audit['serial'], exception=True, user=user,
+            check_auth_serial(serial, exception=True, user=user,
                               context=self.request_context)
 
         # add additional details
@@ -192,10 +177,10 @@ class ValidateController(BaseController):
             if ok:
                 opt['realm'] = c.audit.get('realm')
                 opt['user'] = c.audit.get('user')
-                opt['tokentype'] = c.audit.get('token_type')
-                opt['serial'] = c.audit.get('serial')
+                opt['tokentype'] = self.request_context.get('audit').get('token_type')
+                opt['serial'] = self.request_context.get('audit').get('serial')
             else:
-                opt['error'] = c.audit.get('action_detail')
+                opt['error'] = self.request_context.get('audit').get('action_detail')
 
         return (ok, opt)
 
@@ -325,8 +310,8 @@ class ValidateController(BaseController):
 
             ok = False
             try:
-                th = TokenHandler(context=self.request_context)
-                ok, opt = th.checkYubikeyPass(passw)
+                vh = ValidationHandler(context=self.request_context)
+                ok, opt = vh.checkYubikeyPass(passw)
                 c.audit['success'] = ok
 
             except AuthorizeException as exx:
@@ -504,10 +489,9 @@ class ValidateController(BaseController):
                 userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                validation_handler = ValidationHandler(self.request_context)
-                (ok, opt) = validation_handler.checkSerialPass(serial, passw,
-                                                               user=user,
-                                                               options=param)
+                vh = ValidationHandler(self.request_context)
+                (ok, opt) = vh.checkSerialPass(
+                                        serial, passw, user=user, options=param)
 
                 value['value'] = ok
                 failcount = theToken.getFailCount()
@@ -607,10 +591,8 @@ class ValidateController(BaseController):
                     options['initTime'] = initTime
 
             options['scope'] = {"check_s": True}
-            validation_handler = ValidationHandler(self.request_context)
-            (ok, opt) = validation_handler.checkSerialPass(serial, passw,
-                                                           options=options)
-
+            vh = ValidationHandler(self.request_context)
+            (ok, opt) = vh.checkSerialPass(serial, passw, options=options)
             c.audit['success'] = ok
             Session.commit()
 

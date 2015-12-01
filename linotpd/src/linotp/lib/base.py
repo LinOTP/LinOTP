@@ -262,7 +262,6 @@ class BaseController(WSGIController):
         self.sep = None
         self.set_language(request.headers)
         self.base_auth_user = ''
-        self.context = None
 
         self.parent = super(WSGIController, self)
         self.parent.__init__(*args, **kw)

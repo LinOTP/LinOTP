@@ -29,17 +29,15 @@
 
 import logging
 
-from linotp.lib.util    import getParam
-from linotp.lib.validate import check_pin
+from linotp.lib.tokenclass import TokenClass
+
+from linotp.auth.validate import check_pin
+from linotp.lib.util import getParam
 
 optional = True
 required = False
 
-from linotp.lib.tokenclass import TokenClass
-
 log = logging.getLogger(__name__)
-
-
 
 
 class SpassTokenClass(TokenClass):

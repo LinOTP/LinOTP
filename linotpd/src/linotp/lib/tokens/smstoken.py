@@ -29,7 +29,6 @@
 
 import time
 import datetime
-import traceback
 
 from linotp.lib.HMAC    import HmacOtp
 from linotp.lib.util    import getParam
@@ -37,10 +36,8 @@ from linotp.lib.util    import required
 
 from linotp.lib.user import getUserDetail
 
-from linotp.lib.validate import check_pin
-from linotp.lib.validate import check_otp
-from linotp.lib.validate import split_pin_otp
-#from linotp.lib.validate import get_challenges
+from linotp.auth.validate import check_pin
+from linotp.auth.validate import split_pin_otp
 
 from linotp.lib.config  import getFromConfig
 

@@ -25,7 +25,7 @@
 #
 
 
-'''
+"""
 This file containes the standard token definitions:
 - OCRATokenClass
 
@@ -37,41 +37,31 @@ directive 'linotpTokenModules' in the linotp.ini file.
 
 depends on several modules from linotp.lib but also in case of VascoTokenClass
 on linotp.lib.ImportOTP.vasco
-'''
+"""
 
-import re
 import binascii
-
+import datetime
+import hashlib
 import logging
 import time
-import hashlib
-import datetime
+
+import re
 
 import linotp
-
-
-from linotp.lib.error import TokenAdminError
-from linotp.lib.error import ParameterError
-
-from linotp.lib.util import getParam
-from linotp.lib.util import generate_otpkey
-
-from linotp.lib.config  import getFromConfig
-
-from linotp.lib.user import getUserResolverId
-
+from linotp.lib.challenges import Challenges
+from linotp.lib.config import getFromConfig
+from linotp.lib.crypt import createNonce
 from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import encryptPin
 from linotp.lib.crypt import kdf2
 from linotp.lib.crypt import urandom
-from linotp.lib.crypt import createNonce
-
-from linotp.lib.policy  import get_qrtan_url
-
-from linotp.lib.challenges import Challenges
-
-
-### TODO: move this as ocra specific methods
+from linotp.lib.error import ParameterError
+from linotp.lib.error import TokenAdminError
+from linotp.lib.policy import get_qrtan_url
+from linotp.lib.user import getUserResolverId
+from linotp.lib.util import generate_otpkey
+from linotp.lib.util import getParam
+# TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
 from linotp.lib.util import normalize_activation_code
 
@@ -81,12 +71,11 @@ from linotp.model       import OcraChallenge
 from linotp.model.meta  import Session
 from linotp.lib.reply   import create_img
 
-from linotp.lib.validate import check_pin
-from linotp.lib.validate import check_otp
-from linotp.lib.validate import split_pin_otp
+from linotp.auth.validate import check_pin
+from linotp.auth.validate import check_otp
+from linotp.auth.validate import split_pin_otp
 
-from sqlalchemy         import asc, desc
-#from sqlalchemy.sql.expression import in_
+from sqlalchemy import asc, desc
 
 from pylons.i18n.translation import _
 
@@ -113,7 +102,7 @@ class TokenClass(object):
         ## which could be retrieved in the controllers
         self.info = {}
         self.hKeyRequired = False
-        self.mode = ['authenticate', 'challenge']
+        self.mode = ['auth', 'challenge']
         self.context = context
         # these lists will be returned as result of the token check
         self.challenge_token = []

@@ -23,29 +23,24 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-""" This file contains the e-mail token implementation:
+"""
+This file contains the e-mail token implementation:
               - EmailTokenClass   (HOTP)
 """
+import datetime
 import logging
 import sys
-import datetime
-
-from linotp.lib.tokens.hmactoken import HmacTokenClass
-from linotp.lib.config import getFromConfig
-from linotp.lib.util import getParam
-from linotp.lib.HMAC import HmacOtp
-
-from linotp.lib.user import getUserDetail
-
-from linotp.lib.validate import split_pin_otp
-from linotp.lib.validate import check_pin
-from linotp.lib.validate import check_otp
-from linotp.lib.challenges import Challenges
-
-from linotp.lib.policy import (getPolicy,
-                               getPolicyActionValue)
 
 from pylons.i18n.translation import _
+
+from linotp.auth.validate import split_pin_otp
+from linotp.lib.HMAC import HmacOtp
+from linotp.lib.challenges import Challenges
+from linotp.lib.config import getFromConfig
+from linotp.lib.policy import (getPolicy,
+                               getPolicyActionValue)
+from linotp.lib.tokens.hmactoken import HmacTokenClass
+from linotp.lib.user import getUserDetail
 
 if sys.version_info[0:2] >= (2, 6):
     from json import loads

@@ -27,15 +27,11 @@
 openid controller - This is the controller for the openid service
 """
 
-ASSOC_EXPIRES_IN = 3600
-COOKIE_NAME = "linotp_openid"
-
-
 import logging
-
 import webob
-import traceback
 
+from linotp.lib.base import BaseController
+from linotp.auth.validate import ValidationHandler
 
 from pylons import tmpl_context as c
 from pylons import request, response
@@ -43,24 +39,18 @@ from pylons.controllers.util import redirect
 from pylons import config
 from pylons import url as url
 
-from linotp.lib.base import BaseController
-
-from linotp.lib.util import  getParam
+from linotp.lib.util import getParam
 from linotp.lib.util import get_client
-from linotp.lib.util import  is_valid_fqdn
-from linotp.lib.user import  getUserFromParam
-from linotp.lib.realm import  getDefaultRealm
-from linotp.lib.realm import getRealms
-from linotp.lib.user     import getRealmBox
-from linotp.lib.util    import get_version
-from linotp.lib.util    import get_copyright_info
+from linotp.lib.util import is_valid_fqdn
+from linotp.lib.user import getUserFromParam
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.util import get_version
+from linotp.lib.util import get_copyright_info
 
 from linotp.lib.policy import PolicyException
 from pylons.templating import render_mako as render
 from webob.exc import HTTPBadRequest
 
-
-from linotp.lib.validate import ValidationHandler
 from linotp.lib.reply import sendError
 from linotp.model.meta import Session
 
@@ -72,8 +62,8 @@ from linotp.lib.openid import OPENID_1_0_TYPE
 
 from urllib import urlencode
 
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
+ASSOC_EXPIRES_IN = 3600
+COOKIE_NAME = "linotp_openid"
 
 audit = config.get('audit')
 

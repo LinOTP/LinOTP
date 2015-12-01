@@ -31,37 +31,32 @@ import traceback
 import logging
 from urllib import urlencode
 
-
+import webob
 from pylons import request, response, config, tmpl_context as c
 from linotp.model.meta import Session
 
+from linotp.auth.validate import ValidationHandler
 from linotp.lib.base import BaseController
-from linotp.lib.util  import check_session
-from linotp.lib.util import get_client
-from linotp.lib.error   import ParameterError
-from linotp.lib.validate import ValidationHandler
+from linotp.lib.error import ParameterError
 
-from linotp.lib.util    import getParam, getLowerParams
-from linotp.lib.reply   import sendResult, sendError
-from linotp.lib.reply   import sendQRImageResult
+from linotp.lib.policy import PolicyException
+from linotp.lib.policy import checkPolicyPre
+from linotp.lib.realm import getDefaultRealm
 
-
-from linotp.lib.realm   import getDefaultRealm
-from linotp.lib.user    import getUserFromRequest
-from linotp.lib.user    import getUserInfo
-from linotp.lib.user    import User
-
-from linotp.lib.policy  import checkPolicyPre
-from linotp.lib.policy  import PolicyException
+from linotp.lib.reply import sendQRImageResult
+from linotp.lib.reply import sendResult, sendError
 
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.tokenclass import OcraTokenClass
 
-from linotp.lib.user import  getUserFromParam
-import webob
+from linotp.lib.user import User
+from linotp.lib.user import getUserFromParam
+from linotp.lib.user import getUserFromRequest
+from linotp.lib.user import getUserInfo
 
-from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
+from linotp.lib.util import check_session
+from linotp.lib.util import getParam, getLowerParams
+from linotp.lib.util import get_client
 
 
 audit = config.get('audit')
@@ -340,9 +335,8 @@ class OcraController(BaseController):
                 userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                validation_handler = ValidationHandler(self.request_context)
-                (ok, opt) = validation_handler.checkSerialPass(serial, passw,
-                                            user=user,
+                vh = ValidationHandler(self.request_context)
+                (ok, opt) = vh.checkSerialPass(serial, passw, user=user,
                                             options={'transactionid': transid})
 
                 failcount = theToken.getFailCount()

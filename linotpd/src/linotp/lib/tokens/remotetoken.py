@@ -30,20 +30,22 @@ import copy
 
 import httplib2
 import urllib
+
+from linotp.lib.tokenclass import TokenClass
+
+from linotp.auth.validate import split_pin_otp
+from linotp.auth.validate import check_pin
+from linotp.lib.config import getFromConfig
+from linotp.lib.util import getParam
+
 try:
     import json
 except ImportError:
     import simplejson as json
 
-from linotp.lib.config import getFromConfig
-from linotp.lib.util import getParam
-from linotp.lib.validate import split_pin_otp
-from linotp.lib.validate import check_pin
-
 optional = True
 required = False
 
-from linotp.lib.tokenclass import TokenClass
 
 
 log = logging.getLogger(__name__)
