@@ -4243,6 +4243,10 @@ $(document).ready(function(){
         open: function() {
             translate_set_pin();
             do_dialog_icons();
+        },
+        close: function() {
+            $('#pin1').val('');
+            $('#pin2').val('');
         }
     });
 
