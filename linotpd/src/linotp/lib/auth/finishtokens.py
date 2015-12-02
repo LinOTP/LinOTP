@@ -79,6 +79,13 @@ class FinishTokens(object):
             self.create_audit_entry(detail, self.challenge_tokens)
             return ret, reply
 
+        # if there is no token left, we end up here
+        if not (self.pin_matching_tokens + self.invalid_tokens):
+            # Todo: complete audit entry
+            #self.create_audit_entry(audit_entry=self.audit_entry)
+            #log.info("no valid token found: %r" % self.audit.entry)
+            return False, None
+
         if self.user:
             log.warning("user %r@%r failed to auth."
                         % (self.user.login, self.user.realm))
