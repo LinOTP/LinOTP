@@ -707,6 +707,10 @@ int pam_linotp_get_config(int argc, const char *argv[], LinOTPConfig * config, i
     config->debug = 0;
     config->hide_otp_input = 0;
     config->prompt = strdup(password_prompt);
+    if(!config->prompt) {
+        log_error("strdup of password prompt in pam_linotp_get_config failed");
+        return (PAM_AUTH_ERR);
+    }
     config->tokenlength=0;
     config->ca_file=NULL;
     config->ca_path=NULL;
