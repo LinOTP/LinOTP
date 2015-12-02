@@ -254,17 +254,22 @@ function pre_flexi(data){
     }
 }
 
-function load_flexi(){
-    var new_realm = $('#realm').val();
-    $('#user_table').flexOptions({
-        params: [{
-            name: 'realm',
-            value: new_realm
-        }]
-    });
+function on_submit_flexi(){
+/*
+ * callback, to add in parameters to the flexi grid
+ */
+    var active_realm = $('#realm').val();
+    var params = [
+        {name: 'realm', value: active_realm},
+        {name: 'session', value: getsession()},
+        ];
+
+    $('#user_table').flexOptions({params: params});
+    $('#audit_table').flexOptions({params: params});
+    $('#token_table').flexOptions({params: params});
+    $('#policy_table').flexOptions({params: params});
     return true;
 }
-
 
 function alert_info_text(params) {
 /*
@@ -4879,7 +4884,6 @@ function view_policy() {
     $("#policy_table").flexigrid({
             url : '/system/policies_flexi',
             method: 'POST',
-            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Active'), name : 'active', width : 35, sortable : true},
@@ -4905,6 +4909,7 @@ function view_policy() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
+            onSubmit: on_submit_flexi,
             addTitleToCell: true,
             dblClickResize: true,
             searchbutton: true
@@ -4995,7 +5000,6 @@ function view_token() {
         $("#token_table").flexigrid({
             url : '/manage/tokenview_flexi',
             method: 'POST',
-            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Serial Number'), name : 'TokenSerialnumber', width : 100, sortable : true, align: 'center'},
@@ -5027,6 +5031,7 @@ function view_token() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
+            onSubmit: on_submit_flexi,
             onSuccess: show_selected_status,
             addTitleToCell: true,
             dblClickResize: true,
@@ -5042,7 +5047,6 @@ function view_user() {
         $("#user_table").flexigrid({
             url : '/manage/userview_flexi',
             method: 'POST',
-            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Username'), name : 'username', width : 90, sortable : true, align:"left"},
@@ -5075,7 +5079,7 @@ function view_user() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
-            onSubmit: load_flexi,
+            onSubmit: on_submit_flexi,
             onSuccess: show_selected_status,
             addTitleToCell: true,
             dblClickResize: true,
@@ -5091,7 +5095,6 @@ function view_audit() {
        $("#audit_table").flexigrid({
             url : '/audit/search',
             method: 'POST',
-            params: [{name:'session', value: getsession()}],
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Number'), name : 'number', width : 50, sortable : true},
@@ -5138,7 +5141,7 @@ function view_audit() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
-            onSubmit: load_flexi,
+            onSubmit: on_submit_flexi,
             addTitleToCell: true,
             searchbutton: true
     });
