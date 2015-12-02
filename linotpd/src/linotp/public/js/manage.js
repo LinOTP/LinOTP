@@ -166,9 +166,9 @@ jQuery.validator.addMethod("ldap_uidtype", function(value,element,param){
 );
 
 jQuery.validator.addMethod("sql_driver", function(value, element, param){
-    return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(ibm_db_sa\+pyodbc)/);
+    return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(ibm_db_sa\+pyodbc)|(ibm_db_sa)/);
     },
-    i18n.gettext("Please enter a valid driver specification like: mysql, postgres, mssql, oracle or ibm_db_sa+pyodbc")
+    i18n.gettext("Please enter a valid driver specification like: mysql, postgres, mssql, oracle, ibm_db_sa or ibm_db_sa+pyodbc")
 );
 
 jQuery.validator.addMethod("sql_mapping", function(value, element, param){
