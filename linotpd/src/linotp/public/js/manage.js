@@ -2803,24 +2803,25 @@ function tokenbuttons(){
              * We can only handle one selected token (token == 1).
              */
             var tokens = get_selected_tokens();
-            if (tokens.length == 1 ){
-                var token_string = tokens[0];
-                var user_info = get_token_owner(tokens[0]);
-                if ('email' in user_info && "" != user_info['email']) {
-                    $("#dialog_lost_token select option[value=email_token]").
-                        removeAttr('disabled');
-                } else {
-                // ToDo: if no email is given, let the user insert one.
-                    $("#dialog_lost_token select option[value=email_token]").
-                        attr('disabled','disabled');
-                }
-                if ('mobile' in user_info && "" != user_info['mobile']) {
-                    $("#dialog_lost_token select option[value=sms_token]").
-                        removeAttr('disabled');
-                } else {
-                //ToDo: if no mobil entry is given, let the user insert one.
-                    $("#dialog_lost_token select option[value=sms_token]").
-                        attr('disabled','disabled');
+            if (tokens.length == 1){
+                $("#dialog_lost_token select option[value=email_token]").
+                    attr('disabled','disabled');
+                $("#dialog_lost_token select option[value=sms_token]").
+                    attr('disabled','disabled');
+
+                // as the spass token has only a password, it could only be
+                // replaced by a pw token
+                if (get_token_type() != 'spass') {
+                    var token_string = tokens[0];
+                    var user_info = get_token_owner(tokens[0]);
+                    if ('email' in user_info && "" != user_info['email']) {
+                        $("#dialog_lost_token select option[value=email_token]").
+                            removeAttr('disabled');
+                    }
+                    if ('mobile' in user_info && "" != user_info['mobile']) {
+                        $("#dialog_lost_token select option[value=sms_token]").
+                            removeAttr('disabled');
+                    }
                 }
                 $("#dialog_lost_token select option[value=select_token]").
                     attr('selected',true);
