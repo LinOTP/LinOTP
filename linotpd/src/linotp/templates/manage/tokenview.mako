@@ -25,12 +25,14 @@
  *    Support: www.lsexperts.de
  *
 -->
- <button class='ui-button' id='button_losttoken'>${_("Lost Token")}</button>
- <button class='ui-button' id='button_tokeninfo'>${_("Token Info")}</button>
- <button class='ui-button' id='button_resync'>${_("Resync Token")}</button>
- <button class='ui-button' id='button_tokenrealm'>${_("Set Token Realm")}</button>
- <button class='ui-button' id='button_getmulti'>${_("Get OTP")}</button>
- 
+<button class='ui-button' id='button_losttoken'>${_("Lost Token")}</button>
+<button class='ui-button' id='button_tokeninfo'>${_("Token Info")}</button>
+<button class='ui-button' id='button_resync'>${_("Resync Token")}</button>
+<button class='ui-button' id='button_tokenrealm'>${_("Set Token Realm")}</button>
+% if c.getotp_active:
+<button class='ui-button' id='button_getmulti'>${_("Get OTP")}</button>
+% endif
+
 <table id="token_table" class="flexme2" style="display:none"></table>
    
 <script type="text/javascript"> 

@@ -274,6 +274,7 @@ class ManageController(BaseController):
         '''
         c.title = "LinOTP Management"
         c.tokenArray = []
+        c.getotp_active = config.get("linotpGetotp.active", "False") == "True"
         return render('/manage/tokenview.mako')
 
 
