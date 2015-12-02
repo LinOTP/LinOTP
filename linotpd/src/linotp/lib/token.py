@@ -2020,7 +2020,7 @@ def checkTokenList(tokenList, passw, user=User(), options=None, context=None):
 
         try:
             # are there outstanding challenges
-            challenges = token.get_token_challenges(options)
+            challenges = token.get_token_challenges(check_options)
             (ret, reply) = token.check_token(passw, user, options=check_options,
                                              challenges=challenges)
         except Exception as exx:
