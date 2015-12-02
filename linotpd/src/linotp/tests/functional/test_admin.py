@@ -80,6 +80,16 @@ class TestAdminController(TestController):
         self.assertTrue('"value": true' in response, response)
         return serial
 
+    def createSPASS(self, serial="LSSP0001", pin="1test@pin!42"):
+        parameters = {
+                      "serial" : serial,
+                      "type"   : "spass",
+                      "pin"    : pin
+                      }
+        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        self.assertTrue('"value": true' in response, response)
+        return serial
+
     def createToken(self):
         parameters = {
                       "serial"  : "F722362",
@@ -559,6 +569,90 @@ class TestAdminController(TestController):
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
+        return
+
+    def test_losttoken_spass(self):
+        """
+        test for losttoken callback - to register replacement for lost spass
+
+        test with user hans, who has a spass
+        - is the old one deactivated
+        - is the new one active
+        - is the new one of type 'pw'
+        - does the new password work
+
+        remark:
+            other losttoken tests depend on policy definition and are
+            part of the test_policy.py
+
+        """
+        token_name = "verloren"
+        spass_pin  = "initial_pin"
+
+        new_serial = self.createSPASS(serial=token_name, pin=spass_pin)
+        self.assertTrue(token_name == new_serial)
+
+        parameters = {"serial": token_name, "user": "hans"}
+        response = self.app.get(url(controller="admin", action="assign"),
+                                params=parameters)
+        self.assertTrue('"value": true' in response, response)
+
+        # check if this spass validates
+        response = self.app.get(url(controller='validate', action='check_s'),
+                                params={'serial': token_name,
+                                        'pass': spass_pin})
+        self.assertTrue('"value": true' in response, response)
+
+        parameters = {"serial": token_name, 'type': "spass"}
+        response = self.app.get(url(controller="admin", action="losttoken"),
+                                params=parameters)
+        self.assertTrue('"status": true' in response, response)
+
+        resp = json.loads(response.body)
+        temp_token_name = resp.get('result', {}).get('value', {}).get('serial')
+        temp_token_pass = resp.get('result', {}).get('value', {}).get('password')
+
+        # first check if old token is not active
+        parameters = {"serial": token_name}
+        response = self.app.get(url(controller="admin", action="show"),
+                                params=parameters)
+        self.assertTrue('"status": true' in response, response)
+        resp = json.loads(response.body)
+        data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
+        active = data.get("LinOtp.Isactive", True)
+        self.assertFalse(active, response)
+        user = data.get("User.username", '')
+        self.assertEqual(user, 'hans', response)
+
+        # second check if new token is active and properly assigned
+        parameters = {"serial": temp_token_name}
+        response = self.app.get(url(controller="admin", action="show"),
+                                params=parameters)
+        self.assertTrue('"status": true' in response, response)
+        resp = json.loads(response.body)
+        data = resp.get("result", {}).get('value', {}).get('data', [{}])[0]
+        active = data.get("LinOtp.Isactive", False)
+        self.assertTrue(active, response)
+
+        user = data.get("User.username", '')
+        self.assertEqual(user, 'hans', response)
+
+        ttype = data.get("LinOtp.TokenType", '')
+        self.assertEqual(ttype, 'pw', response)
+
+        # finally, check if old spass is blocked and new one works without previous pin
+        response = self.app.get(url(controller='validate', action='check_s'),
+                                params={'serial': token_name,
+                                        'pass': spass_pin})
+        self.assertTrue('"value": false' in response, response)
+        response = self.app.get(url(controller='validate', action='check_s'),
+                                params={'serial': temp_token_name,
+                                        'pass': temp_token_pass})
+        self.assertTrue('"value": true' in response, response)
+
+        # all fine, clean up
+        self.delete_token(token_name)
+        self.delete_token(temp_token_name)
         return
 
     def test_enroll_umlaut(self):
