@@ -127,7 +127,7 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # linotpGetotp.active
-    getotp = global_conf.get('linotpGetotp.active', 'True') == 'True'
+    getotp = global_conf.get('linotpGetotp.active', 'False') == 'True'
     if getotp and not migrate:
         for cont in ['gettoken']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
