@@ -50,6 +50,7 @@ linotpAudit.sql.highwatermark = 10000
 linotpAudit.sql.lowwatermark = 5000
 
 linotpGetotp.active = False
+linotp.enableReplication = False
 
 linotp.DefaultSyncWindow = 1000
 linotp.DefaultOtpLen = 6

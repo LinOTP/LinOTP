@@ -119,6 +119,7 @@ linotp.DefaultResetFailCount = True
 linotp.splitAtSign = True
 
 linotpGetotp.active = False
+linotp.enableReplication = False
 
 ## Encrytion key:
 ## --------------
