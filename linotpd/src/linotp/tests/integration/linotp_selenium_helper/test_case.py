@@ -36,6 +36,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 
 from helper import get_from_tconfig
+from realm import RealmManager
+from user_id_resolver import UserIdResolverManager
 
 
 class TestCase(unittest.TestCase):
@@ -112,6 +114,27 @@ class TestCase(unittest.TestCase):
         self.enableImplicitWait()
 
         return elements  # Return elements without the parent
+
+    def reset_resolvers_and_realms(self, resolver=None, realm=None):
+        """
+        Clear resolvers and realms. Then optionally create a userIdResolver with
+        given data and add it to a realm of given name.
+        """
+        self.realm_manager = RealmManager(self)
+        self.realm_manager.clear_realms()
+
+        self.useridresolver_manager = UserIdResolverManager(self)
+        self.useridresolver_manager.clear_resolvers()
+
+        if resolver:
+            self.useridresolver_manager.create_resolver(resolver)
+
+            if realm:
+                self.realm_manager.open()
+                self.realm_manager.create(realm, resolver['name'])
+                self.realm_manager.close()
+        else:
+            assert not realm, "Can't create a realm without a resolver"
 
     def close_alert_and_get_its_text(self):
         try:

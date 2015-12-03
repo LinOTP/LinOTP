@@ -31,11 +31,12 @@ import requests
 from requests.auth import HTTPDigestAuth
 
 from linotpadminclientcli.clientutils import linotpclient
-from linotp_selenium_helper import TestCase, LdapUserIdResolver, Realm
+from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.user_view import UserView
 from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.validate import Validate
 
+import integration_data as data
 
 class TestYubikey(TestCase):
     """
@@ -48,57 +49,15 @@ class TestYubikey(TestCase):
         want to test with exists.
         """
         TestCase.setUp(self)
+
         self.realm_name = "se_yubikey_realm"
         self.user_name = "maxwell"
 
-        ad_certificate = \
-"""-----BEGIN CERTIFICATE-----
-MIIDcjCCAtugAwIBAgIQVSU6NwMTmKNI6t3WcjY6uTANBgkqhkiG9w0BAQUFADBC
-MRUwEwYKCZImiZPyLGQBGRYFbG9jYWwxGTAXBgoJkiaJk/IsZAEZFglsc2V4cGVy
-dHMxDjAMBgNVBAMTBUNBMDAxMB4XDTA1MDQxMTE2NDgzOVoXDTQwMDQxMTE2NTY1
-MFowQjEVMBMGCgmSJomT8ixkARkWBWxvY2FsMRkwFwYKCZImiZPyLGQBGRYJbHNl
-eHBlcnRzMQ4wDAYDVQQDEwVDQTAwMTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkC
-gYEAqlWLfYK+dExjG+Qa/jpYjSo3EQnweQ7azacosa+xsrTMfDV5wLgMBSclCTX2
-i/35VRg282Bh7hKCZifOBnAxjCBIHMpHQmW9c0T/GpeWSOQ1x0KeKrZ4PRj5oHEv
-/uDJ7q2HlWXgRQo6NR75yDGLpsAWk64TyQ/I4f2vlC+AtjMCAyPS46OCAWcwggFj
-MBMGCSsGAQQBgjcUAgQGHgQAQwBBMAsGA1UdDwQEAwIBhjAPBgNVHRMBAf8EBTAD
-AQH/MB0GA1UdDgQWBBTCY8rVNcU/NGvgZxaPmO+Kz8bG4TCB/AYDVR0fBIH0MIHx
-MIHuoIHroIHohoGwbGRhcDovLy9DTj1DQTAwMSxDTj1sc2V4czAxLENOPUNEUCxD
-Tj1QdWJsaWMlMjBLZXklMjBTZXJ2aWNlcyxDTj1TZXJ2aWNlcyxDTj1Db25maWd1
-cmF0aW9uLERDPWxzZXhwZXJ0cyxEQz1sb2NhbD9jZXJ0aWZpY2F0ZVJldm9jYXRp
-b25MaXN0P2Jhc2U/b2JqZWN0Q2xhc3M9Y1JMRGlzdHJpYnV0aW9uUG9pbnSGM2h0
-dHA6Ly9sc2V4czAxLmxzZXhwZXJ0cy5sb2NhbC9DZXJ0RW5yb2xsL0NBMDAxLmNy
-bDAQBgkrBgEEAYI3FQEEAwIBADANBgkqhkiG9w0BAQUFAAOBgQBa+RGoezCgJS5W
-PFCPy9BWqZr7iRimfRGBDqHpYDCPDtgec2fKCZ+u4jfwuTisZ7UOoiM1iEvkw0hH
-Z7R1pz4Yd6E074kS/fe6u7U+9L3dmSUjFvO3gkLKtHKbhQi0NA+EHMRrPsQQemLm
-gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
------END CERTIFICATE-----"""
-
-        # Create physics AD
-        physics_ad_name = "SE_yubikey_AD"
-        physics_ad_id_resolver = LdapUserIdResolver(
-            physics_ad_name,
-            self.driver,
-            self.base_url,
-            uri="ldaps://hottybotty",
-            certificate=ad_certificate,
-            basedn="dc=hotad,dc=example,dc=net",
-            binddn=u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
-            password="Test123!",
-            preset_ldap=False
-        )
-        time.sleep(1)
-
-        # Create realm
-        resolvers_realm1 = [physics_ad_id_resolver]
-        realm1 = Realm(self.realm_name, resolvers_realm1)
-        realm1.create(self.driver, self.base_url)
-        time.sleep(1)
+        self.reset_resolvers_and_realms(data.physics_ldap_resolver, self.realm_name)
 
         user_view = UserView(self.driver, self.base_url, self.realm_name)
         self.assertTrue(user_view.user_exists(self.user_name), "User '" + self.user_name +
                                                                "' should exist.")
-        time.sleep(1)
 
     def test_yubico_mode(self):
         """

@@ -31,7 +31,7 @@ import re
 import mailbox
 from email.utils import parsedate
 
-from linotp_selenium_helper import TestCase, PasswdUserIdResolver, Realm
+from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.user_view import UserView
 from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.sms_token import SmsToken
@@ -39,8 +39,14 @@ from linotp_selenium_helper.set_config import SetConfig
 from linotp_selenium_helper.helper import get_from_tconfig
 from linotp_selenium_helper.validate import Validate
 
+import integration_data as data
 
 class TestSmsToken(TestCase):
+
+    def setUp(self):
+        TestCase.setUp(self)
+        self.realm_name = "SE_smstoken"
+        self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
 
     def test_enroll(self):
         """
@@ -48,6 +54,8 @@ class TestSmsToken(TestCase):
         correct sms. Then a user is authenticated using challenge response over RADIUS
         and Web API.
         """
+        driver = self.driver
+        realm_name = self.realm_name
 
         sms_provider_config = get_from_tconfig(['sms_token', 'sms_provider_config'])
         radius_server = get_from_tconfig(
@@ -57,27 +65,6 @@ class TestSmsToken(TestCase):
         radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
         disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
 
-        driver = self.driver
-
-        # Create Passwd UserIdResolver
-        #
-        # Expected content of /etc/se_mypasswd is:
-        #
-        # hans:x:42:0:Hans Müller,Room 22,+49(0)1234-22,+49(0)5678-22,hans@example.com:x:x
-        # susi:x:1336:0:Susanne Bauer,Room 23,+49(0)1234-24,+49(0)5678-23,susanne@example.com:x:x
-        # rollo:x:21:0:Rollobert Fischer,Room 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
-        #
-        passwd_name = "SE_myPasswd"
-        passwd_id_resolver = PasswdUserIdResolver(passwd_name, driver,
-                                                  self.base_url, filename="/etc/se_mypasswd")
-        time.sleep(1)
-
-        # Create realm for all resolvers
-        resolvers_realm = [passwd_id_resolver]
-        realm_name = "SE_smstoken"
-        realm = Realm(realm_name, resolvers_realm)
-        realm.create(driver, self.base_url)
-        time.sleep(1)
 
         # Set SMTP sms config
         if sms_provider_config:

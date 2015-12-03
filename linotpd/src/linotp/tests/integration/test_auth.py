@@ -27,15 +27,21 @@
 
 import time
 
-from linotp_selenium_helper import TestCase, PasswdUserIdResolver, Realm
+from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.hotp_token import HotpToken
 from linotp_selenium_helper.user_view import UserView
 
+import integration_data as data
 
 class TestAuth(TestCase):
     """
     TestCase class that tests the auth/index forms
     """
+
+    def setUp(self):
+        TestCase.setUp(self)
+        self.realm_name = "se_test_auth"
+        self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
 
     def test_auth_index(self):
         """
@@ -43,31 +49,11 @@ class TestAuth(TestCase):
         """
         driver = self.driver
 
-        # Create Passwd UserIdResolver
-        #
-        # Expected content of /etc/se_mypasswd is:
-        #
-        # hans:x:42:0:Hans Müller,Room 22,+49(0)1234-22,+49(0)5678-22,hans@example.com:x:x
-        # susi:x:1336:0:Susanne Bauer,Room 23,+49(0)1234-24,+49(0)5678-23,susanne@example.com:x:x
-        # rollo:x:21:0:Rollobert Fischer,Room 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
-        #
-        passwd_name = "SE_myPasswd"
-        passwd_id_resolver = PasswdUserIdResolver(passwd_name, driver,
-                                                  self.base_url, filename="/etc/se_mypasswd")
-        time.sleep(1)
-
-        # Create realm for all resolvers
-        resolvers_realm = [passwd_id_resolver]
-        realm_name = "se_test_auth"
-        realm = Realm(realm_name, resolvers_realm)
-        realm.create(driver, self.base_url)
-        time.sleep(1)
-
         # Enroll HOTP token
         # Seed and OTP values: https://tools.ietf.org/html/rfc4226#appendix-D
         driver.get(self.base_url + "/manage")
         time.sleep(2)
-        user_view = UserView(driver, self.base_url, realm_name)
+        user_view = UserView(driver, self.base_url, self.realm_name)
         username = "susi"
         user_view.select_user(username)
         pin = "myauthpin"

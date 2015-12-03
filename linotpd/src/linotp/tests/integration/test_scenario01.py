@@ -28,9 +28,9 @@
 import time
 import re
 import binascii
+import logging
 
-from linotp_selenium_helper import TestCase, Policy, LdapUserIdResolver, \
-    Realm, SqlUserIdResolver
+from linotp_selenium_helper import TestCase, Policy
 from linotp_selenium_helper.user_view import UserView
 from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.token_import import TokenImport
@@ -40,6 +40,9 @@ from linotp_selenium_helper.spass_token import SpassToken
 
 from linotp.lib.HMAC import HmacOtp
 
+import integration_data as data
+
+LOGGER = logging.getLogger(__name__)
 
 def calculate_motp(epoch, key, pin, digits=6):
     """
@@ -61,85 +64,36 @@ class TestScenario01(TestCase):
        https://wally/projects/linotp/wiki/TestingTest_Szenario_01
     """
 
+    def _announce_test(self, testname):
+        LOGGER.info("### %s ###" % testname)
     def test_scenario01(self):
         """Tests Scenario 01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)"""
 
         driver = self.driver
 
-        ### 1. UserIdResolver anlegen ###
-        CA001_cert = \
-"""-----BEGIN CERTIFICATE-----
-MIIDcjCCAtugAwIBAgIQVSU6NwMTmKNI6t3WcjY6uTANBgkqhkiG9w0BAQUFADBC
-MRUwEwYKCZImiZPyLGQBGRYFbG9jYWwxGTAXBgoJkiaJk/IsZAEZFglsc2V4cGVy
-dHMxDjAMBgNVBAMTBUNBMDAxMB4XDTA1MDQxMTE2NDgzOVoXDTQwMDQxMTE2NTY1
-MFowQjEVMBMGCgmSJomT8ixkARkWBWxvY2FsMRkwFwYKCZImiZPyLGQBGRYJbHNl
-eHBlcnRzMQ4wDAYDVQQDEwVDQTAwMTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkC
-gYEAqlWLfYK+dExjG+Qa/jpYjSo3EQnweQ7azacosa+xsrTMfDV5wLgMBSclCTX2
-i/35VRg282Bh7hKCZifOBnAxjCBIHMpHQmW9c0T/GpeWSOQ1x0KeKrZ4PRj5oHEv
-/uDJ7q2HlWXgRQo6NR75yDGLpsAWk64TyQ/I4f2vlC+AtjMCAyPS46OCAWcwggFj
-MBMGCSsGAQQBgjcUAgQGHgQAQwBBMAsGA1UdDwQEAwIBhjAPBgNVHRMBAf8EBTAD
-AQH/MB0GA1UdDgQWBBTCY8rVNcU/NGvgZxaPmO+Kz8bG4TCB/AYDVR0fBIH0MIHx
-MIHuoIHroIHohoGwbGRhcDovLy9DTj1DQTAwMSxDTj1sc2V4czAxLENOPUNEUCxD
-Tj1QdWJsaWMlMjBLZXklMjBTZXJ2aWNlcyxDTj1TZXJ2aWNlcyxDTj1Db25maWd1
-cmF0aW9uLERDPWxzZXhwZXJ0cyxEQz1sb2NhbD9jZXJ0aWZpY2F0ZVJldm9jYXRp
-b25MaXN0P2Jhc2U/b2JqZWN0Q2xhc3M9Y1JMRGlzdHJpYnV0aW9uUG9pbnSGM2h0
-dHA6Ly9sc2V4czAxLmxzZXhwZXJ0cy5sb2NhbC9DZXJ0RW5yb2xsL0NBMDAxLmNy
-bDAQBgkrBgEEAYI3FQEEAwIBADANBgkqhkiG9w0BAQUFAAOBgQBa+RGoezCgJS5W
-PFCPy9BWqZr7iRimfRGBDqHpYDCPDtgec2fKCZ+u4jfwuTisZ7UOoiM1iEvkw0hH
-Z7R1pz4Yd6E074kS/fe6u7U+9L3dmSUjFvO3gkLKtHKbhQi0NA+EHMRrPsQQemLm
-gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
------END CERTIFICATE-----"""
+        self.reset_resolvers_and_realms()
 
+        self._announce_test("1. UserIdResolver anlegen")
         # Create LDAP UserIdResolver
-        ldap_name = "SE_scenario01_ldap"
+        ldap_data = data.musicians_ldap_resolver
         ldap_expected_users = ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', u'dvořák',
                                'haydn', 'mozart', u'حافظ', u'郎']
         ldap_num_expected_users = len(ldap_expected_users)
-        ldap_id_resolver = LdapUserIdResolver(
-            ldap_name,
-            driver,
-            self.base_url,
-            uri="ldaps://blackdog",
-            certificate=CA001_cert,
-            basedn="ou=people,dc=blackdog,dc=office,dc=lsexperts,dc=de",
-            # You may also use cn="Wolfgang Amadeus Mozart"
-            binddn=u'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=office,dc=lsexperts,dc=de',
-            password="Test123!",
-            preset_ldap=True
-        )
-        time.sleep(1)
+        ldap_resolver = self.useridresolver_manager.create_resolver(ldap_data)
 
         # Create SQL UserIdResolver
-        sql_name = "SE_scenario01_sql"
-        sql_server = "blackdog"
-        sql_database = "userdb"
-        sql_user = "resolver_user"
-        sql_password = "Test123!"
-        sql_table = "user"
-        sql_limit = "500"
-        sql_encoding = "latin1"
+        sql_data = data.sql_resolver
+        sql_resolver = self.useridresolver_manager.create_resolver(sql_data)
         sql_expected_users = ["corny", "kay", "eric", u"knöt"]
         sql_num_expected_users = len(sql_expected_users)
-        sql_id_resolver = SqlUserIdResolver(sql_name, driver, self.base_url,
-                                            sql_server, sql_database,
-                                            sql_user, sql_password, sql_table,
-                                            sql_limit, sql_encoding)
-        time.sleep(1)
 
         # Create realm for all resolvers
-        resolvers_realm1 = [ldap_id_resolver]
         realm_name1 = "SE_scenario01_realm1"
-        realm1 = Realm(realm_name1, resolvers_realm1)
-        realm1.create(driver, self.base_url)
-        time.sleep(1)
-
-        resolvers_realm2 = [sql_id_resolver]
         realm_name2 = "SE_scenario01_realm2"
-        realm2 = Realm(realm_name2, resolvers_realm2)
-        realm2.create(driver, self.base_url)
-        time.sleep(1)
+        self.realm_manager.create(realm_name1, [ldap_resolver])
+        self.realm_manager.create(realm_name2, [sql_resolver])
 
-        ### 2. Im Management Webinterface testen, dass alle Benutzer sichtbar sind ###
+        self._announce_test("2. In Management Webinterface, check that all users are visible")
 
         user_view = UserView(driver, self.base_url, realm_name1)
         self.assertEqual(ldap_num_expected_users, user_view.get_num_users(),
@@ -147,7 +101,6 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         for user in ldap_expected_users:
             self.assertTrue(user_view.user_exists(user), "User '" + user +
                             "' should exist.")
-        time.sleep(1)
 
         user_view = UserView(driver, self.base_url, realm_name2)
         self.assertEqual(sql_num_expected_users, user_view.get_num_users(),
@@ -156,7 +109,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
             self.assertTrue(user_view.user_exists(user), "User '" + user +
                             "' should exist.")
 
-        ### 3. eToken.xml ueber das Webinterface importieren  ###
+        self._announce_test("3. eToken.xml ueber das Webinterface importieren")
 
         seed_oath137332 = "ff06df50017d3b981cfbc4ec4d374040164d8d19"
         seed_oath137332_bin = binascii.unhexlify(seed_oath137332)
@@ -216,13 +169,13 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         serial_token_bach = "oath137332"
         test1_realm = realm_name1.lower()
 
-        ### 4. Im Management Webinterface nun eine Policy anlegen ###
+        self._announce_test("4. Im Management Webinterface nun eine Policy anlegen")
 
         Policy(driver, self.base_url, "SE_scenario01", "selfservice",
                "enrollMOTP, setOTPPIN, setMOTPPIN, resync, disable ",
                test1_realm)
 
-        ### 5. eToken zuweisen ###
+        self._announce_test("5. eToken zuweisen")
 
         user_view = UserView(driver, self.base_url, test1_realm)
         user_view.select_user("bach")
@@ -237,7 +190,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("button_setpin_setpin").click()
         time.sleep(1)
 
-        ### 6. Remote Token zuweisen ###
+        self._announce_test("6. Remote Token zuweisen")
 
         user_view = UserView(driver, self.base_url, test1_realm)
         user_view.select_user("debussy")
@@ -250,9 +203,8 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                                    )
         serial_token_debussy = remote_token.serial
         remote_token_otp = "666666"
-        time.sleep(1)
 
-        ### 7. Spass-Token zuweisen ###
+        self._announce_test("7. Spass-Token zuweisen")
 
         user_view = UserView(driver, self.base_url, test1_realm)
         user_view.select_user("beethoven")
@@ -263,9 +215,8 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
             description="SPass Token enrolled with Selenium"
             )
         serial_token_beethoven = spass_token.serial
-        time.sleep(1)
 
-        ### 8. Selfservice mOTP ###
+        self._announce_test("8. Selfservice mOTP")
 
         motp_key = "1234123412341234"
         motp_pin = "1234"
@@ -275,7 +226,6 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("password").clear()
         driver.find_element_by_id("password").send_keys("Test123!")
         driver.find_element_by_id("password").submit() # Submits the form
-        time.sleep(1)
         driver.find_element_by_id("motp_secret").clear()
         driver.find_element_by_id("motp_secret").send_keys(motp_key)
         driver.find_element_by_id("motp_s_pin1").clear()
@@ -285,7 +235,6 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("motp_self_desc").clear()
         driver.find_element_by_id("motp_self_desc").send_keys("Selenium self enrolled")
         driver.find_element_by_id("button_register_motp").click()
-        time.sleep(1)
         alert_box_text = driver.find_element_by_id("alert_box_text").text
         m = re.match(
             r"""
@@ -307,7 +256,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         self.driver.find_element_by_xpath("//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]").click()
         driver.find_element_by_link_text("Logout").click()
 
-        ### 9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN
+        self._announce_test("9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN")
 
         user_token_dict = {
             "bach": serial_token_bach,
@@ -335,7 +284,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
             self.assertEqual("PIN set successfully", self.close_alert_and_get_its_text())
             driver.find_element_by_link_text("Logout").click()
 
-        ### 10. Authentisierung der 4 Benutzer ###
+        self._announce_test("10. Authentisierung der 4 Benutzer ###")
         validate = Validate(self.http_protocol,
                             self.http_host,
                             self.http_port,
@@ -392,7 +341,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                                             password="mozartnewpin" + motp_otp)
         self.assertFalse(access_granted, "OTP: mozartnewpin%s should be False for user mozart" % motp_otp)
 
-        ### 11. mOTP Pin im selfservice ändern ###
+        self._announce_test("11. mOTP Pin im selfservice ändern")
 
         driver.get(self.base_url + "/account/login")
         driver.find_element_by_id("login").clear()
@@ -401,7 +350,6 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("password").send_keys("Test123!")
         driver.find_element_by_id("password").submit()
         driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='set mOTP PIN']").click()
-        time.sleep(1)
         driver.find_element_by_id('tokenDiv').find_element_by_link_text(serial_token_mozart).click()
         driver.find_element_by_id("mpin1").clear()
         new_motp_pin = "5588"
@@ -409,7 +357,6 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("mpin2").clear()
         driver.find_element_by_id("mpin2").send_keys(new_motp_pin)
         driver.find_element_by_id("button_setmpin").click()
-        time.sleep(1)
         self.assertEqual("mOTP PIN set successfully", self.close_alert_and_get_its_text())
         driver.find_element_by_link_text("Logout").click()
 
@@ -426,7 +373,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         self.assertTrue(access_granted, "OTP: mozartnewpin" + motp_otp + " for user " +
                         "mozart@" + test1_realm + " returned False")
 
-        ### 12. Token Resynchronisierung ###
+        self._announce_test("12. Token Resynchronisierung")
 
         # Bach 'presses' his token more than 10 times and fails to authenticate
         counter = 50 # was 19
@@ -443,7 +390,6 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("password").send_keys("Test123!")
         driver.find_element_by_id("password").submit()
         driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='Resync Token']").click()
-        time.sleep(1)
         driver.find_element_by_id('tokenDiv').find_element_by_link_text(serial_token_bach).click()
         otp1 = hotp.generate(counter=counter + 1, key=seed_oath137332_bin)
         otp2 = hotp.generate(counter=counter + 2, key=seed_oath137332_bin)
@@ -452,7 +398,6 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("otp2").clear()
         driver.find_element_by_id("otp2").send_keys(otp2)
         driver.find_element_by_id("button_resync").click()
-        time.sleep(1)
         self.assertEqual("Token resynced successfully", self.close_alert_and_get_its_text())
         driver.find_element_by_link_text("Logout").click()
 
@@ -462,7 +407,7 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                                               password=otp)
         self.assertTrue(access_granted, "OTP: %s should be True for user bach" % otp)
 
-        ### 13. Ein Benutzer debussy deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden. ###
+        self._announce_test("13. Ein Benutzer debussy deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden.")
 
         driver.get(self.base_url + "/account/login")
         driver.find_element_by_id("login").clear()
@@ -471,10 +416,8 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
         driver.find_element_by_id("password").send_keys("Test123!")
         driver.find_element_by_id("password").submit()
         driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='Disable Token']").click()
-        time.sleep(1)
         driver.find_element_by_id('tokenDiv').find_element_by_link_text(serial_token_debussy).click()
         driver.find_element_by_id("button_disable").click()
-        time.sleep(1)
         self.assertEqual("Token disabled successfully", self.close_alert_and_get_its_text())
         driver.find_element_by_link_text("Logout").click()
 
@@ -483,14 +426,12 @@ gYzNiYwtvAu74Q+eTC6R5Uf0hOlFig==
                                             password="debussynewpin" + remote_token_otp)
         self.assertFalse(access_granted, "OTP: debussynewpin" + remote_token_otp + "should be False for user debussy")
 
-        ### 14. Der Admin entsperrt diesen Token, der Benutzer debussy kann sich wieder anmelden. ###
+        self._announce_test("14. Der Admin entsperrt diesen Token, der Benutzer debussy kann sich wieder anmelden.")
 
         driver.get(self.base_url + "/manage")
-        time.sleep(1)
         token_view = TokenView(driver, self.base_url)
         token_view.select_token(serial_token_debussy)
         driver.find_element_by_id("button_enable").click()
-        time.sleep(1)
 
         # debussy should be able to authenticate
         access_granted, _ = validate.validate(user="debussy@" + test1_realm,
