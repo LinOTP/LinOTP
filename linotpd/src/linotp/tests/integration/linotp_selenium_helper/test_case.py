@@ -25,16 +25,23 @@
 #
 """Basic LinOTP Selenium Test-Case"""
 
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
 import unittest
 import warnings
+
+from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 
 from helper import get_from_tconfig
 
 
 class TestCase(unittest.TestCase):
     """Basic LinOTP TestCase class"""
+
+    implicit_wait_time = 5
 
     def setUp(self):
         """Initializes the base_url and sets the driver"""
@@ -55,21 +62,21 @@ class TestCase(unittest.TestCase):
         fp = webdriver.FirefoxProfile()
         fp.set_preference("intl.accept_languages", selenium_driver_language);
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--lang=' + selenium_driver_language )
+        chrome_options.add_argument('--lang=' + selenium_driver_language)
 
         if selenium_driver == 'chrome':
             try:
                 self.driver = webdriver.Chrome(chrome_options=chrome_options)
-            except WebDriverException:
-                warnings.warn("Error creating Chrome driver. Maybe you forgot installing"
-                              " 'chromedriver'. If you wanted to use another Browser please"
-                              " adapt your config file.")
+            except WebDriverException, e:
+                warnings.warn("Error creating Chrome driver. Maybe you need to install"
+                              " 'chromedriver'. If you wish to use another browser please"
+                              " adapt your configuratiion file. Error message: %s" % str(e))
         elif selenium_driver == 'firefox':
             self.driver = webdriver.Firefox(firefox_profile=fp)
         if self.driver is None:
             warnings.warn("Falling back to Firefox driver.")
             self.driver = webdriver.Firefox(firefox_profile=fp)
-        self.driver.implicitly_wait(30)
+        self.enableImplicitWait()
         self.verification_errors = []
         self.accept_next_alert = True
 
@@ -77,6 +84,34 @@ class TestCase(unittest.TestCase):
         """Closes the driver and displays all errors"""
         self.driver.quit()
         self.assertEqual([], self.verification_errors)
+
+    def disableImplicitWait(self):
+        self.driver.implicitly_wait(0)
+
+    def enableImplicitWait(self):
+        self.driver.implicitly_wait(self.implicit_wait_time)
+
+    def find_children_by_id(self, parent_id, element_type='*'):
+        """
+        Find an element with the given id, and return a list of children. The
+        child list can be empty.
+        """
+        # Retrieve all elements including parent. This bypasses the timeout
+        # that would other wise occur
+        WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, parent_id))
+            )
+
+        self.disableImplicitWait()
+        try:
+            elements = WebDriverWait(self.driver, 0).until(
+                    EC.presence_of_all_elements_located((By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
+                )
+        except TimeoutException:
+            return []
+        self.enableImplicitWait()
+
+        return elements  # Return elements without the parent
 
     def close_alert_and_get_its_text(self):
         try:
