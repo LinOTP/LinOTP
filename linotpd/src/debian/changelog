@@ -1,10 +1,11 @@
-linotp (2.8.0.2~rc0-1) jessie; urgency=low
+linotp (2.8.0.2~rc1-1) jessie; urgency=low
 
   Bug fixes:
   * Server: Fix for double escaping when using info_box
   * Server: Fix for information disclosure with audit search
   * Server: Prevent enumeration/information leakage in validate/check
   * Server: Remove session id from URL
+  * WebUI: Clear PIN input fields on closing the 'Set PIN' dialog
   * Selfservice: Enforce session and cookie check in all userservice actions
   * Selfservice: Add missing session invalidation on selfservice logout
   * Config examples: Set security relevant headers in example apache config
@@ -12,7 +13,7 @@ linotp (2.8.0.2~rc0-1) jessie; urgency=low
   * Config examples: Set X-Permitted-Cross-Domain-Policies header in example
     Apache config files
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 01 Dec 2015 14:41:46 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 03 Dec 2015 11:10:03 +0100
 
 linotp (2.8.0.1-1) jessie; urgency=low
 
