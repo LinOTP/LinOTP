@@ -535,13 +535,15 @@ class FinishTokens(object):
             self.create_audit_entry(detail, self.challenge_tokens)
             return ret, reply
 
+        failed_tokens = self.pin_matching_tokens + self.invalid_tokens
         if self.user:
             log.warning("user %r@%r failed to auth."
                         % (self.user.login, self.user.realm))
-        else:
+        elif failed_tokens:
             log.warning("serial %r failed to auth."
-                        % (self.pin_matching_tokens +
-                           self.invalid_tokens)[0].getSerial())
+                        % failed_tokens[0].getSerial())
+        else:
+            log.warning("generic authentication failure.")
 
         if self.pin_matching_tokens:
             (ret, reply, detail) = self.finish_pin_matching_tokens()
