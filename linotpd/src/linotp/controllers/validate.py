@@ -164,10 +164,9 @@ class ValidateController(BaseController):
 
         if ok:
             # AUTHORIZATION post check
-            serial = self.request_context.get('audit').get('serial', '')
-            check_auth_tokentype(serial, exception=True, user=user,
+            check_auth_tokentype(c.audit['serial'], exception=True, user=user,
                                  context=self.request_context)
-            check_auth_serial(serial, exception=True, user=user,
+            check_auth_serial(c.audit['serial'], exception=True, user=user,
                               context=self.request_context)
 
         # add additional details
@@ -177,10 +176,10 @@ class ValidateController(BaseController):
             if ok:
                 opt['realm'] = c.audit.get('realm')
                 opt['user'] = c.audit.get('user')
-                opt['tokentype'] = self.request_context.get('audit').get('token_type')
-                opt['serial'] = self.request_context.get('audit').get('serial')
+                opt['tokentype'] = c.audit.get('token_type')
+                opt['serial'] = c.audit.get('serial')
             else:
-                opt['error'] = self.request_context.get('audit').get('action_detail')
+                opt['error'] = c.audit.get('action_detail')
 
         return (ok, opt)
 

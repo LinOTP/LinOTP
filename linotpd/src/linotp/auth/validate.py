@@ -31,6 +31,7 @@ import linotp
 import linotp.lib.policy
 
 from pylons import config
+from pylons import tmpl_context as c
 
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import ParameterError, UserError
@@ -604,7 +605,7 @@ class FinishTokens(object):
                 (res, _reply) = validation_results[token.getSerial()]
                 token.setOtpCount(res)
 
-            self.context['audi']['action_detail'] = "Multiple valid tokens found!"
+            self.context['audit']['action_detail'] = "Multiple valid tokens found!"
             if user:
                 log.error("[__checkTokenList] multiple token match error: "
                           "Several Tokens matching with the same OTP PIN "
@@ -732,15 +733,21 @@ class FinishTokens(object):
         :param tokens:
         :param action_detail:
         """
-        audit = self.context['audit']
-        audit['action_detail'] = action_detail
+
+        c.audit['action_detail'] = action_detail
 
         if len(tokens) == 1:
-            audit['serial'] = tokens[0].getSerial()
-            audit['token_type'] = tokens[0].getType()
+            c.audit['serial'] = tokens[0].getSerial()
+            c.audit['token_type'] = tokens[0].getType()
         else:
             # no or multiple tokens
-            audit['serial'] = ''
-            audit['token_type'] = ''
+            serials = []
+            types = []
+            for token in tokens:
+                serials.append(token.getSerial())
+                types.append(token.getType())
+            c.audit['serial'] = ' '.join(serials)[:29]
+            c.audit['token_type'] = ' '.join(types)[:39]
+
         return
 # eof###########################################################################
