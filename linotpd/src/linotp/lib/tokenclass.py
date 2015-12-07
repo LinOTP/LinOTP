@@ -71,9 +71,9 @@ from linotp.model       import OcraChallenge
 from linotp.model.meta  import Session
 from linotp.lib.reply   import create_img
 
-from linotp.auth.validate import check_pin
-from linotp.auth.validate import check_otp
-from linotp.auth.validate import split_pin_otp
+from linotp.lib.auth.validate import check_pin
+from linotp.lib.auth.validate import check_otp
+from linotp.lib.auth.validate import split_pin_otp
 
 from sqlalchemy import asc, desc
 

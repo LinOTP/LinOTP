@@ -35,7 +35,7 @@ import webob
 from pylons import request, response, config, tmpl_context as c
 from linotp.model.meta import Session
 
-from linotp.auth.validate import ValidationHandler
+from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.base import BaseController
 from linotp.lib.error import ParameterError
 

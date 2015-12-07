@@ -33,7 +33,7 @@ import sys
 
 from pylons.i18n.translation import _
 
-from linotp.auth.validate import split_pin_otp
+from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig

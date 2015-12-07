@@ -31,7 +31,7 @@ import logging
 
 from linotp.lib.tokenclass import TokenClass
 
-from linotp.auth.validate import check_pin
+from linotp.lib.auth.validate import check_pin
 from linotp.lib.util import getParam
 
 optional = True

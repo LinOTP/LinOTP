@@ -34,8 +34,8 @@ from linotp.lib.util    import getParam
 from linotp.lib.config  import getFromConfig
 from linotp.lib.tokenclass import TokenClass
 
-from linotp.auth.validate import check_pin
-from linotp.auth.validate import check_otp
+from linotp.lib.auth.validate import check_pin
+from linotp.lib.auth.validate import check_otp
 from linotp.lib.challenges import Challenges
 
 from linotp.lib.reply   import create_img

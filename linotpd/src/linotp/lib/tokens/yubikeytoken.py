@@ -34,7 +34,7 @@ import logging
 optional = True
 required = False
 
-from linotp.auth.validate import check_pin
+from linotp.lib.auth.validate import check_pin
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.util import modhex_decode

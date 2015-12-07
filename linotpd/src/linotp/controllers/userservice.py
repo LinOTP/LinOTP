@@ -69,7 +69,7 @@ from pylons.templating import render_mako as render
 from mako.exceptions import CompileException
 
 from linotp.lib.base import BaseController
-from linotp.auth.validate import ValidationHandler
+from linotp.lib.auth.validate import ValidationHandler
 
 from linotp.lib.policy import (checkPolicyPre,
                                checkPolicyPost,

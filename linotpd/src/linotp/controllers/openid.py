@@ -31,7 +31,7 @@ import logging
 import webob
 
 from linotp.lib.base import BaseController
-from linotp.auth.validate import ValidationHandler
+from linotp.lib.auth.validate import ValidationHandler
 
 from pylons import tmpl_context as c
 from pylons import request, response

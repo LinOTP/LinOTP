@@ -33,8 +33,8 @@ from M2Crypto import X509, m2
 from hashlib import sha256
 from string import rfind
 
-from linotp.auth.validate import check_otp
-from linotp.auth.validate import check_pin
+from linotp.lib.auth.validate import check_otp
+from linotp.lib.auth.validate import check_pin
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.challenges import Challenges

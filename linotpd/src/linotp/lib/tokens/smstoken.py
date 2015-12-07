@@ -36,8 +36,8 @@ from linotp.lib.util    import required
 
 from linotp.lib.user import getUserDetail
 
-from linotp.auth.validate import check_pin
-from linotp.auth.validate import split_pin_otp
+from linotp.lib.auth.validate import check_pin
+from linotp.lib.auth.validate import split_pin_otp
 
 from linotp.lib.config  import getFromConfig
 

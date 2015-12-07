@@ -35,7 +35,7 @@ from pylons import request, response, config
 from pylons import tmpl_context as c
 from pylons.controllers.util import abort
 
-from linotp.auth.validate import ValidationHandler
+from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.base import BaseController
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError

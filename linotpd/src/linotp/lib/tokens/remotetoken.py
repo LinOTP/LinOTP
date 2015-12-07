@@ -33,8 +33,8 @@ import urllib
 
 from linotp.lib.tokenclass import TokenClass
 
-from linotp.auth.validate import split_pin_otp
-from linotp.auth.validate import check_pin
+from linotp.lib.auth.validate import split_pin_otp
+from linotp.lib.auth.validate import check_pin
 from linotp.lib.config import getFromConfig
 from linotp.lib.util import getParam
 
