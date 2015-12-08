@@ -185,6 +185,11 @@ def getPolicyDefinitions(scope=""):
                         'against the UserIdResolver, if the user has no '
                         'tokens assigned.'
                 },
+            'forward': {
+                'type': 'string',
+                'desc': 'If set, the users authentication request will be '
+                        'forwarded to another linotp or radius server.'
+                },
             'passOnNoToken': {
                 'type': 'bool',
                 'desc': 'if the user has no token, the authentication request '
