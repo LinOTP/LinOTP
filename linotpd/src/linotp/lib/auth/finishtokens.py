@@ -23,13 +23,12 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
+import logging
 
-from pylons import tmpl_context as c
-
-from linotp.lib.auth.validate import log
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import UserError
 
+log = logging.getLogger(__name__)
 
 class FinishTokens(object):
     def __init__(self, valid_tokens, challenge_tokens, pin_matching_tokens,
@@ -269,8 +268,7 @@ class FinishTokens(object):
         for token in all_tokens:
             token.incOtpFailCounter()
 
-    @staticmethod
-    def create_audit_entry(action_detail, tokens):
+    def create_audit_entry(self, action_detail, tokens):
         """
         setting global audit entry
 
@@ -278,11 +276,12 @@ class FinishTokens(object):
         :param action_detail:
         """
 
-        c.audit['action_detail'] = action_detail
+        audit = self.context['audit']
+        audit['action_detail'] = action_detail
 
         if len(tokens) == 1:
-            c.audit['serial'] = tokens[0].getSerial()
-            c.audit['token_type'] = tokens[0].getType()
+            audit['serial'] = tokens[0].getSerial()
+            audit['token_type'] = tokens[0].getType()
         else:
             # no or multiple tokens
             serials = []
@@ -290,8 +289,8 @@ class FinishTokens(object):
             for token in tokens:
                 serials.append(token.getSerial())
                 types.append(token.getType())
-            c.audit['serial'] = ' '.join(serials)[:29]
-            c.audit['token_type'] = ' '.join(types)[:39]
+            audit['serial'] = ' '.join(serials)[:29]
+            audit['token_type'] = ' '.join(types)[:39]
 
         return
 # eof###########################################################################
