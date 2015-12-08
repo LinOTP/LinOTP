@@ -112,6 +112,7 @@ import datetime
 import traceback
 
 from linotp.lib.config  import getFromConfig
+from linotp.lib.crypt   import SecretObj
 from linotp.lib.crypt   import createNonce
 from linotp.lib.crypt   import decryptPin, encryptPin
 from linotp.lib.crypt   import kdf2
@@ -528,7 +529,8 @@ class Ocra2TokenClass(TokenClass):
             self.addToTokenInfo('rollout', '1')
 
             ##  preseerver the current key as sharedSecret
-            secObj = self.token.getHOtpKey()
+            key, iv = self.token.get_encrypted_seed()
+            secObj = SecretObj(key, iv, hsm=self.context['hsm'])
             key = secObj.getKey()
             encSharedSecret = encryptPin(key)
             self.addToTokenInfo('sharedSecret', encSharedSecret)
@@ -759,8 +761,9 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[signData] %r:' % (data))
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
         signature = ocraSuite.signData(data)
 
         log.debug('[signData]: %r:' % (signature))
@@ -776,8 +779,9 @@ class Ocra2TokenClass(TokenClass):
 
         counter = self.getOtpCount()
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         ## set the pin onyl in the compliant hashed mode
         pin = ''
@@ -836,8 +840,9 @@ class Ocra2TokenClass(TokenClass):
         if input_data is None or len(input_data) == 0:
             typ = 'random'
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         if typ == 'raw':
             challenge = ocraSuite.data2rawChallenge(input_data)
@@ -953,8 +958,9 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[challenge] %r: %r: %r' % (data, session, challenge))
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         if data is None or len(data) == 0:
             typ = 'random'
@@ -1227,8 +1233,9 @@ class Ocra2TokenClass(TokenClass):
             raise Exception(err)
 
         ## prepare the challenge check - do the ocra setup
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         ## set the ocra token pin
         ocraPin = ''
@@ -1563,8 +1570,9 @@ class Ocra2TokenClass(TokenClass):
             log.error('[Ocra2TokenClass:resync] %s' % (error))
             raise Exception('[Ocra2TokenClass:resync] %s' % (error))
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         syncWindow = self.token.getSyncWindow()
         if  ocraSuite.T is not None:

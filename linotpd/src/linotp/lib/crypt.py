@@ -97,23 +97,24 @@ VALUE_KEY = 3
 
 
 class SecretObj:
-    def __init__(self, val, iv, preserve=True):
+    def __init__(self, val, iv, preserve=True, hsm=None):
         self.val = val
         self.iv = iv
         self.bkey = None
         self.preserve = preserve
+        self.hsm = hsm
 
     def getKey(self):
         log.debug('Warning: Requesting secret key '
                             '- verify the usage scope and zero + free ')
-        return decrypt(self.val, self.iv)
+        return decrypt(self.val, self.iv, hsm=self.hsm)
 
     def getPin(self):
-        return decrypt(self.val, self.iv)
+        return decrypt(self.val, self.iv, hsm=self.hsm)
 
     def compare(self, key):
         bhOtpKey = binascii.unhexlify(key)
-        enc_otp_key = encrypt(bhOtpKey, self.iv)
+        enc_otp_key = encrypt(bhOtpKey, self.iv, hsm=self.hsm)
         otpKeyEnc = binascii.hexlify(enc_otp_key)
         return (otpKeyEnc == self.val)
 
@@ -150,7 +151,7 @@ class SecretObj:
             self.bkey = None
 
         if self.bkey is None:
-            akey = decrypt(self.val, self.iv)
+            akey = decrypt(self.val, self.iv, hsm=self.hsm)
             self.bkey = binascii.unhexlify(akey)
             zerome(akey)
             del akey
@@ -397,8 +398,8 @@ def decryptPin(cryptPin):
     ret = hsm.decryptPin(cryptPin)
     return ret
 
-def encrypt(data, iv, id=0):
-    '''
+def encrypt(data, iv, id=0, hsm=None):
+    """
     encrypt a variable from the given input with an initialiation vector
 
     :param input: buffer, which contains the value
@@ -407,24 +408,26 @@ def encrypt(data, iv, id=0):
     :type  iv:    buffer (20 bytes random)
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
+
     :return:      encryted buffer
-
-
-    '''
+    """
 
     log.debug('encrypt()')
-    if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
-        raise HSMException('no hsm defined in execution context!')
+    if hsm:
+        hsm_obj = hsm.get('obj')
+    else:
+        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+            raise HSMException('no hsm defined in execution context!')
 
-    hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() == False:
+        hsm_obj = c.hsm.get('obj')
+    if hsm_obj is None or hsm_obj.isReady() == False:
         raise HSMException('hsm not ready!')
-    ret = hsm.encrypt(data, iv, id)
+    ret = hsm_obj.encrypt(data, iv, id)
     return ret
 
 
-def decrypt(input, iv, id=0):
-    '''
+def decrypt(input, iv, id=0, hsm=None):
+    """
     decrypt a variable from the given input with an initialiation vector
 
     :param input: buffer, which contains the crypted value
@@ -433,18 +436,22 @@ def decrypt(input, iv, id=0):
     :type  iv:    buffer (20 bytes random)
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
+
     :return:      decryted buffer
+    """
 
-    '''
     log.debug('decrypt()')
-    if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
-        raise HSMException('no hsm defined in execution context!')
+    if hsm:
+        hsm_obj = hsm.get('obj')
+    else:
+        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+            raise HSMException('no hsm defined in execution context!')
+        hsm_obj = c.hsm.get('obj')
 
-    hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() == False:
+    if hsm_obj is None or hsm_obj.isReady() == False:
         raise HSMException('hsm not ready!')
 
-    ret = hsm.decrypt(input, iv, id)
+    ret = hsm_obj.decrypt(input, iv, id)
     return ret
 
 def uencode(value):

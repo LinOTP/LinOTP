@@ -30,6 +30,7 @@ import time
 from datetime import datetime
 
 from linotp.lib.HMAC    import HmacOtp
+from linotp.lib.crypt import SecretObj
 from linotp.lib.util    import getParam
 from linotp.lib.config  import getFromConfig
 from linotp.lib.tokenclass import TokenClass
@@ -325,11 +326,12 @@ class HmacTokenClass(TokenClass):
             log.exception('[checkOtp] failed to initialize hashlibStr: %r' % (ex))
             raise Exception(ex)
 
-        secretHOtp = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
         #serialNum   = self.token.LinOtpTokenSerialnumber
         #log.debug("serial: %s",serialNum)
 
-        hmac2Otp = HmacOtp(secretHOtp, counter, otplen,
+        hmac2Otp = HmacOtp(secObj, counter, otplen,
                            self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, window)
 
@@ -370,9 +372,10 @@ class HmacTokenClass(TokenClass):
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
 
-        secretHOtp = self.token.getHOtpKey()
-        hmac2Otp = HmacOtp(secretHOtp, counter, otplen,
-                             self.getHashlib(self.hashlibStr))
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        hmac2Otp = HmacOtp(secObj, counter, otplen,
+                           self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(otp, window)
 
         if res >= 0:
@@ -505,11 +508,12 @@ class HmacTokenClass(TokenClass):
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
 
-        secretHOtp = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
         counter = self.token.getOtpCounter()
         syncWindow = self.token.getSyncWindow()
         #log.debug("serial: %s",serialNum)
-        hmac2Otp = HmacOtp(secretHOtp, counter, otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         counter = hmac2Otp.checkOtp(otp1, syncWindow)
 
         if counter == -1:
@@ -559,9 +563,10 @@ class HmacTokenClass(TokenClass):
             raise Exception(ex)
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
-        secretHOtp = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
 
-        hmac2Otp = HmacOtp(secretHOtp, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(secObj, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
         otpval = hmac2Otp.generate(inc_counter=False)
 
         pin = self.token.getPin()
@@ -596,8 +601,9 @@ class HmacTokenClass(TokenClass):
             log.exception("[get_multi_otp]: Could not convert otplen - value error %r " % (ex))
             raise Exception(ex)
         s_count = self.getOtpCount()
-        secretHOtp = self.token.getHOtpKey()
-        hmac2Otp = HmacOtp(secretHOtp, s_count, otplen, self.getHashlib(self.hashlibStr))
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        hmac2Otp = HmacOtp(secObj, s_count, otplen, self.getHashlib(self.hashlibStr))
         log.debug("[get_multi_otp] retrieving %i OTP values for token %s" % (count, hmac2Otp))
 
         if count > 0:

@@ -290,8 +290,9 @@ class BaseController(WSGIController):
         self.sep = glo.security_provider
 
         try:
-            self.hsm = self.sep.getSecurityModule()
-            c.hsm = self.hsm
+            hsm = self.sep.getSecurityModule()
+            self.hsm = hsm
+            c.hsm = hsm
         except Exception as exx:
             log.exception('failed to assign hsm device: %r' % exx)
             raise exx
@@ -470,6 +471,5 @@ class BaseController(WSGIController):
                 log.info('no sytem config entry %s' % key)
 
         self.request_context['SystemConfig'] = sysconfig
-        return
 
 ###eof#########################################################################

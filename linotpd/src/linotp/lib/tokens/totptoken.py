@@ -34,6 +34,7 @@ import traceback
 
 
 from linotp.lib.HMAC    import HmacOtp
+from linotp.lib.crypt   import SecretObj
 from linotp.lib.util    import getParam
 from linotp.lib.util    import generate_otpkey
 from linotp.lib.config  import getFromConfig
@@ -405,7 +406,8 @@ class TimeHmacTokenClass(HmacTokenClass):
         except ValueError as e:
             raise e
 
-        secretHOtp = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
         self.hashlibStr = self.getFromTokenInfo("hashlib", self.hashlibStr)
 
         timeStepping = int(self.getFromTokenInfo("timeStep", self.timeStep))
@@ -442,7 +444,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         log.debug("[checkOTP] shift   : %r " % (shift))
 
-        hmac2Otp = HmacOtp(secretHOtp, counter, otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, int (window / timeStepping), symetric=True)
 
         log.debug("[checkOTP] comparing the result %i to the old counter %i." % (res, oCount))
@@ -599,8 +601,8 @@ class TimeHmacTokenClass(HmacTokenClass):
         except ValueError:
             return ret
 
-
-        secretHOtp = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
@@ -626,13 +628,13 @@ class TimeHmacTokenClass(HmacTokenClass):
         log.debug("[resync] tokenCounter: %r" % oCount)
         log.debug("[resync] now checking window %s, timeStepping %s" % (window, timeStepping))
         # check 2nd value
-        hmac2Otp = HmacOtp(secretHOtp, counter, otplen, self.getHashlib(self.hashlibStr))
-        log.debug("[resync] %s in otpkey: %s " % (otp2, secretHOtp))
+        hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
+        log.debug("[resync] %s in otpkey: %s " % (otp2, secObj))
         res2 = hmac2Otp.checkOtp(otp2, int (window / timeStepping), symetric=True)  #TEST -remove the 10
         log.debug("[resync] res 2: %r" % res2)
         # check 1st value
-        hmac2Otp = HmacOtp(secretHOtp, counter - 1, otplen, self.getHashlib(self.hashlibStr))
-        log.debug("[resync] %s in otpkey: %s " % (otp1, secretHOtp))
+        hmac2Otp = HmacOtp(secObj, counter - 1, otplen, self.getHashlib(self.hashlibStr))
+        log.debug("[resync] %s in otpkey: %s " % (otp1, secObj))
         res1 = hmac2Otp.checkOtp(otp1, int (window / timeStepping), symetric=True)  #TEST -remove the 10
         log.debug("[resync] res 1: %r" % res1)
 
@@ -689,12 +691,14 @@ class TimeHmacTokenClass(HmacTokenClass):
 
 
         otplen = int(self.token.LinOtpOtpLen)
-        secretHOtp = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
         shift = int(self.getFromTokenInfo("timeShift", 0))
 
-        hmac2Otp = HmacOtp(secretHOtp, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
+        hmac2Otp = HmacOtp(secObj, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
 
         tCounter = self.time2float(datetime.datetime.now())
         if curTime:
@@ -735,13 +739,14 @@ class TimeHmacTokenClass(HmacTokenClass):
         except ValueError:
             return ret
 
-        secretHOtp = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
         shift = int(self.getFromTokenInfo("timeShift", 0))
 
-        hmac2Otp = HmacOtp(secretHOtp, self.getOtpCount(),
+        hmac2Otp = HmacOtp(secObj, self.getOtpCount(),
                            otplen, self.getHashlib(self.hashlibStr))
 
         tCounter = self.time2float(datetime.datetime.now())

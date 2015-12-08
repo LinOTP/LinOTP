@@ -29,7 +29,9 @@
 
 from linotp.lib.util    import getParam
 from pylons.i18n.translation import _
+
 from linotp.lib.tokenclass import TokenClass
+from linotp.lib.crypt import SecretObj
 
 from linotp.lib.ImportOTP.vasco import vasco_otp_check
 
@@ -138,8 +140,9 @@ class VascoTokenClass(TokenClass):
         '''
         res = -1
 
-        secObject = self.token.getHOtpKey()
-        otpkey = secObject.getKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        otpkey = secObj.getKey()
         # let vasco handle the OTP checking
         ret = vasco_otp_check(otpkey, anOtpVal)
         if ret is None:

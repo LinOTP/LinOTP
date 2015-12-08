@@ -34,9 +34,11 @@ import logging
 optional = True
 required = False
 
+from linotp.lib.tokenclass import TokenClass
+from linotp.lib.crypt   import SecretObj
+
 from linotp.lib.auth.validate import check_pin
 
-from linotp.lib.tokenclass import TokenClass
 from linotp.lib.util import modhex_decode
 from linotp.lib.util import checksum
 
@@ -256,7 +258,8 @@ class YubikeyTokenClass(TokenClass):
             return res
 
         serial = self.token.getSerial()
-        secret = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
 
         anOtpVal = otpVal.lower()
 
@@ -274,7 +277,7 @@ class YubikeyTokenClass(TokenClass):
 
         try:
             otp_bin = modhex_decode(yubi_otp)
-            msg_bin = secret.aes_decrypt(otp_bin)
+            msg_bin = secObj.aes_decrypt(otp_bin)
         except KeyError:
             log.warning("failed to decode yubi_otp!")
             return res

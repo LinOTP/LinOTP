@@ -40,6 +40,7 @@ from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
+from linotp.lib.crypt import SecretObj
 from linotp.lib.policy import (getPolicy,
                                getPolicyActionValue)
 
@@ -256,11 +257,12 @@ class EmailTokenClass(HmacTokenClass):
             LOG.error("[getNextOtp] ValueError %r" % ex)
             raise Exception(ex)
 
-        secret_obj = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
         counter = self.token.getOtpCounter()
 
         #log.debug("serial: %s",serialNum)
-        hmac2otp = HmacOtp(secret_obj, counter, otplen)
+        hmac2otp = HmacOtp(secObj, counter, otplen)
         nextotp = hmac2otp.generate(counter + 1)
 
         LOG.debug("[getNextOtp] end. got the next otp value: nextOtp %r"

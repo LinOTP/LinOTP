@@ -232,12 +232,11 @@ class Token(object):
         self.LinOtpTokenPinUserIV = unicode(binascii.hexlify(iv))
 
 
-    def getHOtpKey(self):
+    def get_encrypted_seed(self):
         log.debug('getHOtpKey()')
         key = binascii.unhexlify(self.LinOtpKeyEnc or '')
         iv = binascii.unhexlify(self.LinOtpKeyIV or '')
-        secret = SecretObj(key, iv)
-        return secret
+        return key, iv
 
     def getOtpCounter(self):
         return self.LinOtpCount or 0
@@ -499,8 +498,9 @@ class Token(object):
     def updateOtpKey(self, otpKey):
         #in case of a new hOtpKey we have to do some more things
         if (otpKey is not None):
-            secretObj = self.getHOtpKey()
-            if secretObj.compare(otpKey) == False:
+            key, iv = self.get_encrypted_seed()
+            secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+            if secObj.compare(otpKey) == False:
                 log.debug('update token OtpKey - counter reset')
                 self.setHKey(otpKey)
 

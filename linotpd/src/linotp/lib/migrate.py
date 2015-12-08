@@ -48,6 +48,8 @@ from linotp.model import Config as model_config
 from linotp.lib.config  import getFromConfig
 from linotp.lib.config  import  _storeConfigDB
 
+from linotp.lib.crypt import SecretObj
+
 
 class MigrationHandler(object):
     """
@@ -183,7 +185,8 @@ class MigrationHandler(object):
             # to identify changes
             encKey = token.LinOtpKeyEnc
 
-            secObj = token.getHOtpKey()
+            key, iv = token.get_encrypted_seed()
+            secObj = SecretObj(key, iv, hsm=self.context['hsm'])
             seed = secObj.getKey()
             enc_value = self.crypter.encrypt(input_data=seed,
                                             just_mac=serial + encKey)

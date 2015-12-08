@@ -33,6 +33,7 @@ import binascii
 
 from linotp.lib.util    import getParam
 
+from linotp.lib.crypt import SecretObj
 
 optional = True
 required = False
@@ -224,7 +225,8 @@ class RadiusTokenClass(RemoteTokenClass):
         radiusUser = self.getFromTokenInfo("radius.user")
 
         ## Read the secret!!!
-        secret = self.token.getHOtpKey()
+        key, iv = self.token.get_encrypted_seed()
+        secret = SecretObj(key, iv, hsm=self.context['hsm'])
         radiusSecret = binascii.unhexlify(secret.getKey())
 
         if radiusSecret == VOID_RADIUS_SECRET:

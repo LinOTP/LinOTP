@@ -75,6 +75,8 @@ from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import split_pin_otp
 
+from linotp.lib.crypt import SecretObj
+
 from sqlalchemy import asc, desc
 
 from pylons.i18n.translation import _
@@ -1607,7 +1609,8 @@ class OcraTokenClass(TokenClass):
             self.addToTokenInfo('rollout', '1')
 
             ##  preseerver the current key as sharedSecret
-            secObj = self.token.getHOtpKey()
+            key, iv = self.token.get_encrypted_seed()
+            secObj = SecretObj(key, iv, hsm=self.context['hsm'])
             key = secObj.getKey()
             encSharedSecret = encryptPin(key)
             self.addToTokenInfo('sharedSecret', encSharedSecret)
@@ -1764,8 +1767,9 @@ class OcraTokenClass(TokenClass):
         '''
         log.debug('[signData] %r:' % (data))
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
         signature = ocraSuite.signData(data)
 
         log.debug('[signData]: %r:' % (signature))
@@ -1800,8 +1804,9 @@ class OcraTokenClass(TokenClass):
 
         log.debug('[challenge] %s: %s: %s' % (s_data, s_session, s_challenge))
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
 
         if data is None or len(data) == 0:
@@ -1914,8 +1919,9 @@ class OcraTokenClass(TokenClass):
 
         ret = -1
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         ## if we have no transactionid given through the options,
         ## we have to retrieve the eldest challenge for this ocra token
@@ -2289,8 +2295,9 @@ class OcraTokenClass(TokenClass):
 
 
 
-        secretHOtp = self.token.getHOtpKey()
-        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
+        key, iv = self.token.get_encrypted_seed()
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         syncWindow = self.token.getSyncWindow()
         if  ocraSuite.T is not None:
