@@ -160,6 +160,7 @@ class ValidateController(BaseController):
         vh = ValidationHandler(context=self.request_context)
         (ok, opt) = vh.checkUserPass(user, passw, options=options)
 
+        c.audit.update(self.request_context.get('audit'))
         c.audit['success'] = ok
 
         if ok:
