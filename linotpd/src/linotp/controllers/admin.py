@@ -1371,10 +1371,19 @@ class AdminController(BaseController):
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
-        except Exception as e :
-            log.exception('%s :%r' % (msg, e))
+        except Exception as exx :
+            log.exception('%s: %r' % (msg, exx))
             Session.rollback()
-            return sendError(response, e)
+            # as this message is directly returned into the javascript
+            # alert as escaped string we remove here all escaping chars
+            error = "%r" % exx
+            error = error.replace('"', '|')
+            error = error.replace("'", ':')
+            error = error.replace('&', '+')
+            error = error.replace('>', ']')
+            error = error.replace('<', '[')
+            result = "%s: %s" % (msg, error)
+            return sendError(response, result)
 
         finally:
             Session.close()
