@@ -2462,6 +2462,24 @@ def get_auth_passthru(user, context=None):
     return ret
 
 
+def get_auth_forward(user, context=None):
+    '''
+    returns the list of all forwarding servers
+    '''
+    client = _get_client(context)
+
+    pol = get_client_policy(client, scope="authentication",
+                            action="forward", realm=user.realm,
+                            user=user.login, userObj=user,
+                            context=context)
+    if not pol:
+        return None
+
+    servers = getPolicyActionValue(pol, "forward", String=True)
+
+    return servers
+
+
 def get_auth_passOnNoToken(user, context=None):
     '''
     returns True, if the user in this realm should be always authenticated

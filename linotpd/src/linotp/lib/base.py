@@ -57,8 +57,6 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
 from linotp.lib.util import get_client
 
-
-
 import logging
 log = logging.getLogger(__name__)
 
@@ -292,8 +290,8 @@ class BaseController(WSGIController):
         self.sep = glo.security_provider
 
         try:
-            hsm = self.sep.getSecurityModule()
-            c.hsm = hsm
+            self.hsm = self.sep.getSecurityModule()
+            c.hsm = self.hsm
         except Exception as exx:
             log.exception('failed to assign hsm device: %r' % exx)
             raise exx
@@ -454,6 +452,24 @@ class BaseController(WSGIController):
 
         self.request_context['Realms'] = realms
 
+        self.request_context['hsm'] = None
+        if hasattr(self, "hsm"):
+            self.request_context['hsm'] = self.hsm
+
+        # copy some system entries from pylons
+        syskeys = {
+                   "radius.nas_identifier": "LinOTP",
+                   "radius.dictfile": "/etc/linotp2/dictionary"
+        }
+
+        sysconfig = {}
+        for key, default in syskeys.items():
+            try:
+                sysconfig[key] = config.get(key, default)
+            except:
+                log.info('no sytem config entry %s' % key)
+
+        self.request_context['SystemConfig'] = sysconfig
         return
 
 ###eof#########################################################################

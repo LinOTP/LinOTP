@@ -33,6 +33,8 @@ import linotp.lib.policy
 from pylons import config
 
 from linotp.lib.auth.finishtokens import FinishTokens
+from linotp.lib.auth.request import HttpRequest
+from linotp.lib.auth.request import RadiusRequest
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import ParameterError
 from linotp.lib.realm import getDefaultRealm
@@ -201,6 +203,10 @@ class ValidationHandler(object):
 
         return (res, opt)
 
+    def do_request(self):
+
+        return
+
     def checkUserPass(self, user, passw, options=None):
         """
         :param user: the to be identified user
@@ -220,11 +226,13 @@ class ValidationHandler(object):
         resolverClass = None
         uid = None
         audit = self.context['audit']
+        user_exists = False
 
         if user is not None and (user.isEmpty() == False):
             # the upper layer will catch / at least should
             try:
                 (uid, _resolver, resolverClass) = getUserId(user)
+                user_exists = True
             except:
                 pass_on = self.context.get('Config').get(
                                             'linotp.PassOnUserNotFound', False)
@@ -235,6 +243,20 @@ class ValidationHandler(object):
                 else:
                     audit['action_detail'] = 'User not found'
                     return (False, opt)
+
+        # if we have an user, check if we forward the request to another server
+        if user_exists:
+            from linotp.lib.policy import get_auth_forward
+            servers = get_auth_forward(user, context=self.context)
+            if servers:
+                if 'radius://' in servers:
+                    rad = RadiusRequest(context=self.context, servers=servers)
+                    res, opt = rad.do_request(servers, user, passw, options)
+                    return res, opt
+                elif 'http://' in servers or 'https://' in servers:
+                    http = HttpRequest(context=self.context, servers=servers)
+                    res, opt = http.do_request(user, passw, options)
+                    return res, opt
 
         tokenList = linotp.lib.token.getTokens4UserOrSerial(user, serial,
                                                             context=self.context)
