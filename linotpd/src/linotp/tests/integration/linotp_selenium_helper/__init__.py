@@ -25,15 +25,11 @@
 #
 """Helper classes for LinOTP Selenium Tests"""
 
-from linotp_selenium_helper.test_case import TestCase
-from linotp_selenium_helper.ldap_user_id_resolver import LdapUserIdResolver
-from linotp_selenium_helper.sql_user_id_resolver import SqlUserIdResolver
-from linotp_selenium_helper.passwd_user_id_resolver \
-     import PasswdUserIdResolver
-from linotp_selenium_helper.realm import Realm
-from linotp_selenium_helper.policy import Policy
+from test_case import TestCase
+from policy import Policy
+from user_id_resolver import UserIdResolverManager, UserIdResolver, SqlUserIdResolver, PasswdUserIdResolver, LdapUserIdResolver
 
-__all__ = ["TestCase", "LdapUserIdResolver", "SqlUserIdResolver",
-           "PasswdUserIdResolver", "Realm", "Policy"]
+__all__ = ["TestCase", "UserIdResolverManager", "UserIdResolver",
+            "Policy"]
 
 

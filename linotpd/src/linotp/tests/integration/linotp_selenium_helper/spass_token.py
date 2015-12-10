@@ -27,8 +27,8 @@
 
 import time
 
-from linotp_selenium_helper.token import Token
-from linotp_selenium_helper.helper import select
+from token import Token
+from helper import select
 
 class SpassToken(Token):
     """Creates a Spass Token in the LinOTP WebUI"""
