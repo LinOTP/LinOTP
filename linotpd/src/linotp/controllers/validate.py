@@ -264,10 +264,8 @@ class ValidateController(BaseController):
             log.exception("[check] validate/check failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
             c.audit['info'] = unicode(exx)
-
             Session.rollback()
-            return sendError(response, u"validate/check failed: %s"
-                             % unicode(exx), 0)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()
@@ -328,8 +326,7 @@ class ValidateController(BaseController):
             log.exception("[check_yubikey] validate/check_yubikey failed: %r" % exx)
             c.audit['info'] = unicode(exx)
             Session.rollback()
-            return sendError(response, u"validate/check_yubikey failed: %s"
-                             % unicode(exx), 0)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()
@@ -370,8 +367,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[check_url] validate/check_url failed: %r" % exx)
             Session.rollback()
-            return sendError(response, u"validate/check_url failed: %s"
-                             % unicode(exx), 0)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()
@@ -434,8 +430,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[samlcheck] validate/check failed: %r" % exx)
             Session.rollback()
-            return sendError(response, "validate/samlcheck failed: %s"
-                             % unicode(exx), 0)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()
@@ -519,8 +514,7 @@ class ValidateController(BaseController):
             log.exception("[check_t] validate/check_t failed: %r" % exx)
             c.audit['info'] = unicode(exx)
             Session.rollback()
-            return sendError(response, "validate/check_t failed: %s"
-                             % unicode(exx), 0)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()
@@ -614,8 +608,7 @@ class ValidateController(BaseController):
             log.exception("[check_s] validate/check_s failed: %r" % exx)
             c.audit['info'] = unicode(exx)
             Session.rollback()
-            return sendError(response, "validate/check_s failed: %s"
-                             % unicode(exx), 0)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()
@@ -683,7 +676,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[simplecheck] failed: %r" % exx)
             Session.rollback()
-            return u":-/"
+            return u":-("
 
         finally:
             Session.close()
@@ -694,7 +687,7 @@ class ValidateController(BaseController):
         return sendResult(response, "TRUE", 0)
 
     def fail(self):
-        return sendResult(response, "FALSE", 0)
+        return sendResult(response, False, 0)
 
     def smspin(self):
         '''
@@ -755,8 +748,7 @@ class ValidateController(BaseController):
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
             c.audit['info'] = unicode(exx)
             Session.rollback()
-            return sendError(response, "validate/smspin failed: %s"
-                             % unicode(exx), 0)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()

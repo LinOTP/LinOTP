@@ -31,13 +31,16 @@
 import logging
 import binascii
 import random
+import urllib
 
 from linotp.lib.ext.pbkdf2 import PBKDF2
+from linotp.lib.reply import create_img
+
 
 from Crypto.Hash import SHA256 as SHA256
 
 from linotp.lib.ocra import OcraSuite
-from linotp.lib.crypt import kdf2, createActivationCode
+from linotp.lib.crypt import kdf2, createActivationCode, check
 from linotp.lib.crypt import check
 
 
@@ -47,7 +50,6 @@ from linotp.tests import TestController, url
 from datetime import datetime
 from datetime import timedelta
 
-
 try:
     import json
 except ImportError:
@@ -55,7 +57,7 @@ except ImportError:
 
 from urlparse import urlparse
 from urlparse import parse_qs
-
+from urlparse import urlsplit
 
 log = logging.getLogger(__name__)
 
@@ -92,6 +94,36 @@ class OcraOtp(object):
         self.ocrasuite = ocrasuite
 
         return (self.ocrasuite, self.sharedsecret, self.serial)
+
+    def check_signature(self, lseqr_url):
+
+        # parse the url
+
+        o = urlsplit(lseqr_url)
+        # due to different  behaviour of urlsplit, we introduce here the
+        # fallback for elder versions to use the path (o[2]) instead of the
+        # o[3] (query)
+        if o[3]:  # query
+            qs = o[3]
+        elif o[2]:  # path
+            qs = o[2].lstrip('?')
+        else:
+            raise Exception('no query parameter defined!')
+
+        params = parse_qs(qs)
+        if 'si' not in params:
+            return None
+        si = params['si'][0]
+        data = lseqr_url.split('&si=')[0]
+
+        if self.ocra is None:
+            self._setup_()
+
+        signature = self.ocra.signData(data, key=self.bkey)
+        if si == signature:
+            return True
+
+        return False
 
     def init_2(self, response, activationKey):
         self.activationkey = activationKey
@@ -394,24 +426,37 @@ class OcraTest(TestController):
 
     def setupPolicies(self, check_url='http://127.0.0.1/validate/check_t'):
 
+        self.delete_all_policies()
+
         params = {
                 'name': 'CheckURLPolicy',
                 'scope': 'authentication',
                 'realm': 'mydefrealm',
         }
-        params['action'] = 'qrtanurl=%s' % (unicode(check_url))
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params=params)
+        params['action'] = (
+'qrtanurl.one=https://<user>:<password>@my.one.de/callback/<serial>/<transactionid>/, '
+'qrtanurl=%s, '
+'qrtanurl_init=https://<user>:<password>@my.default.de/ini/callback/<serial>/,'
+'qrtanurl_init.one=https://<user>:<password>@my.one.de/ini/callback/<serial>/,'
+        % (unicode(check_url))
+        )
+
+        response = self.app.get(url(controller='system', action='setPolicy'), params=params)
 
         self.assertTrue('"setPolicy CheckURLPolicy"' in response, response)
         self.assertTrue('"status": true' in response, response)
         return response
 
-    def check_otp(self, transid, otp, pin='pin'):
+
+
+    def check_otp(self, transid, otp, pin='pin', params=None):
         ''' -3.a- verify the otp value to finish the rollout '''
-        parameters = {"transactionid": transid, "pass": '' + pin + otp}
-        response = self.app.get(url(controller='validate', action='check_t'),
-                                params=parameters)
+        parameters = {}
+        if params:
+            parameters.update(params)
+        parameters["transactionid"] = transid
+        parameters["pass"] = '' + pin + otp
+        response = self.app.get(url(controller='validate', action='check_t'), params=parameters)
         return response
 
     def gen_challenge_data(self):
@@ -470,8 +515,9 @@ class OcraTest(TestController):
 
             message = 'abc'
             (response2, activationkey) = self.init_1_QR_Token(user='root',
-                        message=message, activationkey='GEZDGNBVGY3TQOJQ01',
-                        ocrasuite=test['ocrasuite'])
+                                                              message=message,
+                                                              activationkey='GEZDGNBVGY3TQOJQ01',
+                                                              ocrasuite=test['ocrasuite'])
             (challenge, transid) = ocra.init_2(response2, activationkey)
 
             jresp = json.loads(response2.body)
@@ -553,15 +599,18 @@ class OcraTest(TestController):
         return rotp
 
     def init_0_QR_Token(self, tokentype='ocra2', ocrapin='',
-                        pin='pin', user='root', description='QRTestToken',
-                        serial='QR123', sharedsecret='1',
+                        pin='pin', user=None, serial=None,
+                        description='QRTestToken',
+                        sharedsecret='1',
                         genkey='1', otpkey=None,
-                        ocrasuite='OCRA-1:HOTP-SHA256-8:C-QA64'):
+                        ocrasuite='OCRA-1:HOTP-SHA256-8:C-QA64',
+                        realm=None,
+                        params=None):
+        ''' -1- create an ocra token '''
 
-        _description = description
-
-        # -1- create an ocra token
         parameters = {}
+        if params:
+            parameters.update(params)
 
         if tokentype is not None:
             parameters['type'] = tokentype
@@ -586,8 +635,12 @@ class OcraTest(TestController):
 
         if user is not None:
             parameters['user'] = user
-        elif serial is not None:
+
+        if serial is not None:
             parameters['serial'] = serial
+
+        if realm:
+            parameters['realm'] = realm
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -596,9 +649,13 @@ class OcraTest(TestController):
     def init_1_QR_Token(self, activationkey=None, tokentype='ocra2',
                         serial=None, user=None, pin='pin', message='Message',
                         ocrapin='', genkey='1',
-                        ocrasuite='OCRA-1:HOTP-SHA256-8:C-QA64'):
-        # -2- acivate ocra token
+                        ocrasuite=None,
+                        realm=None,
+                        params=None):
+        ## -2- acivate ocra token
         parameters = {}
+        if params:
+            parameters.update(params)
 
         if tokentype is not None:
             parameters['type'] = tokentype
@@ -619,6 +676,9 @@ class OcraTest(TestController):
             parameters['user'] = user
         elif serial is not None:
             parameters['serial'] = serial
+
+        if realm:
+            parameters['realm'] = realm
 
         if activationkey is None:
             activationkey = createActivationCode('1234567890')
@@ -2263,10 +2323,13 @@ class OcraTest(TestController):
 
         return (otp1, transid1, challenge1)
 
-    def get_challenge(self, serial, user=None, challenge_data=None):
-        p = {
-             "data": challenge_data,
-            }
+    def get_challenge(self, serial, user=None, challenge_data=None,
+                      params=None):
+        p = {}
+        if params:
+            p.update(params)
+
+        p["data"] = challenge_data
         if user is None:
             p["serial"] = serial
         else:
@@ -2994,11 +3057,16 @@ class OcraTest(TestController):
         response = self.check_otp(transid, wrongOtp)
         self.assertTrue('"value": false' in response, response)
 
+        # after "OcraMaxChallengeRequests", '3' failde auth requests
+        # the token is reset to rollout=1 status, which means you have
+        # to restart the rollout
         response = self.check_otp(transid, otp)
-        #self.assertTrue(transid in response, response)
-        #self.assertTrue("No challenge for transaction" in response, response)
-        self.assertTrue(("validate/check_t failed: unable to "
-                "complete the rollout") in response, response)
+
+        # due to fixes on security leakeage prevention the response changes
+        # and does not contain the following text anymore:
+        # "validate/check_t failed: unable to complete the rollout"
+        # instead  only a False value
+        self.assertTrue('"value": false' in response, response)
 
         # re-enroll token
         ocra.init_1(response1)
@@ -3162,7 +3230,11 @@ class OcraTest(TestController):
         self.assertTrue('Incorrect padding' in response2, response2)
 
         activationkey = createActivationCode()
-        wrongactivationkey = self.randOTP(activationkey)
+        while True:
+            wrongactivationkey = self.randOTP(activationkey)
+            checksum = check(str(wrongactivationkey))
+            if checksum != wrongactivationkey[-2:]:
+                break
 
         (response2, activationkey) = self.init_1_QR_Token(user='root',
                                             message='TestTTT',
@@ -3409,21 +3481,28 @@ class OcraTest(TestController):
         (response, challenge, transid) = \
                         self.get_challenge(serial,
                                            challenge_data='Äns Zwö Drü')
-        self.assertTrue('No token found: unable to create challenge for'
-                        in response, response)
+        # due to security fixes to prevent information leakage, there is no
+        # more the text:
+        #         'No token found: unable to create challenge for'
+        self.assertTrue('"value": false' in response, response)
 
         # test for user with two tokens
         (response, challenge, transid) = \
                     self.get_challenge(serial, user='root',
                                        challenge_data='Äns Zwö Drü')
-        self.assertTrue('More than one token found' in response, response)
+        # due to security fixes to prevent information leakage, there is no
+        # more the text:
+        #         More than one token found'
+        self.assertTrue('"value": false' in response, response)
 
         # now test wrong user
         (response, challenge, transid) = \
                     self.get_challenge(serial, user='rr',
                                        challenge_data='Äns Zwö Drü')
-        self.assertTrue("getUserId failed: no user >rr< found!" in response,
-                        response)
+        # due to security fixes to prevent information leakage, there is no
+        # more the text:
+        #         getUserId failed: no user >rr< found!
+        self.assertTrue('"value": false' in response, response)
 
         # get next challenge
         (response, challenge, transid) = \
@@ -3437,7 +3516,10 @@ class OcraTest(TestController):
 
         # correct response
         response = self.check_otp(transid, otp)
-        self.assertTrue('No challenge for transaction' in response, response)
+        # due to security fixes to prevent information leakage, there is no
+        # more the text:
+        #         'No challenge for transaction'
+        self.assertTrue('"value": false' in response, response)
 
         self.removeTokens(serial=ocra.serial)
         self.removeTokens(serial=ocra2.serial)
@@ -3616,6 +3698,108 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
 
+        return
+
+    def test_serial_based_w_callbackid(self):
+        '''
+        ocra2 token with check_s and check_t and callback_id as parameter
+        with replacements for transactionis and serial number
+        '''
+        ocrasuite = 'OCRA-1:HOTP-SHA256-8:C-QA64'
+        message = 'Transaktion: Ausrollen eines OCRA2 Tokens'
+        serial = "ExternalManagedOcraToken"
+
+        pin = ''
+
+        ocra = OcraOtp()
+
+        self.setupPolicies()
+
+        enroll_param = {'callback.id': 'one',
+                        'callback.user': 'hugo',
+                        'callback.password': 'abracad:abra123',
+                }
+        response1 = self.init_0_QR_Token(serial=serial, pin=pin,
+                                         realm='mydefrealm',
+                                         params=enroll_param,
+                                         ocrasuite=ocrasuite)
+
+        resp = json.loads(response1.body)
+        curl = resp.get('detail', {}).get('url', '')
+
+        # now check
+        # was the callback.id used
+        # and if the replacements went right
+        self.assertTrue('one' in curl, curl)
+        self.assertTrue('ini' in curl, curl)
+        self.assertTrue(serial in curl, curl)
+        self.assertTrue(enroll_param['callback.user'] in curl, curl)
+        self.assertTrue(urllib.quote(enroll_param['callback.password'])
+                                          in curl, curl)
+
+        ocra.init_1(response1)
+
+        (response2, activationkey) = self.init_1_QR_Token(serial=serial,
+                                                          pin=pin,
+                                                          message=message,
+                                                          realm='mydefrealm',
+                                                          params=enroll_param)
+        resp = json.loads(response2.body)
+        transid = resp.get('detail', {}).get('transactionid', '')
+        curl = resp.get('detail', {}).get('url', '')
+        self.assertTrue(transid in curl, curl)
+        self.assertTrue('one' in curl, curl)
+        self.assertTrue('ini' not in curl, curl)
+
+        (challenge, transid) = ocra.init_2(response2, activationkey)
+
+        ''' finish rollout '''
+        otp = ocra.callcOtp(challenge)
+
+        response = self.check_otp(transid, otp, pin=pin, params=enroll_param)
+
+        self.assertTrue('"value": true' in response, response)
+
+        for i in range(1, 5):
+            message = ('Veränderung %d am System durchgeführt! '
+                      'Bitte bestätigen!' % i)
+
+            if i == 3:
+                enroll_param['no_callback'] = True
+
+            if i == 4:
+                del enroll_param['callback.id']
+                del enroll_param['no_callback']
+
+            (response, challenge, transid) = self.get_challenge(ocra.serial,
+                                                    challenge_data=message,
+                                                    params=enroll_param)
+
+            resp = json.loads(response.body)
+            curl = resp.get('detail', {}).get('url', '')
+
+            if i < 3:
+                self.assertTrue(transid in curl, curl)
+                self.assertTrue(serial in curl, curl)
+            if i == 3:
+                self.assertTrue(curl == '', curl)
+            if i == 4:
+                self.assertTrue("validate/check_t" in curl, curl)
+
+            self.assertTrue('"value": true' in response, response)
+
+            otp = ocra.callcOtp(challenge, counter=i)
+
+            parameters = {'pass': otp,
+                          'transactionid': transid,
+                         }
+
+            response = self.app.get(url(controller='validate', action='check_t'),
+                                    params=parameters)
+
+            self.assertTrue('"value": true' in response, response)
+
+        self.removeTokens(serial=ocra.serial)
         return
 
     def createSpassToken(self, serial=None, user='root', pin='spass'):
@@ -3806,4 +3990,277 @@ class OcraTest(TestController):
         self.removeTokens(serial=ocra.serial)
         return
 
-#eof###########################################################################
+    def setupPolicies2(self):
+
+        self.delete_all_policies()
+
+        params = {'name': 'l_callback_one',
+                  'scope': 'authentication',
+                  'realm': 'mydefrealm',
+                  'user': '*', }
+        params['action'] = (
+         "qrtanurl_init.one=https://<user>:<password>/init/one/<serial>/, "
+         "qrtanurl.one=https://<user>:<password>/one/<serial>/<transactionid>,"
+        )
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params=params)
+
+        self.assertTrue('"setPolicy l_callback_one"' in response, response)
+        self.assertTrue('"status": true' in response, response)
+
+        params = {'name': 'l_callback',
+                  'scope': 'authentication',
+                  'realm': 'mydefrealm',
+                  'user': '*', }
+        params['action'] = (
+        "qrtanurl_init=https://<user>:<password>@host/init_<serial>/, "
+        "qrtanurl=https://<user>:<password>/callback/<serial>/<transactionid>,"
+        )
+
+        response = self.app.get(url(controller='system', action='setPolicy'),
+                                params=params)
+
+        self.assertTrue('"setPolicy l_callback"' in response, response)
+        self.assertTrue('"status": true' in response, response)
+
+        return response
+
+    def test_check_signature(self):
+        '''
+        standard challenge response with signature check
+        '''
+        ocrasuite = 'OCRA-1:HOTP-SHA256-8:C-QA64'
+        message = 'Transaktion: Ausrollen eines OCRA2 Tokens'
+        serial = "95538327:ocra2:1"
+
+        pin = ''
+
+        ocra = OcraOtp()
+
+        self.setupPolicies2()
+
+        enroll_param = {'callback.id': 'one',
+                        'callback.user': 'U',
+                        'callback.password': 'PW',
+                        'description': 'PENDING',
+                        'serial': serial,
+                }
+        response1 = self.init_0_QR_Token(serial=serial, pin=pin,
+                                         realm='mydefrealm',
+                                         params=enroll_param,
+                                         ocrasuite=ocrasuite)
+
+        resp = json.loads(response1.body)
+        curl = resp.get('detail', {}).get('url', '')
+        lse_url = resp.get('detail', {}).get('app_import', '')
+
+        # now check
+        # was the callback.id used
+        # and if the replacements went right
+        self.assertTrue('one' in curl, curl)
+        self.assertTrue('ini' in curl, curl)
+        self.assertTrue(serial in curl, curl)
+        self.assertTrue(enroll_param['callback.user'] in curl, curl)
+        self.assertTrue(urllib.quote(enroll_param['callback.password'])
+                                          in curl, curl)
+
+        ocra.init_1(response1)
+        res = ocra.check_signature(lse_url)
+        self.assertTrue(res is None, res)
+
+        (response2, activationkey) = self.init_1_QR_Token(serial=serial,
+                                                          pin=pin,
+                                                          message=message,
+                                                          realm='mydefrealm',
+                                                          params=enroll_param)
+        resp = json.loads(response2.body)
+        transid = resp.get('detail', {}).get('transactionid', '')
+        curl = resp.get('detail', {}).get('url', '')
+        lse_url = resp.get('detail', {}).get('app_import', '')
+
+        self.assertTrue(transid in curl, curl)
+        self.assertTrue('one' in curl, curl)
+        self.assertTrue('ini' not in curl, curl)
+
+        (challenge, transid) = ocra.init_2(response2, activationkey)
+        res = ocra.check_signature(lse_url)
+        self.assertTrue(res, lse_url)
+
+        ''' finish rollout '''
+        otp = ocra.callcOtp(challenge)
+
+        response = self.check_otp(transid, otp, pin=pin, params=enroll_param)
+
+        self.assertTrue('"value": true' in response, response)
+
+        for i in range(1, 5):
+            message = ('Veränderung %d am System durchgeführt! '
+                      'Bitte bestätigen!' % i)
+
+            if i == 3:
+                enroll_param['no_callback'] = True
+
+            if i == 4:
+                del enroll_param['callback.id']
+                del enroll_param['no_callback']
+
+            (response, challenge, transid) = self.get_challenge(ocra.serial,
+                                                    challenge_data=message,
+                                                    params=enroll_param)
+
+            resp = json.loads(response.body)
+            curl = resp.get('detail', {}).get('url', '')
+            lse_url = resp.get('detail', {}).get('message', '')
+            res = ocra.check_signature(lse_url)
+            self.assertTrue(res, lse_url)
+
+            if i < 3:
+                self.assertTrue(transid in curl, curl)
+                self.assertTrue(serial in curl, curl)
+            if i == 3:
+                self.assertTrue(curl == '', curl)
+            if i == 4:
+                self.assertTrue("/callback/" in curl, curl)
+
+            self.assertTrue('"value": true' in response, response)
+
+            otp = ocra.callcOtp(challenge, counter=i)
+
+            parameters = {'pass': otp,
+                          'transactionid': transid,
+                         }
+
+            response = self.app.get(url(controller='validate', action='check_t'),
+                                    params=parameters)
+
+            self.assertTrue('"value": true' in response, response)
+
+        self.removeTokens(serial=ocra.serial)
+        return
+
+    def test_qr_code(self):
+        '''
+        check the response qrcode to contain the same value as the lsqr url
+        - derived from test_serial_based_w_callbackid
+        '''
+        ocrasuite = 'OCRA-1:HOTP-SHA256-8:C-QA64'
+        message = 'Transaktion: Ausrollen eines OCRA2 Tokens'
+        serial = "ExternalManagedOcraToken"
+
+        pin = ''
+
+        ocra = OcraOtp()
+
+        self.setupPolicies()
+
+        enroll_param = {'callback.id': 'one',
+                        'callback.user': 'hugo',
+                        'callback.password': 'abracad:abra123',
+                }
+        response1 = self.init_0_QR_Token(serial=serial, pin=pin,
+                                         realm='mydefrealm',
+                                         params=enroll_param,
+                                         ocrasuite=ocrasuite)
+
+        # now verify that the qrcode image is the same
+        # as the qr code generated from the lseqr value
+        resp = json.loads(response1.body)
+
+        qr_img = resp.get('detail', {}).get('ocraurl', {}).get('img', '')
+        qr_img = qr_img.split('rc="data:image/png;base64,')[1]
+
+        qr_data = resp.get('detail', {}).get('ocraurl', {}).get('value', '')
+        qr_code = create_img(qr_data)
+        qr_code = qr_code.split('rc="data:image/png;base64,')[1]
+
+        self.assertEqual(qr_img, qr_code, resp)
+
+        self.assertTrue('lseqr://init' in qr_data, resp)
+        self.assertTrue(serial in qr_data, resp)
+
+        ocra.init_1(response1)
+
+        (response2, activationkey) = self.init_1_QR_Token(serial=serial,
+                                                          pin=pin,
+                                                          message=message,
+                                                          realm='mydefrealm',
+                                                          params=enroll_param)
+
+        # now verify that the qrcode image is the same
+        # as the qr code generated from the lseqr value
+        resp = json.loads(response2.body)
+
+        qr_img = resp.get('detail', {}).get('ocraurl', {}).get('img', '')
+        qr_img = qr_img.split('rc="data:image/png;base64,')[1]
+
+        qr_data = resp.get('detail', {}).get('ocraurl', {}).get('value', '')
+        qr_code = create_img(qr_data)
+        qr_code = qr_code.split('rc="data:image/png;base64,')[1]
+
+        self.assertEqual(qr_img, qr_code, resp)
+
+        self.assertTrue('lseqr://nonce' in qr_data, resp)
+        self.assertTrue(serial in qr_data, resp)
+
+        (challenge, transid) = ocra.init_2(response2, activationkey)
+
+        # finish rollout
+        otp = ocra.callcOtp(challenge)
+
+        response = self.check_otp(transid, otp, pin=pin, params=enroll_param)
+
+        self.assertTrue('"value": true' in response, response)
+
+        for i in range(1, 5):
+            message = ('Veränderung %d am System durchgeführt! '
+                      'Bitte bestätigen!' % i)
+
+            if i == 3:
+                enroll_param['no_callback'] = True
+
+            if i == 4:
+                del enroll_param['callback.id']
+                del enroll_param['no_callback']
+
+            (response, challenge, transid) = self.get_challenge(ocra.serial,
+                                                    challenge_data=message,
+                                                    params=enroll_param)
+
+            self.assertTrue('"value": true' in response, response)
+
+            # now verify that the qrcode image is the same
+            # as the qr code generated from the lseqr value
+            resp = json.loads(response.body)
+
+            qr_img = resp.get('detail', {}).get('ocraurl', {}).get('img', '')
+            qr_img = qr_img.split('rc="data:image/png;base64,')[1]
+
+            qr_data = resp.get('detail', {}).get('ocraurl', {}).get('value', '')
+            qr_code = create_img(qr_data)
+            qr_code = qr_code.split('rc="data:image/png;base64,')[1]
+
+            self.assertEqual(qr_img, qr_code, resp)
+
+            self.assertTrue('lseqr://req' in qr_data, resp)
+            self.assertTrue(transid in qr_data, resp)
+
+            # now check if this is the same as the returned message
+            self.assertEqual(qr_data,
+                             resp.get('detail', {}).get('message', ''),
+                             resp)
+
+            otp = ocra.callcOtp(challenge, counter=i)
+
+            parameters = {'pass': otp,
+                          'transactionid': transid,
+                         }
+
+            response = self.app.get(url(controller='validate', action='check_t'),
+                                    params=parameters)
+
+            self.assertTrue('"value": true' in response, response)
+
+        self.removeTokens(serial=ocra.serial)
+        return
+
+##eof##########################################################################

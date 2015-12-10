@@ -39,7 +39,7 @@ from linotp.lib.ext.pbkdf2 import PBKDF2
 from Crypto.Hash import SHA256 as SHA256
 
 from linotp.lib.ocra import OcraSuite
-from linotp.lib.crypt import kdf2, createActivationCode
+from linotp.lib.crypt import kdf2, createActivationCode, check
 from linotp.lib.crypt import check
 
 
@@ -3116,7 +3116,12 @@ This is a very long message text, which should be used as the data for the chall
         assert 'Incorrect padding' in response2
 
         activationkey = createActivationCode()
-        wrongactivationkey = self.randOTP(activationkey)
+
+        while True:
+            wrongactivationkey = self.randOTP(activationkey)
+            checksum = check(str(wrongactivationkey))
+            if checksum != wrongactivationkey[-2:]:
+                break
 
         (response2, activationkey) = self.init_1_QR_Token(user='root', message='TestTTT', activationkey=wrongactivationkey)
         assert '"status": false' in response2

@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2015-10-24 00:08+0200\n"
+"PO-Revision-Date: 2015-11-13 02:43+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -637,10 +637,24 @@ msgstr "E-Mail Adresse"
 msgid "enroll email token"
 msgstr "E-Mail Token ausrollen"
 
-msgid "define if the user should be allowed to define the email"
+msgid "define if the user should be allowed to define the email address"
 msgstr ""
 "beschreibt, ob der Benutzer die EMail Adresse selbst definieren oder ändern "
 "darf."
+
+msgid ""
+"The text that will be send via email for an email token. Use <otp> and "
+"<serial> as parameters."
+msgstr ""
+"E-Mail-Text, der für ein E-Mail-Token via E-Mail gesendet wird. Parameter "
+"sind <opt> und <serial>."
+
+msgid ""
+"The subject that will be send via email for an email token. Use <otp> and "
+"<serial> as parameters."
+msgstr ""
+"E-Mail-Text, der für ein E-Mail-Token via E-Mail gesendet wird. Parameter "
+"sind <opt> und <serial>."
 
 msgid "User is not allowed to set email address"
 msgstr "Der Benutzer darf die E-Mail Adresse nicht setzen!"
@@ -1106,6 +1120,9 @@ msgstr ""
 msgid "User is not allowed to set phone number"
 msgstr "Der Benutzer darf die Telefon Nummer nicht setzen!"
 
+msgid "sending sms failed"
+msgstr "Das Senden der SMS war nicht erfolgreich."
+
 msgid "Simple Pass Token"
 msgstr "Simple Pass Token"
 
@@ -1441,6 +1458,12 @@ msgstr "Temporären Token erzeugen"
 
 msgid "Cancel"
 msgstr "Abbrechen"
+
+msgid "Set Token Realm"
+msgstr "Tokenrealm setzen"
+
+msgid "Please select the token first."
+msgstr "Bitte wählen Sie zunächst einen Token aus."
 
 msgid "Close"
 msgstr "Schließen"
@@ -2623,9 +2646,8 @@ msgstr "Token synchronisieren"
 msgid "Resync"
 msgstr "Synchronisieren"
 
-msgid "Here you may define to which realms the token shall belong to:"
-msgstr ""
-"Hier können Sie definieren, zu welchen Realms dieser Token gehören soll:"
+msgid "Define to which realms the token(s) shall belong to:"
+msgstr "Definieren Sie zu welchen Realms dieser Token gehören soll:"
 
 msgid "You may add realms by holding down Ctrl-Key and left-clicking."
 msgstr ""
@@ -2634,6 +2656,9 @@ msgstr ""
 
 msgid "Edit Realms of Token"
 msgstr "Realms des Tokens bearbeiten"
+
+msgid "Set Realm"
+msgstr "Tokenrealm setzen"
 
 msgid "You may get OTP values for token:"
 msgstr "Für diesen Token können Sie OTP-Werte anfragen:"
@@ -3157,9 +3182,6 @@ msgstr "Zeitversatz"
 
 msgid "mobile phone number"
 msgstr "Mobiltelefonnummer"
-
-msgid "Set Token Realm"
-msgstr "Tokenrealm setzen"
 
 msgid "Get OTP"
 msgstr "OTP Werte anfragen"

@@ -140,7 +140,6 @@ def getPolicyDefinitions(scope=""):
                         'the credentials are forwarded'},
             'autoassignment': {
                 'type': 'bool',
-                #'value': [6, 8, 32, 48],
                 'desc': 'users can assign a token just by using the '
                             'unassigned token to authenticate.'},
 
@@ -199,6 +198,11 @@ def getPolicyDefinitions(scope=""):
                 'type': 'str',
                 'desc': 'The URL for the half automatic mode that should be '
                         'used in a QR Token'
+                },
+            'qrtanurl_init': {
+                'type': 'str',
+                'desc': 'The URL for rollout in the half automatic mode that '
+                        'should be used in a QR Token rollout.'
                 },
             'challenge_response': {
                 'type': 'str',

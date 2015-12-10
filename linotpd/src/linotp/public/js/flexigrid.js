@@ -400,17 +400,11 @@
 				this.rePosDrag();
 			},
 			addData: function (data) { //parse data
+				//HTML-sanitize data
 				function sanitize (data) {
-					//HTML-sanitize data
 					data = String(data);
-					data = data.replace(/&/g, '&amp;');
-					data = data.replace(/</g, '&lt;');
-					data = data.replace(/>/g, '&gt;');
-					data = data.replace(/"/g, '&quot;');
-					data = data.replace(/'/g, '&#x27;');
-					return data;
+					return data = escape(data);
 				}
-
 				if (p.dataType == 'json') {
 					data = $.extend({rows: [], page: 0, total: 0}, data);
 				}

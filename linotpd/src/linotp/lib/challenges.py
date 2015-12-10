@@ -27,7 +27,8 @@
 import logging
 from sqlalchemy import desc, and_
 import linotp
-from linotp.model import Session, Challenge
+from linotp.model import Session
+from linotp.model import Challenge
 
 log = logging.getLogger(__name__)
 
@@ -60,30 +61,33 @@ class Challenges(object):
         :param transid:  transaction id, if None, all will be retrieved
         :return:         return a list of challenge dict
         """
-        log.debug('%r' % (serial))
+        log.debug('serial %r: transactionid %r', serial, transid)
 
         if transid is None and serial is None:
             log.debug(
-                'Called without serial or transid! Returning all Challenges')
-        # return []
+                'Called without serial or transid! Returning all challenges')
 
         conditions = ()
-        if serial:
-            conditions += (and_(Challenge.tokenserial == serial),)
+
         if transid:
             transid_len = int(
-                context.get('Config').get('TransactionIdLength', 12))
+                context.get('Config').get('TransactionIdLength', 12) or 12)
+
             if len(transid) == transid_len:
                 conditions += (and_(Challenge.transid == transid),)
             else:
                 conditions += (and_(Challenge.transid.startswith(transid)),)
 
+        if serial:
+            conditions += (and_(Challenge.tokenserial == serial),)
+
         # SQLAlchemy requires the conditions in one arg as tupple
         condition = and_(*conditions)
-        challenges = Session.query(Challenge). \
+        challenges = Session.query(Challenge).\
             filter(condition).order_by(desc(Challenge.id)).all()
 
-        log.debug('%r' % challenges)
+        log.debug('%r', challenges)
+
         return challenges
 
     @staticmethod
@@ -280,7 +284,8 @@ class Challenges(object):
         for related_challenge in related_challenges:
             serial = related_challenge.tokenserial
             transid = related_challenge.transid
-            token = linotp.lib.token.getTokens4UserOrSerial(serial=serial)[0]
+            token = linotp.lib.token.getTokens4UserOrSerial(serial=serial,
+                                                            context=context)[0]
 
             # get all challenges and the matching ones
             all_challenges = Challenges.lookup_challenges(context,

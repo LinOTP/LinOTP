@@ -327,8 +327,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_system_settings() {
         $("#dialog_system_settings" ).dialog( "option", "title", '${_("System Config")}' );
-        $('#button_system_save .ui-button-text').html('${_("Save Config")}');
-        $('#button_system_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_system_save .ui-button-text').html(escape('${_("Save Config")}'));
+        $('#button_system_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -352,8 +352,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_token_settings() {
         $("#dialog_token_settings" ).dialog( "option", "title", '${_("Tokentype Configuration")}' );
-        $('#button_token_save .ui-button-text').html('${_("Save Config")}');
-        $('#button_token_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_token_save .ui-button-text').html(escape('${_("Save Config")}'));
+        $('#button_token_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -365,8 +365,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_support_view() {
         $("#dialog_support_view" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
-        $('#button_support_set .ui-button-text').html('${_("Set Support and Subscription")}');
-        $('#button_support_close .ui-button-text').html('${_("Close")}');
+        $('#button_support_set .ui-button-text').html(escape('${_("Set Support and Subscription")}'));
+        $('#button_support_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
 
@@ -385,8 +385,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_support_set() {
         $("#dialog_set_support" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
-        $('#button_support_set .ui-button-text').html('${_("Set Support and Subscription")}');
-        $('#button_support_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_support_set .ui-button-text').html(escape('${_("Set Support and Subscription")}'));
+        $('#button_support_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -410,7 +410,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_about() {
         $("#dialog_about").dialog( "option", "title", '${_("About LSE LinOTP")}' );
-        $('#button_about_close .ui-button-text').html('${_("Close")}');
+        $('#button_about_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
 
@@ -451,8 +451,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_set_pin() {
         $("#dialog_set_pin" ).dialog( "option", "title", '${_("Set PIN")}' );
-        $('#button_setpin_setpin .ui-button-text').html('${_("Set PIN")}');
-        $('#button_setpin_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_setpin_setpin .ui-button-text').html(escape('${_("Set PIN")}'));
+        $('#button_setpin_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -536,8 +536,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_token_enroll() {
         $("#dialog_token_enroll" ).dialog( "option", "title", '${_("Enroll Token")}' );
-        $('#button_enroll_enroll .ui-button-text').html('${_("Enroll")}');
-        $('#button_enroll_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_enroll_enroll .ui-button-text').html(escape('${_("Enroll")}'));
+        $('#button_enroll_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -560,8 +560,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_get_serial() {
         $("#dialog_get_serial" ).dialog( "option", "title", '${_("Get Serial by OTP value")}' );
-        $('#button_tools_getserial_ok .ui-button-text').html('${_("Get Serial")}');
-        $('#button_tools_getserial_close .ui-button-text').html('${_("Close")}');
+        $('#button_tools_getserial_ok .ui-button-text').html(escape('${_("Get Serial")}'));
+        $('#button_tools_getserial_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
 
@@ -599,8 +599,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_check_policy() {
         $("#dialog_check_policy" ).dialog( "option", "title", '${_("Check Policy")}' );
-        $('#button_tools_checkpolicy_ok .ui-button-text').html('${_("Check Policy")}');
-        $('#button_tools_checkpolicy_close .ui-button-text').html('${_("Close")}');
+        $('#button_tools_checkpolicy_ok .ui-button-text').html(escape('${_("Check Policy")}'));
+        $('#button_tools_checkpolicy_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
 
@@ -617,7 +617,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_export_token() {
         $("#dialog_export_token" ).dialog( "option", "title", '${_("Export Token Info")}' );
-        $('#button_export_token .ui-button-text').html('${_("Export")}');
+        $('#button_export_token .ui-button-text').html(escape('${_("Export")}'));
     }
 </script>
 
@@ -638,7 +638,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_export_audit() {
         $("#dialog_export_audit" ).dialog( "option", "title", '${_("Export Audit Trail")}' );
-        $('#button_export_audit .ui-button-text').html('${_("Export")}');
+        $('#button_export_audit .ui-button-text').html(escape('${_("Export")}'));
     }
 </script>
 
@@ -654,8 +654,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_copy_token() {
         $("#dialog_copy_token" ).dialog( "option", "title", '${_("Copy Token PIN")}' );
-        $('#button_tools_copytokenpin_ok .ui-button-text').html('${_("Copy PIN")}');
-        $('#button_tools_copytokenpin_close .ui-button-text').html('${_("Close")}');
+        $('#button_tools_copytokenpin_ok .ui-button-text').html(escape('${_("Copy PIN")}'));
+        $('#button_tools_copytokenpin_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
 
@@ -689,8 +689,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_safenet() {
         $("#dialog_import_safenet" ).dialog( "option", "title", '${_("Aladdin XML Token File")}' );
-        $('#button_aladdin_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_aladdin_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_aladdin_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_aladdin_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -736,8 +736,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_pskc() {
         $("#dialog_import_pskc" ).dialog( "option", "title", '${_("PSKC Key File")}' );
-        $('#button_pskc_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_pskc_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_pskc_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_pskc_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -775,8 +775,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_oath() {
         $("#dialog_import_oath" ).dialog( "option", "title", '${_("OATH CSV Token File")}' );
-        $('#button_oathcsv_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_oathcsv_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_oathcsv_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_oathcsv_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -802,8 +802,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_yubikey() {
         $("#dialog_import_yubikey" ).dialog( "option", "title", '${_("YubiKey CSV Token File")}' );
-        $('#button_yubikeycsv_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_yubikeycsv_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_yubikeycsv_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_yubikeycsv_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -828,8 +828,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_dpw() {
         $("#dialog_import_dpw" ).dialog( "option", "title", '${_("Tagespasswort Token File")}' );
-        $('#button_dpw_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_dpw_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_dpw_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_dpw_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -858,8 +858,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_dat() {
         $("#dialog_import_dat" ).dialog( "option", "title", '${_("eToken DAT File")}' );
-        $('#button_dat_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_dat_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_dat_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_dat_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -882,8 +882,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_feitian() {
         $("#dialog_import_feitian" ).dialog( "option", "title", '${_("Feitian XML Token file")}' );
-        $('#button_feitian_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_feitian_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_feitian_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_feitian_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -918,8 +918,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_vasco() {
         $("#dialog_import_vasco" ).dialog( "option", "title", '${_("Vasco DPX File")}' );
-        $('#button_vasco_load .ui-button-text').html('${_("Load Token File")}');
-        $('#button_vasco_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_vasco_load .ui-button-text').html(escape('${_("Load Token File")}'));
+        $('#button_vasco_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -936,8 +936,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_import_policy() {
         $("#dialog_import_policies" ).dialog( "option", "title", '${_("Import policies")}' );
-        $('#button_policy_load .ui-button-text').html('${_("Import policy file")}');
-        $('#button_policy_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_policy_load .ui-button-text').html(escape('${_("Import policy file")}'));
+        $('#button_policy_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -951,12 +951,12 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_realms() {
         $("#dialog_realms" ).dialog( "option", "title", '${_("Realms")}' );
-        $('#button_realms_new .ui-button-text').html('${_("New")}');
-        $('#button_realms_edit .ui-button-text').html('${_("Edit")}');
-        $('#button_realms_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_realms_close .ui-button-text').html('${_("Close")}');
-        $('#button_realms_setdefault .ui-button-text').html('${_("Set Default")}');
-        $('#button_realms_cleardefault .ui-button-text').html('${_("Clear Default")}');
+        $('#button_realms_new .ui-button-text').html(escape('${_("New")}'));
+        $('#button_realms_edit .ui-button-text').html(escape('${_("Edit")}'));
+        $('#button_realms_delete .ui-button-text').html(escape('${_("Delete")}'));
+        $('#button_realms_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_realms_setdefault .ui-button-text').html(escape('${_("Set Default")}'));
+        $('#button_realms_cleardefault .ui-button-text').html(escape('${_("Clear Default")}'));
     }
 </script>
 <!-- ######################### resolvers ############################## -->
@@ -966,11 +966,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </div>
 <script>
     function translate_dialog_resolvers() {
-        $("#dialog_resolvers" ).dialog( "option", "title", '${_("Resolver")}' );
-        $('#button_resolver_new .ui-button-text').html('${_("New")}');
-        $('#button_resolver_edit .ui-button-text').html('${_("Edit")}');
-        $('#button_resolver_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_resolver_close .ui-button-text').html('${_("Close")}');
+        $("#dialog_resolvers" ).dialog( "option", "title", '${_("Resolver")}');
+        $('#button_resolver_new .ui-button-text').html(escape('${_("New")}'));
+        $('#button_resolver_edit .ui-button-text').html(escape('${_("Edit")}'));
+        $('#button_resolver_delete .ui-button-text').html(escape('${_("Delete")}'));
+        $('#button_resolver_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
 
@@ -1013,8 +1013,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_realm_edit() {
         $("#dialog_edit_realms" ).dialog( "option", "title", '${_("Edit Realm")}' );
-        $('#button_editrealms_cancel .ui-button-text').html('${_("Cancel")}');
-        $('#button_editrealms_save .ui-button-text').html('${_("Save")}');
+        $('#button_editrealms_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_editrealms_save .ui-button-text').html(escape('${_("Save")}'));
     }
 </script>
 
@@ -1027,8 +1027,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_delete_token() {
         $("#dialog_delete_token" ).dialog( "option", "title", '${_("Delete selected tokens?")}' );
-        $('#button_delete_delete .ui-button-text').html('${_("Delete tokens")}');
-        $('#button_delete_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_delete_delete .ui-button-text').html(escape('${_("Delete tokens")}'));
+        $('#button_delete_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -1044,7 +1044,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_show_enroll_url() {
         $("#dialog_show_enroll_url" ).dialog( "option", "title", '${_("token enrollment")}' );
-        $('#button_show_enroll_ok .ui-button-text').html('${_("OK")}');
+        $('#button_show_enroll_ok .ui-button-text').html(escape('${_("OK")}'));
     }
 </script>
 <!--
@@ -1058,7 +1058,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_show_enroll_url() {
         $("#dialog_show_enroll_url" ).dialog( "option", "title", '${_("token enrollment")}' );
-        $('#button_show_enroll_ok .ui-button-text').html('${_("OK")}');
+        $('#button_show_enroll_ok .ui-button-text').html(escape('${_("OK")}'));
     }
 </script>
 -->
@@ -1086,8 +1086,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_lost_token() {
         $("#dialog_lost_token" ).dialog( "option", "title", '${_("Lost Token")}' );
-        $('#button_losttoken_ok .ui-button-text').html('${_("Get Temporary Token")}');
-        $('#button_losttoken_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_losttoken_ok .ui-button-text').html(escape('${_("Get Temporary Token")}'));
+        $('#button_losttoken_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -1097,19 +1097,19 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_token_info() {
         $("#dialog_token_info" ).dialog( "option", "title", '${_("Token Info")}' );
-        $('#button_ti_hashlib .ui-button-text').html('${_("Hashlib")}');
-        $('#button_ti_close .ui-button-text').html('${_("Close")}');
-        $('#button_ti_otplength .ui-button-text').html('${_("OTP Length")}');
-        $('#button_ti_counterwindow .ui-button-text').html('${_("Counter Window")}');
-        $('#button_ti_failcount .ui-button-text').html('${_("Max Fail Counter")}');
-        $('#button_ti_countauthmax .ui-button-text').html('${_("Max Auth Count")}');
-        $('#button_ti_countauthsuccessmax .ui-button-text').html('${_("Max Successful Auth Count")}');
-        $('#button_ti_validityPeriodStart .ui-button-text').html('${_("Validity start")}');
-        $('#button_ti_validityPeriodEnd .ui-button-text').html('${_("Validity end")}');
-        $('#button_ti_syncwindow .ui-button-text').html('${_("Sync Window")}');
-        $('#button_ti_timewindow .ui-button-text').html('${_("Time Window")}');
-        $('#button_ti_timeshift .ui-button-text').html('${_("Time Shift")}');
-        $('#button_ti_timestep .ui-button-text').html('${_("Time Step")}');
+        $('#button_ti_hashlib .ui-button-text').html(escape('${_("Hashlib")}'));
+        $('#button_ti_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_ti_otplength .ui-button-text').html(escape('${_("OTP Length")}'));
+        $('#button_ti_counterwindow .ui-button-text').html(escape('${_("Counter Window")}'));
+        $('#button_ti_failcount .ui-button-text').html(escape('${_("Max Fail Counter")}'));
+        $('#button_ti_countauthmax .ui-button-text').html(escape('${_("Max Auth Count")}'));
+        $('#button_ti_countauthsuccessmax .ui-button-text').html(escape('${_("Max Successful Auth Count")}'));
+        $('#button_ti_validityPeriodStart .ui-button-text').html(escape('${_("Validity start")}'));
+        $('#button_ti_validityPeriodEnd .ui-button-text').html(escape('${_("Validity end")}'));
+        $('#button_ti_syncwindow .ui-button-text').html(escape('${_("Sync Window")}'));
+        $('#button_ti_timewindow .ui-button-text').html(escape('${_("Time Window")}'));
+        $('#button_ti_timeshift .ui-button-text').html(escape('${_("Time Shift")}'));
+        $('#button_ti_timestep .ui-button-text').html(escape('${_("Time Step")}'));
     }
 </script>
 
@@ -1119,94 +1119,94 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </div>
 <script>
     function translate_dialog_ti_hashlib() {
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Hashlib")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Hashlib")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_otplength() {
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set OTP length")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set OTP length")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_counterwindow() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Counter Window")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_maxfailcount() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Failcount")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_countauthmax() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_countauthsuccessmax() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Successful Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_validityPeriodStart() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity start")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_validityPeriodEnd() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity end")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_countauthmax() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_countauthsuccessmax() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Successful Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_validityPeriodStart() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity start")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_validityPeriodEnd() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity end")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_phone() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Mobile phone number")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_syncwindow(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Sync Window")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_timewindow(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Time Window")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_timeshift(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Time Shift")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_timestep(){
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Time Step")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Time Step")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
     function translate_dialog_ti_description(){
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Description")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html('${_("OK")}');
-        $('#button_tokeninfo_cancel .ui-button-text').html('${_("Cancel")}');
+        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Description")}');
+        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -1233,26 +1233,26 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_resync_token() {
         $("#dialog_resync_token" ).dialog( "option", "title", '${_("Resync Token")}' );
-        $('#button_resync_resync .ui-button-text').html('${_("Resync")}');
-        $('#button_resync_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_resync_resync .ui-button-text').html(escape('${_("Resync")}'));
+        $('#button_resync_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
 <!-- ######################## dialog edit token realm ############# -->
 <div id='dialog_edit_tokenrealm'>
     <form class="cmxform" id="form_tokenrealm">
-    <p>${_("Here you may define to which realms the token shall belong to:")}
-        <span id='tokenid_realm'> </span></p>
-    <p>${_("You may add realms by holding down Ctrl-Key and left-clicking.")}</p>
+    <p>${_("Define to which realms the token(s) shall belong to:")}*</p>
+    <p><span id='tokenid_realm'> </span></p>
     <input type='hidden' id='realm_name' size='20' maxlength='60'>
     <div id='token_realm_list'> </div>
+    <i>*${_("You may add realms by holding down Ctrl-Key and left-clicking.")}</i>
     </form>
 </div>
 <script>
     function translate_dialog_token_realm() {
         $("#dialog_edit_tokenrealm" ).dialog( "option", "title", '${_("Edit Realms of Token")}' );
-        $('#button_tokenrealm_save .ui-button-text').html('${_("Save")}');
-        $('#button_tokenrealm_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_tokenrealm_save .ui-button-text').html(escape('${_("Set Realm")}'));
+        $('#button_tokenrealm_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -1266,8 +1266,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_getmulti() {
         $("#dialog_getmulti" ).dialog( "option", "title", '${_("Get OTP values")}' );
-        $('#button_getmulti_ok .ui-button-text').html('${_("OK")}');
-        $('#button_getmulti_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_getmulti_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_getmulti_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -1281,8 +1281,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_unassign() {
         $("#dialog_unassign_token" ).dialog( "option", "title", '${_("Unassign selected tokens?")}' );
-        $('#button_unassign_unassign .ui-button-text').html('${_("Unassign")}');
-        $('#button_unassign_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_unassign_unassign .ui-button-text').html(escape('${_("Unassign")}'));
+        $('#button_unassign_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 <!-- #################### realm ask delete ###################### -->
@@ -1292,8 +1292,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_realm_ask_delete() {
         $("#dialog_realm_ask_delete" ).dialog( "option", "title", '${_("Deleting realm")}' );
-        $('#button_realm_ask_delete_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_realm_ask_delete_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_realm_ask_delete_delete .ui-button-text').html(escape('${_("Delete")}'));
+        $('#button_realm_ask_delete_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 <!-- ################## resolver ask delete ###################### -->
@@ -1307,8 +1307,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_resolver_ask_delete() {
         $("#dialog_resolver_ask_delete" ).dialog( "option", "title", '${_("Deleting resolver")}' );
-        $('#button_resolver_ask_delete_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_resolver_ask_delete_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_resolver_ask_delete_delete .ui-button-text').html(escape('${_("Delete")}'));
+        $('#button_resolver_ask_delete_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
 </script>
 
@@ -1326,7 +1326,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_view_temptoken() {
         $("#dialog_view_temporary_token" ).dialog( "option", "title", '${_("New Temporary Token")}' );
-        $('#button_view_temporary_token_close .ui-button-text').html('${_("Close")}');
+        $('#button_view_temporary_token_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
 
@@ -1389,9 +1389,9 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_ldap_resolver() {
         $("#dialog_ldap_resolver" ).dialog( "option", "title", '${_("LDAP Resolver")}' );
-        $('#button_test_ldap .ui-button-text').html('${_("Test LDAP connection")}');
-        $('#button_preset_ad .ui-button-text').html('${_("Preset AD")}');
-        $('#button_preset_ldap .ui-button-text').html('${_("Preset LDAP")}');
+        $('#button_test_ldap .ui-button-text').html(escape('${_("Test LDAP connection")}'));
+        $('#button_preset_ad .ui-button-text').html(escape('${_("Preset AD")}'));
+        $('#button_preset_ldap .ui-button-text').html(escape('${_("Preset LDAP")}'));
     }
 </script>
 
@@ -1546,7 +1546,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <script>
     function translate_dialog_sql_resolver() {
         $("#dialog_sql_resolver" ).dialog( "option", "title", '${_("SQL Resolver")}' );
-        $('#button_test_sql .ui-button-text').html('${_("Test SQL connection")}');
+        $('#button_test_sql .ui-button-text').html(escape('${_("Test SQL connection")}'));
     }
 </script>
 

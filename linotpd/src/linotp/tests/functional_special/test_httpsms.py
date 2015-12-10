@@ -40,7 +40,9 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 
 from linotp.tests import TestController
 from linotp.tests import url
+from linotp.lib.util import str2unicode
 
+import tempfile
 try:
     import json
 except ImportError:
@@ -194,6 +196,7 @@ class TestHttpSmsController(TestController):
                 }
 
         parameters = {
+                'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
                 'SMSProviderConfig' : json.dumps(sms_conf),
                 'selftest_admin' : 'superadmin'
                 }
@@ -214,7 +217,12 @@ class TestHttpSmsController(TestController):
 
         response = self.app.get(url(controller='validate', action='smspin')
                                 , params={'user' : 'user1', 'pass' : '1234'})
-        self.assertTrue('Failed to send SMS.' in response, response)
+
+        # due to security fixes to prevent information leakage, there is no
+        # more the text:
+        #         'Failed to send SMS.'
+        self.assertTrue('"value": false' in response, response)
+
         # check last audit entry
         response = self.last_audit()
 
@@ -247,9 +255,11 @@ class TestHttpSmsController(TestController):
                     "RETURN_SUCCESS" : "ID"
                     }
 
-        parameters = { 'SMSProviderConfig' : json.dumps(sms_conf),
-                       'selftest_admin' : 'superadmin'
-                      }
+        parameters = {
+              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+              'SMSProviderConfig': json.dumps(sms_conf),
+               'selftest_admin': 'superadmin'
+            }
         response = self.app.get(url(controller='system', action='setConfig'),
                                 params=parameters)
 
@@ -297,9 +307,11 @@ class TestHttpSmsController(TestController):
             "HTTP_Method" : "GET",
             "RETURN_SUCCESS" : "ID"
         }
-        parameters = { 'SMSProviderConfig' : json.dumps(sms_conf),
-                       'selftest_admin' : 'superadmin'
-                      }
+        parameters = {
+              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+              'SMSProviderConfig': json.dumps(sms_conf),
+              'selftest_admin': 'superadmin'
+            }
         response = self.app.get(url(controller='system', action='setConfig'),
                                                              params=parameters)
 
@@ -336,9 +348,11 @@ class TestHttpSmsController(TestController):
             "HTTP_Method" : "GET",
             "RETURN_FAILED" : "FAILED"
             }
-        parameters = { 'SMSProviderConfig' : json.dumps(sms_conf),
-                       'selftest_admin' : 'superadmin'
-                      }
+        parameters = {
+              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+              'SMSProviderConfig': json.dumps(sms_conf),
+              'selftest_admin': 'superadmin'
+                }
         response = self.app.get(url(controller='system', action='setConfig'),
                                                             params=parameters)
 
@@ -350,6 +364,51 @@ class TestHttpSmsController(TestController):
 
         self.assertTrue('"state"' in response, response)
 
+        return
+
+    def test_successful_File_SMS(self):
+        '''
+        Successful test of the File SMS Provider
+        '''
+        # locate the lookup file in the servers home
+        here = self.appconf.get('here', None)
+
+        # create a temporary filename, to avoid conflicts
+        f = tempfile.NamedTemporaryFile(delete=False, dir=here)
+        filename = f.name
+        sms_conf = {"file": filename}
+        parameters = {
+              'SMSProvider': 'smsprovider.FileSMSProvider.FileSMSProvider',
+              'SMSProviderConfig': json.dumps(sms_conf),
+               'selftest_admin': 'superadmin'
+              }
+        response = self.app.get(url(controller='system', action='setConfig'),
+                                                            params=parameters)
+
+        self.assertTrue('"status": true' in response, response)
+
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user': 'user1', 'pass': '1234',
+                                        'message': 'Täst<otp>'})
+
+        self.assertTrue('"message": "sms submitted"' in response, response)
+        self.assertTrue('"state"' in response, response)
+
+        with open(filename, 'r') as f:
+            line = f.read()
+
+        line = str2unicode(line)
+        self.assertTrue(u'Täst' in line, u"'Täst' not found in line")
+
+        _left, otp = line.split(u'Täst')
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user': 'user1',
+                                        'pass': '1234%s' % otp})
+
+        self.assertTrue('"value": true' in response, response)
+
+        import os
+        os.remove(filename)
         return
 
     def test_failed_SMS(self):
@@ -364,8 +423,10 @@ class TestHttpSmsController(TestController):
             "RETURN_FAIL" : "FAILED"
         }
 
-        parameters = { 'SMSProviderConfig' : json.dumps(sms_conf),
-                       'selftest_admin' : 'superadmin'
+        parameters = {
+              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+              'SMSProviderConfig': json.dumps(sms_conf),
+              'selftest_admin': 'superadmin'
                       }
         response = self.app.get(url(controller='system', action='setConfig'),
                                                             params=parameters)
@@ -373,11 +434,13 @@ class TestHttpSmsController(TestController):
         self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='validate', action='smspin'),
-                                params={'user' : 'user1',
-                                        'pass' : '1234'})
-
-        self.assertTrue('Failed to send SMS. We received a'
-                        ' predefined error from the SMS Gateway.' in response)
+                                params={'user': 'user1',
+                                        'pass': '1234'})
+        # due to security fixes to prevent information leakage, there is no
+        # more the text:
+        #         'Failed to send SMS. We received a predefined error
+        #                            from the SMS Gateway.'
+        self.assertTrue('"value": false' in response, response)
 
         return
 
@@ -405,9 +468,11 @@ class TestHttpSmsController(TestController):
         if preferred_httplib:
             sms_conf["PREFERRED_HTTPLIB"] = preferred_httplib
 
-        parameters = {'SMSProviderConfig': json.dumps(sms_conf),
-                      'selftest_admin': 'superadmin'
-                     }
+        parameters = {
+              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+              'SMSProviderConfig': json.dumps(sms_conf),
+              'selftest_admin': 'superadmin'
+            }
 
         response = self.app.get(url(controller='system', action='setConfig'),
                                 params=parameters)

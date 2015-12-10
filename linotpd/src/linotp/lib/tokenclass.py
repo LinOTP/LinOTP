@@ -124,6 +124,19 @@ class TokenClass(object):
     def getClassPrefix(cls):
         return "UNK"
 
+    def getRealms(self):
+
+        if hasattr(self, 'realms'):
+            return self.realms
+
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
+
+        self.realms = realms
+        return self.realms
+
     def getType(self):
         return self.token.getType()
 
@@ -1868,14 +1881,12 @@ class OcraTokenClass(TokenClass):
             log.exception("[OcraTokenClass]")
             raise Exception('[OcraTokenClass] Failed to create challenge object: %s' % (ex))
 
-        realm = None
-        realms = self.token.getRealms()
-        if len(realms) > 0:
-            realm = realms[0]
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
 
-        url = ''
-        if realm is not None:
-            url = get_qrtan_url(realm.name, context=self.context)
+        url = get_qrtan_url(realms, context=self.context)
 
         log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)

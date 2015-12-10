@@ -23,11 +23,84 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
+
 """This file containes the standard token definitions:
               - OCRA2TokenClass
 
    the OCRA2 Token will use the standard challenge response
    instead of the dedicated ocra/request and ocra/check_t
+
+    rollout an ocra2 token:
+    ------------------------
+    The rollout is a 2 step process with the following steps:
+
+    1. call the /admin/init controller with the following parameters
+
+      :param type: must be "ocra2" for an ocra2 token
+      :param genkey: must be "1", if the server should generate the seed
+                     otherwise you can use the :param otpkey: with the seed
+      :param ocrasuite: your ocra suite of choice e.g.
+                              "OCRA-1:HOTP-SHA256-8:C-QA64"
+      :param sharedsecret: value must be "1"
+      :param serial: optional, if the serial will be defined by external
+
+    as reply a set of information is returned, where the relevant part is the
+    in the image data for the softtoken qrscan in the structure
+         detail/ocraurl/img
+
+    <img    width=250   src="data:image/png;base64,iVBO....
+
+    which could be embedded in the enrollment application. Other relevant
+    information (as well part in the qr encoded data) is the
+
+    "sharedsecret": "25676ef34bd1873834bbe10c4c4176b0a9689619"
+
+    which is the server data part for the pairing process transferd to the
+    qrtan app.
+
+    2. complete the rollout
+    The qrtan app will calculate an activation code, that must be transfered
+    back to the server as a set of input data for the second enrollment step by
+    calling the /admin/init controller with the following parameters:
+
+      :param type: must be of the same token type "ocra2"
+      :param serial: must be the same as received from the first request
+      :param genkey: must be of "1", which indicates, that the init is not
+                     finished
+      :param activationcode: "GEZDGNBVGY3TQOJQ01",
+      :param ocrasuite: same ocrasuite as above
+                              "OCRA-1:HOTP-SHA256-8:C-QA64",
+      :param message: optional the message, that is displayed in the app, e.g.
+                      "Transaktion: Ausrollen eines OCRA2 Tokens",
+
+    As response again an <img > is returned, which is the 'finishing'
+    transaction, where the qrtan app will reply only with an otp value
+
+
+    Further challenge request and response processing could then be managed by
+    using the /validate/check_s with
+
+     :param serial: token serial number, as defined above
+     :param challenge: the challenge input data as heart of the transaction
+
+    or when using /validate/check with
+
+     :param user: the assigned token user / owner
+     :param passw: which contains the token pin
+     :param challenge: the challenge input data as heart of the transaction
+
+    a response to this request will then contain the /detail/ocraurl/img
+    image data and the transaction id, which is the referer to the incomming
+    challenge respones from the qrtan app.
+
+    The challenge response then is verified by /validate/check_t and the
+    parameters:
+
+     :param transactionid: the transaction id "440364804594",
+     :param pass: the otp value e.g. "48344099"
+
+    But as well the /validate/check controller could be used to verify the
+    transaction by providing in addition the user name.
 
 """
 
@@ -35,12 +108,19 @@ import binascii
 import datetime
 import logging
 import time
+import datetime
+import traceback
 
 from linotp.lib.config  import getFromConfig
 from linotp.lib.crypt   import createNonce
 from linotp.lib.crypt   import decryptPin, encryptPin
 from linotp.lib.crypt   import kdf2
-from linotp.lib.policy  import get_qrtan_url
+from linotp.lib.crypt   import createNonce
+
+from linotp.lib.policy  import getPolicy
+from linotp.lib.policy  import getPolicyActionValue
+
+
 ### TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
 from linotp.lib.util import normalize_activation_code
@@ -68,9 +148,98 @@ optional = True
 required = False
 
 log = logging.getLogger(__name__)
+
+
+def qrtan_url(realms, callback_id=None, context=None):
+    """
+    Returns the URL for the half automatic mode for the QR TAN token
+    for the given realm
+
+    :remark: there might be more than one url, if the token
+             belongs to more than one realm
+
+    :param realms: list of realms or None
+
+    :return: url string
+
+    """
+    url = get_qrtan_url('qrtanurl', realms, callback_id=callback_id,
+                        context=context)
+    return url
+
+
+def qrtanurl_init(realms, callback_id=None, context=None):
+    '''
+    Returns the URL for the half automatic mode for the QR TAN token
+    for the given realm
+
+    :remark: there might be more than one url, if the token
+             belongs to more than one realm
+
+    :param realms: list of realms or None
+
+    :return: url string
+
+    '''
+    url = get_qrtan_url('qrtanurl_init', realms, callback_id=callback_id,
+                        context=context)
+    return url
+
+
+def get_qrtan_url(qrtan_policy_name, realms, callback_id=None, context=None):
+    '''
+    Worker to returns the URL for the half automatic mode for the QR TAN token
+    for the given realm
+
+    :param qrtan_policy_name: either 'qrtanurl_init' or 'qrtanurl'
+    :param realms: list of realms or None
+    :param callback_id: support of multiple callback definitions
+
+    :return: url string
+
+
+    :remark: there might be more than one url, if the token belongs to more
+             than one realm. it is tested, if all are the same, otherwise
+             an exception is raised
+
+    '''
+    log.debug("getting qrtan callback url ")
+    urls = []
+
+    # Policies defintions with wildcard defintions '*'
+    # if there is no realm defined, we can catch by this trick the
+    # policy definition, which have an realm wildcard definition '*'
+    # so that the wildcard will match as well the empty realm
+    # By setting the realm to '/:no realm:/' there is no collission with
+    # any realm as this string contains characters, which are not allowed in
+    # realm names
+    if realms is None or len(realms) == 0:
+        realms = ['/:no realm:/']
+
+    for realm in realms:
+        pol = getPolicy({"scope": "authentication", 'realm': realm},
+                        context=context)
+        url = getPolicyActionValue(pol, qrtan_policy_name, is_string=True,
+                                   subkey=callback_id)
+        if url:
+            urls.append(url)
+
+    # now verify, that all urls are the same
+    if len(urls) > 1:
+        for url in urls:
+            if url != url[0]:
+                raise Exception('multiple enrollement urls %r found for '
+                                'realm set: %r' % (urls, realms))
+
+    url = ''
+    if urls:
+        url = urls[0]
+
+    log.debug("got callback url %s for realms %r" % (url, realms))
+    return url
+
+
 #### Ocra2TokenClass #####################################
-
-
 class Ocra2TokenClass(TokenClass):
     '''
     Ocra2TokenClass  implement an ocra compliant token
@@ -148,7 +317,7 @@ class Ocra2TokenClass(TokenClass):
 
         tok_type = "ocra2"
 
-        ## take the keysize from the ocrasuite
+        # take the keysize from the ocrasuite
         ocrasuite = param.get("ocrasuite", None)
         activationcode = param.get("activationcode", None)
         sharedsecret = param.get("sharedsecret", None)
@@ -158,17 +327,22 @@ class Ocra2TokenClass(TokenClass):
         if activationcode is not None:
             ## dont create a new key
             genkey = None
-            serial = getRolloutToken4User(user=user, serial=serial, tok_type=tok_type)
+            serial = getRolloutToken4User(user=user, serial=serial,
+                                          tok_type=tok_type)
             if serial is None:
-                raise Exception('no token found for user: %r or serial: %r' % (user, serial))
+                raise Exception('no token found for user: %r or serial: %r'
+                                % (user, serial))
             helper_param['serial'] = serial
-            helper_param['activationcode'] = normalize_activation_code(activationcode)
+            helper_param['activationcode'] = normalize_activation_code(
+                                                                activationcode)
 
         if ocrasuite is None:
             if sharedsecret is not None or  activationcode is not None:
-                ocrasuite = getFromConfig("QrOcraDefaultSuite", 'OCRA-1:HOTP-SHA256-6:C-QA64')
+                ocrasuite = getFromConfig("QrOcraDefaultSuite",
+                                          'OCRA-1:HOTP-SHA256-6:C-QA64')
             else:
-                ocrasuite = getFromConfig("OcraDefaultSuite", 'OCRA-1:HOTP-SHA256-8:C-QN08')
+                ocrasuite = getFromConfig("OcraDefaultSuite",
+                                          'OCRA-1:HOTP-SHA256-8:C-QN08')
             helper_param['ocrasuite'] = ocrasuite
 
         if genkey is not None:
@@ -181,10 +355,6 @@ class Ocra2TokenClass(TokenClass):
             helper_param['key_size'] = key_size
 
         return helper_param
-
-
-
-
 
     @classmethod
     def getClassInfo(cls, key=None, ret='all'):
@@ -241,9 +411,10 @@ class Ocra2TokenClass(TokenClass):
                                     },
 
                                   },
-
-            'policy' : { 'selfservice' : {'activate_OCRA2' : {'type' : 'bool'} }}
-
+            'policy': {'selfservice': {
+                            'activate_OCRA2': {'type': 'bool'}
+                            },  # eof selfservice
+                      }  # eof policy
         }
 
         if key and key in res:
@@ -253,7 +424,6 @@ class Ocra2TokenClass(TokenClass):
                 ret = res
 
         return ret
-
 
 
     def __init__(self, aToken, context=None):
@@ -283,20 +453,17 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[getInfo] %r ' % (self.info))
         return self.info
 
-
     def update(self, params, reset_failcount=True):
         '''
         update: add further definition for token from param in case of init
         '''
         log.debug('[update] %r: %r: ' % (params, reset_failcount))
 
-
-        if params.has_key('ocrasuite'):
+        if 'ocrasuite' in params:
             self.ocraSuite = params.get('ocrasuite')
         else:
             activationcode = params.get('activationcode', None)
             sharedSecret = params.get('sharedsecret', None)
-
 
             if activationcode is None and sharedSecret is None:
                 self.ocraSuite = self.getOcraSuiteSuite()
@@ -306,11 +473,10 @@ class Ocra2TokenClass(TokenClass):
         if params.get('activationcode', None):
             ## due to changes in the tokenclass parameter handling
             ## we have to add for compatibility a genkey parameter
-            if params.has_key('otpkey') == False and params.has_key('genkey') == False:
+            if 'otpkey' not in params and 'genkey' not in params:
                 log.warning('[Ocra2TokenClass:update] missing parameter genkey\
                              to complete the rollout 2!')
                 params['genkey'] = 1
-
 
         TokenClass.update(self, params, reset_failcount=reset_failcount)
 
@@ -324,7 +490,7 @@ class Ocra2TokenClass(TokenClass):
         if ocraPin is not None:
             self.token.setUserPin(ocraPin)
 
-        if params.has_key('otpkey'):
+        if 'otpkey' in params:
             self.setOtpKey(params.get('otpkey'))
 
         self._rollout_1(params)
@@ -332,8 +498,6 @@ class Ocra2TokenClass(TokenClass):
 
         log.debug('[update]:')
         return
-
-
 
     def _rollout_1(self, params):
         '''
@@ -381,6 +545,15 @@ class Ocra2TokenClass(TokenClass):
             info['serial'] = self.getSerial()
             uInfo['se'] = self.getSerial()
 
+            callback = self._prepare_callback_url(params, qrtanurl_init)
+            callback = callback.encode('utf-8')
+
+            if callback:
+                uInfo['u'] = callback
+
+            # the info url must be provided in any case
+            info["url"] = callback
+
             info['app_import'] = 'lseqr://init?%s' % (urllib.urlencode(uInfo))
             del info['ocrasuite']
             self.info = info
@@ -389,6 +562,60 @@ class Ocra2TokenClass(TokenClass):
 
         log.debug('[_rollout_1]:')
         return
+
+    def _prepare_callback_url(self, params, policy_lookup_funtion,
+                               transactionid=None):
+        """
+        prepare the callback url
+        - check if it is allowed to get the callback from the parameters
+        - get callback url from parameters or as fallback, from policy value
+
+        finaly replace <user>, <password>, <transactionid>, <serial> in the url
+
+        :param params: the dict of calling parameters
+        :param policy_lookup_funtion: function to check for the policy defined
+                    callback, either standard callback or rollout callback
+        :param transactionid: optional the transactionid, if not in rollout
+                              scope
+        :return: the callback url or an empty string
+
+        """
+        callback = ''
+
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
+
+        # is there an callbac selector
+        callback_id = params.get('callback.id', None)
+        callback = policy_lookup_funtion(realms, callback_id,
+                                         context=self.context)
+
+        # is the callback supressed for the current request?
+        if 'no_callback' in params:
+            callback = ''
+
+        # now adjust the callback with replacements
+        if callback:
+            callback = callback.replace('<serial>', self.getSerial())
+
+            if '<transactionid>' in callback and transactionid:
+                callback = callback.replace('<transactionid>', transactionid)
+
+            # now handle the replacement parts for the authetication
+            callback_pass = params.get('callback.password', '')
+            callback_user = params.get('callback.user', '')
+
+            if "<user>" in callback and callback_user:
+                user = urllib.quote(callback_user)
+                callback = callback.replace('<user>', user)
+
+            if "<password>" in callback and callback_pass:
+                passw = urllib.quote(callback_pass)
+                callback = callback.replace('<password>', passw)
+
+        return callback
 
     def _rollout_2(self, params):
         '''
@@ -420,7 +647,8 @@ class Ocra2TokenClass(TokenClass):
             ##  genkey might have created a new key, so we have to rely on
             encSharedSecret = self.getFromTokenInfo('sharedSecret', None)
             if encSharedSecret is None:
-                raise Exception ('missing shared secret of initialition for token %r' % (self.getSerial()))
+                raise Exception('missing shared secret of initialition for '
+                                 'token %r' % (self.getSerial()))
 
             sharedSecret = decryptPin(encSharedSecret)
 
@@ -435,7 +663,6 @@ class Ocra2TokenClass(TokenClass):
             elif self.ocraSuite.find('-SHA512'):
                 key_len = 64
 
-
             newkey = kdf2(sharedSecret, nonce, activationcode, key_len)
             self.setOtpKey(binascii.hexlify(newkey))
 
@@ -448,8 +675,10 @@ class Ocra2TokenClass(TokenClass):
             (res, opt) = Challenges.create_challenge(self, self.context, options=params)
 
             challenge = opt.get('challenge')
-            url = opt.get('url')
             transid = opt.get('transactionid')
+            url = opt.get('url')
+            url = url.replace('<serial>', self.getSerial())
+            url = url.replace('<transactionid>', transid)
 
             ##  generate response
             info = {}
@@ -465,17 +694,19 @@ class Ocra2TokenClass(TokenClass):
             if message is not None:
                 uInfo['me'] = str(message.encode("utf-8"))
 
-            ustr = urllib.urlencode({'u':str(url.encode("utf-8"))})
-            uInfo['u'] = ustr[2:]
-            info['url'] = str(url.encode("utf-8"))
+            ustr = urllib.urlencode({'u': str(url.encode("utf-8"))})
+            if ustr[2:]:
+                uInfo['u'] = ustr[2:]
+                info['url'] = str(url.encode("utf-8"))
 
             app_import = 'lseqr://nonce?%s' % (urllib.urlencode(uInfo))
 
             ##  add a signature of the url
-            signature = {'si': self.signData(app_import) }
+            signature = {'si': self.signData(app_import)}
             info['signature'] = signature.get('si')
 
-            info['app_import'] = "%s&%s" % (app_import, urllib.urlencode(signature))
+            info['app_import'] = "%s&%s" % (app_import,
+                                             urllib.urlencode(signature))
             self.info = info
 
             ##  setup new state
@@ -494,7 +725,8 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[getOcraSuiteSuite]')
 
-        defaultOcraSuite = getFromConfig("OcraDefaultSuite", 'OCRA-1:HOTP-SHA256-8:C-QN08')
+        defaultOcraSuite = getFromConfig("OcraDefaultSuite",
+                                         'OCRA-1:HOTP-SHA256-8:C-QN08')
         self.ocraSuite = self.getFromTokenInfo('ocrasuite', defaultOcraSuite)
 
         log.debug('[getOcraSuiteSuite] %r:' % (self.ocraSuite))
@@ -509,13 +741,12 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[getQROcraSuiteSuite]')
 
-        defaultOcraSuite = getFromConfig("QrOcraDefaultSuite", 'OCRA-1:HOTP-SHA256-8:C-QA64')
+        defaultOcraSuite = getFromConfig("QrOcraDefaultSuite",
+                                         'OCRA-1:HOTP-SHA256-8:C-QA64')
         self.ocraSuite = self.getFromTokenInfo('ocrasuite', defaultOcraSuite)
 
         log.debug('[getQROcraSuiteSuite] %r:' % (self.ocraSuite))
         return self.ocraSuite
-
-
 
     def signData(self, data):
         '''
@@ -588,61 +819,62 @@ class Ocra2TokenClass(TokenClass):
         ## which kind of challenge gen should be used
         typ = 'raw'
 
-        input = None
+        input_data = None
         challenge = None
         session = None
         message = ""
 
-        if options is not None:
-            input = options.get('challenge', None)
-            if input is None:
-                input = options.get('message', None)
-            if input is None:
-                input = options.get('data', None)
+        if options:
+            input_data = options.get('challenge',
+                                     options.get('message',
+                                                 options.get('data', None)))
 
             typ = options.get('challenge_type', 'raw')
             ## ocra token could contain a session attribute
             session = options.get('ocra_session', None)
 
-        if input is None or len(input) == 0:
+        if input_data is None or len(input_data) == 0:
             typ = 'random'
 
         secretHOtp = self.token.getHOtpKey()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)
 
         if typ == 'raw':
-            challenge = ocraSuite.data2rawChallenge(input)
+            challenge = ocraSuite.data2rawChallenge(input_data)
         elif typ == 'random':
-            challenge = ocraSuite.data2randomChallenge(input)
+            challenge = ocraSuite.data2randomChallenge(input_data)
         elif typ == 'hash':
-            challenge = ocraSuite.data2hashChallenge(input)
+            challenge = ocraSuite.data2hashChallenge(input_data)
 
         log.debug('[Ocra2TokenClass] challenge: %r ' % (challenge))
 
         store_data = {
-                'challenge' : "%s" % (challenge),
-                'serial' : self.token.getSerial(),
-                'input' : '',
-                'url' : '',
+                'challenge': "%s" % (challenge),
+                'serial': self.token.getSerial(),
+                'input': '',
+                'url': '',
                 }
 
-        if input is not None:
-            store_data['input'] = input
+        if input_data is not None:
+            store_data['input'] = input_data
 
         if session is not None:
             store_data["session"] = session
 
         res = self.verify_challenge_is_valid(challenge, session)
 
-        ## add Info: so depending on the Info, the rendering could be done
-        ##          as a callback into the token via
-        ##          token.getQRImageData(opt=details)
-        realms = self.token.getRealms()
-        if len(realms) > 0:
-            store_data["url"] = get_qrtan_url(realms[0].name,
-                                              context=self.context)
+        # add Info: so depending on the Info, the rendering could be done
+        #   as a callback into the token via
+        #       token.getQRImageData(opt=details)
 
-        ## we will return a dict of all
+        # do we have a callback url, that will receive the otp value
+        callback = self._prepare_callback_url(options, qrtan_url,
+                                          transactionid=state)
+        callback = callback.encode('utf-8')
+
+        store_data["url"] = callback
+
+        # we will return a dict of all
         attributes = self.prepare_message(store_data, state)
         attributes['challenge'] = challenge
 
@@ -668,14 +900,16 @@ class Ocra2TokenClass(TokenClass):
         u = urllib.urlencode({'u': "%s" % (url.encode("utf-8"))})
 
         challenge = data.get('challenge')
-        input = data.get('input')
+        input_data = data.get('input')
 
         uInfo = {'tr': transId,
                  'ch': challenge,
-                 'me': str(input.encode("utf-8")),
-                 'u': str(u[2:])}
-        detail = {'request'         : str(input.encode("utf-8")),
-                  'url'             : str(url.encode("utf-8")),
+                 'me': str(input_data.encode("utf-8")),
+                 }
+        if url:
+            uInfo['u'] = str(u[2:])
+        detail = {'request': str(input_data.encode("utf-8")),
+                  'url': str(url.encode("utf-8")),
                  }
 
         ## create the app_url from the data
@@ -687,6 +921,10 @@ class Ocra2TokenClass(TokenClass):
         dataobj = '%s&%s' % (dataobj, str(urllib.urlencode(signature)))
 
         detail["data"] = dataobj
+        detail["ocraurl"] = {
+                    "value": detail.get('data'),
+                    "img": create_img(detail.get('data'), width=250)
+                    }
 
         return detail
 
@@ -776,14 +1014,12 @@ class Ocra2TokenClass(TokenClass):
             raise Exception('[Ocra2TokenClass] Failed to create '
                                                 'challenge object: %s' % (ex))
 
-        realm = None
-        realms = self.token.getRealms()
-        if len(realms) > 0:
-            realm = realms[0]
+        realms = []
+        tokenrealms = self.token.getRealms()
+        for realm in tokenrealms:
+            realms.append(realm.name)
 
-        url = ''
-        if realm is not None:
-            url = get_qrtan_url(realm.name, context=self.context)
+        url = qrtan_url(realms)
 
         log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)
@@ -1117,7 +1353,7 @@ class Ocra2TokenClass(TokenClass):
         ## autosync does only work, if we have a token info, where the last challenge and the last sync-counter is stored
         ## if no tokeninfo, we start with a autosync request, thus start the lookup in the sync window
 
-        if tinfo.has_key('lChallenge') == False:
+        if 'lChallenge' not in tinfo:
             ## run checkOtp, with sync window for the current challenge
             log.info('[OcraToken:autosync] initial sync')
             count_0 = -1
@@ -1184,10 +1420,6 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[autosync]: %r ' % (res))
         return res
 
-
-
-
-
     def statusValidationFail(self):
         '''
         statusValidationFail - callback to enable a status change,
@@ -1200,7 +1432,7 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[statusValidationFail]')
         challenge = None
 
-        if self.transId == 0 :
+        if self.transId == 0:
             return
         try:
 
@@ -1210,23 +1442,27 @@ class Ocra2TokenClass(TokenClass):
                 challenge = challenges[0]
                 challenge.setTanStatus(received=True, valid=False)
 
-
             ##  still in rollout state??
             rolloutState = self.getFromTokenInfo('rollout', '0')
 
             if rolloutState == '1':
-                log.info('rollout state 1 for token %r not completed' % (self.getSerial()))
+                log.info('rollout state 1 for token %r not completed'
+                         % (self.getSerial()))
 
             elif rolloutState == '2':
                 if challenge.received_count >= int(getFromConfig("OcraMaxChallengeRequests", '3')):
                     ##  after 3 fails in rollout state 2 - reset to rescan
                     self.addToTokenInfo('rollout', '1')
-                    log.info('rollout for token %r reset to phase 1:' % (self.getSerial()))
+                    log.info('rollout for token %r reset to phase 1:'
+                             % (self.getSerial()))
 
-                log.info('rollout for token %r not completed' % (self.getSerial()))
+                log.info('rollout for token %r not completed'
+                         % (self.getSerial()))
 
         except Exception as ex:
-            log.exception('[Ocra2TokenClass:statusValidationFail] Error during validation finalisation for token %r :%r' % (self.getSerial(), ex))
+            log.exception('[Ocra2TokenClass:statusValidationFail] Error during '
+                          'validation finalisation for token %r :%r'
+                          % (self.getSerial(), ex))
             raise Exception(ex)
 
         finally:
@@ -1235,7 +1471,6 @@ class Ocra2TokenClass(TokenClass):
 
         log.debug('[statusValidationFail]')
         return
-
 
     def statusValidationSuccess(self):
         '''
@@ -1248,7 +1483,7 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[statusValidationSuccess]')
 
-        if self.transId == 0 :
+        if self.transId == 0:
             return
 
         challenges = Challenges.lookup_challenges(self.context, self.getSerial(),
@@ -1263,11 +1498,11 @@ class Ocra2TokenClass(TokenClass):
 
         if rolloutState == '2':
             t_info = self.getTokenInfo()
-            if t_info.has_key('rollout'):
+            if 'rollout' in t_info:
                 del t_info['rollout']
-            if t_info.has_key('sharedSecret'):
+            if 'sharedSecret' in t_info:
                 del t_info['sharedSecret']
-            if t_info.has_key('nonce'):
+            if 'nonce' in t_info:
                 del t_info['nonce']
             self.setTokenInfo(t_info)
 
@@ -1310,7 +1545,6 @@ class Ocra2TokenClass(TokenClass):
             challenge1['session'] = ch1.get('session')
             challenge1['id'] = ch1.get('id')
 
-
             ## the elder one
             ch2 = challenges[0]
             challenge2['challenge'] = ch2.get('data').get('challenge')
@@ -1319,18 +1553,15 @@ class Ocra2TokenClass(TokenClass):
             challenge2['id'] = ch2.get('id')
 
         else:
-            if options.has_key('challenge1'):
+            if 'challenge1' in options:
                 challenge1['challenge'] = options.get('challenge1')
-            if options.has_key('challenge2'):
+            if 'challenge2' in options:
                 challenge2['challenge'] = options.get('challenge2')
-
 
         if len(challenge1) == 0 or len(challenge2) == 0:
             error = "No challeges found!"
             log.error('[Ocra2TokenClass:resync] %s' % (error))
             raise Exception('[Ocra2TokenClass:resync] %s' % (error))
-
-
 
         secretHOtp = self.token.getHOtpKey()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secretHOtp)

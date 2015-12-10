@@ -149,6 +149,7 @@ def generate_password(size=6, characters=None):
     if not characters:
         characters = string.ascii_lowercase + \
                      string.ascii_uppercase + string.digits
+
     return ''.join(urandom.choice(characters) for _x in range(size))
 
 
@@ -194,32 +195,26 @@ def check_session(request):
             pass
 
 
-def check_selfservice_session(request, url, path, cookies, params):
+def check_selfservice_session(cookies=None, params=None, url=None):
     '''
     This function checks the session cookie for the
-    selfservcice session
+    selfservice / userservice session
     '''
-    res = True
-    cookie = None
-    session = None
-    log.debug(request.path.lower())
-    # All functions starting with /selfservice/user are data functions
-    # and protected by the session key
-    if path.lower()[:17] != "/selfservice/user":
-        log.info('nothing to check')
-    else:
-        try:
-            cookie = cookies.get('linotp_selfservice')[0:40]
-            session = params.get('session')[0:40]
-        except Exception as e:
-            log.warning("failed to check selfservice session: %r" % e)
-            res = False
-        log.info("session: %s" % session)
-        log.info("cookie:  %s" % cookie)
-        if session is None or session != cookie:
-            log.error("The request %s did not pass a valid session!" % url)
-            res = False
-    return res
+    cookie = cookies.get('linotp_selfservice').strip('"')
+    session = params.get('session')
+
+    log.debug("session: %r" % session)
+    log.debug("cookie:  %r" % cookie)
+
+    if not session or not cookie:
+        log.warning("failed to check selfservice session")
+        return False
+
+    if session[:40] != cookie[:40]:
+        log.error("The request %r did not pass a valid session!" % url)
+        return False
+
+    return True
 
 
 def remove_session_from_param(param):
@@ -413,15 +408,20 @@ def checksum(msg):
 
 def str2unicode(input_str):
     """
-    convert as binary string into a unicode string
+    convert as binary string into a unicode string by trying various encodings
     :param input_str: input binary string
     :return: unicode output
     """
+
     output_str = input_str
-    conversions = [{}, {'encoding':'utf-8'}]
+    conversions = [{},
+                   {'encoding':'utf-8'},
+                   {'encoding':'iso-8859-1'},
+                   {'encoding':'iso-8859-15'}
+                   ]
     for param in conversions:
         try:
-            output_str = unicode(output_str, **param)
+            output_str = unicode(input_str, **param)
             break
         except UnicodeDecodeError as exx:
             if param == conversions[-1]:

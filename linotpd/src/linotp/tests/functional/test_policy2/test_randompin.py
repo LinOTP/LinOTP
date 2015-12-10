@@ -543,7 +543,8 @@ class TestRandompinController(TestController):
             'realm': '',
             'realmbox': False,
             }
-        response = self.make_request('account', 'dologin', params=params)
+        response = self.make_request('account', 'dologin', params=params,
+                                     method='GET')
         err_msg = "Unexpected response %r" % response
         self.assertEqual(302, response.status_int, err_msg)
         self.assertEqual('/', response.headers['location'])
@@ -569,6 +570,7 @@ class TestRandompinController(TestController):
             'setpin',
             params=params,
             cookies=cookies,
+            method='GET'
             )
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
