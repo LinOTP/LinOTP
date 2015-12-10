@@ -91,17 +91,9 @@ class TestYubikey(TestCase):
 
         user_view = UserView(driver, self.base_url, self.realm_name)
         user_view.select_user(self.user_name)
-        token_view = TokenView(driver, self.base_url)
-        token_view.select_token(serial)
-        driver.find_element_by_id("button_assign").click()
-        time.sleep(2)
+        token_view = TokenView(self)
         pin = "asdf1234"
-        driver.find_element_by_id("pin1").clear()
-        driver.find_element_by_id("pin1").send_keys(pin)
-        driver.find_element_by_id("pin2").clear()
-        driver.find_element_by_id("pin2").send_keys(pin)
-        driver.find_element_by_id("button_setpin_setpin").click()
-        time.sleep(1)
+        token_view.assign_token(serial, pin)
 
         validate = Validate(self.http_protocol, self.http_host, self.http_port,
                             self.http_username, self.http_password)

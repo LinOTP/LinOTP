@@ -179,16 +179,8 @@ class TestScenario01(TestCase):
 
         user_view = UserView(driver, self.base_url, test1_realm)
         user_view.select_user("bach")
-        token_view = TokenView(driver, self.base_url)
-        token_view.select_token(serial_token_bach)
-        driver.find_element_by_id("button_assign").click()
-        time.sleep(2)
-        driver.find_element_by_id("pin1").clear()
-        driver.find_element_by_id("pin1").send_keys("1234")
-        driver.find_element_by_id("pin2").clear()
-        driver.find_element_by_id("pin2").send_keys("1234")
-        driver.find_element_by_id("button_setpin_setpin").click()
-        time.sleep(1)
+        token_view = TokenView(self)
+        token_view.assign_token(serial_token_bach, "1234")
 
         self._announce_test("6. Remote Token zuweisen")
 
@@ -429,7 +421,7 @@ class TestScenario01(TestCase):
         self._announce_test("14. Der Admin entsperrt diesen Token, der Benutzer debussy kann sich wieder anmelden.")
 
         driver.get(self.base_url + "/manage")
-        token_view = TokenView(driver, self.base_url)
+        token_view = TokenView(self)
         token_view.select_token(serial_token_debussy)
         driver.find_element_by_id("button_enable").click()
 

@@ -25,10 +25,12 @@
 #
 """Contains HotpToken (event-based HMAC token) class"""
 
-import time
+from token import Token
+from helper import select
 
-from linotp_selenium_helper.token import Token
-from linotp_selenium_helper.helper import select
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 class HotpToken(Token):
     """Creates a Hotp Token in the LinOTP WebUI"""
@@ -70,7 +72,11 @@ class HotpToken(Token):
         driver.find_element_by_id("hmac_pin2").send_keys(pin)
         wel_enroll_hmac_desc.send_keys(description)
         driver.find_element_by_id("button_enroll_enroll").click()
-        time.sleep(1)
+
+        # Wait for API call to complete
+        WebDriverWait(self.driver, 10).until_not(
+                EC.visibility_of_element_located((By.ID, "do_waiting")))
+
         info_boxes = driver.find_elements_by_css_selector("#info_box > .info_box > span")
         for box in info_boxes:
             if box.text.startswith("created token with serial"):

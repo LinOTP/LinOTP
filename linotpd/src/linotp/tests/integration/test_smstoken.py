@@ -91,7 +91,7 @@ class TestSmsToken(TestCase):
                              base_url=self.base_url,
                              pin=sms_token_pin,
                              description=description)
-        token_view = TokenView(self.driver, self.base_url)
+        token_view = TokenView(self)
         token_info = token_view.get_token_info(sms_token.serial)
         expected_phone_number = "+49(0)1234-24"
         self.assertEqual(expected_phone_number, token_info['LinOtp.TokenInfo']['phone'],

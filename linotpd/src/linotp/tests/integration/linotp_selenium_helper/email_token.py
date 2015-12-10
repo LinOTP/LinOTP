@@ -25,11 +25,12 @@
 #
 """Contains EmailToken class"""
 
-import time
-
 from token import Token
 from helper import select
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 class EmailToken(Token):
     """Creates a e-mail token in the LinOTP WebUI"""
@@ -48,7 +49,11 @@ class EmailToken(Token):
             driver.find_element_by_id("email_address").clear()
             driver.find_element_by_id("email_address").send_keys(email)
         driver.find_element_by_id("button_enroll_enroll").click()
-        time.sleep(1)
+
+        # Wait for API call to complete
+        WebDriverWait(self.driver, 10).until_not(
+                EC.visibility_of_element_located((By.ID, "do_waiting")))
+
         info_boxes = driver.find_elements_by_css_selector("#info_box > .info_box > span")
         for box in info_boxes:
             if box.text.startswith("created token with serial"):
