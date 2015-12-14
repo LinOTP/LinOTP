@@ -1933,10 +1933,12 @@ class TestChallengeResponseController(TestController):
         params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
-        self.assertTrue('"message": "validate/check failed:' in response,
-                        response)
-        self.assertTrue('"status": false' in response, response)
-
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    'Failed to send SMS. We received a'
+        #                "message": "validate/check failed:'
+        self.assertTrue('"value": false' in response, response)
 
         # check if simplecheck displays as well an error
         params = {"user": "passthru_user1", "pass": "shortpin"}
@@ -1944,7 +1946,11 @@ class TestChallengeResponseController(TestController):
                                     action='simplecheck'),
                                 params=params)
 
-        self.assertTrue(':-/' in response, response)
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    ':-/'
+        self.assertTrue(':-(' in response, response)
 
         # finally check, if there is no open challenge left
         params = {

@@ -569,6 +569,7 @@ class TestRandompinController(TestController):
             'setpin',
             params=params,
             cookies=cookies,
+            method='POST'
             )
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])

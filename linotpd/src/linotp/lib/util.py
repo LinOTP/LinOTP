@@ -178,8 +178,8 @@ def check_selfservice_session(cookies=None, params=None, url=None):
     This function checks the session cookie for the
     selfservice / userservice session
     '''
-    cookie = cookies.get('linotp_selfservice')
-    session = params.get('session')
+    cookie = cookies.get('linotp_selfservice', '').strip('"')
+    session = params.get('session', '').strip('"')
 
     log.debug("session: %r" % session)
     log.debug("cookie:  %r" % cookie)
