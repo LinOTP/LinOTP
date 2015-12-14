@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
@@ -26,7 +26,7 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
--->
+</%doc>
 <html>
   <head>
     
