@@ -38,6 +38,7 @@ import os
 import re
 import logging
 
+from linotp.lib.util import str2unicode
 
 from UserIdResolver import (UserIdResolver,
                             ResolverLoadConfigError
@@ -45,10 +46,7 @@ from UserIdResolver import (UserIdResolver,
 
 from UserIdResolver import getResolverClass
 
-
 log = logging.getLogger(__name__)
-ENCODING = "utf-8"
-
 
 def tokenise(r):
     def _(s):
@@ -149,6 +147,7 @@ class IdResolver (UserIdResolver):
             if len(line) == 0:
                 continue
 
+            line = str2unicode(line)
             fields = line.split(":", 7)
             self.nameDict["%s" % fields[NAME]] = fields[ID]
 
@@ -264,21 +263,13 @@ class IdResolver (UserIdResolver):
     def getUserId(self, LoginName):
         """
         search the user id from the login name
+            we need the encoding no more as the input is converted to unicode
+            by the str2unicode function
 
         :param LoginName: the login of the user
         :return: the userId
         """
-        # We need the encoding, to be also able to read usernames
-        # with Umlauts from files.
-
-        if type(LoginName) == unicode:
-            LoginName = LoginName.encode(ENCODING)
-
-        if LoginName in self.nameDict.keys():
-            #log.debug("YES YES YES YES")
-            return self.nameDict[LoginName]
-        else:
-            return ""
+        return self.nameDict.get(LoginName, '') or ''
 
     def getSearchFields(self, searchDict=None):
         """
@@ -362,12 +353,6 @@ class IdResolver (UserIdResolver):
     def stringMatch(self, cString, cPattern):
         ret = False
         e = s = ""
-
-        if type(cString) == unicode:
-            cString = cString.encode(ENCODING)
-
-        if type(cPattern) == unicode:
-            cPattern = cPattern.encode(ENCODING)
 
         string = cString.lower()
         pattern = cPattern.lower()

@@ -30,10 +30,11 @@ from linotp.lib.error import UserError
 
 log = logging.getLogger(__name__)
 
+
 class FinishTokens(object):
     def __init__(self, valid_tokens, challenge_tokens, pin_matching_tokens,
                  invalid_tokens, validation_results, user, options,
-                 context=None):
+                 context=None, audit_entry=None):
         """
         create the finalisation object, that finishes the token processing
 
@@ -44,6 +45,7 @@ class FinishTokens(object):
         :param validation_results: dict of the verification response
         :param user: the requesting user
         :param options: request options - additional parameters
+        :param audit_entry: audit_entry reference
         """
 
         self.valid_tokens = valid_tokens
@@ -53,7 +55,9 @@ class FinishTokens(object):
         self.validation_results = validation_results
         self.user = user
         self.options = options
+        self.audit_entry = audit_entry or {} 
         self.context = context
+      
 
     def finish_checked_tokens(self):
         """
@@ -81,9 +85,9 @@ class FinishTokens(object):
 
         # if there is no token left, we end up here
         if not (self.pin_matching_tokens + self.invalid_tokens):
-            # Todo: complete audit entry
-            #self.create_audit_entry(audit_entry=self.audit_entry)
-            #log.info("no valid token found: %r" % self.audit.entry)
+            self.create_audit_entry(action_detail="no token found!",
+                                    tokens=[])
+            log.info("no valid token found: %r" % self.audit_entry)
             return False, None
 
         if self.user:
@@ -94,30 +98,21 @@ class FinishTokens(object):
                         % (self.pin_matching_tokens +
                            self.invalid_tokens)[0].getSerial())
 
-        if self.pin_matching_tokens:
-            (ret, reply, detail) = self.finish_pin_matching_tokens()
-            # in case of pin matching, we have to treat as well the invalid
-            self.increment_failcounters(self.pin_matching_tokens)
-            self.finish_invalid_tokens()
-
-            # check for the global settings, if we increment in wrong pin
-            inc_on_false_pin = self.context.get(
-                "linotp.FailCounterIncOnFalsePin", "True")
-            if inc_on_false_pin.strip().lower() == 'true':
-                self.increment_failcounters(self.invalid_tokens)
-            self.create_audit_entry(detail, self.pin_matching_tokens)
-            return ret, reply
-
         if self.invalid_tokens:
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
 
-            self.create_audit_entry(detail, self.invalid_tokens)
-            return ret, reply
+            self.create_audit_entry(action_detail=detail,
+                                    tokens=self.invalid_tokens)
 
-        # if there is no token left, we hend up here
-        self.create_audit_entry("no token found", [])
-        return False, None
+        if self.pin_matching_tokens:
+            (ret, reply, detail) = self.finish_pin_matching_tokens()
+            self.increment_failcounters(self.pin_matching_tokens)
+
+            self.create_audit_entry(action_detail=detail,
+                                    tokens=self.pin_matching_tokens)
+
+        return ret, reply
 
     def finish_valid_tokens(self):
         """
@@ -275,7 +270,7 @@ class FinishTokens(object):
         for token in all_tokens:
             token.incOtpFailCounter()
 
-    def create_audit_entry(self, action_detail, tokens):
+    def create_audit_entry(self, action_detail=None, tokens=None):
         """
         setting global audit entry
 
@@ -283,21 +278,32 @@ class FinishTokens(object):
         :param action_detail:
         """
 
+        # get the audit dict from the context
         audit = self.context['audit']
-        audit['action_detail'] = action_detail
 
-        if len(tokens) == 1:
-            audit['serial'] = tokens[0].getSerial()
-            audit['token_type'] = tokens[0].getType()
+        # initialize by the given entry
+        audit.update(self.audit_entry)
+
+        # and allow overwrite by actual details
+        if action_detail:
+            audit['action_detail'] = action_detail
+
+        if not tokens:
+            audit['serial'] = ''
+            audit['token_type'] = ''
         else:
-            # no or multiple tokens
-            serials = []
-            types = []
-            for token in tokens:
-                serials.append(token.getSerial())
-                types.append(token.getType())
-            audit['serial'] = ' '.join(serials)[:29]
-            audit['token_type'] = ' '.join(types)[:39]
+            if len(tokens) == 1:
+                audit['serial'] = tokens[0].getSerial()
+                audit['token_type'] = tokens[0].getType()
+            else:
+                # no or multiple tokens
+                serials = []
+                types = []
+                for token in tokens:
+                    serials.append(token.getSerial())
+                    types.append(token.getType())
+                audit['serial'] = ' '.join(serials)[:29]
+                audit['token_type'] = ' '.join(types)[:39]
 
         return
 # eof###########################################################################

@@ -1043,7 +1043,11 @@ class TestChallengeResponseController(TestController):
         response = self.app.get(url(controller='validate', action='check_s'),
                                                             params=params)
 
-        self.assertTrue('Missing parameter: pass"' in response, response)
+        # due to fixes on security leakeage prevention the response changes
+        # and does not contain the following text anymore:
+        #     'Missing parameter: pass"'
+        # instead  only a False value
+        self.assertTrue('"value": false' in response, response)
 
         # now good case - with policy set to submit sms
         params = {'name': 'trigger_sms',
@@ -2042,10 +2046,10 @@ class TestChallengeResponseController(TestController):
         params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
-        self.assertTrue('"message": "validate/check failed:' in response,
-                        response)
-        self.assertTrue('"status": false' in response, response)
-
+        # due to security fixes to prevent information leakage, there is no
+        # more the text:
+        #         'No token found: unable to create challenge for'
+        self.assertTrue('"value": false' in response, response)
 
         # check if simplecheck displays as well an error
         params = {"user": "passthru_user1", "pass": "shortpin"}
@@ -2053,7 +2057,9 @@ class TestChallengeResponseController(TestController):
                                     action='simplecheck'),
                                 params=params)
 
-        self.assertTrue(':-/' in response, response)
+        # due to security fixes to prevent information leakage, there is no
+        # more ':-/'
+        self.assertTrue(':-(' in response, response)
 
         # finally check, if there is no open challenge left
         params = {

@@ -26,6 +26,7 @@
 """ contains several token api functions"""
 
 import binascii
+import string
 import datetime
 import logging
 import string
@@ -398,7 +399,8 @@ class TokenHandler(object):
                 pw_len = 10
 
             contents = linotp.lib.policy.getPolicyActionValue(pol,
-                                            "lostTokenPWContents", String=True)
+                                            "lostTokenPWContents",
+                                            is_string=True)
 
             character_pool = "%s%s%s" % (string.ascii_lowercase,
                                          string.ascii_uppercase, string.digits)
@@ -1369,7 +1371,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
     serials = []
     tokens = []
 
-    if user is not None and user.isEmpty() == False:
+    if user is not None and user.isEmpty() == False and user.login:
         resolverUid = user.resolverUid
         v = None
         k = None
@@ -1729,6 +1731,7 @@ def getTokenType(serial):
 
     return typ
 
+
 def add_last_accessed_info(list_of_tokenlist):
     """
     if token_last_access is defined in the config, add this to the token info
@@ -1915,10 +1918,6 @@ def setPinSo(soPin, serial, context=None):
     return len(tokenList)
 
 
-
-
-
-
 def resetToken(user=None, serial=None, context=None):
 
     if (user is None) and (serial is None):
@@ -1980,4 +1979,5 @@ def getTokenConfig(tok, section=None):
             res = tclt.getClassInfo(section, ret={})
 
     return res
+
 #eof###########################################################################

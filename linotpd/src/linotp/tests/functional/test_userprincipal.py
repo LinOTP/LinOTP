@@ -50,6 +50,12 @@ class TestUserPrincipalController(TestAdvancedController):
         super(TestUserPrincipalController, self).setUp()
 
         self.setAuthorization(self.getDefaultAuthorization())
+        
+        # Delete previous configuration...
+        self.deleteAllTokens()
+        self.deleteAllRealms()
+        self.deleteAllResolvers()
+        # Create basic test environment...
         self.createDefaultResolvers()
         self.createDefaultRealms()
 

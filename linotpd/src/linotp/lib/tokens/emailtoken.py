@@ -31,6 +31,9 @@ import datetime
 import logging
 import sys
 
+
+from linotp.lib.token import get_token_owner
+
 from pylons.i18n.translation import _
 
 from linotp.lib.auth.validate import split_pin_otp
@@ -39,6 +42,7 @@ from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.policy import (getPolicy,
                                getPolicyActionValue)
+
 from linotp.lib.tokens.hmactoken import HmacTokenClass
 from linotp.lib.user import getUserDetail
 
@@ -91,7 +95,7 @@ class EmailTokenClass(HmacTokenClass):
 
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
-        self.hashlibStr = getFromConfig("hotp.hashlib", "sha1")
+        self.hashlibStr = self.context['Config'].get("hotp.hashlib", "sha1")
         self.mode = ['challenge']
 
     @property
@@ -125,8 +129,8 @@ class EmailTokenClass(HmacTokenClass):
         :rtype: s.o.
 
         """
-        LOG.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
+        LOG.debug("[getClassInfo] begin. Get class render info for section: "
+                  "key %r, ret %r " % (key, ret))
 
         res = {
             'type':         'email',
@@ -152,32 +156,52 @@ class EmailTokenClass(HmacTokenClass):
                     'scope': 'config',
                 },
             },
-           'selfservice': {
-               'enroll':
-                   {'page': {
-                      'html': 'emailtoken.mako',
-                      'scope': 'selfservice.enroll', },
-                    'title':{
+            'selfservice': {
+                'enroll':
+                    {'page': {
                         'html': 'emailtoken.mako',
-                        'scope': 'selfservice.title.enroll', },
-                      },
-                  },
-            'policy': {'selfservice':
-                       {'edit_email':
-                        {'type':'int',
+                        'scope': 'selfservice.enroll', },
+                        'title': {
+                            'html': 'emailtoken.mako',
+                            'scope': 'selfservice.title.enroll', },
+                    },
+            },
+            'policy': {
+                'selfservice':  {
+                    'edit_email':
+                        {'type': 'int',
                          'value': [0, 1],
                          'desc': _('define if the user should be allowed'
-                                    ' to define the email')
-                         }}}
+                                   ' to define the email address')
+                         }
+                },
+                'authentication': {
+                    'emailtext': {
+                        'type': 'str',
+                        'desc': _('The text that will be send via email '
+                                  'for an email token. Use <otp> '
+                                  'and <serial> as parameters.')
+                    },
+                    'emailsubject': {
+                        'type': 'str',
+                        'desc': _('The subject that will be send via email '
+                                  'for an email token. Use <otp> '
+                                  'and <serial> as parameters.')
+                    },
+
+                }
+            }
         }
 
-        # do we need to define the lost token policies here... [comment copied from sms token]
+        # do we need to define the lost token policies here...
+        # [comment copied from sms token]
         if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
                 ret = res
-        LOG.debug("[getClassInfo] end. Returned the configuration section: ret %r " % ret)
+        LOG.debug("[getClassInfo] end. Returned the configuration section:"
+                  " ret %r " % ret)
         return ret
 
     def update(self, param, reset_failcount=True):
@@ -190,7 +214,8 @@ class EmailTokenClass(HmacTokenClass):
         :return: nothing
 
         """
-        LOG.debug("[update] begin. adjust the token class with: param %r" % param)
+        LOG.debug("[update] begin. adjust the token class with: param %r"
+                  % param)
 
         # specific - e-mail
         self._email_address = param[self.EMAIL_ADDRESS_KEY]
@@ -203,7 +228,8 @@ class EmailTokenClass(HmacTokenClass):
                 u_info = getUserDetail(user)
                 u_email = u_info.get('email', None)
                 if u_email.strip() != self._email_address.strip():
-                    raise Exception(_('User is not allowed to set email address'))
+                    raise Exception(_('User is not allowed to set '
+                                      'email address'))
 
         ## in case of the e-mail token, only the server must know the otpkey
         ## thus if none is provided, we let create one (in the TokenClass)
@@ -244,15 +270,17 @@ class EmailTokenClass(HmacTokenClass):
     def initChallenge(self, transactionid, challenges=None, options=None):
         """
         initialize the challenge -
-        This method checks if the creation of a new challenge (identified by transactionid)
-        should proceed or if an old challenge should be used instead.
+        This method checks if the creation of a new challenge (identified by
+        transactionid) should proceed or if an old challenge should be used
+        instead.
 
         :param transactionid: the id of the new challenge
         :param options: the request parameters
 
         :return: tuple of
                 success - bool
-                transactionid_to_use - the best transaction id for this request context
+                transactionid_to_use - the best transaction id for this
+                                       request context
                 message - which is shown to the user
                 attributes - further info (dict) shown to the user
         """
@@ -262,13 +290,16 @@ class EmailTokenClass(HmacTokenClass):
         attributes = {}
 
         now = datetime.datetime.now()
-        blocking_time = int(getFromConfig('EmailBlockingTimeout', self.DEFAULT_EMAIL_BLOCKING_TIMEOUT))
+        blocking_time = int(getFromConfig('EmailBlockingTimeout',
+                                          self.DEFAULT_EMAIL_BLOCKING_TIMEOUT))
 
         for challenge in challenges:
             challenge_timestamp = challenge.get('timestamp')
             assert(challenge_timestamp <= now)
-            block_timeout = challenge_timestamp + datetime.timedelta(seconds=blocking_time)
-            # check if there is a challenge that is blocking the creation of new challenges
+            block_timeout = challenge_timestamp + \
+                             datetime.timedelta(seconds=blocking_time)
+            # check if there is a challenge that is blocking
+            # the creation of new challenges
             if now <= block_timeout:
                 transactionid_to_use = challenge.getTransactionId()
                 message = 'e-mail with otp already submitted'
@@ -300,7 +331,7 @@ class EmailTokenClass(HmacTokenClass):
             attributes = {'state': transactionid}
         return success, status_message, data, attributes
 
-    def _getEmailMessage(self):
+    def _getEmailMessage(self, user=""):
         """
         Could be used to implement some more complex logic similar to the
         SMS token where the SMS text is read from a policy.
@@ -309,12 +340,58 @@ class EmailTokenClass(HmacTokenClass):
             at least the placeholder <otp>
         :rtype: string
         """
-        return "<otp>"
+        message = '<otp>'
+
+        if not user:
+            return message
+
+        realm = user.realm
+        login = user.login
+
+        policies = getPolicy({'scope': 'authentication',
+                              'realm': realm,
+                              "action": "emailtext",
+                              "user": login},
+                             context=self.context
+                             )
+        if policies:
+            message = getPolicyActionValue(policies, "emailtext", is_string=True)
+
+        return message
+
+    def _getEmailSubject(self, user=""):
+        """
+        Could be used to implement some more complex logic similar to the
+        SMS token where the SMS text is read from a policy.
+
+        :return: The message that is sent to the user. It should contain
+            at least the placeholder <otp>
+        :rtype: string
+        """
+        subject = ''
+
+        if not user:
+            return subject
+
+        realm = user.realm
+        login = user.login
+
+        policies = getPolicy({'scope': 'authentication',
+                              'realm': realm,
+                              "action": "emailsubject",
+                              "user": login},
+                             context=self.context
+                             )
+        if policies:
+            subject = getPolicyActionValue(policies, "emailsubject",
+                                           is_string=True)
+
+        return subject
 
     def _sendEmail(self):
         """
-        Prepares the e-mail by gathering all relevant information and then sends
-        it out.
+        Prepares the e-mail by gathering all relevant information and
+        then sends it out.
 
         :return: A tuple of success and status_message
         :rtype: bool, string
@@ -323,9 +400,20 @@ class EmailTokenClass(HmacTokenClass):
         email_address = self._email_address
         if not email_address:
             raise Exception("No e-mail address was defined for this token.")
-        message = self._getEmailMessage()
+
+        owner = get_token_owner(self)
+        message = self._getEmailMessage(user=owner)
+
+        if "<otp>" not in message:
+            message = message + "<otp>"
+
         message = message.replace("<otp>", otp)
         message = message.replace("<serial>", self.getSerial())
+
+        subject = self._getEmailSubject(user=owner)
+        subject = subject.replace("<otp>", otp)
+        subject = subject.replace("<serial>", self.getSerial())
+
         try:
             email_provider_class = self._getEmailProviderClass()
             email_provider = email_provider_class()
@@ -334,11 +422,14 @@ class EmailTokenClass(HmacTokenClass):
             raise exc
 
         ## now we need the config from the env
-        LOG.debug("[sendEmail] loading e-mail configuration for class %s" % email_provider)
+        LOG.debug("[sendEmail] loading e-mail configuration for class %s"
+                  % email_provider)
         config = self._getEmailProviderConfig()
         LOG.debug("[sendEmail] config: %r" % config)
         email_provider.loadConfig(config)
-        status, status_message = email_provider.submitMessage(email_address, message)
+        status, status_message = email_provider.submitMessage(email_address,
+                                                              subject=subject,
+                                                              message=message)
         return status, status_message
 
     def _getEmailProviderConfig(self):
@@ -381,21 +472,29 @@ class EmailTokenClass(HmacTokenClass):
         """
         LOG.debug('[getEmailProviderClass] begin. get the e-mail Provider '
                   'class definition')
-        email_provider = getFromConfig("EmailProvider", self.DEFAULT_EMAIL_PROVIDER)
+        email_provider = getFromConfig("EmailProvider",
+                                       self.DEFAULT_EMAIL_PROVIDER)
         if not email_provider:
             raise Exception("No EmailProvider defined.")
-        (email_provider_package, email_provider_class_name) = email_provider.rsplit(".", 1)
+        (email_provider_package, email_provider_class_name) = \
+                                                email_provider.rsplit(".", 1)
 
         if not email_provider_package or not email_provider_class_name:
-            raise Exception("Could not load e-mail provider class. Maybe EmailProvider is "
-                            "not set in the config file.")
+            raise Exception("Could not load e-mail provider class. Maybe "
+                            "EmailProvider is not set in the config file.")
 
-        mod = __import__(email_provider_package, globals(), locals(), [email_provider_class_name])
-        # TODO Kay sagt hier soll das Modul global geladen werden (mit einem bisher nicht existierenden Hook)
+        mod = __import__(email_provider_package, globals(), locals(),
+                         [email_provider_class_name])
+
+        # TODO Kay sagt hier soll das Modul global geladen werden (mit einem
+        #     bisher nicht existierenden Hook)
+
         provider_class = getattr(mod, email_provider_class_name)
         if not hasattr(provider_class, "submitMessage"):
-            raise NameError("EmailProvider AttributeError: " + email_provider_package + "." +
-                            email_provider_class_name + " instance of EmailProvider has no method 'submitMessage'")
+            raise NameError("EmailProvider AttributeError: %s.%s instance of "
+                            "EmailProvider has no method 'submitMessage'" %
+                            (email_provider_package, email_provider_class_name))
+
         return provider_class
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):
@@ -423,7 +522,8 @@ class EmailTokenClass(HmacTokenClass):
 
         return challenge_response
 
-    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
+    def checkResponse4Challenge(self, user, passw, options=None,
+                                challenges=None):
         """
         verify the response of a previous challenge
 
@@ -433,8 +533,9 @@ class EmailTokenClass(HmacTokenClass):
            value) is available in options
         2) No 'transaction_id'
 
-        In the first case we can safely assume that the passw only contains the OTP (no pin).
-        In the second case passw will contain both and we split to get the OTP.
+        In the first case we can safely assume that the passw only contains
+        the OTP (no pin). In the second case passw will contain both and we
+        split to get the OTP.
 
         :param user:     the requesting user
         :param passw:    the to be checked pass (pin+otp)
@@ -461,14 +562,14 @@ class EmailTokenClass(HmacTokenClass):
 
         if transaction_id:
             otp = passw
-            # if the transaction_id is set we can assume that we have only received a single
-            # challenge with that transaction_id thanks to
+            # if the transaction_id is set we can assume that we have only
+            # received a single challenge with that transaction_id thanks to
             # linotp.lib.validate.ValidateToken.get_challenges()
             assert(len(challenges) == 1)
             assert(Challenges.is_same_transaction(challenges[0], transaction_id))
         else:
-            # If no transaction_id is set the request came through the WebUI and
-            # we have to check all challenges
+            # If no transaction_id is set the request came through the WebUI
+            # and we have to check all challenges
             split_status, _, otp = split_pin_otp(self, passw, user, options)
             if split_status < 0:
                 raise Exception("Could not split passw")
@@ -478,21 +579,22 @@ class EmailTokenClass(HmacTokenClass):
         for challenge in challenges:
             challenge_data = challenge.getData()
             stored_counter = challenge_data.get("counter_value")
-            temp_otp_counter = self.checkOtp(otp, int(stored_counter), window, options)
+            temp_otp_counter = self.checkOtp(otp, int(stored_counter),
+                                             window, options)
             if temp_otp_counter > 0:
                 otp_counter = temp_otp_counter
                 matching_challenges = [challenge]
                 break
 
-        # The matching_challenges list will either contain a single challenge or will be empty.
-        # Returning multiple challenges is not useful in this case because all older challenges are
-        # cleaned up anyway.
+        # The matching_challenges list will either contain a single challenge
+        # or will be empty. Returning multiple challenges is not useful in this
+        # case because all older challenges arecleaned up anyway.
         return otp_counter, matching_challenges
 
     def authenticate(self, passw, user, options=None):
         """
-        The e-mail token only supports challenge response mode therefore when a 'normal
-        authenticate' request arrives we return false.
+        The e-mail token only supports challenge response mode therefore when
+        a 'normal' authenticate' request arrives we return false.
 
         :return: pin_match, otp_counter, reply
         :rtype: bool, int, string
@@ -502,7 +604,7 @@ class EmailTokenClass(HmacTokenClass):
         reply = None
         return pin_match, otp_counter, reply
 
-    def getInitDetail(self, params , user=None):
+    def getInitDetail(self, params, user=None):
         '''
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails

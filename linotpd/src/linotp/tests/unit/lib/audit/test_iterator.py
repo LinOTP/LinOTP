@@ -198,7 +198,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             {},
             rp_dict={
                 'sortname': None,
-                'sortorder': None
+                'sortorder': 'asc'
                 }
             )
         audit.row2dict.assert_called_once_with(None)
@@ -235,7 +235,7 @@ class AuditIteratorTestCase(unittest.TestCase):
             rp_dict={
 #                'rp': '15',
                 'sortname': None,
-                'sortorder': None
+                'sortorder': 'asc'
                 }
             )
 

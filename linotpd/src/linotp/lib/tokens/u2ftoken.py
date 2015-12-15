@@ -329,7 +329,7 @@ class U2FTokenClass(TokenClass):
             policies = getPolicy(get_policy_params, context=self.context)
             valid_facets_action_value = getPolicyActionValue(policies,
                                                              'u2f_valid_facets',
-                                                             String=True
+                                                             is_string=True
                                                              )
 
         if valid_facets_action_value != '':
@@ -922,7 +922,7 @@ class U2FTokenClass(TokenClass):
                     policies = getPolicy(get_policy_params, context=self.context)
                     policy_value = getPolicyActionValue(policies,
                                                         'u2f_app_id',
-                                                        String=True
+                                                        is_string=True
                                                         )
                     # Check for appId conflicts
                     if appId and policy_value:

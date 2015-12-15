@@ -94,7 +94,7 @@ encodings = [
 function error_handling(message, file, line){
     Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line +
     "\nTo go on, reload this web page.";
-    alert(Fehler);
+    alert(escape(Fehler));
     return true;
 }
 
@@ -139,14 +139,14 @@ jQuery.validator.addMethod("http_uri", function(value, element, param){
 
 // LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
 jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
-    return value.match(/(\(\S+=\S+\))+/);
+    return value.match(/(\(\S+=(\S+).*\))+/);
     },
     i18n.gettext("Please enter a valid searchfilter like this: (sAMAccountName=*)(objectClass=user)")
 );
 
 // LDAPFILTER: "(&(sAMAccountName=%s)(objectClass=user))"
 jQuery.validator.addMethod("ldap_userfilter", function(value, element, param){
-    return value.match(/\(\&(\(\S+=\S+\))+\)/);
+    return value.match(/\(\&(\(\S+=(\S+).*\))+\)/);
     },
     i18n.gettext("Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)(objectClass=user))")
 );
@@ -240,36 +240,19 @@ function len(obj) {
 }
 
 
-function log(text){
-    var time = new Date();
-    var hours = time.getHours();
-    var minutes = time.getMinutes();
-    minutes = ((minutes < 10) ? "0" : "") + minutes;
-    var seconds = time.getSeconds();
-    seconds = ((seconds < 10) ? "0" : "") + seconds;
-
-    var day = time.getDate();
-    day = ((day < 10) ? "0" : "") + day;
-    var month = time.getMonth();
-    month = ((month < 10) ? "0" : "") + month;
-    var year = time.getFullYear();
-
-    var datum = year + '/' + month + '/' + day + ' ' + hours + ':' + minutes + ':' + seconds;
-
-    $('#logText').html(datum + ": " + text + '<br>' + $('#logText').html());
-}
-
-
 function error_flexi(data){
     // we might do some mods here...
-    alert_info_text("text_error_fetching_list", "", ERROR);
+    alert_info_text({'text': "text_error_fetching_list",
+                     "type": ERROR,
+                    'is_escaped': true});
 }
 
 function pre_flexi(data){
     // adjust the input for the linotp api version >= 2.0
     if (data.result) {
         if (data.result.status === false) {
-            alert_info_text(data.result.error.message);
+            alert_info_text({'text': escape(data.result.error.message),
+                            'is_escaped': true});
             return;
         } else if (data.jsonrpc) {
             var api_version = parseFloat(data.jsonrpc);
@@ -281,19 +264,43 @@ function pre_flexi(data){
     return data;
 }
 
-function load_flexi(){
-    var new_realm = $('#realm').val();
-    $('#user_table').flexOptions({
-        params: [{
-            name: 'realm',
-            value: new_realm
-        }]
-    });
+function on_submit_flexi(){
+/*
+ * callback, to add in parameters to the flexi grid
+ */
+    var active_realm = $('#realm').val();
+    var params = [
+        {name: 'realm', value: active_realm},
+        {name: 'session', value: getsession()},
+        ];
+
+    $('#user_table').flexOptions({params: params});
+    $('#audit_table').flexOptions({params: params});
+    $('#token_table').flexOptions({params: params});
+    $('#policy_table').flexOptions({params: params});
     return true;
 }
 
+function alert_info_text(params) {
+/*
+ * write tnto the report line
+ * :param params: dicttionary with
+ * text - If the parameter is the ID of an element, we pass the text
+ *       of this very element
+ * param - replace parameter
+ * display_type: report or ERROR
+ */
 
-function alert_info_text(s, text_container, display_type) {
+    var s = params['text'] || '';
+    var text_container = params['param'] || '';
+    var display_type = params['type'] || '';
+    var is_escaped = params['is_escaped'] || false;
+
+    if (is_escaped == false)
+    {
+        text_container = escape(text_container);
+        s = escape(s);
+    }
     /*
      * If the parameter is the ID of an element, we pass the text from this very element
      */
@@ -303,14 +310,14 @@ function alert_info_text(s, text_container, display_type) {
             $('#'+s+' .text_param1').html(text_container);
         }
         if ( $('#'+s).length > 0 ) { // Element exists!
-            s=$('#'+s).html();
+            s = $('#'+s).html();
         } else {
             s = str;
         }
 
     }
     catch (e) {
-        s=str;
+        s = str;
     }
 
     new_info_bar = $('#info_bar').clone(true,true)
@@ -358,10 +365,26 @@ function toggle_close_all_link() {
     }
 }
 
-function alert_box(title, s, param1) {
-    /*
-     * If the parameter is the ID of an element, we pass the text of this very element
-     */
+function alert_box(params) {
+/*
+ * pop up an alert box
+ * :param params: dicttionary
+ * s - If the parameter is the ID of an element, we pass the text
+ *     of this very element
+ */
+
+    var escaped = params['is_escaped'] || false;
+    var title = params['title'] || '';
+    var s = params['text'] || '';
+    var param1 = params['param'] || '';
+
+    if (escaped == false)
+    {
+        title = escape(title);
+        s = escape(s);
+        param1 = escape(param1);
+    }
+
     str = s;
     try {
         if (param1) {
@@ -375,7 +398,7 @@ function alert_box(title, s, param1) {
 
     }
     catch (e) {
-        s=str;
+        s = str;
     }
     title_t = title;
     try {
@@ -424,9 +447,10 @@ function get_selected_user(){
     if (selected.length > 1){
         // unselect all selected users - as the last selected could not be identified easily
         selected.removeClass('trSelected');
-        alert_box( i18n.gettext("User selection:"),
-                   i18n.gettext("Selection of more than one user is not supported!")+"<p>"
-                   + i18n.gettext("Please select only one user.") + "</p>");
+        alert_box({'title': i18n.gettext("User selection:"),
+                   'text' : i18n.gettext("Selection of more than one user is not supported!")+"<p>"
+                            + i18n.gettext("Please select only one user.") + "</p>",
+                   'is_escaped': true});
         return selectedUserItems;
     }
     var actual_realm = $('#realm').val();
@@ -437,7 +461,8 @@ function get_selected_user(){
         column.each(function(){
             var attr = $(this).attr("abbr");
             if (attr == "useridresolver") {
-                var resolver = $('div', $(this)).html().split('.');
+                var loc = $('div', $(this)).html();
+                var resolver = escape(loc.split('.'));
                 user.resolver = resolver[resolver.length-1];
             }
         });
@@ -550,23 +575,23 @@ function get_token_owner(token_serial){
 function show_selected_status(){
     var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
-    document.getElementById('selected_tokens').innerHTML = selectedTokenItems.join(", ");
+    $('#selected_tokens').html(escape(selectedTokenItems.join(", ")));
     // we can only select a single user
     if ( selectedUserItems.length > 0 )
-        document.getElementById('selected_users').innerHTML = selectedUserItems[0].login;
+        $('#selected_users').html(escape(selectedUserItems[0].login));
     else
-        document.getElementById('selected_users').innerHTML = "";
+        $('#selected_users').html("");
 }
 
 function get_selected(){
     var selectedUserItems = get_selected_user();
     var selectedTokenItems = get_selected_tokens();
-    document.getElementById('selected_tokens').innerHTML = selectedTokenItems.join(", ");
+    $('#selected_tokens').html(escape(selectedTokenItems.join(", ")));
     // we can only select a single user
     if ( selectedUserItems.length > 0 )
-        document.getElementById('selected_users').innerHTML = selectedUserItems[0].login;
+        $('#selected_users').html(escape(selectedUserItems[0].login));
     else
-        document.getElementById('selected_users').innerHTML = "";
+        $('#selected_users').html("");
 
     if (selectedTokenItems.length > 0) {
         if (selectedUserItems.length == 1) {
@@ -583,13 +608,23 @@ function get_selected(){
         $("#button_delete").button("enable");
         $("#button_setpin").button("enable");
         $("#button_resetcounter").button("enable");
-        if (selectedTokenItems.length == 1) {
+
+        if (selectedTokenItems.length == 0) {
+            $("#button_tokenrealm").button("disable");
+            $("#button_resync").button("disable");
+            $("#button_losttoken").button("disable");
+            $('#button_getmulti').button("disable");
+            $("#button_tokeninfo").button("disable");
+        }
+        else if (selectedTokenItems.length == 1) {
+            $("#button_tokenrealm").button("enable");
             $("#button_resync").button("enable");
             $('#button_losttoken').button("enable");
             $('#button_getmulti').button("enable");
             $("#button_tokeninfo").button("enable");
           }
-        else {
+        else if (selectedTokenItems.length > 1) {
+            $("#button_tokenrealm").button("enable");
             $("#button_resync").button("disable");
             $("#button_losttoken").button("disable");
             $('#button_getmulti').button("disable");
@@ -790,7 +825,9 @@ function save_token_config(){
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
-            alert_info_text(data.result.error.message, "", ERROR);
+            alert_info_text({'text': escape(data.result.error.message),
+                             'type': ERROR,
+                             'is_escaped': true});
         }
     });
 }
@@ -913,9 +950,12 @@ function check_license(){
     var resp = clientUrlFetchSync('/system/isSupportValid',{});
     var obj = jQuery.parseJSON(resp);
     if (obj.result.value === false) {
-       message = obj.detail.reason
-       intro = $('#text_support_lic_error').html()
-       alert_info_text(intro + " " + message, '' ,ERROR);
+       message = escape(obj.detail.reason);
+       intro = escape($('#text_support_lic_error').html());
+       alert_info_text({'text': intro + " " + message,
+                        'type': ERROR,
+                        'is_escaped': true
+                        });
        return;
     }
 }
@@ -941,7 +981,9 @@ function assign_callback(xhdr, textStatus, serial) {
     resp = xhdr.responseText;
     obj = jQuery.parseJSON(resp);
     if (obj.result.status == false) {
-        alert_info_text(obj.result.error.message, "", ERROR);
+        alert_info_text({'title': escape(obj.result.error.message),
+                         'type': ERROR,
+                         'is_esacped': true});
     } else
         view_setpin_after_assigning([serial]);
     reset_buttons();
@@ -970,7 +1012,9 @@ function token_operations_callback(responses) {
     });
 
     if (error_messages.length > 0) {
-        alert_info_text(error_messages.join(" -- "), null, ERROR)
+        alert_info_text({'text': escape(error_messages.join(" -- ")),
+                         'type': ERROR,
+                         'is_escaped': true});
     }
     reset_buttons();
 }
@@ -1058,12 +1102,17 @@ function token_resync_callback(xhdr, textStatus) {
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
             if (obj.result.value)
-                alert_info_text("text_resync_success");
+                alert_info_text({'text': "text_resync_success",
+                                 'is_escaped': true,
+                                 });
             else
-                alert_info_text("text_resync_fail", "", ERROR);
+                alert_info_text({'text': "text_resync_fail",
+                                 'type': ERROR,
+                                 'is_escaped': true,
+                                 });
     } else {
-        message = obj.result.error.message;
-        alert_info_text(message, "", ERROR);
+        message = escape(obj.result.error.message);
+        alert_info_text({'text': message, 'type': ERROR, 'is_escaped': true});
     }
 
     reset_buttons();
@@ -1089,19 +1138,20 @@ function losttoken_callback(xhdr, textStatus){
         var password = '';
         if ('password' in obj.result.value){
             password = obj.result.value.password ;
-            $('#temp_token_password').html(password);
+            $('#temp_token_password').text(password);
         }
-        $('#temp_token_serial').html(serial);
-        $('#temp_token_enddate').html(end_date);
+        $('#temp_token_serial').html(escape(serial));
+        $('#temp_token_enddate').html(escape(end_date));
         $dialog_view_temporary_token.dialog("open");
     } else {
-        alert_info_text("text_losttoken_failed",
-                obj.result.error.message, ERROR);
+        alert_info_text({'text': "text_losttoken_failed",
+                         'param': escape(obj.result.error.message),
+                         'type': ERROR,
+                         'is_escaped': true});
     }
     $("#token_table").flexReload();
     $('#selected_tokens').html('');
     disable_all_buttons();
-    log('Token ' + serial + ' lost.');
 }
 
 function token_losttoken(token_type) {
@@ -1136,9 +1186,14 @@ function setpin_callback(xhdr, textStatus) {
     var obj = jQuery.parseJSON(resp);
     if (obj.result.status) {
             if (obj.result.value)
-                alert_info_text("text_setpin_success")
+                alert_info_text({'text': "text_setpin_success",
+                                 'is_escaped': true});
             else
-                alert_info_text("text_setpin_failed", obj.result.error.message, ERROR);
+                alert_info_text({'text': "text_setpin_failed",
+                                 'param': escape(obj.result.error.message),
+                                 'type': ERROR,
+                                 'is_escaped': true,
+                                 });
         }
 }
 
@@ -1158,7 +1213,10 @@ function token_setpin(){
         } else if ((pintype.toLowerCase() == "ocrapin")) {
             clientUrlFetch("/admin/setPin", {"serial" : serial, "userpin" : pin}, setpin_callback);
         } else
-            alert_info_text("text_unknown_pintype", pintype, ERROR);
+            alert_info_text({'text': "text_unknown_pintype",
+                             'param': pintype,
+                             'type': ERROR,
+                             'is_escaped': true});
     }
 
 }
@@ -1172,7 +1230,7 @@ function view_setpin_dialog(tokens) {
      * Parameter: array of serial numbers
      */
     var token_string = tokens.join(", ");
-    $('#dialog_set_pin_token_string').html(token_string);
+    $('#dialog_set_pin_token_string').html(escape(token_string));
     $('#setpin_tokens').val(tokens);
     $dialog_setpin_token.dialog('open');
 }
@@ -1211,7 +1269,8 @@ function token_info(){
     var tokens = get_selected_tokens();
     var count = tokens.length;
     if (count != 1) {
-        alert_info_text("text_only_one_token_ti");
+        alert_info_text({'text': "text_only_one_token_ti",
+                         'is_escaped': true});
         return false;
     }
     else {
@@ -1228,7 +1287,8 @@ function get_token_type(){
     var count = tokens.length;
     var ttype = "";
     if (count != 1) {
-        alert_info_text("text_only_one_token_type");
+        alert_info_text({'text': "text_only_one_token_type",
+                         'is_escaped': true});
         return false;
     }
     else {
@@ -1239,7 +1299,10 @@ function get_token_type(){
             ttype = obj['result']['value']['data'][0]['LinOtp.TokenType'];
         }
         catch (e) {
-            alert_info_text("text_fetching_tokentype_failed", e, ERROR);
+            alert_info_text({'text': "text_fetching_tokentype_failed",
+                             'param': escape(e),
+                             'type': ERROR,
+                             'is_escape': true});
         }
         return ttype;
     }
@@ -1247,7 +1310,7 @@ function get_token_type(){
 
 function tokeninfo_redisplay() {
     var tokeninfo = token_info();
-    $dialog_token_info.html(tokeninfo);
+    $dialog_token_info.html($.parseHTML(tokeninfo));
     set_tokeninfo_buttons();
 }
 
@@ -1259,7 +1322,8 @@ function token_info_save(){
     var count = tokens.length;
     var serial = tokens[0];
     if (count != 1) {
-        alert_info_text("text_only_one_token_ti");
+        alert_info_text({'text': "text_only_one_token_ti",
+                         'is_escape': true});
         return false;
     }
     else {
@@ -1269,7 +1333,7 @@ function token_info_save(){
         var resp = clientUrlFetchSync("/admin/set", param);
         var rObj = jQuery.parseJSON(resp);
         if (rObj.result.status == false) {
-            alert(rObj.result.error.message);
+            alert(escape(rObj.result.error.message));
         }
     }
     // re-display
@@ -1283,7 +1347,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
     var obj = jQuery.parseJSON(resp);
     var serial = p_serial;
 
-    //alert('TODO: enroll_callback - return from init the values, which makes this easier')
+    //enroll_callback - return from init the values, which makes this easier
 
     $('#dialog_enroll').hide();
     if (obj.result.status) {
@@ -1293,15 +1357,24 @@ function enroll_callback(xhdr, textStatus, p_serial) {
               serial = detail.serial;
            }
         }
-        alert_info_text("text_created_token", serial);
+        alert_info_text({'text': "text_created_token",
+                         'param': escape(serial),
+                         'is_escaped': true});
         if (true == g.display_genkey) {
 
             // display the QR-Code of the URL. tab
             var users = get_selected_user();
             var emails = get_selected_email();
-            $('#token_enroll_serial').html(serial);
+            $('#token_enroll_serial').html(escape(serial));
             if (users.length >= 1) {
-                $('#token_enroll_user').html("<a href=mailto:" +emails[0]+">"+users[0].login+"</a>");
+                var login = escape(users[0].login);
+                var user = login;
+                var email = escape(emails[0].trim())
+                if (email.length > 0) {
+                    user = "<a href=mailto:" +email+">"+login+"</a>"
+                }
+                // the input parts for the fragment are already escaped
+                $('#token_enroll_user').html(user);
             } else {
                 $('#token_enroll_user').html("---");
             }
@@ -1309,6 +1382,8 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             var dia_tabs = {};
             var dia_tabs_content = {};
 
+			// here we compose the HMAC reply dialog with multiple tabs
+			// while the content is defined in mako files
             for (var k in obj.detail) {
                 var theDetail = obj.detail[k];
                 if (theDetail != null && theDetail.hasOwnProperty('description') ){
@@ -1318,9 +1393,10 @@ function enroll_callback(xhdr, textStatus, p_serial) {
                     } else {
                         order = k;
                     }
-                    var description = theDetail.description;
+                    var description = escape(theDetail.description);
                     if ( $("#description_" +k ).length !== 0) {
-                        description = $("#description_" +k ).html();
+                    	// we only require the text value of the description
+                        description = $("#description_" +k ).text();
                     }
                     dia_tabs[order] = '<li><a href="#url_content_'+k+'">'+ description + '</a></li>';
                     dia_tabs_content[order] = _extract_tab_content(theDetail, k);
@@ -1352,13 +1428,17 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             // end of qr_url_tabs
             dia_text += '</div>';
 
-            $('#enroll_url').html(dia_text);
+			// the output fragments of dia_text ae already escaped
+            $('#enroll_url').html($.parseHTML(dia_text));
             $('#qr_url_tabs').tabs();
             $dialog_show_enroll_url.dialog("open");
         }
     }
     else {
-        alert_info_text("text_error_creating_token", obj.result.error.message, ERROR);
+        alert_info_text({'text': "text_error_creating_token",
+                         'param': escape(obj.result.error.message),
+                         'type':ERROR,
+                         'is_escape': true});
     }
     reset_buttons();
 }
@@ -1371,6 +1451,7 @@ function _extract_tab_content(theDetail, k) {
     if($('#annotation_' + k).length !== 0) {
         annotation = $('#annotation_' + k).html();
     }
+	annotation = escape(annotation);
 
     var dia_text ='';
     dia_text += '<div id="url_content_'+k+'">';
@@ -1430,13 +1511,16 @@ function token_enroll(){
                 var exi = typeof funct;
 
                 if (exi == 'undefined') {
-                    alert('undefined function '+ functionString + ' for tokentype ' + typ  );
+                    alert('undefined function '+ escape(functionString) +
+                          ' for tokentype ' + escape(typ)  );
                 }
                 if (exi == 'function') {
                     params = window[functionString]();
                 }
             } else {
-                alert_info_text("text_enroll_type_error", "", ERROR);
+                alert_info_text({'text': "text_enroll_type_error",
+                                 'type': ERROR,
+                                 'is_escaped': true});
                 return false;
             }
     }
@@ -1455,7 +1539,9 @@ function get_enroll_infotext(){
     $("#enroll_info_text_multiuser").hide();
     if (users.length == 1) {
         $("#enroll_info_text_user").show();
-        $('#enroll_info_user').html(users[0].login+" ("+users[0].resolver+")");
+        var login = escape(users[0].login);
+        var resolver = escape(users[0].resolver);
+        $('#enroll_info_user').html($.parseHTML( login +" ("+resolver+")"));
     }
     else
         if (users.length == 0) {
@@ -1635,21 +1721,22 @@ function _fill_realms(widget, also_none_realm){
         }
         var defaultRealm;
         for (var i in value) {
+			var realm_val = escape(i);
             if (value[i]['default']) {
                 realms += "<option selected>";
-                defaultRealm = i;
+                defaultRealm = realm_val;
             }
             else
                 if (realmCount == 1) {
                     realms += "<option selected>";
-                    defaultRealm = i;
+                    defaultRealm = realm_val;
                 }
                 else {
                     realms += "<option>";
                 }
             //realms += data.result.value[i].realmname;
             // we use the lowercase realm name
-            realms += i;
+            realms += realm_val;
             realms += "</option>";
         }
 
@@ -1726,19 +1813,33 @@ function get_serial_by_otp_callback(xhdr, textStatus) {
     if (obj.result.status == true) {
         if (obj.result.value.success==true) {
             if (""!=obj.result.value.serial) {
-                var text="Found the token: "+obj.result.value.serial;
+
+                var text = i18n.gettext("Found the token: ") +
+                           escape(obj.result.value.serial);
+
                 if (obj.result.value.user_login != "") {
-                    text += "\nThe token belongs to " + obj.result.value.user_login+" ("+obj.result.value.user_resolver+")";
+
+                    text += "\n" +
+                            i18n.gettext("The token belongs to ") +
+                            escape(obj.result.value.user_login) +
+                            " ("+ escape(obj.result.value.user_resolver) +")";
                 }
-                alert_info_text(text);
+                alert_info_text({'text': text,
+                                 'is_escaped': true});
             }
             else
-                alert_info_text("text_get_serial_no_otp");
+                alert_info_text({'text': "text_get_serial_no_otp",
+                                 'is_escaped': true});
         }else{
-            alert_info_text("text_get_serial_error", "", ERROR);
+            alert_info_text({"text": "text_get_serial_error",
+                             'type': ERROR,
+                             'is_escaped': true});
         }
     } else {
-        alert_info_text("text_failed", obj.result.error.message, ERROR);
+        alert_info_text({'text': "text_failed",
+                         'param': escape(obj.result.error.message),
+                         'type': ERROR,
+                         'is_escaped': true});
     }
 }
 // get Serial by OTP
@@ -1795,18 +1896,27 @@ function parseXML(xml, textStatus){
     var message = $(xml).find('message').text();
 
     if ("error" == textStatus) {
-        alert_info_text("text_linotp_comm_fail", "", ERROR);
+        alert_info_text({'text': "text_linotp_comm_fail",
+                         'type': ERROR,
+                         'is_escaped': true});
     }
     else {
         if ("False" == status) {
-            alert_info_text("text_token_import_failed", message, ERROR);
+            alert_info_text({'text': "text_token_import_failed",
+                             'param': escape(message),
+                             'type': ERROR,
+                             'is_escaped': true,
+                             });
         }
         else {
             // reload the token_table
             $('#token_table').flexReload();
             $('#selected_tokens').html('');
             disable_all_buttons();
-            alert_info_text("text_token_import_result", value);
+            alert_info_text({'text': "text_token_import_result",
+                             'param': escape(value),
+                             'is_escaped': true,
+                             });
 
         }
     }
@@ -1820,16 +1930,22 @@ function parsePolicyImport(xml, textStatus) {
     var message = $(xml).find('message').text();
 
     if ("error" == textStatus) {
-        alert_info_text("text_linotp_comm_fail", "", ERROR);
+        alert_info_text({'text': "text_linotp_comm_fail",
+                         'type': ERROR,
+                         'is_escaped': true});
     }
     else {
         if ("False" == status) {
-            alert_info_text("text_policy_import_failed", message);
+            alert_info_text({'text': "text_policy_import_failed",
+                             'param': escape(message),
+                             'is_escaped': true});
         }
         else {
             // reload the token_table
             $('#policy_table').flexReload();
-            alert_info_text("text_policy_import_result", value);
+            alert_info_text({'text': "text_policy_import_result",
+                             'param': escape(value),
+                             'is_escaped': true});
         }
     }
     hide_waiting();
@@ -1846,17 +1962,29 @@ function parseLicense(xhdr, textStatus){
 
     // error occured
     if ( status === false) {
-        var message = i18n.gettext('Invalid License') + ': <br>' + obj.result.error.message;
-        alert_info_text(message, '' ,ERROR);
-        alert_box(dialog_title, error_intro + message);
+        var message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.result.error.message);
+        alert_info_text({'text': message,
+                         'type': ERROR,
+                         'is_escaped': true
+                         });
+
+        alert_box({'title': dialog_title,
+                   'text': error_intro + message,
+                   'is_escaped': true});
     } else {
         value = obj.result.value;
         if (value === false){
-            message = i18n.gettext('Invalid License') + ': <br>' + obj.detail.reason;
-            alert_info_text(message, '', ERROR);
-            alert_box(dialog_title, error_intro + message);
+            message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.detail.reason);
+            alert_info_text({'text': message,
+                             'type': ERROR,
+                             'is_escaped': true});
+            alert_box({'title': dialog_title,
+                       'text': error_intro + message,
+                       'is_escaped': true});
         } else {
-            alert_box(dialog_title, "text_support_lic_installed");
+            alert_box({'title': dialog_title,
+                       'text': "text_support_lic_installed",
+                       'is_escaped': true});
         }
     }
     hide_waiting();
@@ -1949,7 +2077,9 @@ function load_tokenfile(type){
         });
     }
     else {
-        alert_info_text( "text_import_unknown_type", "", ERROR);
+        alert_info_text({'text': "text_import_unknown_type",
+                         'type': ERROR,
+                         'is_escaped': true});
     };
     return false;
 }
@@ -1968,7 +2098,9 @@ function support_set(){
         dataType: 'xml'
     });
     } else {
-        alert_info_text("text_import_pem", "", ERROR);
+        alert_info_text({'text': "text_import_pem",
+                         'type': ERROR,
+                         'is_escaped': true});
     }
     hide_waiting();
     return false;
@@ -1987,7 +2119,7 @@ function support_view(){
             var info = "";
             info += '<h2 class="contact_info">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
             info += i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact <p class="contact_info"><a href="mailto:sales@lsexperts.de">LSE Leading Security Experts GmbH</a></p> for support agreement purchase.');
-            $("#dialog_support_view").html(info);
+            $("#dialog_support_view").html($.parseHTML(info));
 
         } else {
             var info = "";
@@ -2006,7 +2138,7 @@ function support_view(){
                 i18n.gettext("For support and subscription please contact us at") +
                 " <a href='https://www.lsexperts.de/service-support.html' target='_blank'>https://www.lsexperts.de</a> <br>" +
                 i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
-            $("#dialog_support_view").html(info);
+            $("#dialog_support_view").html($.parseHTML(info));
         }
     });
     return false;
@@ -2096,7 +2228,9 @@ function save_system_config(){
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
-            alert_info_text("text_system_save_error", "", ERROR);
+            alert_info_text({'text': "text_system_save_error",
+                             'type': ERROR,
+                             'is_escape': true});
         }
     });
 
@@ -2159,7 +2293,9 @@ function save_system_config(){
              },
      function(data, textStatus, XMLHttpRequest){
         if (data.result.status == false) {
-            alert_info_text("text_system_save_error_checkbox", "", ERROR);
+            alert_info_text({'text': "text_system_save_error_checkbox",
+                             'type': ERROR,
+                             'is_escaped': true});
         }
     });
 }
@@ -2183,26 +2319,33 @@ function save_ldap_config(){
         '#ldap_noreferrals' : 'NOREFERRALS',
         '#ldap_certificate': 'CACERTIFICATE',
     };
-    var url = '/system/setResolver?name='+resolvername+'&type='+resolvertype+'&';
+    var url = '/system/setResolver';
+    var params = {}
+    params['name']= resolvername;
+    params['type'] = resolvertype;
     for (var key in ldap_map) {
-        var data = $(key).serialize();
-        var new_data = data.replace(/^.*=/, ldap_map[key] + '=');
-        url += new_data + "&";
+        var new_key = ldap_map[key];
+        var value = $(key).val();
+        params[new_key] = value;
     }
     // checkboxes
     var noreferrals="False";
     if ($("#ldap_noreferrals").is(':checked')) {
         noreferrals = "True";
     }
-    url += "NOREFERRALS="+noreferrals+"&";
+    params["NOREFERRALS"] = noreferrals;
 
-    url += "session="+getsession();
+    params["session"] = getsession();
     show_waiting();
-    $.get(url,
+
+    $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
-            alert_info_text("text_error_ldap", data.result.error.message, ERROR);
+            alert_info_text({'text': "text_error_ldap",
+                             'param': escape(data.result.error.message),
+                             'type': ERROR,
+                             'is_escaped': true});
         } else {
             resolvers_load();
             $dialog_ldap_resolver.dialog('close');
@@ -2252,11 +2395,16 @@ function save_realm_config(){
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
-            alert_info_text("text_error_realm", data.result.error.message, ERROR);
+            alert_info_text({'text': "text_error_realm",
+                             'param': escape(data.result.error.message),
+                             'type': ERROR,
+                             'is_escaped': true});
         } else {
             fill_realms();
             realms_load();
-            alert_info_text("text_realm_created", realm);
+            alert_info_text({'text': "text_realm_created",
+                             'param': escape(realm),
+                             'is_escaped': true});
         }
     });
 }
@@ -2274,7 +2422,10 @@ function save_tokenrealm_config(){
          function(data, textStatus, XMLHttpRequest){
             hide_waiting();
             if (data.result.status == false) {
-                alert_info_text("text_error_set_realm", data.result.error.message, ERROR);
+                alert_info_text({'text': "text_error_set_realm",
+                                 'param': escape(data.result.error.message),
+                                 'type': ERROR,
+                                 'is_escaped': true});
             }
             else {
                 $('#token_table').flexReload();
@@ -2301,7 +2452,10 @@ function save_file_config(){
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
-            alert_info_text("text_error_save_file", data.result.error.message, ERROR);
+            alert_info_text({'text': "text_error_save_file",
+                             'param': escape(data.result.error.message),
+                             'type': ERROR,
+                             'is_escaped': true});
         } else {
             resolvers_load();
             $dialog_file_resolver.dialog('close');
@@ -2328,19 +2482,25 @@ function save_sql_config(){
         '#sql_conparams': 'conParams',
         '#sql_encoding' : 'Encoding'
     };
-    var url = '/system/setResolver?name='+resolvername+'&type='+resolvertype+'&';
+    var url = '/system/setResolver';
+    var params = {};
+    params['name'] = resolvername;
+    params['type'] = resolvertype;
     for (var key in map) {
-        var data = $(key).serialize();
-        var new_data = data.replace(/^.*=/, map[key] + '=');
-        url += new_data + "&";
+        var value = $(key).val();
+        var new_key = map[key];
+        params[new_key] = value;
     }
-    url += '&session='+getsession();
+    params['session'] = getsession();
     show_waiting();
-    $.get(url,
+    $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
-            alert_info_text("text_error_save_sql", data.result.error.message, ERROR);
+            alert_info_text({'text': "text_error_save_sql",
+                             'param': escape(data.result.error.message),
+                             'type': ERROR,
+                             'is_escaped': true});
         } else {
             resolvers_load();
             $dialog_sql_resolver.dialog('close');
@@ -2372,16 +2532,18 @@ function realms_load(){
             if (data.result.value[key]['default']) {
                 default_realm = " (Default) ";
             }
-
-            realms += '<li class="ui-widget-content">' + key + default_realm + ' [' + resolvers + ']</li>';
+			var e_key = escape(key);
+			var e_default_realm = escape(default_realm);
+			var e_resolvers = escape(resolvers)
+            realms += '<li class="ui-widget-content">' + e_key + e_default_realm + ' [' + e_resolvers + ']</li>';
         }
         realms += '</ol>';
-        $('#realm_list').html(realms);
+        $('#realm_list').html($.parseHTML(realms));
         $('#realms_select').selectable({
             stop: function(){
                 $(".ui-selected", this).each(function(){
                     var index = $("#realms_select li").index(this);
-                    g.realm_to_edit = this.innerHTML;
+                    g.realm_to_edit = escape($(this).html());
                 }); // end of each
             } // end of stop function
         }); // end of selectable
@@ -2394,7 +2556,7 @@ function realm_ask_delete(){
     // replace in case of default realm
     realm = realm.replace(/^(\S+)\s+\(Default\)\s+\[(.*)$/, "$1");
 
-    $('#realm_delete_name').html(realm);
+    $('#realm_delete_name').html(escape(realm));
     $dialog_realm_ask_delete.dialog('open');
 }
 
@@ -2412,7 +2574,9 @@ function resolvers_load(){
         for (var key in data.result.value) {
             //resolvers += '<input type="radio" id="resolver" name="resolver" value="'+key+'">';
             //resolvers += key+' ('+data.result.value[key].type+')<br>';
-            resolvers += '<li class="ui-widget-content">' + key + ' [' + data.result.value[key].type + ']</li>';
+            var e_key = escape(key);
+            var e_reolver_type = escape(data.result.value[key].type);
+            resolvers += '<li class="ui-widget-content">' + e_key + ' [' + e_reolver_type + ']</li>';
             count = count +1 ;
         }
         resolvers += '</ol>';
@@ -2422,7 +2586,7 @@ function resolvers_load(){
                 stop: function(){
                     $(".ui-selected", this).each(function(){
                         var index = $("#resolvers_select li").index(this);
-                        g.resolver_to_edit = this.innerHTML;
+                        g.resolver_to_edit = escape($(this).html());
                     }); // end of each
                 } // end of stop function
             }); // end of selectable
@@ -2444,12 +2608,20 @@ function resolver_delete(){
         if (data.result.status == true) {
             resolvers_load();
             if (data.result.value == true)
-                alert_info_text("text_resolver_delete_success", reso);
+                alert_info_text({'text': "text_resolver_delete_success",
+                                 'param': escape(reso),
+                                 'is_escaped': true});
             else
-                alert_info_text("text_resolver_delete_fail", reso, ERROR);
+                alert_info_text({'text': "text_resolver_delete_fail",
+                                 'param': escape(reso),
+                                 'type': ERROR,
+                                 'is_escaped': true});
         }
         else {
-            alert_info_text("text_resolver_delete_fail", data.result.error.message, ERROR);
+            alert_info_text({'text': "text_resolver_delete_fail",
+                             'param': escape(data.result.error.message),
+                             'type': ERROR,
+                             'is_escape': true});
         }
     });
 }
@@ -2461,10 +2633,15 @@ function realm_delete(){
         if (data.result.status == true) {
             fill_realms();
             realms_load();
-            alert_info_text("text_realm_delete_success", realm);
+            alert_info_text({'text': "text_realm_delete_success",
+                             'param': escape(realm),
+                            'is_escaped': true});
         }
         else {
-            alert_info_text("text_realm_delete_fail", data.result.error.message, ERROR);
+            alert_info_text({'text': "text_realm_delete_fail",
+                             'param': escape(data.result.error.message),
+                             'type': ERROR,
+                            'is_escaped': true});
         }
         hide_waiting();
     });
@@ -2476,12 +2653,15 @@ function resolver_ask_delete(){
         var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
         var type = g.resolver_to_edit.replace(/\S+\s+(\S+)/, "$1");
 
-        $('#delete_resolver_type').html(type);
-        $('#delete_resolver_name').html(reso);
+        $('#delete_resolver_type').html(escape(type));
+        $('#delete_resolver_name').html(escape(reso));
         $dialog_resolver_ask_delete.dialog('open');
     }
     else {
-        alert_info_text("text_regexp_error", g.resolver_to_edit, ERROR);
+        alert_info_text({'text': "text_regexp_error",
+                         'param': escape(g.resolver_to_edit),
+                         'type': ERROR,
+                         'is_escaped': true});
     }
    }
 }
@@ -2643,9 +2823,9 @@ function set_tokeninfo_buttons(){
         label: "auth max_success"
     });
     $('#ti_button_count_auth_max_success').click(function(){
-        $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="countAuthSuccessMax">\
+        $dialog_tokeninfo_set.html($.parseHTML('<input type="hidden" name="info_type" value="countAuthSuccessMax">\
             <input id=info_value name=info_value></input>\
-            ');
+            '));
         translate_dialog_ti_countauthsuccessmax();
         $dialog_tokeninfo_set.dialog('open');
     });
@@ -2767,6 +2947,7 @@ function tokenbuttons(){
         }
     });
 
+	disable_all_buttons();
 
     var $dialog_losttoken = $('#dialog_lost_token').dialog({
         autoOpen: false,
@@ -2825,7 +3006,7 @@ function tokenbuttons(){
                 }
                 $("#dialog_lost_token select option[value=select_token]").
                     attr('selected',true);
-                $('#lost_token_serial').html(token_string);
+                $('#lost_token_serial').html(escape(token_string));
                 translate_dialog_lost_token();
                 do_dialog_icons();
             } else {
@@ -2866,7 +3047,7 @@ function tokenbuttons(){
             /* delete otp values in dialog */
             $("#otp1").val("");
             $("#otp2").val("");
-            $('#tokenid_resync').html(token_string);
+            $('#tokenid_resync').html(escape(token_string));
             translate_dialog_resync_token();
             do_dialog_icons();
         }
@@ -2880,7 +3061,8 @@ function tokenbuttons(){
     $('#button_tokeninfo').click(function () {
         var tokeninfo = token_info();
         if (false != tokeninfo) {
-            $dialog_token_info.html(tokeninfo);
+            var pHtml = $.parseHTML(tokeninfo);
+            $dialog_token_info.html(pHtml);
             set_tokeninfo_buttons();
             buttons = {
                 Close: {click: function(){
@@ -2917,7 +3099,7 @@ function tokenbuttons(){
                             $(this).dialog('close');
                             },
                     id: "button_tokenrealm_save",
-                    text: "Save"
+                    text: "Set Realm"
             }
         },
         open: function() {
@@ -2953,7 +3135,7 @@ function tokenbuttons(){
         open: function() {
             do_dialog_icons();
             token_string = get_selected_tokens()[0];
-            $('#tokenid_getmulti').html(token_string);
+            $('#tokenid_getmulti').html(escape(token_string));
             translate_dialog_getmulti();
         }
     });
@@ -2962,8 +3144,8 @@ function tokenbuttons(){
     });
 
     $('#button_tokenrealm').click(function(event){
-        tokens = get_selected_tokens();
-        token_string = tokens.join(", ");
+        var tokens = get_selected_tokens();
+        var token_string = tokens.join(", ");
         g.realms_of_token = Array();
 
         // get all realms the admin is allowed to view
@@ -2973,11 +3155,12 @@ function tokenbuttons(){
             realms = '<ol id="tokenrealm_select" class="select_list" class="ui-selectable">';
             for (var key in data.result.value) {
                 var klass = 'class="ui-widget-content"';
-                realms += '<li ' + klass + '>' + key + '</li>';
+                var e_key = escape(key);
+                realms += '<li ' + klass + '>' + e_key + '</li>';
             }
             realms += '</ol>';
 
-            $('#tokenid_realm').html(token_string);
+            $('#tokenid_realm').html(escape(token_string));
             $('#realm_name').val(token_string);
             $('#token_realm_list').html(realms);
 
@@ -2986,14 +3169,20 @@ function tokenbuttons(){
                     $(".ui-selected", this).each(function(){
                         // fill realms of token
                         var index = $("#tokenrealm_select li").index(this);
-                        var realm = this.innerHTML;
+                        var realm = escape($(this).html());
                         g.realms_of_token.push(realm);
 
                     }); // end of stop function
                 } // end stop function
             }); // end of selectable
         }); // end of $.get
-        $dialog_edit_tokenrealm.dialog('open');
+        if (tokens.length === 0) {
+            alert_box({'title': i18n.gettext("Set Token Realm"),
+                       'text': i18n.gettext("Please select the token first."),
+                       'is_escaped': true});
+        } else {
+            $dialog_edit_tokenrealm.dialog('open');
+        }
         return false;
     });
 }
@@ -3115,7 +3304,6 @@ $(document).ready(function(){
         $(this).parent().hide('blind', {}, 500, toggle_close_all_link);
     });
 
-    disable_all_buttons();
 
     /*****************************************************************************************
      * Realms editing dialog
@@ -3396,15 +3584,22 @@ $(document).ready(function(){
                             var userarray = obj.result.value.desc;
                             var usr_msg = sprintf(i18n.gettext("Number of users found: %d"),userarray.length);
                             var msg = i18n.gettext("Connection Test: successful") +
-                                      "<p>" + usr_msg + "</p><p class='hint'>" + limit + "</p>";
-                            alert_box(i18n.gettext("LDAP Connection Test"), msg);
+                                      "<p>" + escape(usr_msg) + "</p><p class='hint'>" + escape(limit) + "</p>";
+
+                            alert_box({'title': i18n.gettext("LDAP Connection Test"),
+                                       'text': msg,
+                                       'is_escaped': true});
                         }
                         else {
-                            alert_box("LDAP Test", obj.result.value.desc);
+                            alert_box({'title': "LDAP Test",
+                                       'text': escape(obj.result.value.desc),
+                                       'is_escaped': true});
                         }
                     }
                     else {
-                        alert_box("LDAP Test", obj.result.error.message);
+                        alert_box({'title': "LDAP Test",
+                                   'text': escape(obj.result.error.message),
+                                   'is_escaped': true});
                     }
                     return false;
                  });
@@ -3543,13 +3738,22 @@ $(document).ready(function(){
                         rows = obj.result.value.rows;
                         if (rows > -1) {
                             // show number of found users
-                            alert_box("SQL Test", "text_sql_config_success", rows);
+                            alert_box({'title': "SQL Test",
+                                       'text': "text_sql_config_success",
+                                       'param': escape(rows),
+                                       'is_escaped': true});
                         } else {
-                            err_string = obj.result.value.err_string;
-                            alert_box("SQL Test", "text_sql_config_fail", err_string);
+                            err_string = escape(obj.result.value.err_string);
+                            alert_box({'title': "SQL Test",
+                                       'text': "text_sql_config_fail",
+                                       'param': err_string,
+                                       'is_escaped': true});
                         }
                     } else {
-                        alert_box("SQL Test", obj.result.error.message);
+                        alert_box({'title': "SQL Test",
+                                   'text' : escape(obj.result.error.message),
+                                   'is_escaped': true,
+                                   });
                     }
                     return false;
                  });
@@ -3768,10 +3972,14 @@ $(document).ready(function(){
                     });
                 }
                 else if (g.realm_to_edit.match(/^\S+\s+\(Default\)\s+\[.+\]/)) {
-                    alert_info_text("text_already_default_realm", "", ERROR);
+                    alert_info_text({'text': "text_already_default_realm",
+                                     "type": ERROR,
+                                    'is_escaped': true});
                 }
                 else {
-                    alert_info_text("text_realm_regexp_error", "", ERROR);
+                    alert_info_text({'text': "text_realm_regexp_error",
+                                     "type": ERROR,
+                                     'is_escaped': true});
                 }
                 },
                 id: "button_realms_setdefault",
@@ -3828,14 +4036,17 @@ $(document).ready(function(){
                                         formName = $(this).find('label').first().text();
                                     }
                                     validation_fails = validation_fails +
-                                                "<li>" + formName.trim() +"</li>";
+                                                "<li>" + escape(formName.trim()) +"</li>";
                                 }
                             }
                         }
                     );
                     if (validation_fails.length > 0) {
-                        alert_box("text_form_validation_error_title",
-                            "text_form_validation_error1", validation_fails);
+                        alert_box({'title': i18n.gettext("Form Validation Error"),
+                                   'text': "text_form_validation_error1",
+                                   'param':validation_fails,
+                                   'is_escaped': true
+                                   });
                     }
                     else
                     {
@@ -3891,7 +4102,9 @@ $(document).ready(function(){
                     save_system_config();
                     $(this).dialog('close');
                 } else {
-                    alert_box("", "text_error_saving_system_config");
+                    alert_box({'title': "",
+                               'text': "text_error_saving_system_config",
+                               'is_escaped': true});
                 }
                 },
                 id: "button_system_save",
@@ -3947,7 +4160,10 @@ $(document).ready(function(){
           load_token_config();
           $dialog_token_config.dialog('open');
         } catch (error) {
-          alert_box('', "text_catching_generic_error", error);
+          alert_box({'title': '',
+                     'text': "text_catching_generic_error",
+                     'param': escape(error),
+                     'is_escaped': true});
         }
     });
 
@@ -4107,7 +4323,11 @@ $(document).ready(function(){
         try {
             tokentype_changed();
         } catch (error) {
-            alert_box('', "text_catching_generic_error", error);
+            alert_box({'title': '',
+                       'text': "text_catching_generic_error",
+                       'param': escape(error),
+                       'is_escaped': true,
+                       });
             return false;
         }
         // ajax call  w. callback//
@@ -4156,7 +4376,7 @@ $(document).ready(function(){
         });
         $('#user_table').flexReload();
         // remove the selected user display
-        document.getElementById('selected_users').innerHTML = "";
+        $('#selected_users').html("");
     });
 
     $dialog_setpin_token = $('#dialog_set_pin').dialog({
@@ -4184,6 +4404,10 @@ $(document).ready(function(){
         open: function() {
             translate_set_pin();
             do_dialog_icons();
+        },
+        close: function() {
+            $('#pin1').val('');
+            $('#pin2').val('');
         }
     });
 
@@ -4219,7 +4443,7 @@ $(document).ready(function(){
             translate_dialog_unassign();
             tokens = get_selected_tokens();
             token_string = tokens.join(", ");
-            $('#tokenid_unassign').html(token_string);
+            $('#tokenid_unassign').html(escape(token_string));
         }
     });
     $('#button_unassign').click(function(){
@@ -4251,7 +4475,7 @@ $(document).ready(function(){
         },
         open: function(){
             tokens = get_selected_tokens();
-            $('#delete_info').html( tokens.join(", "));
+            $('#delete_info').html(escape(tokens.join(", ")));
             translate_dialog_delete_token();
             do_dialog_icons();
         }
@@ -4388,6 +4612,8 @@ $(document).ready(function(){
      minHeight: 60
      });
      */
+
+
 });
 //--------------------------------------------------------------------------------------
 // End of document ready
@@ -4465,9 +4691,11 @@ function realm_edit(name){
             realm = name.replace(/^(\S+)\s+(\[|\()(.+)\]/, "$1");
         }
         else {
-            alert_info_text("text_realm_name_error", "", ERROR);
+            alert_info_text({'text': "text_realm_name_error",
+                             "type": ERROR,
+                            'is_escaped': true});
         }
-        $('#realm_edit_realm_name').html(realm);
+        $('#realm_edit_realm_name').html(escape(realm));
         $('#realm_name').val(realm);
         $('#realm_intro_edit').show();
     }
@@ -4500,8 +4728,10 @@ function realm_edit(name){
                     klass = 'class="ui-selected" class="ui-widget-content" ';
                 }
             }
-            var id = "id=realm_edit_click_" + key;
-            resolvers += '<li '+id+' '+ klass + '>' + key + ' [' + data.result.value[key].type + ']</li>';
+            var e_key = escape(key);
+            var id = "id=realm_edit_click_" + e_key;
+            var e_resolver_type = escape(data.result.value[key].type);
+            resolvers += '<li '+id+' '+ klass + '>' + e_key + ' [' + e_resolver_type + ']</li>';
         }
         resolvers += '</ol>';
 
@@ -4515,13 +4745,16 @@ function realm_edit(name){
                         g.resolvers_in_realm_to_edit += ',';
                     }
                     var index = $("#resolvers_in_realms_select li").index(this);
-                    var reso = this.innerHTML;
+                    var reso = escape($(this).html());
                     if (reso.match(/(\S+)\s\[(\S+)\]/)) {
                         var r = reso.replace(/(\S+)\s+\S+/, "$1");
                         var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
                     }
                     else {
-                        alert_info_text("text_regexp_error", reso, ERROR);
+                        alert_info_text({'text': "text_regexp_error",
+                                         'param': escape(reso),
+                                         'type': ERROR,
+                                         'is_escaped': true});
                     }
                     switch (t) {
                         case 'ldapresolver':
@@ -4609,7 +4842,10 @@ function resolver_ldap(name){
                 resolver_set_ldap(obj);
             } else {
                 // error reading resolver
-                alert_box("", "text_ldap_load_error", obj.result.error.message);
+                alert_box({'title': "",
+                           'text': "text_ldap_load_error",
+                           'param': escape(obj.result.error.message),
+                           'is_escaped': true});
             }
 
           });
@@ -4861,7 +5097,10 @@ function resolver_sql(name){
                     resolver_set_sql(obj);
                 } else {
                     // error reading resolver
-                    alert_box("", "text_sql_load_error", obj.result.error.message);
+                    alert_box({'title': "",
+                               'text': "text_sql_load_error",
+                               'param': escape(obj.result.error.message),
+                               'is_escaped':true});
                 }
             });
         } // end if
@@ -4953,8 +5192,8 @@ function define_policy_action_autocomplete(availableActions) {
 function view_policy() {
 
     $("#policy_table").flexigrid({
-            url : '/system/policies_flexi?session='+getsession(),
-            method: 'GET',
+            url : '/system/policies_flexi',
+            method: 'POST',
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Active'), name : 'active', width : 35, sortable : true},
@@ -4980,6 +5219,7 @@ function view_policy() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
+            onSubmit: on_submit_flexi,
             addTitleToCell: true,
             dblClickResize: true,
             searchbutton: true
@@ -4996,7 +5236,9 @@ function view_policy() {
         var pol_name = $('#policy_name').val();
         pol_name = $.trim(pol_name);
         if (pol_name.length == 0) {
-        alert_box('Policy Name',"text_policy_name_not_empty");
+        alert_box({'title': 'Policy Name',
+                   'text': "text_policy_name_not_empty",
+                   'is_escaped': true});
             return;
         }
 
@@ -5018,10 +5260,13 @@ function view_policy() {
               'session':getsession() },
          function(data, textStatus, XMLHttpRequest){
             if (data.result.status == true) {
-                alert_info_text("text_policy_set");
+                alert_info_text({'text': "text_policy_set",
+                                 'is_escaped': true});
                 $('#policy_table').flexReload();
             }else {
-                alert_info_text(data.result.error.message,"" , ERROR);
+                alert_info_text({'text': escape(data.result.error.message),
+                                 'type': ERROR,
+                                 'is_escaped': true});
             }
         });
     });
@@ -5033,10 +5278,13 @@ function view_policy() {
             $.get('/system/delPolicy', {'name' : policy, 'session':getsession()},
              function(data, textStatus, XMLHttpRequest){
                 if (data.result.status == true) {
-                    alert_info_text("text_policy_deleted");
+                    alert_info_text({'text': "text_policy_deleted",
+                                     'is_escaped': true});
                     $('#policy_table').flexReload();
                 } else {
-                    alert_info_text(data.result.error.message, "", ERROR);
+                    alert_info_text({'text': escape(data.result.error.message),
+                                     "type": ERROR,
+                                     'is_escaped': true});
                 }
             });
             $('#policy_form').trigger("reset");
@@ -5060,8 +5308,8 @@ function view_policy() {
 
 function view_token() {
         $("#token_table").flexigrid({
-            url : '/manage/tokenview_flexi?session='+getsession(),
-            method: 'GET',
+            url : '/manage/tokenview_flexi',
+            method: 'POST',
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Serial Number'), name : 'TokenSerialnumber', width : 100, sortable : true, align: 'center'},
@@ -5093,6 +5341,7 @@ function view_token() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
+            onSubmit: on_submit_flexi,
             onSuccess: show_selected_status,
             addTitleToCell: true,
             dblClickResize: true,
@@ -5106,8 +5355,8 @@ function view_token() {
 
 function view_user() {
         $("#user_table").flexigrid({
-            url : '/manage/userview_flexi?session='+getsession(),
-            method: 'GET',
+            url : '/manage/userview_flexi',
+            method: 'POST',
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Username'), name : 'username', width : 90, sortable : true, align:"left"},
@@ -5140,7 +5389,7 @@ function view_user() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
-            onSubmit: load_flexi,
+            onSubmit: on_submit_flexi,
             onSuccess: show_selected_status,
             addTitleToCell: true,
             dblClickResize: true,
@@ -5154,8 +5403,8 @@ function view_user() {
 
 function view_audit() {
        $("#audit_table").flexigrid({
-            url : '/audit/search?session='+getsession(),
-            method: 'GET',
+            url : '/audit/search',
+            method: 'POST',
             dataType : 'json',
             colModel : [
                 {display: i18n.gettext('Number'), name : 'number', width : 50, sortable : true},
@@ -5202,7 +5451,7 @@ function view_audit() {
             showTableToggleBtn: true,
             preProcess: pre_flexi,
             onError: error_flexi,
-            onSubmit: load_flexi,
+            onSubmit: on_submit_flexi,
             addTitleToCell: true,
             searchbutton: true
     });
@@ -5226,6 +5475,6 @@ if (browser_lang && browser_lang !== 'en') {
             "json"
         );
     } catch(e) {
-        alert('Unsupported localisation for ' + browser_lang);
+        alert('Unsupported localisation for ' + escape(browser_lang));
     }
 }

@@ -10,24 +10,78 @@ linotp (2.8.1~0dev0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 06 May 2015 16:14:03 +0200
 
-linotp (2.8~0dev0-1) jessie; urgency=low
-
-  * Set new version 2.7.3~0dev0-1~precise
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 06 May 2015 16:09:53 +0200
-
-linotp (2.7.2.3~0dev0-1) jessie; urgency=low
-
-  * Set new version 2.7.2.3~0dev0-1
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 28 Aug 2015 09:48:24 +0200
-
-linotp (2.7.2.2-1) jessie; urgency=low
-
-  Enhancements:
-  * UserIdResolver: Add support for odbc_connect in SQLIdResolver
+linotp (2.8.0.2~rc1-1) jessie; urgency=low
 
   Bug fixes:
+  * Server: Fix for double escaping when using info_box
+  * Server: Fix for information disclosure with audit search
+  * Server: Prevent enumeration/information leakage in validate/check
+  * Server: Remove session id from URL
+  * WebUI: Clear PIN input fields on closing the 'Set PIN' dialog
+  * Selfservice: Enforce session and cookie check in all userservice actions
+  * Selfservice: Add missing session invalidation on selfservice logout
+  * Config examples: Set security relevant headers in example apache config
+    files
+  * Config examples: Set X-Permitted-Cross-Domain-Policies header in example
+    Apache config files
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 03 Dec 2015 11:10:03 +0100
+
+linotp (2.8.0.1-1) jessie; urgency=low
+
+  Enhancements:
+  * Server: Add support for '*' wildcard in policy client definition
+  * Server: Add support to set random pin on token import
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 30 Nov 2015 09:56:09 +0100
+
+linotp (2.8-1) jessie; urgency=low
+
+  Enhancements:
+  * Server: Add FIDO U2F support
+  * Selfservice: Enroll FIDO U2F, e-mail and SMS tokens
+  * Server: Losttoken: Support enrollment of e-mail and SMS tokens
+  * Server: Trigger challenges for multiple challenge-response tokens with one
+    request
+  * Server: Support deleting multiple policies with one request
+  * Server: Rework and improve token counter logic
+  * Server: Add policy actions 'emailtext' and 'emailsubject' in scope
+    'authentication' to define body and subject of e-mails sent by e-mail
+    tokens
+  * Server: Add parameter to define SMS messages sent by SMS tokens
+  * Server: Add support for defining multiple OCRA2 callback URLs
+  * Server: Add optional ability to save last_accessed timestamps for tokens
+  * Server: Add crypto migration controller to change in-use cryptographic
+    techniques, switch to HSMs or replace in-use HSMs
+  * Server: Add support for using UserPrincipalName as username
+  * Server: Support wildcard '*' for serial number filter in admin/show
+  * Tools: linotp-auth-radius: Support for unicode radius requests
+  * Selfservice: Support yubikey tokens with public_uid
+  * Server: Add target realm input for token imports
+  * Server: Prevent accidental admin lock-out using read-only admin policies
+  * Server: Support autoassignment policy without action value
+
+  Bug fixes:
+  * Selfservice: Fix getSerialByOtp functionality for yubikey tokens
+  * Server: Fix importing yubikey tokens without prefix
+  * Server: Fix autoassignment with remote token pointing at yubikey token
+  * Server: Fix autoassignment using tokens with different OTP lengths
+  * Server: Prevent counter increments of inactive tokens
+  * Server: Don't return counter parameter on TOTP enrollment
+  * Selfservice: Fix occasional login problems using non-ASCII characters
+  * Server: Fix occasional problems sorting userlist with unicode characters
+  * Server: Fix usage of otppin policy for remotetoken with local pincheck
+  * Server: Don't return error messages on unconfigured autoenrollment
+  * Server: Always set OTP length in remote token enrollment
+  * Server: Don't return error messages for policy otppin=1 and unassigned
+    tokens
+  * Server: Reply to OCRA2 challenge providing only transactionid and OTP
+  * WebUI: Don't show dialog asking for realm creation if no useridresolver is
+    configured
+  * WebUI: Fix WebUI for recent Internet Explorer versions
+  * WebUI: Clear key and PIN input fields after token enrollment
+  * Tools: linotp-create-pwidresolver-user: Fix duplicate and ignored
+    command-line arguments
   * Tools: Correctly package linotp-enroll-smstoken tool
   * Tools: Use Digest instead of Basic Authentication in
     linotp-enroll-smstoken
@@ -38,7 +92,13 @@ linotp (2.7.2.2-1) jessie; urgency=low
   * Server: Fix LinOTP on pylons 0.9.7
   * Packaging: Remove nose dependency from linotp install process
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 28 Aug 2015 10:48:19 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 25 Nov 2015 17:30:54 +0100
+
+linotp (2.7.2.2-1) jessie; urgency=low
+
+  * Fix XSS vulnerabilities in manage WebUI
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 12 Nov 2015 11:57:17 +0100
 
 linotp (2.7.2.1-1) jessie; urgency=low
 

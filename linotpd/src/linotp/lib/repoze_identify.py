@@ -200,6 +200,12 @@ class RedirectingFormPlugin(FormPluginBase):
             form.update(query)
             referer = environ.get('HTTP_REFERER', '/')
             environ['repoze.who.application'] = HTTPUnauthorized()
+
+            # invalidate the session
+            identity = environ.get('repoze.who.identity')
+            if identity:
+                self.forget(environ, identity)
+
             return None
 
         elif path_info == self.login_handler_path:
@@ -228,6 +234,12 @@ class RedirectingFormPlugin(FormPluginBase):
         headers = [('Location', login_form_url)]
         cookies = [(h, v) for (h, v) in app_headers if h.lower() == 'set-cookie']
         headers = headers + forget_headers + cookies
+
+        # cleanup the session id
+        identity = environ.get('repoze.who.identity')
+        if identity and status == "401 Unauthorized":
+            self.forget(environ, identity)
+
         return HTTPFound(headers=headers)
 
 

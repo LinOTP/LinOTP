@@ -354,6 +354,10 @@ class ValidationHandler(object):
             if 'transactionid' in check_options:
                 check_options['transactionid'] = transid
 
+        audit_entry = {} 
+        audit_entry['action_detail'] = "no token found!"
+
+
         challenge_tokens = []
         pin_matching_tokens = []
         invalid_tokens = []
@@ -364,8 +368,11 @@ class ValidationHandler(object):
         validation_results = {}
 
         for token in tokenList:
-            log.debug('[__checkTokenList] Found user with loginId %r: %r:\n' % (
-                                        token.getUserId(), token.getSerial()))
+            log.debug('Found user with loginId %r: %r:\n',
+                      token.getUserId(), token.getSerial())
+
+            audit_entry['serial'] = token.getSerial()
+            audit_entry['token_type'] = token.getType()
 
             # preselect: the token must be in the same realm as the user
             if user is not None:
@@ -373,32 +380,32 @@ class ValidationHandler(object):
                 u_realm = user.getRealm()
                 if (len(t_realms) > 0 and len(u_realm) > 0 and
                         u_realm.lower() not in t_realms):
-                    continue
-            audit = {}
-            audit.update({'serial': token.getSerial(),
-                          'token_type': token.getType(),
-                          'weight': 0})
 
+                    audit_entry['action_detail'] = ("Realm mismatch for "
+                                                    "token and user")
+
+                    continue
+            
             #  check if the token is the list of supported tokens
             #  if not skip to the next token in list
             typ = token.getType()
             if typ.lower() not in tokenclasses:
                 log.error('token typ %r not found in tokenclasses: %r' %
                           (typ, tokenclasses))
-                audit['action_detail'] = "Unknown Token type"
+                audit_entry['action_detail'] = "Unknown Token type"
                 continue
 
             if not token.isActive():
-                audit['action_detail'] = "Token inactive"
+                audit_entry['action_detail'] = "Token inactive"
                 continue
             if token.getFailCount() >= token.getMaxFailCount():
-                audit['action_detail'] = "Failcounter exceeded"
+                audit_entry['action_detail'] = "Failcounter exceeded"
                 continue
             if not token.check_auth_counter():
-                audit['action_detail'] = "Authentication counter exceeded"
+                audit_entry['action_detail'] = "Authentication counter exceeded"
                 continue
             if not token.check_validity_period():
-                audit['action_detail'] = "validity period mismatch"
+                audit_entry['action_detail'] = "validity period mismatch"
                 continue
 
             # start the token validation
@@ -413,6 +420,8 @@ class ValidationHandler(object):
                 log.exception("checking token %r failed: %r" % (token, exx))
                 ret = -1
                 reply = "%r" % exx
+                audit_entry['action_detail'] = ("checking token %r "
+                                                "failed: %r" % (token, exx))
                 continue
             finally:
                 validation_results[token.getSerial()] = (ret, reply)
@@ -437,8 +446,8 @@ class ValidationHandler(object):
                           invalid_tokens,
                           validation_results,
                           user, options,
-                          context=self.context
-                          )
+                          context=self.context,
+                          audit_entry=audit_entry)
 
         (res, reply) = fh.finish_checked_tokens()
 

@@ -20,8 +20,9 @@
 #qrcode
 # sudo easy_install qrcode
 
+
 usage(){
-echo "Usage: $0 [ -h | -t | -r | -i other.ini | -s key=val ] [testname]"
+echo "Usage: $0 [ -h | -t | -r | -p | -i other.ini | -s key=val ] [testname]"
 echo ""
 echo "  -h: display the usage"
 echo "  -r: reset the test continuation (removes the .all)"
@@ -29,6 +30,7 @@ echo "  -i other.ini: use a different ini file than the default test.ini"
 echo "  -s key=value: set additional parameters (key=value) pairs, which are provided into the test cases (untested)"
 echo "  -t: show the list of the fixed test cases  "
 echo "  -a: run all tests from the tests/functional directory"
+echo "  -p: run functional_special tests"
 echo "   "
 echo "   You can specify a single testname to run only that test."
 
@@ -43,28 +45,36 @@ export PYTHONPATH=$PYTHONPATH:${PWD}/../../smsprovider/src/SMSProvider:${PWD}/..
 
 TEST_INI=test.ini
 
-FUNKDIR=`find . -name 'functional' -type d`
-TT=`find $FUNKDIR -name "test_*.py" | sed -e "s|$FUNKDIR/||"`
+BASEDIR='functional'
 
+RUN_TEST="YES"
 TEST_ALL=0
+TT_CMD=""
 
-while getopts “s:i:rhta” OPTION
+while getopts “s:i:rhtap” OPTION
 do
+  echo "############ $OPTION ##################"
   case $OPTION in
+   p)
+      echo "# callin functional_special"
+      BASEDIR='functional_special'
+      shift
+      ;;
    h)
-     usage
-     exit 1
-     ;;
+      usage
+      exit 1
+      ;;
    r)
       echo "## Reseting tests"
       touch .all && rm .all && touch .all
-      shift
       exit
-     ;;
+      ;;
+
    i)
       echo "## Seting the .ini file"
       TEST_INI=$OPTARG
-      shift 2
+      shift
+      shift
       ;;
    a)
       echo "## running all tests"
@@ -73,18 +83,48 @@ do
       ;;
    t)
       echo "## current tests are"
-      echo "$TT"
+      RUN_TEST="NO"
       shift
-      exit
       ;;
 
     s)
       echo "## Testparameters "
       TPARAM=" $TPARAM $OPTARG"
-      shift 2
+      shift
+      shift
       ;;
   esac
+  shift
 done
+
+shift $((OPTIND-1)) 
+
+FUNKDIR=`find . -name $BASEDIR -type d`
+TT=`find $FUNKDIR -name "test_*.py" | sed -e "s|$FUNKDIR/||"`
+TPATH=linotp/tests/$BASEDIR/
+
+touch .all
+if [ $# -eq 0 ] 
+then
+ TT=$TT
+else
+ TT=$*
+ touch .all && rm .all && touch .all
+fi
+
+PARAMS="-v -x --with-pylons=$TEST_INI "
+
+echo "Running tests:"
+for t in $TT 
+do  
+    echo "$(tput setaf 4)## $TPATH$t"
+done
+echo "$(tput sgr0)"
+
+if [[ $RUN_TEST == 'NO' ]] 
+then
+   exit 
+fi
 
 # Create audit keys
 linotp-create-auditkeys -f ${TEST_INI}
@@ -109,42 +149,30 @@ then
 fi
 
 
-
-export TPATH=linotp/tests/functional/
-PARAMS="-v -x --with-pylons=$TEST_INI "
-
-
 ## install an exit handler
 function shutdown_paster {
    ## do a finally
-   paster_id=`ps a | grep paster | grep -v grep | cut -d' ' -f1`
+   PORT=`grep ^port test.ini2 | cut -f 3 -d ' '`
+   paster_id=`lsof -t -i :$PORT`
    if [ -n "$paster_id" ]; then
       echo "Terminating paster process:"
-      ps -aef | grep $paster_id | grep -v grep
       kill -TERM $paster_id
    fi
+   echo "$(tput sgr0)"
 }
 
-trap shutdown_paster EXIT
+trap shutdown_paster 0 1 2 3 15
 
 echo "### Startting Background paster for remote tests ###"
 shutdown_paster
 
 paster setup-app $TEST_INI
 paster serve $TEST_INI &
-echo "### done! ###"
+echo "### 'paster serve $TEST_INI' done! ###"
 echo
 
-touch .all
-export TPATH=linotp/tests/functional/
 
-if [ $# -eq 0 ]
-then
- TT=$TT
-else
- TT=$*
- touch .all && rm .all && touch .all
-fi
+PARAMS="-v -x --with-pylons=$TEST_INI "
 
 if [ $TEST_ALL -eq 1 ]
 then

@@ -24,6 +24,9 @@
 #    Support: www.lsexperts.de
 #
 """ the iterators for the audit objects """
+
+import sys
+
 try:
     import json
 except ImportError: # pragma: no cover
@@ -109,21 +112,39 @@ class AuditQuery(object):
         log.debug("[search] search_dict: %s" % self._search_dict)
 
         if 'page' in param:
-            page = param.get('page', '1') or '1'
-            self.page = int(page)
+            try:
+                self.page = int(param.get('page', '1') or '1')
+                if self.page < 0 or self.page > sys.maxint:
+                    self.page = 1
+            except ValueError:
+                self.page = 1
             self._rp_dict['page'] = self.page
 
+        # verify that rows per page is uint
         if 'rp' in param:
-            self._rp_dict['rp'] = param.get('rp', '15') or '15'
+            try:
+                rp = int(param.get('rp', '15') or '15')
+                if rp < 0 or rp > sys.maxint:
+                    rp = 15
+            except ValueError:
+                rp = 15
+            self._rp_dict['rp'] = "%d" % rp
 
         self._rp_dict['sortname'] = param.get('sortname')
-        self._rp_dict['sortorder'] = param.get('sortorder')
+
+        # verify sort order: could be one of ['asc', 'desc']
+        sortorder = param.get('sortorder', 'asc') or 'asc'
+        if sortorder not in ['desc', 'asc']:
+            sortorder = 'asc'
+        self._rp_dict['sortorder'] = sortorder
+
         log.debug("[search] rp_dict: %s" % self._rp_dict)
 
         if user:
             self._search_dict['user'] = user.login
             self._search_dict['realm'] = user.realm
 
+        return
 
     def get_page(self):
         return self.page
