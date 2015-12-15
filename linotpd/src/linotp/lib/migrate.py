@@ -58,7 +58,7 @@ class MigrationHandler(object):
     contain sensitive data like password
     """
 
-    def __init__(self):
+    def __init__(self, context=None):
         """
         the Migration hanlder relies on a crypto handler, which
         encrypts or decryptes data.
@@ -67,6 +67,7 @@ class MigrationHandler(object):
         """
         self.salt = None
         self.crypter = None
+        self.context = None
 
     def setup(self, passphrase, salt=None):
         """
@@ -175,8 +176,9 @@ class MigrationHandler(object):
 
             # the userpin is used in motp and ocra/ocra2 token
             if token.LinOtpTokenPinUser:
-                user_pin_obj = token.getUserPin()
-                user_pin = user_pin_obj.getKey()
+                key, iv = token.getUserPin()
+                secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+                user_pin = secObj.getKey()
                 enc_value = self.crypter.encrypt(input_data=user_pin,
                                     just_mac=serial + token.LinOtpTokenPinUser)
                 token_data['TokenUserPin'] = enc_value
@@ -206,14 +208,16 @@ class MigrationHandler(object):
             token_pin = self.crypter.decrypt(enc_pin,
                                 just_mac=serial + token.LinOtpPinHash)
             # prove, we can write
-            token.setPin(token_pin, hashed=False)
+            iv, enc_pin = SecretObj.encrypt_pin(pin)
+            token.set_pin(token_pin, iv, crypted=True)
 
         if 'TokenUserPin' in token_data:
             enc_user_pin = token_data['TokenUserPin']
             user_pin = self.crypter.decrypt(enc_user_pin,
                                just_mac=serial + token.LinOtpTokenPinUser)
             # prove, we can write
-            token.setUserPin(user_pin)
+            iv, enc_token_seed = SecretObj.encrypt_seed(token_seed)
+            token.setUserPin(user_pin, iv)
 
         # we put the current crypted seed in the mac to check if
         # something changed in meantime
@@ -221,7 +225,10 @@ class MigrationHandler(object):
         enc_seed = token_data['TokenSeed']
         token_seed = self.crypter.decrypt(enc_seed,
                                           just_mac=serial + encKey)
-        token.setHKey(token_seed, reset_failcount=False)
+
+        # the encryption of the token seed is not part of the model anymore
+        iv, enc_token_seed = SecretObj.encrypt_seed(token_seed)
+        token.set_encrypted_seed(enc_token_seed, iv, reset_failcount=False)
 
 
 class Crypter(object):

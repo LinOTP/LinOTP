@@ -90,13 +90,13 @@ except:
 
 
 
-# # constant - later taken from the env?
+# constant - later taken from the env?
 CONFIG_KEY = 1
 TOKEN_KEY = 2
 VALUE_KEY = 3
 
 
-class SecretObj:
+class SecretObj(object):
     def __init__(self, val, iv, preserve=True, hsm=None):
         self.val = val
         self.iv = iv
@@ -140,6 +140,40 @@ class SecretObj:
         self._clearKey_(preserve=self.preserve)
         return msg_bin
 
+    @staticmethod
+    def encrypt(seed, iv=None, hsm=None):
+        if not iv:
+            iv = geturandom(16)
+        enc_seed = encrypt(seed, iv, hsm=hsm)
+        return iv, enc_seed
+
+    @staticmethod
+    def decrypt(enc_seed, iv=None, hsm=None):
+        dec_seed = decrypt(enc_seed, iv=iv, hsm=hsm)
+        return dec_seed
+
+    @staticmethod
+    def hash_pin(pin, iv=None, hsm=None):
+        if not iv:
+            iv = geturandom(16)
+        hashed_pin = hash(pin, iv)
+        return iv, hashed_pin
+
+    @staticmethod
+    def encrypt_pin(pin, iv=None, hsm=None):
+        """
+        returns a concatenated 'iv:crypt'
+        """
+        if not iv:
+            iv = geturandom(16)
+        enc_pin = encryptPin(pin, iv=iv, hsm=hsm)
+        return enc_pin
+
+    @staticmethod
+    def decrypt_pin(pin, hsm=None):
+        dec_pin = decryptPin(pin, hsm=hsm)
+        return dec_pin
+
     def encryptPin(self):
         self._setupKey_()
         res = encryptPin(self.bkey)
@@ -166,13 +200,15 @@ class SecretObj:
                 zerome(self.bkey)
                 del self.bkey
 
-
     def __del__(self):
         self._clearKey_()
+
     def __enter__(self):
         self._clearKey_()
+
     def __exit__(self, type, value, traceback):
         self._clearKey_()
+
 
 def getSecretDummy():
     log.debug('getSecretDummy()')
@@ -195,17 +231,19 @@ def getSecret(id=0):
 
     try:
         f = open(secFile)
-        for _i in range (0 , id + 1):
+        for _i in range(0, id + 1):
             secret = f.read(32)
         f.close()
-        if secret == "" :
+        if secret == "":
             # secret = setupKeyFile(secFile, id+1)
-            raise Exception ("No secret key defined for index: %s !\n"
-                             "Please extend your %s !" % (unicode(id), secFile))
+            raise Exception("No secret key defined for index: %s !\n"
+                             "Please extend your %s !"
+                             % (unicode(id), secFile))
     except Exception as exx:
-        raise Exception ("Exception: %r" % exx)
+        raise Exception("Exception: %r" % exx)
 
     return secret
+
 
 def setupKeyFile(secFile, maxId):
     secret = ''
@@ -215,14 +253,15 @@ def setupKeyFile(secFile, maxId):
             secret = f.read(32)
         f.close()
 
-        # # if no secret: fill in a new one
-        if secret == "" :
+        # if no secret: fill in a new one
+        if secret == "":
             f = open(secFile, 'ab+')
             secret = geturandom(32)
             f.write(secret)
             f.close()
 
     return secret
+
 
 def isWorldAccessible(filepath):
     log.debug('isWorldAccessible()')
@@ -246,6 +285,7 @@ def _getCrypto(description):
     # if not callable(algo):
     #    raise ValueError, ('Unknown hash algorithm', s[1])
     return algo
+
 
 def check(st):
     """
@@ -280,6 +320,7 @@ def createActivationCode(acode=None, checksum=True):
 
     return activationcode
 
+
 def createNonce(len=64):
     """
     create a nonce - which is a random string
@@ -290,12 +331,13 @@ def createNonce(len=64):
     return binascii.hexlify(key)
 
 
-def kdf2(sharesecret, nonce , activationcode, len, iterations=10000,
+def kdf2(sharesecret, nonce, activationcode, len, iterations=10000,
                                digest='SHA256', macmodule=HMAC, checksum=True):
     '''
     key derivation function
 
-    - takes the shareed secret, an activation code and a nonce to generate a new key
+    - takes the shareed secret, an activation code and a nonce to generate
+      a new key
     - the last 4 btyes (8 chars) of the nonce is the salt
     - the last byte    (2 chars) of the activation code are the checksum
     - the activation code mitght contain '-' signs for grouping char blocks
@@ -331,13 +373,16 @@ def kdf2(sharesecret, nonce , activationcode, len, iterations=10000,
         checkCode = str(activationcode[-2:])
         veriCode = str(check(bcode)[-2:])
         if checkCode != veriCode:
-            raise Exception('[crypt:kdf2] activation code checksum error!! [%s]%s:%s' % (acode, veriCode, checkCode))
+            raise Exception('[crypt:kdf2] activation code checksum error!!'
+                            ' [%s]%s:%s' % (acode, veriCode, checkCode))
 
     activ = binascii.hexlify(bcode)
     passphrase = u'' + sharesecret + activ + nonce[:-salt_len]
-    keyStream = PBKDF2(binascii.unhexlify(passphrase), bSalt, iterations=iterations, digestmodule=digestmodule)
+    keyStream = PBKDF2(binascii.unhexlify(passphrase), bSalt,
+                       iterations=iterations, digestmodule=digestmodule)
     key = keyStream.read(len)
     return key
+
 
 def hash(val, seed, algo=None):
     log.debug('hash()')
@@ -345,6 +390,7 @@ def hash(val, seed, algo=None):
     m.update(val.encode('utf-8'))
     m.update(seed)
     return m.digest()
+
 
 def encryptPassword(password):
 
@@ -359,18 +405,23 @@ def encryptPassword(password):
     ret = hsm.encryptPassword(password)
     return ret
 
-def encryptPin(cryptPin):
 
-    log.debug('encryptPin()')
-    if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
-        raise HSMException('no hsm defined in execution context!')
+def encryptPin(cryptPin, iv=None, hsm=None):
 
-    hsm = c.hsm.get('obj')
-    if hsm is None or  hsm.isReady() == False:
+    if hsm:
+        hsm_obj = hsm.get('obj')
+    else:
+        log.debug('encryptPin()')
+        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+            raise HSMException('no hsm defined in execution context!')
+        hsm_obj = c.hsm.get('obj')
+
+    if hsm_obj is None or hsm_obj.isReady() == False:
         raise HSMException('hsm not ready!')
 
-    ret = hsm.encryptPin(cryptPin)
+    ret = hsm_obj.encryptPin(cryptPin, iv)
     return ret
+
 
 def decryptPassword(cryptPass):
 
@@ -385,18 +436,23 @@ def decryptPassword(cryptPass):
     ret = hsm.decryptPassword(cryptPass)
     return ret
 
-def decryptPin(cryptPin):
+
+def decryptPin(cryptPin, hsm=None):
 
     log.debug('decryptPin()')
-    if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
-        raise HSMException('no hsm defined in execution context!')
+    if hsm:
+        hsm_obj = hsm.get('obj')
+    else:
+        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+            raise HSMException('no hsm defined in execution context!')
+        hsm_obj = c.hsm.get('obj')
 
-    hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() == False:
+    if hsm_obj is None or hsm_obj.isReady() == False:
         raise HSMException('hsm not ready!')
 
-    ret = hsm.decryptPin(cryptPin)
+    ret = hsm_obj.decryptPin(cryptPin)
     return ret
+
 
 def encrypt(data, iv, id=0, hsm=None):
     """
@@ -454,6 +510,7 @@ def decrypt(input, iv, id=0, hsm=None):
     ret = hsm_obj.decrypt(input, iv, id)
     return ret
 
+
 def uencode(value):
     """
     unicode escape the value - required to support non-unicode
@@ -471,6 +528,7 @@ def uencode(value):
             log.exception("Failed to encode value %r : %r" % (value, exx))
 
     return ret
+
 
 # encrypted cookie data
 def aes_encrypt_data(data, key, iv=None):
@@ -500,6 +558,7 @@ def aes_encrypt_data(data, key, iv=None):
     res = aes.encrypt(input_data)
     return res
 
+
 def aes_decrypt_data(data, key, iv=None):
     """
     decrypt the given data
@@ -522,11 +581,13 @@ def aes_decrypt_data(data, key, iv=None):
     aes = AES.new(key, AES.MODE_CBC, iv)
     output = aes.decrypt(data)
     eof = output.rfind(u"\x01\x02")
-    if eof >= 0: output = output[:eof]
+    if eof >= 0:
+        output = output[:eof]
 
     # convert output from ascii, back to bin data, which might be unicode++
     res = binascii.a2b_hex(output)
     return res
+
 
 def udecode(value):
     """
@@ -540,11 +601,12 @@ def udecode(value):
     if ("linotp.uencode_data" in env
         and env["linotp.uencode_data"].lower() == 'true'):
         try:
-            # # add surrounding "" for correct decoding
+            # add surrounding "" for correct decoding
             ret = json.loads('"%s"' % value)
         except Exception as exx:
             log.exception("Failed to decode value %r : %r" % (value, exx))
     return ret
+
 
 def geturandom(len=20):
     '''
@@ -573,6 +635,7 @@ def geturandom(len=20):
 
 ### some random functions based on geturandom #################################
 
+
 class urandom(object):
 
     precision = 12
@@ -584,23 +647,22 @@ class urandom(object):
 
         :return: float value
         """
-        # # get a binary random string
+        # get a binary random string
         randbin = geturandom(urandom.precision)
 
-        # # convert this to an integer
+        # convert this to an integer
         randi = int(randbin.encode('hex'), 16) * 1.0
 
-        # # get the max integer
+        # get the max integer
         intmax = 2 ** (8 * urandom.precision) * 1.0
 
-        # # scale the integer to an float between 0.0 and 1.0
+        # scale the integer to an float between 0.0 and 1.0
         randf = randi / intmax
 
         assert randf >= 0.0
         assert randf <= 1.0
 
         return randf
-
 
     @classmethod
     def uniform(cls, start, end=None):
@@ -615,22 +677,21 @@ class urandom(object):
             end = start
             start = 0.0
 
-        # # make sure we have a float
+        # make sure we have a float
         startf = start * 1.0
 
         dist = (end - start)
-        # # if end lower than start invert the distance and start at the end
+        # if end lower than start invert the distance and start at the end
         if dist < 0:
             dist = dist * -1.0
             startf = end * 1.0
 
         ret = urandom.random()
 
-        # # result is start value + stretched distance
+        # result is start value + stretched distance
         res = startf + ret * dist
 
         return res
-
 
     @classmethod
     def randint(cls, start, end=None):
@@ -644,14 +705,14 @@ class urandom(object):
             start = 0
 
         dist = end - start
-        # # if end lower than start invert the distance and start at the end
+        # if end lower than start invert the distance and start at the end
         if dist < 0:
             dist = dist * -1
             start = end
 
         randf = urandom.random()
 
-        # # result is start value + stretched distance
+        # result is start value + stretched distance
         ret = int(start + randf * dist)
 
         return ret
@@ -682,7 +743,7 @@ class urandom(object):
         if stop is None:
             stop = start
             start = 0
-        # # see python definition of randrange
+        # see python definition of randrange
         res = urandom.choice(range(start, stop, step))
         return res
 

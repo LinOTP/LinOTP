@@ -47,7 +47,6 @@ log = logging.getLogger(__name__)
 
 class DefaultSecurityModule(SecurityModule):
 
-
     def __init__(self, config=None):
         '''
         initialsation of the security module
@@ -64,15 +63,15 @@ class DefaultSecurityModule(SecurityModule):
         self.is_ready = True
         self._id = binascii.hexlify(os.urandom(3))
 
-
-        if config.has_key('crypted'):
+        if 'crypted' in config:
             crypt = config.get('crypted').lower()
             if crypt == 'true':
                 self.crypted = True
                 self.is_ready = False
 
-        if config.has_key('file') == False:
-            log.error("[getSecret] no secret file defined. A parameter linotpSecretFile is missing in your linotp.ini.")
+        if not 'file' in config:
+            log.error("[getSecret] no secret file defined. A parameter "
+                      "linotpSecretFile is missing in your linotp.ini.")
             raise Exception("no secret file defined: linotpSecretFile!")
 
         self.secFile = config.get('file')
@@ -96,7 +95,7 @@ class DefaultSecurityModule(SecurityModule):
         internal function, which acceses the key in the defined slot
 
         :param id: slot id of the key array
-        :type  id: int
+        :type  id: int - slotId
 
         :return: key or secret
         :rtype:  binary string
@@ -106,31 +105,32 @@ class DefaultSecurityModule(SecurityModule):
         id = int(id)
 
         if self.crypted:
-            if self.secrets.has_key(id):
+            if id in self.secrets:
                 return self.secrets.get(id)
 
         secret = ''
         try:
                 f = open(self.secFile)
-                for _i in range (0 , id + 1):
+                for _i in range(0, id + 1):
                     secret = f.read(32)
                 f.close()
-                if secret == "" :
+                if not secret:
                     # secret = setupKeyFile(secFile, id+1)
-                    raise Exception ("No secret key defined for index: %s !\n"
-                                     "Please extend your %s"" !"
+                    raise Exception("No secret key defined for index: %s !\n"
+                                    "Please extend your %s"" !"
                                      % (str(id), self.secFile))
-        except Exception as e:
-            raise Exception ("Exception:" + unicode(e))
+        except Exception as exx:
+            raise Exception("Exception: %r" % exx)
 
         if self.crypted:
             self.secrets[id] = secret
 
-        return secret;
+        return secret
 
     def setup_module(self, param):
         '''
-        callback, which is called during the runtime to initialze the security module
+        callback, which is called during the runtime to
+        initialze the security module
 
         :param params: all parameters, which are provided by the http request
         :type  params: dict
@@ -140,22 +140,22 @@ class DefaultSecurityModule(SecurityModule):
         '''
         if self.crypted == False:
             return
-        if param.has_key('password') == False:
+        if not 'password' in param:
             raise Exception("missing password")
 
-        # # if we have a crypted file and a password, we take all keys
-        # # from the file and put them in a hash
+        # if we have a crypted file and a password, we take all keys
+        # from the file and put them in a hash
         # #
-        # # After this we do not require the password anymore
+        # After this we do not require the password anymore
 
-        handles = ['pinHandle' , 'passHandle' , 'valueHandle', 'defaultHandle']
+        handles = ['pinHandle', 'passHandle', 'valueHandle', 'defaultHandle']
         for handle in handles:
             self.getSecret(self.config.get(handle, '0'))
 
         self.is_ready = True
         return
 
-    # # the real interfaces: random, encrypt, decrypt '''
+    # the real interfaces: random, encrypt, decrypt '''
     def random(self, len=32):
         '''
         security module methods: random
@@ -181,7 +181,7 @@ class DefaultSecurityModule(SecurityModule):
         :type  iv: random bytes
 
         :param  id: slot of the key array
-        :type   id: int
+        :type   id: int - slotid
 
         :return: encrypted data
         :rtype:  byte string
@@ -193,7 +193,7 @@ class DefaultSecurityModule(SecurityModule):
             raise Exception('setup of security module incomplete')
 
         key = self.getSecret(id)
-        # # convert input to ascii, so we can securely append bin data
+        # convert input to ascii, so we can securely append bin data
         input = binascii.b2a_hex(data)
         input += u"\x01\x02"
         padding = (16 - len(input) % 16) % 16
@@ -231,20 +231,12 @@ class DefaultSecurityModule(SecurityModule):
 
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)
-        # cko
-        # import linotp.lib.yhsm as yhsm
-        # y = yhsm.YubiHSM(0x1111, password="14fda9321ae820aa34e57852a31b10d0")
-        # y.unlock(password="14fda9321ae820aa34e57852a31b10d0")
-        # log.debug("CKO in: %s" % input)
-        # output = binascii.hexlify(y.decrypt(input))
-        # log.debug("CKO out: %s" % output)
-        #
         output = aes.decrypt(input)
-        # log.debug("CKO: output2: %s" % output)
         eof = output.rfind(u"\x01\x02")
-        if eof >= 0: output = output[:eof]
+        if eof >= 0:
+            output = output[:eof]
 
-        # # convert output from ascii, back to bin data
+        # convert output from ascii, back to bin data
         data = binascii.a2b_hex(output)
 
         if self.crypted == False:
@@ -253,14 +245,14 @@ class DefaultSecurityModule(SecurityModule):
 
         return data
 
-
     def decryptPassword(self, cryptPass):
         '''
         dedicated security module methods: decryptPassword
         which used one slot id to decryt a string
 
-        :param cryptPassword: the crypted password - leading iv, seperated by the ':'
-        :param cryptPassword: byte string
+        :param cryptPassword: the crypted password -
+                              leading iv, seperated by the ':'
+        :type cryptPassword: byte string
 
         :return: decrypted data
         :rtype:  byte string
@@ -274,7 +266,7 @@ class DefaultSecurityModule(SecurityModule):
         which used one slot id to decryt a string
 
         :param cryptPin: the crypted pin - - leading iv, seperated by the ':'
-        :param cryptPin: byte string
+        :type cryptPin: byte string
 
         :return: decrypted data
         :rtype:  byte string
@@ -288,46 +280,51 @@ class DefaultSecurityModule(SecurityModule):
         which used one slot id to encrypt a string
 
         :param password: the to be encrypted password
-        :param password: byte string
+        :type password: byte string
 
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
         return self._encryptValue(password, CONFIG_KEY)
 
-    def encryptPin(self, pin):
+    def encryptPin(self, pin, iv=None):
         '''
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string
 
         :param pin: the to be encrypted pin
-        :param pin: byte string
+        :type pin: byte string
+
+        :param iv: initialisation vector (optional)
+        :type iv: buffer (20 bytes random)
 
         :return: encrypted data - leading iv, seperated by the ':'
         :rtype:  byte string
         '''
-        return self._encryptValue(pin, TOKEN_KEY)
+        return self._encryptValue(pin, TOKEN_KEY, iv=iv)
 
-
-    ''' base methods for pin and password '''
-
-    def _encryptValue(self, value, keyNum):
+    # base methods for pin and password
+    def _encryptValue(self, value, keyNum, iv=None):
         '''
         _encryptValue - base method to encrypt a value
         - uses one slot id to encrypt a string
         retrurns as string with leading iv, seperated by ':'
 
         :param value: the to be encrypted value
-        :param value: byte string
+        :type value: byte string
 
-        :param  id: slot of the key array
-        :type   id: int
+        :param  keyNum: slot of the key array
+        :type   keyNum: int
+
+        :param iv: initialisation vector (optional)
+        :type iv: buffer (20 bytes random)
 
         :return: encrypted data with leading iv and sepeartor ':'
         :rtype:  byte string
         '''
-        iv = self.random(16)
-        v = self.encrypt(value, iv , keyNum)
+        if not iv:
+            iv = self.random(16)
+        v = self.encrypt(value, iv, keyNum)
 
         value = binascii.hexlify(iv) + ':' + binascii.hexlify(v)
         return value
@@ -335,18 +332,19 @@ class DefaultSecurityModule(SecurityModule):
     def _decryptValue(self, cryptValue, keyNum):
         '''
         _decryptValue - base method to decrypt a value
-        - used one slot id to encrypt a string with leading iv, seperated by ':'
+        - used one slot id to encrypt a string with
+          leading iv, seperated by ':'
 
         :param cryptValue: the to be encrypted value
-        :param cryptValue: byte string
+        :type cryptValue: byte string
 
-        :param  id: slot of the key array
-        :type   id: int
+        :param  keyNum: slot of the key array
+        :type   keyNum: int
 
         :return: decrypted data
         :rtype:  byte string
         '''
-        # # split at ":"
+        # split at ":"
         pos = cryptValue.find(':')
         bIV = cryptValue[:pos]
         bData = cryptValue[pos + 1:len(cryptValue)]
@@ -368,4 +366,3 @@ class ErrSecurityModule(DefaultSecurityModule):
 
 
 #eof###########################################################################
-

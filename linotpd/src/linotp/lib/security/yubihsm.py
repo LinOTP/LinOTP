@@ -28,7 +28,8 @@
 
     linotp.ini:
     linotpActiveSecurityModule = yubihsm
-    linotpSecurity.yubihsm.module = linotp.lib.security.yubihsm.YubiSecurityModule
+    linotpSecurity.yubihsm.module =
+                        linotp.lib.security.yubihsm.YubiSecurityModule
     linotpSecurity.yubihsm.pinHandle =21
     linotpSecurity.yubihsm.valueHandle =22
     linotpSecurity.yubihsm.passwordHandle =23
@@ -44,10 +45,8 @@
 
 from linotp.lib.security import SecurityModule
 
-import string
 import binascii
 import logging
-import traceback
 import pyhsm
 
 from linotp.lib.security.provider import DEFAULT_KEY
@@ -69,7 +68,8 @@ class YubiSecurityModule(SecurityModule):
 
     def __init__(self, config=None):
 
-        log.debug("[__init__] Initializing the Yubi Security Module with config %s" % config)
+        log.debug("[__init__] Initializing the Yubi Security Module with "
+                  "config %s", config)
 
         if not config:
             config = {}
@@ -94,21 +94,25 @@ class YubiSecurityModule(SecurityModule):
         if config_entry and config_entry.lower() == 'true':
             self.accept_invalid_padding = True
 
-        self.handles = { CONFIG_KEY: config.get("configHandle", config.get("defaultHandle", None)),
-                         TOKEN_KEY: config.get("tokenHandle", config.get("defaultHandle", None)),
-                         VALUE_KEY: config.get("valueHandle", config.get("defaultHandle", None)),
-                         DEFAULT_KEY: config.get("defaultHandle", None)
-                        }
-
+        self.handles = {
+            CONFIG_KEY: config.get("configHandle",
+                                   config.get("defaultHandle", None)),
+            TOKEN_KEY: config.get("tokenHandle",
+                                  config.get("defaultHandle", None)),
+            VALUE_KEY: config.get("valueHandle",
+                                  config.get("defaultHandle", None)),
+            DEFAULT_KEY: config.get("defaultHandle", None)
+        }
 
     def isReady(self):
         return self.is_ready
 
     def setup_module(self, params):
         '''
-        used to set the password, if the password is not contained in the config file
+        used to set the password, if the password is not contained
+        in the config file
         '''
-        if not params.has_key('password'):
+        if 'password' not in params:
             log.error("[setup_module] missing password!")
             raise Exception("missing password")
 
@@ -119,13 +123,16 @@ class YubiSecurityModule(SecurityModule):
 
     def pad(self, unpadded_str, block=16):
         """
-        PKCS7 padding pads the missing bytes with the value of the number of the bytes.
-        If 4 bytes are missing, this missing bytes are filled with \x04
+        PKCS7 padding pads the missing bytes with the value of the number
+        of the bytes. If 4 bytes are missing, this missing bytes are filled
+        with \x04
 
         :param unpadded_str: The string to pad
         :type unpadded_str: str
+
         :param block: Block size
         :type block: int
+
         :returns: padded string
         :rtype: str
         """
@@ -141,8 +148,10 @@ class YubiSecurityModule(SecurityModule):
 
         :param padded_str: The string to unpad
         :type padded_str: str
+
         :param block: Block size
         :type block: int
+
         :raises ValueError: If padded_str is not correctly padded a ValueError
             can be raised.
             This depends on the 'yubihsm.accept_invalid_padding' LinOTP config
@@ -163,6 +172,7 @@ class YubiSecurityModule(SecurityModule):
             for some other reason (e.g. disk failure) and can not be unpadded.
             In this case you should NOT set 'yubihsm.accept_invalid_padding' to
             True because your data will be unusable anyway.
+
         :returns: unpadded string or sometimes padded string when
             'yubihsm.accept_invalid_padding' is set to True. See above.
         :rtype: str
@@ -190,7 +200,8 @@ class YubiSecurityModule(SecurityModule):
             log.debug("[login] using password from the config file.")
             password = self.password
         if password == None:
-            log.info("[login] No password in config file. We have to wait for it beeing set.")
+            log.info("[login] No password in config file. We have to wait for"
+                     " it beeing set.")
 
         try:
             if len(password) == 32:
@@ -202,14 +213,12 @@ class YubiSecurityModule(SecurityModule):
         except pyhsm.exception.YHSM_Error as  e:
             log.exception("[login] Failed to unlock key store: %s" % e)
 
-
     def logout(self):
         '''
         closes the existing session
         '''
         # TODO
         pass
-
 
     def find_aes_keys(self, label="testAES", wanted=1):
         '''
@@ -228,7 +237,6 @@ class YubiSecurityModule(SecurityModule):
         '''
         return self.hsm.info()
 
-
     def createAES(self, ks=32, label="new AES Key"):
         '''
         Creates a new AES key with the given label and the given length
@@ -245,10 +253,10 @@ class YubiSecurityModule(SecurityModule):
         log.debug("[random] creating %i random bytes" % l)
         return self.hsm.random(l)
 
-
     def decrypt(self, data, iv, id=0):
         '''
-        decrypts the given data, using the IV and the key specified by the handle
+        decrypts the given data, using the IV and the key
+        specified by the handle
 
         possible id's are:
             0
@@ -266,14 +274,13 @@ class YubiSecurityModule(SecurityModule):
         s = self.unpad(s)
         return s
 
-
-
     def encrypt(self, data, iv, id=0):
         '''
         encrypts the given input data
 
         AES hat eine blocksize von 16 byte.
-        Daher muss die data ein vielfaches von 16 sein und der IV im Falle von CBC auch 16 byte lang.
+        Daher muss die data ein vielfaches von 16 sein und der IV im Falle
+        von CBC auch 16 byte lang.
         '''
         handle = int(self.handles.get(id))
         log.debug("[encrypt] encrypting with handle %s" % str(handle))
@@ -288,43 +295,48 @@ class YubiSecurityModule(SecurityModule):
 
         return encrypted_data
 
-
-    def _encryptValue(self, value, keyNum=2):
+    def _encryptValue(self, value, keyNum=2, iv=None):
         '''
-            _encryptValue - base method to encrypt a value
-            - uses one slot id to encrypt a string
-            retrurns as string with leading iv, seperated by ':'
+        _encryptValue - base method to encrypt a value
+        - uses one slot id to encrypt a string
+        retruns as string with leading iv, seperated by ':'
 
-            @param value: the to be encrypted value
-            @param value: byte string
+        :param value: the to be encrypted value
+        :type value: byte string
 
-            @param  id: slot of the key array
-            @type   id: int
+        :param keyNum: slot of the key array
+        :type keyNum: int
 
-            @return: encrypted data with leading iv and sepeartor ':'
-            @rtype:  byte string
+        :param iv: initialisation vector (optional)
+        :type iv: buffer (20 bytes random)
+
+        :return: encrypted data with leading iv and sepeartor ':'
+        :rtype:  byte string
         '''
-        iv = self.random(16)
-        v = self.encrypt(value, iv , keyNum)
+        if not iv:
+            iv = self.random(16)
+        v = self.encrypt(value, iv, keyNum)
 
         value = binascii.hexlify(iv) + ':' + binascii.hexlify(v)
         return value
 
     def _decryptValue(self, cryptValue, keyNum=2):
         '''
-            _decryptValue - base method to decrypt a value
-            - used one slot id to encrypt a string with leading iv, seperated by ':'
+        _decryptValue - base method to decrypt a value
+        - used one slot id to encrypt a string with
+          leading iv, seperated by ':'
 
-            @param cryptValue: the to be encrypted value
-            @param cryptValue: byte string
+        :param cryptValue: the to be encrypted value
+        :type cryptValue: byte string
 
-            @param  id: slot of the key array
-            @type   id: int
+        :param  id: slot of the key array
+        :type   id: int
 
-            @return: decrypted data
-            @rtype:  byte string
+        :return: decrypted data
+        :rtype:  byte string
         '''
-        ''' split at : '''
+
+        # split at ':'
         pos = cryptValue.find(':')
         bIV = cryptValue[:pos]
         bData = cryptValue[pos + 1:len(cryptValue)]
@@ -336,61 +348,64 @@ class YubiSecurityModule(SecurityModule):
 
         return password
 
-
     def decryptPassword(self, cryptPass):
         '''
-            dedicated security module methods: decryptPassword
-            which used one slot id to decryt a string
+        dedicated security module methods: decryptPassword
+        which used one slot id to decryt a string
 
-            @param cryptPassword: the crypted password - leading iv, seperated by the ':'
-            @param cryptPassword: byte string
+        :param cryptPassword: the crypted password
+                              - leading iv, seperated by the ':'
+        :type cryptPassword: byte string
 
-            @return: decrypted data
-            @rtype:  byte string
+        :return: decrypted data
+        :rtype:  byte string
         '''
 
         return self._decryptValue(cryptPass, 0)
 
     def decryptPin(self, cryptPin):
         '''
-            dedicated security module methods: decryptPin
-            which used one slot id to decryt a string
+        dedicated security module methods: decryptPin
+        which used one slot id to decryt a string
 
-            @param cryptPin: the crypted pin - - leading iv, seperated by the ':'
-            @param cryptPin: byte string
+        :param cryptPin: the crypted pin - leading iv, seperated by the ':'
+        :type cryptPin: byte string
 
-            @return: decrypted data
-            @rtype:  byte string
+        :return: decrypted data
+        :rtype:  byte string
         '''
 
         return self._decryptValue(cryptPin, 1)
 
-
     def encryptPassword(self, password):
         '''
-            dedicated security module methods: encryptPassword
-            which used one slot id to encrypt a string
+        dedicated security module methods: encryptPassword
+        which used one slot id to encrypt a string
 
-            @param password: the to be encrypted password
-            @param password: byte string
+        :param password: the to be encrypted password
+        :type password: byte string
 
-            @return: encrypted data - leading iv, seperated by the ':'
-            @rtype:  byte string
+        :return: encrypted data - leading iv, seperated by the ':'
+        :rtype:  byte string
         '''
         return self._encryptValue(password, 0)
 
-    def encryptPin(self, pin):
+    def encryptPin(self, pin, iv=None):
         '''
-            dedicated security module methods: encryptPin
-            which used one slot id to encrypt a string
+        dedicated security module methods: encryptPin
+        which used one slot id to encrypt a string
 
-            @param pin: the to be encrypted pin
-            @param pin: byte string
+        :param pin: the to be encrypted pin
+        :type pin: byte string
 
-            @return: encrypted data - leading iv, seperated by the ':'
-            @rtype:  byte string
+        :param iv: initialisation vector (optional)
+        :type iv: buffer (20 bytes random)
+
+        :return: encrypted data - leading iv, seperated by the ':'
+        :rtype:  byte string
         '''
-        return self._encryptValue(pin, 1)
+        return self._encryptValue(pin, 1, iv=iv)
+
 
 def main():
     '''
@@ -398,7 +413,8 @@ def main():
 
     Parameters are:
 
-        -p / --password=  The Password of the partition. Can be ommitted. Then you are asked
+        -p / --password=  The Password of the partition. Can be ommitted.
+                          Then you are asked
         -d / --device=    The device  (default /dev/ttyACM0)
         -n / --name=      The name of the AES key.
         -f / --find=      Find the AES key
@@ -439,11 +455,12 @@ def main():
         sys.exit(1)
 
     if not password:
-        password = getpass.getpass(prompt="Please enter password for slot %i:" % int(slot))
+        password = getpass.getpass(prompt="Please enter password for "
+                                   "slot %i:" % int(slot))
 
-    y = YubiSecurityModule({ 'password' : '14fda9321ae820aa34e57852a31b10d0',
-                             'device' : device,
-                             '':""})
+    y = YubiSecurityModule({'password': '14fda9321ae820aa34e57852a31b10d0',
+                            'device': device,
+                            '': ""})
 
     y.login(password=password)
     if listing:

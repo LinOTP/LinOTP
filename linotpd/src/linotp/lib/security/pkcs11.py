@@ -49,7 +49,7 @@ from ctypes import *
 import string
 import binascii
 import logging
-import traceback
+
 
 from linotp.lib.security.provider import DEFAULT_KEY
 from linotp.lib.security.provider import CONFIG_KEY
@@ -98,10 +98,12 @@ NULL = None
 
 running_as_main = False
 
+
 class CK_VERSION(Structure):
     _fields_ = [("major", c_byte),
                 ("minor", c_byte),
                 ]
+
 
 class CK_TOKEN_INFO(Structure):
     _fields_ = [("label", c_wchar * 32),  # 0:31   Zeichen = 2byte
@@ -124,6 +126,7 @@ class CK_TOKEN_INFO(Structure):
                 ("utcTime", c_char * 16),  # 120:135
                 ]
 
+
 class CK_ATTRIBUTE(Structure):
     _fields_ = [("type", c_ulong),
                 ("pValue", c_void_p),
@@ -132,39 +135,41 @@ class CK_ATTRIBUTE(Structure):
 
 
 class CK_MECHANISM(Structure):
-    _fields_ = [ ("mechanism", c_ulong),
-                 ("pParameter", c_void_p),
-                 ("usParameterLen", c_ulong)
+    _fields_ = [("mechanism", c_ulong),
+                ("pParameter", c_void_p),
+                ("usParameterLen", c_ulong)
                 ]
 
-errormap = { 182:'Session exists',
-                7:'Bad argument',
-                19: 'Attribute value invalid',
-                162: 'invalid PIN length',
-                112: 'Mechanism invalid',
-                224: 'Token not present',
-                209: 'Template inconsistent',
-                208: 'Template incomplete',
-                163: 'PIN expired',
-                160: 'CKR_PIN_INCORRECT',
-                0x000000D0: 'TEMPLATE_INCOMPLETE',
-                0x00000020: 'Data invalid',
-                0x00000070: 'Mechanism invalid',
-                0x00000071: 'mechanism param invalid',
-                0x00000150: 'CKR_BUFFER_TOO_SMALL',
-                0x00000160: 'CKR_SAVED_STATE_INVALID',
-                0x00000021: 'CKR_DATA_LEN_RANGE',
-                0x000000B3: "CKR_SESSION_HANDLE_INVALID",
-				0x00000082: "CKR_OBJECT_HANDLE_INVALID",
-                0x00000090: "CKR_OPERATION_ACTIVE",
-                0x00000091: "CKR_OPERATION_NOT_INITIALIZED",
-                0x000000A0: "CKR_PIN_INCORRECT",
-                0x000000A1: "CKR_PIN_INVALID",
-                0x000000A2: "CKR_PIN_LEN_RANGE"
-                }
+errormap = {182: 'Session exists',
+            7: 'Bad argument',
+            19: 'Attribute value invalid',
+            162: 'invalid PIN length',
+            112: 'Mechanism invalid',
+            224: 'Token not present',
+            209: 'Template inconsistent',
+            208: 'Template incomplete',
+            163: 'PIN expired',
+            160: 'CKR_PIN_INCORRECT',
+            0x000000D0: 'TEMPLATE_INCOMPLETE',
+            0x00000020: 'Data invalid',
+            0x00000070: 'Mechanism invalid',
+            0x00000071: 'mechanism param invalid',
+            0x00000150: 'CKR_BUFFER_TOO_SMALL',
+            0x00000160: 'CKR_SAVED_STATE_INVALID',
+            0x00000021: 'CKR_DATA_LEN_RANGE',
+            0x000000B3: "CKR_SESSION_HANDLE_INVALID",
+            0x00000082: "CKR_OBJECT_HANDLE_INVALID",
+            0x00000090: "CKR_OPERATION_ACTIVE",
+            0x00000091: "CKR_OPERATION_NOT_INITIALIZED",
+            0x000000A0: "CKR_PIN_INCORRECT",
+            0x000000A1: "CKR_PIN_INVALID",
+            0x000000A2: "CKR_PIN_LEN_RANGE"
+            }
+
 
 def pkcs11error(rv):
     return errormap.get(rv, rv)
+
 
 def output(loglevel, text):
     if running_as_main:
@@ -176,6 +181,7 @@ def output(loglevel, text):
             log.info(text)
         elif loglevel == "error":
             log.error(text)
+
 
 class Pkcs11SecurityModule(SecurityModule):
     '''
@@ -200,15 +206,15 @@ class Pkcs11SecurityModule(SecurityModule):
         if config_entry and config_entry.lower() == 'true':
             self.accept_invalid_padding = True
 
-        self.handles = { CONFIG_KEY: config.get("configHandle", None),
-                         TOKEN_KEY: config.get("tokenHandle", None),
-                         VALUE_KEY: config.get("valueHandle", None),
-                         DEFAULT_KEY: config.get("defaultHandle", None)
+        self.handles = {CONFIG_KEY: config.get("configHandle", None),
+                        TOKEN_KEY: config.get("tokenHandle", None),
+                        VALUE_KEY: config.get("valueHandle", None),
+                        DEFAULT_KEY: config.get("defaultHandle", None)
                         }
-        self.labels = { CONFIG_KEY: config.get("configLabel", None),
-                        TOKEN_KEY: config.get("tokenLabel", None),
-                        VALUE_KEY: config.get("valueLabel", None),
-                        DEFAULT_KEY: config.get("defaultLabel", None)}
+        self.labels = {CONFIG_KEY: config.get("configLabel", None),
+                       TOKEN_KEY: config.get("tokenLabel", None),
+                       VALUE_KEY: config.get("valueLabel", None),
+                       DEFAULT_KEY: config.get("defaultLabel", None)}
 
         if not library:
             raise Exception("No .library specified")
@@ -216,33 +222,35 @@ class Pkcs11SecurityModule(SecurityModule):
 
         self.initpkcs11()
         if self.password:
-            output("debug", "[setup_module] logging in to slot %s" % str(self.slotid))
+            output("debug", "[setup_module] logging in to slot %s"
+                   % str(self.slotid))
             self.login(slotid=self.slotid)
-
-
 
     def populate_handles(self):
         '''
-        In a HA Group of LunaSAs the handle do not exist. They first need to be populated
+        In a HA Group of LunaSAs the handle do not exist.
+        They first need to be populated
 
         The Label overwrites the handles!
         '''
-        for key in [ CONFIG_KEY, TOKEN_KEY, VALUE_KEY, DEFAULT_KEY ]:
+        for key in [CONFIG_KEY, TOKEN_KEY, VALUE_KEY, DEFAULT_KEY]:
             label = self.labels.get(key)
             if label:
-                output("debug", "[populate_handles] get handle for label %s" % label)
+                output("debug", "[populate_handles] get handle for label %s"
+                       % label)
                 self.handles[key] = self.find_aes_keys(label)
-                output("debug", "[populate_handles] handle set to %s" % self.handles.get(key))
-
+                output("debug", "[populate_handles] handle set to %s"
+                       % self.handles.get(key))
 
     def isReady(self):
         return self.is_ready
 
     def setup_module(self, params):
         '''
-        used to set the password, if the password is not contained in the config file
+        used to set the password, if the password is not contained
+        in the config file
         '''
-        if not params.has_key('password'):
+        if 'password' not in params:
             output("error", "[setup_module] missing password!")
             raise Exception("missing password")
 
@@ -258,13 +266,16 @@ class Pkcs11SecurityModule(SecurityModule):
 
     def pad(self, unpadded_str, block=16):
         """
-        PKCS7 padding pads the missing bytes with the value of the number of the bytes.
-        If 4 bytes are missing, this missing bytes are filled with \x04
+        PKCS7 padding pads the missing bytes with the value of the number
+        of the bytes. If 4 bytes are missing, this missing bytes are filled
+        with \x04
 
         :param unpadded_str: The string to pad
         :type unpadded_str: str
+
         :param block: Block size
         :type block: int
+
         :returns: padded string
         :rtype: str
         """
@@ -280,8 +291,10 @@ class Pkcs11SecurityModule(SecurityModule):
 
         :param padded_str: The string to unpad
         :type padded_str: str
+
         :param block: Block size
         :type block: int
+
         :raises ValueError: If padded_str is not correctly padded a ValueError
             can be raised.
             This depends on the 'pkcs11.accept_invalid_padding' LinOTP config
@@ -302,6 +315,7 @@ class Pkcs11SecurityModule(SecurityModule):
             for some other reason (e.g. disk failure) and can not be unpadded.
             In this case you should NOT set 'pkcs11.accept_invalid_padding' to
             True because your data will be unusable anyway.
+
         :returns: unpadded string or sometimes padded string when
             'pkcs11.accept_invalid_padding' is set to True. See above.
         :rtype: str
@@ -321,27 +335,34 @@ class Pkcs11SecurityModule(SecurityModule):
         '''
         Initialize the PKCS11 library
         '''
-        output("debug", "[initpkcs11]  Initialize the PKCS11 library %s" % self.pkcs11)
+        output("debug", "[initpkcs11]  Initialize the PKCS11 library %s"
+               % self.pkcs11)
 
         self.pkcs11.C_Initialize(0)
         SlotID = c_ulong()
         nSlots = c_ulong()
         rv = self.pkcs11.C_GetSlotList(c_ulong(1), NULL, byref(nSlots))
         if rv:
-            # TODO: a second call of C_GetSlotList could fetch the list of the slots
-            output("error", "[initpkcs11] Failed to C_GetSlotList (%s): %s" % (str(rv), pkcs11error(rv)))
-            raise Exception("etng::initpkcs11 - Failed to C_GetSlotList (%s)" % rv)
+            # TODO: a second call of C_GetSlotList could
+            # fetch the list of the slots
+            output("error", "[initpkcs11] Failed to C_GetSlotList (%s): %s"
+                   % (str(rv), pkcs11error(rv)))
+            raise Exception("etng::initpkcs11 - Failed to C_GetSlotList (%s)"
+                            % rv)
         else:
-            output("debug", "[initpkcs11] number of connected tokens: %s. slotid: %s" % (nSlots.value, SlotID.value))
+            output("debug", "[initpkcs11] number of connected tokens: %s. "
+                   "slotid: %s" % (nSlots.value, SlotID.value))
 
         if nSlots.value == 0:
             output("error", "[initpkcs11] No slots connected!")
-            raise Exception("initpkcs11 - No slot connected (%s)" % nSlots.value)
+            raise Exception("initpkcs11 - No slot connected (%s)"
+                            % nSlots.value)
 
         if nSlots.value > 1:
-            output("info", "[initpkcs11] More than one slot connected: %s" % nSlots.value)
-            #raise Exception( "initpkcs11 - There is more than one slot connected (%s)" % nSlots.value )
+            output("info", "[initpkcs11] More than one slot connected: %s"
+                   % nSlots.value)
 
+        return
 
     def login(self, password=None, slotid=0):
         '''
@@ -355,10 +376,17 @@ class Pkcs11SecurityModule(SecurityModule):
             output("debug", "[login] using password from the config file.")
             password = self.password
         if password == None:
-            output("info", "[login] No password in config file. We have to wait for it beeing set.")
+            output("info", "[login] No password in config file. We have to"
+                   " wait for it beeing set.")
 
-        prototype = CFUNCTYPE (c_int, CK_SLOT_ID, c_int, POINTER(c_ulong), POINTER(c_ulong), POINTER(c_ulong))
-        paramflags = (1, "SlotID", 0), (1, "Flags", 6), (1, "App", NULL), (1, "Notify", NULL), (2, "SessionHandle")
+        prototype = CFUNCTYPE(c_int, CK_SLOT_ID, c_int, POINTER(c_ulong),
+                              POINTER(c_ulong), POINTER(c_ulong))
+        paramflags = ((1, "SlotID", 0),
+                      (1, "Flags", 6),
+                      (1, "App", NULL),
+                      (1, "Notify", NULL),
+                      (2, "SessionHandle")
+                      )
         opensession = prototype(("C_OpenSession", self.pkcs11), paramflags)
 
         self.hSession = opensession(SlotID=CK_SLOT_ID(slotid))
@@ -366,10 +394,13 @@ class Pkcs11SecurityModule(SecurityModule):
         output("debug", "[login] got this session: %s" % self.hSession)
         password = str(password)
 
-        rv = self.pkcs11.C_Login(self.hSession, CKU_USER, password, len(password))
+        rv = self.pkcs11.C_Login(self.hSession, CKU_USER, password,
+                                 len(password))
         if rv:
-            output("error", "[login] Failed to login to token (%s): %s" % (str(rv), pkcs11error(rv)))
-            raise Exception("etng::logintoken - Failed to C_Login (%s)" % rv)
+            output("error", "[login] Failed to login to token (%s): %s"
+                   % (str(rv), pkcs11error(rv)))
+            raise Exception("etng::logintoken - Failed to C_Login (%s)"
+                            % rv)
         else:
             output("debug", "[login] login successful")
             self.is_ready = True
@@ -382,11 +413,12 @@ class Pkcs11SecurityModule(SecurityModule):
         '''
         rv = self.pkcs11.C_CloseSession(self.hSession)
         if rv:
-            output("error", "[logout] Failed to close session (%s): %s" % (str(rv), pkcs11error(rv)))
-            raise Exception("[logout] Failed to C_CloseSession (%s): %s" % (str(rv), pkcs11error(rv)))
+            output("error", "[logout] Failed to close session (%s): %s"
+                   % (str(rv), pkcs11error(rv)))
+            raise Exception("[logout] Failed to C_CloseSession (%s): %s"
+                            % (str(rv), pkcs11error(rv)))
         else:
             output("debug", "[logout] logout successful")
-
 
     def find_aes_keys(self, label="testAES", wanted=1):
         '''
@@ -408,14 +440,27 @@ class Pkcs11SecurityModule(SecurityModule):
         CK_TEMPLATE = CK_ATTRIBUTE * size
 
         template = CK_TEMPLATE(
-                        CK_ATTRIBUTE(CKA_CLASS, addressof(klass), sizeof(klass)),
-                        CK_ATTRIBUTE(CKA_KEY_TYPE, addressof(keytype), sizeof(keytype)),
-                        CK_ATTRIBUTE(CKA_LABEL, cast(label, c_void_p), len(label)),
-                        CK_ATTRIBUTE(CKA_PRIVATE, cast(addressof(ck_false), c_void_p), sizeof(ck_false)),
-                        CK_ATTRIBUTE(CKA_TOKEN, cast(addressof(ck_true), c_void_p), sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_SENSITIVE, cast(addressof(ck_true), c_void_p), sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_ENCRYPT, cast(addressof(ck_true), c_void_p), sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_DECRYPT, cast(addressof(ck_true), c_void_p), sizeof(ck_true))
+                        CK_ATTRIBUTE(CKA_CLASS,
+                                     addressof(klass), sizeof(klass)),
+                        CK_ATTRIBUTE(CKA_KEY_TYPE,
+                                     addressof(keytype), sizeof(keytype)),
+                        CK_ATTRIBUTE(CKA_LABEL,
+                                     cast(label, c_void_p), len(label)),
+                        CK_ATTRIBUTE(CKA_PRIVATE,
+                                     cast(addressof(ck_false), c_void_p),
+                                          sizeof(ck_false)),
+                        CK_ATTRIBUTE(CKA_TOKEN,
+                                     cast(addressof(ck_true), c_void_p),
+                                          sizeof(ck_true)),
+                        CK_ATTRIBUTE(CKA_SENSITIVE,
+                                     cast(addressof(ck_true), c_void_p),
+                                          sizeof(ck_true)),
+                        CK_ATTRIBUTE(CKA_ENCRYPT,
+                                     cast(addressof(ck_true), c_void_p),
+                                          sizeof(ck_true)),
+                        CK_ATTRIBUTE(CKA_DECRYPT,
+                                     cast(addressof(ck_true), c_void_p),
+                                     sizeof(ck_true))
                         )
 
         template_len = c_ulong(size)
@@ -424,7 +469,8 @@ class Pkcs11SecurityModule(SecurityModule):
                                            template,
                                            template_len)
         if rv:
-            raise Exception("Failed to C_FindObjectsInit (%s): %s" % (rv, pkcs11error(rv)))
+            raise Exception("Failed to C_FindObjectsInit (%s): %s"
+                            % (rv, pkcs11error(rv)))
 
         keys = []
         hKey = CK_OBJECT_HANDLE()
@@ -435,22 +481,27 @@ class Pkcs11SecurityModule(SecurityModule):
             rv = self.pkcs11.C_FindObjects(self.hSession,
                                            byref(hKey),
                                            wanted,
-                                           byref(ulKeyCount));
+                                           byref(ulKeyCount))
             if rv:
-                output("error", "[find_aes_keys] Failed to C_FindObjects (%s): %s" % (rv, pkcs11error(rv)))
-                raise Exception("Failed to C_FindObjects (%s): %s" % (rv, pkcs11error(rv)))
+                output("error", "[find_aes_keys] Failed to C_FindObjects (%s):"
+                       " %s" % (rv, pkcs11error(rv)))
+                raise Exception("Failed to C_FindObjects (%s): %s"
+                                % (rv, pkcs11error(rv)))
 
             if ulKeyCount.value > 0:
                 keys.append(hKey.value)
                 ret_handle = int(hKey.value)
 
-            output("debug", "[find_aes_keys] searching keys: %i: %s" % (ulKeyCount.value, hKey.value))
+            output("debug", "[find_aes_keys] searching keys: %i: %s"
+                   % (ulKeyCount.value, hKey.value))
 
-        rv = self.pkcs11.C_FindObjectsFinal(self.hSession);
+        rv = self.pkcs11.C_FindObjectsFinal(self.hSession)
 
         if rv:
-            output("debug", "[find_aes_keys] Failed to C_FindObjectsFinal (%s): %s" % (rv, pkcs11error(rv)))
-            raise Exception("Failed to C_FindObjectsFinal (%s): %s" % (rv, pkcs11error(rv)))
+            output("debug", "[find_aes_keys] Failed to C_FindObjectsFinal "
+                   "(%s): %s" % (rv, pkcs11error(rv)))
+            raise Exception("Failed to C_FindObjectsFinal (%s): %s"
+                            % (rv, pkcs11error(rv)))
 
         return ret_handle
 
@@ -463,8 +514,10 @@ class Pkcs11SecurityModule(SecurityModule):
         rv = self.pkcs11.C_GetTokenInfo(c_ulong(slotid), byref(ti))
 
         if rv:
-            output("error", "[gettokeninfo] Failed to get token info (%s): %s" % (rv, pkcs11error(rv)))
-            raise Exception("Failed to get token info (%s): %s" % (rv, pkcs11error(rv)))
+            output("error", "[gettokeninfo] Failed to get token info (%s): %s"
+                   % (rv, pkcs11error(rv)))
+            raise Exception("Failed to get token info (%s): %s"
+                            % (rv, pkcs11error(rv)))
         else:
             output("debug", "[gettokeninfo] %s" % str(ti))
         return ti
@@ -475,7 +528,7 @@ class Pkcs11SecurityModule(SecurityModule):
 
         returns the handle
         '''
-        rv = 0
+
         mechanism = CK_MECHANISM(CKM_AES_KEY_GEN, NULL, 0)
 
         keysize = c_ulong(ks)
@@ -489,15 +542,29 @@ class Pkcs11SecurityModule(SecurityModule):
         CK_TEMPLATE = CK_ATTRIBUTE * size
 
         template = CK_TEMPLATE(
-                        CK_ATTRIBUTE(CKA_CLASS, addressof(klass), sizeof(klass)),
-                        CK_ATTRIBUTE(CKA_KEY_TYPE, addressof(keytype), sizeof(keytype)),
-                        CK_ATTRIBUTE(CKA_LABEL, cast(label, c_void_p), len(label)),
-                        CK_ATTRIBUTE(CKA_VALUE_LEN, addressof(keysize), sizeof(keysize)),
-                        CK_ATTRIBUTE(CKA_PRIVATE, cast(addressof(ck_false), c_void_p), sizeof(ck_false)),
-                        CK_ATTRIBUTE(CKA_TOKEN, cast(addressof(ck_true), c_void_p), sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_SENSITIVE, cast(addressof(ck_true), c_void_p), sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_ENCRYPT, cast(addressof(ck_true), c_void_p), sizeof(ck_true)),
-                        CK_ATTRIBUTE(CKA_DECRYPT, cast(addressof(ck_true), c_void_p), sizeof(ck_true))
+                        CK_ATTRIBUTE(CKA_CLASS,
+                                     addressof(klass), sizeof(klass)),
+                        CK_ATTRIBUTE(CKA_KEY_TYPE,
+                                     addressof(keytype), sizeof(keytype)),
+                        CK_ATTRIBUTE(CKA_LABEL,
+                                     cast(label, c_void_p), len(label)),
+                        CK_ATTRIBUTE(CKA_VALUE_LEN,
+                                     addressof(keysize), sizeof(keysize)),
+                        CK_ATTRIBUTE(CKA_PRIVATE,
+                                     cast(addressof(ck_false), c_void_p),
+                                     sizeof(ck_false)),
+                        CK_ATTRIBUTE(CKA_TOKEN,
+                                     cast(addressof(ck_true), c_void_p),
+                                     sizeof(ck_true)),
+                        CK_ATTRIBUTE(CKA_SENSITIVE,
+                                     cast(addressof(ck_true), c_void_p),
+                                     sizeof(ck_true)),
+                        CK_ATTRIBUTE(CKA_ENCRYPT,
+                                     cast(addressof(ck_true), c_void_p),
+                                     sizeof(ck_true)),
+                        CK_ATTRIBUTE(CKA_DECRYPT,
+                                     cast(addressof(ck_true), c_void_p),
+                                     sizeof(ck_true))
                         )
 
         template_len = c_ulong(size)
@@ -509,10 +576,13 @@ class Pkcs11SecurityModule(SecurityModule):
                                          byref(objHandle))
 
         if rv:
-            output("error", "[createAES] Failed to C_GenerateKey (%s): %s" % (rv, pkcs11error(rv)))
-            raise Exception("createAES - Failed to C_GenerateKey (%s): %s" % (rv, pkcs11error(rv)))
+            output("error", "[createAES] Failed to C_GenerateKey (%s): %s"
+                   % (rv, pkcs11error(rv)))
+            raise Exception("createAES - Failed to C_GenerateKey (%s): %s"
+                            % (rv, pkcs11error(rv)))
         else:
-            output("debug", "[createAES] created key successfully: %s" % str(objHandle))
+            output("debug", "[createAES] created key successfully: %s"
+                   % str(objHandle))
 
         return objHandle
 
@@ -525,14 +595,16 @@ class Pkcs11SecurityModule(SecurityModule):
         key = "0" * l
         rv = self.pkcs11.C_GenerateRandom(self.hSession, key, len(key))
         if rv:
-            output("error", "C_GenerateRandom failed (%s): %s" % (rv, pkcs11error(rv)))
-            raise Exception("C_GenerateRandom failed (%s): %s" % (rv, pkcs11error(rv)))
+            output("error", "C_GenerateRandom failed (%s): %s"
+                   % (rv, pkcs11error(rv)))
+            raise Exception("C_GenerateRandom failed (%s): %s"
+                            % (rv, pkcs11error(rv)))
         return key
-
 
     def decrypt(self, data, iv, id=0):
         '''
-        decrypts the given data, using the IV and the key specified by the handle
+        decrypts the given data, using the IV and the key specified
+        by the handle
 
         possible id's are:
             0
@@ -544,17 +616,21 @@ class Pkcs11SecurityModule(SecurityModule):
         clear = create_string_buffer(len(data))
         len_clear = c_ulong(len(clear))
         if len(iv) != 16:
-            output("error", "[decrypt] Doeing aes requires an IV (block size) of 16 bytes. %i given" % len(iv))
-            raise Exception("aes.decrypt: Doeing aes requires an IV (block size) of 16 bytes. %i given" % len(iv))
-        mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv), c_void_p) , len(iv))
+            output("error", "[decrypt] Doeing aes requires an IV (block size)"
+                   " of 16 bytes. %i given" % len(iv))
+            raise Exception("aes.decrypt: Doeing aes requires an IV (block "
+                            "size) of 16 bytes. %i given" % len(iv))
+        mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv), c_void_p),
+                                 len(iv))
 
         rv = self.pkcs11.C_DecryptInit(self.hSession,
                                        byref(mechanism),
                                        CK_OBJECT_HANDLE(handle))
         if rv:
-            output("error", "[decrypt] C_DecryptInit failed (%s): %s" % (rv, pkcs11error(rv)))
-            raise Exception("C_DecryptInit failed (%s): %s" % (rv, pkcs11error(rv)))
-
+            output("error", "[decrypt] C_DecryptInit failed (%s): %s"
+                   % (rv, pkcs11error(rv)))
+            raise Exception("C_DecryptInit failed (%s): %s"
+                            % (rv, pkcs11error(rv)))
 
         rv = self.pkcs11.C_Decrypt(self.hSession,
                                    data,
@@ -562,21 +638,22 @@ class Pkcs11SecurityModule(SecurityModule):
                                    byref(clear),
                                    byref(len_clear))
         if rv:
-            output("error", "[decrypt] C_Decrypt failed (%s): %s" % (rv, pkcs11error(rv)))
-            raise Exception("C_Decrypt failed (%s): %s" % (rv, pkcs11error(rv)))
+            output("error", "[decrypt] C_Decrypt failed (%s): %s"
+                   % (rv, pkcs11error(rv)))
+            raise Exception("C_Decrypt failed (%s): %s"
+                            % (rv, pkcs11error(rv)))
 
         s = string.join(clear, "")[:len_clear.value]
         s = self.unpad(s)
         return s
-
-
 
     def encrypt(self, data, iv, id=0):
         '''
         encrypts the given input data
 
         AES hat eine blocksize von 16 byte.
-        Daher muss die data ein vielfaches von 16 sein und der IV im Falle von CBC auch 16 byte lang.
+        Daher muss die data ein vielfaches von 16 sein und der IV im Falle von
+        CBC auch 16 byte lang.
         '''
         handle = int(self.handles.get(id))
         handle = CK_OBJECT_HANDLE(handle)
@@ -586,23 +663,29 @@ class Pkcs11SecurityModule(SecurityModule):
         encrypted_data = create_string_buffer(len(data))
         len_encrypted_data = c_ulong(len(encrypted_data))
         if len(iv) != 16:
-            output("error", "[encrypt] Doing aes requires an IV (block size) of 16 bytes. %i given" % len(iv))
-            raise Exception("PKCS11.decrypt: Doeing aes requires an IV (block size) of 16 bytes. %i given" % len(iv))
+            output("error", "[encrypt] Doing aes requires an IV (block size)"
+                   " of 16 bytes. %i given" % len(iv))
+            raise Exception("PKCS11.decrypt: Doeing aes requires an IV (block "
+                            "size) of 16 bytes. %i given" % len(iv))
 
         '''
         Note:   AES_CBC hat ein 16 byte IV.
                 AES_ECB hat keinen IV.
         '''
-        mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv), c_void_p) , len(iv))
+        mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv),
+                                                   c_void_p), len(iv))
 
         rv = self.pkcs11.C_EncryptInit(self.hSession,
                                        byref(mechanism),
                                        handle)
 
         if rv:
-            output("error", "[encrypt] C_EncryptInit (slot=%s, handle=%s) failed (%s): %s" % (self.slotid, handle,
-                                                                                                 rv, pkcs11error(rv)))
-            raise Exception("C_EncryptInit failed (%s): %s" % (rv, pkcs11error(rv)))
+            output("error", "[encrypt] C_EncryptInit (slot=%s, handle=%s) "
+                   "failed (%s): %s" % (self.slotid, handle, rv,
+                                        pkcs11error(rv)))
+
+            raise Exception("C_EncryptInit failed (%s): %s"
+                            % (rv, pkcs11error(rv)))
 
         data_buffer = create_string_buffer(data)
         rv = self.pkcs11.C_Encrypt(self.hSession,
@@ -611,11 +694,10 @@ class Pkcs11SecurityModule(SecurityModule):
                                    byref(encrypted_data),
                                    byref(len_encrypted_data))
         if rv:
-            output("error", "[encrypt] C_Encrypt (slot=%s, handle=%s) failed (%s): %s" % (self.slotid, handle,
-                                                                                                 rv, pkcs11error(rv)))
-            ''' no handle? '''
+            output("error", "[encrypt] C_Encrypt (slot=%s, handle=%s) failed "
+                   "(%s): %s" % (self.slotid, handle, rv, pkcs11error(rv)))
+            # no handle?
             self.find_aes_keys("config")
-            #raise Exception("C_Encrypt failed (%s): %s" % (rv, pkcs11error(rv)))
 
         return encrypted_data
 
@@ -627,41 +709,45 @@ class Pkcs11SecurityModule(SecurityModule):
         decrypted_data = aes.decrypt(data)
         return self.unpad(decrypted_data)
 
-
-    def _encryptValue(self, value, keyNum=2):
+    def _encryptValue(self, value, keyNum=2, iv=None):
         '''
-            _encryptValue - base method to encrypt a value
-            - uses one slot id to encrypt a string
-            retrurns as string with leading iv, seperated by ':'
+        _encryptValue - base method to encrypt a value
+        - uses one slot id to encrypt a string
+        retrurns as string with leading iv, seperated by ':'
 
-            @param value: the to be encrypted value
-            @param value: byte string
+        :param value: the to be encrypted value
+        :type value: byte string
 
-            @param  id: slot of the key array
-            @type   id: int
+        :param keyNum: slot of the key array
+        :type keyNum: int
 
-            @return: encrypted data with leading iv and sepeartor ':'
-            @rtype:  byte string
+        :param iv: initialisation vector (optional)
+        :type iv: buffer (20 bytes random)
+
+        :return: encrypted data with leading iv and sepeartor ':'
+        :rtype:  byte string
         '''
-        iv = self.random(16)
-        v = self.encrypt(value, iv , keyNum)
+        if not iv:
+            iv = self.random(16)
+        v = self.encrypt(value, iv, keyNum)
 
         value = binascii.hexlify(iv) + ':' + binascii.hexlify(v)
         return value
 
     def _decryptValue(self, cryptValue, keyNum=2):
         '''
-            _decryptValue - base method to decrypt a value
-            - used one slot id to encrypt a string with leading iv, seperated by ':'
+        _decryptValue - base method to decrypt a value
+        - used one slot id to encrypt a string
+          with leading iv, seperated by ':'
 
-            @param cryptValue: the to be encrypted value
-            @param cryptValue: byte string
+        :param cryptValue: the to be encrypted value
+        :type cryptValue: byte string
 
-            @param  id: slot of the key array
-            @type   id: int
+        :param keyNum: slot of the key array
+        :type keyNum: int
 
-            @return: decrypted data
-            @rtype:  byte string
+        :return: decrypted data
+        :rtype:  byte string
         '''
         ''' split at : '''
         pos = cryptValue.find(':')
@@ -675,61 +761,64 @@ class Pkcs11SecurityModule(SecurityModule):
 
         return password
 
-
     def decryptPassword(self, cryptPass):
         '''
-            dedicated security module methods: decryptPassword
-            which used one slot id to decryt a string
+        dedicated security module methods: decryptPassword
+        which used one slot id to decryt a string
 
-            @param cryptPassword: the crypted password - leading iv, seperated by the ':'
-            @param cryptPassword: byte string
+        :param cryptPassword: the crypted password -
+                                  leading iv, seperated by the ':'
+        :type cryptPassword: byte string
 
-            @return: decrypted data
-            @rtype:  byte string
+        :return: decrypted data
+        :rtype:  byte string
         '''
 
         return self._decryptValue(cryptPass, 0)
 
     def decryptPin(self, cryptPin):
         '''
-            dedicated security module methods: decryptPin
-            which used one slot id to decryt a string
+        dedicated security module methods: decryptPin
+        which used one slot id to decryt a string
 
-            @param cryptPin: the crypted pin - - leading iv, seperated by the ':'
-            @param cryptPin: byte string
+        :param cryptPin: the crypted pin - - leading iv, seperated by the ':'
+        :type cryptPin: byte string
 
-            @return: decrypted data
-            @rtype:  byte string
+        :return: decrypted data
+        :rtype:  byte string
         '''
 
         return self._decryptValue(cryptPin, 1)
 
-
     def encryptPassword(self, password):
         '''
-            dedicated security module methods: encryptPassword
-            which used one slot id to encrypt a string
+        dedicated security module methods: encryptPassword
+        which used one slot id to encrypt a string
 
-            @param password: the to be encrypted password
-            @param password: byte string
+        :param password: the to be encrypted password
+        :type password: byte string
 
-            @return: encrypted data - leading iv, seperated by the ':'
-            @rtype:  byte string
+        :return: encrypted data - leading iv, seperated by the ':'
+        :rtype:  byte string
         '''
         return self._encryptValue(password, 0)
 
-    def encryptPin(self, pin):
+    def encryptPin(self, pin, iv=None):
         '''
-            dedicated security module methods: encryptPin
-            which used one slot id to encrypt a string
+        dedicated security module methods: encryptPin
+        which used one slot id to encrypt a string
 
-            @param pin: the to be encrypted pin
-            @param pin: byte string
+        :param pin: the to be encrypted pin
+        :type pin: byte string
 
-            @return: encrypted data - leading iv, seperated by the ':'
-            @rtype:  byte string
+        :param iv: initialisation vector (optional)
+        :type iv: buffer (20 bytes random)
+
+        :return: encrypted data - leading iv, seperated by the ':'
+        :rtype:  byte string
         '''
-        return self._encryptValue(pin, 1)
+        return self._encryptValue(pin, 1, iv=iv)
+
 
 def main():
     '''
@@ -737,7 +826,8 @@ def main():
 
     Parameters are:
 
-        -p / --password=  The Passwort of the partition. Can be ommitted. Then you are asked
+        -p / --password=  The Passwort of the partition. Can be ommitted.
+                          Then you are asked
         -s / --slot=      The Slot number (default 0)
         -n / --name=      The name of the AES key.
         -f / --find=      Find the AES key
@@ -747,7 +837,8 @@ def main():
     '''
     try:
         opts, args = getopt(sys.argv[1:], "hp:s:n:f:e:l:",
-                ["help", "password=", "slot=", "name=", "find=", "encrypt=", "label="])
+                ["help", "password=", "slot=", "name=",
+                 "find=", "encrypt=", "label="])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
@@ -786,11 +877,12 @@ def main():
         sys.exit(1)
 
     if not password:
-        password = getpass.getpass(prompt="Please enter password for slot %i:" % int(slot))
+        password = getpass.getpass(prompt="Please enter password for slot %i:"
+                                   % int(slot))
 
-    config = { 'password' : password,
-                'slotid' : int(slot),
-                'library' : 'libCryptoki2_64.so' }
+    config = {'password': password,
+              'slotid': int(slot),
+              'library': 'libCryptoki2_64.so'}
     if l_handle:
         config['defaultLabel'] = l_handle
 
@@ -798,15 +890,16 @@ def main():
 
     if listing:
         keys = P11.find_aes_keys(label=label, wanted=100)
-        print "Found these AES keys: %s" % keys
+        print("Found these AES keys: %s" % keys)
     elif encrypt:
-        print "Encrypting data %s with label %s from slot %s." % (encrypt, str(l_handle), str(slot))
+        print("Encrypting data %s with label %s from slot %s."
+              % (encrypt, str(l_handle), str(slot)))
         #i_handle = P11.find_aes_keys(label=str(l_handle))
         #print "Found handle %s" % str(i_handle)
         #P11.handles = { DEFAULT_KEY : i_handle }
         iv = P11.random(16)
         crypttext = P11.encrypt(encrypt, iv, DEFAULT_KEY)
-        print "Encrypted Text : ", binascii.hexlify(crypttext)
+        print("Encrypted Text : ", binascii.hexlify(crypttext))
         plaintext = P11.decrypt(crypttext, iv, DEFAULT_KEY)
         print "Decrypted Text >>%s<< " % plaintext
     else:

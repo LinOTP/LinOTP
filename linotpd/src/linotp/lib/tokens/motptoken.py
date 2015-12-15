@@ -27,6 +27,7 @@
               - http://motp.sourceforge.net/ -
 """
 
+from linotp.lib.crypt import SecretObj
 from linotp.lib.util        import getParam
 from linotp.lib.util        import required
 
@@ -146,7 +147,7 @@ class MotpTokenClass(TokenClass):
 
         ## motp token specific
         otpPin = getParam(param, "otppin", required)
-        self.token.setUserPin(otpPin)
+        self.setUserPin(otpPin)
 
         TokenClass.update(self, param, reset_failcount)
 
@@ -183,11 +184,12 @@ class MotpTokenClass(TokenClass):
         otime = self.token.LinOtpCount
         secObj = self._get_secret_object()
         window = self.token.LinOtpCountWindow
-        secretPin = self.token.getUserPin()
+        key, iv = self.token.getUserPin()
+        secPinObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
 
         log.debug("[checkOtp] otime %s", otime)
 
-        mtimeOtp = mTimeOtp(secObj, secretPin, otime, otplen)
+        mtimeOtp = mTimeOtp(secObj, secPinObj, otime, otplen)
         res = mtimeOtp.checkOtp(anOtpVal, window, options=options)
 
         if (res != -1):

@@ -108,14 +108,12 @@ import binascii
 import datetime
 import logging
 import time
-import datetime
-import traceback
 
-from linotp.lib.config  import getFromConfig
-from linotp.lib.crypt   import createNonce
-from linotp.lib.crypt   import decryptPin, encryptPin
-from linotp.lib.crypt   import kdf2
-from linotp.lib.crypt   import createNonce
+from linotp.lib.config import getFromConfig
+from linotp.lib.crypt import createNonce
+from linotp.lib.crypt import decryptPin, encryptPin
+from linotp.lib.crypt import kdf2
+from linotp.lib.crypt import SecretObj
 
 from linotp.lib.policy  import getPolicy
 from linotp.lib.policy  import getPolicyActionValue
@@ -125,10 +123,10 @@ from linotp.lib.policy  import getPolicyActionValue
 from linotp.lib.token import getRolloutToken4User
 from linotp.lib.util import normalize_activation_code
 
-from linotp.lib.ocra    import OcraSuite
+from linotp.lib.ocra import OcraSuite
 
 from linotp.lib.challenges import Challenges
-from linotp.lib.reply   import create_img
+from linotp.lib.reply import create_img
 
 from pylons.i18n.translation import _
 
@@ -488,7 +486,7 @@ class Ocra2TokenClass(TokenClass):
 
         ocraPin = params.get('ocrapin', None)
         if ocraPin is not None:
-            self.token.setUserPin(ocraPin)
+            self.setUserPin(ocraPin)
 
         if 'otpkey' in params:
             self.setOtpKey(params.get('otpkey'))
@@ -782,8 +780,9 @@ class Ocra2TokenClass(TokenClass):
         ## set the pin onyl in the compliant hashed mode
         pin = ''
         if ocraSuite.P is not None:
-            pinObj = self.token.getUserPin()
-            pin = pinObj.getKey()
+            key, iv = self.token.getUserPin()
+            pin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
+
 
         try:
             param = {}
@@ -974,8 +973,8 @@ class Ocra2TokenClass(TokenClass):
         ## set the pin onyl in the compliant hashed mode
         pin = ''
         if ocraSuite.P is not None:
-            pinObj = self.token.getUserPin()
-            pin = pinObj.getKey()
+            key, iv = self.token.getUserPin()
+            pin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
 
         try:
             param = {}
@@ -1233,8 +1232,8 @@ class Ocra2TokenClass(TokenClass):
         ## set the ocra token pin
         ocraPin = ''
         if ocraSuite.P is not None:
-            ocraPinObj = self.token.getUserPin()
-            ocraPin = ocraPinObj.getKey()
+            key, iv = self.token.getUserPin()
+            ocraPin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -1336,8 +1335,8 @@ class Ocra2TokenClass(TokenClass):
         ## set the ocra token pin
         ocraPin = ''
         if ocraSuite.P is not None:
-            ocraPinObj = self.token.getUserPin()
-            ocraPin = ocraPinObj.getKey()
+            key, iv = self.token.getUserPin()
+            ocraPin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -1575,8 +1574,8 @@ class Ocra2TokenClass(TokenClass):
         ## set the ocra token pin
         ocraPin = ''
         if ocraSuite.P is not None:
-            ocraPinObj = self.token.getUserPin()
-            ocraPin = ocraPinObj.getKey()
+            key, iv = self.token.getUserPin()
+            ocraPin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''

@@ -46,8 +46,6 @@ except ImportError:
 optional = True
 required = False
 
-
-
 log = logging.getLogger(__name__)
 
 ###############################################

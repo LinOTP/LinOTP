@@ -53,9 +53,9 @@ from linotp.model.meta import Session
 from linotp.model.meta import MetaData
 
 from linotp.lib.crypt import geturandom
-from linotp.lib.crypt import encrypt, hash, SecretObj
-from linotp.lib.crypt import encryptPin
-from linotp.lib.crypt import decryptPin
+#from linotp.lib.crypt import encrypt, hash, SecretObj
+#from linotp.lib.crypt import encryptPin
+#from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import get_rand_digit_str
 
 
@@ -213,24 +213,20 @@ class Token(object):
     def getSerial(self):
         return self.LinOtpTokenSerialnumber
 
-    def setHKey(self, hOtpKey, reset_failcount=True):
-        log.debug('setHKey()')
-        iv = geturandom(16)
-        #bhOtpKey            = binascii.unhexlify(hOtpKey)
-        enc_otp_key = encrypt(hOtpKey, iv)
-        self.LinOtpKeyEnc = unicode(binascii.hexlify(enc_otp_key))
-        self.LinOtpKeyIV = unicode(binascii.hexlify(iv))
+    def set_encrypted_seed(self, encrypted_seed, iv, reset_failcount=True):
+        """
+        set_encrypted_seed - save the encrypted token seed / secret
+
+        :param encrypted_seed: the encrypted seed / secret
+        :param iv: the initiaslistion value / salt
+        :param reset_failcount: reset the failcount on token update
+        """
+        log.debug('set_seed()')
         self.LinOtpCount = 0
         if True == reset_failcount:
             self.LinOtpFailCount = 0
-
-    def setUserPin(self, userPin):
-        log.debug('setUserPin()')
-        iv = geturandom(16)
-        enc_userPin = encrypt(userPin, iv)
-        self.LinOtpTokenPinUser = unicode(binascii.hexlify(enc_userPin))
-        self.LinOtpTokenPinUserIV = unicode(binascii.hexlify(iv))
-
+        self.LinOtpKeyEnc = unicode(binascii.hexlify(encrypted_seed))
+        self.LinOtpKeyIV = unicode(binascii.hexlify(iv))
 
     def get_encrypted_seed(self):
         log.debug('getHOtpKey()')
@@ -238,17 +234,45 @@ class Token(object):
         iv = binascii.unhexlify(self.LinOtpKeyIV or '')
         return key, iv
 
-    def getOtpCounter(self):
-        return self.LinOtpCount or 0
+    def setUserPin(self, enc_userPin, iv):
+        log.debug('setUserPin()')
+        self.LinOtpTokenPinUser = unicode(binascii.hexlify(enc_userPin))
+        self.LinOtpTokenPinUserIV = unicode(binascii.hexlify(iv))
 
     def getUserPin(self):
         log.debug('getHOtpKey()')
-        pu = self.LinOtpTokenPinUser or ''
-        puiv = self.LinOtpTokenPinUserIV or ''
+        pu = self._fix_spaces(self.LinOtpTokenPinUser or '')
+        puiv = self._fix_spaces(self.LinOtpTokenPinUserIV or '')
         key = binascii.unhexlify(pu)
         iv = binascii.unhexlify(puiv)
-        secret = SecretObj(key, iv)
-        return secret
+        return key, iv
+
+    def getOtpCounter(self):
+        return self.LinOtpCount or 0
+
+    def set_hashed_pin(self, pin, iv):
+        self.LinOtpSeed = unicode(binascii.hexlify(iv))
+        self.LinOtpPinHash = unicode(binascii.hexlify(pin))
+
+    def get_hashed_pin(self):
+        iv = binascii.unhexlify(self.LinOtpSeed)
+        pin = binascii.unhexlify(self.LinOtpPinHash)
+        return iv, pin
+
+    @staticmethod
+    def copy_pin(src, target):
+        target.LinOtpSeed = src.LinOtpSeed
+        target.LinOtpPinHash = src.LinOtpPinHash
+
+    def set_encrypted_pin(self, pin, iv):
+        self.LinOtpSeed = unicode(binascii.hexlify(iv))
+        self.LinOtpPinHash = unicode(binascii.hexlify(pin))
+        self.LinOtpPinHash = "@@" + self.LinOtpPinHash
+
+    def get_encrypted_pin(self):
+        iv = binascii.unhexlify(self.LinOtpSeed)
+        pin = binascii.unhexlify(self.LinOtpPinHash[2:])
+        return iv, pin
 
     def setHashedPin(self, pin):
         log.debug('setHashedPin()')
@@ -337,7 +361,6 @@ class Token(object):
         log.debug('delete token success')
         return True
 
-
     def isPinEncrypted(self, pin=None):
         ret = False
         if pin is None:
@@ -353,14 +376,10 @@ class Token(object):
             ret = decryptPin(tokenPin)
         return ret
 
-    def setSoPin(self, soPin):
-        # TODO: we could log the PIN here
+    def setSoPin(self, enc_soPin, iv):
         log.debug('setSoPin()')
-        iv = geturandom(16)
-        enc_soPin = encrypt(soPin, iv)
         self.LinOtpTokenPinSO = unicode(binascii.hexlify(enc_soPin))
         self.LinOtpTokenPinSOIV = unicode(binascii.hexlify(iv))
-
 
     def __unicode__(self):
         return self.LinOtpTokenDesc
@@ -455,13 +474,6 @@ class Token(object):
     def setInfo(self, info):
         self.LinOtpTokenInfo = info
 
-    def _setPin(self, pin, hashed=True):
-        log.debug("_setPin(%s)" % pin)
-        if pin is None or pin == "":
-            log.debug("Token pin was None")
-        else:
-            self.setPin(pin, hashed)
-
     def storeToken(self):
         if self.LinOtpUserid is None:
             self.LinOtpUserid = u''
@@ -494,22 +506,6 @@ class Token(object):
 
         self.LinOtpTokenType = typ
         return
-
-    def updateOtpKey(self, otpKey):
-        #in case of a new hOtpKey we have to do some more things
-        if (otpKey is not None):
-            key, iv = self.get_encrypted_seed()
-            secObj = SecretObj(key, iv, hsm=self.context['hsm'])
-            if secObj.compare(otpKey) == False:
-                log.debug('update token OtpKey - counter reset')
-                self.setHKey(otpKey)
-
-    def updateToken(self, tokenDesc, otpKey, pin):
-        log.debug('updateToken()')
-
-        self.setDescription(tokenDesc)
-        self._setPin(pin)
-        self.updateOtpKey(otpKey)
 
     def getRealms(self):
         return self.realms or ''

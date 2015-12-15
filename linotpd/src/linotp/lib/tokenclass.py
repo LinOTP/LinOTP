@@ -47,7 +47,7 @@ import time
 
 import re
 
-import linotp
+
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypt import createNonce
@@ -55,6 +55,8 @@ from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import encryptPin
 from linotp.lib.crypt import kdf2
 from linotp.lib.crypt import urandom
+from linotp.lib.crypt import SecretObj
+
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
 from linotp.lib.policy import get_qrtan_url
@@ -65,11 +67,11 @@ from linotp.lib.util import getParam
 from linotp.lib.token import getRolloutToken4User
 from linotp.lib.util import normalize_activation_code
 
-from linotp.lib.ocra    import OcraSuite
-from linotp.model       import OcraChallenge
+from linotp.lib.ocra import OcraSuite
+from linotp.model import OcraChallenge
 
-from linotp.model.meta  import Session
-from linotp.lib.reply   import create_img
+from linotp.model.meta import Session
+from linotp.lib.reply import create_img
 
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
@@ -99,8 +101,8 @@ class TokenClass(object):
     def __init__(self, token, context=None):
         self.type = ''
         self.token = token
-        ## the info is a generic container, to store token specific processing info
-        ## which could be retrieved in the controllers
+        # the info is a generic container, to store token specific
+        # processing info, which could be retrieved in the controllers
         self.info = {}
         self.hKeyRequired = False
         self.mode = ['auth', 'challenge']
@@ -198,7 +200,7 @@ class TokenClass(object):
         '''
         return (False, "get_multi_otp not implemented for this tokentype", {})
 
-### new highlevel interface which covers the checkPin and checkOTP
+    # new highlevel interface which covers the checkPin and checkOTP
     def authenticate(self, passw, user, options=None):
         '''
         This is the method that verifies single shot authentication like
@@ -218,9 +220,9 @@ class TokenClass(object):
         :param options: dictionary of additional request parameters
         :type options: (dict)
 
-        :return: returns tuple true or false for the pin match, the otpcounter (int)
-            and the reply (dict) that will be added as additional information in
-            the JSON response of ``/validate/check``.
+        :return: returns tuple true or false for the pin match, the otpcounter
+                 (int) and the reply (dict) that will be added as additional
+                 information in the JSON response of ``/validate/check``.
         '''
 
         pin_match = False
@@ -235,8 +237,7 @@ class TokenClass(object):
 
         return (pin_match, otp_counter, reply)
 
-
-### challenge interfaces starts here
+    # challenge interfaces starts here
     def is_challenge_request(self, passw, user, options=None):
         '''
         This method checks, if this is a request, that triggers a challenge.
@@ -272,7 +273,8 @@ class TokenClass(object):
 
         return request_is_valid
 
-    def is_challenge_response(self, passw, user, options=None, challenges=None):
+    def is_challenge_response(self, passw, user, options=None,
+                              challenges=None):
         '''
         This method checks, if this is a request, that is the response to
         a previously sent challenge.
@@ -291,8 +293,9 @@ class TokenClass(object):
         :type user: User object
         :param options: dictionary of additional request parameters
         :type options: (dict)
-        :param challenges: A list of challenges for this token. These challenges may be used, to identify
-            if this request is a response for a challenge.
+        :param challenges: A list of challenges for this token. These
+                           challenges may be used, to identify if this request
+                           is a response for a challenge.
 
         :return: true or false
         '''
@@ -301,12 +304,11 @@ class TokenClass(object):
         if "state" in options or "transactionid" in options:
             challenge_response = True
 
-        ## we leave out the checkOtp, which is done later
-        ## either in checkResponse4Challenge
-        ## or in the check pin+otp
+        # we leave out the checkOtp, which is done later
+        # either in checkResponse4Challenge
+        # or in the check pin+otp
 
         return challenge_response
-
 
     def is_challenge_valid(self, challenge=None):
         '''
@@ -333,7 +335,7 @@ class TokenClass(object):
         try:
             validity = int(getFromConfig('DefaultChallengeValidityTime', 120))
 
-            ## handle the token specific validity
+            # handle the token specific validity
             typ = self.getType()
             if typ == 'sms':
                 lookup_for = 'SMSProviderTimeout'
@@ -341,7 +343,7 @@ class TokenClass(object):
                 lookup_for = typ.capitalize() + 'ChallengeValidityTime'
             validity = int(getFromConfig(lookup_for, validity))
 
-            ## instance specific timeout
+            # instance specific timeout
             validity = int(self.getFromTokenInfo('challenge_validity_time',
                                                  validity))
 
@@ -365,12 +367,12 @@ class TokenClass(object):
         :py:meth:`~linotp.lib.tokenclass.TokenClass.createChallenge`, which
         will only be called if this method returns success==true.
 
-        Thus this method can be used, to verify if there is an outstanding challenge
-        or if a new challenge needs to be created.
+        Thus this method can be used, to verify if there is an outstanding
+        challenge or if a new challenge needs to be created.
         E.g. this hook can be used, to implement a blocking mechanism to
         allow the creation of a new challenge only after a certain timeout.
-        If there is an already outstanding challenge the return value can refer to this.
-        (s. ticket #2986)
+        If there is an already outstanding challenge the return value can refer
+        to this. (s. ticket #2986)
 
         :param transactionid: the id of the new challenge
         :type transactionid: string
@@ -382,18 +384,19 @@ class TokenClass(object):
         :return: tuple of ( success, transid, message, additional attributes )
 
         The ``transid`` (the best transaction id for this request context),
-        ``message``, and additional ``attributes`` (dictionar) are displayed as results
-        in the JSON response of the ``/validate/check`` request.
+        ``message``, and additional ``attributes`` (dictionar) are displayed
+        as results in the JSON response of the ``/validate/check`` request.
 
-        Only in case of ``success`` == true the next method ``createChallenge`` will be called.
+        Only in case of ``success`` == true the next method ``createChallenge``
+        will be called.
         """
         return (True, transactionid, 'challenge init ok', {})
 
-
-    def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
+    def checkResponse4Challenge(self, user, passw, options=None,
+                                challenges=None):
         '''
-        This method verifies if the given ``passw`` matches any existing ``challenge``
-        of the token.
+        This method verifies if the given ``passw`` matches any existing
+        ``challenge`` of the token.
 
         It then returns the new otp_counter of the token and the
         list of the matching challenges.
@@ -407,7 +410,8 @@ class TokenClass(object):
         :type user: User object
         :param passw: the password (pin+otp)
         :type passw: string
-        :param options:  additional arguments from the request, which could be token specific
+        :param options:  additional arguments from the request, which could
+                         be token specific
         :type options: dict
         :param challenges: A sorted list of valid challenges for this token.
         :type challenges: list
@@ -420,12 +424,12 @@ class TokenClass(object):
         matching_challenges = []
 
         if 'transactionid' in options or 'state' in options:
-            ## fetch the transactionid
+            # fetch the transactionid
             transid = options.get('transactionid', None)
             if transid == None:
                 transid = options.get('state', None)
 
-        ## check if the transactionid is in the list of challenges
+        # check if the transactionid is in the list of challenges
         if transid is not None:
             for challenge in challenges:
                 if Challenges.is_same_transaction(challenge, transid):
@@ -438,8 +442,6 @@ class TokenClass(object):
 
         return (otp_counter, matching_challenges)
 
-
-
     def challenge_janitor(self, matching_challenges, challenges):
         '''
         This is the default janitor for the challenges of a token.
@@ -448,8 +450,8 @@ class TokenClass(object):
         the matching one. Other janitors could be implemented on a token base
         and overwrite this behaviour.
 
-        **Remarks**: In later versions this will be the place to hook a dynamically
-        loaded default token specific janitor.
+        **Remarks**: In later versions this will be the place to hook a
+        dynamically loaded default token specific janitor.
 
         :param matching_challenges: the last matching challenge
         :type matching_challenges: list
@@ -468,7 +470,7 @@ class TokenClass(object):
                 if int(ch.get('id')) <= match_id:
                     to_be_deleted.append(ch)
 
-        ## as well append all out dated challenges
+        # as well append all out dated challenges
         for ch in challenges:
             if self.is_challenge_valid(ch) is False:
                 to_be_deleted.append(ch)
@@ -649,6 +651,7 @@ class TokenClass(object):
         # but as for further prcessing a dummy user with only the realm defined
         # is required for the policy evaluation
         if user is None:
+            import linotp.lib.token
             realms = linotp.lib.token.getTokenRealms(self.getSerial())
             if len(realms) == 1:
                 user = linotp.lib.user.User(login='', realm=realms[0])
@@ -661,7 +664,7 @@ class TokenClass(object):
                        'realm is required for further processing.')
                 log.error(msg)
                 raise Exception(msg)
-
+        import linotp.lib.policy
         support_challenge_response = \
             linotp.lib.policy.get_auth_challenge_response(user, self.getType(),
                                                           context=self.context)
@@ -682,6 +685,7 @@ class TokenClass(object):
                 pin_match = False
                 otp_count = -1
             else:
+                log.exception("%r" % exx)
                 raise Exception(exx)
 
         if otp_count < 0 or pin_match is False:
@@ -737,35 +741,38 @@ class TokenClass(object):
         if tdesc is not None:
             self.token.setDescription(tdesc)
 
-        ## key_size as parameter overrules a prevoiusly set
-        ## value e.g. in hashlib in the upper classes
+        # key_size as parameter overrules a prevoiusly set
+        # value e.g. in hashlib in the upper classes
         key_size = getParam(param, "keysize", optional)
         if key_size is None:
             key_size = 20
 
         ##
-        ## process the otpkey:
-        ##   if otpkey given - take this
-        ##   if not given
-        ##       if genkey == 1 : create one
-        ##   if required and otpkey == None:
-        ##      raise param Exception, that we require an otpkey
+        # process the otpkey:
+        #   if otpkey given - take this
+        #   if not given
+        #       if genkey == 1 : create one
+        #   if required and otpkey == None:
+        #      raise param Exception, that we require an otpkey
         ##
         otpKey = getParam(param, "otpkey", optional)
         genkey = int(getParam(param, "genkey", optional) or 0)
 
-        assert (genkey in [0, 1]), "TokenClass supports only genkey in range [0,1] : %r" % genkey
+        if genkey not in [0, 1]:
+            raise Exception("TokenClass supports only genkey in "
+                            "range [0,1] : %r" % genkey)
 
         if genkey == 1 and otpKey is not None:
-            raise ParameterError('[ParameterError] You may either specify genkey or otpkey, but not both!', id=344)
+            raise ParameterError('[ParameterError] You may either specify'
+                                 'genkey or otpkey, but not both!', id=344)
 
         if otpKey is not None:
-            self.token.setHKey(otpKey, reset_failcount=reset_failcount)
+            self.setOtpKey(otpKey, reset_failcount=reset_failcount)
         else:
             if genkey == 1:
                 otpKey = self._genOtpKey_()
 
-        ## otpKey still None?? - raise the exception
+        # otpKey still None?? - raise the exception
         if otpKey is None:
             if self.hKeyRequired == True:
                 otpKey = getParam(param, "otpkey", required)
@@ -776,11 +783,7 @@ class TokenClass(object):
 
         pin = getParam(param, "pin", optional)
         if pin is not None:
-            storeHashed = True
-            enc = getParam(param, "encryptpin", optional)
-            if enc is not None and "true" == enc.lower():
-                storeHashed = False
-            self.token.setPin(pin, storeHashed)
+            self.setPin(pin, param=param)
 
         otplen = param.get('otplen', None)
         if otplen:
@@ -791,11 +794,17 @@ class TokenClass(object):
         return
 
     def resetTokenInfo(self):
+        """
+        TODO: to be implemented or to be removed!
+        """
         return
 
     def _genOtpKey_(self, otpkeylen=None):
         '''
         private method, to create an otpkey
+
+        :param otpkeylen: optional or 20
+        :return: token seed / secret
         '''
         if otpkeylen is None:
             if hasattr(self, 'otpkeylen'):
@@ -805,16 +814,23 @@ class TokenClass(object):
         return generate_otpkey(otpkeylen)
 
     def setDescription(self, description):
+        """
+        set the token description
+        :param description: set the token description
+        """
         self.token.setDescription(u'' + description)
         return
 
     def setDefaults(self):
-        ## set the defaults
+        # set the defaults
 
         self.token.LinOtpOtpLen = int(getFromConfig("DefaultOtpLen") or 6)
-        self.token.LinOtpCountWindow = int(getFromConfig("DefaultCountWindow") or 10)
-        self.token.LinOtpMaxFail = int(getFromConfig("DefaultMaxFailCount") or 10)
-        self.token.LinOtpSyncWindow = int(getFromConfig("DefaultSyncWindow")or 1000)
+        self.token.LinOtpCountWindow = int(getFromConfig("DefaultCountWindow")
+                                           or 10)
+        self.token.LinOtpMaxFail = int(getFromConfig("DefaultMaxFailCount")
+                                       or 10)
+        self.token.LinOtpSyncWindow = int(getFromConfig("DefaultSyncWindow")
+                                          or 1000)
 
         self.token.LinOtpTokenType = u'' + self.type
         return
@@ -824,12 +840,18 @@ class TokenClass(object):
         :param user: a User() object, consisting of loginname and realm
         :param report: tbdf.
         '''
-        (uuserid, uidResolver, uidResolverClass) = getUserResolverId(user, report)
+        (uuserid, uidResolver, uidResolverClass) = getUserResolverId(user,
+                                                                     report)
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResolverClass
         self.token.LinOtpUserid = uuserid
 
     def getUser(self):
+        """
+        get the user info of the token
+
+        :return: tuple of user id, user resolver and resolver class
+        """
         uidResolver = self.token.LinOtpIdResolver or ''
         uidResolverClass = self.token.LinOtpIdResClass or ''
 
@@ -837,7 +859,8 @@ class TokenClass(object):
         # to the available un-ee resolvers, which makes the live
         # alot easier
         if 'useridresolveree.' in uidResolverClass:
-            uidResolverClass = uidResolverClass.replace('useridresolveree.', 'useridresolver.')
+            uidResolverClass = uidResolverClass.replace('useridresolveree.',
+                                                        'useridresolver.')
         uuserid = self.token.LinOtpUserid or ''
         return (uuserid, uidResolver, uidResolverClass)
 
@@ -851,6 +874,9 @@ class TokenClass(object):
         return
 
     def reset(self):
+        """
+        reset the token failcount value
+        """
         self.token.LinOtpFailCount = 0
 
     def addToSession(self, Session):
@@ -893,13 +919,41 @@ class TokenClass(object):
         return self.token.getSerial()
 
     def setSoPin(self, soPin):
-        self.token.setSoPin(soPin)
+        """
+        set the soPin of the token
+            the soPin is encrypted and the encrypte value is stored in the
+            Token model
+
+        :param soPin: the special so pin
+        """
+        iv, enc_soPin = SecretObj.encrypt(soPin, hsm=self.context.get('hsm'))
+        self.token.setSoPin(enc_soPin, iv)
 
     def setUserPin(self, userPin):
-        self.token.setUserPin(userPin)
+        """
+        set the userPin of the token
+            the userPin is encrypted and the encrypte value is stored in the
+            Token model
 
-    def setOtpKey(self, otpKey):
-        self.token.setHKey(otpKey)
+        :param userPin: the user pin
+        """
+
+        log.debug('setUserPin()')
+        iv, enc_user_pin = SecretObj.encrypt(userPin, hsm=self.context['hsm'])
+        self.token.setUserPin(enc_user_pin, iv)
+
+    def setOtpKey(self, otpKey, reset_failcount=True):
+        """
+        set the token seed / secret
+            the seed / secret is encrypted and the encrypte value is
+            stored in the Token model
+
+        :param otpKey: the token seed / secret
+        :param reset_failcount: boolean, if the failcounter should be reseted
+        """
+        iv, enc_otp_key = SecretObj.encrypt(otpKey, hsm=self.context['hsm'])
+        self.token.set_encrypted_seed(enc_otp_key, iv,
+                                      reset_failcount=reset_failcount)
 
     def setOtpLen(self, otplen):
         self.token.LinOtpOtpLen = int(otplen)
@@ -914,32 +968,42 @@ class TokenClass(object):
         '''
         set the PIN. The optional parameter "param" can hold the information,
         if the PIN is encrypted or hashed.
+
+        :param pin: the pin value
+        :param param: the additional request parameters, which could contain
+                      the 'encryptpin' value, that triggers, that the token
+                      secret are stored in an encrypted form
+        :return: - nothing -
         '''
         if param is None:
             param = {}
 
+        hsm = self.context['hsm']
         storeHashed = True
-        enc = getParam(param, "encryptpin", optional)
+        enc = param.get("encryptpin", None)
         if enc is not None and "true" == enc.lower():
             storeHashed = False
 
-        self.token.setPin(pin, storeHashed)
+        if storeHashed is True:
+            iv, hashed_pin = SecretObj.hash_pin(pin, hsm=hsm)
+            self.token.set_hashed_pin(hashed_pin, iv)
+        else:
+            enc_pin = SecretObj.encrypt_pin(pin, hsm=hsm)
+            iv = enc_pin.split(':')[0]
+            self.token.set_encrypted_pin(enc_pin, binascii.unhexlify(iv))
 
     def _get_secret_object(self):
         """
         encapsulate the returning of the secret object
+
+        the returning of the SecretObj to allow delayed access to the token
+        seed eg. only when hmac is calculated, the secret will be decrypted
+
+        :return: SecretObject, containing the token seed
         """
         key, iv = self.token.get_encrypted_seed()
-        from linotp.lib.crypt import SecretObj
         secObj = SecretObj(key, iv, hsm=self.context['hsm'])
         return secObj
-
-    def getPinHashSeed(self):
-        return self.token.LinOtpPinHash, self.token.LinOtpSeed
-
-    def setPinHashSeed(self, pinhash, seed):
-        self.token.LinOtpPinHash = pinhash
-        self.token.LinOtpSeed = seed
 
     def enable(self, enable):
         self.token.LinOtpIsactive = enable
@@ -964,15 +1028,12 @@ class TokenClass(object):
 
         return self.token.LinOtpFailCount
 
-
-
-    ### TODO: - this is only HMAC??
+    # TODO: - this is only HMAC??
     def setCounterWindow(self, countWindow):
         self.token.LinOtpCountWindow = int(countWindow)
 
     def getCounterWindow(self):
         return self.token.LinOtpCountWindow
-
 
     def setSyncWindow(self, syncWindow):
         self.token.LinOtpSyncWindow = int(syncWindow)
@@ -980,8 +1041,8 @@ class TokenClass(object):
     def getSyncWindow(self):
         return self.token.LinOtpSyncWindow
 
-    ## hashlib algorithms:
-    ## http://www.doughellmann.com/PyMOTW/hashlib/index.html#module-hashlib
+    # hashlib algorithms:
+    # http://www.doughellmann.com/PyMOTW/hashlib/index.html#module-hashlib
 
     def getHashlib(self, hLibStr):
 
@@ -1005,7 +1066,6 @@ class TokenClass(object):
         else:
             return hashlib.sha1
 
-
     def getTokenInfo(self):
         info = {}
 
@@ -1024,16 +1084,13 @@ class TokenClass(object):
             tokeninfo = u'' + json.dumps(info, indent=0)
             self.token.setInfo(tokeninfo)
 
-
     def addToTokenInfo(self, key, value):
         info = {}
         tokeninfo = self.token.getInfo()
 
-        if tokeninfo is not None:
-            if len(tokeninfo) > 0 :
-                info = json.loads(tokeninfo)
+        if tokeninfo:
+            info = json.loads(tokeninfo)
 
-        #if info.has_key(key) == True:
         info[key] = value
 
         self.setTokenInfo(info)
@@ -1131,7 +1188,7 @@ class TokenClass(object):
         '''
         sets the end date of the validity period for a token
         '''
-        ## upper layer will catch. we just try to verify the date format
+        # upper layer will catch. we just try to verify the date format
         datetime.datetime.strptime(end_date, "%d/%m/%y %H:%M")
 
         self.addToTokenInfo("validity_period_end", end_date)
@@ -1151,10 +1208,9 @@ class TokenClass(object):
         '''
         sets the start date of the validity period for a token
         '''
-        ##  upper layer will catch. we just try to verify the date format
+        #  upper layer will catch. we just try to verify the date format
         datetime.datetime.strptime(start_date, "%d/%m/%y %H:%M")
         self.addToTokenInfo("validity_period_start", start_date)
-
 
     def inc_count_auth_success(self):
         count = self.get_count_auth_success()
@@ -1177,14 +1233,16 @@ class TokenClass(object):
                 return False
 
         if 0 != self.get_count_auth_success_max():
-            if self.get_count_auth_success() >= self.get_count_auth_success_max():
+            if (self.get_count_auth_success() >=
+                    self.get_count_auth_success_max()):
                 return False
 
         return True
 
     def check_validity_period(self):
         '''
-        This checks if the datetime.datetime.now() is within the validity period of the token.
+        This checks if the datetime.datetime.now() is within the
+        validity period of the token.
 
         Returns either True/False
         '''
@@ -1239,33 +1297,30 @@ class TokenClass(object):
         if counter is None:
             counter = self.token.LinOtpCount
 
-        #CKO, FIX: in case of SMS Token, we always get a counter==0 ???
-        #if 0 == counter:
-        #    counter = self.token.LinOtpCount
-
-        log.debug("[incOtpCounter] got counter %s, %s" % (self.token.LinOtpCount, counter))
+        log.debug("[incOtpCounter] got counter %s, %s" %
+                  (self.token.LinOtpCount, counter))
         self.token.LinOtpCount = counter + 1
 
         if reset == True:
-            if getFromConfig("DefaultResetFailCount") == "True" :
+            if getFromConfig("DefaultResetFailCount") is "True":
                 resetCounter = True
 
-        #log.error("Serial %s: LinOtpFailCount %d < LinOtpMaxFail %d",token.LinOtpTokenSerialnumber, token.LinOtpFailCount,token.LinOtpMaxFail)
-
         if resetCounter == True:
-            if self.token.LinOtpFailCount < self.token.LinOtpMaxFail and self.token.LinOtpIsactive == True:
-                self.token.LinOtpFailCount = 0;
+            if (self.token.LinOtpFailCount < self.token.LinOtpMaxFail and
+                self.token.LinOtpIsactive == True):
+                self.token.LinOtpFailCount = 0
 
         try:
             self.token.storeToken()
 
-        except Exception as ex :
+        except Exception as ex:
             log.exception("Token Counter update failed: %r" % (ex))
-            raise TokenAdminError("Token Counter update failed: %r" % (ex), id=1106)
+            raise TokenAdminError("Token Counter update failed: %r" % (ex),
+                                  id=1106)
 
-        log.debug("[incOtpCounter] now got counter %s, %s" % (self.token.LinOtpCount, counter))
+        log.debug("[incOtpCounter] now got counter %s, %s" %
+                  (self.token.LinOtpCount, counter))
         return self.token.LinOtpCount
-
 
     def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
         '''
@@ -1275,14 +1330,13 @@ class TokenClass(object):
         '''
         return -1
 
-
     def splitPinPass(self, passw):
         try:
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError:
             otplen = 6
 
-        if getFromConfig("PrependPin") == "True" :
+        if getFromConfig("PrependPin") == "True":
             pin = passw[0:-otplen]
             otpval = passw[-otplen:]
         else:
@@ -1290,7 +1344,6 @@ class TokenClass(object):
             otpval = passw[0:otplen]
 
         return pin, otpval
-
 
     def checkPin(self, pin, options=None):
         '''
@@ -1305,19 +1358,39 @@ class TokenClass(object):
         res = False
         log.debug("[checkPin] entering checkPin function")
 
-        if self.token.comparePin(pin) == True:
-            res = True
+        hsm = self.context['hsm']
+        if self.token.isPinEncrypted():
+            # for comparison we encrypt the pin and do the comparison
+            iv, encrypted_token_pin = self.token.get_encrypted_pin()
+            encrypted_pin = SecretObj.encrypt_pin(pin, iv=iv, hsm=hsm)
+            if encrypted_token_pin == encrypted_pin:
+                res = True
+        else:
+            # for hased pins we redo the hash and compare the hashes
+            iv, hashed_token_pin = self.token.get_hashed_pin()
+            iv, hashed_pin = SecretObj.hash_pin(pin, iv, hsm=hsm)
+            if hashed_pin == hashed_token_pin:
+                res = True
+
+            # special case of empty pin, where pin has never been set
+            # especialy in case of lost token with the pw token
+            if len(hashed_token_pin) == 0 and len(pin) == 0:
+                res = True
 
         log.debug("[checkPin] result %r" % res)
         return res
 
+    @staticmethod
+    def copy_pin(src, target):
+        import linotp.model
+        linotp.model.Token.copy_pin(src.token, target.token)
+
     def statusValidationFail(self):
-        ##  callback to enable a status change, if auth failed
+        #  callback to enable a status change, if auth failed
         return
 
-
     def statusValidationSuccess(self):
-        ##  callback to enable a status change, if auth failed
+        #  callback to enable a status change, if auth failed
         return
 
     def __repr__(self):
@@ -1354,7 +1427,7 @@ class TokenClass(object):
                 ldict[key] = "%r" % val
         return ldict
 
-    def getInitDetail(self, params , user=None):
+    def getInitDetail(self, params, user=None):
         '''
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
@@ -1365,22 +1438,18 @@ class TokenClass(object):
         response_detail.update(info)
         response_detail['serial'] = self.getSerial()
 
-        tok_type = self.type.lower()
-
         otpkey = None
         if 'otpkey' in info:
             otpkey = info.get('otpkey')
 
         if otpkey != None:
-            response_detail["otpkey"] = {
-                  "order"      : '1',
-                  "description": _("OTP seed"),
-                  "value"      :  "seed://%s" % otpkey,
-                  "img"        :  create_img(otpkey, width=200),
-                     }
+            response_detail["otpkey"] = {"order": '1',
+                                         "description": _("OTP seed"),
+                                         "value":  "seed://%s" % otpkey,
+                                         "img":  create_img(otpkey, width=200),
+                                         }
 
         return response_detail
-
 
     def getQRImageData(self, response_detail):
         '''
@@ -1396,7 +1465,7 @@ class TokenClass(object):
         return url, hparam
 
 
-#### OcraTokenClass #####################################
+### OcraTokenClass #####################################
 
 
 class OcraTokenClass(TokenClass):
@@ -1404,10 +1473,10 @@ class OcraTokenClass(TokenClass):
     OcraTokenClass  implement an ocra compliant token
 
     used from Config
-        OcraMaxChallenges         - number of open challenges per token if None: 3
-        OcraChallengeTimeout      - timeout definition like 1D, 2H or 3M if None: 1M
-        OcraDefaultSuite          - if none :'OCRA-1:HOTP-SHA256-8:C-QN08'
-        QrOcraDefaultSuite        - if none :'OCRA-1:HOTP-SHA256-8:C-QA64'
+        OcraMaxChallenges:    number of open challenges per token if None: 3
+        OcraChallengeTimeout: timeout definition like 1D, 2H or 3M if None: 1M
+        OcraDefaultSuite:     if none :'OCRA-1:HOTP-SHA256-8:C-QN08'
+        QrOcraDefaultSuite:   if none :'OCRA-1:HOTP-SHA256-8:C-QA64'
 
 
     algorithm Ocra Token Rollout: two phases of rollout::
@@ -1419,10 +1488,12 @@ class OcraTokenClass(TokenClass):
             user=BENUTZERNAME&
             session=SESSIONKEY
 
-            =>> "serial" : SERIENNUMMER, "sharedsecret" : DATAOBJECT, "app_import" : IMPORTURL
+            =>> "serial" : SERIENNUMMER, "sharedsecret" : DATAOBJECT,
+                                  "app_import" : IMPORTURL
             - genSharedSecret - vom HSM oder urandom ?
             - app_import : + linotp://
-                        + ocrasuite ->> default aus dem config: (DefaultOcraSuite)
+                        + ocrasuite ->> default aus dem config:
+                                                    (DefaultOcraSuite)
                         + sharedsecret (Länge wie ???)
                         + seriennummer
             - seriennummer: uuid
@@ -1437,11 +1508,13 @@ class OcraTokenClass(TokenClass):
             message=MESSAGE&
             session=SESSIONKEY
 
-            =>> "serial" : SERIENNUMMER, "nonce" : DATAOBJECT, "transactionid" : "TRANSAKTIONSID, "app_import" : IMPORTURL
+            =>> "serial" : SERIENNUMMER, "nonce" : DATAOBJECT,
+                "transactionid" : "TRANSAKTIONSID, "app_import" : IMPORTURL
 
             - nonce - von HSM oder random ?
             - pkcs5 - kdf2
-            - es darf zur einer Zeit nur eine QR Token inaktiv (== im Ausrollzustand) sein !!!!!
+            - es darf zur einer Zeit nur eine QR Token inaktiv
+                   (== im Ausrollzustand) sein !!!!!
             der Token wird über den User gefunden
             - seed = pdkdf2(nonce + activcode + shared secret)
             - challenge generiern - von urandom oder HSM
@@ -1451,7 +1524,6 @@ class OcraTokenClass(TokenClass):
             - if counter >= 1: delete sharedsecret löschen
     """
 
-
     @classmethod
     def classInit(cls, param, user=None):
 
@@ -1459,7 +1531,7 @@ class OcraTokenClass(TokenClass):
 
         tok_type = "ocra"
 
-        ## take the keysize from the ocrasuite
+        # take the keysize from the ocrasuite
         ocrasuite = param.get("ocrasuite", None)
         activationcode = param.get("activationcode", None)
         sharedsecret = param.get("sharedsecret", None)
@@ -1467,19 +1539,24 @@ class OcraTokenClass(TokenClass):
         genkey = param.get("genkey", None)
 
         if activationcode is not None:
-            ## dont create a new key
+            # dont create a new key
             genkey = None
-            serial = getRolloutToken4User(user=user, serial=serial, tok_type=tok_type)
+            serial = getRolloutToken4User(user=user, serial=serial,
+                                          tok_type=tok_type)
             if serial is None:
-                raise Exception('no token found for user: %r or serial: %r' % (user, serial))
+                raise Exception('no token found for user: %r or serial: %r'
+                                % (user, serial))
             helper_param['serial'] = serial
-            helper_param['activationcode'] = normalize_activation_code(activationcode)
+            helper_param['activationcode'] = \
+                        normalize_activation_code(activationcode)
 
         if ocrasuite is None:
             if sharedsecret is not None or  activationcode is not None:
-                ocrasuite = getFromConfig("QrOcraDefaultSuite", 'OCRA-1:HOTP-SHA256-6:C-QA64')
+                ocrasuite = getFromConfig("QrOcraDefaultSuite",
+                                          'OCRA-1:HOTP-SHA256-6:C-QA64')
             else:
-                ocrasuite = getFromConfig("OcraDefaultSuite", 'OCRA-1:HOTP-SHA256-8:C-QN08')
+                ocrasuite = getFromConfig("OcraDefaultSuite",
+                                          'OCRA-1:HOTP-SHA256-8:C-QN08')
             helper_param['ocrasuite'] = ocrasuite
 
         if genkey is not None:
@@ -1492,7 +1569,6 @@ class OcraTokenClass(TokenClass):
             helper_param['key_size'] = key_size
 
         return helper_param
-
 
     @classmethod
     def getClassType(cls):
@@ -1535,20 +1611,17 @@ class OcraTokenClass(TokenClass):
         log.debug('[getInfo] %r ' % (self.info))
         return self.info
 
-
     def update(self, params, reset_failcount=True):
         '''
         update: add further defintion for token from param in case of init
         '''
         log.debug('[update] %r: %r: ' % (params, reset_failcount))
 
-
-        if params.has_key('ocrasuite'):
+        if 'ocrasuite' in params:
             self.ocraSuite = params.get('ocrasuite')
         else:
             activationcode = params.get('activationcode', None)
             sharedSecret = params.get('sharedsecret', None)
-
 
             if activationcode is None and sharedSecret is None:
                 self.ocraSuite = self.getOcraSuiteSuite()
@@ -1556,13 +1629,12 @@ class OcraTokenClass(TokenClass):
                 self.ocraSuite = self.getQROcraSuiteSuite()
 
         if params.get('activationcode', None):
-            ## due to changes in the tokenclass parameter handling
-            ## we have to add for compatibility a genkey parameter
-            if params.has_key('otpkey') == False and params.has_key('genkey') == False:
-                log.warning('[OcraTokenClass:update] missing parameter genkey\
-                             to complete the rollout 2!')
+            # due to changes in the tokenclass parameter handling
+            # we have to add for compatibility a genkey parameter
+            if 'otpkey' not in params and 'genkey' not in params:
+                log.warning('[OcraTokenClass:update] missing parameter genkey'
+                            ' to complete the rollout 2!')
                 params['genkey'] = 1
-
 
         TokenClass.update(self, params, reset_failcount=reset_failcount)
 
@@ -1574,9 +1646,9 @@ class OcraTokenClass(TokenClass):
 
         ocraPin = params.get('ocrapin', None)
         if ocraPin is not None:
-            self.token.setUserPin(ocraPin)
+            self.setUserPin(ocraPin)
 
-        if params.has_key('otpkey'):
+        if 'otpkey' in params:
             self.setOtpKey(params.get('otpkey'))
 
         self._rollout_1(params)
@@ -1584,8 +1656,6 @@ class OcraTokenClass(TokenClass):
 
         log.debug('[update]:')
         return
-
-
 
     def _rollout_1(self, params):
         '''
@@ -1598,10 +1668,12 @@ class OcraTokenClass(TokenClass):
             user=BENUTZERNAME&
             session=SESSIONKEY
 
-            =>> "serial" : SERIENNUMMER, "sharedsecret" : DATAOBJECT, "app_import" : IMPORTURL
+            =>> "serial" : SERIENNUMMER, "sharedsecret" : DATAOBJECT,
+                                         "app_import" : IMPORTURL
             - genSharedSecret - vom HSM oder urandom ?
             - app_import : + linotp://
-                           + ocrasuite ->> default aus dem config: (DefaultOcraSuite)
+                           + ocrasuite ->> default aus dem config:
+                                                           (DefaultOcraSuite)
                            + sharedsecret (Länge wie ???)
                            + seriennummer
             - seriennummer: uuid ??
@@ -1612,7 +1684,7 @@ class OcraTokenClass(TokenClass):
 
         sharedSecret = params.get('sharedsecret', None)
         if sharedSecret == '1':
-            ##  preserve the rollout state
+            #  preserve the rollout state
             self.addToTokenInfo('rollout', '1')
 
             # preserve the current key as sharedSecret
@@ -1654,11 +1726,13 @@ class OcraTokenClass(TokenClass):
             message=MESSAGE&
             session=SESSIONKEY
 
-        =>> "serial" : SERIENNUMMER, "nonce" : DATAOBJECT, "transactionid" : "TRANSAKTIONSID, "app_import" : IMPORTURL
+        =>> "serial" : SERIENNUMMER, "nonce" : DATAOBJECT,
+            "transactionid" : "TRANSAKTIONSID, "app_import" : IMPORTURL
 
         - nonce - von HSM oder random ?
         - pkcs5 - kdf2
-        - es darf zur einer Zeit nur eine QR Token inaktiv (== im Ausrollzustand) sein !!!!!
+        - es darf zur einer Zeit nur eine QR Token inaktiv
+                                        (== im Ausrollzustand) sein !!!!!
           der Token wird über den User gefunden
         - seed = pdkdf2(nonce + activcode + shared secret)
         - challenge generiern - von urandom oder HSM
@@ -1669,33 +1743,33 @@ class OcraTokenClass(TokenClass):
         activationcode = params.get('activationcode', None)
         if activationcode is not None:
 
-            ##  genkey might have created a new key, so we have to rely on
+            #  genkey might have created a new key, so we have to rely on
             encSharedSecret = self.getFromTokenInfo('sharedSecret', None)
             if encSharedSecret is None:
-                raise Exception ('missing shared secret of initialition for token %r' % (self.getSerial()))
+                raise Exception('missing shared secret of initialition'
+                                ' for token %r' % (self.getSerial()))
 
             sharedSecret = decryptPin(encSharedSecret)
 
-            ##  we generate a nonce, which in the end is a challenge
+            #  we generate a nonce, which in the end is a challenge
             nonce = createNonce()
             self.addToTokenInfo('nonce', nonce)
 
-            ##  create a new key from the ocrasuite
+            #  create a new key from the ocrasuite
             key_len = 20
             if self.ocraSuite.find('-SHA256'):
                 key_len = 32
             elif self.ocraSuite.find('-SHA512'):
                 key_len = 64
 
-
             newkey = kdf2(sharedSecret, nonce, activationcode, key_len)
             self.setOtpKey(binascii.hexlify(newkey))
 
-            ##  generate challenge, which is part of the app_import
+            #  generate challenge, which is part of the app_import
             message = params.get('message', None)
             (transid, challenge, _ret, url) = self.challenge(message)
 
-            ##  generate response
+            #  generate response
             info = {}
             uInfo = {}
             info['serial'] = self.getSerial()
@@ -1709,21 +1783,21 @@ class OcraTokenClass(TokenClass):
             if message is not None:
                 uInfo['me'] = str(message.encode("utf-8"))
 
-
-            ustr = urllib.urlencode({'u':str(url.encode("utf-8"))})
+            ustr = urllib.urlencode({'u': str(url.encode("utf-8"))})
             uInfo['u'] = ustr[2:]
             info['url'] = str(url.encode("utf-8"))
 
             app_import = 'lseqr://nonce?%s' % (urllib.urlencode(uInfo))
 
-            ##  add a signature of the url
-            signature = {'si': self.signData(app_import) }
+            #  add a signature of the url
+            signature = {'si': self.signData(app_import)}
             info['signature'] = signature.get('si')
 
-            info['app_import'] = "%s&%s" % (app_import, urllib.urlencode(signature))
+            info['app_import'] = "%s&%s" % (app_import,
+                                            urllib.urlencode(signature))
             self.info = info
 
-            ##  setup new state
+            #  setup new state
             self.addToTokenInfo('rollout', '2')
             self.enable(True)
 
@@ -1732,14 +1806,16 @@ class OcraTokenClass(TokenClass):
 
     def getOcraSuiteSuite(self):
         '''
-        getQROcraSuiteSuite - return the QR Ocra Suite - if none, it will return the default
+        getQROcraSuiteSuite - return the QR Ocra Suite
+                            - if none, it will return the default
 
         :return: Ocrasuite of token
         :rtype: string
         '''
         log.debug('[getOcraSuiteSuite]')
 
-        defaultOcraSuite = getFromConfig("OcraDefaultSuite", 'OCRA-1:HOTP-SHA256-8:C-QN08')
+        defaultOcraSuite = getFromConfig("OcraDefaultSuite",
+                                         'OCRA-1:HOTP-SHA256-8:C-QN08')
         self.ocraSuite = self.getFromTokenInfo('ocrasuite', defaultOcraSuite)
 
         log.debug('[getOcraSuiteSuite] %r:' % (self.ocraSuite))
@@ -1747,20 +1823,20 @@ class OcraTokenClass(TokenClass):
 
     def getQROcraSuiteSuite(self):
         '''
-        getQROcraSuiteSuite - return the QR Ocra Suite - if none, it will return the default
+        getQROcraSuiteSuite - return the QR Ocra Suite
+                            - if none, it will return the default
 
         :return: QROcrasuite of token
         :rtype: string
         '''
         log.debug('[getQROcraSuiteSuite]')
 
-        defaultOcraSuite = getFromConfig("QrOcraDefaultSuite", 'OCRA-1:HOTP-SHA256-8:C-QA64')
+        defaultOcraSuite = getFromConfig("QrOcraDefaultSuite",
+                                         'OCRA-1:HOTP-SHA256-8:C-QA64')
         self.ocraSuite = self.getFromTokenInfo('ocrasuite', defaultOcraSuite)
 
         log.debug('[getQROcraSuiteSuite] %r:' % (self.ocraSuite))
         return self.ocraSuite
-
-
 
     def signData(self, data):
         '''
@@ -1784,33 +1860,40 @@ class OcraTokenClass(TokenClass):
         '''
         the challenge method is for creating an transaction / challenge object
 
-        remark: the transaction has a maximum lifetime and a reference to the OcraSuite token (serial)
+        remark: the transaction has a maximum lifetime and a reference to
+                the OcraSuite token (serial)
 
         :param data:     data, which is the base for the challenge or None
         :type data:     string or None
         :param session:  session support for ocratokens
         :type session:  string
         :type typ:      define, which kind of challenge base should be used
-                         could be raw - take the data input as is (extract chars accordind challenge definition Q)
+                         could be raw - take the data input as is
+                              (extract chars accordind challenge definition Q)
                          or random    - will generate a random input
                          or hased     - will take the hash of the input data
 
-        :return:    challenge response containing the transcation id and the challenge for the ocrasuite
+        :return:    challenge response containing the transcation id and
+                    the challenge for the ocrasuite
         :rtype :    tuple of (transId(string), challenge(string))
 
-
         '''
+
         s_data = 'None'
         s_session = 'None'
         s_challenge = 'None'
-        if data is not None: s_data = data
-        if session is not None: s_session = session
-        if challenge is None: s_challenge = challenge
+        if data is not None:
+            s_data = data
+        if session is not None:
+            s_session = session
+        if challenge is None:
+            s_challenge = challenge
 
         log.debug('[challenge] %s: %s: %s' % (s_data, s_session, s_challenge))
 
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
+
 
         if not data:
             typ = 'random'
@@ -1828,11 +1911,12 @@ class OcraTokenClass(TokenClass):
         serial = self.getSerial()
         counter = self.getOtpCount()
 
-        ## set the pin onyl in the compliant hashed mode
+        # set the pin onyl in the compliant hashed mode
         pin = ''
         if ocraSuite.P is not None:
-            pinObj = self.token.getUserPin()
-            pin = pinObj.getKey()
+            key, iv = self.token.getUserPin()
+            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            pin = secObj.getKey()
 
         try:
             param = {}
@@ -1854,9 +1938,10 @@ class OcraTokenClass(TokenClass):
 
         except Exception as ex:
             log.exception("[OcraTokenClass]")
-            raise Exception('[OcraTokenClass] Failed to create ocrasuite challenge: %r' % (ex))
+            raise Exception('[OcraTokenClass] Failed to create ocrasuite'
+                            'challenge: %r' % (ex))
 
-        ##  save the object
+        #  save the object
         digits = '0123456789'
         transid = ''
         transactionIdLen = 12
@@ -1865,9 +1950,10 @@ class OcraTokenClass(TokenClass):
             transactionIdLen = int(getFromConfig("OcraDefaultSuite", '12'))
         except:
             transactionIdLen = 12
-            log.debug("[OcraTokenClass] Failed to set transactionId length from config - using fallback %d" % (transactionIdLen))
+            log.debug("[OcraTokenClass] Failed to set transactionId length"
+                      " from config - using fallback %d" % (transactionIdLen))
 
-        ##  create a non exisiting challenge
+        #  create a non exisiting challenge
         try:
             while True:
                 for _c in range(0, transactionIdLen):
@@ -1881,13 +1967,16 @@ class OcraTokenClass(TokenClass):
             if data is not None:
                 ddata = data
 
-            chall = OcraChallenge(transid, typ + ':' + challenge, serial, typ + ':' + ddata)
+            chall = OcraChallenge(transid, typ + ':' + challenge,
+                                  serial, typ + ':' + ddata)
             chall.save()
 
         except Exception as ex:
-            ##  this might happen if we have a db problem or the uniqnes constrain does not fit
+            #  this might happen if we have a db problem or
+            # the uniqnes constrain does not fit
             log.exception("[OcraTokenClass]")
-            raise Exception('[OcraTokenClass] Failed to create challenge object: %s' % (ex))
+            raise Exception('[OcraTokenClass] Failed to create challenge'
+                            ' object: %s' % (ex))
 
         realms = []
         tokenrealms = self.token.getRealms()
@@ -1925,17 +2014,17 @@ class OcraTokenClass(TokenClass):
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
-        ## if we have no transactionid given through the options,
-        ## we have to retrieve the eldest challenge for this ocra token
+        # if we have no transactionid given through the options,
+        # we have to retrieve the eldest challenge for this ocra token
         serial = self.getSerial()
         challenges = []
 
-
-        ## set the ocra token pin
+        # set the ocra token pin
         ocraPin = ''
         if ocraSuite.P is not None:
-            ocraPinObj = self.token.getUserPin()
-            ocraPin = ocraPinObj.getKey()
+            key, iv = self.token.getUserPin()
+            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            ocraPin = secObj.getKey()
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -1943,38 +2032,39 @@ class OcraTokenClass(TokenClass):
         timeShift = 0
         if  ocraSuite.T is not None:
             defTimeWindow = int(getFromConfig("ocra.timeWindow", 180))
-            window = int(self.getFromTokenInfo('timeWindow', defTimeWindow)) / ocraSuite.T
+            window = (int(self.getFromTokenInfo('timeWindow', defTimeWindow))
+                      / ocraSuite.T)
             defTimeShift = int(getFromConfig("ocra.timeShift", 0))
             timeShift = int(self.getFromTokenInfo("timeShift", defTimeShift))
 
-
         if options is None:
-            challenges = OcraTokenClass.getTransactions4serial(serial, currentOnly=True)
+            challenges = OcraTokenClass.getTransactions4serial(serial,
+                                                            currentOnly=True)
 
         elif options is not None:
             if type(options).__name__ != 'dict':
-                err = '[chekOtp] "options" not of type dict! %r' % (type(options))
+                err = ('[chekOtp] "options" not of type dict! %r' %
+                       type(options))
                 log.error(err)
                 raise Exception(err)
 
-
-            if options.has_key('transactionid'):
+            if 'transactionid' in options:
                 transid = options.get('transactionid')
                 challenges.append(OcraTokenClass.getTransaction(transid))
 
-            elif options.has_key('challenge'):
+            elif 'challenge' in options:
                 challenges.append(options)
 
-            ## due to the added options in checkUserPass, we have to extend
-            ## the logic here:
-            ## if no challenges found in between but we have a serial, we catch
-            ## the open challenges by serial (s.o.)
+            # due to the added options in checkUserPass, we have to extend
+            # the logic here:
+            # if no challenges found in between but we have a serial, we catch
+            # the open challenges by serial (s.o.)
             if len(challenges) == 0:
-                challenges = OcraTokenClass.getTransactions4serial(serial, currentOnly=True)
-
+                challenges = OcraTokenClass.getTransactions4serial(serial,
+                                                            currentOnly=True)
 
         if len(challenges) == 0:
-            ##  verify that there has already been a challenge
+            #  verify that there has already been a challenge
             challenges = OcraTokenClass.getTransactions4serial(serial)
             if len(challenges) > 0:
                 err = 'No current transaction found!'
@@ -1983,7 +2073,7 @@ class OcraTokenClass(TokenClass):
             else:
                 err = 'No open transaction found!'
                 log.error(err)
-                if type(options) == dict and options.has_key('transactionid'):
+                if type(options) == dict and 'transactionid' in options:
                     raise Exception(err)
                 ret = -1
                 return ret
@@ -1991,37 +2081,38 @@ class OcraTokenClass(TokenClass):
         for ch in challenges:
             challenge = {}
 
-
-            if type(ch) == dict:
-                ##  transaction less checkOtp
+            if isinstance(ch, dict):
+                #  transaction less checkOtp
                 self.transId = 0
                 challenge.update(ch)
 
             elif type(ch) == OcraChallenge:
-                ##  preserve transaction context, so we could use this in the status callback
+                #  preserve transaction context, so we could use this in
+                # the status callback
                 self.transId = ch.transid
                 challenge['challenge'] = ch.challenge
                 challenge['transid'] = ch.transid
                 challenge['session'] = ch.session
 
-
-
-            ret = ocraSuite.checkOtp(passw, counter, window, challenge, pin=ocraPin , options=options, timeshift=timeShift)
+            ret = ocraSuite.checkOtp(passw, counter, window, challenge,
+                                     pin=ocraPin, options=options,
+                                     timeshift=timeShift)
             log.debug('[checkOtp]: %r' % (ret))
 
             if ret != -1:
                 break
 
         if -1 == ret:
-            ##  autosync: test if two consecutive challenges + it's counter match
+            #  autosync: test if two consecutive challenges +
+            # it's counter match
             ret = self.autosync(ocraSuite, passw, challenge)
-
 
         return ret
 
     def autosync(self, ocraSuite, passw, challenge):
         '''
-        try to resync a token automaticaly, if a former and the current request failed
+        try to resync a token automaticaly, if a former and the current
+        request failed
 
         :param  ocraSuite: the ocraSuite of the current Token
         :type  ocraSuite: ocra object
@@ -2049,7 +2140,7 @@ class OcraTokenClass(TokenClass):
             return res
 
         ##
-        ## AUTOSYNC starts here
+        # AUTOSYNC starts here
         ##
 
         counter = self.token.getOtpCounter()
@@ -2057,12 +2148,12 @@ class OcraTokenClass(TokenClass):
         if  ocraSuite.T is not None:
             syncWindow = syncWindow / 10
 
-
-        ## set the ocra token pin
+        # set the ocra token pin
         ocraPin = ''
         if ocraSuite.P is not None:
-            ocraPinObj = self.token.getUserPin()
-            ocraPin = ocraPinObj.getKey()
+            key, iv = self.token.getUserPin()
+            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            ocraPin = secObj.getKey()
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -2075,59 +2166,68 @@ class OcraTokenClass(TokenClass):
 
         tinfo = self.getTokenInfo()
 
-        ## autosync does only work, if we have a token info, where the last challenge and the last sync-counter is stored
-        ## if no tokeninfo, we start with a autosync request, thus start the lookup in the sync window
+        # autosync does only work, if we have a token info, where the
+        # last challenge and the last sync-counter is stored
+        # if no tokeninfo, we start with a autosync request, thus start the
+        # lookup in the sync window
 
-        if tinfo.has_key('lChallenge') == False:
-            ## run checkOtp, with sync window for the current challenge
+        if 'lChallenge' not in tinfo:
+            # run checkOtp, with sync window for the current challenge
             log.info('[OcraToken:autosync] initial sync')
             count_0 = -1
             try:
                 otp0 = passw
-                count_0 = ocraSuite.checkOtp(otp0, counter, syncWindow, challenge, pin=ocraPin, timeshift=timeShift)
+                count_0 = ocraSuite.checkOtp(otp0, counter, syncWindow,
+                                             challenge, pin=ocraPin,
+                                             timeshift=timeShift)
             except Exception as ex:
                 log.exception(' error during autosync0 %r' % (ex))
 
             if count_0 != -1:
-                tinfo['lChallenge'] = {'otpc' : count_0}
+                tinfo['lChallenge'] = {'otpc': count_0}
                 self.setTokenInfo(tinfo)
-                log.info('[OcraToken:autosync] initial sync - success: %r' % (count_0))
+                log.info('[OcraToken:autosync] initial sync - success: %r' %
+                         count_0)
 
             res = -1
             log.info('[OcraToken:autosync] initial sync done!')
 
         else:
-            ## run checkOtp, with sync window for the current challenge
+            # run checkOtp, with sync window for the current challenge
             log.info('[OcraToken:autosync] sync')
             count_1 = -1
             try:
                 otp1 = passw
-                count_1 = ocraSuite.checkOtp(otp1, counter, syncWindow, challenge, pin=ocraPin, timeshift=timeShift)
+                count_1 = ocraSuite.checkOtp(otp1, counter, syncWindow,
+                                             challenge, pin=ocraPin,
+                                             timeshift=timeShift)
             except Exception as ex:
                 log.exception(' error during autosync1 %r' % (ex))
 
             if count_1 == -1:
                 del tinfo['lChallenge']
                 self.setTokenInfo(tinfo)
-                log.info('[OcraToken:autosync] sync failed! Not a valid pass in scope (%r)' % (otp1))
+                log.info('[OcraToken:autosync] sync failed! Not a valid pass'
+                         ' in scope (%r)' % (otp1))
                 res = -1
             else:
-                ## run checkOtp, with sync window for the old challenge
+                # run checkOtp, with sync window for the old challenge
                 lChallange = tinfo.get('lChallenge')
                 count_0 = lChallange.get('otpc')
 
                 if ocraSuite.C is not None:
-                    ##  sync the counter based ocra token
+                    #  sync the counter based ocra token
                     if count_1 - count_0 < 2:
                         self.setOtpCount(count_1)
                         res = count_1
 
                 if ocraSuite.T is not None:
-                    ##  sync the timebased ocra token
-                    if count_1 - count_0 < ocraSuite.T * 2 :
-                        ## calc the new timeshift !
+                    #  sync the timebased ocra token
+                    if count_1 - count_0 < ocraSuite.T * 2:
+                        # calc the new timeshift !
                         log.debug("[autosync] the counter %r matches: %r" %
-                                  (count_1, datetime.datetime.fromtimestamp(count_1)))
+                                  (count_1,
+                                   datetime.datetime.fromtimestamp(count_1)))
 
                         currenttime = int(time.time())
                         new_shift = (count_1 - currenttime)
@@ -2136,7 +2236,7 @@ class OcraTokenClass(TokenClass):
                         self.setOtpCount(count_1)
                         res = count_1
 
-                ##  if we came here, the old challenge is not required anymore
+                #  if we came here, the old challenge is not required anymore
                 del tinfo['lChallenge']
                 self.setTokenInfo(tinfo)
 
@@ -2145,7 +2245,8 @@ class OcraTokenClass(TokenClass):
         log.debug('[autosync]: %r ' % (res))
         return res
 
-    def is_challenge_response(self, passw, user, options=None, challenges=None):
+    def is_challenge_response(self, passw, user, options=None,
+                              challenges=None):
         '''
         check, if the request contains the result of a challenge
 
@@ -2172,34 +2273,40 @@ class OcraTokenClass(TokenClass):
         log.debug('[statusValidationFail]')
         ocraChallenge = None
 
-        if self.transId == 0 :
+        if self.transId == 0:
             return
 
         try:
             ocraChallenge = OcraTokenClass.getTransaction(self.transId)
             ocraChallenge.setTanStatus(received=True, valid=False)
 
-            ##  still in rollout state??
+            #  still in rollout state??
             rolloutState = self.getFromTokenInfo('rollout', '0')
 
             if rolloutState == '1':
-                log.info('rollout state 1 for token %r not completed' % (self.getSerial()))
+                log.info('rollout state 1 for token %r not completed'
+                         % (self.getSerial()))
 
             elif rolloutState == '2':
                 try:
-                    maxchall = int(getFromConfig("OcraMaxChallengeRequests", '3'))
+                    maxchall = int(getFromConfig("OcraMaxChallengeRequests",
+                                                 '3'))
                 except:
                     maxchall = 3
 
                 if int(ocraChallenge.received_count) >= maxchall:
-                    ##  after 3 fails in rollout state 2 - reset to rescan
+                    #  after 3 fails in rollout state 2 - reset to rescan
                     self.addToTokenInfo('rollout', '1')
-                    log.info('rollout for token %r reset to phase 1:' % (self.getSerial()))
+                    log.info('rollout for token %r reset to phase 1:'
+                             % (self.getSerial()))
 
-                log.info('rollout for token %r not completed' % (self.getSerial()))
+                log.info('rollout for token %r not completed'
+                         % (self.getSerial()))
 
         except Exception as ex:
-            log.exception('[OcraTokenClass:statusValidationFail] Error during validation finalisation for token %r :%r' % (self.getSerial(), ex))
+            log.exception('[OcraTokenClass:statusValidationFail] Error'
+                          ' during validation finalisation for token %r :%r'
+                          % (self.getSerial(), ex))
             raise Exception(ex)
 
         finally:
@@ -2208,7 +2315,6 @@ class OcraTokenClass(TokenClass):
 
         log.debug('[statusValidationFail]')
         return
-
 
     def statusValidationSuccess(self):
         '''
@@ -2221,23 +2327,23 @@ class OcraTokenClass(TokenClass):
         '''
         log.debug('[statusValidationSuccess]')
 
-        if self.transId == 0 :
+        if self.transId == 0:
             return
 
         ocraChallenge = OcraTokenClass.getTransaction(self.transId)
         ocraChallenge.setTanStatus(received=True, valid=True)
         ocraChallenge.save()
 
-        ##  still in rollout state??
+        #  still in rollout state??
         rolloutState = self.getFromTokenInfo('rollout', '0')
 
         if rolloutState == '2':
             t_info = self.getTokenInfo()
-            if t_info.has_key('rollout'):
+            if 'rollout' in t_info:
                 del t_info['rollout']
-            if t_info.has_key('sharedSecret'):
+            if 'sharedSecret' in t_info:
                 del t_info['sharedSecret']
-            if t_info.has_key('nonce'):
+            if 'nonce' in t_info:
                 del t_info['nonce']
             self.setTokenInfo(t_info)
 
@@ -2249,10 +2355,10 @@ class OcraTokenClass(TokenClass):
         log.debug('[statusValidationSuccess]:')
         return
 
-
     def resync(self, otp1, otp2, options=None):
         '''
-        - for the resync to work, we take the last two transactions and their challenges
+        - for the resync to work, we take the last two transactions and
+          their challenges
         - for each challenge, we search forward the sync window length
 
         '''
@@ -2265,7 +2371,7 @@ class OcraTokenClass(TokenClass):
         for challenge in o_challenges:
             challenges.append(challenge)
 
-        ##  check if there are enough challenges around
+        #  check if there are enough challenges around
         if len(challenges) < 2:
             return False
 
@@ -2284,11 +2390,10 @@ class OcraTokenClass(TokenClass):
             challenge2['session'] = ch2.session
 
         else:
-            if options.has_key('challenge1'):
+            if 'challenge1' in options:
                 challenge1['challenge'] = options.get('challenge1')
-            if options.has_key('challenge2'):
+            if 'challenge2' in options:
                 challenge2['challenge'] = options.get('challenge2')
-
 
         if len(challenge1) == 0 or len(challenge2) == 0:
             error = "No challeges found!"
@@ -2304,11 +2409,12 @@ class OcraTokenClass(TokenClass):
 
         counter = self.token.getOtpCounter()
 
-        ## set the ocra token pin
+        # set the ocra token pin
         ocraPin = ''
         if ocraSuite.P is not None:
-            ocraPinObj = self.token.getUserPin()
-            ocraPin = ocraPinObj.getKey()
+            key, iv = self.token.getUserPin()
+            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            ocraPin = secObj.getKey()
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -2319,12 +2425,16 @@ class OcraTokenClass(TokenClass):
 
         try:
 
-            count_1 = ocraSuite.checkOtp(otp1, counter, syncWindow, challenge1, pin=ocraPin, timeshift=timeShift)
+            count_1 = ocraSuite.checkOtp(otp1, counter, syncWindow,
+                                         challenge1, pin=ocraPin,
+                                         timeshift=timeShift)
             if count_1 == -1:
                 log.info('[resync] lookup for first otp value failed!')
                 ret = False
             else:
-                count_2 = ocraSuite.checkOtp(otp2, counter, syncWindow, challenge2, pin=ocraPin, timeshift=timeShift)
+                count_2 = ocraSuite.checkOtp(otp2, counter, syncWindow,
+                                             challenge2, pin=ocraPin,
+                                             timeshift=timeShift)
                 if count_2 == -1:
                     log.info('[resync] lookup for second otp value failed!')
                     ret = False
@@ -2336,9 +2446,10 @@ class OcraTokenClass(TokenClass):
 
                     if  ocraSuite.T is not None:
                         if count_1 - count_2 <= ocraSuite.T * 2:
-                            ##  callculate the timeshift
+                            #  callculate the timeshift
                             date = datetime.datetime.fromtimestamp(count_2)
-                            log.info('[resync] syncing token to new timestamp: %r' % (date))
+                            log.info('[resync] syncing token to new timestamp:'
+                                     ' %r' % (date))
 
                             now = datetime.datetime.now()
                             stime = now.strftime("%s")
@@ -2352,7 +2463,6 @@ class OcraTokenClass(TokenClass):
 
         log.debug('[resync]: %r ' % (ret))
         return ret
-
 
     def getStatus(self, transactionId):
         '''
@@ -2386,10 +2496,8 @@ class OcraTokenClass(TokenClass):
             statusDict['timestamp'] = unicode(ocraChallenge.timestamp)
             statusDict['active'] = unicode(self.isActive())
 
-
         log.debug('[getStatus]: %r' % (statusDict))
         return statusDict
-
 
     @classmethod
     def timeoutJanitor(cls):
@@ -2404,7 +2512,8 @@ class OcraTokenClass(TokenClass):
         delta = datetime.timedelta(days=0)
         scopeDef = getFromConfig("OcraChallengeTimeout", '1D')
 
-        ##  timedelta supports : days[, seconds[, microseconds[, milliseconds[, minutes[, hours[, weeks]]]]]]])
+        #  timedelta supports : days[, seconds[, microseconds[, milliseconds[,
+        # minutes[, hours[, weeks]]]]]]])
         if re.match('^(\d+[DHMS])+$', scopeDef):
             delta = datetime.timedelta(days=0)
             parts = re.findall('\d+[DHMS]', scopeDef)
@@ -2420,21 +2529,23 @@ class OcraTokenClass(TokenClass):
                 elif period == 'S':
                     delta = delta + datetime.timedelta(seconds=quantity)
         else:
-            log.info('OcraChallengeTimeout value %r does not match timedelta definition (^(\d+[DHMS])+$)' % (scopeDef))
+            log.info('OcraChallengeTimeout value %r does not match timedelta'
+                     ' definition (^(\d+[DHMS])+$)' % (scopeDef))
             try:
                 scope_def = int(scopeDef)
                 delta = datetime.timedelta(seconds=scope_def)
             except ValueError:
-                log.info('Failed to convert OcraChallengeTimeout value from config: %r' % (scopeDef))
+                log.info('Failed to convert OcraChallengeTimeout value from'
+                         ' config: %r' % (scopeDef))
                 delta = datetime.timedelta(days=1)
 
-
         ocraChallenges = Session.query(OcraChallenge).filter(
-                            OcraChallenge.timestamp < datetime.datetime.now() - delta)
-
+                            OcraChallenge.timestamp < datetime.datetime.now()
+                            - delta)
 
         for ocraChallenge in ocraChallenges:
-            log.warning("[OcraToken:timeoutJanitor] - dropping outdated ocraChallenge): %r for token %r" %
+            log.warning("[OcraToken:timeoutJanitor] - dropping outdated"
+                        " ocraChallenge): %r for token %r" %
                         (ocraChallenge.transid, ocraChallenge.tokenserial))
             Session.delete(ocraChallenge)
 
@@ -2444,22 +2555,24 @@ class OcraTokenClass(TokenClass):
     @classmethod
     def maxChallengeRequestJanitor(cls):
         '''
-        maxChallengeRequestJanitor - remove all transactions / challenges which have been made more than maxChallengeRequests
+        maxChallengeRequestJanitor - remove all transactions / challenges
+                                     which have been made more than
+                                     maxChallengeRequests
 
         :return: - nothing
 
         '''
         log.debug('[maxChallengeRequestJanitor]')
 
-
         maxRequests = int(getFromConfig("OcraMaxChallengeRequests", '3'))
 
         ocraChallenges = Session.query(OcraChallenge).filter(
                             OcraChallenge.received_count >= maxRequests)
 
-
         for ocraChallenge in ocraChallenges:
-            log.warning("[OcraToken:timeoutJanitor] - dropping outdated ocraChallenge): %r for token %r" % (ocraChallenge.transid, ocraChallenge.tokenserial))
+            log.warning("[OcraToken:timeoutJanitor] - dropping outdated"
+                        " ocraChallenge): %r for token %r"
+                        % (ocraChallenge.transid, ocraChallenge.tokenserial))
             Session.delete(ocraChallenge)
 
         log.debug('[maxChallengeRequestJanitor]')
@@ -2468,9 +2581,11 @@ class OcraTokenClass(TokenClass):
     @classmethod
     def maxChallengeJanitor(cls, transId=None, serial=None):
         '''
-        maxChallengeJanitor - remove for one token (serial) all challengens but the last ones
+        maxChallengeJanitor - remove for one token (serial) all challengens
+                              but the last ones
 
-        :param transId:     the current transaction, which provides a the lookup for the serial number
+        :param transId:     the current transaction, which provides a
+                            the lookup for the serial number
         :type transId:     string
 
         :param serial:     the serial number of the token
@@ -2485,7 +2600,9 @@ class OcraTokenClass(TokenClass):
         try:
             ones = int(maxChallDef)
         except ValueError as ex:
-            log.exception('[OcraTokrenClass:maxChallengeJanitor] Faild to convert OcraMaxChallenges value from config: %r :%r' % (maxChallDef, ex))
+            log.exception('[OcraTokrenClass:maxChallengeJanitor] Faild to'
+                          'convert OcraMaxChallenges value from config: %r :%r'
+                          % (maxChallDef, ex))
             ones = 3
 
         if ones <= 0:
@@ -2494,14 +2611,16 @@ class OcraTokenClass(TokenClass):
         if transId is not None:
             challenges = Session.query(OcraChallenge).filter(OcraChallenge.transid == u'' + transId)
             if challenges is None:
-                log.info('[OcraTokrenClass:maxChallengeJanitor] no ocraChallenge found for tranid %r' % (transId))
+                log.info('[OcraTokrenClass:maxChallengeJanitor] no'
+                         ' ocraChallenge found for tranid %r' % (transId))
                 return
 
             for challenge in challenges:
                 serial = challenge.tokenserial
 
         if serial is None:
-            log.error('[OcraTokrenClass:maxChallengeJanitor] failed to lookup for transid %r or serial %r' % (transId, serial))
+            log.error('[OcraTokrenClass:maxChallengeJanitor] failed to lookup'
+                      ' for transid %r or serial %r' % (transId, serial))
             return
 
         challenges = Session.query(OcraChallenge).\
@@ -2513,8 +2632,10 @@ class OcraTokenClass(TokenClass):
             if len(lastIds) < ones:
                 lastIds.add(challenge.id)
             else:
-                log.warning("[OcraToken:maxChallengeJanitor] - dropping max ocraChallenges: %r :: %r for token %r" % \
-                            (challenge.id, challenge.transid, challenge.tokenserial))
+                log.warning("[OcraToken:maxChallengeJanitor] - dropping max"
+                            " ocraChallenges: %r :: %r for token %r"
+                            % (challenge.id, challenge.transid,
+                                challenge.tokenserial))
                 Session.delete(challenge)
 
         log.debug('[maxChallengeJanitor]')
@@ -2534,7 +2655,7 @@ class OcraTokenClass(TokenClass):
         '''
         log.debug('[getTransaction] %r' % (transId))
 
-        ##  first do housekeeping - remove outdated transactions
+        #  first do housekeeping - remove outdated transactions
         cls.timeoutJanitor()
         cls.maxChallengeRequestJanitor()
         cls.maxChallengeJanitor(transId=transId)
@@ -2542,37 +2663,38 @@ class OcraTokenClass(TokenClass):
         ocraChallenge = None
         count = 0
 
-
         if transId is not None:
-            challenges = Session.query(OcraChallenge).filter(OcraChallenge.transid == u'' + transId)
-
+            challenges = Session.query(OcraChallenge).filter(
+                                        OcraChallenge.transid == u'' + transId)
 
         if challenges is None:
             log.info('no ocraChallenge found for tranid %r' % (transId))
             return None
 
-
         for ocraChallenge in challenges:
-            log.debug("[OcraSuite:getTransactionId] %r for token: %r" % (ocraChallenge.transid, ocraChallenge.tokenserial))
+            log.debug("[OcraSuite:getTransactionId] %r for token: %r"
+                      % (ocraChallenge.transid, ocraChallenge.tokenserial))
             count += 1
 
         if count == 0 or count > 1:
-            log.error('%r ocraChallenge token found for this transaction %r ' % (count, transId))
-            #raise Exception('%r ocraChallenge token found for this transaction %r '%(count,transId))
+            log.error('%r ocraChallenge token found for this transaction %r '
+                      % (count, transId))
 
         log.debug('[getTransaction] %r' % (ocraChallenge))
         return ocraChallenge
 
-
     @classmethod
     def getTransactions4serial(cls, serial, currentOnly=False):
         '''
-        getTransactions4serial - give all challenges for a given token serial number
+        getTransactions4serial - give all challenges for a
+                                 given token serial number
 
         :param serial:     token serial identifier
         :type serial:     string
-        :param currentOnly: boolean Flag to return all Challenges (like for status request)
-                             or to return the eldest open transaction / challenge
+        :param currentOnly: boolean Flag to return all Challenges
+                            (like for status request)
+                             or to return the eldest open
+                             transaction / challenge
         :type currentOnly: boolean flag
 
         :return:         return a list of Challenges
@@ -2581,16 +2703,14 @@ class OcraTokenClass(TokenClass):
         '''
         log.debug('[getTransactions4serial] %r: %r' % (serial, currentOnly))
 
-        ##  first do housekeeping - remove outdated transactions
+        #  first do housekeeping - remove outdated transactions
         cls.timeoutJanitor()
         cls.maxChallengeRequestJanitor()
         cls.maxChallengeJanitor(serial=serial)
 
-
         ocraChallenges = []
         ocraChallenge = None
         challenges = []
-
 
         if serial is not None:
             if currentOnly == False:
@@ -2598,7 +2718,7 @@ class OcraTokenClass(TokenClass):
                     .filter(OcraChallenge.tokenserial == u'' + serial)\
                     .order_by(desc(OcraChallenge.id))
             else:
-                ##  return the oldest transaction onyl -  orderby(id).limit(1)
+                #  return the oldest transaction onyl -  orderby(id).limit(1)
                 challenges = Session.query(OcraChallenge)\
                     .filter(OcraChallenge.tokenserial == u'' + serial)\
                     .filter(OcraChallenge.received_tan == False)\
@@ -2609,14 +2729,14 @@ class OcraTokenClass(TokenClass):
             return None
 
         for ocraChallenge in challenges:
-            log.debug("[OcraSuite:getTransactionId] %r for token: %r" % (ocraChallenge.transid, ocraChallenge.tokenserial))
+            log.debug("[OcraSuite:getTransactionId] %r for token: %r"
+                      % (ocraChallenge.transid, ocraChallenge.tokenserial))
             ocraChallenges.append(ocraChallenge)
-
 
         log.debug('[getTransactions4serial]')
         return ocraChallenges
 
-    def getInitDetail(self, params , user=None):
+    def getInitDetail(self, params, user=None):
         '''
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
@@ -2633,16 +2753,16 @@ class OcraTokenClass(TokenClass):
 
         if otpkey != None:
             response_detail["otpkey"] = {
-                        "order"      : '1',
+                        "order": '1',
                         "description": _("OTP seed"),
-                        "value"      :  "seed://%s" % otpkey,
-                        "img"        :  create_img(otpkey, width=200),
+                        "value": "seed://%s" % otpkey,
+                        "img": create_img(otpkey, width=200),
                         }
 
         ocra_url = info.get('app_import')
 
         response_detail["ocraurl"] = {
-                    "order"      : '0',
+                    "order": '0',
                     "description": _("URL for OCRA token"),
                     "value": ocra_url,
                     "img": create_img(ocra_url, width=250),

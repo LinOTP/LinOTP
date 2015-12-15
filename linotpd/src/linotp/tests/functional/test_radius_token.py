@@ -49,10 +49,6 @@ class TestRadiusToken(TestController):
     p = None
 
     def setUp(self):
-        TestController.setUp(self)
-        self.set_config_selftest()
-        self.create_common_resolvers()
-        self.create_common_realms()
         if nose_config and 'radius' in nose_config:
             self.radius_authport = nose_config['radius']['authport']
             self.radius_acctport = nose_config['radius']['acctport']
@@ -60,67 +56,75 @@ class TestRadiusToken(TestController):
             self.radius_authport = DEFAULT_NOSE_CONFIG['radius']['authport']
             self.radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
 
+        TestController.setUp(self)
+        self.set_config_selftest()
+        self.create_common_resolvers()
+        self.create_common_realms()
+
+        # cleanup from last run
+        try:
+            self.deleteRadiusToken()
+        except:
+            pass
+
+        self.create_radius_token()
+
     def tearDown(self):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
 
-    def test_00_create_radius_token(self):
+    def create_radius_token(self):
         # The token with the remote PIN
         parameters1 = {
-                      "serial"  : "radius1",
-                      "type"    : "radius",
-                      "otpkey"  : "1234567890123456",
-                      "otppin"  : "",
-                      "user"    : "remoteuser",
-                      "pin"     : "pin",
-                      "description" : "RadiusToken1",
-                      'radius.server' : 'localhost:%s' % self.radius_authport,
-                      'radius.local_checkpin' : 0,
-                      'radius.user' : 'user_with_pin',
-                      'radius.secret' : 'testing123',
+                      "serial": "radius1",
+                      "type": "radius",
+                      "otpkey": "1234567890123456",
+                      "otppin": "",
+                      "user": "remoteuser",
+                      "pin": "pin",
+                      "description": "RadiusToken1",
+                      'radius.server': 'localhost:%s' % self.radius_authport,
+                      'radius.local_checkpin': 0,
+                      'radius.user': 'user_with_pin',
+                      'radius.secret': 'testing123',
                       }
 
         # the token with the local PIN
         parameters2 = {
-                      "serial"  : "radius2",
-                      "type"    : "radius",
-                      "otpkey"  : "1234567890123456",
-                      "otppin"  : "local",
-                      "user"    : "localuser",
-                      "pin"     : "pin",
-                      "description" : "RadiusToken2",
-                      'radius.server' : 'localhost:%s' % self.radius_authport,
-                      'radius.local_checkpin' : 1,
-                      'radius.user' : 'user_no_pin',
-                      'radius.secret' : 'testing123',
+                      "serial": "radius2",
+                      "type": "radius",
+                      "otpkey": "1234567890123456",
+                      "otppin": "local",
+                      "user": "localuser",
+                      "pin": "pin",
+                      "description": "RadiusToken2",
+                      'radius.server': 'localhost:%s' % self.radius_authport,
+                      'radius.local_checkpin': 1,
+                      'radius.user': 'user_no_pin',
+                      'radius.secret': 'testing123',
                       }
 
-        response = self.app.get(url(controller='admin', action='init'), params=parameters1)
+        response = self.make_admin_request('init', params=parameters1)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params=parameters2)
+        response = self.make_admin_request('init', params=parameters2)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='set'), params={'serial':'radius2', 'pin':'local'})
+        params = {'serial': 'radius2', 'pin': 'local'}
+        response = self.make_admin_request('set', params=params)
         self.assertTrue('"set pin": 1' in response, response)
 
-        response = self.app.get(url(controller='admin', action='set'), params={'serial':'radius1', 'pin':''})
+        params = {'serial': 'radius1', 'pin': ''}
+        response = self.make_admin_request('set', params=params)
         self.assertTrue('"set pin": 1' in response, response)
 
     def deleteRadiusToken(self):
-        parameters = {
-                      "serial"  : "radius1",
-                      }
-
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-
-        parameters = {
-                      "serial"  : "radius2",
-                      }
-
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
-        log.debug(response)
+        for serial in ["radius1", "radius2"]:
+            parameters = {"serial": serial}
+            response = self.make_admin_request('remove', params=parameters)
+            self.assertTrue('"value": 1' in response, response)
+            return
 
     def _start_radius_server(self):
         '''
@@ -165,7 +169,6 @@ class TestRadiusToken(TestController):
 
         return
 
-
     def _stop_radius_server(self):
         '''
         stopping the dummy radius server
@@ -174,77 +177,86 @@ class TestRadiusToken(TestController):
             r = self.p.kill()
             log.debug(r)
 
-
     def test_02_check_token_local_pin(self):
         '''
         Checking if token with local PIN works
         '''
-        self._start_radius_server()
-        parameters = {"user": "localuser", "pass": "local654321"}
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
-        log.error("CKO %s" % parameters)
-        self._stop_radius_server()
-        self.assertTrue('"value": true' in response, response)
-
+        try:
+            self._start_radius_server()
+            parameters = {"user": "localuser", "pass": "local654321"}
+            response = self.make_validate_request('check', params=parameters)
+            self.assertTrue('"value": true' in response, response)
+        finally:
+            self._stop_radius_server()
+        return
 
     def test_03_check_token_remote_pin(self):
         '''
         Checking if remote PIN works
         '''
-        self._start_radius_server()
-        parameters = {"user": "remoteuser", "pass": "test123456"}
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
-        self._stop_radius_server()
-        self.assertTrue('"value": true' in response, response)
+        try:
+            self._start_radius_server()
+            parameters = {"user": "remoteuser", "pass": "test123456"}
+            response = self.make_validate_request('check', params=parameters)
+            self.assertTrue('"value": true' in response, response)
+        finally:
+            self._stop_radius_server()
+        return
 
     def test_04_check_token_local_pin_fail(self):
         '''
         Checking if a missing local PIN will fail
         '''
-        self._start_radius_server()
-        parameters = {"user": "localuser", "pass": "654321"}
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
-        self._stop_radius_server()
+        try:
+            self._start_radius_server()
+            parameters = {"user": "localuser", "pass": "654321"}
+            response = self.make_validate_request('check', params=parameters)
+            self.assertTrue('"value": false' in response, response)
+        finally:
+            self._stop_radius_server()
 
-        assert '"value": false' in response
+        return
 
     def test_05_check_token_local_pin_fail2(self):
         '''
         Checking if a wrong local PIN will fail
         '''
-        self._start_radius_server()
-        parameters = {"user": "localuser", "pass": "blabla654321"}
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
-        self._stop_radius_server()
+        try:
+            self._start_radius_server()
+            parameters = {"user": "localuser", "pass": "blabla654321"}
+            response = self.make_validate_request('check', params=parameters)
+            self.assertTrue('"value": false' in response, response)
+        finally:
+            self._stop_radius_server()
 
-        assert '"value": false' in response
+        return
 
     def test_06_check_token_remote_pin_fail(self):
         '''
         Checking if a missing remote PIN will fail
         '''
-        self._start_radius_server()
-        parameters = {"user": "remoteuser", "pass": "123456"}
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
-        self._stop_radius_server()
+        try:
+            self._start_radius_server()
+            parameters = {"user": "remoteuser", "pass": "123456"}
+            response = self.make_validate_request('check', params=parameters)
+            self.assertTrue('"value": false' in response, response)
+        finally:
+            self._stop_radius_server()
 
-        assert '"value": false' in response
+        return
 
     def test_06_check_token_remote_pin_fail2(self):
         '''
         Checking if a wrong remote PIN will fail
         '''
-        self._start_radius_server()
-        parameters = {"user": "remoteuser", "pass": "abcd123456"}
-        response = self.app.get(url(controller='validate', action='check'), params=parameters)
-        self._stop_radius_server()
+        try:
+            self._start_radius_server()
+            parameters = {"user": "remoteuser", "pass": "abcd123456"}
+            response = self.make_validate_request('check', params=parameters)
+            self.assertTrue('"value": false' in response, response)
+        finally:
+            self._stop_radius_server()
 
-        assert '"value": false' in response
+        return
 
-
-    def test_xx_clean_up(self):
-        '''
-        Deleting tokens
-        '''
-        self.deleteRadiusToken()
-
+#eof##########################################################################

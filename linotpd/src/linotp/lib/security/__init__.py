@@ -28,7 +28,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-
 class SecurityModule(object):
 
     def __init__(self, config=None):
@@ -80,13 +79,12 @@ class SecurityModule(object):
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
-    def encryptPin(self, cryptPin):
+    def encryptPin(self, cryptPin, iv=None):
         fname = 'decrypt'
         log.error("[%s] This is the base class. You should implement "
                   "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
-
 
     def decryptPassword(self, cryptPass):
         fname = 'decrypt'
@@ -102,6 +100,4 @@ class SecurityModule(object):
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
-
 #eof###########################################################################
-

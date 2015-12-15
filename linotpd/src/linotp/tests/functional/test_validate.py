@@ -390,21 +390,30 @@ class TestValidateController(TestController):
         return serial
 
     def test_cryptedPin(self):
+        """
+        test for encrypted pin
+        """
+        serials = self.createToken()
 
-        _realmsResp = self.app.get(url(controller='system',
-                                      action='getDefaultRealm'), params=None)
-        # og.debug(realmsResp)
-        # assert '"value": true' in response
+        for serial in serials:
+            params = {'encryptpin': 'True',
+                      'pin': 'crypted!',
+                      'serial': serial
+                      }
+            response = self.make_admin_request('set', params=params)
+            self.assertTrue('"set pin": 1' in response, response)
 
-        parameters = {"realm": "mydef"}
-        _defRealmsResp = self.app.get(url(controller='system',
-                                         action='setDefaultRealm'),
-                                     params=parameters)
-        # log.debug(defRealmsResp)
-        # assert '"value": true' in response
+        # check all 3 tokens - the last one is it
+        parameters = {"user": "root", "pass": "crypted!280395"}
+        response = self.make_validate_request('check',
+                                              params=parameters)
+        self.assertTrue('"value": true' in response, response)
 
-        serial = self.createSpassToken("mySpass")
-        self.delete_token(serial)
+        for serial in serials:
+            self.delete_token(serial)
+
+        return
+
 
     #
     #    Use case:

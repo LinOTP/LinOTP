@@ -385,9 +385,9 @@ class ValidationHandler(object):
                                                     "token and user")
 
                     continue
-            
-            #  check if the token is the list of supported tokens
-            #  if not skip to the next token in list
+
+            # check if the token is the list of supported tokens
+            # if not skip to the next token in list
             typ = token.getType()
             if typ.lower() not in tokenclasses:
                 log.error('token typ %r not found in tokenclasses: %r' %

@@ -72,6 +72,7 @@ class PasswordTokenClass(TokenClass):
         self.hKeyRequired = True
         self.setType(u"pw")
 
+
     @classmethod
     def getClassType(cls):
         return "pw"

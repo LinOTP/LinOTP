@@ -197,10 +197,10 @@ class TokenHandler(object):
 
         try:
             token.storeToken()
-        except Exception as e:
+        except Exception as exx:
             log.error('[initToken] token create failed!')
-            log.error("[initToken] %r" % (traceback.format_exc()))
-            raise TokenAdminError("token create failed %r" % e, id=1112)
+            log.exception("[initToken] %r", exx)
+            raise TokenAdminError("token create failed %r" % exx, id=1112)
 
         log.debug("[initToken] end. created tokenObject %r and returning"
                   " status %r " % (True, tokenObj))
@@ -227,7 +227,7 @@ class TokenHandler(object):
             auto, token_type = linotp.lib.policy.get_auto_enrollment(user,
                                                         context=self.context)
         except Exception as exx:
-            log.error("%r" % exx)
+            log.exception("%r", exx)
             raise Exception("[auto_enrollToken] %r" % exx)
 
         if not auto:
@@ -302,7 +302,7 @@ class TokenHandler(object):
                 raise Exception(error)
 
         except Exception as exx:
-            log.error("%r" % exx)
+            log.exception("%r", exx)
             # we have to commit our token delete as the rollback
             # on exception does not :-(
             Session.delete(tokenObj.token)
@@ -590,7 +590,7 @@ class TokenHandler(object):
             auto = linotp.lib.policy.get_autoassignment(user,
                                                         context=self.context)
         except Exception as exx:
-            log.error("[auto_assignToken] %r" % exx)
+            log.exception("[auto_assignToken] %r", exx)
 
         # check if autoassignment is configured
         if not auto:
@@ -659,7 +659,7 @@ class TokenHandler(object):
             c.audit['token_type'] = token.getType()
             ret = True
         except Exception as exx:
-            log.error("[auto_assignToken] Failed to assign token: %r" % exx)
+            log.exception("[auto_assignToken] Failed to assign token: %r", exx)
             return False
 
         return ret
@@ -705,10 +705,10 @@ class TokenHandler(object):
 
         try:
             token.storeToken()
-        except Exception as e:
-            log.error('[assign Token] update Token DB failed')
+        except Exception as exx:
+            log.exception('[assign Token] update Token DB failed: %r', exx)
             raise TokenAdminError("Token assign failed for %s/%s : %r"
-                                  % (user.login, serial, e), id=1105)
+                                  % (user.login, serial, exx), id=1105)
 
         log.debug("[assignToken] successfully assigned token with serial "
                   "%r to user %r" % (serial, user.login))
@@ -744,7 +744,7 @@ class TokenHandler(object):
         try:
             token.storeToken()
         except Exception as exx:
-            log.error('[unassignToken] update token DB failed')
+            log.exception('[unassignToken] update token DB failed %r', exx)
             raise TokenAdminError("Token unassign failed for %r/%r: %r"
                                   % (user, serial, exx), id=1105)
 
@@ -918,7 +918,7 @@ class TokenHandler(object):
                 Session.delete(token)
 
         except Exception as exx:
-            log.error('[removeToken] update token DB failed')
+            log.exception('[removeToken] update token DB failed %r', exx)
             raise TokenAdminError("removeToken: Token update failed: %r"
                                    % exx, id=1132)
 
@@ -1064,8 +1064,8 @@ class TokenHandler(object):
         if len(tokens_to) != 1:
             log.error("[copyTokenPin] not a unique token to copy to found")
             return -2
-        pinhash, seed = tokens_from[0].getPinHashSeed()
-        tokens_to[0].setPinHashSeed(pinhash, seed)
+        import linotp.lib.tokenclass
+        linotp.lib.tokenclass.TokenClass.copy_pin(tokens_from[0], tokens_to[0])
         return 1
 
     def copyTokenUser(self, serial_from, serial_to):
@@ -1217,7 +1217,7 @@ def createTokenClassObject(token, typ=None, context=None):
             token_class = tokenclasses.get(typ)
             tok = newToken(token_class)(token, context=context)
         except Exception as exx:
-            log.debug('createTokenClassObject failed!')
+            log.exception('createTokenClassObject failed! %r', exx)
             raise TokenAdminError("createTokenClassObject failed:  %r"
                                   % exx, id=1609)
 
@@ -1289,9 +1289,9 @@ def get_token_type_list():
 #        from linotp.lib.config      import getGlobalObject
         tokenclasses = config['tokenclasses']
 
-    except Exception as e:
-        log.debug('get_token_type_list failed!')
-        raise TokenAdminError("get_token_type_list failed:  %r" % e, id=1611)
+    except Exception as exx:
+        log.exception('get_token_type_list failed! %r', exx)
+        raise TokenAdminError("get_token_type_list failed:  %r", exx, id=1611)
 
     token_type_list = tokenclasses.keys()
     return token_type_list
