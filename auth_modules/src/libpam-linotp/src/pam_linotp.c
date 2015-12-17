@@ -111,8 +111,6 @@
 #define LINOTPD_REJECT     ":-("
 #define LINOTPD_FAIL       ":-/"
 
-#define MAXMEMSIZE         1024 * 1024
-
 /* config enries maxlen */
 #define URLMAXLEN    1000
 #define REALMMAXLEN   100
@@ -266,7 +264,6 @@ static size_t curl_write_memory_callback(void *ptr, size_t size, size_t nmemb,
     if((size && nmemb > (SIZE_MAX / size)) ||
        mem->size >= SIZE_MAX ||
        (SIZE_MAX - mem->size - 1) < (size * nmemb)) {
-
         log_debug("Integer overflow detected @ curl_write_memory_callback");
         return 0;
     }
@@ -276,10 +273,10 @@ static size_t curl_write_memory_callback(void *ptr, size_t size, size_t nmemb,
     }
 
     /*Check for Max_size*/
-    if (realsize > MAXMEMSIZE) {
+    if (realsize > CURL_MAX_WRITE_SIZE) {
         log_error(
                 "ERROR: The linotpd responded to our authentication "\
-                "request with more than 1MB of data! Something is really "\
+                "request with more than allowed amount of data (CURL_MAX_WRITE_SIZE)! Something is really "\
                 "wrong here!");
 
         return mem->size;
