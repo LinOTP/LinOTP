@@ -1,6 +1,6 @@
 [gerrit]
 host=harrison
 project=linotp
-defaultbranch=branch-v2.8.0
+defaultbranch=branch-v2.8.1
 defaultremote=origin
 defaultrebase=0
