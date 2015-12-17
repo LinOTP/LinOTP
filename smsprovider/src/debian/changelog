@@ -1,3 +1,9 @@
+linotp-smsprovider (2.8.1~0dev0-1) jessie; urgency=low
+
+  * Set new version 2.8.1~0dev0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 17 Dec 2015 17:48:09 +0100
+
 linotp-smsprovider (2.8-1) jessie; urgency=low
 
   * Encode spaces in request params as '%20', not as '+'
