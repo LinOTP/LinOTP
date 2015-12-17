@@ -263,7 +263,10 @@ static size_t curl_write_memory_callback(void *ptr, size_t size, size_t nmemb,
     struct MemoryStruct *mem = (struct MemoryStruct *) data;
 
     /* Integer overflow protection */
-    if(size && nmemb > INT_MAX / size){
+    if((size && nmemb > (SIZE_MAX / size)) ||
+       mem->size >= SIZE_MAX ||
+       (SIZE_MAX - mem->size - 1) < (size * nmemb)) {
+
         log_debug("Integer overflow detected @ curl_write_memory_callback");
         return 0;
     }
