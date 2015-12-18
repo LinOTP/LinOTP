@@ -451,7 +451,8 @@ class TestHttpSmsController(TestController):
         """
         use the internal testing server for
         """
-        sms_conf = {"URL": "http://localhost:5001/testing/http2sms",
+        sms_conf = {"URL": "http://localhost:%s/testing/http2sms"
+                        % self.paster_port,
                     "PARAMETER": {"account": "clickatel", "username": "legit"},
                     "SMS_TEXT_KEY": "text",
                     "SMS_PHONENUMBER_KEY": "destination",
