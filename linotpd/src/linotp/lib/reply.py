@@ -414,13 +414,18 @@ def sendCSVResult(response, obj, flat_lines=False,
     output = u""
 
     if not flat_lines:
-        # Do the header
-        for k, v in obj.get("data", {})[0].iteritems():
-            output += "%s%s%s, " % (delim, k, delim)
-        output += "\n"
 
-        # Do the data
-        for row in obj.get("data", {}):
+        headers_printed = False
+        data = obj.get("data", [])
+
+        for row in data:
+            # Do the header
+            if not headers_printed:
+                for k in data[0].keys():
+                    output += "%s%s%s, " % (delim, k, delim)
+                output += "\n"
+                headers_printed = True
+
             for val in row.values():
                 if type(val) in [str, unicode]:
                     value = val.replace("\n", " ")
