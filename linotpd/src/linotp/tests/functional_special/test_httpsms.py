@@ -217,7 +217,13 @@ class TestHttpSmsController(TestController):
 
         response = self.app.get(url(controller='validate', action='smspin')
                                 , params={'user' : 'user1', 'pass' : '1234'})
-        self.assertTrue('Failed to send SMS.' in response, response)
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    'Failed to send SMS. We received a'
+        #                'Failed to send SMS.'
+        self.assertTrue('"value": false' in response, response)
+
         # check last audit entry
         response = self.last_audit()
 
@@ -432,9 +438,12 @@ class TestHttpSmsController(TestController):
                                 params={'user' : 'user1',
                                         'pass' : '1234'})
 
-        self.assertTrue('Failed to send SMS. We received a'
-                        ' predefined error from the SMS Gateway.' in response)
-
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    'Failed to send SMS. We received a'
+        #                ' predefined error from the SMS Gateway.
+        self.assertTrue('"value": false' in response, response)
         return
 
     def setSMSProvider(self, preferred_httplib=None, method='GET',
