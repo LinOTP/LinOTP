@@ -1,3 +1,13 @@
+linotp (2.8.0.3~rc0-1) jessie; urgency=low
+
+  Bug fixes:
+  * Server: Increment 'failCount' even if maxFailCount is reached
+  * Server: Fix TOTP tokens with empty timeshift values
+  * Server: Fix resolver usage in the policy user entry
+  * Server: Fix export of empty token list
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 18 Dec 2015 16:20:40 +0100
+
 linotp (2.8.0.2-1) jessie; urgency=low
 
   Bug fixes:
