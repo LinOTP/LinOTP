@@ -320,7 +320,6 @@ def getPolicyDefinitions(scope=""):
         pol['admin']["init%s" % ttype.upper()] = {'type': 'bool'}
 
         # TODO: action=initETNG
-        # Cornelius Kölbel        Apr 18 7: 31 PM
         #
         # Haben wir auch noch den die policy
         #
