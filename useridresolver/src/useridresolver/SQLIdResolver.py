@@ -32,7 +32,7 @@ Dependencies: UserIdResolver
 """
 
 #from sqlalchemy.event import listen
-import crypt
+
 from sqlalchemy import create_engine
 from sqlalchemy import types
 from sqlalchemy.sql import expression
@@ -47,11 +47,16 @@ from useridresolver.UserIdResolver import (UserIdResolver,
 import re
 import base64
 import hashlib
-import sys
+
 import urllib
 
 
-import linotp.lib.phppass as phppass
+import crypt
+try:
+    import bcrypt
+    _bcrypt_hashpw = bcrypt.hashpw
+except ImportError:
+    _bcrypt_hashpw = None
 
 try:
     import json
@@ -63,6 +68,32 @@ import logging
 log = logging.getLogger(__name__)
 
 DEFAULT_ENCODING = "utf-8"
+
+
+def check_php_password(password, stored_hash):
+    """
+    from phppass: check certain kinds of phppassowrds
+
+    :param password: the new, to be verified password
+    :param stored_hash: the previously used password in a hashed form
+    :return: boolean
+    """
+    result = False 
+
+    if stored_hash.startswith('$2a$'):
+        # bcrypt
+        if _bcrypt_hashpw is None:
+            raise NotImplementedError('The bcrypt module is required')
+        hashed_password = _bcrypt_hashpw(password, stored_hash)
+        result = hashed_password == stored_hash
+    elif stored_hash.startswith('_'):
+        # ext-des
+        hashed_password = crypt.crypt(password, stored_hash)
+        result = hashed_password == stored_hash
+    else:
+        log.info("Hashed password type not recognised!")
+
+    return result
 
 
 def testconnection(params):
@@ -402,8 +433,7 @@ class IdResolver (UserIdResolver):
             elif m_php:
                 # The Password field contains something like
                 # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
-                t_hasher = phppass.PasswordHash(8, False)
-                return t_hasher.check_password(password, userInfo["password"])
+                return check_php_password(password, userInfo["password"])
             else:
                 # get the crypted password and the salt from the database
                 # for doing crypt.crypt( "password", "salt" )
