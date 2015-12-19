@@ -32,8 +32,10 @@ Test the otp_pin_random policy
 from collections import deque
 from copy import deepcopy
 
-from linotp.tests import TestController
+import logging
+log = logging.getLogger(__name__)
 
+from linotp.tests import TestController
 
 class TestRandompinController(TestController):
     """
@@ -571,11 +573,17 @@ class TestRandompinController(TestController):
             cookies=cookies,
             method='POST'
             )
-        content = TestController.get_json_body(response)
+
+        session_info = "cookie %r : session %r" % (cookies, session)
+        try:
+            content = TestController.get_json_body(response)
+        except ValueError as err:
+            log.error("%r: %s", err, session_info)
+            raise Exception(err)
+
         self.assertTrue(content['result']['status'])
-        expected = {
-            "set userpin": 1
-            }
+        expected = {"set userpin": 1}
+
         self.assertDictEqual(expected, content['result']['value'])
         return
 

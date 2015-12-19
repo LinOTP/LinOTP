@@ -3057,10 +3057,9 @@ class OcraTest(TestController):
         self.assertTrue('"value": false' in response, response)
 
         response = self.check_otp(transid, otp)
-        #self.assertTrue(transid in response, response)
-        #self.assertTrue("No challenge for transaction" in response, response)
-        self.assertTrue(("validate/check_t failed: unable to "
-                "complete the rollout") in response, response)
+        # due to fix to prevent information leakeage there is no more message
+        # like "validate/check_t failed: unable to complete the rollout
+        self.assertTrue('"value": false' in response, response)
 
         # re-enroll token
         ocra.init_1(response1)
@@ -3475,21 +3474,25 @@ class OcraTest(TestController):
         (response, challenge, transid) = \
                         self.get_challenge(serial,
                                            challenge_data='Äns Zwö Drü')
-        self.assertTrue('No token found: unable to create challenge for'
-                        in response, response)
+        # due to fix to prevent information leakeage there is no more message
+        # like 'No token found: unable to create challenge for'
+        self.assertTrue('"value": false' in response, response)
 
         # test for user with two tokens
         (response, challenge, transid) = \
                     self.get_challenge(serial, user='root',
                                        challenge_data='Äns Zwö Drü')
-        self.assertTrue('More than one token found' in response, response)
+        # due to fix to prevent information leakeage there is no more message
+        # like 'More than one token found'
+        self.assertTrue('"value": false' in response, response)
 
         # now test wrong user
         (response, challenge, transid) = \
                     self.get_challenge(serial, user='rr',
                                        challenge_data='Äns Zwö Drü')
-        self.assertTrue("getUserId failed: no user >rr< found!" in response,
-                        response)
+        # due to fix to prevent information leakeage there is no more message
+        # like "getUserId failed: no user >rr< found!"
+        self.assertTrue('"value": false' in response, response)
 
         # get next challenge
         (response, challenge, transid) = \
@@ -3503,7 +3506,9 @@ class OcraTest(TestController):
 
         # correct response
         response = self.check_otp(transid, otp)
-        self.assertTrue('No challenge for transaction' in response, response)
+        # due to fix to prevent information leakeage there is no more message
+        # like 'No challenge for transaction'
+        self.assertTrue('"value": false' in response, response)
 
         self.removeTokens(serial=ocra.serial)
         self.removeTokens(serial=ocra2.serial)
