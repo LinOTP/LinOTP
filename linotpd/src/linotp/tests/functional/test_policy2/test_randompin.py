@@ -37,6 +37,8 @@ log = logging.getLogger(__name__)
 
 from linotp.tests import TestController
 
+from distutils.version import LooseVersion
+
 class TestRandompinController(TestController):
     """
     Test the otp_pin_random policy
@@ -175,6 +177,11 @@ class TestRandompinController(TestController):
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
         https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+
+        # selfservice authentication does a redirect
+        if self._version_['pylons'] <= LooseVersion('0.10'):
+            self.skipTest("Pylons lower 0.10 does not support redirect!")
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -210,6 +217,11 @@ class TestRandompinController(TestController):
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
         https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+
+        # selfservice authentication does a redirect
+        if self._version_['pylons'] <= LooseVersion('0.10'):
+            self.skipTest("Pylons lower 0.10 does not support redirect!")
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -263,6 +275,10 @@ class TestRandompinController(TestController):
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
         https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+        # selfservice authentication does a redirect
+        if self._version_['pylons'] <= LooseVersion('0.10'):
+            self.skipTest("Pylons lower 0.10 does not support redirect!")
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
