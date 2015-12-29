@@ -41,26 +41,12 @@ We assume port 5001 is used (default). If you want to use another port you can
 specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
-import logging
 import json
 
-from linotp.tests import TestController
-
-log = logging.getLogger(__name__)
-
-DEFAULT_NOSE_CONFIG = {
-    'paster': {
-        'port': '5001',
-        }
-    }
-try:
-    from testconfig import config as nose_config
-except ImportError as exc:
-    print "You need to install nose-testconfig. Will use default values."
-    nose_config = None
+from linotp.tests.functional_special import TestSpecialController
 
 
-class TestRemoteToken2(TestController):
+class TestRemoteToken2(TestSpecialController):
 
     def setUp(self):
         '''
@@ -69,12 +55,8 @@ class TestRemoteToken2(TestController):
         If the realms are deleted also the table TokenRealm gets deleted
         and we loose the information how many tokens are within a realm!
         '''
-        TestController.setUp(self)
+        TestSpecialController.setUp(self)
         self.set_config_selftest()
-        if nose_config and 'paster' in nose_config:
-            self.paster_port = nose_config['paster']['port']
-        else:
-            self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
         self.remote_url = 'http://127.0.0.1:%s' % self.paster_port
 
         '''
@@ -88,6 +70,10 @@ class TestRemoteToken2(TestController):
 
         self.create_common_resolvers()
         self.create_realms()
+        return
+
+    def tearDown(self):
+        ''' Overwrite parent tear down, which removes all realms '''
         return
 
     def create_pin_policies(self):
@@ -340,9 +326,7 @@ class TestRemoteToken2(TestController):
         self.assertTrue('"value": true' in response, response)
         return serial
 
-    def tearDown(self):
-        ''' Overwrite parent tear down, which removes all realms '''
-        return
+
 
     ### define Admins
 

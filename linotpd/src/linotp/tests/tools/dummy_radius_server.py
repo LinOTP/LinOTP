@@ -40,7 +40,8 @@ etc.
 '''
 
 from pyrad.server import Server as RadiusServer
-from pyrad.server import ServerPacketError, RemoteHost
+from pyrad.server import ServerPacketError
+from pyrad.server import RemoteHost
 from pyrad.dictionary import Dictionary
 
 import pyrad.packet as packet
@@ -57,9 +58,10 @@ from getopt import getopt, GetoptError
 myIP = socket.gethostbyname(socket.gethostname())
 
 state_id = "11321312313213132"
-users = { 'user_with_pin' : 'test123456',
-          'user_no_pin'   : '654321',
-          }
+users = {'user_with_pin': 'test123456',
+         'user_no_pin': '654321',
+         }
+
 
 def checkUser(username, password, state):
     """
@@ -85,6 +87,7 @@ def checkUser(username, password, state):
             auth = False
 
     return auth
+
 
 class myRadiusServer(RadiusServer):
 
@@ -205,10 +208,10 @@ def main():
             print "Unknown option %s" % opt
 
     params = {
-                "addresses":["127.0.0.1", myIP],
+                "addresses": ["127.0.0.1", myIP],
                 "authport": authport,
                 "acctport": acctport,
-                "hosts":{myIP:client1, "127.0.0.1":client2},
+                "hosts": {myIP: client1, "127.0.0.1": client2},
                 }
 
     if os.path.isfile(r_dict) == False:
@@ -220,7 +223,6 @@ def main():
 
     print "[ starting dummy radius server ]"
     serv = myRadiusServer(**params)
-
 
     return serv.Run()
 

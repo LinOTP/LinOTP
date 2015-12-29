@@ -37,46 +37,22 @@ We assume port 5001 is used (default). If you want to use another port you can
 specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
-import os
+
 import binascii
-
-import urllib
-import httplib2
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
-from linotp.tests import TestController, url
-
-from linotp.lib.HMAC import HmacOtp
 from mock import patch
 import smtplib
 import re
 import time
-
-import smsprovider
-import smsprovider.HttpSMSProvider
-import smsprovider.SmtpSMSProvider
-
+import json
 import logging
-log = logging.getLogger(__name__)
 
-DEFAULT_NOSE_CONFIG = {
-    'radius': {
-        'authport': '18012',
-        'acctport': '18013',
-        },
-    'paster': {
-        'port': '5001',
-        }
-    }
-try:
-    from testconfig import config as nose_config
-except ImportError as exc:
-    print "You need to install nose-testconfig. Will use default values."
-    nose_config = None
+from linotp.tests.functional_special import TestSpecialController
+from linotp.tests import url
+
+from linotp.lib.HMAC import HmacOtp
+import smsprovider.HttpSMSProvider
+
+log = logging.getLogger(__name__)
 
 
 def email_otp_func(call_args):
@@ -89,14 +65,15 @@ def email_otp_func(call_args):
     otp = None
     try:
         ordered_args = call_args[0]
-        email_from = ordered_args[0]
-        email_to = ordered_args[1]
+        _email_from = ordered_args[0]
+        _email_to = ordered_args[1]
         message = ordered_args[2]
         matches = re.search('\d{6}', message)
         otp = matches.group(0)
     except Exception as exx:
-        pass
+        log.error('email_otp failed: %r' % exx)
     return otp
+
 
 def sms_otp_func(call_args):
     '''
@@ -108,10 +85,10 @@ def sms_otp_func(call_args):
     otp = None
     try:
         ordered_args = call_args[0]
-        phone = ordered_args[0]
+        _phone = ordered_args[0]
         otp = ordered_args[1]
     except Exception as exx:
-        pass
+        log.error('sms_otp failed: %r' % exx)
     return otp
 
 
@@ -139,6 +116,7 @@ def get_otp(counter=0, otpkey=None, mock_obj=None, otp_func=None, typ='hmac'):
 
     return otp
 
+
 def calcOTP(key, counter=0, digits=6, typ=None):
     '''
     as we have to use this method in a not class related function
@@ -152,7 +130,7 @@ def calcOTP(key, counter=0, digits=6, typ=None):
     '''
     htoken = HmacOtp(digits=digits)
     if typ == 'totp':
-        log.warn("waiting for next time slot")
+        log.debug("waiting for next time slot")
         timestep = 30
         time.sleep(timestep + 1)
         counter = int((time.time() / timestep) + 0.5)
@@ -162,35 +140,27 @@ def calcOTP(key, counter=0, digits=6, typ=None):
     return otp
 
 
-def do_http(remoteServer, params=None):
+class TestChallengeResponseController(TestSpecialController):
 
-        if params is None:
-            params = {}
+    radius_proc = None
 
-        data = urllib.urlencode(params)
-        request_url = "%s" % (remoteServer)
+    @classmethod
+    def setup_class(cls):
+        cls.radius_process = cls.start_radius_server(cls.radius_authport,
+                                                     cls.radius_acctport)
+        TestSpecialController.setup_class()
 
-        # prepare the submit and receive headers
-        headers = {"Content-type": "application/x-www-form-urlencoded",
-                    "Accept": "text/plain"}
-        if 'session' in params:
-            headers['Cookie'] = "admin_session=%s" % params['session']
-
-        # submit the request
-        http = httplib2.Http()
-        (resp, content) = http.request(request_url,
-                                        method="POST",
-                                        body=data,
-                                        headers=headers)
-        return content
-
-class TestChallengeResponseController(TestController):
+    @classmethod
+    def teardown_class(cls):
+        if cls.radius_proc:
+            cls.stop_radius_server(cls.radius_proc)
+        TestSpecialController.teardown_class()
 
     def setUp(self):
         '''
         This sets up all the resolvers and realms
         '''
-        TestController.setUp(self)
+        TestSpecialController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -206,42 +176,23 @@ class TestChallengeResponseController(TestController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        if nose_config and 'radius' in nose_config:
-            self.radius_authport = nose_config['radius']['authport']
-            self.radius_acctport = nose_config['radius']['acctport']
-        else:
-            self.radius_authport = DEFAULT_NOSE_CONFIG['radius']['authport']
-            self.radius_acctport = DEFAULT_NOSE_CONFIG['radius']['acctport']
-
-        if nose_config and 'paster' in nose_config:
-            self.paster_port = nose_config['paster']['port']
-        else:
-            self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
-
+        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
+        self.sms_url = ("http://localhost:%s/testing/http2sms" %
+                        self.paster_port)
+        self.radius_url = 'localhost:%s' % self.radius_authport,
         return
 
     def tearDown(self):
+
         if self.patch_smtp is not None:
             self.patch_smtp.stop()
         if self.patch_sms is not None:
             self.patch_sms.stop()
+
+        self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        TestController.tearDown(self)
-
-    def delete_all_policies(self):
-        '''
-        '''
-        response = self.make_system_request(action='getPolicy')
-        self.assertTrue('"status": true' in response, response)
-
-        body = json.loads(response.body)
-        policies = body.get('result', {}).get('value', {}).keys()
-
-        for policy in policies:
-            self.delete_policy(policy)
-
-        return
+        TestSpecialController.tearDown(self)
 
     def calcOTP(self, key, counter=0, digits=6, typ='hmac'):
         otp = calcOTP(key, counter=counter, digits=digits, typ=typ)
@@ -290,30 +241,31 @@ class TestChallengeResponseController(TestController):
             'active': active,
             'session': self.session,
             }
+        cookies = {"admin_session": self.session}
 
         r_url = url(controller='system', action='setPolicy')
 
         if remoteurl is not None:
             r_url = "%s/%s" % (remoteurl, "system/setPolicy")
-            response = do_http(r_url, params=params)
+            response = self.do_http_request(r_url,
+                                            params=params,
+                                            cookies=cookies)
         else:
-            response = self.app.get(r_url, params=params)
-
-
+            response = self.make_system_request("setPolicy", params=params)
 
         self.assertTrue('"status": true' in response, response)
-
 
         r_url = url(controller='system', action='getPolicy')
 
         if remoteurl is not None:
             r_url = "%s/%s" % (remoteurl, "system/getPolicy")
-            response = do_http(r_url, params=params)
+            response = self.do_http_request(r_url,
+                                            params=params,
+                                            cookies=cookies)
         else:
-            response = self.app.get(r_url, params=params)
+            response = self.make_system_request("getPolicy", params=params)
 
         self.assertTrue('"status": true' in response, response)
-
 
         self.policies.append(name)
         return response
@@ -327,62 +279,68 @@ class TestChallengeResponseController(TestController):
             'selftest_admin': 'superadmin',
             'session': self.session,
             }
+        cookies = {"admin_session": self.session}
 
         r_url = "%s/%s" % (url, "system/delPolicy")
-        response = do_http(r_url, params=params)
+        response = self.do_http_request(r_url,
+                                        params=params,
+                                        cookies=cookies)
+        return response
 
     def setup_remote_token(self,
                            typ="pw",
                            otpkey="123456",
                            remoteurl=None):
         if remoteurl is None:
-            remoteurl = "http://127.0.0.1:%s" % self.paster_port
+            remoteurl = self.remote_url
         # local token
         serials = []
         params_list = [
                   # the token set with remote pin checking
                   {
-                        "serial"  : "LSRE001",
-                        "type"    : "remote",
-                        "otpkey"  : otpkey,
-                        "otppin"  : "",
-                        "user"    : "remoteuser",
-                        "pin"     : "lpin",
-                        "description" : "RemoteToken1",
-                        'remote.server' : remoteurl,
-                        'remote.local_checkpin' : 0,
-                        'remote.serial' : 'LSPW1',
+                        "serial": "LSRE001",
+                        "type": "remote",
+                        "otpkey": otpkey,
+                        "otppin": "",
+                        "user": "remoteuser",
+                        "pin": "lpin",
+                        "description": "RemoteToken1",
+                        'remote.server': remoteurl,
+                        'remote.local_checkpin': 0,
+                        'remote.serial': 'LSPW1',
                         'session': self.session,
                       },
-                  { # the target is accessed via serial, so no user is required
-                        "serial"  : "LSPW1",
-                        "type"    : typ,
-                        "otpkey"  : otpkey,
-                        "otppin"  : "",
-                        "user"    : "",
-                        "pin"     : "rpin",
+                  # target is accessed via serial, so no user is required
+                  {
+                        "serial": "LSPW1",
+                        "type": typ,
+                        "otpkey": otpkey,
+                        "otppin": "",
+                        "user": "",
+                        "pin": "rpin",
                         'session': self.session,
                   },
                   # the token set with local pin checking
                   {
-                        "serial"  : "LSRE002",
-                        "type"    : "remote",
-                        "otpkey"  : otpkey,
-                        "user"    : "localuser",
-                        "pin"     : "lpin",
-                        "description" : "RemoteToken2",
-                        'remote.server' : remoteurl,
-                        'remote.local_checkpin' : 1,
-                        'remote.serial' : 'LSPW2',
+                        "serial": "LSRE002",
+                        "type": "remote",
+                        "otpkey": otpkey,
+                        "user": "localuser",
+                        "pin": "lpin",
+                        "description": "RemoteToken2",
+                        'remote.server': remoteurl,
+                        'remote.local_checkpin': 1,
+                        'remote.serial': 'LSPW2',
                         'session': self.session,
                         },
-                  { # the target is accessed via serial, so no user is required
-                        "serial"  : "LSPW2",
-                        "type"    : typ,
-                        "otpkey"  : otpkey,
-                        "otppin"  : "",
-                        "user"    : "",
-                        "pin"     : "",
+                  # the target is accessed via serial, so no user is required
+                  {
+                        "serial": "LSPW2",
+                        "type": typ,
+                        "otpkey": otpkey,
+                        "otppin": "",
+                        "user": "",
+                        "pin": "",
                         'session': self.session,
                          },
                   ]
@@ -403,11 +361,12 @@ class TestChallengeResponseController(TestController):
             'enableReplication': 'true',
             'session': self.session,
             }
-        resp = do_http(
-            "%s/system/setConfig" % remoteurl,
-            params=params,
-            )
-        assert('"setConfig enableReplication:true": true' in resp)
+        cookies = {"admin_session": self.session}
+        response = self.do_http_request("%s/system/setConfig" % remoteurl,
+                                        params=params,
+                                        cookies=cookies)
+        self.assertTrue('"setConfig enableReplication:true": true' in response,
+                        response)
 
         return serials
 
@@ -417,33 +376,33 @@ class TestChallengeResponseController(TestController):
 
         # The token with the remote PIN
         params_list = [{
-                      "serial"  : "radius1",
-                      "type"    : "radius",
-                      "otpkey"  : "1234567890123456",
-                      "otppin"  : "",
-                      "user"    : "remoteuser",
-                      "pin"     : "",
-                      "description" : "RadiusToken1",
-                      'radius.server' : 'localhost:%s' % self.radius_authport,
-                      'radius.local_checkpin' : 0,
-                      'radius.user' : 'challenge',
-                      'radius.secret' : 'testing123',
+                      "serial": "radius1",
+                      "type": "radius",
+                      "otpkey": "1234567890123456",
+                      "otppin": "",
+                      "user": "remoteuser",
+                      "pin": "",
+                      "description": "RadiusToken1",
+                      'radius.server': self.radius_url,
+                      'radius.local_checkpin': 0,
+                      'radius.user': 'challenge',
+                      'radius.secret': 'testing123',
                       'session': self.session,
                       },
 
                     # the token with the local PIN
                     {
-                      "serial"  : "radius2",
-                      "type"    : "radius",
-                      "otpkey"  : "1234567890123456",
-                      "otppin"  : "local",
-                      "user"    : "localuser",
-                      "pin"     : "local",
-                      "description" : "RadiusToken2",
-                      'radius.server' : 'localhost:%s' % self.radius_authport,
-                      'radius.local_checkpin' : 1,
-                      'radius.user' : 'user_no_pin',
-                      'radius.secret' : 'testing123',
+                      "serial": "radius2",
+                      "type": "radius",
+                      "otpkey": "1234567890123456",
+                      "otppin": "local",
+                      "user": "localuser",
+                      "pin": "local",
+                      "description": "RadiusToken2",
+                      'radius.server': self.radius_url,
+                      'radius.local_checkpin': 1,
+                      'radius.user': 'user_no_pin',
+                      'radius.secret': 'testing123',
                       'session': self.session,
                       },
                      ]
@@ -453,54 +412,6 @@ class TestChallengeResponseController(TestController):
             serials.append(params.get("serial"))
 
         return serials
-
-    def _start_radius_server(self):
-        """
-        Start the dummy radius server
-
-        We need to start the radius server for every test, since every test instatiates a new TestClass and thus the
-        radius server process will not be accessable outside of a test anymore
-        """
-        import subprocess
-        try:
-            radius_server_file = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                '..',
-                'tools',
-                'dummy_radius_server.py',
-                )
-            dictionary_file = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                '..',
-                '..',
-                '..',
-                'config',
-                'dictionary',
-                )
-            self.p = subprocess.Popen(
-                [
-                    radius_server_file,
-                    "--dict",
-                    dictionary_file,
-                    "--authport",
-                    self.radius_authport,
-                    "--acctport",
-                    self.radius_acctport,
-                    ]
-                )
-        except Exception as exx:
-            raise exx
-        assert self.p is not None
-
-    def _stop_radius_server(self):
-        '''
-        stopping the dummy radius server
-        '''
-        if self.p:
-            r = self.p.kill()
-            log.debug(r)
-
-        return
 
     def test_03_hmac_regression(self):
         '''
@@ -521,7 +432,6 @@ class TestChallengeResponseController(TestController):
                                                             params=params)
         self.assertTrue('"value": true' in response, response)
         self.delete_token(serial)
-
 
         # with otppin==1 the pin should be the same
         self.setPinPolicy(realm='myDefRealm', action='otppin=1, ')
@@ -551,8 +461,6 @@ class TestChallengeResponseController(TestController):
         params = {"user": "passthru_user1", "pass": "123456"}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
-        if '"value": true' not in response:
-            log.error(response)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('transactionid"' not in response, response)
 
@@ -563,8 +471,6 @@ class TestChallengeResponseController(TestController):
         params = {"user": "passthru_user1", "pass": "123456"}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
-        if '"value": true' not in response:
-            log.error(response)
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('transactionid"' not in response, response)
 
@@ -572,7 +478,6 @@ class TestChallengeResponseController(TestController):
         self.delete_policy(name="ch_resp")
 
         return
-
 
     def test_02_spass_regression(self):
         '''
@@ -589,7 +494,6 @@ class TestChallengeResponseController(TestController):
                                                             params=params)
         self.assertTrue('"value": true' in response, response)
         self.delete_token(serial)
-
 
         # with otppin==1 the pin should be the same
         self.setPinPolicy(realm='myDefRealm')
@@ -617,7 +521,7 @@ class TestChallengeResponseController(TestController):
 
         return
 
-    def test_09_remote_regression(self):
+    def test_00000_09_remote_regression(self):
         '''
         Challenge Response Test: regression remoteToken can splits passw localy or remote
         '''
@@ -628,6 +532,8 @@ class TestChallengeResponseController(TestController):
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
 
+        self.assertTrue('"value": true' in response, response)
+
         params = {"user": "localuser", "pass": "lpin123456"}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
@@ -637,7 +543,6 @@ class TestChallengeResponseController(TestController):
         for serial in serials:
             self.delete_token(serial)
         return
-
 
     def test_11_hmac_challenge_otppin1(self):
         '''
@@ -651,7 +556,6 @@ class TestChallengeResponseController(TestController):
         self.setPinPolicy(realm='myDefRealm', action='otppin=1, ')
 
         serial = self.createToken(pin="otppin", user='passthru_user1')
-
 
         otp = self.calcOTP(otpkey, counter=counter)
         params = {"user": "passthru_user1", "pass": "geheim1" + otp}
@@ -718,7 +622,6 @@ class TestChallengeResponseController(TestController):
                                                             params=params)
         self.assertTrue('"value": true' in response, response)
 
-
         # submit a pin only request - to trigger a challenge
         params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate', action='check'),
@@ -730,7 +633,6 @@ class TestChallengeResponseController(TestController):
         # and a reply message message
         body = json.loads(response.body)
         state = body.get('detail').get('transactionid')
-
 
         # submit a pin + otp challenge response
         counter = counter + 1
@@ -767,7 +669,6 @@ class TestChallengeResponseController(TestController):
         body = json.loads(response.body)
         state = body.get('detail').get('transactionid')
 
-
         # submit a pin + otp challenge response
         counter = counter + 1
         otp = self.calcOTP(otpkey, counter=counter)
@@ -776,8 +677,6 @@ class TestChallengeResponseController(TestController):
         response = self.app.get(url(controller='validate', action='check'),
                                                             params=params)
         self.assertTrue('"value": true' in response, response)
-
-
 
         self.delete_token(serial)
 
@@ -798,10 +697,10 @@ class TestChallengeResponseController(TestController):
         self.setPinPolicy(name="ch_resp", realm='myDefRealm',
                                        action='challenge_response=hmac topt,')
 
-        serial = self.createToken(serial="H1", pin="h1", otpkey=otpkey,
+        self.createToken(serial="H1", pin="h1", otpkey=otpkey,
                                   user='passthru_user1', typ='hmac')
 
-        serial = self.createToken(serial="H2", pin="h2", otpkey=otpkey,
+        self.createToken(serial="H2", pin="h2", otpkey=otpkey,
                                   user='passthru_user1', typ='hmac')
 
         # submit a pin only request - to trigger a challenge
@@ -813,7 +712,6 @@ class TestChallengeResponseController(TestController):
 
             self.assertTrue('"value": false' in response, response)
             self.assertTrue('"transactionid":' in response, response)
-
 
             # submit a pin only request - to trigger a challenge
             params = {"user": "passthru_user1", "pass": "h2"}
@@ -840,7 +738,8 @@ class TestChallengeResponseController(TestController):
         response = self.make_admin_request(action='checkstatus', params=params)
         self.assertTrue(state2 in response, response)
 
-        # now check if the challenge could be identified by the last transaction
+        # now check if the challenge could be identified
+        # by the last transaction
         otp = self.calcOTP(otpkey, counter=counter - 1)
         params = {"user": "passthru_user1", "pass": otp}
         params['transactionid'] = state2
@@ -858,7 +757,7 @@ class TestChallengeResponseController(TestController):
 
         # reusage of the challenge should not work
         otp = self.calcOTP(otpkey, counter=counter)
-        params = {"user": "passthru_user1", "pass": otp, 'state':state2}
+        params = {"user": "passthru_user1", "pass": otp, 'state': state2}
         params['transactionid'] = state2
         response = self.app.get(url(controller='validate', action='check'),
                                                             params=params)
@@ -867,7 +766,7 @@ class TestChallengeResponseController(TestController):
 
         # but the challenge for the other token should still be valid
         otp = self.calcOTP(otpkey, counter=counter)
-        params = {"user": "passthru_user1", "pass": otp, 'state':state1}
+        params = {"user": "passthru_user1", "pass": otp, 'state': state1}
         params['transactionid'] = state1
         response = self.app.get(url(controller='validate', action='check'),
                                                             params=params)
@@ -885,13 +784,11 @@ class TestChallengeResponseController(TestController):
         self.assertTrue(state2 not in response, response)
         self.assertTrue(state1 not in response, response)
 
-
         self.delete_token("H1")
         self.delete_token("H2")
 
         self.delete_policy(name="ch_resp")
         return
-
 
     def test_12_sms_otppin(self):
         '''
@@ -903,14 +800,13 @@ class TestChallengeResponseController(TestController):
             'session': self.session,
             }
         _response = self.make_system_request(action='setConfig', params=params)
-        sms_conf = {"URL": "http://localhost:%s/testing/http2sms" %
-                        self.paster_port,
+        sms_conf = {"URL": self.sms_url,
                     "PARAMETER": {"account": "clickatel",
                                    "username": "legit"},
                     "SMS_TEXT_KEY": "text",
                     "SMS_PHONENUMBER_KEY": "destination",
-                    "HTTP_Method" : "GET",
-                    "RETURN_SUCCESS" : "ID"
+                    "HTTP_Method": "GET",
+                    "RETURN_SUCCESS": "ID"
                     }
 
         params = {
@@ -920,7 +816,6 @@ class TestChallengeResponseController(TestController):
             }
 
         response = self.make_system_request(action='setConfig', params=params)
-        log.error(response)
         self.assertTrue('"status": true' in response, response)
 
         # Patch (replace) smsprovider.HttpSMSProvider.HttpSMSProvider class
@@ -957,7 +852,6 @@ class TestChallengeResponseController(TestController):
         # now test same with otppin policy
         self.setPinPolicy(realm='myDefRealm', action='otppin=1, ')
 
-
         # submit a pin only request - to trigger a challenge
         params = {"user": "passthru_user1", "pass": "geheim1"}
         response = self.app.get(url(controller='validate', action='check'),
@@ -992,8 +886,7 @@ class TestChallengeResponseController(TestController):
             'session': self.session,
             }
         _response = self.make_system_request(action='setConfig', params=params)
-        sms_conf = {"URL": "http://localhost:%s/testing/http2sms" %
-                        self.paster_port,
+        sms_conf = {"URL": self.sms_url,
                     "PARAMETER": {"account": "clickatel",
                                  "username": "legit"},
                            "SMS_TEXT_KEY": "text",
@@ -1009,7 +902,6 @@ class TestChallengeResponseController(TestController):
             }
 
         response = self.make_system_request(action='setConfig', params=params)
-        log.error(response)
         self.assertTrue('"status": true' in response, response)
 
         # Patch (replace) smsprovider.HttpSMSProvider.HttpSMSProvider class
@@ -1094,7 +986,7 @@ class TestChallengeResponseController(TestController):
         counter = 0
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         user = "remoteuser"
-        remoteurl = "http://127.0.0.1:%s" % self.paster_port
+        remoteurl = self.remote_url
 
         # setup the remote token pairs
         serials = self.setup_remote_token(typ="hmac", otpkey=otpkey,
@@ -1133,7 +1025,7 @@ class TestChallengeResponseController(TestController):
 
         # 1.2 check the challenge
         otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
-        params = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state": state}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
         # hey, if this ok, we are done for the remote pin check
@@ -1154,7 +1046,7 @@ class TestChallengeResponseController(TestController):
         counter = 0
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         user = "localuser"
-        remoteurl = "http://127.0.0.1:%s" % self.paster_port
+        remoteurl = self.remote_url
 
         # setup the remote token pairs
         serials = self.setup_remote_token(typ="hmac",
@@ -1220,8 +1112,6 @@ class TestChallengeResponseController(TestController):
         Challenge Response Test: radius token with remote PIN
         """
         serials = self.setup_radius_token()
-
-        self._start_radius_server()
         user = "remoteuser"
         otp = "test123456"
 
@@ -1242,13 +1132,12 @@ class TestChallengeResponseController(TestController):
         self.assertTrue(state != '', response)
 
         # 1.2 check the challenge
-        params = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state": state}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
+
         # hey, if this ok, we are done for the remote pin check
         self.assertTrue('"value": true' in response, response)
-
-        self._stop_radius_server()
 
         for serial in serials:
             self.delete_token(serial)
@@ -1260,7 +1149,6 @@ class TestChallengeResponseController(TestController):
         Challenge Response Test: radius token with local PIN
         """
         serials = self.setup_radius_token()
-        self._start_radius_server()
 
         user = "localuser"
         otp = "654321"
@@ -1282,13 +1170,11 @@ class TestChallengeResponseController(TestController):
         self.assertTrue(state != '', response)
 
         # 1.2 check the challenge
-        params = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state": state}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
         # hey, if this ok, we are done for the remote pin check
         self.assertTrue('"value": true' in response, response)
-
-        self._stop_radius_server()
 
         for serial in serials:
             self.delete_token(serial)
@@ -1315,7 +1201,6 @@ class TestChallengeResponseController(TestController):
 
         :return: the last otpcount to continue authentication
         """
-
 
         if typ not in  ['email', 'sms']:
             # 1 std auth with user with pin+otp
@@ -1356,7 +1241,7 @@ class TestChallengeResponseController(TestController):
         # 3.2 response
         counter = counter + 1
         otp = get_otp(counter, otpkey, mock_obj, otp_func, typ=typ)
-        params = {"user": user, "pass": otp, "state" : state}
+        params = {"user": user, "pass": otp, "state": state}
         response = self.app.get(url(controller='validate', action='check'),
                                                             params=params)
 
@@ -1417,7 +1302,6 @@ class TestChallengeResponseController(TestController):
 
         return
 
-
     def test_51_sms_auth(self):
         '''
         Challenge Response Test: sms token challenge with otppin=1 + otppin=2
@@ -1430,8 +1314,7 @@ class TestChallengeResponseController(TestController):
             }
         _response = self.make_system_request(action='setConfig', params=params)
 
-        sms_conf = {"URL": "http://localhost:%s/testing/http2sms" %
-                    self.paster_port,
+        sms_conf = {"URL": self.sms_url,
                     "PARAMETER": {"account": "clickatel",
                                   "username": "legit"},
                     "SMS_TEXT_KEY": "text",
@@ -1447,7 +1330,6 @@ class TestChallengeResponseController(TestController):
             }
 
         response = self.make_system_request(action='setConfig', params=params)
-        log.error(response)
         self.assertTrue('"status": true' in response, response)
 
         counter = 0
@@ -1504,7 +1386,6 @@ class TestChallengeResponseController(TestController):
 
         return
 
-
     def test_52_email_auth(self):
         """
         Challenge Response Test: email token challenge with otppin=1 + otppin=2
@@ -1523,7 +1404,8 @@ class TestChallengeResponseController(TestController):
         response = self.make_system_request(action='setConfig', params=params)
         self.assertTrue('"status": true' in response, response)
 
-        # Patch (replace) smtplib.SMTP class to prevent e-mails from being sent out
+        # Patch (replace) smtplib.SMTP class to prevent e-mails
+        # from being sent out
         self.patch_smtp = patch('smtplib.SMTP', spec=smtplib.SMTP)
         mock_smtp_class = self.patch_smtp.start()
         mock_smtp_instance = mock_smtp_class.return_value
@@ -1532,7 +1414,6 @@ class TestChallengeResponseController(TestController):
 
         # Enroll token
         pin = "shortpin"
-        description = "E-mail token enrolled in functional tests",
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
 
         serial = self.createToken(pin=pin,
@@ -1580,6 +1461,7 @@ class TestChallengeResponseController(TestController):
                                             otp_func=email_otp_func
                                             )
 
+        self.delete_token(serial)
         return
 
     def test_54_totp_auth(self):
@@ -1671,7 +1553,7 @@ class TestChallengeResponseController(TestController):
         counter2 = counter2 + 1
         otp = get_otp(counter2, otpkey2, None, None, typ)
         # submit a pin only request - to trigger a challenge
-        params = {"user": "passthru_user1", "pass": otp, "state":state}
+        params = {"user": "passthru_user1", "pass": otp, "state": state}
         response = self.app.get(url(controller='validate', action='check'),
                                                             params=params)
 
@@ -1694,7 +1576,7 @@ class TestChallengeResponseController(TestController):
         otp = get_otp(counter1, otpkey1, None, None, typ)
         # submit a pin only request - to trigger a challenge
         params = {"user": "passthru_user1@myMixRealm",
-                                                "pass": otp, "state":state}
+                                                "pass": otp, "state": state}
         response = self.app.get(url(controller='validate', action='check'),
                                                             params=params)
 
@@ -1717,13 +1599,13 @@ class TestChallengeResponseController(TestController):
         otp = get_otp(counter2, otpkey2, None, None, typ)
         # submit a pin only request - to trigger a challenge
         params = {"user": "passthru_user1@myDefRealm",
-                                                "pass": otp, "state":state}
+                                                "pass": otp, "state": state}
         response = self.app.get(url(controller='validate', action='check'),
                                                             params=params)
 
         self.assertTrue('"value": true' in response, response)
 
-        counter2 = self.do_auth("shortpin", counter2 + 1 , otpkey=otpkey2,
+        counter2 = self.do_auth("shortpin", counter2 + 1, otpkey=otpkey2,
                                 user="passthru_user1@myDefRealm")
 
         # with otppin==1 the pin should be the same as the password
@@ -1742,7 +1624,7 @@ class TestChallengeResponseController(TestController):
 
         self.delete_policy('otpPin')
 
-        counter1 = self.do_auth("shortpin", counter1 + 1 , otpkey=otpkey1,
+        counter1 = self.do_auth("shortpin", counter1 + 1, otpkey=otpkey1,
                                 user="passthru_user1@myMixRealm")
 
         # with otppin==1 the pin should be the same as the password
@@ -1761,7 +1643,7 @@ class TestChallengeResponseController(TestController):
 
         self.delete_policy('otpPin')
 
-        counter2 = self.do_auth("shortpin", counter2 + 1 , otpkey=otpkey2,
+        counter2 = self.do_auth("shortpin", counter2 + 1, otpkey=otpkey2,
                                 user="passthru_user1")
 
         # with otppin==1 the pin should be the same as the password
@@ -1778,6 +1660,8 @@ class TestChallengeResponseController(TestController):
         counter2 = self.do_auth("", counter2 + 1, otpkey=otpkey2,
                                user="passthru_user1")
 
+        self.delete_token(serial1)
+        self.delete_token(serial2)
 
         return
 
@@ -1850,6 +1734,9 @@ class TestChallengeResponseController(TestController):
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"transactionid":' in response, response)
 
+        self.delete_token(serial1)
+        self.delete_token(serial2)
+
         return
 
     def test_62_email_active_inactive_tokens(self):
@@ -1884,7 +1771,7 @@ class TestChallengeResponseController(TestController):
         otpkey2 = "38AD8EABE235FC57C815B26CEF3709075580B447"
 
         # create two email tokens
-        _serial1 = self.createToken(serial='one',
+        serial1 = self.createToken(serial='one',
                                     pin="shortpin",
                                     typ=typ,
                                     email_address='paul@example.com',
@@ -1963,6 +1850,9 @@ class TestChallengeResponseController(TestController):
                                mock_obj=mock_obj, otp_func=email_otp_func,
                                user="passthru_user1")
 
+        self.delete_token(serial1)
+        self.delete_token(serial2)
+
         return
 
     def test_63_sms_config_error(self):
@@ -1992,14 +1882,12 @@ class TestChallengeResponseController(TestController):
             }
 
         response = self.make_system_request(action='setConfig', params=params)
-        log.error(response)
         self.assertTrue('"status": true' in response, response)
 
-        counter = 0
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
 
         serial = self.createToken(pin="shortpin", typ=typ, phone="123456",
-                                        otpkey=otpkey, user='passthru_user1')
+                                  otpkey=otpkey, user='passthru_user1')
 
         # as the config contains an error, the result message should contain
         # a error message and not the otppin
@@ -2010,6 +1898,7 @@ class TestChallengeResponseController(TestController):
 
         self.assertTrue('SMS could not be sent' in response, response)
 
+        self.delete_token(serial)
         return
 
     def test_72_exception_in_challenge(self):
@@ -2062,10 +1951,9 @@ class TestChallengeResponseController(TestController):
         self.assertTrue(':-(' in response, response)
 
         # finally check, if there is no open challenge left
-        params = {
-            "serial": serial1,
-            'session': self.session,
-            }
+        params = {"serial": serial1,
+                  "session": self.session,
+                  }
 
         response = self.make_admin_request(action='checkstatus', params=params)
 
@@ -2089,13 +1977,13 @@ class TestChallengeResponseController(TestController):
         otpkey2 = "AD8EABE235FC57C815B26CEF3709075580B44739"
 
         self.setPinPolicy(name="ch_resp", realm='myDefRealm',
-                                       action='challenge_response=hmac topt,')
+                          action='challenge_response=hmac topt,')
 
-        serial = self.createToken(serial="H1", pin="pin", otpkey=otpkey,
-                                  user='passthru_user1', typ='hmac')
+        self.createToken(serial="H1", pin="pin", otpkey=otpkey,
+                         user='passthru_user1', typ='hmac')
 
-        serial = self.createToken(serial="H2", pin="pin", otpkey=otpkey2,
-                                  user='passthru_user1', typ='hmac')
+        self.createToken(serial="H2", pin="pin", otpkey=otpkey2,
+                         user='passthru_user1', typ='hmac')
 
         # submit a pin only request - to trigger a challenge
         transactions = []
@@ -2125,7 +2013,7 @@ class TestChallengeResponseController(TestController):
 
         # check if the admin checkstatus api supports finding of challenges
         # by top transactionid
-        for (t, s1, s2, o1, o2) in transactions:
+        for (t, s1, s2, _o1, _o2) in transactions:
 
             params = {"transactionid": t, 'session': self.session}
             response = self.make_admin_request(action='checkstatus',

@@ -38,7 +38,7 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 
-from linotp.tests import TestController
+from linotp.tests.functional_special import TestSpecialController
 from linotp.tests import url
 from linotp.lib.util import str2unicode
 
@@ -51,19 +51,8 @@ except ImportError:
 import logging
 log = logging.getLogger(__name__)
 
-DEFAULT_NOSE_CONFIG = {
-    'paster': {
-        'port': '5001',
-        }
-    }
-try:
-    from testconfig import config as nose_config
-except ImportError as exc:
-    print "You need to install nose-testconfig. Will use default values."
-    nose_config = None
 
-
-class TestHttpSmsController(TestController):
+class TestHttpSmsController(TestSpecialController):
     '''
     Here the HTTP SMS Gateway functionality is tested.
     '''
@@ -78,31 +67,27 @@ class TestHttpSmsController(TestController):
             serial = "sms%02d" % num
             self.serials.append(serial)
 
-        TestController.setUp(self)
+        TestSpecialController.setUp(self)
         self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
         self.removeTokens()
         self.initTokens()
         self.initProvider()
-        if nose_config and 'paster' in nose_config:
-            self.paster_port = nose_config['paster']['port']
-        else:
-            self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
+
+        self.sms_url = ("http://localhost:%s/testing/http2sms" %
+                        self.paster_port)
 
     def tearDown(self):
         self.delete_all_realms()
         self.delete_all_resolvers()
-        TestController.tearDown(self)
-
+        TestSpecialController.tearDown(self)
 
 ###############################################################################
     def removeTokens(self):
         for serial in self.serials:
             parameters = {'serial': serial}
-            response = self.app.get(url(controller='admin', action='remove'),
-                                    params=parameters)
-            #log.error(response)
+            response = self.make_admin_request('remove', params=parameters)
             self.assertTrue('"status": true' in response, response)
 
     def initTokens(self):
@@ -120,8 +105,7 @@ class TestHttpSmsController(TestController):
                       'phone': '016012345678',
                       'selftest_admin': 'superadmin'
                       }
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -135,23 +119,21 @@ class TestHttpSmsController(TestController):
                       'phone': '016022222222',
                       'selftest_admin': 'superadmin'
                       }
-        response = self.app.get(url(controller='admin', action='init'),
-                                                             params=parameters)
+        response = self.make_admin_request('init', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
         for serial in self.serials[2:self.max]:
             parameters = {'serial': serial,
-                          'otpkey': '1234567890123456789012345678901234567890' +
-                                      '123456789012345678901234',
+                          'otpkey': ('1234567890123456789012345678901234567890'
+                                     '123456789012345678901234'),
                           'realm': 'myDefRealm',
                           'type': 'sms',
                           'pin': '',
                           'phone': '+49 01602/2222-222',
                           'selftest_admin': 'superadmin'
                           }
-            response = self.app.get(url(controller='admin', action='init'),
-                                                                 params=parameters)
+            response = self.make_admin_request('init', params=parameters)
 
             self.assertTrue('"status": true' in response, response)
 
@@ -162,11 +144,10 @@ class TestHttpSmsController(TestController):
         Initialize the HttpSMSProvider
         '''
         parameters = {
-                'SMSProvider' : 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-                'selftest_admin' : 'superadmin'
+                'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+                'selftest_admin': 'superadmin'
                    }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                             params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -175,10 +156,13 @@ class TestHttpSmsController(TestController):
         Checks the last audit entry
         '''
         # audit/search?sortorder=desc&rp=1
+        params = {'sortorder': 'desc',
+                  'rp': num,
+                  'page': page,
+                  'selftest_admin': 'superadmin'
+                 }
         response = self.app.get(url(controller="audit", action="search"),
-                                params={ 'sortorder':'desc',
-                                         'rp':num, 'page':page,
-                                         'selftest_admin':'superadmin'})
+                                params=params)
         return response
 
     def test_missing_param(self):
@@ -186,37 +170,32 @@ class TestHttpSmsController(TestController):
         Missing parameter at the SMS Gateway config. send SMS will fail
         '''
         sms_conf = {
-                "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
-                "PARAMETER" :
-                    {"account" : "clickatel", "username" : "legit"},
-                "SMS_TEXT_KEY":"text",
-                "SMS_PHONENUMBER_KEY":"to",
-                "HTTP_Method" : "GET",
-                "RETURN_SUCCESS" : "ID",
+                "URL": self.sms_url,
+                "PARAMETER": {"account": "clickatel", "username": "legit"},
+                "SMS_TEXT_KEY": "text",
+                "SMS_PHONENUMBER_KEY": "to",
+                "HTTP_Method": "GET",
+                "RETURN_SUCCESS": "ID",
                 }
 
         parameters = {
                 'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-                'SMSProviderConfig' : json.dumps(sms_conf),
-                'selftest_admin' : 'superadmin'
+                'SMSProviderConfig': json.dumps(sms_conf),
+                'selftest_admin': 'superadmin'
                 }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
         # check the saved configuration
-        response = self.app.get(url(controller='system', action='getConfig'),
-                                {'key' : 'SMSProviderConfig'})
+        response = self.make_system_request('getConfig',
+                                            {'key': 'SMSProviderConfig'})
 
-        self.assertIn(
-            'http://localhost:%s/testing/http2sms' % self.paster_port,
-            response,
-            response
-            )
+        self.assertIn(self.sms_url, response, response)
 
-        response = self.app.get(url(controller='validate', action='smspin')
-                                , params={'user' : 'user1', 'pass' : '1234'})
+        response = self.make_validate_request('smspin',
+                                              params={'user': 'user1',
+                                                      'pass': '1234'})
 
         # due to security fixes to prevent information leakage, there is no
         # more the text:
@@ -239,20 +218,19 @@ class TestHttpSmsController(TestController):
 
         self.assertTrue(val == "0", response)
 
-
         return
 
     def test_succesful_auth(self):
         '''
         Successful SMS sending (via smspin) and authentication
         '''
-        sms_conf = { "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
-                     "PARAMETER" : { "account" : "clickatel",
-                                    "username" : "legit" },
-                    "SMS_TEXT_KEY":"text",
-                    "SMS_PHONENUMBER_KEY":"destination",
-                    "HTTP_Method" : "GET",
-                    "RETURN_SUCCESS" : "ID"
+        sms_conf = {"URL": self.sms_url,
+                    "PARAMETER": {"account": "clickatel",
+                                  "username": "legit"},
+                    "SMS_TEXT_KEY": "text",
+                    "SMS_PHONENUMBER_KEY": "destination",
+                    "HTTP_Method": "GET",
+                    "RETURN_SUCCESS": "ID"
                     }
 
         parameters = {
@@ -260,13 +238,13 @@ class TestHttpSmsController(TestController):
               'SMSProviderConfig': json.dumps(sms_conf),
                'selftest_admin': 'superadmin'
             }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='validate', action='smspin'),
-                                params={'user' : 'user1', 'pass' : '1234'})
+        response = self.make_validate_request('smspin',
+                                              params={'user': 'user1',
+                                                      'pass': '1234'})
         self.assertTrue('"state":' in response,
                         "Expecting 'state' as challenge inidcator %r"
                         % response)
@@ -288,9 +266,9 @@ class TestHttpSmsController(TestController):
         self.assertTrue(val == "1", response2)
 
         # test authentication
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user' : 'user1',
-                                        'pass' : '1234973532'})
+        response = self.make_validate_request('check',
+                                              params={'user': 'user1',
+                                                      'pass': '1234973532'})
         self.assertTrue('"value": true' in response, response)
 
         return
@@ -300,25 +278,25 @@ class TestHttpSmsController(TestController):
         Successful SMS sending (via validate) and authentication
         '''
         sms_conf = {
-            "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
-            "PARAMETER" : { "account" : "clickatel", "username" : "legit" },
-            "SMS_TEXT_KEY":"text",
-            "SMS_PHONENUMBER_KEY":"destination",
-            "HTTP_Method" : "GET",
-            "RETURN_SUCCESS" : "ID"
+            "URL": self.sms_url,
+            "PARAMETER": {"account": "clickatel", "username": "legit"},
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "destination",
+            "HTTP_Method": "GET",
+            "RETURN_SUCCESS": "ID"
         }
         parameters = {
               'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
               'SMSProviderConfig': json.dumps(sms_conf),
               'selftest_admin': 'superadmin'
             }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                             params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user' : 'user1', 'pass' : '1234'})
+        response = self.make_validate_request('check',
+                                              params={'user': 'user1',
+                                                      'pass': '1234'})
 
         # authentication fails but sms is sent
         self.assertTrue('"value": false' in response, response)
@@ -330,9 +308,9 @@ class TestHttpSmsController(TestController):
             self.assertTrue('''challenge created''' in response2, response2)
 
         # test authentication
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user' : 'user1',
-                                        'pass' : '1234973532'})
+        response = self.make_validate_request('check',
+                                              params={'user': 'user1',
+                                                      'pass': '1234973532'})
 
         self.assertTrue('"value": true' in response, response)
 
@@ -341,26 +319,25 @@ class TestHttpSmsController(TestController):
         Successful SMS sending with RETURN_FAILED
         '''
         sms_conf = {
-            "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
-            "PARAMETER" : { "account" : "clickatel", "username" : "legit" },
-            "SMS_TEXT_KEY":"text",
-            "SMS_PHONENUMBER_KEY":"destination",
-            "HTTP_Method" : "GET",
-            "RETURN_FAILED" : "FAILED"
+            "URL": self.sms_url,
+            "PARAMETER": {"account": "clickatel", "username": "legit"},
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "destination",
+            "HTTP_Method": "GET",
+            "RETURN_FAILED": "FAILED"
             }
         parameters = {
               'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
               'SMSProviderConfig': json.dumps(sms_conf),
               'selftest_admin': 'superadmin'
                 }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                            params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='validate', action='smspin'),
-                                params={'user' : 'user1',
-                                        'pass' : '1234'})
+        response = self.make_validate_request('smspin',
+                                              params={'user': 'user1',
+                                                      'pass': '1234'})
 
         self.assertTrue('"state"' in response, response)
 
@@ -382,14 +359,14 @@ class TestHttpSmsController(TestController):
               'SMSProviderConfig': json.dumps(sms_conf),
                'selftest_admin': 'superadmin'
               }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                            params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user': 'user1', 'pass': '1234',
-                                        'message': 'Täst<otp>'})
+        response = self.make_validate_request('check',
+                                              params={'user': 'user1',
+                                                      'pass': '1234',
+                                                      'message': 'Täst<otp>'})
 
         self.assertTrue('"message": "sms submitted"' in response, response)
         self.assertTrue('"state"' in response, response)
@@ -401,9 +378,9 @@ class TestHttpSmsController(TestController):
         self.assertTrue(u'Täst' in line, u"'Täst' not found in line")
 
         _left, otp = line.split(u'Täst')
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user': 'user1',
-                                        'pass': '1234%s' % otp})
+        response = self.make_validate_request('check',
+                                              params={'user': 'user1',
+                                                      'pass': '1234%s' % otp})
 
         self.assertTrue('"value": true' in response, response)
 
@@ -415,12 +392,12 @@ class TestHttpSmsController(TestController):
         '''
         Failed SMS sending with RETURN_FAIL
         '''
-        sms_conf = { "URL" : "http://localhost:%s/testing/http2sms" % self.paster_port,
-            "PARAMETER" : {"account" : "clickatel", "username" : "anotherone"},
-            "SMS_TEXT_KEY":"text",
-            "SMS_PHONENUMBER_KEY":"destination",
-            "HTTP_Method" : "GET",
-            "RETURN_FAIL" : "FAILED"
+        sms_conf = {"URL": self.sms_url,
+            "PARAMETER": {"account": "clickatel", "username": "anotherone"},
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "destination",
+            "HTTP_Method": "GET",
+            "RETURN_FAIL": "FAILED"
         }
 
         parameters = {
@@ -428,14 +405,13 @@ class TestHttpSmsController(TestController):
               'SMSProviderConfig': json.dumps(sms_conf),
               'selftest_admin': 'superadmin'
                       }
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                                            params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='validate', action='smspin'),
-                                params={'user': 'user1',
-                                        'pass': '1234'})
+        response = self.make_validate_request('smspin',
+                                              params={'user': 'user1',
+                                                      'pass': '1234'})
         # due to security fixes to prevent information leakage, there is no
         # more the text:
         #         'Failed to send SMS. We received a predefined error
@@ -449,7 +425,7 @@ class TestHttpSmsController(TestController):
         """
         use the internal testing server for
         """
-        sms_conf = {"URL": "http://localhost:5001/testing/http2sms",
+        sms_conf = {"URL": self.sms_url,
                     "PARAMETER": {"account": "clickatel", "username": "legit"},
                     "SMS_TEXT_KEY": "text",
                     "SMS_PHONENUMBER_KEY": "destination",
@@ -474,8 +450,7 @@ class TestHttpSmsController(TestController):
               'selftest_admin': 'superadmin'
             }
 
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params=parameters)
+        response = self.make_system_request('setConfig', params=parameters)
 
         self.assertTrue('"status": true' in response, response)
         return
@@ -486,18 +461,15 @@ class TestHttpSmsController(TestController):
         '''
         self.setSMSProvider(preferred_httplib='httplib', method='POST')
 
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params={'serial': self.serials[2],
-                                        'pass': ''})
+        params = {'serial': self.serials[2], 'pass': ''}
+        response = self.make_validate_request('check_s', params=params)
         self.assertTrue('"state":' in response,
                         "Expecting 'state' as challenge inidcator %r"
                         % response)
 
         self.setSMSProvider(preferred_httplib='httplib', method='GET')
-
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params={'serial': self.serials[3],
-                                        'pass': ''})
+        params = {'serial': self.serials[3], 'pass': ''}
+        response = self.make_validate_request('check_s', params=params)
         self.assertTrue('"state":' in response,
                         "Expecting 'state' as challenge inidcator %r"
                         % response)
@@ -509,18 +481,16 @@ class TestHttpSmsController(TestController):
 
         self.setSMSProvider(preferred_httplib='urllib', method='POST')
 
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params={'serial': self.serials[4],
-                                        'pass': ''})
+        params = {'serial': self.serials[4], 'pass': ''}
+        response = self.make_validate_request('check_s', params=params)
         self.assertTrue('"state":' in response,
                         "Expecting 'state' as challenge inidcator %r"
                         % response)
 
         self.setSMSProvider(preferred_httplib='urllib', method='GET')
 
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params={'serial': self.serials[5],
-                                        'pass': ''})
+        params = {'serial': self.serials[5], 'pass': ''}
+        response = self.make_validate_request('check_s', params=params)
         self.assertTrue('"state":' in response,
                         "Expecting 'state' as challenge inidcator %r"
                         % response)
@@ -549,20 +519,16 @@ class TestHttpSmsController(TestController):
 
         self.setSMSProvider(preferred_httplib='requests', method='POST')
 
-        response = self.app.get(url(controller='validate',
-                                    action='check_s'),
-                                params={'serial': self.serials[6],
-                                        'pass': ''})
+        params = {'serial': self.serials[6], 'pass': ''}
+        response = self.make_validate_request('check_s', params=params)
         self.assertTrue('"state":' in response,
                         "Expecting 'state' as challenge inidcator %r"
                         % response)
 
         self.setSMSProvider(preferred_httplib='requests', method='GET')
 
-        response = self.app.get(url(controller='validate',
-                                    action='check_s'),
-                                params={'serial': self.serials[7],
-                                        'pass': ''})
+        params = {'serial': self.serials[7], 'pass': ''}
+        response = self.make_validate_request('check_s', params=params)
         self.assertTrue('"state":' in response,
                         "Expecting 'state' as challenge inidcator %r"
                         % response)
@@ -591,9 +557,8 @@ class TestHttpSmsController(TestController):
             arguments.update(arg)
             self.setSMSProvider(**arguments)
 
-            response = self.app.get(url(controller='validate', action='check_s'),
-                                    params={'serial': self.serials[i],
-                                            'pass': ''})
+            params = {'serial': self.serials[i], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
             self.assertTrue('"state":' in response,
                             "Expecting 'state' %d: %r"
                             % (i, response))
@@ -606,10 +571,10 @@ class TestHttpSmsController(TestController):
             arguments.update(arg)
             self.setSMSProvider(**arguments)
             i = i + 1
-            response = self.app.get(url(controller='validate', action='check_s'),
-                                    params={'serial': self.serials[i],
-                                            'pass': ''})
-            self.assertTrue('predefined error from the SMS Gateway' in response,
+            params = {'serial': self.serials[i], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('predefined error from the SMS Gateway'
+                            in response,
                             "Expecting error %d: %r" % (i, response))
 
         return
@@ -637,9 +602,8 @@ class TestHttpSmsController(TestController):
             arguments.update(arg)
             self.setSMSProvider(**arguments)
 
-            response = self.app.get(url(controller='validate', action='check_s'),
-                                    params={'serial': self.serials[i],
-                                            'pass': ''})
+            params = {'serial': self.serials[i], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
             self.assertTrue('"state":' in response,
                             "Expecting 'state' %d: %r"
                             % (i, response))
@@ -652,10 +616,10 @@ class TestHttpSmsController(TestController):
             arguments.update(arg)
             self.setSMSProvider(**arguments)
             i = i + 1
-            response = self.app.get(url(controller='validate', action='check_s'),
-                                    params={'serial': self.serials[i],
-                                            'pass': ''})
-            self.assertTrue('predefined error from the SMS Gateway' in response,
+            params = {'serial': self.serials[i], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('predefined error from the SMS Gateway'
+                            in response,
                             "Expecting error %d: %r" % (i, response))
 
         return
@@ -698,10 +662,8 @@ class TestHttpSmsController(TestController):
                          }
             arguments.update(arg)
             self.setSMSProvider(**arguments)
-
-            response = self.app.get(url(controller='validate', action='check_s'),
-                                    params={'serial': self.serials[i],
-                                            'pass': ''})
+            params = {'serial': self.serials[i], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
             self.assertTrue('"state":' in response,
                             "Expecting 'state' %d: %r"
                             % (i, response))
@@ -714,13 +676,12 @@ class TestHttpSmsController(TestController):
             arguments.update(arg)
             self.setSMSProvider(**arguments)
             i = i + 1
-            response = self.app.get(url(controller='validate', action='check_s'),
-                                    params={'serial': self.serials[i],
-                                            'pass': ''})
-            self.assertTrue('predefined error from the SMS Gateway' in response,
+            params = {'serial': self.serials[i], 'pass': ''}
+            response = self.make_validate_request('check_s', params=params)
+            self.assertTrue('predefined error from the SMS Gateway'
+                            in response,
                             "Expecting error %d: %r" % (i, response))
 
         return
 
 ###eof#########################################################################
-

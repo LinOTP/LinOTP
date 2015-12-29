@@ -365,6 +365,7 @@ class TestController(unittest2.TestCase):
         self.assertTrue(content['result']['value']['setConfig selfTest:True'])
         self.isSelfTest = True
 
+
     # *********************************************************************** #
         warnings.warn("The self-test modus is not recommended (anymore)!")
     # *********************************************************************** #

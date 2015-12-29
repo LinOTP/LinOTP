@@ -38,23 +38,13 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 import logging
-from linotp.tests import TestController, url
+from linotp.tests.functional_special import TestSpecialController
+from linotp.tests import url
 
 log = logging.getLogger(__name__)
 
-DEFAULT_NOSE_CONFIG = {
-    'paster': {
-        'port': '5001',
-        }
-    }
-try:
-    from testconfig import config as nose_config
-except ImportError as exc:
-    print "You need to install nose-testconfig. Will use default values."
-    nose_config = None
 
-
-class TestRemoteToken(TestController):
+class TestRemoteToken(TestSpecialController):
 
     def setUp(self):
         '''
@@ -63,12 +53,9 @@ class TestRemoteToken(TestController):
         If the realms are deleted also the table TokenRealm gets deleted
         and we loose the information how many tokens are within a realm!
         '''
-        TestController.setUp(self)
+        TestSpecialController.setUp(self)
         self.set_config_selftest()
-        if nose_config and 'paster' in nose_config:
-            self.paster_port = nose_config['paster']['port']
-        else:
-            self.paster_port = DEFAULT_NOSE_CONFIG['paster']['port']
+        self.remote_url = 'http://127.0.0.1:%s' % self.paster_port
         return
 
     def tearDown(self):
@@ -91,82 +78,80 @@ class TestRemoteToken(TestController):
 
     def test_00_create_remote_token(self):
         # local token
-        param_local_1 = {
-                         "serial"  : "LSPW1",
-                      "type"    : "pw",
-                      "otpkey"  : "123456",
-                      "otppin"  : "",
-                      "user"    : "",
-                      "pin"     : "pin",
+        param_local_1 = {"serial": "LSPW1",
+                         "type": "pw",
+                         "otpkey": "123456",
+                         "otppin": "",
+                         "user": "",
+                         "pin": "pin",
                          }
         param_local_2 = {
-                         "serial"  : "LSPW2",
-                      "type"    : "pw",
-                      "otpkey"  : "234567",
-                      "otppin"  : "",
-                      "user"    : "",
-                      "pin"     : "pin",
+                         "serial": "LSPW2",
+                      "type": "pw",
+                      "otpkey": "234567",
+                      "otppin": "",
+                      "user": "",
+                      "pin": "pin",
                          }
 
         # The token with the remote PIN
         parameters1 = {
-                      "serial"  : "LSRE001",
-                      "type"    : "remote",
-                      "otpkey"  : "1234567890123456",
-                      "otppin"  : "",
-                      "user"    : "remoteuser",
-                      "pin"     : "pin",
-                      "description" : "RemoteToken1",
-                      'remote.server' : 'http://127.0.0.1:%s' % self.paster_port,
-                      'remote.local_checkpin' : 0,
-                      'remote.serial' : 'LSPW1',
+                      "serial": "LSRE001",
+                      "type": "remote",
+                      "otpkey": "1234567890123456",
+                      "otppin": "",
+                      "user": "remoteuser",
+                      "pin": "pin",
+                      "description": "RemoteToken1",
+                      'remote.server': self.remote_url,
+                      'remote.local_checkpin': 0,
+                      'remote.serial': 'LSPW1',
                       }
 
         # the token with the local PIN
         parameters2 = {
-                      "serial"  : "LSRE002",
-                      "type"    : "remote",
-                      "otpkey"  : "1234567890123456",
-                      "otppin"  : "",
-                      "user"    : "localuser",
-                      "pin"     : "pin",
-                      "description" : "RemoteToken2",
-                      'remote.server' : 'http://127.0.0.1:%s' % self.paster_port,
-                      'remote.local_checkpin' : 1,
-                      'remote.serial' : 'LSPW2',
+                      "serial": "LSRE002",
+                      "type": "remote",
+                      "otpkey": "1234567890123456",
+                      "otppin": "",
+                      "user": "localuser",
+                      "pin": "pin",
+                      "description": "RemoteToken2",
+                      'remote.server':  self.remote_url,
+                      'remote.local_checkpin': 1,
+                      'remote.serial': 'LSPW2',
                       }
 
-
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=param_local_1)
+        response = self.make_admin_request('init', params=param_local_1)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=param_local_2)
+        response = self.make_admin_request('init', params=param_local_2)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters1)
+        response = self.make_admin_request('init', params=parameters1)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters2)
+        response = self.make_admin_request('init', params=parameters2)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='set'),
-                                params={'serial':'LSPW1', 'pin':'lspw1'})
+        response = self.make_admin_request('set',
+                                           params={'serial': 'LSPW1',
+                                                   'pin': 'lspw1'})
         self.assertTrue('"set pin": 1' in response, response)
 
-        response = self.app.get(url(controller='admin', action='set'),
-                                params={'serial':'LSPW2', 'pin':''})
+        response = self.make_admin_request('set',
+                                           params={'serial': 'LSPW2',
+                                                   'pin': ''})
         self.assertTrue('"set pin": 1' in response, response)
 
-        response = self.app.get(url(controller='admin', action='set'),
-                                params={'serial':'LSRE001', 'pin':'local'})
+        response = self.make_admin_request('set',
+                                           params={'serial': 'LSRE001',
+                                                   'pin': 'local'})
         self.assertTrue('"set pin": 1' in response, response)
 
-        response = self.app.get(url(controller='admin', action='set'),
-                                params={'serial':'LSRE002', 'pin':'local'})
+        response = self.make_admin_request('set',
+                                           params={'serial': 'LSRE002',
+                                                   'pin': 'local'})
         self.assertTrue('"set pin": 1' in response, response)
 
         return
@@ -178,19 +163,16 @@ class TestRemoteToken(TestController):
         To successfully test the remote token, the paster must run locally.
         '''
 
-        parameters = { "serial" : "LSPW2",
-                       "pass" : "234567" }
-        response = self.app.get(url(controller='validate', action='check_s'),
-                                params=parameters)
-        log.error(response)
-        assert '"value": true' in response
+        parameters = {"serial": "LSPW2", "pass": "234567"}
+        response = self.make_validate_request('check_s',
+                                              params=parameters)
+
+        self.assertTrue('"value": true' in response, response)
 
         parameters = {"user": "localuser", "pass": "local234567"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
-        log.error(response)
-
-        assert '"value": true' in response
+        response = self.make_validate_request('check',
+                                              params=parameters)
+        self.assertTrue('"value": true' in response, response)
 
         return
 
@@ -199,8 +181,8 @@ class TestRemoteToken(TestController):
         Checking if remote PIN works
         '''
         parameters = {"user": "remoteuser", "pass": "lspw1123456"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check',
+                                              params=parameters)
 
         self.assertTrue('"value": true' in response, response)
 
@@ -212,10 +194,10 @@ class TestRemoteToken(TestController):
         '''
 
         parameters = {"user": "localuser", "pass": "234567"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check',
+                                              params=parameters)
 
-        assert '"value": false' in response
+        self.assertTrue('"value": false' in response, response)
 
         return
 
@@ -225,10 +207,9 @@ class TestRemoteToken(TestController):
         '''
 
         parameters = {"user": "localuser", "pass": "lspw1234567"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
-        assert '"value": false' in response
+        self.assertTrue('"value": false' in response, response)
 
     def test_06_check_token_remote_pin_fail(self):
         '''
@@ -236,10 +217,9 @@ class TestRemoteToken(TestController):
         '''
 
         parameters = {"user": "remoteuser", "pass": "123456"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
-        assert '"value": false' in response
+        self.assertTrue('"value": false' in response, response)
 
         return
 
@@ -249,10 +229,9 @@ class TestRemoteToken(TestController):
         '''
 
         parameters = {"user": "remoteuser", "pass": "local123456"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=parameters)
+        response = self.make_validate_request('check', params=parameters)
 
-        assert '"value": false' in response
+        self.assertTrue('"value": false' in response, response)
 
         return
 
@@ -262,16 +241,15 @@ class TestRemoteToken(TestController):
 
         # local token
         param_local_1 = {
-                       "serial"  : serial,
-                      "type"    : "spass",
-                      "otpkey"  : "123456",
-                      "otppin"  : "",
-                      "user"    : "",
-                      "pin"     : "pin",
+                       "serial": serial,
+                      "type": "spass",
+                      "otpkey": "123456",
+                      "otppin": "",
+                      "user": "",
+                      "pin": "pin",
                          }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=param_local_1)
+        response = self.make_admin_request('init', params=param_local_1)
         self.assertTrue('"value": true' in response, response)
         return serial
 
@@ -288,7 +266,7 @@ class TestRemoteToken(TestController):
             log.debug("Column Table name: %s : %s : %r"
                       % (column.name, column.type, column.index))
             if column.name == 'LinOtpTokenSerialnumber':
-                assert column.index == True
+                self.assertTrue(column.index == True, column.name)
 
         serials = []
 
@@ -301,20 +279,19 @@ class TestRemoteToken(TestController):
         serials.append(rserial)
 
         parameters1 = {
-                      "serial"  : rserial,
-                      "type"    : "remote",
-                      "otpkey"  : "1234567890123456",
-                      "otppin"  : "",
-                      "user"    : "root",
-                      "pin"     : "",
-                      "description" : "RemoteToken",
-                      'remote.server' : 'http://127.0.0.1:%s' % self.paster_port,
-                      'remote.local_checkpin' : 0,
-                      'remote.serial' : serial,
+                      "serial": rserial,
+                      "type": "remote",
+                      "otpkey": "1234567890123456",
+                      "otppin": "",
+                      "user": "root",
+                      "pin": "",
+                      "description": "RemoteToken",
+                      'remote.server':  self.remote_url,
+                      'remote.local_checkpin': 0,
+                      'remote.serial': serial,
                       }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters1)
+        response = self.make_admin_request('init', params=parameters1)
         self.assertTrue('"value": true' in response, response)
 
         for offset in range(1, 20):
@@ -322,15 +299,12 @@ class TestRemoteToken(TestController):
             for i in range(1, 100):
                 pin = "%s%s" % (pin, unichr(0x28 * offset + i))
 
-            params = { 'serial' : serial, 'pin' : pin}
-            response = self.app.get(url(controller='admin', action='set'),
-                                    params=params)
+            params = {'serial': serial, 'pin': pin}
+            response = self.make_admin_request('set', params=params)
             self.assertTrue('"set pin": 1' in response, response)
 
-            params = {'user':'root', 'pass' : pin}
-            response = self.app.get(url(controller='validate',
-                                        action='check'),
-                                    params=params)
+            params = {'user': 'root', 'pass': pin}
+            response = self.make_validate_request('check', params=params)
             self.assertTrue('"value": true' in response, response)
 
         for serial in serials:
@@ -339,4 +313,3 @@ class TestRemoteToken(TestController):
         return
 
 #eof###########################################################################
-
