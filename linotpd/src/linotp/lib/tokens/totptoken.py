@@ -34,7 +34,6 @@ import traceback
 
 
 from linotp.lib.HMAC    import HmacOtp
-from linotp.lib.crypt   import SecretObj
 from linotp.lib.util    import getParam
 from linotp.lib.util    import generate_otpkey
 from linotp.lib.config  import getFromConfig
@@ -406,8 +405,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         except ValueError as e:
             raise e
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         self.hashlibStr = self.getFromTokenInfo("hashlib", self.hashlibStr)
 
         timeStepping = int(self.getFromTokenInfo("timeStep", self.timeStep))
@@ -601,8 +599,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         except ValueError:
             return ret
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
@@ -689,10 +686,8 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         res = (-1, 0, 0, 0)
 
-
         otplen = int(self.token.LinOtpOtpLen)
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
@@ -739,9 +734,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         except ValueError:
             return ret
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
-
+        secObj = self._get_secret_object()
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         timeStepping = int(self.getFromTokenInfo("timeStep", 30))
         shift = int(self.getFromTokenInfo("timeShift", 0))
@@ -755,7 +748,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         ## we don't need to round here as we have alread float
         counter = int(((tCounter - shift) / timeStepping))
-
 
         otp_dict["shift"] = shift
         otp_dict["timeStepping"] = timeStepping

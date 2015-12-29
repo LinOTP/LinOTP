@@ -75,8 +75,6 @@ from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import split_pin_otp
 
-from linotp.lib.crypt import SecretObj
-
 from sqlalchemy import asc, desc
 
 from pylons.i18n.translation import _
@@ -94,6 +92,7 @@ optional = True
 required = False
 
 log = logging.getLogger(__name__)
+
 
 class TokenClass(object):
 
@@ -908,7 +907,6 @@ class TokenClass(object):
     def getOtpLen(self):
         return self.token.LinOtpOtpLen
 
-
     def setOtpCount(self, otpCount):
         self.token.LinOtpCount = int(otpCount)
 
@@ -926,6 +924,15 @@ class TokenClass(object):
             storeHashed = False
 
         self.token.setPin(pin, storeHashed)
+
+    def _get_secret_object(self):
+        """
+        encapsulate the returning of the secret object
+        """
+        key, iv = self.token.get_encrypted_seed()
+        from linotp.lib.crypt import SecretObj
+        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        return secObj
 
     def getPinHashSeed(self):
         return self.token.LinOtpPinHash, self.token.LinOtpSeed
@@ -1608,9 +1615,8 @@ class OcraTokenClass(TokenClass):
             ##  preserve the rollout state
             self.addToTokenInfo('rollout', '1')
 
-            ##  preseerver the current key as sharedSecret
-            key, iv = self.token.get_encrypted_seed()
-            secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+            # preserve the current key as sharedSecret
+            secObj = self._get_secret_object()
             key = secObj.getKey()
             encSharedSecret = encryptPin(key)
             self.addToTokenInfo('sharedSecret', encSharedSecret)
@@ -1767,8 +1773,7 @@ class OcraTokenClass(TokenClass):
         '''
         log.debug('[signData] %r:' % (data))
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
         signature = ocraSuite.signData(data)
 
@@ -1804,12 +1809,10 @@ class OcraTokenClass(TokenClass):
 
         log.debug('[challenge] %s: %s: %s' % (s_data, s_session, s_challenge))
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
-
-        if data is None or len(data) == 0:
+        if not data:
             typ = 'random'
 
         if challenge is None:
@@ -1919,8 +1922,7 @@ class OcraTokenClass(TokenClass):
 
         ret = -1
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         ## if we have no transactionid given through the options,
@@ -2293,10 +2295,7 @@ class OcraTokenClass(TokenClass):
             log.error('[OcraTokenClass:resync] %s' % (error))
             raise Exception('[OcraTokenClass:resync] %s' % (error))
 
-
-
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         syncWindow = self.token.getSyncWindow()

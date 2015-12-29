@@ -28,8 +28,6 @@
 
 import logging
 from linotp.lib.crypt   import zerome
-from linotp.lib.crypt import SecretObj
-
 from linotp.lib.util    import getParam
 
 
@@ -129,8 +127,7 @@ class PasswordTokenClass(TokenClass):
         '''
         sets the OTP length to the length of the password
         '''
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         sp = PasswordTokenClass.__secretPassword__(secObj)
         pw_len = len(sp.getPassword())
         log.debug("[setOtpLen] setting otplen to %d" % pw_len)
@@ -144,8 +141,7 @@ class PasswordTokenClass(TokenClass):
         '''
         log.debug("checkOtp of PasswordToken")
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         sp = PasswordTokenClass.__secretPassword__(secObj)
         res = sp.checkOtp(anOtpVal)
 

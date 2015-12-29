@@ -27,6 +27,8 @@
 import logging
 import unittest
 import binascii
+import json
+
 from mock import MagicMock, patch
 from Crypto.Cipher import AES
 
@@ -36,6 +38,7 @@ def _aes_decrypt_constructor(hex_key):
     Returns a aes_decrypt function for the given hex key
     """
     binary_key = binascii.unhexlify(hex_key)
+
     def aes_decrypt(data_input):
         """
         support inplace aes decryption for the yubikey
@@ -62,14 +65,19 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         logging.basicConfig()
 
         # All these values were generated/tested with a real Yubikey
-        aes_key = "9163508031b20d2fbb1868954e041729" #hex format
+        # aes_key in hex format
+        aes_key = "9163508031b20d2fbb1868954e041729"
         serial = "UBAM01382015_1"
-        self.private_uid = "adb0ee7dd24a" #hex format
-        self.public_uid = "ecebeeejedecebeg" #modhex format. In decimal: 01382015
+        # private_uid in hex format
+        self.private_uid = "adb0ee7dd24a"
+        # public_uid in modhex format. In decimal: 01382015
+        self.public_uid = "ecebeeejedecebeg"
 
         # Initialize mock objects
         secret_obj = MagicMock(spec=linotp.lib.crypt.SecretObj)
         secret_obj.aes_decrypt = _aes_decrypt_constructor(aes_key)
+
+        # mock the linotp.model.Token
         model_token = MagicMock(
             spec=[
                 "getSerial",
@@ -79,15 +87,24 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
                 "setType",
                 "LinOtpCountWindow"
                 ]
-            ) # linotp.model.Token
+            )
         model_token.getSerial.return_value = serial
-        model_token.getHOtpKey.return_value = secret_obj
-        model_token.getInfo.return_value = u'' + '{\n"yubikey.tokenid": "' + self.private_uid + '"\n}'
-        model_token.LinOtpCountWindow = None # Not required in the Yubikey Token
+        model_token.getInfo.return_value = json.dumps({"yubikey.tokenid": self.private_uid })
+
+        # LinOtpCountWindow is not required in the Yubikey Token
+        model_token.LinOtpCountWindow = None
         model_token.LinOtpCount = 0
         model_token.LinOtpOtpLen = 32
+
         self.model_token = model_token
-        self.yubikey_token = YubikeyTokenClass(model_token)
+
+        # create the yubike with the mocked model_token
+        self.yubikey_token = YubikeyTokenClass(model_token, context={})
+
+        def _get_secret_object():
+            return secret_obj
+
+        setattr(self.yubikey_token, '_get_secret_object', _get_secret_object)
         model_token.setType.assert_called_once_with("yubikey")
 
     def test_checkotp_positive(self):

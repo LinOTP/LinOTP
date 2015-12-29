@@ -103,7 +103,6 @@ import time
 import datetime
 
 from linotp.lib.HMAC    import HmacOtp
-from linotp.lib.crypt   import SecretObj
 
 from linotp.lib.util    import getParam
 from linotp.lib.util    import required
@@ -653,13 +652,11 @@ class SmsTokenClass(HmacTokenClass):
             log.exception("[getNextOtp] ValueError %r" % ex)
             raise Exception(ex)
 
-        key, iv = self.token.get_encrypted_seed()
-        secret_obj = SecretObj(key, iv, hsm=self.context['hsm'])
-
+        secObj = self._get_secret_object()
         counter = self.token.getOtpCounter()
 
         # log.debug("serial: %s",serialNum)
-        hmac2otp = HmacOtp(secret_obj, counter, otplen)
+        hmac2otp = HmacOtp(secObj, counter, otplen)
         nextotp = hmac2otp.generate(counter + 1)
 
         log.debug("[getNextOtp] end. got the next otp value: nextOtp %r"

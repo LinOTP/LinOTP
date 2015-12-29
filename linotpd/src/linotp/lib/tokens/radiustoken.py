@@ -33,8 +33,6 @@ import binascii
 
 from linotp.lib.util    import getParam
 
-from linotp.lib.crypt import SecretObj
-
 optional = True
 required = False
 
@@ -224,10 +222,9 @@ class RadiusTokenClass(RemoteTokenClass):
         radiusServer = self.getFromTokenInfo("radius.server")
         radiusUser = self.getFromTokenInfo("radius.user")
 
-        ## Read the secret!!!
-        key, iv = self.token.get_encrypted_seed()
-        secret = SecretObj(key, iv, hsm=self.context['hsm'])
-        radiusSecret = binascii.unhexlify(secret.getKey())
+        # Read the secret!!!
+        secObj = self._get_secret_object()
+        radiusSecret = binascii.unhexlify(secObj.getKey())
 
         if radiusSecret == VOID_RADIUS_SECRET:
             log.warning("Usage of default radius secret is not recomended!!")

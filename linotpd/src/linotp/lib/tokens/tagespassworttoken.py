@@ -38,7 +38,6 @@ from linotp.lib.tokenclass import TokenClass
 from linotp.lib.dpwOTP  import dpwOtp
 from linotp.lib.config  import getFromConfig
 from linotp.lib.error   import TokenAdminError
-from linotp.lib.crypt   import SecretObj
 
 log = logging.getLogger(__name__)
 
@@ -127,8 +126,7 @@ class TagespasswortTokenClass(TokenClass):
         except ValueError:
             return res
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
 
         dpw = dpwOtp(secObj, otplen)
         res = dpw.checkOtp(anOtpVal, window=window)
@@ -144,9 +142,7 @@ class TagespasswortTokenClass(TokenClass):
         except ValueError:
             return res
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
-
+        secObj = self._get_secret_object()
         dpw = dpwOtp(secObj, otplen)
 
         date_string = None
@@ -188,8 +184,7 @@ class TagespasswortTokenClass(TokenClass):
             log.exception("[get_multi_otp] %r" % ex)
             return (False, unicode(ex), otp_dict)
 
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         dpw = dpwOtp(secObj, otplen)
         log.debug("[get_multi_otp] retrieving %i OTP values for token %s" % (count, dpw))
 

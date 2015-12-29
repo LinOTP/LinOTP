@@ -35,8 +35,6 @@ optional = True
 required = False
 
 from linotp.lib.tokenclass import TokenClass
-from linotp.lib.crypt   import SecretObj
-
 from linotp.lib.auth.validate import check_pin
 
 from linotp.lib.util import modhex_decode
@@ -258,8 +256,7 @@ class YubikeyTokenClass(TokenClass):
             return res
 
         serial = self.token.getSerial()
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
 
         anOtpVal = otpVal.lower()
 

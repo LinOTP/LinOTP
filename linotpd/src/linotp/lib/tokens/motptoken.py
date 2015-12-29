@@ -27,7 +27,6 @@
               - http://motp.sourceforge.net/ -
 """
 
-from linotp.lib.crypt import SecretObj
 from linotp.lib.util        import getParam
 from linotp.lib.util        import required
 
@@ -182,8 +181,7 @@ class MotpTokenClass(TokenClass):
         #otime contains the previous verification time
         # the new one must be newer than this!
         otime = self.token.LinOtpCount
-        key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = self._get_secret_object()
         window = self.token.LinOtpCountWindow
         secretPin = self.token.getUserPin()
 
