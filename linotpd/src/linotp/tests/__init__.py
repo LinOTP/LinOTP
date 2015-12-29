@@ -37,11 +37,7 @@ setup-app`) and provides the base testing objects.
 
 """
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+import json
 import pylons.test
 import os
 import logging
@@ -58,14 +54,14 @@ from pylons import url
 from pylons.configuration import config as env
 from routes.util import URLGenerator
 import webtest
-import pylons.test
+
 from distutils.version import LooseVersion
 import pkg_resources
 
 
-
 import warnings
 warnings.filterwarnings(action='ignore', category=DeprecationWarning)
+
 
 def fxn():
     warnings.warn("deprecated", DeprecationWarning)
@@ -78,19 +74,21 @@ LOG = logging.getLogger(__name__)
 
 __all__ = ['environ', 'url', 'TestController']
 
-assert pylons.test.pylonsapp, "Pylons app must be loaded ('nosetests --with-pylons=test.ini')"
+assert pylons.test.pylonsapp, ("Pylons app must be loaded ('nosetests "
+                               "--with-pylons=test.ini')")
 config = pylons.test.pylonsapp.config
 
 environ = {}
 
 
-
 class TestController(unittest2.TestCase):
-    DEFAULT_WEB_METHOD = 'POST'
-    
     '''
     the TestController, which loads the linotp app upfront
     '''
+
+    DEFAULT_WEB_METHOD = 'POST'
+    env = {}
+
     def __init__(self, *args, **kwargs):
         '''
         initialize the test class
@@ -99,14 +97,12 @@ class TestController(unittest2.TestCase):
         wsgiapp = pylons.test.pylonsapp
         self.app = webtest.TestApp(wsgiapp)
         self.session = 'justatest'
-        self.resolvers = {} # Set up in create_common_resolvers
+        self.resolvers = {}  # Set up of resolvers in create_common_resolvers
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         unittest2.TestCase.__init__(self, *args, **kwargs)
 
         self.appconf = config
-
-
 
     @classmethod
     def setup_class(cls):
@@ -115,6 +111,11 @@ class TestController(unittest2.TestCase):
         SetupCommand('setup-app').run([config['__file__']])
         from linotp.lib.config import refreshConfig
         refreshConfig()
+
+        # provide the info of environment we are running in
+        cls.env['pylons'] = LooseVersion(
+            pkg_resources.get_distribution('pylons').version
+            )
         return
 
     @classmethod
@@ -126,8 +127,8 @@ class TestController(unittest2.TestCase):
     @staticmethod
     def get_json_body(response):
         """
-        Parses the response body as JSON and returns it. WebOb added the property
-        json_body (alias json) in version 1.2
+        Parses the response body as JSON and returns it. WebOb added
+        the property json_body (alias json) in version 1.2
 
         :param response: A WebOb response object
         """
@@ -158,7 +159,6 @@ class TestController(unittest2.TestCase):
             app.set_cookie(key, value)
         else:
             app.cookies[key] = value
-
 
     def setUp(self):
         ''' here we do the system test init per test method '''
@@ -228,7 +228,10 @@ class TestController(unittest2.TestCase):
         assert method in ['GET', 'POST']
 
         # Assuming following 401 response from server:
-        # 'www-authenticate': 'Digest realm="LinOTP2 admin area", nonce="hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae", algorithm=MD5, qop="auth"'
+        # 'www-authenticate': 'Digest realm="LinOTP2 admin area",
+        #    nonce="hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae",
+        #    algorithm=MD5, qop="auth"'
+
         qop = 'auth'
         digest_uri = "/random/wont/be/checked"
         nonce = 'hYJOfgYSBQA=6fd2875a6a04fa4fed643e5e8b0dbcbeed3930ae'
@@ -237,7 +240,7 @@ class TestController(unittest2.TestCase):
         nonceCount = "00000001"
         clientNonce = "0a4f113b"
         ha1 = hashlib.md5("%s:%s:%s" % (username, realm, password)).hexdigest()
-        ha2 = hashlib.md5("%s:%s"    % (method, digest_uri)).hexdigest()
+        ha2 = hashlib.md5("%s:%s" % (method, digest_uri)).hexdigest()
         response = hashlib.md5(
             "%s:%s:%s:%s:%s:%s" % (
                 ha1,
@@ -260,7 +263,6 @@ class TestController(unittest2.TestCase):
             ]
         return (', ').join(auth_content)
 
-
     def make_authenticated_request(
             self,
             controller,
@@ -274,7 +276,7 @@ class TestController(unittest2.TestCase):
         Makes an authenticated request (setting HTTP Digest header, cookie and
         'session' parameter).
         """
-        params  = params  or {}
+        params = params  or {}
         headers = headers or {}
         cookies = cookies or {}
         if not 'session' in params:
@@ -342,8 +344,8 @@ class TestController(unittest2.TestCase):
 
         'selfTest' mode enables to use the LinOTP API without 'session'
         parameter and cookie, but since using these extra values is not a
-        problem and then tests are closer to the real code running on productive
-        servers it is preferred NOT to set 'selfTest'.
+        problem and then tests are closer to the real code running on
+        productive servers it is preferred NOT to set 'selfTest'.
 
         Use the methods make_admin_request(), make_system_request or
         make_authenticated_request() and 'session' Parameter and Cookie will be
@@ -358,13 +360,14 @@ class TestController(unittest2.TestCase):
         response = self.make_system_request('setConfig', params)
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
-        self.assertTrue('setConfig selfTest:True' in content['result']['value'])
+        self.assertTrue('setConfig selfTest:True'
+                        in content['result']['value'])
         self.assertTrue(content['result']['value']['setConfig selfTest:True'])
         self.isSelfTest = True
-        
-        # *********************************************************************** #
+
+    # *********************************************************************** #
         warnings.warn("The self-test modus is not recommended (anymore)!")
-        # *********************************************************************** #
+    # *********************************************************************** #
 
     def delete_all_realms(self):
         ''' get al realms and delete them '''
@@ -376,12 +379,9 @@ class TestController(unittest2.TestCase):
         for realmId in values:
             realm_desc = values.get(realmId)
             realm_name = realm_desc.get("realmname")
-            params = {
-                "realm":realm_name,
-                }
+            params = {"realm": realm_name}
             resp = self.make_system_request('delRealm', params)
             assert('"result": true' in resp)
-
 
     def delete_all_resolvers(self):
         ''' get all resolvers and delete them '''
@@ -393,9 +393,7 @@ class TestController(unittest2.TestCase):
         for realmId in values:
             resolv_desc = values.get(realmId)
             resolv_name = resolv_desc.get("resolvername")
-            params = {
-                "resolver" : resolv_name,
-                }
+            params = {"resolver": resolv_name}
             resp = self.make_system_request('delResolver', params)
             assert('"status": true' in resp)
 
@@ -431,7 +429,9 @@ class TestController(unittest2.TestCase):
         expected_keys = set(
             ['name', 'scope', 'action', 'user', 'realm', 'client', 'time']
             )
-        assert set(lparams.keys()) == expected_keys, "Some key is missing to create a policy"
+        self.assertTrue(set(lparams.keys()) == expected_keys,
+                        "Some key is missing to create a policy")
+
         response = self.make_system_request('setPolicy', lparams)
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
@@ -512,19 +512,21 @@ class TestController(unittest2.TestCase):
 
         resolver_params = {
             'myDefRes': {
-                'name'      : 'myDefRes',
-                'fileName'  : '%(here)s/../data/testdata/def-passwd',
-                'type'      : 'passwdresolver',
+                'name': 'myDefRes',
+                'fileName': '%(here)s/../data/testdata/def-passwd',
+                'type': 'passwdresolver',
                 },
-            'myOtherRes' : {
-                'name'      : 'myOtherRes',
-                'fileName'  : '%(here)s/../data/testdata/myDom-passwd',
-                'type'      : 'passwdresolver',
+            'myOtherRes': {
+                'name': 'myOtherRes',
+                'fileName': '%(here)s/../data/testdata/myDom-passwd',
+                'type': 'passwdresolver',
                 }
             }
         self.resolvers = {
-            'myOtherRes': 'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
-            'myDefRes': 'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
+            'myOtherRes':
+                'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
+            'myDefRes':
+                'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
             }
         params = resolver_params['myDefRes']
         response = self.create_resolver(
@@ -611,4 +613,3 @@ class TestController(unittest2.TestCase):
         self.assertTrue(realms['mydefrealm']['default'])
 
 ###eof#########################################################################
-

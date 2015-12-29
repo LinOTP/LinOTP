@@ -31,6 +31,7 @@ Test the otp_pin_random policy
 
 from collections import deque
 from copy import deepcopy
+from distutils.version import LooseVersion
 
 from linotp.tests import TestController
 
@@ -62,6 +63,11 @@ class TestRandompinController(TestController):
         self.create_common_realms()
         self.token_for_deletion = set()
         self.policies_for_deletion = set()
+
+        self.skip_selfservice_auth = False
+        if self.env['pylons'] <= LooseVersion('0.10'):
+            self.skip_selfservice_auth = True
+
         return
 
     def tearDown(self):
@@ -114,9 +120,9 @@ class TestRandompinController(TestController):
         """
         Same as 'test_simple_enroll' but with assign after enroll
 
-        Verify the behaviour is the same if the token is first enrolled and then
-        assigned to a user, instead of directly enrolling for the user as in
-        test_simple_enroll.
+        Verify the behaviour is the same if the token is first enrolled and
+        then assigned to a user, instead of directly enrolling for the user
+        as in test_simple_enroll.
         """
         # Enroll token
         user = u'aἰσχύλος'  # realm myDefRealm
@@ -165,14 +171,19 @@ class TestRandompinController(TestController):
         """
         User logs into selfservice and sets PIN then authenticates with PIN+OTP
 
-        After enrolling the PIN is unknown and the token can't be used. The user
-        can log into the selfservice and set a PIN for his token. Then he can
-        authenticate with PIN+OTP.
+        After enrolling the PIN is unknown and the token can't be used. The
+        user can log into the selfservice and set a PIN for his token. Then
+        he can authenticate with PIN+OTP.
 
         This test will fail with WebTest 1.2.1 (Debian Squeeze) because of a
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
-        https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
+        https://github.com/Pylons/webtest/
+                            commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+        if self.skip_selfservice_auth:
+            self.skipTest("pylons version not supported for selfservice"
+                          " authentication: %r" % self.env['pylons'])
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -206,8 +217,13 @@ class TestRandompinController(TestController):
 
         This test will fail with WebTest 1.2.1 (Debian Squeeze) because of a
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
-        https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
+        https://github.com/Pylons/webtest/
+                                commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+        if self.skip_selfservice_auth:
+            self.skipTest("pylons version not supported for selfservice"
+                          " authentication: %r" % self.env['pylons'])
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -254,13 +270,18 @@ class TestRandompinController(TestController):
         """
         Verify PIN is overwritten when assigning token to a different user
 
-        Test both the case where the user is in the same realm (where the policy
-        is defined) and in another realm without opt_pin_random policy.
+        Test both the case where the user is in the same realm (where the
+        policy is defined) and in another realm without opt_pin_random policy.
 
         This test will fail with WebTest 1.2.1 (Debian Squeeze) because of a
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
-        https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
+        https://github.com/Pylons/webtest/
+                                commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+        if self.skip_selfservice_auth:
+            self.skipTest("pylons version not supported for selfservice"
+                          " authentication: %r" % self.env['pylons'])
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -352,9 +373,7 @@ class TestRandompinController(TestController):
                 )
         return
 
-
     # -------- Private helper methods --------
-
     def _create_randompin_policy(self, realm):
         """
         Creates an otp_pin_random policy for 'realm'. Schedules the policy for
@@ -430,11 +449,12 @@ class TestRandompinController(TestController):
 
     def _validate(self, user, pwd, expected='success', err_msg=None):
         """
-        Makes a validate/check request and verifies the response is as 'expected'
+        run a validate/check request and verifies the response is as 'expected'
 
         :param user: Username or username@realm
         :param pwd: Password (e.g. PIN+OTP)
-        :param expected: One of 'success', 'value-false', 'status-false' or 'both-false'
+        :param expected: One of 'success', 'value-false', 'status-false' or
+                        'both-false'
         :param err_msg: An error message to display if assert fails
         :return: The content (JSON object)
         """
@@ -472,7 +492,8 @@ class TestRandompinController(TestController):
             err_msg=err_msg,
             )
 
-    def _validate_base(self, params, action='check', expected='success', err_msg=None):
+    def _validate_base(self, params, action='check', expected='success',
+                       err_msg=None):
         """
         Base method for /validate/<action> requests
 
