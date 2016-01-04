@@ -2,7 +2,7 @@ LinOTP Licenses
 ===============
 
 LinOTP - the open source solution for two factor authentication
-  Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+  Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
 
 
 This repository contains all parts to build up your own solution

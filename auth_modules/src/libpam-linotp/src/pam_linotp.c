@@ -1,7 +1,6 @@
 /*
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
- *       Author: Niklas Abel 08.2015
+ *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
  *
  *   This file is part of LinOTP authentication modules.
  *
