@@ -1,6 +1,6 @@
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
 # 
 #    This file is part of LinOTP authentication modules.
 # 
@@ -93,13 +93,9 @@ Access-Type 'scope1', this would look like:
   scope1[URL] = http://192.168.56.1:5001/validate/simplecheck
   scope1[REALM] = mydefault
 
-=head1 AUTHOR
-
-Cornelius Koelbel (cornelius.koelbel@lsexperts.de)
-
 =head1 COPYRIGHT
 
-Copyright 2013-2015
+Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
 
 This library is free software; you can redistribute it 
 under the GPLv2.

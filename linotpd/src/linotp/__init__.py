@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -62,7 +62,7 @@ the simple webui which come with linotp
 # indirectly) import any module that might not yet be installed when installing
 # LinOTP.
 
-__copyright__ = "2010 - 2015 LSE Leading Security Experts GmbH"
+__copyright__ = "2010 - 2016 LSE Leading Security Experts GmbH"
 __product__ = "LinOTP"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
