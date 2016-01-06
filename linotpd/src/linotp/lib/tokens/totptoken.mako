@@ -76,7 +76,7 @@ function totp_get_config_params(){
 }
 
 </script>
-
+<form class="cmxform" id="form_totp_config">
 <fieldset>
 	<legend>${_("TOTP token settings")}</legend>
 	<table>
@@ -91,7 +91,7 @@ function totp_get_config_params(){
 			title='${_("This is the time LinOTP will calculate before and after the current time. A reasonable value is 300.")}'> sec</td></tr>
 	</table>
 </fieldset>
-
+</form>
 %endif
 
 
