@@ -371,8 +371,8 @@ class ManageController(BaseController):
             lines = []
             for tok in c.tokenArray:
                 lines.append(
-                    { 'id' : tok['LinOtp.TokenSerialnumber'],
-                        'cell': [
+                    {'id' : tok['LinOtp.TokenSerialnumber'],
+                     'cell': [
                             tok['LinOtp.TokenSerialnumber'],
                             tok['LinOtp.Isactive'],
                             tok['User.username'],
@@ -385,7 +385,8 @@ class ManageController(BaseController):
                             tok['LinOtp.CountWindow'],
                             tok['LinOtp.SyncWindow'],
                             tok['LinOtp.Userid'],
-                            tok['LinOtp.IdResolver'], ]
+                            tok['LinOtp.IdResClass'].split('.')[-1],
+                            ]
                     }
                     )
 

@@ -302,11 +302,6 @@ def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
         if len(usr.login) > 0 or len(usr.realm) > 0 or len(usr.conf) > 0:
             res = getResolversOfUser(usr)
             usr.saveResolvers(res)
-            if len(res) > 1:
-                log.error("[getUserFromParam] user %r@%r in more than one "
-                          "resolver: %r" % (user, realm, res))
-                raise Exception("The user %s@%s is in more than one resolver:"
-                                " %s" % (user, realm, unicode(res)))
 
     log.debug("[getUserFromParam] creating user object %r,%r,%r"
               % (user, realm, conf))

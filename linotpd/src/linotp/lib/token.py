@@ -1589,41 +1589,49 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True, context=None):
                   % user)
 
         if not user.isEmpty() and user.login:
-            # the upper layer will catch / at least should
-            (uid, _resolver, resolverClass) = getUserId(user)
+            users = []
+            # getUserId triggers the lookup of the resolvers
+            # which could then be used for mutiple users in realm
+            getUserId(user)
+            for resolverClass, uid in user.resolverUid.items():
+                users.append((uid, resolverClass))
 
-            # in the database could be tokens of ResolverClass:
-            #    useridresolver. or useridresolveree.
-            # so we have to make sure
-            # - there is no 'useridresolveree' in the searchterm and
-            # - there is a wildcard search: second replace
-            # Remark: when the token is loaded the response to the
-            # resolver class is adjusted
+            for lookup_user in users:
+                (uid, resolverClass) = lookup_user
 
-            resolverClass = resolverClass.replace('useridresolveree.',
-                                                  'useridresolver.')
-            resolverClass = resolverClass.replace('useridresolver.',
-                                                  'useridresolver%.')
+                # in the database could be tokens of ResolverClass:
+                #    useridresolver. or useridresolveree.
+                # so we have to make sure
+                # - there is no 'useridresolveree' in the searchterm and
+                # - there is a wildcard search: second replace
+                # Remark: when the token is loaded the response to the
+                # resolver class is adjusted
 
-            sqlQuery = Session.query(model.Token).filter(
-                        model.Token.LinOtpUserid == uid).filter(
-                        model.Token.LinOtpIdResClass.like(resolverClass))
+                resolverClass = resolverClass.replace('useridresolveree.',
+                                                      'useridresolver.')
+                resolverClass = resolverClass.replace('useridresolver.',
+                                                      'useridresolver%.')
 
-            for token in sqlQuery:
-                # we have to check that the token is in
-                # the same realm as the user
-                t_realms = token.getRealmNames()
-                u_realm = user.getRealm()
-                if u_realm != '*':
-                    if len(t_realms) > 0 and len(u_realm) > 0:
-                        if u_realm.lower() not in t_realms:
-                            log.debug("user realm and token realm missmatch"
-                                      " %r::%r" % (u_realm, t_realms))
-                            continue
+                sqlQuery = Session.query(model.Token).filter(
+                            model.Token.LinOtpUserid == uid).filter(
+                            model.Token.LinOtpIdResClass.like(resolverClass))
 
-                log.debug("[getTokens4UserOrSerial] user serial (user): %r"
-                          % token.LinOtpTokenSerialnumber)
-                tokenList.append(token)
+                for token in sqlQuery:
+                    # we have to check that the token is in
+                    # the same realm as the user
+                    t_realms = token.getRealmNames()
+                    u_realm = user.getRealm()
+                    if u_realm != '*':
+                        if len(t_realms) > 0 and len(u_realm) > 0:
+                            if u_realm.lower() not in t_realms:
+                                log.debug("user realm and token realm "
+                                          "missmatch %r::%r"
+                                          % (u_realm, t_realms))
+                                continue
+
+                    log.debug("[getTokens4UserOrSerial] user serial (user): %r"
+                              % token.LinOtpTokenSerialnumber)
+                    tokenList.append(token)
 
     if _class == True:
         for tok in tokenList:
