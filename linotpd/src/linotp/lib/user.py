@@ -949,53 +949,49 @@ def get_authenticated_user(username, realm, password=None,
         username = user.login
         realm = user.realm
         res = getResolversOfUser(user, use_default_realm=False)
-        if (len(res) != 1):
-            if (len(res) == 0):
-                log.info("The username %r exists in NO resolver within the "
-                          "realm %r." % (username, realm))
-            else:
-                log.info("The username %r exists in more than one resolver "
-                          "within the realm %r" % (username, realm))
+        if not res:
+            log.info("The username %r exists in NO resolver within the "
+                      "realm %r.", username, realm)
             continue
 
-        # we got one resolver, so lets check if user exists
-        (uid, resolver, resolverC) = getUserId(user)
-        identified_users.append((user, uid, resolver, resolverC))
-        log.info("the user resolves to %r" % uid)
-        log.info("The username is found within the resolver %r" % resolver)
+        # fill in the set of resolvers
+        getUserId(user)
+        for resolverClass, uid in user.resolverUid.items():
+            identified_users.append((user, uid, resolverClass, resolverClass))
+            log.info("the user resolves to %r", uid)
+            log.info("The username is found within the resolver %r", resolver)
 
-    ide_user = len(identified_users)
-    if ide_user != 1:
-        if ide_user > 1:
-            log.info("The username %s could not be identified uniquely" %
-                     username)
-        if ide_user == 0:
-            log.info("The username %s could not be found." % username)
+    if not identified_users:
+        log.info("The username %s could not be found." % username)
         return None
 
-    (user, uid, resolver, resolverC) = identified_users[0]
     if not authenticate:
+        (user, uid, resolver, resolverC) = identified_users[0]
         return user
 
     # Authenticate user
     auth_user = None
-    try:
-        (package, module, class_, conf) = splitResolver(resolverC)
-        module = package + "." + module
-        y = getResolverObject(resolverC)
+    for identified_user in identified_users:
+        (user, uid, resolver, resolverC) = identified_user
+        try:
+            (package, module, _class_, _conf) = splitResolver(resolverC)
+            module = package + "." + module
+            y = getResolverObject(resolverC)
 
-        if  y.checkPass(uid, password):
-            log.debug("Successfully authenticated user %r." % username)
-            auth_user = user
-        else:
-            log.info("user %r failed to authenticate." % username)
+            if y.checkPass(uid, password):
+                # we stop with the first successful authenticated user
+                log.debug("Successfully authenticated user %r.", username)
+                auth_user = user
+                break
+            else:
+                log.info("user %r failed to authenticate.", username)
 
-    except UserError as exx:
-        log.info("failed to verify the username: %s@%s" % (user.login,
-                                                           user.realm))
+        except UserError as exx:
+            log.info("failed to verify the username: %s@%s: %r",
+                     user.login, user.realm, exx)
 
     if not auth_user:
-        log.error("Error while trying to verify the username: %s" % username)
+        log.error("Error while trying to verify the username: %s", username)
 
     return auth_user
 
