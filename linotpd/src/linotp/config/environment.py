@@ -142,7 +142,7 @@ def load_environment(global_conf, app_conf):
     # any Pylons config options)
 
     from linotp.lib.audit.base import getAudit
-    audit = getAudit()
+    audit = getAudit(config)
     config['audit'] = audit
 
     # setup Security provider definition

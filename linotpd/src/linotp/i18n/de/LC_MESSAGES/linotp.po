@@ -22,13 +22,13 @@
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
-# linotp@lsexperts.de <>, 2015.
+# linotp@lsexperts.de <>, 2015, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2015-11-13 02:43+0100\n"
+"PO-Revision-Date: 2016-01-07 15:55+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -517,6 +517,14 @@ msgstr ""
 
 #, python-format
 msgid ""
+"You do not have the administrative right to manage tools. You are missing a "
+"policy scope=tools, action=%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte um auf die Tools zu zugreifen. Es "
+"fehlt dazu ein Richtlinie mit scope=tools und action=%s."
+
+#, python-format
+msgid ""
 "There is no policy selfservice/max_count definable for the token type %s."
 msgstr ""
 "Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
@@ -851,14 +859,14 @@ msgstr "OCRA suite"
 msgid "Enroll your OCRA2 Token"
 msgstr "Rollen Sie Ihren OCRA2 Token aus"
 
-msgid "Enter seed for the new OCRA2 token:"
-msgstr "Geben Sie das Seed für den neuen OCRA2 Token ein:"
+msgid "Token description"
+msgstr "Token-Beschreibung"
 
 msgid "Generate OCRA2 seed"
 msgstr "OCRA2 Key vom Server generieren lassen."
 
-msgid "Token description"
-msgstr "Token-Beschreibung"
+msgid "Enter seed for the new OCRA2 token:"
+msgstr "Geben Sie das Seed für den neuen OCRA2 Token ein:"
 
 msgid "enroll ocra2 token"
 msgstr "OCRA2 Token ausrollen"
@@ -1293,6 +1301,10 @@ msgstr "YubiKey TokenId"
 msgid "enroll yubico token"
 msgstr "Yubikey ausrollen"
 
+#, python-format
+msgid "%d tokens of %d migrated"
+msgstr "%d Tokens von %d migriert"
+
 msgid "Not a valid json string!"
 msgstr "Kein gültiger JSON Text!"
 
@@ -1359,10 +1371,10 @@ msgstr ""
 
 msgid ""
 "Please enter a valid driver specification like: mysql, postgres, mssql, "
-"oracle or ibm_db_sa+pyodbc"
+"oracle, ibm_db_sa or ibm_db_sa+pyodbc"
 msgstr ""
 "Bitte geben sie einen gültigen Treber an, wie: mysql, postgres, mssql, "
-"oracle oder ibm_db_sa+pyodbc"
+"oracle, ibm_db_sa oder ibm_db_sa+pyodbc"
 
 msgid ""
 "Please enter a valid searchfilter like this: \n"
@@ -1418,6 +1430,12 @@ msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
 
 msgid "Please select only one user."
 msgstr "Bitte wählen Sie nur einen Benutzer aus."
+
+msgid "Found the token: "
+msgstr "Folgender Token wurde gefunden:"
+
+msgid "The token belongs to "
+msgstr "Der Token gehört zu "
 
 msgid "The upload of your support and subscription license failed: "
 msgstr "Das Laden der Support- und Subskriptions-Datei ist fehlgeschlagen: "
@@ -1495,6 +1513,9 @@ msgstr "LDAP Verbindungs Test"
 
 msgid "HTTP Connection Test"
 msgstr "HTTP Verbindungs Test"
+
+msgid "Form Validation Error"
+msgstr "Formular Eingabe Fehler"
 
 msgid "Active"
 msgstr "Aktiv"
@@ -1724,6 +1745,13 @@ msgstr "Fehler bei Tokenaktivierung\n"
 msgid "Error loading history:\n"
 msgstr "Fehler beim Laden der Historie:\n"
 
+msgid ""
+"Could not migrate tokens!\n"
+"\n"
+msgstr ""
+"Konnte die Token nicht migrieren!\n"
+"\n"
+
 msgid "Authentication"
 msgstr "Authentisierung"
 
@@ -1834,6 +1862,9 @@ msgstr "Tokeninformationen exportieren"
 msgid "Export Audit Trail"
 msgstr "Audit-Trail exportieren"
 
+msgid "Migrate resolver"
+msgstr "Resolver Migration"
+
 msgid "Import Token File"
 msgstr "Tokendatei importieren"
 
@@ -1868,9 +1899,6 @@ msgid "You need to enable Javascript to use the LinOTP Management Web UI."
 msgstr ""
 "Sie müssen Javascript aktivieren, um das LinOTP Management Web UI benutzen "
 "zu können."
-
-msgid "Communicating with LinOTP server..."
-msgstr "Kommuniziere mit dem LinOTP Server..."
 
 msgid "Selected User"
 msgstr "Ausgewählter Benutzer"
@@ -2145,8 +2173,8 @@ msgstr "Bitte wählen Sie eine Support- und Subskriptions-Datei"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP - die Open Source Lösung für zwei Faktor Authentisierung."
 
-msgid "Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH"
-msgstr "Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH"
+msgid "Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH"
+msgstr "Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Lizensiert unter AGPLv3"
@@ -2321,6 +2349,21 @@ msgstr "Zum Token"
 
 msgid "Copy PIN"
 msgstr "Kopiere PIN"
+
+msgid "Migrate assigned tokens to a new resolver"
+msgstr "Migriere zugewiesene Token zu einem anderen Resolver"
+
+msgid "From resolver"
+msgstr "von Resolver"
+
+msgid "To resolver"
+msgstr "zu Resolver"
+
+msgid "Migrate Resolver"
+msgstr "Resolver migrieren"
+
+msgid "Migrate tokens"
+msgstr "Token migrieren"
 
 msgid ""
 "Here you can upload the XML file that came with your SafeNet eToken PASS."
@@ -3087,9 +3130,6 @@ msgstr ""
 "Bitte überprüfen sie auf die einzelnen Konfigurations-Einstellungen für "
 "weitere Details."
 
-msgid "Form Validation Error"
-msgstr "Formular Eingabe Fehler"
-
 msgid "License reminder:"
 msgstr "Lizenz Erinnerung:"
 
@@ -3115,6 +3155,9 @@ msgstr "QR-Code zur Installation des Tokens in der 'OATH Token' App für iOS."
 
 msgid "The OATH token seed for installing the token using manual input."
 msgstr "Der OATH Token Seed zur manuellen Eingabe."
+
+msgid "Communicating with LinOTP server..."
+msgstr "Kommuniziere mit dem LinOTP Server..."
 
 msgid "OTP values"
 msgstr "OTP-Werte"

@@ -23,6 +23,11 @@
  *    Support: www.lsexperts.de
  *
  */
+
+var i18n = new Jed({});
+var sprintf = Jed.sprintf;
+
+
 function create_tools_getserial_dialog() {
      var $dialog = $('#dialog_get_serial').dialog({
         autoOpen: false,
@@ -277,4 +282,85 @@ function add_user_data() {
         param['realm'] = $('#realm').val();
     }
     return param;
+}
+
+function migrateResolver(from_resolver, to_resolver, serials) {
+    var param = {};
+    var res = false;
+    param["from"] = from_resolver;
+    param["to"]   = to_resolver;
+
+    var resp = clientUrlFetchSync('/tools/migrate_resolver', param, true);
+    var obj = jQuery.parseJSON(resp);
+        if (obj.result.status==true) {
+            if (obj.result.value.value==true) {
+                msg = escape(obj.result.value.message)
+                alert(msg);
+                res = true;
+            }else {
+                var msg = escape(obj.result.error.message);
+                var err = i18n.gettext("Could not migrate tokens!\n\n")
+                alert(err + msg);
+            }
+        } else {
+            var msg = obj.result.error.message;
+            var err = i18n.gettext("Could not migrate tokens!\n\n")
+            alert(err + msg)
+    }
+    return res;
+}
+
+function create_tools_migrateresolver_dialog() {
+     var $dialog = $('#dialog_migrate_resolver').dialog({
+        autoOpen: false,
+        title: 'Migrate tokens to new resolver',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Migrate Resolver': {
+                click: function(){
+                    var res = migrateResolver($('#copy_from_resolver').val(),
+                                              $('#copy_to_resolver').val());
+                    $(this).dialog('close');
+                    if (res === true) {
+                        $('#token_table').flexReload();
+                    }
+                },
+                id: "button_tools_migrateresolver_ok",
+                text: "Migrate tokens"
+             },
+            'Close': { click: function(){
+                            $(this).dialog('close');
+                        },
+                        id: "button_tools_migrateresolver_close",
+                        text:"Close"
+            }
+        },
+        open: function(){
+            translate_migrateresolver();
+            do_dialog_icons();
+        }
+    });
+    return $dialog;
+  }
+
+/*
+ * window.CURRENT_LANGUAGE is set in the template from the mako lib.
+ * Here, we dynamically load the desired language JSON file for Jed.
+ */
+var browser_lang = window.CURRENT_LANGUAGE || 'en';
+if (browser_lang && browser_lang !== 'en') {
+    try {
+        var url = sprintf("/i18n/%s.json", browser_lang);
+        $.get(
+            url,
+            {},
+            function(data, textStatus) {
+                i18n.options.locale_data.messages = data;
+            },
+            "json"
+        );
+    } catch(e) {
+        alert('Unsupported localisation for ' + escape(browser_lang));
+    }
 }

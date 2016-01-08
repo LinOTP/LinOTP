@@ -126,7 +126,7 @@ class AdminController(BaseController):
         try:
             log.debug("[__before__::%r] %r" % (action, params))
 
-            audit.initialize()
+            c.audit = self.request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
             # Session handling
@@ -436,7 +436,7 @@ class AdminController(BaseController):
             c.audit['realm'] = user.realm
             if "" == c.audit['realm'] and "" != c.audit['user']:
                 c.audit['realm'] = getDefaultRealm()
-            logTokenNum()
+            logTokenNum(c.audit)
             c.audit['success'] = ret
 
             opt_result_dict = {}
@@ -503,7 +503,7 @@ class AdminController(BaseController):
             c.audit['success'] = ret
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm
-            logTokenNum()
+            logTokenNum(c.audit)
 
             if "" == c.audit['realm'] and "" != c.audit['user']:
                 c.audit['realm'] = getDefaultRealm()
@@ -861,7 +861,7 @@ class AdminController(BaseController):
             # if "" == c.audit['realm'] and "" != c.audit['user']:
             #    c.audit['realm'] = getDefaultRealm()
 
-            logTokenNum()
+            logTokenNum(c.audit)
             c.audit['success'] = ret
             checkPolicyPost('admin', 'init', helper_param, user=user,
                             context=self.request_context)
@@ -2148,7 +2148,7 @@ class AdminController(BaseController):
 
             c.audit['info'] = "%s, %s (imported: %i)" % (fileType, tokenFile, len(TOKENS))
             c.audit['serial'] = ', '.join(TOKENS.keys())
-            logTokenNum()
+            logTokenNum(c.audit)
             c.audit['success'] = ret
 
             Session.commit()

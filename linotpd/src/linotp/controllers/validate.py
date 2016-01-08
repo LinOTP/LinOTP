@@ -89,7 +89,7 @@ class ValidateController(BaseController):
         log.debug("[__before__::%r] %r" % (action, params))
 
         try:
-            audit.initialize()
+            c.audit = self.request_context['audit']
             c.audit['client'] = get_client(request)
             if self.request_context:
                 self.request_context['Audit'] = audit

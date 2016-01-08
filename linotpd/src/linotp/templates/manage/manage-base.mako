@@ -103,6 +103,7 @@ if isinstance(lang, list):
                 <li><a href='#' id='menu_tools_checkpolicy'>${_("Check Policy")}</a></li>
                 <li><a href='#' id='menu_tools_exporttoken'>${_("Export Token Info")}</a></li>
                 <li><a href='#' id='menu_tools_exportaudit'>${_("Export Audit Trail")}</a></li>
+                <li><a href='#' id='menu_tools_migrateresolver'>${_("Migrate Resolver")}</a></li>
             </ul>
         </li>
         <li><a href='#'>${_("Import Token File")}</a>
@@ -553,8 +554,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 <option value="1">${_("assigned")}</option>
                 <option value="0">${_("not assigned")}</option>
             </select></p>
-        <p><label for="tools_getserial_realm">${_("Realm")}</label> <select id='tools_getserial_realm'> </select></p>
-        <p><label for="tools_getserial_otp">${_("OTP value")}</label> <input id='tools_getserial_otp'></p>
+        <p><label for="tools_getserial_realm">${_("Realm")}</label>
+            <select id='tools_getserial_realm'> </select></p>
+        <p><label for="tools_getserial_otp">${_("OTP value")}</label>
+            <input id='tools_getserial_otp'></p>
 </div>
 
 <script>
@@ -653,11 +656,36 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <script>
     function translate_copy_token() {
-        $("#dialog_copy_token" ).dialog( "option", "title", '${_("Copy Token PIN")}' );
+        $("#dialog_copy_token").dialog( "option", "title", '${_("Copy Token PIN")}' );
         $('#button_tools_copytokenpin_ok .ui-button-text').html(escape('${_("Copy PIN")}'));
         $('#button_tools_copytokenpin_close .ui-button-text').html(escape('${_("Close")}'));
     }
 </script>
+
+<!-- ###################### copy token ####################### -->
+<div id='dialog_migrate_resolver'>
+    <p>${_("Migrate assigned tokens to a new resolver")}</p>
+    <table>
+    <tr>
+        <td><label for='copy_from_resolver'>${_("From resolver")}</label></td>
+        <td><select id='copy_from_resolver'> </select></td>
+    </tr>
+    <tr>
+        <td><label for='copy_to_resolver'>${_("To resolver")}</label></td>
+        <td><select id='copy_to_resolver'> </select></td>
+    </tr>
+    </table>
+</div>
+
+<script>
+    function translate_migrateresolver() {
+        $("#dialog_migrate_resolver" ).dialog( "option", "title", '${_("Migrate Resolver")}' );
+        $('#button_tools_migrateresolver_ok .ui-button-text').html(escape('${_("Migrate tokens")}'));
+        $('#button_tools_migrateresolver_close .ui-button-text').html(escape('${_("Close")}'));
+    }
+</script>
+
+
 
 <!-- ############# import Safenet ######################### -->
 <div id='dialog_import_safenet'>

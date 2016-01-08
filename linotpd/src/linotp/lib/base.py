@@ -50,8 +50,12 @@ from linotp.lib.config import getGlobalObject
 
 from linotp.model import meta
 from linotp.lib.openid import SQLStorage
-from linotp.model.meta import Session
-from linotp import model
+
+# this is a hack for the static code analyser, which
+# would otherwise show session.close() as error
+import linotp.model
+Session = linotp.model.Session
+
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
@@ -60,9 +64,12 @@ from linotp.lib.util import get_client
 import logging
 log = logging.getLogger(__name__)
 
+Audit = config.get('audit')
+
 # HTTP-ACCEPT-LANGUAGE strings are in the form of i.e.
 # de-DE, de; q=0.7, en; q=0.3
 accept_language_regexp = re.compile(r'\s*([^\s;,]+)\s*[;\s*q=[0-9.]*]?\s*,?')
+
 
 def set_config(key, value, typ, description=None):
     '''
@@ -75,14 +82,16 @@ def set_config(key, value, typ, description=None):
     :return: nothing
     '''
 
-    count = Session.query(model.Config).filter(
-                        model.Config.Key == "linotp." + key).count()
+    count = Session.query(linotp.model.Config).filter(
+                          linotp.model.Config.Key == "linotp." + key).count()
 
     if count == 0:
-        config_entry = model.Config(key, value, Type=typ, Description=description)
+        config_entry = linotp.model.Config(key, value,
+                                           Type=typ, Description=description)
         Session.add(config_entry)
 
     return
+
 
 def set_defaults():
     '''
@@ -187,11 +196,13 @@ def set_defaults():
 
     # emailtoken defaults
     set_config(key=u"EmailProvider",
-               value="linotp.lib.emailprovider.SMTPEmailProvider", typ=u"string",
+               value="linotp.lib.emailprovider.SMTPEmailProvider",
+               typ=u"string",
                description=u"Default EmailProvider class")
     set_config(key=u"EmailChallengeValidityTime",
                value="600", typ=u"int",
-               description=u"Time that an e-mail token challenge stays valid (seconds)")
+               description=u"Time that an e-mail token challenge stays valid"
+                            " (seconds)")
     set_config(key=u"EmailBlockingTimeout",
                value="120", typ=u"int",
                description=u"Time during which no new e-mail is sent out")
@@ -239,8 +250,6 @@ def setup_app(conf, conf_global=None, unitTest=False):
     Session.commit()
 
     log.info("Successfully set up.")
-
-
 
 
 class BaseController(WSGIController):
@@ -383,11 +392,11 @@ class BaseController(WSGIController):
                 found_lang = True
                 break
             except LanguageError:
-                log.debug("Cannot set requested language: %s. Trying next language if available.",
-                          language)
+                log.debug("Cannot set requested language: %s. Trying next"
+                          " language if available.", language)
 
         if not found_lang and languages:
-            log.warning("Cannot set preferred language: %r" % languages)
+            log.warning("Cannot set preferred language: %r", languages)
 
         return
 
@@ -435,7 +444,9 @@ class BaseController(WSGIController):
 
         self.request_context['Client'] = client
 
-        self.request_context['audit'] = {}
+        self.request_context['Audit'] = Audit
+        self.request_context['audit'] = Audit.initialize(request,
+                                                         client=client)
 
         defaultRealm = ""
         try:

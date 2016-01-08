@@ -91,7 +91,7 @@ class OpenidController(BaseController):
             for key, value in params.items():
                 log.debug("[__before__::%r:%r]" % (key, value))
 
-            audit.initialize()
+            c.audit = self.request_context[audit]
             c.audit['client'] = get_client(request)
             self.request_context['Audit'] = audit
 

@@ -147,6 +147,13 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
+    # linotp tools
+    tools = global_conf.get('linotp.tools', 'True') == 'True'
+    if tools and not migrate:
+        for cont in ['tools']:
+            routeMap.connect('/%s/{action}' % cont, controller = cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
     if migrate:
         for cont in ['migrate']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)

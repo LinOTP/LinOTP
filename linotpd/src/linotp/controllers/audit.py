@@ -44,7 +44,6 @@ from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import PolicyException
 
 from linotp.lib.reply import sendError
-from linotp.lib.audit.base import search as audit_search
 from linotp.lib.audit.iterator import AuditQuery
 from linotp.lib.audit.iterator import CSVAuditIterator
 from linotp.lib.audit.iterator import JSONAuditIterator
@@ -83,7 +82,7 @@ class AuditController(BaseController):
         log.debug("[__before__::%r] %r" % (action, params))
 
         try:
-            audit.initialize()
+            c.audit = self.request_context['audit']
             c.audit['client'] = get_client(request)
             check_session(request)
             self.request_context['Audit'] = audit

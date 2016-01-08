@@ -235,7 +235,7 @@ class UserserviceController(BaseController):
         self.autoassign = context['autoassign']
         self.autoenroll = context['autoenroll']
 
-        audit.initialize()
+        c.audit = self.request_context['audit']
         c.audit['success'] = False
         c.audit['client'] = self.client
 
@@ -1189,7 +1189,7 @@ class UserserviceController(BaseController):
             c.audit['user'] = self.authUser.login
             c.audit['realm'] = self.authUser.realm
 
-            logTokenNum()
+	    logTokenNum(c.audit)
             c.audit['success'] = ret
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser,
                             context=self.request_context)
@@ -1362,7 +1362,7 @@ class UserserviceController(BaseController):
                 "valid types are 'oathtoken' and 'googleauthenticator' and "
                 "'googleauthenticator_time'. You provided %s") % typ)
 
-            logTokenNum()
+            logTokenNum(c.audit)
             c.audit['serial'] = serial
             # the Google and OATH are always HMAC; sometimes (FUTURE) totp"
             c.audit['token_type'] = t_type
@@ -1617,7 +1617,7 @@ class UserserviceController(BaseController):
                 'transaction' : trans,
             }
 
-            logTokenNum()
+            logTokenNum(c.audit)
 
             c.audit['serial'] = serial
             c.audit['token_type'] = typ
