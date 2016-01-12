@@ -45,8 +45,8 @@ from linotp.model.meta import Session
 from linotp.model import Token as model_token
 from linotp.model import Config as model_config
 
-from linotp.lib.config  import getFromConfig
-from linotp.lib.config  import  _storeConfigDB
+from linotp.lib.config import getFromConfig
+from linotp.lib.config import _storeConfigDB
 
 from linotp.lib.crypt import SecretObj
 
@@ -67,7 +67,8 @@ class MigrationHandler(object):
         """
         self.salt = None
         self.crypter = None
-        self.context = None
+        self.context = context
+        self.hsm = self.context.get('hsm')
 
     def setup(self, passphrase, salt=None):
         """
@@ -120,11 +121,12 @@ class MigrationHandler(object):
             enc_value = self.crypter.encrypt(input_data=value,
                                              just_mac=key + entry.Value)
 
-            config_item = {}
-            config_item["Key"] = entry.Key
-            config_item["Value"] = enc_value
-            config_item["Type"] = entry.Type
-            config_item["Description"] = entry.Description
+            config_item = {
+                "Key": entry.Key,
+                "Value": enc_value,
+                "Type": entry.Type,
+                "Description": entry.Description
+            }
 
             yield config_item
 
@@ -160,7 +162,9 @@ class MigrationHandler(object):
         _storeConfigDB(key, value, typ=typ, desc=desc)
 
     def get_token_data(self):
-        # get all tokens
+        """
+        get all tokens
+        """
         tokens = Session.query(model_token).all()
 
         for token in tokens:
@@ -169,7 +173,8 @@ class MigrationHandler(object):
             token_data['Serial'] = serial
 
             if token.isPinEncrypted():
-                pin = token.getPin()
+                iv, enc_pin = token.get_encrypted_pin()
+                pin = SecretObj.decrypt_pin(enc_pin, hsm=self.hsm)
                 enc_value = self.crypter.encrypt(input_data=pin,
                                         just_mac=serial + token.LinOtpPinHash)
                 token_data['TokenPin'] = enc_value
@@ -177,8 +182,8 @@ class MigrationHandler(object):
             # the userpin is used in motp and ocra/ocra2 token
             if token.LinOtpTokenPinUser:
                 key, iv = token.getUserPin()
-                secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
-                user_pin = secObj.getKey()
+                user_pin = SecretObj.decrypt(key, iv, hsm=self.hsm)
+
                 enc_value = self.crypter.encrypt(input_data=user_pin,
                                     just_mac=serial + token.LinOtpTokenPinUser)
                 token_data['TokenUserPin'] = enc_value
@@ -188,7 +193,7 @@ class MigrationHandler(object):
             encKey = token.LinOtpKeyEnc
 
             key, iv = token.get_encrypted_seed()
-            secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+            secObj = SecretObj(key, iv, hsm=self.hsm)
             seed = secObj.getKey()
             enc_value = self.crypter.encrypt(input_data=seed,
                                             just_mac=serial + encKey)
@@ -208,16 +213,17 @@ class MigrationHandler(object):
             token_pin = self.crypter.decrypt(enc_pin,
                                 just_mac=serial + token.LinOtpPinHash)
             # prove, we can write
-            iv, enc_pin = SecretObj.encrypt_pin(pin)
-            token.set_pin(token_pin, iv, crypted=True)
+            enc_pin = SecretObj.encrypt_pin(token_pin)
+            iv = enc_pin.split(':')[0]
+            token.set_encrypted_pin(enc_pin, binascii.unhexlify(iv))
 
         if 'TokenUserPin' in token_data:
-            enc_user_pin = token_data['TokenUserPin']
-            user_pin = self.crypter.decrypt(enc_user_pin,
+            token_enc_user_pin = token_data['TokenUserPin']
+            user_pin = self.crypter.decrypt(token_enc_user_pin,
                                just_mac=serial + token.LinOtpTokenPinUser)
             # prove, we can write
-            iv, enc_token_seed = SecretObj.encrypt_seed(token_seed)
-            token.setUserPin(user_pin, iv)
+            iv, enc_user_pin = SecretObj.encrypt(user_pin, hsm=self.hsm)
+            token.setUserPin(enc_user_pin, iv)
 
         # we put the current crypted seed in the mac to check if
         # something changed in meantime
@@ -227,7 +233,7 @@ class MigrationHandler(object):
                                           just_mac=serial + encKey)
 
         # the encryption of the token seed is not part of the model anymore
-        iv, enc_token_seed = SecretObj.encrypt_seed(token_seed)
+        iv, enc_token_seed = SecretObj.encrypt(token_seed)
         token.set_encrypted_seed(enc_token_seed, iv, reset_failcount=False)
 
 
@@ -240,9 +246,9 @@ class Crypter(object):
         return val
 
     def mac(self, *messages):
-        '''
+        """
         calculate the mac independend of the type
-        '''
+        """
         mac_message = ""
         for message in messages:
             if type(message) == str:
@@ -287,7 +293,7 @@ class Crypter(object):
         crypted_data = cipher.encrypt(Crypter.pad(input_data))
 
         # mac encrypted data plus additional 'just_mac' data
-        #mac = self.mac("%r%r%r" % (iv, crypted_data, just_mac))
+        # mac = self.mac("%r%r%r" % (iv, crypted_data, just_mac))
         mac = self.mac(iv, crypted_data, just_mac)
 
         return {"iv": binascii.hexlify(iv),
@@ -299,7 +305,7 @@ class Crypter(object):
         """
         decrypt the stored data
 
-        :param enc_data: the hexlified string with (iv:enc_data)
+        :param encrypted_data: the hexlified string with (iv:enc_data)
         :return: decrypted data
         """
         iv = binascii.unhexlify(encrypted_data["iv"])
@@ -345,7 +351,7 @@ class Crypter(object):
         salt = os.urandom(AES.block_size)
         crypter = Crypter(passphrase, salt)
         # test the encrypt, decrypt
-        #for _i in range(1, 30):
+        # for _i in range(1, 30):
         for i in range(1, 150):
             # create a random string
             data = id_generator(i)

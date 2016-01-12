@@ -53,9 +53,9 @@ from linotp.model.meta import Session
 from linotp.model.meta import MetaData
 
 from linotp.lib.crypt import geturandom
-#from linotp.lib.crypt import encrypt, hash, SecretObj
-#from linotp.lib.crypt import encryptPin
-#from linotp.lib.crypt import decryptPin
+# from linotp.lib.crypt import encrypt, hash, SecretObj
+# from linotp.lib.crypt import encryptPin
+# from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import get_rand_digit_str
 
 
@@ -64,8 +64,8 @@ log = logging.getLogger(__name__)
 
 implicit_returning = config.get('linotpSQL.implicit_returning', True)
 
-## for oracle we need a mapping of columns
-## due to reserved keywords 'session' and 'timestamp'
+# # for oracle we need a mapping of columns
+# # due to reserved keywords 'session' and 'timestamp'
 COL_PREFIX = ""
 SQLU = config.get("sqlalchemy.url", "")
 if SQLU.startswith("oracle:"):
@@ -97,10 +97,10 @@ token_table = sa.Table('Token', meta.metadata,
 
                 sa.Column('LinOtpTokenType', sa.types.Unicode(30), default=u'HMAC', index=True),
                 sa.Column('LinOtpTokenInfo', sa.types.Unicode(2000), default=u''),
-                sa.Column('LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),  ## encrypt
-                sa.Column('LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),  ## encrypt
-                sa.Column('LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),  ## encrypt
-                sa.Column('LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),  ## encrypt
+                sa.Column('LinOtpTokenPinUser', sa.types.Unicode(512), default=u''),  # # encrypt
+                sa.Column('LinOtpTokenPinUserIV', sa.types.Unicode(32), default=u''),  # # encrypt
+                sa.Column('LinOtpTokenPinSO', sa.types.Unicode(512), default=u''),  # # encrypt
+                sa.Column('LinOtpTokenPinSOIV', sa.types.Unicode(32), default=u''),  # # encrypt
 
                 sa.Column('LinOtpIdResolver', sa.types.Unicode(120), default=u'', index=True),
                 sa.Column('LinOtpIdResClass', sa.types.Unicode(120), default=u''),
@@ -109,8 +109,8 @@ token_table = sa.Table('Token', meta.metadata,
 
                 sa.Column('LinOtpSeed', sa.types.Unicode(32), default=u''),
                 sa.Column('LinOtpOtpLen', sa.types.Integer(), default=6),
-                sa.Column('LinOtpPinHash', sa.types.Unicode(512), default=u''),  ## hashed
-                sa.Column('LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),  ## encrypt
+                sa.Column('LinOtpPinHash', sa.types.Unicode(512), default=u''),  # # hashed
+                sa.Column('LinOtpKeyEnc', sa.types.Unicode(1024), default=u''),  # # encrypt
                 sa.Column('LinOtpKeyIV', sa.types.Unicode(32), default=u''),
 
                 sa.Column('LinOtpMaxFail', sa.types.Integer(), default=10),
@@ -132,7 +132,7 @@ class Token(object):
 
         log.debug(' __init__(%s)' % serial)
 
-        ## self.LinOtpTokenId - will be generated DBType serial
+        # # self.LinOtpTokenId - will be generated DBType serial
         self.LinOtpTokenSerialnumber = u'' + serial
 
         self.LinOtpTokenType = u''
@@ -165,7 +165,7 @@ class Token(object):
         :return: - nothing -
         """
         if name in TOKEN_ENCODE:
-            ## encode data
+            # # encode data
             if value:
                 value = linotp.lib.crypt.uencode(value)
         super(Token, self).__setattr__(name, value)
@@ -179,7 +179,7 @@ class Token(object):
 
         :return: the corresponding value
         """
-        #Default behaviour
+        # Default behaviour
         value = object.__getattribute__(self, name)
         if name in TOKEN_ENCODE:
             if value:
@@ -285,7 +285,7 @@ class Token(object):
         # TODO: we could log the PIN here.
         log.debug('getHashedPin()')
 
-        ## calculate a hash from a pin
+        # # calculate a hash from a pin
         # Fix for working with MS SQL servers
         # MS SQL servers sometimes return a '<space>' when the column is empty: ''
         seed_str = self._fix_spaces(self.LinOtpSeed or '')
@@ -306,56 +306,11 @@ class Token(object):
         log.debug('setOtpLen %i' % int(otplen))
         self.LinOtpOtpLen = int(otplen)
 
-    def setPin(self, pin, hashed=True):
-        # TODO: we could log the PIN here
-        log.debug("setPin()")
-
-        upin = ""
-        if pin != "" and pin is not None:
-            upin = pin
-        if hashed == True:
-            self.setHashedPin(upin)
-            log.debug("setPin(HASH:%r)" % self.LinOtpPinHash)
-        elif hashed == False:
-            self.LinOtpPinHash = "@@" + encryptPin(upin)
-            log.debug("setPin(ENCR:%r)" % self.LinOtpPinHash)
-        return self.LinOtpPinHash
-
-    def comparePin(self, pin):
-        log.debug("[comparePin] entering comparePin")
-        res = False
-
-        ## check for a valid input
-        if pin is None:
-            log.error("[comparePin] no valid PIN!")
-            return res
-
-        if self.LinOtpPinHash:
-            if self.isPinEncrypted():
-                log.debug("[comparePin] we got an encrypted PIN!")
-                tokenPin = self.LinOtpPinHash[2:]
-                decryptTokenPin = decryptPin(tokenPin)
-                if decryptTokenPin == pin:
-                    res = True
-            else:
-                log.debug("[comparePin] we got a hashed PIN!")
-                ## is there a hashed pin
-                hashed_pin = self.getHashedPin(pin)
-                if hashed_pin == self.LinOtpPinHash:
-                    res = True
-
-        else: ## token hashed pin is empyt or none
-            log.debug("[comparePin] there is no pin for this token!")
-            if pin == '':
-                res = True
-
-        return res
-
     def deleteToken(self):
         log.debug('deleteToken()')
-        ## some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
-        ## is deleteted via foreign key relation
-        ## so we delete it explicit
+        # # some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
+        # # is deleteted via foreign key relation
+        # # so we delete it explicit
         Session.query(TokenRealm).filter(TokenRealm.token_id == self.LinOtpTokenId).delete()
         Session.delete(self)
         log.debug('delete token success')
@@ -367,13 +322,6 @@ class Token(object):
             pin = self.LinOtpPinHash
         if pin and pin.startswith("@@"):
             ret = True
-        return ret
-
-    def getPin(self):
-        ret = -1
-        if self.isPinEncrypted() == True:
-            tokenPin = self.LinOtpPinHash[2:]
-            ret = decryptPin(tokenPin)
         return ret
 
     def setSoPin(self, enc_soPin, iv):
@@ -497,7 +445,7 @@ class Token(object):
         return self.LinOtpTokenType or 'hmac'
 
     def updateType(self, typ):
-        #in case the prevoius has been different type
+        # in case the prevoius has been different type
         # we must reset the counters
         # But be aware, ray, this could also be upper and lower case mixing...
         if self.LinOtpTokenType.lower() != typ.lower() :
@@ -580,7 +528,7 @@ class Config(object):
         :return: - nothing -
         """
         if name in CONFIG_ENCODE:
-            ## encode data
+            # # encode data
             if value:
                 value = linotp.lib.crypt.uencode(value)
         super(Config, self).__setattr__(name, value)
@@ -594,7 +542,7 @@ class Config(object):
 
         :return: the corresponding value
         """
-        #Default behaviour
+        # Default behaviour
         value = object.__getattribute__(self, name)
         if name in CONFIG_ENCODE:
             if value:
@@ -611,7 +559,7 @@ class Config(object):
 tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
                 sa.Column('id', sa.types.Integer(), sa.Sequence('tokenrealm_seq_id', optional=True), primary_key=True, nullable=False),
                 sa.Column('token_id', sa.types.Integer(), ForeignKey('Token.LinOtpTokenId')),
-                #sa.Column('realm_id', sa.types.Integer())
+                # sa.Column('realm_id', sa.types.Integer())
                 sa.Column('realm_id', sa.types.Integer(), ForeignKey('Realm.id')),
                 implicit_returning=implicit_returning,
                 )
@@ -647,7 +595,7 @@ class Realm(object):
         :return: - nothing -
         """
         if name in REALM_ENCODE:
-            ## encode data
+            # # encode data
             if value:
                 value = linotp.lib.crypt.uencode(value)
         super(Realm, self).__setattr__(name, value)
@@ -661,7 +609,7 @@ class Realm(object):
 
         :return: the corresponding value
         """
-        #Default behaviour
+        # Default behaviour
         value = object.__getattribute__(self, name)
         if name in REALM_ENCODE:
             if value:
@@ -676,7 +624,7 @@ class Realm(object):
         self.name = realm
         if realm is not None:
             self.name = realm.lower()
-        #self.id     = 0
+        # self.id     = 0
 
     def storeRealm(self):
         if self.name is None:
@@ -742,7 +690,7 @@ class OcraChallenge(object):
         :return: - nothing -
         """
         if name in OCRA_ENCODE:
-            ## encode data
+            # # encode data
             if value:
                 value = linotp.lib.crypt.uencode(value)
         super(OcraChallenge, self).__setattr__(name, value)
@@ -756,7 +704,7 @@ class OcraChallenge(object):
 
         :return: the corresponding value
         """
-        #Default behaviour
+        # Default behaviour
         value = object.__getattribute__(self, name)
         if name in OCRA_ENCODE:
             if value:
@@ -849,6 +797,7 @@ challenges_table = sa.Table('challenges', meta.metadata,
 
 CHALLENGE_ENCODE = ["data", "challenge", 'tokenserial']
 
+
 class Challenge(object):
     '''
     the generic challange handling
@@ -879,7 +828,7 @@ class Challenge(object):
         :return: - nothing -
         """
         if name in CHALLENGE_ENCODE:
-            ## encode data
+            # # encode data
             if value:
                 value = linotp.lib.crypt.uencode(value)
         super(Challenge, self).__setattr__(name, value)
@@ -893,7 +842,7 @@ class Challenge(object):
 
         :return: the corresponding value
         """
-        #Default behaviour
+        # Default behaviour
         value = object.__getattribute__(self, name)
         if name in CHALLENGE_ENCODE:
             if value:
@@ -902,8 +851,6 @@ class Challenge(object):
                 value = ""
 
         return value
-
-
 
     @classmethod
     def createTransactionId(cls , length=20):
@@ -922,7 +869,6 @@ class Challenge(object):
         except:
             data = self.data
         return data
-
 
     def get(self, key=None, fallback=None, save=False):
         '''
@@ -950,7 +896,6 @@ class Challenge(object):
 
     def getId(self):
         return self.id
-
 
     def getSession(self):
         return self.session
@@ -1037,7 +982,7 @@ log.debug('calling ORM Mapper')
 #      http://www.sqlalchemy.org/docs/05/reference/orm/mapping.html
 # The realms of a token will be stored in the additional attribute "realms"
 # and the token, to which the realms belong will be stored in the backed "token"
-#orm.mapper(Token, token_table, properties={
+# orm.mapper(Token, token_table, properties={
 #    #'realms':relation(Realm, secondary=tokenrealm_table)
 #    'realms':relation(TokenRealm, backref=backref('token'))
 #    })
@@ -1052,13 +997,13 @@ orm.mapper(TokenRealm, tokenrealm_table)
 orm.mapper(Config, config_table)
 
 
-## for oracle and the SQLAlchemy 0.7 we need a mapping of columns
-## due to reserved keywords session and timestamp
+# # for oracle and the SQLAlchemy 0.7 we need a mapping of columns
+# # due to reserved keywords session and timestamp
 mapping = {}
 mapping['session'] = "%ssession" % COL_PREFIX
 mapping['timestamp'] = "%stimestamp" % COL_PREFIX
 
-## create challenges ORM mapping to the Challenge class
+# # create challenges ORM mapping to the Challenge class
 
 challenge_properties = {}
 if len(COL_PREFIX) > 0:
@@ -1067,7 +1012,7 @@ if len(COL_PREFIX) > 0:
 
 orm.mapper(Challenge, challenges_table, properties=challenge_properties)
 
-## create Ocra ORM mapping to the Ocra class
+# # create Ocra ORM mapping to the Ocra class
 ocra_properties = {}
 if len(COL_PREFIX) > 0:
     for key, value in mapping.items():
