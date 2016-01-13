@@ -161,7 +161,7 @@ class SelfserviceController(BaseController):
         '''
 
         try:
-            audit.initialize()
+            c.audit = self.request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
 

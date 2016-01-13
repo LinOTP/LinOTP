@@ -128,7 +128,7 @@ def getPolicies(config=None):
     Policies = {}
     for entry in lConfig:
         if entry.startswith("linotp.Policy."):
-            #log.debug("[getPolicy] entry: %s" % entry )
+            # log.debug("[getPolicy] entry: %s" % entry )
             policy = entry.split(".", 4)
             if len(policy) == 4:
                 name = policy[2]
@@ -166,7 +166,7 @@ def getPolicy(param, display_inactive=False, context=None):
     :return: a dictionary with the policies. The name of the policy being
              the key
     '''
-    #log.debug("[getPolicy] params %s" % str(param))
+    # log.debug("[getPolicy] params %s" % str(param))
     Policies = {}
 
     # First we load ALL policies from the Config
@@ -195,21 +195,21 @@ def getPolicy(param, display_inactive=False, context=None):
     # Now we need to clean up realms, that were not requested
     pol2delete = []
     if param.get('realm', None) is not None:
-        #log.debug("[getPolicy] cleanup acccording to realm %s"
+        # log.debug("[getPolicy] cleanup acccording to realm %s"
         #          % param["realm"])
         for polname, policy in Policies.items():
             delete_it = True
-            #log.debug("[getPolicy] evaluating policy %s: %s"
+            # log.debug("[getPolicy] evaluating policy %s: %s"
             #          % (polname, str(policy)))
             if policy.get("realm") is not None:
                 pol_realms = [p.strip()
                               for p in policy['realm'].lower().split(',')]
-                #log.debug("[getPolicy] realms in policy %s: %s"
+                # log.debug("[getPolicy] realms in policy %s: %s"
                 #          % (polname, str(pol_realms) ))
                 for r in pol_realms:
-                    #log.debug("[getPolicy] Realm: %s" % r)
+                    # log.debug("[getPolicy] Realm: %s" % r)
                     if r == param['realm'].lower() or r == '*':
-                        #log.debug( "[getPolicy] Setting delete_it to false.
+                        # log.debug( "[getPolicy] Setting delete_it to false.
                         # Se we are using policy: %s" % str(polname))
                         delete_it = False
             if delete_it:
@@ -219,7 +219,7 @@ def getPolicy(param, display_inactive=False, context=None):
 
     pol2delete = []
     if param.get('scope', None) is not None:
-        #log.debug("[getPolicy] cleanup acccording to scope %s"
+        # log.debug("[getPolicy] cleanup acccording to scope %s"
         #          % param["scope"])
         for polname, policy in Policies.items():
             if policy['scope'].lower() != param['scope'].lower():
@@ -229,18 +229,18 @@ def getPolicy(param, display_inactive=False, context=None):
 
     pol2delete = []
     if param.get('action', None) is not None:
-        #log.debug("[getPolicy] cleanup acccording to action %s"
+        # log.debug("[getPolicy] cleanup acccording to action %s"
         #          % param["action"])
         param_action = param['action'].strip().lower()
         for polname, policy in Policies.items():
             delete_it = True
-            #log.debug("[getPolicy] evaluating policy %s: %s"
+            # log.debug("[getPolicy] evaluating policy %s: %s"
             #          % (polname, str(policy)))
             if policy.get("action") is not None:
                 pol_actions = [p.strip()
                                for p in policy.get('action', "").
                                lower().split(',')]
-                #log.debug("[getPolicy] actions in policy %s: %s "
+                # log.debug("[getPolicy] actions in policy %s: %s "
                 #          % (polname, str(pol_actions) ))
                 for policy_action in pol_actions:
                     if policy_action == '*' or policy_action == param_action:
@@ -295,10 +295,10 @@ def getPolicy(param, display_inactive=False, context=None):
 
 
 def parse_action_value(action_value):
-    """  
+    """
     parsing the policy action value by an regular expression
     """
-    params = {} 
+    params = {}
     key_vals = action_value.split(',')
     for ke_val in key_vals:
         res = ke_val.split('=', 1)
@@ -306,8 +306,8 @@ def parse_action_value(action_value):
         # if we have a boolean value, there is only one arg
         if len(res) == 1:
             key = res[0].strip()
-            if key: 
-                params[key] = True 
+            if key:
+                params[key] = True
         else:
             key = res[0].strip()
             val = res[1].strip()
@@ -417,7 +417,7 @@ def getAdminPolicies(action, lowerRealms=False, context=None):
     # get all the realms from the policies:
     realms = []
     for _pol, val in policies.items():
-        ## the val.get('realm') could return None
+        # # the val.get('realm') could return None
         pol_realm = val.get('realm', '') or ''
         pol_realm = pol_realm.split(',')
         for r in pol_realm:
@@ -609,7 +609,7 @@ def _checkTokenNum(user=None, realm=None, context=None):
         return ret
 
     else:
-        #allRealms = getRealms()
+        # allRealms = getRealms()
         Realms = []
 
         if user:
@@ -751,7 +751,7 @@ def get_tokenlabel(user="", realm="", serial="", context=None):
     client = _get_client(context)
 
     # TODO: What happens when we got no realms?
-    #pol = getPolicy( {'scope': 'enrollment', 'realm': realm} )
+    # pol = getPolicy( {'scope': 'enrollment', 'realm': realm} )
     pol = get_client_policy(client, scope="enrollment",
                             realm=realm, user=user,
                             context=context)
@@ -1461,7 +1461,7 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None,
                                              context=context)))):
                 log.warning("the admin >%s< is not allowed to set MOTP PIN/SC "
                             "UserPIN for token %s." %
-                            (policies['admin'], serial))
+                            (policies1['admin'], serial))
                 raise PolicyException(_("You do not have the administrative "
                                       "right to set MOTP PIN/ SC UserPIN "
                                       "for token %s. Check the policies.")
@@ -1735,6 +1735,23 @@ def _checkManagePolicyPre(method, param={}, authUser=None, user=None,
     ret = {}
     log.debug("entering controller %s" % controller)
     return ret
+
+
+def checkToolsAuthorisation(method, param={}, context=None):
+    # TODO: fix the semantic of the realm in the policy!
+
+    ret = {}
+    _ = context['translate']
+
+    auth = _getAuthorization("tools", method, context=context)
+    if auth['active'] and not auth['auth']:
+        log.warning("the admin >%r< is not allowed to "
+                    "view the audit trail" % auth['admin'])
+
+        ret = _("You do not have the administrative right to manage tools. "
+               "You are missing a policy scope=tools, action=%s") % method
+
+        raise PolicyException(ret)
 
 
 def _checkSelfservicePolicyPre(method, param={}, authUser=None, user=None,
@@ -2069,6 +2086,12 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None,
         ret = _checkManagePolicyPre(method=method, param=param,
                                      authUser=authUser, user=user,
                                      context=context)
+
+    elif controller in ['tools']:
+        ret = _checkToolsPolicyPre(method=method, param=param,
+                                     authUser=authUser, user=user,
+                                     context=context)
+
     elif 'selfservice' == controller:
         ret = _checkSelfservicePolicyPre(method=method, param=param,
                                      authUser=authUser, user=user,
@@ -2289,8 +2312,8 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
     log.debug("got policies %s " % Pols)
 
     def get_array(policy, attribute="client", marks=False):
-        ## This function returns the parameter "client" or
-        ## "user" in a policy as an array
+        # # This function returns the parameter "client" or
+        # # "user" in a policy as an array
         attrs = policy.get(attribute, "")
         if attrs == "None" or attrs is None:
             attrs = ""
@@ -2308,7 +2331,7 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
             del attrs_array[0]
         return attrs_array
 
-    ## 1. Find a policy with this client
+    # # 1. Find a policy with this client
     for pol, policy in Pols.items():
         log.debug("checking policy %s" % pol)
         clients_array = get_array(policy, attribute="client")
@@ -2346,9 +2369,9 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
             if len(get_array(policy, attribute="client")) == 0:
                 Policies[pol] = policy
 
-    ## 2. Within those policies select the policy with the user.
-    ##     if there is a policy with this very user, return only
-    ##     these policies, otherwise return all policies
+    # # 2. Within those policies select the policy with the user.
+    # #     if there is a policy with this very user, return only
+    # #     these policies, otherwise return all policies
     if user:
         user_policy_found = False
         own_policies = {}
@@ -2374,11 +2397,11 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
         else:
             Policies = default_policies
 
-        ##3. If no user specific policy was found, we now take a look,
-        ##   if we find a policy with the matching resolver.
+        # #3. If no user specific policy was found, we now take a look,
+        # #   if we find a policy with the matching resolver.
         if not user_policy_found and realm and find_resolver:
-            ## get the resolver of the user in the realm and search for this
-            ## resolver in the policies
+            # # get the resolver of the user in the realm and search for this
+            # # resolver in the policies
             if userObj is not None:
                 resolvers = getResolversOfUser(userObj)
             else:
@@ -2763,9 +2786,9 @@ def check_auth_tokentype(serial, exception=False, user=None, context=None):
                 or len(tokentypes) == 0):
             res = True
     elif len(toks) == 0:
-        ## TODO if the user does not exis or does have no token
+        # # TODO if the user does not exis or does have no token
         ## ---- WHAT DO WE DO? ---
-        ## At the moment we pass through: This is the old behaviour...
+        # # At the moment we pass through: This is the old behaviour...
         res = True
 
     if res is False and exception:
@@ -2896,9 +2919,9 @@ def get_pin_policies(user, context=None):
                "Check scope=authentication. policies: %r" % pin_policies)
 
         log.error("[__checkToken] %r" % msg)
-        #self.context.audit['action_detail'] = msg
+        # self.context.audit['action_detail'] = msg
         raise Exception('multiple pin policies found')
-        ## former return -2
+        # # former return -2
 
     return pin_policies
 

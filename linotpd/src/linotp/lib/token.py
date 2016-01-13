@@ -117,7 +117,7 @@ class TokenHandler(object):
             tokenrealm = [tokenrealm]
         # if there is a realm as parameter, we assign the token to this realm
         if 'realm' in param:
-            ## and append our parameter realm
+            # # and append our parameter realm
             tokenrealm.append(param.get('realm'))
 
         typ = getParam(param, "type", optional)

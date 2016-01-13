@@ -88,7 +88,7 @@ class GettokenController(BaseController):
         log.debug("[__before__]")
 
         try:
-            audit.initialize()
+            c.audit = self.request_context['audit']
             c.audit['client'] = get_client(request)
             check_session(request)
 

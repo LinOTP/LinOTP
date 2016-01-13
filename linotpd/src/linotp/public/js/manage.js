@@ -1699,6 +1699,26 @@ function do_dialog_icons(){
 //
 // realms and resolver functions
 //
+function _fill_resolvers(widget){
+    $.get('/system/getResolvers', {'session':getsession()} ,
+     function(data, textStatus, XMLHttpRequest){
+        var resolversOptions = "";
+        var value = {};
+        if (data.hasOwnProperty('result')) {
+            value = data.result.value;
+        }
+        for (var i in value) {
+            var resolver_val = escape(i);
+            resolversOptions += "<option>";
+            resolversOptions += resolver_val;
+            resolversOptions += "</option>";
+        }
+        widget.html(resolversOptions);
+    });
+    return;
+}
+
+
 function _fill_realms(widget, also_none_realm){
     var defaultRealm = "";
     $.get('/system/getRealms', {'session':getsession()} ,
@@ -3872,6 +3892,15 @@ $(document).ready(function(){
     $('#menu_tools_exportaudit').click(function(){
         $dialog_tools_exportaudit.dialog('open');
     });
+
+    $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
+    $('#menu_tools_migrateresolver').click(function(){
+        //_fill_realms($('#tools_getserial_realm'),1)
+        _fill_resolvers($('#copy_to_resolver'))
+        _fill_resolvers($('#copy_from_resolver'))
+        $dialog_tools_migrateresolver.dialog('open');
+    });
+
 
     /************************************************************
      * Enrollment Dialog with response url

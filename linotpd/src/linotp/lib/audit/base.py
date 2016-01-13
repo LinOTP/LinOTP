@@ -27,13 +27,10 @@
 
 import logging
 log = logging.getLogger(__name__)
-from pylons import config
-from pylons import tmpl_context as c
-from pylons import request
 import socket
 
-
 from linotp.lib.token import getTokenNumResolver
+
 
 def getAuditClass(packageName, className):
     """
@@ -72,45 +69,57 @@ def getAuditClass(packageName, className):
         return klass
 
 
-def getAudit():
+def getAudit(config):
     audit_type = config.get("linotpAudit.type")
-    audit = getAuditClass(audit_type, "Audit")()
+    audit = getAuditClass(audit_type, "Audit")(config)
     return audit
 
 
-def logTokenNum():
+def logTokenNum(audit):
+    """
+    add the current token count to the audit dict
+
+    :param audit: audit dict
+    """
     # log the number of the tokens
-    c.audit['action_detail'] = "tokennum = %s" % str(getTokenNumResolver())
+    audit['action_detail'] = "tokennum = %s" % str(getTokenNumResolver())
+
 
 class AuditBase(object):
 
-    def __init__(self):
+    def __init__(self, config):
         self.name = "AuditBase"
+        self.config = config
 
-    def initialize(self):
+    def initialize(self, request, client=None):
         # defaults
-        c.audit = {'action_detail' : '',
-                   'info' : '',
-                   'log_level' : 'INFO',
-                   'administrator' : '',
-                   'value' : '',
-                   'key' : '',
-                   'serial' : '',
-                   'token_type' : '',
-                   'clearance_level' : 0,
-                   'linotp_server' : socket.gethostname(),
-                   'realm' : '',
-                   'user' : '',
-                   'client' : ''
-                   }
-        c.audit['action'] = "%s/%s" % (
-                        request.environ['pylons.routes_dict']['controller'],
-                        request.environ['pylons.routes_dict']['action'])
-
+        audit = {'action_detail': '',
+                 'info': '',
+                 'log_level': 'INFO',
+                 'administrator': '',
+                 'value': '',
+                 'key': '',
+                 'serial': '',
+                 'token_type': '',
+                 'clearance_level': 0,
+                 'linotp_server': socket.gethostname(),
+                 'realm': '',
+                 'user': '',
+                 'client': '',
+                 'success': False,
+                }
+        path = ("%s/%s"
+                 % (request.environ['pylons.routes_dict']['controller'],
+                    request.environ['pylons.routes_dict']['action'])
+                )
+        audit['action'] = path
+        if client:
+            audit['client'] = client
+        return audit
 
     def readKeys(self):
-        priv = config.get("linotpAudit.key.private")
-        pub = config.get("linotpAudit.key.public")
+        priv = self.config.get("linotpAudit.key.private")
+        pub = self.config.get("linotpAudit.key.public")
         try:
             f = open(priv, "r")
             self.private = f.read()
@@ -185,7 +194,7 @@ class AuditBase(object):
         return iter([])
 
 
-def search(param, user=None, columns=None):
+def search(param, user=None, columns=None,):
 
     audit = config.get('audit')
     search_dict = {}

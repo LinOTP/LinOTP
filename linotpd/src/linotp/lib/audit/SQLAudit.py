@@ -59,6 +59,7 @@ if ini_file is not None:
     # When importing the module with Sphinx to generate documentation
     # 'ini_file' is None. In other cases this should not be the case.
     logging.config.fileConfig(ini_file, disable_existing_loggers=False)
+
 log = logging.getLogger(__name__)
 
 metadata = schema.MetaData()
@@ -69,6 +70,7 @@ def now():
 
 ######################## MODEL ################################################
 table_prefix = config.get("linotpAudit.sql.table_prefix", "")
+
 audit_table_name = '%saudit' % table_prefix
 
 audit_table = schema.Table(audit_table_name, metadata,
@@ -106,7 +108,8 @@ class AuditTable(object):
                 linotp_server=u"",
                 client=u"",
                 log_level=u"INFO",
-                clearance_level=0):
+                clearance_level=0,
+                config_param=None):
         """
         build an audit db entry
 
@@ -160,6 +163,10 @@ class AuditTable(object):
         self.clearance_level = clearance_level
         self.timestamp = now()
         self.siganture = ' '
+        if config_param:
+            self.config = config_param
+        else:
+            self.config = config
 
     def _get_field_len(self, col_name):
         leng = -1
@@ -187,7 +194,7 @@ class AuditTable(object):
             encoded_value = linotp.lib.crypt.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
                 log.warning("truncating audit data: [audit.%s] %s" % (name, value))
-                trunc_as_err = config.get("linotpAudit.error_on_truncation", False) or False
+                trunc_as_err = self.config.get("linotpAudit.error_on_truncation", False) or False
                 if trunc_as_err != False:
                     raise Exception("truncating audit data: [audit.%s] %s" % (name, value))
 
@@ -229,12 +236,13 @@ class Audit(AuditBase):
     """
     Audit Implementation to the generic audit interface
     """
-    def __init__(self):
+    def __init__(self, config):
         self.name = "SQlAudit"
-
+        self.config = config
         connect_string = config.get("linotpAudit.sql.url")
         pool_recycle = config.get("linotpAudit.sql.pool_recyle", 3600)
         implicit_returning = config.get("linotpSQL.implicit_returning", True)
+
         self.engine = None
         ########################## SESSION ##################################
 
@@ -263,7 +271,8 @@ class Audit(AuditBase):
         # initialize signing keys
         self.readKeys()
 
-        self.PublicKey = RSA.load_pub_key(config.get("linotpAudit.key.public"))
+        self.PublicKey = RSA.load_pub_key(
+                                          self.config.get("linotpAudit.key.public"))
         self.VerifyEVP = EVP.PKey()
         self.VerifyEVP.reset_context(md='sha256')
         self.VerifyEVP.assign_rsa(self.PublicKey)
@@ -391,7 +400,8 @@ class Audit(AuditBase):
                     linotp_server=param.get('linotp_server'),
                     client=param.get('client'),
                     log_level=param.get('log_level'),
-                    clearance_level=param.get('clearance_level')
+                    clearance_level=param.get('clearance_level'),
+                    config_param=self.config,
             )
 
         self.session.add(at)

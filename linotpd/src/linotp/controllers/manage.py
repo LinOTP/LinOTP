@@ -98,7 +98,7 @@ class ManageController(BaseController):
         log.debug("[__before__::%r] %r" % (action, params))
 
         try:
-            audit.initialize()
+            c.audit = self.request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
 

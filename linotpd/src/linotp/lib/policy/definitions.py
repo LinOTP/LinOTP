@@ -241,6 +241,13 @@ def getPolicyDefinitions(scope=""):
             'view': {
                 'type': 'bool'}
         },
+        'tools': {
+            'migrate_resolver': {
+                'type': 'bool',
+                'desc': 'Support the migration of assigned tokens to '
+                        'a new resolver '
+            }
+        },
         'ocra': {
             'request': {
                 'type': 'bool',
