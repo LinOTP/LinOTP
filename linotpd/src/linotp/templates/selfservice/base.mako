@@ -61,6 +61,8 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
 
+<script type="text/javascript" src="/js/jed.js"></script>
+
 <script type="text/javascript" src="/js/qrcode.js"></script>
 <script type="text/javascript" src="/js/qrcode-helper.js"></script>
 <script type="text/javascript" src="/js/linotp_utils.js"></script>
@@ -75,8 +77,6 @@ if isinstance(lang, list):
     window.CURRENT_LANGUAGE = "${lang}";
     window.ALL_CURRENT_LANGUAGE = "${allang}";
 </script>
-
-<script type="text/javascript" src="/js/jed.js"></script>
 
 <script type="text/javascript" src="/js/selfservice.js"></script>
 
