@@ -80,6 +80,7 @@ if isinstance(lang, list):
     <script type='text/javascript' src='/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/js/superfish.min.js'></script>
 %endif
+<script type="text/javascript" src="/js/jed.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
 
 <script type="text/javascript" src="/js/qrcode.js"></script>
@@ -102,7 +103,6 @@ if isinstance(lang, list):
     window.ALL_CURRENT_LANGUAGE = "${allang}";
 </script>
 
-<script type="text/javascript" src="/js/jed.js"></script>
 <script type="text/javascript" src="/js/manage.js"></script>
 
 </head>

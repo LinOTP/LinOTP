@@ -376,8 +376,7 @@ class BaseController(WSGIController):
                 break
 
             try:
-                # set_lang needs a locale name formed parameter
-                set_lang(language.replace('-','_'))
+                set_lang(language.split('-')[0])
                 found_lang = True
                 break
             except LanguageError:
