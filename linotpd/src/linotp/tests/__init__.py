@@ -261,6 +261,7 @@ class TestController(unittest2.TestCase):
             params=None,
             headers=None,
             cookies=None,
+            auth_user='admin',
             ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -275,7 +276,7 @@ class TestController(unittest2.TestCase):
             cookies['admin_session'] = self.session
         if not 'Authorization' in headers:
             headers['Authorization'] = TestController.get_http_digest_header(
-                username='admin'
+                username=auth_user
                 )
         return self.make_request(
             controller,
@@ -286,7 +287,8 @@ class TestController(unittest2.TestCase):
             cookies=cookies,
             )
 
-    def make_admin_request(self, action, params=None, method='GET'):
+    def make_admin_request(self, action, params=None, method='GET',
+                           auth_user='admin',):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -297,9 +299,11 @@ class TestController(unittest2.TestCase):
             action,
             method=method,
             params=params,
+            auth_user=auth_user,
             )
 
-    def make_system_request(self, action, params=None, method='GET'):
+    def make_system_request(self, action, params=None, method='GET',
+                            auth_user='admin'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -310,6 +314,7 @@ class TestController(unittest2.TestCase):
             action,
             method=method,
             params=params,
+            auth_user=auth_user,
             )
 
     def make_validate_request(self, action, params=None, method='GET'):

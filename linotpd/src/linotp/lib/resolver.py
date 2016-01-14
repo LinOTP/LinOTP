@@ -528,6 +528,16 @@ def closeResolvers():
     return
 
 
+def getResolverClassName(resolver_type, resolver_name):
+
+    res = ""
+    for clazz_name, clazz_type in context.resolver_types.items():
+        if clazz_type == resolver_type:
+            res = "%s.%s" % (clazz_name, resolver_name)
+            break
+
+    return res
+
 # internal functions
 def get_resolver_class(resolver_type):
     '''

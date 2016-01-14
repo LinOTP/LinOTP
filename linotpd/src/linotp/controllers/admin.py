@@ -326,7 +326,7 @@ class AdminController(BaseController):
 
             filterRealm = []
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param , user=user)
+            res = checkPolicyPre('admin', 'show', param, user=user)
 
             filterRealm = res['realms']
             # check if policies are active at all
@@ -1481,16 +1481,22 @@ class AdminController(BaseController):
 
         """
         users = []
-        param = request.params
+        param = {}
 
         # check admin authorization
         # check if we got a realm or resolver, that is ok!
         try:
-            realm = getParam(param, "realm", optional)
-            checkPolicyPre('admin', 'userlist', param)
+            param.update(request.params)
+            realm = param.get("realm")
+            user = getUserFromParam(param, optional)
+
+            acls = checkPolicyPre('admin', 'userlist', param)
+            allowed_realms = acls['realms']
 
             up = 0
-            user = getUserFromParam(param, optional)
+            if user and user.realm and allowed_realms:
+                if user.realm.lower() not in allowed_realms:
+                    raise PolicyException('not allowed to see realm')
 
             log.info("[userlist] displaying users with param: %s, ", param)
 

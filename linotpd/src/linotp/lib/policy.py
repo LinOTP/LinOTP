@@ -39,8 +39,10 @@ from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
 from linotp.lib.user import getUserRealms
-from linotp.lib.user import User, getUserFromParam, getUserFromRequest
+from linotp.lib.user import getUserFromParam
+from linotp.lib.user import getUserFromRequest
 from linotp.lib.user import getResolversOfUser
+from linotp.lib.user import User
 
 from linotp.lib.util import get_client
 
@@ -673,13 +675,46 @@ def getPolicy(param, display_inactive=False):
                 raise Exception("Empty userlist in policy '%s' not supported!" % polname)
 
             delete_it = True
-            for u in pol_users:
-                # log.debug("[getPolicy] User: %s" % u )
-                if u == param['user'].lower() or u == '*':
-                    # log.debug("[getPolicy] setting delete_it to false."
-                    #          "We are using policy %s" % str(polname))
+
+            # first check of wildcard in users
+            if '*' in pol_users:
+                delete_it = False
+
+            # then check for direct name match
+            if delete_it:
+                if (param['user'].lower() in pol_users or
+                    param['user'] in pol_users):
                     delete_it = False
-                    break
+
+            # we support the verification of the user,
+            # to be in a resolver for the admin and system scope
+            local_scope = param.get('scope', '').lower()
+            if local_scope in ['admin', 'system']:
+                policy_users = policy.get('user', '').split(',')
+                if delete_it:
+                    # check for matching of wildcard realm
+                    for policy_user in policy_users:
+                        policy_user = policy_user.strip()
+                        if policy_user[0:2] == '*@':
+                            domain = policy_user[2:]
+                            domain_user = param['user']
+                            if '@' in domain_user:
+                                if domain_user.split('@')[-1] == domain:
+                                    delete_it = False
+                                    break
+
+                if delete_it:
+                    # check existance in resolver
+                    for policy_user in policy_users:
+                        policy_user = policy_user.strip()
+                        # check if user is par of an resolver, independend
+                        # of an realms
+                        if policy_user[-1] == ':':
+                            resolver = policy_user[:-1]
+                            f_user = User(login=param['user'])
+                            if f_user.does_exists([resolver]):
+                                delete_it = False
+                                break
 
             if delete_it:
                 pol2delete.append(polname)
@@ -839,7 +874,7 @@ def getAdminPolicies(action, lowerRealms=False):
                  " Admin authorization will be disabled.")
         active = False
 
-    # We may change this later to other authetnication schemes
+    # We may change this later to other authentication schemes
     admin_user = getUserFromRequest(request)
     log.info("[getAdminPolicies] Evaluating policies for the "
              "user: %s" % admin_user['login'])
@@ -1756,23 +1791,74 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
         serial = getParam(param, "serial", optional)
         if user is None:
             user = getUserFromParam(param, optional)
+
         realm = getParam(param, "realm", optional)
         if realm is None or len(realm) == 0:
             realm = getDefaultRealm()
 
-        if 'show' == method:
+        if method in ['show']:
             log.debug("[checkPolicyPre] entering method %s" % method)
-
             # get the realms for this administrator
-            policies = getAdminPolicies('')
+            policies = getAdminPolicies(action=method)
             log.debug("[checkPolicyPre] The admin >%s< may manage the "
                       "following realms: %s" % (policies['admin'],
                                                 policies['realms']))
             if policies['active'] and 0 == len(policies['realms']):
                 log.error("[checkPolicyPre] The admin >%s< has no rights in "
                           "any realms!" % policies['admin'])
-                raise PolicyException(_("You do not have any rights in any "
-                                      "realm! Check the policies."))
+                msg = _("You do not have any rights in any "
+                        "realm! Check the policies.")
+                raise PolicyException(msg)
+            return {'realms': policies['realms'], 'admin': policies['admin']}
+
+        elif method in ['userlist']:
+            log.debug("[checkPolicyPre] entering method %s" % method)
+            # get the realms for this administrator
+            realm = param.get("realm")
+            resConf = param.get("resConf")
+
+            policies = getAdminPolicies(action=method)
+            log.debug("[checkPolicyPre] The admin >%s< may manage the "
+                      "following realms: %s" % (policies['admin'],
+                                                policies['realms']))
+            msg = None
+            if policies['active']:
+                if not policies['realms']:
+                    log.error("[checkPolicyPre] The admin >%s< has no rights in "
+                              "any realms!" % policies['admin'])
+
+                    msg = (_("You do not have the administrative"
+                             " right to list users in realm %s(%s).")
+                            % (user.realm, user.conf))
+                if realm:
+                    allowed_realms = policies['realms']
+                    if realm and realm.lower() not in allowed_realms:
+                        msg = (_("You do not have the administrative"
+                                " right to list users in realm %s(%s).")
+                               % (user.realm, user.conf))
+
+                if resConf:
+                    found = False
+                    allowed_realms = policies['realms']
+                    for allowed_realm in allowed_realms:
+                        realm_def = getRealms(allowed_realm)
+                        allowed_resolvers = realm_def[allowed_realm].\
+                                            get('useridresolver', [])
+                        for allowed_resolver in allowed_resolvers:
+                            if allowed_resolver.split('.')[-1] == resConf:
+                                found = True
+                                break
+                        if found:
+                            break
+
+                    if not found:
+                        msg = (_("You do not have the administrative"
+                                " right to list users in realm %s(%s).")
+                               % (user.realm, user.conf))
+
+            if msg:
+                raise PolicyException(msg)
+
             return {'realms': policies['realms'], 'admin': policies['admin']}
 
         elif 'remove' == method:
@@ -2157,18 +2243,6 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
                 raise PolicyException(_("You do not have the administrative "
                                       "right to resync token %s. Check the "
                                       "policies.") % serial)
-
-        elif 'userlist' == method:
-            policies = getAdminPolicies("userlist")
-            # check if the admin may view the users in this realm
-            if (policies['active'] and
-                    not checkAdminAuthorization(policies, "", user)):
-                log.warning("[userlist] the admin >%s< is not allowed to list"
-                            " users in realm %s(%s)!"
-                            % (policies['admin'], user.realm, user.conf))
-                raise PolicyException(_("You do not have the administrative"
-                                      " right to list users in realm %s(%s).")
-                                      % (user.realm, user.conf))
 
         elif 'tokenowner' == method:
             policies = getAdminPolicies("tokenowner")
