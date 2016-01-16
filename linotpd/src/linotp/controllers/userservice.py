@@ -212,7 +212,10 @@ class UserserviceController(BaseController):
         # - check if the decrypted cookie user and client are the same as
         #   the requesting user / client
 
-        self.client = get_client()
+        client = get_client()
+        if not client:
+            client = 'localhost'
+        self.client = client
 
         if action not in ['auth', 'pre_context']:
             auth_type, identity = get_auth_user(request)
@@ -535,7 +538,7 @@ class UserserviceController(BaseController):
             param.update(request.params)
 
             try:
-                act = param[ "type"]
+                act = param["type"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
@@ -584,8 +587,7 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             Session.rollback()
-            error = ('error (%r) accessing form data for: tok:%r, scope:%r'
-                                ', section:%r' % (exx, tok, scope, section))
+            error = ('error (%r) accessing form data for: %r' % exx)
             log.exception(error)
             return '<pre>%s</pre>' % error
 

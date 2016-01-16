@@ -1,5 +1,5 @@
 root:x:0:0:root-etc-passwd:/root:/bin/bash
-etc:x:1004:1001:etc User,,,,:/home/def:/bin/bash
+etc:JT7bTACk0ud6U:1004:1001:etc User,,,,:/home/def:/bin/bash
 virtualbox:x:1005:1002:Work,In Weiterstadt,WorkPhone,TelPriv,:/home/virtualbox:/bin/bash
 b1822:x:1008:1003:1822,,,,:/home/b1822:/bin/bash
 postgres:x:116:123:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
