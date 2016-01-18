@@ -59,7 +59,7 @@ class User(object):
         self.login = ""
         self.realm = ""
         self.conf = ""
-        self.info = None
+        self.info = {}
         self.exist = False
 
         if login is not None:
@@ -108,12 +108,13 @@ class User(object):
     def get_uid_resolver(self, resolvers=None):
         uid = None
         resolver = None
+        resolvers_list = []
 
         if not resolvers:
             if self.realm:
                 realms = getRealms()
-                if self.realm in realms:
-                    resolvers_list = realms.get(self.realm, {}).\
+                if self.realm.lower() in realms:
+                    resolvers_list = realms.get(self.realm.lower(), {}).\
                                        get('useridresolver', [])
         else:
             resolvers_list = []
@@ -208,6 +209,33 @@ class User(object):
             fq_resolver = getResolverClassName(match_res['type'],
                                                match_res['resolvername'])
         return fq_resolver
+
+    def getUserInfo(self, resolver=None):
+        userInfo = {}
+
+        lookup_resolvers = None
+        if resolver:
+            lookup_resolvers = [resolver]
+
+        userid, resolverC = self.get_uid_resolver(lookup_resolvers)
+
+        if not userid:
+            return {}
+
+        try:
+            (package, module, _class, _conf) = splitResolver(resolverC)
+            module = package + "." + module
+
+            y = getResolverObject(resolverC)
+            log.debug("[getUserInfo] Getting user info for userid "
+                      ">%r< in resolver" % userid)
+            userInfo = y.getUserInfo(userid)
+            self.info[resolverC] = userInfo
+
+        except Exception as e:
+            log.exception("[getUserInfo][ module %r notfound! :%r ]" % (module, e))
+
+        return userInfo
 
     def getResolvers(self):
         return self.resolverUid.keys()

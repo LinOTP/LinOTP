@@ -28,19 +28,18 @@
 """
 Test the support for resolver definitions in system or admin policy user entry
 """
-
+import base64
 
 import logging
-from linotp.tests import TestController
+from linotp.tests import TestController, url
 
 log = logging.getLogger(__name__)
 
 
-class TestAdminController(TestController):
+class TestAdminAuthController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-
         # clean setup
         self.delete_all_policies()
         self.delete_all_token()
@@ -75,9 +74,30 @@ class TestAdminController(TestController):
 
         return
 
+    def createPolicy(self, param=None):
+        policy = {'name': 'self01',
+                  'scope': 'selfservice',
+                  'realm': 'myDefRealm',
+                  'user': None,
+                  'action': 'history',
+                }
+
+        # overwrite the default defintion
+        if not param:
+            param = {}
+        policy.update(param)
+        name = policy['name']
+
+        response = self.make_system_request('setPolicy', params=policy)
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue(('"setPolicy %s": {' % name) in response, response)
+
+        return
+
+###############################################################################
     def test_admin_show(self):
         '''
-        Admin auth: The admin is verified to be part of an resolver definition
+        Admin Authorization: The admin is verified to be part of an resolver definition
         '''
         parameters = {'name': 'admin_auth_show',
                       'scope': 'admin',
@@ -115,7 +135,7 @@ class TestAdminController(TestController):
 
     def test_admin_userlist(self):
         '''
-        Admin auth: The admin is verified to be part of an resolver definition
+        Admin Authorization: The admin is verified to be part of an resolver definition
         '''
         parameters = {'name': 'admin_auth_userlist',
                       'scope': 'admin',
@@ -152,9 +172,9 @@ class TestAdminController(TestController):
 
         return
 
-    def test_000_system_auth(self):
+    def test_system_auth(self):
         """
-        System Auth Test: check if root from resolver myDefRes: is allowed to write
+        System Authorization: check if root from resolver myDefRes: is allowed to write
         """
         parameters = {'name': 'sysSuper',
                       'scope': 'system',

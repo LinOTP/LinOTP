@@ -36,6 +36,7 @@ This module initializes the application via ``websetup`` (`paster
 setup-app`) and provides the base testing objects.
 
 """
+import base64
 
 try:
     import json
@@ -157,6 +158,29 @@ class TestController(unittest2.TestCase):
         else:
             app.cookies[key] = value
 
+    @staticmethod
+    def get_cookies(response):
+        """
+        get a cookie from a response
+
+        :param app: A webtest.TestApp object
+        """
+        cookies = {}
+        cookie_entries = ''
+        for entry in response.headerlist:
+            key, val = entry
+            if key == 'Set-Cookie':
+                cookie_entries = val
+                break
+
+        cookys = cookie_entries.split(';')
+
+        for cooky in cookys:
+            if '=' in cooky:
+                cookie_name, cookie_value = cooky.split('=', 1)
+                cookies[cookie_name] = cookie_value
+
+        return cookies
 
     def setUp(self):
         ''' here we do the system test init per test method '''
@@ -603,6 +627,44 @@ class TestController(unittest2.TestCase):
         self.assertIn('mydefrealm', realms)
         self.assertIn('default', realms['mydefrealm'])
         self.assertTrue(realms['mydefrealm']['default'])
+
+    def _user_service_init(self, auth_user, password):
+
+        passw = ':' + base64.b32encode(password)
+        params = {'login': auth_user, 'password': passw}
+        response = self.app.get(url(controller='userservice',
+                                    action='auth'), params=params)
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('userauthcookie')
+        self.assertIsNotNone(auth_cookie, "%r" % cookies)
+
+        self.user_service[auth_user] = auth_cookie
+
+        return auth_cookie
+
+    def make_userservice_request(self, action, params=None,
+                                 auth_user=None):
+
+        if not params:
+            params = {}
+
+        if not hasattr(self, 'user_service'):
+            setattr(self, 'user_service', {})
+
+        user, password = auth_user
+        auth_cookie = self.user_service.get(user,
+                                    self._user_service_init(user, password))
+        TestController.set_cookie(self.app, 'userauthcookie', auth_cookie)
+
+        params['session'] = auth_cookie
+        params['user'] = user
+        response = self.app.get(url(controller='userservice',
+                                    action=action),
+                                params=params)
+
+        return response
+
 
 ###eof#########################################################################
 
