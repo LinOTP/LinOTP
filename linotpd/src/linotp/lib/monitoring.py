@@ -112,7 +112,7 @@ class MonitorHandler(object):
 
         return result
 
-    def get_allowed_realms(self):
+    def get_allowed_realms(self, action):
         """
         Get all realms to which user has access.
 
@@ -120,19 +120,22 @@ class MonitorHandler(object):
         check if user has access to it and return it.
         Else return all possible realms.
 
+        :param action: the policy action which must be checked
+        :type action: unicode
         :return: list of realms that user may access
         """
 
         user = self.context['AuthUser'].get('login', '')
+        action = unicode(action)
 
         # parse policies and extract realms:
-        # TODO: implement scope Monitoring to policies and use them here
-        # here: admin policies are used for testing purposes
         realm_whitelist = []
         for pol in self.context['Policies'].itervalues():
             if pol['active'] == u'True':
-                if u'show' in pol['action'] and pol['scope'] == u'admin':
+                if action in pol['action'] and pol['scope'] == u'monitoring':
                     if user in pol['user'] or pol['user'] is u'*':
+                        # TODO: darf man * in die Realms rein schreiben???
+                        # Was ist bei ungültigen Eingaben?
                         pol_realms = pol['realm'].split(u',')
                         for rlm in pol_realms:
                             if rlm:
