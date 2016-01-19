@@ -1729,17 +1729,6 @@ def _checkGetTokenPolicyPre(method, param={}, authUser=None, user=None,
 
 def _checkAuditPolicyPre(method, param={}, authUser=None, user=None,
                         context=None):
-    # TODO: fix the semantic of the realm in the policy!
-
-    auth_user = context['AuthUser']
-
-    _checkToolsPolicyPre(method, param=param,
-                                authUser=auth_user, user=None,
-                                context=context)
-
-
-def _checkToolsPolicyPre(method, param={}, authUser=None, user=None,
-                        context=None):
 
     ret = {}
     _ = context['translate']
