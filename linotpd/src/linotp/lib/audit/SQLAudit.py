@@ -148,6 +148,12 @@ class AuditTable(object):
         log.debug("[__init__] creating AuditTable object, action = %s"
                   % action)
 
+        if config_param:
+            self.config = config_param
+        else:
+            self.config = config
+        self.trunc_as_err = self.config.get('linotpAudit.error_on_truncation',
+                                            'False') == 'True'
         self.serial = unicode(serial or '')
         self.action = unicode(action or '')
         self.success = unicode(success or '0')
@@ -163,10 +169,6 @@ class AuditTable(object):
         self.clearance_level = clearance_level
         self.timestamp = now()
         self.siganture = ' '
-        if config_param:
-            self.config = config_param
-        else:
-            self.config = config
 
     def _get_field_len(self, col_name):
         leng = -1
@@ -194,8 +196,7 @@ class AuditTable(object):
             encoded_value = linotp.lib.crypt.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
                 log.warning("truncating audit data: [audit.%s] %s" % (name, value))
-                trunc_as_err = self.config.get("linotpAudit.error_on_truncation", False) or False
-                if trunc_as_err != False:
+                if self.trunc_as_err != False:
                     raise Exception("truncating audit data: [audit.%s] %s" % (name, value))
 
                 ## during the encoding the value might expand -
