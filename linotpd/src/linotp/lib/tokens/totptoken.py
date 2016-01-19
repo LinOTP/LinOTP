@@ -703,9 +703,9 @@ class TimeHmacTokenClass(HmacTokenClass):
         counter = int(((tCounter - shift) / timeStepping))
         otpval = hmac2Otp.generate(counter=counter, inc_counter=False)
 
-        pin = self.token.getPin()
+        pin = self.getPin()
         combined = "%s%s" % (otpval, pin)
-        if getFromConfig("PrependPin") == "True" :
+        if getFromConfig("PrependPin") == "True":
             combined = "%s%s" % (pin, otpval)
 
         log.debug("[getOtp]  end. Return opt is: (pin: %r, otpval: %r, combined: %r) " %

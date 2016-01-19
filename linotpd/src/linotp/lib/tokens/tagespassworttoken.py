@@ -154,7 +154,7 @@ class TagespasswortTokenClass(TokenClass):
             else:
                 log.error("[getOtp] invalid curTime: %r. You need to specify a datetime.datetime" % type(curTime))
         otpval = dpw.getOtp(date_string)
-        pin = self.token.getPin()
+        pin = self.getPin()
         combined = "%s%s" % (otpval, pin)
         if getFromConfig("PrependPin") == "True" :
             combined = "%s%s" % (pin, otpval)

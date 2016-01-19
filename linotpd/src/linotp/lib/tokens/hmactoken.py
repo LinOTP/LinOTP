@@ -562,7 +562,7 @@ class HmacTokenClass(TokenClass):
         hmac2Otp = HmacOtp(secObj, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
         otpval = hmac2Otp.generate(inc_counter=False)
 
-        pin = self.token.getPin()
+        pin = self.getPin()
         combined = "%s%s" % (otpval, pin)
 
         if getFromConfig("PrependPin") == "True" :
