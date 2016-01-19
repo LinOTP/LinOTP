@@ -259,15 +259,22 @@ function on_submit_flexi(){
  * callback, to add in parameters to the flexi grid
  */
     var active_realm = $('#realm').val();
+    var session = getsession();
+
     var params = [
         {name: 'realm', value: active_realm},
-        {name: 'session', value: getsession()},
+        {name: 'session', value: session},
+        ];
+
+    var policy_params = [
+        {name: 'session', value: session},
         ];
 
     $('#user_table').flexOptions({params: params});
     $('#audit_table').flexOptions({params: params});
     $('#token_table').flexOptions({params: params});
-    $('#policy_table').flexOptions({params: params});
+    $('#policy_table').flexOptions({params: policy_params});
+
     return true;
 }
 
