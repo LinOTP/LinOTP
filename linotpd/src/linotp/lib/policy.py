@@ -698,7 +698,7 @@ def getPolicy(param, display_inactive=False):
                     # check for matching of wildcard realm
                     for policy_user in policy_users:
                         policy_user = policy_user.strip()
-                        if policy_user[0:2] == '*@':
+                        if len(policy_user) >= 2 and policy_user[0:2] == '*@':
                             domain = policy_user[2:]
                             domain_user = param['user']
                             if '@' in domain_user:
@@ -712,7 +712,7 @@ def getPolicy(param, display_inactive=False):
                         policy_user = policy_user.strip()
                         # check if user is par of an resolver, independend
                         # of an realms
-                        if policy_user[-1] == ':':
+                        if policy_user and policy_user[-1] == ':':
                             resolver = policy_user[:-1]
                             f_user = User(login=param['user'])
                             if f_user.does_exists([resolver]):
