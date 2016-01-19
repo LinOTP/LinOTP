@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -188,6 +188,17 @@ def defineResolver(params):
     res = resolver.saveConfig()
 
     getResolverObject(resolver_clazz + '.' + conf)
+
+    return res
+
+
+def getResolverClassName(resolver_type, resolver_name):
+
+    res = ""
+    for clazz_name, clazz_type in context.resolver_types.items():
+        if clazz_type == resolver_type:
+            res = "%s.%s" % (clazz_name, resolver_name)
+            break
 
     return res
 

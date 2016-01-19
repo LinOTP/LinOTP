@@ -25,7 +25,9 @@
 #
 '''The Controller's Base class '''
 import os
+import re
 
+from pylons.i18n.translation import _ as translate
 from pylons.i18n.translation import set_lang
 from pylons.i18n import LanguageError
 
@@ -36,13 +38,16 @@ from pylons import config
 from pylons import request
 
 
-from linotp.lib.config import initLinotpConfig
+from linotp.lib.config import initLinotpConfig, getLinotpConfig
+from linotp.lib.policy import getPolicies
+from linotp.lib.realm import getDefaultRealm, getRealms
 from linotp.lib.resolver import initResolvers
 from linotp.lib.resolver import setupResolvers
 from linotp.lib.resolver import closeResolvers
-from linotp.lib.user import getUserFromRequest
+from linotp.lib.user import getUserFromRequest, getUserFromParam
 
 from linotp.lib.config import getGlobalObject
+from linotp.lib.util import get_client
 
 from linotp.model import meta
 from linotp.lib.openid import SQLStorage
@@ -51,6 +56,8 @@ from linotp import model
 
 import logging
 log = logging.getLogger(__name__)
+
+Audit = config.get('audit')
 
 
 def set_config(key, value, typ, description=None):
@@ -370,5 +377,87 @@ class BaseController(WSGIController):
 
         return
 
+    def create_context(self, request):
+        """
+        create the request context for all controllers
+        """
+
+        linotp_config = getLinotpConfig()
+
+        self.request_context = {}
+        self.request_context['Config'] = linotp_config
+        self.request_context['Policies'] = getPolicies(config=linotp_config)
+        self.request_context['translate'] = translate
+
+        request_params = {}
+
+        try:
+            request_params.update(request.params)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['Params'] = request_params
+
+        authUser = None
+        try:
+            authUser = getUserFromRequest(request)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['AuthUser'] = authUser
+
+        requestUser = None
+        try:
+            requestUser = getUserFromParam(request_params, True)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+        self.request_context['RequestUser'] = requestUser
+
+        client = None
+        try:
+            client = get_client(request=request)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['Client'] = client
+
+        self.request_context['Audit'] = Audit
+        self.request_context['audit'] = Audit.initialize(request,
+                                                         client=client)
+
+        defaultRealm = ""
+        try:
+            defaultRealm = getDefaultRealm(linotp_config)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['defaultRealm'] = defaultRealm
+
+        realms = None
+        try:
+            realms = getRealms(context=self.request_context)
+        except UnicodeDecodeError as exx:
+            log.error("Faild to decode request parameters %r" % exx)
+
+        self.request_context['Realms'] = realms
+
+        self.request_context['hsm'] = None
+        if hasattr(self, "hsm"):
+            self.request_context['hsm'] = self.hsm
+
+        # copy some system entries from pylons
+        syskeys = {
+                   "radius.nas_identifier": "LinOTP",
+                   "radius.dictfile": "/etc/linotp2/dictionary"
+        }
+
+        sysconfig = {}
+        for key, default in syskeys.items():
+            try:
+                sysconfig[key] = config.get(key, default)
+            except:
+                log.info('no sytem config entry %s' % key)
+
+        self.request_context['SystemConfig'] = sysconfig
 
 ###eof#########################################################################

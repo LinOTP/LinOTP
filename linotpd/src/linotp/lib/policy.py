@@ -294,6 +294,13 @@ def getPolicyDefinitions(scope=""):
             'view': {
                 'type': 'bool'}
         },
+        'tools': {
+            'migrate_resolver': {
+                'type': 'bool',
+                'desc': 'Support the migration of assigned tokens to '
+                        'a new resolver '
+            }
+        },
         'ocra': {
             'request': {
                 'type': 'bool',
@@ -1494,6 +1501,30 @@ def getRandomPin(randomPINLength):
     return newpin
 
 
+def checkToolsAuthorisation(method, param={}, context=None):
+    # TODO: fix the semantic of the realm in the policy!
+
+    auth_user = context['AuthUser']
+
+    _checkToolsPolicyPre(method, param=param, authUser=auth_user, user=None,
+                                context=context)
+
+
+def _checkToolsPolicyPre(method, param={}, authUser=None, user=None):
+
+    ret = {}
+
+    auth = getAuthorization("tools", method)
+    if auth['active'] and not auth['auth']:
+        log.warning("the admin >%r< is not allowed to "
+                    "view the audit trail" % auth['admin'])
+
+        ret = _("You do not have the administrative right to manage tools. "
+               "You are missing a policy scope=tools, action=%s") % method
+
+        raise PolicyException(ret)
+
+
 ##### Pre and Post checks
 def checkPolicyPreSelfservice(method, param={}, authUser=None, user=None):
     '''
@@ -2094,7 +2125,7 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
                                                  User("", "", ""))))):
                     log.warning("[setPin] the admin >%s< is not allowed to "
                                 "set MOTP PIN/SC UserPIN for token %s."
-                                % (policies['admin'], serial))
+                                % (policies1['admin'], serial))
                     raise PolicyException(_("You do not have the administrative "
                                           "right to set MOTP PIN/ SC UserPIN "
                                           "for token %s. Check the policies.")
@@ -2333,6 +2364,11 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
 
     elif 'manage' == controller:
         log.debug("[checkPolicyPre] entering controller %s" % controller)
+
+    elif controller in ['tools']:
+        ret = _checkToolsPolicyPre(method=method, param=param,
+                                     authUser=authUser, user=user,
+                                     context=context)
 
     elif 'selfservice' == controller:
         log.debug("[checkPolicyPre] entering controller %s" % controller)

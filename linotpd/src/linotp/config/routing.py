@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -119,7 +119,7 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # linotpGetotp.active
-    getotp = global_conf.get('linotpGetotp.active', 'True') == 'True'
+    getotp = global_conf.get('linotpGetotp.active', 'False') == 'True'
     if getotp and not migrate:
         for cont in ['gettoken']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
@@ -137,6 +137,13 @@ def make_map(global_conf, app_conf,):
     if self_test and not migrate:
         for cont in ['testing']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
+    # linotp tools
+    tools = global_conf.get('linotp.tools', 'True') == 'True'
+    if tools and not migrate:
+        for cont in ['tools']:
+            routeMap.connect('/%s/{action}' % cont, controller = cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     if migrate:

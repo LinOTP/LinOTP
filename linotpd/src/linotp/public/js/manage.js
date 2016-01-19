@@ -1,6 +1,6 @@
 /*!
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH
+ *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -131,6 +131,11 @@ jQuery.validator.addMethod("ldap_uri", function(value, element, param){
     },
     i18n.gettext("Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://")
 );
+jQuery.validator.addMethod("http_uri", function(value, element, param){
+    return value.match(param);
+    },
+    i18n.gettext("Please enter a valid http uri. It needs to start with http:// or https://")
+);
 
 // LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
 jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
@@ -161,9 +166,9 @@ jQuery.validator.addMethod("ldap_uidtype", function(value,element,param){
 );
 
 jQuery.validator.addMethod("sql_driver", function(value, element, param){
-    return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(ibm_db_sa\+pyodbc)/);
+    return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(ibm_db_sa\+pyodbc)|(ibm_db_sa)/);
     },
-    i18n.gettext("Please enter a valid driver specification like: mysql, postgres, mssql, oracle or ibm_db_sa+pyodbc")
+    i18n.gettext("Please enter a valid driver specification like: mysql, postgres, mssql, oracle, ibm_db_sa or ibm_db_sa+pyodbc")
 );
 
 jQuery.validator.addMethod("sql_mapping", function(value, element, param){
@@ -178,6 +183,7 @@ jQuery.validator.addMethod("sql_mapping", function(value, element, param){
 // We need this dialogs globally, so that we do not create more than one instance!
 
 var $dialog_ldap_resolver;
+var $dialog_http_resolver;
 var $dialog_file_resolver;
 var $dialog_sql_resolver;
 var $dialog_edit_realms;
@@ -242,16 +248,20 @@ function error_flexi(data){
 }
 
 function pre_flexi(data){
-    // we might do some mods here...
+    // adjust the input for the linotp api version >= 2.0
     if (data.result) {
-        if (data.result.status == false) {
+        if (data.result.status === false) {
             alert_info_text({'text': escape(data.result.error.message),
                             'is_escaped': true});
+            return;
+        } else if (data.jsonrpc) {
+            var api_version = parseFloat(data.jsonrpc);
+            if (api_version >= 2.0) {
+                return data.result.value;
+            }
         }
     }
-    else {
-        return data;
-    }
+    return data;
 }
 
 function on_submit_flexi(){
@@ -1689,6 +1699,26 @@ function do_dialog_icons(){
 //
 // realms and resolver functions
 //
+function _fill_resolvers(widget){
+    $.get('/system/getResolvers', {'session':getsession()} ,
+     function(data, textStatus, XMLHttpRequest){
+        var resolversOptions = "";
+        var value = {};
+        if (data.hasOwnProperty('result')) {
+            value = data.result.value;
+        }
+        for (var i in value) {
+            var resolver_val = escape(i);
+            resolversOptions += "<option>";
+            resolversOptions += resolver_val;
+            resolversOptions += "</option>";
+        }
+        widget.html(resolversOptions);
+    });
+    return;
+}
+
+
 function _fill_realms(widget, also_none_realm){
     var defaultRealm = "";
     $.get('/system/getRealms', {'session':getsession()} ,
@@ -2168,7 +2198,6 @@ function load_system_config(){
         $('#ocra_challenge_timeout').val(data.result.value.OcraChallengeTimeout);
 
         /*todo call the 'tok_fill_config.js */
-
     });
 }
 
@@ -2244,7 +2273,8 @@ function save_system_config(){
             'PassOnUserNotFound' : passOUNFound,
             'PassOnUserNoToken' : passOUNToken,
             'selfservice.realmbox' : realmbox,
-            'allowSamlAttributes' : allowsaml },
+            'allowSamlAttributes' : allowsaml,
+             },
      function(data, textStatus, XMLHttpRequest){
         if (data.result.status == false) {
             alert_info_text({'text': "text_system_save_error_checkbox",
@@ -2905,24 +2935,25 @@ function tokenbuttons(){
              * We can only handle one selected token (token == 1).
              */
             var tokens = get_selected_tokens();
-            if (tokens.length == 1 ){
-                var token_string = tokens[0];
-                var user_info = get_token_owner(tokens[0]);
-                if ('email' in user_info && "" != user_info['email']) {
-                    $("#dialog_lost_token select option[value=email_token]").
-                        removeAttr('disabled');
-                } else {
-                // ToDo: if no email is given, let the user insert one.
-                    $("#dialog_lost_token select option[value=email_token]").
-                        attr('disabled','disabled');
-                }
-                if ('mobile' in user_info && "" != user_info['mobile']) {
-                    $("#dialog_lost_token select option[value=sms_token]").
-                        removeAttr('disabled');
-                } else {
-                //ToDo: if no mobil entry is given, let the user insert one.
-                    $("#dialog_lost_token select option[value=sms_token]").
-                        attr('disabled','disabled');
+            if (tokens.length == 1){
+                $("#dialog_lost_token select option[value=email_token]").
+                    attr('disabled','disabled');
+                $("#dialog_lost_token select option[value=sms_token]").
+                    attr('disabled','disabled');
+
+                // as the spass token has only a password, it could only be
+                // replaced by a pw token
+                if (get_token_type() != 'spass') {
+                    var token_string = tokens[0];
+                    var user_info = get_token_owner(tokens[0]);
+                    if ('email' in user_info && "" != user_info['email']) {
+                        $("#dialog_lost_token select option[value=email_token]").
+                            removeAttr('disabled');
+                    }
+                    if ('mobile' in user_info && "" != user_info['mobile']) {
+                        $("#dialog_lost_token select option[value=sms_token]").
+                            removeAttr('disabled');
+                    }
                 }
                 $("#dialog_lost_token select option[value=select_token]").
                     attr('selected',true);
@@ -3713,6 +3744,15 @@ $(document).ready(function(){
         $dialog_tools_exportaudit.dialog('open');
     });
 
+    $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
+    $('#menu_tools_migrateresolver').click(function(){
+        //_fill_realms($('#tools_getserial_realm'),1)
+        _fill_resolvers($('#copy_to_resolver'))
+        _fill_resolvers($('#copy_from_resolver'))
+        $dialog_tools_migrateresolver.dialog('open');
+    });
+
+
     /************************************************************
      * Enrollment Dialog with response url
      *
@@ -3774,17 +3814,13 @@ $(document).ready(function(){
         modal: true,
         buttons: {
             'New': { click: function(){
-                realm_edit('');
-                realms_load();
-                fill_realms();
+                    realm_modify('');
                 },
                 id: "button_realms_new",
                 text: "New"
                 },
             'Edit': { click: function(){
-                realm_edit(g.realm_to_edit);
-                realms_load();
-                fill_realms();
+                    realm_modify(g.realm_to_edit);
                 },
                 id: "button_realms_edit",
                 text: "Edit"
@@ -4513,7 +4549,16 @@ function resolver_file(name){
     });
 }
 
-
+function realm_modify(name) {
+    var resolvers = get_resolvers();
+    if (resolvers.length === 0) {
+        alert_box("Cannot " + (name.length === 0 ? "create" : "edit") + " a realm", "Please create a UserIdResolver first");
+    } else {
+        realm_edit(name);
+        realms_load();
+        fill_realms();
+    }
+}
 
 function realm_edit(name){
 
@@ -4734,6 +4779,52 @@ function resolver_ldap(name){
 
 }
 
+function set_form_input(form_name, data) {
+/*
+ * for all input fields of the form, set the corresponding
+ * values from the obj
+ *
+ * Assumption:
+ *   the input form names are the same as the config entries
+ */
+    var items = {};
+    $('#'+form_name).find(':input').each(
+        function (id, el) {
+            if (el.name != "") {
+                name = el.name;
+                id = el.id;
+                if (data.hasOwnProperty(name) ){
+                    var value = data[name];
+                    $('#'+id).val(value);
+                } else {
+                    $('#'+id).val('');
+            } } }
+    );
+
+    for (var i = 0; i < items.length; i++) {
+        var name = items[i];
+
+    }
+
+}
+
+function get_form_input(form_name) {
+/*
+ * for all input fields of the form, set the corresponding
+ * values from the obj
+ *
+ * Assumption:
+ *   the input form names are the same as the config entries
+ */
+    var items = {};
+    $('#'+form_name).find(':input').each(
+        function (id, el) {
+            if (el.name != "") {
+                items[el.name] = el.value;
+            }   }
+    );
+    return items;
+}
 
 function resolver_set_sql(obj) {
 
