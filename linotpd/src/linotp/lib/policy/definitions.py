@@ -261,7 +261,25 @@ def getPolicyDefinitions(scope=""):
             'calcOTP': {
                 'type': 'bool',
                 'desc': 'Allow to do an ocra/calculateOtp.'}
+        },
+        'monitoring': {
+            'config': {
+                'type': 'bool',
+                'desc': 'Allow to see basic configuratiuon'},
+            'license': {
+                'type': 'bool',
+                'desc': 'Allow to check the license'},
+            'storageEncryption': {
+                'type': 'bool',
+                'desc': 'Allow to check if encryption works'},
+            'tokens': {
+                'type': 'bool',
+                'desc': 'Allow to see number of tokens in realms'},
+            'userinfo': {
+                'type': 'bool',
+                'desc': 'Allow to get information on user-id-resolvers'}
         }
+
     }
 
     ## now add generic policies, which every token should provide:

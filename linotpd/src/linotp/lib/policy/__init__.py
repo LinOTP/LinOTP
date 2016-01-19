@@ -444,12 +444,12 @@ def getAdminPolicies(action, lowerRealms=False, context=None):
 def _getAuthorization(scope, action, context=None):
     """
     This internal function returns the Authrorizaition within some
-    the scope=system. for the currently authenticated
+    the scope=system(or audit, monitoring, tools ). for the currently authenticated
     administrativ user. This does not take into account the REALMS!
 
     arguments:
         action  - this is the action
-                    scope = system
+                    scope = system/audit/monitoring/tools
                         read
                         write
 
@@ -1670,6 +1670,28 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None,
                               "Unknown method: %s") % method)
 
     return ret
+
+
+def checkMonitoringAuthorisation(method, context=None):
+    """
+    check if the authenticated user has the right to do the given action
+    :param method: the requested action
+    :param context:
+    :return: notheing if authorized, else raise PolicyException
+    """
+    _ = context['translate']
+
+    auth = _getAuthorization("monitoring", method, context=context)
+    if auth['active'] and not auth['auth']:
+        log.warning("the admin >%r< is not allowed to "
+                    "view the audit trail" % auth['admin'])
+
+        ret = _("You do not have the administrative right to do monitoring."
+                "You are missing a policy"
+                "scope=monitoring, action=%s") % method
+
+        raise PolicyException(ret)
+
 
 
 def _checkGetTokenPolicyPre(method, param={}, authUser=None, user=None,

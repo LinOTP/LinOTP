@@ -44,6 +44,7 @@ from linotp.lib.reply import (sendResult,
 from linotp.model.meta import Session
 
 from linotp.lib.policy import PolicyException
+from linotp.lib.policy import checkMonitoringAuthorisation
 
 from linotp.lib.support import InvalidLicenseException, \
                                getSupportLicenseInfo, verifyLicenseInfo
@@ -75,6 +76,7 @@ class MonitoringController(BaseController):
             check_session(request)
 
             self.request_context['Audit'] = audit
+            checkMonitoringAuthorisation(action, context=self.request_context)
 
             return request
 
@@ -141,7 +143,7 @@ class MonitoringController(BaseController):
             request_realms = param.get('realms', '').split(',')
 
             monit_handler = MonitorHandler(context=self.request_context)
-            realm_whitelist = monit_handler.get_allowed_realms()
+            realm_whitelist = monit_handler.get_allowed_realms(action='tokens')
 
             # by default we show all allowed realms
             realms = realm_whitelist
@@ -349,18 +351,16 @@ class MonitoringController(BaseController):
         result = {}
         try:
             param = request.params
-            status = param.get('status')
             request_realms = param.get('realms', '').split(',')
 
             monit_handler = MonitorHandler(context=self.request_context)
-            realm_whitelist = monit_handler.get_allowed_realms()
+            realm_whitelist = monit_handler.get_allowed_realms(action='userinfo')
 
             # by default we show all allowed realms
             realms = realm_whitelist
 
             # support for empty realms or no realms by realm = *
             if '*' in request_realms:
-                realms = realm_whitelist
                 realms.append('/:no realm:/')
             # other cases, we iterate through the realm list
             elif len(request_realms) > 0 and not (request_realms == ['']):
