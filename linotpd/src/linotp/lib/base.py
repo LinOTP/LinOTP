@@ -316,6 +316,7 @@ class BaseController(WSGIController):
         # available in environ['pylons.routes_dict']
 
         path = ""
+        self.create_context(request)
 
         try:
             if environ:
@@ -415,19 +416,18 @@ class BaseController(WSGIController):
 
         client = None
         try:
-            client = get_client(request=request)
+            client = get_client()
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
         self.request_context['Client'] = client
 
         self.request_context['Audit'] = Audit
-        self.request_context['audit'] = Audit.initialize(request,
-                                                         client=client)
+        self.request_context['audit'] = Audit.initialize()
 
         defaultRealm = ""
         try:
-            defaultRealm = getDefaultRealm(linotp_config)
+            defaultRealm = getDefaultRealm()
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
@@ -435,7 +435,7 @@ class BaseController(WSGIController):
 
         realms = None
         try:
-            realms = getRealms(context=self.request_context)
+            realms = getRealms()
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
