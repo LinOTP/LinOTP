@@ -722,7 +722,7 @@ class TestValidateController(TestController):
         parameters = {"serial": "F722364"}
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 10' in response, response)
+        self.assertTrue('"LinOtp.FailCount": 19' in response, response)
 
         self.delete_token("F722364")
         self.delete_token("F722363")
@@ -1364,7 +1364,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
         #self.assertTrue('"LinOtp.Count": 8' in response, response)
-        self.assertTrue('"LinOtp.FailCount": 15' in response, response)
+        self.assertTrue('"LinOtp.FailCount": 16' in response, response)
 
         parameters = {"serial": "F722362"}
         response = self.app.get(url(controller='admin', action='reset'),
