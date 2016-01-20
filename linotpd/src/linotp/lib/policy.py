@@ -469,7 +469,7 @@ def check_policy_impact(scope='', action='', active='True', client='',
             for act in policy.get('action', '').split(','):
                 p_actions.append(act.strip())
 
-            #check if there is a write in the actions
+            # check if there is a write in the actions
             if '*' in p_actions or 'write' in p_actions:
                 no_system_write_policy = False
                 break
@@ -530,7 +530,7 @@ def getPolicies(config=None):
     Policies = {}
     for entry in lConfig:
         if entry.startswith("linotp.Policy."):
-            #log.debug("[getPolicy] entry: %s" % entry )
+            # log.debug("[getPolicy] entry: %s" % entry )
             policy = entry.split(".", 4)
             if len(policy) == 4:
                 name = policy[2]
@@ -568,7 +568,7 @@ def getPolicy(param, display_inactive=False):
     :return: a dictionary with the policies. The name of the policy being
              the key
     '''
-    #log.debug("[getPolicy] params %s" % str(param))
+    # log.debug("[getPolicy] params %s" % str(param))
     Policies = {}
 
     # First we load ALL policies from the Config
@@ -598,21 +598,21 @@ def getPolicy(param, display_inactive=False):
     # Now we need to clean up realms, that were not requested
     pol2delete = []
     if param.get('realm', None) is not None:
-        #log.debug("[getPolicy] cleanup acccording to realm %s"
+        # log.debug("[getPolicy] cleanup acccording to realm %s"
         #          % param["realm"])
         for polname, policy in Policies.items():
             delete_it = True
-            #log.debug("[getPolicy] evaluating policy %s: %s"
+            # log.debug("[getPolicy] evaluating policy %s: %s"
             #          % (polname, str(policy)))
             if policy.get("realm") is not None:
                 pol_realms = [p.strip()
                               for p in policy['realm'].lower().split(',')]
-                #log.debug("[getPolicy] realms in policy %s: %s"
+                # log.debug("[getPolicy] realms in policy %s: %s"
                 #          % (polname, str(pol_realms) ))
                 for r in pol_realms:
-                    #log.debug("[getPolicy] Realm: %s" % r)
+                    # log.debug("[getPolicy] Realm: %s" % r)
                     if r == param['realm'].lower() or r == '*':
-                        #log.debug( "[getPolicy] Setting delete_it to false.
+                        # log.debug( "[getPolicy] Setting delete_it to false.
                         # Se we are using policy: %s" % str(polname))
                         delete_it = False
             if delete_it:
@@ -622,7 +622,7 @@ def getPolicy(param, display_inactive=False):
 
     pol2delete = []
     if param.get('scope', None) is not None:
-        #log.debug("[getPolicy] cleanup acccording to scope %s"
+        # log.debug("[getPolicy] cleanup acccording to scope %s"
         #          % param["scope"])
         for polname, policy in Policies.items():
             if policy['scope'].lower() != param['scope'].lower():
@@ -632,18 +632,18 @@ def getPolicy(param, display_inactive=False):
 
     pol2delete = []
     if param.get('action', None) is not None:
-        #log.debug("[getPolicy] cleanup acccording to action %s"
+        # log.debug("[getPolicy] cleanup acccording to action %s"
         #          % param["action"])
         param_action = param['action'].strip().lower()
         for polname, policy in Policies.items():
             delete_it = True
-            #log.debug("[getPolicy] evaluating policy %s: %s"
+            # log.debug("[getPolicy] evaluating policy %s: %s"
             #          % (polname, str(policy)))
             if policy.get("action") is not None:
                 pol_actions = [p.strip()
                                for p in policy.get('action', "").
                                lower().split(',')]
-                #log.debug("[getPolicy] actions in policy %s: %s "
+                # log.debug("[getPolicy] actions in policy %s: %s "
                 #          % (polname, str(pol_actions) ))
                 for policy_action in pol_actions:
                     if policy_action == '*' or policy_action == param_action:
@@ -699,10 +699,13 @@ def getPolicy(param, display_inactive=False):
                     for policy_user in policy_users:
                         policy_user = policy_user.strip()
                         if len(policy_user) >= 2 and policy_user[0:2] == '*@':
-                            domain = policy_user[2:]
+                            domain = policy_user[2:].lower()
                             domain_user = param['user']
                             if '@' in domain_user:
-                                if domain_user.split('@')[-1] == domain:
+                                (_user, _sep,
+                                 user_domain) = domain_user.rpartition('@')
+                                if (user_domain and
+                                    user_domain.lower() == domain.lower()):
                                     delete_it = False
                                     break
 
@@ -759,7 +762,7 @@ def deletePolicy(name, enforce=False):
             delEntries.append(entry)
 
     for entry in delEntries:
-        #delete this entry.
+        # delete this entry.
         log.debug("[deletePolicy] removing key: %s" % entry)
         ret = removeFromConfig(entry)
         res[entry] = ret
@@ -1079,7 +1082,7 @@ def checkTokenNum(user=None, realm=None):
         return ret
 
     else:
-        #allRealms = getRealms()
+        # allRealms = getRealms()
         Realms = []
 
         if user:
@@ -1814,55 +1817,21 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
                 raise PolicyException(msg)
             return {'realms': policies['realms'], 'admin': policies['admin']}
 
-        elif method in ['userlist']:
-            log.debug("[checkPolicyPre] entering method %s" % method)
-            # get the realms for this administrator
-            realm = param.get("realm")
-            resConf = param.get("resConf")
+        elif 'userlist' == method:
+            policies = getAdminPolicies("userlist")
 
-            policies = getAdminPolicies(action=method)
-            log.debug("[checkPolicyPre] The admin >%s< may manage the "
-                      "following realms: %s" % (policies['admin'],
-                                                policies['realms']))
-            msg = None
-            if policies['active']:
-                if not policies['realms']:
-                    log.error("[checkPolicyPre] The admin >%s< has no rights in "
-                              "any realms!" % policies['admin'])
-
-                    msg = (_("You do not have the administrative"
-                             " right to list users in realm %s(%s).")
-                            % (user.realm, user.conf))
-                if realm:
-                    allowed_realms = policies['realms']
-                    if realm and realm.lower() not in allowed_realms:
-                        msg = (_("You do not have the administrative"
-                                " right to list users in realm %s(%s).")
-                               % (user.realm, user.conf))
-
-                if resConf:
-                    found = False
-                    allowed_realms = policies['realms']
-                    for allowed_realm in allowed_realms:
-                        realm_def = getRealms(allowed_realm)
-                        allowed_resolvers = realm_def[allowed_realm].\
-                                            get('useridresolver', [])
-                        for allowed_resolver in allowed_resolvers:
-                            if allowed_resolver.split('.')[-1] == resConf:
-                                found = True
-                                break
-                        if found:
-                            break
-
-                    if not found:
-                        msg = (_("You do not have the administrative"
-                                " right to list users in realm %s(%s).")
-                               % (user.realm, user.conf))
-
-            if msg:
-                raise PolicyException(msg)
-
-            return {'realms': policies['realms'], 'admin': policies['admin']}
+            # policies = {'active': True, 'resolvers': [], 'admin': 'admin',
+            #             'realms': ['*']}
+            log.error('########## %r' % policies)
+            # check if the admin may view the users in this realm
+            if (policies['active'] and
+                    not checkAdminAuthorization(policies, "", user)):
+                log.warning("[userlist] the admin >%s< is not allowed to list"
+                            " users in realm %s(%s)!"
+                            % (policies['admin'], user.realm, user.conf))
+                raise PolicyException(_("You do not have the administrative"
+                                      " right to list users in realm %s(%s).")
+                                      % (user.realm, user.conf))
 
         elif 'remove' == method:
             policies = getAdminPolicies("remove")

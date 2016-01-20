@@ -326,6 +326,21 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             )
 
+    def make_manage_request(self, action, params=None, method='GET',
+                           auth_user='admin',):
+        """
+        Makes an authenticated request to /manage/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_authenticated_request(
+            'manage',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            )
+
     def make_system_request(self, action, params=None, method='GET',
                             auth_user='admin'):
         """
