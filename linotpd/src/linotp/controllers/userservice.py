@@ -1506,7 +1506,8 @@ class UserserviceController(BaseController):
             lines, total, page = audit_search(param, user=self.authUser,
                                 columns=['date', 'action', 'success', 'serial',
                                         'token_type', 'administrator',
-                                        'action_detail', 'info'])
+                                        'action_detail', 'info'],
+                                        context=self.request_context)
 
             response.content_type = 'application/json'
 

@@ -194,18 +194,18 @@ class AuditBase(object):
         return iter([])
 
 
-def search(param, user=None, columns=None,):
+def search(param, user=None, columns=None, context=None):
 
-    audit = config.get('audit')
+    audit = context['Audit']
     search_dict = {}
 
-    if param.has_key("query"):
+    if "query" in param:
         if "extsearch" == param['qtype']:
             # search patterns are delimitered with ;
             search_list = param['query'].split(";")
             for s in search_list:
                 log.debug(s)
-                key, e, value = s.partition("=")
+                key, _e, value = s.partition("=")
                 key = key.strip()
                 value = value.strip()
                 search_dict[key] = value
@@ -263,7 +263,7 @@ def search(param, user=None, columns=None,):
             if len(a['serial']) > 0:
                 pass
             cell.append(a.get(colname))
-        lines.append({'id': a['id'], 'cell' : cell })
+        lines.append({'id': a['id'], 'cell': cell})
 
     # get the complete number of audit logs
     total = audit.getTotal(search_dict)

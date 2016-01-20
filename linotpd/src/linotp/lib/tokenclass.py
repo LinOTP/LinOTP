@@ -992,6 +992,17 @@ class TokenClass(object):
             iv = enc_pin.split(':')[0]
             self.token.set_encrypted_pin(enc_pin, binascii.unhexlify(iv))
 
+    def getPin(self):
+        """
+        :return: the value of the pin- if it is stored encrypted
+        """
+        pin = ''
+        hsm = self.context['hsm']
+        if self.token.isPinEncrypted():
+            _iv, enc_pin = self.token.get_encrypted_pin()
+            pin = SecretObj.decrypt_pin(enc_pin, hsm=hsm)
+        return pin
+
     def _get_secret_object(self):
         """
         encapsulate the returning of the secret object
