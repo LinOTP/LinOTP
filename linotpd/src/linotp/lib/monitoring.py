@@ -40,6 +40,8 @@ from linotp.lib.useriterator import iterate_users
 
 from linotp.lib.user import getUserListIterators, getUserFromParam
 
+from linotp.lib.context import request_context as context
+
 from sqlalchemy import and_, not_
 
 
@@ -47,9 +49,6 @@ class MonitorHandler(object):
     """
     provide functions for monitor controller
     """
-    def __init__(self, context):
-        self.context = context
-
     def token_per_realm_count(self, realm, status=None):
         """
         Give the number of tokens per realm
@@ -125,12 +124,12 @@ class MonitorHandler(object):
         :return: list of realms that user may access
         """
 
-        user = self.context['AuthUser'].get('login', '')
+        user = context['AuthUser'].get('login', '')
         action = unicode(action)
 
         # parse policies and extract realms:
         realm_whitelist = []
-        for pol in self.context['Policies'].itervalues():
+        for pol in context['Policies'].itervalues():
             if pol['active'] == u'True':
                 if action in pol['action'] and pol['scope'] == u'monitoring':
                     if user in pol['user'] or pol['user'] is u'*':
@@ -143,7 +142,7 @@ class MonitorHandler(object):
 
         # If there are no policies for us, we are allowed to see all realms
         if not realm_whitelist:
-            realm_whitelist = self.context['Realms'].keys()
+            realm_whitelist = context['Realms'].keys()
 
         return realm_whitelist
 
@@ -251,7 +250,7 @@ class MonitorHandler(object):
         :param realm: the realm to query
         :return: dict with resolvernames as keys and number of users as value
         """
-        realminfo = self.context.get('Config').getRealms().get(realm)
+        realminfo = context.get('Config').getRealms().get(realm)
         resolvers = realminfo.get('useridresolver', '')
         realmdict = {}
 

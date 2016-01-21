@@ -50,6 +50,7 @@ from linotp.lib.support import InvalidLicenseException, \
                                getSupportLicenseInfo, verifyLicenseInfo
 
 from linotp.lib.monitoring import MonitorHandler
+from linotp.lib.context import request_context
 
 audit = config.get('audit')
 
@@ -67,7 +68,7 @@ class MonitoringController(BaseController):
         try:
             log.debug('[__before__::%r] %r', action, params)
 
-            c.audit = self.request_context['audit']
+            c.audit = request_context['audit']
             c.audit['success'] = False
 
             c.audit['client'] = get_client(request)
@@ -75,8 +76,8 @@ class MonitoringController(BaseController):
             # Session handling
             check_session(request)
 
-            self.request_context['Audit'] = audit
-            checkMonitoringAuthorisation(action, context=self.request_context)
+            request_context['Audit'] = audit
+            checkMonitoringAuthorisation(action)
 
             return request
 
@@ -142,7 +143,7 @@ class MonitoringController(BaseController):
                 status = status.split(',')
             request_realms = param.get('realms', '').split(',')
 
-            monit_handler = MonitorHandler(context=self.request_context)
+            monit_handler = MonitorHandler()
             realm_whitelist = monit_handler.get_allowed_realms(action='tokens')
 
             # by default we show all allowed realms
@@ -219,7 +220,7 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            monit_handler = MonitorHandler(context=self.request_context)
+            monit_handler = MonitorHandler()
 
             result = monit_handler.get_sync_status()
 
@@ -266,7 +267,7 @@ class MonitoringController(BaseController):
             enc_name = hsm.name
             res = {'cryptmodul_type': enc_type, 'cryptmodul_name': enc_name}
 
-            monit_handler = MonitorHandler(context=self.request_context)
+            monit_handler = MonitorHandler()
             res['encryption'] = monit_handler.check_encryption()
 
             return sendResult(response, res, 1)
@@ -312,7 +313,7 @@ class MonitoringController(BaseController):
                 res['token-num'] = int(license_info.get('token-num', 0))
 
                 # get all active tokens from all realms (including norealm)
-                monit_handler = MonitorHandler(context=self.request_context)
+                monit_handler = MonitorHandler()
                 active_tokencount = monit_handler.get_active_tokencount()
                 res['token-active'] = active_tokencount
 
@@ -353,7 +354,7 @@ class MonitoringController(BaseController):
             param = request.params
             request_realms = param.get('realms', '').split(',')
 
-            monit_handler = MonitorHandler(context=self.request_context)
+            monit_handler = MonitorHandler()
             realm_whitelist = monit_handler.get_allowed_realms(action='userinfo')
 
             # by default we show all allowed realms

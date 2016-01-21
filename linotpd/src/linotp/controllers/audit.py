@@ -56,6 +56,8 @@ from linotp.model.meta import Session
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
 
+from linotp.lib.context import request_context
+
 import traceback
 
 
@@ -82,10 +84,10 @@ class AuditController(BaseController):
         log.debug("[__before__::%r] %r" % (action, params))
 
         try:
-            c.audit = self.request_context['audit']
+            c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
             check_session(request)
-            self.request_context['Audit'] = audit
+            request_context['Audit'] = audit
 
 
         except Exception as exx:
@@ -138,7 +140,7 @@ class AuditController(BaseController):
             log.debug("[search] params: %s" % param)
 
 
-            checkPolicyPre('audit', 'view', {}, context=self.request_context)
+            checkPolicyPre('audit', 'view', {})
 
             log.debug("[search] params %r" % param)
 

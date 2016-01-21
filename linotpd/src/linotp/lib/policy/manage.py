@@ -38,6 +38,7 @@ from linotp.lib.config import storeConfig
 from linotp.lib.policy import getPolicies
 
 from linotp.lib.error import ServerError
+from linotp.lib.context import request_context as context
 
 
 class PolicyWarning(Exception):
@@ -46,7 +47,7 @@ class PolicyWarning(Exception):
 log = logging.getLogger(__name__)
 
 
-def setPolicy(param, context=None):
+def setPolicy(param):
     '''
     Function to set a policy. It expects a dict of with the following keys:
 
@@ -97,7 +98,7 @@ def setPolicy(param, context=None):
     return ret
 
 
-def deletePolicy(name, enforce=False, context=None):
+def deletePolicy(name, enforce=False):
     '''
     Function to delete one named policy
 

@@ -90,6 +90,7 @@ from linotp.lib.ImportOTP import ImportException
 from linotp.lib.ImportOTP import parseYubicoCSV
 
 from linotp.lib.useriterator import iterate_users
+from linotp.lib.context import request_context
 
 import os
 
@@ -126,13 +127,13 @@ class AdminController(BaseController):
         try:
             log.debug("[__before__::%r] %r" % (action, params))
 
-            c.audit = self.request_context['audit']
+            c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
             # Session handling
             check_session(request)
 
-            self.request_context['Audit'] = audit
+            request_context['Audit'] = audit
             return request
 
         except Exception as exx:
@@ -251,9 +252,8 @@ class AdminController(BaseController):
             serial = param["serial"]
 
             # check admin authorization
-            checkPolicyPre('admin', 'tokenowner', param,
-                           context=self.request_context)
-            th = TokenHandler(context=self.request_context)
+            checkPolicyPre('admin', 'tokenowner', param)
+            th = TokenHandler()
             owner = th.getTokenOwner(serial)
             if owner.info:
                 ret = owner.info
@@ -336,13 +336,12 @@ class AdminController(BaseController):
 
             filterRealm = []
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param , user=user,
-                                 context=self.request_context)
+            res = checkPolicyPre('admin', 'show', param , user=user)
 
             filterRealm = res['realms']
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            pol = getAdminPolicies("show", context=self.request_context)
+            pol = getAdminPolicies("show")
             # If there are no admin policies, we are allowed to see all realms
             if not pol['active']:
                 filterRealm = ["*"]
@@ -426,9 +425,9 @@ class AdminController(BaseController):
             user = getUserFromParam(param, optional)
 
             # check admin authorization
-            checkPolicyPre('admin', 'remove', param, context=self.request_context)
+            checkPolicyPre('admin', 'remove', param)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             log.info("[remove] removing token with serial %s for user %s", serial, user.login)
             ret = th.removeToken(user, serial)
 
@@ -492,10 +491,9 @@ class AdminController(BaseController):
             user = getUserFromParam(param, optional)
 
             # check admin authorization
-            checkPolicyPre('admin', 'enable', param , user=user,
-                           context=self.request_context)
+            checkPolicyPre('admin', 'enable', param , user=user)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             log.info("[enable] enable token with serial %s for user %s@%s.",
                         serial, user.login, user.realm)
             ret = th.enableToken(True, user, serial)
@@ -572,8 +570,8 @@ class AdminController(BaseController):
             username = ""
 
             # check admin authorization
-            checkPolicyPre('admin', 'getserial', param, context=self.request_context)
-            th = TokenHandler(context=self.request_context)
+            checkPolicyPre('admin', 'getserial', param)
+            th = TokenHandler()
             serial, username, resolverClass = th.get_serial_by_otp(None, otp,
                                                                    10, typ=typ,
                                                 realm=realm, assigned=assigned)
@@ -582,8 +580,7 @@ class AdminController(BaseController):
 
             if "" != serial:
                 checkPolicyPost('admin', 'getserial',
-                                {'serial': serial},
-                                context=self.request_context)
+                                {'serial': serial})
 
             c.audit['success'] = 1
             c.audit['serial'] = serial
@@ -642,10 +639,9 @@ class AdminController(BaseController):
             auth_user = getUserFromRequest(request)
 
             # check admin authorization
-            checkPolicyPre('admin', 'disable', param, user=user,
-                           context=self.request_context)
+            checkPolicyPre('admin', 'disable', param, user=user)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             log.info("[disable] disable token with serial %s for user %s@%s.",
                      serial, user.login, user.realm)
             ret = th.enableToken(False, user, serial)
@@ -714,7 +710,7 @@ class AdminController(BaseController):
             #    return sendError(response, str(pe), 1)
 
             log.info("[check_serial] checking serial %s" % serial)
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             (unique, new_serial) = th.check_serial(serial)
 
             c.audit['success'] = True
@@ -793,8 +789,7 @@ class AdminController(BaseController):
             user = getUserFromParam(param, optional)
 
             # check admin authorization
-            res = checkPolicyPre('admin', 'init', param, user=user,
-                                 context=self.request_context)
+            res = checkPolicyPre('admin', 'init', param, user=user)
 
             if user is not None:
                 helper_param['user.login'] = user.login
@@ -832,7 +827,7 @@ class AdminController(BaseController):
 
             serial = helper_param.get('serial', None)
             prefix = helper_param.get('prefix', None)
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if not serial:
                 serial = th.genSerial(tok_type, prefix)
                 helper_param['serial'] = serial
@@ -863,8 +858,7 @@ class AdminController(BaseController):
 
             logTokenNum(c.audit)
             c.audit['success'] = ret
-            checkPolicyPost('admin', 'init', helper_param, user=user,
-                            context=self.request_context)
+            checkPolicyPost('admin', 'init', helper_param, user=user)
 
             Session.commit()
 
@@ -928,9 +922,9 @@ class AdminController(BaseController):
             log.debug("[unassign] unassigning serial %r, user %r" % (serial, user))
 
             # check admin authorization
-            checkPolicyPre('admin', 'unassign', param, context=self.request_context)
+            checkPolicyPre('admin', 'unassign', param)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             log.info("[unassign] unassigning token with serial %r from "
                      "user %r@%r" % (serial, user.login, user.realm))
             ret = th.unassignToken(serial, user, None)
@@ -1000,14 +994,13 @@ class AdminController(BaseController):
             user = getUserFromParam(param, optional)
 
             # check admin authorization
-            checkPolicyPre('admin', 'assign', param, context=self.request_context)
+            checkPolicyPre('admin', 'assign', param)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             log.info("[assign] assigning token with serial %s to user %s@%s" % (serial, user.login, user.realm))
             res = th.assignToken(serial, user, upin, param)
 
-            checkPolicyPost('admin', 'assign', param, user,
-                            context=self.request_context)
+            checkPolicyPost('admin', 'assign', param, user)
 
             c.audit['success'] = res
             c.audit['user'] = user.login
@@ -1077,10 +1070,10 @@ class AdminController(BaseController):
                 serial = getParam(param, "serial", required)
 
                 # check admin authorization
-                checkPolicyPre('admin', 'setPin', param, context=self.request_context)
+                checkPolicyPre('admin', 'setPin', param)
 
                 log.info("[setPin] setting userPin for token with serial %s" % serial)
-                ret = setPinUser(userPin, serial, context=self.request_context)
+                ret = setPinUser(userPin, serial)
                 res["set userpin"] = ret
                 count = count + 1
                 c.audit['action_detail'] += "userpin, "
@@ -1091,10 +1084,10 @@ class AdminController(BaseController):
                 serial = getParam(param, "serial", required)
 
                 # check admin authorization
-                checkPolicyPre('admin', 'setPin', param, context=self.request_context)
+                checkPolicyPre('admin', 'setPin', param)
 
                 log.info("[setPin] setting soPin for token with serial %s" % serial)
-                ret = setPinSo(soPin, serial, context=self.request_context)
+                ret = setPinSo(soPin, serial)
                 res["set sopin"] = ret
                 count = count + 1
                 c.audit['action_detail'] += "sopin, "
@@ -1196,19 +1189,17 @@ class AdminController(BaseController):
             user = getUserFromParam(param, optional)
 
             # check admin authorization
-            checkPolicyPre('admin', 'set', param, user=user,
-                           context=self.request_context)
+            checkPolicyPre('admin', 'set', param, user=user)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             # # if there is a pin
             if 'pin' in param:
                 msg = "[set] setting pin failed"
                 upin = getParam(param, "pin", required)
                 log.info("[set] setting pin for token with serial %r" % serial)
-                if 1 == getOTPPINEncrypt(serial=serial, user=user,
-                                         context=self.request_context):
+                if 1 == getOTPPINEncrypt(serial=serial, user=user):
                     param['encryptpin'] = "True"
-                ret = setPin(upin, user, serial, param, context=self.request_context)
+                ret = setPin(upin, user, serial, param)
                 res["set pin"] = ret
                 count = count + 1
                 c.audit['action_detail'] += "pin, "
@@ -1264,7 +1255,7 @@ class AdminController(BaseController):
                 msg = "[set] setting hashlib failed"
                 hashlib = getParam(param, "hashlib".lower(), required)
                 log.info("[set] setting hashlib (%r) for token with serial %r" % (hashlib, serial))
-                th = TokenHandler(context=self.request_context)
+                th = TokenHandler()
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
                 count = count + 1
@@ -1303,7 +1294,7 @@ class AdminController(BaseController):
                 msg = "[set] setting countAuth failed"
                 ca = int(getParam(param, "countAuth".lower(), required))
                 log.info("[set] setting count_auth (%r) for token with serial %r" % (ca, serial))
-                tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.set_count_auth(int(ca))
@@ -1316,7 +1307,7 @@ class AdminController(BaseController):
                 msg = "[set] setting countAuthMax failed"
                 ca = int(getParam(param, "countAuthMax".lower(), required))
                 log.info("[set] setting count_auth_max (%r) for token with serial %r" % (ca, serial))
-                tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.set_count_auth_max(int(ca))
@@ -1329,7 +1320,7 @@ class AdminController(BaseController):
                 msg = "[set] setting countAuthSuccess failed"
                 ca = int(getParam(param, "countAuthSuccess".lower(), required))
                 log.info("[set] setting count_auth_success (%r) for token with serial %r" % (ca, serial))
-                tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.set_count_auth_success(int(ca))
@@ -1342,7 +1333,7 @@ class AdminController(BaseController):
                 msg = "[set] setting countAuthSuccessMax failed"
                 ca = int(getParam(param, "countAuthSuccessMax".lower(), required))
                 log.info("[set] setting count_auth_success_max (%r) for token with serial %r" % (ca, serial))
-                tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.set_count_auth_success_max(int(ca))
@@ -1355,7 +1346,7 @@ class AdminController(BaseController):
                 msg = "[set] setting validityPeriodStart failed"
                 ca = getParam(param, "validityPeriodStart".lower(), required)
                 log.info("[set] setting validity_period_start (%r) for token with serial %r" % (ca, serial))
-                tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.set_validity_period_start(ca)
@@ -1368,7 +1359,7 @@ class AdminController(BaseController):
                 msg = "[set] setting validityPeriodEnd failed"
                 ca = getParam(param, "validityPeriodEnd".lower(), required)
                 log.info("[set] setting validity_period_end (%r) for token with serial %r" % (ca, serial))
-                tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.set_validity_period_end(ca)
@@ -1381,7 +1372,7 @@ class AdminController(BaseController):
                 msg = "[set] setting phone failed"
                 ca = getParam(param, "phone".lower(), required)
                 log.info("[set] setting phone (%r) for token with serial %r" % (ca, serial))
-                tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(user, serial)
                 ret = 0
                 for tok in tokens:
                     tok.addToTokenInfo("phone", ca)
@@ -1465,8 +1456,8 @@ class AdminController(BaseController):
                 options = {'challenge1' : chall1, 'challenge2':chall2 }
 
             # check admin authorization
-            checkPolicyPre('admin', 'resync', param, context=self.request_context)
-            th = TokenHandler(context=self.request_context)
+            checkPolicyPre('admin', 'resync', param)
+            th = TokenHandler()
             log.info("[resync] resyncing token with serial %r, user %r@%r"
                      % (serial, user.login, user.realm))
             res = th.resyncToken(otp1, otp2, user, serial, options)
@@ -1527,7 +1518,7 @@ class AdminController(BaseController):
         try:
             param.update(request.params)
             realm = getParam(param, "realm", optional)
-            checkPolicyPre('admin', 'userlist', param, context=self.request_context)
+            checkPolicyPre('admin', 'userlist', param)
 
             up = 0
             user = getUserFromParam(param, optional)
@@ -1618,7 +1609,7 @@ class AdminController(BaseController):
             realms = getParam(param, "realms", required)
 
             # check admin authorization
-            checkPolicyPre('admin', 'tokenrealm', param, context=self.request_context)
+            checkPolicyPre('admin', 'tokenrealm', param)
 
             log.info("[tokenrealm] setting realms for token %s to %s" % (serial, realms))
             realmList = realms.split(',')
@@ -1676,10 +1667,10 @@ class AdminController(BaseController):
         try:
 
             # check admin authorization
-            checkPolicyPre('admin', 'reset', param , user=user, context=self.request_context)
+            checkPolicyPre('admin', 'reset', param , user=user)
 
             log.info("[reset] resetting the FailCounter for token with serial %s" % serial)
-            ret = resetToken(user, serial, context=self.request_context)
+            ret = resetToken(user, serial)
 
             c.audit['success'] = ret
             c.audit['user'] = user.login
@@ -1746,9 +1737,9 @@ class AdminController(BaseController):
             serial_to = getParam(param, "to", required)
 
             # check admin authorization
-            checkPolicyPre('admin', 'copytokenpin', param, context=self.request_context)
+            checkPolicyPre('admin', 'copytokenpin', param)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             log.info("[copyTokenPin] copying Pin from token %s to token %s" % (serial_from, serial_to))
             ret = th.copyTokenPin(serial_from, serial_to)
 
@@ -1819,9 +1810,9 @@ class AdminController(BaseController):
             serial_to = getParam(param, "to", required)
 
             # check admin authorization
-            checkPolicyPre('admin', 'copytokenuser', param, context=self.request_context)
+            checkPolicyPre('admin', 'copytokenuser', param)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             log.info("[copyTokenUser] copying User from token %s to token %s" % (serial_from, serial_to))
             ret = th.copyTokenUser(serial_from, serial_to)
 
@@ -1895,8 +1886,8 @@ class AdminController(BaseController):
             serial = param["serial"]
 
             # check admin authorization
-            checkPolicyPre('admin', 'losttoken', param, context=self.request_context)
-            th = TokenHandler(context=self.request_context)
+            checkPolicyPre('admin', 'losttoken', param)
+            th = TokenHandler()
             res = th.losttoken(serial, param=param)
 
             c.audit['success'] = ret
@@ -2076,7 +2067,7 @@ class AdminController(BaseController):
 
             # this needs to return the valid realms of the admin.
             # it also checks the token number
-            res = checkPolicyPre('admin', 'import', {}, context=self.request_context)
+            res = checkPolicyPre('admin', 'import', {})
             if res['realms']:
                 # by defualt, wee put the token in the FIRST realm of the admin
                 # so tokenrealm will either be ONE realm or NONE
@@ -2094,7 +2085,7 @@ class AdminController(BaseController):
 
             # Now import the Tokens from the dictionary
             ret = ""
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             for serial in TOKENS:
                 log.debug("[loadtokens] importing token %s" % TOKENS[serial])
 
@@ -2132,15 +2123,13 @@ class AdminController(BaseController):
 
                 if tokenrealm:
                     checkPolicyPre('admin', 'loadtokens',
-                                   {'tokenrealm': tokenrealm},
-                                   context=self.request_context)
+                                   {'tokenrealm': tokenrealm})
 
                 (ret, tokenObj) = th.initToken(init_param, User('', '', ''),
                                             tokenrealm=tokenrealm)
 
                 checkPolicyPost('admin', 'loadtokens',
-                               {'serial': serial},
-                               context=self.request_context)
+                               {'serial': serial})
 
 
             log.info ("[loadtokens] %i tokens imported." % len(TOKENS))
@@ -2312,7 +2301,7 @@ class AdminController(BaseController):
             param.update(request.params)
             log.debug("[checkstatus] check challenge token status: %r" % param)
 
-            checkPolicyPre('admin', "checkstatus", context=self.request_context)
+            checkPolicyPre('admin', "checkstatus")
 
             transid = param.get('transactionid', None) or param.get('state', None)
             user = getUserFromParam(param, optional)
@@ -2327,22 +2316,18 @@ class AdminController(BaseController):
             # # gather all challenges from serial, transactionid and user
             challenges = set()
             if serial is not None:
-                challenges.update(Challenges.lookup_challenges(
-                                    self.request_context, serial=serial))
+                challenges.update(Challenges.lookup_challenges(serial=serial))
 
             if transid is not None :
-                challenges.update(Challenges.lookup_challenges(
-                                    self.request_context, transid=transid))
+                challenges.update(Challenges.lookup_challenges(transid=transid))
 
             # # if we have a user
             if user.isEmpty() == False:
-                tokens = getTokens4UserOrSerial(user=user,
-                                                context=self.request_context)
+                tokens = getTokens4UserOrSerial(user=user)
                 for token in tokens:
                     serial = token.getSerial()
                     challenges.update(
-                        Challenges.lookup_challenges(self.request_context,
-                                                     serial=serial))
+                        Challenges.lookup_challenges(serial=serial))
 
             serials = set()
             for challenge in challenges:
@@ -2362,8 +2347,7 @@ class AdminController(BaseController):
                 stat['challenges'] = chall_dict
 
                 # # add the token info to the stat dict
-                tokens = getTokens4UserOrSerial(serial=serial,
-                                                context=self.request_context)
+                tokens = getTokens4UserOrSerial(serial=serial)
                 token = tokens[0]
                 stat['tokeninfo'] = token.get_vars(save=True)
 

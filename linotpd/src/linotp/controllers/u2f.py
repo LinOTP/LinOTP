@@ -66,8 +66,7 @@ class U2FController(BaseController):
             'realm': realm
             }
         valid_facets_action_value = getPolicyActionValue(
-                                        getPolicy(get_policy_params,
-                                                  context=self.request_context),
+                                        getPolicy(get_policy_params),
                                         'u2f_valid_facets',
                                         is_tring=True)
         # the action value contains the semicolon-separated list of valid facets

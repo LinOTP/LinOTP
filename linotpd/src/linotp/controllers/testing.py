@@ -134,7 +134,7 @@ class TestingController(BaseController):
                 return sendError(response, "The testing controller can only be used in SelfTest mode!", 0)
 
             user = getUserFromParam(param, required)
-            ok = get_auth_AutoSMSPolicy(context=self.request_context)
+            ok = get_auth_AutoSMSPolicy()
 
             Session.commit()
             return sendResult(response, ok, 0)

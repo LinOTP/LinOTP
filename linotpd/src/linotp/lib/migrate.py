@@ -49,6 +49,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.config import _storeConfigDB
 
 from linotp.lib.crypt import SecretObj
+from linotp.lib.context import request_context as context
 
 
 class MigrationHandler(object):
@@ -58,7 +59,7 @@ class MigrationHandler(object):
     contain sensitive data like password
     """
 
-    def __init__(self, context=None):
+    def __init__(self):
         """
         the Migration hanlder relies on a crypto handler, which
         encrypts or decryptes data.
@@ -67,8 +68,7 @@ class MigrationHandler(object):
         """
         self.salt = None
         self.crypter = None
-        self.context = context
-        self.hsm = self.context.get('hsm')
+        self.hsm = context.get('hsm')
 
     def setup(self, passphrase, salt=None):
         """
@@ -183,7 +183,6 @@ class MigrationHandler(object):
             if token.LinOtpTokenPinUser:
                 key, iv = token.getUserPin()
                 user_pin = SecretObj.decrypt(key, iv, hsm=self.hsm)
-
                 enc_value = self.crypter.encrypt(input_data=user_pin,
                                     just_mac=serial + token.LinOtpTokenPinUser)
                 token_data['TokenUserPin'] = enc_value

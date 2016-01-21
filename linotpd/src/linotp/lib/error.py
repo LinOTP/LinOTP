@@ -110,6 +110,8 @@ class TokenTypeNotSupportedError(LinotpError):
     def __init__(self, description="this token type is not supported on this setup!", id=906):
         LinotpError.__init__(self, description=description, id=id)
 
+class ProgrammingError (Exception):
+    pass
 
 #eof###########################################################################
 

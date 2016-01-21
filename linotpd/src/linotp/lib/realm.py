@@ -31,6 +31,7 @@ from linotp.model.meta import Session
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getFromConfig
+from linotp.lib.context import request_context as context
 
 from sqlalchemy import func
 
@@ -109,7 +110,7 @@ def getRealmObject(name=u"", id=0):
             realmObj = realmObjects[0]
     return realmObj
 
-def getRealms(aRealmName="", context=None):
+def getRealms(aRealmName=""):
     '''
     lookup for a defined realm or all realms
 
@@ -135,10 +136,7 @@ def getRealms(aRealmName="", context=None):
     '''
     ret = {}
 
-    if not context:
-        config = getLinotpConfig()
-    else:
-        config = context["Config"]
+    config = context["Config"]
     realms = config.getRealms()
 
     # only parse once per session

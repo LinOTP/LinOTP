@@ -33,6 +33,7 @@ from linotp.lib.util        import required
 
 from linotp.lib.mOTP        import mTimeOtp
 from linotp.lib.tokenclass  import TokenClass
+from linotp.lib.context import request_context as context
 
 
 import logging
@@ -116,7 +117,7 @@ class MotpTokenClass(TokenClass):
         return ret
 
 
-    def __init__(self, a_token, context=None):
+    def __init__(self, a_token):
         '''
         constructor - create a token object
 
@@ -124,7 +125,7 @@ class MotpTokenClass(TokenClass):
         :type a_token:  orm object
         '''
         log.debug("[__init__] begin. entering constructor with param: a_token %r" % (a_token))
-        TokenClass.__init__(self, a_token, context=context)
+        TokenClass.__init__(self, a_token)
         self.setType(u"mOTP")
 
         return
@@ -185,7 +186,7 @@ class MotpTokenClass(TokenClass):
         secObj = self._get_secret_object()
         window = self.token.LinOtpCountWindow
         key, iv = self.token.getUserPin()
-        secPinObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+        secPinObj = SecretObj(key, iv, hsm=context.get('hsm'))
 
         log.debug("[checkOtp] otime %s", otime)
 

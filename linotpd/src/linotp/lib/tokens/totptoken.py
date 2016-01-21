@@ -102,7 +102,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
     resyncDiffLimit = 3
 
-    def __init__(self, aToken, context=None):
+    def __init__(self, aToken):
         '''
         constructor - create a token object
 
@@ -112,7 +112,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         '''
         log.debug("[init]  begin. Create a token object with: a_token %r" % (aToken))
 
-        TokenClass.__init__(self, aToken, context=context)
+        TokenClass.__init__(self, aToken)
         self.setType(u"TOTP")
         self.hKeyRequired = True
 

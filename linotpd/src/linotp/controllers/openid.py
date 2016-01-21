@@ -60,6 +60,8 @@ from linotp.lib.openid import create_association, check_authentication
 from linotp.lib.openid import OPENID_2_0_TYPE
 from linotp.lib.openid import OPENID_1_0_TYPE
 
+from linotp.lib.context import request_context
+
 from urllib import urlencode
 
 ASSOC_EXPIRES_IN = 3600
@@ -91,9 +93,9 @@ class OpenidController(BaseController):
             for key, value in params.items():
                 log.debug("[__before__::%r:%r]" % (key, value))
 
-            c.audit = self.request_context[audit]
+            c.audit = request_context[audit]
             c.audit['client'] = get_client(request)
-            self.request_context['Audit'] = audit
+            request_context['Audit'] = audit
 
             self.storage = config.get('openid_sql')
 
@@ -511,7 +513,7 @@ class OpenidController(BaseController):
 
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm or getDefaultRealm()
-            vh = ValidationHandler(context=self.request_context)
+            vh = ValidationHandler()
             if same_user is True:
                 (ok, opt) = vh.checkUserPass(user, passw)
 

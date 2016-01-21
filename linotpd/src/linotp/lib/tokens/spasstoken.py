@@ -46,8 +46,8 @@ class SpassTokenClass(TokenClass):
     It does have no OTP component. The OTP checking will always
     succeed. Of course, an OTP PIN can be used.
     '''
-    def __init__(self, aToken, context=None):
-        TokenClass.__init__(self, aToken, context=context)
+    def __init__(self, aToken):
+        TokenClass.__init__(self, aToken)
         self.setType(u"spass")
         self.mode = ['authenticate']
 

@@ -30,6 +30,8 @@ import linotp
 from linotp.model import Session
 from linotp.model import Challenge
 
+from linotp.lib.context import request_context as context
+
 log = logging.getLogger(__name__)
 
 
@@ -51,12 +53,11 @@ class Challenges(object):
         return challenges
 
     @staticmethod
-    def lookup_challenges(context, serial=None, transid=None):
+    def lookup_challenges(serial=None, transid=None):
         """
         database lookup to find all challenges belonging to a token and or
         if exist with a transaction state
 
-        :param context:
         :param serial:   serial of the token
         :param transid:  transaction id, if None, all will be retrieved
         :return:         return a list of challenge dict
@@ -110,8 +111,7 @@ class Challenges(object):
         return False
 
     @staticmethod
-    def create_challenge(token, context, options=None, challenge_id=None,
-                         id_postfix=''):
+    def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
         """
         dedicated method to create a challenge to support the implementation
         of challenge policies in future
@@ -162,8 +162,7 @@ class Challenges(object):
                     retry_counter, reason)
                 raise Exception('Failed to create challenge %r' % reason)
 
-        challenges = Challenges.lookup_challenges(context,
-                                                  serial=token.getSerial())
+        challenges = Challenges.lookup_challenges(serial=token.getSerial())
 
         # carefully create a new challenge
         try:
@@ -275,7 +274,7 @@ class Challenges(object):
         return res
 
     @staticmethod
-    def handle_related_challenge(related_challenges, context):
+    def handle_related_challenge(related_challenges):
         """
         """
         # if there are any related challenges, we have to call the
@@ -284,14 +283,11 @@ class Challenges(object):
         for related_challenge in related_challenges:
             serial = related_challenge.tokenserial
             transid = related_challenge.transid
-            token = linotp.lib.token.getTokens4UserOrSerial(serial=serial,
-                                                            context=context)[0]
+            token = linotp.lib.token.getTokens4UserOrSerial(serial=serial)[0]
 
             # get all challenges and the matching ones
-            all_challenges = Challenges.lookup_challenges(context,
-                                                          serial=serial)
-            matching_challenges = Challenges.lookup_challenges(context,
-                                                               serial=serial,
+            all_challenges = Challenges.lookup_challenges(serial=serial)
+            matching_challenges = Challenges.lookup_challenges(serial=serial,
                                                                transid=transid)
 
             # call the janitor to select the invalid challenges

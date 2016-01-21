@@ -38,6 +38,8 @@ from linotp.lib.user import getUserInfo
 from linotp.lib.resolver import getResolverObject
 from linotp.lib.resolver import getResolverClassName
 
+from linotp.lib.context import request_context as context
+
 import linotp.model as model
 
 import linotp.model.meta
@@ -50,10 +52,6 @@ log = logging.getLogger(__name__)
 
 
 class MigrateResolverHandler(ToolsHandler):
-
-    def __init__(self, context):
-
-        self.context = context
 
     def migrate_resolver(self, src=None, target=None, filter_serials=None):
         """
@@ -72,7 +70,7 @@ class MigrateResolverHandler(ToolsHandler):
         if not src or not target:
             raise Exception("Missing src or target resolver defintion!")
 
-        audit = self.context.get('audit')
+        audit = context.get('audit')
         now = datetime.now()
         stime = now.strftime("%s")
 
@@ -131,7 +129,7 @@ class MigrateResolverHandler(ToolsHandler):
         audit['info'] = "[%s] %s" % (stime, ret['message'])
         audit['serial'] = ",".join(list(serials))
         audit['success'] = True
-        self.context['audit'] = audit
+        context['audit'] = audit
 
         return ret
 

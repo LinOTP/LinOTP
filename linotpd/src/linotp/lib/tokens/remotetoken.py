@@ -62,13 +62,13 @@ class RemoteTokenClass(TokenClass):
     different users.
     """
 
-    def __init__(self, aToken, context=None):
+    def __init__(self, aToken):
         """
         constructor - create a token class object with it's db token binding
 
         :param aToken: the db bound token
         """
-        TokenClass.__init__(self, aToken, context=context)
+        TokenClass.__init__(self, aToken)
         self.setType(u"remote")
 
         self.remoteServer = ""

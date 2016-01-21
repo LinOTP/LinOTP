@@ -43,6 +43,8 @@ from linotp.lib.token import TokenHandler
 from linotp.lib.user import (User, getUserId, getUserInfo)
 from linotp.lib.util import modhex_decode
 
+from linotp.lib.context import request_context as context
+
 log = logging.getLogger(__name__)
 
 
@@ -59,8 +61,7 @@ def check_pin(token, passw, user=None, options=None):
     :return: boolean, if pin matched True
     """
     res = False
-    context = token.context
-    pin_policies = linotp.lib.policy.get_pin_policies(user, context=context)
+    pin_policies = linotp.lib.policy.get_pin_policies(user)
 
     if 1 in pin_policies:
         # We check the Users Password as PIN
@@ -128,8 +129,7 @@ def split_pin_otp(token, passw, user=None, options=None):
                     token.splitPinPass
     :return: tuple of (split status, pin and otpval)
     """
-    context = token.context
-    pin_policies = linotp.lib.policy.get_pin_policies(user, context=context)
+    pin_policies = linotp.lib.policy.get_pin_policies(user)
 
     policy = 0
 
@@ -154,9 +154,6 @@ def split_pin_otp(token, passw, user=None, options=None):
 
 class ValidationHandler(object):
 
-    def __init__(self, context):
-        self.context = context
-
     def checkSerialPass(self, serial, passw, options=None, user=None):
         """
         This function checks the otp for a given serial
@@ -167,7 +164,7 @@ class ValidationHandler(object):
 
         log.debug('checking for serial %r' % serial)
         tokenList = linotp.lib.token.getTokens4UserOrSerial(
-            None, serial, context=self.context)
+            None, serial)
 
         if passw is None:
             # other than zero or one token should not happen, as serial is unique
@@ -186,7 +183,7 @@ class ValidationHandler(object):
 
                 if theToken.is_challenge_request(passw, user, options=options):
                     (res, opt) = Challenges.create_challenge(
-                        theToken, self.context, options)
+                        theToken, options)
                 else:
                     raise ParameterError('Missing parameter: pass', id=905)
 
@@ -225,7 +222,7 @@ class ValidationHandler(object):
         serial = None
         resolverClass = None
         uid = None
-        audit = self.context['audit']
+        audit = context['audit']
         user_exists = False
 
         if user is not None and (user.isEmpty() == False):
@@ -234,7 +231,7 @@ class ValidationHandler(object):
                 (uid, _resolver, resolverClass) = getUserId(user)
                 user_exists = True
             except:
-                pass_on = self.context.get('Config').get(
+                pass_on = context.get('Config').get(
                                             'linotp.PassOnUserNotFound', False)
                 if pass_on and 'true' == pass_on.lower():
                     audit['action_detail'] = (
@@ -247,19 +244,18 @@ class ValidationHandler(object):
         # if we have an user, check if we forward the request to another server
         if user_exists:
             from linotp.lib.policy import get_auth_forward
-            servers = get_auth_forward(user, context=self.context)
+            servers = get_auth_forward(user)
             if servers:
                 if 'radius://' in servers:
-                    rad = RadiusRequest(context=self.context, servers=servers)
+                    rad = RadiusRequest(servers=servers)
                     res, opt = rad.do_request(servers, user, passw, options)
                     return res, opt
                 elif 'http://' in servers or 'https://' in servers:
-                    http = HttpRequest(context=self.context, servers=servers)
+                    http = HttpRequest(servers=servers)
                     res, opt = http.do_request(user, passw, options)
                     return res, opt
 
-        tokenList = linotp.lib.token.getTokens4UserOrSerial(user, serial,
-                                                            context=self.context)
+        tokenList = linotp.lib.token.getTokens4UserOrSerial(user, serial)
 
         if len(tokenList) == 0:
             audit['action_detail'] = 'User has no tokens assigned'
@@ -267,7 +263,7 @@ class ValidationHandler(object):
             # here we check if we should to autoassign and try to do it
             log.debug('about to check auto_assigning')
 
-            th = TokenHandler(context=self.context)
+            th = TokenHandler()
             auto_assign_return = th.auto_assignToken(passw, user)
             if auto_assign_return is True:
                 # We can not check the token, as the OTP value is already used!
@@ -281,7 +277,7 @@ class ValidationHandler(object):
                 # we have a challenge tiggered
                 return (False, opt)
 
-            pass_on = self.context.get('Config').get('linotp.PassOnUserNoToken',
+            pass_on = context.get('Config').get('linotp.PassOnUserNoToken',
                                                          False)
             if pass_on and 'true' == pass_on.lower():
                 audit['action_detail'] = 'authenticated by PassOnUserNoToken'
@@ -289,7 +285,7 @@ class ValidationHandler(object):
 
             #  Check if there is an authentication policy passthru
             from linotp.lib.policy import get_auth_passthru
-            if get_auth_passthru(user, context=self.context):
+            if get_auth_passthru(user):
                 log.debug('user %r has no token. Checking for '
                           'passthru in realm %r' % (user.login, user.realm))
                 y = getResolverObject(resolverClass)
@@ -299,7 +295,7 @@ class ValidationHandler(object):
 
             #  Check if there is an authentication policy passOnNoToken
             from linotp.lib.policy import get_auth_passOnNoToken
-            if get_auth_passOnNoToken(user, context=self.context):
+            if get_auth_passOnNoToken(user):
                 log.info('user %r has not token. PassOnNoToken'
                          ' set - authenticated!')
                 audit['action_detail'] = (
@@ -354,7 +350,7 @@ class ValidationHandler(object):
             if 'transactionid' in check_options:
                 check_options['transactionid'] = transid
 
-        audit_entry = {} 
+        audit_entry = {}
         audit_entry['action_detail'] = "no token found!"
 
 
@@ -437,7 +433,7 @@ class ValidationHandler(object):
         # end of token verification loop
 
         # if there are related / sub challenges, we have to call their janitor
-        Challenges.handle_related_challenge(related_challenges, self.context)
+        Challenges.handle_related_challenge(related_challenges)
 
         # now we finalize the token validation result
         fh = FinishTokens(valid_tokens,
@@ -446,7 +442,6 @@ class ValidationHandler(object):
                           invalid_tokens,
                           validation_results,
                           user, options,
-                          context=self.context,
                           audit_entry=audit_entry)
 
         (res, reply) = fh.finish_checked_tokens()
@@ -473,7 +468,7 @@ class ValidationHandler(object):
         :rtype: dict
         """
 
-        audit = self.context['audit']
+        audit = context['audit']
         opt = None
         res = False
 
@@ -493,8 +488,7 @@ class ValidationHandler(object):
             serials.append("%s_%s" % (serialnum, i))
 
         for serial in serials:
-            tokens = linotp.lib.token.getTokens4UserOrSerial(
-                                        serial=serial, context=self.context)
+            tokens = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
             tokenList.extend(tokens)
 
         if len(tokenList) == 0:

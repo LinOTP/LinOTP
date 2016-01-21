@@ -440,3 +440,22 @@ def unicode_compare(x, y):
     :return: the locale aware comparison result
     """
     return cmp(str2unicode(x), str2unicode(y))
+
+
+def dict_copy(dict_):
+
+    """ recursively copies a dict """
+
+    # we use an recursive approach instead of an
+    # iterative one, because our dicts are only
+    # 3 to 4 levels deep.
+
+    copy = {}
+    for key, value in dict_.iteritems():
+        if isinstance(value, dict):
+            fragment = {key: dict_copy(value)}
+        else:
+            fragment = {key: value}
+        copy.update(fragment)
+    return copy
+

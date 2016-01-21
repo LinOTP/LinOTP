@@ -223,7 +223,7 @@ def check_userservice_session(request, config, user, client):
 
     return ret
 
-def get_pre_context(client, context=None):
+def get_pre_context(client):
     """
     get the rendering context before the login is shown, so the rendering
     of the login page could be controlled if realm_box or otpLogin is
@@ -250,31 +250,28 @@ def get_pre_context(client, context=None):
     pre_context['otpLogin'] = False
     policy = get_client_policy(client=client,
                                 scope='selfservice',
-                                action='otpLogin',
-                                context=context)
+                                action='otpLogin')
     if policy:
         pre_context['otpLogin'] = True
 
     pre_context['autoassign'] = False
     policy = get_client_policy(client=client,
                                 scope='enrollment',
-                                action='autoassignment',
-                                context=context)
+                                action='autoassignment')
     if policy:
         pre_context['autoassign'] = True
 
     pre_context['autoenroll'] = False
     policy = get_client_policy(client=client,
                                 scope='enrollment',
-                                action='autoenrollment',
-                                context=context)
+                                action='autoenrollment')
     if policy:
         pre_context['autoenroll'] = True
 
     return pre_context
 
 
-def get_context(config, user, realm, client, context=None):
+def get_context(config, user, realm, client):
     """
     get the user dependend rendering context
 
@@ -294,7 +291,7 @@ def get_context(config, user, realm, client, context=None):
     req_context["tokenArray"] = getTokenForUser(authUser)
 
     # show the defined actions, which have a rendering
-    actions = getSelfserviceActions(authUser, context=context)
+    actions = getSelfserviceActions(authUser)
     req_context["actions"] = actions
     for policy in actions:
         if "=" in policy:

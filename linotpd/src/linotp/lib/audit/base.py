@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 import socket
 
 from linotp.lib.token import getTokenNumResolver
+from linotp.lib.context import request_context as context
 
 
 def getAuditClass(packageName, className):
@@ -194,7 +195,7 @@ class AuditBase(object):
         return iter([])
 
 
-def search(param, user=None, columns=None, context=None):
+def search(param, user=None, columns=None):
 
     audit = context['Audit']
     search_dict = {}

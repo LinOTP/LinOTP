@@ -47,7 +47,7 @@ class NoOtpAuthTokenException(Exception):
     pass
 
 
-def create_google_authenticator(param, user=None, context=None):
+def create_google_authenticator(param, user=None):
     '''
     create url for google authenticator
 
@@ -104,7 +104,7 @@ def create_google_authenticator(param, user=None, context=None):
     if 'timeStep' in param:
         url_param['period'] = param.get('timeStep')
 
-    issuer = get_tokenissuer(login, realm, serial, context=context)
+    issuer = get_tokenissuer(login, realm, serial)
     if issuer:
         url_param['issuer'] = quote(issuer)
 
@@ -120,7 +120,7 @@ def create_google_authenticator(param, user=None, context=None):
 
     # show the user login in the token prefix
     if len(login) > 0:
-        label = get_tokenlabel(login, realm, serial, context=context)
+        label = get_tokenlabel(login, realm, serial)
         if len(param.get('description', '')) > 0 and '<d>' in label:
             label = label.replace('<d>', param.get('description'))
 
@@ -139,8 +139,7 @@ def create_google_authenticator(param, user=None, context=None):
     return ga
 
 
-def create_oathtoken_url(user, realm, otpkey, type="hmac", serial="",
-                         context=None):
+def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
     # 'url' : 'oathtoken:///addToken?name='+serial +
     #                '&key='+otpkey+
     #                '&timeBased=false&counter=0&numDigites=6&lockdown=true',
@@ -149,7 +148,7 @@ def create_oathtoken_url(user, realm, otpkey, type="hmac", serial="",
     if "totp" == type.lower():
         timebased = "&timeBased=true"
 
-    label = get_tokenlabel(user, realm, serial, context=context)
+    label = get_tokenlabel(user, realm, serial)
     url_label = quote(label)
 
     url = "oathtoken:///addToken?name=%s&lockdown=true&key=%s%s" % (

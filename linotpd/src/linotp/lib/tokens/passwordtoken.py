@@ -67,8 +67,8 @@ class PasswordTokenClass(TokenClass):
 
             return res
 
-    def __init__(self, aToken, context=None):
-        TokenClass.__init__(self, aToken, context=context)
+    def __init__(self, aToken):
+        TokenClass.__init__(self, aToken)
         self.hKeyRequired = True
         self.setType(u"pw")
 

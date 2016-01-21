@@ -51,6 +51,9 @@ from linotp.lib.config import getGlobalObject
 from linotp.model import meta
 from linotp.lib.openid import SQLStorage
 
+from linotp.lib.context import request_context
+from linotp.lib.context import request_context_safety
+
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error
 import linotp.model
@@ -331,42 +334,44 @@ class BaseController(WSGIController):
 
         path = ""
 
-        self.create_context(request)
+        with request_context_safety():
 
-        try:
-            if environ:
-                path = environ.get("PATH_INFO", "") or ""
+            self.create_context(request)
 
             try:
-                user_desc = getUserFromRequest(request)
-                self.base_auth_user = user_desc.get('login', '')
-            except UnicodeDecodeError as exx:
-                # we supress Exception here as it will be handled in the
-                # controller which will return corresponding response
-                log.info('Failed to identify user due to %r' % exx)
+                if environ:
+                    path = environ.get("PATH_INFO", "") or ""
 
-            log.debug("request %r" % path)
-            ret = WSGIController.__call__(self, environ, start_response)
-            log.debug("reply %r" % ret)
+                try:
+                    user_desc = getUserFromRequest(request)
+                    self.base_auth_user = user_desc.get('login', '')
+                except UnicodeDecodeError as exx:
+                    # we supress Exception here as it will be handled in the
+                    # controller which will return corresponding response
+                    log.info('Failed to identify user due to %r' % exx)
 
-        finally:
-            meta.Session.remove()
-            # free the lock on the scurityPovider if any
-            if self.sep:
-                self.sep.dropSecurityModule()
-            closeResolvers()
+                log.debug("request %r" % path)
+                ret = WSGIController.__call__(self, environ, start_response)
+                log.debug("reply %r" % ret)
 
-            # hint for the garbage collector to make the dishes
-            data_objects = ["resolvers_loaded", "resolver_types",
-                            "resolver_clazzes", "linotpConfig", "audit", "hsm"]
-            for data_obj in data_objects:
-                if hasattr(c, data_obj):
-                    data = getattr(c, data_obj)
-                    del data
+            finally:
+                meta.Session.remove()
+                # free the lock on the scurityPovider if any
+                if self.sep:
+                    self.sep.dropSecurityModule()
+                closeResolvers()
 
-            log.debug("request %r done!" % path)
+                # hint for the garbage collector to make the dishes
+                data_objects = ["resolvers_loaded", "resolver_types",
+                                "resolver_clazzes", "linotpConfig", "audit", "hsm"]
+                for data_obj in data_objects:
+                    if hasattr(c, data_obj):
+                        data = getattr(c, data_obj)
+                        del data
 
-        return ret
+                log.debug("request %r done!" % path)
+
+            return ret
 
     def set_language(self, headers):
         '''Invoke before everything else. And set the translation language'''
@@ -407,10 +412,9 @@ class BaseController(WSGIController):
 
         linotp_config = getLinotpConfig()
 
-        self.request_context = {}
-        self.request_context['Config'] = linotp_config
-        self.request_context['Policies'] = getPolicies(config=linotp_config)
-        self.request_context['translate'] = translate
+        request_context['Config'] = linotp_config
+        request_context['Policies'] = getPolicies(config=linotp_config)
+        request_context['translate'] = translate
 
         request_params = {}
 
@@ -419,7 +423,7 @@ class BaseController(WSGIController):
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
-        self.request_context['Params'] = request_params
+        request_context['Params'] = request_params
 
         authUser = None
         try:
@@ -427,14 +431,14 @@ class BaseController(WSGIController):
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
-        self.request_context['AuthUser'] = authUser
+        request_context['AuthUser'] = authUser
 
         requestUser = None
         try:
             requestUser = getUserFromParam(request_params, True)
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
-        self.request_context['RequestUser'] = requestUser
+        request_context['RequestUser'] = requestUser
 
         client = None
         try:
@@ -442,10 +446,10 @@ class BaseController(WSGIController):
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
-        self.request_context['Client'] = client
+        request_context['Client'] = client
 
-        self.request_context['Audit'] = Audit
-        self.request_context['audit'] = Audit.initialize(request,
+        request_context['Audit'] = Audit
+        request_context['audit'] = Audit.initialize(request,
                                                          client=client)
 
         defaultRealm = ""
@@ -454,19 +458,19 @@ class BaseController(WSGIController):
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
-        self.request_context['defaultRealm'] = defaultRealm
+        request_context['defaultRealm'] = defaultRealm
 
         realms = None
         try:
-            realms = getRealms(context=self.request_context)
+            realms = getRealms()
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
 
-        self.request_context['Realms'] = realms
+        request_context['Realms'] = realms
 
-        self.request_context['hsm'] = None
+        request_context['hsm'] = None
         if hasattr(self, "hsm"):
-            self.request_context['hsm'] = self.hsm
+            request_context['hsm'] = self.hsm
 
         # copy some system entries from pylons
         syskeys = {
@@ -481,6 +485,6 @@ class BaseController(WSGIController):
             except:
                 log.info('no sytem config entry %s' % key)
 
-        self.request_context['SystemConfig'] = sysconfig
+        request_context['SystemConfig'] = sysconfig
 
 ###eof#########################################################################

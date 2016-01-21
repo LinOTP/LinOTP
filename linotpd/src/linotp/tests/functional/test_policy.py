@@ -39,6 +39,8 @@ from linotp.lib.policy import get_qrtan_url
 
 
 from linotp.tests import TestController, url
+from linotp.lib.context import request_context_safety
+from linotp.lib.context import request_context as context
 
 log = logging.getLogger(__name__)
 
@@ -3103,11 +3105,12 @@ class TestPolicies(TestController):
         linotp_config = getLinotpConfig()
         linotp_policies = getPolicies(config=linotp_config)
 
-        context = {}
-        context['Config'] = linotp_config
-        context['Policies'] = linotp_policies
+        with request_context_safety():
+            context['Config'] = linotp_config
+            context['Policies'] = linotp_policies
 
-        u = get_qrtan_url(["testrealm"], context=context)
+            u = get_qrtan_url(["testrealm"])
+
         self.assertTrue(u == URL, u)
 
     def test_802_getqrtanurl(self):
@@ -3127,11 +3130,13 @@ class TestPolicies(TestController):
         linotp_config = getLinotpConfig()
         linotp_policies = getPolicies(config=linotp_config)
 
-        context = {}
-        context['Config'] = linotp_config
-        context['Policies'] = linotp_policies
+        with request_context_safety():
 
-        u = get_qrtan_url(["testrealm"], context=context)
+            context['Config'] = linotp_config
+            context['Policies'] = linotp_policies
+
+            u = get_qrtan_url(["testrealm"])
+
         self.assertTrue(u == URL, u)
 
     def test_803_getqrtanurl(self):
@@ -3150,11 +3155,12 @@ class TestPolicies(TestController):
         linotp_config = getLinotpConfig()
         linotp_policies = getPolicies(config=linotp_config)
 
-        context = {}
-        context['Config'] = linotp_config
-        context['Policies'] = linotp_policies
+        with request_context_safety():
+            context['Config'] = linotp_config
+            context['Policies'] = linotp_policies
 
-        u = get_qrtan_url(["testrealm"], context=context)
+            u = get_qrtan_url(["testrealm"])
+
         self.assertTrue(u == URL, u)
 
     def test_804_ocra_policy(self):

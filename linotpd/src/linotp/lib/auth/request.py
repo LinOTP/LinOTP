@@ -40,6 +40,8 @@ import pyrad.packet
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
 
+from linotp.lib.context import request_context as context
+
 log = logging.getLogger(__name__)
 
 
@@ -56,18 +58,15 @@ class Request(object):
               http://127.0.0.1:5001/validate/check
     """
 
-    def __init__(self, context, servers):
+    def __init__(self, servers):
         """
         build up the request class
         - by parsing the server definition
-        - by preserving the context/config info
 
-        :param context: request context, required for configuration info
         :param servers: the server description from the policy definition
         :return: tuple of status as boolean and reply as dict with detail info
         """
 
-        self.context = context
         self.sysconfig = context['SystemConfig']
         self.config = {}
 

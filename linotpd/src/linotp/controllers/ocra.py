@@ -58,6 +58,7 @@ from linotp.lib.util import check_session
 from linotp.lib.util import getParam, getLowerParams
 from linotp.lib.util import get_client
 
+from linotp.lib.context import request_context
 
 audit = config.get('audit')
 
@@ -81,13 +82,13 @@ class OcraController(BaseController):
 
         try:
 
-            c.audit = self.request_context['audit']
+            c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
             if action != "check_t":
                 check_session(request)
 
-            self.request_context['Audit'] = audit
+            request_context['Audit'] = audit
             return response
 
         except webob.exc.HTTPUnauthorized as acc:
@@ -175,7 +176,7 @@ class OcraController(BaseController):
             param = getLowerParams(request.params)
             log.info("[request] saving default configuration: %r" % param)
 
-            checkPolicyPre('ocra', "request", context=self.request_context)
+            checkPolicyPre('ocra', "request")
 
             serial = getParam(param, 'serial', optional)
             user = getUserFromParam(param, optional)
@@ -190,7 +191,7 @@ class OcraController(BaseController):
                 message = ''
 
             ## ocra token
-            tokens = getTokens4UserOrSerial(user, serial, context=self.request_context)
+            tokens = getTokens4UserOrSerial(user, serial)
 
             if len(tokens) > 1 :
                 error = ('More than one token found: unable to create challenge '
@@ -297,7 +298,7 @@ class OcraController(BaseController):
             param = getLowerParams(request.params)
             log.info("[check_t] check OCRA token: %r" % param)
 
-            #checkPolicyPre('ocra', "check_t" , context=self.request_context)
+            #checkPolicyPre('ocra', "check_t")
 
             passw = getParam(param, 'pass'  , optional)
             if passw is None:
@@ -317,8 +318,7 @@ class OcraController(BaseController):
             if ocraChallenge is not None:
                 serial = ocraChallenge.tokenserial
 
-                tokens = getTokens4UserOrSerial(serial=serial,
-                                                context=self.request_context)
+                tokens = getTokens4UserOrSerial(serial=serial)
                 if len(tokens) == 0 or len(tokens) > 1:
                     raise Exception('tokenmismatch for token serial: %s'
                                     % (unicode(serial)))
@@ -335,7 +335,7 @@ class OcraController(BaseController):
                 userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                vh = ValidationHandler(self.request_context)
+                vh = ValidationHandler()
                 (ok, opt) = vh.checkSerialPass(serial, passw, user=user,
                                             options={'transactionid': transid})
 
@@ -437,7 +437,7 @@ class OcraController(BaseController):
             param = getLowerParams(request.params)
             log.debug("[checkstatus] check OCRA token status: %r" % param)
 
-            checkPolicyPre('ocra', "status", context=self.request_context)
+            checkPolicyPre('ocra', "status")
 
             transid = getParam(param, 'transactionid'   , optional)
             user = getUserFromParam(param, optional)
@@ -469,12 +469,12 @@ class OcraController(BaseController):
             ## if we have a serial number of  token
             if len(serials) > 0:
                 for serial in serials:
-                    tokens.extend(getTokens4UserOrSerial(serial=serial, context=self.request_context))
+                    tokens.extend(getTokens4UserOrSerial(serial=serial))
 
             ## if we have a user
             if user.isEmpty() == False:
                 try:
-                    tokens.extend(getTokens4UserOrSerial(user=user, context=self.request_context))
+                    tokens.extend(getTokens4UserOrSerial(user=user))
                 except:
                     log.warning("no token or user %r found!" % user)
 
@@ -537,7 +537,7 @@ class OcraController(BaseController):
             params = getLowerParams(request.params)
             log.debug("[getActivationCode]: %r" % params)
 
-            checkPolicyPre('ocra', "activationcode", context=self.request_context)
+            checkPolicyPre('ocra', "activationcode")
 
             ac = str(params.get('activationcode'))
             activationCode = createActivationCode(acode=ac)
@@ -579,7 +579,7 @@ class OcraController(BaseController):
             params = getLowerParams(request.params)
             log.debug("[calculateOtp]: %r" % params)
 
-            checkPolicyPre('ocra', "calcOTP", context=self.request_context)
+            checkPolicyPre('ocra', "calcOTP")
 
             sharedsecret = params.get('sharedsecret')
             activationcode = params.get('activationcode')

@@ -138,6 +138,8 @@ from linotp.lib.resolver import getResolverObject
 
 from linotp.lib.error import ParameterError
 
+from linotp.lib.context import request_context
+
 log = logging.getLogger(__name__)
 audit = config.get('audit')
 
@@ -229,13 +231,12 @@ class UserserviceController(BaseController):
             if not res:
                 abort(401, _("No valid session"))
 
-        context = get_pre_context(self.client,
-                                  context=self.request_context)
+        context = get_pre_context(self.client)
         self.otpLogin = context['otpLogin']
         self.autoassign = context['autoassign']
         self.autoenroll = context['autoenroll']
 
-        c.audit = self.request_context['audit']
+        c.audit = request_context['audit']
         c.audit['success'] = False
         c.audit['client'] = self.client
 
@@ -392,7 +393,7 @@ class UserserviceController(BaseController):
 
             # if user has no token, we check for auto assigneing one to him
             if len(toks) == 0:
-                th = TokenHandler(context=self.request_context)
+                th = TokenHandler()
 
                 # if no token and otp, we might do an auto assign
                 if self.autoassign and otp:
@@ -412,7 +413,7 @@ class UserserviceController(BaseController):
 
             # user has at least one token, so we do a check on pin + otp
             else:
-                vh = ValidationHandler(context=self.request_context)
+                vh = ValidationHandler()
                 (ret, _reply) = vh.checkUserPass(user, otp)
         return ret
 
@@ -460,8 +461,7 @@ class UserserviceController(BaseController):
         try:
             param.update(request.params)
 
-            pre_context = get_pre_context(self.client,
-                                      request_context=self.request_conntext)
+            pre_context = get_pre_context(self.client)
             response.content_type = 'application/json'
             return json.dumps(pre_context, indent=3)
 
@@ -491,8 +491,7 @@ class UserserviceController(BaseController):
             else:
                 realm = getDefaultRealm()
 
-            context = get_context(config, user, realm, self.client,
-                                  context=self.request_context)
+            context = get_context(config, user, realm, self.client)
 
             response.content_type = 'application/json'
             return json.dumps(context, indent=3)
@@ -545,8 +544,7 @@ class UserserviceController(BaseController):
             user = self.authUser.login
             realm = self.authUser.realm
 
-            context = get_context(config, user, realm, self.client,
-                                  request_context=self.request_context)
+            context = get_context(config, user, realm, self.client)
             for k, v in context.items():
                 setattr(c, k, v)
 
@@ -616,8 +614,8 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userenable', param,
-                           authUser=self.authUser, context=self.request_context)
-            th = TokenHandler(context=self.request_context)
+                           authUser=self.authUser)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("[userenable] user %s@%s is enabling his token with "
                          "serial %s." % (self.authUser.login,
@@ -672,8 +670,8 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userdisable', param,
-                           authUser=self.authUser, context=self.request_context)
-            th = TokenHandler(context=self.request_context)
+                           authUser=self.authUser)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is disabling his token with serial %s."
                         % (self.authUser.login, self.authUser.realm, serial))
@@ -711,15 +709,14 @@ class UserserviceController(BaseController):
         try:
             param.update(request.params)
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userdelete', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'userdelete', param, self.authUser)
 
             try:
                 serial = param["serial"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("[userdelete] user %s@%s is deleting his token with "
                          "serial %s." % (self.authUser.login,
@@ -757,19 +754,18 @@ class UserserviceController(BaseController):
 
         try:
             param.update(request.params)
-            checkPolicyPre('selfservice', 'userreset', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'userreset', param, self.authUser)
             try:
                 serial = param["serial"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("[userreset] user %s@%s is resetting the failcounter"
                                 " of his token with serial %s"
                         % (self.authUser.login, self.authUser.realm, serial))
-                ret = resetToken(serial=serial, context=self.request_context)
+                ret = resetToken(serial=serial)
                 res["reset Failcounter"] = ret
 
                 c.audit['success'] = ret
@@ -804,8 +800,7 @@ class UserserviceController(BaseController):
         try:
             # check selfservice authorization
             param.update(request.params)
-            checkPolicyPre('selfservice', 'userunassign', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'userunassign', param, self.authUser)
 
             try:
                 serial = param["serial"]
@@ -814,7 +809,7 @@ class UserserviceController(BaseController):
 
             upin = param.get("pin", None)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is unassigning his token with serial %s."
                          % (self.authUser.login, self.authUser.realm, serial))
@@ -854,8 +849,7 @@ class UserserviceController(BaseController):
             param.update(request.params)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'usersetpin', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'usersetpin', param, self.authUser)
 
             try:
                 userPin = param["userpin"]
@@ -863,14 +857,13 @@ class UserserviceController(BaseController):
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is setting the OTP PIN "
                          "for token with serial %s" %
                          (self.authUser.login, self.authUser.realm, serial))
 
-                check_res = checkOTPPINPolicy(userPin, self.authUser,
-                                              context=self.request_context)
+                check_res = checkOTPPINPolicy(userPin, self.authUser)
 
                 if not check_res['success']:
                     log.warning("Setting of OTP PIN for Token %s"
@@ -882,11 +875,9 @@ class UserserviceController(BaseController):
                                                         % check_res['error'])
 
                 if 1 == getOTPPINEncrypt(serial=serial,
-                                         user=self.authUser,
-                                         context=self.request_context):
+                                         user=self.authUser):
                     param['encryptpin'] = "True"
-                ret = setPin(userPin, None, serial, param,
-                             context=self.request_context)
+                ret = setPin(userPin, None, serial, param)
                 res["set userpin"] = ret
 
                 c.audit['success'] = ret
@@ -919,20 +910,19 @@ class UserserviceController(BaseController):
             param.update(request.params)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'usersetmpin', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'usersetmpin', param, self.authUser)
             try:
                 pin = param["pin"]
                 serial = param["serial"]
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is setting the mOTP PIN"
                          " for token with serial %s"
                           % (self.authUser.login, self.authUser.realm, serial))
-                ret = setPinUser(pin, serial, context=self.request_context)
+                ret = setPinUser(pin, serial)
                 res["set userpin"] = ret
 
                 c.audit['success'] = ret
@@ -967,8 +957,7 @@ class UserserviceController(BaseController):
         try:
             param.update(request.params)
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userresync', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'userresync', param, self.authUser)
 
             try:
                 serial = param["serial"]
@@ -977,7 +966,7 @@ class UserserviceController(BaseController):
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (True == th.isTokenOwner(serial, self.authUser)):
                 log.info("user %s@%s is resyncing his "
                           "token with serial %s"
@@ -1016,8 +1005,7 @@ class UserserviceController(BaseController):
         try:
             param.update(request.params)
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userassign', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'userassign', param, self.authUser)
 
             upin = param.get("pin", None)
 
@@ -1034,7 +1022,7 @@ class UserserviceController(BaseController):
                 # one of the realms, otherwise the token can not be assigned
                 raise Exception(_("The token you want to assign is "
                                              " not contained in your realm!"))
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (False == th.hasOwner(serial)):
                 log.info("user %s@%s is assign the token with "
                                                     "serial %s to himself."
@@ -1095,7 +1083,7 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'usergetserialbyotp', param,
-                                self.authUser, context=self.request_context)
+                                self.authUser)
             try:
                 otp = param["otp"]
             except KeyError as exx:
@@ -1104,7 +1092,7 @@ class UserserviceController(BaseController):
             ttype = param.get("type", None)
 
             c.audit['token_type'] = ttype
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             serial, _username, _resolverClass = th.get_serial_by_otp(None,
                     otp, 10, typ=ttype, realm=self.authUser.realm, assigned=0)
             res = {'serial': serial}
@@ -1140,8 +1128,7 @@ class UserserviceController(BaseController):
             param.update(request.params)
 
             # check selfservice authorization
-            checkPolicyPre('selfservice', 'userinit', param, self.authUser,
-                           context=self.request_context)
+            checkPolicyPre('selfservice', 'userinit', param, self.authUser)
 
             try:
                 tok_type = param["type"]
@@ -1151,7 +1138,7 @@ class UserserviceController(BaseController):
             serial = param.get('serial', None)
             prefix = param.get('prefix', None)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if not serial:
                 serial = th.genSerial(tok_type, prefix)
                 param['serial'] = serial
@@ -1191,8 +1178,7 @@ class UserserviceController(BaseController):
 
 	    logTokenNum(c.audit)
             c.audit['success'] = ret
-            checkPolicyPost('selfservice', 'enroll', param, user=self.authUser,
-                            context=self.request_context)
+            checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
             Session.commit()
 
@@ -1244,8 +1230,7 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'userwebprovision',
-                           param, self.authUser,
-                           context=self.request_context)
+                           param, self.authUser)
 
             typ = param["type"]
             t_type = "hmac"
@@ -1256,7 +1241,7 @@ class UserserviceController(BaseController):
             desc = ""
             # date = datetime.datetime.now().strftime("%y%m%d%H%M%S")
             # rNum = random.randrange(1000, 9999)
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
 
             if typ.lower() == "oathtoken":
                 t_type = 'hmac'
@@ -1291,8 +1276,7 @@ class UserserviceController(BaseController):
                 if ret1:
                     url = create_oathtoken_url(self.authUser.login,
                                                self.authUser.realm,
-                                               otpkey, serial=serial,
-                                               context=self.request_context)
+                                               otpkey, serial=serial)
                     ret = {
                         'url': url,
                         'img': create_img(url, width=300, alt=serial),
@@ -1344,8 +1328,7 @@ class UserserviceController(BaseController):
                                   'description': desc,
                                   }
                         url = create_google_authenticator(pparam,
-                                                user=self.authUser,
-                                                context=self.request_context)
+                                                user=self.authUser)
                         label = "%s@%s" % (self.authUser.login,
                                            self.authUser.realm)
                         ret = {
@@ -1369,8 +1352,7 @@ class UserserviceController(BaseController):
             c.audit['success'] = ret1
             param['serial'] = serial
 
-            checkPolicyPost('selfservice', 'enroll', param, user=self.authUser,
-                            context=self.request_context)
+            checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
             Session.commit()
             return sendResult(response, {'init': ret1,
@@ -1427,7 +1409,7 @@ class UserserviceController(BaseController):
 
             curTime = param.get("curTime", None)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             if (True != th.isTokenOwner(serial, self.authUser)):
                 error = (_("The serial %s does not belong to user %s@%s") %
                           (serial, self.authUser.login, self.authUser.realm))
@@ -1435,7 +1417,7 @@ class UserserviceController(BaseController):
                 return sendError(response, error, 1)
 
             max_count = checkPolicyPre('selfservice', 'max_count', param,
-                                self.authUser, context=self.request_context)
+                                self.authUser)
             log.debug("checkpolicypre returned %s" % max_count)
 
             if count > max_count:
@@ -1443,8 +1425,7 @@ class UserserviceController(BaseController):
 
             log.debug("[usergetmultiotp] retrieving OTP value for token %s"
                       % serial)
-            ret = get_multi_otp(serial, count=int(count), curTime=curTime,
-                                context=self.request_context)
+            ret = get_multi_otp(serial, count=int(count), curTime=curTime)
             if ret['result'] == False and max_count == -1:
                 ret['error'] = "%s - %s" % (ret['error'], _("see policy"
                                                             " definition."))
@@ -1500,14 +1481,12 @@ class UserserviceController(BaseController):
         try:
             param.update(request.params)
             log.debug("params: %s" % param)
-            checkPolicyPre('selfservice', 'userhistory', param, self.authUser,
-                                        context=self.request_context)
+            checkPolicyPre('selfservice', 'userhistory', param, self.authUser)
 
             lines, total, page = audit_search(param, user=self.authUser,
                                 columns=['date', 'action', 'success', 'serial',
                                         'token_type', 'administrator',
-                                        'action_detail', 'info'],
-                                        context=self.request_context)
+                                        'action_detail', 'info'])
 
             response.content_type = 'application/json'
 
@@ -1568,8 +1547,7 @@ class UserserviceController(BaseController):
 
             # check selfservice authorization
             checkPolicyPre('selfservice', 'useractivateocratoken',
-                                                    param, self.authUser,
-                                            context=self.request_context)
+                                                    param, self.authUser)
             try:
                 typ = param["type"]
             except KeyError as exx:
@@ -1595,7 +1573,7 @@ class UserserviceController(BaseController):
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%s'" % exx.message)
 
-            th = TokenHandler(context=self.request_context)
+            th = TokenHandler()
             (ret, tokenObj) = th.initToken(helper_param, self.authUser)
 
             info = {}
@@ -1666,8 +1644,7 @@ class UserserviceController(BaseController):
             ''' check selfservice authorization '''
 
             checkPolicyPre('selfservice', 'userwebprovision',
-                                                    param, self.authUser,
-                                            context=self.request_context)
+                                                    param, self.authUser)
 
             try:
                 transid = param['transactionid']
@@ -1692,7 +1669,7 @@ class UserserviceController(BaseController):
                 log.error(error)
                 raise Exception(error)
 
-            tokens = getTokens4UserOrSerial(serial=serial, context=self.request_context)
+            tokens = getTokens4UserOrSerial(serial=serial)
             if len(tokens) == 0 or len(tokens) > 1:
                 error = ('[userfinshocratoken] no token found for '
                          'serial: %s' % (unicode(serial)))
@@ -1712,7 +1689,7 @@ class UserserviceController(BaseController):
                                                         tok.LinOtpIdResClass)
             user = User(login=userInfo.get('username'), realm=realm)
 
-            vh= ValidationHandler(self.request_context)
+            vh= ValidationHandler()
             (ok, opt) = vh.checkSerialPass(serial, passw, user=user,
                                             options={'transactionid': transid})
 
@@ -1777,8 +1754,7 @@ class UserserviceController(BaseController):
             ''' check selfservice authorization '''
 
             checkPolicyPre('selfservice', 'userwebprovision',
-                                                        param, self.authUser,
-                                                context=self.request_context)
+                                                        param, self.authUser)
             try:
                 passw = param["pass"]
             except KeyError as exx:
@@ -1808,7 +1784,7 @@ class UserserviceController(BaseController):
                     raise ParameterError("Missing parameter: '%s'"
                                          % exx.message)
 
-                tokens = getTokens4UserOrSerial(serial=serial, context=self.request_context)
+                tokens = getTokens4UserOrSerial(serial=serial)
                 if len(tokens) == 0 or len(tokens) > 1:
                     raise Exception('tokenmismatch for token serial: %s'
                                     % (unicode(serial)))
@@ -1826,7 +1802,7 @@ class UserserviceController(BaseController):
                                        tok.LinOtpIdResClass)
                 user = User(login=userInfo.get('username'), realm=realm)
 
-                vh = ValidationHandler(self.request_context)
+                vh = ValidationHandler()
                 (ok, opt) = vh.checkSerialPass(
                                         serial, passw, user=user, options=param)
 
@@ -1893,8 +1869,7 @@ class UserserviceController(BaseController):
                                      realm=self.authUser.realm,
                                      action=method,
                                      userObj=self.authUser.realm,
-                                     find_resolver=False,
-                                     context=self.request_context)
+                                     find_resolver=False)
             if not pols or len(pols) == 0:
                 log.error('user %r not authorized to call %s'
                           % (self.authUser, method))
@@ -1908,7 +1883,7 @@ class UserserviceController(BaseController):
                 tclass = tokenclasses.get(typ)
                 tclt = None
                 if serial is not None:
-                    toks = getTokens4UserOrSerial(None, serial, _class=False, context=self.request_context)
+                    toks = getTokens4UserOrSerial(None, serial, _class=False)
                     tokenNum = len(toks)
                     if tokenNum == 1:
                         token = toks[0]

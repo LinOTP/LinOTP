@@ -43,8 +43,8 @@ required = False
 ###############################################
 class VascoTokenClass(TokenClass):
 
-    def __init__(self, aToken, context=None):
-        TokenClass.__init__(self, aToken, context=context)
+    def __init__(self, aToken):
+        TokenClass.__init__(self, aToken)
         self.setType(u"vasco")
         self.hKeyRequired = True
 

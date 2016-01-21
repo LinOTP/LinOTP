@@ -131,6 +131,7 @@ from linotp.lib.reply import create_img
 from pylons.i18n.translation import _
 
 from linotp.lib.tokenclass import TokenClass
+from linotp.lib.context import request_context as context
 
 # needed for ocra token
 import urllib
@@ -148,7 +149,7 @@ required = False
 log = logging.getLogger(__name__)
 
 
-def qrtan_url(realms, callback_id=None, context=None):
+def qrtan_url(realms, callback_id=None):
     """
     Returns the URL for the half automatic mode for the QR TAN token
     for the given realm
@@ -161,12 +162,11 @@ def qrtan_url(realms, callback_id=None, context=None):
     :return: url string
 
     """
-    url = get_qrtan_url('qrtanurl', realms, callback_id=callback_id,
-                        context=context)
+    url = get_qrtan_url('qrtanurl', realms, callback_id=callback_id)
     return url
 
 
-def qrtanurl_init(realms, callback_id=None, context=None):
+def qrtanurl_init(realms, callback_id=None):
     '''
     Returns the URL for the half automatic mode for the QR TAN token
     for the given realm
@@ -179,12 +179,11 @@ def qrtanurl_init(realms, callback_id=None, context=None):
     :return: url string
 
     '''
-    url = get_qrtan_url('qrtanurl_init', realms, callback_id=callback_id,
-                        context=context)
+    url = get_qrtan_url('qrtanurl_init', realms, callback_id=callback_id)
     return url
 
 
-def get_qrtan_url(qrtan_policy_name, realms, callback_id=None, context=None):
+def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
     '''
     Worker to returns the URL for the half automatic mode for the QR TAN token
     for the given realm
@@ -215,8 +214,7 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None, context=None):
         realms = ['/:no realm:/']
 
     for realm in realms:
-        pol = getPolicy({"scope": "authentication", 'realm': realm},
-                        context=context)
+        pol = getPolicy({"scope": "authentication", 'realm': realm})
         url = getPolicyActionValue(pol, qrtan_policy_name, is_string=True,
                                    subkey=callback_id)
         if url:
@@ -424,7 +422,7 @@ class Ocra2TokenClass(TokenClass):
         return ret
 
 
-    def __init__(self, aToken, context=None):
+    def __init__(self, aToken):
         '''
         getInfo - return the status of the token rollout
 
@@ -433,7 +431,7 @@ class Ocra2TokenClass(TokenClass):
         '''
         log.debug('[__init__]')
 
-        TokenClass.__init__(self, aToken, context=context)
+        TokenClass.__init__(self, aToken)
         self.setType(u"ocra2")
         self.transId = 0
 
@@ -587,8 +585,7 @@ class Ocra2TokenClass(TokenClass):
 
         # is there an callbac selector
         callback_id = params.get('callback.id', None)
-        callback = policy_lookup_funtion(realms, callback_id,
-                                         context=self.context)
+        callback = policy_lookup_funtion(realms, callback_id)
 
         # is the callback supressed for the current request?
         if 'no_callback' in params:
@@ -670,7 +667,7 @@ class Ocra2TokenClass(TokenClass):
             #(transid, challenge, _ret, url) = self.challenge(message)
 
             #self.createChallenge()
-            (res, opt) = Challenges.create_challenge(self, self.context, options=params)
+            (res, opt) = Challenges.create_challenge(self, options=params)
 
             challenge = opt.get('challenge')
             transid = opt.get('transactionid')
@@ -781,7 +778,7 @@ class Ocra2TokenClass(TokenClass):
         pin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            pin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
+            pin = SecretObj.decrypt(key, iv, hsm=context.get('hsm'))
 
 
         try:
@@ -974,7 +971,7 @@ class Ocra2TokenClass(TokenClass):
         pin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            pin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
+            pin = SecretObj.decrypt(key, iv, hsm=context.get('hsm'))
 
         try:
             param = {}
@@ -1001,7 +998,7 @@ class Ocra2TokenClass(TokenClass):
         ##  create a non exisiting challenge
         try:
 
-            (res, opt) = Challenges.create_challenge(self, self.context, options={'messgae': data})
+            (res, opt) = Challenges.create_challenge(self, options={'messgae': data})
 
             transid = opt.get('transactionid')
             challenge = opt.get('challenge')
@@ -1192,7 +1189,7 @@ class Ocra2TokenClass(TokenClass):
 
         if 'transactionid' in options:
             transid = options.get('transactionid', None)
-            challs = Challenges.lookup_challenges(self.context, serial=serial,
+            challs = Challenges.lookup_challenges(serial=serial,
                                                   transid=transid)
             for chall in challs:
                 (rec_tan, rec_valid) = chall.getTanStatus()
@@ -1209,7 +1206,7 @@ class Ocra2TokenClass(TokenClass):
             challenges.append(options)
 
         if len(challenges) == 0:
-            challs = Challenges.lookup_challenges(self.context, serial=serial)
+            challs = Challenges.lookup_challenges(serial=serial)
             for chall in challs:
                 (rec_tan, rec_valid) = chall.getTanStatus()
                 if rec_tan == False:
@@ -1233,7 +1230,7 @@ class Ocra2TokenClass(TokenClass):
         ocraPin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            ocraPin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
+            ocraPin = SecretObj.decrypt(key, iv, hsm=context.get('hsm'))
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -1336,7 +1333,7 @@ class Ocra2TokenClass(TokenClass):
         ocraPin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            ocraPin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
+            ocraPin = SecretObj.decrypt(key, iv, hsm=context.get('hsm'))
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -1435,7 +1432,7 @@ class Ocra2TokenClass(TokenClass):
             return
         try:
 
-            challenges = Challenges.lookup_challenges(self.context, self.getSerial(),
+            challenges = Challenges.lookup_challenges(self.getSerial(),
                                                       transid=self.transId)
             if len(challenges) == 1:
                 challenge = challenges[0]
@@ -1485,7 +1482,7 @@ class Ocra2TokenClass(TokenClass):
         if self.transId == 0:
             return
 
-        challenges = Challenges.lookup_challenges(self.context, self.getSerial(),
+        challenges = Challenges.lookup_challenges(self.getSerial(),
                                                   transid=self.transId)
         if len(challenges) == 1:
             challenge = challenges[0]
@@ -1526,7 +1523,7 @@ class Ocra2TokenClass(TokenClass):
         challenges = []
 
         ## the challenges are orderd, the first one is the newest
-        challenges = Challenges.lookup_challenges(self.context, self.getSerial())
+        challenges = Challenges.lookup_challenges(self.getSerial())
 
         ##  check if there are enough challenges around
         if len(challenges) < 2:
@@ -1575,7 +1572,7 @@ class Ocra2TokenClass(TokenClass):
         ocraPin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            ocraPin = SecretObj.decrypt(key, iv, hsm=self.context.get('hsm'))
+            ocraPin = SecretObj.decrypt(key, iv, hsm=context.get('hsm'))
 
             if ocraPin is None or len(ocraPin) == 0:
                 ocraPin = ''
@@ -1642,7 +1639,7 @@ class Ocra2TokenClass(TokenClass):
         log.debug('[getStatus] %r' % (transactionId))
 
         statusDict = {}
-        challenge = Challenges.lookup_challenges(self.context, self.getSerial(),
+        challenge = Challenges.lookup_challenges(self.getSerial(),
                                                  transid=transactionId)
         if challenge is not None:
             statusDict['serial'] = challenge.tokenserial

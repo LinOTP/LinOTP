@@ -48,6 +48,7 @@ optional = True
 required = False
 
 from pylons.i18n.translation import _
+from linotp.lib.context import request_context
 
 
 
@@ -148,7 +149,7 @@ class HmacTokenClass(TokenClass):
         return ret
 
 
-    def __init__(self, a_token, context=None):
+    def __init__(self, a_token):
         '''
         constructor - create a token object
 
@@ -158,7 +159,7 @@ class HmacTokenClass(TokenClass):
         '''
         log.debug("[init]  begin. Create a token object with: a_token %r" % (a_token))
 
-        TokenClass.__init__(self, a_token, context=context)
+        TokenClass.__init__(self, a_token)
         self.setType(u"HMAC")
         self.hKeyRequired = True
 
@@ -637,8 +638,7 @@ class HmacTokenClass(TokenClass):
                 p['otpkey'] = otpkey
                 p['serial'] = self.getSerial()
                 # label
-                goo_url = create_google_authenticator(p, user=user,
-                                                      context=self.context)
+                goo_url = create_google_authenticator(p, user=user)
 
                 response_detail["googleurl"] = {
                       "order"      : '0',
@@ -655,8 +655,7 @@ class HmacTokenClass(TokenClass):
 
                     oath_url = create_oathtoken_url(user.login, user.realm,
                                                     otpkey, tok_type,
-                                                    serial=self.getSerial(),
-                                                    context=self.context)
+                                                    serial=self.getSerial())
                     response_detail["oathurl"] = {
                            "order"      : '2',
                            "description" : _("URL for OATH token"),

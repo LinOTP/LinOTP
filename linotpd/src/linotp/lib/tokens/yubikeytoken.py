@@ -49,8 +49,8 @@ class YubikeyTokenClass(TokenClass):
     The YubiKey Token in the Yubico AES mode
     """
 
-    def __init__(self, aToken, context=None):
-        TokenClass.__init__(self, aToken, context=context)
+    def __init__(self, aToken):
+        TokenClass.__init__(self, aToken)
         self.setType(u"yubikey")
 
         self.hKeyRequired = True

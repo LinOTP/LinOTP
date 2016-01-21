@@ -45,6 +45,7 @@ from linotp.lib.policy import getPolicyActionValue
 
 from linotp.lib.tokens.hmactoken import HmacTokenClass
 from linotp.lib.user import getUserDetail
+from linotp.lib.context import request_context as context
 
 if sys.version_info[0:2] >= (2, 6):
     from json import loads
@@ -88,14 +89,14 @@ class EmailTokenClass(HmacTokenClass):
     DEFAULT_EMAIL_PROVIDER = "linotp.lib.emailprovider.SMTPEmailProvider"
     DEFAULT_EMAIL_BLOCKING_TIMEOUT = 120
 
-    def __init__(self, aToken, context=None):
-        HmacTokenClass.__init__(self, aToken, context=context)
+    def __init__(self, aToken):
+        HmacTokenClass.__init__(self, aToken)
         self.setType(u"email")
         self.hKeyRequired = False
 
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
-        self.hashlibStr = self.context['Config'].get("hotp.hashlib", "sha1")
+        self.hashlibStr = context['Config'].get("hotp.hashlib", "sha1")
         self.mode = ['challenge']
 
     @property
@@ -351,9 +352,7 @@ class EmailTokenClass(HmacTokenClass):
         policies = getPolicy({'scope': 'authentication',
                               'realm': realm,
                               "action": "emailtext",
-                              "user": login},
-                             context=self.context
-                             )
+                              "user": login})
         if policies:
             message = getPolicyActionValue(policies, "emailtext", is_string=True)
 
@@ -379,9 +378,7 @@ class EmailTokenClass(HmacTokenClass):
         policies = getPolicy({'scope': 'authentication',
                               'realm': realm,
                               "action": "emailsubject",
-                              "user": login},
-                             context=self.context
-                             )
+                              "user": login})
         if policies:
             subject = getPolicyActionValue(policies, "emailsubject",
                                            is_string=True)

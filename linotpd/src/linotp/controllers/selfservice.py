@@ -89,6 +89,7 @@ from linotp.lib.token import newToken
 
 from pylons.i18n.translation import _
 
+from linotp.lib.context import request_context
 
 import logging
 log = logging.getLogger(__name__)
@@ -161,14 +162,14 @@ class SelfserviceController(BaseController):
         '''
 
         try:
-            c.audit = self.request_context['audit']
+            c.audit = request_context['audit']
             c.audit['success'] = False
             c.audit['client'] = get_client(request)
 
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
 
-            self.request_context['Audit'] = audit
+            request_context['Audit'] = audit
 
             (auth_type, auth_user) = get_auth_user(request)
 
@@ -202,8 +203,7 @@ class SelfserviceController(BaseController):
             # only the defined actions should be displayed
             # - remark: the generic actions like enrollTT are allready approved
             #   to have a rendering section and included
-            actions = getSelfserviceActions(self.authUser,
-                                            context=self.request_context)
+            actions = getSelfserviceActions(self.authUser)
             c.actions = actions
             for policy in actions:
                 if "=" in policy:
@@ -479,8 +479,7 @@ class SelfserviceController(BaseController):
         This is the form for an google token to do web provisioning.
         '''
         try:
-            c.actions = getSelfserviceActions(self.authUser,
-                                              context=self.request_context)
+            c.actions = getSelfserviceActions(self.authUser)
             return render('/selfservice/webprovisiongoogle.mako')
 
         except Exception as exx:

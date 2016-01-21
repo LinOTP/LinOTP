@@ -39,6 +39,8 @@ from linotp.lib.policy import PolicyException
 from linotp.lib.policy import checkToolsAuthorisation
 from linotp.lib.util import check_session
 
+from linotp.lib.context import request_context
+
 import logging
 
 # this is a hack for the static code analyser, which
@@ -63,10 +65,9 @@ class ToolsController(BaseController):
             # Session handling
             check_session(request)
 
-            checkToolsAuthorisation(action, params,
-                                    context=self.request_context)
+            checkToolsAuthorisation(action, params)
 
-            c.audit = self.request_context['audit']
+            c.audit = request_context['audit']
             return request
 
         except PolicyException as exx:
@@ -89,8 +90,8 @@ class ToolsController(BaseController):
         """
         try:
             # finally create the audit entry
-            Audit = self.request_context['Audit']
-            audit = self.request_context.get('audit')
+            Audit = request_context['Audit']
+            audit = request_context.get('audit')
             c.audit.update(audit)
             Audit.log(c.audit)
             Session.commit()
@@ -127,7 +128,7 @@ class ToolsController(BaseController):
             if not target_resolver or not src_resolver:
                 raise Exception('Src or Target resolver is undefined!')
 
-            mg = MigrateResolverHandler(context=self.request_context)
+            mg = MigrateResolverHandler()
             ret = mg.migrate_resolver(src=src_resolver,
                                       target=target_resolver)
 

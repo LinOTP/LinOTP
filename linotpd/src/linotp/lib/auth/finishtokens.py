@@ -28,13 +28,15 @@ import logging
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import UserError
 
+from linotp.lib.context import request_context as context
+
 log = logging.getLogger(__name__)
 
 
 class FinishTokens(object):
     def __init__(self, valid_tokens, challenge_tokens, pin_matching_tokens,
                  invalid_tokens, validation_results, user, options,
-                 context=None, audit_entry=None):
+                 audit_entry=None):
         """
         create the finalisation object, that finishes the token processing
 
@@ -55,9 +57,7 @@ class FinishTokens(object):
         self.validation_results = validation_results
         self.user = user
         self.options = options
-        self.audit_entry = audit_entry or {} 
-        self.context = context
-      
+        self.audit_entry = audit_entry or {}
 
     def finish_checked_tokens(self):
         """
@@ -150,7 +150,7 @@ class FinishTokens(object):
                 (res, _reply) = validation_results[token.getSerial()]
                 token.setOtpCount(res)
 
-            self.context['audit']['action_detail'] = "Multiple valid tokens found!"
+            context['audit']['action_detail'] = "Multiple valid tokens found!"
             if user:
                 log.error("[__checkTokenList] multiple token match error: "
                           "Several Tokens matching with the same OTP PIN "
@@ -172,7 +172,7 @@ class FinishTokens(object):
         if len(challenge_tokens) == 1:
             challenge_token = challenge_tokens[0]
             _res, reply = Challenges.create_challenge(
-                                challenge_token, self.context, options=options)
+                                challenge_token, options=options)
             return (False, reply, action_detail)
 
         # processing of multiple challenges
@@ -196,7 +196,6 @@ class FinishTokens(object):
 
                 (_res, reply) = Challenges.create_challenge(
                     challenge_token,
-                    self.context,
                     options=options,
                     challenge_id=challenge_id,
                     id_postfix=id_postfix
@@ -245,8 +244,7 @@ class FinishTokens(object):
             tok.statusValidationFail()
 
         import linotp.lib.policy
-        pin_policies = linotp.lib.policy.get_pin_policies(
-                                            user, context=self.context) or []
+        pin_policies = linotp.lib.policy.get_pin_policies(user) or []
 
         if 1 in pin_policies:
             action_detail = "wrong user password -1"
@@ -279,7 +277,7 @@ class FinishTokens(object):
         """
 
         # get the audit dict from the context
-        audit = self.context['audit']
+        audit = context['audit']
 
         # initialize by the given entry
         audit.update(self.audit_entry)

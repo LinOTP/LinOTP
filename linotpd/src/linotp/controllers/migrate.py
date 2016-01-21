@@ -130,7 +130,7 @@ class MigrateController(BaseController):
 
             backup_data = {}
 
-            mig = MigrationHandler(context=self.request_context)
+            mig = MigrationHandler()
             salt = mig.setup(passphrase=passphrase)
 
             # create the backup file
@@ -227,7 +227,7 @@ class MigrateController(BaseController):
 
                     if not mig and  "Salt" in restore_data:
                         salt = restore_data["Salt"]
-                        mig = MigrationHandler(context=self.request_context)
+                        mig = MigrationHandler()
                         mig.setup(passphrase=passphrase,
                                   salt=binascii.unhexlify(salt))
 

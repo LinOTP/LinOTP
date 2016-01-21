@@ -32,6 +32,9 @@ from linotp.lib.user import getRealmBox, getSplitAtSign
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.util import str2unicode
+from linotp.lib.context import request_context
+from linotp.lib.context import request_context_safety
+from linotp.lib.config import getLinotpConfig
 
 import traceback
 
@@ -76,10 +79,13 @@ class UserModelPlugin(object):
             realm_mbox = True
 
         # check username/realm, password
-        user = get_authenticated_user(username, realm, password,
-                                          realm_box=realm_mbox,
-                                          authenticate=authenticate,
-                                          options=options)
+        with request_context_safety():
+            linotp_config = getLinotpConfig()
+            request_context['Config'] = linotp_config
+            user = get_authenticated_user(username, realm, password,
+                                              realm_box=realm_mbox,
+                                              authenticate=authenticate,
+                                              options=options)
         if not user:
             return None
 

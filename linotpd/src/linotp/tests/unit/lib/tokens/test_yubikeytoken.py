@@ -99,7 +99,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         self.model_token = model_token
 
         # create the yubike with the mocked model_token
-        self.yubikey_token = YubikeyTokenClass(model_token, context={})
+        self.yubikey_token = YubikeyTokenClass(model_token)
 
         def _get_secret_object():
             return secret_obj

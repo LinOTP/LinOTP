@@ -81,6 +81,8 @@ from sqlalchemy import asc, desc
 
 from pylons.i18n.translation import _
 
+from linotp.lib.context import request_context as context
+
 # needed for ocra token
 import urllib
 
@@ -98,7 +100,7 @@ log = logging.getLogger(__name__)
 
 class TokenClass(object):
 
-    def __init__(self, token, context=None):
+    def __init__(self, token):
         self.type = ''
         self.token = token
         # the info is a generic container, to store token specific
@@ -106,7 +108,6 @@ class TokenClass(object):
         self.info = {}
         self.hKeyRequired = False
         self.mode = ['auth', 'challenge']
-        self.context = context
         # these lists will be returned as result of the token check
         self.challenge_token = []
         self.pin_matching_token = []
@@ -554,15 +555,14 @@ class TokenClass(object):
             state = options.get('state', options.get('transactionid'))
 
             challenges = Challenges.lookup_challenges(
-                self.context, serial=self.getSerial(), transid=state)
+                serial=self.getSerial(), transid=state)
             if len(challenges) == 0 and self.getType() not in ['ocra']:
                 # if state argument is given, but no open challenge found
                 # this might be a problem, so make a log entry
                 log.info('no challenge with state %s found for %s'
                          % (state, self.getSerial()))
         else:
-            challenges = Challenges.lookup_challenges(
-                self.context, serial=self.getSerial())
+            challenges = Challenges.lookup_challenges(serial=self.getSerial())
 
         # now verify that the challenge is valid
         for ch in challenges:
@@ -609,7 +609,7 @@ class TokenClass(object):
         # default is: challenges which are younger than the matching one
         # are to be deleted
 
-        all_challenges = Challenges.lookup_challenges(self.context)
+        all_challenges = Challenges.lookup_challenges()
         to_be_deleted = self.challenge_janitor(matching_challenges,
                                                all_challenges)
 
@@ -622,7 +622,7 @@ class TokenClass(object):
             if '.' in del_challenge.transid:
                 tran_id = del_challenge.transid.split('.')[0]
                 related_challenges = Challenges.lookup_challenges(
-                    self.context, transid=tran_id)
+                                                            transid=tran_id)
                 self.related_challenges.extend(related_challenges)
 
         Challenges.delete_challenges(serial=self.getSerial(),
@@ -666,8 +666,7 @@ class TokenClass(object):
                 raise Exception(msg)
         import linotp.lib.policy
         support_challenge_response = \
-            linotp.lib.policy.get_auth_challenge_response(user, self.getType(),
-                                                          context=self.context)
+            linotp.lib.policy.get_auth_challenge_response(user, self.getType())
 
         if len(self.mode) == 1 and self.mode[0] == "challenge":
             # the support_challenge_response is overruled, if the token
@@ -926,7 +925,7 @@ class TokenClass(object):
 
         :param soPin: the special so pin
         """
-        iv, enc_soPin = SecretObj.encrypt(soPin, hsm=self.context.get('hsm'))
+        iv, enc_soPin = SecretObj.encrypt(soPin, hsm=context.get('hsm'))
         self.token.setSoPin(enc_soPin, iv)
 
     def setUserPin(self, userPin):
@@ -939,7 +938,7 @@ class TokenClass(object):
         """
 
         log.debug('setUserPin()')
-        iv, enc_user_pin = SecretObj.encrypt(userPin, hsm=self.context['hsm'])
+        iv, enc_user_pin = SecretObj.encrypt(userPin, hsm=context['hsm'])
         self.token.setUserPin(enc_user_pin, iv)
 
     def setOtpKey(self, otpKey, reset_failcount=True):
@@ -951,7 +950,7 @@ class TokenClass(object):
         :param otpKey: the token seed / secret
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
-        iv, enc_otp_key = SecretObj.encrypt(otpKey, hsm=self.context['hsm'])
+        iv, enc_otp_key = SecretObj.encrypt(otpKey, hsm=context['hsm'])
         self.token.set_encrypted_seed(enc_otp_key, iv,
                                       reset_failcount=reset_failcount)
 
@@ -978,7 +977,7 @@ class TokenClass(object):
         if param is None:
             param = {}
 
-        hsm = self.context['hsm']
+        hsm = context['hsm']
         storeHashed = True
         enc = param.get("encryptpin", None)
         if enc is not None and "true" == enc.lower():
@@ -997,7 +996,7 @@ class TokenClass(object):
         :return: the value of the pin- if it is stored encrypted
         """
         pin = ''
-        hsm = self.context['hsm']
+        hsm = context['hsm']
         if self.token.isPinEncrypted():
             _iv, enc_pin = self.token.get_encrypted_pin()
             pin = SecretObj.decrypt_pin(enc_pin, hsm=hsm)
@@ -1013,7 +1012,7 @@ class TokenClass(object):
         :return: SecretObject, containing the token seed
         """
         key, iv = self.token.get_encrypted_seed()
-        secObj = SecretObj(key, iv, hsm=self.context['hsm'])
+        secObj = SecretObj(key, iv, hsm=context['hsm'])
         return secObj
 
     def enable(self, enable):
@@ -1369,7 +1368,7 @@ class TokenClass(object):
         res = False
         log.debug("[checkPin] entering checkPin function")
 
-        hsm = self.context['hsm']
+        hsm = context['hsm']
         if self.token.isPinEncrypted():
             # for comparison we encrypt the pin and do the comparison
             iv, encrypted_token_pin = self.token.get_encrypted_pin()
@@ -1596,7 +1595,7 @@ class OcraTokenClass(TokenClass):
     def getClassPrefix(cls):
         return "ocra"
 
-    def __init__(self, aToken, context=None):
+    def __init__(self, aToken):
         '''
         getInfo - return the status of the token rollout
 
@@ -1605,7 +1604,7 @@ class OcraTokenClass(TokenClass):
         '''
         log.debug('[__init__]')
 
-        TokenClass.__init__(self, aToken, context=context)
+        TokenClass.__init__(self, aToken)
         self.setType(u"ocra")
         self.transId = 0
 
@@ -1926,7 +1925,7 @@ class OcraTokenClass(TokenClass):
         pin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            secObj = SecretObj(key, iv, hsm=context.get('hsm'))
             pin = secObj.getKey()
 
         try:
@@ -1994,7 +1993,7 @@ class OcraTokenClass(TokenClass):
         for realm in tokenrealms:
             realms.append(realm.name)
 
-        url = get_qrtan_url(realms, context=self.context)
+        url = get_qrtan_url(realms)
 
         log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)
@@ -2034,7 +2033,7 @@ class OcraTokenClass(TokenClass):
         ocraPin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            secObj = SecretObj(key, iv, hsm=context.get('hsm'))
             ocraPin = secObj.getKey()
 
             if ocraPin is None or len(ocraPin) == 0:
@@ -2163,7 +2162,7 @@ class OcraTokenClass(TokenClass):
         ocraPin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            secObj = SecretObj(key, iv, hsm=context.get('hsm'))
             ocraPin = secObj.getKey()
 
             if ocraPin is None or len(ocraPin) == 0:
@@ -2424,7 +2423,7 @@ class OcraTokenClass(TokenClass):
         ocraPin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
-            secObj = SecretObj(key, iv, hsm=self.context.get('hsm'))
+            secObj = SecretObj(key, iv, hsm=context.get('hsm'))
             ocraPin = secObj.getKey()
 
             if ocraPin is None or len(ocraPin) == 0:

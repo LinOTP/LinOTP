@@ -58,8 +58,8 @@ class YubicoTokenClass(TokenClass):
     The Yubico Cloud token forwards an authentication request to the Yubico Cloud service.
     """
 
-    def __init__(self, aToken, context=None):
-        TokenClass.__init__(self, aToken, context=context)
+    def __init__(self, aToken):
+        TokenClass.__init__(self, aToken)
         self.setType(u"yubico")
 
         self.tokenid = ""
