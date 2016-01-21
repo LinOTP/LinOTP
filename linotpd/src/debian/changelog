@@ -1,8 +1,8 @@
-linotp (2.8.0.2+custom02-1) jessie; urgency=low
+linotp (2.8.0.2+custom03-1) jessie; urgency=low
 
   * Support for extended admin and user definition
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 18 Jan 2016 12:09:26 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 21 Jan 2016 10:11:20 +0100
 
 linotp (2.8.0.2-1) jessie; urgency=low
 
