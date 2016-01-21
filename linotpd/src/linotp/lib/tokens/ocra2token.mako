@@ -34,7 +34,7 @@
 
 %if c.scope == 'config' :
 
-
+<form class="cmxform" id="form_ocra2_config">
 <fieldset>
 	<legend>${_("OCRA2 token settings")}</legend>
 <table>
@@ -46,6 +46,7 @@
 			title='${_("After this time a challenge can not be used anymore. Valid entries are like 1D, 2H or 5M where D=day, H=hour, M=minute.")}'></td></tr>
 </table>
 </fieldset>
+</form>
 %endif
 
 
