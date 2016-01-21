@@ -376,7 +376,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <div id='dialog_about' align="center">
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
-    <p id='about_copyright'>${_("Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH")}</p>
+    <p id='about_copyright'>${_("Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
     <p><a href="http://www.linotp.org/" target="_blank">http://www.linotp.org</a>
