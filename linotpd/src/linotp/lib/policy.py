@@ -314,6 +314,23 @@ def getPolicyDefinitions(scope=""):
             'calcOTP': {
                 'type': 'bool',
                 'desc': 'Allow to do an ocra/calculateOtp.'}
+        },
+        'monitoring': {
+            'config': {
+                'type': 'bool',
+                'desc': 'Allow to see basic configuratiuon'},
+            'license': {
+                'type': 'bool',
+                'desc': 'Allow to check the license'},
+            'storageEncryption': {
+                'type': 'bool',
+                'desc': 'Allow to check if encryption works'},
+            'tokens': {
+                'type': 'bool',
+                'desc': 'Allow to see number of tokens in realms'},
+            'userinfo': {
+                'type': 'bool',
+                'desc': 'Allow to get information on user-id-resolvers'}
         }
     }
 
@@ -992,6 +1009,24 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
     # catch all
     return False
+
+
+def checkMonitoringAuthorisation(method, context=None):
+    """
+    check if the authenticated user has the right to do the given action
+    :param method: the requested action
+    :param context:
+    :return: notheing if authorized, else raise PolicyException
+    """
+    _ = context['translate']
+    auth = getAuthorization("monitoring", method)
+    if auth['active'] and not auth['auth']:
+        log.warning("the admin >%r< is not allowed to "
+                    "view the audit trail" % auth['admin'])
+        ret = _("You do not have the administrative right to do monitoring."
+                "You are missing a policy"
+                "scope=monitoring, action=%s") % method
+        raise PolicyException(ret)
 
 
 def getSelfserviceActions(user):
@@ -2367,8 +2402,7 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
 
     elif controller in ['tools']:
         ret = _checkToolsPolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user,
-                                     context=context)
+                                     authUser=authUser, user=user)
 
     elif 'selfservice' == controller:
         log.debug("[checkPolicyPre] entering controller %s" % controller)

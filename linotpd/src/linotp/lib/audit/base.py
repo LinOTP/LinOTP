@@ -106,6 +106,7 @@ class AuditBase(object):
         c.audit['action'] = "%s/%s" % (
                         request.environ['pylons.routes_dict']['controller'],
                         request.environ['pylons.routes_dict']['action'])
+        return c.audit
 
 
     def readKeys(self):
