@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-    
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
@@ -24,7 +24,7 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
--->
+</%doc>
 <a id=policy_export>${_("Export policies")}</a>
 
 <button id=policy_import>${_("Import policies")}</button>
