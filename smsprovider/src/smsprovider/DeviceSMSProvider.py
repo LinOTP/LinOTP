@@ -70,6 +70,10 @@ class DeviceSMSProvider(ISMSProvider):
             configfile = self.config.get('CONFIGFILE')
             log.info("[submitMessage] setting configfile to %s" % configfile)
 
+        if (self.config.has_key('SMSC')):
+                smsc_number=self.config.get('SMSC')
+                smsc_option="--setsmsc"
+
         # NOTE 1: The LinOTP service account need rw-access to /dev/ttyXXX
         # NOTE 2: we need gnokii 0.6.29, since 0.6.28 will crash with a bug
 
@@ -80,7 +84,8 @@ class DeviceSMSProvider(ISMSProvider):
         #log.info("process run. Now sending message as input into pipe")
         #proc.communicate(message+"\n")
 
-        command = "echo %s | gnokii --config %s --sendsms %s" % (message, configfile, phone)
+        command = ("echo %s | gnokii --config %s --sendsms %s %s %s"
+                   % (message, configfile, phone, smsc_option, smsc_number))
         log.debug("[submitMessage] running command: %s" % command)
         proc = subprocess.Popen([command], shell=True)
 
