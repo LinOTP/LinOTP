@@ -43,6 +43,9 @@ from linotp.lib.resolver import getResolverObject
 from linotp.lib.realm import createDBRealm
 from linotp.lib.selftest import isSelfTest
 
+from linotp.lib.resolver import getResolverClassName
+from linotp.lib.resolver import getResolverList
+
 
 ENCODING = 'utf-8'
 
@@ -58,7 +61,8 @@ class User(object):
         self.login = ""
         self.realm = ""
         self.conf = ""
-        self.info = None
+        self.info = {}
+        self.exist = False
 
         if login is not None:
             self.login = login
@@ -72,6 +76,75 @@ class User(object):
         self.resolverConf = {}
         self.resolvers_list = []
         self._exists = None
+
+    @staticmethod
+    def getUserObject(login, realm=None, check_if_exist=False):
+
+        f_realm = realm
+        f_login = login
+
+        if not realm:
+            if '@' in login:
+                realms = getRealms()
+                lo, rea = login.rsplit('@', 1)
+                if rea.lower() in realms:
+                    f_realm = rea.lower()
+                    f_login = lo
+                else:
+                    f_realm = getDefaultRealm()
+                    f_login = login
+
+        f_user = User(f_login, realm=f_realm)
+        if check_if_exist:
+            uid, resolver = f_user.get_uid_resolver()
+
+        return f_user
+
+    def does_exists(self, resolvers=None):
+        """
+        """
+        uid, _resolver = self.get_uid_resolver(resolvers=resolvers)
+        if uid is not None:
+            return True
+        return False
+
+    def get_uid_resolver(self, resolvers=None):
+        uid = None
+        resolver = None
+        resolvers_list = []
+
+        if not resolvers:
+            if self.realm:
+                realms = getRealms()
+                if self.realm.lower() in realms:
+                    resolvers_list = realms.get(self.realm.lower(), {}).\
+                                       get('useridresolver', [])
+        else:
+            resolvers_list = []
+            for search_resolver in resolvers:
+                fq_resolver = User.get_fq_resolver(search_resolver)
+                if fq_resolver:
+                    resolvers_list.append(fq_resolver)
+
+        if not resolvers_list:
+            return None, None
+
+        for resolver in resolvers_list:
+            try:
+                y = getResolverObject(resolver)
+                uid = y.getUserId(self.login)
+                if not uid:
+                    uid = None
+                    continue
+                self.resolverUid[resolver] = uid
+                self.exist = True
+                break
+
+            except Exception as exx:
+                log.exception("Error while accessing resolver %r", exx)
+
+        return (uid, resolver)
+
 
     def getRealm(self):
         return self.realm
@@ -130,6 +203,44 @@ class User(object):
         save the resolver objects as list as part of the user
         """
         self.resolvers_list = resolvers
+
+    @staticmethod
+    def get_fq_resolver(res):
+        fq_resolver = None
+        resolvers = getResolverList()
+        if res in resolvers:
+            match_res = resolvers.get(res)
+            fq_resolver = getResolverClassName(match_res['type'],
+                                               match_res['resolvername'])
+        return fq_resolver
+
+    def getUserInfo(self, resolver=None):
+        userInfo = {}
+
+        lookup_resolvers = None
+        if resolver:
+            lookup_resolvers = [resolver]
+
+        userid, resolverC = self.get_uid_resolver(lookup_resolvers)
+
+        if not userid:
+            return {}
+
+        try:
+            (package, module, _class, _conf) = splitResolver(resolverC)
+            module = package + "." + module
+
+            y = getResolverObject(resolverC)
+            log.debug("[getUserInfo] Getting user info for userid "
+                      ">%r< in resolver" % userid)
+            userInfo = y.getUserInfo(userid)
+            self.info[resolverC] = userInfo
+
+        except Exception as e:
+            log.exception("[getUserInfo][ module %r notfound! :%r ]"
+                          % (module, e))
+
+        return userInfo
 
     def getResolvers(self):
         return self.resolverUid.keys()
@@ -606,7 +717,7 @@ def getResolversOfUser(user, use_default_realm=True, allRealms=None, defaultReal
     return Resolvers
 
 
-def getUserId(user):
+def getUserId(user, resolvers=None):
     """
     getUserId (userObject)
 
@@ -617,7 +728,9 @@ def getUserId(user):
     loginUser = u''
     loginUser = user.login;
 
-    resolvers = getResolversOfUser(user)
+    if not resolvers:
+        resolvers = getResolversOfUser(user)
+
     for reso in resolvers:
         resId = ""
         resIdC = ""

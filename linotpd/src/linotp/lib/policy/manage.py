@@ -168,7 +168,7 @@ def _check_policy_impact(policies=None, scope='', action='', active='True',
            }
 
     if not policies:
-        policies = getPolicies()
+        policies = getPolicies(config=context['Config'])
 
     # in case of a policy change exclude this one from comparison
     if name in policies:

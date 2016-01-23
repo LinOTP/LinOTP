@@ -192,17 +192,6 @@ def defineResolver(params):
     return res
 
 
-def getResolverClassName(resolver_type, resolver_name):
-
-    res = ""
-    for clazz_name, clazz_type in context.resolver_types.items():
-        if clazz_type == resolver_type:
-            res = "%s.%s" % (clazz_name, resolver_name)
-            break
-
-    return res
-
-
 def checkResolverType(resolver):
     """
     check if a resolver of the given type exists
@@ -537,6 +526,17 @@ def closeResolvers():
         except Exception as exx:
             log.exception("Failed to close resolver in context %r" % exx)
     return
+
+
+def getResolverClassName(resolver_type, resolver_name):
+
+    res = ""
+    for clazz_name, clazz_type in context.resolver_types.items():
+        if clazz_type == resolver_type:
+            res = "%s.%s" % (clazz_name, resolver_name)
+            break
+
+    return res
 
 
 # internal functions

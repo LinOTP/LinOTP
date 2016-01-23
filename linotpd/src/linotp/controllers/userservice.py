@@ -201,7 +201,7 @@ class UserserviceController(BaseController):
         # - check if the decrypted cookie user and client are the same as
         #   the requesting user / client
 
-        self.client = get_client(request)
+        self.client = get_client(request) or ''
 
         if action not in ['auth', 'pre_context']:
             auth_type, identity = get_auth_user(request)
@@ -578,8 +578,7 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             Session.rollback()
-            error = ('error (%r) accessing form data for: tok:%r, scope:%r'
-                                ', section:%r' % (exx, tok, scope, section))
+            error = ('error (%r) accessing form data for: %r' % exx)
             log.exception(error)
             return '<pre>%s</pre>' % error
 
