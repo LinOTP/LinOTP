@@ -64,10 +64,6 @@ class TestRandompinController(TestController):
         self.token_for_deletion = set()
         self.policies_for_deletion = set()
 
-        self.skip_selfservice_auth = False
-        if self.env['pylons'] <= LooseVersion('0.10'):
-            self.skip_selfservice_auth = True
-
         return
 
     def tearDown(self):
@@ -180,10 +176,6 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                             commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
-        if self.skip_selfservice_auth:
-            self.skipTest("pylons version not supported for selfservice"
-                          " authentication: %r" % self.env['pylons'])
-
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -220,10 +212,6 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                                 commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
-        if self.skip_selfservice_auth:
-            self.skipTest("pylons version not supported for selfservice"
-                          " authentication: %r" % self.env['pylons'])
-
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -278,10 +266,6 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                                 commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
-        if self.skip_selfservice_auth:
-            self.skipTest("pylons version not supported for selfservice"
-                          " authentication: %r" % self.env['pylons'])
-
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -558,41 +542,14 @@ class TestRandompinController(TestController):
         :param pin: The PIN to be set
         """
         params = {
-            'login': user.encode('utf-8'),
-            'password': pwd.encode('utf-8'),
-            'defaultRealm': 'myDefRealm',
-            'realm': '',
-            'realmbox': False,
-            }
-        response = self.make_request('account', 'dologin', params=params,
-                                     method='GET')
-        err_msg = "Unexpected response %r" % response
-        self.assertEqual(302, response.status_int, err_msg)
-        self.assertEqual('/', response.headers['location'])
-        self.assertRegexpMatches(
-            response.headers['Set-Cookie'],
-            r"^linotp_selfservice=.*",
-            err_msg,
-            )
-
-        session = self.app.cookies['linotp_selfservice']
-        session = session.strip('"')
-        self.assertGreater(len(session), 0, err_msg)
-        params = {
             'serial': serial,
-            'session': session,
             'userpin': pin,
             }
-        cookies = {
-            'linotp_selfservice': '"%s"' % session,
-            }
-        response = self.make_request(
-            'userservice',
-            'setpin',
-            params=params,
-            cookies=cookies,
-            method='GET'
-            )
+        login = user.encode('utf-8')
+        password = pwd.encode('utf-8')
+        response = self.make_userservice_request('setpin', params,
+                                                 auth_user=(login, password))
+
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         expected = {

@@ -208,7 +208,12 @@ class UserserviceController(BaseController):
             if not identity:
                 abort(401, _("You are not authenticated"))
 
-            login, _foo, realm = identity.rpartition('@')
+            if '@' in identity:
+                login, _foo, realm = identity.rpartition('@')
+            else:
+                login = identity
+                realm = getDefaultRealm()
+
             self.authUser = User(login, realm)
 
             # make the authenticated user global available
