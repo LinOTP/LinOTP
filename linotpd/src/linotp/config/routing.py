@@ -36,13 +36,13 @@ from routes import Mapper
 
 
 def make_map(global_conf, app_conf,):
-    '''
+    """
     Create, configure and return the routes Mapper
     There are the three main controllers:
         /admin
         /validate
         /system
-    '''
+    """
     routeMap = Mapper(directory=config['pylons.paths']['controllers'],
                       always_scan=config['debug'])
     routeMap.minimization = False
@@ -57,13 +57,20 @@ def make_map(global_conf, app_conf,):
     # routeMap.connect('/{controller}/{action}/{id}')
 
     # check if we are in migration mode -
-    # ! this will disable most other controllers !
+    # ! this will disable all other controllers !
     migrate = app_conf.get('service.migrate', 'False') == 'True'
+
+    if migrate:
+        for cont in ['migrate']:
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
+        return routeMap
 
     # the first / - default will be taken!!
     # in case of selfservice, we route the default / to selfservice
     selfservice = app_conf.get('service.selfservice', 'True') == 'True'
-    if selfservice and not migrate:
+    if selfservice:
         routeMap.connect(
             '/selfservice/custom-style.css', controller='selfservice', action='custom_style')
         routeMap.connect('/selfservice', controller='selfservice', action='index')
@@ -74,7 +81,7 @@ def make_map(global_conf, app_conf,):
 
     # in case of support for a remote selfservice, we have to enable this hook
     userservice = app_conf.get('service.userservice', 'True') == 'True'
-    if userservice and not migrate:
+    if userservice:
         routeMap.connect('/userservice', controller='userservice', action='index')
         for cont in ['userservice']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
@@ -103,23 +110,23 @@ def make_map(global_conf, app_conf,):
 
     # in case of validate, we route the default / to validate
     validate = app_conf.get('service.validate', 'True') == 'True'
-    if validate and not migrate:
+    if validate:
         routeMap.connect('/validate', controller='validate', action='check')
         routeMap.connect('/', controller='validate', action='check')
         for cont in ['validate']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
-    # in case of validate, we route the default / to validate
+    # ocra
     ocra = app_conf.get('service.ocra', 'True') == 'True'
-    if ocra and not migrate:
+    if ocra:
         routeMap.connect('/ocra', controller='ocra', action='checkstatus')
         for cont in ['ocra']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     openid = app_conf.get('service.openid', 'True') == 'True'
-    if openid and not migrate:
+    if openid:
         # the default openid will be the status
         routeMap.connect('/openid/', controller='openid', action='status')
         for cont in ['openid']:
@@ -128,36 +135,30 @@ def make_map(global_conf, app_conf,):
 
     # linotpGetotp.active
     getotp = global_conf.get('linotpGetotp.active', 'False') == 'True'
-    if getotp and not migrate:
+    if getotp:
         for cont in ['gettoken']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # in case of u2f, we allow routes of type /u2f/realm/action
     u2f = app_conf.get('service.u2f', 'True') == 'True'
-    if u2f and not migrate:
+    if u2f:
         for cont in ['u2f']:
             routeMap.connect('/%s/{realm}/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}' % cont, controller=cont)
 
     # linotp.selfTest
     self_test = global_conf.get('linotp.selfTest', 'True') == 'True'
-    if self_test and not migrate:
+    if self_test:
         for cont in ['testing']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
     # linotp tools
     tools = global_conf.get('linotp.tools', 'True') == 'True'
-    if tools and not migrate:
+    if tools:
         for cont in ['tools']:
             routeMap.connect('/%s/{action}' % cont, controller = cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
-
-    if migrate:
-        for cont in ['migrate']:
-            routeMap.connect('/%s/{action}' % cont, controller=cont)
-            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
-
 
     return routeMap
