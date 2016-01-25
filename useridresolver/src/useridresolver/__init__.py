@@ -42,4 +42,4 @@ __copyright__ = "Copyright (C) 2010 - 2015 LSE Leading Security Experts GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@lsexperts.de"
-__version__ = '2.8.0.3rc1'
+__version__ = '2.8.0.3rc2'
