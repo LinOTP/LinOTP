@@ -73,10 +73,9 @@ def setPolicy(param):
     # before storing the policy, we have to check the impact:
     # if there is a problem, we will raise an exception with a warning
     if context and 'Policies' in context:
-        policies = deepcopy(context['Policies'])
+        policies = context['Policies']
     else:
-        Config = getLinotpConfig()
-        policies = getPolicies(config=Config)
+        policies = getPolicies()
 
     _check_policy_impact(policies=policies, **param)
 
@@ -116,9 +115,9 @@ def deletePolicy(name, enforce=False):
         Config = getLinotpConfig()
 
     if context and 'Policies' in context:
-        policies = deepcopy(context['Policies'])
+        policies = context['Policies']
     else:
-        policies = getPolicies(config=Config)
+        policies = getPolicies()
 
     # check if due to delete of the policy a lockout could happen
     param = policies.get(name)
@@ -168,7 +167,7 @@ def _check_policy_impact(policies=None, scope='', action='', active='True',
            }
 
     if not policies:
-        policies = getPolicies(config=context['Config'])
+        policies = getPolicies()
 
     # in case of a policy change exclude this one from comparison
     if name in policies:

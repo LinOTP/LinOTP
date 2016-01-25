@@ -3102,12 +3102,9 @@ class TestPolicies(TestController):
         response = self.app.get(url(controller='system', action='getPolicy'))
         self.assertIn(URL, response.body, response.body)
 
-        linotp_config = getLinotpConfig()
-        linotp_policies = getPolicies(config=linotp_config)
-
         with request_context_safety():
-            context['Config'] = linotp_config
-            context['Policies'] = linotp_policies
+            context['Config'] = getLinotpConfig()
+            context['Policies'] = getPolicies()
 
             u = get_qrtan_url(["testrealm"])
 
@@ -3127,13 +3124,10 @@ class TestPolicies(TestController):
         response = self.app.get(url(controller='system', action='setPolicy'),
                                 params=parameters)
 
-        linotp_config = getLinotpConfig()
-        linotp_policies = getPolicies(config=linotp_config)
-
         with request_context_safety():
 
-            context['Config'] = linotp_config
-            context['Policies'] = linotp_policies
+            context['Config'] = getLinotpConfig()
+            context['Policies'] = getPolicies()
 
             u = get_qrtan_url(["testrealm"])
 
@@ -3152,12 +3146,9 @@ class TestPolicies(TestController):
                       }
         response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
 
-        linotp_config = getLinotpConfig()
-        linotp_policies = getPolicies(config=linotp_config)
-
         with request_context_safety():
-            context['Config'] = linotp_config
-            context['Policies'] = linotp_policies
+            context['Config'] = getLinotpConfig()
+            context['Policies'] = getPolicies()
 
             u = get_qrtan_url(["testrealm"])
 

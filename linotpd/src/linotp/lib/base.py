@@ -413,7 +413,7 @@ class BaseController(WSGIController):
         linotp_config = getLinotpConfig()
 
         request_context['Config'] = linotp_config
-        request_context['Policies'] = getPolicies(config=linotp_config)
+        request_context['Policies'] = getPolicies()
         request_context['translate'] = translate
 
         request_params = {}

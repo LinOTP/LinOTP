@@ -125,9 +125,9 @@ def _getUserRealms(user):
                   defaultRealm=context['defaultRealm'])
 
 
-def getPolicies(config=None):
+def getPolicies():
     # First we load ALL policies from the Config
-    lConfig = _getLinotpConfig(config)
+    lConfig = context['Config']
 
     Policies = {}
     for entry in lConfig:
