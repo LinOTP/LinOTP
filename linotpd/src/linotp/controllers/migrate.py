@@ -189,6 +189,9 @@ class MigrateController(BaseController):
 
         :param pass: passphrase used for encrypting data in the backup file
         :param backupid: used to controll the intermediate backup file
+        :param remove_backup (optional): if set to False, backup file will not
+                be deleted after backup.
+                Default is that backup is deleted, even in case of error
 
         """
         params = {}
