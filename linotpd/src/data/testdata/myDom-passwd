@@ -3,6 +3,6 @@ mysql:x:118:129:MySQL Server,,,:/var/lib/mysql:/bin/false
 b1822:x:1008:1003:1822,,,,:/home/b1822:/bin/bash
 myDom:x:1118:129:MyDOM Server,,,:/var/lib/mydom:/bin/false
 postgres:x:116:123:PostgreSQL administrator,,,:/var/lib/postgresql:/bin/bash
-other_user:x:1010:1010:Other user,,,:/home/other:/bin/bash
+other_user:e7yT2qttrNrlk:1010:1010:Other user,,,:/home/other:/bin/bash
 max1:iN/RktGWjRdYE:1011:1011:::
 max2:RSs/AeIofAcc.:1012:1012:::

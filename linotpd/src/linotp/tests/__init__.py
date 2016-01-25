@@ -47,6 +47,7 @@ import os
 import logging
 import hashlib
 import copy
+import base64
 
 import unittest2
 
@@ -157,9 +158,32 @@ class TestController(unittest2.TestCase):
         else:
             app.cookies[key] = value
 
+    @staticmethod
+    def get_cookies(response):
+        """
+        get a cookie from a response
+
+        :param app: A webtest.TestApp object
+        """
+        cookies = {}
+        cookie_entries = ''
+        for entry in response.headerlist:
+            key, val = entry
+            if key == 'Set-Cookie':
+                cookie_entries = val
+                break
+
+        cookys = cookie_entries.split(';')
+
+        for cooky in cookys:
+            if '=' in cooky:
+                cookie_name, cookie_value = cooky.split('=', 1)
+                cookies[cookie_name] = cookie_value
+
+        return cookies
 
     def setUp(self):
-        ''' here we do the system test init per test method '''
+        # here we do the system test init per test method
         #self.delete_all_realms()
         #self.delete_all_resolvers()
         #self.create_common_resolvers()
@@ -261,6 +285,7 @@ class TestController(unittest2.TestCase):
             params=None,
             headers=None,
             cookies=None,
+            auth_user='admin',
             ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -275,7 +300,7 @@ class TestController(unittest2.TestCase):
             cookies['admin_session'] = self.session
         if not 'Authorization' in headers:
             headers['Authorization'] = TestController.get_http_digest_header(
-                username='admin'
+                username=auth_user
                 )
         return self.make_request(
             controller,
@@ -286,7 +311,8 @@ class TestController(unittest2.TestCase):
             cookies=cookies,
             )
 
-    def make_admin_request(self, action, params=None, method='GET'):
+    def make_admin_request(self, action, params=None, method='GET',
+                           auth_user='admin',):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -297,9 +323,26 @@ class TestController(unittest2.TestCase):
             action,
             method=method,
             params=params,
+            auth_user=auth_user,
             )
 
-    def make_system_request(self, action, params=None, method='GET'):
+    def make_manage_request(self, action, params=None, method='GET',
+                           auth_user='admin',):
+        """
+        Makes an authenticated request to /manage/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_authenticated_request(
+            'manage',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            )
+
+    def make_system_request(self, action, params=None, method='GET',
+                            auth_user='admin'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -310,6 +353,7 @@ class TestController(unittest2.TestCase):
             action,
             method=method,
             params=params,
+            auth_user=auth_user,
             )
 
     def make_validate_request(self, action, params=None, method='GET'):
@@ -598,6 +642,48 @@ class TestController(unittest2.TestCase):
         self.assertIn('mydefrealm', realms)
         self.assertIn('default', realms['mydefrealm'])
         self.assertTrue(realms['mydefrealm']['default'])
+
+    def _user_service_init(self, auth_user, password):
+
+        passw = ':' + base64.b32encode(password)
+        params = {'login': auth_user, 'password': passw}
+        response = self.app.get(url(controller='userservice',
+                                    action='auth'), params=params)
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('userauthcookie')
+        if not auth_cookie:
+            pass
+        self.assertIsNotNone(auth_cookie, "%r:%r" % (response, cookies))
+
+        self.user_service[auth_user] = auth_cookie
+
+        return auth_cookie
+
+    def make_userservice_request(self, action, params=None,
+                                 auth_user=None):
+
+        if not params:
+            params = {}
+
+        if not hasattr(self, 'user_service'):
+            setattr(self, 'user_service', {})
+
+        user, password = auth_user
+        auth_cookie = self.user_service.get(user,
+                                    self._user_service_init(user, password))
+        TestController.set_cookie(self.app, 'userauthcookie', auth_cookie)
+
+        params['session'] = auth_cookie
+        params['user'] = user
+        response = self.app.get(url(controller='userservice',
+                                    action=action),
+                                params=params)
+
+        return response
+
+
+
 
 ###eof#########################################################################
 
