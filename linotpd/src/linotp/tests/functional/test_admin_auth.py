@@ -177,6 +177,51 @@ class TestAdminAuthController(TestController):
 
         return
 
+    def test_00000_admin_username_regex_and_domain(self):
+        '''
+        Admin Authorization:
+        '''
+        try:
+            parameters = {'name': 'admin_auth_userlist',
+                          'scope': 'admin',
+                          'realm': '*',
+                          'action': 'userlist, ',
+                          'user': 'admin, adminResolver:,.*oo.*@virtRealm',
+                          }
+            response = self.make_system_request('setPolicy', params=parameters)
+            self.assertTrue('"status": true' in response, response)
+
+            # simple match for admin - backward compatibility
+            parameters = {'username': '*', 'realm': 'myDefRealm'}
+            response = self.make_admin_request('userlist', params=parameters,
+                                               auth_user='admin')
+            self.assertTrue('"status": true' in response, response)
+
+            # wildcard domain match for root@virtRealm
+            response = self.make_admin_request('userlist', params=parameters,
+                                               auth_user='root@virtRealm')
+            self.assertTrue('"status": true' in response, response)
+
+            # resolver match root@adomain in adminResolver:
+            parameters = {'username': '*', 'resConf': 'myOtherRes'}
+            response = self.make_admin_request('userlist', params=parameters,
+                                               auth_user='rotot@virtRealm')
+            self.assertTrue('"status": false' in response, response)
+
+            # resolver mis match toor@adomain not in adminResolver:
+            response = self.make_admin_request('userlist', params=parameters,
+                                               auth_user='toor@virtRealm')
+            self.assertTrue('"status": true' in response, response)
+
+        finally:
+            parameters = {'name': 'admin_auth_userlist'}
+            response = self.make_system_request('delPolicy', params=parameters,
+                                            auth_user='superadmin')
+            self.assertTrue('"status": true' in response, response)
+
+        return
+
+
     def test_admin_action_wildcard(self):
         '''
         Admin Authorization:
