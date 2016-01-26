@@ -153,7 +153,7 @@ if isinstance(lang, list):
     <div id="logo"></div>
 </div> <!-- header -->
 <div align="right" style="font-size: 70%">
-    <p>${_("Logged in as")}: ${c.admin} | <a href="${c.logout_url}">${_("Logout")}</a>
+    <p>${_("Logged in as")}: ${c.admin} | <a href=# onclick='Logout("${c.logout_url}");return false;' >${_("Logout")}</a>
     </p>
 </div>
 <div class="javascript_error" id="javascript_error">
