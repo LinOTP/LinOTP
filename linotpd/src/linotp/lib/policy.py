@@ -689,38 +689,20 @@ def getPolicy(param, display_inactive=False):
                     param['user'] in pol_users):
                     delete_it = False
 
-            # we support the verification of the user,
-            # to be in a resolver for the admin and system scope
-            local_scope = param.get('scope', '').lower()
-            if local_scope in ['admin', 'system']:
-                policy_users = policy.get('user', '').split(',')
-                if delete_it:
-                    # check for matching of wildcard realm
-                    for policy_user in policy_users:
-                        policy_user = policy_user.strip()
-                        if len(policy_user) >= 2 and policy_user[0:2] == '*@':
-                            domain = policy_user[2:].lower()
-                            domain_user = param['user']
-                            if '@' in domain_user:
-                                (_user, _sep,
-                                 user_domain) = domain_user.rpartition('@')
-                                if (user_domain and
-                                    user_domain.lower() == domain.lower()):
-                                    delete_it = False
-                                    break
+            if delete_it:
+                # we support the verification of the user,
+                # to be in a resolver for the admin and system scope
+                local_scope = param.get('scope', '').lower()
+                if local_scope in ['admin', 'system']:
 
-                if delete_it:
-                    # check existance in resolver
-                    for policy_user in policy_users:
-                        policy_user = policy_user.strip()
-                        # check if user is par of an resolver, independend
-                        # of an realms
-                        if policy_user and policy_user[-1] == ':':
-                            resolver = policy_user[:-1]
-                            f_user = User(login=param['user'])
-                            if f_user.does_exists([resolver]):
-                                delete_it = False
-                                break
+                    policy_users = policy.get('user', '').split(',')
+                    userObj = User(login=param['user'])
+
+                    # we do the extended user defintion comparison
+                    res = _filter_admin_user(policy_users, userObj)
+                    if res is True:
+                        delete_it = False
+                        break
 
             if delete_it:
                 pol2delete.append(polname)
@@ -730,6 +712,69 @@ def getPolicy(param, display_inactive=False):
     log.debug("[getPolicy] getting policies %s for "
               "params %s" % (Policies, param))
     return Policies
+
+
+def _filter_admin_user(policy_users, userObj):
+    """
+    filter the policies, wher the loged in user matches one of the
+    extended policy user filters.
+
+    Remark: currently without user attribute comarison, as the defintion
+            and the testing here is not completed
+
+    :param policy_users: lsit of policy user defintions
+    :param userObj: the logged in user as object
+
+    :return: boolean, true if user matched policy user defintion
+    """
+    res = False
+
+    for policy_user in policy_users:
+        user_def = policy_user.strip()
+        res = None
+
+        # check if there is an attribute filter in defintion
+        # !! currently unspecified and untested - so commented out!!
+        #if '#' in  user_def:
+        #    attr_comp = AttributeCompare()
+        #    domUserObj = userObj
+        #    u_d, _sep, av = user_def.rpartition('#')
+
+        #    # if we have a domain match, we try the compare
+        #    # literal, but the attrbute requires the existance!
+        #    if '@' in u_d:
+        #        if '@' in param['user']:
+        #            login, _sep, realm = param['user'].rpartition('@')
+        #            domUserObj = User(login=login, realm=realm)
+
+        #    res = attr_comp.compare(userObj, user_def)
+
+        # if no attribute filter -try domain match
+        if "@" in user_def:
+            domUserObj = userObj
+
+            # in case of domain match, we do string compare
+            # to use the same comparator, we have to establish the realm
+            # as last part of the login (if there)
+            if '@' in userObj.login:
+                login, _sep, realm = userObj.login.rpartition('@')
+                domUserObj = User(login=login, realm=realm)
+            domain_comp = UserDomainCompare()
+            res = domain_comp.compare(domUserObj, user_def)
+
+        # or try resolver filter, BUT with existance check
+        elif ':' in user_def:
+            domain_comp = UserDomainCompare()
+            res = domain_comp.exists(userObj, user_def)
+
+        # any other filter is returned as ignored
+        else:
+            continue
+
+        if res is True:
+            break
+
+    return res
 
 
 def deletePolicy(name, enforce=False):
