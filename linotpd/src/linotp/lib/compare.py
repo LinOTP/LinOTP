@@ -37,6 +37,14 @@ class UserDomainCompare(object):
     def __init__(self):
         self._compare = None
 
+    def exists(self, userObj, user_def):
+        """
+        existance test is the same as the attribute search for userid
+        """
+        attr_comp = AttributeCompare()
+        exists = attr_comp.compare(userObj, user_def + "#userid")
+        return exists
+
     def compare(self, userObj, user_def):
         """
         comparison method - the single entry of this class
@@ -133,7 +141,7 @@ class UserDomainCompare(object):
         if def_resolver not in resolvers:
             return False
 
-        # if we have no user part and came that far, we ar e done
+        # if we have no user part and came that far, we are done
         if def_resolver == user_def[:-1]:
             return True
 
@@ -248,7 +256,7 @@ class AttributeCompare(object):
         :return: boolean
         """
 
-        return not(self._equal(user_info))
+        return not(self._attr_equal(user_info))
 
     def _attr_exist(self, user_info):
         """
