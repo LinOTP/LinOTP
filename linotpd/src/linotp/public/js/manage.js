@@ -98,6 +98,18 @@ function error_handling(message, file, line){
     return true;
 }
 
+function Logout(logout_url) {
+    // redirect to the logout location
+    // but try to clean the ClearAuthenticationCache before
+    try{
+        document.execCommand("ClearAuthenticationCache", false);
+    }
+    finally {
+        $.cookie("admin_session", "invalid", {expires: 0,  path: '/'});
+        window.location.href = logout_url;
+    }
+}
+
 /*
  * add the jquery validation methods
  */
