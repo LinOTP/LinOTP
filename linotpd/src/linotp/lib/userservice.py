@@ -144,14 +144,15 @@ def create_auth_cookie(config, user, client):
     secret = get_cookie_secret(config)
     key = binascii.unhexlify(secret)
 
-    username = user
+    username = "%r" % user
     if type(user) == User:
-        username = "%s@%s" % (user.login, user.realm)
+        username = "%r@%r" % (user.login, user.realm)
     iv = os.urandom(SECRET_LEN)
     try:
         enc = aes_encrypt_data(username + "|" + client, key, iv)
     except Exception as exx:
         log.exception("Failed to create encrypted cookie %r" % exx)
+        raise exx
 
     auth_cookie = "%s%s" % (binascii.hexlify(iv), binascii.hexlify(enc))
     return auth_cookie
@@ -182,7 +183,7 @@ def check_auth_cookie(config, cookie, user, client):
 
     username = user
     if type(user) == User:
-        username = "%s@%s" % (user.login, user.realm)
+        username = "%r@%r" % (user.login, user.realm)
 
     return (username == cookie_user and cookie_client == client)
 
