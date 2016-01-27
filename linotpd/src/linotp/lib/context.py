@@ -26,13 +26,10 @@
 '''establish a global context object'''
 
 
-import pylons
 from linotp.lib.local import LocalContainer, release_local
 from linotp.lib.error import ProgrammingError
 from contextlib import contextmanager
 from functools import partial
-
-context = pylons.tmpl_context
 
 # ------------------------------------------------------------------------------
 # Context stack tracing
