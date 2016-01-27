@@ -60,6 +60,7 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
 <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
+<script type="text/javascript" src="/js/jquery.cookie.js"></script>
 
 <script type="text/javascript" src="/js/qrcode.js"></script>
 <script type="text/javascript" src="/js/qrcode-helper.js"></script>
@@ -91,7 +92,7 @@ if isinstance(lang, list):
     <div id="logo" class="float_right"> </div>
 </div>
 <div class="logout">
-    <p>${_("Logged in as")}:${c.user}@${c.realm} | <a href="/account/logout">${_("Logout")}</a> </p>
+    <p>${_("Logged in as")}:${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/account/logout");return false;'>${_("Logout")}</a> </p>
 </div>
 
 <div id="do_waiting">
