@@ -50,6 +50,26 @@ if (!String.sprintf) {
  */
 LOGIN_CODE = 576
 
+function SelfLogout(logout_url) {
+/* clear the admin cookie and
+   * for IE try to clean the ClearAuthenticationCache and reload same page
+   * for Firefox redirect to a location, with
+*/
+
+    var done = false;
+    done = document.execCommand("ClearAuthenticationCache", false);
+    $.cookie("linotp_selfservice", "invalid", {expires: 0,  path: '/'});
+
+    if (done == true) {
+        window.location.href = document.URL;
+    } else {
+        window.location.href = logout_url;
+    }
+
+}
+
+
+
 
 function self_alert_box(params /* dict or parameters */){
 	/*

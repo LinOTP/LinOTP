@@ -99,13 +99,18 @@ function error_handling(message, file, line){
 }
 
 function Logout(logout_url) {
-    // redirect to the logout location
-    // but try to clean the ClearAuthenticationCache before
-    try{
-        document.execCommand("ClearAuthenticationCache", false);
-    }
-    finally {
-        $.cookie("admin_session", "invalid", {expires: 0,  path: '/'});
+/* clear the admin cookie and
+   * for IE try to clean the ClearAuthenticationCache and reload same page
+   * for Firefox/Chrome redirect to a location, with new basic auth in url
+*/
+
+    var done = false;
+    done = document.execCommand("ClearAuthenticationCache", false);
+    $.cookie("admin_session", "invalid", {expires: 0,  path: '/'});
+
+    if (done == true) {
+        window.location.href = document.URL;
+    } else {
         window.location.href = logout_url;
     }
 }
