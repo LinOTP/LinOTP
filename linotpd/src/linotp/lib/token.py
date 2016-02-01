@@ -43,7 +43,6 @@ from sqlalchemy import or_, and_
 from sqlalchemy import func
 
 
-from pylons import tmpl_context as c
 from pylons.i18n.translation import _
 from pylons import config
 
@@ -649,9 +648,9 @@ class TokenHandler(object):
         # if found, assign the found token to the user.login
         try:
             self.assignToken(serial, user, pin)
-            c.audit['serial'] = serial
-            c.audit['info'] = "Token auto assigned"
-            c.audit['token_type'] = token.getType()
+            context['audit']['serial'] = serial
+            context['audit']['info'] = "Token auto assigned"
+            context['audit']['token_type'] = token.getType()
             ret = True
         except Exception as exx:
             log.exception("[auto_assignToken] Failed to assign token: %r", exx)
