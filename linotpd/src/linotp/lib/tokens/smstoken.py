@@ -119,14 +119,14 @@ from linotp.lib.policy import getPolicy
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 from linotp.lib.policy import trigger_sms
 
+from linotp.lib.context import request_context as context
+
 
 import sys
 if sys.version_info[0:2] >= (2, 6):
     from json import loads, dumps
 else:
     from simplejson import loads, dumps
-
-from pylons.i18n.translation import _
 
 from linotp.lib.tokens.hmactoken import HmacTokenClass
 
@@ -234,6 +234,8 @@ class SmsTokenClass(HmacTokenClass):
 
         '''
 
+        _ = context['translate']
+
         res = {
                'type' : 'sms',
                'title' : _('SMS Token'),
@@ -289,6 +291,8 @@ class SmsTokenClass(HmacTokenClass):
         :return: nothing
 
         '''
+        _ = context['translate']
+
         log.debug("[update] begin. adjust the token class with: param %r"
                   % (param))
 
@@ -391,6 +395,9 @@ class SmsTokenClass(HmacTokenClass):
 
         :return: tuple of success and message
         '''
+
+        _ = context['translate']
+
         res = 0
         user = None
 

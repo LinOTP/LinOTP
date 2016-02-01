@@ -79,8 +79,6 @@ from linotp.lib.auth.validate import split_pin_otp
 
 from sqlalchemy import asc, desc
 
-from pylons.i18n.translation import _
-
 from linotp.lib.context import request_context as context
 
 # needed for ocra token
@@ -1442,6 +1440,9 @@ class TokenClass(object):
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
         '''
+
+        _ = context['translate']
+
         response_detail = {}
 
         info = self.getInfo()
@@ -2751,6 +2752,9 @@ class OcraTokenClass(TokenClass):
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
         '''
+
+        _ = context['translate']
+
         response_detail = {}
 
         info = self.getInfo()

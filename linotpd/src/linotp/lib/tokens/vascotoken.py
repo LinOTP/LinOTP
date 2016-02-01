@@ -28,10 +28,10 @@
 """
 
 from linotp.lib.util    import getParam
-from pylons.i18n.translation import _
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.ImportOTP.vasco import vasco_otp_check
+from linotp.lib.context import request_context as context
 
 import logging
 log = logging.getLogger(__name__)
@@ -74,6 +74,8 @@ class VascoTokenClass(TokenClass):
         :rtype : s.o.
 
         '''
+
+        _ = context['translate']
 
         res = {
                'type' : 'vasco',

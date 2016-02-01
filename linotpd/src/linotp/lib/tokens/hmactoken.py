@@ -47,8 +47,7 @@ from linotp.lib.apps    import create_oathtoken_url
 optional = True
 required = False
 
-from pylons.i18n.translation import _
-from linotp.lib.context import request_context
+from linotp.lib.context import request_context as context
 
 
 
@@ -97,6 +96,8 @@ class HmacTokenClass(TokenClass):
         '''
         log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
                   (key, ret))
+
+        _ = context['translate']
 
         res = {
            'type'         : 'hmac',
@@ -613,6 +614,9 @@ class HmacTokenClass(TokenClass):
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
         '''
+
+        _ = context['translate']
+
         response_detail = {}
 
         info = self.getInfo()

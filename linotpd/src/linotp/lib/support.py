@@ -27,8 +27,6 @@
 
 import os
 
-from pylons.i18n.translation import _
-
 import base64
 import binascii
 import M2Crypto
@@ -39,6 +37,8 @@ from linotp.lib.config import storeConfig
 from linotp.lib.config import removeFromConfig
 
 from linotp.lib.token import getTokenNumResolver
+
+from linotp.lib.context import request_context as context
 
 
 import logging
@@ -96,6 +96,9 @@ def parseSupportLicense(licString):
                       license as string, which the signature could be checked
                       against
     """
+
+    _ = context['translate']
+
     if not licString:
         error = _("Support not available, your product is unlicensed")
         log.error("[parseSupportLicense] Verification of support "
@@ -261,6 +264,9 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False,
                            an exception should be raised
     :return: tuple with validity and reason, if invalid
     """
+
+    _ = context['translate']
+
     if not lic_dict:
         error = _("license file is empty!")
         log.error("[isSupportLicenseValid] Verification of support "
@@ -356,6 +362,8 @@ def verify_expiration(lic_dic):
     :return: boolean - true if still valid
     """
 
+    _ = context['translate']
+
     if "expire" not in lic_dic:
         msg = "%s %r" % (_("no license expiration information in license "),
                          lic_dic.info())
@@ -392,6 +400,8 @@ def verify_expiration(lic_dic):
 
 
 def verify_volume(lic_dict):
+
+    _ = context['translate']
 
     # get the current number of active tokens
     num = getTokenNumResolver()
@@ -450,6 +460,8 @@ def get_public_keys():
 def check_date(expire_type, expire):
     import datetime
     today = datetime.datetime.now()
+
+    _ = context['translate']
 
     # -with  support for two date formats
     expiration_date = None

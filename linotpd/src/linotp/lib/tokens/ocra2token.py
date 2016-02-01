@@ -128,8 +128,6 @@ from linotp.lib.ocra import OcraSuite
 from linotp.lib.challenges import Challenges
 from linotp.lib.reply import create_img
 
-from pylons.i18n.translation import _
-
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.context import request_context as context
 
@@ -367,6 +365,8 @@ class Ocra2TokenClass(TokenClass):
         :rtype : s.o.
 
         '''
+
+        _ = context['translate']
 
         res = {
                'type' : 'ocra2',
@@ -1661,6 +1661,9 @@ class Ocra2TokenClass(TokenClass):
         to complete the token normalisation, the response of the initialiastion
         should be build by the token specific method, the getInitDetails
         '''
+
+        _ = context['translate']
+
         response_detail = {}
 
         info = self.getInfo()

@@ -43,7 +43,6 @@ from sqlalchemy import or_, and_
 from sqlalchemy import func
 
 
-from pylons.i18n.translation import _
 from pylons import config
 
 from linotp.lib.challenges import Challenges
@@ -1670,6 +1669,7 @@ def get_token_owner(token):
         # for backward compatibility, we return here an empty user
         return User()
 
+    _ = context['translate']
     serial = token.getSerial()
 
     log.debug("[get_token_owner] token found: %r" % token)

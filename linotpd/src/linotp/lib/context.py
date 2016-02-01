@@ -75,7 +75,6 @@ def context_stack_trace(manager_id, allow_nesting=True):
     if not allow_nesting and manager_id in context_stack:
         raise ProgrammingError('Nesting of %s context managers is not allowed' %
                                manager_id)
-
     context_stack.append(manager_id)
     try:
         yield

@@ -34,8 +34,6 @@ import sys
 
 from linotp.lib.token import get_token_owner
 
-from pylons.i18n.translation import _
-
 from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.challenges import Challenges
@@ -133,6 +131,8 @@ class EmailTokenClass(HmacTokenClass):
         LOG.debug("[getClassInfo] begin. Get class render info for section: "
                   "key %r, ret %r " % (key, ret))
 
+        _ = context['translate']
+
         res = {
             'type':         'email',
             'title':        'E-mail Token',
@@ -217,6 +217,8 @@ class EmailTokenClass(HmacTokenClass):
         """
         LOG.debug("[update] begin. adjust the token class with: param %r"
                   % param)
+
+        _ = context['translate']
 
         # specific - e-mail
         self._email_address = param[self.EMAIL_ADDRESS_KEY]

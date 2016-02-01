@@ -31,8 +31,6 @@ migration handler -
 
 from datetime import datetime
 
-from pylons.i18n.translation import _
-
 from linotp.lib.tools import ToolsHandler
 from linotp.lib.user import getUserInfo
 from linotp.lib.resolver import getResolverObject
@@ -65,6 +63,9 @@ class MigrateResolverHandler(ToolsHandler):
         - update the new_id in the token
 
         """
+
+        _ = context['translate']
+
         ret = {}
 
         if not src or not target:
