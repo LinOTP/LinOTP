@@ -77,15 +77,18 @@ def context_stack_trace(manager_id, allow_nesting=True):
                                manager_id)
 
     context_stack.append(manager_id)
-    yield
-    popped_manager_id = context_stack.pop()
-    if not popped_manager_id == manager_id:
-        # this should not happen, when context stack is only accessed
-        # through context_stack_trace. however, just in case someone
-        # tempers with context_stack directly, we check for stack
-        # consistency
-        raise ProgrammingError('Misuse of context stack trace. Entered %s but '
-                               'exited %s' % manager_id, popped_manager_id)
+    try:
+        yield
+    finally:
+        popped_manager_id = context_stack.pop()
+        if not popped_manager_id == manager_id:
+            # this should not happen, when context stack is only accessed
+            # through context_stack_trace. however, just in case someone
+            # tempers with context_stack directly, we check for stack
+            # consistency
+            raise ProgrammingError('Misuse of context stack trace. Entered %s '
+                                   'but exited %s' % manager_id,
+                                   popped_manager_id)
 
 
 def is_on_context_stack(manager_id):
