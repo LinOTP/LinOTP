@@ -32,8 +32,12 @@ Test the otp_pin_random policy
 from collections import deque
 from copy import deepcopy
 
+import logging
+log = logging.getLogger(__name__)
+
 from linotp.tests import TestController
 
+from distutils.version import LooseVersion
 
 class TestRandompinController(TestController):
     """
@@ -173,6 +177,11 @@ class TestRandompinController(TestController):
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
         https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+
+        # selfservice authentication does a redirect
+        if self._version_['pylons'] <= LooseVersion('0.10'):
+            self.skipTest("Pylons lower 0.10 does not support redirect!")
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -208,6 +217,11 @@ class TestRandompinController(TestController):
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
         https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+
+        # selfservice authentication does a redirect
+        if self._version_['pylons'] <= LooseVersion('0.10'):
+            self.skipTest("Pylons lower 0.10 does not support redirect!")
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -261,6 +275,10 @@ class TestRandompinController(TestController):
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
         https://github.com/Pylons/webtest/commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+        # selfservice authentication does a redirect
+        if self._version_['pylons'] <= LooseVersion('0.10'):
+            self.skipTest("Pylons lower 0.10 does not support redirect!")
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -571,11 +589,17 @@ class TestRandompinController(TestController):
             cookies=cookies,
             method='POST'
             )
-        content = TestController.get_json_body(response)
+
+        session_info = "cookie %r : session %r" % (cookies, session)
+        try:
+            content = TestController.get_json_body(response)
+        except ValueError as err:
+            log.error("%r: %s", err, session_info)
+            raise Exception(err)
+
         self.assertTrue(content['result']['status'])
-        expected = {
-            "set userpin": 1
-            }
+        expected = {"set userpin": 1}
+
         self.assertDictEqual(expected, content['result']['value'])
         return
 

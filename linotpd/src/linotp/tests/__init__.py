@@ -94,6 +94,9 @@ class TestController(unittest2.TestCase):
         '''
         initialize the test class
         '''
+        self._version_ = {}
+        self._version_['pylons'] = \
+            pkg_resources.get_distribution('pylons').version
 
         wsgiapp = pylons.test.pylonsapp
         self.app = webtest.TestApp(wsgiapp)

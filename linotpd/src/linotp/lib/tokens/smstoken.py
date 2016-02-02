@@ -846,7 +846,7 @@ class SmsTokenClass(HmacTokenClass):
             log.exception("[sendSMS] Failed to load SMSProviderConfig: %r" % exc)
             raise Exception("Failed to load SMSProviderConfig: %r" % exc)
 
-        log.debug("[sendSMS] submitMessage: %r, to phone %r", (message, phone))
+        log.debug("[sendSMS] submitMessage: %r, to phone %r", message, phone)
         ret = sms.submitMessage(phone, message)
         if not ret:
             raise Exception("Failed to submit message")

@@ -27,6 +27,7 @@
 
 """ """
 
+import json
 import time
 import hmac
 import logging
@@ -673,6 +674,7 @@ class TestValidateController(TestController):
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
         self.assertTrue('"LinOtp.FailCount": 1' in response, response)
+        self.assertTrue('"LinOtp.FailCount": 0' not in response, response)
 
         # check all 3 tokens - the last one is it
         parameters = {"user": "root", "pass": "pin280395"}
@@ -712,6 +714,7 @@ class TestValidateController(TestController):
         self.assertTrue('"LinOtp.Count": 4' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
+        # now increment the failcounter to 19
         for _i in range(1, 20):
             # check if otp could be reused
             parameters = {"user": "root", "pass": "TPIN552629"}
@@ -719,16 +722,33 @@ class TestValidateController(TestController):
                                     params=parameters)
             self.assertTrue('"value": false' in response, response)
 
-        parameters = {"serial": "F722364"}
+        parameters = {"user": "root"}
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
-        self.assertTrue('"LinOtp.FailCount": 19' in response, response)
+        jresp = json.loads(response.body)
+        data = jresp.get('result', {}).get('value', {}).get('data', [])
+
+        # assure that we have at least one data row found
+        self.assertGreater(len(data), 0, response)
+
+        # now check, if the FailCounter has incremented
+        tokens = 0
+        for token_entry in data:
+            tokens += 1
+            fail_count = token_entry.get('LinOtp.FailCount', 0)
+            self.assertEqual(fail_count, 19, response)
+
+        # check if we did see any token
+        self.assertEqual(tokens, 3, response)
 
         self.delete_token("F722364")
         self.delete_token("F722363")
         self.delete_token("F722362")
 
     def test_resync(self):
+        """
+        test the admin resync: jump ahead in the sync window from 0 to 40
+        """
 
         self.createToken2()
 
@@ -916,6 +936,8 @@ class TestValidateController(TestController):
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
         self.assertTrue('"value": false' in response, response)
+
+        self.delete_token("T2")
 
     def test_checkMOtp(self):
 
@@ -1321,22 +1343,20 @@ please enable 'linotp.selfTest = True' in your *.ini
         parameters = {"user": "root", "pass": "pin818771"}
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
-        # log.error("response %s\n",response)
+
         # Test response...
         self.assertTrue('"value": true' in response, response)
 
         parameters = {"serial": "F722362"}
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
-        # log.error("response %s\n",response)
+
         # Test response...
         self.assertTrue('"LinOtp.Count": 5' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
-        #
         # Test if FailCount increments and in case of a maxFailCount
         # could not be reseted by a valid OTP
-        #
 
         for _i in range(0, 15):
             parameters = {"user": "root", "pass": "pin123456"}
@@ -1350,10 +1370,8 @@ please enable 'linotp.selfTest = True' in your *.ini
         self.assertTrue('"LinOtp.Count": 5' in response, response)
         self.assertTrue('"LinOtp.FailCount": 15' in response, response)
 
-        #
         # the reset by a valid OTP must fail and
         # the OTP Count must be incremented anyway
-        #
 
         parameters = {"user": "root", "pass": "pin250710"}
         response = self.app.get(url(controller='validate', action='check'),
@@ -1363,7 +1381,8 @@ please enable 'linotp.selfTest = True' in your *.ini
         parameters = {"serial": "F722362"}
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
-        #self.assertTrue('"LinOtp.Count": 8' in response, response)
+
+        self.assertTrue('"LinOtp.Count": 5' in response, response)
         self.assertTrue('"LinOtp.FailCount": 16' in response, response)
 
         parameters = {"serial": "F722362"}
@@ -1374,7 +1393,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         parameters = {"serial": "F722362"}
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
-        #self.assertTrue('"LinOtp.Count": 8' in response, response)
+        self.assertTrue('"LinOtp.Count": 5' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
         self.delete_token("F722362")
