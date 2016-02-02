@@ -87,9 +87,9 @@ from sqlalchemy         import asc, desc
 from pylons.i18n.translation import _
 
 
-
 # needed for ocra token
 import urllib
+import linotp
 
 try:
     import json
@@ -102,13 +102,14 @@ required = False
 
 log = logging.getLogger(__name__)
 
+
 class TokenClass(object):
 
     def __init__(self, token):
         self.type = ''
         self.token = token
-        ## the info is a generic container, to store token specific processing info
-        ## which could be retrieved in the controllers
+        # the info is a generic container, to store token specific
+        # processing info which could be retrieved in the controllers
         self.info = {}
         self.hKeyRequired = False
         self.mode = ['authenticate', 'challenge']
@@ -117,6 +118,43 @@ class TokenClass(object):
         typ = u'' + typ
         self.type = typ
         self.token.setType(typ)
+
+    def is_auth_only_token(self, user):
+        """
+        check if token is in the authenticate only mode
+        this is required to optimize the number of requests
+
+        :param user: the user / realm where the token policy is applied
+        :return: boolean
+        """
+        if len(self.mode) == 1 and 'authenticate' in self.mode:
+            return True
+
+        if len(self.mode) == 1 and 'challenge' in self.mode:
+            return False
+
+        import linotp.lib.policy
+        support_challenge_response = \
+            linotp.lib.policy.get_auth_challenge_response(user, self.type)
+
+        return not support_challenge_response
+
+    def is_challenge_and_auth_token(self, user):
+        """
+        check if token supports both authentication methods:
+          authenticate an challenge responser
+
+        :param user: the user / realm where the token policy is applied
+        :return: boolean
+        """
+
+        if 'authenticate' in self.mode and 'challenge' in self.mode:
+            import linotp.lib.policy
+            support_challenge_response = \
+                linotp.lib.policy.get_auth_challenge_response(user, self.type)
+            return support_challenge_response
+        else:
+            return False
 
     @classmethod
     def getClassType(cls):
@@ -230,9 +268,17 @@ class TokenClass(object):
 
         (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
         if res != -1:
-            pin_match = check_pin(self, pin, user=user, options=options)
-            if pin_match is True:
+            pin_policies = linotp.lib.policy.get_pin_policies(user)
+            if 1 in pin_policies:
                 otp_counter = check_otp(self, otpval, options=options)
+                if otp_counter >= 0:
+                    pin_match = check_pin(self, pin, user=user, options=options)
+                    if not pin_match:
+                        otp_counter = -1
+            else:
+                pin_match = check_pin(self, pin, user=user, options=options)
+                if pin_match is True:
+                    otp_counter = check_otp(self, otpval, options=options)
 
         return (pin_match, otp_counter, reply)
 

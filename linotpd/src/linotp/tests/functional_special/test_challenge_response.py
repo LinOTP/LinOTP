@@ -969,6 +969,23 @@ class TestChallengeResponseController(TestController):
                                 params=params)
         self.assertTrue('"value": true' in response, response)
 
+        # now try same with a wron challenge reply
+
+        # submit a pin only request - to trigger a challenge
+        params = {"user": "passthru_user1", "pass": "geheim1"}
+        response = self.app.get(url(controller='validate', action='check'),
+                                                            params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        # validate sms
+        otp = get_otp(counter, otpkey, mock_obj, sms_otp_func, typ)
+        params = {"user": "passthru_user1", "pass": "geheim2" + otp}
+        response = self.app.get(url(controller='validate', action='check'),
+                                params=params)
+        self.assertTrue('"value": false' in response, response)
+
+
         self.delete_token(serial)
         self.delete_policy('otpPin')
 
