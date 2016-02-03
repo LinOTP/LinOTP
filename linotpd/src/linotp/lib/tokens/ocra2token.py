@@ -126,7 +126,7 @@ from linotp.lib.util import normalize_activation_code
 
 from linotp.lib.ocra    import OcraSuite
 
-from linotp.lib.validate import create_challenge
+from linotp.lib.validate import create_challenge, check_pin, split_pin_otp
 from linotp.lib.validate import get_challenges
 from linotp.lib.reply   import create_img
 
@@ -1050,10 +1050,14 @@ class Ocra2TokenClass(TokenClass):
 
         return request_is_valid
 
-    def is_challenge_response(self, passw, user, options=None,
-                                                            challenges=None):
+    def is_challenge_response(self, passw, user, options=None, challenges=None):
         '''
-        for the ocra token,
+        test for the ocra token, if this is a response to a challenge
+
+        normal challenge response brings in a password and there is at least
+        a stored challenge available. But OCRA support as well direct
+        challenges, which bring the challenge data and the otp within the same
+        request.
 
         :param passw: password, which might be pin or pin+otp
         :param user: the requesting user
@@ -1063,16 +1067,27 @@ class Ocra2TokenClass(TokenClass):
         '''
 
         challenge_response = False
-        if (passw is not None and  len(passw) > 0 and
-           challenges is not None and len(challenges) > 0):
-            challenge_response = True
 
-        if 'challenge' in options or 'data' in options:
+        if passw is not None and len(passw) > 0:
+            # for a challenge response a pin+otp is required
+            # if passw matches a password, this is a challenge request
+            if check_pin(self, passw, user, options=options):
+                return False
+
+            if challenges is not None and len(challenges) > 0:
+                challenge_response = True
+
+            # we might have a direct challenge:
+            # direct challenge comes along with a pin+otp and direct challenge
+            elif 'challenge' in options or 'data' in options:
+                    challenge_response = True
+
+        elif 'challenge' in options or 'data' in options:
             challenge_response = False
 
-        ## we leave out the checkOtp, which is done later
-        ## either in checkResponse4Challenge
-        ## or in the check pin+otp
+        # we leave out the checkOtp, which is done later
+        # either in checkResponse4Challenge
+        # or in the check pin+otp
 
         return challenge_response
 
@@ -1152,6 +1167,12 @@ class Ocra2TokenClass(TokenClass):
                 if otpcount >= 0:
                     matching_challenges.append(mids.get(transid))
                     break
+
+            # direct challenge -
+            # brings the challange along with the matching pin
+            if not mids and 'challenge' in options:
+                otpcount = self.checkOtp(otpval, counter, window,
+                                         options=options)
 
         return (otpcount, matching_challenges)
 

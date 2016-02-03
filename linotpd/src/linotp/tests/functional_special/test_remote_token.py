@@ -239,7 +239,7 @@ class TestRemoteToken(TestController):
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        assert '"value": false' in response
+        self.assertTrue('"value": false' in response, response)
 
         return
 
@@ -252,7 +252,7 @@ class TestRemoteToken(TestController):
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        assert '"value": false' in response
+        self.assertTrue('"value": false' in response, response)
 
         return
 

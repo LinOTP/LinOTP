@@ -25,9 +25,9 @@
 #
 """ validation processing logic"""
 
-import logging
+from hashlib import sha256
 
-from sqlalchemy import or_, and_, not_
+from sqlalchemy import and_
 from sqlalchemy import desc
 
 from linotp.lib.user import getUserId
@@ -36,27 +36,14 @@ import linotp.lib.token
 import linotp.lib.policy
 
 from linotp.model import Challenge
-from linotp.model.meta import Session
 from linotp.lib.config  import getFromConfig
 from linotp.lib.resolver import getResolverObject
 
+import linotp.model.meta
+Session = linotp.model.meta.Session
+
+import logging
 log = logging.getLogger(__name__)
-
-
-def transform_challenges(challenges):
-    '''
-    small helper to transfor a set of DB Challenges to a list
-    of challenge data as dicts
-
-    :param challenges: list of database challenges
-
-    :return: a list with challenge data dicts
-    '''
-    channel_list = []
-    for challenge in challenges:
-        channel_list.append(challenge.get())
-    # return channel_list
-    return challenges
 
 
 def get_challenges(serial=None, transid=None):
@@ -174,23 +161,23 @@ def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
                                                  challenges=challenges,
                                                  options=options)
 
-        if res == False:
+        if res is False:
             # if a different transid is returned, this indicates, that there
             # is already an outstanding challenge we can refere to
             if open_transactionid != transactionid:
                 transactionid = open_transactionid
 
         else:
-            # in case the init was successfull, we preserve no the challenge data
-            # to support the implementation of a blocking based on the previous
-            # stored data
+            # in case the init was successfull, we preserve no the challenge
+            # data to support the implementation of a blocking based on the
+            # previous stored data
             challenge_obj.setChallenge(message)
             challenge_obj.save()
 
             (res, message, data, attributes) = \
                         token.createChallenge(transactionid, options=options)
 
-            if res == True:
+            if res is True:
                 # persist the final challenge data + message
                 challenge_obj.setChallenge(message)
                 challenge_obj.setData(data)
@@ -203,7 +190,7 @@ def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
         res = False
 
     # if something goes wrong with the challenge, remove it
-    if res == False and challenge_obj is not None:
+    if res is False and challenge_obj is not None:
         try:
             log.debug("deleting session")
             Session.delete(challenge_obj)
@@ -233,53 +220,6 @@ def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
         challenge.update(attributes)
 
     return (res, challenge)
-
-
-def check_pin(token, passw, user=None, options=None):
-    '''
-    check the provided pin w.r.t. the policy definition
-
-    :param passw: the to be checked pass
-    :param user: if otppin==1, this is the user, which resolver should
-                 be checked
-    :param options: the optional request parameters
-
-    :return: boolean, if pin matched True
-    '''
-    res = False
-    pin_policies = linotp.lib.policy.get_pin_policies(user)
-
-    if 1 in pin_policies:
-        # We check the Users Password as PIN
-        log.debug("[check_pin] pin policy=1: checking the users"
-                                                    " password as pin")
-        if (user is None or not user.login):
-            log.info("[check_pin] - fail for pin policy == 1 "
-                                                      "with user = None")
-            return False
-
-        (uid, _resolver, resolver_class) = getUserId(user)
-
-        r_obj = getResolverObject(resolver_class)
-        if  r_obj.checkPass(uid, passw):
-            log.debug("[__checkToken] Successfully authenticated user %r."
-                                                                    % uid)
-            res = True
-        else:
-            log.info("[__checkToken] user %r failed to authenticate."
-                                                                    % uid)
-
-    elif 2 in pin_policies:
-        # NO PIN should be entered atall
-        log.debug("[__checkToken] pin policy=2: checking no pin")
-        if len(passw) == 0:
-            res = True
-    else:
-        # old stuff: We check The fixed OTP PIN
-        log.debug("[__checkToken] pin policy=0: checkin the PIN")
-        res = token.checkPin(passw, options=options)
-
-    return res
 
 
 def delete_challenges(serial, challenges):
@@ -322,6 +262,77 @@ def delete_challenges(serial, challenges):
 
     return res
 
+
+def check_pin(token, passw, user=None, options=None):
+    '''
+    check the provided pin w.r.t. the policy definition
+
+    :param passw: the to be checked pass
+    :param user: if otppin==1, this is the user, which resolver should
+                 be checked
+    :param options: the optional request parameters
+
+    :return: boolean, if pin matched True
+    '''
+    res = False
+    pin_policies = linotp.lib.policy.get_pin_policies(user)
+
+    if 1 in pin_policies:
+        # We check the Users Password as PIN
+        log.debug("pin policy=1: checking the users password as pin")
+        # this should not be the case
+        if not options:
+            options = {}
+
+        if 'pin_match' not in options:
+            options['pin_match'] = {}
+
+        hashed_passw = sha256(passw).hexdigest()
+
+        # if password already found, we can return result again
+        if hashed_passw in options['pin_match']:
+            log.debug("check if password already checked! %r " %
+                      options['pin_match'][hashed_passw])
+            return options['pin_match'][hashed_passw]
+
+        # if a password already matched, this one will fail
+        if 'found' in options['pin_match']:
+            log.debug("check if password already found but its not this one!")
+            return False
+
+        if user is None or not user.login:
+            log.info("fail for pin policy == 1 with user = None")
+            res = False
+        else:
+            (uid, _resolver, resolver_class) = getUserId(user)
+            resolver = getResolverObject(resolver_class)
+            if resolver.checkPass(uid, passw):
+                log.debug("Successfully authenticated user %r." % uid)
+                res = True
+            else:
+                log.info("user %r failed to authenticate." % uid)
+
+        # we register our result
+        key = sha256(passw).hexdigest()
+        options['pin_match'][key] = res
+        # and register the success, to shorten lookups after
+        # already one positive was found
+        if res is True:
+            options['pin_match']['found'] = True
+
+    elif 2 in pin_policies:
+        # NO PIN should be entered atall
+        log.debug("[__checkToken] pin policy=2: checking no pin")
+        if len(passw) == 0:
+            res = True
+    else:
+        # old stuff: We check The fixed OTP PIN
+        log.debug("[__checkToken] pin policy=0: checkin the PIN")
+        res = token.checkPin(passw, options=options)
+
+    return res
+
+
 def check_otp(token, otpval, options=None):
     '''
     check the otp value
@@ -338,13 +349,12 @@ def check_otp(token, otpval, options=None):
     # This is only the OTP value, not the OTP PIN
     log.debug("[check_otp] OtpVal : %r" % otpval)
 
-    res = -1
-
     counter = token.getOtpCount()
     window = token.getOtpCountWindow()
 
     res = token.checkOtp(otpval, counter, window, options=options)
     return res
+
 
 def split_pin_otp(token, passw, user=None, options=None):
     '''
@@ -394,7 +404,6 @@ class ValidateToken(object):
             '''
             self.audit = {}
 
-
     def __init__(self, token, user=None, context=None):
         '''
         ValidateToken constructor
@@ -406,7 +415,6 @@ class ValidateToken(object):
         '''
         self.token = token
         self.user = user
-        self.pin_policies = None
 
         # these lists will be returned as result of the token check
         self.challenge_token = []
@@ -456,24 +464,69 @@ class ValidateToken(object):
         if options is None:
             options = {}
 
-        # are there outstanding challenges
+        # fallback in case of check_s, which does not provide a user
+        # but as for further prcessing a dummy user with only the realm defined
+        # is required for the policy evaluation
+        if user is None:
+            user = self.get_token_realm_user()
+
+        # standard authentication token
+        if self.token.is_auth_only_token(user):
+            (res, reply) = self.check_authenticate(user, passw,
+                                                   options=options)
+            return (res, reply)
+
+        # only challenge response token authentication
+        if not self.token.is_challenge_and_auth_token(user):
+
+            # first check are there outstanding challenges
+            challenges = self.get_challenges(options)
+            if self.token.is_challenge_response(passw, user,
+                                                options=options,
+                                                challenges=challenges):
+
+                (res, reply) = self.check_challenge_response(challenges,
+                                                             user, passw,
+                                                             options=options)
+                return (res, reply)
+
+            res = self.token.is_challenge_request(passw, user, options=options)
+            if res:
+                self.challenge_token.append(self.token)
+            else:
+                self.invalid_token.append(self.token)
+
+            return (False, None)
+
+        # else: tokens, which support both: challenge response
+        # and standard authentication
+
+        # first check are there outstanding challenges
         challenges = self.get_challenges(options)
-
-        # is the request refering to a previous challenge
         if self.token.is_challenge_response(passw, user,
-                                             options=options,
-                                             challenges=challenges):
+                                            options=options,
+                                            challenges=challenges):
 
-            (res, reply) = self.check_challenges(challenges,
-                                        user, passw, options=options)
+            (res, reply) = self.check_challenge_response(challenges,
+                                                         user, passw,
+                                                         options=options)
+            return (res, reply)
 
+        # if all okay, we can return here
+        (res, reply) = self.check_authenticate(user, passw, options=options)
+        if res >= 0:
+            return (res, reply)
+
+        # any challenge trigger should return false
+        res = self.token.is_challenge_request(passw, user, options=options)
+        if res:
+            self.challenge_token.append(self.token)
         else:
-            # do the standard check
-            (res, reply) = self.check_standard(passw, user, options=options)
+            self.invalid_token.append(self.token)
 
-        return (res, reply)
+        return (False, None)
 
-    def check_challenges(self, challenges, user, passw, options=None):
+    def check_challenge_response(self, challenges, user, passw, options=None):
         '''
         This function checks, if the given response (passw) matches
         any of the open challenges
@@ -492,8 +545,7 @@ class ValidateToken(object):
         # challenge reply will stay None as we are in the challenge response
         # mode
         reply = None
-        matching_challenges = []
-        if options == None:
+        if not options:
             options = {}
 
         otp = passw
@@ -508,6 +560,11 @@ class ValidateToken(object):
         else:
             self.invalid_token.append(self.token)
 
+        self.free_challenges(matching_challenges)
+
+        return (otpcount, reply)
+
+    def free_challenges(self, matching_challenges):
         # delete all challenges, which belong to the token and
         # the token could decide on its own, which should be deleted
         # default is: challenges which are younger than the matching one
@@ -515,10 +572,10 @@ class ValidateToken(object):
 
         all_challenges = self.lookup_challenge()
         to_be_deleted = self.token.challenge_janitor(matching_challenges,
-                                                      all_challenges)
+                                                     all_challenges)
 
         # gather all related challenges, which as well must be deleted.
-        # (relatedby the means of having a '.dd' postfix in transaction id)
+        # (related by the means of having a '.dd' postfix in transaction id)
         # These are then retrieved in the outer loop to call for each token
         # the challenge janitor so that every token may decide which challenge
         # to delete
@@ -531,14 +588,29 @@ class ValidateToken(object):
         delete_challenges(serial=self.token.getSerial(),
                           challenges=to_be_deleted)
 
-        return (otpcount, reply)
+        return
 
-    def check_standard(self, passw, user, options=None):
+    def get_token_realm_user(self):
+
+        user = None
+        realms = linotp.lib.token.getTokenRealms(self.token.getSerial())
+        if len(realms) == 1:
+            user = linotp.lib.user.User(login='', realm=realms[0])
+        elif len(realms) == 0:
+            realm = linotp.lib.token.getDefaultRealm()
+            user = linotp.lib.user.User(login='', realm=realm)
+            log.info('No token realm found - using default realm.')
+        else:
+            msg = ('Multiple realms for token found. But one dedicated '
+                   'realm is required for further processing.')
+            log.error(msg)
+            raise Exception(msg)
+
+        return user
+
+    def check_authenticate(self, user, passw, options=None):
         '''
-        do a standard verification, as we are not in a challengeResponse mode
-
-        the upper interfaces expect in the success the otp counter or at
-        least 0 if we have a success. A -1 identifies an error
+        simple authentication with pin+otp
 
         :param passw: the password, which should be checked
         :param options: dict with additional request parameters
@@ -546,77 +618,14 @@ class ValidateToken(object):
         :return: tuple of matching otpcounter and a potential reply
         '''
 
-        otp_count = -1
-        pin_match = False
-        reply = None
-
-        ttype = self.token.getType()
-
-        # fallback in case of check_s, which does not provide a user
-        # but as for further prcessing a dummy user with only the realm defined
-        # is required for the policy evaluation
-        if user is None:
-            realms = linotp.lib.token.getTokenRealms(self.token.getSerial())
-            if len(realms) == 1:
-                user = linotp.lib.user.User(login='', realm=realms[0])
-            elif len(realms) == 0:
-                realm = linotp.lib.token.getDefaultRealm()
-                user = linotp.lib.user.User(login='', realm=realm)
-                log.info('No token realm found - using default realm.')
-            else:
-                msg = ('Multiple realms for token found. But one dedicated '
-                       'realm is required for further processing.')
-                log.error(msg)
-                raise Exception(msg)
-
-        support_challenge_response = \
-                linotp.lib.policy.get_auth_challenge_response(user, ttype)
-
-        # special handling for tokens, who support only challenge modes
-        # like the sms, email or ocra2 token
-        challenge_mode_only = False
-
-        mode = self.token.mode
-        if type(mode) == list and len(mode) == 1 and mode[0] == "challenge":
-            challenge_mode_only = True
-
-        # the support_challenge_response is overruled, if the token
-        # supports only challenge processing
-        if challenge_mode_only == True:
-            support_challenge_response = True
-
-        try:
-            # call the token authentication
-            (pin_match, otp_count, reply) = self.token.authenticate(passw, user,
-                                                                options=options)
-        except Exception as exx:
-            if (support_challenge_response == True and
-                self.token.is_challenge_request(passw, user, options=options)):
-                log.info("Retry on base of a challenge request:")
-                pin_match = False
-                otp_count = -1
-            else:
-                raise Exception(exx)
-
-        if otp_count < 0 or pin_match == False:
-
-            if (support_challenge_response == True and
-                self.token.isActive() and
-                self.token.is_challenge_request(passw, user, options=options)):
-                # we are in createChallenge mode
-                # fix for #12413:
-                # - moved the create_challenge call to the checkTokenList!
-                # after all tokens are processed and only one is challengeing
-                # (_res, reply) = create_challenge(self.token, options=options)
-                self.challenge_token.append(self.token)
-
-        if len(self.challenge_token) == 0:
-            if otp_count >= 0:
-                self.valid_token.append(self.token)
-            elif pin_match is True:
-                self.pin_matching_token.append(self.token)
-            else:
-                self.invalid_token.append(self.token)
+        pin_match, otp_count, reply = self.token.authenticate(passw, user,
+                                                              options=options)
+        if otp_count >= 0:
+            self.valid_token.append(self.token)
+        elif pin_match is True:
+            self.pin_matching_token.append(self.token)
+        else:
+            self.invalid_token.append(self.token)
 
         return (otp_count, reply)
 
