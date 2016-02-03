@@ -149,6 +149,18 @@ class TestMonitoringController(TestController):
         self.assertEqual(values.get('realms'), 3, response)
         self.assertEqual(values.get('passwdresolver'), 2, response)
         # self.assertEqual(values.get('sync'), True, response)
+
+        # provoke unsyncronized situation:
+        self.make_authenticated_request(
+            controller='monitoring', action='storageEncryption', params={})
+        response = self.make_authenticated_request(
+            controller='monitoring', action='config', params={})
+        resp = json.loads(response.body)
+        values = resp.get('result').get('value')
+        self.assertEqual(values.get('realms'), 3, response)
+        self.assertEqual(values.get('passwdresolver'), 2, response)
+        # self.assertEqual(values.get('sync'), False, response)
+
         return
 
     def test_token_realm_list(self):
@@ -156,7 +168,7 @@ class TestMonitoringController(TestController):
         self.create_token(serial='0002', user='root')
         self.create_token(serial='0003', realm='mydefrealm')
         self.create_token(serial='0004', realm='myotherrealm')
-        # test what happens if first realm is empty:git add
+        # test what happens if first realm is empty:
         parameters = {'realms': ',mydefrealm,myotherrealm'}
         response = self.make_authenticated_request(
             controller='monitoring', action='tokens', params=parameters)
@@ -299,6 +311,7 @@ class TestMonitoringController(TestController):
         return
 
     def test_check_encryption(self):
+        # do this test befor test_config
         response = self.make_authenticated_request(
             controller='monitoring', action='storageEncryption', params={})
         resp = json.loads(response.body)

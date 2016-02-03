@@ -151,6 +151,7 @@ class MonitorHandler(object):
         check if cache and config db are synced
 
         if sync is True, the synctime is returned
+        else, the difference (cache-time - database_time) is given
         :return: dict with keys 'sync' and 'synctime'
         """
         result = {'sync': False}
@@ -168,6 +169,15 @@ class MonitorHandler(object):
         if db_time == linotp_time:
             result['sync'] = True
             result['synctime'] = db_time
+            now = datetime.datetime.now()
+            result['now'] = unicode(now)
+
+        else:
+            format_string = '%Y-%m-%d %H:%M:%S.%f'
+            linotp_t = datetime.datetime.strptime(str(linotp_time), format_string)
+            db_t = datetime.datetime.strptime(str(db_time), format_string)
+            result['cache_to_db_diff'] = unicode(linotp_t - db_t)
+            result['db_time'] = db_time
 
         return result
 
@@ -230,8 +240,8 @@ class MonitorHandler(object):
 
         old_value = getFromConfig(test_key, defVal=None)
 
-        now = datetime.datetime
-        new_value_plain = str(now)
+        now = datetime.datetime.now()
+        new_value_plain = unicode(now)
 
         storeConfig(test_key, new_value_plain, typ='password', desc=None)
 
