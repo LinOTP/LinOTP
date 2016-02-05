@@ -684,9 +684,8 @@ class ValidateController(BaseController):
             Session.close()
             log.debug('[simplecheck] done')
 
-
     def ok(self):
-        return sendResult(response, "TRUE", 0)
+        return sendResult(response, True, 0)
 
     def fail(self):
         return sendResult(response, False, 0)
