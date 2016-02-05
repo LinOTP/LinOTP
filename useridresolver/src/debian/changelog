@@ -1,8 +1,8 @@
-linotp-useridresolver (2.8.0.3~rc2-1) jessie; urgency=low
+linotp-useridresolver (2.8.0.3-1) jessie; urgency=low
 
   * Replace phppass file by a dedicated method
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 25 Jan 2016 16:48:21 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 05 Feb 2016 08:54:31 +0100
 
 linotp-useridresolver (2.8-1) jessie; urgency=low
 
