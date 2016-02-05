@@ -723,7 +723,6 @@ def getPolicy(param, display_inactive=False):
                     res = _filter_admin_user(policy_users, userObj)
                     if res is True:
                         delete_it = False
-                        break
 
             if delete_it:
                 pol2delete.append(polname)
