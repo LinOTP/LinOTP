@@ -22,13 +22,13 @@
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
-# linotp@lsexperts.de <>, 2015.
+# linotp@lsexperts.de <>, 2015, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2015-11-13 02:43+0100\n"
+"PO-Revision-Date: 2016-02-07 12:59+0100\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -36,6 +36,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#, python-format
+msgid ""
+"You do not have the rights to monitor these realms: %r. Check the policies!"
+msgstr ""
+"Sie haben keine Rechte die folgenden Realms zu monitoren %r. Überprüfen Sie "
+"die Richtlinien!"
+
+msgid "Summary"
+msgstr "Zusammenfassung"
+
+msgid "Realms"
+msgstr "Realms"
 
 msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
 msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
@@ -92,6 +105,14 @@ msgstr "Fehler bei der Suche im Audit Log: %s"
 #, python-format
 msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
 msgstr "Gültige Werte sind 'ocra' oder 'ocra2'. Sie gaben %s an"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to do monitoring.You are missing a "
+"policyscope=monitoring, action=%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte zum Monitoring. Es fehlt dazu eine "
+"Richtlinie mit 'scope=monitoring' und 'action=%s'."
 
 #, python-format
 msgid "The provided PIN is too short. It should be at least %i characters."
@@ -155,6 +176,14 @@ msgstr "Der PIN beinhaltet Sonderzeichen obwohl dies nicht so sein sollte (%s)"
 msgid "The PIN contains other characters, although it should not! (%s)"
 msgstr ""
 "Der PIN beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to manage tools. You are missing a "
+"policy scope=tools, action=%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte die Tools auszuführen. Es fehlt "
+"dazu eine Richtlinie mit 'scope=tools' und 'action=%s'."
 
 #, python-format
 msgid ""
@@ -514,20 +543,36 @@ msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter controller %s"
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
 
+msgid "Support not available, your product is unlicensed"
+msgstr "Keine Support Unterstüzung"
+
+msgid "license file is empty!"
+msgstr "Die Lizenzdatei ist leer!"
+
 msgid "signature could not be verified!"
 msgstr "Die Signatur ist nicht gültig!"
 
-msgid "volume exceeded:"
-msgstr "Volumen überschritten:"
+msgid "no license expiration information in license "
+msgstr "Keine Information über das Ablaufdatum der Lizenz"
 
-msgid "expired - valid till"
-msgstr "abgelaufen - gültig bis"
+msgid "no license subscription information in license"
+msgstr "Keine Information über die Subskription in der Lizenz"
+
+msgid "invalid license (old license style)"
+msgstr "ungülige Lizenz (altes Lizenzformat)"
 
 msgid "tokens used"
 msgstr "verwendete Token"
 
 msgid "tokens supported"
 msgstr "lizensierte Token"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "Nicht unterstütztes Datumsformat %r"
+
+msgid "expired - valid till"
+msgstr "abgelaufen - gültig bis"
 
 #, python-format
 msgid ""
@@ -819,14 +864,14 @@ msgstr "OCRA suite"
 msgid "Enroll your OCRA2 Token"
 msgstr "Rollen Sie Ihren OCRA2 Token aus"
 
-msgid "Enter seed for the new OCRA2 token:"
-msgstr "Geben Sie das Seed für den neuen OCRA2 Token ein:"
+msgid "Token description"
+msgstr "Token-Beschreibung"
 
 msgid "Generate OCRA2 seed"
 msgstr "OCRA2 Key vom Server generieren lassen."
 
-msgid "Token description"
-msgstr "Token-Beschreibung"
+msgid "Enter seed for the new OCRA2 token:"
+msgstr "Geben Sie das Seed für den neuen OCRA2 Token ein:"
 
 msgid "enroll ocra2 token"
 msgstr "OCRA2 Token ausrollen"
@@ -1261,6 +1306,10 @@ msgstr "YubiKey TokenId"
 msgid "enroll yubico token"
 msgstr "Yubikey ausrollen"
 
+#, python-format
+msgid "%d tokens of %d migrated"
+msgstr "%d Token von %d migriert"
+
 msgid "Not a valid json string!"
 msgstr "Kein gültiger JSON Text!"
 
@@ -1282,6 +1331,12 @@ msgid ""
 "Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://"
 msgstr ""
 "Bitte geben Sie eine gültige LDAP URI ein, die mit ldap:// oder ldaps:// "
+"anfängt."
+
+msgid ""
+"Please enter a valid http uri. It needs to start with http:// or https://"
+msgstr ""
+"Bitte geben Sie eine gültige LDAP URI ein, die mit http:// oder https:// "
 "anfängt."
 
 msgid ""
@@ -1321,10 +1376,10 @@ msgstr ""
 
 msgid ""
 "Please enter a valid driver specification like: mysql, postgres, mssql, "
-"oracle or ibm_db_sa+pyodbc"
+"oracle, ibm_db_sa or ibm_db_sa+pyodbc"
 msgstr ""
 "Bitte geben sie einen gültigen Treber an, wie: mysql, postgres, mssql, "
-"oracle oder ibm_db_sa+pyodbc"
+"oracle, ibm_db_sa oder ibm_db_sa+pyodbc"
 
 msgid ""
 "Please enter a valid searchfilter like this: \n"
@@ -1380,6 +1435,12 @@ msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
 
 msgid "Please select only one user."
 msgstr "Bitte wählen Sie nur einen Benutzer aus."
+
+msgid "Found the token: "
+msgstr "Gefundener Token:"
+
+msgid "The token belongs to "
+msgstr "Der Token gehört zu "
 
 msgid "The upload of your support and subscription license failed: "
 msgstr "Das Laden der Support- und Subskriptions-Datei ist fehlgeschlagen: "
@@ -1454,6 +1515,9 @@ msgstr "Verbindungs Test: erfolgreich"
 
 msgid "LDAP Connection Test"
 msgstr "LDAP Verbindungs Test"
+
+msgid "Form Validation Error"
+msgstr "Formular Eingabe Fehler"
 
 msgid "Active"
 msgstr "Aktiv"
@@ -1683,6 +1747,13 @@ msgstr "Fehler bei Tokenaktivierung\n"
 msgid "Error loading history:\n"
 msgstr "Fehler beim Laden der Historie:\n"
 
+msgid ""
+"Could not migrate tokens!\n"
+"\n"
+msgstr ""
+"Konnte die Token nicht migrieren!\n"
+"\n"
+
 msgid "Authentication"
 msgstr "Authentisierung"
 
@@ -1766,9 +1837,6 @@ msgstr "LinOTP Konfiguration"
 msgid "UserIdResolvers"
 msgstr "UserIdResolvers"
 
-msgid "Realms"
-msgstr "Realms"
-
 msgid "System Config"
 msgstr "System-konfiguration"
 
@@ -1795,6 +1863,9 @@ msgstr "Tokeninformationen exportieren"
 
 msgid "Export Audit Trail"
 msgstr "Audit-Trail exportieren"
+
+msgid "Migrate Resolver"
+msgstr "Resolver Migration"
 
 msgid "Import Token File"
 msgstr "Tokendatei importieren"
@@ -2261,6 +2332,18 @@ msgstr "Zum Token"
 
 msgid "Copy PIN"
 msgstr "Kopiere PIN"
+
+msgid "Migrate assigned tokens to a new resolver"
+msgstr "Migriere zugewiesene Token zu einem neuen Resolver"
+
+msgid "From resolver"
+msgstr "Von Resolver"
+
+msgid "To resolver"
+msgstr "zu Resolver"
+
+msgid "Migrate tokens"
+msgstr "Migriere Token"
 
 msgid ""
 "Here you can upload the XML file that came with your SafeNet eToken PASS."
@@ -2977,9 +3060,6 @@ msgstr ""
 "Bitte überprüfen sie auf die einzelnen Konfigurations-Einstellungen für "
 "weitere Details."
 
-msgid "Form Validation Error"
-msgstr "Formular Eingabe Fehler"
-
 msgid "License reminder:"
 msgstr "Lizenz Erinnerung:"
 
@@ -3356,6 +3436,9 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "volume exceeded:"
+#~ msgstr "Volumen überschritten:"
 
 #~ msgid "OCRA Suite"
 #~ msgstr "OCRA Suite"
