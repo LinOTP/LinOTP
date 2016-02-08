@@ -1,11 +1,14 @@
-linotp (2.8.0.2+custom04-1) jessie; urgency=low
+linotp (2.8.0.2+custom05-1) jessie; urgency=low
 
   * Support for extended admin and user definition
   * Add extended user filter to admin and system policies
   * Support for windows logout and cookie deletion
   * Fix breaking userservice calls with UTF-8 characters
+  * Permit viewing all policies independent of the belonging realm
+  * Fix filtering of available policies
+  * Fix delivering correct language on IE11
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 28 Jan 2016 12:13:33 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 08 Feb 2016 10:04:00 +0100
 
 linotp (2.8.0.2-1) jessie; urgency=low
 
