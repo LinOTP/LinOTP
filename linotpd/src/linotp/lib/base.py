@@ -322,8 +322,6 @@ class BaseController(WSGIController):
                 log.error("Failed to setup resolver: %r" % exx)
                 raise exx
 
-        initResolvers()
-
         return
 
     def __call__(self, environ, start_response):
@@ -415,6 +413,8 @@ class BaseController(WSGIController):
         request_context['Config'] = linotp_config
         request_context['Policies'] = getPolicies()
         request_context['translate'] = translate
+
+        initResolvers()
 
         request_params = {}
 

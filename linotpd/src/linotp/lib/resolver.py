@@ -30,7 +30,7 @@ import logging
 import re
 import copy
 
-from linotp.lib.context import context
+from linotp.lib.context import request_context as context
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getGlobalObject
@@ -176,7 +176,7 @@ def defineResolver(params):
     conf = params['name']
     resolver_clazz = None
 
-    for clazz_name, clazz_type in context.resolver_types.items():
+    for clazz_name, clazz_type in context.get('resolver_types').items():
         if typ.lower() in clazz_type.lower():
             resolver_clazz = clazz_name
 
@@ -209,8 +209,8 @@ def checkResolverType(resolver):
     reso = reso.replace("\"", "")
 
     # the fully qualified resolver
-    if reso in context.resolver_clazzes:
-        res = context.resolver_clazzes.get(reso)
+    if reso in context.get('resolver_clazzes'):
+        res = context.get('resolver_clazzes').get(reso)
         ret = True
     else:
         # if the last argument is the configuration
@@ -219,7 +219,7 @@ def checkResolverType(resolver):
         conf = pack[-1]
 
         # lookup, if there is a resolver definition
-        if rtype in context.resolver_types:
+        if rtype in context.get('resolver_types'):
             res = "%s.%s" % (rtype, conf)
             ret = True
         # #
@@ -228,7 +228,7 @@ def checkResolverType(resolver):
             #    "useridresolver.passwdresolver.mrealm"
             # so we only could rely only on the type definition e.g.
             #  'passwdresolver' as part of the string
-            for res_id, res_type in context.resolver_types.iteritems():
+            for res_id, res_type in context.get('resolver_types').iteritems():
                 if res_type in reso:
                     res = "%s.%s" % (res_id, conf)
                     ret = True
@@ -279,7 +279,8 @@ def getResolverList(filter_resolver_type=None):
     Resolvers = {}
     resolvertypes = get_resolver_types()
 
-    conf = getLinotpConfig()
+    conf = context.get('Config')
+    # conf = getLinotpConfig()
     for entry in conf:
 
         for typ in resolvertypes:
@@ -318,7 +319,8 @@ def getResolverInfo(resolvername):
 
     descr = {}
 
-    conf = getLinotpConfig()
+    conf = context.get('Config')
+    # conf = getLinotpConfig()
 
     for entry in conf:
 
@@ -361,7 +363,7 @@ def getResolverInfo(resolvername):
 
                 break
 
-    return { "type" : typ, "data" : resolver_dict, "resolver" : resolvername}
+    return {"type": typ, "data": resolver_dict, "resolver": resolvername}
 
 
 def deleteResolver(resolvername):
@@ -377,7 +379,8 @@ def deleteResolver(resolvername):
     res = False
 
     resolvertypes = get_resolver_types()
-    conf = getLinotpConfig()
+    conf = context.get('Config')
+    # conf = getLinotpConfig()
 
     delEntries = []
 
@@ -392,7 +395,7 @@ def deleteResolver(resolvername):
                     if typ in resolvertypes:
                         delEntries.append(entry)
 
-    if len(delEntries) > 0 :
+    if len(delEntries) > 0:
         try:
             for entry in delEntries:
                 res = removeFromConfig(entry)
@@ -433,13 +436,7 @@ def getResolverObject(resolvername):
     # The solution is to deal with local references, either to the
     # global context or to local data (where we have no reuse of the resolver)
 
-    resolvers_loaded = {}
-    try:
-        if hasattr(context, 'resolvers_loaded') == False:
-            setattr(context, 'resolvers_loaded', {})
-        resolvers_loaded = context.resolvers_loaded
-    except Exception as exx:
-        resolvers_loaded = {}
+    resolvers_loaded = context.setdefault('resolvers_loaded', {})
 
     # port of the 2.6. resolver to 2.7
     if resolvername[:len('useridresolveree.')] == 'useridresolveree.':
@@ -490,6 +487,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
 
     return
 
+
 def initResolvers():
     """
     hook for the request start -
@@ -499,13 +497,12 @@ def initResolvers():
         glo = getGlobalObject()
 
         resolver_clazzes = copy.deepcopy(glo.getResolverClasses())
-        setattr(context, 'resolver_clazzes', resolver_clazzes)
-
         resolver_types = copy.deepcopy(glo.getResolverTypes())
-        setattr(context, 'resolver_types', resolver_types)
 
+        context['resolver_clazzes'] = resolver_clazzes
+        context['resolver_types'] = resolver_types
         # dict of all resolvers, which are instatiated during the request
-        setattr(context, 'resolvers_loaded', {})
+        context['resolvers_loaded'] = {}
 
     except Exception as exx:
         log.exception("Failed to initialize resolver in context %r" % exx)
@@ -516,14 +513,11 @@ def closeResolvers():
     """
     hook to close the resolvers at the end of the request
     """
-
-    if hasattr(context, 'resolvers_loaded'):
-        try:
-            for resolver in context.resolvers_loaded.values():
-                if hasattr(resolver, 'close'):
-                    resolver.close()
-
-        except Exception as exx:
+    try:
+        for resolver in context.get('resolvers_loaded').values():
+            if hasattr(resolver, 'close'):
+                resolver.close()
+    except Exception as exx:
             log.exception("Failed to close resolver in context %r" % exx)
     return
 
@@ -531,7 +525,7 @@ def closeResolvers():
 def getResolverClassName(resolver_type, resolver_name):
 
     res = ""
-    for clazz_name, clazz_type in context.resolver_types.items():
+    for clazz_name, clazz_type in context.get('resolver_types').items():
         if clazz_type == resolver_type:
             res = "%s.%s" % (clazz_name, resolver_name)
             break
@@ -588,7 +582,7 @@ def get_resolver_types():
 
     :return: array of resolvertypes like 'passwdresolver'
     """
-    return context.resolver_types.values()
+    return context.get('resolver_types').values()
 
 
 def get_resolver_classConfig(claszzesType):
