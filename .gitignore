@@ -137,3 +137,6 @@ linotpd/src/.eggs/*
 
 # License file for test cases, never commit!
 linotpd/src/data/testdata/testlicense*.pem
+
+# rope analysis data
+.ropeproject
