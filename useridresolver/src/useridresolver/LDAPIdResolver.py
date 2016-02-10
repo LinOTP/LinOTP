@@ -34,6 +34,7 @@
 
 from ldap.controls import SimplePagedResultsControl
 
+from . import resolver_registry
 from useridresolver.UserIdResolver import (UserIdResolver,
                                            ResolverLoadConfigError
                                            )
@@ -125,6 +126,7 @@ def _set_cacertificate(cacertificates, ca_dir=None):
     return ca_file
 
 
+@resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
 class IdResolver (UserIdResolver):
     '''
     LDAP User Id resolver

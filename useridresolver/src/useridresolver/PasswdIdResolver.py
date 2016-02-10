@@ -38,8 +38,7 @@ import os
 import re
 import logging
 
-from linotp.lib.util import str2unicode
-
+from . import resolver_registry
 from UserIdResolver import (UserIdResolver,
                             ResolverLoadConfigError
                             )
@@ -47,6 +46,30 @@ from UserIdResolver import (UserIdResolver,
 from UserIdResolver import getResolverClass
 
 log = logging.getLogger(__name__)
+
+def str2unicode(input_str):
+    """
+    convert as binary string into a unicode string by trying various encodings
+    :param input_str: input binary string
+    :return: unicode output
+    """
+
+    output_str = input_str
+    conversions = [{},
+                   {'encoding':'utf-8'},
+                   {'encoding':'iso-8859-1'},
+                   {'encoding':'iso-8859-15'}
+                   ]
+    for param in conversions:
+        try:
+            output_str = unicode(input_str, **param)
+            break
+        except UnicodeDecodeError as exx:
+            if param == conversions[-1]:
+                log.info('no unicode conversion found for %r' % input_str)
+                raise exx
+
+    return output_str
 
 def tokenise(r):
     def _(s):
@@ -61,6 +84,7 @@ def tokenise(r):
     return _
 
 
+@resolver_registry.class_entry('useridresolver.PasswdIdResolver.IdResolver')
 class IdResolver (UserIdResolver):
 
     fields = {"username": 1, "userid": 1,

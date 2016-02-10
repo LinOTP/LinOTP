@@ -40,6 +40,7 @@ from sqlalchemy import Table, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoSuchColumnError
 
+from . import resolver_registry
 from useridresolver.UserIdResolver import (UserIdResolver,
                                            ResolverLoadConfigError
                                            )
@@ -296,7 +297,7 @@ def _check_hash_type(password, hash_type, hash_value):
 
     return res
 
-
+@resolver_registry.class_entry('useridresolver.SQLIdResolver.IdResolver')
 class IdResolver (UserIdResolver):
 
     @classmethod

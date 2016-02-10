@@ -33,7 +33,7 @@ Dependencies: UserIdResolver
 
 #from sqlalchemy.event import listen
 
-
+from . import resolver_registry
 from useridresolver.UserIdResolver import UserIdResolver
 
 import json
@@ -130,6 +130,7 @@ def urllib_request(url, parameter,
     return reply
 
 
+@resolver_registry.class_entry('useridresolver.HTTPIdResolver.IdResolver')
 class IdResolver (UserIdResolver):
 
     @classmethod

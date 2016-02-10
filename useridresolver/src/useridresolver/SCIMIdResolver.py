@@ -33,6 +33,7 @@
 import logging
 log = logging.getLogger(__name__)
 
+from . import resolver_registry
 from UserIdResolver import UserIdResolver
 from UserIdResolver import getResolverClass
 
@@ -46,7 +47,7 @@ except Exception as ex:
 
 import json
 
-
+@resolver_registry.class_entry('useridresolver.SCIMIdResolver.IdResolver')
 class IdResolver (UserIdResolver):
 
     @classmethod
