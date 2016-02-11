@@ -37,7 +37,8 @@ from sqlalchemy import engine_from_config
 import linotp.lib.app_globals as app_globals
 import linotp.lib.helpers
 
-from useridresolver.UserIdResolver import UserIdResolver
+from useridresolver import resolver_registry
+from useridresolver import UserIdResolver
 from linotp.config.routing import make_map
 from linotp.lib.error import TokenTypeNotSupportedError
 
@@ -115,10 +116,8 @@ def load_environment(global_conf, app_conf):
         directories.append(mpath)
 
     # add a template path for every resolver
-    modules = get_resolver_module_list()
-    for module in modules:
-        mpath = os.path.dirname(module.__file__)
-        directories.append(mpath)
+    resolver_module_path = UserIdResolver.__file__
+    directories.append(resolver_module_path)
 
     unique_directories = _uniqify_list(directories)
     log.debug("[load_environment] Template directories: %r" % unique_directories)
@@ -333,27 +332,43 @@ def get_token_class_list():
 ###############################################################################
 
 
-def get_resolver_list():
-    '''
-    get the list of the resolvers
-    :return: list of resolver names from the config file
-    '''
+def get_activated_resolver_modules():
+
+    """
+    returns a list of strings representing the active resolver
+    modules according to the 'linotpResolverModules' variable in
+    config.ini
+
+    Format: ['useridresolver.PasswdIdResolver', ...]
+
+    The following modules are harcoded and will always be returned:
+
+    *  'useridresolver.PasswdIdResolver'
+    *  'useridresolver.LDAPIdResolver'
+    *  'useridresolver.HTTPIdResolver'
+    *  'useridresolver.SQLIdResolver'
+
+    :return module name list
+    """
+
     module_list = set()
 
-    module_list.add("useridresolver.PasswdIdResolver")
-    module_list.add("useridresolver.LDAPIdResolver")
-    module_list.add("useridresolver.HTTPIdResolver")
-    module_list.add("useridresolver.SQLIdResolver")
+    module_list.add('useridresolver.PasswdIdResolver')
+    module_list.add('useridresolver.LDAPIdResolver')
+    module_list.add('useridresolver.HTTPIdResolver')
+    module_list.add('useridresolver.SQLIdResolver')
 
-    config_modules = config.get("linotpResolverModules", '')
-    log.debug("[get_resolver_module_list] %s " % config_modules)
+    config_modules = config.get('linotpResolverModules', '')
+    log.debug('[get_activated_resolver_modules] Parsing config value %s ' %
+              config_modules)
+
     if config_modules:
         # in the config *.ini files we have some line continuation slashes,
         # which will result in ugly module names, but as they are followed by
         # \n they could be separated as single entries by the following two
         # lines
         lines = config_modules.splitlines()
-        coco = ",".join(lines)
+        coco = ','.join(lines)
         for module in coco.split(','):
             if module.strip() != '\\':
                 module_list.add(module.strip())
@@ -361,81 +376,53 @@ def get_resolver_list():
     return module_list
 
 
-def get_resolver_module_list():
-    '''
-    return the list of the available resolver classes like passw, sql, ldap
-
-    :return: list of resolver modules
-    '''
-
-    # def load_resolver_modules
-    module_list = get_resolver_list()
-    log.debug("using the module list: %s" % module_list)
-
-    modules = []
-    for mod_name in module_list:
-        if mod_name == '\\' or len(mod_name.strip()) == 0:
-            continue
-
-        # load all resolver class implementations, if not already loaded
-        if mod_name not in sys.modules:
-            try:
-                log.debug("import module: %s" % mod_name)
-                __import__(mod_name)
-            except Exception as exx:
-                module = None
-                log.warning('unable to load resolver module : %r (%r)'
-                            % (mod_name, exx))
-
-        module = sys.modules[mod_name]
-        if module is not None:
-            modules.append(module)
-            log.debug('module %s loaded' % (mod_name))
-        else:
-            log.error('module %s failed to load!' % (mod_name))
-
-    return modules
-
-
 def get_resolver_class_list():
-    '''
-    return the dict of resolver class objects
-    '''
-    resolverclass_dict = {}
-    resolverprefix_dict = {}
 
-    modules = get_resolver_module_list()
-    base_class_repr = "useridresolver.UserIdResolver.UserIdResolver"
-    for module in modules:
-        log.debug("[get_resolver_class_list] module: %s" % module)
-        for name in dir(module):
-            obj = getattr(module, name)
-            if inspect.isclass(obj):
-                try:
-                    rtyp = repr(obj)
-                    # check if this is a resolver class
-                    if (issubclass(obj, UserIdResolver) and
-                            base_class_repr not in rtyp):
-                        # we index the resolver object under:
-                        # useridresolver.PasswdIdResolver.IdResolver
-                        # in the token.db the resolver refer to:
-                        # useridresolver.PasswdIdResolver.IdResolver.myDefRes
-                        class_name = "%s.%s" % (module.__name__, obj.__name__)
-                        resolverclass_dict[class_name] = obj
+    """
+    Returns a tuple (resolver_classes, resolver_types) with
+    resolver classes being a dict of the following format:
 
-                        prefix = class_name.split('.')[1]
-                        if hasattr(obj, 'getResolverClassType'):
-                            prefix = obj.getResolverClassType()
+    { 'class_identifier': <class resolver> }, e.g.
+    { 'useridresolvers.PasswdIdResolver.IdResolver : <class PasswdIdResolver> }
 
-                        resolverprefix_dict[class_name] = prefix
+    and the resolver_types having the format:
 
-                except Exception as e:
-                    log.info("[get_token_class_list] error constructing" +
-                             " resolverclass_list: %r" % e)
+    { 'fully_qualified_import_path': 'class_type_identifier' }, e.g.
+    { 'useridresolvers.PasswdIdResolver.IdResolver : 'passwdresolver' }
 
-    log.debug("[get_resolver_class_list] the resolvernclass list: %r"
-              % resolverclass_dict)
+    Both dictionaries are used as a type mapping of strings to
+    classes.
+    """
 
-    return (resolverclass_dict, resolverprefix_dict)
+    # the difference between resolver_types and resolver_classes
+    # is for legacy support of lib.resolvers - Technically we
+    # only need resolver_classes
+
+    resolver_types = {}
+
+    filtered_resolver_classes = {}
+    activated_modules = get_activated_resolver_modules()
+
+    for cls_key, cls_ in resolver_registry.iteritems():
+        if cls_.__module__ in activated_modules:
+            filtered_resolver_classes[cls_key] = cls_
+
+    for cls_key, cls_ in filtered_resolver_classes.iteritems():
+        if hasattr(cls_, 'getResolverClassType'):
+            type_identifier = cls_.getResolverClassType()
+        else:
+            # FIXME: remove "additional" semantics of
+            # resolver registry keys (only here for
+            # legacy support)
+            type_identifier = cls_key.split('.')[1]
+        resolver_types[cls_key] = type_identifier
+
+    log.debug("[get_resolver_class_list] the resolver_classes dict: %r"
+              % filtered_resolver_classes)
+
+    log.debug("[get_resolver_class_list] the resolver_types dict: %r"
+              % resolver_types)
+
+    return filtered_resolver_classes, resolver_types
 
 ###eof#########################################################################
