@@ -77,29 +77,6 @@ class User(object):
         self.resolvers_list = []
         self._exists = None
 
-    @staticmethod
-    def getUserObject(login, realm=None, check_if_exist=False):
-
-        f_realm = realm
-        f_login = login
-
-        if not realm:
-            if '@' in login:
-                realms = getRealms()
-                lo, rea = login.rsplit('@', 1)
-                if rea.lower() in realms:
-                    f_realm = rea.lower()
-                    f_login = lo
-                else:
-                    f_realm = getDefaultRealm()
-                    f_login = login
-
-        f_user = User(f_login, realm=f_realm)
-        if check_if_exist:
-            uid, resolver = f_user.get_uid_resolver()
-
-        return f_user
-
     def does_exists(self, resolvers=None):
         """
         """
