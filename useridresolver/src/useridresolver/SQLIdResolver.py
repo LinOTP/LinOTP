@@ -272,7 +272,7 @@ def call_on_connect(dbapi_con, connection_record):
     return
 
 
-def _check_hash_type(password, hash_type, hash_value):
+def _check_hash_type(password, hash_type, hash_value, salt=None):
     '''
     Checks, if the password matches the given hash.
 
@@ -313,13 +313,22 @@ def _check_hash_type(password, hash_type, hash_value):
             H = hashlib.new(new_hash_type)
             hash_len = H.digest_size
 
-            # split the hashed passowrd from the binary salt
-            bin_hash = bin_value[:hash_len]
-            bin_salt = bin_value[hash_len:]
+            # Carefully check for ASP.NET format (salt separated from hash)
+            if salt and len(bin_value) == hash_len:
+                # Salt separated from hash - probably ASP.NET format
+                # For ASP.NET the format is 'hash(salt + password)' with
+                # 'password' being a UTF-16 little-endian string
+                bin_hash = bin_value
+                password = password.encode('utf-16-le')
+                bin_salt = base64.b64decode(salt)
+                H.update(bin_salt + password)
+            else:
+                # split the hashed password from the binary salt
+                bin_hash = bin_value[:hash_len]
+                bin_salt = bin_value[hash_len:]
+                H.update(password + bin_salt)
 
-            H.update(password + bin_salt)
             bin_hashed_password = H.digest()
-
             res = (bin_hashed_password == bin_hash)
         except ValueError:
             log.exception("[_check_hash_type] Unsupported Hash type: %r"
@@ -429,7 +438,12 @@ class IdResolver (UserIdResolver):
                 # {SHA256}abcdfef123456
                 hash_type = m.group(1)
                 hash_value = m.group(2)
-                return _check_hash_type(password, hash_type, hash_value)
+
+                # Check for salt field in case the db splits salt from hash:
+                salt = None
+                if 'salt' in userInfo:
+                    salt = userInfo['salt']
+                return _check_hash_type(password, hash_type, hash_value, salt=salt)
             elif m_php:
                 # The Password field contains something like
                 # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
