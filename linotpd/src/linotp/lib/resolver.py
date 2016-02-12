@@ -541,7 +541,6 @@ def get_resolver_class(resolver_type):
                           fully qualified or abreviated
     :return: resolver object class
     '''
-    ret = None
 
     # ## this patch is a bit hacky:
     # the normal request has a request context, where it retrieves
@@ -553,27 +552,11 @@ def get_resolver_class(resolver_type):
 
     try:
         resolver_clazzes = context.resolver_clazzes
-        resolver_types = context.resolver_types
     except Exception as exx:
         glo = getGlobalObject()
         resolver_clazzes = copy.deepcopy(glo.getResolverClasses())
-        resolver_types = copy.deepcopy(glo.getResolverTypes())
 
-    parts = resolver_type.split('.')
-    # resolver is fully qualified
-    if len(parts) > 1:
-        if resolver_type in resolver_clazzes:
-            ret = resolver_clazzes.get(resolver_type)
-
-    # resolver is in abreviated form, we have to do a reverse lookup
-    elif resolver_type in resolver_types.values():
-        for k, v in resolver_types.iteritems():
-            if v == resolver_type:
-                ret = resolver_clazzes.get(k, None)
-                break
-    if ret is None:
-        pass
-    return ret
+    return resolver_clazzes.get(resolver_type, None)
 
 
 def get_resolver_types():

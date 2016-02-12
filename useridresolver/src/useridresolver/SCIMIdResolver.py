@@ -48,6 +48,7 @@ except Exception as ex:
 import json
 
 @resolver_registry.class_entry('useridresolver.SCIMIdResolver.IdResolver')
+@resolver_registry.class_entry('scimresolver')
 class IdResolver (UserIdResolver):
 
     @classmethod

@@ -383,12 +383,12 @@ def get_resolver_class_list():
     resolver classes being a dict of the following format:
 
     { 'class_identifier': <class resolver> }, e.g.
-    { 'useridresolvers.PasswdIdResolver.IdResolver : <class PasswdIdResolver> }
+    { 'useridresolver.PasswdIdResolver.IdResolver : <class PasswdIdResolver> }
 
     and the resolver_types having the format:
 
     { 'fully_qualified_import_path': 'class_type_identifier' }, e.g.
-    { 'useridresolvers.PasswdIdResolver.IdResolver : 'passwdresolver' }
+    { 'useridresolver.PasswdIdResolver.IdResolver : 'passwdresolver' }
 
     Both dictionaries are used as a type mapping of strings to
     classes.
@@ -408,13 +408,20 @@ def get_resolver_class_list():
             filtered_resolver_classes[cls_key] = cls_
 
     for cls_key, cls_ in filtered_resolver_classes.iteritems():
+
+        # FIXME: Hack to skip aliases when populating the resolver_types
+        # dict. Otherwise lib.resolvers fails on getResolverClassName.
+        # should be removed once the code working on top of resolver_types
+        # is refactored
+
+        if not cls_key.startswith('useridresolver.') or \
+           not cls_key.endswith('.IdResolver'):
+            continue
+
         if hasattr(cls_, 'getResolverClassType'):
             type_identifier = cls_.getResolverClassType()
         else:
-            # FIXME: remove "additional" semantics of
-            # resolver registry keys (only here for
-            # legacy support)
-            type_identifier = cls_key.split('.')[1]
+            type_identifier = cls_.__module__.split('.')[-1]
         resolver_types[cls_key] = type_identifier
 
     log.debug("[get_resolver_class_list] the resolver_classes dict: %r"
