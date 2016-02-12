@@ -1,3 +1,9 @@
+linotp-useridresolver (2.8.0.3+custom02-1) jessie; urgency=low
+
+  * SQLIdResolver: Add support for ASP.NET hashes
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 12 Feb 2016 14:27:43 +0100
+
 linotp-useridresolver (2.8.0.3-1) jessie; urgency=low
 
   * Replace phppass file by a dedicated method
