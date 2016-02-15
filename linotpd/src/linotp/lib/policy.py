@@ -27,9 +27,19 @@
 
 import logging
 
-import linotp.lib.token
+# for loading XML file
+import re
+import string
+
+from netaddr import IPAddress
+from netaddr import IPNetwork
+
+from configobj import ConfigObj
+
 from pylons.i18n.translation import _
 from pylons import request, config, tmpl_context as c
+
+#import linotp.lib.token
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import removeFromConfig
@@ -46,29 +56,20 @@ from linotp.lib.util import get_client
 
 from linotp.lib.error import ServerError, LinotpError
 
+
 from linotp.lib.compare import AttributeCompare
 from linotp.lib.compare import UserDomainCompare
 
-from netaddr import IPAddress
-from netaddr import IPNetwork
-
-from configobj import ConfigObj
-
-
-# for loading XML file
-import re
 # for generating random passwords
 from linotp.lib.crypt import urandom
-import string
 
 from linotp.lib.util import getParam, uniquify
+from linotp.lib.policy_forward import ForwardServerPolicy
 
 log = logging.getLogger(__name__)
 
-
 optional = True
 required = False
-
 
 REG_POLICY_C = config.get("linotpPolicy.pin_c", "[a-zA-Z]")
 REG_POLICY_N = config.get("linotpPolicy.pin_n", "[0-9]")
@@ -245,6 +246,11 @@ def getPolicyDefinitions(scope=""):
                         'against the UserIdResolver, if the user has no '
                         'tokens assigned.'
                 },
+            'forward_server': {
+                'type': 'str',
+                'desc': 'If set, the users authentication request will be '
+                        'forwarded to another linotp or radius server.'
+                },
             'passOnNoToken': {
                 'type': 'bool',
                 'desc': 'if the user has no token, the authentication request '
@@ -340,7 +346,7 @@ def getPolicyDefinitions(scope=""):
     ## now add generic policies, which every token should provide:
     ## - init<TT>
     ## - enroll<TT>, but only, if there is a rendering section
-
+    import linotp.lib.token
     token_type_list = linotp.lib.token.get_token_type_list()
 
     for ttype in token_type_list:
@@ -425,6 +431,8 @@ def setPolicy(param):
     # if there is a problem, we will raise an exception with a warning
     check_policy_impact(**param)
 
+    action = ForwardServerPolicy.prepare_forward(action)
+
     ret["action"] = storeConfig("Policy.%s.action" % name,
                                 action, "", "a policy definition")
     ret["scope"] = storeConfig("Policy.%s.scope" % name,
@@ -441,6 +449,7 @@ def setPolicy(param):
                                 active, "", "a policy definition")
 
     return ret
+
 
 
 def check_policy_impact(scope='', action='', active='True', client='',
@@ -1060,6 +1069,7 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
 
     # in case we got a serial
     if serial != "" and serial is not None:
+        import linotp.lib.token
         realms = linotp.lib.token.getTokenRealms(serial)
         log.debug("[checkAdminAuthorization] the token %r is contained "
                   "in the realms: %r" % (serial, realms))
@@ -1155,6 +1165,7 @@ def checkTokenNum(user=None, realm=None):
         if "" == user.login:
             user = None
 
+    import linotp.lib.token
     if user is None and realm is None:
         # No user and realm given, so we check all the tokens
         ret = True
@@ -1231,6 +1242,7 @@ def checkTokenAssigned(user):
     if user.login == "":
         return True
 
+    import linotp.lib.token
     Realms = getUserRealms(user)
 
     log.debug("[checkTokenAssigned] checking the already assigned tokens for"
@@ -1246,7 +1258,6 @@ def checkTokenAssigned(user):
             return True
 
         maxTokenAssigned = getPolicyActionValue(pol, "maxtoken")
-
         # get the tokens of the user
         tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
         # If there is a policy, where the tokennumber exceeds the tokens in
@@ -1344,6 +1355,7 @@ def get_auto_enrollment(user):
 
     return ret, token_typ
 
+
 def autoassignment_forward(user):
     '''
     this function checks the policy scope=enrollment, action=autoassignment
@@ -1419,6 +1431,7 @@ def getOTPPINEncrypt(serial=None, user=None):
     # do store as hashed value
     encrypt_pin = 0
     Realms = []
+    import linotp.lib.token
     if serial:
         Realms = linotp.lib.token.getTokenRealms(serial)
     elif user:
@@ -1655,6 +1668,7 @@ def checkPolicyPreSelfservice(method, param={}, authUser=None, user=None):
     :return: dictionary with the necessary results. These depend on
              the controller.
     '''
+    import linotp.lib.token
     ret = {}
     controller = 'selfservice'
     log.debug("[checkPolicyPre] entering controller %s" % controller)
@@ -1895,7 +1909,7 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
              the controller.
     '''
     ret = {}
-
+    import linotp.lib.token
     log.debug("[checkPolicyPre] entering controller %s" % controller)
     log.debug("[checkPolicyPre] entering method %s" % method)
 
@@ -2798,6 +2812,8 @@ def checkPolicyPost(controller, method, param=None, user=None):
     '''
     ret = {}
 
+    import linotp.lib.token
+
     if param is None:
         param = {}
 
@@ -3253,6 +3269,24 @@ def get_auth_passthru(user):
     return ret
 
 
+def get_auth_forward(user):
+    '''
+    returns the list of all forwarding servers
+    '''
+    client = get_client()
+
+    pol = get_client_policy(client, scope="authentication",
+                            action="forward_server", realm=user.realm,
+                            user=user.login, userObj=user,
+                            )
+    if not pol:
+        return None
+
+    servers = getPolicyActionValue(pol, "forward_server", is_string=True)
+
+    return servers
+
+
 def get_auth_passOnNoToken(user):
     '''
     returns True, if the user in this realm should be always authenticated
@@ -3457,6 +3491,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
     log.debug("[check_auth_tokentype] found these "
               "tokentypes: <%s>" % tokentypes)
 
+    import linotp.lib.token
     toks = linotp.lib.token.getTokens4UserOrSerial(None, serial)
     if len(toks) > 1:
         log.error("[check_auth_tokentype] multiple tokens with serial %s found"

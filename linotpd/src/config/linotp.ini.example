@@ -152,12 +152,14 @@ radius.nas_identifier = LinOTP
 [app:main]
 use = egg:LinOTP
 
-#service.manage = False
-#service.ocra = False
-#service.selfservice = False
-#service.validate = False
+# enable or disable services
+#service.manage = True
+#service.selfservice = True
+#service.validate = True
+#service.u2f = True
 #service.openid = False
-#linotpGetotp.active = True
+#service.ocra = False
+#linotpGetotp.active = False
 
 alembic.ini = %(here)s/alembic.ini
 #alembic.writeback = True

@@ -53,9 +53,6 @@ def make_map(global_conf, app_conf,):
     routeMap.connect('/error/{action}', controller='error')
     routeMap.connect('/error/{action}/{id}', controller='error')
 
-    # routeMap.connect('/{controller}/{action}')
-    # routeMap.connect('/{controller}/{action}/{id}')
-
     # check if we are in migration mode -
     # ! this will disable most other controllers !
     migrate = app_conf.get('service.migrate', 'False') == 'True'
@@ -64,8 +61,8 @@ def make_map(global_conf, app_conf,):
     # in case of selfservice, we route the default / to selfservice
     selfservice = app_conf.get('service.selfservice', 'True') == 'True'
     if selfservice and not migrate:
-        routeMap.connect(
-            '/selfservice/custom-style.css', controller='selfservice', action='custom_style')
+        routeMap.connect('/selfservice/custom-style.css',
+                         controller='selfservice', action='custom_style')
         routeMap.connect('/selfservice', controller='selfservice', action='index')
         routeMap.connect('/', controller='selfservice', action='index')
         for cont in ['selfservice', 'account']:
@@ -110,15 +107,16 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
-    # ocra
-    ocra = app_conf.get('service.ocra', 'True') == 'True'
+    # ocra support
+    ocra = app_conf.get('service.ocra', 'False') == 'True'
     if ocra and not migrate:
         routeMap.connect('/ocra', controller='ocra', action='checkstatus')
         for cont in ['ocra']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
-    openid = app_conf.get('service.openid', 'True') == 'True'
+    # openid support
+    openid = app_conf.get('service.openid', 'False') == 'True'
     if openid and not migrate:
         # the default openid will be the status
         routeMap.connect('/openid/', controller='openid', action='status')
@@ -126,8 +124,12 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
-    # linotpGetotp.active
-    getotp = global_conf.get('linotpGetotp.active', 'False') == 'True'
+    # controller to get otp values
+    # fallback for the getotp is the global linotpGetopt, but as all services
+    # are in the app section, the app section one should be prefered
+    getotp = (app_conf.get('service.getotp',
+                           global_conf.get('linotpGetotp.active', 'False'))
+              == 'True')
     if getotp and not migrate:
         for cont in ['gettoken']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
@@ -140,8 +142,8 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{realm}/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}' % cont, controller=cont)
 
-    # linotp.selfTest
-    self_test = global_conf.get('linotp.selfTest', 'True') == 'True'
+    # testing - for test setup: http sms provider callback
+    self_test = app_conf.get('service.testing', 'False') == 'True'
     if self_test and not migrate:
         for cont in ['testing']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)

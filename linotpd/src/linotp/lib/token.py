@@ -49,6 +49,7 @@ from sqlalchemy import func
 from pylons import tmpl_context as c
 from pylons.i18n.translation import _
 from pylons import config
+from pylons.configuration import config as env
 
 from linotp.lib.error import TokenAdminError
 from linotp.lib.error import UserError
@@ -80,6 +81,9 @@ from linotp.lib.realm import createDBRealm, getRealmObject
 from linotp.lib.realm import getDefaultRealm
 
 from linotp.lib.util import get_client
+
+from linotp.lib.policy import get_auth_forward
+from linotp.lib.policy_forward import ForwardServerPolicy
 
 log = logging.getLogger(__name__)
 
@@ -1265,11 +1269,13 @@ def checkUserPass(user, passw, options=None):
     serial = None
     resolverClass = None
     uid = None
+    user_exists = False
 
     if user is not None and (user.isEmpty() == False):
     # the upper layer will catch / at least should
         try:
             (uid, resolver, resolverClass) = getUserId(user)
+            user_exists = True
         except:
             passOnNoUser = "PassOnUserNotFound"
             passOn = getFromConfig(passOnNoUser, False)
@@ -1279,6 +1285,14 @@ def checkUserPass(user, passw, options=None):
             else:
                 c.audit['action_detail'] = "User not found"
                 return (False, opt)
+
+        # if we have an user, check if we forward the request to another server
+        if user_exists:
+            servers = get_auth_forward(user)
+            if servers:
+                res, opt = ForwardServerPolicy.do_request(servers, env,
+                                                          user, passw, options)
+                return res, opt
 
     tokenList = getTokens4UserOrSerial(user, serial)
 
@@ -1493,7 +1507,7 @@ class FinishTokens(object):
         :param validation_results: dict of the verification response
         :param user: the requesting user
         :param options: request options - additional parameters
-        :param audit_entry: audit_entry reference 
+        :param audit_entry: audit_entry reference
         """
 
         self.valid_tokens = valid_tokens
