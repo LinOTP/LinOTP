@@ -409,24 +409,24 @@ def deleteResolver(resolvername):
     return res
 
 
-
-
 # external in token.py user.py validate.py
-def getResolverObject(resolvername):
-    """
-    get the resolver instance from a resolver name spec
-    - either take the class from the request context
-    - or create one from the global object list + init with resolver config
-
-    :remark: the resolver object is preserved in the request context, so that
-              a resolver could preserve a connection durung a request
-
-    :param resolvername: the resolver string as from the token including
-                         the config as last part
-    :return: instance of the resolver with the loaded config
+def getResolverObject(resolver_spec):
 
     """
-    r_obj = None
+    get the resolver instance from a resolver specification.
+
+    :remark: internally this function uses the request context for caching.
+
+    :param resolver_spec: the resolver string as from the token including
+                          the config identifier.
+
+                          format:
+                          <resolver class identifier>.<config identifier>
+
+    :return: instance of the resolver with the loaded config (or None
+             if specification was invalid or didn't match a resolver)
+
+    """
 
     #  this patch is a bit hacky:
     # the normal request has a request context, where it retrieves
@@ -439,35 +439,38 @@ def getResolverObject(resolvername):
     resolvers_loaded = context.setdefault('resolvers_loaded', {})
 
     # port of the 2.6. resolver to 2.7
-    if resolvername[:len('useridresolveree.')] == 'useridresolveree.':
-        resolvername = "useridresolver.%s" % resolvername[len('useridreseolveree.') - 1:]
+    if resolver_spec.startswith('useridresolveree.'):
+        __, __, suffix = resolver_spec.partition('.')
+        resolver_spec = 'useridresolver.' + suffix
 
-
-    # test if there is already a resolver of this kind loaded
-    if resolvername in resolvers_loaded:
-        return resolvers_loaded.get(resolvername)
+    # test if the resolver is in the cache
+    if resolver_spec in resolvers_loaded:
+        return resolvers_loaded.get(resolver_spec)
 
     # no resolver - so instatiate one
     else:
-        parts = resolvername.split('.')
-        if len(parts) > 2:
-            re_name = '.'.join(parts[:-1])
-            r_obj_class = get_resolver_class(re_name)
 
-        if r_obj_class is None:
-            log.error("unknown resolver class %s " % resolvername)
-            return r_obj
+        cls_identifier, __, config_identifier = resolver_spec.rpartition('.')
 
-        # create the resolver instance and load the config
-        r_obj = r_obj_class()
-        conf = resolvername.split(".")[-1]
+        if not cls_identifier or not config_identifier:
+            log.error('Format error: resolver_spec must have the format '
+                      '<resolver_class_identifier>.<config_identifier>, but '
+                      'value was %s' % resolver_spec)
+            return None
 
-        if r_obj is not None:
-            config = getLinotpConfig()
-            r_obj.loadConfig(config, conf)
-            resolvers_loaded[resolvername] = r_obj
+        resolver_cls = get_resolver_class(cls_identifier)
 
-    return r_obj
+        if resolver_cls is None:
+            log.error('unknown resolver class: %s' % cls_identifier)
+            return None
+
+        resolver = resolver_cls()
+
+        config = getLinotpConfig()
+        resolver.loadConfig(config, config_identifier)
+        resolvers_loaded[resolver_spec] = resolver
+
+        return resolver
 
 # external lib/base.py
 def setupResolvers(config=None, cache_dir="/tmp"):
