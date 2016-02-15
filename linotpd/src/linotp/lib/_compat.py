@@ -38,5 +38,7 @@ win32 = sys.platform.startswith('win')
 
 if py3k:
     from threading import get_ident as get_thread_ident
+    str_ = str
 else:
     from thread import get_ident as get_thread_ident
+    str_ = unicode

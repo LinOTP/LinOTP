@@ -575,15 +575,16 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
     # unnecessar resolver lookup
     if user.realm:
         # default realm user
-        if user.realm == "" and user.conf == "":
+        if user.realm == "" and user.resolver_config_identifier == "":
             return _getDefaultRealm() in policies['realms']
-        if not user.realm and not user.conf:
+        if not user.realm and not user.resolver_config_identifier:
             return _getDefaultRealm() in policies['realms']
         # we got a realm:
         if user.realm != "":
             return user.realm.lower() in policies['realms']
-        if user.conf != "":
-            return user.conf.lower() in policies['resolvers']
+        if user.resolver_config_identifier != "":
+            lower_config_id = user.resolver_config_identifier.lower()
+            return lower_config_id in policies['resolvers']
 
     # catch all
     return False
@@ -652,7 +653,7 @@ def _checkTokenNum(user=None, realm=None):
 
         if user:
             log.debug("checking token num in realm: %s, resolver: %s" %
-                      (user.realm, user.conf))
+                      (user.realm, user.resolver_config_identifier))
             # 1. alle resolver aus dem Realm holen.
             # 2. fuer jeden Resolver die tNum holen.
             # 3. die Policy holen und gegen die tNum checken.
@@ -1439,12 +1440,14 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
         if not _checkTokenNum(user):
             log.warning("the admin >%s< is not allowed to assign "
                         "any more tokens for the realm %s(%s)"
-                        % (policies['admin'], user.realm, user.conf))
+                        % (policies['admin'], user.realm,
+                        user.resolver_config_identifier))
             raise PolicyException(_("The maximum allowed number of tokens "
                                   "for the realm %s (%s) was reached. You "
                                   "can not assign any more tokens. Check "
                                   "the policies.")
-                                  % (user.realm, user.conf))
+                                  % (user.realm,
+                                  user.resolver_config_identifier))
 
         # check the number of assigned tokens
         if not _checkTokenAssigned(user):
@@ -1542,10 +1545,12 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
                 not checkAdminAuthorization(policies, "", user)):
             log.warning("the admin >%s< is not allowed to list"
                         " users in realm %s(%s)!"
-                        % (policies['admin'], user.realm, user.conf))
+                        % (policies['admin'], user.realm,
+                           user.resolver_config_identifier))
             raise PolicyException(_("You do not have the administrative"
                                   " right to list users in realm %s(%s).")
-                                  % (user.realm, user.conf))
+                                  % (user.realm,
+                                  user.resolver_config_identifier))
 
     elif 'tokenowner' == method:
         policies = getAdminPolicies("tokenowner")
@@ -1554,10 +1559,12 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
                 not checkAdminAuthorization(policies, "", user)):
             log.warning("the admin >%s< is not allowed to get"
                         " the token owner in realm %s(%s)!"
-                        % (policies['admin'], user.realm, user.conf))
+                        % (policies['admin'], user.realm,
+                        user.resolver_config_identifier))
             raise PolicyException(_("You do not have the administrative"
                                   " right to get the token owner in realm"
-                                  " %s(%s).") % (user.realm, user.conf))
+                                  " %s(%s).") % (user.realm,
+                                  user.resolver_config_identifier))
 
     elif 'checkstatus' == method:
         policies = getAdminPolicies("checkstatus")
@@ -1566,11 +1573,13 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
                 checkAdminAuthorization(policies, "", user)):
             log.warning("the admin >%s< is not allowed to show status of token"
                         " challenges in realm %s(%s)!"
-                        % (policies['admin'], user.realm, user.conf))
+                        % (policies['admin'], user.realm,
+                        user.resolver_config_identifier))
             raise PolicyException(_("You do not have the administrative "
                                   "right to show status of token "
                                   "challenges in realm "
-                                  "%s(%s).") % (user.realm, user.conf))
+                                  "%s(%s).") % (user.realm,
+                                  user.resolver_config_identifier))
 
     elif 'tokenrealm' == method:
         log.debug("entering method %s" % method)

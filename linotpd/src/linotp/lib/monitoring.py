@@ -28,7 +28,7 @@ library for monitoring controller
 """
 
 import datetime
-from linotp.lib.resolver import splitResolver
+from linotp.lib.resolver import parse_resolver_spec
 
 from linotp.model import Token, Realm, TokenRealm
 from linotp.model import Config as config_model
@@ -289,12 +289,12 @@ class MonitorHandler(object):
         :return: dict with resolvernames as keys and number of users as value
         """
         realminfo = context.get('Config').getRealms().get(realm)
-        resolvers = realminfo.get('useridresolver', '')
+        resolver_specs = realminfo.get('useridresolver', '')
         realmdict = {}
 
-        for resolver in resolvers:
-            package, module, classs, conf = splitResolver(resolver)
-            realmdict[conf] = 0
+        for resolver_spec in resolver_specs:
+            __, config_identifier = parse_resolver_spec(resolver_spec)
+            realmdict[config_identifier] = 0
 
         user = getUserFromParam({'realm': realm}, optionalOrRequired=True)
         users_iters = iterate_users(getUserListIterators({'realm': realm}, user))

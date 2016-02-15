@@ -45,7 +45,7 @@ required = True
 optional = False
 
 
-__all__ = [ 'defineResolver', 'checkResolverType', 'splitResolver',
+__all__ = [ 'defineResolver', 'checkResolverType', 'parse_resolver_spec',
             'getResolverList', 'getResolverInfo', 'deleteResolver',
             'getResolverObject', 'initResolvers', 'closeResolvers',
             'setupResolvers'
@@ -155,15 +155,16 @@ class Resolver():
             val = self.data.get(d)
             typ = None
             desc = None
-            if self.types.has_key(d) == True:
+            if d in self.types:
                 typ = self.types.get(d)
 
-            if self.desc.has_key(d) == True:
+            if d in self.desc:
                 desc = self.desc.get(d)
 
             res = storeConfig(key, val, typ, desc)
 
         return res
+
 
 def defineResolver(params):
     """
@@ -243,29 +244,6 @@ def checkResolverType(resolver):
         ret = False
 
     return (ret, res)
-
-#### helper functions to retrieve information from the UserIDResolvers ###################
-def splitResolver(resolver):
-
-    reso = resolver.strip()
-    reso = reso.replace("\"", "")
-    try:
-        l = reso.split('.', 3)
-        package = l[0]
-
-        if package == 'useridresolveree':
-            package = 'useridresolver'
-
-        module = l[1]
-        class_ = l[2]
-        if len(l) == 3:
-            conf = ""
-        elif len(l) == 4:  # all the rest
-            conf = l[3]
-    except Exception as e:
-        log.exception("[splitResolver] split of resolver failed %s : %r " % (reso, e))
-        raise Exception("invalid resolver class specification" + reso)
-    return (package, module, class_, conf)
 
 # external system/getResolvers
 def getResolverList(filter_resolver_type=None):
@@ -450,7 +428,7 @@ def getResolverObject(resolver_spec):
     # no resolver - so instatiate one
     else:
 
-        cls_identifier, __, config_identifier = resolver_spec.rpartition('.')
+        cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if not cls_identifier or not config_identifier:
             log.error('Format error: resolver_spec must have the format '
@@ -586,6 +564,25 @@ def get_resolver_classConfig(claszzesType):
 
     return descriptor
 
+
+def parse_resolver_spec(resolver_spec):
+
+    """
+    expects a resolver specification and returns a tuple
+    containing the resolver class identifier and the config
+    identifier
+
+    :param resolver_spec: a resolver specification
+
+                          format:
+                          <resolver class identifier>.<config identifier>
+
+    :return: (cls_identifier, config_identifier)
+
+    """
+
+    cls_identifier, __, config_identifier = resolver_spec.rpartition('.')
+    return cls_identifier, config_identifier
 
 #eof###########################################################################
 

@@ -1698,7 +1698,7 @@ def get_token_owner(token):
     user = User()
     user.realm = realm
     user.login = userInfo.get('username')
-    user.conf = resolverClass
+    user.resolver_config_identifier = resolverClass
     if userInfo:
         user.info = userInfo
 

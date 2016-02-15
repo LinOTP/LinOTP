@@ -1575,7 +1575,7 @@ class AdminController(BaseController):
 
             if (len(user.realm) > 0):
                 up = up + 1
-            if (len(user.conf) > 0):
+            if (len(user.resolver_config_identifier) > 0):
                 up = up + 1
 
             # Here we need to list the users, that are only visible in the
