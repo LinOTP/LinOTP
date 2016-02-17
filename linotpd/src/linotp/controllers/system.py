@@ -59,10 +59,11 @@ from linotp.lib.util import get_client
 from linotp.lib.util import get_version_number
 
 from linotp.lib.resolver import defineResolver
-from linotp.lib.resolver import checkResolverType
+from linotp.lib.resolver import getResolverObject
 from linotp.lib.resolver import getResolverList
 from linotp.lib.resolver import getResolverInfo
 from linotp.lib.resolver import deleteResolver
+from linotp.lib.resolver import parse_resolver_spec
 
 from linotp.lib.error   import ParameterError
 
@@ -667,11 +668,11 @@ class SystemController(BaseController):
             realms = getRealms()
             for realm in realms:
                 info = realms.get(realm)
-                reso = info.get('useridresolver')
+                resolver_specs = info.get('useridresolver')
 
-                for idRes in reso:
-                    parts = idRes.split('.')
-                    if len(parts) == 4 and resolver == parts[3]:
+                for resolver_spec in resolver_specs:
+                    __, config_identifier = parse_resolver_spec(resolver_spec)
+                    if resolver == config_identifier:
                         fRealms.append(realm)
                         found = True
 
@@ -865,22 +866,27 @@ class SystemController(BaseController):
             log.info("[setRealm] setting a realm: %r" % param)
 
             realm = getParam(param, "realm", required)
-            resolvers = getParam(param, "resolvers", required)
+            resolver_specs_str = getParam(param, "resolvers", required)
+            resolver_specs = resolver_specs_str.split(',')
 
-            realm_resolvers = []
-            for resolver in resolvers.split(','):
-                # check resolver returns the correct resolver description
-                (res, realm_resolver) = checkResolverType(resolver)
-                if res == False:
-                    raise Exception("unknown resolver %r  or invalid resolver "
-                                    "class specification: %r "
-                                    % (resolver, realm_resolver))
-                realm_resolvers.append(realm_resolver)
+            valid_resolver_specs = []
+            for resolver_spec in resolver_specs:
 
-            resolvers = ",".join(realm_resolvers)
-            res = setRealm(realm, resolvers)
+                resolver_spec = resolver_spec.strip()
+                resolver_spec = resolver_spec.replace("\"", "")
+
+                # check if resolver exists
+                resolver = getResolverObject(resolver_spec)
+                if resolver is None:
+                    raise Exception('unknown resolver or invalid resolver '
+                                    'class specification: %r' % resolver_spec)
+                valid_resolver_specs.append(resolver_spec)
+
+            valid_resolver_specs_str = ",".join(valid_resolver_specs)
+            res = setRealm(realm, valid_resolver_specs_str)
             c.audit['success'] = res
-            c.audit['info'] = "realm: %r, resolvers: %r" % (realm, resolvers)
+            c.audit['info'] = 'realm: %r, resolvers: %r' % \
+                              (realm, valid_resolver_specs_str)
 
             Session.commit()
             return sendResult(response, res, 1)

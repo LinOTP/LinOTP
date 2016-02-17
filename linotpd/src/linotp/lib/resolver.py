@@ -27,6 +27,7 @@
 
 
 import logging
+import warnings
 import re
 import copy
 
@@ -45,7 +46,7 @@ required = True
 optional = False
 
 
-__all__ = [ 'defineResolver', 'checkResolverType', 'parse_resolver_spec',
+__all__ = [ 'defineResolver', 'parse_resolver_spec',
             'getResolverList', 'getResolverInfo', 'deleteResolver',
             'getResolverObject', 'initResolvers', 'closeResolvers',
             'setupResolvers'
@@ -192,58 +193,6 @@ def defineResolver(params):
 
     return res
 
-
-def checkResolverType(resolver):
-    """
-    check if a resolver of the given type exists
-
-    :param resolver: full qualified resolver name or optional with trailing
-        conf like: ``useridresolver.PasswdIdResolver.IdResolver.etc_resl``
-
-    :return: True or False
-    """
-    res = False
-    ret = False
-
-    # prepare
-    reso = resolver.strip()
-    reso = reso.replace("\"", "")
-
-    # the fully qualified resolver
-    if reso in context.get('resolver_clazzes'):
-        res = context.get('resolver_clazzes').get(reso)
-        ret = True
-    else:
-        # if the last argument is the configuration
-        pack = reso.split('.')
-        rtype = ".".join(pack[:-1])
-        conf = pack[-1]
-
-        # lookup, if there is a resolver definition
-        if rtype in context.get('resolver_types'):
-            res = "%s.%s" % (rtype, conf)
-            ret = True
-        # #
-        else:
-            # legacy support, where resolver is defined as
-            #    "useridresolver.passwdresolver.mrealm"
-            # so we only could rely only on the type definition e.g.
-            #  'passwdresolver' as part of the string
-            for res_id, res_type in context.get('resolver_types').iteritems():
-                if res_type in reso:
-                    res = "%s.%s" % (res_id, conf)
-                    ret = True
-                    break
-
-    #  is resolver defined in the linotp config
-    try:
-        getResolverObject(res)
-    except Exception as exx:
-        log.warning("Failed to setup resolver %r: %r" % (res, exx))
-        res = "%r" % exx
-        ret = False
-
-    return (ret, res)
 
 # external system/getResolvers
 def getResolverList(filter_resolver_type=None):
@@ -445,7 +394,15 @@ def getResolverObject(resolver_spec):
         resolver = resolver_cls()
 
         config = getLinotpConfig()
-        resolver.loadConfig(config, config_identifier)
+        try:
+            resolver.loadConfig(config, config_identifier)
+        except:
+            # FIXME: Except clause is too general. resolver
+            # exceptions in the useridresolver modules should
+            # have their own type, so we can filter here
+            log.error('resolver config loading failed for resolver with '
+                      'specification %s' % resolver_spec)
+            return None
         resolvers_loaded[resolver_spec] = resolver
 
         return resolver
@@ -458,13 +415,13 @@ def setupResolvers(config=None, cache_dir="/tmp"):
     """
     glo = getGlobalObject()
 
-    resolver_clazzes = copy.deepcopy(glo.getResolverClasses())
-    for resolver_clazz in resolver_clazzes.values():
-        if hasattr(resolver_clazz, 'setup'):
+    resolver_classes = copy.deepcopy(glo.getResolverClasses())
+    for resolver_cls in resolver_classes.values():
+        if hasattr(resolver_cls, 'setup'):
             try:
-                resolver_clazz.setup(config=config, cache_dir=cache_dir)
-            except Exception as exx:
-                log.exception("failed to call setup of %r" % resolver_clazz)
+                resolver_cls.setup(config=config, cache_dir=cache_dir)
+            except:
+                log.exception("failed to call setup of %r" % resolver_cls)
 
     return
 
@@ -477,10 +434,10 @@ def initResolvers():
     try:
         glo = getGlobalObject()
 
-        resolver_clazzes = copy.deepcopy(glo.getResolverClasses())
+        resolver_classes = copy.deepcopy(glo.getResolverClasses())
         resolver_types = copy.deepcopy(glo.getResolverTypes())
 
-        context['resolver_clazzes'] = resolver_clazzes
+        context['resolver_classes'] = resolver_classes
         context['resolver_types'] = resolver_types
         # dict of all resolvers, which are instatiated during the request
         context['resolvers_loaded'] = {}
@@ -515,7 +472,7 @@ def getResolverClassName(resolver_type, resolver_name):
 
 
 # internal functions
-def get_resolver_class(resolver_type):
+def get_resolver_class(cls_identifier):
     '''
     return the class object for a resolver type
     :param resolver_type: string specifying the resolver
@@ -531,13 +488,12 @@ def get_resolver_class(resolver_type):
     # The solution is, to deal with local references, either to the
     # global context or to local data
 
-    try:
-        resolver_clazzes = context.resolver_clazzes
-    except Exception as exx:
+    resolver_classes = context.get('resolver_classes')
+    if resolver_classes is None:
         glo = getGlobalObject()
-        resolver_clazzes = copy.deepcopy(glo.getResolverClasses())
+        resolver_classes = copy.deepcopy(glo.getResolverClasses())
 
-    return resolver_clazzes.get(resolver_type, None)
+    return resolver_classes.get(cls_identifier)
 
 
 def get_resolver_types():
