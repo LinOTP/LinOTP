@@ -298,6 +298,7 @@ def _check_hash_type(password, hash_type, hash_value):
     return res
 
 @resolver_registry.class_entry('useridresolver.SQLIdResolver.IdResolver')
+@resolver_registry.class_entry('useridresolver.sqlresolver')
 @resolver_registry.class_entry('sqlresolver')
 class IdResolver (UserIdResolver):
 

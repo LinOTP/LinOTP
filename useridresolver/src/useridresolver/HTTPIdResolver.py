@@ -131,6 +131,7 @@ def urllib_request(url, parameter,
 
 
 @resolver_registry.class_entry('useridresolver.HTTPIdResolver.IdResolver')
+@resolver_registry.class_entry('useridresolver.httpresolver')
 @resolver_registry.class_entry('httpresolver')
 class IdResolver (UserIdResolver):
 
