@@ -373,7 +373,7 @@ class ManageController(BaseController):
                             tok['LinOtp.CountWindow'],
                             tok['LinOtp.SyncWindow'],
                             tok['LinOtp.Userid'],
-                            tok['LinOtp.IdResolver'], ]
+                            tok['LinOtp.IdResClass'], ]
                     }
                     )
 
