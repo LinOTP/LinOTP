@@ -73,7 +73,7 @@ setup(
     install_requires=[
         "Pylons>=0.9.7",
         "WebOb<1.4",
-        "SQLAlchemy>=0.6,<=0.9.99",
+        "SQLAlchemy>=0.6",
         "docutils>=0.4",
         "simplejson>=2.0",
         "pycrypto>=1.0",
@@ -86,7 +86,6 @@ setup(
         "httplib2",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
-        "sqlalchemy-migrate",
     ],
     scripts=[
         'tools/linotp-convert-token',
