@@ -523,7 +523,8 @@ scope = gettoken
 
         response = self.app.get(url(controller='system', action='setRealm'),
                                 params={'realm': 'realm1',
-                                        'resolvers': 'linotp.passwdresolver.fileName.reso1, linotp.passwdresolver.fileName.reso2'})
+                                        'resolvers': 'passwdresolver.reso1, '
+                                                     'passwdresolver.reso2'})
         print response
         assert '"value": true' in response
 
