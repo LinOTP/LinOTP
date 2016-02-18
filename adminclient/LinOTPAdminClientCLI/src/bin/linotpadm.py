@@ -99,6 +99,7 @@ def usage():
         --yubimode=<OATH or YUBICO or STATIC>
         --yubislot=<1 or 2>
         --yubiCR                    : programm the Yubikey in challenge Response mode (TOTP, 60seconds)
+        --yubinoenter               : supressing the press of the Enter key after generating the OTP
     etokenng_mass_enroll [--label=TokenName]
     assigntoken:    --user --serial
     unassigntoken:  --serial
@@ -190,6 +191,7 @@ def yubi_mass_enroll(lotpc,
                      yubi_prefix,
                      yubi_prefix_random,
                      yubi_cr,
+                     yubi_enter,
                      ):
     '''
     Do the Yubikey mass enrollment
@@ -202,6 +204,7 @@ def yubi_mass_enroll(lotpc,
     :param yubi_prefix: the public prefix
     :param yubi_prefix_random: the rendom prefix
     :param yubi_cr: boolean - uses as TOTP token
+    :param yubi_enter: boolean - "enter"/"carriage return" at the end of the OTP
     '''
     yp = YubikeyPlug()
     while 0 == 0:
@@ -221,6 +224,7 @@ def yubi_mass_enroll(lotpc,
             ykparams['digits'] = int(proc_params['otplen'])
 
         otpkey, serial = enrollYubikey(debug=False,
+                                        APPEND_CR=yubi_enter,
                                         prefix_serial=yubi_prefix_serial,
                                         fixed_string=yubi_prefix,
                                         len_fixed_string=yubi_prefix_random,
@@ -384,6 +388,7 @@ def main():
               "yubi_mode" : YUBI_OATH_MODE,
               "yubi_slot" : 1,
               "yubi_prefix_serial" : False,
+              "yubi_enter" : True,
               "yubi_cr" : False,
               "realm": None,
               "csv" : False,
@@ -406,7 +411,7 @@ def main():
                 'module=',
                 'label=', 'authtype=',
                 'yubiprefix=', 'yubiprefixrandom=', 'yubimode=', 'yubislot=',
-                'yubiprefixserial', 'yubiCR',
+                'yubiprefixserial', 'yubiCR', 'yubinoenter',
                 'password=', 'csv', 'export_fields=',
                 'automate=', 'realm='] + file_opts + ldap_opts)
 
@@ -521,7 +526,8 @@ def main():
             config["yubi_prefix_serial"] = True
         elif opt in ('--yubiCR'):
             config["yubi_cr"] = True
-
+        elif opt in ('--yubinoenter'):
+            config["yubi_enter"] = False
         elif opt in ('--csv'):
             config["csv_format"] = True
         elif opt in ('--export_fields='):
@@ -649,6 +655,7 @@ def main():
                          config.get("yubi_prefix"),
                          config.get("yubi_prefix_random"),
                          config.get("yubi_cr"),
+                         config.get("yubi_enter")
                          )
 
 
