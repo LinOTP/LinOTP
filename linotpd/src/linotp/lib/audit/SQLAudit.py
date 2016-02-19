@@ -38,9 +38,6 @@ uses a public/private key for signing the log entries
 import datetime
 from sqlalchemy import schema, types, orm, and_, or_, asc, desc
 
-## TODO: the wildcard import is bad!!
-from migrate import *
-
 from M2Crypto import EVP, RSA
 from binascii import hexlify
 from binascii import unhexlify
@@ -49,7 +46,7 @@ from linotp.lib.audit.base import AuditBase
 from pylons import config
 
 import logging.config
-import traceback
+
 
 import linotp
 
@@ -62,6 +59,7 @@ if ini_file is not None:
 log = logging.getLogger(__name__)
 
 metadata = schema.MetaData()
+
 
 def now():
     u_now = u"%s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -96,6 +94,7 @@ audit_table = schema.Table(audit_table_name, metadata,
 AUDIT_ENCODE = ["action", "serial", "success", "user", "realm", "tokentype",
                 "administrator", "action_detail", "info", "linotp_server",
                 "client", "log_level"]
+
 
 class AuditTable(object):
 
@@ -186,10 +185,13 @@ class AuditTable(object):
             field_len = self._get_field_len(name)
             encoded_value = linotp.lib.crypt.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
-                log.warning("truncating audit data: [audit.%s] %s" % (name, value))
-                trunc_as_err = config.get("linotpAudit.error_on_truncation", False) or False
+                log.warning("truncating audit data: [audit.%s] %s"
+                            % (name, value))
+                trunc_as_err = config.get("linotpAudit.error_on_truncation",
+                                          False) or False
                 if trunc_as_err != False:
-                    raise Exception("truncating audit data: [audit.%s] %s" % (name, value))
+                    raise Exception("truncating audit data: [audit.%s] %s"
+                                    % (name, value))
 
                 ## during the encoding the value might expand -
                 ## so we take this additional length into account
@@ -223,8 +225,43 @@ class AuditTable(object):
 
 orm.mapper(AuditTable, audit_table)
 
-########################################################################################
 
+# replace sqlalchemy-migrate by the ability to ad a column
+def add_column(engine, table, column):
+    """
+    small helper to add a column by calling a native 'ALTER TABLE' to
+    replace the need for sqlalchemy-migrate
+
+    from:
+    http://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
+
+    :param engine: the running sqlalchemy
+    :param table: in which table should this column be added
+    :param column: the sqlalchemy definition of a column
+
+    :return: boolean of success or not
+    """
+
+    result = False
+
+    table_name = table.description
+    column_name = column.compile(dialect=engine.dialect)
+    column_type = column.type.compile(engine.dialect)
+
+    try:
+        engine.execute('ALTER TABLE %s ADD COLUMN %s %s'
+                                % (table_name, column_name, column_type))
+        result = True
+
+    except Exception as exx:
+        # Obviously we already migrated the database.
+        log.info("[__init__] Error during database migration: %r" % exx)
+        result = False
+
+    return result
+
+
+###############################################################################
 class Audit(AuditBase):
     """
     Audit Implementation to the generic audit interface
@@ -268,14 +305,11 @@ class Audit(AuditBase):
         self.VerifyEVP.reset_context(md='sha256')
         self.VerifyEVP.assign_rsa(self.PublicKey)
 
-        try:
-            # create the column "client"
-            column = schema.Column("client", types.Unicode(80))
-            column.create(audit_table)
-        except Exception as exx:
-            # Obviously we already migrated the database.
-            log.info("[__init__] Error during database migration: %r" % exx)
+        # create the column "client"
+        column = schema.Column("client", types.Unicode(80))
+        add_column(self.engine, audit_table, column)
 
+        return
 
     def _attr_to_dict(self, audit_line):
 
@@ -318,7 +352,6 @@ class Audit(AuditBase):
         signature = key.sign_final()
         log.debug("[_sign] signature : %s" % hexlify(signature))
         return hexlify(signature)
-
 
     def _verify(self, auditline, signature):
         '''
@@ -401,7 +434,6 @@ class Audit(AuditBase):
         self.session.merge(at)
         self.session.flush()
 
-
     def initialize_log(self, param):
         '''
         This method initialized the log state.
@@ -416,7 +448,6 @@ class Audit(AuditBase):
         But maybe it should only be read from linotp.ini?
         '''
         pass
-
 
     def _buildCondition(self, param, AND):
         '''
@@ -493,7 +524,6 @@ class Audit(AuditBase):
             line['sig_check'] = "OK"
         else:
             line['sig_check'] = "FAIL"
-
 
         return line
 
@@ -600,8 +630,6 @@ class Audit(AuditBase):
         result = self.session.execute(audit_q.statement)
         return result
 
-
-
     def getTotal(self, param, AND=True, display_error=True):
         '''
         This method returns the total number of audit entries in
@@ -617,13 +645,15 @@ class Audit(AuditBase):
         log.debug("[getTotal] count=%s " % str(c))
         return c
 
+
 def getAsString(data):
     '''
     We need to distinguish, if this is an entry after the adding the
     client entry or before. Otherwise the old signatures will break!
     '''
 
-    s = "number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s, admin=%s, %s, %s, server=%s, %s, %s" % (
+    s = ("number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s,"
+         " admin=%s, %s, %s, server=%s, %s, %s") % (
                 str(data.get('id')), str(data.get('timestamp')),
                 data.get('action'), str(data.get('success')),
                 data.get('serial'), data.get('tokentype'),

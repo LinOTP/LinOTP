@@ -8,7 +8,7 @@ Index: src/setup.py
          "Pylons>=0.9.7",
 -        "WebOb<1.4",
 +        "WebOb",
-         "SQLAlchemy>=0.6,<=0.9.99",
+         "SQLAlchemy>=0.6",
          "docutils>=0.4",
          "simplejson>=2.0",
 Index: src/debian/control
@@ -18,7 +18,7 @@ Index: src/debian/control
 @@ -14,7 +14,7 @@ Depends: ${misc:Depends}, ${python:Depen
   linotp-useridresolver (>=2.7~)
  Pre-Depends: python-simplejson, python-crypto, python-docutils,
-  python-sqlalchemy (>=0.6), python-sqlalchemy (<=0.9.99),
+  python-sqlalchemy (>=0.6), python-sqlalchemy,
 - python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob (<1.4),
 + python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob,
   python-mako, python-decorator, python-formencode, python-pastescript,
