@@ -1,8 +1,8 @@
-linotp-smsprovider (2.8.1~rc0-1) jessie; urgency=low
+linotp-smsprovider (2.8.1~rc1-1) jessie; urgency=low
 
   * Add support for SMPP SMS Provider
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 15 Feb 2016 17:31:28 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 19 Feb 2016 11:09:49 +0100
 
 linotp-smsprovider (2.8-1) jessie; urgency=low
 
