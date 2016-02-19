@@ -62,7 +62,7 @@ the simple webui which come with linotp
 # indirectly) import any module that might not yet be installed when installing
 # LinOTP.
 
-__copyright__ = "2010 - 2016 LSE Leading Security Experts GmbH GmbH"
+__copyright__ = "2010 - 2016 LSE Leading Security Experts GmbH"
 __product__ = "LinOTP"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
