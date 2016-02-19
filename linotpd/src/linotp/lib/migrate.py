@@ -40,13 +40,16 @@ from hmac import HMAC
 
 from Crypto.Cipher import AES
 
-
 from linotp.model.meta import Session
 from linotp.model import Token as model_token
 from linotp.model import Config as model_config
 
 from linotp.lib.config  import getFromConfig
 from linotp.lib.config  import  _storeConfigDB
+
+
+class DecryptionError(Exception):
+    pass
 
 
 class MigrationHandler(object):
@@ -299,7 +302,7 @@ class Crypter(object):
         v_mac = self.mac(iv, crypted_data, just_mac)
 
         if encrypted_data["mac"] != binascii.hexlify(v_mac):
-            raise Exception("Data mismatch detected!")
+            raise DecryptionError("Data mismatch detected!")
 
         cipher = AES.new(self.enc_key, AES.MODE_CBC, iv)
 
