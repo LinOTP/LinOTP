@@ -76,6 +76,10 @@ class SMPPSMSProvider(ISMSProvider):
         if not self.config:
             raise Exception("missing configuration!")
 
+        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
+        if msisdn:
+            phone = self._get_msisdn_phonenumber(phone)
+
         client = smpplib.client.Client(self.server, self.port)
         client.connect()
         log.debug("connected to %r:%r" % (self.server, self.port))
