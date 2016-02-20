@@ -112,6 +112,7 @@ class TokenClass(object):
         self.invalid_token = []
         self.valid_token = []
         self.related_challenges = []
+        self.auth_detail = {}
 
     def setType(self, typ):
         typ = u'' + typ
@@ -234,6 +235,10 @@ class TokenClass(object):
             if pin_match is True:
                 otp_counter = check_otp(self, otpval, options=options)
 
+        # for special token that have no otp like passwordtoken
+        if not self.auth_detail and pin_match is True and otp_counter == 0:
+            self.auth_detail = {'auth_info': [{'pin_length': len(passw)}]}
+
         return (pin_match, otp_counter, reply)
 
     # challenge interfaces starts here
@@ -353,7 +358,7 @@ class TokenClass(object):
             c_start_time = challenge.get('timestamp')
             c_now = datetime.datetime.now()
             if (c_now < c_start_time + datetime.timedelta(seconds=validity)
-                and c_now > c_start_time):
+                    and c_now > c_start_time):
                 ret = True
 
         return ret
@@ -549,7 +554,7 @@ class TokenClass(object):
         valid_challenges = []
 
         if (options is not None and
-                    "state" in options or "transactionid" in options):
+                "state" in options or "transactionid" in options):
             state = options.get('state', options.get('transactionid'))
 
             challenges = Challenges.lookup_challenges(
@@ -620,7 +625,7 @@ class TokenClass(object):
             if '.' in del_challenge.transid:
                 tran_id = del_challenge.transid.split('.')[0]
                 related_challenges = Challenges.lookup_challenges(
-                                                            transid=tran_id)
+                    transid=tran_id)
                 self.related_challenges.extend(related_challenges)
 
         Challenges.delete_challenges(serial=self.getSerial(),
@@ -1315,7 +1320,7 @@ class TokenClass(object):
 
         if resetCounter == True:
             if (self.token.LinOtpFailCount < self.token.LinOtpMaxFail and
-                self.token.LinOtpIsactive == True):
+                    self.token.LinOtpIsactive == True):
                 self.token.LinOtpFailCount = 0
 
         try:
@@ -1344,12 +1349,19 @@ class TokenClass(object):
         except ValueError:
             otplen = 6
 
+        auth_info = []
         if getFromConfig("PrependPin") == "True":
             pin = passw[0:-otplen]
             otpval = passw[-otplen:]
+            auth_info.append({'pin_length': len(pin)})
+            auth_info.append({'otp_length': len(otpval)})
         else:
             pin = passw[otplen:]
             otpval = passw[0:otplen]
+            auth_info.append({'otp_length': len(otpval)})
+            auth_info.append({'pin_length': len(pin)})
+
+        self.auth_detail['auth_detail'] = auth_info
 
         return pin, otpval
 
@@ -1434,6 +1446,10 @@ class TokenClass(object):
             else:
                 ldict[key] = "%r" % val
         return ldict
+
+    def getAuthDetail(self):
+
+        return self.auth_detail
 
     def getInitDetail(self, params, user=None):
         '''
@@ -1559,10 +1575,10 @@ class OcraTokenClass(TokenClass):
                                 % (user, serial))
             helper_param['serial'] = serial
             helper_param['activationcode'] = \
-                        normalize_activation_code(activationcode)
+                normalize_activation_code(activationcode)
 
         if ocrasuite is None:
-            if sharedsecret is not None or  activationcode is not None:
+            if sharedsecret is not None or activationcode is not None:
                 ocrasuite = getFromConfig("QrOcraDefaultSuite",
                                           'OCRA-1:HOTP-SHA256-6:C-QA64')
             else:
@@ -1905,7 +1921,6 @@ class OcraTokenClass(TokenClass):
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
-
         if not data:
             typ = 'random'
 
@@ -2041,7 +2056,7 @@ class OcraTokenClass(TokenClass):
                 ocraPin = ''
 
         timeShift = 0
-        if  ocraSuite.T is not None:
+        if ocraSuite.T is not None:
             defTimeWindow = int(getFromConfig("ocra.timeWindow", 180))
             window = (int(self.getFromTokenInfo('timeWindow', defTimeWindow))
                       / ocraSuite.T)
@@ -2050,7 +2065,7 @@ class OcraTokenClass(TokenClass):
 
         if options is None:
             challenges = OcraTokenClass.getTransactions4serial(serial,
-                                                            currentOnly=True)
+                                                               currentOnly=True)
 
         elif options is not None:
             if type(options).__name__ != 'dict':
@@ -2072,7 +2087,7 @@ class OcraTokenClass(TokenClass):
             # the open challenges by serial (s.o.)
             if len(challenges) == 0:
                 challenges = OcraTokenClass.getTransactions4serial(serial,
-                                                            currentOnly=True)
+                                                                   currentOnly=True)
 
         if len(challenges) == 0:
             #  verify that there has already been a challenge
@@ -2156,7 +2171,7 @@ class OcraTokenClass(TokenClass):
 
         counter = self.token.getOtpCounter()
         syncWindow = self.token.getSyncWindow()
-        if  ocraSuite.T is not None:
+        if ocraSuite.T is not None:
             syncWindow = syncWindow / 10
 
         # set the ocra token pin
@@ -2170,7 +2185,7 @@ class OcraTokenClass(TokenClass):
                 ocraPin = ''
 
         timeShift = 0
-        if  ocraSuite.T is not None:
+        if ocraSuite.T is not None:
             timeShift = int(self.getFromTokenInfo("timeShift", 0))
 
         #timeStepping    = int(ocraSuite.T)
@@ -2415,7 +2430,7 @@ class OcraTokenClass(TokenClass):
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
         syncWindow = self.token.getSyncWindow()
-        if  ocraSuite.T is not None:
+        if ocraSuite.T is not None:
             syncWindow = syncWindow / 10
 
         counter = self.token.getOtpCounter()
@@ -2431,7 +2446,7 @@ class OcraTokenClass(TokenClass):
                 ocraPin = ''
 
         timeShift = 0
-        if  ocraSuite.T is not None:
+        if ocraSuite.T is not None:
             timeShift = int(self.getFromTokenInfo("timeShift", 0))
 
         try:
@@ -2455,7 +2470,7 @@ class OcraTokenClass(TokenClass):
                             self.setOtpCount(count_2)
                             ret = True
 
-                    if  ocraSuite.T is not None:
+                    if ocraSuite.T is not None:
                         if count_1 - count_2 <= ocraSuite.T * 2:
                             #  callculate the timeshift
                             date = datetime.datetime.fromtimestamp(count_2)
@@ -2551,8 +2566,8 @@ class OcraTokenClass(TokenClass):
                 delta = datetime.timedelta(days=1)
 
         ocraChallenges = Session.query(OcraChallenge).filter(
-                            OcraChallenge.timestamp < datetime.datetime.now()
-                            - delta)
+            OcraChallenge.timestamp < datetime.datetime.now()
+            - delta)
 
         for ocraChallenge in ocraChallenges:
             log.warning("[OcraToken:timeoutJanitor] - dropping outdated"
@@ -2578,7 +2593,7 @@ class OcraTokenClass(TokenClass):
         maxRequests = int(getFromConfig("OcraMaxChallengeRequests", '3'))
 
         ocraChallenges = Session.query(OcraChallenge).filter(
-                            OcraChallenge.received_count >= maxRequests)
+            OcraChallenge.received_count >= maxRequests)
 
         for ocraChallenge in ocraChallenges:
             log.warning("[OcraToken:timeoutJanitor] - dropping outdated"
@@ -2620,7 +2635,8 @@ class OcraTokenClass(TokenClass):
             ones = 3
 
         if transId is not None:
-            challenges = Session.query(OcraChallenge).filter(OcraChallenge.transid == u'' + transId)
+            challenges = Session.query(OcraChallenge).filter(
+                OcraChallenge.transid == u'' + transId)
             if challenges is None:
                 log.info('[OcraTokrenClass:maxChallengeJanitor] no'
                          ' ocraChallenge found for tranid %r' % (transId))
@@ -2635,8 +2651,8 @@ class OcraTokenClass(TokenClass):
             return
 
         challenges = Session.query(OcraChallenge).\
-                        filter(OcraChallenge.tokenserial == u'' + serial)\
-                        .order_by(desc(OcraChallenge.id))
+            filter(OcraChallenge.tokenserial == u'' + serial)\
+            .order_by(desc(OcraChallenge.id))
 
         lastIds = set()
         for challenge in challenges:
@@ -2676,7 +2692,7 @@ class OcraTokenClass(TokenClass):
 
         if transId is not None:
             challenges = Session.query(OcraChallenge).filter(
-                                        OcraChallenge.transid == u'' + transId)
+                OcraChallenge.transid == u'' + transId)
 
         if challenges is None:
             log.info('no ocraChallenge found for tranid %r' % (transId))
@@ -2767,20 +2783,20 @@ class OcraTokenClass(TokenClass):
 
         if otpkey != None:
             response_detail["otpkey"] = {
-                        "order": '1',
-                        "description": _("OTP seed"),
-                        "value": "seed://%s" % otpkey,
-                        "img": create_img(otpkey, width=200),
-                        }
+                "order": '1',
+                "description": _("OTP seed"),
+                "value": "seed://%s" % otpkey,
+                "img": create_img(otpkey, width=200),
+            }
 
         ocra_url = info.get('app_import')
 
         response_detail["ocraurl"] = {
-                    "order": '0',
-                    "description": _("URL for OCRA token"),
-                    "value": ocra_url,
-                    "img": create_img(ocra_url, width=250),
-                   }
+            "order": '0',
+            "description": _("URL for OCRA token"),
+            "value": ocra_url,
+            "img": create_img(ocra_url, width=250),
+        }
 
         return response_detail
 

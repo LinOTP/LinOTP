@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 
 
 class FinishTokens(object):
+
     def __init__(self, valid_tokens, challenge_tokens, pin_matching_tokens,
                  invalid_tokens, validation_results, user, options,
                  audit_entry=None):
@@ -141,7 +142,12 @@ class FinishTokens(object):
             if token.getFromTokenInfo('count_auth_success_max', default=None):
                 auth_count = token.get_count_auth_success()
                 token.set_count_auth_success(auth_count + 1)
-            return (True, None, action_detail)
+
+            detail = None
+            auth_info = self.options.get('auth_info', 'False')
+            if auth_info.lower() == "true":
+                detail = token.getAuthDetail()
+            return (True, detail, action_detail)
 
         else:
             # we have to set the matching counter to prevent replay one one
@@ -172,7 +178,7 @@ class FinishTokens(object):
         if len(challenge_tokens) == 1:
             challenge_token = challenge_tokens[0]
             _res, reply = Challenges.create_challenge(
-                                challenge_token, options=options)
+                challenge_token, options=options)
             return (False, reply, action_detail)
 
         # processing of multiple challenges
@@ -202,7 +208,8 @@ class FinishTokens(object):
                 )
                 transactionid = reply.get('transactionid').rsplit('.')[0]
 
-                # add token type and serial to ease the type specific processing
+                # add token type and serial to ease the type specific
+                # processing
                 reply['linotp_tokentype'] = challenge_token.type
                 reply['linotp_tokenserial'] = challenge_token.getSerial()
                 key = challenge_token.getSerial()

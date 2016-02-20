@@ -31,12 +31,12 @@ import logging
 import traceback
 import binascii
 
-from linotp.lib.util    import getParam
+from linotp.lib.util import getParam
 
 optional = True
 required = False
 
-## for update, we require the TokenClass
+# for update, we require the TokenClass
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokens.remotetoken import RemoteTokenClass
 
@@ -53,6 +53,8 @@ from pylons.configuration import config as env
 VOID_RADIUS_SECRET = "voidRadiusSecret"
 
 ###############################################
+
+
 class RadiusTokenClass(RemoteTokenClass):
 
     def __init__(self, aToken):
@@ -91,34 +93,34 @@ class RadiusTokenClass(RemoteTokenClass):
                   (key, ret))
 
         res = {
-               'type'           : 'radius',
-               'title'          : 'RADIUS Token',
-               'description'    : ('RADIUS token to forward the authentication request to another RADIUS server'),
+            'type': 'radius',
+            'title': 'RADIUS Token',
+            'description': ('RADIUS token to forward the authentication request to another RADIUS server'),
 
-               'init'         : {'page' : {'html'      : 'radiustoken.mako',
-                                            'scope'      : 'enroll', },
-                                   'title'  : {'html'      : 'radiustoken.mako',
-                                             'scope'     : 'enroll.title', },
-                                   },
+            'init': {'page': {'html': 'radiustoken.mako',
+                              'scope': 'enroll', },
+                     'title': {'html': 'radiustoken.mako',
+                               'scope': 'enroll.title', },
+                     },
 
-               'config'        : { 'page' : {'html'      : 'radiustoken.mako',
-                                            'scope'      : 'config', },
-                                   'title'  : {'html'      : 'radiustoken.mako',
-                                             'scope'     : 'config.title', },
-                                 },
+            'config': {'page': {'html': 'radiustoken.mako',
+                                'scope': 'config', },
+                       'title': {'html': 'radiustoken.mako',
+                                 'scope': 'config.title', },
+                       },
 
-               'selfservice'   :  {},
-               'policy' : {},
-               }
+            'selfservice':  {},
+            'policy': {},
+        }
 
         if key is not None and res.has_key(key):
             ret = res.get(key)
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
+        log.debug(
+            "[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
-
 
     def update(self, param):
 
@@ -141,7 +143,6 @@ class RadiusTokenClass(RemoteTokenClass):
 
         if self.radiusSecret == VOID_RADIUS_SECRET:
             log.warning("Usage of default radius secret is not recomended!!")
-
 
         TokenClass.update(self, param)
         # We need to write the secret!
@@ -206,7 +207,8 @@ class RadiusTokenClass(RemoteTokenClass):
             pin = ""
             otpval = passw
 
-        log.debug("[splitPinPass] [radiustoken] returning (len:%s) (len:%s)" % (len(pin), len(otpval)))
+        log.debug("[splitPinPass] [radiustoken] returning (len:%s) (len:%s)" % (
+            len(pin), len(otpval)))
         return pin, otpval
 
     def do_request(self, anOtpVal, transactionid=None, user=None):
@@ -229,7 +231,7 @@ class RadiusTokenClass(RemoteTokenClass):
         if radiusSecret == VOID_RADIUS_SECRET:
             log.warning("Usage of default radius secret is not recomended!!")
 
-        ## here we also need to check for radius.user
+        # here we also need to check for radius.user
         log.debug("[do_request] checking OTP len:%s on radius server: %s,"
                   "  user: %s" % (len(anOtpVal), radiusServer, radiusUser))
 
@@ -255,9 +257,9 @@ class RadiusTokenClass(RemoteTokenClass):
                       (r_server, r_authport, radiusSecret))
 
             srv = Client(server=r_server,
-                       authport=r_authport,
-                       secret=radiusSecret,
-                       dict=Dictionary(r_dict))
+                         authport=r_authport,
+                         secret=radiusSecret,
+                         dict=Dictionary(r_dict))
 
             #log.debug("[checkOTP [RadiusToken] building Request packet")
             req = srv.CreateAuthPacket(code=pyrad.packet.AccessRequest,
@@ -270,7 +272,7 @@ class RadiusTokenClass(RemoteTokenClass):
                 req["State"] = str(transactionid)
 
             #log.debug("[checkOTP [RadiusToken] sending request")
-            #log.debug(req)
+            # log.debug(req)
             response = srv.SendPacket(req)
 
             if response.code == pyrad.packet.AccessChallenge:
@@ -279,7 +281,7 @@ class RadiusTokenClass(RemoteTokenClass):
                     opt[attr] = response[attr]
                 res = False
                 log.debug("challenge returned %r " % opt)
-                ## now we map this to a linotp challenge
+                # now we map this to a linotp challenge
                 if "State" in opt:
                     reply["transactionid"] = opt["State"][0]
 
@@ -302,7 +304,7 @@ class RadiusTokenClass(RemoteTokenClass):
                 res = False
 
         except Exception as ex:
-            log.exception("[do_request] [RadiusToken] Error contacting radius Server: %r" % (ex))
+            log.exception(
+                "[do_request] [RadiusToken] Error contacting radius Server: %r" % (ex))
 
         return (res, otp_count, reply)
-

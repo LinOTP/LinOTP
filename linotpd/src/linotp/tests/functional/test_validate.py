@@ -27,6 +27,7 @@
 
 """ """
 
+import httplib2
 import time
 import hmac
 import logging
@@ -34,6 +35,11 @@ import binascii
 import struct
 import hashlib
 import sys
+import json
+from mock import patch
+
+# we need this for the radius token
+import pyrad
 
 (ma, mi, _, _, _,) = sys.version_info
 pver = float(int(ma) + int(mi) * 0.1)
@@ -43,7 +49,40 @@ from linotp.tests import TestController, url
 log = logging.getLogger(__name__)
 
 
+class Response(object):
+    code = pyrad.packet.AccessAccept
+
+
+def mocked_radius_SendPacket(Client, *argparams, **kwparams):
+
+    response = Response()
+    #response.code = pyrad.packet.AccessAccept
+
+    return response
+
+
+def mocked_http_request(HttpObject,  *argparams, **kwparams):
+
+    resp = 200
+
+    content = {
+        "version": "LinOTP MOCK",
+        "jsonrpc": "2.0",
+        "result": {
+            "status": True,
+            "value": True
+        },
+        "id": 0
+    }
+    r_auth_detail = TestValidateController.R_AUTH_DETAIL
+    if r_auth_detail:
+        content['detail'] = r_auth_detail
+
+    return resp, json.dumps(content)
+
+
 class HmacOtp():
+
     def __init__(self, secret, counter=0, digits=6, hashfunc=hashlib.sha1):
         self.secret = secret
         self.counter = counter
@@ -51,7 +90,7 @@ class HmacOtp():
 
         # set up hashlib
         ty = type(hashfunc).__name__
-        if  ty == 'str' or ty == 'unicode':
+        if ty == 'str' or ty == 'unicode':
             self.hashfunc = self._getHashlib(hashfunc)
         else:
             self.hashfunc = hashfunc
@@ -131,8 +170,10 @@ class TestValidateController(TestController):
             test_httpsms and
             test_challenge_response
     """
+    R_AUTH_DETAIL = {}
 
     def setUp(self):
+        self.tokens = {}
         TestController.setUp(self)
         self.set_config_selftest()
         self.create_common_resolvers()
@@ -145,14 +186,14 @@ class TestValidateController(TestController):
 
     def createMOtpToken(self):
         parameters = {
-                      "serial": "M722362",
-                      "type": "motp",
-                      "otpkey": "1234567890123456",
-                      "otppin": "1234",
-                      "user": "root",
-                      "pin": "pin",
-                      "description": "TestToken1",
-                      }
+            "serial": "M722362",
+            "type": "motp",
+            "otpkey": "1234567890123456",
+            "otppin": "1234",
+            "user": "root",
+            "pin": "pin",
+            "description": "TestToken1",
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -174,27 +215,28 @@ class TestValidateController(TestController):
 
         if hashlib_def == "SHA512":
             otpkey = (
-            "313233343536373839303132333435363738393031323334353"
-            "637383930313233343536373839303132333435363738393031323"
-            "33435363738393031323334")
+                "313233343536373839303132333435363738393031323334353"
+                "637383930313233343536373839303132333435363738393031323"
+                "33435363738393031323334")
         elif hashlib_def == "SHA256":
             otpkey = (
-            "3132333435363738393031323334353637383930313233343536373839303132"
+                "31323334353637383930313233343536373839303132333435363"
+                "73839303132"
             )
         else:
             otpkey = "3132333435363738393031323334353637383930"
         parameters = {
-                          "serial": "TOTP",
-                          "type": "totp",
-                          # 64 byte key
-                          "otpkey": otpkey,
-                          "otppin": "1234",
-                          "user": "root",
-                          "pin": "pin",
-                          "otplen": 8,
-                          "description": "time based HMAC TestToken1",
-                          "hashlib": hashlib_def,
-                          }
+            "serial": "TOTP",
+            "type": "totp",
+            # 64 byte key
+            "otpkey": otpkey,
+            "otppin": "1234",
+            "user": "root",
+            "pin": "pin",
+            "otplen": 8,
+            "description": "time based HMAC TestToken1",
+            "hashlib": hashlib_def,
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -220,7 +262,7 @@ class TestValidateController(TestController):
 
         return ret
 
-    def createToken1(self):
+    def createToken1(self, user='root', pin='pin'):
         """
             otp[0]: 870581 :
             otp[1]: 793334 :
@@ -233,17 +275,36 @@ class TestValidateController(TestController):
             otp[8]: 478893 :
             otp[9]: 517407 :
         """
+        serial = "F722362"
         parameters = {
-                      "serial": "F722362",
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "user": "root",
-                      "pin": "pin",
-                      "description": "TestToken1",
-                      }
+            "serial": serial,
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": user,
+            "pin": pin,
+            "description": "TestToken1",
+        }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
+
+        return serial
+
+    def create_hmac_token(self, user='root', pin='pin'):
+
+        serial = self.createToken1(user=user, pin=pin)
+        otps = [
+            "870581",
+            "793334",
+            "088491",
+            "013126",
+            "818771",
+            "454594",
+            "217219",
+            "250710",
+            "478893",
+            "517407"
+        ]
+        return serial, otps
 
     def createRealmToken1(self, realm):
         """
@@ -259,12 +320,12 @@ class TestValidateController(TestController):
             otp[9]: 517407 :
         """
         parameters = {
-                      "serial": "F722362",
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "user": "root",
-                      "pin": "pin",
-                      "description": "TestToken1",
-                      }
+            "serial": "F722362",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": "root",
+            "pin": "pin",
+            "description": "TestToken1",
+        }
         if realm is not None:
             parameters.update(realm)
         response = self.app.get(url(controller='admin', action='init'),
@@ -274,12 +335,12 @@ class TestValidateController(TestController):
     def createToken(self):
         serials = set()
         parameters = {
-                      "serial": "F722362",
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "user": "root",
-                      "pin": "pin",
-                      "description": "TestToken1",
-                      }
+            "serial": "F722362",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": "root",
+            "pin": "pin",
+            "description": "TestToken1",
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -288,12 +349,12 @@ class TestValidateController(TestController):
         serials.add(parameters.get('serial'))
 
         parameters = {
-                  "serial": "F722363",
-                  "otpkey": "AD8EABE235FC57C815B26CEF3709075580B4473880B44738",
-                  "user": "root",
-                  "pin": "pin",
-                  "description": "TestToken2",
-                  }
+            "serial": "F722363",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B4473880B44738",
+            "user": "root",
+            "pin": "pin",
+            "description": "TestToken2",
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -303,12 +364,12 @@ class TestValidateController(TestController):
 
         # # test the update
         parameters = {
-                      "serial": "F722364",
-                      "otpkey": "AD8EABE235FC57C815B26CEF37090755",
-                      "user": "root",
-                      "pin": "Pin3",
-                      "description": "TestToken3",
-                      }
+            "serial": "F722364",
+            "otpkey": "AD8EABE235FC57C815B26CEF37090755",
+            "user": "root",
+            "pin": "Pin3",
+            "description": "TestToken3",
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -317,12 +378,12 @@ class TestValidateController(TestController):
         serials.add(parameters.get('serial'))
 
         parameters = {
-                      "serial": "F722364",
-                      "otpkey": "AD8EABE235FC57C815B26CEF37090755",
-                      "user": "root",
-                      "pin": "pin",
-                      "description": "TestToken3",
-                      }
+            "serial": "F722364",
+            "otpkey": "AD8EABE235FC57C815B26CEF37090755",
+            "user": "root",
+            "pin": "pin",
+            "description": "TestToken3",
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -334,12 +395,12 @@ class TestValidateController(TestController):
 
     def createToken2(self):
         parameters = {
-                      "serial": "T2",
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "user": "root",
-                      "pin": "T2PIN",
-                      "description": "TestToken2",
-                      }
+            "serial": "T2",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": "root",
+            "pin": "T2PIN",
+            "description": "TestToken2",
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -347,12 +408,12 @@ class TestValidateController(TestController):
 
     def createToken3(self):
         parameters = {
-                      "serial": "T3",
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "user": "root",
-                      "pin": "T2PIN",
-                      "description": "TestToken3",
-                      }
+            "serial": "T3",
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": "root",
+            "pin": "T2PIN",
+            "description": "TestToken3",
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -360,33 +421,153 @@ class TestValidateController(TestController):
 
     def createTokenSMS(self):
         parameters = {
-                      "serial": "SM1",
-                      "user": "root",
-                      "pin": "test",
-                      "description": "TestSMS",
-                      "type": "sms",
-                      "phone": "007"
-                      }
+            "serial": "SM1",
+            "user": "root",
+            "pin": "test",
+            "description": "TestSMS",
+            "type": "sms",
+            "phone": "007"
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
-    def createSpassToken(self, serial=None):
-        if serial is None:
-            serial = "TSpass"
+    def createSpassToken(self, serial="TSpass", user="root", pin="pin"):
         parameters = {
-                      "serial": serial,
-                      "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
-                      "user": "root",
-                      "pin": "pin",
-                      "description": "TestToken1",
-                      "type": "spass"
+            "serial": serial,
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": user,
+            "pin": pin,
+            "description": "TestToken1",
+            "type": "spass"
+        }
+
+        response = self.make_admin_request('init', params=parameters)
+        self.assertTrue('"value": true' in response, response)
+        return serial
+
+    def createPWToken(self, serial="TPW", user="root", pin="pin",
+                      otpkey="123456"):
+
+        parameters = {"serial": serial,
+                      "type": "pw",
+                      "otpkey": otpkey,
+                      "otppin": pin,
+                      "user": user,
+                      "pin": pin,
                       }
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=parameters)
+        response = self.make_admin_request('init', params=parameters)
         self.assertTrue('"value": true' in response, response)
+        return serial
+
+    def create_yubi_token(self, serialnum="01382015",
+                          yubi_slot=1,
+                          otpkey="9163508031b20d2fbb1868954e041729",
+                          public_uid="ecebeeejedecebeg",
+                          use_public_id=False,
+                          user='root'
+                          ):
+        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+
+        valid_otps = [
+            public_uid + "fcniufvgvjturjgvinhebbbertjnihit",
+            public_uid + "tbkfkdhnfjbjnkcbtbcckklhvgkljifu",
+            public_uid + "ktvkekfgufndgbfvctgfrrkinergbtdj",
+            public_uid + "jbefledlhkvjjcibvrdfcfetnjdjitrn",
+            public_uid + "druecevifbfufgdegglttghghhvhjcbh",
+            public_uid + "nvfnejvhkcililuvhntcrrulrfcrukll",
+            public_uid + "kttkktdergcenthdredlvbkiulrkftuk",
+            public_uid + "hutbgchjucnjnhlcnfijckbniegbglrt",
+            public_uid + "vneienejjnedbfnjnnrfhhjudjgghckl",
+            public_uid + "krgevltjnujcnuhtngjndbhbiiufbnki",
+            public_uid + "kehbefcrnlfejedfdulubuldfbhdlicc",
+            public_uid + "ljlhjbkejkctubnejrhuvljkvglvvlbk",
+            public_uid + "eihtnehtetluntirtirrvblfkttbjuih",
+        ]
+
+        params = {
+            'type': 'yubikey',
+            'serial': serial,
+            'otpkey': otpkey,
+            'description': "Yubikey enrolled in functional tests",
+            'session': self.session
+        }
+
+        if not use_public_id:
+            params['otplen'] = 32 + len(public_uid)
+        else:
+            params['public_uid'] = public_uid
+
+        response = self.make_admin_request('init', params=params)
+        self.assertTrue('"value": true' in response, "Response: %r" % response)
+
+        # test initial assign
+        params = {
+            "serial": serial,
+            "user": user,
+        }
+        response = self.make_admin_request('assign', params=params)
+        # Test response...
+        self.assertTrue('"value": true' in response, "Response: %r" % response)
+
+        return (serial, valid_otps)
+
+    def create_remote_token(self, target_serial, target_otplen=6, user='root',
+                            pin='', check_pin=1,
+                            remote_url='http://127.0.0.1/'):
+        """
+        call admin/init to create the remote token
+
+        :param target_serial: the serial number of the target token
+        :param target_otplen: the otplen of the target token
+        :param user: the to be assigened user
+        :param remote_url: the target url - could be ignored as the
+                        '   http req is mocked
+        :param check_pin: local=1, remote=0
+        :return: the serial number of the remote token
+        """
+
+        serial = "LSRE%s" % target_serial
+        params = {
+            "serial": serial,
+            "type": "remote",
+            "otplen": target_otplen,
+            "description": "RemoteToken",
+            'remote.server': remote_url,
+            'remote.realm': 'nopin',
+            'remote.local_checkpin': check_pin,
+            'remote.serial': target_serial,
+            'user': user,
+            'pin': pin
+        }
+
+        response = self.make_admin_request('init', params=params)
+        self.assertIn('"value": true', response, "Response: %r" % response)
+
+        return serial
+
+    def create_radius_token(self, user="root", pin="pin", serial="radius2",
+                            check_pin=1):
+        # the token with the local PIN
+        parameters = {
+            "serial": serial,
+            "type": "radius",
+            "otpkey": "1234567890123456",
+            "otppin": "local",
+            "user": user,
+            "pin": pin,
+            "description": "RadiusToken2",
+            'radius.server': 'localhost:18012',
+            'radius.local_checkpin': check_pin,
+            'radius.user': user,
+            'radius.secret': 'testing123',
+        }
+
+        response = self.make_admin_request('init', params=parameters)
+        self.assertTrue('"value": true' in response, response)
+
         return serial
 
     def test_cryptedPin(self):
@@ -413,7 +594,6 @@ class TestValidateController(TestController):
             self.delete_token(serial)
 
         return
-
 
     #
     #    Use case:
@@ -620,7 +800,7 @@ class TestValidateController(TestController):
         self.app.get(url(controller='system', action='getRealms'))
         parameters = {"username": "*"}
         self.app.get(url(controller='admin', action='userlist'),
-                                params=parameters)
+                     params=parameters)
         self.checkFalse(realm)
 
         parameters = {"PassOnUserNoToken": "True"}
@@ -954,19 +1134,18 @@ class TestValidateController(TestController):
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        if self.isSelfTest == True:
+        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
         else:
-            log.error("""-------------------------
-motp not tested for correctness
-please enable 'linotp.selfTest = True' in your *.ini
-""")
+            log.error("-------------------------\n"
+                      "motp not tested for correctness \n"
+                      " please enable 'linotp.selfTest = True' in your *.ini")
+
             self.assertTrue('"value": false' in response, response)
 
         self.delete_token("M722362")
 
     def test_checkOTPAlgo(self):
-
         """
            The test token shared secret uses the ASCII string value
            "12345678901234567890".  With Time Step X = 30, and the Unix epoch
@@ -1021,28 +1200,28 @@ please enable 'linotp.selfTest = True' in your *.ini
         """
 
         testVector = {
-                     'SHA1': [(59, '94287082'),
-                                 (1111111109, '07081804'),
-                                 (1111111111, '14050471'),
-                                 (1234567890, '89005924'),
-                                 (2000000000, '69279037'),
-                                 (20000000000, '65353130'),
-                                 ],
-                     'SHA256': [(59, '46119246'),
-                                 (1111111109, '68084774'),
-                                 (1111111111, '67062674'),
-                                 (1234567890, '91819424'),
-                                 (2000000000, '90698825'),
-                                 (20000000000, '77737706'),
-                                 ],
-                     'SHA512': [(59, '90693936'),
-                                 (1111111109, '25091201'),
-                                 (1111111111, '99943326'),
-                                 (1234567890, '93441116'),
-                                 (2000000000, '38618901'),
-                                 (20000000000, '47863826'),
-                                 ],
-                     }
+            'SHA1': [(59, '94287082'),
+                     (1111111109, '07081804'),
+                     (1111111111, '14050471'),
+                     (1234567890, '89005924'),
+                     (2000000000, '69279037'),
+                     (20000000000, '65353130'),
+                     ],
+            'SHA256': [(59, '46119246'),
+                       (1111111109, '68084774'),
+                       (1111111111, '67062674'),
+                       (1234567890, '91819424'),
+                       (2000000000, '90698825'),
+                       (20000000000, '77737706'),
+                       ],
+            'SHA512': [(59, '90693936'),
+                       (1111111109, '25091201'),
+                       (1111111111, '99943326'),
+                       (1234567890, '93441116'),
+                       (2000000000, '38618901'),
+                       (20000000000, '47863826'),
+                       ],
+        }
 
         try:
             for hashAlgo in testVector.keys():
@@ -1093,14 +1272,12 @@ please enable 'linotp.selfTest = True' in your *.ini
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        if self.isSelfTest == True:
+        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
         else:
-            log.error("""
--------------------------
-motp not tested for correctness
-please enable 'linotp.selfTest = True' in your *.ini
-""")
+            log.error("-------------------------\n"
+                      "motp not tested for correctness \n"
+                      " please enable 'linotp.selfTest = True' in your *.ini")
             self.assertTrue('"value": false' in response, response)
 
         # second test value
@@ -1112,14 +1289,13 @@ please enable 'linotp.selfTest = True' in your *.ini
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        if self.isSelfTest == True:
+        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
         else:
-            log.error("""
--------------------------
-totp not tested for correctness
-please enable 'linotp.selfTest = True' in your *.ini
-""")
+            log.error("-------------------------\n"
+                      "totp not tested for correctness \n"
+                      " please enable 'linotp.selfTest = True' in your *.ini")
+
             self.assertTrue('"value": false' in response, response)
 
         parameters = {"user": "root", "pass": "pin89005924",
@@ -1127,14 +1303,13 @@ please enable 'linotp.selfTest = True' in your *.ini
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        if self.isSelfTest == True:
+        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
         else:
-            log.error("""
--------------------------
-totp not tested for correctness
-please enable 'linotp.selfTest = True' in your *.ini
-""")
+            log.error("-------------------------\n"
+                      "totp not tested for correctness \n"
+                      "please enable 'linotp.selfTest = True' in your *.ini")
+
             self.assertTrue('"value": false' in response, response)
 
         self.delete_token("TOTP")
@@ -1151,7 +1326,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
 
-        if self.isSelfTest == True:
+        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
         else:
             log.error("""
@@ -1170,14 +1345,12 @@ please enable 'linotp.selfTest = True' in your *.ini
                                 params=parameters)
         log.error("response %s\n", response)
 
-        if self.isSelfTest == True:
+        if self.isSelfTest is True:
             self.assertTrue('"value": true' in response, response)
         else:
-            log.error("""
--------------------------
-totp not tested for correctness
-please enable 'linotp.selfTest = True' in your *.ini
-""")
+            log.error("-------------------------\n"
+                      "totp not tested for correctness \n"
+                      "please enable 'linotp.selfTest = True' in your *.ini")
             self.assertTrue('"value": false' in response, response)
 
         self.delete_token("TOTP")
@@ -1372,7 +1545,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         parameters = {"serial": "F722362"}
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
-        #self.assertTrue('"LinOtp.Count": 8' in response, response)
+        # self.assertTrue('"LinOtp.Count": 8' in response, response)
         self.assertTrue('"LinOtp.FailCount": 15' in response, response)
 
         parameters = {"serial": "F722362"}
@@ -1383,7 +1556,7 @@ please enable 'linotp.selfTest = True' in your *.ini
         parameters = {"serial": "F722362"}
         response = self.app.get(url(controller='admin', action='show'),
                                 params=parameters)
-        #self.assertTrue('"LinOtp.Count": 8' in response, response)
+        # self.assertTrue('"LinOtp.Count": 8' in response, response)
         self.assertTrue('"LinOtp.FailCount": 0' in response, response)
 
         self.delete_token("F722362")
@@ -1393,12 +1566,12 @@ please enable 'linotp.selfTest = True' in your *.ini
         Test the /validate/samlcheck
         """
         parameters = {
-                      "serial": "saml0001",
+            "serial": "saml0001",
                       "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
                       "user": "root",
                       "pin": "test",
                       "type": "spass"
-                      }
+        }
 
         response = self.app.get(url(controller='admin', action='init'),
                                 params=parameters)
@@ -1438,11 +1611,12 @@ please enable 'linotp.selfTest = True' in your *.ini
         '''
         Testing simplecheck
         '''
+        serial = 'simple634'
         response = self.app.get(url(controller='admin', action='init'),
-                                    params={'type': 'spass',
-                                            'user': 'root',
-                                            'pin': 'topSecret',
-                                            'serial': 'simple634'})
+                                params={'type': 'spass',
+                                        'user': 'root',
+                                        'pin': 'topSecret',
+                                        'serial': serial})
         self.assertTrue('"status": true' in response, response)
 
         response = self.app.get(url(controller='validate',
@@ -1458,6 +1632,270 @@ please enable 'linotp.selfTest = True' in your *.ini
                                         'pass': 'wrongPW'})
         self.assertTrue(':-(' in response, response)
 
+        self.delete_token(serial)
         return
 
-#eof###########################################################################
+    def test_auth_info_detail_standard(self):
+        """
+        check for additional auth_info in response of the validate check
+
+        for the additional authentication information we require the
+        additional parameter auth_info=True
+
+        Test must cover:
+         - simple tokens like spass or pw token
+         - hmac
+         - yubikey
+         - remote token with local and with remote pin split
+
+        """
+        pin = "Test123!"
+        user = "root"
+
+        # first check hmac token where most inherit from
+        serial, otps = self.create_hmac_token(pin=pin, user=user)
+        otp = otps[0]
+
+        params = {'user': user,
+                  'pass': pin + otp}
+        response = self.make_validate_request('check', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        auth_detail = jresp.get('detail', {}).get('auth_detail', None)
+        self.assertTrue(auth_detail is None, response)
+
+        otp = otps[1]
+        params = {'user': user,
+                  'pass': pin + otp,
+                  'auth_info': True}
+        response = self.make_validate_request('check', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+
+        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
+        self.assertTrue("otp_length" in otp_dict, response)
+        self.assertTrue(otp_dict["otp_length"] == 6, response)
+
+        self.delete_token(serial)
+
+        # now check spass token
+        serial = self.createSpassToken(pin="Test123!", user="root")
+        params = {'user': user,
+                  'pass': pin,
+                  'auth_info': True}
+        response = self.make_validate_request('check', params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+
+        self.delete_token(serial)
+
+        # now check pw token: the pw token requires the fixed pw, which was
+        # initially stored on the otpkey
+        otpkey = "123456"
+        serial = self.createPWToken(pin=pin, user=user, otpkey=otpkey)
+        params = {'user': user,
+                  'pass': pin + otpkey,
+                  'auth_info': True
+                  }
+        response = self.make_validate_request('check', params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+
+        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
+        self.assertTrue("otp_length" in otp_dict, response)
+        self.assertTrue(otp_dict["otp_length"] == len(otpkey), response)
+
+        self.delete_token(serial)
+
+        return
+
+    def test_auth_info_detail_yubi(self):
+        """
+        check for additional auth_info from validate check for yubikey
+        """
+        user = "root"
+        pin = "Test123!"
+        serial, otps = self.create_yubi_token(user=user)
+
+        params = {'user': user,
+                  'pass': otps[0],
+                  'auth_info': True
+                  }
+        response = self.make_validate_request('check', params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == 0, response)
+
+        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
+        self.assertTrue("otp_length" in otp_dict, response)
+        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+
+        params = {'user': user,
+                  'pin': pin,
+                  }
+        response = self.make_admin_request('set', params=params)
+        self.assertTrue('"set pin": ' in response, response)
+
+        params = {'user': user,
+                  'pass': pin + otps[1],
+                  'auth_info': True
+                  }
+        response = self.make_validate_request('check', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+
+        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
+        self.assertTrue("otp_length" in otp_dict, response)
+        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+
+        self.delete_token(serial)
+
+        return
+
+    @patch.object(httplib2.Http, 'request', mocked_http_request)
+    def test_auth_info_detail_remotetoken(self):
+        """
+        check for additional auth_info from validate check for remotetoken
+        """
+        user = "root"
+        pin = "Test123!"
+
+        # first check hmac token where most inherit from
+        target_serial, otps = self.create_hmac_token(pin='', user=user)
+        otp_len = len(otps[0])
+
+        remote_serial = self.create_remote_token(user=user,
+                                                 target_serial=target_serial,
+                                                 target_otplen=otp_len,
+                                                 pin=pin)
+
+        TestValidateController.R_AUTH_DETAIL = {}
+
+        params = {'serial': remote_serial,
+                  'pass': pin + otps[0],
+                  'auth_info': True
+                  }
+        response = self.make_validate_request('check_s', params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+
+        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
+        self.assertTrue("otp_length" in otp_dict, response)
+        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+
+        self.delete_token(remote_serial)
+
+        remote_serial = self.create_remote_token(user=user,
+                                                 target_serial=target_serial,
+                                                 target_otplen=otp_len,
+                                                 check_pin=0)
+
+        TestValidateController.R_AUTH_DETAIL = {
+            'auth_detail': [{'pin_length': len(pin)},
+                            {'otp_length': len(otps[0])}
+                            ]
+        }
+
+        params = {'serial': remote_serial,
+                  'pass': pin + otps[1],
+                  'auth_info': True
+                  }
+        response = self.make_validate_request('check_s', params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        auth_detail = jresp.get('detail', {}).get('auth_detail', [])
+
+        self.assertTrue(len(auth_detail) == 2, response)
+
+        pin_dict = auth_detail[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+
+        otp_dict = auth_detail[1]
+        self.assertTrue("otp_length" in otp_dict, response)
+        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+
+        self.delete_token(target_serial)
+        self.delete_token(remote_serial)
+
+        TestValidateController.R_AUTH_DETAIL = {}
+
+        return
+
+    @patch.object(pyrad.client.Client, 'SendPacket', mocked_radius_SendPacket)
+    def test_auth_info_detail_radiotoken(self):
+        """
+        check for additional auth_info from validate check for radiotoken
+
+        as the radius could not transfer any additional info, we only could
+        deliver auth_info in case of the local pincheck
+        """
+        user = "root"
+        pin = "Test123!"
+
+        # first check hmac token where most inherit from
+        target_serial, otps = self.create_hmac_token(pin='', user=user)
+
+        remote_serial = self.create_radius_token(user=user, pin=pin,
+                                                 check_pin=1)
+
+        params = {'serial': remote_serial,
+                  'pass': pin + otps[0],
+                  'auth_info': True
+                  }
+        response = self.make_validate_request('check_s', params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        jresp = json.loads(response.body)
+
+        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
+        self.assertTrue("pin_length" in pin_dict, response)
+        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+
+        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
+        self.assertTrue("otp_length" in otp_dict, response)
+        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+
+        self.delete_token(target_serial)
+        self.delete_token(remote_serial)
+
+        return
+
+# eof #########################################################################
