@@ -227,7 +227,7 @@ class RemoteTokenClass(TokenClass):
 
         otpval = passw
 
-        ## should we check the pin localy??
+        # should we check the pin localy??
         if self.check_pin_local():
             (res, pin, otpval) = split_pin_otp(self, passw, user,
                                                options=options)
@@ -283,8 +283,8 @@ class RemoteTokenClass(TokenClass):
         remoteServer = self.getFromTokenInfo("remote.server") or ""
         remoteServer = remoteServer.encode("utf-8")
 
-        ## in preparation of the ability to reloacte linotp urls,
-        ## we introduce the remote url path
+        # in preparation of the ability to reloacte linotp urls,
+        # we introduce the remote url path
         remotePath = self.getFromTokenInfo("remote.path") or ""
         remotePath = remotePath.strip().encode('utf-8')
 
@@ -309,8 +309,7 @@ class RemoteTokenClass(TokenClass):
             else:
                 ssl_verify = False
 
-
-        ## here we also need to check for remote.user and so on....
+        # here we also need to check for remote.user and so on....
         log.debug("[checkOtp] checking OTP len:%r remotely on server: %r,"
                   " serial: %r, user: %r" %
                   (len(otpval), remoteServer, remoteSerial, remoteUser))
@@ -336,8 +335,8 @@ class RemoteTokenClass(TokenClass):
                 remotePath = "/validate/check"
 
         else:
-        ## There is no remote.serial and no remote.user, so we will
-        ## try to pass the requesting user.
+            # There is no remote.serial and no remote.user, so we will
+            # try to pass the requesting user.
             if user is None:
                 log.warning("FIXME: We do not know the user at the moment!")
             else:
@@ -350,30 +349,31 @@ class RemoteTokenClass(TokenClass):
 
         # use a POST request to check the token
         data = urllib.urlencode(params)
-        request_url = "%s/%s" % (remoteServer.rstrip('/'), remotePath.lstrip('/'))
+        request_url = "%s/%s" % (remoteServer.rstrip('/'),
+                                 remotePath.lstrip('/'))
 
         reply = {}
         otp_count = -1
         res = False
 
         try:
-            ## prepare the submit and receive headers
+            # prepare the submit and receive headers
             headers = {"Content-type": "application/x-www-form-urlencoded",
                        "Accept": "text/plain", 'Connection': 'close'}
 
-            ## submit the request
+            # submit the request
             try:
-                ## is httplib compiled with ssl?
-                http = httplib2.Http(disable_ssl_certificate_validation=
-                                     not(ssl_verify))
+                # is httplib compiled with ssl?
+                http = httplib2.Http(
+                    disable_ssl_certificate_validation=not(ssl_verify))
             except TypeError as exx:
-                ## not so on squeeze:
-                ## TypeError: __init__() got an unexpected keyword argument
-                ## 'disable_ssl_certificate_validation'
+                # not so on squeeze:
+                # TypeError: __init__() got an unexpected keyword argument
+                # 'disable_ssl_certificate_validation'
 
                 log.warning("httplib2 'disable_ssl_certificate_validation' "
                             "attribute error: %r" % exx)
-                ## so we run in fallback mode
+                # so we run in fallback mode
                 http = httplib2.Http()
 
             (resp, content) = http.request(request_url,
@@ -385,21 +385,28 @@ class RemoteTokenClass(TokenClass):
             status = result['result']['status']
             log.debug(status)
 
-            if True == status:
-                if True == result['result']['value']:
+            if status is True:
+
+                if result.get('result', {}).get('value', False) is True:
                     res = True
                     otp_count = 0
+                    auth_detail = result.get('detail', {}).get('auth_detail',
+                                                               None)
+                    if auth_detail and not self.local_pin_check:
+                        self.auth_detail['auth_detail'] = auth_detail
 
-            if "detail" in result:
-                reply = copy.deepcopy(result["detail"])
-                otp_count = -1
-                res = False
-                self.isRemoteChallengeRequest = True
-                self.remote_challenge_response = reply
+                else:
+                    # if false and detail - this is a challenge response
+                    if "detail" in result:
+                        reply = copy.deepcopy(result["detail"])
+                        otp_count = -1
+                        res = False
+                        self.isRemoteChallengeRequest = True
+                        self.remote_challenge_response = reply
 
         except Exception as exx:
             log.exception("[do_request] [RemoteToken] Error getting response from "
-                      "remote Server (%r): %r" % (request_url, exx))
+                          "remote Server (%r): %r" % (request_url, exx))
 
         return (res, otp_count, reply)
 
@@ -455,7 +462,7 @@ class RemoteTokenClass(TokenClass):
         matching_challenges = []
 
         if 'transactionid' in options or 'state' in options:
-            ## fetch the transactionid
+            # fetch the transactionid
             transid = options.get('transactionid', options.get('state', None))
 
         if transid is not None:
@@ -467,14 +474,14 @@ class RemoteTokenClass(TokenClass):
             if matching_challenge is None:
                 return (otp_counter, matching_challenges)
 
-            ## in case of a local pin check, we the transaction is a local one
-            ## and we must not forward this!!
+            # in case of a local pin check, we the transaction is a local one
+            # and we must not forward this!!
             if self.check_pin_local():
-                ## check if transaction id is in list of challengens
+                # check if transaction id is in list of challengens
                 (res, otp_counter, reply) = \
                     self.do_request(passw, user=user)
 
-                ## everything is ok, we remove the challenge
+                # everything is ok, we remove the challenge
                 if res is True and otp_counter >= 0:
                     matching_challenges.append(matching_challenge)
 
@@ -482,12 +489,12 @@ class RemoteTokenClass(TokenClass):
             # to extract the replyed challenge
             else:
                 remote_transid = matching_challenge.get('data', {}).\
-                                            get('remote_reply', {}).\
-                                            get('transactionid', '')
+                    get('remote_reply', {}).\
+                    get('transactionid', '')
                 (res, otp_counter, reply) = \
                     self.do_request(passw, transactionid=remote_transid,
                                     user=user)
-                ## everything is ok, we remove the challenge
+                # everything is ok, we remove the challenge
                 if res and otp_counter >= 0:
                     matching_challenges.append(matching_challenge)
 
@@ -503,7 +510,6 @@ class RemoteTokenClass(TokenClass):
                                                   autoassign=autoassign)
         return otp_count
 
-
     def checkPin(self, pin, options=None):
         """
         check the pin - either remote or localy
@@ -512,7 +518,7 @@ class RemoteTokenClass(TokenClass):
         """
         res = True
 
-        ## only, if pin should be checked localy
+        # only, if pin should be checked localy
         if self.check_pin_local():
             res = TokenClass.checkPin(self, pin)
 

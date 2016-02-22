@@ -27,8 +27,8 @@
 """ This file containes PasswordTokenClass """
 
 import logging
-from linotp.lib.crypt   import zerome
-from linotp.lib.util    import getParam
+from linotp.lib.crypt import zerome
+from linotp.lib.util import getParam
 
 
 optional = True
@@ -39,6 +39,8 @@ from linotp.lib.tokenclass import TokenClass
 log = logging.getLogger(__name__)
 
 ###############################################
+
+
 class PasswordTokenClass(TokenClass):
     '''
     This Token does use a fixed Password as the OTP value.
@@ -72,7 +74,6 @@ class PasswordTokenClass(TokenClass):
         self.hKeyRequired = True
         self.setType(u"pw")
 
-
     @classmethod
     def getClassType(cls):
         return "pw"
@@ -96,14 +97,14 @@ class PasswordTokenClass(TokenClass):
                   (key, ret))
 
         res = {
-               'type'           : 'pw',
-               'title'          : 'Password Token',
-               'description'    : ('A token with a fixed password. Can be combined with the OTP PIN. Is used for the lost token scenario.'),
-               'init'         : {},
-               'config'        : {},
-               'selfservice'   :  {},
-               'policy' : {},
-               }
+            'type': 'pw',
+            'title': 'Password Token',
+            'description': ('A token with a fixed password. Can be combined with the OTP PIN. Is used for the lost token scenario.'),
+            'init': {},
+            'config': {},
+            'selfservice':  {},
+            'policy': {},
+        }
         # I don't think we need to define the lost token policies here...
 
         if key is not None and res.has_key(key):
@@ -111,10 +112,9 @@ class PasswordTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
+        log.debug(
+            "[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
-
-
 
     def update(self, param):
 
@@ -134,7 +134,6 @@ class PasswordTokenClass(TokenClass):
         log.debug("[setOtpLen] setting otplen to %d" % pw_len)
         TokenClass.setOtpLen(self, pw_len)
         return
-
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         '''

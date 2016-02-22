@@ -46,6 +46,7 @@ class SpassTokenClass(TokenClass):
     It does have no OTP component. The OTP checking will always
     succeed. Of course, an OTP PIN can be used.
     '''
+
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
         self.setType(u"spass")
@@ -78,18 +79,18 @@ class SpassTokenClass(TokenClass):
                   (key, ret))
 
         res = {
-               'type'           : 'spass',
-               'title'          : 'Simple Pass Token',
-               'description'    : ('A token that allows the user to simply pass. Can be combined with the OTP PIN.'),
-               'init'         : {'page' : {'html'      : 'spasstoken.mako',
-                                            'scope'      : 'enroll', },
-                                   'title'  : {'html'      : 'spasstoken.mako',
-                                             'scope'     : 'enroll.title', },
-                                   },
-               'config'        : {},
-               'selfservice'   :  {},
-               'policy' : {},
-               }
+            'type': 'spass',
+            'title': 'Simple Pass Token',
+            'description': ('A token that allows the user to simply pass. Can be combined with the OTP PIN.'),
+            'init': {'page': {'html': 'spasstoken.mako',
+                              'scope': 'enroll', },
+                     'title': {'html': 'spasstoken.mako',
+                               'scope': 'enroll.title', },
+                     },
+            'config': {},
+            'selfservice':  {},
+            'policy': {},
+        }
 
         # do we need to define the lost token policies here...
         if key is not None and res.has_key(key):
@@ -97,7 +98,8 @@ class SpassTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
+        log.debug(
+            "[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
     def update(self, param):
@@ -106,13 +108,13 @@ class SpassTokenClass(TokenClass):
         if not param.has_key('otpkey'):
             param['genkey'] = 1
 
-        ## mark this spass token as usable exactly once
+        # mark this spass token as usable exactly once
         if param.has_key('onetime'):
             TokenClass.set_count_auth_success_max(self, 1)
 
         TokenClass.update(self, param)
 
-    ## the spass token does not suport challenge response
+    # the spass token does not suport challenge response
     def is_challenge_request(self, passw, user, options=None):
         return False
 
@@ -128,7 +130,7 @@ class SpassTokenClass(TokenClass):
         pin_match = check_pin(self, passw, user=user, options=options)
         if pin_match == True:
             otp_count = 0
+            self.auth_detail = {'auth_detail': [{'pin_length': len(passw)}]}
         return (pin_match, otp_count, None)
 
 ## eof ########################################################################
-
