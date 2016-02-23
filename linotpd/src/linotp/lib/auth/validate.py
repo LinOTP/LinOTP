@@ -142,8 +142,8 @@ def split_pin_otp(token, passw, user=None, options=None):
         # NO PIN should be entered atall
         log.debug('pin policy=2: checking no pin')
         (pin, otp) = ('', passw)
-        token.auth_detail= {'auth_info': [{'pin_length': 0},
-                                          {'otp_length': len(passw)}]}
+        token.auth_info= {'auth_info': [('pin_length', 0),
+                                          ('otp_length', len(passw))]}
         policy = 2
     else:
         # old stuff: We check The fixed OTP PIN
