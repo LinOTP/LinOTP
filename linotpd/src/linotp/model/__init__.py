@@ -157,9 +157,9 @@ class Token(object):
     def __setattr__(self, name, value):
         """
         to support unicode on all backends, we use the json encoder with
-        the assci encode default
+        the ASCII encode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
         :param value: the corresponding value
 
         :return: - nothing -
@@ -173,9 +173,9 @@ class Token(object):
     def __getattribute__(self, name):
         """
         to support unicode on all backends, we use the json decoder with
-        the assci decode default
+        the ASCII decode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
 
         :return: the corresponding value
         """
@@ -201,7 +201,7 @@ class Token(object):
         This functions helps fixing this.
         Also avoids running into errors, if the data is a None Type.
 
-        :param data: a string from teh database
+        :param data: a string from the database
         :type data: usually a string
         :return: a stripped string
         '''
@@ -218,7 +218,7 @@ class Token(object):
         set_encrypted_seed - save the encrypted token seed / secret
 
         :param encrypted_seed: the encrypted seed / secret
-        :param iv: the initiaslistion value / salt
+        :param iv: the initialization value / salt
         :param reset_failcount: reset the failcount on token update
         """
         log.debug('set_seed()')
@@ -310,7 +310,7 @@ class Token(object):
         log.debug('deleteToken()')
         # # some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
         # # is deleteted via foreign key relation
-        # # so we delete it explicit
+        # # so we delete it explicitly
         Session.query(TokenRealm).filter(TokenRealm.token_id == self.LinOtpTokenId).delete()
         Session.delete(self)
         log.debug('delete token success')
@@ -338,10 +338,10 @@ class Token(object):
         easier, as this will have to deal as well with
         'dict only challenges'
 
-        :param key: the attribute name - in case of key is not provided, a dict
-                    of all class attributes are returned
+        :param key: the attribute name - in case key is not provided, a dict
+                    of all class attributes is returned
         :param fallback: if the attribute is not found, the fallback is returned
-        :param save: in case of all attributes and save==True, the timestamp is
+        :param save: in case all attributes are returned and save==True, the timestamp is
                      converted to a string representation
         '''
         if key == None:
@@ -445,9 +445,9 @@ class Token(object):
         return self.LinOtpTokenType or 'hmac'
 
     def updateType(self, typ):
-        # in case the prevoius has been different type
-        # we must reset the counters
-        # But be aware, ray, this could also be upper and lower case mixing...
+        # in case the previous type is not the same type
+        # we must reset the counters. 
+        # Remark: comparison must be made case insensitiv
         if self.LinOtpTokenType.lower() != typ.lower() :
             self.LinOtpCount = 0
             self.LinOtpFailCount = 0
@@ -520,9 +520,9 @@ class Config(object):
     def __setattr__(self, name, value):
         """
         to support unicode on all backends, we use the json encoder with
-        the assci encode default
+        the ASCII encode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
         :param value: the corresponding value
 
         :return: - nothing -
@@ -536,9 +536,9 @@ class Config(object):
     def __getattribute__(self, name):
         """
         to support unicode on all backends, we use the json decoder with
-        the assci decode default
+        the ASCII decode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
 
         :return: the corresponding value
         """
@@ -555,7 +555,7 @@ class Config(object):
     __str__ = __unicode__
 
 
-# This table connect a token to several realms
+# This table connects a token to several realms
 tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
                 sa.Column('id', sa.types.Integer(), sa.Sequence('tokenrealm_seq_id', optional=True), primary_key=True, nullable=False),
                 sa.Column('token_id', sa.types.Integer(), ForeignKey('Token.LinOtpTokenId')),
@@ -587,9 +587,9 @@ class Realm(object):
     def __setattr__(self, name, value):
         """
         to support unicode on all backends, we use the json encoder with
-        the assci encode default
+        the ASCII encode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
         :param value: the corresponding value
 
         :return: - nothing -
@@ -603,9 +603,9 @@ class Realm(object):
     def __getattribute__(self, name):
         """
         to support unicode on all backends, we use the json decoder with
-        the assci decode default
+        the ASCII decode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
 
         :return: the corresponding value
         """
@@ -682,9 +682,9 @@ class OcraChallenge(object):
     def __setattr__(self, name, value):
         """
         to support unicode on all backends, we use the json encoder with
-        the assci encode default
+        the ASCII encode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
         :param value: the corresponding value
 
         :return: - nothing -
@@ -698,9 +698,9 @@ class OcraChallenge(object):
     def __getattribute__(self, name):
         """
         to support unicode on all backends, we use the json decoder with
-        the assci decode default
+        the ASCII decode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
 
         :return: the corresponding value
         """
@@ -820,9 +820,9 @@ class Challenge(object):
     def __setattr__(self, name, value):
         """
         to support unicode on all backends, we use the json encoder with
-        the assci encode default
+        the ASCII encode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
         :param value: the corresponding value
 
         :return: - nothing -
@@ -836,9 +836,9 @@ class Challenge(object):
     def __getattribute__(self, name):
         """
         to support unicode on all backends, we use the json decoder with
-        the assci decode default
+        the ASCII decode default
 
-        :param name: db column name or class memeber
+        :param name: db column name or class member
 
         :return: the corresponding value
         """
@@ -876,8 +876,8 @@ class Challenge(object):
         easier, as this will have to deal as well with
         'dict only challenges'
 
-        :param key: the attribute name - in case of key is not provided, a dict
-                    of all class attributes are returned
+        :param key: the attribute name - in case key is not provided, a dict
+                    of all class attributes is returned
         :param fallback: if the attribute is not found, the fallback is returned
         :param save: in case of all attributes and save==True, the timestamp is
                      converted to a string representation
@@ -928,10 +928,10 @@ class Challenge(object):
 
     def save(self):
         '''
-        enforce the saveing of a challenge
-        - will guarentee the uniqness of the transaction id
+        enforce the saving of a challenge
+        - will guarantee the uniqness of the transaction id
 
-        :return: transaction id of the stored challeng
+        :return: transaction id of the stored challenge
         '''
         log.debug('[save] save challenge')
         try:
