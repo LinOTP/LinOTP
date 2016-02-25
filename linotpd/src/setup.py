@@ -51,7 +51,7 @@ setup(
         "SQLAlchemy>=0.6,<=0.9.99",
         "docutils>=0.4",
         "simplejson>=2.0",
-        "pycrypto>=1.0",
+        "pycryptodome>=3.4",
         "repoze.who<=1.1",
         "pyrad>=1.1",
         "LinOtpUserIdResolver>=2.7",
@@ -61,6 +61,7 @@ setup(
         "httplib2",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
+        "pysodium>=0.6.8",
         "sqlalchemy-migrate",
     ],
     scripts=[
