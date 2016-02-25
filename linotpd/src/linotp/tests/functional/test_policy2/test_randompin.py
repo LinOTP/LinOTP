@@ -205,7 +205,7 @@ class TestRandompinController(TestController):
 
     def test_admin_setpin(self):
         """
-        Admin can set PIN, even after the user set it in selfservice
+        Admin can set the PIN, even after the user has set it in selfservice
 
         This test will fail with WebTest 1.2.1 (Debian Squeeze) because of a
         bug that caused cookies to be quoted twice. The bug is fixed in 1.2.2.
@@ -296,7 +296,7 @@ class TestRandompinController(TestController):
         self._assign(token['serial'], new_user)
 
         # authenticate fails because old PIN is no longer valid (i.e. was
-        # overwritten with a random value during assign)
+        # overwritten with a random value during assignment)
         self._validate(
             new_user,
             pin + token['otps'].popleft(),
@@ -433,7 +433,7 @@ class TestRandompinController(TestController):
 
     def _validate(self, user, pwd, expected='success', err_msg=None):
         """
-        run a validate/check request and verifies the response is as 'expected'
+        runs a validate/check request and verifies the response is as 'expected'
 
         :param user: Username or username@realm
         :param pwd: Password (e.g. PIN+OTP)
@@ -487,7 +487,7 @@ class TestRandompinController(TestController):
         :param params: Request parameters
         :param expected: One of 'success', 'value-false', 'status-false' or
             'both-false'
-        :param err_msg: An error message to display if assert fails
+        :param err_msg: An error message to display if the assert fails
         :return: The content (JSON object)
         """
         response = self.make_validate_request(action, params=params)
