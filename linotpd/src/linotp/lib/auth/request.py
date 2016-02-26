@@ -52,7 +52,7 @@ class Request(object):
     requests to a Radius server or requests to an remote LinOTP server via
     http. The forwarding server defintion is done in the forward policy, where
     a list of servers is defined in the URI format. Parameters in URI defintion
-    of the policy could contain multiple server defintions, which are sepereted
+    of the policy could contain multiple server defintions, which are separated
     via ';'
      action = http://localhost:5001/validate/check;\
               http://127.0.0.1:5001/validate/check
