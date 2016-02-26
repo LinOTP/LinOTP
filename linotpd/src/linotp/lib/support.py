@@ -63,7 +63,7 @@ BbKBUlx/8GqnwpftJjOmH3qQUjQistt0XJvAOBk2G+jfLMknQmK+KmfzrCxkY1t7
 
 class LicenseInfo(dict):
     """
-    LicenseIfo
+    LicenseInfo
     special dict, which is able to return the original input strings,
     which is required to verify the License Signature
     """
@@ -93,8 +93,8 @@ def parseSupportLicense(licString):
 
     :param licString: the support license as multiline string
     :return: tuple of license dict, extracted signature and the
-                      license as string, which the signature could be checked
-                      against
+                      license as string, for which the signature 
+                      should be checked
     """
 
     _ = context['translate']
@@ -155,8 +155,8 @@ def readLicenseInfo(filename):
 
     :param filename: the file which contains the license
     :return: tuple of license dict, extracted signature and the
-                      license as string, which the signature could be checked
-                      against
+                      license as string, for which the signature should
+                      be checked
     """
     with open(filename, 'r') as f:
         return parseSupportLicense(f.read())
@@ -185,7 +185,7 @@ def setSupportLicense(licString):
     set the license to be the current one
 
     :param licString: the license with description and signature
-    :return: tuple with status (boolean) and if faild, the reason
+    :return: tuple with status (boolean) and if an error occured, the reason
     """
     ret = True
     msg = ''
@@ -203,7 +203,6 @@ def getSupportLicenseInfo():
     """
     get the current support and subscription information
 
-    :param validate: inform program to validate or not the license info
     :return: tuple of dict with the license information and signature
              in case of an error, the dict and the signature are empty
     """
@@ -228,7 +227,7 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
 
     :param lic_dict: the license with description
     :param lic_sign: the license signature
-    :return: tuple with status (boolean) and if faild, the reason
+    :return: tuple with status (boolean) and if an error occured, the reason
     """
 
     verifyLicenseInfo(lic_dict, lic_sign, raiseException=True)
@@ -260,8 +259,8 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False,
 
     :param lic_dict: the dict with the license data
     :param lic_sign: the license signature
-    :param raiseException: define if in case of an invalid license
-                           an exception should be raised
+    :param raiseException: set to true if an invalid license
+                           should raise an exception
     :return: tuple with validity and reason, if invalid
     """
 
@@ -314,7 +313,7 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False,
 
 def verify_signature(lic_dict, lic_sign, licStr=None):
     """
-    verfiy the license signature with the m2crypto
+    verfy the license signature
 
     :param lic_dict: the dict with the license data
     :param lic_sign: the license signature
