@@ -36,7 +36,7 @@ The new controller will hide the technical details about how to
 perform LinOTP calls (pillons, authentication) and will provide
 methods for direct LinOTP operations. The writer of test cases
 does not need to understand how the communication works, he
-only need to know the LinOTP interface-api and directly perform
+only needs to know the LinOTP interface-api and directly perform
 the operations which are needed in tests. More, the new
 controller will provide better support for checking the return
 values and in all of the cases the result values are tested by
@@ -107,8 +107,8 @@ class Final(type):
             if isinstance(b, Final):
                 raise TypeError("type '{0}' is not an acceptable base type".format(b.__name__))
         return type.__new__(cls, name, bases, dict(classdict))
-    
-# The class DefaultValue is used internally by TestAdvancedController as 
+
+# The class DefaultValue is used internally by TestAdvancedController as
 # placeholder for default values for all methods where expectedValue is used.
 class DefaultValue:
     __metaclass__ = Final
@@ -126,7 +126,7 @@ class TestAdvancedController(TestController2):
         super(TestAdvancedController, self).setUp()
         # On startup, initialize the session cookie...
         self.Cookies['session'] = self.session
-        
+
     def tearDown(self):
         self.setAuthorization(None)
         # On finish, delete the session variable...
@@ -152,7 +152,7 @@ class TestAdvancedController(TestController2):
 
     # The Headers property is a collection of name-values which
     # is passed through with each Http-Requests. If user requires
-    # authentication. the Headers is the right place to set the
+    # authentication, the Headers is the right place to set the
     # authentication token.
     @property
     def Headers(self):
@@ -246,8 +246,8 @@ class TestAdvancedController(TestController2):
                         if isinstance(value, unicode):
                             value = value.encode(encoding)
                         elif not isinstance(value, basestring):
-                            value = str(value)   
-                             
+                            value = str(value)
+
                         retDict[key] = value
             return retDict;
 
@@ -282,12 +282,12 @@ class TestAdvancedController(TestController2):
         res = JsonUtils.getBody(rsp)  # rsp.json_body
         # result Status must be always True!
         self.assertTrue(JsonUtils.getJson(res, ['result', 'status']) == True,
-            ("Failed LinOTP %s.%s invocation (result: %s)" 
+            ("Failed LinOTP %s.%s invocation (result: %s)"
                 % (linotpController, linotpAction, str(rsp))))
         value = JsonUtils.getJson(res, ['result', 'value'])
         if value is None:
             self.fail(
-                ("The LinOTP %s.%s invocation returned no value (result: %s)" 
+                ("The LinOTP %s.%s invocation returned no value (result: %s)"
                     % (linotpController, linotpAction, str(rsp))))
         elif not expectedValue is None:
             # If an explicit value is expected, then we compare the value
@@ -311,7 +311,7 @@ class TestAdvancedController(TestController2):
             else:
                 # return both value and passResponse lookup value..
                 return (value, JsonUtils.getJson(res, passResponse))
-        
+
         if passResponse is None or \
            isinstance(passResponse, bool):
             if passResponse:
@@ -341,10 +341,10 @@ class TestAdvancedController(TestController2):
             path = [] #['result', 'value']
             if isinstance(key, list):
                 path.extend(key)
-            else: 
+            else:
                 path.append(key)
             return JsonUtils.getJson(res, path, defaultValue)
-            
+
         inf = JsonUtils.getJson(res, ['result', 'value'])
         if defaultValue is None:
             return inf
@@ -369,7 +369,7 @@ class TestAdvancedController(TestController2):
                               key=key,
                               expectedValue=expectedValue)
 
-    def deleteConfiguration(self, key, 
+    def deleteConfiguration(self, key,
                             expectedValue=DefaultValue):
         if expectedValue is DefaultValue:
             expectedValue = {re.compile('^delConfig (?P<key>.*)$'): True}
@@ -389,7 +389,7 @@ class TestAdvancedController(TestController2):
                                  valueErrorMessage=valueErrorMessage,
                                  name=name, type=type,
                                  **params)
-        
+
     def deleteResolver(self, name,
                        expectedValue=DefaultValue, valueErrorMessage=None):
         if expectedValue is DefaultValue:
@@ -398,7 +398,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  resolver=name)
-        
+
     def getResolvers(self, defaultValue={}, **extraParams):
         ''' get all resolvers and delete them '''
         res = self.invokeLinotp('system', 'getResolvers',
@@ -407,7 +407,7 @@ class TestAdvancedController(TestController2):
         if res is None:
             return defaultValue
         return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
-    
+
     def getResolverUsers(self, resolver, username=None, defaultValue={},
                          **extraParams):
         res = self.invokeLinotp('admin', 'userlist',
@@ -428,7 +428,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  realm=name, resolvers=resolvers)
-    
+
     def deleteRealm(self, name,
                     expectedValue=DefaultValue,
                     valueErrorMessage=None):
@@ -438,7 +438,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  realm=name)
-    
+
     def getRealms(self, defaultValue={}, **extraParams):
         res = self.invokeLinotp('system', 'getRealms',
                                  expectedValue=None,
@@ -446,7 +446,7 @@ class TestAdvancedController(TestController2):
         if res is None:
             return defaultValue
         return res #JsonUtils.getJson(res, ['result', 'value'], defaultValue)
-    
+
     def getRealmUsers(self, realm, username=None, defaultValue={},
                       **extraParams):
         res = self.invokeLinotp('admin', 'userlist',
@@ -487,7 +487,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMesage=valueErrorMessage,
                                  **parameters)
-        
+
     def deletePolicy(self, name,
                      expectedValue=DefaultValue,
                      valueErrorMessage=None):
@@ -509,7 +509,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  name=name)
-        
+
     def getPolicies(self, defaultValue={}, **extraParams):
         res = self.invokeLinotp('system', 'getPolicy',
                                  expectedValue=None,
@@ -538,13 +538,13 @@ class TestAdvancedController(TestController2):
                 return res
             else:
                 return None
-        
+
         return self.invokeLinotp('admin', 'init',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  passResponse=['detail'],
                                  **parameters)
-        
+
     def assignToken(self, serial, user, pin=None, realm=None,
                     expectedValue=DefaultValue, valueErrorMessage=None):
         if expectedValue is DefaultValue:
@@ -558,7 +558,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  **parameters)
-        
+
     def enableToken(self, serial,
                     expectedValue=DefaultValue, valueErrorMessage=None):
         if expectedValue is DefaultValue:
@@ -567,7 +567,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  serial=serial)
-        
+
     def disableToken(self, serial,
                     expectedValue=DefaultValue, valueErrorMessage=None):
         if expectedValue is DefaultValue:
@@ -604,7 +604,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  serial=serial)
-        
+
     def setTokenRealm(self, serial, realm,
                       expectedValue=DefaultValue, valueErrorMessage=None):
         if expectedValue is DefaultValue:
@@ -613,7 +613,7 @@ class TestAdvancedController(TestController2):
                                  expectedValue=expectedValue,
                                  valueErrorMesage=valueErrorMessage,
                                  serial=serial, realms=realm)
-        
+
     def getTokens(self, defaultValue={}, **extraParams):
         res = self.invokeLinotp('admin', 'show',
                                  expectedValue=None,
@@ -641,12 +641,12 @@ class TestAdvancedController(TestController2):
                 return res
             else:
                 return None
-            
+
         return self.invokeLinotp('validate', 'check',
                                  expectedValue=expectedValue,
                                  valueErrorMessage=valueErrorMessage,
                                  passResponse=['details'],
-                                 **parameters)            
+                                 **parameters)
 
 
     # *********************************************************************
@@ -686,7 +686,7 @@ class TestAdvancedController(TestController2):
             self.createResolver(name=resolver['name'],
                                 type=resolver['type'],
                                 fileName=resolver['fileName'])
-            
+
     def createDefaultRealms(self):
         """
             Idea: build out of two resolvers
@@ -722,7 +722,7 @@ class TestAdvancedController(TestController2):
             for realm in ['mydefrealm', 'myotherrealm', 'mymixrealm']:
                 self.assertIn(realm, realms.keys(), 'Expected realm not available: ' + realm)
             warnings.warn('A non-expected list of realms returned')
-                
+
         # Assert 'myDefRealm' is default
         self.assertIn('default', realms['mydefrealm'],   errmsg)
         self.assertTrue(realms['mydefrealm']['default'], errmsg)
