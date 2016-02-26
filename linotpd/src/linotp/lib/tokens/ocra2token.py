@@ -305,7 +305,7 @@ class Ocra2TokenClass(TokenClass):
         return "LSO2"
 
     @classmethod
-    def classInit(cls, param, user=None):
+    def get_helper_params_post(cls, param, user=None):
 
         helper_param = {}
 

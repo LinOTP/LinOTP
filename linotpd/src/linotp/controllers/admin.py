@@ -47,6 +47,7 @@ from linotp.lib.token import (getTokens4UserOrSerial,
 from linotp.lib.token import newToken
 
 from linotp.lib.error import ParameterError
+from linotp.lib.error import TokenAdminError
 from linotp.lib.util import getParam, getLowerParams
 from linotp.lib.util import check_session, SESSION_KEY_LENGTH, remove_session_from_param
 from linotp.lib.util import get_client
@@ -745,28 +746,39 @@ class AdminController(BaseController):
             creates a new token.
 
         arguments:
-            * otpkey    - required - the hmac Key of the token
-            * genkey    - required - =1, if key should be generated. We either need otpkey or genkey
-            * keysize   - optional - either 20 or 32. Default is 20
-            * serial    - required - the serial number / identifier of the token
-            * description - optional
-            * pin        - optional - the pin of the user pass
-            * user       - optional - login user name
-            * realm      - optional - realm of the user
-            * type       - optional - the type of the token
-            * tokenrealm - optional - the realm a token should be put into
-            * otplen     - optional  - length of the OTP value
-            * hashlib    - optional  - used hashlib sha1 oder sha256
+            * otpkey (required) the hmac Key of the token
+            * genkey (required) =1, if key should be generated.
+                We either need otpkey or genkey
+            * keysize (optional) either 20 or 32. Default is 20
+            * serial (required) the serial number / identifier of the token
+            * description (optional)
+            * pin (optional) the pin of the user pass
+            * user (optional) login user name
+            * realm (optional) realm of the user
+            * type (optional) the type of the token
+            * tokenrealm (optional) the realm a token should be put into
+            * otplen (optional) length of the OTP value
+            * hashlib (optional) used hashlib sha1 oder sha256
 
         ocra arguments:
-            for generating OCRA Tokens type=ocra you can specify the following parameters:
+            for generating OCRA Tokens type=ocra you can specify the
+            following parameters:
 
-            * ocrasuite    - optional - if you do not want to use the default ocra suite OCRA-1:HOTP-SHA256-8:QA64
-            * sharedsecret - optional - if you are in Step0 of enrolling an OCRA/QR token the
-              sharedsecret=1 specifies,
+            * ocrasuite (optional) - if you do not want to use the default
+                ocra suite OCRA-1:HOTP-SHA256-8:QA64
+            * sharedsecret (optional) if you are in Step0 of enrolling an
+                OCRA/QR token the sharedsecret=1 specifies,
               that you want to generate a shared secret
-            * activationcode - optional - if you are in Step1 of enrolling an OCRA token you need to pass the
+            * activationcode (optional) if you are in Step1 of enrolling
+                an OCRA token you need to pass the
               activation code, that was generated in the QRTAN-App
+
+        qrtan arguments:
+            for generating QRTAN Tokens type=qrtan you can specify the
+            following parameters
+
+            * hashlib (optional) the hash algorithm used in the mac
+                calculation (sha512, sha256, sha1). default is sha256
 
         returns:
             a json result with a boolean
@@ -779,98 +791,134 @@ class AdminController(BaseController):
         log.debug("[init] calling the init controller function")
         ret = False
         response_detail = {}
-        helper_param = {}
 
         try:
-            tokenrealm = None
-            param = request.params
-            helper_param.update(param)
 
-            user = getUserFromParam(param, optional)
+            params = dict(request.params)
+            params.setdefault('key_size', 20)
 
-            # check admin authorization
-            res = checkPolicyPre('admin', 'init', param, user=user)
+            # ------------------------------------------------------------------
 
-            if user is not None:
-                helper_param['user.login'] = user.login
-                helper_param['user.realm'] = user.realm
+            # determine token class
 
-            # # for genkey, we have to transfer this to the lowest level
-            key_size = getParam(param, "keysize", optional) or 20
-            helper_param['key_size'] = key_size
-
-            tok_type = getParam(param, "type", optional) or 'hmac'
-
-            # if no user is given, we put the token in all realms of the admin
-            if user.login == "":
-                log.debug("[init] setting tokenrealm %s" % res['realms'])
-                tokenrealm = res['realms']
-
-
-            # # look for the tokenclass to support a class init
-            # # the classInit could do a rewrite of the request parameters
-            # # which are then used in the tokenInit as parameters
-            # # this is for example
-            # #   to find all open init challenges of a token type and set the
-            # #   serial number in the parameter list
+            token_cls_alias = getParam(params, "type", optional) or 'hmac'
 
             g = config['pylons.app_globals']
             tokenclasses = g.tokenclasses
 
-            tokenTypes = tokenclasses.keys()
-            if tok_type in tokenTypes:
-                tclass = tokenclasses.get(tok_type)
-                tclass_object = newToken(tclass)
-                if hasattr(tclass_object, 'classInit'):
-                    h_params = tclass_object.classInit(param, user=user)
-                    helper_param.update(h_params)
+            token_cls_aliases = tokenclasses.keys()
+            lower_alias = token_cls_alias.lower()
 
-            serial = helper_param.get('serial', None)
-            prefix = helper_param.get('prefix', None)
+            if lower_alias not in token_cls_aliases:
+                raise TokenAdminError('admin/init failed: unknown token '
+                                      'type %r' % token_cls_alias, id=1610)
+
+            token_cls_identifier = tokenclasses.get(lower_alias)
+            token_cls = newToken(token_cls_identifier)
+
+            # ------------------------------------------------------------------
+
+            # call the token class hook in order to enrich/overwrite the
+            # parameters (this is done because e.g. the pairing response
+            # provides the user in a encrypted format)
+
+            helper_params = token_cls.get_helper_params_pre(params)
+            params.update(helper_params)
+
+            # ------------------------------------------------------------------
+
+            # fetch user from parameters. in some cases (e.g. qrtan) the user
+            # is not in the original params, but is added by the token class
+            # hook in the above section)
+
+            user = getUserFromParam(params, optional)
+
+            if user is not None:
+                params['user.login'] = user.login
+                params['user.realm'] = user.realm
+
+            # ------------------------------------------------------------------
+
+            # check admin authorization
+
+            res = checkPolicyPre('admin', 'init', params, user=user)
+
+            # ------------------------------------------------------------------
+
+            # if no user is given, we put the token in all realms of the admin
+
+            tokenrealm = None
+            if user.login == "":
+                log.debug("[init] setting tokenrealm %s" % res['realms'])
+                tokenrealm = res['realms']
+
+            # ------------------------------------------------------------------
+
+            helper_params = token_cls.get_helper_params_post(params, user=user)
+            params.update(helper_params)
+
+            # ------------------------------------------------------------------
+
+            serial = params.get('serial', None)
+            prefix = params.get('prefix', None)
+
+            # ------------------------------------------------------------------
+
             th = TokenHandler()
             if not serial:
-                serial = th.genSerial(tok_type, prefix)
-                helper_param['serial'] = serial
+                serial = th.genSerial(token_cls_alias, prefix)
+                params['serial'] = serial
 
             log.info("[init] initialize token. user: %s, serial: %s"
                      % (user.login, serial))
-            (ret, tokenObj) = th.initToken(helper_param, user,
-                                           tokenrealm=tokenrealm)
 
-            # # result enrichment - if the token is sucessfully created,
-            # # some processing info is added to the result document,
-            # #  e.g. the otpkey :-) as qr code
-            initDetail = tokenObj.getInitDetail(helper_param, user)
+            # ------------------------------------------------------------------
+
+            (ret, token) = th.initToken(params, user,
+                                        tokenrealm=tokenrealm)
+
+            # ------------------------------------------------------------------
+
+            # different token types return different information on
+            # initialization (e.g. otpkey, pairing_url, etc)
+
+            initDetail = token.getInitDetail(params, user)
             response_detail.update(initDetail)
 
-            if tokenObj is not None and ret is True:
-                c.audit['serial'] = tokenObj.getSerial()
-                c.audit['token_type'] = tokenObj.type
+            # ------------------------------------------------------------------
+
+            # prepare data for audit
+
+            if token is not None and ret is True:
+                c.audit['serial'] = token.getSerial()
+                c.audit['token_type'] = token.type
 
             c.audit['success'] = ret
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm
 
-            # DeleteMe: This code will never run, since getUserFromParam
-            # always returns a realm!
-            # if "" == c.audit['realm'] and "" != c.audit['user']:
-            #    c.audit['realm'] = getDefaultRealm()
-
             logTokenNum(c.audit)
             c.audit['success'] = ret
-            checkPolicyPost('admin', 'init', helper_param, user=user)
 
+            # ------------------------------------------------------------------
+
+            checkPolicyPost('admin', 'init', params, user=user)
             Session.commit()
 
-            # # finally we render the info as qr immage, if the qr parameter
-            # # is provided and if the token supports this
-            if 'qr' in param and tokenObj is not None:
-                (rdata, hparam) = tokenObj.getQRImageData(response_detail)
+            # ------------------------------------------------------------------
+
+            # depending on parameters send back an qr image
+            # or a text result
+
+            if 'qr' in params and token is not None:
+                (rdata, hparam) = token.getQRImageData(response_detail)
                 hparam.update(response_detail)
-                hparam['qr'] = param.get('qr') or 'html'
+                hparam['qr'] = params.get('qr') or 'html'
                 return sendQRImageResult(response, rdata, hparam)
             else:
                 return sendResult(response, ret, opt=response_detail)
+
+        # ----------------------------------------------------------------------
 
         except PolicyException as pe:
             log.exception("[init] policy failed %r" % pe)

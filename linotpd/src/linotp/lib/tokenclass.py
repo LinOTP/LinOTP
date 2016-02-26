@@ -80,6 +80,7 @@ from linotp.lib.auth.validate import split_pin_otp
 from sqlalchemy import asc, desc
 
 from linotp.lib.context import request_context as context
+from linotp.lib.error import TokenStateError
 
 # needed for ocra token
 import urllib
@@ -94,6 +95,66 @@ optional = True
 required = False
 
 log = logging.getLogger(__name__)
+
+
+class StatefulTokenMixin(object):
+
+    """
+    A mixin used by token types that have different
+    rollout states (e.g. QRTAN and OCRA)
+    """
+
+
+    @property
+    def current_state(self):
+
+        """ signifies the current state of the token """
+
+        current_state_id = self.getFromTokenInfo('state')
+        return current_state_id
+
+    def ensure_state(self, state_id):
+
+        """
+        a barrier method to ensure that a token has a certain state.
+
+        :param state_id: The state the token has to be in
+        :raises TokenStateError: If state_id is different from the
+            current state of this token
+        """
+
+        self.ensure_state_is_in([state_id])
+
+
+    def ensure_state_is_in(self, valid_state_ids):
+
+        """
+        a barrier method to ensure that the token state is
+        in a list of valid_states
+
+        :param valid_state_ids: A list of allowed states
+        :raises TokenStateError: If token state is not in
+            the list of valid states
+        """
+
+        current_state_id = self.getFromTokenInfo('state')
+        if not current_state_id in valid_state_ids:
+            raise TokenStateError('Token %r must be in one of the following '
+                                  'states for this action: %s, but current '
+                                  'state is %s' %
+                                  (self, ','.join(valid_state_ids),
+                                   current_state_id))
+
+
+    def change_state(self, state_id):
+
+        """
+        changes the state of this token
+
+        :param state_id: The new state_id this token should have
+        """
+
+        self.addToTokenInfo('state', state_id)
 
 
 class TokenClass(object):
@@ -119,6 +180,45 @@ class TokenClass(object):
         typ = u'' + typ
         self.type = typ
         self.token.setType(typ)
+
+    # --------------------------------------------------------------------------
+
+    # interface hooks for generation of helper parameters in admin/init
+
+    @classmethod
+    def get_helper_params_pre(cls, params):
+
+        """
+        hook method which gets called with the parameters given to admin/init
+        and returns a dictionary which will be added to the helper_params.
+        In contrast to get_helper_params_post this function will be called
+        _before_ the user object gets created from the parameters
+
+        :params params: the request parameters supplied to admin/init
+        :returns: dictionary with additional helper params
+        """
+
+        return {}
+
+    @classmethod
+    def get_helper_params_post(cls, params, user):
+
+        """
+        hook method which gets called with the parameters given to admin/init
+        and the user that possibly gets created from it.
+        It returns a dictionary which will be added to the helper_params.
+        In contrast to get_helper_params_pre this function will be called
+        _after_ the user object gets created from the parameters
+
+        :params params: the request parameters supplied to admin/init
+        :params user: the user object created from the request parameters
+                      (None if no user was specified in the request)
+        :returns: dictionary with additional helper params
+        """
+
+        return {}
+
+    # --------------------------------------------------------------------------
 
     @classmethod
     def getClassType(cls):
@@ -1485,7 +1585,7 @@ class OcraTokenClass(TokenClass):
     """
 
     @classmethod
-    def classInit(cls, param, user=None):
+    def get_helper_params_post(cls, param, user=None):
 
         helper_param = {}
 

@@ -30,6 +30,7 @@ encapsulate security aspects
 
 import hmac
 import logging
+import struct
 from hashlib import sha256
 import base64
 
@@ -47,6 +48,7 @@ import ctypes
 from pylons.configuration import config as env
 from pylons import tmpl_context as c
 from linotp.lib.error import HSMException
+from linotp.lib.error import ConfigAdminError
 
 import Crypto.Hash as CryptoHash
 from Crypto.Hash import HMAC
@@ -56,6 +58,10 @@ from Crypto.Cipher import AES
 
 
 from linotp.lib.ext.pbkdf2  import PBKDF2
+from linotp.lib.context import request_context as context
+from linotp.lib.error import ValidateError
+
+from pylons import config
 
 try:
     import json
@@ -789,5 +795,96 @@ def zerome(bufferObject):
     ctypes.memset(data, 0, size.value)
     # print repr(bufferObject)
     return
+
+#-------------------------------------------------------------------------------
+
+def get_qrtan_secret_key():
+
+    """
+    reads the file defined in the config entry 'linotp.qrtan_secret_key_file',
+    extracts and decodes the secret key and returns it as a 32 bytes.
+    """
+
+    sk_file = config.get('linotpQrTanSecretKeyFile')
+
+    if sk_file is None:
+        raise ConfigAdminError('Missing entry linotpQrTanSecretKeyFile')
+
+    with open(sk_file) as f:
+
+        content = f.read()
+
+        if not content.startswith('qrtansk:'):
+            raise ValidateError('QR secret key has an invalid '
+                                'format. Must begin with \'qrtansk:\'')
+
+        b64_encoded_secret_key = content[len('qrtansk:'):]
+        secret_key = base64.b64decode(b64_encoded_secret_key)
+
+        if len(secret_key) != 32:
+            raise ValidateError('QR secret key has an invalid '
+                                'format. Key must be 32 bytes long')
+    return secret_key
+
+#-------------------------------------------------------------------------------
+
+def get_qrtan_public_key():
+
+    """
+    reads the file defined in the config entry 'linotp.qrtan_public_key_file',
+    extracts and decodes the public key and returns it as a 32 bytes.
+    """
+
+    pk_file = config.get('linotpQrTanPublicKeyFile')
+
+    if pk_file is None:
+        raise ConfigAdminError('Missing entry linotpQrTanPublicKeyFile')
+
+    with open(pk_file) as f:
+
+        content = f.read()
+
+        if not content.startswith('qrtanpk:'):
+            raise ValidateError('Curve 25519 / QR public key has an invalid '
+                                'format. Must begin with \'qrtanpk:\'')
+
+        b64_encoded_public_key = content[len('qrtanpk:'):]
+        public_key = base64.b64decode(b64_encoded_public_key)
+
+        if len(public_key) != 32:
+            raise ValidateError('Curve 25519 / QR public key has an invalid '
+                                'format. Key must be 32 bytes long')
+    return public_key
+
+def extract_tan(signature, digits):
+
+    """
+    Calculates a TAN from a signature using a procedure
+    similar to HOTP
+
+    :param signature: the signature used as a source for the TAN
+    :param digits: number of digits the should be long
+
+    :returns TAN (as integer)
+    """
+
+    offset = ord(signature[-1:]) & 0xf
+    tan = struct.unpack('>I', signature[offset:offset+4])[0] & 0x7fffffff
+    tan = tan % 10**digits
+    return tan
+
+#-------------------------------------------------------------------------------
+
+def encode_base64_urlsafe(data):
+    """ encodes a string with urlsafe base64 and removes its padding """
+    return base64.urlsafe_b64encode(data).decode('utf8').rstrip('=')
+
+def decode_base64_urlsafe(data):
+    """ decodes a string encoded with :func encode_base64_urlsafe """
+    return base64.urlsafe_b64decode(data.encode() + (-len(data) % 4)*b'=')
+
+#-------------------------------------------------------------------------------
+
+
 
 ##eof##########################################################################

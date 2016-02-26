@@ -113,5 +113,35 @@ class TokenTypeNotSupportedError(LinotpError):
 class ProgrammingError (Exception):
     pass
 
-#eof###########################################################################
+class InvalidFunctionParameter (Exception):
 
+    """
+    used to signify an invalid function parameter
+
+    Example:
+    >>> def foo(bar):
+    >>>     raise ArgumentError('bar', 'invalid bar value')
+    """
+
+    def __init__(self, parameter_name, message):
+        self.parameter_name = parameter_name
+        self.message = message
+        Exception.__init__(self, 'Parameter %s: %s' % (parameter_name, message))
+
+
+class TokenStateError (UserError):
+
+    """
+    raised by StatefulTokenMixin, if a stateful token got
+    a request that doesn't fit its internal rollout state
+
+    The exception will be mapped into the generic message
+    'Unfitting request for this token' when it gets
+    transported to the API.
+    """
+
+    def __init__(self, message):
+        log.debug('TokenStateError occured. Message: %s' % message)
+        UserError.__init__(self, 'Unfitting request for this token')
+
+#eof###########################################################################

@@ -59,6 +59,7 @@ setup(
         "qrcode>=2.4",
         "configobj>=4.6.0",
         "httplib2",
+        "pysodium>=0.6.8",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
         "pysodium>=0.6.8",
