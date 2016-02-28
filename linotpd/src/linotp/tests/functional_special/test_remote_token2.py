@@ -42,8 +42,51 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 import json
+import urlparse
+
+import httplib2
+from mock import patch
 
 from linotp.tests.functional_special import TestSpecialController
+
+
+# mocking hook is startting here
+HTTP_RESPONSE_FUNC = None
+HTTP_RESPONSE = None
+
+def mocked_http_request(HttpObject, *argparams, **kwparams):
+
+    resp = 200
+    body = kwparams.get('body', '')
+    params = dict(urlparse.parse_qsl(body))
+
+    content = {
+        "version": "LinOTP MOCK",
+        "jsonrpc": "2.0",
+        "result": {
+            "status": True,
+            "value": True
+        },
+        "id": 0
+    }
+
+    global HTTP_RESPONSE
+    if HTTP_RESPONSE:
+        status, response = HTTP_RESPONSE
+        if response:
+            content = response
+            resp = status
+        HTTP_RESPONSE = None
+
+    global HTTP_RESPONSE_FUNC
+    if HTTP_RESPONSE_FUNC:
+        test_func = HTTP_RESPONSE_FUNC
+        resp, content = test_func(params)
+        HTTP_RESPONSE_FUNC = None
+
+    return resp, json.dumps(content)
+
+
 
 
 class TestRemoteToken2(TestSpecialController):
@@ -56,12 +99,9 @@ class TestRemoteToken2(TestSpecialController):
         and we loose the information how many tokens are within a realm!
         '''
         TestSpecialController.setUp(self)
-        self.set_config_selftest()
         self.remote_url = 'http://127.0.0.1:%s' % self.paster_port
 
-        '''
-        Init the tests....
-        '''
+        # Init the tests....
         self.delete_all_policies()
         self.delete_all_token()
 
@@ -326,14 +366,13 @@ class TestRemoteToken2(TestSpecialController):
         self.assertTrue('"value": true' in response, response)
         return serial
 
-
-
-    ### define Admins
-
+    @patch.object(httplib2.Http, 'request', mocked_http_request)
     def test_check_unassigned_tokens(self):
         """
         RT2: unassigned remote token and target yubikey (check_s)
         """
+        global HTTP_RESPONSE_FUNC
+
         (y_serial, r_serial) = self.create_tokens()
 
         # check otps on yubikey
@@ -346,16 +385,34 @@ class TestRemoteToken2(TestSpecialController):
         # check otps on remote
         otp = self.yubi_valid_otps[1]
 
+        def check_func1(params):
+            resp = 200
+            value = params.get('pass') == otp
+            content = {
+                "version": "LinOTP MOCK",
+                "jsonrpc": "2.0",
+                "result": {
+                    "status": True,
+                    "value": value
+                },
+                "id": 0
+            }
+            return resp, content
+        HTTP_RESPONSE_FUNC = check_func1
+
         params = {'serial': r_serial, 'pass': otp}
         response = self.make_validate_request(action='check_s', params=params)
         self.assertIn('"value": true', response, response)
 
         return
 
+    @patch.object(httplib2.Http, 'request', mocked_http_request)
     def test_check_assigned_tokens(self):
         """
         RT2: assigned remote token without pin and target yubikey
         """
+        global HTTP_RESPONSE_FUNC
+
         (y_serial, r_serial) = self.create_tokens()
 
         params = {}
@@ -380,16 +437,34 @@ class TestRemoteToken2(TestSpecialController):
 
         otp = self.yubi_valid_otps[3]
 
+        def check_func1(params):
+            resp = 200
+            value = params.get('pass') == otp
+            content = {
+                "version": "LinOTP MOCK",
+                "jsonrpc": "2.0",
+                "result": {
+                    "status": True,
+                    "value": value
+                },
+                "id": 0
+            }
+            return resp, content
+        HTTP_RESPONSE_FUNC = check_func1
+
         params = {'user': 'passthru_user1@withpin', 'pass': otp}
         response = self.make_validate_request(action='check', params=params)
         self.assertIn('"value": true', response, response)
 
         return
 
+    @patch.object(httplib2.Http, 'request', mocked_http_request)
     def test_check_tokens_with_pin(self):
         """
         RT2: remote token with local pin and target yubikey
         """
+        global HTTP_RESPONSE_FUNC
+
         (y_serial, r_serial) = self.create_tokens()
 
         params = {}
@@ -420,7 +495,23 @@ class TestRemoteToken2(TestSpecialController):
         val = resp.get('result', {}).get('value', {})
         self.assertTrue(val['set pin'] == 1, response)
 
-        passw = "local%s" % self.yubi_valid_otps[5]
+        otp = self.yubi_valid_otps[5]
+        passw = "local%s" % otp
+
+        def check_func1(params):
+            resp = 200
+            value = params.get('pass') == otp
+            content = {
+                "version": "LinOTP MOCK",
+                "jsonrpc": "2.0",
+                "result": {
+                    "status": True,
+                    "value": value
+                },
+                "id": 0
+            }
+            return resp, content
+        HTTP_RESPONSE_FUNC = check_func1
 
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
@@ -428,10 +519,12 @@ class TestRemoteToken2(TestSpecialController):
 
         return
 
+    @patch.object(httplib2.Http, 'request', mocked_http_request)
     def test_check_tokens_with_otppin_policy(self):
         """
         RT2: remote token with otppin policy and target yubikey
         """
+        global HTTP_RESPONSE_FUNC
 
         self.create_pin_policies()
 
@@ -457,7 +550,23 @@ class TestRemoteToken2(TestSpecialController):
         response = self.make_admin_request('assign', params)
         self.assertIn('"value": true', response, response)
 
-        passw = "geheim1%s" % self.yubi_valid_otps[1]
+        otp = self.yubi_valid_otps[1]
+        passw = "geheim1%s" % otp
+
+        def check_func1(params):
+            resp = 200
+            value = params.get('pass') == otp
+            content = {
+                "version": "LinOTP MOCK",
+                "jsonrpc": "2.0",
+                "result": {
+                    "status": True,
+                    "value": value
+                },
+                "id": 0
+            }
+            return resp, content
+        HTTP_RESPONSE_FUNC = check_func1
 
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
@@ -465,13 +574,12 @@ class TestRemoteToken2(TestSpecialController):
 
         return
 
+    @patch.object(httplib2.Http, 'request', mocked_http_request)
     def test_check_tokens_with_autoassign(self):
         """
         RT2: remote token with otppin, autoassign policy and target yubikey
         """
-
-        self.skipTest("the remote server is not aware of changed config - "
-                      " s. replication config flag")
+        global HTTP_RESPONSE_FUNC
 
         self.create_pin_policies()
         self.create_autoassign_policy()
@@ -495,7 +603,23 @@ class TestRemoteToken2(TestSpecialController):
         self.assertEqual(username, 'passthru_user1', response)
 
         # check otps on remote
-        passw = "geheim1%s" % self.yubi_valid_otps[9]
+        otp = self.yubi_valid_otps[9]
+        passw = "geheim1%s" % otp
+
+        def check_func1(params):
+            resp = 200
+            value = params.get('pass') == otp
+            content = {
+                "version": "LinOTP MOCK",
+                "jsonrpc": "2.0",
+                "result": {
+                    "status": True,
+                    "value": value
+                },
+                "id": 0
+            }
+            return resp, content
+        HTTP_RESPONSE_FUNC = check_func1
 
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
@@ -512,13 +636,12 @@ class TestRemoteToken2(TestSpecialController):
 
         return
 
-    def test_check_tokens_with_autoassign_forward(self):
+    def test_00000_check_tokens_with_autoassign_forward(self):
         """
         RT2: remote token with otppin, autoassign forward policy and yubikey
         """
-
-        self.skipTest("the remote server is not aware of changed config - "
-                      " s. replication config flag")
+        self.skipTest("this test requires a real running linotp as it "
+                      "triggers an outenrollment")
 
         self.create_pin_policies()
         self.create_autoassign_policy()
@@ -527,7 +650,9 @@ class TestRemoteToken2(TestSpecialController):
         (y_serial, r_serial) = self.create_tokens()
 
         # check otps on remote
-        passw = "geheim1%s" % self.yubi_valid_otps[10]
+        otp = self.yubi_valid_otps[10]
+        passw = "geheim1%s" % otp
+
         params = {'user': 'passthru_user1@withpin', 'pass': passw}
         response = self.make_validate_request(action='check', params=params)
         self.assertIn('"value": true', response, response)
