@@ -1637,8 +1637,7 @@ def checkToolsAuthorisation(method, param={}, context=None):
 
     auth_user = context['AuthUser']
 
-    _checkToolsPolicyPre(method, param=param, authUser=auth_user, user=None,
-                                context=context)
+    _checkToolsPolicyPre(method, param=param, authUser=auth_user, user=None)
 
 
 def _checkToolsPolicyPre(method, param={}, authUser=None, user=None):
