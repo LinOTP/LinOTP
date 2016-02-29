@@ -127,6 +127,7 @@ def _set_cacertificate(cacertificates, ca_dir=None):
 
 
 @resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
+@resolver_registry.class_entry('useridresolveree.LDAPIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolver.ldapresolver')
 @resolver_registry.class_entry('ldapresolver')
 class IdResolver (UserIdResolver):

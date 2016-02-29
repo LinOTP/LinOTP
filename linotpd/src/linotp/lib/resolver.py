@@ -405,11 +405,6 @@ def getResolverObject(resolver_spec):
 
     resolvers_loaded = context.setdefault('resolvers_loaded', {})
 
-    # port of the 2.6. resolver to 2.7
-    if resolver_spec.startswith('useridresolveree.'):
-        __, __, suffix = resolver_spec.partition('.')
-        resolver_spec = 'useridresolver.' + suffix
-
     # test if the resolver is in the cache
     if resolver_spec in resolvers_loaded:
         return resolvers_loaded.get(resolver_spec)
