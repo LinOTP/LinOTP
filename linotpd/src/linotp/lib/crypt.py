@@ -336,7 +336,7 @@ def kdf2(sharesecret, nonce, activationcode, len, iterations=10000,
     '''
     key derivation function
 
-    - takes the shareed secret, an activation code and a nonce to generate
+    - takes the shared secret, an activation code and a nonce to generate
       a new key
     - the last 4 btyes (8 chars) of the nonce is the salt
     - the last byte    (2 chars) of the activation code are the checksum
@@ -456,11 +456,11 @@ def decryptPin(cryptPin, hsm=None):
 
 def encrypt(data, iv, id=0, hsm=None):
     """
-    encrypt a variable from the given input with an initialiation vector
+    encrypt a variable from the given input with an initialization vector
 
     :param input: buffer, which contains the value
     :type  input: buffer of bytes
-    :param iv:    initilaitation vector
+    :param iv:    initialization vector
     :type  iv:    buffer (20 bytes random)
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
@@ -484,11 +484,11 @@ def encrypt(data, iv, id=0, hsm=None):
 
 def decrypt(input, iv, id=0, hsm=None):
     """
-    decrypt a variable from the given input with an initialiation vector
+    decrypt a variable from the given input with an initialization vector
 
     :param input: buffer, which contains the crypted value
     :type  input: buffer of bytes
-    :param iv:    initilaitation vector
+    :param iv:    initialization vector
     :type  iv:    buffer (20 bytes random)
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
@@ -568,7 +568,7 @@ def aes_decrypt_data(data, key, iv=None):
 
     :param data: the to be decrypted data
     :param key: the encryption key
-    :param iv: the random initialisation vector
+    :param iv: the random initialization vector
     :return: the decrypted value
     """
     if iv is None:
@@ -643,7 +643,7 @@ class urandom(object):
     @classmethod
     def random(cls):
         """
-        get random float value betwee 0.0 and 1.0
+        get random float value between 0.0 and 1.0
 
         :return: float value
         """
@@ -669,7 +669,7 @@ class urandom(object):
         """
         get a floating value between start and end
 
-        :param start: start floafing value
+        :param start: start floating value
         :param end: end floating value
         :return: floating value between start and end
         """
