@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
 
 class SecurityProvider(object):
     '''
-    the Security provider is the singleton in the server who provides
+    the security provider is the singleton in the server who provides
     the security modules to run security relevant methods
 
     - read the hsm configurations
@@ -53,11 +53,11 @@ class SecurityProvider(object):
     - bind a hsm to one session
     - free the hsm from session after usage
 
-    as session identifier the thread id is used
+    the thread id is used as session identifier
     '''
     def __init__(self, secLock):
         '''
-        setup the SecurityProvider, which is called on server startup
+        setup the security provider, which is called on server startup
         from the app_globals init
 
         :param secLock: RWLock() to support server wide locking
@@ -114,7 +114,7 @@ class SecurityProvider(object):
 
             for key in config:
 
-                ## lookup, which is the active security module
+                ## look the active security module up
                 if key == 'linotpActiveSecurityModule':
                     self.activeOne = config.get(key)
                     log.debug("[SecurityProvider:load_config] setting active security module: %s" % self.activeOne)
@@ -140,7 +140,7 @@ class SecurityProvider(object):
             error = "failed to identify module: %s " % unicode(e)
             raise HSMException(error, id=707)
 
-        ## now create for each module a pool of hsm objects
+        ## now create a pool of hsm objects for each module
         self.rwLock.acquire_write()
         try:
             for id in self.config:
@@ -212,7 +212,7 @@ class SecurityProvider(object):
     def setupModule(self, hsm_id, config=None):
         '''
         setupModule is called during runtime to define
-        the config parameters like passw or connection strings
+        the config parameters like password or connection strings
         '''
         self.rwLock.acquire_write()
         try:
@@ -239,7 +239,7 @@ class SecurityProvider(object):
 
     def createHSMPool(self, hsm_id=None, *args, **kw):
         '''
-        setup a pool of secutity provider
+        setup a pool of security providers
         '''
         pool = None
         ## amount has to be taken from the hsm-id config
