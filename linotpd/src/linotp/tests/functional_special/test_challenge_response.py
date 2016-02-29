@@ -142,20 +142,6 @@ def calcOTP(key, counter=0, digits=6, typ=None):
 
 class TestChallengeResponseController(TestSpecialController):
 
-    radius_proc = None
-
-    @classmethod
-    def setup_class(cls):
-        cls.radius_process = cls.start_radius_server(cls.radius_authport,
-                                                     cls.radius_acctport)
-        TestSpecialController.setup_class()
-
-    @classmethod
-    def teardown_class(cls):
-        if cls.radius_proc:
-            cls.stop_radius_server(cls.radius_proc)
-        TestSpecialController.teardown_class()
-
     def setUp(self):
         '''
         This sets up all the resolvers and realms
@@ -176,10 +162,8 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
         self.sms_url = ("http://localhost:%s/testing/http2sms" %
                         self.paster_port)
-        self.radius_url = 'localhost:%s' % self.radius_authport,
         return
 
     def tearDown(self):
@@ -229,7 +213,7 @@ class TestChallengeResponseController(TestSpecialController):
 
     def setPinPolicy(self, name='otpPin', realm='ldap_realm',
                      action='otppin=1, ', scope='authentication',
-                     active=True, remoteurl=None):
+                     active=True):
         params = {
             'name': name,
             'user': '*',
@@ -241,177 +225,15 @@ class TestChallengeResponseController(TestSpecialController):
             'active': active,
             'session': self.session,
             }
-        cookies = {"admin_session": self.session}
 
-        r_url = url(controller='system', action='setPolicy')
-
-        if remoteurl is not None:
-            r_url = "%s/%s" % (remoteurl, "system/setPolicy")
-            response = self.do_http_request(r_url,
-                                            params=params,
-                                            cookies=cookies)
-        else:
-            response = self.make_system_request("setPolicy", params=params)
-
+        response = self.make_system_request("setPolicy", params=params)
         self.assertTrue('"status": true' in response, response)
 
-        r_url = url(controller='system', action='getPolicy')
-
-        if remoteurl is not None:
-            r_url = "%s/%s" % (remoteurl, "system/getPolicy")
-            response = self.do_http_request(r_url,
-                                            params=params,
-                                            cookies=cookies)
-        else:
-            response = self.make_system_request("getPolicy", params=params)
-
+        response = self.make_system_request("getPolicy", params=params)
         self.assertTrue('"status": true' in response, response)
 
         self.policies.append(name)
         return response
-
-    def delete_remote_policy(self, name, url):
-        """
-        Delete policy on remote LinOTP found at url
-        """
-        params = {
-            'name': name,
-            'selftest_admin': 'superadmin',
-            'session': self.session,
-            }
-        cookies = {"admin_session": self.session}
-
-        r_url = "%s/%s" % (url, "system/delPolicy")
-        response = self.do_http_request(r_url,
-                                        params=params,
-                                        cookies=cookies)
-        return response
-
-    def setup_remote_token(self,
-                           typ="pw",
-                           otpkey="123456",
-                           remoteurl=None):
-        if remoteurl is None:
-            remoteurl = self.remote_url
-        # local token
-        serials = []
-        params_list = [
-                  # the token set with remote pin checking
-                  {
-                        "serial": "LSRE001",
-                        "type": "remote",
-                        "otpkey": otpkey,
-                        "otppin": "",
-                        "user": "remoteuser",
-                        "pin": "lpin",
-                        "description": "RemoteToken1",
-                        'remote.server': remoteurl,
-                        'remote.local_checkpin': 0,
-                        'remote.serial': 'LSPW1',
-                        'session': self.session,
-                      },
-                  # target is accessed via serial, so no user is required
-                  {
-                        "serial": "LSPW1",
-                        "type": typ,
-                        "otpkey": otpkey,
-                        "otppin": "",
-                        "user": "",
-                        "pin": "rpin",
-                        'session': self.session,
-                  },
-                  # the token set with local pin checking
-                  {
-                        "serial": "LSRE002",
-                        "type": "remote",
-                        "otpkey": otpkey,
-                        "user": "localuser",
-                        "pin": "lpin",
-                        "description": "RemoteToken2",
-                        'remote.server': remoteurl,
-                        'remote.local_checkpin': 1,
-                        'remote.serial': 'LSPW2',
-                        'session': self.session,
-                        },
-                  # the target is accessed via serial, so no user is required
-                  {
-                        "serial": "LSPW2",
-                        "type": typ,
-                        "otpkey": otpkey,
-                        "otppin": "",
-                        "user": "",
-                        "pin": "",
-                        'session': self.session,
-                         },
-                  ]
-        for params in params_list:
-            serials.append(params.get('serial'))
-            response = self.make_admin_request(action='init', params=params)
-            self.assertTrue('"value": true' in response, response)
-
-        # enforce the awareness of policy changes
-        params = {
-            'enableReplication': 'true',
-            'session': self.session,
-            }
-        resp = self.make_system_request(action='setConfig', params=params)
-        assert('"setConfig enableReplication:true": true' in resp)
-
-        params = {
-            'enableReplication': 'true',
-            'session': self.session,
-            }
-        cookies = {"admin_session": self.session}
-        response = self.do_http_request("%s/system/setConfig" % remoteurl,
-                                        params=params,
-                                        cookies=cookies)
-        self.assertTrue('"setConfig enableReplication:true": true' in response,
-                        response)
-
-        return serials
-
-    def setup_radius_token(self):
-
-        serials = []
-
-        # The token with the remote PIN
-        params_list = [{
-                      "serial": "radius1",
-                      "type": "radius",
-                      "otpkey": "1234567890123456",
-                      "otppin": "",
-                      "user": "remoteuser",
-                      "pin": "",
-                      "description": "RadiusToken1",
-                      'radius.server': self.radius_url,
-                      'radius.local_checkpin': 0,
-                      'radius.user': 'challenge',
-                      'radius.secret': 'testing123',
-                      'session': self.session,
-                      },
-
-                    # the token with the local PIN
-                    {
-                      "serial": "radius2",
-                      "type": "radius",
-                      "otpkey": "1234567890123456",
-                      "otppin": "local",
-                      "user": "localuser",
-                      "pin": "local",
-                      "description": "RadiusToken2",
-                      'radius.server': self.radius_url,
-                      'radius.local_checkpin': 1,
-                      'radius.user': 'user_no_pin',
-                      'radius.secret': 'testing123',
-                      'session': self.session,
-                      },
-                     ]
-        for params in params_list:
-            response = self.make_admin_request(action='init', params=params)
-            self.assertTrue('"value": true' in response, response)
-            serials.append(params.get("serial"))
-
-        return serials
 
     def test_03_hmac_regression(self):
         '''
@@ -519,29 +341,6 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_token(serial)
         self.delete_policy('otpPin')
 
-        return
-
-    def test_00000_09_remote_regression(self):
-        '''
-        Challenge Response Test: regression remoteToken can splits passw localy or remote
-        '''
-
-        serials = self.setup_remote_token()
-
-        params = {"user": "remoteuser", "pass": "rpin123456"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": true' in response, response)
-
-        params = {"user": "localuser", "pass": "lpin123456"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": true' in response, response)
-
-        for serial in serials:
-            self.delete_token(serial)
         return
 
     def test_11_hmac_challenge_otppin1(self):
@@ -976,208 +775,6 @@ class TestChallengeResponseController(TestSpecialController):
 
         self.delete_token(serial)
         self.delete_policy(name='trigger_sms')
-
-        return
-
-    def test_16_remote_token_remote_challenge(self):
-        '''
-        Challenge Response Test: remoteToken with with remote pin check
-        '''
-        counter = 0
-        otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
-        user = "remoteuser"
-        remoteurl = self.remote_url
-
-        # setup the remote token pairs
-        serials = self.setup_remote_token(typ="hmac", otpkey=otpkey,
-                                          remoteurl=remoteurl)
-
-        # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=hmac remote')
-        self.assertTrue('"status": true,' in response, response)
-
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=hmac remote',
-                                remoteurl=remoteurl)
-        self.assertTrue('"status": true,' in response, response)
-
-        # 1. part - pin belongs to remote token
-        # check is simple auth works
-        otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        params = {"user": user, "pass": "rpin" + otp}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": true' in response, response)
-
-        # 1.1 now trigger a challenge
-        otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
-        params = {"user": user, "pass": "rpin"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": false' in response, response)
-
-        body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
-
-        # 1.2 check the challenge
-        otp = calcOTP(key=otpkey, counter=counter + 1, typ="hmac")
-        params = {"user": user, "pass": otp, "state": state}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-        # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
-
-        for serial in serials:
-            self.delete_token(serial)
-
-        self.delete_policy(name="ch_resp")
-        self.delete_remote_policy("ch_resp", remoteurl)
-
-        return
-
-    def test_17_remote_token_local_challenge(self):
-        '''
-        Challenge Response Test: remoteToken with with local pin check
-        '''
-        counter = 0
-        otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
-        user = "localuser"
-        remoteurl = self.remote_url
-
-        # setup the remote token pairs
-        serials = self.setup_remote_token(typ="hmac",
-                                          otpkey=otpkey,
-                                          remoteurl=remoteurl)
-
-        # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp",
-                                     realm='*',
-                                     action='challenge_response=hmac remote')
-        self.assertTrue('"status": true,' in response, response)
-
-        response = self.setPinPolicy(name="ch_resp",
-                                     realm='*',
-                                     action='challenge_response=hmac remote',
-                                     remoteurl=remoteurl)
-
-        # now we have to test the local pin
-        # when using the local pin, we will keep the challenge in the
-        # src token
-
-        # 1. part - pin belongs to local token - remote has no pin
-        # check is simple auth works
-        otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        params = {"user": user, "pass": "lpin" + otp}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": true' in response, response)
-
-        # 2.1 now trigger a challenge
-        counter = counter + 1
-        otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        params = {"user": user, "pass": "lpin"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": false' in response, response)
-
-        body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
-
-        # 2.2 check the challenge
-        counter = counter + 1
-        otp = calcOTP(key=otpkey, counter=counter, typ="hmac")
-        params = {"user": user, "pass": otp, "state" : state}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-        # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
-
-        for serial in serials:
-            self.delete_token(serial)
-
-        self.delete_policy(name="ch_resp")
-        self.delete_remote_policy("ch_resp", remoteurl)
-
-        return
-
-    def test_22_radiustoken_remote_pin(self):
-        """
-        Challenge Response Test: radius token with remote PIN
-        """
-        serials = self.setup_radius_token()
-        user = "remoteuser"
-        otp = "test123456"
-
-        # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=radius')
-        self.assertTrue('"status": true,' in response, response)
-
-        # 1.1 now trigger a challenge
-        params = {"user": user, "pass": "test"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": false' in response, response)
-
-        body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
-
-        # 1.2 check the challenge
-        params = {"user": user, "pass": otp, "state": state}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
-
-        for serial in serials:
-            self.delete_token(serial)
-
-        return
-
-    def test_23_radiustoken_local_pin(self):
-        """
-        Challenge Response Test: radius token with local PIN
-        """
-        serials = self.setup_radius_token()
-
-        user = "localuser"
-        otp = "654321"
-
-        # now switch policy on for challenge_response for hmac token
-        response = self.setPinPolicy(name="ch_resp", realm='*',
-                                action='challenge_response=radius')
-        self.assertTrue('"status": true,' in response, response)
-
-        # 1.1 now trigger a challenge
-        params = {"user": user, "pass": "local"}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-
-        self.assertTrue('"value": false' in response, response)
-
-        body = json.loads(response.body)
-        state = body.get('detail', {}).get('transactionid', '')
-        self.assertTrue(state != '', response)
-
-        # 1.2 check the challenge
-        params = {"user": user, "pass": otp, "state": state}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
-        # hey, if this ok, we are done for the remote pin check
-        self.assertTrue('"value": true' in response, response)
-
-        for serial in serials:
-            self.delete_token(serial)
 
         return
 
