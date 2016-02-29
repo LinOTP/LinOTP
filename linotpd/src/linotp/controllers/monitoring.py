@@ -166,9 +166,7 @@ class MonitoringController(BaseController):
                         invalid_realms.append(search_realm)
                 if not realms and invalid_realms:
                     raise PolicyException(_('You do not have the rights to '
-                                            'monitor these realms: %r. '
-                                            'Check the policies!')
-                                          % invalid_realms)
+                                            'monitor these realms.'))
 
             totals = {}
             realm_info = {}
@@ -376,9 +374,7 @@ class MonitoringController(BaseController):
                         invalid_realms.append(search_realm)
                 if not realms and invalid_realms:
                     raise PolicyException(_('You do not have the rights to '
-                                            'monitor these realms: %r. '
-                                            'Check the policies!')
-                                          % invalid_realms)
+                                            'monitor these realms.'))
 
             realm_info = {}
             for a_realm in realms:
