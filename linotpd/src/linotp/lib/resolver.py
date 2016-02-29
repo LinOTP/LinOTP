@@ -90,14 +90,9 @@ class Resolver():
                           (self.type, unicode(resolvertypes)))
             raise e
 
-        resolvers = getResolverList(filter_resolver_type=self.type)
-        for resolver in resolvers:
-            if self.name.lower() == resolver.lower():
-                if self.name == resolver:
-                    continue
-                e = Exception("resolver with similar name already exists: %s" %
-                              (resolver))
-                raise e
+        if similar_resolver_exists(self.name):
+            raise Exception('resolver with similar name already exists (%s)' %
+                            self.name)
 
         resolver_config = get_resolver_classConfig(self.type)
         if self.type in resolver_config:
@@ -193,6 +188,51 @@ def defineResolver(params):
 
     return res
 
+def similar_resolver_exists(config_identifier):
+
+    """
+    Signifies if a resolver identified by config_identifer
+    exists in the configuration.
+
+    :remark: matches case insensitive
+
+    :returns: bool
+    """
+
+    config = context.get('Config')
+    cls_identifiers = context.get('resolver_classes').keys()
+
+    for config_entry in config:
+        for cls_identifier in cls_identifiers:
+            if config_entry.startswith('linotp.' + cls_identifier):
+                __, __, entry_config_identifier = config_entry.rpartition('.')
+                if entry_config_identifier.lower() == config_identifier.lower():
+                    return True
+
+    return False
+
+
+def get_cls_identifier(config_identifier):
+
+    """
+    Returns the class identifier string for a existing resolver
+    identified by config_identifier (or None, if config_identifier
+    doesn't exist)
+    """
+
+    config = context.get('Config')
+    cls_identifiers = context.get('resolver_classes').keys()
+
+    for config_entry in config:
+
+        if not config_entry.endswith(config_identifier):
+            continue
+
+        for cls_identifier in cls_identifiers:
+            if config_entry.startswith('linotp.' + cls_identifier):
+                return cls_identifier
+
+    return None
 
 # external system/getResolvers
 def getResolverList(filter_resolver_type=None):

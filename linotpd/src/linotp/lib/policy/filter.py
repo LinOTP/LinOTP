@@ -128,9 +128,8 @@ class UserDomainCompare(object):
             def_resolver = def_resolver.split('.')[-1]
 
         # check if the resolver is defined at all
-        from linotp.lib.resolver import getResolverList
-        resolvers = getResolverList()
-        if def_resolver not in resolvers:
+        from linotp.lib.resolver import similar_resolver_exists
+        if not similar_resolver_exists(def_resolver):
             return False
 
         # if we have no user part and came that far, we ar e done
