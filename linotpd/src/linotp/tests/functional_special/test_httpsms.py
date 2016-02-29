@@ -38,17 +38,61 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 
-from linotp.tests.functional_special import TestSpecialController
-from linotp.tests import url
-from linotp.lib.util import str2unicode
-
+import logging
 import tempfile
+import urlparse
+
+import httplib2
+from mock import patch
+
+from pylons import url
+from linotp.lib.util import str2unicode
+from linotp.tests.functional_special import TestSpecialController
+
+
+# mocking hook is startting here
+HTTP_RESPONSE_FUNC = None
+HTTP_RESPONSE = None
+
+def mocked_http_request(HttpObject, *argparams, **kwparams):
+
+    resp = 200
+    body = kwparams.get('body', '')
+    params = dict(urlparse.parse_qsl(body))
+
+    content = {
+        "version": "LinOTP MOCK",
+        "jsonrpc": "2.0",
+        "result": {
+            "status": True,
+            "value": True
+        },
+        "id": 0
+    }
+
+    global HTTP_RESPONSE
+    if HTTP_RESPONSE:
+        status, response = HTTP_RESPONSE
+        if response:
+            content = response
+            resp = status
+        HTTP_RESPONSE = None
+
+    global HTTP_RESPONSE_FUNC
+    if HTTP_RESPONSE_FUNC:
+        test_func = HTTP_RESPONSE_FUNC
+        resp, content = test_func(params)
+        HTTP_RESPONSE_FUNC = None
+
+    return resp, json.dumps(content)
+
+
+
 try:
     import json
 except ImportError:
     import simplejson as json
 
-import logging
 log = logging.getLogger(__name__)
 
 
