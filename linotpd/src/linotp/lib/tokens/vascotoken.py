@@ -23,7 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-"""This file containes the dynamic Vasco token implementation:
+"""This file contains the dynamic Vasco token implementation:
               - VascoTokenClass (vasco)
 """
 
