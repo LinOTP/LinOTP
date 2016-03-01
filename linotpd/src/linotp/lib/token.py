@@ -916,7 +916,7 @@ def auto_enrollToken(passw, user, options=None):
     if token_type == 'sms':
         mobile = u_info.get('mobile', None)
         if not mobile:
-            msg = ('auto_enrollemnt for user %s faild: missing mobile number!'
+            msg = ('Autoenrollment for user %s failed: missing mobile number!'
                         % user)
             log.warning(msg)
             return False, {'error': msg}
@@ -927,7 +927,7 @@ def auto_enrollToken(passw, user, options=None):
     elif token_type == 'email':
         email = u_info.get('email', None)
         if not email:
-            msg = ('auto_enrollemnt for user %s faild: missing email!'
+            msg = ('Autoenrollment for user %s failed: missing email!'
                         % user)
             log.warning(msg)
             return False, {'error': msg}
@@ -935,7 +935,7 @@ def auto_enrollToken(passw, user, options=None):
 
     # else: token type undefined
     else:
-        msg = ('auto_enrollemnt for user %s faild: unknown token type'
+        msg = ('Autoenrollment for user %s failed: unknown token type'
                     % (user, token_type))
         log.warning(msg)
         return False, {'error': msg}
@@ -964,7 +964,7 @@ def auto_enrollToken(passw, user, options=None):
         # trigger challenge for user
         (_res, reply) = linotp.lib.validate.create_challenge(tokenObj, options=options)
         if _res is not True:
-            error = ('failed to create challenge for user %s@%s during autoenrollment'
+            error = ('Failed to create challenge for user %s@%s during autoenrollment'
                       % (user.login, user.realm))
             log.error(error)
             raise Exception(error)
