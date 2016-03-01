@@ -74,9 +74,9 @@ def mocked_http_request(HttpObject,  *argparams, **kwparams):
         },
         "id": 0
     }
-    r_auth_detail = TestValidateController.R_AUTH_DETAIL
-    if r_auth_detail:
-        content['detail'] = r_auth_detail
+    r_auth_info = TestValidateController.R_AUTH_DETAIL
+    if r_auth_info:
+        content['detail'] = r_auth_info
 
     return resp, json.dumps(content)
 
@@ -1663,8 +1663,8 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        auth_detail = jresp.get('detail', {}).get('auth_detail', None)
-        self.assertTrue(auth_detail is None, response)
+        auth_info = jresp.get('detail', {}).get('auth_info', None)
+        self.assertTrue(auth_info is None, response)
 
         otp = otps[1]
         params = {'user': user,
@@ -1675,13 +1675,13 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == len(pin), response)
 
-        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
-        self.assertTrue("otp_length" in otp_dict, response)
-        self.assertTrue(otp_dict["otp_length"] == 6, response)
+        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        self.assertTrue("otp_length" in otp_list, response)
+        self.assertTrue(otp_list[1] == 6, response)
 
         self.delete_token(serial)
 
@@ -1696,9 +1696,9 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == len(pin), response)
 
         self.delete_token(serial)
 
@@ -1716,13 +1716,13 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == len(pin), response)
 
-        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
-        self.assertTrue("otp_length" in otp_dict, response)
-        self.assertTrue(otp_dict["otp_length"] == len(otpkey), response)
+        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        self.assertTrue("otp_length" in otp_list, response)
+        self.assertTrue(otp_list[1] == len(otpkey), response)
 
         self.delete_token(serial)
 
@@ -1746,13 +1746,13 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == 0, response)
+        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == 0, response)
 
-        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
-        self.assertTrue("otp_length" in otp_dict, response)
-        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        self.assertTrue("otp_length" in otp_list, response)
+        self.assertTrue(otp_list[1] == len(otps[0]), response)
 
         params = {'user': user,
                   'pin': pin,
@@ -1769,13 +1769,13 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == len(pin), response)
 
-        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
-        self.assertTrue("otp_length" in otp_dict, response)
-        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        self.assertTrue("otp_length" in otp_list, response)
+        self.assertTrue(otp_list[1] == len(otps[0]), response)
 
         self.delete_token(serial)
 
@@ -1810,13 +1810,13 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == len(pin), response)
 
-        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
-        self.assertTrue("otp_length" in otp_dict, response)
-        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        self.assertTrue("otp_length" in otp_list, response)
+        self.assertTrue(otp_list[1] == len(otps[0]), response)
 
         self.delete_token(remote_serial)
 
@@ -1826,8 +1826,8 @@ please enable 'linotp.selfTest = True' in your *.ini
                                                  check_pin=0)
 
         TestValidateController.R_AUTH_DETAIL = {
-            'auth_detail': [{'pin_length': len(pin)},
-                            {'otp_length': len(otps[0])}
+            'auth_info': [('pin_length', len(pin)),
+                            ('otp_length', len(otps[0]))
                             ]
         }
 
@@ -1839,17 +1839,17 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         self.assertTrue('"value": true' in response, response)
 
-        auth_detail = jresp.get('detail', {}).get('auth_detail', [])
+        auth_info = jresp.get('detail', {}).get('auth_info', [])
 
-        self.assertTrue(len(auth_detail) == 2, response)
+        self.assertTrue(len(auth_info) == 2, response)
 
-        pin_dict = auth_detail[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+        pin_list = auth_info[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == len(pin), response)
 
-        otp_dict = auth_detail[1]
-        self.assertTrue("otp_length" in otp_dict, response)
-        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+        otp_list = auth_info[1]
+        self.assertTrue("otp_length" in otp_list, response)
+        self.assertTrue(otp_list[1] == len(otps[0]), response)
 
         self.delete_token(target_serial)
         self.delete_token(remote_serial)
@@ -1885,13 +1885,13 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         jresp = json.loads(response.body)
 
-        pin_dict = jresp.get('detail', {}).get('auth_detail', [])[0]
-        self.assertTrue("pin_length" in pin_dict, response)
-        self.assertTrue(pin_dict["pin_length"] == len(pin), response)
+        pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
+        self.assertTrue("pin_length" in pin_list, response)
+        self.assertTrue(pin_list[1] == len(pin), response)
 
-        otp_dict = jresp.get('detail', {}).get('auth_detail', [])[1]
-        self.assertTrue("otp_length" in otp_dict, response)
-        self.assertTrue(otp_dict["otp_length"] == len(otps[0]), response)
+        otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
+        self.assertTrue("otp_length" in otp_list, response)
+        self.assertTrue(otp_list[1] == len(otps[0]), response)
 
         self.delete_token(target_serial)
         self.delete_token(remote_serial)

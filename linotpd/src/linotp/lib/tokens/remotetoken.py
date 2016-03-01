@@ -390,10 +390,10 @@ class RemoteTokenClass(TokenClass):
                 if result.get('result', {}).get('value', False) is True:
                     res = True
                     otp_count = 0
-                    auth_detail = result.get('detail', {}).get('auth_detail',
+                    auth_info = result.get('detail', {}).get('auth_info',
                                                                None)
-                    if auth_detail and not self.local_pin_check:
-                        self.auth_detail['auth_detail'] = auth_detail
+                    if auth_info and not self.local_pin_check:
+                        self.auth_info['auth_info'] = auth_info
 
                 else:
                     # if false and detail - this is a challenge response

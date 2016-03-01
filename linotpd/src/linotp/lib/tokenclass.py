@@ -112,7 +112,7 @@ class TokenClass(object):
         self.invalid_token = []
         self.valid_token = []
         self.related_challenges = []
-        self.auth_detail = {}
+        self.auth_info = {}
 
     def setType(self, typ):
         typ = u'' + typ
@@ -236,8 +236,8 @@ class TokenClass(object):
                 otp_counter = check_otp(self, otpval, options=options)
 
         # for special token that have no otp like passwordtoken
-        if not self.auth_detail and pin_match is True and otp_counter == 0:
-            self.auth_detail = {'auth_info': [{'pin_length': len(passw)}]}
+        if not self.auth_info and pin_match is True and otp_counter == 0:
+            self.auth_info = {'auth_info': [('pin_length', len(passw))]}
 
         return (pin_match, otp_counter, reply)
 
@@ -1353,15 +1353,15 @@ class TokenClass(object):
         if getFromConfig("PrependPin") == "True":
             pin = passw[0:-otplen]
             otpval = passw[-otplen:]
-            auth_info.append({'pin_length': len(pin)})
-            auth_info.append({'otp_length': len(otpval)})
+            auth_info.append(('pin_length', len(pin)))
+            auth_info.append(('otp_length', len(otpval)))
         else:
             pin = passw[otplen:]
             otpval = passw[0:otplen]
-            auth_info.append({'otp_length': len(otpval)})
-            auth_info.append({'pin_length': len(pin)})
+            auth_info.append(('otp_length', len(otpval)))
+            auth_info.append(('pin_length', len(pin)))
 
-        self.auth_detail['auth_detail'] = auth_info
+        self.auth_info['auth_info'] = auth_info
 
         return pin, otpval
 
@@ -1449,7 +1449,7 @@ class TokenClass(object):
 
     def getAuthDetail(self):
 
-        return self.auth_detail
+        return self.auth_info
 
     def getInitDetail(self, params, user=None):
         '''
