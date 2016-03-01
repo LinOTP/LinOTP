@@ -61,7 +61,7 @@ class ToolsController(BaseController):
             log.debug("[__before__::%r] %r" % (action, params))
 
             # Session handling
-            check_session(request)
+            check_session()
 
             checkToolsAuthorisation(action, params,
                                     context=self.request_context)
