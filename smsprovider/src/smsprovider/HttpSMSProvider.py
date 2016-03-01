@@ -509,9 +509,12 @@ class HttpSMSProvider(ISMSProvider):
         if type(parameter) == dict:
             params = []
             for key, value in parameter.items():
-                value = unicode(value).encode('utf-8')
                 key = unicode(key).encode('utf-8')
-                params.append("%s=%s" % (key, urllib.quote(value)))
+                if value:
+                    value = unicode(value).encode('utf-8')
+                    params.append("%s=%s" % (key, urllib.quote(value)))
+                else:
+                    params.append("%s" % key)
             encoded_params = "&".join(params)
         return str(encoded_params)
 
