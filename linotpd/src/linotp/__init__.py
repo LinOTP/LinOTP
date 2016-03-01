@@ -68,4 +68,4 @@ __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@lsexperts.de"
 __version__ = '2.8.2.dev0'
-__api__ = "2.0"
+__api__ = "2.0802"
