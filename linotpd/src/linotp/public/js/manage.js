@@ -3327,8 +3327,18 @@ $(document).ready(function(){
             },
             'Save': { click: function(){
                     if ($("#form_realmconfig").valid()) {
-                        save_realm_config();
-                        $(this).dialog('close');
+                        /* first check if there is at least one resolver selected */
+                        var resolvers = g.resolvers_in_realm_to_edit.split(',');
+                        if (resolvers.length == 1 &&
+                            resolvers[0].length == 0){
+                            alert_box({'title': i18n.gettext("No resolver selected"),
+                                       'text': i18n.gettext("Please select at least one resolver from the resolver list."),
+                                       'is_escaped': true});
+
+                        } else {
+                            save_realm_config();
+                            $(this).dialog('close');
+                        }
                     }
                 },
                 id: "button_editrealms_save",
