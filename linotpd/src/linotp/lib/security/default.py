@@ -195,7 +195,7 @@ class DefaultSecurityModule(SecurityModule):
         key = self.getSecret(id)
         # convert input to ascii, so we can securely append bin data
         input = binascii.b2a_hex(data)
-        input += u"\x01\x02"
+        input += '\x01\x02'
         padding = (16 - len(input) % 16) % 16
         input += padding * "\0"
         aes = AES.new(key, AES.MODE_CBC, iv)
@@ -232,7 +232,7 @@ class DefaultSecurityModule(SecurityModule):
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)
         output = aes.decrypt(input)
-        eof = output.rfind(u"\x01\x02")
+        eof = output.rfind('\x01\x02')
         if eof >= 0:
             output = output[:eof]
 

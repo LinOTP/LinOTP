@@ -551,7 +551,7 @@ def aes_encrypt_data(data, key, iv=None):
 
     # convert data from binary to hex as it might contain unicode++
     input_data = binascii.b2a_hex(data)
-    input_data += u"\x01\x02"
+    input_data += '\x01\x02'
     padding = (16 - len(input_data) % 16) % 16
     input_data += padding * "\0"
     aes = AES.new(key, AES.MODE_CBC, iv)
@@ -580,7 +580,7 @@ def aes_decrypt_data(data, key, iv=None):
 
     aes = AES.new(key, AES.MODE_CBC, iv)
     output = aes.decrypt(data)
-    eof = output.rfind(u"\x01\x02")
+    eof = output.rfind('\x01\x02')
     if eof >= 0:
         output = output[:eof]
 
