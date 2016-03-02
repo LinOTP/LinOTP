@@ -1,0 +1,3137 @@
+# Chinese translations for LinOTP package - Chinese messages for LinOTP.
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP admin clients.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+# linotp@lsexperts.de <>, 2015, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: LinOTP 2\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"PO-Revision-Date: 2016-03-02 16:32+0100\n"
+"Last-Translator: linotp@lsexperts.de\n"
+"Language-Team: Chinese <>\n"
+"Language: zh\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Generator: Gtranslator 2.91.7\n"
+
+#, python-format
+msgid ""
+"You do not have the rights to monitor these realms: %r. Check the policies!"
+msgstr "您没有权限监测下列域：%r。请检查您的策略！"
+
+msgid "Summary"
+msgstr "概要："
+
+msgid "Realms"
+msgstr "域"
+
+msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
+msgstr "策略名只能包含字符 a-zA-Z0-9_。"
+
+msgid "The name of the policy must not be empty"
+msgstr "策略名不能为空。"
+
+msgid "You are not authenticated"
+msgstr "您未被认证"
+
+#, python-format
+msgid "No valid authentication session %r"
+msgstr "缺少有效的认证会话 %r"
+
+msgid "No valid session"
+msgstr "缺少有效会话"
+
+#, python-format
+msgid "Error: %s"
+msgstr "出错: %s"
+
+msgid "The token you want to assign is  not contained in your realm!"
+msgstr "您请求分配的令牌不在您的域内！"
+
+msgid "The token is already assigned to another user."
+msgstr "令牌已分配给其他用户。"
+
+#, python-format
+msgid ""
+"valid types are 'oathtoken' and 'googleauthenticator' and "
+"'googleauthenticator_time'. You provided %s"
+msgstr ""
+"有效类型是 'oathtoken'、'googleauthenticator' 或 'googleauthenticator_time'。"
+"您提供的是 %s"
+
+msgid "getotp is not activated."
+msgstr "'getotp' 未启用"
+
+#, python-format
+msgid "The serial %s does not belong to user %s@%s"
+msgstr "序列号 %s 不属于用户 %s@%s"
+
+msgid "see policy definition."
+msgstr "请参照策略定义。"
+
+#, python-format
+msgid "selfservice/usergetmultiotp failed: %s"
+msgstr "selfservice/usergetmultiotp 错误： %s"
+
+#, python-format
+msgid "audit/search failed: %s"
+msgstr "搜索审计日志出错： %s"
+
+#, python-format
+msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
+msgstr "有效值是 'ocra' 或 'ocra2'. 您提供的是 %s"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to do monitoring.You are missing a "
+"policyscope=monitoring, action=%s"
+msgstr "您没有监视的管理权限。缺少策略 'scope=monitoring' 和 'action=%s'。"
+
+#, python-format
+msgid "The provided PIN is too short. It should be at least %i characters."
+msgstr "输入的 PIN 码太短。它至少应该有 %i 个字符。"
+
+#, python-format
+msgid ""
+"The provided PIN is too long. It should not be longer than %i characters."
+msgstr "输入的 PIN 码太长。它最大限度为 %i 个字符。"
+
+#, python-format
+msgid ""
+"The provided PIN does not contain characters of the group or it does "
+"contains characters that are not in the group %s"
+msgstr "输入的 PIN 码未包含指定的字符，或者包含了未被指定的字符： %s"
+
+msgid ""
+"The provided PIN does not contain any letters. Check policy otp_pin_contents."
+msgstr " 输入的 PIN 码未包含任何指定的字母，请查看策略 'otp_pin_content'。"
+
+msgid ""
+"The provided PIN does not contain any numbers. Check policy otp_pin_contents."
+msgstr "输入的 PIN 码未包含任何指定的数字，请查看策略 'otp_pin_content'。"
+
+msgid ""
+"The provided PIN does not contain any special characters. It should contain "
+"some of these characters like .: ,;-_<>+*~!/()=?$. Check policy "
+"otp_pin_contents."
+msgstr ""
+"输入的 PIN 码未包含任何指定的特殊字符，请查看策略 'otp_pin_content'。特殊字符"
+"包括 .: ,;-_<>+*~!/()=?$。"
+
+msgid ""
+"The provided PIN does not contain any other characters. It should contain "
+"some of these characters that are not contained in letters, digits and the "
+"defined special characters. Check policy otp_pin_contents."
+msgstr ""
+"输入的 PIN 码未包含任何特别字符，PIN 码应当包含一些除了字母、数字和被指定的特"
+"殊字符以外的特别字符。请查看策略 'otp_pin_content'。"
+
+#, python-format
+msgid "The PIN contains letters, although it should not! (%s)"
+msgstr "PIN 码包含字母，虽然不应该如此（%s）"
+
+#, python-format
+msgid "The PIN contains digits, although it should not! (%s)"
+msgstr "PIN 码包含数字，虽然不应该如此（%s）"
+
+#, python-format
+msgid "The PIN contains special characters, although it should not! (%s)"
+msgstr "PIN 码包含特殊字符，虽然不应该如此（%s）"
+
+#, python-format
+msgid "The PIN contains other characters, although it should not! (%s)"
+msgstr "PIN 码包含特别字符，虽然不应该如此（%s）"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to manage tools. You are missing a "
+"policy scope=tools, action=%s"
+msgstr "您没有运行这些工具的管理权限。缺少策略 'scope=tools' 和 'action=%s'。"
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr "策略 selfservice/max_count 缺少对令牌类型%s 的定义。"
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr "策略 selfservice/max_count 缺少对令牌类型 %s 在 %s 域中的定义。"
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "该策略设置不允许您发起该请求！"
+
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr "已达到最大令牌数量。您将不能登记更多的令牌。"
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr "支持的最大令牌数已溢出，请检查相关策略。"
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr "该策略不允许您请求 OTP 序列号！"
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "自助服务中的未知方法： %s"
+
+msgid "You do not have any rights in any realm! Check the policies."
+msgstr "您在所有域均没有权限：请检查您的策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to remove token %s. Check the "
+"policies."
+msgstr "您没有管理权限删除令牌 %s 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to enable token %s. Check the "
+"policies."
+msgstr "您没有管理权限激活令牌 %s 请检查策略。"
+
+msgid ""
+"You may not enable any more tokens. Your maximum token number is reached!"
+msgstr "达到最大令牌数量 - 没有更多可以被激活的令牌。"
+
+#, python-format
+msgid ""
+"You may not enable any more tokens in realm %s. Check the policy 'tokencount'"
+msgstr "在域 %s内 没有更多可被激活的令牌。请检查策略 'tokencount'。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to disable token %s. Check the "
+"policies."
+msgstr "您没有管理权限取消令牌 %s 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to copy PIN of token %s. Check the "
+"policies."
+msgstr "您没有管理权限复制令牌 %s 的 PIN 码。请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to copy user of token %s. Check the "
+"policies."
+msgstr "您没有管理权限复制令牌 %s 的用户。请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to run the losttoken workflow for "
+"token %s. Check the policies."
+msgstr "您没有管理权限启用令牌 %s 的令牌丢失进程。请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to run the getotp workflow for "
+"token %s. Check the policies."
+msgstr "您没有管理权限启用令牌 %s 的 'getotp' 进程。请检查策略。"
+
+msgid ""
+"You do not have the administrative right to get serials by OTPs in this "
+"realm!"
+msgstr "您没有管理权限在当前域通过 OTP 获得序列号。请检查策略。"
+
+#, python-format
+msgid "The tokentype '%s' could not be found."
+msgstr "未找到令牌类型 '%s'。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to init token %s of type %s to user "
+"%s@%s. Check the policies."
+msgstr "您没有管理权限注册令牌 %s 类型为 %s 用户为 %s@%s  - 请检查策略。"
+
+msgid ""
+"You do not have the administrative right to enroll tokens. Check the "
+"policies."
+msgstr "您没有管理权限注册令牌 - 请检查策略。"
+
+#, python-format
+msgid "You do not have the administrative right to init token %s of type %s."
+msgstr "您没有管理权限注册令牌 %s 类型为 %s 。"
+
+#, python-format
+msgid ""
+"The maximum allowed number of tokens for the realm %s was reached. You can "
+"not init any more tokens. Check the policies scope=enrollment, "
+"action=tokencount."
+msgstr ""
+"在域 %s 内达到最大令牌数量。您无法为该域注册更多的令牌。请检查策略 "
+"scope=enrollment, action=tokencount。"
+
+msgid ""
+"The maximum number of allowed tokens per user is exceeded. Check the "
+"policies scope=enrollment, action=maxtoken"
+msgstr ""
+"达到每个用户允许的最大令牌数量。请检查策略 scope=enrollment, "
+"action=tokencount。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to unassign token %s. Check the "
+"policies."
+msgstr "您没有管理权限取消令牌 %s 分配 - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to assign token %s. Check the "
+"policies."
+msgstr "您没有管理权限分配令牌 %s - 请检查策略。"
+
+#, python-format
+msgid ""
+"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
+"can not assign any more tokens. Check the policies."
+msgstr ""
+"在域 %s (%s) 内已达到最大允许令牌数量。您无法注册更多的令牌。请检查策略。"
+
+msgid "the maximum number of allowed tokens is exceeded. Check the policies"
+msgstr "已超出最大允许令牌数量 - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set MOTP PIN/ SC UserPIN for "
+"token %s. Check the policies."
+msgstr "您没有管理权限为令牌 %s 设置 MOTP PIN / SC UserPIN - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set Smartcard PIN for token %s. "
+"Check the policies."
+msgstr "您没有管理权限设置令牌 %s 的智能卡 PIN - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set OTP PIN for token %s. Check "
+"the policies."
+msgstr "您没有管理权限设置令牌 %s 的 OTP PIN 码 - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to set token properties for %s. "
+"Check the policies."
+msgstr "您没有管理权限设置令牌 %s 的令牌属性 - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to resync token %s. Check the "
+"policies."
+msgstr "您没有管理权限同步令牌 %s - 请检查策略。"
+
+#, python-format
+msgid "You do not have the administrative right to list users in realm %s(%s)."
+msgstr "您没有管理权限显示域 %s(%s) 内的用户。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to get the token owner in realm "
+"%s(%s)."
+msgstr "您没有管理权限查看域 %s(%s)内的令牌拥有者"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to show status of token challenges "
+"in realm %s(%s)."
+msgstr "您没有管理权限查看域 %s(%s) 内的令牌挑战码"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to remove tokens from realm %s. "
+"Check the policies."
+msgstr "您没有管理权限删除域 %s 内的令牌 - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to add tokens to realm %s. Check "
+"the policies."
+msgstr "您没有管理权限在域 %s 内添加令牌 - 请检查策略。"
+
+#, python-format
+msgid ""
+"You may not put any more tokens in realm %s. Check the policy 'tokencount'"
+msgstr "域 %s 内无法添加更多的令牌 - 请检查策略 'tokencount'。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to reset token %s. Check the "
+"policies."
+msgstr "您没有管理权限重置令牌 %s - 请检查策略。"
+
+msgid ""
+"You do not have the administrative right to import tokens. Check the "
+"policies."
+msgstr "您没有管理权限导入令牌 - 请检查策略。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to import token files to realm %s. "
+"Check the policies."
+msgstr "您没有管理权限向域 %s 内导入令牌 - 请检查策略。"
+
+#, python-format
+msgid ""
+"The maximum number of allowed tokens in realm %s is exceeded. Check policy "
+"tokencount!"
+msgstr "在域 %s 内达到最大令牌数量 - 请检查策略 'tokencount'!"
+
+#, python-format
+msgid "Failed to run checkPolicyPre. Unknown method: %s"
+msgstr "策略检查发生错误 - 未知方法： %s"
+
+#, python-format
+msgid "There is no policy gettoken/max_count definable for the tokentype %r"
+msgstr "缺少策略 'gettoken/maxcount' 针对令牌类型 %r"
+
+msgid ""
+"You do not have the administrative right to view the audit trail. You are "
+"missing a policy scope=audit, action=view"
+msgstr "您没有管理权限查看审计日志。缺少策略 'scope=audit' 和 'action=view'。"
+
+#, python-format
+msgid "Policy check failed. You are not allowed to %s system config."
+msgstr "策略检查失败 - 您不能查看或更改 (%s)系统配置。"
+
+#, python-format
+msgid "You do not have the administrative right to do an ocra/%s"
+msgstr "您没有管理权限执行 OCRA: ocra/%s。"
+
+#, python-format
+msgid "Failed to run getPolicyPre. Unknown controller: %s"
+msgstr "策略检查失败 - 未知控制器 %s"
+
+msgid ""
+"You do not have the administrative right to get serials from this realm!"
+msgstr "您没有管理权限请求本域的序列号！"
+
+#, python-format
+msgid "Failed to run getPolicyPost. Unknown method: %s"
+msgstr "策略检查失败 - 未知方法 %s"
+
+msgid "You do not have system config read rights and not realm admin policies."
+msgstr "您没有权限浏览系统配置或域管理策略。"
+
+#, python-format
+msgid "Failed to run getPolicyPost. Unknown controller: %s"
+msgstr "策略检查失败 - 未知控制器 %s"
+
+msgid "multiple tokens found - cannot determine tokentype!"
+msgstr "发现多个令牌 - 不能确定令牌的类型！"
+
+msgid "Support not available, your product is unlicensed"
+msgstr "支持不可用"
+
+msgid "license file is empty!"
+msgstr "缺少许可证文件！"
+
+msgid "signature could not be verified!"
+msgstr "签名无效！"
+
+msgid "no license expiration information in license "
+msgstr "缺少许可证期限信息"
+
+msgid "no license subscription information in license"
+msgstr "缺少许可证订阅信息"
+
+msgid "invalid license (old license style)"
+msgstr "无效许可证（旧的许可证格式）"
+
+msgid "tokens used"
+msgstr "令牌已被使用"
+
+msgid "tokens supported"
+msgstr "令牌已被许可"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "不支持日期格式 %r"
+
+msgid "expired - valid till"
+msgstr "过期 - 期限至"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr "getTokenOwner：用户 %s/%s 和令牌 %s 包含在多个域： %s内。"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr "getTokenOwner：用户 %s 位于分配器 %s 的令牌 %s 无法在任何域内找到！"
+
+msgid "OTP seed"
+msgstr "OTP 密钥"
+
+msgid "URL for OCRA token"
+msgstr "OCRA 令牌链接"
+
+msgid "E-mail OTP Token"
+msgstr "OTP 令牌邮件"
+
+msgid "E-mail provider config"
+msgstr "电子邮件配置"
+
+msgid "Provider"
+msgstr "供应商"
+
+msgid "Provider config"
+msgstr "供应商配置"
+
+msgid "Challenge validity (sec)"
+msgstr "电子邮件挑战码有效性（秒）"
+
+msgid "Time between e-mails (sec)"
+msgstr "电子邮件间隔时间（秒）"
+
+msgid "E-mail token"
+msgstr "电子邮件令牌"
+
+msgid "E-mail address"
+msgstr "电子邮件地址"
+
+msgid "Description"
+msgstr "描述"
+
+msgid "Protect your token with a static PIN"
+msgstr "通过固定 PIN 码保护自己的令牌："
+
+msgid "Token PIN:"
+msgstr "令牌 PIN 码："
+
+msgid "Enter PIN"
+msgstr "设置 PIN 码"
+
+msgid "Confirm PIN"
+msgstr "确认 PIN 码"
+
+msgid "Enroll EMail Token"
+msgstr "注册电子邮件令牌"
+
+msgid "Input data is not valid!"
+msgstr "表单数据无效。"
+
+msgid "Enroll your email token"
+msgstr "注册您的电子邮件令牌"
+
+msgid "Your email address"
+msgstr "电子邮件地址"
+
+msgid "enroll email token"
+msgstr "注册电子邮件令牌"
+
+msgid "define if the user should be allowed to define the email address"
+msgstr "定义了用户是否被允许自行定义或改变电子邮件地址。"
+
+msgid ""
+"The text that will be send via email for an email token. Use <otp> and "
+"<serial> as parameters."
+msgstr "通过电子邮件发送的电子邮件令牌标题。参数为 <opt> 和 <serial>。"
+
+msgid ""
+"The subject that will be send via email for an email token. Use <otp> and "
+"<serial> as parameters."
+msgstr "通过电子邮件发送的电子邮件令牌标题。参数为 <opt> 和 <serial>。"
+
+msgid "User is not allowed to set email address"
+msgstr "用户不允许设置电子邮件地址！"
+
+msgid "HMAC Token Settings"
+msgstr "HMAC 令牌设置"
+
+msgid "HMAC eventbased"
+msgstr "HMAC 基于事件"
+
+msgid "Create a new OATH token - HMAC event based"
+msgstr "创建一个新的 OATH 令牌 -  HMAC 基于事件"
+
+msgid ""
+"The token seed is the secret that is used in the hmac algorithm to make your "
+"token unique. So please take care!"
+msgstr ""
+"令牌密钥是一种使用了 HMAC 算法，并使令牌具有唯一性的秘密协议。请予以注意！"
+
+msgid "Token seed:"
+msgstr "令牌密钥："
+
+msgid "generate random seed"
+msgstr "生成一个随机密钥"
+
+msgid "Enter seed"
+msgstr "输入密钥"
+
+msgid ""
+"The hmac algorithm could be controlled by the following settings. Make sure "
+"that these settings match your hardware token or software token capabilities."
+msgstr "HMAC 算法会受到下面设置的影响。请确保这些设置与硬令牌或软令牌相适应。"
+
+msgid "Token settings:"
+msgstr "令牌设置："
+
+msgid "The Google Authenticator supports only 6 digits and SHA1 hashing."
+msgstr "谷歌验证器仅支持 6 位和 SHA1 哈希算法。"
+
+msgid "Google Authenticator compliant"
+msgstr "谷歌身份验证标准。"
+
+msgid "OTP Digits"
+msgstr "OTP 号"
+
+msgid "Hash algorithm"
+msgstr "哈希算法"
+
+msgid "Enroll HOTP Token"
+msgstr "HOTP 令牌注册"
+
+msgid "required input field"
+msgstr "必填信息"
+
+msgid "minimum length must be greater than {0}"
+msgstr "长度必须大于 {0} 个字符。"
+
+msgid "maximum length must be lower than {0}"
+msgstr "长度必须小于 {0} 个字符。"
+
+msgid ""
+"Please enter a valid init secret. It may only contain numbers and the "
+"letters A-F."
+msgstr "请输入一个有效初始密钥。它只能包含数字和 A 到 F 的字母。"
+
+msgid "Form data not valid."
+msgstr "表单数据无效。"
+
+msgid "Enroll your HOTP token"
+msgstr "注册您的 HOTP 令牌"
+
+msgid "Token Seed:"
+msgstr "令牌密钥："
+
+msgid "Generate random seed"
+msgstr "生成一个随机密钥"
+
+msgid "Enter token seed"
+msgstr "输入令牌密钥"
+
+msgid "Token Settings:"
+msgstr "令牌设置："
+
+msgid "OTP digits"
+msgstr "OTP 号"
+
+msgid "self enrolled"
+msgstr "自行创建"
+
+msgid "enroll hmac token"
+msgstr "注册 HMAC 令牌"
+
+msgid "Specify the hashlib to be used. Can be sha1 (1) or sha2-256 (2)."
+msgstr "请给出将使用的哈希表。可以是 SHA1 (1) 或 SHA2-256 (2) 。"
+
+msgid "Specify the otplen to be used. Can be 6 or 8 digits."
+msgstr "指定将使用的 OTP 的长度。可以是 6 或 8 个字符。"
+
+msgid "OTPAuth Url"
+msgstr "OTPAuth 链接"
+
+msgid "URL for OATH token"
+msgstr "OATH 令牌链接"
+
+msgid "mOTP Token Settings"
+msgstr "mOTP 设置"
+
+msgid "mOTP - mobile otp"
+msgstr "mOTP  - 移动 OTP"
+
+msgid ""
+"Please enter or copy the init-secret, that was generated by your app and the "
+"PIN you are using on your phone."
+msgstr ""
+"请输入初始密钥。它将由安装在您手机的 App 自动生成。并输入您在手机上使用的 "
+"PIN 码。"
+
+msgid "Init secret"
+msgstr "初始化密钥"
+
+msgid "(again)"
+msgstr "（重复）"
+
+msgid "Register mOTP"
+msgstr "注册 mOTP 令牌"
+
+msgid "Register your mOTP Token"
+msgstr "注册 mOTP 令牌"
+
+msgid "Init Secret of motp-Token"
+msgstr "初始化 mOTP 令牌密钥"
+
+msgid "mOTP PIN"
+msgstr "mOTP PIN 码"
+
+msgid "mOTP PIN (again)"
+msgstr "mOTP PIN 码（重复）"
+
+msgid "register mOTP Token"
+msgstr "注册 mOTP 令牌"
+
+msgid "OCRA2 Token"
+msgstr "OCRA2 令牌"
+
+msgid "OCRA2 token settings"
+msgstr "OCRA2 令牌设置"
+
+msgid "Maximum concurrent OCRA2 challenges"
+msgstr "OCRA2 最大同时挑战数量"
+
+msgid "This is the maximum concurrent challenges per OCRA2 Token."
+msgstr "OCRA2 最大并发挑战数量，可以请求一个 OCRA2 令牌的最大挑战数量。"
+
+msgid "OCRA2 challenge timeout"
+msgstr "OCRA2 挑战超时"
+
+msgid ""
+"After this time a challenge can not be used anymore. Valid entries are like "
+"1D, 2H or 5M where D=day, H=hour, M=minute."
+msgstr ""
+"在此时间后的 OCRA 挑战将被丢弃。有效输入为，例如，1D、2H 或 5M。其中 D =天、"
+"H =小时、M =分钟。"
+
+msgid "OCRA2 - challenge/response Token"
+msgstr "OCRA2  - 挑战/响应令牌"
+
+msgid "Please enter or copy the OCRA2 key."
+msgstr "请您输入 OCRA2 密钥。"
+
+msgid "OCRA2 key"
+msgstr "OCRA2 密钥"
+
+msgid "Generate OCRA2 key."
+msgstr "由服务器生成 OCRA2 密钥"
+
+msgid "OCRA suite"
+msgstr "OCRA 套件"
+
+msgid "Enroll your OCRA2 Token"
+msgstr "注册您的 OCRA2 令牌"
+
+msgid "Token description"
+msgstr "令牌描述"
+
+msgid "Generate OCRA2 seed"
+msgstr "由服务器生成 OCRA2 密钥"
+
+msgid "Enter seed for the new OCRA2 token:"
+msgstr "输入新的 OCRA2 令牌密钥："
+
+msgid "enroll ocra2 token"
+msgstr "OCRA2 令牌注册"
+
+msgid "Activate your OCRA2 Token"
+msgstr "激活您的 OCRA2 令牌"
+
+msgid "Your OCRA2 Token :"
+msgstr "您的 OCRA2 令牌"
+
+msgid "1. Enter the activation code :"
+msgstr "1.请输入激活码："
+
+msgid "Failed to enroll token!"
+msgstr "注册令牌失败！"
+
+msgid "activate your OCRA2 Token"
+msgstr "激活您的 OCRA2 令牌"
+
+msgid "2. Enter your confirmation code:"
+msgstr "2.请输入验证码："
+
+#, python-format
+msgid "OCRA rollout for token %s completed!"
+msgstr "OCRA 令牌 %s 部署完成！"
+
+msgid "OCRA token rollout failed! Please retry"
+msgstr "OCRA 令牌部署失败。请重试！"
+
+msgid "finish your OCRA2 Token"
+msgstr "结束 OCRA2 令牌"
+
+msgid "ocra challenge-response token - hmac event based"
+msgstr "OCRA 挑战响应令牌 -  HMAC 基于事件"
+
+msgid "URL for OCRA2 token"
+msgstr "OCRA2 令牌链接"
+
+msgid "RADIUS Token"
+msgstr "RADIUS 令牌"
+
+msgid ""
+"Please enter a valid RADIUS server specification. It needs to be of the form "
+"<name_or_ip>:<port>"
+msgstr " 请输入有效的 RADIUS 服务器规范。格式为 <Name_oder_IP>：<Port>。"
+
+msgid "RADIUS token settings"
+msgstr "RADIUS 令牌设置："
+
+msgid "You need to enter the server like myradius:1812"
+msgstr "您需要输入服务器及端口形式的表述，如 'RADIUSServer:1812'。"
+
+msgid "RADIUS server"
+msgstr "RADIUS 服务器"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or forwarded to "
+"the RADIUS server"
+msgstr "PIN 码既可以在本地 LinOTP 服务器上验证，也可以被转发至 RADIUS 服务器。"
+
+msgid "Check PIN"
+msgstr "检查 PIN 码"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or on the RADIUS "
+"server"
+msgstr "PIN 码既可以在本地 LinOTP 服务器上验证，也可以被转发至 RADIUS 服务器。"
+
+msgid "on RADIUS server"
+msgstr "在 RADIUS 服务器上"
+
+msgid "locally"
+msgstr "本地"
+
+msgid "RADIUS shared secret"
+msgstr "RADIUS 共享机密"
+
+msgid "RADIUS token"
+msgstr "RADIUS 令牌"
+
+msgid ""
+"Here you can define, to which RADIUS server the request should be forwarded."
+msgstr "在此，您可以指定转发至请求身份验证的 RADIUS 服务器。"
+
+msgid "Please specify the server, the secret and the username"
+msgstr "请指定服务器，RADIUS 机密和用户名。"
+
+msgid "RADIUS user"
+msgstr "RADIUS 用户"
+
+msgid "Remote Token"
+msgstr "远程令牌"
+
+msgid ""
+"Please enter a valid remote server specification. It needs to be of the form "
+"http://server or https://server"
+msgstr "请输入有效的远程服务器规范。形式为 http://server 或 https://server。"
+
+msgid "Remote token settings"
+msgstr "远程令牌设置"
+
+msgid "You need to enter the remote LinOTP server like https://remotelinotp"
+msgstr ""
+"在本地定位远程 LinOTP 服务器的形式为 'https://linotp2.remoteserver.local'。"
+
+msgid "Remote server"
+msgstr "远程服务器"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or forwarded to "
+"the remote server"
+msgstr "PIN 码既可以在本地 LinOTP 服务器上验证，也可以被转发至 RADIUS 服务器。"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or on the remote "
+"server"
+msgstr "PIN 码既可以在本地服务器上验证，也可以在远程 LinOTP 服务器上。"
+
+msgid "on remote server"
+msgstr "在远程服务器上"
+
+msgid "Remote realm"
+msgstr "远程域"
+
+msgid "Remote resolver"
+msgstr "远程解析"
+
+msgid "Remote token"
+msgstr "远程令牌"
+
+msgid ""
+"Please enter a valid URL for the LinOTP server. It needs to start with "
+"http:// or https://"
+msgstr "请输入 LinOTP 服务器的有效链接。请求格式必须为 http://或https://。"
+
+msgid ""
+"Here you can define to which LinOTP Server the authentication request should "
+"be forwarded."
+msgstr "在此，您可以指定转发至请求身份验证的 LinOTP 服务器。"
+
+msgid ""
+"You can either forward the OTP to a remote serial number or to a remote user."
+msgstr "该验证请求既可以通过远程序列号传送，又可以通过远程用户传送。"
+
+msgid ""
+"If you do not enter a remote serial or a remote user, the request will be "
+"forwarded to the remote user with the same username."
+msgstr ""
+"如果既没有指定远程序列号，又没有远程用户名，验证请求将被转发到相同的用户名"
+"下。"
+
+msgid "You need to enter the server like 'https://linotp2.my.domain'"
+msgstr "在本地定位远程服务器的形式为  'https://linotp2.remoteserver.local'。"
+
+msgid ""
+"The PIN can either be verified on this local LinOTP server or on the remote "
+"LinOTP server"
+msgstr "PIN 码既可以在本地服务器上验证，也可以在远程 LinOTP 服务器上。"
+
+msgid "remotely"
+msgstr "远程"
+
+msgid "Remote OTP len"
+msgstr "远程 OTP 长度"
+
+msgid "Remote serial"
+msgstr "远程序列号"
+
+msgid "Remote user"
+msgstr "远程用户"
+
+msgid "Remote user realm"
+msgstr "远程用户的域"
+
+msgid "Remote user UserIdResolver"
+msgstr "远程用户的用户 ID 解析器"
+
+msgid "SMS OTP Token"
+msgstr "短信 OTP 令牌"
+
+msgid "SMS provider config"
+msgstr "短信供应商配置"
+
+msgid "Provider Config"
+msgstr "供应商配置"
+
+msgid "Timeout"
+msgstr "超时"
+
+msgid "Time between SMS (sec.)"
+msgstr "短信间隔时间(秒)"
+
+msgid "SMS OTP"
+msgstr "短信 OTP"
+
+msgid "Please enter the mobile phone number for the SMS token"
+msgstr "请输入使用短信令牌的手机号。"
+
+msgid "Phone number"
+msgstr "手机号"
+
+msgid "Register SMS"
+msgstr "注册短信令牌"
+
+msgid "minimum length must be greater than 10"
+msgstr "最小长度必须大于 10 个字符。"
+
+msgid ""
+"Please enter a valid phone number. It may only contain numbers and + or /."
+msgstr "请输入一个有效的电话号码。仅允许包含数字，+ 和 /。"
+
+msgid "Register your SMS OTP Token / mobileTAN"
+msgstr "注册您的短信 OTP 令牌/ 手机 TAN 码"
+
+msgid "Your mobile phone number"
+msgstr "您的手机号码"
+
+msgid "register SMS Token"
+msgstr "注册短信令牌"
+
+msgid "SMS Token"
+msgstr "短信 OTP 令牌"
+
+msgid "sms challenge-response token - hmac event based"
+msgstr "短信挑战响应令牌 -  HMAC 基于事件"
+
+msgid "define if the user should be allowed to define the sms"
+msgstr "描述，是否允许用户自行修改短信号码"
+
+msgid "User is not allowed to set phone number"
+msgstr "用户不允许设置电话号码！"
+
+msgid "sending sms failed"
+msgstr "发送短信失败。"
+
+msgid "Simple Pass Token"
+msgstr "简单通行令牌"
+
+msgid "The Simple Pass token will not require any one time password component."
+msgstr "简单通行令牌不包括一次性密码 (OTP) 的组件。"
+
+msgid ""
+"Anyway, you can set an OTP PIN, so that using this token the user can "
+"authenticate always and only with this fixed PIN."
+msgstr "您仍然可以设置 OTP PIN 码，那么，该令牌将像一个简单密码一样运行。"
+
+msgid "Day OTP Token / Tagespasswort"
+msgstr "当天密码"
+
+msgid "Here you can define the 'Tagespasswort' token, that changes every day."
+msgstr ""
+"在这里，您可以定义'当天密码'令牌。每天仅需修改 OTP 值一次，您就可在全天内任意"
+"使用该 OTP 值。"
+
+msgid "DPW key"
+msgstr "DPW 密钥"
+
+msgid "TOTP Token"
+msgstr "TOTP 令牌"
+
+msgid "TOTP token settings"
+msgstr "TOTP 令牌设置"
+
+msgid "time step"
+msgstr "时间步长"
+
+msgid "This is the time step for time based tokens. Usually this is 30 or 60."
+msgstr "基于时间令牌的时间步长。通常是 30 或 60 秒。"
+
+msgid "time offset"
+msgstr "时间偏移"
+
+msgid "This is the default time shift of the server. This should be 0."
+msgstr "标准时间偏移是服务器和令牌时钟的偏差，应当为 0。"
+
+msgid "time lookup window"
+msgstr "时间窗口"
+
+msgid ""
+"This is the time LinOTP will calculate before and after the current time. A "
+"reasonable value is 300."
+msgstr ""
+"对于基于时间的令牌，LinOTP 将在时间窗口内，超前或滞后当前时间来尝试寻找 OTP "
+"值。"
+
+msgid "HMAC time based"
+msgstr "HMAC 基于时间"
+
+msgid "Create a new OATH token - HMAC time based"
+msgstr "创建一个新的 OATH 令牌 -  HMAC 基于时间"
+
+msgid ""
+"The :time step: defines the granularity of the time in seconds that is used "
+"in the HMAC algorithm."
+msgstr "Zeitschritt: 定义了 HMAC 算法所使用的以秒为单位的时间粒度。"
+
+msgid "Time step"
+msgstr "时间步长"
+
+msgid "seconds"
+msgstr "秒"
+
+msgid "Enroll TOTP Token"
+msgstr "TOTP 令牌注册"
+
+msgid "Enroll your TOTP token"
+msgstr "注册您的 TOTP 令牌"
+
+msgid "enter token seed"
+msgstr "输入令牌密钥"
+
+msgid ""
+"The Google Authenticator supports only 6 digits, SHA1 hashing and time step "
+"30."
+msgstr "谷歌身份验证器只支持 6 位的 SHA1 哈希算法和 30 秒的时间步长。"
+
+msgid "enroll totp token"
+msgstr "TOTP 令牌注册"
+
+msgid "Enroll FIDO U2F Token"
+msgstr "FIDO U2F 令牌注册"
+
+msgid "Enroll token"
+msgstr "令牌注册"
+
+msgid "Vasco Token"
+msgstr "Vasco 令牌"
+
+msgid "Vasco Digipass Token Class - proprietary timebased tokens"
+msgstr "Vasco 动态密码令牌类 - 基于时间的私有令牌"
+
+msgid "Yubico"
+msgstr "Yubico"
+
+msgid "Enroll YubiKey"
+msgstr "注册 YubiKey"
+
+msgid "Yubico settings"
+msgstr "Yubico 设置"
+
+msgid "You get your own API key from the yubico website "
+msgstr "您可以在 Yubico 网站上获得自己的专属 API 密钥。"
+
+msgid ""
+"If you do not use your own API key, the LinOTP demo API key will be used!"
+msgstr "如果您没有自己的 API 密钥，LinOTP DEMO API 密钥会被使用！"
+
+msgid "You need to enter a valid API id"
+msgstr "您必须输入有效的 API ID。"
+
+msgid "Yubico ID"
+msgstr "Yubico ID"
+
+msgid "You need to enter a valid API key"
+msgstr "您必须输入一个有效的 API 密钥。"
+
+msgid "Yubico API key"
+msgstr "Yubico API 密钥"
+
+msgid "YubiKey"
+msgstr "YubiKey"
+
+msgid "Here you need to enter the token ID of the YubiKey."
+msgstr "在此，必须输入您 YubiKeys 的令牌 ID。"
+
+msgid "You can do this by inserting the YubiKey and simply push the button."
+msgstr "您可以简单地插入 YubiKey，并按下按钮。"
+
+msgid "You need to enter the YubiKey token ID"
+msgstr "您需要输入 YubiKey 令牌 ID。"
+
+msgid "Token ID"
+msgstr "令牌 ID"
+
+msgid "Enroll your YubiKey"
+msgstr "注册您的 YubiKey"
+
+msgid ""
+"Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the "
+"button."
+msgstr "输入您的 YubiKeys 令牌 ID。插入您的 Yubikey 并按下按钮。"
+
+msgid "YubiKey TokenId"
+msgstr "YubiKey 令牌 ID"
+
+msgid "enroll yubico token"
+msgstr "注册 YubiKey"
+
+#, python-format
+msgid "%d tokens of %d migrated"
+msgstr "%d  %d 令牌转移"
+
+msgid "Not a valid json string!"
+msgstr "缺少有效的 JSON 文本！"
+
+msgid ""
+"Please enter a valid realm name. It may contain characters, numbers and "
+"'_-.'."
+msgstr "请指定有效的域的名称。这只能由字母、数字和 '_-.' 组成。"
+
+msgid ""
+"Please enter a valid resolver name. It may contain characters, numbers and "
+"'_-'."
+msgstr "请指定有效的解析器名。这只能由字母、数字和 '_-.' 组成。"
+
+msgid ""
+"Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://"
+msgstr " 请指定有效的 LDAP 链接，由 ldap:// 或 ldaps:// 开头。"
+
+msgid ""
+"Please enter a valid http uri. It needs to start with http:// or https://"
+msgstr "请指定有效的 LDAP 链接，由 http:// 或 https:// 开头。"
+
+msgid ""
+"Please enter a valid searchfilter like this: (sAMAccountName=*)"
+"(objectClass=user)"
+msgstr ""
+"请指定有效的 LDAP 搜索过滤器名，如 (sAMAccountName=*)(objectClass=user)"
+
+#, python-format
+msgid ""
+"Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
+"(objectClass=user))"
+msgstr ""
+"请指定有效的 LDAP 用户搜索过滤器名，如 (&(sAMAccountName=%s)"
+"(objectClass=user))"
+
+msgid ""
+"Please enter a valid searchfilter like this: \n"
+"    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+"\"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
+msgstr ""
+"请指定有效的 LDAP 搜索过滤器名，如\n"
+"    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+"\"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
+
+msgid ""
+"Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or "
+"GUID"
+msgstr ""
+"请指定 LDAP 服务器的 UID （唯一性标识），比如 DN、entryUUID、objectGUID 或 "
+"GUID"
+
+msgid ""
+"Please enter a valid driver specification like: mysql, postgres, mssql, "
+"oracle, ibm_db_sa or ibm_db_sa+pyodbc"
+msgstr ""
+"请指定有效的驱动程序，如：mysql、postgres、mssql、oracle、ibm_db_sa 或 "
+"ibm_db_sa+pyodbc"
+
+msgid ""
+"Please enter a valid searchfilter like this: \n"
+"    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
+"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
+msgstr ""
+"请指定有效的搜索过滤器，如 \n"
+"    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
+"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
+"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+"\" : \"givenName\" }"
+
+msgid "Issuer"
+msgstr "发行方"
+
+msgid "Number of tokens"
+msgstr "令牌数量"
+
+msgid "Licensee"
+msgstr "被许可人"
+
+msgid "Address"
+msgstr "地址"
+
+msgid "Contact name"
+msgstr "联系方式"
+
+msgid "Contact EMail"
+msgstr "电子邮件"
+
+msgid "Contact phone"
+msgstr "联系电话"
+
+msgid "Date"
+msgstr "日期"
+
+msgid "Expiration"
+msgstr "截止日期"
+
+msgid "Subscription"
+msgstr "订阅"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "User selection:"
+msgstr "用户选择："
+
+msgid "Selection of more than one user is not supported!"
+msgstr "不支持多于一个用户的选择！"
+
+msgid "Please select only one user."
+msgstr "请选择只有一个用户。"
+
+msgid "Found the token: "
+msgstr "找到的令牌："
+
+msgid "The token belongs to "
+msgstr "令牌属于 "
+
+msgid "The upload of your support and subscription license failed: "
+msgstr "支持和订阅加载失败： "
+
+msgid "License upload"
+msgstr "上传许可证"
+
+msgid "Invalid License"
+msgstr "无效的许可证"
+
+msgid "Professional LinOTP support and enterprise subscription"
+msgstr "专业的 LinOTP 支持和企业级订阅"
+
+msgid ""
+"For professional LinOTP support and enterprise subscription, feel free to "
+"contact <p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE "
+"Leading Security Experts GmbH</a></p> for support agreement purchase."
+msgstr ""
+"如需购买专业的支持和企业级订阅，请联系我们： \n"
+"<p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE Leading "
+"Security Experts GmbH</a></p>"
+
+msgid "Your LinOTP support subscription"
+msgstr "您的 LinOTP 支持和订阅"
+
+msgid "For support and subscription please contact us at"
+msgstr "关于支持和订阅的咨询请联系我们"
+
+msgid "by phone"
+msgstr "通过电话 "
+
+msgid "or email"
+msgstr "或电子邮件"
+
+msgid "Get Temporary Token"
+msgstr "创建临时令牌"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Set Token Realm"
+msgstr "设置令牌域"
+
+msgid "Please select the token first."
+msgstr "请您选择一个令牌"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid ""
+"LDAP Server, especially Active Directory, implement a default serverside "
+"maximum size limit of 1000 objects."
+msgstr ""
+"LDAP 服务器，尤其是活动目录，服务器端在响应方面是具有默认限制的，其只允许返"
+"回 1000 个对象（数量限制）。"
+
+msgid ""
+"This is independed of the local sizelimit and does not hinder the "
+"functionality of LinOTP."
+msgstr "这些限制独立于本地指定限制之外，且不影响与 LinOTP 相关联的各项功能。"
+
+#, python-format
+msgid "Number of users found: %d"
+msgstr "发现用户数： %d"
+
+msgid "Connection Test: successful"
+msgstr "连接测试：成功"
+
+msgid "LDAP Connection Test"
+msgstr "LDAP 连接测试"
+
+msgid "Form Validation Error"
+msgstr "表单输入错误"
+
+msgid "Active"
+msgstr "启用"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "User"
+msgstr "用户"
+
+msgid "Scope"
+msgstr "范围"
+
+msgid "Action"
+msgstr "行为"
+
+msgid "Realm"
+msgstr "域"
+
+msgid "Client"
+msgstr "客户端"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "All other columns"
+msgstr "所有其他列"
+
+msgid "Serial Number"
+msgstr "序列号"
+
+msgid "Username"
+msgstr "用户名"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "Login Attempts Failed"
+msgstr "尝试登录失败"
+
+msgid "Max Login Attempts"
+msgstr "尝试登录失败已超出最大限度"
+
+msgid "OTP Length"
+msgstr "OTP 长度"
+
+msgid "Count Window"
+msgstr "计数器窗口"
+
+msgid "Sync Window"
+msgstr "同步窗口"
+
+msgid "User ID"
+msgstr "用户 ID"
+
+msgid "Resolver"
+msgstr "解析器"
+
+msgid "Login Name"
+msgstr "登录名"
+
+msgid "UserIdResolver"
+msgstr "用户 ID 解析器"
+
+msgid "Surname"
+msgstr "姓"
+
+msgid "Given Name"
+msgstr "名"
+
+msgid "Email"
+msgstr "电子邮件"
+
+msgid "Mobile"
+msgstr "手机"
+
+msgid "Phone"
+msgstr "电话"
+
+msgid "Number"
+msgstr "编号"
+
+msgid "Signature"
+msgstr "签名"
+
+msgid "Missing Lines"
+msgstr "缺少行"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Serial"
+msgstr "序列号"
+
+msgid "Token Type"
+msgstr "令牌类型"
+
+msgid "Administrator"
+msgstr "管理员"
+
+msgid "Action Detail"
+msgstr "行为细节"
+
+msgid "Info"
+msgstr "信息"
+
+msgid "LinOTP Server"
+msgstr "LinOTP 服务器"
+
+msgid "Log Level"
+msgstr "日志级别"
+
+msgid "Clearance Level"
+msgstr "信任级别"
+
+msgid "Successful"
+msgstr "成功"
+
+msgid "Extended Search"
+msgstr "高级搜索"
+
+msgid "there is no linotp_selfservice cookie"
+msgstr "linotp_selfservice Cookie 未配置"
+
+msgid "Your session has expired!"
+msgstr "您的会话已过期！"
+
+msgid "Error "
+msgstr "错误"
+
+msgid "You need to select a Token and enter two OTP values."
+msgstr "请您选择一个令牌，并提供两个 OTP 值。"
+
+msgid "Token resynced successfully"
+msgstr "令牌已成功同步"
+
+msgid "Failed to resync Token"
+msgstr "令牌同步时，发生错误"
+
+msgid "Error resyncing Token: "
+msgstr "令牌同步时，发生错误："
+
+msgid "You need to enter a serial number"
+msgstr "输入序列号"
+
+msgid ""
+"You are going to assign a new token to you. Is this the correct serial: "
+msgstr "您已被分配一个新的令牌，序列号是否正确？"
+
+msgid "Token assigned successfully"
+msgstr "令牌已成功分配"
+
+msgid "Error assigning Token: "
+msgstr "令牌分配时，发生错误："
+
+msgid "You need to enter an OTP value"
+msgstr "您必须指定一个 OTP 值"
+
+msgid "No Token with this OTP value found!"
+msgstr "未发现对应该 OTP 值的令牌"
+
+msgid "Error getting serial: "
+msgstr "获取序列号错误"
+
+msgid "Error calling token:"
+msgstr "调用令牌发生错误"
+
+msgid "Token enrollment result"
+msgstr "令牌注册结果"
+
+msgid "Token enrolled successfully "
+msgstr "令牌已成功注册"
+
+msgid "Failed to enroll token: "
+msgstr "令牌注册失败！"
+
+msgid "Failcounter resetted successfully"
+msgstr "错误计数器成功重置"
+
+msgid "Failed to reset failcounter!\n"
+msgstr "错误计数器重置出错\n"
+
+msgid "Token disabled successfully"
+msgstr "令牌成功禁用"
+
+msgid "Error disabling Token!\n"
+msgstr "禁用令牌出错\n"
+
+msgid "Token enabled successfully"
+msgstr "激活令牌成功"
+
+msgid "Error enabling Token!\n"
+msgstr "激活令牌时，发生错误\n"
+
+msgid "OTP values for token "
+msgstr "令牌 OTP 值"
+
+msgid "Counter"
+msgstr "计数器"
+
+msgid "Otp Value"
+msgstr "OTP 值"
+
+msgid "Error getting otp values"
+msgstr "获取 OTP 值发生错误"
+
+msgid "Token unassigned successfully"
+msgstr "成功取消令牌分配"
+
+msgid "Error unassigning Token!\n"
+msgstr "取消令牌分配时，发生错误\n"
+
+msgid "Token deleted successfully"
+msgstr "删除令牌成功"
+
+msgid "Failed to delete token!\n"
+msgstr "删除令牌时，发生错误\n"
+
+msgid "Failed to enroll token!\n"
+msgstr "注册令牌出错！\n"
+
+msgid "Failed to activate token! \n"
+msgstr "激活令牌时，发生错误\n"
+
+msgid "Error loading history:\n"
+msgstr "加载历史发生错误：\n"
+
+msgid ""
+"Could not migrate tokens!\n"
+"\n"
+msgstr ""
+"无法迁移令牌！\n"
+"\n"
+
+msgid "Authentication"
+msgstr "认证"
+
+msgid "You need to enable Javascript to use the authentication forms."
+msgstr "您必须启用 Javascript 才能使用认证表单"
+
+msgid "Here you may try to authenticate using your OCRA OTP token."
+msgstr "在此，您可以使用 OCRA OTP 令牌进行认证。"
+
+msgid "Enter your username, the OTP PIN and the OTP value."
+msgstr "请输入您的用户名，OTP PIN 码和 OTP 值。"
+
+msgid "OCRA Login"
+msgstr "OCRA 登录"
+
+msgid "Submit a challenge:"
+msgstr "输入挑战码"
+
+msgid "username"
+msgstr "用户名"
+
+msgid "challenge"
+msgstr "挑战"
+
+msgid "get challenge"
+msgstr "获取挑战码"
+
+msgid "Scan your challenge and get your OTP:"
+msgstr "扫描一个挑战，并获取您的 OTP 值："
+
+msgid "Login:"
+msgstr "登录："
+
+msgid "OTP PIN and OTP value"
+msgstr "OTP PIN 码和 OTP 值"
+
+msgid "login"
+msgstr "登录"
+
+msgid "Enter your username, the OTP PIN and the input for the challenge."
+msgstr "请输入您的用户名，OTP PIN 码和挑战文本。"
+
+msgid ""
+"By submitting this you will generate a QR image, that can be scaned with "
+"your OCRA2 Token reader."
+msgstr "在此，会生成一个二维码图片，允许您通过 OCRA2 令牌扫描仪扫描。"
+
+msgid "To verify your result enter the OTP value into the form below."
+msgstr "请输入您的 OTP 值用于校验。"
+
+msgid "OCRA2 Login"
+msgstr "OCRA2 注册"
+
+msgid "OTP PIN"
+msgstr "OTP PIN 码"
+
+msgid "Here you may try to authenticate using your OTP token."
+msgstr "在此，您可以测试 OTP 令牌认证。"
+
+msgid "Enter your username, the OTP PIN (Password) and the OTP value."
+msgstr "请输入您的用户名，OTP PIN 码和 OTP 值。"
+
+msgid "Login"
+msgstr "登录"
+
+msgid "OTP value"
+msgstr "OTP 值"
+
+msgid "LinOTP 2 Management"
+msgstr "LinOTP 管理"
+
+msgid "LinOTP Config"
+msgstr "LinOTP 配置"
+
+msgid "UserIdResolvers"
+msgstr "用户 ID 解析器"
+
+msgid "System Config"
+msgstr "系统配置"
+
+msgid "Token Config"
+msgstr "令牌配置"
+
+msgid "Policies"
+msgstr "策略"
+
+msgid "Tools"
+msgstr "工具"
+
+msgid "Get Serial by OTP"
+msgstr "通过 OTP 值获取序列号"
+
+msgid "Copy Token PIN"
+msgstr "复制令牌 PIN 码"
+
+msgid "Check Policy"
+msgstr "策略测试"
+
+msgid "Export Token Info"
+msgstr "导出令牌信息"
+
+msgid "Export Audit Trail"
+msgstr "导出审计跟踪"
+
+msgid "Migrate Resolver"
+msgstr "解析迁移"
+
+msgid "Import Token File"
+msgstr "导入令牌文件"
+
+msgid "SafeNet/ Aladdin XML"
+msgstr "SafeNet XML (Aladdin)"
+
+msgid "OATH CSV"
+msgstr "OATH CSV"
+
+msgid "YubiKey CSV"
+msgstr "YubiKey CSV"
+
+msgid "Help"
+msgstr "帮助"
+
+msgid "Documentation"
+msgstr "文档"
+
+msgid "Support and Subscription"
+msgstr "支持和订阅"
+
+msgid "About LinOTP"
+msgstr "关于 LinOTP"
+
+msgid "Logged in as"
+msgstr "登录为"
+
+msgid "Logout"
+msgstr "退出"
+
+msgid "You need to enable Javascript to use the LinOTP Management Web UI."
+msgstr "您必须启用 Javascript 才能使用 LinOTP Web 管理界面。"
+
+msgid "Communicating with LinOTP server..."
+msgstr "与 LinOTP 服务器通讯..."
+
+msgid "Selected User"
+msgstr "所选用户"
+
+msgid "Selected Token"
+msgstr "已选令牌"
+
+msgid "Enroll"
+msgstr "注册"
+
+msgid "Assign"
+msgstr "分配"
+
+msgid "Unassign"
+msgstr "取消分配"
+
+msgid "Enable"
+msgstr "激活"
+
+msgid "Disable"
+msgstr "禁用"
+
+msgid "Set PIN"
+msgstr "设置 PIN 码"
+
+msgid "Reset Failcounter"
+msgstr "重置错误计数器"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Close all"
+msgstr "关闭所有"
+
+msgid "Token View"
+msgstr "查看令牌"
+
+msgid "User View"
+msgstr " 查看用户"
+
+msgid "Audit Trail"
+msgstr "审计跟踪"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Token defaults"
+msgstr "令牌默认"
+
+msgid "GUI settings"
+msgstr "GUI 设置"
+
+msgid "Split at @ sign (splitAtSign)"
+msgstr "在 @ 字符处断开"
+
+msgid "This will use the part right of an @ sign as realm"
+msgstr "@ 字符的右侧部分是域，@ 字符的左侧部分是用户名。"
+
+msgid "Return SAML attributes"
+msgstr "返回 SAML 属性"
+
+msgid "The /validate/samlcheck controller will also return user attributes"
+msgstr "控制器 /validate/samlcheck 也能返回用户属性。"
+
+msgid "FailCounterIncOnFalsePin"
+msgstr "错误计数器为错误的 PIN 码计数"
+
+msgid "This will increase the failcounter, if the user provided a wrong PIN."
+msgstr "当用户输入一个错误的 PIN 码，且令牌不能被识别时，计数器将增加。"
+
+msgid "PrependPin"
+msgstr "PIN 码前置"
+
+msgid ""
+"This will prepend the PIN to the OTP value. Otherwise the PIN will be "
+"appended."
+msgstr "此时 PIN 码被放置在 OTP 值之前。否则，PIN 码将置于 OTP 值之后。"
+
+msgid "Auto resync"
+msgstr "自动重新同步"
+
+msgid "This will automatically resync OTP counter of HMAC based tokens."
+msgstr ""
+"如果是基于 HMAC 算法的令牌，那么在用户连续两次输入错误 OTP 值的情况下，将自动"
+"尝试重新同步。"
+
+msgid "Auto resync timeout"
+msgstr "自动同步超时"
+
+msgid ""
+"The time in which the two successive OTP values need to be entered (in "
+"seconds)"
+msgstr "这个时间（秒）之后的第一个的 OTP 值被丢弃。"
+
+msgid "Pass on user not found"
+msgstr "如果用户不存在，允许访问"
+
+msgid ""
+"If checked, users who are not found in the useridresolvers are authenticated "
+"successfully. USE WITH CAUTION!"
+msgstr ""
+"如果用户不存在，认证请求的回答是肯定的。所有不存在的用户名将会成功通过验证，"
+"请小心使用！"
+
+msgid "Pass on user no token"
+msgstr "如果用户没有令牌，允许访问"
+
+msgid ""
+"If checked, users who have no token get authenticated automatically "
+"successful. USE WITH CAUTION!"
+msgstr "如果用户存在，但没有令牌，该用户将被成功验证。请小心使用！"
+
+msgid "Authorization"
+msgstr "授权"
+
+msgid "Override authentication client"
+msgstr "覆盖认证客户端"
+
+msgid ""
+"This is a comma separated list of clients, that may send another client IP "
+"for authorization policies."
+msgstr ""
+"这是一个用逗号分隔的 IP 地址列表，将自有的 IP 地址用其它地址覆盖，并和授权策"
+"略共同发送。"
+
+msgid "OCRA settings"
+msgstr "OCRA 设置"
+
+msgid "Maximum concurrent OCRA challenges"
+msgstr "OCRA2 最大同时挑战数量"
+
+msgid "This is the maximum concurrent challenges per OCRA Token."
+msgstr "OCRA2 最大并发挑战数量，请求一个 OCRA2 令牌的最大挑战数量。"
+
+msgid "OCRA challenge timeout"
+msgstr "OCRA 挑战超时"
+
+msgid "Misc settings"
+msgstr "各项设定"
+
+msgid "DefaultResetFailCount"
+msgstr "重置默认错误计数器"
+
+msgid "Will reset the fail counter when the user authenticated successfully"
+msgstr "当用户使用此令牌成功登录则重置计数器。"
+
+msgid "DefaultMaxFailCount"
+msgstr "错误计数器标准最大值"
+
+msgid "This is the maximum allowed failed logins for a new enrolled token."
+msgstr ""
+"这是一个令牌登录尝试失败的最大数量。令牌将被锁定直到错误计数器手动复位。"
+
+msgid "DefaultSyncWindow"
+msgstr "标准重新同步窗口"
+
+msgid ""
+"A new token will have this windows to do the manual or automatic OTP sync."
+msgstr "这是一个令牌自动和手动重新同步的窗口。"
+
+msgid "DefaultOtpLen"
+msgstr "标准 OTP 长度"
+
+msgid "A new token will be set to this OTP length."
+msgstr "一个新令牌的 OTP 值为该长度。"
+
+msgid "DefaultCountWindow"
+msgstr "标准计数器窗口"
+
+msgid "This is the default look ahead window for counter based tokens."
+msgstr "当新令牌使用时，在计数器窗口内会默认搜索 OTP 值。"
+
+msgid "DefaultChallengeValidityTime"
+msgstr "挑战的标准有效期"
+
+msgid "Default validity timeframe of a challenge."
+msgstr "一个挑战的标准有效时间窗口"
+
+msgid "Default OCRA suite"
+msgstr "标准 OCRA 套件"
+
+msgid ""
+"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+"SHA256-8:C-QA08"
+msgstr "新注册 OCRA 令牌的默认 OCRA 套件。标准：OCRA-1:HOTP-SHA256-8:C-QA08"
+
+msgid "Default QR suite"
+msgstr "标准二维码套件"
+
+msgid ""
+"This is the suite for newly enrolled QR tokens. Default is OCRA-1:HOTP-"
+"SHA256-6:C-QA64"
+msgstr ""
+"新注册二维码 OCRA 令牌的默认二维码 OCRA 套件。标准：OCRA-1:HOTP-SHA256-6:C-"
+"QA64"
+
+msgid "Selfservice portal"
+msgstr "自助服务门户"
+
+msgid "Display realm select box"
+msgstr "查看可选域清单"
+
+msgid ""
+"If checked a realm dropdown box will be displayed on the selfservice portal "
+"logon page."
+msgstr "会出现一个下拉列表，从中用户可以选择他需要在自助服务门户登录的域。"
+
+msgid "Save Config"
+msgstr "保存配置"
+
+msgid "Tokentype Configuration"
+msgstr "令牌类型的配置"
+
+msgid "LSE LinOTP Support and Subscription"
+msgstr "您的 LinOTP 支持和订阅 "
+
+msgid "Set Support and Subscription"
+msgstr "支持和订阅注册"
+
+msgid "Please choose your support and subscription file"
+msgstr "请选择一个支持和订阅文件"
+
+msgid "LinOTP - the open source solution for two factor authentication."
+msgstr "LinOTP  - 双因素身份验证的开源解决方案。"
+
+msgid "Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH"
+msgstr "版权所有 (C) 2010 - 2016 LSE Leading Security Experts GmbH"
+
+msgid "Licensed under AGPLv3"
+msgstr "AGPLv3 版权公约"
+
+msgid "For more information please visit:"
+msgstr "欲了解更多信息，请参阅："
+
+msgid "or"
+msgstr "或者"
+
+msgid "Authors:"
+msgstr "作者："
+
+msgid "About LSE LinOTP"
+msgstr "关于LSE LinOTP"
+
+msgid "You may reset the PINs for the tokens"
+msgstr "您可以重置令牌的 PIN 码"
+
+msgid "PIN type"
+msgstr "令牌类型"
+
+msgid "PIN (again)"
+msgstr "PIN 码（重复）"
+
+msgid "The token will be enrolled for user"
+msgstr "注册用户令牌"
+
+msgid "Currently this token will not be assigned to any users."
+msgstr "此令牌无法分配给用户。"
+
+msgid "[?]"
+msgstr "[?]"
+
+msgid ""
+"If you select one user, this token will be automatically assigned to this "
+"user. Anyhow, you can assign this token to any user later on."
+msgstr ""
+"如果您选择了一个用户，令牌被自动分配给用户。您也可以稍后为用户分配令牌。"
+
+msgid ""
+"You selected more than one user. If you want to assign the token to a user "
+"during enrollment, you need to select only one user.  Anyhow, you can assign "
+"this token to any user later on."
+msgstr ""
+"您选择了多个用户。如果您想给用户令牌，只能选择一个用户。您也可以随后再分配给"
+"一个用户令牌。"
+
+msgid "Token type"
+msgstr "令牌类型"
+
+msgid "OCRA - challenge/response Token"
+msgstr "OCRA  - 挑战/响应令牌"
+
+msgid "Please enter or copy the OCRA key."
+msgstr "请输入 OCRA 密钥。"
+
+msgid "OCRA key"
+msgstr "OCRA 密钥"
+
+msgid "Generate OCRA key."
+msgstr "OCRA 密钥由服务器生成。"
+
+msgid "enter PIN"
+msgstr "设置 PIN 码"
+
+msgid "confirm PIN"
+msgstr "确认 PIN 码"
+
+msgid "Enroll Token"
+msgstr "令牌注册"
+
+msgid ""
+"Here you can search for the serial of a token.You need to enter the current "
+"OTP value, and choose where you want to search for this token."
+msgstr ""
+"在这里，您可以搜索令牌的序列号。您必须输入当前的令牌 OTP 值，并选择寻找哪种标"
+"准的令牌。"
+
+msgid "Beware: This can be time consuming!"
+msgstr "注意：这可能非常耗时！"
+
+msgid "Assigned token"
+msgstr "分配令牌"
+
+msgid "assigned"
+msgstr "分配"
+
+msgid "not assigned"
+msgstr "未分配"
+
+msgid "Get Serial by OTP value"
+msgstr "通过 OTP 值确定序列号"
+
+msgid "Get Serial"
+msgstr "确定序列号"
+
+msgid "Here you can check your policies."
+msgstr "在此，您可以测试策略。"
+
+msgid ""
+"You can enter the corresponding values and the system will check, if there "
+"is any matching policy for this scenario."
+msgstr "您可以输入相关值并检查系统，是否存在匹配的策略。"
+
+msgid "This action is allowed by the following policy:"
+msgstr "该行为是由以下策略所允许的："
+
+msgid "This action is not allowed by any policy!"
+msgstr "该行为未被任何策略允许！"
+
+msgid ""
+"Here you can export token information of the tokens you are allowed to view "
+"to a CSV file."
+msgstr "您可以通过 CSV 文件导出令牌信息，并且有权查看该信息。"
+
+msgid ""
+"You can enter additional attributes, you defined in the user mapping in the "
+"UserIdResolver. These attributes will be added to the CSV file."
+msgstr ""
+"您也可以输入包含 CSV 导出信息的附加属性。但必须在用户 ID 解析器的属性映射内将"
+"这些属性定义好。"
+
+msgid "Export"
+msgstr "导出"
+
+msgid "Here you can export the audit information to a CSV file."
+msgstr "您可以将审计信息导出为 CSV 文件。"
+
+msgid "Number of audit entries to export"
+msgstr "要导出的审计条目数"
+
+msgid "Enter the number of audit entries you want to export."
+msgstr "请输入您要导出的审计记录数。"
+
+msgid "Page to export"
+msgstr "前往导出页面"
+
+msgid "Enter the page of the audit entries you want to export."
+msgstr "请指定您需要导出的审计页面和条目"
+
+msgid "Here you can copy the OTP PIN from one token to the other."
+msgstr "您可以转移令牌的 OTP PIN 码而无需知道 PIN 码。"
+
+msgid ""
+"Please enter the serial number of the token with the existing PIN and the "
+"serial number of the token, that should get the same PIN."
+msgstr "请输入已有的 PIN 码的令牌序列号，以及将获得相同的 PIN 码的令牌序列号。"
+
+msgid "From token"
+msgstr "源令牌"
+
+msgid "To token"
+msgstr "目标令牌"
+
+msgid "Copy PIN"
+msgstr "复制 PIN 码"
+
+msgid "Migrate assigned tokens to a new resolver"
+msgstr "迁移分配令牌至新的解析器"
+
+msgid "From resolver"
+msgstr "源解析器"
+
+msgid "To resolver"
+msgstr "目标解析器"
+
+msgid "Migrate tokens"
+msgstr "迁移令牌"
+
+msgid ""
+"Here you can upload the XML file that came with your SafeNet eToken PASS."
+msgstr "在此，您可以为 SafeNet eToken PASS 导入 XML 文件。"
+
+msgid "Please choose the token file"
+msgstr "请选择一个令牌文件"
+
+msgid "automatic detection"
+msgstr "自动识别"
+
+msgid "Target realm"
+msgstr "目标域"
+
+msgid "Aladdin XML Token File"
+msgstr "Aladdin XML 令牌文件"
+
+msgid "Load Token File"
+msgstr "令牌文件下载"
+
+msgid ""
+"Here you may upload the XML file of any OATH compliant OTP Token.The LinOTP "
+"server will automatically recognize if the token is an HOTP (event based) or "
+"a TOTP (time based) token. If the HMAC secrets are encrypted you either need "
+"- depending on the encryption - the password or the encryption key."
+msgstr ""
+"在此，您可以为 OATH 令牌导入 XML 文件。 LinOTP 将自动识别是基于事件（HOTP）还"
+"是基于时间（TOTP）。如果 HMAC 有加密，则取决于加密情况，您需要输入密码或加密"
+"密钥。"
+
+msgid ""
+"Check the serial numbers for OATH compliance (non-compliant serial numbers "
+"will be ignored)"
+msgstr "检查符合 OATH 的序列号，如果令牌序列号不一致则忽略。"
+
+msgid "plain value"
+msgstr "未加密的值"
+
+msgid "preshared key"
+msgstr "使用预共享密钥加密"
+
+msgid "password protected"
+msgstr "口令加密"
+
+msgid "PSKC Key File"
+msgstr "PSKC 文件"
+
+msgid ""
+"Here you can upload a CSV file for your OATH token. The file is supposed to "
+"contain one token per line"
+msgstr "您可以导入 CSV 文件，包含 OATH 令牌的定义。该文件每一行包含一个令牌。"
+
+msgid "For HOTP and TOTP tokens:"
+msgstr "对于 HOTP 以及 TOTP 令牌："
+
+msgid "Serial number, Seed, Type, OTP length, Time step"
+msgstr "序列号、种子、类型、OTP 长度、时间步长"
+
+msgid "For OCRA tokens:"
+msgstr "对于 OCRA 令牌："
+
+msgid "Serial Number, Seed, Type, Ocra Suite"
+msgstr "序列号、种子、类型、OCRA 套件"
+
+msgid "Default Values:"
+msgstr "默认值："
+
+msgid "HOTP"
+msgstr "HOTP"
+
+msgid "OTP length"
+msgstr "OTP 长度"
+
+msgid "optional"
+msgstr "可选"
+
+msgid "OATH CSV Token File"
+msgstr "OATH CSV 令牌文件"
+
+msgid ""
+"Here you can upload a CSV file for your YubiKey token. The file is supposed "
+"to contain one token per line"
+msgstr ""
+"您可以导入一个 CSV 文件包含 YubiKey 令牌定义。此文件每一行包含一个令牌，可以"
+"使用 'Yubikey 个性化 GUI' 来创建。"
+
+msgid "YubiKey CSV Token File"
+msgstr "YubiKey CSV 令牌文件"
+
+msgid ""
+"Here you can upload the data file that came with your Tagespasswort tokens."
+msgstr "您可以导入包含当日密码令牌信息的文件。"
+
+msgid "Tagespasswort Token File"
+msgstr "当日密码令牌文件"
+
+msgid "Upload the eToken data file:"
+msgstr "eToken .dat 文件上传："
+
+msgid "eToken DAT File"
+msgstr "eToken .dat 文件"
+
+msgid "Here you can upload the XML file that came with your Feitian tokens."
+msgstr "在此，您可以导入飞天令牌 XML 文件。"
+
+msgid "Feitian XML Token file"
+msgstr "飞天令牌 XML 文件"
+
+msgid "Here you can upload your Vasco DPX file."
+msgstr "您可以导入 VASCO DPX 文件。"
+
+msgid "Vasco DPX File"
+msgstr "VASCO DPX 文件"
+
+msgid "Here you can import your policy file."
+msgstr "您可以导入策略文件。"
+
+msgid "Please choose the policy file"
+msgstr "请选择一个策略文件"
+
+msgid "Import policies"
+msgstr "导入策略"
+
+msgid "Import policy file"
+msgstr "导入策略文件"
+
+msgid "Create a new realm or select one available realm"
+msgstr "在此，您可以创建一个新的域，或编辑现有的域"
+
+msgid "New"
+msgstr "新建"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Set Default"
+msgstr "设置为默认的域"
+
+msgid "Clear Default"
+msgstr "删除标准"
+
+msgid "Create a new or select one available UserIdResolver"
+msgstr "在此，您可以创建一个新的解析器或编辑现有的这个"
+
+msgid "Which type of resolver do you want to create?"
+msgstr "您想要创建何种类型的用户 ID 解析器？"
+
+msgid "Creating a new UserIdResolver"
+msgstr "创建一个新的用户 ID 解析器"
+
+msgid "LDAP"
+msgstr "LDAP"
+
+msgid "SQL"
+msgstr "SQL"
+
+msgid "Flatfile"
+msgstr "扁平文件"
+
+msgid "Here you can add or remove existing resolvers to the realm"
+msgstr "在此，您可以为一个域加入或删除现有的解析器"
+
+msgid "You are creating a new realm."
+msgstr "创建新的域"
+
+msgid "You may add resolvers by holding down Ctrl-Key and left-clicking."
+msgstr "您可以添加解析器，按住 Ctrl 键并单击左键。"
+
+msgid "Realm name"
+msgstr "域的名称"
+
+msgid "Here you may define the resolvers belonging to the realm"
+msgstr "在此，您可以定义解析器属于哪个域"
+
+msgid "Edit Realm"
+msgstr "编辑域"
+
+msgid "Save"
+msgstr "保存"
+
+msgid ""
+"The following tokens will be permanently deleted and can not be recovered."
+msgstr "以下令牌将被永久删除，且无法恢复。"
+
+msgid "Delete selected tokens?"
+msgstr "删除所选令牌？"
+
+msgid "Delete tokens"
+msgstr "删除令牌"
+
+msgid "Enrolled the token"
+msgstr "令牌"
+
+msgid "for user"
+msgstr "注册到用户"
+
+msgid "token enrollment"
+msgstr "注册令牌"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Token serial: "
+msgstr "序列号 "
+
+msgid ""
+"The token was lost? You may enroll a temporary token and automatically "
+"disable the lost token."
+msgstr "令牌丢失？您可以注册一个新的临时令牌。丢失的令牌将被自动禁用。"
+
+msgid "- Select Temporary Token Type -"
+msgstr "- 临时令牌类型选择 -"
+
+msgid "Simple Password Token"
+msgstr "简单密码令牌"
+
+msgid "Email Token"
+msgstr "电子邮件令牌"
+
+msgid "Lost Token"
+msgstr "丢失的令牌"
+
+msgid "Token Info"
+msgstr "令牌信息"
+
+msgid "Hashlib"
+msgstr "哈希算法"
+
+msgid "Counter Window"
+msgstr "计数器窗口"
+
+msgid "Max Fail Counter"
+msgstr "错误计数器最大值"
+
+msgid "Max Auth Count"
+msgstr "最大认证尝试"
+
+msgid "Max Successful Auth Count"
+msgstr "最大成功认证"
+
+msgid "Validity start"
+msgstr "有效期开始"
+
+msgid "Validity end"
+msgstr "有效期结束"
+
+msgid "Time Window"
+msgstr "时间窗口"
+
+msgid "Time Shift"
+msgstr "时间偏移"
+
+msgid "Time Step"
+msgstr "时间步长"
+
+msgid "set Hashlib"
+msgstr "设置哈希算法"
+
+msgid "set OTP length"
+msgstr "设置 OTP 长度"
+
+msgid "set Counter Window"
+msgstr "设置计数器窗口"
+
+msgid "set Max Failcount"
+msgstr "设置错误计数器"
+
+msgid "set Max Auth Count"
+msgstr "设置最大尝试认证"
+
+msgid "set Max Successful Auth Count"
+msgstr "设定最大成功认证"
+
+msgid "Mobile phone number"
+msgstr "手机号"
+
+msgid "set Sync Window"
+msgstr "设置重新同步窗口"
+
+msgid "set Time Window"
+msgstr "设置时间窗口"
+
+msgid "set Time Shift"
+msgstr "设定时间偏移"
+
+msgid "set Time Step"
+msgstr "设置时间步长"
+
+msgid "set Description"
+msgstr "设置描述"
+
+msgid "You may resync the token:"
+msgstr "重新同步令牌："
+
+msgid "Therefor please enter two OTP values."
+msgstr "请输入两个连续的 OTP 值。"
+
+msgid "Resync Token"
+msgstr "同步令牌"
+
+msgid "Resync"
+msgstr "同步"
+
+msgid "Define to which realms the token(s) shall belong to:"
+msgstr "定义令牌的所属域："
+
+msgid "You may add realms by holding down Ctrl-Key and left-clicking."
+msgstr "您可以添加域，按住 Ctrl 键并单击左键。"
+
+msgid "Edit Realms of Token"
+msgstr "编辑令牌所属域"
+
+msgid "Set Realm"
+msgstr "设置令牌域"
+
+msgid "You may get OTP values for token:"
+msgstr "对于此令牌，您可以请求 OTP 值："
+
+msgid "Enter the number, how many OTP values you want to retrieve:"
+msgstr "请输入请求 OTP 值次数："
+
+msgid "Get OTP values"
+msgstr "请求 OTP 值"
+
+msgid "The following Tokens will be unassigned from the their users:"
+msgstr "下列令牌分配将被移除："
+
+msgid ""
+"The users will not be able to authenticate with this token anymore. Are you "
+"sure?"
+msgstr "用户将不能再次使用该令牌来验证。您确定吗？"
+
+msgid "Unassign selected tokens?"
+msgstr "取消分配选定令牌？"
+
+msgid "Do you want to delete the realm"
+msgstr "您想删除域 "
+
+msgid "Deleting realm"
+msgstr "删除域"
+
+msgid "Do you want to delete the resolver?"
+msgstr "您想删除解析器？"
+
+msgid "Deleting resolver"
+msgstr "删除解析器"
+
+msgid "Token enrolled. Use the old PIN with the new password."
+msgstr "注册临时令牌。用户需将其旧 PIN 和新密码结合使用。"
+
+msgid "The temporary token can be used till the end date."
+msgstr "临时令牌可以使用至有效日期结束。"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "End date"
+msgstr "截止日期"
+
+msgid "New Temporary Token"
+msgstr "新的临时令牌"
+
+msgid "Server Configuration"
+msgstr "服务器配置"
+
+msgid "Resolver name"
+msgstr "解析器名称"
+
+msgid "Server-URI"
+msgstr "服务器链接"
+
+msgid "CA Certificate"
+msgstr "CA 证书"
+
+msgid ""
+"If you are using LDAPS you can enter the CA certificate in PEM format here."
+msgstr "如果您正在使用 LDAPS，您可以在此复制 PEM 格式的 CA 证书。"
+
+msgid "BaseDN"
+msgstr "基本 DN"
+
+msgid "BindDN"
+msgstr "绑定 DN"
+
+msgid "Bind Password"
+msgstr "绑定密码"
+
+msgid "Sizelimit"
+msgstr "长度限制"
+
+msgid "No anonymous referral chasing"
+msgstr "没有介绍人匿名追踪"
+
+msgid "Test LDAP Server connection"
+msgstr "测试 LDAP 服务器连接"
+
+msgid "Testing connection ..."
+msgstr "测试连接..."
+
+msgid "LDAP attributes"
+msgstr "LDAP 属性"
+
+msgid "Mapping Attributes"
+msgstr "映射属性"
+
+msgid "LoginName Attribute"
+msgstr "登录名属性 "
+
+msgid "Searchfilter"
+msgstr "搜索过滤器"
+
+msgid "Userfilter"
+msgstr "用户过滤器"
+
+msgid "Attribute mapping"
+msgstr "属性映射"
+
+msgid ""
+"The UID (unique identifier) for your LDAP objects - could be DN, GUID or "
+"entryUUID (LDAP) or objectGUID (Active Directory)"
+msgstr ""
+"请指定 LDAP 对象的 UID （唯一性标识），比如，DN、GUID、 entryUUID（LDAP） 或 "
+"objectGUID （活动目录）。"
+
+msgid "UID Type"
+msgstr "UID 类型"
+
+msgid "Preset Active Directory"
+msgstr "预设活动目录"
+
+msgid "Preset LDAP"
+msgstr "预设 LDAP"
+
+msgid "LDAP Resolver"
+msgstr "解析 LDAP"
+
+msgid "Test LDAP connection"
+msgstr "测试 LDAP 连接"
+
+msgid "Preset AD"
+msgstr "预设 AD"
+
+msgid "Server config"
+msgstr "服务器配置"
+
+msgid "Driver"
+msgstr "驱动"
+
+msgid "Server"
+msgstr "服务器"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Database"
+msgstr "数据库"
+
+msgid "Database table"
+msgstr "数据库表"
+
+msgid "Limit"
+msgstr "极限"
+
+msgid "Database encoding"
+msgstr "数据库编码"
+
+msgid "Additional connection parameters"
+msgstr "其它连接参数"
+
+msgid "Test SQL connection"
+msgstr "测试 SQL 连接"
+
+msgid "Testing connections..."
+msgstr "测试 LDAP 连接..."
+
+msgid "SQL attributes"
+msgstr "SQL 属性"
+
+msgid "Where statement"
+msgstr "Where 语句"
+
+msgid "SQL Resolver"
+msgstr "SQL 解析器"
+
+msgid "File configuration"
+msgstr "文件配置"
+
+msgid "filename"
+msgstr "文件名称"
+
+msgid "File Resolver"
+msgstr "文件解析器"
+
+msgid "Resyncing of token failed"
+msgstr "重新同步令牌失败。"
+
+msgid "Resynced token successfully"
+msgstr "令牌已成功同步。"
+
+msgid "set PIN successfully"
+msgstr "PIN 码设置成功。"
+
+msgid "When displaying Token information you may only select one single Token."
+msgstr "如果您想显示令牌信息，请单独选择一个令牌。"
+
+msgid "When retrieving the token type you may only select one single Token."
+msgstr "如果您想确定令牌类型，请单独选择一个令牌。"
+
+msgid "Error: unknown tokentype in function token_enroll()"
+msgstr " 错误：未知令牌类型 <em>token_enroll()</em>。"
+
+msgid "Could not find a token for this OTP value."
+msgstr "该 OTP 值无法确定令牌。"
+
+msgid "Error finding a token to this OTP value."
+msgstr "查找与该 OTP 值相对应的令牌时，发生错误。"
+
+msgid "Failed to communicate to LinOTP server"
+msgstr "与 LinOTP 服务器通信失败！"
+
+msgid "unknown token type to load!"
+msgstr "导入未知的令牌类型！"
+
+msgid "You may only upload support subscription files ending with .pem"
+msgstr "您上传的支持文件必须包含文件末尾 <em>.pem</em>。"
+
+msgid ""
+"Error saving SMS configuration. Please check your configuration and your "
+"server"
+msgstr "保存短息供应商配置时，发生错误。请检查服务器配置。"
+
+msgid ""
+"Error saving system configuration. Please check your configuration and your "
+"server"
+msgstr "保存系统配置时，发生错误。请检查服务器配置。"
+
+msgid ""
+"Error saving system checkboxes configuration. Please check your "
+"configuration and your server"
+msgstr "系统检查复选框保存时，发生错误。请检查服务器配置。"
+
+msgid ""
+"Regexp error in realm. You need to select ONE realm to set it as default."
+msgstr "域的正则表达发生错误。您只能选择<em>一个</em>域设为标准域。"
+
+msgid "There is an error in the realm name!"
+msgstr "域的名称发生错误！"
+
+msgid "Policy set."
+msgstr "策略已保存。"
+
+msgid "Policy name is not defined!"
+msgstr "尚未定义该策略的名称！"
+
+msgid "Policy deleted."
+msgstr "指令已被删除。"
+
+msgid "Error fetching list!"
+msgstr "获取列表时，发生错误！"
+
+msgid "created token with serial"
+msgstr "成功生成令牌。序列号："
+
+msgid "losttoken failed"
+msgstr "丢失令牌出错"
+
+msgid "set token PIN failed"
+msgstr "设定令牌 PIN 码时，发生错误"
+
+msgid "Error while fetching the tokentype"
+msgstr "确定令牌类型时，发生错误"
+
+msgid "Error creating token"
+msgstr "创建令牌时，发生错误"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "Failed to import token"
+msgstr "导入令牌失败"
+
+msgid "Token import result"
+msgstr "导入令牌的结果"
+
+msgid "Failed to import policies"
+msgstr "导入策略失败"
+
+msgid "Policy import result"
+msgstr "策略导入的结果"
+
+msgid "Failed to load support subscription"
+msgstr "支持数据注册失败"
+
+msgid "Support subscription import result"
+msgstr "支持注册的结果"
+
+msgid "Error saving ldap configuration"
+msgstr "无法保存 LDAP 配置"
+
+msgid "Error saving realm configuration."
+msgstr "无法保存域配置"
+
+msgid "Realm created"
+msgstr "创建域"
+
+msgid "Error setting Token realms"
+msgstr "设置令牌域时，发生错误"
+
+msgid "Error saving file configuration"
+msgstr "文件配置保存时，发生错误"
+
+msgid "Error saving sql configuration"
+msgstr "无法保存 LDAP 配置"
+
+msgid "Resolver deleted successfully"
+msgstr "解析器删除成功"
+
+msgid "Failed deleting resolver"
+msgstr "删除解析器时，发生错误"
+
+msgid "Realm deleted"
+msgstr "删除域"
+
+msgid "Failed deleting Realm"
+msgstr "删除域时，发生错误"
+
+msgid "Error in regular expression for"
+msgstr "正则表达式出错"
+
+msgid "LDAP Server configuration seems to be OK! Number of users found"
+msgstr ""
+"LDAP 服务器配置OK！\n"
+"发现用户数 "
+
+msgid "Error loading LDAP resolver"
+msgstr "加载 LDAP 解析时，发生错误"
+
+msgid "Error loading SQL resolver"
+msgstr "加载 SQL 解析时，发生错误"
+
+msgid "SQL config seems to be OK! Number of users found"
+msgstr "SQL 配置OK！发现用户数"
+
+msgid "SQL config contains errors"
+msgstr "SQL 配置包含错误"
+
+msgid "Unknown PIN type"
+msgstr "未知 PIN 码类型"
+
+msgid "You entered invalid data. Please check all the Tabs!"
+msgstr "您输入的数据无效。请检查所有标签！"
+
+msgid "Error occurred during processing"
+msgstr "进程处理出错"
+
+msgid ""
+"You have defined UserIdResolvers. But you need to create at least one realm "
+"that contains some of your UserIdResolvers. The realm Dialog will now open "
+"to do this."
+msgstr ""
+"您已经定义用户 ID 解析。但您必须定义至少一个域才能将令牌分配给用户。现在将打"
+"开域对话框。"
+
+msgid "This realm is already the default realm."
+msgstr "该域已经是默认域。"
+
+msgid "Incorrect or missing input at"
+msgstr "存在不正确或丢失的信息："
+
+msgid "Please have a look at each of the forms for more details."
+msgstr "详细信息，请检查个人配置设置。"
+
+msgid "License reminder:"
+msgstr "许可提醒："
+
+msgid "Support license installed successfully."
+msgstr "支持许可证已成功安装。"
+
+msgid "OATH Soft Token"
+msgstr "OATH 软令牌"
+
+msgid ""
+"QR-Code for installing the token in OATH compatible Soft Tokens (FreeOTP, "
+"Google Authenticator and other tokens using the 'otpauth:/' syntax)."
+msgstr ""
+"安装在各种 OATH 软令牌应用程序的二维码 （FreeOTP、Google Authenticator 和其它"
+"支持 'otpauth://' 语法的令牌。"
+
+msgid "'OATH token' app"
+msgstr "'OATH 令牌' App"
+
+msgid "QR-Code for installing the token in the 'OATH Token' app for iOS."
+msgstr "应用于 iOS 版的 App 安装的 'OATH 令牌' 二维码。"
+
+msgid "The OATH token seed for installing the token using manual input."
+msgstr "手动输入 OATH 令牌密钥。"
+
+msgid "OTP values"
+msgstr "OTP 值"
+
+msgid "Your token"
+msgstr "您的令牌"
+
+msgid "is of type"
+msgstr "是类型"
+
+msgid "Export policies"
+msgstr "导出策略"
+
+msgid "Policy name"
+msgstr "策略名称"
+
+msgid "The name of the policy"
+msgstr "策略的名称"
+
+msgid "- Select scope -"
+msgstr "- 选择分类 -"
+
+msgid ""
+"The action that should be allowed. These are actions like: enrollSMS, "
+"enrollMOTP...The actions may be comma separated."
+msgstr "被允许的行为，如 'enrollSMS'、'enrollMOTP'... 用逗号分隔。"
+
+msgid "The user or usergroup the policy should apply to"
+msgstr "应用该策略的用户或用户组"
+
+msgid "The realm the policy applies to"
+msgstr "应用策略的域"
+
+msgid "Comma separated list of client IPs and Subnets."
+msgstr "以逗号分隔的客户端 IP 地址或子网的列表。"
+
+msgid "The time on which the policy should be applied"
+msgstr "策略的有效时间"
+
+msgid "Set Policy"
+msgstr "保存策略"
+
+msgid "Delete Selected Policy"
+msgstr "删除选定策略"
+
+msgid "Clear Fields"
+msgstr "空字段"
+
+msgid "hashlib"
+msgstr "哈希算法"
+
+msgid "count auth"
+msgstr "认证计数器"
+
+msgid "count auth max"
+msgstr "最大认证数量"
+
+msgid "time window"
+msgstr "时间窗口"
+
+msgid "time shift"
+msgstr "时间偏移"
+
+msgid "mobile phone number"
+msgstr "手机号"
+
+msgid "Get OTP"
+msgstr "请求 OTP 值"
+
+msgid "Activate your OCRA Token"
+msgstr "激活您的 OCRA 令牌"
+
+msgid "Your OCRA Token :"
+msgstr "您的 OCRA 令牌："
+
+msgid "activate your OCRA Token"
+msgstr "激活您的 OCRA 令牌"
+
+msgid "finish your OCRA Token"
+msgstr "OCRA 令牌设定完成"
+
+msgid "Assign OTP Token"
+msgstr "分配 OTP 令牌"
+
+msgid ""
+"You may either assign the token by entering the serial number or you can "
+"enter an OTP value of the token and the system will try to identify the "
+"token for you."
+msgstr ""
+"您既可以通过直接输入序列号分配令牌，或者也可以通过 OTP 值确定令牌再进行分配。"
+
+msgid "The OTP value of the Token to assign"
+msgstr "将被分配的令牌的 OTP 值"
+
+msgid "Determine Serial Number"
+msgstr "确定序列号"
+
+msgid "Serialnumber of new Token"
+msgstr "新的 OTP 令牌序列号"
+
+msgid "Assign Token"
+msgstr "分配令牌"
+
+msgid "LinOTP 2 User self service"
+msgstr "LinOTP 自助服务门户"
+
+msgid "Selfservice Portal"
+msgstr "自助服务门户"
+
+msgid "Tokens for user:"
+msgstr "用户令牌："
+
+msgid "in realm"
+msgstr "域"
+
+msgid "Activate your QR token"
+msgstr "激活二维码令牌"
+
+msgid "Activate your OCRA token"
+msgstr "激活 OCRA 令牌"
+
+msgid "Enroll OATH token"
+msgstr "注册 OATH 令牌"
+
+msgid "Enroll OATH soft token"
+msgstr "注册 OATH 软令牌"
+
+msgid "Disable Token"
+msgstr "禁用令牌"
+
+msgid "Enable Token"
+msgstr "启用令牌"
+
+msgid "set PIN"
+msgstr "设置 PIN 码"
+
+msgid "set mOTP PIN"
+msgstr "设置 mOTP PIN 码"
+
+msgid "get OTP values"
+msgstr "请求 OTP 值"
+
+msgid "unassign Token"
+msgstr "取消令牌分配"
+
+msgid "delete Token"
+msgstr "删除令牌"
+
+msgid "History"
+msgstr "历史"
+
+#, python-format
+msgid ""
+"Error enrolling token:\n"
+" %s"
+msgstr ""
+"注册令牌出错：\n"
+" %s"
+
+#, python-format
+msgid ""
+"Token enrolled successfully:\n"
+" %s"
+msgstr ""
+"令牌已成功注册：\n"
+" %s"
+
+msgid "Delete OTP Token"
+msgstr "删除 OTP 令牌"
+
+msgid "selected Token"
+msgstr "已选令牌"
+
+msgid "Disable OTP Token"
+msgstr "禁用 OTP 令牌"
+
+msgid "disable Token"
+msgstr "禁用令牌"
+
+msgid "Enable OTP Token"
+msgstr "启用 OTP 令牌"
+
+msgid "enable Token"
+msgstr "启用令牌"
+
+msgid "get OTP values from Token"
+msgstr "请求令牌 OTP 值"
+
+msgid "Number of OTP values to retrieve"
+msgstr "请求 OTP 值的数量"
+
+msgid ""
+"This is the LinOTP self service portal. You may login here with your "
+"username and realm."
+msgstr "这里是 LinOTP 自助服务门户。您可以使用您的用户名和域进行登录。"
+
+msgid ""
+"Within the self service portal you may reset the PINs of your tokens, assign "
+"new tokens or resync your tokens."
+msgstr "在自助服务门户上，您可以：为您的令牌重置 PIN 码，注册或同步的新令牌。"
+
+msgid "If you lost a token, you may also disable this token."
+msgstr "如果您已经丢失了一个令牌，您可以将其禁用。"
+
+msgid "Login to LinOTP self service"
+msgstr "登录 LinOTP 自助服务门户"
+
+msgid "Failed to retrieve the OTP values of your token:"
+msgstr "请求 OTP 值失败："
+
+msgid "reset Failcounter"
+msgstr "重置错误计数器"
+
+msgid "Resync OTP Token"
+msgstr "同步 OTP 令牌"
+
+msgid "resync OTP"
+msgstr "OTP 同步"
+
+msgid "Reset mOTP PIN"
+msgstr "mOTP PIN 码重置"
+
+msgid ""
+"This resets the mOTP PIN, which is the PIN that is entered in the motp "
+"application on your phone."
+msgstr "重置 mOTP PIN 码。请在您手机的 mOTP App 应用上输入 PIN 码。"
+
+msgid "repeat mOTP PIN"
+msgstr "mOTP PIN 码重复"
+
+msgid "The passwords do not match!"
+msgstr "密码不相同！"
+
+msgid "Error setting mOTP PIN: "
+msgstr "设置 mOTP PIN 码时，发生错误："
+
+msgid "mOTP PIN set successfully"
+msgstr "mOTP PIN 码设置成功。"
+
+msgid "Reset OTP PIN"
+msgstr "重置 OTP PIN 码"
+
+msgid "repeat PIN"
+msgstr "PIN 码重复"
+
+msgid "Error setting PIN: "
+msgstr "设置 PIN 码时，发生错误："
+
+msgid "PIN set successfully"
+msgstr "mOTP PIN 码设置成功"
+
+msgid "Unassign OTP Token"
+msgstr "取消令牌分配"
+
+msgid "Provision your OATH soft token"
+msgstr "注册您的 OATH 令牌"
+
+msgid ""
+"You need an OATH compatible soft token app installed on your mobile device."
+msgstr "您需要在手机上安装一个兼容 OATH 软令牌的 App 应用。"
+
+msgid "(FreeOTP, Google Authenticator or another OATH compatible soft token)"
+msgstr "（FreeOTP、Google Authenticator 或一个其它兼容 OATH 的软令牌）"
+
+msgid "Provision your soft token in LinOTP"
+msgstr "在 LinOTP 输入您的软令牌"
+
+msgid "Choose your token profile "
+msgstr "请选择您的令牌类型 "
+
+msgid "event based"
+msgstr "基于事件"
+
+msgid "time based"
+msgstr "基于时间"
+
+msgid "and"
+msgstr "和"
+
+msgid "enroll your token"
+msgstr "创建自己的令牌"
+
+msgid "enroll your event based token"
+msgstr "创建自己的基于事件的令牌"
+
+msgid "enroll your time based token"
+msgstr "创建自己的基于时间的令牌"
+
+msgid "Install your soft token profile"
+msgstr "安装您的软令牌类型"
+
+msgid ""
+"To install the token on your mobile device, scan the QR code below with your "
+"soft token app or follow the link"
+msgstr "要在您的移动设备上安装令牌，请扫描下列二维码并跟随链接引导操作。"
+
+msgid "Provision your OATH Token"
+msgstr "注册 OATH 令牌"
+
+msgid "1. You first need to install the oathtoken to your iPhone."
+msgstr "1.您必须首先在您的 iPhone 上安装 OATH 令牌 App 应用。"
+
+msgid "link for iPhone"
+msgstr "iPhone 链接"
+
+msgid ""
+"Using the QR Code you can directly go to install the oath token on your "
+"iPhone."
+msgstr "通过二维码您将直接在 iPhone 上安装 OATH 令牌 App。"
+
+msgid "2. Then you may create a profile."
+msgstr "2.然后您可以为令牌创建配置文件。"
+
+msgid "enroll OATH Token"
+msgstr "创建 OATH 令牌"
+
+msgid "3."
+msgstr "3."
+
+msgid "successfully created!"
+msgstr "创建成功！"
+
+msgid "Click on this link to install the oathtoken profile to your iPhone:"
+msgstr "点击您的智能手机上的链接，便能在您的 iPhone 上安装配置文件："
+
+msgid "install profile"
+msgstr "安装配置文件"
+
+msgid "Or you can scan the QR code below your iPhone to import the secret."
+msgstr "另外，您也可以通过 iPhone 扫描下面的二维码，导入配置文件。"
+
