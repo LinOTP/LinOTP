@@ -31,7 +31,7 @@ BUILDIR=$(CURDIR)/debian/linotp
 PROJECT=LinOTP
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
 
-I18N_LANGUAGES = de
+I18N_LANGUAGES = de fr
 I18N_SRC := $(CURDIR)/linotp/i18n
 I18N_JSON_DEST := $(CURDIR)/linotp/public/i18n
 I18N_PO_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_SRC)/$(lang)/LC_MESSAGES/linotp.po)
