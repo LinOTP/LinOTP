@@ -1613,7 +1613,9 @@ class SystemController(BaseController):
         res = {}
         try:
 
-            res = linotp.lib.support.getSupportLicenseInfo()
+            (lic_info, _sig) = linotp.lib.support.getSupportLicenseInfo()
+            res = {}
+            res.update(lic_info)
 
             c.audit['success'] = True
             return sendResult(response, res, 1)
