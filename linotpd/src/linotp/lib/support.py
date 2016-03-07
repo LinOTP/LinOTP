@@ -203,6 +203,42 @@ def isSupportLicenseValid(licString=None, lic_dict=None, lic_sign=None,
     return res, reason
 
 
+def check_license_restrictions():
+    """
+    check if there are restrictions, which are caused by the license
+    """
+
+    license_str = getFromConfig('license')
+    if not license_str:
+        return False
+
+    licString = binascii.unhexlify(license_str)
+    lic_dict, lic_sign = parseSupportLicense(licString)
+    res, reason = verifyLicenseInfo(lic_dict, lic_sign,
+                                    raiseException=False)
+
+    if not (lic_dict.license_type and lic_dict.license_type == 'demo'):
+        return False
+
+    import linotp.lib.token
+    installed_tokens = int(linotp.lib.token.getTokenNumResolver())
+    allowed_tokens = lic_dict.get('token-num', 'unlimited')
+    try:
+        allowed_tokens = int(allowed_tokens.strip())
+        if installed_tokens > allowed_tokens:
+            return True
+    except ValueError as _val_err:
+        # in case of no int we ignore this restriction as it could
+        # be a string representation like 'unlimited'
+        pass
+
+    res, _msg = verify_expiration(lic_dict)
+    if res is False:
+        return True
+
+    return False
+
+
 def setSupportLicense(licString):
     """
     set the license to be the current one
