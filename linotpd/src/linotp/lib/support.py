@@ -351,7 +351,7 @@ def setSupportLicenseInfo(lic_dict, lic_sign):
     verifyLicenseInfo(lic_dict, lic_sign, raiseException=True)
 
     # first set the duration if there is one
-    if not set_duration(lic_dict, raiseException=True)
+    if not set_duration(lic_dict, raiseException=True):
         return False
 
     lic_str = lic_dict.info()
