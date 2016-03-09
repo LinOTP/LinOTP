@@ -980,8 +980,20 @@ function check_license(){
                         'type': ERROR,
                         'is_escaped': true
                         });
-       return;
     }
+    if (obj['detail'] && obj.detail['download_licence_info']) {
+        var title = i18n.gettext('Support Contact');
+        var download_licence_info =  obj.detail['download_licence_info'];
+        alert_box({'title': title,
+                   'text': download_licence_info,
+                   'is_escaped': true});
+       /*
+       translate_support_view();
+       support_view();
+       $('#dialog_support_view').dialog('open');
+       */
+    }
+    return;
 }
 
 function check_serial(serial){

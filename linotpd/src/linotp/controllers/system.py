@@ -1639,7 +1639,7 @@ class SystemController(BaseController):
             value is false and the detail is returned as detail in the response
         """
         res = {}
-        message = None
+        info = {}
         try:
             license_txt = getFromConfig('license', '')
             try:
@@ -1647,12 +1647,18 @@ class SystemController(BaseController):
             except TypeError:
                 licString = license_txt
 
-            (res, msg) = linotp.lib.support.isSupportLicenseValid(licString)
-            if res == False:
-                message = {'reason':msg}
+            (res, msg,
+             lic_info) = linotp.lib.support.isSupportLicenseValid(licString)
+
+            if res is False:
+                info['reason'] = msg
+
+            if linotp.lib.support.do_nagging(lic_info):
+                info['download_licence_info'] = _("<h1>contact support</h1>")
 
             c.audit['success'] = res
-            return sendResult(response, res, 1, opt=message)
+            Session.commit()
+            return sendResult(response, res, 1, opt=info)
 
         except Exception as exx:
             log.exception("[isSupportValid] failed verify support info: %r" % exx)

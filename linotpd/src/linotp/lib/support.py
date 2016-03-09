@@ -200,7 +200,7 @@ def isSupportLicenseValid(licString=None, lic_dict=None, lic_sign=None,
         lic_dict, lic_sign = parseSupportLicense(licString)
     res, reason = verifyLicenseInfo(lic_dict, lic_sign,
                                     raiseException=raiseException)
-    return res, reason
+    return res, reason, lic_dict
 
 
 def check_license_restrictions():
@@ -256,6 +256,58 @@ def setSupportLicense(licString):
         msg = "%s" % exx.message
 
     return ret, msg
+
+
+def do_nagging(lic_info):
+    """
+    do nagging - answer the question if nagging should be done
+
+    :param lic_info: the license info
+    :return: boolean - True if nagging should be displayed
+    """
+
+    d_fmt = "%Y-%m-%d"
+
+    # we start 20 days after download license was installed
+    nag_offset = 20
+
+    if not (lic_info.license_type and lic_info.license_type == 'download'):
+        return False
+
+    # in case there is no duration definition in 'xx days' we do the nagging
+    if not lic_info.license_expiration:
+        log.error("download license format error: "
+                  "missing expiration definition!")
+        return True
+
+    now_date = datetime.datetime.now().date()
+
+    expire = get_expiration_date(lic_info)
+    expire_date = datetime.datetime.strptime(expire, d_fmt).date()
+
+    # calculate back, when the license was enrolled
+    duration = int(lic_info.license_expiration.replace('days', '').strip())
+    lic_start_date = expire_date - datetime.timedelta(days=duration)
+
+    # calulate the nagging start date with given nag_offset
+    nag_start_date = lic_start_date + datetime.timedelta(days=nag_offset)
+
+    if now_date <= nag_start_date:
+        return False
+
+    # ok, we are in the nagging time frame, so start nagging
+    last_nagged = getFromConfig('last_nagged')
+    if last_nagged:
+        # nag only once a day: check, if we nagged already today
+        last_nag_date = datetime.datetime.strptime(last_nagged, d_fmt).date()
+        # check if we nagged already today
+        if last_nag_date >= now_date:
+            return False
+
+    datum = now_date.strftime(d_fmt)
+    storeConfig('last_nagged', datum, desc='last nagged')
+
+    return True
 
 
 def getSupportLicenseInfo():
@@ -688,7 +740,7 @@ def check_duration(expire, lic_info):
             expiration_date = datetime.datetime.strptime(date, date_format)
 
             # preserve the volatile expiration date
-            lic_info['expiration'] = expiration_date.strftime("%dd.%mm.%YY")
+            lic_info["expire"] = expiration_date.strftime("%Y-%m-%d")
 
             if now > expiration_date + datetime.timedelta(days=1):
                 return False, 'License expired'
