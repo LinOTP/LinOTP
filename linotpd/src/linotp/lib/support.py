@@ -62,6 +62,15 @@ BbKBUlx/8GqnwpftJjOmH3qQUjQistt0XJvAOBk2G+jfLMknQmK+KmfzrCxkY1t7
 -----END PUBLIC KEY-----"""
 
 PUB_KEYS = {'linotp' : PUB_KEY_LINOTP}
+BLACK_SIGNATURES = [("BQ+Iney5b97jAS2pxDNqtsqYTItYZCyF55/s1jwJwdGoJJLwe"
+                     "hjgzXIdl54Z8cQ3rmjWYSiQ74XmQrxjLi5WYX2JoG+AxCje53"
+                     "s82i4XPAWFVvWggxU9SwhL+hmatAbi550dIIYmG3OQxX1iMeo"
+                     "vIW5BrWdNLkXJJYsPncG81Wu0JBids5NrhNakUXvONYa8YV3b"
+                     "MeZsMG1AYWqLbDjJcca0wF1dBV7X/9mJ+zkgcPPsviYSAkzFO"
+                     "blwWPKhUbMgem/aXwBSs1r3TitD0Nh/cZW8Fu/DuRM0QSRZbB"
+                     "dD9D5ZGd/nBSO2HajAEa4s/8EeDLoRUs0umZX3nn9nQOYGuw==")
+                    ]
+
 
 class LicenseInfo(dict):
     """
@@ -588,6 +597,9 @@ def _verify_signature(pub_keys, lic_str, lic_sign):
     :return: None or the name of the key
     """
     ret = None
+    # blacklisted signatures
+    if base64.b64encode(lic_sign) in BLACK_SIGNATURES:
+        return False
 
     # verify signature with M2Crypto
     for pub_key_name, pub_key in pub_keys.items():
