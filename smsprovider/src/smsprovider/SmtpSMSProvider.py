@@ -50,7 +50,7 @@ class SmtpSMSProvider(ISMSProvider):
     '''
 
 
-    def submitMessage(self, phone, message, exception=True):
+    def _submitMessage(self, phone, message, exception=True):
         '''
         Submits the message for phone to the email gateway.
 
@@ -69,10 +69,6 @@ class SmtpSMSProvider(ISMSProvider):
             or not self.config.has_key('mailto')):
             log.error("[submitMessage] incomplete config: %s. mailserver, mailsender and mailto needed." % self.config)
             return ret
-
-        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
-        if msisdn:
-            phone = self._get_msisdn_phonenumber(phone)
 
         server = self.config.get("mailserver")
         user = self.config.get("mailuser")

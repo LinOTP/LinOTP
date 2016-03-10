@@ -421,7 +421,9 @@ class TestHttpSmsController(TestController):
             "SMS_TEXT_KEY":"text",
             "SMS_PHONENUMBER_KEY":"destination",
             "HTTP_Method" : "GET",
-            "RETURN_FAIL" : "FAILED"
+            "RETURN_FAIL" : "FAILED",
+            "MSISDN": True,
+            "SUPPRESS_PREFIX" : '+',
         }
 
         parameters = {

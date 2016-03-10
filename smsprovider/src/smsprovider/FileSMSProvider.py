@@ -52,7 +52,7 @@ class FileSMSProvider(ISMSProvider):
 
         return iface
 
-    def submitMessage(self, phone, message):
+    def _submitMessage(self, phone, message):
         """
         write the message down to the given file
 
@@ -60,10 +60,6 @@ class FileSMSProvider(ISMSProvider):
         :param message: the provided message, containing the otp
         """
         ret = False
-
-        msisdn = 'true' in ('%r' % self.config.get('MSISDN', 'false')).lower()
-        if msisdn:
-            phone = self._get_msisdn_phonenumber(phone)
 
         filename = self.config.get('file', '')
         here = self.config.get('here', '')

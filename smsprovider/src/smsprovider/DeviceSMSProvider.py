@@ -53,16 +53,12 @@ class DeviceSMSProvider(ISMSProvider):
     def __init__(self):
         self.config = {}
 
-    def submitMessage(self, phone, message):
+    def _submitMessage(self, phone, message):
         '''
             submitMessage()
             - send out a message to a phone
 
         '''
-        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
-        if msisdn:
-            phone = self._get_msisdn_phonenumber(phone)
-
         if (not self.config.has_key('CONFIGFILE')):
             log.error("[submitMessage] No config key CONFIGFILE found!")
             return
@@ -83,6 +79,8 @@ class DeviceSMSProvider(ISMSProvider):
         command = "echo %s | gnokii --config %s --sendsms %s" % (message, configfile, phone)
         log.debug("[submitMessage] running command: %s" % command)
         proc = subprocess.Popen([command], shell=True)
+
+        return True
 
     def loadConfig(self, configDict):
         self.config = configDict

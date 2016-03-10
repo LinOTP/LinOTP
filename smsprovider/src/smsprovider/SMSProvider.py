@@ -27,7 +27,7 @@
 """ the SMS Provider Interface """
 
 
-class ISMSProvider:
+class ISMSProvider(object):
     """
     Interface class for the SMS providers
     """
@@ -35,7 +35,29 @@ class ISMSProvider:
         self.config = {}
 
     def submitMessage(self, phone, message):
-        pass
+        """
+        submitMessage - the method of all SMS Providers after preparation
+                        the subclass method of _submitMessage() is called
+
+        :param phone: the unformatted, arbitrary phone number
+        :param message: the message that should be submitted
+        :return: boolean value of success
+        """
+
+        # should we transform the phone number according to the MSISDN standard
+        msisdn = ISMSProvider.get_bool(self.config, 'MSISDN', False)
+        if msisdn:
+            phone = self._get_msisdn_phonenumber(phone)
+
+        # suppress_prefix is about to cut off the leading prefix e.g. '+' sign
+        # leading with the meaning, that there are only leading white spaces
+        suppress_prefix = self.config.get('SUPPRESS_PREFIX', '')
+        if suppress_prefix:
+            phone = phone.lstrip()
+            if phone[0:len(suppress_prefix)] == suppress_prefix:
+                phone = phone[len(suppress_prefix):]
+
+        return self._submitMessage(phone, message)
 
     def loadConfig(self, configDict):
         self.config = configDict
@@ -59,18 +81,27 @@ class ISMSProvider:
         global prefixing is ignored
         """
         msisdn = []
-        prefix = False
+
         if phonenumber.strip()[0] == '+':
-            prefix = True
+            msisdn.append('+')
+
         for character in phonenumber:
             if character.isdigit():
                 msisdn.append(character)
 
-        phone = "".join(msisdn)
-        if prefix:
-            return "+" + phone
-        else:
-            return phone
+        return "".join(msisdn)
+
+    @staticmethod
+    def get_bool(config, key, default):
+        """
+        helper method - get the boolean value from a config entry,
+                        which could be either boolean or string
+
+        as we might get from the json a real boolean or a string, we use
+        the %r to print the representation to generalize the processing
+        """
+        as_str = str(config.get(key, default))
+        return 'true' == as_str.lower()
 
 
 def getSMSProviderClass(packageName, className):

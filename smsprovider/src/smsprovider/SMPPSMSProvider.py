@@ -67,7 +67,7 @@ class SMPPSMSProvider(ISMSProvider):
 
         return iface
 
-    def submitMessage(self, phone, message):
+    def _submitMessage(self, phone, message):
         """
         submit the message to the SMPP Server
         """
@@ -75,10 +75,6 @@ class SMPPSMSProvider(ISMSProvider):
         # setup the configuration
         if not self.config:
             raise Exception("missing configuration!")
-
-        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
-        if msisdn:
-            phone = self._get_msisdn_phonenumber(phone)
 
         client = smpplib.client.Client(self.server, self.port)
         client.connect()
