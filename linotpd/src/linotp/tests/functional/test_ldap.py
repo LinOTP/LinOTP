@@ -215,7 +215,7 @@ class LDAP(object):
 
         attrs = {}
         if dn is None:
-            raise Exception('missing requred dn')
+            raise Exception('missing required dn')
 
         if objectclass is None:
             attrs['objectclass'] = ['top', 'person', 'organizationalPerson', 'inetOrgPerson', 'uidObject']
@@ -726,7 +726,3 @@ class TestLDAP(TestController):
 
             self.delOtpPinPolicy()
         return
-
-
-
-
