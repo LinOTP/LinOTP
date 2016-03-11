@@ -102,8 +102,14 @@ class RemoteRequest(object):
         query_parts = query.split('&')
         q = {}
         for query_part in query_parts:
-            key, value = query_part.split('=')
-            q[key.strip()] = value.strip()
+            if '=' in query:
+                key, value = query_part.split('=')
+            else:
+                key = query
+                value = ''
+            # only add if key is not an empty strings
+            if key.strip():
+                q[key.strip()] = value.strip()
 
         url_info['query_params'] = q
         return url_info
