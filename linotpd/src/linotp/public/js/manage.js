@@ -154,6 +154,14 @@ jQuery.validator.addMethod("http_uri", function(value, element, param){
     i18n.gettext("Please enter a valid http uri. It needs to start with http:// or https://")
 );
 
+//LDAPTIMEOUT: "(float or number) | (float or number; float or number)"
+jQuery.validator.addMethod("ldap_timeout", function(value, element, param){
+	var float_tuple = /(^[+]?[0-9]+(\.[0-9]+){0,1}$)|((^[+]?[0-9]+(\.[0-9]+){0,1})\s*;\s*([+]?[0-9]+(\.[0-9]+){0,1}$))/;
+    return value.match(float_tuple);
+    },
+    i18n.gettext("Please enter a timeout like: 5.0; 5.0 ")
+);
+
 // LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
 jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
     return value.match(/(\(\S+=(\S+).*\))+/);
@@ -4794,7 +4802,7 @@ function resolver_ldap(name){
             ldap_timeout: {
                 required: true,
                 minlength: 1,
-                number: true
+                ldap_timeout: true
             },
             ldap_resolvername: {
                 required: true,
