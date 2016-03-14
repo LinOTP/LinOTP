@@ -3072,7 +3072,9 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
     # 3. If no user specific policy was found, we now take a look,
     #    if we find a policy with the matching resolver.
     (matched_policies,
-     empty_policies) = _user_filter_for_resolver(default_policies, userObj)
+     empty_policies,
+     ext_resolver_policies) = _user_filter_for_resolver(default_policies,
+                                                        userObj)
 
     if matched_policies:
         return matched_policies
@@ -3082,7 +3084,8 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
 
     # 4. if nothing matched before and there are extended user filter
     #    definitions, try these out - but only in scope 'selfservice'
-    if ext_policies and scope in ['selfservice']:
+    if ext_resolver_policies or ext_policies and scope in ['selfservice']:
+        ext_policies.update(ext_resolver_policies)
         (matched_policies,
          default_policies) = _user_filter_extended(ext_policies, userObj)
 
@@ -3116,12 +3119,17 @@ def _user_filter_extended(Policies, userObj):
             res = None
 
             # check if there is an attribute filter in defintion
-            if '#' in  user_def:
+            if '#' in user_def:
                 attr_comp = AttributeCompare()
                 res = attr_comp.compare(userObj, user_def)
 
             # if no attribute filter we support as well domain filter
             elif "@" in user_def:
+                domain_comp = UserDomainCompare()
+                res = domain_comp.compare(userObj, user_def)
+
+            # if there is an : in the user, we compare the resolver
+            elif ":" in user_def:
                 domain_comp = UserDomainCompare()
                 res = domain_comp.compare(userObj, user_def)
 
@@ -3143,7 +3151,7 @@ def _user_filter_extended(Policies, userObj):
 
 def _user_filter_for_resolver(Policies, userObj):
     """
-    check if user matches with a policy usee defintion like 'resolver:'
+    check if user matches with a policy user defintion like 'resolver:'
 
     :param Policies: the to be processed policies
     :param userObj: the user as User class object
@@ -3152,6 +3160,7 @@ def _user_filter_for_resolver(Policies, userObj):
 
     matched_policies = {}
     empty_policies = {}
+    ext_resolver_policies = {}
 
     # get the resolver of the user in the realm and search for this
     # resolver list in the policies. Therefore we trim the user resolver
@@ -3173,18 +3182,29 @@ def _user_filter_for_resolver(Policies, userObj):
             empty_policies[polname] = pol
             continue
 
+        # there might be some resolver prefixed by user like *.reso1:
+        # thus we extract the resolver as the last part before the last '.'
+        for reso_def in resolver_def:
+            sub_resolvers = set()
+            if '.' in reso_def:
+                sub_resolvers.add(reso_def.split('.')[-1])
+
         # if we have some, intersect them with the user resolvers
         if resolver_def & resolvers_of_user:
             log.debug("adding %s to matched_policies", polname)
             matched_policies[polname] = pol
+
+        # or if we have some sub-resolvers, intersect them
+        elif sub_resolvers & resolvers_of_user:
+            ext_resolver_policies[polname] = pol
 
         # if no intersection match, write a short log output
         else:
             log.debug("policy %s contains only resolvers (%r) other than %r",
                       polname, resolver_def, resolvers_of_user)
 
-    # return the identified Policies and if they are defualt
-    return matched_policies, empty_policies
+    # return the identified Policies and if they are default
+    return matched_policies, empty_policies, ext_resolver_policies
 
 
 def set_realm(login, realm, exception=False):
