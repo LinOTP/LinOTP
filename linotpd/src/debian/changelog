@@ -1,4 +1,4 @@
-linotp (2.8.1~rc1-1) jessie; urgency=low
+linotp (2.8.1~rc2-1) jessie; urgency=low
 
   Enhancements:
   * Server: Add monitoring controller
@@ -7,14 +7,18 @@ linotp (2.8.1~rc1-1) jessie; urgency=low
   * Server: Extended user filter in policies
   * Server: Reduce number of userid authentication calls
   * Server: Enable less services in default configuration
+  * Server: Add French, Italian, Spanish and Chinese translations
+  * WebUI: Various cosmetic fixes
   * WebUI: Update jQuery, jQuery UI and jed
 
   Bug fixes:
+  * Server: Fix forwarding policy when parameter list is empty
   * Selfservice: Fix access to userservice with UTF-8 characters
+  * Selfservice: Fix resolver user wildcard support in extended policy user def
   * WebUI: IE11: Deliver requested language
   * WebUI: Support for IE11 logout and cookie deletion
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 19 Feb 2016 11:09:49 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 15 Mar 2016 15:10:36 +0100
 
 linotp (2.8.0.3-1) jessie; urgency=low
 
