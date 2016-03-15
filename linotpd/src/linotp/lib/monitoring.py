@@ -138,7 +138,7 @@ class MonitorHandler(object):
 
         return result
 
-    def get_allowed_realms(self, action):
+    def get_allowed_realms(self, action, scope=u'monitoring'):
         """
         Get all realms to which user has access.
 
@@ -146,6 +146,7 @@ class MonitorHandler(object):
         check if user has access to it and return it.
         Else return all possible realms.
 
+        :param scope: the scope of the policy
         :param action: the policy action which must be checked
         :type action: unicode
         :return: list of realms that user may access
@@ -158,7 +159,7 @@ class MonitorHandler(object):
         realm_whitelist = []
         for pol in context['Policies'].itervalues():
             if pol['active'] == u'True':
-                if action in pol['action'] and pol['scope'] == u'monitoring':
+                if action in pol['action'] and pol['scope'] == scope:
                     if user in pol['user'] or pol['user'] is u'*':
                         # TODO: darf man * in die Realms rein schreiben???
                         # Was ist bei ungültigen Eingaben?

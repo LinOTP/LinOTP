@@ -1693,7 +1693,7 @@ def checkMonitoringAuthorisation(method):
     auth = _getAuthorization("monitoring", method)
     if auth['active'] and not auth['auth']:
         log.warning("the admin >%r< is not allowed to "
-                    "view the audit trail" % auth['admin'])
+                    "do monitoring" % auth['admin'])
 
         ret = _("You do not have the administrative right to do monitoring."
                 "You are missing a policy"
@@ -1701,6 +1701,26 @@ def checkMonitoringAuthorisation(method):
 
         raise PolicyException(ret)
 
+
+def checkReportingAuthorisation(method):
+    """
+    check if the authenticated user has the right to do the given action
+    :param method: the requested action
+    :param context:
+    :return: nothing if authorized, else raise PolicyException
+    """
+    _ = context['translate']
+
+    auth = _getAuthorization("admin", 'report_'+method)
+    if auth['active'] and not auth['auth']:
+        log.warning("the admin >%r< is not allowed to "
+                    "view and delete reporting" % auth['admin'])
+
+        ret = _("You do not have the administrative right to do reporting."
+                "You are missing a policy"
+                "scope=admin, action=report_%s") % method
+
+        raise PolicyException(ret)
 
 
 def _checkGetTokenPolicyPre(method, param={}, authUser=None, user=None):
@@ -2173,7 +2193,6 @@ def _checkAdminPolicyPost(method, param=None, user=None):
         log.error("an unknown method <<%s>> was passed." % method)
         raise PolicyException(_("Failed to run getPolicyPost. "
                               "Unknown method: %s") % method)
-
     return ret
 
 
@@ -3030,5 +3049,35 @@ def get_pin_policies(user):
         # # former return -2
 
     return pin_policies
+
+def check_token_reporting(realm):
+    """
+    parse reporting policies for given realm and user
+    :param realm: the realm to be reported
+    :return: list of status like [assigned, active&unassigned, total]
+    """
+
+    if not realm:
+        realm = None
+
+    report_policies = getPolicy({'scope': 'reporting', 'realm': realm})
+    actions = []
+    for polname, policy in report_policies.items():
+        action = policy.get('action', '')
+        action = str(action)
+        action = action.split(',')
+        for act in action:
+            if 'token_total' in act:
+                actions.append('total')
+            if 'token_status' in act:
+                status = act.split('=')
+                actions.append(status[1])
+            if act is '*':
+                status = ['active', 'inactive', 'assigned', 'unassigned',
+                          'active&assigned', 'active&unassigned',
+                          'inactive&assigned', 'inactive&unassigned', 'total']
+                for stat in status:
+                    actions.append(unicode(stat))
+    return actions
 
 #eof###########################################################################

@@ -95,6 +95,14 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
+    # in case of support for reporting, we have to enable this hook
+    reporting = app_conf.get('service.reporting', 'True') == 'True'
+    if reporting:
+        routeMap.connect('/reporting', controller='reporting', action='maximum')
+        for cont in ['reporting']:
+            routeMap.connect('/%s/{action}' % cont, controller=cont)
+            routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
     # in case of manage, we route the default / to manage
     manage = app_conf.get('service.manage', 'True') == 'True'
     if manage:

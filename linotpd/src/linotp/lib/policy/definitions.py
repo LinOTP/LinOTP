@@ -62,7 +62,10 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': 'allow the administrator to retrieve '
                         'OTP values for tokens.'
-                }
+                },
+            'report_maximum': {'type': 'bool'},
+            'report_delete_all': {'type': 'bool'},
+            'report_delete_before': {'type': 'bool'},
         },
         'gettoken': {
             'max_count_dpw': {'type': 'int'},
@@ -296,8 +299,16 @@ def getPolicyDefinitions(scope=""):
             'userinfo': {
                 'type': 'bool',
                 'desc': 'Allow to get information on user-id-resolvers'}
+        },
+        'reporting': {
+            'token_total': {
+                'type': 'bool',
+                'desc': 'Report total number of tokens'},
+            'token_status': {
+                'type': 'str',
+                'desc': 'Report number of tokens which are in-/active,un-/assigned'
+                        ' or combinations of these concatenatet with "&"'},
         }
-
     }
 
     ## now add generic policies, which every token should provide:

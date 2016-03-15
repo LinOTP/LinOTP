@@ -140,6 +140,8 @@ from linotp.lib.error import ParameterError
 
 from linotp.lib.context import request_context
 
+from linotp.lib.reporting import token_reporting
+
 log = logging.getLogger(__name__)
 audit = config.get('audit')
 
@@ -273,7 +275,21 @@ class UserserviceController(BaseController):
                     c.audit['serial'] = param['serial']
                     c.audit['token_type'] = getTokenType(param['serial'])
 
+                if action in ['assign', 'unassign', 'enable', 'disable',
+                              'enroll', 'delete', 'activateocratoken',
+                              ]:
+                    event = 'token_' + action
+
+                    if c.audit.get('source_realm'):
+                        source_realms = c.audit.get('source_realm')
+                        token_reporting(event, source_realms)
+
+                    target_realms = c.audit.get('realm')
+                    token_reporting(event, target_realms)
+
                 audit.log(c.audit)
+                Session.commit()
+
             return response
 
         except Exception as acc:
@@ -627,6 +643,7 @@ class UserserviceController(BaseController):
                 ret = th.enableToken(True, None, serial)
                 res["enable token"] = ret
 
+                c.audit['realm'] = self.authUser.realm
                 c.audit['success'] = ret
 
             Session.commit()
@@ -682,6 +699,7 @@ class UserserviceController(BaseController):
                 ret = th.enableToken(False, None, serial)
                 res["disable token"] = ret
 
+                c.audit['realm'] = self.authUser.realm
                 c.audit['success'] = ret
 
             Session.commit()
@@ -728,6 +746,7 @@ class UserserviceController(BaseController):
                 ret = th.removeToken(serial=serial)
                 res["delete token"] = ret
 
+                c.audit['realm'] = self.authUser.realm
                 c.audit['success'] = ret
 
             Session.commit()
@@ -822,6 +841,7 @@ class UserserviceController(BaseController):
                 res["unassign token"] = ret
 
                 c.audit['success'] = ret
+                c.audit['realm'] = self.authUser.realm
 
             Session.commit()
             return sendResult(response, res, 1)
@@ -1034,6 +1054,7 @@ class UserserviceController(BaseController):
                 ret = th.assignToken(serial, self.authUser, upin)
                 res["assign token"] = ret
 
+                c.audit['realm'] = self.authUser.realm
                 c.audit['success'] = ret
             else:
                 raise Exception(_("The token is already assigned "
@@ -1180,7 +1201,7 @@ class UserserviceController(BaseController):
             c.audit['user'] = self.authUser.login
             c.audit['realm'] = self.authUser.realm
 
-	    logTokenNum(c.audit)
+            logTokenNum(c.audit)
             c.audit['success'] = ret
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
@@ -1605,6 +1626,7 @@ class UserserviceController(BaseController):
             c.audit['serial'] = serial
             c.audit['token_type'] = typ
             c.audit['success'] = True
+            c.audit['realm'] = self.authUser.realm
 
             Session.commit()
             return sendResult(response, {'activate': True, 'ocratoken': ret})
@@ -1705,6 +1727,7 @@ class UserserviceController(BaseController):
 
             c.audit['transactionid'] = transid
             c.audit['token_type'] = typ
+
             c.audit['success'] = value.get('result')
 
             Session.commit()
@@ -1779,6 +1802,7 @@ class UserserviceController(BaseController):
             c.audit['transactionid'] = transid
             c.audit['token_type'] = reply['token_type']
             c.audit['success'] = ok
+            c.audith['realm'] = self.authUser.realm
 
             Session.commit()
             return sendResult(response, value, opt)
