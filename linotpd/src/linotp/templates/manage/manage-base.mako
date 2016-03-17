@@ -411,7 +411,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
-        <br>Stefan Pietsch, Eric Sesterhenn, Marian Pascalau
+        <br>Stefan Pietsch, Eric Sesterhenn, Marian Pascalau,
+        <br>Fabian Vallon, Veronika Schindler, Philipp Lay
     </p>
 
 </div>
