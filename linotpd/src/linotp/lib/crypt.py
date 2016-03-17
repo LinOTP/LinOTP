@@ -750,15 +750,25 @@ class urandom(object):
 
 def get_rand_digit_str(length=16):
     '''
-    return a sting of digits with a defined length
-    using the urandom
+    return a sting of digits with a defined length using the urandom
+
+    if we have leading zeros, the len of s could be smaller. Therefore
+    we run in a repeat-until-int(len) matches loop
+
+    :param length: number of digits the string should return (w.o. leading 0s)
+    :return: return string, which will contain length digits, even when
+             converted to an int
     '''
-    clen = int(length / 2.4 + 0.5)
-    randd = geturandom(len=clen)
-    s = "%d" % (int(randd.encode('hex'), 16))
-    if len(s) < length:
-        s = "0" * (length - len(s)) + s
-    elif len(s) > length:
+
+    s = ""
+    while len(s) < length:
+        # some optimization len int chars does not require len hex bytes
+        missing = length - len(s)
+        randd = geturandom(len=int(missing / 2 + 0.5))
+        s2 = "%d" % (int(randd.encode('hex'), 16))
+        s = s + s2[:missing]
+
+    if len(s) > length:
         s = s[:length]
     return s
 
