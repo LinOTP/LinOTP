@@ -3165,7 +3165,6 @@ class OcraTest(TestController):
     def test_QR_rollout_w_2_retries(self):
         '''
             test_QR_rollout_w_2_retries: rollout a QRToken with 2 fails for OTP before final rollout is done
-
         '''
         ocra = OcraOtp()
         counter = 0

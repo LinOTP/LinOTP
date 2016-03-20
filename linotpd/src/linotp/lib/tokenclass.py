@@ -113,6 +113,7 @@ class TokenClass(object):
         self.valid_token = []
         self.related_challenges = []
         self.auth_info = {}
+        self.transId = None
 
     def setType(self, typ):
         typ = u'' + typ
@@ -314,37 +315,21 @@ class TokenClass(object):
 
         return challenge_response
 
-    def is_challenge_valid(self, challenge=None):
+    def get_challenge_validity(self):
         '''
-        This method verifies if the given challenge is still valid.
+        This method returns the token specific challenge validity
 
-        The default implementation checks, if the challenge start is in the
-        default validity time window.
-
-        **Please note**: This method does not check the response for the
-        challenge itself. This is done by the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.checkResponse4Challenge`.
-        E.g. this very method ``is_challenge_valid`` is used by the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.challenge_janitor`
-        to clean up old challenges.
-
-        :param challenge: The challenge to be checked
-        :type challenge: challenge object
-        :return: true or false
+        :return: int - validity in seconds
         '''
 
         validity = 120
-        ret = False
 
         try:
             validity = int(getFromConfig('DefaultChallengeValidityTime', 120))
 
             # handle the token specific validity
             typ = self.getType()
-            if typ == 'sms':
-                lookup_for = 'SMSProviderTimeout'
-            else:
-                lookup_for = typ.capitalize() + 'ChallengeValidityTime'
+            lookup_for = typ.capitalize() + 'ChallengeValidityTime'
             validity = int(getFromConfig(lookup_for, validity))
 
             # instance specific timeout
@@ -354,14 +339,7 @@ class TokenClass(object):
         except ValueError:
             validity = 120
 
-        if challenge is not None:
-            c_start_time = challenge.get('timestamp')
-            c_now = datetime.datetime.now()
-            if (c_now < c_start_time + datetime.timedelta(seconds=validity)
-                    and c_now > c_start_time):
-                ret = True
-
-        return ret
+        return validity
 
     def initChallenge(self, transactionid, challenges=None, options=None):
         """
@@ -471,7 +449,7 @@ class TokenClass(object):
                 match_id = max([match_id, int(match.get('id'))])
 
             for ch in challenges:
-                if int(ch.get('id')) <= match_id:
+                if int(ch.get('id')) < match_id:
                     to_be_deleted.append(ch)
 
         # as well append all out dated challenges
@@ -541,38 +519,6 @@ class TokenClass(object):
 
         return (res, reply)
 
-    def get_token_challenges(self, options=None):
-        """
-        get all challenges, defined either by the option=state
-        or identified by the token serial reference
-
-        :param options: the request options
-
-        :return: a list of challenges
-        """
-        challenges = []
-        valid_challenges = []
-
-        if (options is not None and
-                "state" in options or "transactionid" in options):
-            state = options.get('state', options.get('transactionid'))
-
-            challenges = Challenges.lookup_challenges(
-                serial=self.getSerial(), transid=state)
-            if len(challenges) == 0 and self.getType() not in ['ocra']:
-                # if state argument is given, but no open challenge found
-                # this might be a problem, so make a log entry
-                log.info('no challenge with state %s found for %s'
-                         % (state, self.getSerial()))
-        else:
-            challenges = Challenges.lookup_challenges(serial=self.getSerial())
-
-        # now verify that the challenge is valid
-        for ch in challenges:
-            if self.is_challenge_valid(ch):
-                valid_challenges.append(ch)
-
-        return valid_challenges
 
     def check_challenges(self, challenges, user, passw, options=None):
         """
@@ -597,39 +543,22 @@ class TokenClass(object):
             options = {}
 
         otp = passw
+        self.transId = options.get('transactionid', options.get('state', None))
+
+        # only check those challenges, which currently have not been verified
+        check_challenges = []
+        for ch in challenges:
+            if Challenges.verify_checksum(ch) and ch.valid_tan is not True:
+                check_challenges.append(ch)
 
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
-            user, otp, options=options, challenges=challenges)
+            user, otp, options=options, challenges=check_challenges)
         if otpcount >= 0:
             self.valid_token.append(self)
             if len(self.invalid_token) > 0:
                 del self.invalid_token[0]
         else:
             self.invalid_token.append(self)
-
-        # delete all challenges, which belong to the token and
-        # the token could decide on its own, which should be deleted
-        # default is: challenges which are younger than the matching one
-        # are to be deleted
-
-        all_challenges = Challenges.lookup_challenges()
-        to_be_deleted = self.challenge_janitor(matching_challenges,
-                                               all_challenges)
-
-        # gather all related challenges, which as well must be deleted.
-        # (relatedby the means of having a '.dd' postfix in transaction id)
-        # These are then retrieved in the outer loop to call for each token
-        # the challenge janitor so that every token may decide which challenge
-        # to delete
-        for del_challenge in to_be_deleted:
-            if '.' in del_challenge.transid:
-                tran_id = del_challenge.transid.split('.')[0]
-                related_challenges = Challenges.lookup_challenges(
-                    transid=tran_id)
-                self.related_challenges.extend(related_challenges)
-
-        Challenges.delete_challenges(serial=self.getSerial(),
-                                     challenges=to_be_deleted)
 
         return (otpcount, reply)
 
@@ -1406,11 +1335,15 @@ class TokenClass(object):
         linotp.model.Token.copy_pin(src.token, target.token)
 
     def statusValidationFail(self):
-        #  callback to enable a status change, if auth failed
+        """
+        callback to enable a status change, when authentication failed
+        """
         return
 
     def statusValidationSuccess(self):
-        #  callback to enable a status change, if auth failed
+        """
+        callback to enable a status change, on authentication success
+        """
         return
 
     def __repr__(self):

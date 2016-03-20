@@ -1436,9 +1436,8 @@ class Ocra2TokenClass(TokenClass):
                                                       transid=self.transId)
             if len(challenges) == 1:
                 challenge = challenges[0]
-                challenge.setTanStatus(received=True, valid=False)
 
-            ##  still in rollout state??
+            #  still in rollout state??
             rolloutState = self.getFromTokenInfo('rollout', '0')
 
             if rolloutState == '1':
@@ -1446,8 +1445,10 @@ class Ocra2TokenClass(TokenClass):
                          % (self.getSerial()))
 
             elif rolloutState == '2':
-                if challenge.received_count >= int(getFromConfig("OcraMaxChallengeRequests", '3')):
-                    ##  after 3 fails in rollout state 2 - reset to rescan
+                max_challenges = int(getFromConfig("OcraMaxChallengeRequests",
+                                                   3))
+                if challenge and challenge.received_count >= max_challenges:
+                    # after 3 fails in rollout state 2 - reset to rescan
                     self.addToTokenInfo('rollout', '1')
                     log.info('rollout for token %r reset to phase 1:'
                              % (self.getSerial()))
@@ -1482,14 +1483,7 @@ class Ocra2TokenClass(TokenClass):
         if self.transId == 0:
             return
 
-        challenges = Challenges.lookup_challenges(self.getSerial(),
-                                                  transid=self.transId)
-        if len(challenges) == 1:
-            challenge = challenges[0]
-            challenge.setTanStatus(True, True)
-            challenge.save()
-
-        ##  still in rollout state??
+        #  still in rollout state??
         rolloutState = self.getFromTokenInfo('rollout', '0')
 
         if rolloutState == '2':

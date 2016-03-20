@@ -24,12 +24,14 @@
 #    Support: www.lsexperts.de
 #
 
+import json
 import logging
+import datetime
+
 from sqlalchemy import desc, and_
 import linotp
 from linotp.model import Session
 from linotp.model import Challenge
-
 from linotp.lib.context import request_context as context
 
 log = logging.getLogger(__name__)
@@ -53,7 +55,7 @@ class Challenges(object):
         return challenges
 
     @staticmethod
-    def lookup_challenges(serial=None, transid=None):
+    def lookup_challenges(serial=None, transid=None, filter_open=False):
         """
         database lookup to find all challenges belonging to a token and or
         if exist with a transaction state
@@ -81,6 +83,9 @@ class Challenges(object):
 
         if serial:
             conditions += (and_(Challenge.tokenserial == serial),)
+
+        if filter_open is True:
+            conditions += (and_(Challenge.valid_tan is False),)
 
         # SQLAlchemy requires the conditions in one arg as tupple
         condition = and_(*conditions)
@@ -129,9 +134,11 @@ class Challenges(object):
         retry_counter = 0
         reason = None
 
+        hsm = context['hsm'].get('obj')
+
         id_length = int(
             context.get('Config', None).get('TransactionIdLength', 12)) - \
-                    len(id_postfix)
+                        len(id_postfix)
 
         while True:
             try:
@@ -162,7 +169,7 @@ class Challenges(object):
                     retry_counter, reason)
                 raise Exception('Failed to create challenge %r' % reason)
 
-        challenges = Challenges.lookup_challenges(serial=token.getSerial())
+        expired_challenges, valid_challenges = Challenges.get_challenges(token)
 
         # carefully create a new challenge
         try:
@@ -170,29 +177,36 @@ class Challenges(object):
             # we got a challenge object allocated and initialize the challenge
             (res, open_transactionid, message, attributes) = \
                 token.initChallenge(transactionid,
-                                    challenges=challenges,
+                                    challenges=valid_challenges,
                                     options=options)
 
-            if res == False:
+            if res is False:
                 # if a different transid is returned, this indicates, that there
                 # is already an outstanding challenge we can refere to
                 if open_transactionid != transactionid:
                     transactionid = open_transactionid
 
             else:
-                # in case the init was successfull, we preserve no the challenge data
-                # to support the implementation of a blocking based on the previous
-                # stored data
+                # in case the init was successfull, we preserve no the
+                # challenge data to support the implementation of a blocking
+                # based on the previous stored data
                 challenge_obj.setChallenge(message)
                 challenge_obj.save()
 
                 (res, message, data, attributes) = \
                     token.createChallenge(transactionid, options=options)
 
-                if res == True:
+                if res is True:
                     # persist the final challenge data + message
                     challenge_obj.setChallenge(message)
                     challenge_obj.setData(data)
+
+                    # and calculate the mac for this token data
+                    challenge_dict = challenge_obj.get_vars(save=True)
+                    challenge_data = json.dumps(challenge_dict)
+                    mac = hsm.signMessage(challenge_data)
+                    challenge_obj.setSession(mac)
+
                     challenge_obj.save()
                 else:
                     transactionid = ''
@@ -202,7 +216,7 @@ class Challenges(object):
             res = False
 
         # if something goes wrong with the challenge, remove it
-        if res == False and challenge_obj is not None:
+        if res is False and challenge_obj is not None:
             try:
                 log.debug("deleting session")
                 Session.delete(challenge_obj)
@@ -263,9 +277,15 @@ class Challenges(object):
         res = 1
         # gather all challenges with one sql 'in' statement
         if len(challenge_ids) > 0:
-            del_challes = Session.query(Challenge). \
-                filter(Challenge.tokenserial == serial). \
-                filter(Challenge.id.in_(challenge_ids)).all()
+            conditions = ()
+            if serial:
+                conditions += (and_(Challenge.tokenserial == serial),)
+
+            conditions += (and_(Challenge.id.in_(challenge_ids)),)
+
+            # SQLAlchemy requires the conditions in one arg as tupple
+            condition = and_(*conditions)
+            del_challes = Session.query(Challenge).filter(condition).all()
 
             # and delete them via session
             for dell in del_challes:
@@ -274,21 +294,63 @@ class Challenges(object):
         return res
 
     @staticmethod
+    def get_challenges(token=None, transid=None, options=None):
+
+        if not options:
+            options = {}
+
+        state = options.get('state', options.get('transactionid', None))
+        if not transid:
+            transid = state
+
+        tokens = []
+        if token:
+            tokens = [token]
+        else:
+            if not transid:
+                raise Exception("unqulified query")
+
+            challenges = Challenges.lookup_challenges(transid=transid)
+            for challenge in challenges:
+                serial = challenge.tokenserial
+                token = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
+                tokens.extend(token)
+
+        expired_challenges = []
+        valid_chalenges = []
+
+        for token in tokens:
+            validity = token.get_challenge_validity()
+            challenges = Challenges.lookup_challenges(serial=token.getSerial())
+
+            for challenge in challenges:
+                c_start_time = challenge.get('timestamp')
+                c_expire_time = c_start_time + datetime.timedelta(seconds=validity)
+                c_now = datetime.datetime.now()
+                if c_now > c_expire_time:
+                    expired_challenges.append(challenge)
+                else:
+                    valid_chalenges.append(challenge)
+
+        return expired_challenges, valid_chalenges
+
+    @staticmethod
     def handle_related_challenge(related_challenges):
         """
+        handle related challenges
         """
         # if there are any related challenges, we have to call the
         # token janitor, who decides if a challenge is still valid
         # eg. expired
         for related_challenge in related_challenges:
             serial = related_challenge.tokenserial
-            transid = related_challenge.transid
             token = linotp.lib.token.getTokens4UserOrSerial(serial=serial)[0]
 
             # get all challenges and the matching ones
+            ex_ch, val_ch = Challenges.get_challenges(token)
+
             all_challenges = Challenges.lookup_challenges(serial=serial)
-            matching_challenges = Challenges.lookup_challenges(serial=serial,
-                                                               transid=transid)
+            matching_challenges = Challenges.lookup_challenges(serial=serial)
 
             # call the janitor to select the invalid challenges
             to_be_deleted = token.challenge_janitor(matching_challenges,
@@ -297,3 +359,65 @@ class Challenges(object):
                 Challenges.delete_challenges(serial, to_be_deleted)
 
         return
+
+    @staticmethod
+    def finish_challenges(token, success=False):
+        """
+        preserve the token challenge status
+
+        :param token: the token where the challenges belong to
+        :param success: boolean value to indicate if it was processed
+                        successfully or not
+
+        :return: - nothing -
+        """
+
+        hsm = context['hsm'].get('obj')
+
+        # we query for all challenges of the token to identify the valid ones
+        (expired_challenges,
+         valid_challenges) = Challenges.get_challenges(token,
+                                                       transid=token.transId)
+
+        # we query for all challenges of the token
+        for challenge in valid_challenges:
+
+            # first preserve the new status
+            challenge.setTanStatus(received=True, valid=success)
+
+            # and calculate the mac for this token data
+            challenge_dict = challenge.get_vars(save=True)
+            challenge_data = json.dumps(challenge_dict)
+
+            mac = hsm.signMessage(message=challenge_data)
+
+            challenge.setSession(mac)
+            challenge.save()
+
+        # finally delete the expired ones
+        if expired_challenges:
+            Challenges.delete_challenges(None, expired_challenges)
+
+        return
+
+    @staticmethod
+    def verify_checksum(challenge):
+        """
+        verify_checksum
+            verify that the challenge data was not modified on db level
+
+        :param challenge: challenge object
+        :return: success boolean
+        """
+
+        hsm = context['hsm'].get('obj')
+
+        # and calculate the mac for this token data
+        challenge_dict = challenge.get_vars(save=True)
+        challenge_data = json.dumps(challenge_dict)
+
+        stored_mac = challenge.getSession()
+        result = hsm.verfiyMessageSignature(message=challenge_data,
+                                            hex_mac=stored_mac)
+
+        return result
