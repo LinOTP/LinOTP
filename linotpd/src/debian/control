@@ -14,7 +14,7 @@ Depends: ${misc:Depends}, ${python:Depends}, apache2, libapache2-mod-wsgi,
  linotp-useridresolver (>=2.7~), libsodium-dev
 Pre-Depends: python-simplejson, python-crypto, python-docutils,
  python-sqlalchemy (>=0.6), python-sqlalchemy (<=0.9.99),
- python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob (<1.4),
+ python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob,
  python-mako, python-decorator, python-formencode, python-pastescript,
  python-pastedeploy, python-paste, python-beaker, python-webhelpers,
  python-routes, python-pygments, python-ldap, adduser, debconf, pwgen,
