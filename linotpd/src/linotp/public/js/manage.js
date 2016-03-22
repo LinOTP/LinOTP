@@ -1393,7 +1393,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             if (users.length >= 1) {
                 var login = escape(users[0].login);
                 var user = login;
-                var email = escape(emails[0].trim())
+                var email = escape(jQuery.trim(emails[0]))
                 if (email.length > 0) {
                     user = "<a href=mailto:" +email+">"+login+"</a>"
                 }
@@ -3950,7 +3950,7 @@ $(document).ready(function(){
                                         formName = $(this).find('label').first().text();
                                     }
                                     validation_fails = validation_fails +
-                                                "<li>" + escape(formName.trim()) +"</li>";
+                                                "<li>" + escape(jQuery.trim(formName)) +"</li>";
                                 }
                             }
                         }
