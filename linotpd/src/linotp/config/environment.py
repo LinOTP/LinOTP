@@ -187,7 +187,7 @@ def load_environment(global_conf, app_conf):
     if url is None:
         version = pkg_resources.get_distribution("linotp").version
         # First try to get the help for this specific version
-        url = "http://linotp.org/doc/%s/index.html" % version
+        url = "https://linotp.org/doc/%s/index.html" % version
     config['help_url'] = url
 
     log.debug("[load_environment] done")

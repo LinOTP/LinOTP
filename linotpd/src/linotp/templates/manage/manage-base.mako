@@ -405,9 +405,9 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p id='about_copyright'>${_("Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
-    <p><a href="http://www.linotp.org/" target="noreferrer">http://www.linotp.org</a>
+    <p><a href="https://www.linotp.org/" target="noreferrer">https://www.linotp.org</a>
     <br/>${_("or")}<br/>
-    <a href="http://www.lsexperts.de/" target="noreferrer">http://www.lsexperts.de</a></p>
+    <a href="https://www.lsexperts.de/" target="noreferrer">https://www.lsexperts.de</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
