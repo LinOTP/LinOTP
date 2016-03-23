@@ -44,7 +44,7 @@ from linotp.lib.security import SecurityModule
 TOKEN_KEY = 0
 CONFIG_KEY = 1
 VALUE_KEY = 2
-DEFAULT_KEY = 3
+DEFAULT_KEY = 2
 
 
 log = logging.getLogger(__name__)
