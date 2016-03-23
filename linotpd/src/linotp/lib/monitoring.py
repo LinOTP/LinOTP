@@ -34,43 +34,71 @@ from linotp.model import Token, Realm, TokenRealm
 from linotp.model import Config as config_model
 from linotp.model.meta import Session
 
-from linotp.lib.config import LinOtpConfig, storeConfig, getFromConfig
+from linotp.lib.config import LinOtpConfig
+from linotp.lib.config import storeConfig
+from linotp.lib.config import getFromConfig
 
 from linotp.lib.useriterator import iterate_users
 
-from linotp.lib.user import getUserListIterators, getUserFromParam
+from linotp.lib.user import getUserListIterators
+from linotp.lib.user import getUserFromParam
 
 from linotp.lib.context import request_context as context
 
-from sqlalchemy import and_, not_
+from sqlalchemy import (and_, or_, not_)
 
 
 class MonitorHandler(object):
     """
     provide functions for monitor controller
     """
-    def token_per_realm_count(self, realm, status=None):
-        """
-        Give the number of tokens per realm
 
-        :return a dict with the keys: active, inactive,
+    def token_count(self, realm_list, status=None):
+        """
+        Give the number of tokens (with status) per realm
+        if multiple tokens are given, give summary for all tokens
+        tokens which are in multiple realms are only counted once!
+
+        :param realm_list: list of realms which must be queried
+        :param status: string which contains requested token status
+        :return: dict with the keys: active, inactive,
             assigned, unassigned, total
         """
-        result = {}
-        # if no realm or empty realm is specified
-        if realm.strip() == '' or realm.strip() == '/:no realm:/':
-            #  get all tokenrealm ids
-            token_id_tuples = Session.query(TokenRealm.token_id).all()
-            token_ids = set()
-            for token_tuple in token_id_tuples:
-                token_ids.add(token_tuple[0])
-            # all tokens, which are not references in TokenRealm
-            r_condition = and_(not_(Token.LinOtpTokenId.in_(token_ids)))
+
+        if not isinstance(realm_list, (list, tuple)):
+            realms = [realm_list]
         else:
-            # otherwise query all items with realm references
-            r_condition = and_(TokenRealm.realm_id == Realm.id,
-                                Realm.name == u'' + realm,
-                                TokenRealm.token_id == Token.LinOtpTokenId)
+            realms = realm_list[:]
+
+        if len(realms) < 1:
+            realms = ['/:no realm:/']
+
+        result = {}
+        cond = tuple()
+
+        for realm in realms:
+            realm = realm.strip()
+            if '/:no realm:/' in realm or realm == '':
+                #  get all tokenrealm ids
+                token_id_tuples = Session.query(TokenRealm.token_id).all()
+                token_ids = set()
+                for token_tuple in token_id_tuples:
+                    token_ids.add(token_tuple[0])
+                # all tokens, which are not references in TokenRealm
+                cond += (and_(not_(Token.LinOtpTokenId.in_(token_ids))),)
+                realms.remove('/:no realm:/')
+
+            else:
+                cond += (and_(TokenRealm.realm_id == Realm.id,
+                              Realm.name == u'' + realm,
+                              TokenRealm.token_id == Token.LinOtpTokenId),)
+
+        for realm in realms:
+            cond += (and_(TokenRealm.realm_id == Realm.id,
+                          Realm.name == u'' + realm,
+                          TokenRealm.token_id == Token.LinOtpTokenId),)
+        # realm condition:
+        r_condition = or_(*cond)
 
         result['total'] = Session.query(Token).\
             filter(r_condition).distinct().count()

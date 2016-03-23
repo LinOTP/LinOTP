@@ -117,13 +117,15 @@ class MonitoringController(BaseController):
             monitoring/tokens
 
         description:
-            displays the number of the available tokens per realm
+            displays the number of tokens (with status) per realm
+            (one token might be in multiple realms)
+            in the Summary, tokens with multiple realms are only counted once!
 
         arguments:
             * status - optional: takes assigned or unassigned, give the number
                 of tokens with this characteristic
-            * realms - optional: takes a realm, only the number of tokens in
-                this realm will be displayed
+            * realms - optional: takes realms, only the number of tokens in
+                these realms will be displayed
 
         returns:
             a json result with:
@@ -171,20 +173,14 @@ class MonitoringController(BaseController):
                                             'Check the policies!')
                                           % invalid_realms)
 
-            totals = {}
             realm_info = {}
             for a_realm in realms:
-                realm_dict = {}
 
-                token_count = monit_handler.token_per_realm_count(a_realm,
-                                                                  status)
-                for key in token_count.keys():
-                    realm_dict[key] = token_count[key]
-                    totals[key] = totals.get(key, 0) + token_count[key]
+                token_count = monit_handler.token_count([a_realm],
+                                                        status)
+                realm_info[a_realm] = token_count
 
-                realm_info[a_realm] = realm_dict
-
-            result[_('Summary')] = totals
+            result[_('Summary')] = monit_handler.token_count(realms, status)
             result[_('Realms')] = realm_info
 
             Session.commit()

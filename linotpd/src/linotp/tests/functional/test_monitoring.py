@@ -231,6 +231,31 @@ class TestMonitoringController(TestController):
         self.assertEqual(s_values.get('total', -1), 6, response)
         return
 
+    def test_token_in_multiple_realms(self):
+        self.create_token(serial='0041')
+        self.create_token(serial='0042', user='root', realm='mydefrealm')
+        # set multiple realms for this token
+        newrealms = {'realms': 'myotherrealm,mydefrealm', 'serial': '0042'}
+        response = self.make_authenticated_request(controller='admin',
+                                                   action='tokenrealm',
+                                                   params=newrealms)
+        self.assertTrue('"value": 1' in response, response)
+
+        self.create_token(serial='0043', realm='mydefrealm')
+        self.create_token(serial='0044', realm='myotherrealm')
+
+        parameters = {'realms': ',mydefrealm,myotherrealm'}
+        response = self.make_authenticated_request(
+            controller='monitoring', action='tokens', params=parameters)
+        resp = json.loads(response.body)
+        values = resp.get('result').get('value')
+        self.assertEqual(values.get('Realms').get('mydefrealm').get('total'),
+                         2, response)
+        self.assertEqual(values.get('Realms').get('myotherrealm').get('total'),
+                         2, response)
+        self.assertEqual(values.get('Summary').get('total'), 3, response)
+        return
+
     def test_nolicense(self):
         """
 
