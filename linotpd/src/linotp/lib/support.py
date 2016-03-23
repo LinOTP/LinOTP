@@ -93,7 +93,7 @@ def parseSupportLicense(licString):
 
     :param licString: the support license as multiline string
     :return: tuple of license dict, extracted signature and the
-                      license as string, for which the signature 
+                      license as string, for which the signature
                       should be checked
     """
 
@@ -166,7 +166,7 @@ def isSupportLicenseValid(licString=None, lic_dict=None, lic_sign=None,
                           raiseException=False):
     """
     verify the support subscription
-    with respect to signature validity, expriration and volume
+    with respect to signature validity, expiration and volume
 
     :param licString: the support license
     :param raiseException: define if in case of an invalid license
@@ -313,7 +313,7 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False,
 
 def verify_signature(lic_dict, lic_sign, licStr=None):
     """
-    verfy the license signature
+    verify the license signature
 
     :param lic_dict: the dict with the license data
     :param lic_sign: the license signature
