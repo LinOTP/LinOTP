@@ -189,7 +189,7 @@ class GettokenController(BaseController):
             user    - username / loginname
             realm   - additional realm to match the user to a useridresolver
             serial  - the serial number of the token
-            curTime - used ONY for internal testing: datetime.datetime object
+            curTime - used ONLY for internal testing: datetime.datetime object
 
         returns:
             JSON response
@@ -286,4 +286,3 @@ class GettokenController(BaseController):
 
 
 #eof###########################################################################
-
