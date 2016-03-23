@@ -2298,6 +2298,8 @@ class AdminController(BaseController):
 
         try:
 
+            only_open_challenges = True
+
             param.update(request.params)
             log.debug("[checkstatus] check challenge token status: %r" % param)
 
@@ -2305,7 +2307,11 @@ class AdminController(BaseController):
 
             transid = param.get('transactionid', None) or param.get('state', None)
             user = getUserFromParam(param, optional)
-            serial = getParam(param, 'serial'          , optional)
+            serial = getParam(param, 'serial', optional)
+            all = param.get('open', 'False').lower() == 'true'
+
+            if all:
+                only_open_challenges = False
 
             if transid is None and user.isEmpty() and serial is None:
                 # # raise exception
@@ -2316,10 +2322,12 @@ class AdminController(BaseController):
             # # gather all challenges from serial, transactionid and user
             challenges = set()
             if serial is not None:
-                challenges.update(Challenges.lookup_challenges(serial=serial))
+                challenges.update(Challenges.lookup_challenges(serial=serial,
+                                                               filter_open=only_open_challenges))
 
-            if transid is not None :
-                challenges.update(Challenges.lookup_challenges(transid=transid))
+            if transid is not None:
+                challenges.update(Challenges.lookup_challenges(transid=transid,
+                                                               filter_open=only_open_challenges))
 
             # # if we have a user
             if user.isEmpty() == False:
@@ -2327,7 +2335,8 @@ class AdminController(BaseController):
                 for token in tokens:
                     serial = token.getSerial()
                     challenges.update(
-                        Challenges.lookup_challenges(serial=serial))
+                        Challenges.lookup_challenges(serial=serial,
+                                                     filter_open=True))
 
             serials = set()
             for challenge in challenges:

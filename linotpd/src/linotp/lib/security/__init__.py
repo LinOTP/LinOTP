@@ -91,13 +91,29 @@ class SecurityModule(object):
         log.error("[%s] This is the base class. You should implement "
                   "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
     def decryptPin(self, cryptPin):
         fname = 'decrypt'
         log.error("[%s] This is the base class. You should implement "
                   "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
-                                   % fname)
+                                  % fname)
 
-#eof###########################################################################
+    def signMessage(self, message, method=None, slot_id=3):
+        fname = 'signMessage'
+        log.error("[%s] This is the base class. You should implement "
+                  "the method : %s " % (self.name, fname))
+        raise NotImplementedError("Should have been implemented %s"
+                                  % fname)
+
+    def verfiyMessageSignature(self, message, hex_mac, method=None,
+                               slot_id=3):
+
+        fname = 'verfiyMessageSignature'
+        log.error("[%s] This is the base class. You should implement "
+                  "the method : %s " % (self.name, fname))
+        raise NotImplementedError("Should have been implemented %s"
+                                  % fname)
+
+# eof ########################################################################

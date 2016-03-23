@@ -268,6 +268,53 @@ class ValidateController(BaseController):
             Session.close()
             log.debug('[check] done')
 
+    def check_status(self):
+        """
+        check the status of a transaction - for polling support
+        """
+        param = {}
+        ok = False
+        opt = None
+
+        try:
+            param.update(request.params)
+
+            transid = param.get('state', param.get('transactionid', None))
+            if not transid:
+                raise ParameterError(_('Missing required parameter "state" or'
+                                     '"transactionid"!'))
+
+            serial = param.get('serial', None)
+            user = getUserFromParam(param, False)
+
+            if not user and not serial:
+                raise ParameterError(_('Missing required parameter "serial"'
+                                     ' or "user"!'))
+
+            passw = param.get('pass', None)
+            if not passw:
+                raise ParameterError(_('Missing required parameter "pass"!'))
+
+            va = ValidationHandler()
+            ok, opt = va.check_status(transid=transid, user=user,
+                                      serial=serial, password=passw)
+
+            c.audit['success'] = ok
+            c.audit['info'] = unicode(opt)
+
+            Session.commit()
+            return sendResult(response, ok, 0, opt=opt)
+
+        except Exception as exx:
+            log.exception("check_status failed: %r" % exx)
+            c.audit['info'] = unicode(exx)
+            Session.rollback()
+            return sendResult(response, False, 0)
+
+        finally:
+            Session.close()
+            log.debug('[check] done')
+
 
     def check_yubikey(self):
         '''

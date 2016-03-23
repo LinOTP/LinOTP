@@ -218,6 +218,30 @@ class SmsTokenClass(HmacTokenClass):
     def getClassPrefix(cls):
         return "LSSM"
 
+    def get_challenge_validity(self):
+        '''
+        This method returns the token specific challenge validity
+
+        :return: int - validity in seconds
+        '''
+
+        validity = 120
+
+        try:
+            validity = int(getFromConfig('DefaultChallengeValidityTime', 120))
+            lookup_for = 'SMSProviderTimeout'
+            validity = int(getFromConfig(lookup_for, validity))
+
+            # instance specific timeout
+            validity = int(self.getFromTokenInfo('challenge_validity_time',
+                                                 validity))
+
+        except ValueError:
+            validity = 120
+
+        return validity
+
+
     @classmethod
     def getClassInfo(cls, key=None, ret='all'):
         '''

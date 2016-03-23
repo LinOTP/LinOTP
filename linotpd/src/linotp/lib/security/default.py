@@ -31,6 +31,11 @@ import binascii
 import os
 
 from Crypto.Cipher import AES
+from Crypto.Hash import HMAC
+from Crypto.Hash import SHA as SHA1
+from Crypto.Hash import SHA256
+
+
 
 from linotp.lib.crypt import zerome
 from linotp.lib.security import SecurityModule
@@ -355,6 +360,82 @@ class DefaultSecurityModule(SecurityModule):
         password = self.decrypt(data, iv, keyNum)
 
         return password
+
+    def signMessage(self, message, method=None, slot_id=DEFAULT_KEY):
+        """
+        create the hex mac for the message -
+
+        :param message: the original message
+        :param method: the hash method - we use by default sha256
+        :param slot_id: which key should be used
+
+        :return: hex mac
+        """
+
+        sign_key = None
+
+        if method is None:
+            method = SHA256
+
+        try:
+            sign_key = self.getSecret(slot_id)
+            hex_mac = HMAC.new(sign_key, message, method).hexdigest()
+        finally:
+            if sign_key:
+                zerome(sign_key)
+                del sign_key
+
+        return hex_mac
+
+    def verfiyMessageSignature(self, message, hex_mac, method=None,
+                               slot_id=DEFAULT_KEY):
+        """
+        verify the hex mac is same for the message -
+           the comparison is done in a constant time comparison
+
+        :param message: the original message
+        :param hex_mac: the to compared mac in hex
+        :param method: the hash method - we use by default sha256
+        :param slot_id: which key should be used
+
+        :return: boolean
+        """
+        sign_key = None
+        result = True
+
+        if method is None:
+            method = SHA256
+
+        try:
+            sign_key = self.getSecret(slot_id)
+            hmac = HMAC.new(sign_key, message, method)
+            sign_mac = HMAC.new(sign_key, message, method).hexdigest()
+
+            res = 0
+            # as we compare on hex, we have to multiply by 2
+            digest_size = hmac.digest_size * 2
+
+            for x, y in zip(hex_mac, sign_mac):
+                res |= ord(x) ^ ord(y)
+
+            if len(sign_mac) != digest_size:
+                result = False
+
+            if res:
+                result = False
+
+        except ValueError as err:
+            log.error("Mac Comparison failed! %r", err)
+
+        except Exception as exx:
+            pass
+
+        finally:
+            if sign_key:
+                zerome(sign_key)
+                del sign_key
+
+        return result
 
 
 class ErrSecurityModule(DefaultSecurityModule):

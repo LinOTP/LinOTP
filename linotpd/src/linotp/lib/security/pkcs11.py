@@ -183,7 +183,7 @@ def output(loglevel, text):
             log.error(text)
 
 
-class Pkcs11SecurityModule(SecurityModule):
+class Pkcs11SecurityModule(DefaultSecurityModule):
     '''
     Class that handles all AES stuff
     '''

@@ -35,8 +35,10 @@ log = logging.getLogger(__name__)
 
 class FinishTokens(object):
 
-    def __init__(self, valid_tokens, challenge_tokens, pin_matching_tokens,
-                 invalid_tokens, validation_results, user, options,
+    def __init__(self,
+                 valid_tokens, challenge_tokens,
+                 pin_matching_tokens, invalid_tokens,
+                 validation_results, user, options,
                  audit_entry=None):
         """
         create the finalisation object, that finishes the token processing
@@ -55,7 +57,9 @@ class FinishTokens(object):
         self.challenge_tokens = challenge_tokens
         self.pin_matching_tokens = pin_matching_tokens
         self.invalid_tokens = invalid_tokens
+
         self.validation_results = validation_results
+
         self.user = user
         self.options = options
         self.audit_entry = audit_entry or {}
@@ -139,6 +143,9 @@ class FinishTokens(object):
             (counter, _reply) = validation_results[token.getSerial()]
             token.setOtpCount(counter + 1)
             token.statusValidationSuccess()
+            # finish as well related open challenges
+            Challenges.finish_challenges(token, success=True)
+
             if token.getFromTokenInfo('count_auth_success_max', default=None):
                 auth_count = token.get_count_auth_success()
                 token.set_count_auth_success(auth_count + 1)
@@ -186,10 +193,11 @@ class FinishTokens(object):
             # for each token, who can submit a challenge, we have to
             # create the challenge. To mark the challenges as depending
             # the transaction id will have an id that all sub transaction share
-            # and a postfix with their enumaration. Finally the result is
+            # and a postfix with their enumeration. Finally the result is
             # composed by the top level transaction id and the message
             # and below in a dict for each token a challenge description -
             # the key is the token type combined with its token serial number
+
             all_reply = {'challenges': {}}
             challenge_count = 0
             transactionid = ''
@@ -238,6 +246,7 @@ class FinishTokens(object):
         for tok in pin_matching_tokens:
             tok.statusValidationFail()
             tok.inc_count_auth()
+            Challenges.finish_challenges(tok, success=False)
 
         return (False, None, action_detail)
 
@@ -249,6 +258,7 @@ class FinishTokens(object):
 
         for tok in invalid_tokens:
             tok.statusValidationFail()
+            Challenges.finish_challenges(tok, success=False)
 
         import linotp.lib.policy
         pin_policies = linotp.lib.policy.get_pin_policies(user) or []

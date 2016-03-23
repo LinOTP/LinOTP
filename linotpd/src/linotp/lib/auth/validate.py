@@ -40,6 +40,8 @@ from linotp.lib.error import ParameterError
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.resolver import getResolverObject
 from linotp.lib.token import TokenHandler
+from linotp.lib.token import getTokens4UserOrSerial
+
 from linotp.lib.user import (User, getUserId, getUserInfo)
 from linotp.lib.util import modhex_decode
 
@@ -206,6 +208,79 @@ class ValidationHandler(object):
 
         return
 
+    def check_status(self, transid=None, user=None, serial=None,
+                     password=None):
+        """
+        check for open transactions - for polling support
+
+        :param transid: the transaction id where we request the status from
+        :param user: the token owner user
+        :param serial: or the serial we are searching for
+        :param password: the pin/password for authorization the request
+
+        :return: tuple of success and detail dict
+        """
+
+        expired, challenges = Challenges.get_challenges(None, transid=transid)
+
+        # remove all expired challenges
+        if expired:
+            Challenges.delete_challenges(None, expired)
+
+        if not challenges:
+            return False, None
+
+        # there is only one challenge per transaction id
+        # if not multiple challenges, where transaction id is the parent one
+        reply = {}
+
+        pin_policies = linotp.lib.policy.get_pin_policies(user)
+        if 1 in pin_policies:
+            pin_match = check_pin(None, password, user=user, options=None)
+            if not pin_match:
+                return False, None
+
+        involved_tokens = []
+
+        transactions = {}
+        for ch in challenges:
+
+            # only look for challenges that are not compromised
+            if not Challenges.verify_checksum(ch):
+                continue
+
+            # is the requester authorized
+            serial = ch.getTokenSerial()
+            tokens = getTokens4UserOrSerial(serial=serial)
+            if not tokens:
+                continue
+            involved_tokens.extend(tokens)
+
+            if 1 not in pin_policies:
+                pin_match = check_pin(tokens[0], password, user=user,
+                                      options=None)
+                if not pin_match:
+                    ret = False
+                    continue
+
+            ret = True
+
+            trans_dict = {}
+            trans_dict['transactionid'] = ch.transid
+            trans_dict['received_count'] = ch.received_count
+            trans_dict['received_tan'] = ch.received_tan
+            trans_dict['valid_tan'] = ch.valid_tan
+            trans_dict['linotp_tokenserial'] = serial
+            trans_dict['linotp_tokentype'] = tokens[0].type
+            trans_dict['message'] = ch.challenge
+
+            transactions[serial] = trans_dict
+
+        if transactions:
+            reply['transactions'] = transactions
+
+        return ret, reply
+
     def checkUserPass(self, user, passw, options=None):
         """
         :param user: the to be identified user
@@ -355,7 +430,6 @@ class ValidationHandler(object):
         audit_entry = {}
         audit_entry['action_detail'] = "no token found!"
 
-
         challenge_tokens = []
         pin_matching_tokens = []
         invalid_tokens = []
@@ -409,7 +483,10 @@ class ValidationHandler(object):
             # start the token validation
             try:
                 # are there outstanding challenges
-                challenges = token.get_token_challenges(check_options)
+                (_ex_challenges,
+                 challenges) = Challenges.get_challenges(token,
+                                                         options=check_options)
+
                 (ret, reply) = token.check_token(
                     passw, user, options=check_options, challenges=challenges)
             except Exception as exx:
@@ -451,6 +528,13 @@ class ValidationHandler(object):
         # add to all tokens the last accessd time stamp
         linotp.lib.token.add_last_accessed_info(
             [valid_tokens, pin_matching_tokens, challenge_tokens, valid_tokens])
+
+        # now we care for all involved tokens and their challenges
+        for token in (valid_tokens + pin_matching_tokens +
+                      challenge_tokens + valid_tokens):
+            expired, _valid = Challenges.get_challenges(token)
+            if expired:
+                Challenges.delete_challenges(None, expired)
 
         log.debug("Number of valid tokens found "
                   "(validTokenNum): %d" % len(valid_tokens))
