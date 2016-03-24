@@ -1,11 +1,11 @@
-libpam-linotp (2.8.1~rc2-1) jessie; urgency=low
+libpam-linotp (2.8.1-1) jessie; urgency=low
 
   Enhancements:
   * Major code rewrite
   * Add support for custom CA certificates
   * Improve compatibility with multiple Linux distributions, freeBSD and OS X
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 15 Mar 2016 15:10:36 +0100
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 24 Mar 2016 13:48:11 +0100
 
 libpam-linotp (2.8-1) jessie; urgency=low
 
