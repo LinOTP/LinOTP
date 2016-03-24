@@ -1338,20 +1338,14 @@ def get_tokenserial_of_transaction(transId):
     :param transId: the state / transaction id
     :return: the serial number or None
     '''
+    serials = []
 
-    challenges = Session.query(Challenge)\
-                .filter(Challenge.transid == u'' + transId).all()
+    challenges = Challenges.lookup_challenges(transid=transId)
 
-    if len(challenges) == 0:
-        log.info('no challenge found for tranId %r' % (transId))
-        return None
-    elif len(challenges) > 1:
-        log.info('multiple challenges found for tranId %r' % (transId))
-        return None
+    for challenge in challenges:
+        serials.append(challenge.tokenserial)
 
-    serial = challenges[0].tokenserial
-
-    return serial
+    return serials
 
 
 def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):

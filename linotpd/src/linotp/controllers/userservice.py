@@ -1753,73 +1753,32 @@ class UserserviceController(BaseController):
         value = {}
         ok = False
         typ = ''
+        opt = None
 
         try:
-            ''' check selfservice authorization '''
-
+            # check selfservice authorization
             checkPolicyPre('selfservice', 'userwebprovision',
                                                         param, self.authUser)
-            try:
-                passw = param["pass"]
-            except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx.message)
+            passw = param.get("pass", None)
+            if not passw:
+                raise ParameterError("Missing parameter: pass")
 
-            transid = param.get('state', None)
-            if transid is not None:
-                param['transactionid'] = transid
-                del param['state']
+            transid = param.get('state', param.get('transactionid', None))
+            if not transid:
+                raise ParameterError("Missing parameter: state or "
+                                     "transactionid!")
 
-            if transid is None:
-                transid = param.get('transactionid', None)
+            vh = ValidationHandler()
+            (ok, reply) = vh.check_by_transactionid(transid=transid,
+                                                    passw=passw,
+                                                    options=param)
 
-            if transid is None:
-                raise Exception("missing parameter: state or transactionid!")
-
-            serial = get_tokenserial_of_transaction(transId=transid)
-            if serial is None:
-                value['value'] = False
-                value['failure'] = 'No challenge for transaction %r found'\
-                                    % transid
-
-            else:
-                try:
-                    param['serial'] = serial
-                except KeyError as exx:
-                    raise ParameterError("Missing parameter: '%s'"
-                                         % exx.message)
-
-                tokens = getTokens4UserOrSerial(serial=serial)
-                if len(tokens) == 0 or len(tokens) > 1:
-                    raise Exception('tokenmismatch for token serial: %s'
-                                    % (unicode(serial)))
-
-                theToken = tokens[0]
-                tok = theToken.token
-                typ = theToken.getType()
-                realms = tok.getRealmNames()
-                if realms is None or len(realms) == 0:
-                    realm = getDefaultRealm()
-                elif len(realms) > 0:
-                    realm = realms[0]
-
-                userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver,
-                                       tok.LinOtpIdResClass)
-                user = User(login=userInfo.get('username'), realm=realm)
-
-                vh = ValidationHandler()
-                (ok, opt) = vh.checkSerialPass(
-                                        serial, passw, user=user, options=param)
-
-                value['value'] = ok
-                failcount = theToken.getFailCount()
-                value['failcount'] = int(failcount)
-
-            value['result'] = ok
-            value['failcount'] = int(failcount)
+            value['value'] = ok
+            value['failcount'] = int(reply.get('failcount', 0))
 
             c.audit['transactionid'] = transid
-            c.audit['token_type'] = typ
-            c.audit['success'] = value.get('result')
+            c.audit['token_type'] = reply['token_type']
+            c.audit['success'] = ok
 
             Session.commit()
             return sendResult(response, value, opt)

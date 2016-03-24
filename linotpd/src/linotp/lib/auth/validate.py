@@ -158,6 +158,61 @@ def split_pin_otp(token, passw, user=None, options=None):
 
 class ValidationHandler(object):
 
+    def check_by_transactionid(self, transid, passw, options=None):
+        """
+        check the passw against the open transaction
+
+        :param transid: the transaction id
+        :param passw: the pass parameter
+        :param options: the additional optional parameters
+
+        :return: tuple of boolean and detail dict
+        """
+
+        reply = {}
+
+        serials = []
+        challenges = Challenges.lookup_challenges(transid=transid)
+
+        for challenge in challenges:
+            serials.append(challenge.tokenserial)
+
+        if not serials:
+            reply['value'] = False
+            reply['failure'] = ('No challenge for transaction %r found'
+                                % transid)
+
+            return False, reply
+
+        reply['failcount'] = 0
+        reply['value'] = False
+        reply['token_type'] = ''
+
+        for serial in serials:
+
+            tokens = getTokens4UserOrSerial(serial=serial)
+            if not tokens:
+                raise Exception('tokenmismatch for token serial: %s'
+                                % (unicode(serial)))
+
+            # there could be only one
+            token = tokens[0]
+            owner = linotp.lib.token.get_token_owner(token)
+
+            (ok, opt) = self.checkTokenList(tokens, passw, user=owner,
+                                            options=options)
+            if opt:
+                reply.update(opt)
+
+            reply['token_type'] = token.getType()
+            reply['failcount'] = token.getFailCount()
+            reply['value'] = ok
+
+            if ok:
+                break
+
+        return ok, reply
+
     def checkSerialPass(self, serial, passw, options=None, user=None):
         """
         This function checks the otp for a given serial

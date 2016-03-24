@@ -502,42 +502,15 @@ class ValidateController(BaseController):
             if transid is None:
                 raise Exception("missing parameter: state or transactionid!")
 
-            serial = get_tokenserial_of_transaction(transId=transid)
-            if serial is None:
-                value['value'] = False
-                value['failure'] = 'No challenge for transaction %r found'\
-                                    % transid
+            vh = ValidationHandler()
+            (ok, reply) = vh.check_by_transactionid(transid=transid,
+                                                    passw=passw,
+                                                    options=param)
 
-
-            else:
-                param['serial'] = serial
-
-                tokens = getTokens4UserOrSerial(serial=serial)
-                if len(tokens) == 0 or len(tokens) > 1:
-                    raise Exception('tokenmismatch for token serial: %s'
-                                    % (unicode(serial)))
-
-                theToken = tokens[0]
-                tok = theToken.token
-                realms = tok.getRealmNames()
-                if realms is None or len(realms) == 0:
-                    realm = getDefaultRealm()
-                elif len(realms) > 0:
-                    realm = realms[0]
-
-                userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
-                user = User(login=userInfo.get('username'), realm=realm)
-
-                vh = ValidationHandler()
-                (ok, opt) = vh.checkSerialPass(
-                                        serial, passw, user=user, options=param)
-
-                value['value'] = ok
-                failcount = theToken.getFailCount()
-                value['failcount'] = int(failcount)
+            value['value'] = ok
+            value['failcount'] = int(reply.get('failcount', 0))
 
             c.audit['success'] = ok
-            #c.audit['info'] += "%s=%s, " % (k, value)
             Session.commit()
 
             qr = param.get('qr', None)
