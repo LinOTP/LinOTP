@@ -1265,17 +1265,23 @@ class SystemController(BaseController):
             # the contents of filestring needs to be parsed and stored as policies.
             from configobj import ConfigObj
             policies = ConfigObj(fileString.split('\n'), encoding="UTF-8")
-            log.info("[importPolicy] read the following policies: %s" % policies)
+            log.info("[importPolicy] read the following policies: %s",
+                     policies)
             res = len(policies)
             for policy_name in policies.keys():
-                ret = setPolicy({ 'name': policy_name,
-                              'action' : policies[policy_name].get('action', ""),
-                              'scope' : policies[policy_name].get('scope', ""),
-                              'realm' : policies[policy_name].get('realm', ""),
-                              'user' : policies[policy_name].get('user', ""),
-                              'time' : policies[policy_name].get('time', ""),
-                              'client': policies[policy_name].get('client', "")})
-                log.debug("[importPolicy] import policy %s: %s" % (policy_name, ret))
+                policy = policies[policy_name]
+                if not policy['action'] or not policy['scope']:
+                    raise ParameterError("Missing scope or action in"
+                                         " policy %s" % policy_name)
+                ret = setPolicy({'name': policy_name,
+                                 'action': policy['action'],
+                                 'scope': policy['scope'],
+                                 'realm': policy.get('realm', ""),
+                                 'user': policy.get('user', ""),
+                                 'time': policy.get('time', ""),
+                                 'client': policy.get('client', "")})
+                log.debug("[importPolicy] import policy %s: %s",
+                          policy_name, ret)
 
             c.audit['info'] = "Policies imported from file %s" % policy_file
             c.audit['success'] = 1
