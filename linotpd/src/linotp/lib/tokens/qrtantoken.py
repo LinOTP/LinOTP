@@ -34,6 +34,8 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC
 from Crypto.Hash import SHA256
+from linotp.lib.policy import getPolicy
+from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
@@ -95,6 +97,43 @@ def transaction_id_to_u64(transaction_id):
     return int(encoded)
 
 
+def get_single_auth_policy(policy_name, realms=None):
+
+    """
+    Retrieves a policy value and checks if the value is consistent
+    across realms.
+
+    :param policy_name: the name of the policy, e.g:
+        * qrtoken_pairing_callback_url
+        * qrtoken_pairing_callback_sms
+        * qrtoken_challenge_response_url
+        * qrtoken_challenge_response_sms
+
+    :param realms: the realms that his policy should be effective in
+    """
+
+    action_values = []
+
+    if realms is None or len(realms) == 0:
+        realms = ['/:no realm:/']
+
+    for realm in realms:
+        policy = getPolicy({"scope": "authentication", 'realm': realm})
+        action_value = policy.get(policy_name, {}).get('action')
+        if action_value:
+            action_values.append(action_value)
+
+    if len(action_values) > 1:
+        for value in action_values:
+            if value != action_values[0]:
+                raise Exception('conflicting policy values %r found for '
+                                'realm set: %r' % (action_values, realms))
+    if not action_values:
+        raise Exception('Policy %s must have a value' % policy_name)
+
+    return action_values[0]
+
+
 class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
     """
@@ -151,6 +190,39 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
     @classmethod
     def getClassPrefix(cls):
         return "QRTAN"
+
+# ------------------------------------------------------------------------------
+
+    # info interface definition
+
+    @classmethod
+    def getClassInfo(cls, key=None, ret='all'):
+
+        info = {'type': 'qrtan', 'title': _('QRTan Token')}
+
+        info['description'] = 'Challenge-Response-Token - Curve 25519 based'
+
+        # ----------------------------------------------------------------------
+
+        auth_policies = {}
+
+        for policy_name in ['qrtoken_pairing_callback_url',
+                            'qrtoken_pairing_callback_sms',
+                            'qrtoken_challenge_callback_url',
+                            'qrtoken_challenge_callback_sms']:
+
+
+            auth_policies[policy_name] = {'type': 'str'}
+
+
+        info['policy'] = {'authentication': auth_policies}
+
+        # ----------------------------------------------------------------------
+
+        if key is not None:
+            return info.get(key)
+
+        return info
 
 # ------------------------------------------------------------------------------
 
@@ -460,11 +532,10 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
             hash_algorithm = params.get('hashlib')
             pub_key = get_qrtan_public_key()
 
-            # TODO: these values should be fetched from
-            # policies or config
+            cb_url = get_single_auth_policy('qrtoken_pairing_callback_url')
+            cb_sms = get_single_auth_policy('qrtoken_pairing_callback_sms')
 
-            cb_url = '/admin/init'
-            cb_sms_number = None
+            # TODO: read from config
             otp_pin_length = None
 
             # ------------------------------------------------------------------
@@ -473,7 +544,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
                                           server_public_key=pub_key,
                                           serial=serial,
                                           callback_url=cb_url,
-                                          callback_sms_number=cb_sms_number,
+                                          callback_sms_number=cb_sms,
                                           otp_pin_length=otp_pin_length,
                                           hash_algorithm=hash_algorithm)
 
@@ -693,10 +764,10 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
         # ----------------------------------------------------------------------
 
-        # TODO: get from policy
+        callback_url = get_single_auth_policy('qrtoken_challenge_callback_url')
+        callback_sms = get_single_auth_policy('qrtoken_challenge_callback_sms')
 
-        callback_url = None
-        callback_sms_number = None
+        # TODO: get from policy/config
         compression = False
 
         # ----------------------------------------------------------------------
@@ -705,7 +776,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
                                                             content_type,
                                                             message,
                                                             callback_url,
-                                                            callback_sms_number,
+                                                            callback_sms,
                                                             compression)
 
         data = {'message': message, 'user_sig': user_sig}

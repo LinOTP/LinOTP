@@ -170,6 +170,113 @@ class TestQRTANToken(TestController):
 
 # ------------------------------------------------------------------------------
 
+    def setPolicy(self, params):
+
+        """ sets a system policy defined by param """
+
+        response = self.make_system_request('setPolicy', params)
+        response_dict = json.loads(response.body)
+
+        self.assertIn('result', response_dict)
+        result = response_dict.get('result')
+
+        self.assertIn('status', result)
+        status = result.get('status')
+
+        self.assertTrue(status)
+
+        response = self.make_system_request('getPolicy', params)
+
+# ------------------------------------------------------------------------------
+
+    def test_callback_policies(self):
+
+        # ----------------------------------------------------------------------
+
+        # set pairing callback policies
+
+        params = {'name': 'qrtoken_pairing_callback_url',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': '/foo/bar/url'}
+
+        self.setPolicy(params)
+
+        params = {'name': 'qrtoken_pairing_callback_sms',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': '1234'}
+
+        self.setPolicy(params)
+
+        # ----------------------------------------------------------------------
+
+        # set challenge callback policies
+
+        params = {'name': 'qrtoken_challenge_callback_url',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': '/bar/baz/url'}
+
+        self.setPolicy(params)
+
+        params = {'name': 'qrtoken_challenge_callback_sms',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': '5678'}
+
+        self.setPolicy(params)
+
+        # ----------------------------------------------------------------------
+
+        # check callback definitions in pairing url
+
+        pairing_url = self.enroll_qrtan_token()
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+
+        token = self.tokens[user_token_id]
+        callback_url = token['callback_url']
+        callback_sms = token['callback_sms']
+
+        self.assertEqual(callback_url, '/foo/bar/url')
+        self.assertEqual(callback_sms, '1234')
+
+        # ----------------------------------------------------------------------
+
+        # create the pairing response
+
+        pairing_response = self.create_pairing_response_by_serial(user_token_id)
+
+        # ----------------------------------------------------------------------
+
+        # send pairing response
+
+        response_dict = self.send_pairing_response(pairing_response)
+
+        # ----------------------------------------------------------------------
+
+        # check if returned json is correct
+
+        self.assertIn('challenge_url', response_dict.get('detail', {}))
+
+        challenge_url = response_dict.get('detail', {}).get('challenge_url')
+        self.assertIsNotNone(challenge_url)
+        self.assertTrue(challenge_url.startswith('lseqr://chal/'))
+
+        challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
+
+        # ----------------------------------------------------------------------
+
+        # check if returned callbacks are correct
+
+        callback_url = challenge['callback_url']
+        self.assertEqual(callback_url, '/bar/baz/url')
+
+        callback_sms = challenge['callback_sms']
+        self.assertEqual(callback_sms, '5678')
+
+# ------------------------------------------------------------------------------
+
     def assign_token_to_user(self, serial, user_login, pin=None):
 
         """
