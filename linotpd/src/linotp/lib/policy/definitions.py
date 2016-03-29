@@ -208,7 +208,25 @@ def getPolicyDefinitions(scope=""):
                 'type': 'str',
                 'desc': 'A list of tokentypes for which challenge response '
                         'should be used.'
-                }
+                },
+            'qrtoken_pairing_callback_url': {
+                'type': 'str',
+                'desc': 'The url the pairing response should be send to'
+                },
+            'qrtoken_pairing_callback_sms': {
+                'type': 'str',
+                'desc': 'The phone number the pairing response should '
+                        'be send to'
+                },
+            'qrtoken_challenge_callback_url': {
+                'type': 'str',
+                'desc': 'The url the challenge response should be send to'
+                },
+            'qrtoken_challenge_callback_sms': {
+                'type': 'str',
+                'desc': 'The sms number the challenge response should '
+                        'be send to'
+                },
             },
         'authorization': {
             'authorize': {
