@@ -326,26 +326,28 @@ class AdminController(BaseController):
 
             filterRealm = []
             # check admin authorization
-            res = checkPolicyPre('admin', 'show', param , user=user)
+            res = checkPolicyPre('admin', 'show', param, user=user)
 
-            filterRealm = res['realms']
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            pol = getAdminPolicies("show")
-            # If there are no admin policies, we are allowed to see all realms
-            if not pol['active']:
-                filterRealm = ["*"]
+            filterRealm = ['*']
+            if res['active'] and res['realms']:
+                filterRealm = res['realms']
 
-            # If the admin wants to see only one realm, then do it:
-            log.debug("[show] checking to only see tokens in realm <%s>" % realm)
             if realm:
+                # If the admin wants to see only one realm, then do it:
+                log.debug("[show] checking to only see tokens in realm <%s>",
+                          realm)
                 if realm in filterRealm or '*' in filterRealm:
                     filterRealm = [realm]
 
-            log.info("[show] admin >%s< may display the following realms: %s" % (res['admin'], filterRealm))
-            log.info("[show] displaying tokens: serial: %s, page: %s, filter: %s, user: %s", serial, page, filter, user.login)
+            log.info("[show] admin >%s< may display the following realms: %r",
+                     res['admin'], filterRealm)
+            log.info("[show] displaying tokens: serial: %s, page: %s, "
+                     "filter: %s, user: %s", serial, page, filter, user.login)
 
-            toks = TokenIterator(user, serial, page, psize, filter, sort, dir, filterRealm, user_fields)
+            toks = TokenIterator(user, serial, page, psize, filter, sort, dir,
+                                 filterRealm, user_fields)
 
             c.audit['success'] = True
             c.audit['info'] = "realm: %s, filter: %r" % (filterRealm, filter)

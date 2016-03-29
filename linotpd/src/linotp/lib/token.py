@@ -582,6 +582,7 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
                       "serial (serial): %r" % token.LinOtpTokenSerialnumber)
             tokenList.append(token)
 
+
     if user is not None:
         log.debug("[getTokens4UserOrSerial] getting token object 4 user: %r"
                   % user)
@@ -2532,30 +2533,42 @@ class TokenIterator(object):
     TokenIterator class - support a smooth iterating through the tokens
     '''
 
-    def _get_serial_condition(self, serial, filterRealm):
+    def _get_serial_condition(self, serial, allowed_realm):
+        """
+        add condition for a given serial
+
+        :param serial: serial number of token
+        :param allowed_realm: the allowed realms
+        """
         scondition = None
+
+        log.debug('[TokenIterator::init] start search for serial: >%r<',
+                  (serial))
 
         if serial is None:
             return scondition
 
-        # check if the requested serial is in the realms of the admin (filterRealm)
-        log.debug('[TokenIterator::init] start search for serial: >%r<' % (serial))
-
+        # check if the requested serial is
+        # in the realms of the admin (filterRealm)
         allowed = False
-        if filterRealm == ['*']:
+        if "*" in allowed_realm:
             allowed = True
         else:
             realms = getTokenRealms(serial)
             for realm in realms:
-                if realm in filterRealm:
+                if realm in allowed_realm:
                     allowed = True
 
-        if allowed == True:
-            if "*" in serial:
-                like_serial = serial.replace("*", "%")
-                scondition = and_(Token.LinOtpTokenSerialnumber.like(like_serial))
-            else:
-                scondition = and_(Token.LinOtpTokenSerialnumber == serial)
+        # if we have a serial and no realm, we return a un-resolvable condition
+        if serial and not allowed:
+            scondition = and_(Token.LinOtpTokenSerialnumber == '')
+            return scondition
+
+        if "*" in serial:
+            like_serial = serial.replace("*", "%")
+            scondition = and_(Token.LinOtpTokenSerialnumber.like(like_serial))
+        else:
+            scondition = and_(Token.LinOtpTokenSerialnumber == serial)
 
         return scondition
 
