@@ -35,7 +35,6 @@ from Crypto.Cipher import AES
 from Crypto.Hash import HMAC
 from Crypto.Hash import SHA256
 from linotp.lib.policy import getPolicy
-from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
@@ -51,6 +50,8 @@ from linotp.lib.crypt import get_qrtan_public_key
 from linotp.lib.qrtan import decrypt_pairing_response
 from linotp.lib.pairing import generate_pairing_url
 from hmac import compare_digest
+
+from linotp.lib.context import request_context as context
 
 
 log = logging.getLogger(__name__)
@@ -197,6 +198,8 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
     @classmethod
     def getClassInfo(cls, key=None, ret='all'):
+
+        _ = context['translate']
 
         info = {'type': 'qrtan', 'title': _('QRTan Token')}
 

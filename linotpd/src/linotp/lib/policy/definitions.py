@@ -324,7 +324,7 @@ def getPolicyDefinitions(scope=""):
         #    pol['admin']["init%s" % ttype.upper()]={'type': 'bool'}
 
         conf = linotp.lib.token.getTokenConfig(ttype, section='selfservice')
-        if 'enroll' in conf:
+        if conf and 'enroll' in conf:
             pol['selfservice']["enroll%s" % ttype.upper()] = {
                 'type': 'bool',
                 'desc': "The user is allowed to enroll a %s token." % ttype}
