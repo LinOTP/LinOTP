@@ -65,7 +65,12 @@ def check_pin(token, passw, user=None, options=None):
     res = False
     pin_policies = linotp.lib.policy.get_pin_policies(user)
 
-    if 1 in pin_policies:
+    if 0 in pin_policies or "token_pin" in pin_policies:
+        # old stuff: We check The fixed OTP PIN
+        log.debug('[__checkToken] pin policy=0: checkin the PIN')
+        res = token.checkPin(passw, options=options)
+
+    elif 1 in pin_policies or "password" in pin_policies:
         # We check the Users Password as PIN
         log.debug('pin policy=1: checking the users password as pin')
         if user is None or not user.login:
@@ -82,11 +87,12 @@ def check_pin(token, passw, user=None, options=None):
         else:
             log.info('[__checkToken] user %r failed to auth.' % uid)
 
-    elif 2 in pin_policies:
-        # NO PIN should be entered atall
+    elif 2 in pin_policies or "only_otp" in pin_policies:
+        # NO PIN should be entered at all
         log.debug('[__checkToken] pin policy=2: checking no pin')
         if len(passw) == 0:
             res = True
+
     else:
         # old stuff: We check The fixed OTP PIN
         log.debug('[__checkToken] pin policy=0: checkin the PIN')
@@ -135,18 +141,25 @@ def split_pin_otp(token, passw, user=None, options=None):
 
     policy = 0
 
-    if 1 in pin_policies:
+    if 0 in pin_policies or "token_pin" in pin_policies:
+        # old stuff: We check The fixed OTP PIN
+        log.debug('pin policy=0: checkin the PIN')
+        (pin, otp) = token.splitPinPass(passw)
+
+    elif 1 in pin_policies or "password" in pin_policies:
         log.debug('pin policy=1: checking the users password as pin')
         # split the passw into password and otp value
         (pin, otp) = token.splitPinPass(passw)
         policy = 1
-    elif 2 in pin_policies:
-        # NO PIN should be entered atall
+
+    elif 2 in pin_policies or "only_otp" in pin_policies:
+        # NO PIN should be entered at all
         log.debug('pin policy=2: checking no pin')
         (pin, otp) = ('', passw)
-        token.auth_info= {'auth_info': [('pin_length', 0),
-                                          ('otp_length', len(passw))]}
+        token.auth_info = {'auth_info': [('pin_length', 0),
+                                         ('otp_length', len(passw))]}
         policy = 2
+
     else:
         # old stuff: We check The fixed OTP PIN
         log.debug('pin policy=0: checkin the PIN')

@@ -519,6 +519,17 @@ function get_scope_actions(scope) {
                 } else
                 if ("str"==obj.result.value[k].type) {
                     action = k+"=<string>";
+                } else
+                if ("set"==obj.result.value[k].type) {
+                    var values = obj.result.value[k].value;
+                    var arrayLength = values.length;
+                    var desc = "";
+                    var sep = ""
+                    for (var i = 0; i < arrayLength; i++) {
+                        if (i != 0) { sep = ", "; }
+                        desc = desc + sep + "<" +values[i] + ">";
+                    }
+                    action = k+ "= <" + desc + ">";
                 };
                 actions.push(action);
             }

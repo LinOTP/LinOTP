@@ -169,11 +169,11 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The text that will be send via SMS for an SMS token. '
                         'Use <otp> and <serial> as parameters.'},
             'otppin': {
-                'type': 'int',
-                'value': [0, 1, 2],
-                'desc': 'either use the Token PIN (0), use the Userstore '
-                        'Password (1) or use no fixed password '
-                        'component (2).'},
+                'type': 'set',
+                'value': [0, 1, 2, "token_pin", "password", "only_otp"],
+                'desc': 'either use the Token PIN (0=token_pin), '
+                        'use the Userstore Password (1=password) or '
+                        'use no fixed password component (2=only_otp).'},
             'autosms': {
                 'type': 'bool',
                 'desc': 'if set, a new SMS OTP will be sent after '

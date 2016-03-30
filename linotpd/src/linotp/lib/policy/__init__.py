@@ -2801,10 +2801,8 @@ def _get_auth_PinPolicy(realm=None, user=None):
               % (pol, login, realm, client))
     pin_check = getPolicyActionValue(pol, "otppin", max=False)
 
-    if pin_check in [1, 2]:
-        return pin_check
+    return pin_check
 
-    return 0
 
 def get_qrtan_url(realms):
     '''
