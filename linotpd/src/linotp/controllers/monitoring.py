@@ -117,9 +117,11 @@ class MonitoringController(BaseController):
             monitoring/tokens
 
         description:
-            displays the number of tokens (with status) per realm
-            (one token might be in multiple realms)
-            in the Summary, tokens with multiple realms are only counted once!
+            Displays the number of tokens (with status) per realm
+            (one token might be in multiple realms).
+            The Summary gives the sum of all tokens in all given realms and
+            might be smaller than the summ of all tokens
+            as tokens which have two realms are only counted once!
 
         arguments:
             * status - optional: takes assigned or unassigned, give the number
@@ -139,10 +141,10 @@ class MonitoringController(BaseController):
         result = {}
         try:
             param = request.params
-            status = param.get('status')
-            # do NOT initialize status  with ''
-            if status:
+            status = param.get('status', ['total'])
+            if status != ['total']:
                 status = status.split(',')
+                status.append('total')
             request_realms = param.get('realms', '').split(',')
 
             monit_handler = MonitorHandler()

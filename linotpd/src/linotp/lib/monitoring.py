@@ -68,6 +68,7 @@ class MonitorHandler(object):
         if not isinstance(realm_list, (list, tuple)):
             realms = [realm_list]
         else:
+            # copy realms so that we can delete items safely
             realms = realm_list[:]
 
         if len(realms) < 1:
@@ -90,32 +91,30 @@ class MonitorHandler(object):
 
             else:
                 cond += (and_(TokenRealm.realm_id == Realm.id,
-                              Realm.name == u'' + realm,
+                              Realm.name == realm,
                               TokenRealm.token_id == Token.LinOtpTokenId),)
 
         for realm in realms:
             cond += (and_(TokenRealm.realm_id == Realm.id,
-                          Realm.name == u'' + realm,
+                          Realm.name == realm,
                           TokenRealm.token_id == Token.LinOtpTokenId),)
         # realm condition:
         r_condition = or_(*cond)
 
-        result['total'] = Session.query(Token).\
-            filter(r_condition).distinct().count()
-
-        if not status:
-            return result
-
         for stat in status:
+            if stat == 'total':
+                result['total'] = Session.query(Token).filter(r_condition).\
+                    distinct().count()
+                continue
             conditions = (and_(r_condition),)
             # handle combinations like:
             # status=unassigned&active,unassigned&inactive
             if '&' in stat:
                 stati = stat.split('&')
                 if 'assigned' in stati:
-                    conditions += (and_(Token.LinOtpUserid != u''),)
+                    conditions += (and_(Token.LinOtpUserid != ''),)
                 else:
-                    conditions += (and_(Token.LinOtpUserid == u''),)
+                    conditions += (and_(Token.LinOtpUserid == ''),)
                 if 'active' in stati:
                     conditions += (and_(Token.LinOtpIsactive == True),)
                 else:
@@ -124,9 +123,9 @@ class MonitorHandler(object):
                 # handle single expressions like
                 # status=unassigned,active
                 if 'assigned' == stat:
-                    conditions += (and_(Token.LinOtpUserid != u''),)
+                    conditions += (and_(Token.LinOtpUserid != ''),)
                 elif 'unassigned' == stat:
-                    conditions += (and_(Token.LinOtpUserid == u''),)
+                    conditions += (and_(Token.LinOtpUserid == ''),)
                 elif 'active' == stat:
                     conditions += (and_(Token.LinOtpIsactive == True),)
                 elif 'inactive' == stat:
@@ -135,7 +134,7 @@ class MonitorHandler(object):
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)
             result[stat] = Session.query(TokenRealm, Realm, Token).\
-                            filter(condition).count()
+                filter(condition).count()
 
         return result
 
