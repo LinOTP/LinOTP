@@ -27,12 +27,16 @@
 """ the SMS Provider Interface """
 
 
-class ISMSProvider:
+class ISMSProvider(object):
     """
     Interface class for the SMS providers
     """
     def __init__(self):
         self.config = {}
+
+    @classmethod
+    def getClassInfo(cls, key=None):
+        return {}
 
     def submitMessage(self, phone, message):
         pass
@@ -40,6 +44,7 @@ class ISMSProvider:
     def loadConfig(self, configDict):
         self.config = configDict
         pass
+
 
     @staticmethod
     def _get_msisdn_phonenumber(phonenumber):
