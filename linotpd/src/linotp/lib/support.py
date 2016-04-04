@@ -61,7 +61,21 @@ BbKBUlx/8GqnwpftJjOmH3qQUjQistt0XJvAOBk2G+jfLMknQmK+KmfzrCxkY1t7
 7wIDAQAB
 -----END PUBLIC KEY-----"""
 
-PUB_KEYS = {'linotp' : PUB_KEY_LINOTP}
+PUB_KEY_DEMO = """-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuhvX1dSdWaNsPXqZ5GjH
+x+40swvnKsluAErcSvHRWFIMRG4UcNRFUiHsb5plaKJJoG+1JLhatbVgbEPcibfl
+evGFzM5sGxc4T9ZFQskUZ4aAGqc/xefqwcVDG886ohtMXao+kuNAi52bBXrz2Ktd
+uFJ+4yTnzy87vuH7wvoHl/Vfb3Rvm4bM8/lDhnzhJgTeYYbaCJa8agSQg2TZFQK4
+TRQc5SPaiqyb0maFweBSJnJyNW65ZjQ+5P35y1Sq3+ekRc/6kMBjruVcrUwK25rt
+ly9jWWpwUrLK8L7y+I/c1EQM0SG5fjsEhByY+hbzYLVQI308/mMAQ9JgY07MXK3k
+FwIDAQAB
+-----END PUBLIC KEY----- """
+
+PUB_KEYS = {'linotp': PUB_KEY_LINOTP,
+            'demo': PUB_KEY_DEMO
+            }
+
+
 BLACK_SIGNATURES = [("BQ+Iney5b97jAS2pxDNqtsqYTItYZCyF55/s1jwJwdGoJJLwe"
                      "hjgzXIdl54Z8cQ3rmjWYSiQ74XmQrxjLi5WYX2JoG+AxCje53"
                      "s82i4XPAWFVvWggxU9SwhL+hmatAbi550dIIYmG3OQxX1iMeo"
@@ -234,7 +248,7 @@ def check_license_restrictions():
     allowed_tokens = lic_dict.get('token-num', 'unlimited')
     try:
         allowed_tokens = int(allowed_tokens.strip())
-        if installed_tokens > allowed_tokens:
+        if installed_tokens >= allowed_tokens:
             return True
     except ValueError as _val_err:
         # in case of no int we ignore this restriction as it could
