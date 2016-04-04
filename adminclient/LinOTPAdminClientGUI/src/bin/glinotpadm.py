@@ -821,7 +821,7 @@ class LinOTPGui(object):
             sulins = ul.insert
             #map( self.sulins, data )
             for user in data:
-                uidresolver = user.get("useridresolver")
+                uidresolver = user.get("useridresolver", user.get("resolver"))
                 uidres = uidresolver.split('.')
                 lenu = len(uidres)
                 if lenu == 4:
