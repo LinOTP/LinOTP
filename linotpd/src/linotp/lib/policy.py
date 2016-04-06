@@ -1934,7 +1934,8 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
                           "any realms!" % policies['admin'])
                 raise PolicyException(_("You do not have any rights in any "
                                       "realm! Check the policies."))
-            return {'realms': policies['realms'], 'admin': policies['admin']}
+            return {'realms': policies['realms'], 'admin': policies['admin'],
+                    "active": policies['active']}
 
         elif 'remove' == method:
             policies = getAdminPolicies("remove")
