@@ -74,8 +74,8 @@ def create_google_authenticator(param, user=None):
         login = user.login or ''
         realm = user.realm or ''
 
-    login = param.get('user.login', login) or ''
-    realm = param.get('user.realm', realm) or ''
+    login = login or param.get('user.login', '')
+    realm = realm or param.get('user.realm', '')
 
     url_param = {}
 
