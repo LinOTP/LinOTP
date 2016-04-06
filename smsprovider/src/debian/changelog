@@ -1,3 +1,9 @@
+linotp-smsprovider (2.8.1.1~rc0-1) jessie; urgency=low
+
+  * Add ability to suppress a leading '+' in phone numbers
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 06 Apr 2016 15:09:36 +0200
+
 linotp-smsprovider (2.8.1-1) jessie; urgency=low
 
   * Add support for SMPP SMS Provider
