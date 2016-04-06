@@ -27,33 +27,28 @@
    syncronysation and provides this to all requests
 '''
 
-import logging
-import time
-import os
 import copy
-
-from pylons import tmpl_context as c
+from datetime import datetime
 from linotp.config import environment as env
-
+from linotp.lib.crypt import decryptPassword
+from linotp.lib.crypt import encryptPassword
 from linotp.lib.error import ConfigAdminError
-
 from linotp.model import Config
 from linotp.model.meta import Session
+import logging
+import os
+import time
 
-from linotp.lib.crypt import encryptPassword
-from linotp.lib.crypt import decryptPassword
-
-from datetime import datetime
+from pylons import tmpl_context as c
 
 
+ENCODING = 'utf-8'
+MAX_VALUE_LEN = 2000
 
 log = logging.getLogger(__name__)
 
-ENCODING = 'utf-8'
-
-
 ###############################################################################
-# #     public interface
+#     public interface
 ###############################################################################
 
 def initLinotpConfig():
@@ -101,7 +96,6 @@ def getLinotpConfig():
                     ret = LinOtpConfig()
                     c.linotpConfig = ret
 
-
     except Exception as e:
         log.debug("Bad Hack: LinotpConfig called out of controller context")
         ret = LinOtpConfig()
@@ -117,8 +111,9 @@ def getLinotpConfig():
 
     return ret
 
+
 ###############################################################################
-# #     implementation class
+#      implementation class
 ###############################################################################
 class LinOtpConfig(dict):
     """
@@ -155,11 +150,11 @@ class LinOtpConfig(dict):
             val = conf.get('linotp.enableReplication')
             if val.lower() == 'true':
 
-                # # look for the timestamp when config was created
+                # look for the timestamp when config was created
                 e_conf_date = conf.get('linotp.Config')
 
-                # # in case of replication, we always have to look if the
-                # # config data in the database changed
+                # in case of replication, we always have to look if the
+                # config data in the database changed
                 db_conf_date = _retrieveConfigDB('linotp.Config')
 
                 if str(db_conf_date) != str(e_conf_date):
@@ -171,51 +166,38 @@ class LinOtpConfig(dict):
 
         conf = self.glo.getConfig()
 
-        if do_reload == True:
-            # # in case there is no entry in the dbconf or
-            # # the config file is newer, we write the config back to the db
+        if do_reload is True:
+            # in case there is no entry in the dbconf or
+            # the config file is newer, we write the config back to the db
             entries = conf.keys()
             for entry in entries:
                 del conf[entry]
 
             writeback = False
-            # # get all conf entries from the config file
+            # get all conf entries from the config file
             fileconf = _getConfigFromEnv()
 
-            # #  get all configs from the DB
+            # get all configs from the DB
             (dbconf, delay) = _retrieveAllConfigDB()
             self.glo.setConfigIncomplete(not delay)
 
-            # # we only merge the config file once as a removed entry
-            # #  might reappear otherwise
-            if dbconf.has_key('linotp.Config') == False:
+            # we only merge the config file once as a removed entry
+            #  might reappear otherwise
+            if 'linotp.Config' not in dbconf:
                 conf.update(fileconf)
                 writeback = True
-            # #
-            # #else:
-            # #    modCFFileDatum = fileconf.get('linotp.Config')
-            # #    dbTimeStr = dbconf.get('linotp.Config')
-            # #    dbTimeStr = dbTimeStr.split('.')[0]
-            # #    modDBFileDatum =
-            # #           datetime.strptime(dbTimeStr,'%Y-%m-%d %H:%M:%S')
-            # #    # if configFile timestamp is newer than last update:
-            # #    #             reincorporate conf
-            # #    #if modCFFileDatum > modDBFileDatum:
-            # #    #    conf.update(fileconf)
-            # #    #    writeback = True
-            # #
 
             conf.update(dbconf)
-            # # chck, if there is a selfTest in the DB and delete it
-            if dbconf.has_key('linotp.selfTest'):
+            # check, if there is a selfTest in the DB and delete it
+            if 'linotp.selfTest' in dbconf:
                 _removeConfigDB('linotp.selfTest')
                 _storeConfigDB('linotp.Config', datetime.now())
 
-            # # the only thing we take from the fileconf is the selftest
-            if fileconf.has_key('linotp.selfTest'):
+            # the only thing we take from the fileconf is the selftest
+            if 'linotp.selfTest' in fileconf:
                 conf['linotp.selfTest'] = 'True'
 
-            if writeback == True:
+            if writeback is True:
                 for con in conf:
                     if con != 'linotp.selfTest':
                         _storeConfigDB(con, conf.get(con))
@@ -271,20 +253,20 @@ class LinOtpConfig(dict):
 
         if typ == 'password':
 
-            # # in case we have a password type, we have to put
+            # in case we have a password type, we have to put
             # #- in the config only the encrypted pass and
             # #- add the config enclinotp.* with the clear password
 
             res = self.parent.__setitem__(key, encryptPassword(val))
             res = self.parent.__setitem__('enc' + key, val)
-            self.glo.setConfig({key :encryptPassword(val)})
-            self.glo.setConfig({'enc' + key : val})
+            self.glo.setConfig({key: encryptPassword(val)})
+            self.glo.setConfig({'enc' + key: val})
 
         else:
-            # # update this config and sync with global dict and db
+            # update this config and sync with global dict and db
             nVal = _expandHere(val)
             res = self.parent.__setitem__(key, nVal)
-            self.glo.setConfig({key:nVal})
+            self.glo.setConfig({key: nVal})
 
         _storeConfigDB(key, val, typ, des)
         _storeConfigDB('linotp.Config', datetime.now())
@@ -317,12 +299,12 @@ class LinOtpConfig(dict):
 
     def has_key(self, key):
         res = self.parent.has_key(key)
-        if res == False and key.startswith('linotp.') == False:
+        if res is False and key.startswith('linotp.') is False:
             key = 'linotp.' + key
 
         res = self.parent.has_key(key)
 
-        if res == False and key.startswith('enclinotp.') == False:
+        if res is False and key.startswith('enclinotp.') is False:
             key = 'enclinotp.' + key
 
         res = self.parent.has_key(key)
@@ -352,16 +334,16 @@ class LinOtpConfig(dict):
             encKey = 'enc' + key
 
         res = self.parent.__delitem__(Key)
-        # # sync with global dict
+        # sync with global dict
         self.glo.delConfig(Key)
 
-        # # do we have an decrypted in local or global dict??
+        # do we have an decrypted in local or global dict??
         if encKey is not None:
             res = self.parent.__delitem__(encKey)
-            # # sync with global dict
+            # sync with global dict
             self.glo.delConfig(encKey)
 
-        # # sync with db
+        # sync with db
         if key.startswith('linotp.'):
             Key = key
         else:
@@ -369,6 +351,14 @@ class LinOtpConfig(dict):
 
         _removeConfigDB(Key)
         _storeConfigDB('linotp.Config', datetime.now())
+        return res
+
+    def __contains__(self, key):
+        """
+        support for 'in' operator of the Config dict
+        """
+        res = (self.parent.__contains__(key) or
+               self.parent.__contains__('linotp.' + key))
         return res
 
     def update(self, dic):
@@ -382,9 +372,9 @@ class LinOtpConfig(dict):
         :rtype  : any value a dict update will return
         '''
         res = self.parent.update(dic)
-        # # sync the lobal dict
+        # sync the lobal dict
         self.glo.setConfig(dic)
-        # # sync to disc
+        # sync to disc
         for key in dic:
             if key != 'linotp.Config':
                 _storeConfigDB(key, dic.get(key))
@@ -394,7 +384,7 @@ class LinOtpConfig(dict):
 
 
 ###############################################################################
-# #  helper class from here
+#  helper class from here
 ###############################################################################
 def getGlobalObject():
     glo = None
@@ -408,21 +398,23 @@ def getGlobalObject():
         glo = None
     return glo
 
+
 def _getConfigReadLock():
     glo = getGlobalObject()
     rcount = glo.setConfigReadLock()
     log.debug(" --------------------------------------- Read Lock %s" % rcount)
+
 
 def _getConfigWriteLock():
     glo = getGlobalObject()
     rcount = glo.setConfigWriteLock()
     log.debug(" ------------------- ------------------ Write Lock %s" % rcount)
 
+
 def _releaseConfigLock():
     glo = getGlobalObject()
     rcount = glo.releaseConfigLock()
     log.debug(" ------------------------------------ release Lock %s" % rcount)
-
 
 
 def _expandHere(value):
@@ -442,7 +434,7 @@ def _getConfigFromEnv():
     try:
         _getConfigReadLock()
         for entry in env.config:
-            # # we check for the modification time of the config file
+            # we check for the modification time of the config file
             if entry == '__file__':
                 fname = env.config.get('__file__')
                 mTime = time.localtime(os.path.getmtime(fname))
@@ -460,24 +452,77 @@ def _getConfigFromEnv():
     return linotpConfig
 
 
-# we insert or update the key / value the config DB
 def _storeConfigDB(key, val, typ=None, desc=None):
+    """
+    insert or update the entry with  key, value, type and
+    description in the config DB
+
+    """
     value = val
-    log.debug('storeConfigDB: key %r : value %r' % (key, value))
+
+    log_value = val
+    if typ == 'password':
+        log_value = "XXXXXXX"
+    log.debug('key %r : value %r', key, log_value)
 
     if (not key.startswith("linotp.")):
         key = "linotp." + key
 
-    confEntries = Session.query(Config).filter(Config.Key == unicode(key))
-    theConf = None
-
-    if typ is not None and typ == 'password':
+    if typ and typ == 'password':
         value = encryptPassword(val)
         en = decryptPassword(value)
         if (en != val):
-            raise Exception("StoreConfig: Error during encoding password type!")
+            raise Exception("Error during encoding password type!")
 
-    # # update
+    if type(value) not in [str, unicode]:
+        return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
+
+    # for strings or unicode, we support continued entries
+    # check if we have to split the value
+    number_of_chunks = (len(value) / MAX_VALUE_LEN)
+    if number_of_chunks == 0:
+        return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
+
+    # the continuous type is a split over multiple entries:
+    # * every entry will have an enumerated key but the first one which has the
+    #   original one.
+    # * For all the type is 'C', but the last one which contains the original
+    #   type.
+    # * For description all entries contains the enumeration, but the last the
+    #   original description
+
+    for i in range(number_of_chunks + 1):
+        # iterate through the chunks, the last one might be empty though
+        cont_value = value[i * MAX_VALUE_LEN: (i + 1) * MAX_VALUE_LEN]
+
+        cont_typ = "C"
+        cont_desc = "%d:%d" % (i, number_of_chunks)
+        cont_key = "%s__[%d:%d]" % (key, i, number_of_chunks)
+
+        if i == 0:
+            # first one will contain the correct key, but type is continuous
+            cont_key = key
+        elif i == number_of_chunks:
+            # the last one will contain the type and the description
+            cont_typ = typ
+            cont_desc = desc
+
+        res = _storeConfigEntryDB(cont_key, cont_value,
+                                  typ=cont_typ,
+                                  desc=cont_desc)
+
+    return res
+
+
+def _storeConfigEntryDB(key, value, typ=None, desc=None):
+    """
+    lowest level for storing database entries in the config table
+    """
+
+    confEntries = Session.query(Config).filter(Config.Key == unicode(key))
+    theConf = None
+
+    # update
     if confEntries.count() == 1:
         theConf = confEntries[0]
         theConf.Value = unicode(value)
@@ -486,7 +531,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
         if (desc is not None):
             theConf.Description = unicode(desc)
 
-    # # insert
+    # insert
     elif confEntries.count() == 0:
         theConf = Config(
                         Key=unicode(key),
@@ -499,35 +544,54 @@ def _storeConfigDB(key, val, typ=None, desc=None):
 
     return 101
 
+
 def _removeConfigDB(key):
+    """
+    remove entry from config table
+
+    :param key: the name of the entry
+    :return: number of deleted entries
+    """
     log.debug('removeConfigDB %r' % key)
-    num = 0
 
     if (not key.startswith("linotp.")):
         if not key.startswith('enclinotp.'):
             key = u"linotp." + key
 
-    confEntries = Session.query(Config).filter(Config.Key == unicode(key))
+    confEntries = Session.query(Config).filter(Config.Key == unicode(key)).all()
 
-    num = confEntries.count()
-    if num == 1:
-        theConf = confEntries[0]
+    if not confEntries:
+        return 0
 
-        try:
+    theConf = confEntries[0]
+
+    to_be_deleted = []
+    to_be_deleted.append(theConf)
+
+    # if entry is a contious type, delete all of this kind
+    if theConf.Type == 'C' and theConf.Description[:len('0:')] == '0:':
+        _start, end = theConf.Description.split(':')
+        search_key = "%s__[%%:%s]" % (key, end)
+        cont_entries = Session.query(Config).filter(Config.Key.like(search_key)).all()
+        to_be_deleted.extend(cont_entries)
+
+    try:
+        for entry in to_be_deleted:
             # Session.add(theConf)
-            Session.delete(theConf)
+            Session.delete(entry)
 
-        except Exception as e:
-            log.exception('[removeConfigDB] failed')
-            raise ConfigAdminError("remove Config failed for %r: %r"
-                                   % (key, e), id=1133)
+    except Exception as e:
+        log.exception('[removeConfigDB] failed')
+        raise ConfigAdminError("remove Config failed for %r: %r"
+                               % (key, e), id=1133)
 
-    return num
+    return len(to_be_deleted)
+
 
 def _retrieveConfigDB(Key):
     log.debug('[retrieveConfigDB] key: %r' % Key)
 
-    # # prepend "lonotp." if required
+    # prepend "lonotp." if required
     key = Key
     if (not key.startswith("linotp.")):
         if (not key.startswith("enclinotp.")):
@@ -535,23 +599,88 @@ def _retrieveConfigDB(Key):
 
     myVal = None
     key = u'' + key
-    for theConf in Session.query(Config).filter(Config.Key == key):
+    entries = Session.query(Config).filter(Config.Key == key).all()
+
+    if not entries:
+        return None
+
+    theConf = entries[0]
+
+    # other types than continous: we are done
+    if theConf.Type != 'C':
         myVal = theConf.Value
         myVal = _expandHere(myVal)
-    return myVal
+        return myVal
+
+    # else we have the continue type: we iterate over all entries where the
+    # number of entries is stored in the description as range end
+    _start, end = theConf.Description.split(':')
+
+    # start accumulating the value
+    value = theConf.Value
+
+    for i in range(int(end)):
+        search_key = "%s__[%d:%d]" % (key, i, int(end))
+        cont_entries = Session.query(Config).filter(Config.Key == search_key).all()
+        if cont_entries:
+            value = value + cont_entries[0].Value
+
+    return value
+
 
 def _retrieveAllConfigDB():
+    """
+    get the server config from database with one call
+
+    remark: for support for continous entries dedicated dicts for
+            description and type are used for interim processing
+
+    :return: config dict
+    """
 
     config = {}
     delay = False
+
+    conf_dict = {}
+    type_dict = {}
+    desc_dict = {}
+    cont_dict = {}
+
+    # put all information in the dicts for later processing
     for conf in Session.query(Config).all():
         log.debug("[retrieveAllConfigDB] key %r:%r" % (conf.Key, conf.Value))
-        key = conf.Key
-        if (not key.startswith("linotp.")):
-            key = "linotp." + conf.Key
-        nVal = _expandHere(conf.Value)
+        conf_dict[conf.Key] = conf.Value
+        type_dict[conf.Key] = conf.Type
+        desc_dict[conf.Key] = conf.Description
+
+        # a continous entry is indicated by the type 'C' and the description
+        # starting with '0:'
+        if conf.Type == 'C' and conf.Description[:len('0:')] == '0:':
+            _start, num = conf.Description.split(':')
+            cont_dict[conf.Key] = int(num)
+
+    # cleanup the config from contious entries
+    for key, number in cont_dict.items():
+        value = conf_dict[key]
+        for i in range(number + 1):
+            search_key = "%s__[%d:%d]" % (key, i, number)
+            if search_key in conf_dict:
+                value = value + conf_dict[search_key]
+                del conf_dict[search_key]
+        conf_dict[key] = value
+        search_key = "%s__[%d:%d]" % (key, number, number)
+        type_dict[key] = type_dict[search_key]
+        desc_dict[key] = desc_dict[search_key]
+
+    # normal processing as before continous here
+    for key, value in conf_dict.items():
+        if key.startswith("linotp.") is False:
+            key = "linotp." + key
+        nVal = _expandHere(value)
         config[key] = nVal
-        myTyp = conf.Type
+
+    for key, value in config.items():
+        myTyp = type_dict.get(key)
         if myTyp is not None:
             if myTyp == 'password':
                 if hasattr(c, 'hsm') == True and isinstance(c.hsm, dict):
@@ -563,13 +692,20 @@ def _retrieveAllConfigDB():
 
     return (config, delay)
 
-########### external interfaces ###############
+
+# ########## external interfaces ###############
 def storeConfig(key, val, typ=None, desc=None):
-    log.debug('[storeConfig] %r:%r' % (key, val))
+
+    log_val = val
+    if type and typ == 'password':
+        log_val = "XXXXXXX"
+    log.debug('[storeConfig] %r:%r' % (key, log_val))
+
     conf = getLinotpConfig()
     conf.addEntry(key, val, typ, desc)
     log.debug('[/storeConfig]')
     return True
+
 
 def updateConfig(confi):
     '''
@@ -578,8 +714,7 @@ def updateConfig(confi):
     log.debug('[updateConfig]')
     conf = getLinotpConfig()
 
-
-    # # remember all key, which should be processed
+    # remember all key, which should be processed
     p_keys = copy.deepcopy(confi)
 
     typing = False
@@ -587,7 +722,7 @@ def updateConfig(confi):
     for entry in confi:
         typ = confi.get(entry + ".type", None)
         des = confi.get(entry + ".desc", None)
-        # # check if we have a descriptive entry
+        # check if we have a descriptive entry
         if typ is not None or des is not None:
             typing = True
             if typ is not None:
@@ -595,8 +730,8 @@ def updateConfig(confi):
             if des is not None:
                 del p_keys[entry + ".desc"]
 
-    if typing == True:
-        # # tupple dict containing the additional info
+    if typing is True:
+        # tupple dict containing the additional info
         t_dict = {}
         for entry in p_keys:
             val = confi.get(entry)
@@ -622,11 +757,13 @@ def updateConfig(confi):
     log.debug('[/updateConfig]')
     return True
 
+
 def getFromConfig(key, defVal=None):
     log.debug('[getFromConfig] key:  %s' % key)
     conf = getLinotpConfig()
     value = conf.get(key, defVal)
     return value
+
 
 def refreshConfig():
     log.debug('[refreshConfig]')
@@ -634,47 +771,50 @@ def refreshConfig():
     conf.refreshConfig(do_reload=True)
     return
 
+
 def removeFromConfig(key, iCase=False):
     log.debug('[removeFromConfig] key:  %r' % key)
     conf = getLinotpConfig()
 
-    if iCase == False:
-        if conf.has_key(key):
+    if iCase is False:
+        if key in conf:
             del conf[key]
     else:
-        # # case insensitive delete
+        # case insensitive delete
         # #- might have multiple hits
         fConf = []
         for k in conf:
             if (k.lower() == key.lower() or
-                  k.lower() == 'linotp.' + key.lower()):
+               k.lower() == 'linotp.' + key.lower()):
                 fConf.append(k)
 
         if len(fConf) > 0:
             for k in fConf:
-                if conf.has_key(k) or conf.has_key('linotp.' + k):
+                if k in conf or 'linotp.' + k in conf:
                     del conf[k]
 
     log.debug('[/removeFromConfig]')
     return True
 
 
-#### several config functions to follow
+# several config functions to follow
 def setDefaultMaxFailCount(maxFailCount):
     return storeConfig(u"DefaultMaxFailCount", maxFailCount)
+
 
 def setDefaultSyncWindow(syncWindowSize):
     return storeConfig(u"DefaultSyncWindow", syncWindowSize)
 
+
 def setDefaultCountWindow(countWindowSize):
     return storeConfig(u"DefaultCountWindow", countWindowSize)
+
 
 def setDefaultOtpLen(otpLen):
     return storeConfig(u"DefaultOtpLen", otpLen)
 
+
 def setDefaultResetFailCount(resetFailCount):
     return storeConfig(u"DefaultResetFailCount", resetFailCount)
 
-
-#eof###########################################################################
-
+# eof #########################################################################
