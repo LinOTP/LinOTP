@@ -434,8 +434,8 @@ def get_public_keys():
 
     for key_file in key_files:
         try:
-            key_text = readPublicKey(key_file, decode=False)
-            if not (key_text is None):
+            key_text = readPublicKey(key_file)
+            if key_text:
                 pubKeys.add(key_text)
             else:
                 log.error("[get_public_keys] public key file is not valid"
@@ -475,39 +475,39 @@ def check_date(expire_type, expire):
     return (True, '')
 
 
-def _isRangeSeparator(line, key):
-    if line.startswith('---') and line.endsswith('---'):
-        return line.strip(['-']).strip().lower() == key.lower()
-    return False
+def readPublicKey(filename):
+    """
+    read the public key from a given file
 
+    :param filename: the pem filename
+    :return: string containing the pubkey
+    """
 
-def readPublicKey(filename, decode=False):
-    pem_lines = []
+    pubKeyStart = "-----BEGIN PUBLIC KEY-----"
+    pubKeyEnd = "-----END PUBLIC KEY-----"
 
-    f = open(filename, 'r')
+    pubKey = ''
+
     try:
-        record = False
-        for line in f:
-            temp = line.strip()
-            if len(temp) > 0:
-                if not record:
-                    if _isRangeSeparator(temp, 'BEGIN PUBLIC KEY'):
-                        pem_lines.append(temp)
-                        record = True
-                elif _isRangeSeparator(temp, 'END PUBLIC KEY'):
-                    pem_lines.append(temp)
-                    break
-                else:
-                    pem_lines.append(temp)
-    finally:
-        f.close()
+        with open(filename, 'r') as f:
+            pem = f.read()
+    except Exception as exx:
+        log.exception("problem reading public key file: %s: %r", filename, exx)
 
-    if len(pem_lines) == 0:
-        return None
+    pem_lines = []
+    lines = pem.split('\n')
+    for line in lines:
+        # we drop all empty lines
+        if line.strip():
+            pem_lines.append(line)
 
-    txt_lines = os.linesep.join(pem_lines)
-    if decode:
-        return base64.b64decode(txt_lines)
-    return txt_lines
+    # only add keys, which contain key definition at start and at end
+    if pem_lines and pubKeyStart in pem_lines[0] and pubKeyEnd in pem_lines[-1]:
+        pubKey = '\n'.join(pem_lines)
 
-# eof #########################################################################
+    else:
+        log.error("public key file is not valid (%s)" % filename)
+
+    return pubKey
+
+# eof ########################################################################
