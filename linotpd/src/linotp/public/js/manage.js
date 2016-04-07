@@ -1973,6 +1973,7 @@ function parseXML(xml, textStatus){
 };
 
 function parsePolicyImport(xml, textStatus) {
+
     var version = $(xml).find('version').text();
     var status = $(xml).find('status').text();
     var value = $(xml).find('value').text();
@@ -2000,18 +2001,19 @@ function parsePolicyImport(xml, textStatus) {
     hide_waiting();
 };
 
-function parseLicense(xhdr, textStatus){
+function parseLicense(xml, textStatus){
     // calback to handle response when license has been submitted
-    var resp = xhdr.responseText;
-    var obj = jQuery.parseJSON(resp);
-    var status = obj.result.status;
 
+    var status = $(xml).find('status').text();
+    var value = $(xml).find('value').text();
+    var rmessage = $(xml).find('reason').text();
+    console.log(xml);
     var error_intro = i18n.gettext('The upload of your support and subscription license failed: ');
     var dialog_title = i18n.gettext('License upload');
 
     // error occured
-    if ( status === false) {
-        var message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.result.error.message);
+    if (status.toLowerCase() == 'false'){
+        var message = i18n.gettext('Invalid License') + ': <br>' + escape(rmessage);
         alert_info_text({'text': message,
                          'type': ERROR,
                          'is_escaped': true
@@ -2021,9 +2023,8 @@ function parseLicense(xhdr, textStatus){
                    'text': error_intro + message,
                    'is_escaped': true});
     } else {
-        value = obj.result.value;
-        if (value === false){
-            message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.detail.reason);
+        if (value.toLowerCase() == 'false'){
+            message = i18n.gettext('Invalid License') + ': <br>' + escape(reason);
             alert_info_text({'text': message,
                              'type': ERROR,
                              'is_escaped': true});
@@ -2140,7 +2141,8 @@ function support_set(){
     var extension = /\.pem$/;
     if (extension.exec(filename) ) {
     $('#set_support_form').ajaxSubmit({
-        data: { session:getsession() },
+        data: {session: getsession(),
+               'format': 'xml'},
         type: "POST",
         error: parseLicense,
         success: parseLicense,
