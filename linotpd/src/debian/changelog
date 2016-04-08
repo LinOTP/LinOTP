@@ -1,3 +1,10 @@
+linotp (2.8.1.1-1) jessie; urgency=low
+
+  Bug fixes:
+  * Server: Fix license decline under certain conditions
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 08 Apr 2016 08:49:36 +0200
+
 linotp (2.8.1-1) jessie; urgency=low
 
   Enhancements:
