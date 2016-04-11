@@ -222,6 +222,28 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ----------------------------------------------------------------------
 
+        # wire the templates
+
+        init_dict = {}
+        init_dict['title'] = {'html': 'qrtoken.mako', 'scope': 'enroll.title'}
+        init_dict['page'] = {'html': 'qrtoken.mako', 'scope': 'enroll'}
+        info['init'] = init_dict
+
+        config_dict = {}
+        config_dict['title'] = {'html': 'qrtoken.mako', 'scope': 'config.title'}
+        config_dict['page'] = {'html': 'qrtoken.mako', 'scope': 'config'}
+        info['config'] = config_dict
+
+        ss_enroll = {}
+        ss_enroll['title'] = {'html': 'qrtoken.mako',
+                              'scope': 'selfservice.title.enroll'}
+        ss_enroll['page'] = {'html': 'qrtoken.mako',
+                             'scope': 'selfservice.enroll'}
+        selfservice_dict = {}
+        selfservice_dict['enroll'] = ss_enroll
+
+        # ----------------------------------------------------------------------
+
         if key is not None:
             return info.get(key)
 
