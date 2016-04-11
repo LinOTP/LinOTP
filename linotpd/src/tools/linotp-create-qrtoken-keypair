@@ -52,17 +52,17 @@ def create_key_pair(config_file):
     config.read(config_file)
     config.set("DEFAULT", "here", config_path)
 
-    secret_key_file = config.get('DEFAULT', 'linotpQrTanSecretKeyFile')
+    secret_key_file = config.get('DEFAULT', 'linotpQrTokenSecretKeyFile')
     secret_key = os.urandom(32)
 
     with open(secret_key_file, 'w+') as f:
-        f.write(b'qrtansk:' + b64encode(secret_key))
+        f.write(b'qrtokensk:' + b64encode(secret_key))
 
-    public_key_file = config.get('DEFAULT', 'linotpQrTanPublicKeyFile')
+    public_key_file = config.get('DEFAULT', 'linotpQrTokenPublicKeyFile')
     public_key = calc_dh_base(secret_key)
 
     with open(public_key_file, 'w+') as f:
-        f.write(b'qrtanpk:' + b64encode(public_key))
+        f.write(b'qrtokenpk:' + b64encode(public_key))
 
     print 'generated key pair! secret:%s, public:%s' % \
           (secret_key_file, public_key_file)

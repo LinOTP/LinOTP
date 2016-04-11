@@ -798,27 +798,27 @@ def zerome(bufferObject):
 
 #-------------------------------------------------------------------------------
 
-def get_qrtan_secret_key():
+def get_qrtoken_secret_key():
 
     """
-    reads the file defined in the config entry 'linotp.qrtan_secret_key_file',
+    reads the file defined in the config entry 'linotp.qrtoken_secret_key_file',
     extracts and decodes the secret key and returns it as a 32 bytes.
     """
 
-    sk_file = config.get('linotpQrTanSecretKeyFile')
+    sk_file = config.get('linotpQrTokenSecretKeyFile')
 
     if sk_file is None:
-        raise ConfigAdminError('Missing entry linotpQrTanSecretKeyFile')
+        raise ConfigAdminError('Missing entry linotpQrTokenSecretKeyFile')
 
     with open(sk_file) as f:
 
         content = f.read()
 
-        if not content.startswith('qrtansk:'):
+        if not content.startswith('qrtokensk:'):
             raise ValidateError('QR secret key has an invalid '
-                                'format. Must begin with \'qrtansk:\'')
+                                'format. Must begin with \'qrtokensk:\'')
 
-        b64_encoded_secret_key = content[len('qrtansk:'):]
+        b64_encoded_secret_key = content[len('qrtokensk:'):]
         secret_key = base64.b64decode(b64_encoded_secret_key)
 
         if len(secret_key) != 32:
@@ -828,27 +828,27 @@ def get_qrtan_secret_key():
 
 #-------------------------------------------------------------------------------
 
-def get_qrtan_public_key():
+def get_qrtoken_public_key():
 
     """
-    reads the file defined in the config entry 'linotp.qrtan_public_key_file',
+    reads the file defined in the config entry 'linotp.qrtoken_public_key_file',
     extracts and decodes the public key and returns it as a 32 bytes.
     """
 
-    pk_file = config.get('linotpQrTanPublicKeyFile')
+    pk_file = config.get('linotpQrTokenPublicKeyFile')
 
     if pk_file is None:
-        raise ConfigAdminError('Missing entry linotpQrTanPublicKeyFile')
+        raise ConfigAdminError('Missing entry linotpQrTokenPublicKeyFile')
 
     with open(pk_file) as f:
 
         content = f.read()
 
-        if not content.startswith('qrtanpk:'):
+        if not content.startswith('qrtokenpk:'):
             raise ValidateError('Curve 25519 / QR public key has an invalid '
-                                'format. Must begin with \'qrtanpk:\'')
+                                'format. Must begin with \'qrtokenpk:\'')
 
-        b64_encoded_public_key = content[len('qrtanpk:'):]
+        b64_encoded_public_key = content[len('qrtokenpk:'):]
         public_key = base64.b64decode(b64_encoded_public_key)
 
         if len(public_key) != 32:

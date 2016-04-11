@@ -795,8 +795,8 @@ class AdminController(BaseController):
                 an OCRA token you need to pass the
               activation code, that was generated in the QRTAN-App
 
-        qrtan arguments:
-            for generating QRTAN Tokens type=qrtan you can specify the
+        qrtoken arguments:
+            for generating QRTokens type=qr you can specify the
             following parameters
 
             * hashlib (optional) the hash algorithm used in the mac
@@ -849,7 +849,7 @@ class AdminController(BaseController):
 
             # ------------------------------------------------------------------
 
-            # fetch user from parameters. in some cases (e.g. qrtan) the user
+            # fetch user from parameters. in some cases (e.g. qrtoken) the user
             # is not in the original params, but is added by the token class
             # hook in the above section)
 

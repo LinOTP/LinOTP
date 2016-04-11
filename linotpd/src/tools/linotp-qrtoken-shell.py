@@ -5,7 +5,7 @@ import requests
 import base64
 
 if not sys.flags.interactive:
-    print("qrtan shell must be run in interactive mode (python -i)")
+    print("qrtoken shell must be run in interactive mode (python -i)")
     sys.exit(1)
 
 print(' _____     _____            _____ _       _ _  \n'
@@ -14,7 +14,7 @@ print(' _____     _____            _____ _       _ _  \n'
       ' |__  _|_|   |_| |__,|_|_|  |_____|_|_|___|_|_|\n'
       '    |__| \n')
 
-print("Welcome to the qrtan shell.")
+print("Welcome to the qrtoken shell.")
 
 # ------------------------------------------------------------------------------
 
@@ -27,12 +27,12 @@ with open(secret_key_file) as f:
 
     content = f.read()
 
-    if not content.startswith('qrtansk:'):
+    if not content.startswith('qrtokensk:'):
         print('Curve 25519 / QR secret key has an invalid '
-              'format. Must begin with \'qrtansk:\'')
+              'format. Must begin with \'qrtokensk:\'')
         sys.exit(1)
 
-    b64_encoded_secret_key = content[len('qrtansk:'):]
+    b64_encoded_secret_key = content[len('qrtokensk:'):]
     secret_key = base64.b64decode(b64_encoded_secret_key)
 
     if len(secret_key) != 32:
@@ -49,12 +49,12 @@ with open(public_key_file) as f:
 
     content = f.read()
 
-    if not content.startswith('qrtanpk:'):
+    if not content.startswith('qrtokenpk:'):
         print('Curve 25519 / QR public key has an invalid '
-              'format. Must begin with \'qrtanpk:\'')
+              'format. Must begin with \'qrtokenpk:\'')
         sys.exit(1)
 
-    b64_encoded_public_key = content[len('qrtanpk:'):]
+    b64_encoded_public_key = content[len('qrtokenpk:'):]
     public_key = base64.b64decode(b64_encoded_public_key)
 
     if len(public_key) != 32:
@@ -96,8 +96,8 @@ import struct
 
 token_db = defaultdict(dict)
 
-TYPE_QRTAN        = 2
-QRTAN_VERSION     = 0
+TYPE_QRTOKEN        = 2
+QRTOKEN_VERSION     = 0
 RESPONSE_VERSION  = 0
 
 FLAG_PAIR_SERIAL  = 1 << 0
@@ -106,9 +106,9 @@ FLAG_PAIR_CBSMS   = 1 << 2
 FLAG_PAIR_DIGITS  = 1 << 3
 FLAG_PAIR_HMAC    = 1 << 4
 
-QRTAN_CT_FREE     = 0
-QRTAN_CT_PAIR     = 1
-QRTAN_CT_AUTH     = 2
+QRTOKEN_CT_FREE     = 0
+QRTOKEN_CT_PAIR     = 1
+QRTOKEN_CT_AUTH     = 2
 
 FLAG_QR_COMP      = 1
 FLAG_QR_HAVE_URL  = 2
@@ -155,7 +155,7 @@ def parse_pairing_url(pairing_url):
 
     # validate protocol versions and type id
 
-    if not token_type == TYPE_QRTAN:
+    if not token_type == TYPE_QRTOKEN:
         raise Exception("wrong token type in url")
 
     if not version == RESPONSE_VERSION:
@@ -217,7 +217,7 @@ def send_pairing_response(pairing_url):
 
     pairing_response = b''
     pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                    TYPE_QRTAN, user_token_id)
+                                    TYPE_QRTOKEN, user_token_id)
 
     pairing_response += public_key
 
@@ -251,7 +251,7 @@ def send_pairing_response(pairing_url):
 
 
     params = {'session': SESSION, 'pairing_response': pairing_response,
-              'type': 'qrtan' }
+              'type': 'qr' }
 
     r = requests.request('get', 'http://localhost:5001/admin/init',
                          params=params, cookies=cookies)
@@ -264,7 +264,7 @@ def send_pairing_response(pairing_url):
 
 def u64_to_transaction_id(u64_int):
     # HACK! counterpart to transaction_id_to_u64 in
-    # lib.tokens.qrtantokenclass
+    # lib.tokens.qrtokenclass
     rest = u64_int % 100
     if rest == 0:
         return str(u64_int / 100)
@@ -288,8 +288,8 @@ def parse_challenge_url(challenge_url):
 
     header = challenge_data[0:5]
     version, user_token_id = struct.unpack('<bI', header)
-    if not version == QRTAN_VERSION:
-        raise Exception('wrong qrtan version')
+    if not version == QRTOKEN_VERSION:
+        raise Exception('wrong qrtoken version')
 
 
     # ----------------------------------------------------------------------
@@ -338,7 +338,7 @@ def parse_challenge_url(challenge_url):
     # make sure a flag for the server signature is
     # present, if the content type is 'pairing'
 
-    if content_type == QRTAN_CT_PAIR and not flags & FLAG_QR_SRVSIG:
+    if content_type == QRTOKEN_CT_PAIR and not flags & FLAG_QR_SRVSIG:
         raise Exception('Ill formatted callenge url')
 
     # ----------------------------------------------------------------------

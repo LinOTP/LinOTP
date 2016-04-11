@@ -45,9 +45,9 @@ from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ValidateError
 from linotp.lib.error import InvalidFunctionParameter
-from linotp.lib.crypt import get_qrtan_secret_key
-from linotp.lib.crypt import get_qrtan_public_key
-from linotp.lib.qrtan import decrypt_pairing_response
+from linotp.lib.crypt import get_qrtoken_secret_key
+from linotp.lib.crypt import get_qrtoken_public_key
+from linotp.lib.qrtoken import decrypt_pairing_response
 from linotp.lib.pairing import generate_pairing_url
 from hmac import compare_digest
 
@@ -70,7 +70,7 @@ CONTENT_TYPE_FREE = 0
 CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_AUTH = 2
 
-QRTAN_VERSION       = 0
+QRTOKEN_VERSION       = 0
 
 def transaction_id_to_u64(transaction_id):
     """
@@ -135,7 +135,7 @@ def get_single_auth_policy(policy_name, realms=None):
     return action_values[0]
 
 
-class QrTanTokenClass(TokenClass, StatefulTokenMixin):
+class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     """
 
@@ -143,14 +143,14 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
     def __init__ (self, token_model_object):
         TokenClass.__init__(self, token_model_object)
-        self.setType(u'qrtan')
+        self.setType(u'qr')
         self.mode = ['challenge']
 
 # ------------------------------------------------------------------------------
 
     def isActive (self):
 
-        # overwritten, because QrTanTokenClass can receive validate
+        # overwritten, because QrTokenClass can receive validate
         # requests in 2 different states: pairing_finished (active
         # flag is 1) and pairing_challenge_sent (active flag is 0)
 
@@ -186,11 +186,11 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
     @classmethod
     def getClassType(cls):
-        return "qrtan"
+        return "qr"
 
     @classmethod
     def getClassPrefix(cls):
-        return "QRTAN"
+        return "QRTOKEN"
 
 # ------------------------------------------------------------------------------
 
@@ -201,7 +201,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
         _ = context['translate']
 
-        info = {'type': 'qrtan', 'title': _('QRTan Token')}
+        info = {'type': 'qr', 'title': _('QRToken')}
 
         info['description'] = 'Challenge-Response-Token - Curve 25519 based'
 
@@ -324,7 +324,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
         R = calc_dh_base(r)
 
         user_token_id = self.getFromTokenInfo('user_token_id')
-        data_header = struct.pack('<bI', QRTAN_VERSION, user_token_id)
+        data_header = struct.pack('<bI', QRTOKEN_VERSION, user_token_id)
 
         # the user public key is saved as base64 in
         # the token info since the byte format is
@@ -533,7 +533,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
             serial = params.get('serial')
             hash_algorithm = params.get('hashlib')
-            pub_key = get_qrtan_public_key()
+            pub_key = get_qrtoken_public_key()
 
             cb_url = get_single_auth_policy('qrtoken_pairing_callback_url')
             cb_sms = get_single_auth_policy('qrtoken_pairing_callback_sms')
@@ -543,7 +543,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
             # ------------------------------------------------------------------
 
-            pairing_url = generate_pairing_url('qrtan',
+            pairing_url = generate_pairing_url('qrtoken',
                                           server_public_key=pub_key,
                                           serial=serial,
                                           callback_url=cb_url,
@@ -675,7 +675,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
         if options is None:
             options = {}
 
-        max_fail = int(getFromConfig('QrTanMaxChallengeRequests', '3'))
+        max_fail = int(getFromConfig('QrTokenMaxChallengeRequests', '3'))
 
         # ----------------------------------------------------------------------
 
@@ -791,7 +791,7 @@ class QrTanTokenClass(TokenClass, StatefulTokenMixin):
 
         """ the server hmac secret for this specific token """
 
-        server_secret_key = get_qrtan_secret_key()
+        server_secret_key = get_qrtoken_secret_key()
 
         # user public key is saved base64 encoded
 

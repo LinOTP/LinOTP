@@ -33,7 +33,7 @@ from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.crypt import zerome
 from linotp.lib.error import ParameterError
-from linotp.lib.crypt import get_qrtan_secret_key
+from linotp.lib.crypt import get_qrtoken_secret_key
 
 # ------------------------------------------------------------------------------
 # Pairing logic
@@ -56,10 +56,10 @@ RESPONSE_VERSION    = 0
 
 hash_algorithms = {'sha1' : 0, 'sha256': 1, 'sha512': 2}
 
-# QRTAN constantns
-#
-QRTAN_VERSION       = 0
-TYPE_QRTAN          = 2
+# QRToken constants
+
+QRTOKEN_VERSION       = 0
+TYPE_QRTOKEN          = 2
 
 PairingResponse = namedtuple('PairingResponse',
                              ['user_public_key', 'user_token_id',
@@ -99,7 +99,7 @@ def decrypt_pairing_response(enc_pairing_response):
 
     :raises ValueError:
         If the pairing response indicates a different
-        token type than QRTanToken (also hardcoded)
+        token type than QRToken (also hardcoded)
 
     :raises ValueError:
         If the MAC of the response didn't match
@@ -131,7 +131,7 @@ def decrypt_pairing_response(enc_pairing_response):
 
     # ----
 
-    secret_key = get_qrtan_secret_key()
+    secret_key = get_qrtoken_secret_key()
     ss = calc_dh(secret_key, R)
 
     # derive encryption key and nonce from the shared secret

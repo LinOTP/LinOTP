@@ -25,21 +25,6 @@
 #
 
 
-"""
-    possible params:
-    params = {
-        'user': user,
-        'serial': 'LSQR123',
-        'type': 'qrtan',
-        'message': 'Herzlichen Glückwunsch zum Kauf einer Waschmaschine',
-        'version': '1.0',           # Protokollversion
-        'ct': 'QRTAN_CT_FREE',      # content type
-        'cburl': None,              # callback url
-        'cbsms': None,              # callback sms
-        'tr': None,                 # transaction number
-        'comp': True                # compression, zib
-    }
-"""
 import struct
 import json
 import logging
@@ -63,13 +48,13 @@ FLAG_PAIR_CBSMS   = 1 << 2
 FLAG_PAIR_DIGITS  = 1 << 3
 FLAG_PAIR_HMAC    = 1 << 4
 
-TYPE_QRTAN        = 2
-QRTAN_VERSION     = 0
+TYPE_QRTOKEN        = 2
+QRTOKEN_VERSION     = 0
 RESPONSE_VERSION  = 0
 
-QRTAN_CT_FREE     = 0
-QRTAN_CT_PAIR     = 1
-QRTAN_CT_AUTH     = 2
+QRTOKEN_CT_FREE     = 0
+QRTOKEN_CT_PAIR     = 1
+QRTOKEN_CT_AUTH     = 2
 
 FLAG_QR_COMP      = 1
 FLAG_QR_HAVE_URL  = 2
@@ -79,7 +64,7 @@ FLAG_QR_SRVSIG    = 8
 
 def u64_to_transaction_id(u64_int):
     # HACK! counterpart to transaction_id_to_u64 in
-    # lib.tokens.qrtantokenclass
+    # lib.tokens.qrtokenclass
     rest = u64_int % 100
     if rest == 0:
         return str(u64_int / 100)
@@ -88,7 +73,7 @@ def u64_to_transaction_id(u64_int):
         return '%s.%s' % (str(before), str(rest))
 
 
-class TestQRTANToken(TestController):
+class TestQRToken(TestController):
 
     def setPinPolicy(self, name='otpPin', realm='myDefRealm',
                      action='otppin=1, ', scope='authentication',
@@ -115,7 +100,7 @@ class TestQRTANToken(TestController):
 
     def setUp(self):
 
-        super(TestQRTANToken, self).setUp()
+        super(TestQRToken, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         self.secret_key = os.urandom(32)
@@ -127,14 +112,14 @@ class TestQRTANToken(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        super(TestQRTANToken, self).tearDown()
+        super(TestQRToken, self).tearDown()
 
 # ------------------------------------------------------------------------------
 
-    def enroll_qrtan_token(self, hashlib=None):
+    def enroll_qrtoken(self, hashlib=None):
 
         """
-        enrolls a qrtan token
+        enrolls a qrtoken
 
         :param hashlib: the identifier for the hash algorithm that
             is used during tan generation ('sha1', 'sha256', 'sha512')
@@ -147,7 +132,7 @@ class TestQRTANToken(TestController):
 
         # initialize an unfinished token on the server
 
-        params = {'type': 'qrtan'}
+        params = {'type': 'qr'}
 
         if hashlib is not None:
             params['hashlib'] = hashlib
@@ -231,7 +216,7 @@ class TestQRTANToken(TestController):
 
         # check callback definitions in pairing url
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
         user_token_id = self.create_user_token_by_pairing_url(pairing_url)
 
         token = self.tokens[user_token_id]
@@ -311,7 +296,7 @@ class TestQRTANToken(TestController):
 
     def send_pairing_response(self, pairing_response):
 
-        params = {'type': 'qrtan', 'pairing_response': pairing_response}
+        params = {'type': 'qr', 'pairing_response': pairing_response}
 
         # we use the standard calback url in here
         # in a real client we would use the callback
@@ -384,7 +369,7 @@ class TestQRTANToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtan_token(hashlib)
+        pairing_url = self.enroll_qrtoken(hashlib)
 
         # ----------------------------------------------------------------------
 
@@ -405,12 +390,12 @@ class TestQRTANToken(TestController):
         # ----------------------------------------------------------------------
 
         # check if the content type is right (we are doing pairing
-        # right now, so type must be QRTAN_CT_PAIR)
+        # right now, so type must be QRTOKEN_CT_PAIR)
 
         content_type = challenge['content_type']
-        self.assertEqual(content_type, QRTAN_CT_PAIR)
+        self.assertEqual(content_type, QRTOKEN_CT_PAIR)
 
-        # challenge message in content type QRTAN_CT_PAIR is defined
+        # challenge message in content type QRTOKEN_CT_PAIR is defined
         # as the token serial - check, if this is the case
 
         user_token_id = challenge['user_token_id']
@@ -470,7 +455,7 @@ class TestQRTANToken(TestController):
 
         # validate protocol versions and type id
 
-        self.assertEqual(token_type, TYPE_QRTAN)
+        self.assertEqual(token_type, TYPE_QRTOKEN)
         self.assertEqual(version, RESPONSE_VERSION)
 
         # ----------------------------------------------------------------------
@@ -532,8 +517,9 @@ class TestQRTANToken(TestController):
             challenge has the keys
 
                 * message - the signed message sent from the server
-                * content_type - one of the three values QRTAN_CT_PAIR,
-                    QRTAN_CT_FREE or QRTAN_CT_AUTH (all defined in this module)
+                * content_type - one of the three values QRTOKEN_CT_PAIR,
+                    QRTOKEN_CT_FREE or QRTOKEN_CT_AUTH
+                    (all defined in this module
                 * callback_url (optional) - the url to which the challenge
                     response should be set
                 * callback_sms (optional) - the sms number the challenge
@@ -560,7 +546,7 @@ class TestQRTANToken(TestController):
 
         header = challenge_data[0:5]
         version, user_token_id = struct.unpack('<bI', header)
-        self.assertEqual(version, QRTAN_VERSION)
+        self.assertEqual(version, QRTOKEN_VERSION)
 
         # ----------------------------------------------------------------------
 
@@ -608,7 +594,7 @@ class TestQRTANToken(TestController):
         # make sure a flag for the server signature is
         # present, if the content type is 'pairing'
 
-        if content_type == QRTAN_CT_PAIR:
+        if content_type == QRTOKEN_CT_PAIR:
             self.assertTrue(flags & FLAG_QR_SRVSIG)
 
         # ----------------------------------------------------------------------
@@ -703,7 +689,7 @@ class TestQRTANToken(TestController):
 
         pairing_response = b''
         pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                        TYPE_QRTAN, user_token_id)
+                                        TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -739,7 +725,7 @@ class TestQRTANToken(TestController):
 
     def test_pairing_sig(self):
 
-        """QRTAN: check if pairing mechanism works correctly (sig based)"""
+        """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
         self.execute_correct_pairing()
 
@@ -747,7 +733,7 @@ class TestQRTANToken(TestController):
 
     def test_pairing_tan(self):
 
-        """QRTAN: check if pairing mechanism works correctly (tan based)"""
+        """QRTOKEN: check if pairing mechanism works correctly (tan based)"""
 
         self.execute_correct_pairing(use_tan=True)
 
@@ -755,7 +741,7 @@ class TestQRTANToken(TestController):
 
     def test_pairing_response_after_pairing(self):
 
-        """QRTAN: check if a sent pairing response after pairing will fail"""
+        """QRTOKEN: check if a sent pairing response after pairing will fail"""
 
         user_token_id = self.execute_correct_pairing()
 
@@ -796,9 +782,9 @@ class TestQRTANToken(TestController):
 
     def test_pairing_ill_formatted_pairing_response(self):
 
-        """QRTAN: check if error is thrown on ill-formatted pairing response """
+        """QRTOKEN: check if error is thrown on ill-formatted pairing response """
 
-        self.enroll_qrtan_token()
+        self.enroll_qrtoken()
         response_dict = self.send_pairing_response('look, mom! i\'m crashing '
                                                    'the server')
 
@@ -828,14 +814,14 @@ class TestQRTANToken(TestController):
     def test_wrong_challenge_response(self):
 
         """
-        QRTAN: Testing if a wrong challenge response in pairing will fail
+        QRTOKEN: Testing if a wrong challenge response in pairing will fail
         """
 
         # ----------------------------------------------------------------------
 
         # enroll token
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
@@ -873,12 +859,12 @@ class TestQRTANToken(TestController):
     def test_pairing_response_wrong_response_version(self):
 
         """
-        QRTAN: check, if pairing response with wrong response version will fail
+        QRTOKEN: pairing response with wrong response version should fail
         """
 
         # enroll token
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
@@ -897,7 +883,7 @@ class TestQRTANToken(TestController):
 
         pairing_response = b''
         pairing_response += struct.pack('<bbI', NONEXISTENT_RESPONSE_VERSION,
-                                        TYPE_QRTAN, user_token_id)
+                                        TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -957,12 +943,12 @@ class TestQRTANToken(TestController):
     def test_pairing_response_wrong_serial(self):
 
         """
-        QRTAN: checking, if pairing response with wrong serial will fail
+        QRTOKEN: checking, if pairing response with wrong serial will fail
         """
 
         # enroll token
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
@@ -979,7 +965,7 @@ class TestQRTANToken(TestController):
 
         pairing_response = b''
         pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                        TYPE_QRTAN, user_token_id)
+                                        TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -1043,12 +1029,12 @@ class TestQRTANToken(TestController):
     def test_pairing_response_wrong_token_type(self):
 
         """
-        QRTAN: checking, if pairing response with wrong token type will fail
+        QRTOKEN: checking, if pairing response with wrong token type will fail
         """
 
         # enroll token
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
@@ -1127,12 +1113,12 @@ class TestQRTANToken(TestController):
     def test_pairing_response_wrong_R(self):
 
         """
-        QRTAN: checking, if pairing response with wrong R will fail
+        QRTOKEN: checking, if pairing response with wrong R will fail
         """
 
         # enroll token
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
@@ -1149,7 +1135,7 @@ class TestQRTANToken(TestController):
 
         pairing_response = b''
         pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                        TYPE_QRTAN, user_token_id)
+                                        TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -1210,14 +1196,14 @@ class TestQRTANToken(TestController):
     def test_pairing_response_double_send(self):
 
         """
-        QRTAN: Testing if sending 2 pairing responses will fail.
+        QRTOKEN: Testing if sending 2 pairing responses will fail.
         """
 
         # ----------------------------------------------------------------------
 
         # enroll token
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
@@ -1263,7 +1249,7 @@ class TestQRTANToken(TestController):
 
     def test_challenge_response_serial_signature(self):
 
-        """ QRTAN: Executing complete challenge response with serial/sig """
+        """ QRTOKEN: Executing complete challenge response with serial/sig """
 
         self.execute_correct_serial_challenge()
 
@@ -1271,7 +1257,7 @@ class TestQRTANToken(TestController):
 
     def test_challenge_response_serial_tan(self):
 
-        """ QRTAN: Executing complete challenge response with serial/tan """
+        """ QRTOKEN: Executing complete challenge response with serial/tan """
 
         self.execute_correct_serial_challenge(use_tan=True)
 
@@ -1279,7 +1265,7 @@ class TestQRTANToken(TestController):
 
     def test_wrong_serial_challenge_response(self):
 
-        """ QRTAN: Sending a wrong challenge response on token (serial) """
+        """ QRTOKEN: Sending a wrong challenge response on token (serial) """
 
         challenge_url = self.trigger_challenge_by_serial()
 
@@ -1344,10 +1330,10 @@ class TestQRTANToken(TestController):
     def test_unpaired_challenge_serial(self):
 
         """
-         QRTAN: Check if unpaired token refuses incoming challenge requests
+         QRTOKEN: Check if unpaired token refuses incoming challenge requests
         """
 
-        pairing_url = self.enroll_qrtan_token()
+        pairing_url = self.enroll_qrtoken()
         user_token_id = self.create_user_token_by_pairing_url(pairing_url)
 
         # ----------------------------------------------------------------------
@@ -1379,7 +1365,7 @@ class TestQRTANToken(TestController):
 
     def test_validate_user_pin_policy_1_wrong_pin(self):
 
-        """ QRTAN: Validating user with pin policy 1 (wrong pin)"""
+        """ QRTOKEN: Validating user with pin policy 1 (wrong pin)"""
 
         user_token_id = self.execute_correct_pairing()
         token = self.tokens[user_token_id]
@@ -1504,7 +1490,7 @@ class TestQRTANToken(TestController):
 
     def test_multiple_challenges(self):
 
-        """ QRTAN: creating multiple challenges and validate them """
+        """ QRTOKEN: creating multiple challenges and validate them """
 
         # ----------------------------------------------------------------------
 
@@ -1584,7 +1570,7 @@ class TestQRTANToken(TestController):
 
     def test_validate_user_pin_policy_1(self):
 
-        """ QRTAN: Validating user with pin policy 1 """
+        """ QRTOKEN: Validating user with pin policy 1 """
 
         user_token_id = self.execute_correct_pairing()
         token = self.tokens[user_token_id]
@@ -1642,7 +1628,7 @@ class TestQRTANToken(TestController):
 
     def test_validate_user_pin_policy_2(self):
 
-        """ QRTAN: Validating user with pin policy 2 """
+        """ QRTOKEN: Validating user with pin policy 2 """
 
         user_token_id = self.execute_correct_pairing()
         token = self.tokens[user_token_id]
@@ -1710,7 +1696,7 @@ class TestQRTANToken(TestController):
         # check if the content type is right
 
         content_type = challenge['content_type']
-        self.assertEqual(content_type, QRTAN_CT_FREE)
+        self.assertEqual(content_type, QRTOKEN_CT_FREE)
 
         # ----------------------------------------------------------------------
 

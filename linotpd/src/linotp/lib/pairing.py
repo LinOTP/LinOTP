@@ -31,7 +31,7 @@ from linotp.lib.error import InvalidFunctionParameter
 """
 This module provides functions and constants for the generation of
 pairing urls. For the response processing and challenge generation
-please take a look into the appropriate token type lib (e.g. lib.qrtan)
+please take a look into the appropriate token type lib (e.g. lib.qrtoken)
 """
 
 # ------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ FLAG_PAIR_TSTART  = 1 << 6
 FLAG_PAIR_TSTEP   = 1 << 7
 
 hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
-token_types = {'qrtan': 2}
+token_types = {'qrtoken': 2}
 
 # ------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ def generate_pairing_url(token_type,
     Mandatory parameters:
 
     :param: token_type The token type for which this url is generated
-        as a string (currently supported is only 'qrtan')
+        as a string (currently supported is only 'qr')
 
     :param: server_public_key: The servers public key as bytes (length: 32)
 
@@ -100,7 +100,7 @@ def generate_pairing_url(token_type,
     :param hash_algorithm: A string value that signifies the hash algorithm
         used in calculating the hmac. Currently the values 'sha1', 'sha256',
         'sha512' are supported. If the parameter is left out the default
-        depends on the token type. qrtan uses sha256 as default, while
+        depends on the token type. qrtoken uses sha256 as default, while
         hotp/totp uses sha1.
 
     The function can raise several exceptions:
