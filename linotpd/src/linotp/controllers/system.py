@@ -68,7 +68,9 @@ from linotp.lib.resolver import deleteResolver
 from linotp.lib.error   import ParameterError
 
 from linotp.lib.util    import getParam, getLowerParams
-from linotp.lib.reply   import sendResult, sendError, sendXMLResult, sendXMLError
+from linotp.lib.reply   import sendResult, sendError
+from linotp.lib.reply   import sendXMLResult, sendXMLError
+
 from linotp.lib.realm   import getRealms
 from linotp.lib.realm   import getDefaultRealm
 from linotp.lib.user    import setRealm
@@ -1685,7 +1687,16 @@ class SystemController(BaseController):
         res = False
         message = None
 
+
+        sendResultMethod = sendResult
+        sendErrorMethod = sendError
+
         try:
+            format = request.POST.get('format')
+            if format == 'xml':
+                sendResponseMethod = sendXMLResult
+                sendErrorMethod = sendXMLError
+
             licField = request.POST['license']
             log.info("[setSupport] setting support: %s" % (licField))
 
@@ -1698,20 +1709,19 @@ class SystemController(BaseController):
                 support_description = licField.encode('utf-8')
             log.debug("[setSupport] license %s", support_description)
 
-
             res, msg = linotp.lib.support.setSupportLicense(support_description)
-            if res == False:
-                message = {'reason' : msg}
+            if res is False:
+                message = {'reason': msg}
 
             c.audit['success'] = res
 
             Session.commit()
-            return sendResult(response, res, 1, opt=message)
+            return sendResponseMethod(response, res, 1, opt=message)
 
         except Exception as exx:
             log.exception("[setSupport] failed to set support license: %r" % exx)
             Session.rollback()
-            return sendError(response, exx)
+            return sendErrorMethod(response, exx)
 
         finally:
             Session.close()

@@ -442,17 +442,51 @@ def sendCSVResult(response, obj, flat_lines=False,
 
     return output
 
-def sendXMLResult(response, obj, id=1):
+
+def json2xml(json_obj, line_padding=""):
+    result_list = list()
+
+    json_obj_type = type(json_obj)
+
+    if json_obj_type is list:
+        for sub_elem in json_obj:
+            result_list.append("%s<value>" % line_padding)
+            result_list.append(json2xml(sub_elem, line_padding))
+            result_list.append("%s</value>" % line_padding)
+
+        return "".join(result_list)
+
+    if json_obj_type is dict:
+        for tag_name in json_obj:
+            sub_obj = json_obj[tag_name]
+            result_list.append("%s<%s>" % (line_padding, tag_name))
+            result_list.append(json2xml(sub_obj, "" + line_padding))
+            result_list.append("%s</%s>" % (line_padding, tag_name))
+
+        return "".join(result_list)
+
+    return "%s%s" % (line_padding, json_obj)
+
+
+def sendXMLResult(response, obj, id=1, opt=None):
+    """
+    send the result as an xml format
+    """
     response.content_type = 'text/xml'
-    res = '<?xml version="1.0" encoding="UTF-8"?>\
-            <jsonrpc version="2.0">\
-            <result>\
-                <status>True</status>\
-                <value>%s</value>\
-            </result>\
-            <version>%s</version>\
-            <id>%s</id>\
-            </jsonrpc>' % (obj, get_version(), id)
+    xml_options = ""
+    if opt:
+        xml_options = "\n<options>" + json2xml(opt) + "</options>"
+    xml_object = json2xml(obj)
+
+    res = """<?xml version="1.0" encoding="UTF-8"?>
+<jsonrpc version="2.0">
+    <result>
+        <status>True</status>
+        <value>%s</value>
+    </result>
+    <version>%s</version>
+    <id>%s</id>%s
+</jsonrpc>""" % (xml_object, get_version(), id, xml_options)
     return res
 
 
