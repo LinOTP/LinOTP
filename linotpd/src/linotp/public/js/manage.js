@@ -672,9 +672,10 @@ function get_selected(){
     if ($('#tabs').tabs('option', 'active') == 2) {
         policy = get_selected_policy().join(',');
         if (policy) {
-            $.get('/system/getPolicy', {'name' : policy,
-                                        'display_inactive': '1',
-                                        'session':getsession()} ,
+        	var params = {'name' : policy,
+                    'display_inactive': '1',
+                    'session':getsession()};
+            $.post('/system/getPolicy', params,
              function(data, textStatus, XMLHttpRequest){
                 if (data.result.status == true) {
                     policies = policy.split(',');
@@ -850,10 +851,9 @@ function save_token_config(){
             //console_log('callbacack for ' + tt + ' not found!')
         }
 
-
     }
     //console_log(params)
-    $.get('/system/setConfig', params,
+    $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -1744,7 +1744,8 @@ function do_dialog_icons(){
 // realms and resolver functions
 //
 function _fill_resolvers(widget){
-    $.get('/system/getResolvers', {'session':getsession()} ,
+	var params = {'session':getsession()};
+    $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
         var resolversOptions = "";
         var value = {};
@@ -1765,7 +1766,8 @@ function _fill_resolvers(widget){
 
 function _fill_realms(widget, also_none_realm){
     var defaultRealm = "";
-    $.get('/system/getRealms', {'session':getsession()} ,
+    var params = {'session':getsession()};
+    $.post('/system/getRealms', params,
      function(data, textStatus, XMLHttpRequest){
         // value._default_.realmname
         // value.XXXX.realmname
@@ -1973,7 +1975,6 @@ function parseXML(xml, textStatus){
 };
 
 function parsePolicyImport(xml, textStatus) {
-
     var version = $(xml).find('version').text();
     var status = $(xml).find('status').text();
     var value = $(xml).find('value').text();
@@ -2001,19 +2002,18 @@ function parsePolicyImport(xml, textStatus) {
     hide_waiting();
 };
 
-function parseLicense(xml, textStatus){
+function parseLicense(xhdr, textStatus){
     // calback to handle response when license has been submitted
+    var resp = xhdr.responseText;
+    var obj = jQuery.parseJSON(resp);
+    var status = obj.result.status;
 
-    var status = $(xml).find('status').text();
-    var value = $(xml).find('value').text();
-    var rmessage = $(xml).find('reason').text();
-    console.log(xml);
     var error_intro = i18n.gettext('The upload of your support and subscription license failed: ');
     var dialog_title = i18n.gettext('License upload');
 
     // error occured
-    if (status.toLowerCase() == 'false'){
-        var message = i18n.gettext('Invalid License') + ': <br>' + escape(rmessage);
+    if ( status === false) {
+        var message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.result.error.message);
         alert_info_text({'text': message,
                          'type': ERROR,
                          'is_escaped': true
@@ -2023,8 +2023,9 @@ function parseLicense(xml, textStatus){
                    'text': error_intro + message,
                    'is_escaped': true});
     } else {
-        if (value.toLowerCase() == 'false'){
-            message = i18n.gettext('Invalid License') + ': <br>' + escape(reason);
+        value = obj.result.value;
+        if (value === false){
+            message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.detail.reason);
             alert_info_text({'text': message,
                              'type': ERROR,
                              'is_escaped': true});
@@ -2141,8 +2142,7 @@ function support_set(){
     var extension = /\.pem$/;
     if (extension.exec(filename) ) {
     $('#set_support_form').ajaxSubmit({
-        data: {session: getsession(),
-               'format': 'xml'},
+        data: { session:getsession() },
         type: "POST",
         error: parseLicense,
         success: parseLicense,
@@ -2162,7 +2162,8 @@ function support_view(){
     // clean out old data
     $("#dialog_support_view").html("");
 
-    $.get('/system/getSupportInfo', { 'session':getsession()} ,
+    var params = { 'session':getsession()};
+    $.post('/system/getSupportInfo', params,
      function(data, textStatus, XMLHttpRequest){
         support_info = data.result.value;
 
@@ -2197,7 +2198,8 @@ function support_view(){
 
 function load_system_config(){
     show_waiting();
-    $.get('/system/getConfig', { 'session':getsession()} ,
+    var params = {'session':getsession()};
+    $.post('/system/getConfig', params,
      function(data, textStatus, XMLHttpRequest){
         // checkboxes this way:
         hide_waiting();
@@ -2249,22 +2251,24 @@ function load_system_config(){
 
 function save_system_config(){
     show_waiting();
-    $.get('/system/setConfig', {
-        'DefaultMaxFailCount': $('#sys_maxFailCount').val(),
-        'DefaultSyncWindow': $('#sys_syncWindow').val(),
-        'DefaultOtpLen': $('#sys_otpLen').val(),
-        'DefaultCountWindow': $('#sys_countWindow').val(),
-        'DefaultChallengeValidityTime': $('#sys_challengeTimeout').val(),
-        'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
-        'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
-        'totp.timeShift': $('#totp_timeShift').val(),
-        'totp.timeStep': $('#totp_timeStep').val(),
-        'totp.timeWindow': $('#totp_timeWindow').val(),
-        'OcraDefaultSuite' : $('#ocra_default_suite').val(),
-        'QrOcraDefaultSuite' : $('#ocra_default_qr_suite').val(),
-        'OcraMaxChallenges' : $('#ocra_max_challenge').val(),
-        'OcraChallengeTimeout' : $('#ocra_challenge_timeout').val(),
-        'session':getsession()},
+    var params = {
+            'DefaultMaxFailCount': $('#sys_maxFailCount').val(),
+            'DefaultSyncWindow': $('#sys_syncWindow').val(),
+            'DefaultOtpLen': $('#sys_otpLen').val(),
+            'DefaultCountWindow': $('#sys_countWindow').val(),
+            'DefaultChallengeValidityTime': $('#sys_challengeTimeout').val(),
+            'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
+            'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
+            'totp.timeShift': $('#totp_timeShift').val(),
+            'totp.timeStep': $('#totp_timeStep').val(),
+            'totp.timeWindow': $('#totp_timeWindow').val(),
+            'OcraDefaultSuite' : $('#ocra_default_suite').val(),
+            'QrOcraDefaultSuite' : $('#ocra_default_qr_suite').val(),
+            'OcraMaxChallenges' : $('#ocra_max_challenge').val(),
+            'OcraChallengeTimeout' : $('#ocra_challenge_timeout').val(),
+            'session':getsession()}
+
+    $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -2310,7 +2314,7 @@ function save_system_config(){
     if ($("#sys_realmbox").is(':checked')) {
         realmbox = "True";
     }
-    $.get('/system/setConfig', { 'session':getsession(),
+    var params = { 'session':getsession(),
             'PrependPin' :prepend,
             'FailCounterIncOnFalsePin' : fcounter ,
             'splitAtSign' : splitatsign,
@@ -2320,7 +2324,8 @@ function save_system_config(){
             'PassOnUserNoToken' : passOUNToken,
             'selfservice.realmbox' : realmbox,
             'allowSamlAttributes' : allowsaml,
-             },
+             };
+    $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){
         if (data.result.status == false) {
             alert_info_text({'text': "text_system_save_error_checkbox",
@@ -2384,14 +2389,40 @@ function save_ldap_config(){
     return false;
 }
 
+function set_default_realm(realm) {
+/*
+ * set the default realm
+ *
+ * @param realm - as string
+ */
+    var params = {
+        'realm' : realm,
+        'session':getsession()
+        };
+
+    $.post('/system/setDefaultRealm', params,
+       function(){
+          realms_load();
+          fill_realms();
+      });
+}
+
 function save_realm_config(){
+/*
+ * save the realm config from the realm edit dialog
+ *
+ * @param - #realm_name is extracted from form entry
+ */
     check_license();
     var realm = $('#realm_name').val();
     show_waiting();
-    $.get('/system/setRealm', {
+    var params = {
         'realm' :realm,
         'resolvers' : g.resolvers_in_realm_to_edit,
-        'session':getsession() },
+        'session':getsession()
+        };
+
+    $.post('/system/setRealm', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -2402,6 +2433,14 @@ function save_realm_config(){
         } else {
             fill_realms();
             realms_load();
+
+            // usability (default) behaviour:
+            // if this is no realm defined before, we make it
+            // the default realm
+            if ($('#realms_select').children().size() === 0) {
+                set_default_realm(realm);
+            }
+
             alert_info_text({'text': "text_realm_created",
                              'param': escape(realm),
                              'is_escaped': true});
@@ -2412,13 +2451,18 @@ function save_realm_config(){
 function save_tokenrealm_config(){
     var tokens = get_selected_tokens();
     var realms = g.realms_of_token.join(",");
+    var params = {
+            'serial' :serial,
+            'realms' : realms,
+            'session':getsession()
+            };
     for (var i = 0; i < tokens.length; ++i) {
         serial = tokens[i];
+        params['serial'] = serial;
+
         show_waiting();
-        $.get('/admin/tokenrealm', {
-          'serial' :serial,
-          'realms' : realms,
-          'session':getsession()},
+
+        $.post('/admin/tokenrealm', params,
          function(data, textStatus, XMLHttpRequest){
             hide_waiting();
             if (data.result.status == false) {
@@ -2448,7 +2492,7 @@ function save_file_config(){
     params['fileName'] = fileName;
     params['session'] = getsession();
     show_waiting();
-    $.get('/system/setResolver', params,
+    $.post('/system/setResolver', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -2516,7 +2560,8 @@ function realms_load(){
 
     g.realm_to_edit = "";
     show_waiting();
-    $.get('/system/getRealms', { 'session': getsession() },
+    var params = { 'session': getsession() };
+    $.post('/system/getRealms', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
@@ -2547,7 +2592,7 @@ function realms_load(){
                 }); // end of each
             } // end of stop function
         }); // end of selectable
-    }); // end of $.get
+    }); // end of $.post
 }
 
 function realm_ask_delete(){
@@ -2566,7 +2611,8 @@ function realm_ask_delete(){
 
 function resolvers_load(){
     show_waiting();
-    $.get('/system/getResolvers', {'session':getsession()},
+    var params = {'session':getsession()};
+    $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
@@ -2595,14 +2641,16 @@ function resolvers_load(){
             $('#resolvers_list').html("");
             g.resolver_to_edit = "";
         };
-    }); // end of $.get
+    }); // end of $.post
 }
 
 
 function resolver_delete(){
     var reso = $('#delete_resolver_name').html();
+    var params = { 'resolver' : reso, 'session':getsession()};
+
     show_waiting();
-    $.get('/system/delResolver', { 'resolver' : reso, 'session':getsession()},
+    $.post('/system/delResolver', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == true) {
@@ -2628,7 +2676,8 @@ function resolver_delete(){
 
 function realm_delete(){
     var realm = $('#realm_delete_name').html();
-    $.get('/system/delRealm', {'realm' : realm,'session':getsession()},
+    var params = {'realm' : realm,'session':getsession()};
+    $.post('/system/delRealm', params,
      function(data, textStatus, XMLHttpRequest){
         if (data.result.status == true) {
             fill_realms();
@@ -2705,6 +2754,7 @@ function add_token_config()
         }
     }
 }
+
 
 function set_tokeninfo_buttons(){
 /*
@@ -3147,7 +3197,8 @@ function tokenbuttons(){
 
         // get all realms the admin is allowed to view
         var realms = '';
-        $.get('/system/getRealms', {'session':getsession()},
+        var params = {'session':getsession()}
+        $.post('/system/getRealms', params,
          function(data, textStatus, XMLHttpRequest){
             realms = '<ol id="tokenrealm_select" class="select_list" class="ui-selectable">';
             for (var key in data.result.value) {
@@ -3172,7 +3223,7 @@ function tokenbuttons(){
                     }); // end of stop function
                 } // end stop function
             }); // end of selectable
-        }); // end of $.get
+        }); // end of $.post
         if (tokens.length === 0) {
             alert_box({'title': i18n.gettext("Set Token Realm"),
                        'text': i18n.gettext("Please select the token first."),
@@ -3899,13 +3950,7 @@ $(document).ready(function(){
                 var realm = "";
                 if (g.realm_to_edit.match(/^(\S+)\s\[(.+)\]/)) {
                     realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.+)\]/, "$1");
-                    $.get('/system/setDefaultRealm', {
-                      'realm' : realm,
-                      'session':getsession()},
-                     function(){
-                        realms_load();
-                        fill_realms();
-                    });
+                    set_default_realm(realm);
                 }
                 else if (g.realm_to_edit.match(/^\S+\s+\(Default\)\s+\[.+\]/)) {
                     alert_info_text({'text': "text_already_default_realm",
@@ -3922,7 +3967,8 @@ $(document).ready(function(){
                 text:"Set Default"
                 },
             'Clear Default': {click: function(){
-                $.get('/system/setDefaultRealm', {'session':getsession()},
+                var params = {'session':getsession()};
+                $.post('/system/setDefaultRealm', params,
                  function(){
                     realms_load();
                     fill_realms();
@@ -4652,7 +4698,8 @@ function realm_edit(name){
 
     // get all resolvers
     var resolvers = '';
-    $.get('/system/getResolvers', {'session':getsession()},
+    var params = {'session':getsession()};
+    $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
         resolvers = '<ol id="resolvers_in_realms_select" class="select_list" class="ui-selectable">';
         for (var key in data.result.value) {
@@ -4706,7 +4753,7 @@ function realm_edit(name){
                 }); // end of each
             } // end of stop function
         }); // end of selectable
-    }); // end of $.get
+    }); // end of $.post
     $dialog_edit_realms.dialog("option", "title", "Edit Realm " + realm);
     $dialog_edit_realms.dialog('open');
 
@@ -5084,17 +5131,17 @@ function view_policy() {
         } else {
             pol_active = "False";
         }
-
-        $.get('/system/setPolicy',
-            { 'name' : $('#policy_name').val(),
-              'user' : $('#policy_user').val(),
-              'action' : $('#policy_action').val(),
-              'scope' : $('#policy_scope_combo').val(),
-              'realm' : $('#policy_realm').val(),
-              'time' : $('#policy_time').val(),
-              'client' : $('#policy_client').val(),
-              'active' : pol_active,
-              'session':getsession() },
+        var params = { 
+                'name' : $('#policy_name').val(),
+                'user' : $('#policy_user').val(),
+                'action' : $('#policy_action').val(),
+                'scope' : $('#policy_scope_combo').val(),
+                'realm' : $('#policy_realm').val(),
+                'time' : $('#policy_time').val(),
+                'client' : $('#policy_client').val(),
+                'active' : pol_active,
+                'session':getsession() };
+        $.post('/system/setPolicy', params,
          function(data, textStatus, XMLHttpRequest){
             if (data.result.status == true) {
                 alert_info_text({'text': "text_policy_set",
@@ -5112,7 +5159,8 @@ function view_policy() {
         event.preventDefault();
         var policy = get_selected_policy().join(',');
         if (policy) {
-            $.get('/system/delPolicy', {'name' : policy, 'session':getsession()},
+            var params = {'name' : policy, 'session':getsession()};
+            $.post('/system/delPolicy', params,
              function(data, textStatus, XMLHttpRequest){
                 if (data.result.status == true) {
                     alert_info_text({'text': "text_policy_deleted",
