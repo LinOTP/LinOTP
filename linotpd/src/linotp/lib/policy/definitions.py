@@ -63,6 +63,7 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'allow the administrator to retrieve '
                         'OTP values for tokens.'
                 },
+            'show': {'type': 'bool'},
             'report_maximum': {'type': 'bool'},
             'report_delete_all': {'type': 'bool'},
             'report_delete_before': {'type': 'bool'},
