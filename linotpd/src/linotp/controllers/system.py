@@ -1694,7 +1694,7 @@ class SystemController(BaseController):
         try:
             format = request.POST.get('format')
             if format == 'xml':
-                sendResponseMethod = sendXMLResult
+                sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
 
             licField = request.POST['license']
@@ -1716,7 +1716,7 @@ class SystemController(BaseController):
             c.audit['success'] = res
 
             Session.commit()
-            return sendResponseMethod(response, res, 1, opt=message)
+            return sendResultMethod(response, res, 1, opt=message)
 
         except Exception as exx:
             log.exception("[setSupport] failed to set support license: %r" % exx)
