@@ -2433,14 +2433,6 @@ function save_realm_config(){
         } else {
             fill_realms();
             realms_load();
-
-            // usability (default) behaviour:
-            // if this is no realm defined before, we make it
-            // the default realm
-            if ($('#realms_select').children().size() === 0) {
-                set_default_realm(realm);
-            }
-
             alert_info_text({'text': "text_realm_created",
                              'param': escape(realm),
                              'is_escaped': true});

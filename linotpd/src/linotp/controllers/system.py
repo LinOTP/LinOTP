@@ -919,7 +919,6 @@ class SystemController(BaseController):
 
             realm = getParam(param, "realm", required)
 
-
             # we test if before delete there has been a default
             # if yes - check after delete, if still one there
             #         and set the last available to default
@@ -937,17 +936,19 @@ class SystemController(BaseController):
                 else:
                     realmConfig = "useridresolver.group." + realm
 
-                res["delRealm"] = {"result":removeFromConfig(realmConfig, iCase=True)}
+                res["delRealm"] = {"result":
+                                   removeFromConfig(realmConfig, iCase=True)}
 
             ret = deleteRealm(realm)
 
-            if hadDefRealmBefore == True:
+            if hadDefRealmBefore is True:
                 defRealm = getDefaultRealm()
                 if defRealm == "":
                     realms = getRealms()
-                    if len(realms) == 1:
+                    if len(realms) == 2:
                         for k in realms:
-                            setDefaultRealm(k)
+                            if k != realm:
+                                setDefaultRealm(k)
             c.audit['success'] = ret
             c.audit['info'] = realm
 
