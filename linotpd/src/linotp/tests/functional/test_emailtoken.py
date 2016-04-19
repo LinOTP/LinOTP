@@ -89,6 +89,7 @@ class TestEmailtokenController(TestController):
         self.patch_smtp.stop()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        self.delete_all_token()
         TestController.tearDown(self)
 
     def test_default(self):
