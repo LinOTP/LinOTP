@@ -449,9 +449,8 @@ def setRealm(realm, resolvers):
 
     # if this is the first one, make it the default
     realms = getRealms()
-    if 1 == len(realms):
-        for name in realms:
-            setDefaultRealm(name)
+    if 0 == len(realms):
+        setDefaultRealm(realm, check_if_exists=False)
 
     return True
 

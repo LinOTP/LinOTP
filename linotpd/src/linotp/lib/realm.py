@@ -258,7 +258,8 @@ def isRealmDefined(realm):
         ret = True
     return ret
 
-def setDefaultRealm(defaultRealm):
+
+def setDefaultRealm(defaultRealm, check_if_exists=True):
     """
     set the defualt realm attrbute
 
@@ -270,10 +271,17 @@ def setDefaultRealm(defaultRealm):
     :return:  success or not
     :rtype:   boolean
     """
-    ret = isRealmDefined(defaultRealm)
-    if True == ret or defaultRealm == "":
-        storeConfig(u"linotp.DefaultRealm", defaultRealm);
+
+    if check_if_exists:
+        ret = isRealmDefined(defaultRealm)
+    else:
+        ret = True
+
+    if ret is True or defaultRealm == "":
+        storeConfig(u"linotp.DefaultRealm", defaultRealm)
+
     return ret
+
 
 def getDefaultRealm():
     """
