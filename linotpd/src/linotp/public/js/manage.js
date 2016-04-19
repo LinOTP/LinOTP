@@ -4712,39 +4712,9 @@ function realm_edit(name){
 
         $('#realm_edit_resolver_list').html(resolvers);
         $('#resolvers_in_realms_select').selectable({
-            stop: function(){
-                g.resolvers_in_realm_to_edit = '';
-                $(".ui-selected", this).each(function(){
-                    // also nur den resolvers-string zusammenbauen...
-                    if (g.resolvers_in_realm_to_edit) {
-                        g.resolvers_in_realm_to_edit += ',';
-                    }
-                    var index = $("#resolvers_in_realms_select li").index(this);
-                    var reso = escape($(this).html());
-                    if (reso.match(/(\S+)\s\[(\S+)\]/)) {
-                        var r = reso.replace(/(\S+)\s+\S+/, "$1");
-                        var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
-                    }
-                    else {
-                        alert_info_text({'text': "text_regexp_error",
-                                         'param': escape(reso),
-                                         'type': ERROR,
-                                         'is_escaped': true});
-                    }
-                    switch (t) {
-                        case 'ldapresolver':
-                            g.resolvers_in_realm_to_edit += 'useridresolver.LDAPIdResolver.IdResolver.' + r;
-                            break;
-                        case 'sqlresolver':
-                            g.resolvers_in_realm_to_edit += 'useridresolver.SQLIdResolver.IdResolver.' + r;
-                            break;
-                        case 'passwdresolver':
-                            g.resolvers_in_realm_to_edit += 'useridresolver.PasswdIdResolver.IdResolver.' + r;
-                            break;
-                    }
-                }); // end of each
-            } // end of stop function
+            stop: check_for_selected_resolvers
         }); // end of selectable
+        check_for_selected_resolvers();
     }); // end of $.post
     $dialog_edit_realms.dialog("option", "title", "Edit Realm " + realm);
     $dialog_edit_realms.dialog('open');
@@ -4761,6 +4731,37 @@ function realm_edit(name){
             }
         }
     });
+}
+
+function check_for_selected_resolvers(){
+    var resolvers_in_realm_to_edit = new Array();
+    $.when.apply($, $(".ui-selected", this).each(function(){
+        var index = $("#resolvers_in_realms_select li").index(this);
+        var reso = escape($(this).html());
+        if (reso.match(/(\S+)\s\[(\S+)\]/)) {
+            var r = reso.replace(/(\S+)\s+\S+/, "$1");
+            var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
+        }
+        else {
+            alert_info_text({'text': "text_regexp_error",
+                             'param': escape(reso),
+                             'type': ERROR,
+                             'is_escaped': true});
+        }
+        switch (t) {
+            case 'ldapresolver':
+                resolvers_in_realm_to_edit.push('useridresolver.LDAPIdResolver.IdResolver.' + r);
+                break;
+            case 'sqlresolver':
+                resolvers_in_realm_to_edit.push('useridresolver.SQLIdResolver.IdResolver.' + r);
+                break;
+            case 'passwdresolver':
+                resolvers_in_realm_to_edit.push('useridresolver.PasswdIdResolver.IdResolver.' + r);
+                break;
+        }
+    })).done(function(){
+        g.resolvers_in_realm_to_edit = resolvers_in_realm_to_edit.join(",");
+    }); // end of each
 }
 
 function resolver_set_ldap(obj) {
