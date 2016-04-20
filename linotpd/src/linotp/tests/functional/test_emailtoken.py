@@ -89,6 +89,7 @@ class TestEmailtokenController(TestController):
         self.patch_smtp.stop()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        self.delete_all_token()
         TestController.tearDown(self)
 
     def test_default(self):
@@ -104,7 +105,7 @@ class TestEmailtokenController(TestController):
         self.assertTrue(response_json['result']['value'])
 
 
-    def test_multiple_challenges(self):
+    def test_00000_multiple_challenges(self):
         """
         Test with multiple challenges
 
@@ -129,6 +130,8 @@ class TestEmailtokenController(TestController):
         time.sleep(5)
         # trigger 3rd challenge and store resulting information
         stored_response, stored_otp = self._trigger_challenge()
+        transaction_id = stored_response['detail']['transactionid']
+
         self._assert_email_sent(response)
         time.sleep(5)
         # trigger 4th challenge
@@ -136,10 +139,12 @@ class TestEmailtokenController(TestController):
         self._assert_email_sent(response)
 
         # Send the response with the stored values from the 3rd challenge
-        transaction_id = stored_response['detail']['transactionid']
         # since we are sending the transactionid we only need the otp (without pin)
+        params = {'user': 'root',
+                  'pass': stored_otp,
+                  'transactionid': transaction_id}
         response = self.app.get(url(controller='validate', action='check'),
-                                params={'user': 'root', 'pass': stored_otp, 'transactionid': transaction_id})
+                                    params=params)
         response = response.json
         self.assertTrue(response['result']['status'])
         self.assertTrue(response['result']['value'])

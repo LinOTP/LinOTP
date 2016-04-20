@@ -175,13 +175,14 @@ class TokenClass(object):
         self.related_challenges = []
         self.auth_info = {}
         self.transId = None
+        self.matching_challenges = []
 
     def setType(self, typ):
         typ = u'' + typ
         self.type = typ
         self.token.setType(typ)
 
-    # --------------------------------------------------------------------------
+    #  --------------------------------------------------------------------------
 
     # interface hooks for generation of helper parameters in admin/init
 
@@ -522,6 +523,7 @@ class TokenClass(object):
                 if otp_counter >= 0:
                     matching_challenges.append(matching)
 
+
         return (otp_counter, matching_challenges)
 
     def challenge_janitor(self, matching_challenges, challenges):
@@ -542,22 +544,19 @@ class TokenClass(object):
 
         :return: list of all challenges, which should be deleted
         '''
-        to_be_deleted = []
-        if matching_challenges is not None and len(matching_challenges) > 0:
+
+        to_be_closed = []
+        if matching_challenges:
             match_id = 0
             for match in matching_challenges:
                 match_id = max([match_id, int(match.get('id'))])
 
+            # other, minor challenge will be closes as well
             for ch in challenges:
                 if int(ch.get('id')) < match_id:
-                    to_be_deleted.append(ch)
+                    to_be_closed.append(ch)
 
-        # as well append all out dated challenges
-        for ch in challenges:
-            if self.is_challenge_valid(ch) is False:
-                to_be_deleted.append(ch)
-
-        return to_be_deleted
+        return to_be_closed
 
     def createChallenge(self, transactionid, options=None):
         """
@@ -654,6 +653,7 @@ class TokenClass(object):
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
             user, otp, options=options, challenges=check_challenges)
         if otpcount >= 0:
+            self.matching_challenges = matching_challenges
             self.valid_token.append(self)
             if len(self.invalid_token) > 0:
                 del self.invalid_token[0]

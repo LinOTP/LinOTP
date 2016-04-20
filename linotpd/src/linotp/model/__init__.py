@@ -446,7 +446,7 @@ class Token(object):
 
     def updateType(self, typ):
         # in case the previous type is not the same type
-        # we must reset the counters. 
+        # we must reset the counters.
         # Remark: comparison must be made case insensitiv
         if self.LinOtpTokenType.lower() != typ.lower() :
             self.LinOtpCount = 0
@@ -913,6 +913,24 @@ class Challenge(object):
 
     def getTanStatus(self):
         return (self.received_tan, self.valid_tan)
+
+    # we introduce the challenge status 'closed'. It is set after a first
+    # successful authentication. The status is required, as we don't remove
+    # the challenges after validation anymore
+    def close(self):
+        self.received_tan = True
+        self.received_count = 0
+
+    def is_open(self):
+        ret = True
+
+        # XXX HACK: in the normal workflow received_count is
+        # always greater 1 if received_tan is True. We use
+        # this special state as a marker for the "closed"
+        # state
+        if self.received_tan is True and self.received_count == 0:
+            ret = False
+        return ret
 
     def getTanCount(self):
         return self.received_count

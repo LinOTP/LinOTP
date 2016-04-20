@@ -2011,11 +2011,11 @@ class OcraTest(TestController):
         '''
             test_OCRA_token_falseResponse: multiple open challenges
 
-            1. create an ocra token
+            1. create an ocra2 token
             2. fetch a challange1
-            3. fetch aother challange2
-            3. submit right respnse for challenge 1
-            3. submit right respnse for challenge 2
+            3. fetch another challange2
+            3. submit right response for challenge 1
+            3. submit right response for challenge 2
             5. check status
 
         '''
@@ -2158,6 +2158,7 @@ class OcraTest(TestController):
         '''
         ocrasuite = 'OCRA-1:HOTP-SHA256-8:QA64'
         for test in self.tests:
+
             ocrasuite = test['ocrasuite']
             key = test['keyh']
             bkey = test['key']
@@ -3027,7 +3028,7 @@ class OcraTest(TestController):
         self.removeTokens(serial=ocra.serial)
         return
 
-    def test_QR_rollout_w_3_fails(self):
+    def test_00000_QR_rollout_w_3_fails(self):
         '''
             test_QR_rollout_w_3_fails: rollout a QRToken with 3 fails for OTP and re-rollout
 
@@ -3321,8 +3322,10 @@ class OcraTest(TestController):
         wrongtransid = unicode(int(transid) - 3)
         wrongOtp = self.randOTP(otp)
         response = self.check_otp(wrongtransid, otp)
-        self.assertTrue(wrongtransid in response, response)
-        self.assertTrue("No challenge for transaction" in response, response)
+        # due to information leakage prevention, this call does not return
+        # anything valuable
+        # self.assertTrue(wrongtransid in response, response)
+        # self.assertTrue("No challenge for transaction" in response, response)
 
         # correct response
         response = self.check_otp(transid, otp)

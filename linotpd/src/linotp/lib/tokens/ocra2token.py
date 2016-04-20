@@ -1071,9 +1071,9 @@ class Ocra2TokenClass(TokenClass):
         if 'challenge' in options or 'data' in options:
             challenge_response = False
 
-        ## we leave out the checkOtp, which is done later
-        ## either in checkResponse4Challenge
-        ## or in the check pin+otp
+        # we leave out the checkOtp, which is done later
+        # either in checkResponse4Challenge
+        # or in the check pin+otp
 
         return challenge_response
 
@@ -1131,14 +1131,14 @@ class Ocra2TokenClass(TokenClass):
             counter = self.getOtpCount()
             transids = set()
 
-            ## preserve the provided transaction
+            # preserve the provided transaction
             if 'transactionid' in options:
                 transids.add(options.get('transactionid'))
 
-            ## add all identified challenges by transid
+            # add all identified challenges by transid
             for challenge in challenges:
-                ### checkOtp recieve the challenge in the options
-                ### as transcationid
+                # checkOtp recieve the challenge in the options
+                # as transcationid
                 try:
                     transid = challenge.get('transid', None)
                 except Exception:
@@ -1147,7 +1147,7 @@ class Ocra2TokenClass(TokenClass):
                     mids[transid] = challenge
 
             for transid in mids.keys():
-                ## intentional overwrite the transaction which has been provided
+                # intentional overwrite the transaction which has been provided
                 loptions['transactionid'] = transid
                 otpcount = self.checkOtp(otpval, counter, window, options=loptions)
                 if otpcount >= 0:
@@ -1192,13 +1192,14 @@ class Ocra2TokenClass(TokenClass):
             challs = Challenges.lookup_challenges(serial=serial,
                                                   transid=transid)
             for chall in challs:
-                (rec_tan, rec_valid) = chall.getTanStatus()
-                if rec_tan == False:
-                    challenges.append(chall)
-                elif rec_valid == False:
-                    ## add all touched but failed challenges
-                    if chall.getTanCount() <= maxRequests:
+                if chall.is_open():
+                    (rec_tan, rec_valid) = chall.getTanStatus()
+                    if rec_tan is False:
                         challenges.append(chall)
+                    elif rec_valid is False:
+                        # # add all touched but failed challenges
+                        if chall.getTanCount() <= maxRequests:
+                            challenges.append(chall)
 
         if 'challenge' in options:
             ## direct challenge - there might be addtionalget info like
@@ -1208,25 +1209,26 @@ class Ocra2TokenClass(TokenClass):
         if len(challenges) == 0:
             challs = Challenges.lookup_challenges(serial=serial)
             for chall in challs:
-                (rec_tan, rec_valid) = chall.getTanStatus()
-                if rec_tan == False:
-                    ## add all untouched challenges
-                    challenges.append(chall)
-                elif rec_valid == False:
-                    ## add all touched but failed challenges
-                    if chall.getTanCount() <= maxRequests:
+                if chall.is_open():
+                    (rec_tan, rec_valid) = chall.getTanStatus()
+                    if rec_tan is False:
+                        # # add all untouched challenges
                         challenges.append(chall)
+                    elif rec_valid is False:
+                        # # add all touched but failed challenges
+                        if chall.getTanCount() <= maxRequests:
+                            challenges.append(chall)
 
         if len(challenges) == 0:
             err = 'No open transaction found for token %s' % serial
-            log.error(err)  ##TODO should log and fail!!
-            raise Exception(err)
+            log.info(err)  # TODO should log and fail!!
+            return -1
 
-        ## prepare the challenge check - do the ocra setup
+        # prepare the challenge check - do the ocra setup
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
-        ## set the ocra token pin
+        # set the ocra token pin
         ocraPin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
@@ -1447,7 +1449,7 @@ class Ocra2TokenClass(TokenClass):
             elif rolloutState == '2':
                 max_challenges = int(getFromConfig("OcraMaxChallengeRequests",
                                                    3))
-                if challenge and challenge.received_count >= max_challenges:
+                if challenge and challenge.received_count + 1 >= max_challenges:
                     # after 3 fails in rollout state 2 - reset to rescan
                     self.addToTokenInfo('rollout', '1')
                     log.info('rollout for token %r reset to phase 1:'

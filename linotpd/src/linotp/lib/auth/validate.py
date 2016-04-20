@@ -553,7 +553,8 @@ class ValidationHandler(object):
                 # are there outstanding challenges
                 (_ex_challenges,
                  challenges) = Challenges.get_challenges(token,
-                                                         options=check_options)
+                                                         options=check_options,
+                                                         filter_open=True)
 
                 (ret, reply) = token.check_token(
                     passw, user, options=check_options, challenges=challenges)

@@ -62,6 +62,8 @@ class Challenges(object):
 
         :param serial:   serial of the token
         :param transid:  transaction id, if None, all will be retrieved
+        :param filter_open: check only for those challenges, which have not
+                            been verified before
         :return:         return a list of challenge dict
         """
         log.debug('serial %r: transactionid %r', serial, transid)
@@ -210,6 +212,7 @@ class Challenges(object):
                     challenge_obj.save()
                 else:
                     transactionid = ''
+                    reason = message
 
         except Exception as exce:
             reason = exce
@@ -233,7 +236,7 @@ class Challenges(object):
         if reason is not None:
             message = "%r" % reason
             log.error("Failed to create or init challenge %r " % reason)
-            raise reason
+            raise Exception(reason)
 
         # prepare the response for the user
         if transactionid is not None:
@@ -294,7 +297,7 @@ class Challenges(object):
         return res
 
     @staticmethod
-    def get_challenges(token=None, transid=None, options=None):
+    def get_challenges(token=None, transid=None, options=None, filter_open=False):
 
         if not options:
             options = {}
@@ -303,32 +306,36 @@ class Challenges(object):
         if not transid:
             transid = state
 
-        tokens = []
-        if token:
-            tokens = [token]
-        else:
-            if not transid:
-                raise Exception("unqulified query")
+        if not token and not transid:
+            raise Exception("unqualified query")
 
+        # transaction ids are handled preferred
+        if transid:
             challenges = Challenges.lookup_challenges(transid=transid)
-            for challenge in challenges:
-                serial = challenge.tokenserial
-                token = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
-                tokens.extend(token)
+        elif token:
+            challenges = Challenges.lookup_challenges(serial=token.getSerial())
+        else:
+            challenges = []
 
         expired_challenges = []
         valid_chalenges = []
 
-        for token in tokens:
-            validity = token.get_challenge_validity()
-            challenges = Challenges.lookup_challenges(serial=token.getSerial())
+        for challenge in challenges:
+            # first lookup the validty time of the challenge which is per token
+            serial = challenge.tokenserial
+            tokens = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
+            validity = tokens[0].get_challenge_validity()
 
-            for challenge in challenges:
-                c_start_time = challenge.get('timestamp')
-                c_expire_time = c_start_time + datetime.timedelta(seconds=validity)
-                c_now = datetime.datetime.now()
-                if c_now > c_expire_time:
-                    expired_challenges.append(challenge)
+            c_start_time = challenge.get('timestamp')
+            c_expire_time = c_start_time + datetime.timedelta(seconds=validity)
+            c_now = datetime.datetime.now()
+            if c_now > c_expire_time:
+                expired_challenges.append(challenge)
+            else:
+                # if we want to see only the open challenges, we check so :)
+                if filter_open:
+                    if challenge.is_open():
+                        valid_chalenges.append(challenge)
                 else:
                     valid_chalenges.append(challenge)
 
@@ -376,14 +383,29 @@ class Challenges(object):
 
         # we query for all challenges of the token to identify the valid ones
         (expired_challenges,
-         valid_challenges) = Challenges.get_challenges(token,
-                                                       transid=token.transId)
+         valid_challenges) = Challenges.get_challenges(token)
 
-        # we query for all challenges of the token
-        for challenge in valid_challenges:
+        if success:
+            for challenge in token.matching_challenges:
+                # set the valid received
+                challenge.setTanStatus(received=True, valid=True)
+
+            to_be_closed = token.challenge_janitor(token.matching_challenges,
+                                                   valid_challenges)
+
+            all_challenges = to_be_closed + token.matching_challenges
+
+        else:
+            all_challenges = valid_challenges
+
+        # we query for all challenges of the token and mark them as closed
+        for challenge in all_challenges:
 
             # first preserve the new status
-            challenge.setTanStatus(received=True, valid=success)
+            if success:
+                challenge.close()
+            else:
+                challenge.setTanStatus(received=True, valid=False)
 
             # and calculate the mac for this token data
             challenge_dict = challenge.get_vars(save=True)
