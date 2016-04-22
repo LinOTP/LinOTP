@@ -35,6 +35,7 @@ from Crypto.Cipher import AES
 from Crypto.Hash import HMAC
 from Crypto.Hash import SHA256
 from linotp.lib.policy import getPolicy
+from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
@@ -71,6 +72,7 @@ CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_AUTH = 2
 
 QRTOKEN_VERSION       = 0
+
 
 def transaction_id_to_u64(transaction_id):
     """
@@ -120,7 +122,7 @@ def get_single_auth_policy(policy_name, realms=None):
 
     for realm in realms:
         policy = getPolicy({"scope": "authentication", 'realm': realm})
-        action_value = policy.get(policy_name, {}).get('action')
+        action_value = getPolicyActionValue(policy, policy_name, is_string=True)
         if action_value:
             action_values.append(action_value)
 
@@ -141,14 +143,14 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     """
 
-    def __init__ (self, token_model_object):
+    def __init__(self, token_model_object):
         TokenClass.__init__(self, token_model_object)
         self.setType(u'qr')
         self.mode = ['challenge']
 
 # ------------------------------------------------------------------------------
 
-    def isActive (self):
+    def isActive(self):
 
         # overwritten, because QrTokenClass can receive validate
         # requests in 2 different states: pairing_finished (active
@@ -176,7 +178,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             return True
         else:
             return TokenClass.is_challenge_request(self, passw,
-                                                        user, options)
+                                                   user, options)
 
         return False
 
@@ -214,9 +216,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                             'qrtoken_challenge_callback_url',
                             'qrtoken_challenge_callback_sms']:
 
-
             auth_policies[policy_name] = {'type': 'str'}
-
 
         info['policy'] = {'authentication': auth_policies}
 
@@ -320,7 +320,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
            message != serial:
             raise InvalidFunctionParameter('message', 'message must be equal '
                                            'to serial in pairing mode')
-
 
         if content_type == CONTENT_TYPE_AUTH:
             if '@' not in message:
@@ -535,7 +534,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         param_keys = set(params.keys())
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
                                        'key_size', 'user.login',
-                                       'user.realm', 'session'])
+                                       'user.realm', 'session',
+                                       'resConf', 'user', 'qr'])
 
         # ----------------------------------------------------------------------
 
@@ -641,6 +641,14 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
             self.change_state('pairing_challenge_sent')
 
+        # ----------------------------------------------------------------------
+
+        else:
+
+            # make sure the call aborts, if request
+            # type wasn't recognized
+
+            raise Exception('Unknown request type for token type qr')
 
 # ------------------------------------------------------------------------------
 
@@ -651,7 +659,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         param_keys = set(params.keys())
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
                                        'key_size', 'user.login',
-                                       'user.realm', 'session'])
+                                       'user.realm', 'session',
+                                       'resConf', 'user', 'qr'])
 
         # ----------------------------------------------------------------------
 
@@ -675,6 +684,15 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             info = self.getInfo()
             challenge_url = info.get('pairing_challenge_url')
             response_detail['challenge_url'] = challenge_url
+
+        # ----------------------------------------------------------------------
+
+        else:
+
+            # make sure the call aborts, if request
+            # type wasn't recognized
+
+            raise Exception('Unknown request type for token type qr')
 
         # ----------------------------------------------------------------------
 
@@ -807,6 +825,22 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         data = {'message': message, 'user_sig': user_sig}
 
         return (True, challenge_url, data, {})
+
+    # --------------------------------------------------------------------------
+
+    def getQRImageData(self, response_detail):
+
+        url = None
+        hparam = {}
+
+        if response_detail is not None:
+            if 'pairing_url' in response_detail:
+                url = response_detail.get('pairing_url')
+                hparam['alt'] = url
+
+        return url, hparam
+
+    # --------------------------------------------------------------------------
 
     @property
     def server_hmac_secret(self):

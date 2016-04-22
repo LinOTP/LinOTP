@@ -98,11 +98,56 @@ class TestQRToken(TestController):
 
         return response
 
-    def setUp(self):
+# ------------------------------------------------------------------------------
 
+    def create_dummy_cb_policies(self):
+
+        """ sets some dummy callback policies. callback policies get ignored
+        by the tests, but are nonetheless necessary for the backend """
+
+        # ----------------------------------------------------------------------
+
+        # set pairing callback policies
+
+        params = {'name': 'dummy1',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'qrtoken_pairing_callback_url=foo'}
+
+        self.setPolicy(params)
+
+        params = {'name': 'dummy2',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'qrtoken_pairing_callback_sms=foo'}
+
+        self.setPolicy(params)
+
+        # ----------------------------------------------------------------------
+
+        # set challenge callback policies
+
+        params = {'name': 'dummy3',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'qrtoken_challenge_callback_url=foo'}
+
+        self.setPolicy(params)
+
+        params = {'name': 'dummy4',
+                  'scope': 'authentication',
+                  'realm': '*',
+                  'action': 'qrtoken_challenge_callback_sms=foo'}
+
+        self.setPolicy(params)
+
+# ------------------------------------------------------------------------------
+
+    def setUp(self):
         super(TestQRToken, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
+        self.create_dummy_cb_policies()
         self.secret_key = os.urandom(32)
         self.public_key = calc_dh_base(self.secret_key)
         self.tokens = defaultdict(dict)
@@ -180,17 +225,17 @@ class TestQRToken(TestController):
 
         # set pairing callback policies
 
-        params = {'name': 'qrtoken_pairing_callback_url',
+        params = {'name': 'dummy1',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': '/foo/bar/url'}
+                  'action': 'qrtoken_pairing_callback_url=/foo/bar/url, '}
 
         self.setPolicy(params)
 
-        params = {'name': 'qrtoken_pairing_callback_sms',
+        params = {'name': 'dummy2',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': '1234'}
+                  'action': 'qrtoken_pairing_callback_sms=1234'}
 
         self.setPolicy(params)
 
@@ -198,17 +243,17 @@ class TestQRToken(TestController):
 
         # set challenge callback policies
 
-        params = {'name': 'qrtoken_challenge_callback_url',
+        params = {'name': 'dummy3',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': '/bar/baz/url'}
+                  'action': 'qrtoken_challenge_callback_url=/bar/baz/url'}
 
         self.setPolicy(params)
 
-        params = {'name': 'qrtoken_challenge_callback_sms',
+        params = {'name': 'dummy4',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': '5678'}
+                  'action': 'qrtoken_challenge_callback_sms=5678'}
 
         self.setPolicy(params)
 
