@@ -535,7 +535,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
                                        'key_size', 'user.login',
                                        'user.realm', 'session',
-                                       'resConf', 'user', 'qr'])
+                                       'resConf', 'user', 'realm', 'qr'])
 
         # ----------------------------------------------------------------------
 
@@ -660,7 +660,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
                                        'key_size', 'user.login',
                                        'user.realm', 'session',
-                                       'resConf', 'user', 'qr'])
+                                       'resConf', 'user', 'realm', 'qr'])
 
         # ----------------------------------------------------------------------
 
