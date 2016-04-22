@@ -726,8 +726,10 @@ def get_public_keys():
             key_text = readPublicKey(key_file)
             if key_text and key_text not in pubKeys.values():
                     idx = os.path.split(key_file)[-1]
-                    idx, _sep, _rest = idx.rpartition(".pem")
-                    idx, _sep, _rest = idx.rpartition("_pub")
+                    if idx[-4:] == '.pem':
+                        idx, _sep, _rest = idx.rpartition(".pem")
+                    if idx[-4:] == '_pub':
+                        idx, _sep, _rest = idx.rpartition("_pub")
                     pubKeys[idx] = key_text
             else:
                 log.error("[get_public_keys] public key file is not valid"
