@@ -47,6 +47,8 @@ from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
 from linotp.lib.config import getGlobalObject
+from linotp.lib.crypt import init_qrtoken_secret_key
+
 
 from linotp.model import meta
 from linotp.lib.openid import SQLStorage
@@ -58,7 +60,6 @@ from linotp.lib.context import request_context_safety
 # would otherwise show session.close() as error
 import linotp.model
 Session = linotp.model.Session
-
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
@@ -310,6 +311,11 @@ class BaseController(WSGIController):
             raise exx
 
         l_config = initLinotpConfig()
+
+        # initialize the elliptic curve secret + public key for the qr token
+        linotpQrTokenSecretKey = l_config.get('QrTokenSecretKey', False)
+        if not linotpQrTokenSecretKey:
+            init_qrtoken_secret_key(l_config)
 
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
