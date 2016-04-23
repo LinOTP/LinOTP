@@ -198,13 +198,10 @@ class TestEmailtokenController(TestController):
         of view they behave in the same way.
         """
         # Get existing challenges (to verify later that no new ones were added)
-        existing_challenges = {}
-        try:
-            response_string = self.make_admin_request('checkstatus', {'user': 'root'})
-            response = response_string.json
-            existing_challenges = response['result']['value']['values'][self.token_serial]['challenges']
-        except KeyError:
-            pass  # No challenges exist for this token
+        response_string = self.make_admin_request('checkstatus', {'user': 'root'})
+        response = response_string.json
+        values = response['result']['value']['values']
+        existing_challenges = values.get(self.token_serial, {}).get('challenges', {})
 
         # Trigger SMTPRecipientsRefused exception when sendmail is called
         exception_to_raise = smtplib.SMTPRecipientsRefused(
@@ -226,7 +223,8 @@ class TestEmailtokenController(TestController):
         # Get new challenges
         response_string = self.make_admin_request('checkstatus', {'user': 'root'})
         response = response_string.json
-        new_challenges = response['result']['value']['values'][self.token_serial]['challenges']
+        values = response['result']['value']['values']
+        new_challenges = values.get(self.token_serial, {}).get('challenges', {})
 
         # Verify that no challenge was created (the exception should have prevented it)
         self.assertTrue(existing_challenges == new_challenges,
