@@ -343,6 +343,8 @@ class UserserviceController(BaseController):
                 realm = getDefaultRealm()
                 user = User(login, realm)
 
+            self.authUser = user
+
             uid = "%s@%s" % (user.login, user.realm)
 
             if self.otpLogin:
@@ -352,9 +354,13 @@ class UserserviceController(BaseController):
 
             if res:
                 log.debug("Successfully authenticated user %s:" % uid)
-                cookie = create_auth_cookie(config, user, self.client)
-                response.set_cookie('userauthcookie',
-                                    cookie, max_age=180 * 24 * 360)
+
+                (cookie, expires,
+                 expiration) = create_auth_cookie(config, user, self.client)
+
+                response.set_cookie('userauthcookie', cookie, expires=expires)
+                c.audit['action_detail'] = "expires: %s " % expiration
+
                 ok = uid
             else:
                 log.info("User %s failed to authenticate!" % uid)

@@ -27,6 +27,7 @@
 
 import binascii
 import os
+import datetime
 
 try:
     import json
@@ -47,6 +48,7 @@ from linotp.lib.policy import (get_client_policy,
 
 from linotp.lib.util import (get_version,
                              get_copyright_info,
+                             parse_duration
                              )
 
 from linotp.lib.realm import getRealms
@@ -82,6 +84,10 @@ log = logging.getLogger(__name__)
 
 # const for encryption and iv
 SECRET_LEN = 32
+
+# const - timeformat used in session cookie
+TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 def get_userinfo(login):
 
@@ -133,15 +139,30 @@ def _get_realms_():
             realms = getRealms(def_realm)
     return realms
 
+
 def create_auth_cookie(config, user, client):
     """
     create and auth_cookie value from the authenticated user and client
 
     :param user: the authenticated user
     :param client: the requesting client
-    :return: the encrypted cookie value
+    :return: the encrypted cookie value, the expires datetime object and
+             the expiration time as string
     """
+
     secret = get_cookie_secret(config)
+    expiry = get_cookie_expiry(config)
+
+    if expiry:
+        delta = parse_duration(expiry)
+    else:
+        # default should be at max 1 hour
+        delta = datetime.timedelta(seconds=1 * 60 * 60)
+
+    now = datetime.datetime.now()
+    expires = now + delta
+    expiration = expires.strftime(TIMEFORMAT)
+
     key = binascii.unhexlify(secret)
 
     username = "%r" % user
@@ -149,13 +170,15 @@ def create_auth_cookie(config, user, client):
         username = "%r@%r" % (user.login, user.realm)
     iv = os.urandom(SECRET_LEN)
     try:
-        enc = aes_encrypt_data(username + "|" + client, key, iv)
+        enc = aes_encrypt_data(username + "|" + client + '|' + expiration,
+                               key, iv)
     except Exception as exx:
         log.exception("Failed to create encrypted cookie %r" % exx)
         raise exx
 
     auth_cookie = "%s%s" % (binascii.hexlify(iv), binascii.hexlify(enc))
-    return auth_cookie
+    return auth_cookie, expires, expiration
+
 
 def check_auth_cookie(config, cookie, user, client):
     """
@@ -174,9 +197,17 @@ def check_auth_cookie(config, cookie, user, client):
         iv = cookie[:2 * SECRET_LEN]
         enc = cookie[2 * SECRET_LEN:]
         auth_cookie_val = aes_decrypt_data(binascii.unhexlify(enc),
-                                       key,
-                                       binascii.unhexlify(iv))
-        cookie_user, cookie_client = auth_cookie_val.split('|')
+                                           key,
+                                           binascii.unhexlify(iv))
+        cookie_user, cookie_client, expiration = auth_cookie_val.split('|')
+
+        # handle session expiration
+        now = datetime.datetime.now()
+        expires = datetime.datetime.strptime(expiration, TIMEFORMAT)
+        if now > expires:
+            log.info("session is expired")
+            return False
+
     except Exception as exx:
         log.exception("Failed to decode cookie - session key seems to be old")
         return False
@@ -187,6 +218,7 @@ def check_auth_cookie(config, cookie, user, client):
 
     return (username == cookie_user and cookie_client == client)
 
+
 def get_cookie_secret(config):
     """
     get the cookie encryption secret from the repoze config
@@ -196,11 +228,24 @@ def get_cookie_secret(config):
     :return: return the cookie encryption secret
     """
 
-    if hasattr(config, 'selfservice_auth_secret') == False:
+    if not config.get('selfservice_auth_secret'):
         secret = binascii.hexlify(os.urandom(SECRET_LEN))
-        setattr(config, 'selfservice_auth_secret', secret)
+        config['selfservice_auth_secret'] = secret
 
-    return config.selfservice_auth_secret
+    return config.get('selfservice_auth_secret')
+
+
+def get_cookie_expiry(config):
+    """
+    get the cookie encryption expiry from the repoze config
+    - if the selfservice is dropped from running locally, this
+      configuration option might not exist anymore
+
+    :return: return the cookie encryption expiry
+    """
+
+    return config.get('selfservice.auth_expiry', False)
+
 
 def check_userservice_session(request, config, user, client):
     """
