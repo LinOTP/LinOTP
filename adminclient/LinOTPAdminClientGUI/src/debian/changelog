@@ -1,9 +1,9 @@
-linotp-adminclient-gui (2.8.1.2~rc1-1) jessie; urgency=low
+linotp-adminclient-gui (2.8.1.2~rc2-1) jessie; urgency=low
 
   Bug Fixes:
   * Fix listing users in useridresolver
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Apr 2016 08:52:30 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 25 Apr 2016 15:19:14 +0200
 
 linotp-adminclient-gui (2.8.1-1) jessie; urgency=low
 
