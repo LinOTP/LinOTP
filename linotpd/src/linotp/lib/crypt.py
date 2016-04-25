@@ -38,12 +38,16 @@ import binascii
 import os
 import stat
 
+from pysodium import crypto_scalarmult_curve25519 as calc_dh
+from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
+
 ''' for the hmac algo, we have to check the python version '''
 import sys
 (ma, mi, _, _, _,) = sys.version_info
 pver = float(int(ma) + int(mi) * 0.1)
 
 import ctypes
+import linotp
 
 from pylons.configuration import config as env
 from pylons import tmpl_context as c
@@ -197,7 +201,7 @@ class SecretObj(object):
             del akey
 
     def _clearKey_(self, preserve=False):
-        if preserve == False:
+        if preserve is False:
 
             if not hasattr(self, 'bkey'):
                 self.bkey = None
@@ -796,65 +800,78 @@ def zerome(bufferObject):
     # print repr(bufferObject)
     return
 
-#-------------------------------------------------------------------------------
+
+def init_qrtoken_secret_key(config):
+    """
+    create an elliptic curve secret + public key pair and
+    store it in the linotp config
+    """
+
+    import linotp.lib.config
+    secret_key = os.urandom(32)
+    secret_key_entry = 'qrtokensk:' + base64.b64encode(secret_key)
+
+    linotp.lib.config.storeConfig(key='QrTokenSecretKey',
+                                  val=secret_key_entry,
+                                  typ='password')
+
+    public_key = calc_dh_base(secret_key)
+
+    public_key_entry = 'qrtokenpk:' + base64.b64encode(public_key)
+
+    linotp.lib.config.storeConfig(key='QrTokenPublicKey',
+                                  val=public_key_entry)
+
+    return
+
 
 def get_qrtoken_secret_key():
-
     """
-    reads the file defined in the config entry 'linotp.qrtoken_secret_key_file',
+    reads the config entry 'enclinotp.QrTokenSecretKey',
     extracts and decodes the secret key and returns it as a 32 bytes.
     """
+    import linotp.lib.config
 
-    sk_file = config.get('linotpQrTokenSecretKeyFile')
+    secret_key_b64 = linotp.lib.config.getFromConfig('enclinotp.'
+                                                     'QrTokenSecretKey')
 
-    if sk_file is None:
-        raise ConfigAdminError('Missing entry linotpQrTokenSecretKeyFile')
+    if not secret_key_b64:
+        raise ConfigAdminError('Missing entry QrTokenSecretKey')
 
-    with open(sk_file) as f:
+    if not secret_key_b64.startswith('qrtokensk:'):
+        raise ValidateError('Curve 25519 / QR secret key has an invalid '
+                            'format. Must begin with \'qrtokensk:\'')
 
-        content = f.read()
+    secret_key = base64.b64decode(secret_key_b64[len('qrtokensk:'):])
+    if len(secret_key) != 32:
+        raise ValidateError('Curve 25519 / QR public key has an invalid '
+                            'format. Key must be 32 bytes long')
 
-        if not content.startswith('qrtokensk:'):
-            raise ValidateError('QR secret key has an invalid '
-                                'format. Must begin with \'qrtokensk:\'')
-
-        b64_encoded_secret_key = content[len('qrtokensk:'):]
-        secret_key = base64.b64decode(b64_encoded_secret_key)
-
-        if len(secret_key) != 32:
-            raise ValidateError('QR secret key has an invalid '
-                                'format. Key must be 32 bytes long')
     return secret_key
 
-#-------------------------------------------------------------------------------
 
 def get_qrtoken_public_key():
-
     """
-    reads the file defined in the config entry 'linotp.qrtoken_public_key_file',
+    reads the config entry 'linotp.QrTokenPublicKey',
     extracts and decodes the public key and returns it as a 32 bytes.
     """
+    import linotp.lib.config
 
-    pk_file = config.get('linotpQrTokenPublicKeyFile')
+    public_key_b64 = linotp.lib.config.getFromConfig('QrTokenPublicKey')
+    if not public_key_b64:
+        raise ConfigAdminError('Missing entry QrTokenPublicKey')
 
-    if pk_file is None:
-        raise ConfigAdminError('Missing entry linotpQrTokenPublicKeyFile')
+    if not public_key_b64.startswith('qrtokenpk:'):
+        raise ValidateError('Curve 25519 / QR secret key has an invalid '
+                            'format. Must begin with \'qrtokenpk:\'')
 
-    with open(pk_file) as f:
+    public_key = base64.b64decode(public_key_b64[len('qrtokenpk:'):])
+    if len(public_key) != 32:
+        raise ValidateError('Curve 25519 / QR public key has an invalid '
+                            'format. Key must be 32 bytes long')
 
-        content = f.read()
-
-        if not content.startswith('qrtokenpk:'):
-            raise ValidateError('Curve 25519 / QR public key has an invalid '
-                                'format. Must begin with \'qrtokenpk:\'')
-
-        b64_encoded_public_key = content[len('qrtokenpk:'):]
-        public_key = base64.b64decode(b64_encoded_public_key)
-
-        if len(public_key) != 32:
-            raise ValidateError('Curve 25519 / QR public key has an invalid '
-                                'format. Key must be 32 bytes long')
     return public_key
+
 
 def extract_tan(signature, digits):
 
@@ -873,18 +890,19 @@ def extract_tan(signature, digits):
     tan = tan % 10**digits
     return tan
 
-#-------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
 
 def encode_base64_urlsafe(data):
     """ encodes a string with urlsafe base64 and removes its padding """
     return base64.urlsafe_b64encode(data).decode('utf8').rstrip('=')
 
+
 def decode_base64_urlsafe(data):
     """ decodes a string encoded with :func encode_base64_urlsafe """
     return base64.urlsafe_b64decode(data.encode() + (-len(data) % 4)*b'=')
 
-#-------------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 
-
-##eof##########################################################################
+# eof #########################################################################
