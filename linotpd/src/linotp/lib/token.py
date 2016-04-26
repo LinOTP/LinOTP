@@ -559,7 +559,8 @@ def getAllTokenUsers():
     return users
 
 
-def getTokens4UserOrSerial(user=None, serial=None, _class=True):
+def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
+                           _class=True):
     tokenList = []
     tokenCList = []
     tok = None
@@ -569,19 +570,29 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
         return tokenList
 
     if (serial is not None):
-        log.debug("[getTokens4UserOrSerial] getting token object "
-                                                "with serial: %r" % serial)
+        log.debug("[getTokens4UserOrSerial] getting"
+                  " token object with serial: %r" % serial)
         #  SAWarning of non unicode type
         serial = linotp.lib.crypt.uencode(serial)
+        sconditions = ()
+        if token_type:
+            sconditions += (and_(func.lower(Token.LinOtpTokenType) ==
+                                 token_type.lower()),)
 
-        sqlQuery = Session.query(Token).filter(
-                            Token.LinOtpTokenSerialnumber == serial)
+        if '*' in serial:
+            serial = serial.replace('*', '%')
+            sconditions += (and_(Token.LinOtpTokenSerialnumber.like(serial)),)
+        else:
+            sconditions += (and_(Token.LinOtpTokenSerialnumber == serial),)
+
+        # finally run the query on token serial
+        condition = and_(*sconditions)
+        sqlQuery = Session.query(Token).filter(condition)
 
         for token in sqlQuery:
             log.debug("[getTokens4UserOrSerial] user "
                       "serial (serial): %r" % token.LinOtpTokenSerialnumber)
             tokenList.append(token)
-
 
     if user is not None:
         log.debug("[getTokens4UserOrSerial] getting token object 4 user: %r"
@@ -599,14 +610,22 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
             # Remark: when the token is loaded the response to the
             # resolver class is adjusted
 
+            uconditions = ()
+
             resolverClass = resolverClass.replace('useridresolveree.',
                                                   'useridresolver.')
             resolverClass = resolverClass.replace('useridresolver.',
                                                   'useridresolver%.')
 
-            sqlQuery = Session.query(model.Token).filter(
-                        model.Token.LinOtpUserid == uid).filter(
-                        model.Token.LinOtpIdResClass.like(resolverClass))
+            uconditions += (and_(model.Token.LinOtpUserid == uid),)
+            uconditions += (and_(model.Token.LinOtpIdResClass.like(resolverClass)),)
+
+            if token_type:
+                uconditions += (and_(func.lower(Token.LinOtpTokenType) ==
+                                     token_type.lower()),)
+
+            condition = and_(*uconditions)
+            sqlQuery = Session.query(Token).filter(condition)
 
             for token in sqlQuery:
                 # we have to check that the token is in the same realm as the user
