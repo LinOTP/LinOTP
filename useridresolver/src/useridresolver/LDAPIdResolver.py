@@ -305,7 +305,7 @@ class IdResolver (UserIdResolver):
         except ldap.LDAPError as err:
             status = "error"
             log.exception("[testconnection] LDAP Error: %r", err)
-            return (status, str(e))
+            return (status, str(err))
 
         finally:
             # unbind
