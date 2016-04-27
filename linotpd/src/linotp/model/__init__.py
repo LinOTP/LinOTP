@@ -988,10 +988,80 @@ class Challenge(object):
 
     __str__ = __unicode__
 
+#############################################################################
+"""
+Reporting Table:
+"""
+
+reporting_table =\
+    sa.Table('Reporting', meta.metadata,
+             sa.Column('id', sa.types.Integer(),
+                       sa.Sequence('token_seq_id', optional=True),
+                       primary_key=True, nullable=False),
+             sa.Column(timestamp_column, sa.types.DateTime, default=datetime.now()),
+             sa.Column('event', sa.types.Unicode(250), default=u''),
+             sa.Column('realm', sa.types.Unicode(250), default=u''),
+             sa.Column('parameter', sa.types.Unicode(250), default=u''),
+             sa.Column('value', sa.types.Unicode(250),  default=u''),
+             sa.Column('count', sa.types.Integer(), default=0),
+             sa.Column('detail', sa.types.Unicode(2000), default=u''),
+             implicit_returning=implicit_returning,)
+
+REPORTING_ENCODE = []
 
 
+class Reporting(object):
+    def __init__(self, event, realm, parameter=u'', value=u'', count=0,
+                 detail=u'', timestamp=None):
 
+        self.event = unicode(event)
+        self.realm = unicode(realm)
+        self.parameter = unicode(parameter)
+        self.value = unicode(value)
+        self.count = count
+        self.detail = unicode(detail)
+        self.timestamp = datetime.now()
+        if timestamp:
+            self.timestamp = timestamp
 
+        log.debug('__init__ reporting table done')
+
+    def __setattr__(self, name, value):
+        """
+        to support unicode on all backends, we use the json encoder with
+        the ASCII encode default
+
+        :param name: db column name or class member
+        :param value: the corresponding value
+
+        :return: - nothing -
+        """
+        if name in REPORTING_ENCODE:
+            # # encode data
+            if value:
+                value = linotp.lib.crypt.uencode(value)
+        super(Reporting, self).__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        """
+        to support unicode on all backends, we use the json decoder with
+        the ASCII decode default
+
+        :param name: db column name or class member
+
+        :return: the corresponding value
+        """
+        # Default behaviour
+        value = object.__getattribute__(self, name)
+        if name in REPORTING_ENCODE:
+            if value:
+                value = linotp.lib.crypt.udecode(value)
+            else:
+                value = ""
+
+        return value
+
+#############################################################################
 
 log.debug('calling ORM Mapper')
 
@@ -1013,7 +1083,7 @@ orm.mapper(Token, token_table, properties={
 orm.mapper(Realm, realm_table)
 orm.mapper(TokenRealm, tokenrealm_table)
 orm.mapper(Config, config_table)
-
+orm.mapper(Reporting, reporting_table)
 
 # # for oracle and the SQLAlchemy 0.7 we need a mapping of columns
 # # due to reserved keywords session and timestamp

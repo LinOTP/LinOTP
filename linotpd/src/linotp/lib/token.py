@@ -178,6 +178,7 @@ class TokenHandler(object):
         realms = getRealms4Token(user, tokenrealm)
         token.setRealms(realms)
 
+
         #  on behalf of the type, the class is created
         tokenObj = createTokenClassObject(token, typ)
 

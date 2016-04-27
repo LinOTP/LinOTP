@@ -93,6 +93,7 @@ from linotp.lib.ImportOTP import parseYubicoCSV
 
 from linotp.lib.useriterator import iterate_users
 from linotp.lib.context import request_context
+from linotp.lib.reporting import token_reporting
 
 import os
 
@@ -164,6 +165,17 @@ class AdminController(BaseController):
                     serial = request.params['serial']
                     c.audit['serial'] = serial
                     c.audit['token_type'] = getTokenType(serial)
+            if action in ['assign', 'unassign', 'enable', 'disable', 'init',
+                          'loadtokens', 'copyTokenUser', 'losttoken',
+                          'remove', 'tokenrealm']:
+                event = 'token_' + action
+
+                if c.audit.get('source_realm'):
+                    source_realms = c.audit.get('source_realm')
+                    token_reporting(event, source_realms)
+
+                target_realms = c.audit.get('realm')
+                token_reporting(event, target_realms)
 
             audit.log(c.audit)
             Session.commit()
@@ -177,7 +189,6 @@ class AdminController(BaseController):
         finally:
             Session.close()
             log.debug("[__after__] done")
-
 
     def logout(self):
         # see http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
@@ -501,11 +512,11 @@ class AdminController(BaseController):
             user = getUserFromParam(param, optional)
 
             # check admin authorization
-            checkPolicyPre('admin', 'enable', param , user=user)
+            checkPolicyPre('admin', 'enable', param, user=user)
 
             th = TokenHandler()
             log.info("[enable] enable token with serial %s for user %s@%s.",
-                        serial, user.login, user.realm)
+                     serial, user.login, user.realm)
             ret = th.enableToken(True, user, serial)
 
             c.audit['success'] = ret
@@ -680,6 +691,7 @@ class AdminController(BaseController):
                 opt_result_dict['message'] = "No token with serial %s" % serial
             elif ret == 0 and user and not user.isEmpty():
                 opt_result_dict['message'] = "No tokens for this user"
+
 
             Session.commit()
             return sendResult(response, ret, opt=opt_result_dict)
@@ -920,7 +932,6 @@ class AdminController(BaseController):
 
             logTokenNum(c.audit)
             c.audit['success'] = ret
-
             # ------------------------------------------------------------------
 
             checkPolicyPost('admin', 'init', params, user=user)
@@ -2490,6 +2501,7 @@ class AdminController(BaseController):
         finally:
             Session.close()
             log.debug('[ocra/checkstatus] done')
+
 
 
 #eof###########################################################################
