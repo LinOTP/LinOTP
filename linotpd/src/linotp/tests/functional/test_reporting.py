@@ -43,6 +43,8 @@ log = logging.getLogger(__name__)
 class TestReportingController(TestController):
 
     def setUp(self):
+        self.delete_all_policies()
+        self.delete_reports()
         super(TestReportingController, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
@@ -52,8 +54,6 @@ class TestReportingController(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        self.delete_all_policies()
-        self.delete_reports()
         super(TestReportingController, self).tearDown()
 
 # ------------------------------------------------------------------------------
@@ -329,9 +329,11 @@ class TestReportingController(TestController):
         response = self.make_authenticated_request(
             controller='reporting',
             action='maximum',
-            params={'realms': 'mydefrealm'})
+            params={'realms': 'mydefrealm, mymixrealm'})
 
         resp = json.loads(response.body)
         values = resp.get('result')
         self.assertEqual(values.get('status'), True, response)
         self.assertEqual(values.get('value').get('mydefrealm'), 4, response)
+        self.assertEqual(values.get('value').get('mymixrealm'), 1, response)
+

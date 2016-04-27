@@ -76,15 +76,9 @@ def get_max(realm, status='active'):
     :return: maximum number of reported tokens with given status in realm
     """
 
-    subq = Session.query(
+    max = Session.query(
         func.max(Reporting.count))\
         .filter(and_(Reporting.parameter == status, Reporting.realm == realm))
-
-    max = Session.query(Reporting.count)\
-        .filter(and_(
-        Reporting.parameter == status,
-        Reporting.realm == realm,
-        Reporting.count == subq))
 
     result = max.first()[0]
 

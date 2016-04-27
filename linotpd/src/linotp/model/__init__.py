@@ -1005,6 +1005,8 @@ reporting_table =\
              sa.Column('value', sa.types.Unicode(250),  default=u''),
              sa.Column('count', sa.types.Integer(), default=0),
              sa.Column('detail', sa.types.Unicode(2000), default=u''),
+             sa.Column('session', sa.types.Unicode(250), default=u''),
+             sa.Column('description', sa.types.Unicode(2000), default=u''),
              implicit_returning=implicit_returning,)
 
 REPORTING_ENCODE = []
@@ -1012,7 +1014,7 @@ REPORTING_ENCODE = []
 
 class Reporting(object):
     def __init__(self, event, realm, parameter=u'', value=u'', count=0,
-                 detail=u'', timestamp=None):
+                 detail=u'', session=u'', description=u'', timestamp=None):
 
         self.event = unicode(event)
         self.realm = unicode(realm)

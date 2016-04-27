@@ -277,7 +277,7 @@ class UserserviceController(BaseController):
 
                 if action in ['assign', 'unassign', 'enable', 'disable',
                               'enroll', 'delete', 'activateocratoken',
-                              ]:
+                              'finishocra2token', 'finishocratoken']:
                     event = 'token_' + action
 
                     if c.audit.get('source_realm'):

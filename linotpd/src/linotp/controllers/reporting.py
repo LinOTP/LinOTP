@@ -147,7 +147,6 @@ class ReportingController(BaseController):
             realm_whitelist = monit_handler.get_allowed_realms(
                 action='report_maximum', scope='admin')
 
-
             realms = realm_whitelist
 
             # support for empty realms or no realms by realm = *
