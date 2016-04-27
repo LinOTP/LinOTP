@@ -2002,18 +2002,57 @@ function parsePolicyImport(xml, textStatus) {
     hide_waiting();
 };
 
-function parseLicense(xhdr, textStatus){
-    // calback to handle response when license has been submitted
-    var resp = xhdr.responseText;
-    var obj = jQuery.parseJSON(resp);
-    var status = obj.result.status;
+// calback to handle response when license has been submitted
+function parseLicense(xml_response, textStatus, xhr){
+    var xml = null;
+
+    if(testXMLObject(xml_response)){
+        xml = xml_response;
+    }
+    else{
+        try{ // try for activeX errors
+            if( window.DOMParser ){ // good browser
+                var parser = new DOMParser();
+                xml = parser.parseFromString(xhr.responseText,"text/xml");
+            }
+            else{ // Internet Explorer
+                xml = new ActiveXObject("Microsoft.XMLDOM");
+                xml.async = "false";
+                if(typeof xhr.responseXML.xml !== 'undefined'){
+                    xml.loadXML(xhr.responseXML.xml);
+                }
+                else{ // IE 9
+                    alert(xhr.responseXML.activeElement.innerText);
+                    xmlstr = xhr.responseXML.activeElement.innerText.replace(/[\n\r]-?/g, '');
+                    xml.loadXML(xmlstr);
+                }
+            }
+            if(!testXMLObject(xml)){
+                throw "Error: xml could not be parsed";
+            }
+        }
+        catch(e){ // if nothing helped
+            xml = null;
+        }
+    }
+
+    var status = $(xml).find('status').text();
+    var value = $(xml).find('value').text();
+    var xml_message = $(xml).find('message').text();
+    var reason = $(xml).find('reason').text();
 
     var error_intro = i18n.gettext('The upload of your support and subscription license failed: ');
     var dialog_title = i18n.gettext('License upload');
 
     // error occured
-    if ( status === false) {
-        var message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.result.error.message);
+    if(xml == null){
+        var status_unkown = i18n.gettext('License uploaded');
+        alert_info_text({'text': status_unkown,
+                     'is_escaped': true
+                     });
+    }
+    else if(status.toLowerCase() == "false") {
+        var message = i18n.gettext('Invalid License') + ': <br>' + escape(xml_message);
         alert_info_text({'text': message,
                          'type': ERROR,
                          'is_escaped': true
@@ -2023,9 +2062,8 @@ function parseLicense(xhdr, textStatus){
                    'text': error_intro + message,
                    'is_escaped': true});
     } else {
-        value = obj.result.value;
-        if (value === false){
-            message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.detail.reason);
+        if (value.toLowerCase() == "false"){
+            var message = i18n.gettext('Invalid License') + ': <br>' + escape(reason);
             alert_info_text({'text': message,
                              'type': ERROR,
                              'is_escaped': true});
@@ -2040,6 +2078,20 @@ function parseLicense(xhdr, textStatus){
     }
     hide_waiting();
 };
+
+function testXMLObject(xml){
+    try{
+        if($(xml).find('version').text() == ""){
+            throw "Error: xml needs reparsing";
+        }
+        else{
+            state = "successful"
+            return true;
+        }
+    }catch(e){
+        return false;
+    }
+}
 
 function import_policy() {
     show_waiting();

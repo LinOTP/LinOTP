@@ -386,6 +386,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Please choose your support and subscription file")}:</p>
         <p><input name="license" id="license_file" type="file" size="30" maxlength="100000" accept="text/*">
+        <input type="hidden" name="format" value="xml">
         </p>
     </form>
 </div>
