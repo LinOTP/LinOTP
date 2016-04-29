@@ -5361,6 +5361,25 @@ function view_policy() {
         get_selected();
     });
 
+    sortChildsOfElement("#policy_scope_combo");
+}
+
+function sortChildsOfElement(elem){
+    $(elem).each(function(){
+        var items = $(this).children().get();
+        items.sort(function(a,b){
+          var keyA = $(a).text();
+          var keyB = $(b).text();
+
+          if (keyA < keyB) return -1;
+          if (keyA > keyB) return 1;
+          return 0;
+        });
+        var parent = $(elem);
+        $.each(items, function(i, child){
+          parent.append(child);
+        });
+    })
 }
 
 function view_token() {
