@@ -33,12 +33,15 @@ import logging
 from datetime import datetime
 
 from pylons import request, response, config, tmpl_context as c
-from pylons.i18n.translation import _
 from linotp.lib.base import BaseController
 from linotp.lib.context import request_context
-from linotp.lib.monitoring import MonitorHandler
-from linotp.lib.policy import (PolicyException,
-                               checkAuthorisation)
+
+from linotp.lib.policy import (checkAuthorisation,
+                               PolicyException,
+                               getAdminPolicies)
+
+from linotp.lib.realm import match_realms
+
 from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.lib.reporting import get_max
@@ -143,33 +146,17 @@ class ReportingController(BaseController):
             if status != ['total']:
                 status = status.split(',')
 
+            realm_whitelist = []
+            policies = getAdminPolicies('tokens', scope='monitoring')
 
-            monit_handler = MonitorHandler()
-            realm_whitelist = monit_handler.get_allowed_realms(
-                action='report_maximum', scope='admin')
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
 
-            realms = realm_whitelist
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
 
-            # support for empty realms or no realms by realm = *
-            if '*' in request_realms:
-                realms = realm_whitelist
-                realms.append('/:no realm:/')
-            # other cases, we iterate through the realm list
-            elif len(request_realms) > 0 and not (request_realms == ['']):
-                realms = []
-                invalid_realms = []
-                for search_realm in request_realms:
-                    search_realm = search_realm.strip()
-                    if search_realm in realm_whitelist:
-                        realms.append(search_realm)
-                    elif search_realm == '/:no realm:/':
-                        realms.append(search_realm)
-                    else:
-                        invalid_realms.append(search_realm)
-                if not realms and invalid_realms:
-                    raise PolicyException(_(
-                        'You do not have the rights to view reports of these '
-                        'realms: %r. Check the policies!') % invalid_realms)
+            realms = match_realms(request_realms, realm_whitelist)
 
             for realm in realms:
                 for stat in status:

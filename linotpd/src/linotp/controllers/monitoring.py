@@ -39,12 +39,14 @@ from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 from linotp.lib.user import (getUserFromRequest, )
 
+from linotp.lib.realm import match_realms
 from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.model.meta import Session
 
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy import checkAuthorisation
+from linotp.lib.policy import getAdminPolicies
 
 from linotp.lib.support import InvalidLicenseException, \
                                getSupportLicenseInfo, verifyLicenseInfo
@@ -148,36 +150,21 @@ class MonitoringController(BaseController):
             request_realms = param.get('realms', '').split(',')
 
             monit_handler = MonitorHandler()
-            realm_whitelist = monit_handler.get_allowed_realms(action='tokens')
+            realm_whitelist = []
 
-            # by default we show all allowed realms
-            realms = realm_whitelist
+            policies = getAdminPolicies('tokens', scope='monitoring')
 
-            # support for empty realms or no realms by realm = *
-            if '*' in request_realms:
-                realms = realm_whitelist
-                realms.append('/:no realm:/')
-            # other cases, we iterate through the realm list
-            elif len(request_realms) > 0 and not (request_realms == ['']):
-                realms = []
-                invalid_realms = []
-                for search_realm in request_realms:
-                    search_realm = search_realm.strip()
-                    if search_realm in realm_whitelist:
-                        realms.append(search_realm)
-                    elif search_realm == '/:no realm:/':
-                        realms.append(search_realm)
-                    else:
-                        invalid_realms.append(search_realm)
-                if not realms and invalid_realms:
-                    raise PolicyException(_('You do not have the rights to '
-                                            'monitor these realms: %r. '
-                                            'Check the policies!')
-                                          % invalid_realms)
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
+
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
+
+            realms = match_realms(request_realms, realm_whitelist)
 
             realm_info = {}
             for a_realm in realms:
-
                 token_count = monit_handler.token_count([a_realm],
                                                         status)
                 realm_info[a_realm] = token_count
@@ -353,35 +340,21 @@ class MonitoringController(BaseController):
             request_realms = param.get('realms', '').split(',')
 
             monit_handler = MonitorHandler()
-            realm_whitelist = monit_handler.get_allowed_realms(action='userinfo')
 
-            # by default we show all allowed realms
-            realms = realm_whitelist
+            policies = getAdminPolicies('userinfo', scope='monitoring')
 
-            # support for empty realms or no realms by realm = *
-            if '*' in request_realms:
-                realms.append('/:no realm:/')
-            # other cases, we iterate through the realm list
-            elif len(request_realms) > 0 and not (request_realms == ['']):
-                realms = []
-                invalid_realms = []
-                for search_realm in request_realms:
-                    search_realm = search_realm.strip()
-                    if search_realm in realm_whitelist:
-                        realms.append(search_realm)
-                    elif search_realm == '/:no realm:/':
-                        realms.append(search_realm)
-                    else:
-                        invalid_realms.append(search_realm)
-                if not realms and invalid_realms:
-                    raise PolicyException(_('You do not have the rights to '
-                                            'monitor these realms: %r. '
-                                            'Check the policies!')
-                                          % invalid_realms)
+            realm_whitelist = []
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
+
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
+
+            realms = match_realms(request_realms, realm_whitelist)
 
             realm_info = {}
             for a_realm in realms:
-
                 realm_info[a_realm] = monit_handler.resolverinfo(a_realm)
 
             result[_('Realms')] = realm_info

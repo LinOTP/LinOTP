@@ -24,7 +24,6 @@
 #    Support: www.lsexperts.de
 #
 """realm processing logic"""
-
 from linotp.model import Realm, TokenRealm
 from linotp.model.meta import Session
 
@@ -34,6 +33,8 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
 
 from sqlalchemy import func
+
+from pylons.i18n.translation import _
 
 import logging
 log = logging.getLogger(__name__)
@@ -326,5 +327,44 @@ def deleteRealm(realmname):
     # now delete all relations, i.e. remove all Tokens from this realm.
 
     return True
+
+
+def match_realms(request_realms, allowed_realms):
+    """
+    Check if all requested realms are also allowed realms and
+    return a filtered list with only the matched realms.
+    In case of '*' in reques_realms, return all allowed realms
+    including /:no realm:/
+
+    :param allowed_realms: list of realms from request (without '*')
+    :param request_realms: list of allowed realms according to policies
+    :return: list of realms which were in both lists
+    """
+    realms = []
+
+    if not request_realms or request_realms == ['']:
+        realms = allowed_realms
+    # support for empty realms or no realms by realm = *
+    elif '*' in request_realms:
+        realms = allowed_realms
+        realms.append('/:no realm:/')
+    # other cases, we iterate through the realm list
+    elif len(request_realms) > 0 and not (request_realms == ['']):
+        invalid_realms = []
+        for search_realm in request_realms:
+            search_realm = search_realm.strip()
+            if search_realm in allowed_realms:
+                realms.append(search_realm)
+            elif search_realm == '/:no realm:/':
+                realms.append(search_realm)
+            else:
+                invalid_realms.append(search_realm)
+        if not realms and invalid_realms:
+            from linotp.lib.policy import PolicyException
+            raise PolicyException(_('You do not have the rights to see these '
+                                    'realms: %r. Check the policies!')
+                                  % invalid_realms)
+
+    return realms
 
 ###eof#########################################################################

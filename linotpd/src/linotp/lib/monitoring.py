@@ -138,42 +138,6 @@ class MonitorHandler(object):
 
         return result
 
-    def get_allowed_realms(self, action, scope=u'monitoring'):
-        """
-        Get all realms to which user has access.
-
-        If a realm is specified in parm,
-        check if user has access to it and return it.
-        Else return all possible realms.
-
-        :param scope: the scope of the policy
-        :param action: the policy action which must be checked
-        :type action: unicode
-        :return: list of realms that user may access
-        """
-
-        user = context['AuthUser'].get('login', '')
-        action = unicode(action)
-
-        # parse policies and extract realms:
-        realm_whitelist = []
-        for pol in context['Policies'].itervalues():
-            if pol['active'] == u'True':
-                if action in pol['action'] and pol['scope'] == scope:
-                    if user in pol['user'] or pol['user'] is u'*':
-                        # TODO: darf man * in die Realms rein schreiben???
-                        # Was ist bei ungültigen Eingaben?
-                        pol_realms = pol['realm'].split(u',')
-                        for rlm in pol_realms:
-                            if rlm:
-                                realm_whitelist.append(rlm.strip(" ").lower())
-
-        # If there are no policies for us, we are allowed to see all realms
-        if not realm_whitelist:
-            realm_whitelist = context['Realms'].keys()
-
-        return realm_whitelist
-
     def get_sync_status(self):
         """
         check if cache and config db are synced
