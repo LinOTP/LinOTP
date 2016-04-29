@@ -1681,44 +1681,22 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
     return ret
 
 
-def checkMonitoringAuthorisation(method):
+def checkAuthorisation(scope, method):
     """
     check if the authenticated user has the right to do the given action
+    :param scope: scope of the policy to be checked
     :param method: the requested action
-    :param context:
-    :return: notheing if authorized, else raise PolicyException
-    """
-    _ = context['translate']
-
-    auth = _getAuthorization("monitoring", method)
-    if auth['active'] and not auth['auth']:
-        log.warning("the admin >%r< is not allowed to "
-                    "do monitoring" % auth['admin'])
-
-        ret = _("You do not have the administrative right to do monitoring."
-                "You are missing a policy"
-                "scope=monitoring, action=%s") % method
-
-        raise PolicyException(ret)
-
-
-def checkReportingAuthorisation(method):
-    """
-    check if the authenticated user has the right to do the given action
-    :param method: the requested action
-    :param context:
     :return: nothing if authorized, else raise PolicyException
     """
     _ = context['translate']
 
-    auth = _getAuthorization("admin", 'report_'+method)
+    auth = _getAuthorization(scope, method)
     if auth['active'] and not auth['auth']:
-        log.warning("the admin >%r< is not allowed to "
-                    "view and delete reporting" % auth['admin'])
+        log.warning("the user >%r< is not allowed to "
+                    "do %s" % (auth['admin'], scope))
 
-        ret = _("You do not have the administrative right to do reporting."
-                "You are missing a policy"
-                "scope=admin, action=report_%s") % method
+        ret = _("You do not have the administrative right to do this. "
+                "You are missing a policy scope=%s, action=%s") % (scope, method)
 
         raise PolicyException(ret)
 

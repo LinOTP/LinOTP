@@ -37,7 +37,8 @@ from pylons.i18n.translation import _
 from linotp.lib.base import BaseController
 from linotp.lib.context import request_context
 from linotp.lib.monitoring import MonitorHandler
-from linotp.lib.policy import (PolicyException, checkReportingAuthorisation)
+from linotp.lib.policy import (PolicyException,
+                               checkAuthorisation)
 from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.lib.reporting import get_max
@@ -74,7 +75,7 @@ class ReportingController(BaseController):
             check_session(request)
 
             request_context['Audit'] = audit
-            checkReportingAuthorisation(action)
+            checkAuthorisation(scope='reporting.access', method=action)
 
             return request
 

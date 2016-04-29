@@ -337,3 +337,17 @@ class TestReportingController(TestController):
         self.assertEqual(values.get('value').get('mydefrealm'), 4, response)
         self.assertEqual(values.get('value').get('mymixrealm'), 1, response)
 
+    def test_reporting_access_policy(self):
+        policy_params = {'name': 'test_token_active',
+                         'scope': 'reporting.access',
+                         'action': 'maximum',
+                         'user': 'Hans',
+                         'realm': '*',
+                         }
+        self.create_policy(policy_params)
+        response =self.make_authenticated_request(controller='reporting',
+                                                  action='maximum')
+        resp = json.loads(response.body)
+        values = resp.get('result')
+        self.assertEqual(values.get('status'), False, response)
+        self.assertEqual(values.get('error').get('code'), 410, response)

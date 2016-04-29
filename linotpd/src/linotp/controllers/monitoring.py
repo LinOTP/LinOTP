@@ -44,7 +44,7 @@ from linotp.lib.reply import (sendResult,
 from linotp.model.meta import Session
 
 from linotp.lib.policy import PolicyException
-from linotp.lib.policy import checkMonitoringAuthorisation
+from linotp.lib.policy import checkAuthorisation
 
 from linotp.lib.support import InvalidLicenseException, \
                                getSupportLicenseInfo, verifyLicenseInfo
@@ -77,7 +77,7 @@ class MonitoringController(BaseController):
             check_session(request)
 
             request_context['Audit'] = audit
-            checkMonitoringAuthorisation(action)
+            checkAuthorisation(scope='monitoring', method=action)
 
             return request
 

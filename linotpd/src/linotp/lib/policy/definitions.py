@@ -64,9 +64,6 @@ def getPolicyDefinitions(scope=""):
                         'OTP values for tokens.'
                 },
             'show': {'type': 'bool'},
-            'report_maximum': {'type': 'bool'},
-            'report_delete_all': {'type': 'bool'},
-            'report_delete_before': {'type': 'bool'},
         },
         'gettoken': {
             'max_count_dpw': {'type': 'int'},
@@ -309,7 +306,16 @@ def getPolicyDefinitions(scope=""):
                 'type': 'str',
                 'desc': 'Report number of tokens which are in-/active,un-/assigned'
                         ' or combinations of these concatenatet with "&"'},
-        }
+        },
+        'reporting.access': {
+            'maximum': {'type': 'bool'},
+            'delete_all': {'type': 'bool'},
+            'delete_before': {
+                'type': 'bool',
+                'desc': 'Delete all reporting entries before given date.'
+                        'Date must be geiven as "yyyy-mm-dd"'
+            }
+        },
     }
 
     ## now add generic policies, which every token should provide:
