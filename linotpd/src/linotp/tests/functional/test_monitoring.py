@@ -58,6 +58,7 @@ class TestMonitoringController(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        self.delete_all_policies()
         super(TestMonitoringController, self).tearDown()
 
     # helper functions
@@ -180,6 +181,15 @@ class TestMonitoringController(TestController):
         return
 
     def test_token_active(self):
+
+        policy_params = {'name': 'test_token_active',
+                         'scope': 'monitoring',
+                         'action': 'tokens',
+                         'user': '*',
+                         'realm': '*',
+                         }
+        self.create_policy(policy_params)
+
         self.create_token(serial='0011')
         self.create_token(serial='0012', user='root', active=True)
         self.create_token(serial='0013', realm='mydefrealm', active=True)
@@ -360,6 +370,27 @@ class TestMonitoringController(TestController):
         myotherrealm = resp.get('result').get('value').get('Realms').get(
             'myotherrealm')
         self.assertEqual(myotherrealm.get('myOtherRes'), 8, response)
+        mymixrealm = resp.get('result').get('value').get('Realms').get(
+            'mymixrealm')
+        self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
+        self.assertEqual(mymixrealm.get('myDefRes'), 24, response)
+
+    def test_userinfo_policy(self):
+        # set policy:
+        policy_params = {'name': 'test_userinfo_poplicy',
+                         'scope': 'monitoring',
+                         'action': 'userinfo',
+                         'user': '*',
+                         'realm': 'mydefrealm,mymixrealm',
+                         }
+        self.create_policy(policy_params)
+
+        response = self.make_authenticated_request(
+            controller='monitoring', action='userinfo', params={})
+        resp = json.loads(response.body)
+        myotherrealm = resp.get('result').get('value').get('Realms').get(
+            'myotherrealm')
+        self.assertIsNone(myotherrealm)
         mymixrealm = resp.get('result').get('value').get('Realms').get(
             'mymixrealm')
         self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)

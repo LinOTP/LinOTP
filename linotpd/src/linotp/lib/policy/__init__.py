@@ -295,7 +295,7 @@ def getPolicy(param, display_inactive=False):
             # we support the verification of the user,
             # to be in a resolver for the admin and system scope
             local_scope = param.get('scope', '').lower()
-            if local_scope in ['admin', 'system']:
+            if local_scope in ['admin', 'system', 'monitoring', 'reporting.access']:
                 policy_users = policy.get('user', '').split(',')
                 if delete_it:
                     # check for matching of wildcard realm
@@ -419,14 +419,17 @@ def getPolicyActionValue(policies, action, max=True, is_string=False, subkey=Non
 
     return ret
 
-def getAdminPolicies(action, lowerRealms=False):
+
+def getAdminPolicies(action, lowerRealms=False, scope='admin'):
     """
-    This internal function returns the admin policies (of scope=admin)
+    This internal function returns the policies (default: of scope=admin)
     for the currently authenticated administrativ user.__builtins__
 
     :param action: this is the action (like enable, disable, init...)
     :param lowerRealms: if set to True, the list of realms returned will
                       be lower case.
+    :param scope: scope of the policies,
+                    might be admin, monitoring, reporting.access
 
     :return: a dictionary with the following keys:
 
@@ -438,7 +441,7 @@ def getAdminPolicies(action, lowerRealms=False):
     """
     active = True
     # check if we got admin policies at all
-    p_at_all = getPolicy({'scope': 'admin'})
+    p_at_all = getPolicy({'scope': scope})
     if len(p_at_all) == 0:
         log.info("No policies in scope admin found."
                  " Admin authorization will be disabled.")
@@ -448,7 +451,7 @@ def getAdminPolicies(action, lowerRealms=False):
     admin_user = _getAuthenticatedUser()
     log.info("Evaluating policies for the "
              "user: %s" % admin_user['login'])
-    pol_request = {'user': admin_user['login'], 'scope': 'admin'}
+    pol_request = {'user': admin_user['login'], 'scope': scope}
     if '' != action:
         pol_request['action'] = action
     policies = getPolicy(pol_request)
