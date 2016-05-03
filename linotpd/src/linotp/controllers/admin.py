@@ -2135,6 +2135,59 @@ class AdminController(BaseController):
             Session.close()
             log.debug('[loadtokens] done')
 
+    def token_method(self):
+
+        res = {}
+        params = {}
+        try:
+            params.update(request.params)
+            token_method = params['method']
+            tokentype, method = token_method.split('.')
+
+            # check admin authorization
+            filter_realms = []
+            res = checkPolicyPre('admin', 'token_method', params)
+            if res:
+                filter_realms = res.get('realms')
+
+            # check if the tokentype is known
+            glo = config['pylons.app_globals']
+            tokenclasses = glo.tokenclasses
+            if tokentype not in tokenclasses:
+                res = False
+                opt = {'message': 'unknown tokentype %r' % tokentype}
+                sendResult(response, res, 1, opt)
+
+            # check if method is in the admin methods
+            tclass = tokenclasses.get(tokentype)
+            tclass_object = newToken(tclass)
+            if hasattr(tclass_object, 'admin_methods'):
+                admin_methods = tclass_object.admin_methods()
+                if method not in admin_methods:
+                    res = False
+                    opt = {'message': 'unknown admin method %r' % method}
+                    sendResult(response, res, 1, opt)
+
+            if not hasattr(tclass_object, method):
+                res = False
+                opt = {'message': 'unable to call admin method %r' % method}
+                sendResult(response, res, 1, opt)
+
+            call_method = getattr(tclass_object, method)
+            result = call_method(params, filter_realms)
+
+            Session.commit()
+            return sendResult(response, result)
+
+        except Exception as e:
+            log.exception("[loadtokens] failed! %r" % e)
+            Session.rollback()
+            return sendError(response, unicode(e))
+
+        finally:
+            Session.close()
+            log.debug('[loadtokens] done')
+
 
     def testresolver(self):
         """
