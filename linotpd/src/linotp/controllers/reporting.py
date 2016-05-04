@@ -45,8 +45,7 @@ from linotp.lib.realm import match_realms
 from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.lib.reporting import get_max
-from linotp.lib.reporting import delete_reporting
-from linotp.lib.reporting import delete_before
+from linotp.lib.reporting import delete
 from linotp.lib.user import (getUserFromRequest, )
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
@@ -193,7 +192,32 @@ class ReportingController(BaseController):
         """
 
         try:
-            result = delete_reporting()
+            param = request.params
+            request_realms = param.get('realms', '').split(',')
+            status = param.get('status', ['total'])
+            if status != ['total']:
+                status = status.split(',')
+
+            realm_whitelist = []
+            policies = getAdminPolicies('tokens', scope='monitoring')
+
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
+
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
+
+            realms = match_realms(request_realms, realm_whitelist)
+
+            if '*' in status:
+                status.remove('*')
+                status.extend(['active', 'inactive', 'assigned', 'unassigned',
+                               'active&assigned', 'active&unassigned',
+                               'inactive&assigned', 'inactive&unassigned',
+                               'total'])
+
+            result = delete(realms=realms, status=status)
             Session.commit()
             return sendResult(response, result)
 
@@ -228,13 +252,32 @@ class ReportingController(BaseController):
         """
 
         try:
+
+            param = request.params
+            request_realms = param.get('realms', '').split(',')
+            status = param.get('status', ['total'])
+            if status != ['total']:
+                status = status.split(',')
+
             param = request.params
             border_day = param.get('date')
 
             # this may throw ValueError if date is in wrong format
             datetime.strptime(border_day, "%Y-%m-%d")
 
-            result = delete_before(border_day)
+            realm_whitelist = []
+            policies = getAdminPolicies('tokens', scope='monitoring')
+
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
+
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
+
+            realms = match_realms(request_realms, realm_whitelist)
+
+            result = delete(date=border_day, realms=realms, status=status)
             Session.commit()
             return sendResult(response, result)
 

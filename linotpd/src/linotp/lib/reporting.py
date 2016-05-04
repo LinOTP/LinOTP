@@ -85,29 +85,34 @@ def get_max(realm, status='active'):
     return result
 
 
-def delete_reporting():
-    """
-    delete all rows in reporting database
-
-    :return: number of deleted rows
-    """
-    rows = Session.query(Reporting)
-    row_num = rows.count()
-    for row in rows.all():
-        Session.delete(row)
-    return row_num
-
-
-def delete_before(date):
+def delete(realms, status, date=None):
     """
     delete all rows in reporting database before a given date
 
-    :param date: day until which all rows will be deleted
+    :param date: (optional)day until which all rows will be deleted
     :type date: string in format: 'yyyy-mm-dd'
 
     :return: number of deleted rows
     """
-    rows = Session.query(Reporting).filter(Reporting.timestamp < date)
+
+    if not isinstance(realms, (list, tuple)):
+        realms = [realms]
+
+    realm_cond = tuple()
+    for realm in realms:
+       realm_cond += (or_(Reporting.realm == realm),)
+
+    status_cond = tuple()
+    for stat in status:
+        status_cond += (or_(Reporting.parameter == stat),)
+
+    date_cond = tuple()
+    if date:
+        date_cond += (and_(Reporting.timestamp < date),)
+
+    conds = (and_(*date_cond), or_(*realm_cond), or_(*status_cond),)
+
+    rows = Session.query(Reporting).filter(*conds)
     row_num = rows.count()
 
     for row in rows:

@@ -45,6 +45,8 @@ class TestReportingController(TestController):
     def setUp(self):
         self.delete_all_policies()
         self.delete_reports()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
         super(TestReportingController, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
@@ -52,8 +54,6 @@ class TestReportingController(TestController):
 
     def tearDown(self):
         self.delete_all_token()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
         super(TestReportingController, self).tearDown()
 
 # ------------------------------------------------------------------------------
@@ -99,7 +99,8 @@ class TestReportingController(TestController):
         """
         response = self.make_authenticated_request(controller='reporting',
                                                    action='delete_all',
-                                                   params={})
+                                                   params={'realms': '*',
+                                                           'status': '*'})
         resp = json.loads(response.body)
         values = resp.get('result')
         self.assertEqual(values.get('status'), True, response)
@@ -214,7 +215,7 @@ class TestReportingController(TestController):
 
         # delete reports
         yest = yesterday.strftime("%Y-%m-%d")
-        parameter = {'date': yest}
+        parameter = {'date': yest, 'realms': '*', 'status': 'active'}
         response = self.make_authenticated_request(controller='reporting',
                                                    action='delete_before',
                                                    params=parameter)
@@ -252,7 +253,8 @@ class TestReportingController(TestController):
         # delete reports
         response = self.make_authenticated_request(controller='reporting',
                                                    action='delete_all',
-                                                   params={})
+                                                   params={'realm': '*',
+                                                           'status': 'active'})
         resp = json.loads(response.body)
         values = resp.get('result')
         self.assertEqual(values.get('status'), True, response)
@@ -345,7 +347,7 @@ class TestReportingController(TestController):
                          'realm': '*',
                          }
         self.create_policy(policy_params)
-        response =self.make_authenticated_request(controller='reporting',
+        response = self.make_authenticated_request(controller='reporting',
                                                   action='maximum')
         resp = json.loads(response.body)
         values = resp.get('result')
