@@ -96,7 +96,7 @@ def delete(realms, status, date=None):
     """
 
     if not isinstance(realms, (list, tuple)):
-        realms = [realms]
+        realms = realms.split(',')
 
     realm_cond = tuple()
     for realm in realms:
@@ -120,5 +120,110 @@ def delete(realms, status, date=None):
     return row_num
 
 
+class ReportingIterator(object):
+    """
+    support a smooth iterating through lines in reporting table
+    """
 
+    def __init__(self, page=None, psize=None, sort=None, sortdir=None,
+                 realms=None, status=None, date=None):
+        """
+        constructor of Tokeniterator, which gathers all conditions to build
+        a sqalchemy query - iterator
+
+        :param page:     page number
+        :type  page:     int
+        :param psize:    how many entries per page
+        :type  psize:    int
+        :param sort:     sort field definition
+        :type  sort:     string
+        :param sortdir:  sort direction: ascending or descending
+        :type  sortdir:  string
+        :param realms:   reports from which realms will be shown
+        :type realms:    list
+        :param status:   filter reports by status like active, unassigned
+        :type status:    list
+        :param date:     only show entries newer than date
+        :type date:      strin gin format 'yyyy-mm-dd'
+
+        :return: - nothing / None
+        """
+        self.page = 1
+        self.pages = 1
+        if not isinstance(realms, (list, tuple)):
+            realms = realms.split(',')
+        if not isinstance(status, (list, tuple)):
+            status = status.split(',')
+
+        realm_cond = tuple()
+        for realm in realms:
+            realm_cond += (or_(Reporting.realm == realm),)
+
+        status_cond = tuple()
+        for stat in status:
+            status_cond += (or_(Reporting.parameter == stat),)
+
+        date_cond = tuple()
+        if date:
+            date_cond += (and_(Reporting.timestamp >= date),)
+
+        conds = (and_(*date_cond), or_(*realm_cond), or_(*status_cond),)
+
+        if sort is None:
+            order = Reporting.timestamp
+        elif sort == 'event':
+            order = Reporting.event
+        elif sort == 'realm':
+            order = Reporting.realm
+        elif sort == 'parameter':
+            order = Reporting.parameter
+        elif sort == 'value':
+            order = Reporting.value
+        elif sort == 'count':
+            order = Reporting.count
+        elif sort == 'detail':
+            order = Reporting.detail
+        elif sort == 'description':
+            order = Reporting.description
+        elif sort == 'session':
+            order = Reporting.session
+        else:
+            order = Reporting.timestamp
+
+        #  care for the result sort order
+        if sortdir is not None and sortdir == "desc":
+            order = order.desc()
+        else:
+            order = order.asc()
+
+        #  care for the result pageing
+        if page is None:
+            self.reports = Session.query(Reporting).filter(*conds).\
+                order_by(order).distinct()
+            self.report_num = self.reports.count()
+
+            log.debug("[ReportingIterator] DB-Query returned # of objects:"
+                      " %i" % self.report_num)
+            self.pagesize = self.report_num
+            self.it = iter(self.reports)
+            return
+
+    def getResultSetInfo(self):
+        resSet = {"pages": self.pages,
+                  "pagesize": self.pagesize,
+                  "report_rows": self.report_num,
+                  "page": self.page
+                  }
+        return resSet
+
+    def next(self):
+        log.debug("[next] ReportingIterator finds next report")
+
+        rep = self.it.next()
+        desc = rep.get_vars()
+        return desc
+
+    def __iter__(self):
+        log.debug("[__iter__] ReportingIterator")
+        return self
 

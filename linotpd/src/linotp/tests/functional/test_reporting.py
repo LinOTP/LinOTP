@@ -340,7 +340,7 @@ class TestReportingController(TestController):
         self.assertEqual(values.get('value').get('mymixrealm'), 1, response)
 
     def test_reporting_access_policy(self):
-        policy_params = {'name': 'test_token_active',
+        policy_params = {'name': 'test_report_policy',
                          'scope': 'reporting.access',
                          'action': 'maximum',
                          'user': 'Hans',
@@ -353,3 +353,37 @@ class TestReportingController(TestController):
         values = resp.get('result')
         self.assertEqual(values.get('status'), False, response)
         self.assertEqual(values.get('error').get('code'), 410, response)
+
+    def test_reporting_show(self):
+        # set reporting policy:
+        policy_params = {'name': 'test_init_token_1',
+                         'scope': 'reporting',
+                         'action': 'token_total',
+                         'user': '*',
+                         'realm': '*',
+                         }
+        self.create_policy(policy_params)
+
+        # set reporting access policy:
+        policy_params = {'name': 'test_report_show',
+                 'scope': 'reporting.access',
+                 'action': 'show',
+                 'user': '*',
+                 'realm': 'mymixrealm, myotherrealm',
+                 }
+        self.create_policy(policy_params)
+
+        self.create_token(serial='0041', realm='mydefrealm', user='hans')
+        self.create_token(serial='0042', user='hans')
+        self.create_token(serial='0043', realm='mymixrealm', user='hans',
+                          active=False)
+        self.create_token(serial='0044', realm='mydefrealm', user='hans')
+        self.create_token(serial='0045', realm='mydefrealm', user='lorca')
+        self.create_token(serial='0046', realm='myotherrealm')
+
+        response = self.make_authenticated_request(controller='reporting',
+                                                   action='show')
+        resp = json.loads(response.body)
+        self.assertEqual(resp.get('result').get('status'), True, response)
+        values = resp.get('result').get('value')
+        self.assertEqual(values.get('resultset').get('report_rows'), 3, response)

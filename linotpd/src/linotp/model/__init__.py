@@ -1022,6 +1022,8 @@ class Reporting(object):
         self.value = unicode(value)
         self.count = count
         self.detail = unicode(detail)
+        self.session = unicode(session)
+        self.description = unicode(description)
         self.timestamp = datetime.now()
         if timestamp:
             self.timestamp = timestamp
@@ -1062,6 +1064,24 @@ class Reporting(object):
                 value = ""
 
         return value
+
+    def get_vars(self, save=False):
+        log.debug('get_vars()')
+
+        ret = {}
+
+        ret['timestamp'] = str(self.timestamp)
+        ret['event'] = self.event
+        ret['realm'] = self.realm
+        ret['parameter'] = self.parameter
+        ret['value'] = self.value
+        ret['count'] = self.count
+        ret['detail'] = self.detail
+        ret['session'] = self.session
+        ret['description'] = self.description
+
+        return ret
+
 
 #############################################################################
 

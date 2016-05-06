@@ -314,7 +314,8 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': 'Delete all reporting entries before given date.'
                         'Date must be geiven as "yyyy-mm-dd"'
-            }
+            },
+            'show': {'type': 'bool'},
         },
     }
 

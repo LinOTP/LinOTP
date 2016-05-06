@@ -314,4 +314,97 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
+            log.debug('[tokens] done')
+
+
+    def show(self):
+        """
+        method:
+            reporting/show
+
+        description:
+            show entries from the reporting database table
+
+        arguments:
+        * date - optional: only show entries which are newer than date;
+                date must be given in format 'yyyy-mm-dd'
+                if no date is given, all entries are shown
+        * realms - optional: takes realms, only the reporting entries
+                from this realm are shown
+        * status - optional: filters reporting entries by status
+                like 'assigned' or 'inactive'
+
+        returns: a json result with:
+            { "head": [],
+            "data": [ [row1], [row2] .. ]
+            }
+
+
+        exception:
+            if an error occurs an exception is serialized and returned
+        """
+
+        try:
+            param = request.params
+            request_realms = param.get('realms', '').split(',')
+            status = param.get('status', [])
+
+            param = request.params
+            border_day = param.get('date')
+
+            if border_day:
+                # this may throw ValueError if date is in wrong format
+                datetime.strptime(border_day, "%Y-%m-%d")
+
+            realm_whitelist = []
+            policies = getAdminPolicies('show', scope='reporting.access')
+
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
+
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
+
+            realms = match_realms(request_realms, realm_whitelist)
+
+            reports = ReportingIterator(realms=realms, status=status, date=None,
+                                        page=None, psize=None, sort=None,
+                                        sortdir=None)
+
+            c.audit['success'] = True
+
+            # put in the result
+            result = {}
+
+            # now row by row
+            lines = []
+            for rep in reports:
+                # CKO:
+                log.debug("tokenline: %s" % rep)
+                lines.append(rep)
+
+            result["data"] = lines
+            result["resultset"] = reports.getResultSetInfo()
+
+            Session.commit()
+            return sendResult(response, result)
+
+        except PolicyException as policy_exception:
+            log.exception(policy_exception)
+            Session.rollback()
+            return sendError(response, unicode(policy_exception), 1)
+
+        except ValueError as value_error:
+            log.exception(value_error)
+            Session.rollback()
+            return sendError(response, unicode(value_error), 1)
+
+        except Exception as exc:
+            log.exception(exc)
+            Session.rollback()
+            return sendError(response, exc)
+
+        finally:
+            Session.close()
             log.debug('[delete_before] done')
