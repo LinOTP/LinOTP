@@ -44,6 +44,7 @@ from linotp.lib.realm import match_realms
 
 from linotp.lib.reply import (sendResult,
                               sendError)
+from linotp.lib.reporting import ReportingIterator
 from linotp.lib.reporting import get_max
 from linotp.lib.reporting import delete
 from linotp.lib.user import (getUserFromRequest, )
@@ -146,7 +147,7 @@ class ReportingController(BaseController):
                 status = status.split(',')
 
             realm_whitelist = []
-            policies = getAdminPolicies('tokens', scope='monitoring')
+            policies = getAdminPolicies('maximum', scope='reporting.access')
 
             if policies['active'] and policies['realms']:
                 realm_whitelist = policies.get('realms')
@@ -183,7 +184,13 @@ class ReportingController(BaseController):
             reporting/delete_all
 
         description:
-            delete the reporting database table
+            delete entries from the reporting database table
+
+        arguments:
+        * realms - optional: takes realms, only the reporting entries
+                from this realm are dedleted
+        * status - optional: filters reporting entries by status
+                like 'assigned' or 'inactive'
 
         returns: dict in which value is the number of deleted rows
 
@@ -199,7 +206,7 @@ class ReportingController(BaseController):
                 status = status.split(',')
 
             realm_whitelist = []
-            policies = getAdminPolicies('tokens', scope='monitoring')
+            policies = getAdminPolicies('delete_all', scope='reporting.access')
 
             if policies['active'] and policies['realms']:
                 realm_whitelist = policies.get('realms')
@@ -235,15 +242,24 @@ class ReportingController(BaseController):
             Session.close()
             log.debug('[delete_all] done')
 
-
     def delete_before(self):
         """
         method:
             reporting/delete_before
 
         description:
-            delete all entries from reporting database which are older than date
+            delete all entries from reporting database with respect to the
+            arguments
             date must be given in format: 'yyyy-mm-dd'
+
+        arguments:
+        * date - optional: only delete entries which are older than date;
+                date must be given in format 'yyyy-mm-dd'
+                if no date is given, all entries get deleted
+        * realms - optional: takes realms, only the reporting entries
+                from this realm are dedleted
+        * status - optional: filters reporting entries by status
+                like 'assigned' or 'inactive'
 
         returns: dict in which value is the number of deleted rows
 
@@ -266,7 +282,7 @@ class ReportingController(BaseController):
             datetime.strptime(border_day, "%Y-%m-%d")
 
             realm_whitelist = []
-            policies = getAdminPolicies('tokens', scope='monitoring')
+            policies = getAdminPolicies('delete_before', scope='reporting')
 
             if policies['active'] and policies['realms']:
                 realm_whitelist = policies.get('realms')
@@ -298,4 +314,4 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[tokens] done')
+            log.debug('[delete_before] done')
