@@ -79,7 +79,7 @@ class UserIdResolverManager(ManageConfigList):
 
         parsed_resolvers = []
 
-        resolver_name_re = re.compile(r'(\w+) \[(\w+)\]$')
+        resolver_name_re = re.compile(r'([\w\-]+) \[([\w\-]+)\]$')
 
         for resolver_element in elements:
             m = resolver_name_re.match(resolver_element.text)
