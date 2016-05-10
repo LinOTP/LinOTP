@@ -76,16 +76,15 @@ class TestScenario01(TestCase):
         self._announce_test("1. UserIdResolver anlegen")
         # Create LDAP UserIdResolver
         ldap_data = data.musicians_ldap_resolver
-        ldap_expected_users = ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', u'dvořák',
-                               'haydn', 'mozart', u'حافظ', u'郎']
-        ldap_num_expected_users = len(ldap_expected_users)
+        ldap_expected_users = ldap_data['users']
+        ldap_num_expected_users = ldap_data['expected_users']
         ldap_resolver = self.useridresolver_manager.create_resolver(ldap_data)
 
         # Create SQL UserIdResolver
         sql_data = data.sql_resolver
         sql_resolver = self.useridresolver_manager.create_resolver(sql_data)
-        sql_expected_users = ["corny", "kay", "eric", u"knöt"]
-        sql_num_expected_users = len(sql_expected_users)
+        sql_expected_users = sql_data['users']
+        sql_num_expected_users = sql_data['expected_users']
 
         # Create realm for all resolvers
         realm_name1 = "SE_scenario01_realm1"

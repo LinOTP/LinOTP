@@ -74,6 +74,8 @@ musicians_ldap_resolver = {
                 'password' : "Test123!",
                 'preset_ldap' : True,
                 'expected_users' : 10,
+                'users': ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', u'dvořák',
+                                'haydn', 'mozart', u'حافظ', u'郎']
 }
 
 physics_ldap_resolver = {
@@ -100,6 +102,7 @@ sql_resolver = {
                 'limit' : 500,
                 'encoding' : 'latin1',
                 'expected_users' : 5,
+                'users': ['corny', 'kay', 'eric', u'knöt', 'bianca']
 }
 
 # Expected content of /etc/se_mypasswd is:
