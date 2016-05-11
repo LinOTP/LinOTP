@@ -647,7 +647,7 @@ class TokenClass(object):
         # only check those challenges, which currently have not been verified
         check_challenges = []
         for ch in challenges:
-            if Challenges.verify_checksum(ch) and ch.valid_tan is not True:
+            if Challenges.verify_checksum(ch) and ch.is_open():
                 check_challenges.append(ch)
 
         (otpcount, matching_challenges) = self.checkResponse4Challenge(

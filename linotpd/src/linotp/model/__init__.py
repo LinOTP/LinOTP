@@ -903,6 +903,45 @@ class Challenge(object):
     def setSession(self, session):
         self.session = unicode(session)
 
+    def signChallenge(self, hsm):
+        """
+        create a challenge signature and preserve it
+
+        :param hsm: security module, which is able to calc the signature
+        :return: - nothing -
+        """
+
+        challenge_dict = self.get_vars(save=True)
+        challenge_data = json.dumps(challenge_dict)
+
+        mac = hsm.signMessage(challenge_data)
+
+        status = challenge_dict.get('session').get('status', 'open')
+        session = {'status': status, 'mac': mac}
+        self.setSession(json.dumps(session))
+
+        res = self.checkChallengeSignature(hsm)
+
+    def checkChallengeSignature(self, hsm):
+        """
+        check the integrity of a challenge
+
+        :param hsm: security module
+        :return: success - boolean
+        """
+
+        # and calculate the mac for this token data
+        challenge_dict = self.get_vars(save=True)
+        challenge_data = json.dumps(challenge_dict)
+
+        session = json.loads(self.getSession())
+        stored_mac = session.get('mac')
+        result = hsm.verfiyMessageSignature(message=challenge_data,
+                                            hex_mac=stored_mac)
+
+        return result
+
+
     def setChallenge(self, challenge):
         self.challenge = unicode(challenge)
 
@@ -914,22 +953,31 @@ class Challenge(object):
     def getTanStatus(self):
         return (self.received_tan, self.valid_tan)
 
-    # we introduce the challenge status 'closed'. It is set after a first
-    # successful authentication. The status is required, as we don't remove
-    # the challenges after validation anymore
     def close(self):
-        self.received_tan = True
-        self.received_count = 0
+        """
+        close a session and make it invisible to the validation
+
+        remarks:
+         we introduce the challenge status 'closed'. It is set after a first
+         successful authentication. The status is required, as we don't remove
+         the challenges after validation anymore
+
+        """
+        session_info = json.loads(self.session) or {}
+        if not session_info:
+            session_info = {'status': 'open'}
+        session_info['status'] = 'closed'
+        self.session = json.dumps(session_info)
 
     def is_open(self):
-        ret = True
+        """
+        check if the session is already closed
 
-        # XXX HACK: in the normal workflow received_count is
-        # always greater 1 if received_tan is True. We use
-        # this special state as a marker for the "closed"
-        # state
-        if self.received_tan is True and self.received_count == 0:
-            ret = False
+        :return: success - boolean
+        """
+        session = json.loads(self.session) or {}
+        status = session.get('status', 'open')
+        ret = status == 'open'
         return ret
 
     def getTanCount(self):
@@ -980,6 +1028,16 @@ class Challenge(object):
             descr['timestamp'] = self.timestamp
         descr['received_tan'] = self.received_tan
         descr['valid_tan'] = self.valid_tan
+
+        # for the vars, only the session status is of interest
+        session_info = {'status': 'open'}
+        if self.session:
+            try:
+                session_info = json.loads(self.session)
+            except Exception as exx:
+                pass
+        status = session_info.get('status', 'open')
+        descr['session'] = {'status': status}
         return descr
 
     def __unicode__(self):
