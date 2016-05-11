@@ -773,8 +773,8 @@ def get_rand_digit_str(length=16):
     s = ""
     while len(s) < length:
         # some optimization len int chars does not require len hex bytes
-        missing = length - len(s)
-        randd = geturandom(len=int(missing / 2 + 0.5))
+        missing = (length - len(s)) + 1  # prevent getting zero in next step
+        randd = geturandom(len=int(missing / 2))
         s2 = "%d" % (int(randd.encode('hex'), 16))
         s = s + s2[:missing]
 
