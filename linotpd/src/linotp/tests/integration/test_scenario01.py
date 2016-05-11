@@ -71,7 +71,12 @@ class TestScenario01(TestCase):
 
         driver = self.driver
 
+        token_view = TokenView(self)
+
+        # reset all views
         self.reset_resolvers_and_realms()
+        self.reset_policies()
+        token_view.delete_all_tokens()
 
         self._announce_test("1. UserIdResolver anlegen")
         # Create LDAP UserIdResolver
@@ -95,6 +100,7 @@ class TestScenario01(TestCase):
         self._announce_test("2. In Management Webinterface, check that all users are visible")
 
         user_view = UserView(driver, self.base_url, realm_name1)
+        time.sleep(1)
         self.assertEqual(ldap_num_expected_users, user_view.get_num_users(),
                          "Not the expected number of users")
         for user in ldap_expected_users:
@@ -264,7 +270,6 @@ class TestScenario01(TestCase):
             driver.find_element_by_id("password").submit()
             driver.find_element_by_xpath("//div[@id='tabs']/ul/li/a/span[text()='set PIN']").click()
             time.sleep(1)
-            # driver.find_element_by_css_selector('#tokenDiv > ul > li > a').click()
             driver.find_element_by_id('tokenDiv').find_element_by_partial_link_text(user_token_dict[user]).click()
             driver.find_element_by_id("pin1").clear()
             driver.find_element_by_id("pin1").send_keys(user + "newpin")
@@ -420,7 +425,6 @@ class TestScenario01(TestCase):
         self._announce_test("14. Der Admin entsperrt diesen Token, der Benutzer debussy kann sich wieder anmelden.")
 
         driver.get(self.base_url + "/manage")
-        token_view = TokenView(self)
         token_view.select_token(serial_token_debussy)
         driver.find_element_by_id("button_enable").click()
 

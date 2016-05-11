@@ -37,6 +37,7 @@ from selenium.common.exceptions import TimeoutException
 
 from helper import get_from_tconfig
 from realm import RealmManager
+from policy import PolicyManager
 from user_id_resolver import UserIdResolverManager
 
 
@@ -135,6 +136,14 @@ class TestCase(unittest.TestCase):
                 self.realm_manager.close()
         else:
             assert not realm, "Can't create a realm without a resolver"
+
+
+    def reset_policies(self):
+        """
+        Remove all policies
+        """
+        self.policy_manager = PolicyManager(self.driver, self.base_url)
+        self.policy_manager.clear_policies()
 
     def close_alert_and_get_its_text(self):
         try:

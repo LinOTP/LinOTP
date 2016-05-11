@@ -25,11 +25,37 @@
 #
 """Contains Policy class"""
 
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from helper import select
+import time
 
-class Policy:
+class PolicyManager(object):
+    policies_tab_css_selector = "#tabs > ul > li:nth-child(3) > a"
+    policy_entries_css_selector = "table#policy_table > tbody > tr"
+    policy_delete_button_id = "button_policy_delete"
+
+    def __init__(self, driver, base_url):
+        self.driver = driver
+        self.url = base_url + "/manage"
+
+    def clear_policies(self):
+        self.driver.get(self.url)
+        self.driver.find_element_by_css_selector(self.policies_tab_css_selector).click()
+
+        while True:
+            time.sleep(1)
+            policies = self.driver.find_elements_by_css_selector(self.policy_entries_css_selector)
+            print policies
+            print "\n\n"
+            if not policies:
+                break
+            self.delete_policy(policies[0])
+
+    def delete_policy(self, p):
+        p.click()
+        self.driver.find_element_by_id(self.policy_delete_button_id).click()
+
+class Policy(object):
     """Creates a LinOTP Policy"""
 
     def __init__(self, driver, base_url, name, scope, action, realm):
