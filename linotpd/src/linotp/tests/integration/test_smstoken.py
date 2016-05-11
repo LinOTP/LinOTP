@@ -52,6 +52,8 @@ class TestSmsToken(TestCase):
         TestCase.setUp(self)
         self.realm_name = "SE_smstoken"
         self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
+        token_view = TokenView(self)
+        token_view.delete_all_tokens()
 
     @unittest.skipIf(is_sms_disabled(), True)
     def test_enroll(self):
@@ -78,8 +80,9 @@ class TestSmsToken(TestCase):
                 'SMSProvider': 'smsprovider.SmtpSMSProvider.SmtpSMSProvider',
                 'SMSProviderConfig': sms_provider_config
             }
-            set_config = SetConfig(self.http_protocol, self.http_host, self.http_username,
+            set_config = SetConfig(self.http_protocol, self.http_host, self.http_port, self.http_username,
                                    self.http_password)
+
             result = set_config.setConfig(parameters)
             self.assertTrue(result, "It was not possible to set the config")
         else:
