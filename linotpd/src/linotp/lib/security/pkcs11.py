@@ -56,7 +56,7 @@ from linotp.lib.security.provider import CONFIG_KEY
 from linotp.lib.security.provider import TOKEN_KEY
 from linotp.lib.security.provider import VALUE_KEY
 
-from Crypto.Cipher import AES as    AESCipher
+from Cryptodome.Cipher import AES as    AESCipher
 from getopt import getopt, GetoptError
 import sys
 import getpass

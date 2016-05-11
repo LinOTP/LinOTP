@@ -31,9 +31,9 @@ from os import urandom
 from base64 import b64decode, b64encode
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
-from Crypto.Cipher import AES
-from Crypto.Hash import HMAC
-from Crypto.Hash import SHA256
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import HMAC
+from Cryptodome.Hash import SHA256
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges

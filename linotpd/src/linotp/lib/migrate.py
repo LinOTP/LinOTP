@@ -25,7 +25,7 @@
 #
 """ contains the hsm migration handler"""
 
-from Crypto.Protocol.KDF import PBKDF2
+from Cryptodome.Protocol.KDF import PBKDF2
 
 try:
     import json
@@ -38,7 +38,7 @@ import os
 import hashlib
 from hmac import HMAC
 
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 
 
 from linotp.model.meta import Session

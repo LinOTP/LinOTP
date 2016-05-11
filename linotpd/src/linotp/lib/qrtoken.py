@@ -27,8 +27,8 @@
 import struct
 from collections import namedtuple
 
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import SHA256
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.crypt import zerome

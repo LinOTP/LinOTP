@@ -54,11 +54,11 @@ from pylons import tmpl_context as c
 from linotp.lib.error import HSMException
 from linotp.lib.error import ConfigAdminError
 
-import Crypto.Hash as CryptoHash
-from Crypto.Hash import HMAC
-from Crypto.Hash import SHA as SHA1
-from Crypto.Hash import SHA256
-from Crypto.Cipher import AES
+import Cryptodome.Hash as CryptoHash
+from Cryptodome.Hash import HMAC
+from Cryptodome.Hash import SHA as SHA1
+from Cryptodome.Hash import SHA256
+from Cryptodome.Cipher import AES
 
 
 from linotp.lib.ext.pbkdf2  import PBKDF2
@@ -81,19 +81,19 @@ c_hash = {
          }
 
 try:
-    from Crypto.Hash import SHA224
+    from Cryptodome.Hash import SHA224
     c_hash['sha224'] = SHA224
 except:
     log.warning('Your system does not support Crypto SHA224 hash algorithm')
 
 try:
-    from Crypto.Hash import SHA384
+    from Cryptodome.Hash import SHA384
     c_hash['sha384'] = SHA384
 except:
     log.warning('Your system does not support Crypto SHA384 hash algorithm')
 
 try:
-    from Crypto.Hash import SHA512
+    from Cryptodome.Hash import SHA512
     c_hash['sha512'] = SHA512
 except:
     log.warning('Your system does not support Crypto SHA512 hash algorithm')

@@ -36,9 +36,9 @@ from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.crypt import extract_tan
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
-from Crypto.Hash import SHA256
-from Crypto.Hash import HMAC
-from Crypto.Cipher import AES
+from Cryptodome.Hash import SHA256
+from Cryptodome.Hash import HMAC
+from Cryptodome.Cipher import AES
 
 log = logging.getLogger(__name__)
 

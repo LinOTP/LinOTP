@@ -68,7 +68,7 @@ def getMacMethod(elem):
 
 
 def aes_decrypt(transport_b64, key_hex, serial=""):
-    import Crypto.Cipher.AES as AES
+    import Cryptodome.Cipher.AES as AES
 
     def hack(data, serial=""):
         bsize = 16

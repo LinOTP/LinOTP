@@ -51,7 +51,7 @@ setup(
         "SQLAlchemy>=0.6,<=0.9.99",
         "docutils>=0.4",
         "simplejson>=2.0",
-        "pycryptodome>=3.4",
+        "pycryptodomex>=3.4",
         "repoze.who<=1.1",
         "pyrad>=1.1",
         "LinOtpUserIdResolver>=2.7",
