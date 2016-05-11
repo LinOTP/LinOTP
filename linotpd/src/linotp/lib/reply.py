@@ -659,5 +659,42 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
     return ret_html
 
 
+def sendCSVIterator(obj, headers=True):
+    delim = '"'
+    output = ""
+
+    typ = "%s" % type(obj)
+    if 'generator' not in typ and 'iterator' not in typ:
+        raise Exception('no iterator method for object %r' % obj)
+
+    try:
+        for row in obj:
+            row = json.loads(row)
+            # do the header
+            if headers:
+                for key in row:
+                    output += "%s%s%s," % (delim, key, delim)
+                output += "\n"
+                yield str(output)
+                headers = False
+
+            output = ""
+            for val in row.values():
+                if type(val) in [str, unicode]:
+                    value = val.replace("\n", " ")
+                    output += "%s%s%s, " % (delim, value, delim)
+                elif type(val) in [int, long]:
+                    value = '%d' % val
+                    output += "%s, " % (value)
+                else:
+                    output += "%s%s%s, " % (delim, value, delim)
+                # output += "%s%s%s, " % (delim, value, delim)
+            output += "\n"
+            yield str(output)
+
+    except Exception as exx:
+        log.debug('error when iterating result for csv output')
+        raise exx
+
 #eof#######################################################
 

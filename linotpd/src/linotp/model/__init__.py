@@ -1170,9 +1170,8 @@ class Reporting(object):
 
         log.debug('__init__ reporting table done')
 
-    def get_vars(self, save=False):
+    def get_vars(self):
         log.debug('get_vars()')
-
         ret = {}
 
         ret['timestamp'] = str(self.timestamp)

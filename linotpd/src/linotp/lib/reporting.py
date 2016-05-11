@@ -23,15 +23,17 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
+import json
 import logging
 
 from linotp.model import Reporting
 from linotp.model.meta import Session
 
+from linotp.lib.context import request_context
 from linotp.lib.monitoring import MonitorHandler
 from linotp.lib.policy import check_token_reporting
 
-from sqlalchemy import (and_, or_, not_)
+from sqlalchemy import (and_, or_)
 from sqlalchemy import func
 
 log = logging.getLogger(__name__)
@@ -87,9 +89,12 @@ def get_max(realm, status='active'):
 
 def delete(realms, status, date=None):
     """
-    delete all rows in reporting database before a given date
+    delete all rows in reporting database before a given date,
+    filtered by realm and status
 
-    :param date: (optional)day until which all rows will be deleted
+    :param realms: the ralm to filter
+    :param status: the status to filter
+    :param date: (optional) day until which all rows will be deleted
     :type date: string in format: 'yyyy-mm-dd'
 
     :return: number of deleted rows
@@ -196,34 +201,62 @@ class ReportingIterator(object):
         else:
             order = order.asc()
 
-        #  care for the result pageing
-        if page is None:
-            self.reports = Session.query(Reporting).filter(*conds).\
-                order_by(order).distinct()
-            self.report_num = self.reports.count()
+        # query database for all reports
+        self.reports = Session.query(Reporting).filter(*conds).order_by(
+            order).distinct()
+        self.report_num = self.reports.count()
+        log.debug("[ReportingIterator::init] DB-Query returned # of objects:"
+                      " %d" % self.report_num)
+        self.pagesize = self.report_num
 
-            log.debug("[ReportingIterator] DB-Query returned # of objects:"
-                      " %i" % self.report_num)
-            self.pagesize = self.report_num
-            self.it = iter(self.reports)
-            return
+        #  care for the result pageing
+        if page is not None:
+            try:
+                if psize is None:
+                    pagesize = \
+                        int(request_context.get('Config').get('pagesize', 50))
+                else:
+                    pagesize = int(psize)
+            except Exception as exce:
+                log.debug('problem with pagesize: %r' % exce)
+                pagesize = 20
+
+            try:
+                the_page = int(page) - 1
+            except Exception as exce:
+                log.debug('problem with page: %r' % exce)
+                the_page = 0
+
+            if the_page < 0:
+                the_page = 0
+
+            start = the_page * pagesize
+            stop = (the_page + 1) * pagesize
+
+            self.page = the_page + 1
+            fpages = float(self.report_num) / float(pagesize)
+            self.pages = int(fpages)
+            if fpages - self.pages > 0:
+                self.pages += 1
+            self.pagesize = pagesize
+            self.reports = self.reports.slice(start, stop)
+            log.debug('[ReportingIterator::init] paging done.')
+
+        log.debug('[ReportingIterator::init] end')
 
     def getResultSetInfo(self):
-        resSet = {"pages": self.pages,
-                  "pagesize": self.pagesize,
-                  "report_rows": self.report_num,
-                  "page": self.page
-                  }
-        return resSet
+        res_set = {"pages": self.pages,
+                   "pagesize": self.pagesize,
+                   "report_rows": self.report_num,
+                   "page": self.page
+                   }
+        return res_set
 
-    def next(self):
-        log.debug("[next] ReportingIterator finds next report")
+    def iterate_reports(self):
+        try:
+            for rep in self.reports:
+                desc = json.dumps(rep.get_vars())
+                yield desc
 
-        rep = self.it.next()
-        desc = rep.get_vars()
-        return desc
-
-    def __iter__(self):
-        log.debug("[__iter__] ReportingIterator")
-        return self
-
+        except Exception as exx:
+            log.exception("Problem during iteration reports: %r" % exx)

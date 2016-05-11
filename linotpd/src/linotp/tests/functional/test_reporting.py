@@ -120,10 +120,11 @@ class TestReportingController(TestController):
 
         self.create_token(serial='0001', realm='mymixrealm', user='hans')
 
-        Session=None
+        Session = None
         try:
             engine = engine_from_config(config, 'sqlalchemy.')
-            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session = scoped_session(sessionmaker(autocommit=False,
+                                                  autoflush=True))
             Session.configure(bind=engine)
             # check if new entry was created in reporting table
             table_content = Session.query(Reporting).count()
@@ -150,10 +151,11 @@ class TestReportingController(TestController):
         self.create_token(serial='0015', realm='mymixrealm', user='lorca')
         self.create_token(serial='0016', realm='myotherrealm')
 
-        Session=None
+        Session = None
         try:
             engine = engine_from_config(config, 'sqlalchemy.')
-            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session = scoped_session(sessionmaker(autocommit=False,
+                                                  autoflush=True))
             Session.configure(bind=engine)
             # check if new entry was created in reporting table
             table_content = Session.query(Reporting).count()
@@ -186,10 +188,11 @@ class TestReportingController(TestController):
 
         self.create_token(serial='0021', realm='mymixrealm', user='hans')
 
-        Session=None
+        Session = None
         try:
             engine = engine_from_config(config, 'sqlalchemy.')
-            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session = scoped_session(sessionmaker(autocommit=False,
+                                                  autoflush=True))
             Session.configure(bind=engine)
             # check if new entry was created in reporting table
             table_content = Session.query(Reporting).count()
@@ -202,10 +205,11 @@ class TestReportingController(TestController):
         """
         test delete rows from reporting table which are older than date
         """
-        Session=None
+        Session = None
         try:
             engine = engine_from_config(config, 'sqlalchemy.')
-            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session = scoped_session(sessionmaker(autocommit=False,
+                                                  autoflush=True))
             Session.configure(bind=engine)
 
             # create table entries
@@ -214,12 +218,20 @@ class TestReportingController(TestController):
             two_days_ago = today - timedelta(days=2)
 
             # create old reports:
-            report_2 = Reporting(timestamp=two_days_ago, event='token_init',
-                                 realm='mydefrealm', parameter='active', count=1)
-            report_1 = Reporting(timestamp=yesterday, event='token_init',
-                                 realm='mydefrealm', parameter='active', count=2)
+            report_2 = Reporting(timestamp=two_days_ago,
+                                 event='token_init',
+                                 realm='mydefrealm',
+                                 parameter='active',
+                                 count=1)
+            report_1 = Reporting(timestamp=yesterday,
+                                 event='token_init',
+                                 realm='mydefrealm',
+                                 parameter='active',
+                                 count=2)
             report_0 = Reporting(event='token_init',
-                                 realm='mydefrealm', parameter='active', count=3)
+                                 realm='mydefrealm',
+                                 parameter='active',
+                                 count=3)
             Session.add(report_0)
             Session.add(report_1)
             Session.add(report_2)
@@ -244,10 +256,11 @@ class TestReportingController(TestController):
                 Session.close()
 
     def test_delete_all_reports(self):
-        Session=None
+        Session = None
         try:
             engine = engine_from_config(config, 'sqlalchemy.')
-            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session = scoped_session(sessionmaker(autocommit=False,
+                                                  autoflush=True))
             Session.configure(bind=engine)
 
             # check if table is empty
@@ -258,10 +271,15 @@ class TestReportingController(TestController):
             today = datetime.now()
             yesterday = today - timedelta(days=1)
 
-            report_1 = Reporting(timestamp=yesterday, event='token_init',
-                                 realm='mydefrealm', parameter='active', count=1)
+            report_1 = Reporting(timestamp=yesterday,
+                                 event='token_init',
+                                 realm='mydefrealm',
+                                 parameter='active',
+                                 count=1)
             report_2 = Reporting(event='token_init',
-                                 realm='mydefrealm', parameter='active', count=2)
+                                 realm='mydefrealm',
+                                 parameter='active',
+                                 count=2)
             Session.add(report_1)
             Session.add(report_2)
             Session.commit()
@@ -271,10 +289,10 @@ class TestReportingController(TestController):
             self.assertEqual(table_content, 2, table_content)
 
             # delete reports
-            response = self.make_authenticated_request(controller='reporting',
-                                                       action='delete_all',
-                                                       params={'realm': '*',
-                                                               'status': 'active'})
+            response = self.make_authenticated_request(
+                controller='reporting',
+                action='delete_all',
+                params={'realm': '*', 'status': 'active'})
             resp = json.loads(response.body)
             values = resp.get('result')
             self.assertEqual(values.get('status'), True, response)
@@ -320,10 +338,11 @@ class TestReportingController(TestController):
                     'type': 'hmac',
                     'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
                     })
-        Session=None
+        Session = None
         try:
             engine = engine_from_config(config, 'sqlalchemy.')
-            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session = scoped_session(sessionmaker(autocommit=False,
+                                                  autoflush=True))
             Session.configure(bind=engine)
             # check if new entry was created in reporting table
             table_content = Session.query(Reporting).count()
@@ -377,7 +396,7 @@ class TestReportingController(TestController):
                          }
         self.create_policy(policy_params)
         response = self.make_authenticated_request(controller='reporting',
-                                                  action='maximum')
+                                                   action='maximum')
         resp = json.loads(response.body)
         values = resp.get('result')
         self.assertEqual(values.get('status'), False, response)
@@ -395,11 +414,11 @@ class TestReportingController(TestController):
 
         # set reporting access policy:
         policy_params = {'name': 'test_report_show',
-                 'scope': 'reporting.access',
-                 'action': 'show',
-                 'user': '*',
-                 'realm': 'mymixrealm, myotherrealm',
-                 }
+                         'scope': 'reporting.access',
+                         'action': 'show',
+                         'user': '*',
+                         'realm': 'mymixrealm, myotherrealm',
+                         }
         self.create_policy(policy_params)
 
         self.create_token(serial='0041', realm='mydefrealm', user='hans')
@@ -413,6 +432,75 @@ class TestReportingController(TestController):
         response = self.make_authenticated_request(controller='reporting',
                                                    action='show')
         resp = json.loads(response.body)
+        self.assertEqual(resp.get('detail').get('report_rows'), 3, response)
         self.assertEqual(resp.get('result').get('status'), True, response)
         values = resp.get('result').get('value')
-        self.assertEqual(values.get('resultset').get('report_rows'), 3, response)
+        self.assertEqual(values[2].get('count'), 1, response)
+
+        # test csv output
+
+        response = self.make_authenticated_request(controller='reporting',
+                                                   action='show',
+                                                   params={'outform': 'csv'})
+        self.assertTrue('1, "myotherrealm", "", ' in response, response)
+        self.assertTrue('"", "", "", "total", "token_init", ' in response,
+                        response)
+
+    def test_reporting_show_paging(self):
+        # set reporting policy:
+        policy_params = {'name': 'test_init_token_1',
+                         'scope': 'reporting',
+                         'action': 'token_total',
+                         'user': '*',
+                         'realm': '*',
+                         }
+        self.create_policy(policy_params)
+
+        # set reporting access policy:
+        policy_params = {'name': 'test_report_show',
+                         'scope': 'reporting.access',
+                         'action': 'show',
+                         'user': '*',
+                         'realm': '*',
+                         }
+        self.create_policy(policy_params)
+
+        for i in range(0, 25):
+            self.create_token(serial='005'+str(2*i),
+                              realm='mydefrealm',
+                              user='lorca')
+            self.create_token(serial='005'+str(2*i+1),
+                              realm='mymixrealm',
+                              user='hans',)
+
+        page_value = 3
+        pagesize_value = 12
+        parameter = {
+            'page': page_value,
+            'pagesize': pagesize_value
+        }
+        response = self.make_authenticated_request(controller='reporting',
+                                                   action='show',
+                                                   params=parameter)
+        resp = json.loads(response.body)
+        self.assertEqual(resp.get('detail').get('report_rows'), 50, response)
+        self.assertEqual(resp.get('detail').get('page'), page_value, response)
+        self.assertEqual(resp.get('detail').get('pagesize'), pagesize_value,
+                         response)
+
+        self.assertEqual(resp.get('result').get('status'), True, response)
+        values = resp.get('result').get('value')
+        self.assertEqual(values[2].get('count'), 14, response)
+
+        timestamp = values[10].get('timestamp')
+
+        # test csv output
+        parameter['outform'] = 'csv'
+        response = self.make_authenticated_request(controller='reporting',
+                                                   action='show',
+                                                   params=parameter)
+        line = '18, "mydefrealm", "", "%s", "", "", "", "total",' \
+               ' "token_init"' % str(timestamp)
+        self.assertTrue(line in response, response)
+        resp = response.body.splitlines()
+        self.assertTrue(len(resp) is pagesize_value + 1)

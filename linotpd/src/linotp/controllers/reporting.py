@@ -27,7 +27,7 @@
 
 
 """
-reporitng controller - interfaces for Reporting
+reporting controller - interfaces for Reporting
 """
 import logging
 
@@ -44,7 +44,9 @@ from linotp.lib.policy import (checkAuthorisation,
 from linotp.lib.realm import match_realms
 
 from linotp.lib.reply import (sendResult,
-                              sendError)
+                              sendError,
+                              sendResultIterator,
+                              sendCSVIterator)
 from linotp.lib.reporting import ReportingIterator
 from linotp.lib.reporting import get_max
 from linotp.lib.reporting import delete
@@ -318,7 +320,6 @@ class ReportingController(BaseController):
             Session.close()
             log.debug('[tokens] done')
 
-
     def show(self):
         """
         method:
@@ -335,11 +336,21 @@ class ReportingController(BaseController):
                 from this realm are shown
         * status - optional: filters reporting entries by status
                 like 'assigned' or 'inactive'
+        * sortby  - optional: sort the output by column
+        * sortdir - optional: asc/desc
+        * page    - optional: reqeuest a certain page
+        * pagesize - optional: limit the number of returned tokens
+        * outform - optional: if set to "csv", the output will be a .csv file
 
         returns: a json result with:
             { "head": [],
-            "data": [ [row1], [row2] .. ]
+            "data": [ [row1]
+            , [row2]
+            , [row3] .. ]
             }
+        in case of csv:
+        first line: header of columns
+        other lines: column values
 
 
         exception:
@@ -348,10 +359,13 @@ class ReportingController(BaseController):
 
         try:
             param = request.params
+            page = param.get('page')
+            sort = param.get('sortby')
+            sortdir = param.get('sortdir')
+            psize = param.get('pagesize')
+            output_format = param.get('outform', 'json')
             request_realms = param.get('realms', '').split(',')
             status = param.get('status', [])
-
-            param = request.params
             border_day = param.get('date')
 
             if border_day:
@@ -371,26 +385,21 @@ class ReportingController(BaseController):
             realms = match_realms(request_realms, realm_whitelist)
 
             reports = ReportingIterator(realms=realms, status=status, date=None,
-                                        page=None, psize=None, sort=None,
-                                        sortdir=None)
+                                        page=page, psize=psize, sort=sort,
+                                        sortdir=sortdir)
+            info = reports.getResultSetInfo()
 
             c.audit['success'] = True
-
-            # put in the result
-            result = {}
-
-            # now row by row
-            lines = []
-            for rep in reports:
-                # CKO:
-                log.debug("tokenline: %s" % rep)
-                lines.append(rep)
-
-            result["data"] = lines
-            result["resultset"] = reports.getResultSetInfo()
-
             Session.commit()
-            return sendResult(response, result)
+
+            if output_format == 'csv':
+                response.content_type = "application/force-download"
+                response.headers['Content-disposition'] = \
+                    'attachment; filename=linotp-reports.csv'
+                return sendCSVIterator(reports.iterate_reports())
+            else:
+                response.content_type = 'application/json'
+                return sendResultIterator(reports.iterate_reports(), opt=info)
 
         except PolicyException as policy_exception:
             log.exception(policy_exception)
@@ -409,4 +418,4 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[delete_before] done')
+            log.debug('done')
