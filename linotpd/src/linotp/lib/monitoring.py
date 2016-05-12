@@ -87,7 +87,8 @@ class MonitorHandler(object):
                     token_ids.add(token_tuple[0])
                 # all tokens, which are not references in TokenRealm
                 cond += (and_(not_(Token.LinOtpTokenId.in_(token_ids))),)
-                realms.remove('/:no realm:/')
+                if '/:no realm:/' in realm:
+                    realms.remove('/:no realm:/')
 
             else:
                 cond += (and_(TokenRealm.realm_id == Realm.id,
