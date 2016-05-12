@@ -35,9 +35,9 @@ import sys
 
 from linotp.lib.ext.pbkdf2 import PBKDF2
 
-from Crypto.Hash import HMAC
-from Crypto.Hash import SHA as SHA1
-from Crypto.Hash import SHA256 as SHA256
+from Cryptodome.Hash import HMAC
+from Cryptodome.Hash import SHA as SHA1
+from Cryptodome.Hash import SHA256 as SHA256
 
 from linotp.lib.ocra import OcraSuite
 from linotp.lib.crypt import kdf2, createActivationCode, check

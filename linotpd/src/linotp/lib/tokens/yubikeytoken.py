@@ -27,7 +27,7 @@
     run in Yubico Mode"""
 
 
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 import binascii
 import logging
 

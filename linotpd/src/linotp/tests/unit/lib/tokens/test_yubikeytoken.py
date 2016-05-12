@@ -30,7 +30,7 @@ import binascii
 import json
 
 from mock import MagicMock, patch
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 
 
 def _aes_decrypt_constructor(hex_key):

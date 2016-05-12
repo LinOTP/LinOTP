@@ -34,7 +34,7 @@ import os
 import binascii
 from linotp.lib.util import modhex_decode
 from linotp.lib.util import modhex_encode
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 
 import logging
 log = logging.getLogger(__name__)

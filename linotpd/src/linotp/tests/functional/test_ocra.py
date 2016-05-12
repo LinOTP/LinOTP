@@ -36,7 +36,7 @@ import traceback
 
 from linotp.lib.ext.pbkdf2 import PBKDF2
 
-from Crypto.Hash import SHA256 as SHA256
+from Cryptodome.Hash import SHA256 as SHA256
 
 from linotp.lib.ocra import OcraSuite
 from linotp.lib.crypt import kdf2, createActivationCode, check

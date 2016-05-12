@@ -30,10 +30,10 @@ import logging
 import binascii
 import os
 
-from Crypto.Cipher import AES
-from Crypto.Hash import HMAC
-from Crypto.Hash import SHA as SHA1
-from Crypto.Hash import SHA256
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import HMAC
+from Cryptodome.Hash import SHA as SHA1
+from Cryptodome.Hash import SHA256
 
 
 
