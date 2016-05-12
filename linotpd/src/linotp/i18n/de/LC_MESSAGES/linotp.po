@@ -1223,7 +1223,7 @@ msgstr ""
 "Der Google Authenticator unterstützt nur 6 Ziffern, den SHA1 Hash "
 "Algorithmus und einen Zeitschritt von 30 Sekunden."
 
-msgid "enroll totp token"
+msgid "enroll TOTP token"
 msgstr "TOTP Token ausrollen"
 
 msgid "Enroll FIDO U2F Token"

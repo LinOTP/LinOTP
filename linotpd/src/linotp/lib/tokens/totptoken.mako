@@ -523,7 +523,7 @@ $( document ).ready(function() {
         </tr>
         </table>
 
-        <button class='action-button' id='button_enroll_totp'>${_("enroll totp token")}</button>
+        <button class='action-button' id='button_enroll_totp'>${_("enroll TOTP token")}</button>
 
     </fieldset>
     </form>
