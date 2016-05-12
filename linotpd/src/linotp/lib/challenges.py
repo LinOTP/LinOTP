@@ -87,7 +87,7 @@ class Challenges(object):
             conditions += (and_(Challenge.tokenserial == serial),)
 
         if filter_open is True:
-            conditions += (and_(Challenge.valid_tan is False),)
+            conditions += (and_(Challenge.session.like('%"status": "open"%')),)
 
         # SQLAlchemy requires the conditions in one arg as tupple
         condition = and_(*conditions)
@@ -202,13 +202,7 @@ class Challenges(object):
                     # persist the final challenge data + message
                     challenge_obj.setChallenge(message)
                     challenge_obj.setData(data)
-
-                    # and calculate the mac for this token data
-                    challenge_dict = challenge_obj.get_vars(save=True)
-                    challenge_data = json.dumps(challenge_dict)
-                    mac = hsm.signMessage(challenge_data)
-                    challenge_obj.setSession(mac)
-
+                    challenge_obj.signChallenge(hsm)
                     challenge_obj.save()
                 else:
                     transactionid = ''
@@ -321,7 +315,13 @@ class Challenges(object):
         valid_chalenges = []
 
         for challenge in challenges:
-            # first lookup the validty time of the challenge which is per token
+            # if we should filter the
+            if filter_open:
+                stat = challenge.is_open()
+                if not stat:
+                    continue
+
+            # lookup the validty time of the challenge which is per token
             serial = challenge.tokenserial
             tokens = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
             validity = tokens[0].get_challenge_validity()
@@ -408,12 +408,7 @@ class Challenges(object):
                 challenge.setTanStatus(received=True, valid=False)
 
             # and calculate the mac for this token data
-            challenge_dict = challenge.get_vars(save=True)
-            challenge_data = json.dumps(challenge_dict)
-
-            mac = hsm.signMessage(message=challenge_data)
-
-            challenge.setSession(mac)
+            challenge.signChallenge(hsm)
             challenge.save()
 
         # finally delete the expired ones
@@ -435,11 +430,5 @@ class Challenges(object):
         hsm = context['hsm'].get('obj')
 
         # and calculate the mac for this token data
-        challenge_dict = challenge.get_vars(save=True)
-        challenge_data = json.dumps(challenge_dict)
-
-        stored_mac = challenge.getSession()
-        result = hsm.verfiyMessageSignature(message=challenge_data,
-                                            hex_mac=stored_mac)
-
+        result = challenge.checkChallengeSignature(hsm)
         return result

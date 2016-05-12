@@ -54,12 +54,7 @@ class TestPolicies(TestController):
         If the realms are deleted also the table TokenRealm gets deleted and we loose the information
         how many tokens are within a realm!
         '''
-        ## here we do the system test init per test method
-        #self._setLicense()
-        #self.delete_all_realms()
-        #self.delete_all_resolvers()
-        #self.create_common_resolvers()
-        #self.create_common_realms()
+
         TestController.setUp(self)
         self.set_config_selftest()
         return
@@ -74,6 +69,8 @@ class TestPolicies(TestController):
         '''
         Policy 00: Init the tests....
         '''
+        self.delete_all_policies()
+        self.delete_all_token()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -2333,7 +2330,7 @@ class TestPolicies(TestController):
         '''
         Policy 702: Unassigning user root@myDefRealm and deleting all tokens from myDefRealm.
         '''
-        for t in ['cko_test_001', 'cko_test_002', 'cko_test_003', 'cko_test_004', 'self001', 'self002']:
+        for t in ['cko_test_003', 'cko_test_004']:
             parameters = { 'serial' : t,
                            'selftest_admin' : 'superadmin'
                           }
