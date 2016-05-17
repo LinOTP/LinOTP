@@ -281,7 +281,7 @@ def setSupportLicense(licString):
     return ret, msg
 
 
-def do_nagging(lic_info):
+def do_nagging(lic_info, nag_days=7):
     """
     do nagging - answer the question if nagging should be done
 
@@ -291,8 +291,8 @@ def do_nagging(lic_info):
 
     d_fmt = "%Y-%m-%d"
 
-    # we start 20 days after download license was installed
-    nag_offset = 20
+    # we start 7 days after download license was installed
+    nag_offset = nag_days
 
     if not (lic_info.license_type and lic_info.license_type == 'download'):
         return False

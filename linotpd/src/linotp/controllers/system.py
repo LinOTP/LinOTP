@@ -1649,7 +1649,29 @@ class SystemController(BaseController):
         """
         res = {}
         info = {}
+        contact_info = [
+            "<h2>", _("Thank you for your interest in our products."), "</h2>",
+            "",
+            "<p>", _("Your current LinOTP Smart Virtual Appliance"
+                     "demo license is about to expire in a few days. "
+                     "For licenses for productive use or an extended "
+                     "evaluation period, "),
+            "<a href='mailto:sales@lsexperts.de'>", _("please contact us"), "</a>.</p>",
+            "",
+            "<p>", _("If you have questions about our products or your "
+                     "evaluation we are happy to answer your inquiry. "
+                     "We would also like to learn about your feedback "
+                     "concerning our products and your evaluation."), "</p>",
+            "",
+            "<p class='center'><a href='mailto:sales@lsexperts.de'>", _("sales@lsexperts.de"), "</a></p>",
+            "",
+            "<p class='center'>", _("Sales hotline: "), "<a href='tel:+49615186086277'>", _("+49 6151 86086 277"), "</a></p>"
+        ]
+
+        contact_hint = " ".join(contact_info)
+
         try:
+
             license_txt = getFromConfig('license', '')
             try:
                 licString = binascii.unhexlify(license_txt)
@@ -1662,8 +1684,8 @@ class SystemController(BaseController):
             if res is False:
                 info['reason'] = msg
 
-            if linotp.lib.support.do_nagging(lic_info):
-                info['download_licence_info'] = _("<h1>contact support</h1>")
+            if linotp.lib.support.do_nagging(lic_info, nag_days=7):
+                info['download_licence_info'] = contact_hint
 
             c.audit['success'] = res
             Session.commit()
@@ -1729,5 +1751,5 @@ class SystemController(BaseController):
             log.error("[setSupport] done")
 
 
-#eof###########################################################################
+# eof #########################################################################
 
