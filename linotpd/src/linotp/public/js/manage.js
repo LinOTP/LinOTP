@@ -4136,6 +4136,10 @@ $(document).ready(function(){
             });
             /* clean up the array, so that it contains no token changed info*/
             $token_config_changed.splice(0,$token_config_changed.length);
+
+            /* sort token config tabs */
+            sortChildsOfElement("#token_tab_index");
+
             do_dialog_icons();
             translate_token_settings();
         }
@@ -5369,7 +5373,10 @@ function sortChildsOfElement(elem){
         var items = $(this).children().get();
         items.sort(function(a,b){
           var keyA = $(a).text();
+          keyA = $.trim(keyA).toLowerCase();
+
           var keyB = $(b).text();
+          keyB = $.trim(keyB).toLowerCase();
 
           if (keyA < keyB) return -1;
           if (keyA > keyB) return 1;
