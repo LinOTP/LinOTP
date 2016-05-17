@@ -227,7 +227,6 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <div id='tab_system_settings'>
         <ul id='config_tab_index'>
             <li><a href='#tab_content_system_settings'>${_("Settings")}</a></li>
-            <li><a href='#tab_content_system_defaults'>${_("Token defaults")}</a></li>
             <li><a href='#tab_content_system_gui'>${_("GUI settings")}</a></li>
             <li><a href='#tab_content_system_client'>${_("Client Identification")}</a></li>
         </ul>
@@ -272,55 +271,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                     <input type='text' name='sys_mayOverwriteClient' id='sys_mayOverwriteClient' size='40'
                     title="${_('This is a comma separated list of clients, that may send another client IP for authorization policies.')}">
             </fieldset>
-            <fieldset id='ocra_config'>
-                <legend>${_("OCRA settings")}</legend>
-                <table>
-                    <tr><td><label for=ocra_max_challenge>${_("Maximum concurrent OCRA challenges")}</label></td>
-                        <td><input type="text" id="ocra_max_challenge" maxlength="4" class=integer
-                            title='${_("This is the maximum concurrent challenges per OCRA Token.")}'/></td></tr>
-                    <tr><td><label for=ocra_challenge_timeout>${_("OCRA challenge timeout")}</label></td>
-                        <td><input type="text" id="ocra_challenge_timeout" maxlength="6"
-                            title='${_("After this time a challenge can not be used anymore. Valid entries are like 1D, 2H or 5M where D=day, H=hour, M=minute.")}'></td></tr>
-                </table>
-            </fieldset>
-    </div> <!-- tab with settings -->
-        <div id='tab_content_system_defaults'>
-            <fieldset>
-                <legend>${_("Misc settings")}</legend>
-                <table>
-                    <tr><td><label for=sys_resetFailCounter>${_("DefaultResetFailCount")}:</label></td>
-                        <td><input type="checkbox" name="sys_resetFailCounter" id="sys_resetFailCounter" value="sys_resetFailCounter"
-                            title='${_("Will reset the fail counter when the user authenticated successfully")}'></td></tr>
-                    <tr><td><label for=sys_maxFailCount> ${_("DefaultMaxFailCount")}: </label></td>
-                        <td><input type="text" name="sys_maxFailCount" class="required"  id="sys_maxFailCount" size="4" maxlength="3"
-                            title='${_("This is the maximum allowed failed logins for a new enrolled token.")}'></td></tr>
-                    <tr><td><label for=sys_syncWindow> ${_("DefaultSyncWindow")}: </label></td>
-                        <td><input type="text" name="sys_syncWindow" class="required"  id="sys_syncWindow" size="4" maxlength="6"
-                            title='${_("A new token will have this windows to do the manual or automatic OTP sync.")}'></td></tr>
-                    <tr><td><label for=sys_otpLen> ${_("DefaultOtpLen")}: </label></td>
-                        <td><input type="text" name="sys_otpLen" class="required"  id="sys_otpLen" size="4" maxlength="1"
-                            title='${_("A new token will be set to this OTP length.")}'></td></tr>
-                    <tr><td><label for=sys_countWindow> ${_("DefaultCountWindow")}: </label></td>
-                        <td><input type="text" name="sys_countWindow" class="required"  id="sys_countWindow" size="4" maxlength="3"
-                            title='${_("This is the default look ahead window for counter based tokens.")}'></td></tr>
-                <tr><td><label for='sys_challengeTimeout'> ${_("DefaultChallengeValidityTime")}: </label></td>
-                    <td><input type="text" name="sys_challengeTimeout" class="required"  id="sys_challengeTimeout" size="4" maxlength="3"
-                        title='${_("Default validity timeframe of a challenge.")}' value=120></td></tr>
-
-                </table>
-            </fieldset>
-            <fieldset>
-                <legend>${_("OCRA settings")}</legend>
-                <table>
-                    <tr><td><label for=ocra_default_suite>${_("Default OCRA suite")}</label></td>
-                        <td><input type="text" name="ocra_default_suite" id="ocra_default_suite" size='30' maxlength="40"
-                            title="${_('This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-SHA256-8:C-QA08')}"></td></tr>
-                    <tr><td><label for=ocra_default_qr_suite>${_("Default QR suite")}</label></td>
-                        <td><input type="text" name="ocra_default_qr_suite" id="ocra_default_qr_suite" maxlength=40 size=30
-                            title='${_("This is the suite for newly enrolled QR tokens. Default is OCRA-1:HOTP-SHA256-6:C-QA64")}'></td></tr>
-                </table>
-            </fieldset>
-        </div> <!-- tab with defaults -->
+        </div> <!-- tab with settings -->
         <div id='tab_content_system_gui'>
             <fieldset>
                     <legend>${_("Selfservice portal")}</legend>
@@ -513,6 +464,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
         % for entry in c.token_config_tab:
             <li> <a href="#${entry}_token_settings">${c.token_config_tab[entry] |n}</a></li>
         % endfor
+            <li> <a href="#ocra_token_settings">${_("OCRA Token")}</a></li>
+            <li> <a href="#tokendefault_token_settings">${_("Default Settings")}</a></li>
         </ul> <!-- tab with token settings -->
         % for entry in c.token_config_div:
             <div id="${entry}_token_settings">
@@ -520,6 +473,184 @@ ${c.version} --- &copy; ${c.licenseinfo}
             </div>
         % endfor
 
+        <%doc>
+            Ocra token config tab _static_
+        </%doc>
+        <script>
+            /*
+             * 'typ'_get_config_val()
+             *
+             * this method is called, when the token config dialog is opened
+             * - it contains the mapping of config entries to the form id
+             * - according to the Config entries, the form entries will be filled
+             *
+             */
+
+            function ocra_get_config_val(){
+                var id_map = {};
+
+                id_map['OcraMaxChallenges'] = 'ocra_max_challenge';
+                id_map['OcraChallengeTimeout'] = 'ocra_challenge_timeout';
+                id_map['OcraDefaultSuite'] = 'ocra_default_suite';
+                id_map['QrOcraDefaultSuite'] = 'ocra_default_qr_suite';
+
+                return id_map;
+            }
+
+            /*
+             * 'typ'_get_config_params()
+             *
+             * this method is called, when the token config is submitted
+             * - it will return a hash of parameters for system/setConfig call
+             *
+             */
+            function ocra_get_config_params(){
+                var url_params ={};
+
+                url_params['OcraMaxChallenges'] = $('#ocra_max_challenge').val();
+                url_params['OcraChallengeTimeout'] = $('#ocra_challenge_timeout').val();
+                url_params['OcraDefaultSuite'] = $('#ocra_default_suite').val();
+                url_params['QrOcraDefaultSuite'] = $('#ocra_default_qr_suite').val();
+
+                return url_params;
+            }
+        </script>
+        <div id="ocra_token_settings">
+            <form class="cmxform" id="form_ocra_config">
+                <fieldset id='ocra_config'>
+                    <legend>${_("OCRA token settings")}</legend>
+                    <table>
+                        <tr><td><label for=ocra_max_challenge>${_("Maximum concurrent OCRA challenges")}</label></td>
+                            <td><input type="text" id="ocra_max_challenge" maxlength="4" class=integer
+                                title='${_("This is the maximum concurrent challenges per OCRA Token.")}'/></td></tr>
+                        <tr><td><label for=ocra_challenge_timeout>${_("OCRA challenge timeout")}</label></td>
+                            <td><input type="text" id="ocra_challenge_timeout" maxlength="6"
+                                title='${_("After this time a challenge can not be used anymore. Valid entries are like 1D, 2H or 5M where D=day, H=hour, M=minute.")}'></td></tr>
+                        <tr><td><label for=ocra_default_suite>${_("Default OCRA suite")}</label></td>
+                            <td><input type="text" name="ocra_default_suite" id="ocra_default_suite" size='30' maxlength="40"
+                                title="${_('This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-SHA256-8:C-QA08')}"></td></tr>
+                        <tr><td><label for=ocra_default_qr_suite>${_("Default QR suite")}</label></td>
+                            <td><input type="text" name="ocra_default_qr_suite" id="ocra_default_qr_suite" maxlength=40 size=30
+                                title='${_("This is the suite for newly enrolled QR tokens. Default is OCRA-1:HOTP-SHA256-6:C-QA64")}'></td></tr>
+                    </table>
+                </fieldset>
+            </form>
+        </div>
+
+        <%doc>
+            Default token config tab _static_
+        </%doc>
+        <script>
+            /*
+             * 'typ'_get_config_val()
+             *
+             * this method is called, when the token config dialog is opened
+             * - it contains the mapping of config entries to the form id
+             * - according to the Config entries, the form entries will be filled
+             *
+             */
+
+            function tokendefault_get_config_val(){
+                var id_map = {};
+
+                id_map['DefaultResetFailCount'] = 'default_token_resetFailCounter';
+                id_map['DefaultMaxFailCount'] = 'default_token_maxFailCount';
+                id_map['DefaultSyncWindow'] = 'default_token_syncWindow';
+                id_map['DefaultOtpLen'] = 'default_token_otpLen';
+                id_map['DefaultCountWindow'] = 'default_token_countWindow';
+                id_map['DefaultChallengeValidityTime'] = 'default_token_challengeTimeout';
+
+                return id_map;
+            }
+
+            /*
+             * 'typ'_get_config_params()
+             *
+             * this method is called, when the token config is submitted
+             * - it will return a hash of parameters for system/setConfig call
+             *
+             */
+            function tokendefault_get_config_params(){
+                var url_params ={};
+
+                url_params['DefaultResetFailCount'] =
+                    ($("#default_token_resetFailCounter").is(':checked') ? "True" : "False");
+
+                url_params['DefaultMaxFailCount'] = $('#default_token_maxFailCount').val();
+                url_params['DefaultSyncWindow'] = $('#default_token_syncWindow').val();
+                url_params['DefaultOtpLen'] = $('#default_token_otpLen').val();
+                url_params['DefaultCountWindow'] = $('#default_token_countWindow').val();
+                url_params['DefaultChallengeValidityTime'] = $('#default_token_challengeTimeout').val();
+
+                return url_params;
+            }
+        </script>
+        <div id="tokendefault_token_settings">
+            <form class="cmxform" id="form_default_token_config">
+                <fieldset>
+                    <legend>${_("Default token settings")}</legend>
+                    <table>
+                        <tr>
+                            <td>
+                                <label for=default_token_resetFailCounter>${_("DefaultResetFailCount")}:</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" name="default_token_resetFailCounter" id="default_token_resetFailCounter" value="default_token_resetFailCounter"
+                                    title='${_("Will reset the fail counter when the user authenticated successfully")}'>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for=default_token_maxFailCount> ${_("DefaultMaxFailCount")}: </label>
+                            </td>
+                            <td>
+                                <input type="number" name="default_token_maxFailCount" id="default_token_maxFailCount"
+                                    title='${_("This is the maximum allowed failed logins for a new enrolled token.")}'>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for=default_token_countWindow> ${_("DefaultCountWindow")}: </label>
+                            </td>
+                            <td>
+                                <input type="number" name="default_token_countWindow" id="default_token_countWindow"
+                                    title='${_("This is the default look ahead window for counter based tokens.")}'>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for=default_token_syncWindow> ${_("DefaultSyncWindow")}: </label>
+                            </td>
+                            <td>
+                                <input type="number" name="default_token_syncWindow" id="default_token_syncWindow"
+                                    title='${_("A new token will have this window to do the manual or automatic OTP sync.")}'>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for=default_token_otpLen> ${_("DefaultOtpLen")}: </label>
+                            </td>
+                            <td>
+                                <select name="default_token_otpLen" title='${_("A new token will be set to this OTP length.")}' id="default_token_otpLen">
+                                    <option value=6>${_("6 digits")}</option>
+                                    <option value=8>${_("8 digits")}</option>
+                                    <option value=10>${_("10 digits")}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for='default_token_challengeTimeout'> ${_("DefaultChallengeValidityTime")}: </label>
+                            </td>
+                            <td>
+                                <input type="number" name="default_token_challengeTimeout" id="default_token_challengeTimeout"
+                                    title='${_("Default validity timeframe of a challenge.")}' placeholder="120">
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </form>
+        </div>
     </div> <!-- tab container system settings -->
 </div>
 
@@ -952,7 +1083,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <p>${_("For OCRA tokens:")}</p>
         <p>${_("Serial Number, Seed, Type, Ocra Suite")}</p>
         <fieldset>
-	        <legend>${_("Default Values:")}</legend>
+            <legend>${_("Default Values:")}</legend>
             <table>
                 <tr><td>${_("Type")}</td><td>-></td><td>${_("HOTP")}</td></tr>
                 <tr><td>${_("OTP length")}</td><td>-></td><td>6</td></tr>
@@ -1223,7 +1354,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_delete_token'>
     <p>${_("The following tokens will be permanently deleted and can not be recovered.")}
     </p>
-    <span id='delete_info'>	</span>
+    <span id='delete_info'> </span>
 </div>
 <script>
     function translate_dialog_delete_token() {

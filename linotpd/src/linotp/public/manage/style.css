@@ -176,10 +176,10 @@ a.disabledToken {
 
 label.error {
 	float: none;
-	display: block;
 	color: red;
-	padding-bottom: .5em;
 	vertical-align: top;
+	margin-bottom: .3em;
+	display: block;
 }
 
 h1 {
@@ -476,9 +476,10 @@ html {
 	font-style: italic;
 }
 
-label.error {
-	color: red;
+.cmxform td {
+    vertical-align: top;
 }
+<<<<<<< f5e22ad58fa86a351fb6eceb54f7d77b4607f2d1
 .ui-dialog form.cmxform input,
 .ui-dialog form.cmxform textarea{
 	width: 100%;
@@ -561,4 +562,9 @@ label.error {
 .ui-widget-content .ui-state-hover,
 .ui-widget-header .ui-state-hover {
 	background: #E1E1E1!important;
+=======
+
+.cmxform td label{
+    line-height: 1.4em;
+>>>>>>> Moved OCRA config and token default settings into the  token config dialog
 }

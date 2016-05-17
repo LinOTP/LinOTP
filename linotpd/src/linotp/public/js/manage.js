@@ -827,10 +827,17 @@ function load_token_config() {
             for (var key in l_params) {
                 if (key in $systemConfig) {
                     try{
-                        //alert('Val = >' + $systemConfig[key] + '<');
-                        //console_log("  " + key + ": " + l_params[key] + '  ' +  $systemConfig[key] + 'not found!');
-                        $('#'+l_params[key]).val( $systemConfig[key] );
-
+                        var input_id = '#'+l_params[key];
+                        if(key.startsWith("Default")){
+                            console.log();
+                        }
+                        if($(input_id).is(":checkbox")) {
+                            var checked = $systemConfig[key].toLowerCase() == "true";
+                            $(input_id).prop('checked', checked);
+                        }
+                        else {
+                            $(input_id).val( $systemConfig[key] );
+                        }
                     } catch(err) {
                         //console_log('error ' + err + "  " + key + ": " + l_params[key] + '  ' + 'not found!')
                     }
@@ -2429,9 +2436,6 @@ function load_system_config(){
         // checkboxes this way:
         hide_waiting();
         checkBoxes = new Array();
-        if (data.result.value.DefaultResetFailCount == "True") {
-            checkBoxes.push("sys_resetFailCounter");
-        };
         if (data.result.value.splitAtSign == "True") {
             checkBoxes.push("sys_splitAtSign");
         };
@@ -2457,19 +2461,8 @@ function load_system_config(){
             checkBoxes.push("sys_realmbox");
         }
         $("input:checkbox").val(checkBoxes);
-        $('#sys_maxFailCount').val(data.result.value.DefaultMaxFailCount);
-        $('#sys_syncWindow').val(data.result.value.DefaultSyncWindow);
-        $('#sys_otpLen').val(data.result.value.DefaultOtpLen);
-        $('#sys_countWindow').val(data.result.value.DefaultCountWindow);
-        $('#sys_challengeTimeout').val(data.result.value.DefaultChallengeValidityTime);
         $('#sys_autoResyncTimeout').val(data.result.value.AutoResyncTimeout);
         $('#sys_mayOverwriteClient').val(data.result.value.mayOverwriteClient);
-        // OCRA stuff
-        $('#ocra_default_suite').val(data.result.value.OcraDefaultSuite);
-        $('#ocra_default_qr_suite').val(data.result.value.QrOcraDefaultSuite);
-        $('#ocra_max_challenge').val(data.result.value.OcraMaxChallenges);
-        $('#ocra_challenge_timeout').val(data.result.value.OcraChallengeTimeout);
-
 
         $('#sys_x_forwarded_for').prop('checked', false);
         if (data.result.value['client.X_FORWARDED_FOR'] == "True") {
@@ -2487,20 +2480,11 @@ function load_system_config(){
 function save_system_config(){
     show_waiting();
     var params = {
-        'DefaultMaxFailCount': $('#sys_maxFailCount').val(),
-        'DefaultSyncWindow': $('#sys_syncWindow').val(),
-        'DefaultOtpLen': $('#sys_otpLen').val(),
-        'DefaultCountWindow': $('#sys_countWindow').val(),
-        'DefaultChallengeValidityTime': $('#sys_challengeTimeout').val(),
         'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
         'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
         'totp.timeShift': $('#totp_timeShift').val(),
         'totp.timeStep': $('#totp_timeStep').val(),
         'totp.timeWindow': $('#totp_timeWindow').val(),
-        'OcraDefaultSuite' : $('#ocra_default_suite').val(),
-        'QrOcraDefaultSuite' : $('#ocra_default_qr_suite').val(),
-        'OcraMaxChallenges' : $('#ocra_max_challenge').val(),
-        'OcraChallengeTimeout' : $('#ocra_challenge_timeout').val(),
         'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
         'session':getsession()}
 
@@ -2542,10 +2526,6 @@ function save_system_config(){
     if ($('#sys_passOnUserNoToken').is(':checked')) {
         passOUNToken = "True";
     }
-    var defaultReset = "False";
-    if ($("#sys_resetFailCounter").is(':checked')) {
-        defaultReset = "True";
-    }
     var realmbox = "False";
     if ($("#sys_realmbox").is(':checked')) {
         realmbox = "True";
@@ -2562,7 +2542,6 @@ function save_system_config(){
             'PrependPin' :prepend,
             'FailCounterIncOnFalsePin' : fcounter ,
             'splitAtSign' : splitatsign,
-            'DefaultResetFailCount' : defaultReset,
             'AutoResync' :    autoresync,
             'PassOnUserNotFound' : passOUNFound,
             'PassOnUserNoToken' : passOUNToken,
@@ -4448,6 +4427,36 @@ $(document).ready(function(){
     });
     $('#tab_token_settings').tabs();
 
+    $("#form_default_token_config").validate({
+        ignoreTitle: true,
+        rules: {
+            default_token_maxFailCount: {
+                required: true,
+                min: 1,
+                max: 100,
+                number: true
+            },
+            default_token_countWindow: {
+                required: true,
+                min: 10,
+                max: 100,
+                number: true
+            },
+            default_token_syncWindow: {
+                required: true,
+                min: 100,
+                max: 9999,
+                number: true
+            },
+            default_token_challengeTimeout: {
+                required: true,
+                min: 60,
+                max: 600,
+                number: true
+            }
+        }
+    });
+
     /*********************************************************************
      * SMS Provider config
      */
@@ -4719,32 +4728,6 @@ $(document).ready(function(){
         }
     });
     $('#tab_system_settings').tabs();
-
-    $("#form_sysconfig").validate({
-        rules: {
-            sys_maxFailCount: {
-                required: true,
-                minlength: 2,
-                number: true
-            },
-            sys_countWindow: {
-                required: true,
-                minlength: 2,
-                number: true
-            },
-            sys_syncWindow: {
-                required: true,
-                minlength: 3,
-                number: true
-            },
-            sys_otpLen: {
-                required: true,
-                minlength: 1,
-                maxlength: 1,
-                number: true
-            }
-        }
-    });
 
     $('#menu_system_config').click(function(){
         load_system_config();
