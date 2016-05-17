@@ -33,6 +33,43 @@
 
 
 %if c.scope == 'config' :
+<script>
+/*
+ * 'typ'_get_config_val()
+ *
+ * this method is called, when the token config dialog is opened
+ * - it contains the mapping of config entries to the form id
+ * - according to the Config entries, the form entries will be filled
+ *
+ */
+
+
+function ocra2_get_config_val(){
+    var id_map = {};
+
+    id_map['Ocra2MaxChallengeRequests'] = 'ocra2_max_challenge';
+    id_map['Ocra2ChallengeTimeout'] = 'ocra2_challenge_timeout';
+
+    return id_map;
+
+}
+
+/*
+ * 'typ'_get_config_params()
+ *
+ * this method is called, when the token config is submitted
+ * - it will return a hash of parameters for system/setConfig call
+ *
+ */
+function ocra2_get_config_params(){
+	var url_params ={};
+
+    url_params['Ocra2MaxChallengeRequests'] = $('#ocra2_max_challenge').val();
+    url_params['Ocra2ChallengeTimeout'] = $('#ocra2_challenge_timeout').val();
+
+	return url_params;
+}
+</script>
 
 <form class="cmxform" id="form_ocra2_config">
 <fieldset>
