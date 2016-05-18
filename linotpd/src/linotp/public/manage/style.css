@@ -372,3 +372,8 @@ z-index: 1;
 label.error {
 	color: red;
 }
+
+
+.center {
+	text-align: center;
+}

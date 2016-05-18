@@ -990,18 +990,9 @@ function check_license(){
                         });
     }
     if (obj['detail'] && obj.detail['download_licence_info']) {
-        var title = i18n.gettext('Support Contact');
-        var download_licence_info =  obj.detail['download_licence_info'];
-        alert_box({'title': title,
-                   'text': download_licence_info,
-                   'is_escaped': true});
-       /*
-       translate_support_view();
-       support_view();
-       $('#dialog_support_view').dialog('open');
-       */
+        $('#dialog_support_contact').html(obj.detail['download_licence_info']);
+        $dialog_support_contact.dialog('open');
     }
-    return;
 }
 
 function check_serial(serial){
@@ -4196,6 +4187,28 @@ $(document).ready(function(){
 
     $('#menu_policies').click(function(){
         $('#tabs').tabs('option', 'active', 2);
+    });
+
+    /*********************************************************************
+     * license support contact
+     */
+    $dialog_support_contact = $('#dialog_support_contact').dialog({
+        autoOpen: false,
+        title: 'Support Contact',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Ok': {click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_support_contact_close",
+                text: "Ok"
+            }
+        },
+        open: function(event, ui) {
+            translate_support_contact();
+        }
+
     });
 
     /*********************************************************************
