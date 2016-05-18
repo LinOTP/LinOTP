@@ -1,4 +1,4 @@
-linotp (2.8.1.2~rc2-1) jessie; urgency=low
+linotp (2.8.1.2~rc3-1) jessie; urgency=low
 
   Enhancements:
   * Server: Add support for demo licenses
@@ -11,7 +11,7 @@ linotp (2.8.1.2~rc2-1) jessie; urgency=low
   * Server: Fix import of policies missing scope or action
   * Server: Fix license import using IE
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 25 Apr 2016 15:19:14 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 18 May 2016 17:13:33 +0200
 
 linotp (2.8.1.1-1) jessie; urgency=low
 

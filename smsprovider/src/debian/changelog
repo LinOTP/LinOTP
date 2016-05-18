@@ -1,8 +1,8 @@
-linotp-smsprovider (2.8.1.2~rc2-1) jessie; urgency=low
+linotp-smsprovider (2.8.1.2~rc3-1) jessie; urgency=low
 
   * Add ability to suppress a leading '+' in phone numbers
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 25 Apr 2016 15:19:14 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 18 May 2016 17:13:33 +0200
 
 linotp-smsprovider (2.8.1-1) jessie; urgency=low
 
