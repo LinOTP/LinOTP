@@ -121,7 +121,6 @@ def getPolicyDefinitions(scope=""):
             'remove': {'type': 'bool'},
             'userlist': {'type': 'bool'},
             'tokenowner': {'type': 'bool'},
-            'token_method': {'type': 'bool'},
             'checkstatus': {'type': 'bool'},
             'manageToken': {'type': 'bool'},
             'getserial': {'type': 'bool'},
@@ -1927,22 +1926,6 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
 
             # get the realms for this administrator
             policies = getAdminPolicies('')
-            log.debug("[checkPolicyPre] The admin >%s< may manage the "
-                      "following realms: %s" % (policies['admin'],
-                                                policies['realms']))
-            if policies['active'] and 0 == len(policies['realms']):
-                log.error("[checkPolicyPre] The admin >%s< has no rights in "
-                          "any realms!" % policies['admin'])
-                raise PolicyException(_("You do not have any rights in any "
-                                      "realm! Check the policies."))
-            return {'realms': policies['realms'], 'admin': policies['admin'],
-                    "active": policies['active']}
-
-        elif 'token_method' == method:
-            log.debug("[checkPolicyPre] entering method %s" % method)
-
-            # get the realms for this administrator
-            policies = getAdminPolicies('token_method')
             log.debug("[checkPolicyPre] The admin >%s< may manage the "
                       "following realms: %s" % (policies['admin'],
                                                 policies['realms']))

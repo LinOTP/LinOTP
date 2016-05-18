@@ -213,14 +213,6 @@ def parseYubicoCSV(csv):
 
     log.debug("[parseYubicoCSV] the file contains %i tokens." % len(csv_array))
     for line in csv_array:
-
-        # parsing of the challenge response should not
-        # interfere with the other token parsing
-        if line.startswith('Challenge-Response:'):
-            serial, params = _parseYubiChallengResponse(line)
-            TOKENS[serial] = params
-            continue
-
         l = line.split(',')
         serial = ""
         key = ""
@@ -246,11 +238,11 @@ def parseYubicoCSV(csv):
                     ttype = "yubikey"
                     otplen = 32 + len(public_id)
                     serial = "UBAM%08d_%s" % (serial_int, slot)
-                    TOKENS[serial] = {'type': ttype,
-                                      'hmac_key': key,
-                                      'otplen': otplen,
-                                      'description': public_id
-                                      }
+                    TOKENS[serial] = { 'type' : ttype,
+                               'hmac_key' : key,
+                               'otplen' : otplen,
+                               'description': public_id
+                              }
                 elif typ.lower() == "oath-hotp":
                     '''
                     TODO: this does not work out at the moment, since the GUI either
@@ -308,32 +300,6 @@ def parseYubicoCSV(csv):
 
     return TOKENS
 
-
-def _parseYubiChallengResponse(line):
-    """
-    parse the yubikey csv
-    """
-    # the lookup 'where' dictionary
-    index_dict = {'description': 0,
-                  'slot': 2,
-                  'hmac_key': 5,
-                  'serial': 7}
-
-    # initial token description
-    params = {'type': 'yk_challenge_response',
-              'otplen': 40,  # sha1 in hexlified format
-              }
-
-    entries = line.split(',')
-    for key, index in index_dict.items():
-        params[key] = entries[index]
-
-    if not params['serial']:
-        params['serial'] = binascii.hexlify(os.urandom(4))
-
-    params['serial'] = "UBCH%s_%d" % (params['serial'], int(params['slot']))
-
-    return params['serial'], params
 
 def parseSafeNetXML(xml):
     '''
