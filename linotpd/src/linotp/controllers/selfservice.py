@@ -206,16 +206,19 @@ class SelfserviceController(BaseController):
             actions = getSelfserviceActions(self.authUser)
             c.actions = actions
             for policy in actions:
-                if "=" in policy:
-                    (name, val) = policy.split('=')
-                    val = val.strip()
-                    # try if val is a simple numeric -
-                    # w.r.t. javascript evaluation
-                    try:
-                        nval = int(val)
-                    except:
-                        nval = val
-                    c.__setattr__(name.strip(), nval)
+                if policy:
+                    if "=" not in policy:
+                        c.__setattr__(policy, -1)
+                    else:
+                        (name, val) = policy.split('=')
+                        val = val.strip()
+                        # try if val is a simple numeric -
+                        # w.r.t. javascript evaluation
+                        try:
+                            nval = int(val)
+                        except:
+                            nval = val
+                        c.__setattr__(name.strip(), nval)
 
             c.dynamic_actions = add_dynamic_selfservice_enrollment(config,
                                                                    c.actions)

@@ -322,7 +322,7 @@ class TestController(unittest2.TestCase):
             cookies=cookies,
             )
 
-    def make_admin_request(self, action, params=None, method='GET',
+    def make_admin_request(self, action, params=None, method=None,
                            auth_user='admin',):
         """
         Makes an authenticated request to /admin/'action'
@@ -337,7 +337,7 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             )
 
-    def make_audit_request(self, action, params=None, method='GET',
+    def make_audit_request(self, action, params=None, method=None,
                            auth_user='admin',):
         """
         Makes an authenticated request to /admin/'action'
@@ -352,7 +352,7 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             )
 
-    def make_manage_request(self, action, params=None, method='GET',
+    def make_manage_request(self, action, params=None, method=None,
                            auth_user='admin',):
         """
         Makes an authenticated request to /manage/'action'
@@ -367,7 +367,7 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             )
 
-    def make_system_request(self, action, params=None, method='GET',
+    def make_system_request(self, action, params=None, method=None,
                             auth_user='admin'):
         """
         Makes an authenticated request to /admin/'action'

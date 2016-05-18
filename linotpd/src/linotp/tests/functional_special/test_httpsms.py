@@ -240,10 +240,11 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_validate_request('smspin',
                                               params={'user': 'user1',
                                                       'pass': '1234'})
-
-        # due to security fixes to prevent information leakage, there is no
-        # more the text:
-        #         'Failed to send SMS.'
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    'Failed to send SMS. We received a'
+        #                'Failed to send SMS.'
         self.assertTrue('"value": false' in response, response)
 
         # check last audit entry
@@ -441,7 +442,9 @@ class TestHttpSmsController(TestSpecialController):
             "SMS_TEXT_KEY": "text",
             "SMS_PHONENUMBER_KEY": "destination",
             "HTTP_Method": "GET",
-            "RETURN_FAIL": "FAILED"
+            "RETURN_FAIL" : "FAILED",
+            "MSISDN": True,
+            "SUPPRESS_PREFIX" : '+',
         }
 
         parameters = {
@@ -456,12 +459,15 @@ class TestHttpSmsController(TestSpecialController):
         response = self.make_validate_request('smspin',
                                               params={'user': 'user1',
                                                       'pass': '1234'})
-        # due to security fixes to prevent information leakage, there is no
-        # more the text:
-        #         'Failed to send SMS. We received a predefined error
-        #                            from the SMS Gateway.'
-        self.assertTrue('"value": false' in response, response)
 
+
+
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    'Failed to send SMS. We received a'
+        #                ' predefined error from the SMS Gateway.
+        self.assertTrue('"value": false' in response, response)
         return
 
     def setSMSProvider(self, preferred_httplib=None, method='GET',

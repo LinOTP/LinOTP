@@ -117,13 +117,13 @@ class TimeHmacTokenClass(HmacTokenClass):
         self.hKeyRequired = True
 
         ''' timeStep defines the granularity: '''
-        self.timeStep = getFromConfig("totp.timeStep", 30)
+        self.timeStep = getFromConfig("totp.timeStep", 30) or 30
 
         ''' window size in seconds:
             30 seconds with as step width of 30 seconds results
             in a window of 1  which is one attempt
         '''
-        self.timeWindow = getFromConfig("totp.timeWindow", 180)
+        self.timeWindow = getFromConfig("totp.timeWindow", 180) or 180
 
 
         '''the time shift is specified in seconds  - and could be
@@ -134,7 +134,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         '''we support various hashlib methods, but only on create
         which is effectively set in the update
         '''
-        self.hashlibStr = getFromConfig("totp.hashlib", u'sha1')
+        self.hashlibStr = getFromConfig("totp.hashlib", u'sha1') or 'sha1'
 
         log.debug("[init]  end. Token object created")
         return
@@ -278,10 +278,14 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         HmacTokenClass.update(self, param)
 
-        self.addToTokenInfo("timeWindow", self.timeWindow)
-        self.addToTokenInfo("timeShift", self.timeShift)
-        self.addToTokenInfo("timeStep", self.timeStep)
-        self.addToTokenInfo("hashlib", self.hashlibStr)
+        if self.timeWindow is not None and self.timeWindow != '':
+            self.addToTokenInfo("timeWindow", self.timeWindow)
+        if self.timeShift is not None and self.timeShift != '':
+            self.addToTokenInfo("timeShift", self.timeShift)
+        if self.timeStep is not None and self.timeStep != '':
+            self.addToTokenInfo("timeStep", self.timeStep)
+        if self.hashlibStr:
+            self.addToTokenInfo("hashlib", self.hashlibStr)
 
         log.debug("[update]  end. Processing the initialization parameters done.")
         return
@@ -406,11 +410,11 @@ class TimeHmacTokenClass(HmacTokenClass):
             raise e
 
         secObj = self._get_secret_object()
-        self.hashlibStr = self.getFromTokenInfo("hashlib", self.hashlibStr)
+        self.hashlibStr = self.getFromTokenInfo("hashlib", self.hashlibStr) or 'sha1'
 
-        timeStepping = int(self.getFromTokenInfo("timeStep", self.timeStep))
-        window = int(self.getFromTokenInfo("timeWindow", self.timeWindow))
-        shift = int(self.getFromTokenInfo("timeShift", self.timeShift))
+        timeStepping = int(self.getFromTokenInfo("timeStep", self.timeStep) or 30)
+        window = int(self.getFromTokenInfo("timeWindow", self.timeWindow) or 180)
+        shift = int(self.getFromTokenInfo("timeShift", self.timeShift) or 0)
 
         ## oldCounter we have to remove one, as the normal otp handling will increment
         oCount = self.getOtpCount() - 1
@@ -689,9 +693,9 @@ class TimeHmacTokenClass(HmacTokenClass):
         otplen = int(self.token.LinOtpOtpLen)
         secObj = self._get_secret_object()
 
-        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
-        timeStepping = int(self.getFromTokenInfo("timeStep", 30))
-        shift = int(self.getFromTokenInfo("timeShift", 0))
+        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1") or 'sha1'
+        timeStepping = int(self.getFromTokenInfo("timeStep", 30) or 30)
+        shift = int(self.getFromTokenInfo("timeShift", 0) or 0)
 
         hmac2Otp = HmacOtp(secObj, self.getOtpCount(), otplen, self.getHashlib(self.hashlibStr))
 
@@ -735,9 +739,9 @@ class TimeHmacTokenClass(HmacTokenClass):
             return ret
 
         secObj = self._get_secret_object()
-        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
-        timeStepping = int(self.getFromTokenInfo("timeStep", 30))
-        shift = int(self.getFromTokenInfo("timeShift", 0))
+        self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1") or 'sha1'
+        timeStepping = int(self.getFromTokenInfo("timeStep", 30) or 30)
+        shift = int(self.getFromTokenInfo("timeShift", 0) or 0)
 
         hmac2Otp = HmacOtp(secObj, self.getOtpCount(),
                            otplen, self.getHashlib(self.hashlibStr))
@@ -746,7 +750,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         if curTime:
             tCounter = self.time2float(curTime)
 
-        ## we don't need to round here as we have alread float
+        # we don't need to round here as we have alread float
         counter = int(((tCounter - shift) / timeStepping))
 
         otp_dict["shift"] = shift

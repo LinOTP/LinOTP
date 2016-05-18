@@ -128,6 +128,7 @@ class SecretObj(object):
         otpKeyEnc = binascii.hexlify(enc_otp_key)
         return (otpKeyEnc == self.val)
 
+
     def hmac_digest(self, data_input, hash_algo):
         self._setupKey_()
         if pver > 2.6:
@@ -890,7 +891,7 @@ def extract_tan(signature, digits):
     tan = tan % 10**digits
     return tan
 
-# ----------------------------------------------------------------------------
+# #############################################################################
 
 
 def encode_base64_urlsafe(data):
@@ -903,6 +904,6 @@ def decode_base64_urlsafe(data):
     return base64.urlsafe_b64decode(data.encode() + (-len(data) % 4)*b'=')
 
 
-# -----------------------------------------------------------------------------
+# #############################################################################
 
 # eof #########################################################################

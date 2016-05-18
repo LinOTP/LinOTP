@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
@@ -24,7 +24,7 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
--->
+</%doc>
 <h1>${_("Reset OTP PIN")}</h1>
 
 <div id='passwordform'>
@@ -46,9 +46,9 @@
         </tr>
         </table>
         <button class='action-button' id='button_setpin' onclick="setpin(); return false;">${_("set PIN")}</button>
-    <input type='hidden' value='${_("The passwords do not match!")}' 		id='setpin_fail'/>
-        <input type='hidden' value='${_("Error setting PIN: ")}' 			id='setpin_error'/>
-        <input type='hidden' value='${_("PIN set successfully")}'			id='setpin_ok'/>
+    <input type='hidden' value='${_("The passwords do not match!")}'        id='setpin_fail'/>
+        <input type='hidden' value='${_("Error setting PIN: ")}'            id='setpin_error'/>
+        <input type='hidden' value='${_("PIN set successfully")}'           id='setpin_ok'/>
         </fieldset>
     </form>
 </div>

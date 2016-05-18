@@ -1448,8 +1448,8 @@ class UserserviceController(BaseController):
             if count > max_count:
                 count = max_count
 
-            log.debug("[usergetmultiotp] retrieving OTP value for token %s"
-                      % serial)
+            log.debug("[usergetmultiotp] retrieving OTP value for token %s",
+                      serial)
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
             if ret['result'] == False and max_count == -1:
                 ret['error'] = "%s - %s" % (ret['error'], _("see policy"
@@ -1470,7 +1470,7 @@ class UserserviceController(BaseController):
             log.exception("[usergetmultiotp] gettoken/getmultiotp failed: %r" % e)
             Session.rollback()
             return sendError(response, _(u"selfservice/usergetmultiotp failed:"
-                                         " %s") % unicode(e), 0)
+                                         " %r") % e, 0)
 
         finally:
             Session.close()

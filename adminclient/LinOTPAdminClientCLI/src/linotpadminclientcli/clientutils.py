@@ -33,6 +33,7 @@ import urllib2, httplib, urllib
 import re
 import random
 import sys, os
+import ssl
 import logging
 import logging.handlers
 import cookielib
@@ -135,13 +136,13 @@ class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
     def getConnection(self, host, timeout=300):
         return httplib.HTTPSConnection(host, key_file=self.key, cert_file=self.cert)
 
-class linotpclient:
+class linotpclient(object):
     '''
     class linotpclient: This class is created to hold a connection to the LinOTP server
     '''
     def __init__(self, protocol, url, admin=None, adminpw=None,
-                cert=None, key=None, proxy=None,
-                authtype="Digest"):
+                cert=None, key=None, disable_ssl_certificate_validation=False,
+                proxy=None, authtype="Digest"):
         '''
         arguments:
             The class is created with the parameters
@@ -168,6 +169,7 @@ class linotpclient:
         self.adminpw = adminpw
         self.cert = cert
         self.key = key
+        self.disable_ssl_certificate_validation = disable_ssl_certificate_validation
         self.proxy = proxy
         self.logging = False
         self.authtype = authtype
@@ -201,7 +203,7 @@ class linotpclient:
 
     def setcredentials(self, protocol, url, admin=None, adminpw=None,
             cert=None, key=None, proxy=None,
-            authtype="Digest"):
+            authtype="Digest", disable_ssl_certificate_validation=False):
         '''
         arguments:
             The same arguments as when initializing the instance.
@@ -220,10 +222,8 @@ class linotpclient:
         self.key = key
         self.proxy = proxy
         self.authtype = authtype
-        try:
-            self.getsession()
-        except:
-            pass
+        self.disable_ssl_certificate_validation = disable_ssl_certificate_validation
+        self.getsession()
         if self.logging:
             self.log.info("[setcredentials]: Credentials set successfully.")
 
@@ -313,13 +313,44 @@ class linotpclient:
                 # proxy_auth_handler.add_password(None, self.protocol+'://'+self.url, self.proxyuser, self.proxypass)
 
             cookie_handler = urllib2.HTTPCookieProcessor(self.cookie_jar)
-            opener = urllib2.build_opener(auth_handler, proxy_handler, cookie_handler)
+
+            ctx = None
+            https_handler = urllib2.HTTPSHandler()
+            if self.disable_ssl_certificate_validation:
+                # only the urlib2 in python 2.7 has the ssl.create_default
+                try:
+                    ctx = ssl.create_default_context()
+                    ctx.check_hostname = False
+                    ctx.verify_mode = ssl.CERT_NONE
+                    https_handler = urllib2.HTTPSHandler(context=ctx)
+                except AttributeError as exx:
+                    # so we have the old ulrlib, which does no verification
+                    https_handler = urllib2.HTTPSHandler()
+
+            opener = urllib2.build_opener(https_handler,
+                                          auth_handler, proxy_handler,
+                                          cookie_handler)
+
             # ...and install it globally so it can be used with urlopen.
             urllib2.install_opener(opener)
 
-            f = urllib2.urlopen(urllib2.Request(self.protocol + '://' + self.url + path + '?session=' + self.session + '&' + p, d))
+            req_params = {}
+            if param:
+                req_params.update(param)
+            if data:
+                req_params.update(data)
 
-        except Exception as  e:
+            if self.session:
+                req_params['session'] = self.session
+
+            p = None
+            if req_params:
+                p = urllib.urlencode(req_params)
+
+            req_url = self.protocol + '://' + self.url + path
+            f = urllib2.urlopen(urllib2.Request(req_url, p))
+
+        except Exception as e:
             if self.logging:
                 self.log.error("[connect]: Error connecting to LinOTPd service: %s" % str(e))
             raise LinOTPClientError(1006, _("Error connecting to LinOTPd service: %s" % str(e)))

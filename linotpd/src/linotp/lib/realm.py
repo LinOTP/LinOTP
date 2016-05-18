@@ -34,7 +34,6 @@ from linotp.lib.context import request_context as context
 
 from sqlalchemy import func
 
-from pylons.i18n.translation import _
 
 import logging
 log = logging.getLogger(__name__)
@@ -260,7 +259,8 @@ def isRealmDefined(realm):
         ret = True
     return ret
 
-def setDefaultRealm(defaultRealm):
+
+def setDefaultRealm(defaultRealm, check_if_exists=True):
     """
     set the defualt realm attrbute
 
@@ -272,9 +272,16 @@ def setDefaultRealm(defaultRealm):
     :return:  success or not
     :rtype:   boolean
     """
-    ret = isRealmDefined(defaultRealm)
-    if True == ret or defaultRealm == "":
-        storeConfig(u"linotp.DefaultRealm", defaultRealm);
+
+    #TODO: verify merge
+    if check_if_exists:
+        ret = isRealmDefined(defaultRealm)
+    else:
+        ret = True
+
+    if ret is True or defaultRealm == "":
+        storeConfig(u"linotp.DefaultRealm", defaultRealm)
+
     return ret
 
 
@@ -342,6 +349,8 @@ def match_realms(request_realms, allowed_realms):
     """
     realms = []
 
+    _ = context['translate']
+
     if not request_realms or request_realms == ['']:
         realms = allowed_realms
     # support for empty realms or no realms by realm = *
@@ -367,4 +376,4 @@ def match_realms(request_realms, allowed_realms):
 
     return realms
 
-###eof#########################################################################
+# eof ########################################################################

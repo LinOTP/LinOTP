@@ -296,14 +296,14 @@ class ManageController(BaseController):
         return ''
 
     def _flexi_error(self, error):
-        res = { "page": 1,
+        return json.dumps({ "page": 1,
                 "total": 1,
                 "rows": [
                  { 'id' : 'error',
                     'cell' : ['E r r o r', error,
                     '', '', '', '', '', ''
                  ] } ] }
-        return sendResult(response,res)
+                , indent=3)
 
 
     def tokenview_flexi(self):
@@ -398,6 +398,7 @@ class ManageController(BaseController):
             c.audit['success'] = True
 
             Session.commit()
+            # The flexi handler should support std LinOTP output
             return sendResult(response, res)
 
         except PolicyException as pe:

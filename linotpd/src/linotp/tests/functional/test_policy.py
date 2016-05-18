@@ -1217,7 +1217,9 @@ class TestPolicies(TestController):
         self.assertTrue('"value": 1'  in response, response)
 
         # check this token is in no realm
-        response = self.app.get(url(controller='admin', action='show'), params={"serial" : serial})
+        params = {"serial" : serial}
+        response = self.app.get(url(controller='admin', action='show'),
+                                params=params)
 
         self.assertTrue('"LinOtp.TokenSerialnumber": "oath429"'  in response, response)
 

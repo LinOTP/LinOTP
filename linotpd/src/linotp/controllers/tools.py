@@ -66,7 +66,6 @@ class ToolsController(BaseController):
             check_session(request)
 
             checkToolsAuthorisation(action, params)
-
             c.audit = request_context['audit']
             return request
 
@@ -92,6 +91,7 @@ class ToolsController(BaseController):
             # finally create the audit entry
             Audit = request_context['Audit']
             audit = request_context.get('audit')
+
             c.audit.update(audit)
             Audit.log(c.audit)
             Session.commit()
@@ -146,4 +146,4 @@ class ToolsController(BaseController):
             log.debug('[enable] done')
 
 
-#eof###########################################################################
+# eof #########################################################################

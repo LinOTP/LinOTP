@@ -3492,6 +3492,7 @@ class OcraTest(TestController):
         (response, challenge, transid) = \
                     self.get_challenge(serial, user='root',
                                        challenge_data='Äns Zwö Drü')
+
         # due to security fixes to prevent information leakage, there is no
         # more the text:
         #         More than one token found'
@@ -3501,6 +3502,7 @@ class OcraTest(TestController):
         (response, challenge, transid) = \
                     self.get_challenge(serial, user='rr',
                                        challenge_data='Äns Zwö Drü')
+
         # due to security fixes to prevent information leakage, there is no
         # more the text:
         #         getUserId failed: no user >rr< found!
@@ -3518,6 +3520,7 @@ class OcraTest(TestController):
 
         # correct response
         response = self.check_otp(transid, otp)
+
         # due to security fixes to prevent information leakage, there is no
         # more the text:
         #         'No challenge for transaction'

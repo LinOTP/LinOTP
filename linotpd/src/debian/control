@@ -6,21 +6,19 @@ Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49),
  python (>=2.6),  po-debconf, python-setuptools, python-pastescript,
  python-pylons (>=0.9.7), lsb-release, quilt
 Standards-Version: 3.9.1
-
 Package: linotp
 Architecture: all
 Homepage: http://www.linotp.org/
 Depends: ${misc:Depends}, ${python:Depends}, apache2, libapache2-mod-wsgi,
  linotp-useridresolver (>=2.7~), libsodium-dev
 Pre-Depends: python-simplejson, python-crypto, python-docutils,
- python-sqlalchemy (>=0.6), python-sqlalchemy (<=0.9.99),
+ python-sqlalchemy (>=0.6),
  python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob,
  python-mako, python-decorator, python-formencode, python-pastescript,
  python-pastedeploy, python-paste, python-beaker, python-webhelpers,
  python-routes, python-pygments, python-ldap, adduser, debconf, pwgen,
  python-m2crypto, python-mysqldb, python-pyrad, openssl, python-netaddr,
  python-repoze.who (<=1.9), python-qrcode, python-configobj, python-httplib2,
- python-migrate
 Replaces: linotp-ee (<< 2.7-1~)
 Breaks: linotp-ee (<< 2.7-1~)
 Description: Server Core of the LinOTP 2 authentication solution

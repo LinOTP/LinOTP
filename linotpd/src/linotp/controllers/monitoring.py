@@ -39,19 +39,24 @@ from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 from linotp.lib.user import (getUserFromRequest, )
 
+
 from linotp.lib.realm import match_realms
+
 from linotp.lib.reply import (sendResult,
                               sendError)
 from linotp.model.meta import Session
 
 from linotp.lib.policy import PolicyException
+
 from linotp.lib.policy import checkAuthorisation
 from linotp.lib.policy import getAdminPolicies
+
 
 from linotp.lib.support import InvalidLicenseException, \
                                getSupportLicenseInfo, verifyLicenseInfo
 
 from linotp.lib.monitoring import MonitorHandler
+
 from linotp.lib.context import request_context
 
 audit = config.get('audit')
@@ -69,6 +74,7 @@ class MonitoringController(BaseController):
         """
         try:
             log.debug('[__before__::%r] %r', action, params)
+
 
             c.audit = request_context['audit']
             c.audit['success'] = False
@@ -119,6 +125,7 @@ class MonitoringController(BaseController):
             monitoring/tokens
 
         description:
+
             Displays the number of tokens (with status) per realm
             (one token might be in multiple realms).
             The Summary gives the sum of all tokens in all given realms and
@@ -128,6 +135,7 @@ class MonitoringController(BaseController):
         arguments:
             * status - optional: takes assigned or unassigned, give the number
                 of tokens with this characteristic
+
             * realms - optional: takes realms, only the number of tokens in
                 these realms will be displayed
 
@@ -143,6 +151,7 @@ class MonitoringController(BaseController):
         result = {}
         try:
             param = request.params
+
             status = param.get('status', ['total'])
             if status != ['total']:
                 status = status.split(',')
@@ -205,8 +214,8 @@ class MonitoringController(BaseController):
         """
         result = {}
         try:
-            monit_handler = MonitorHandler()
 
+            monit_handler = MonitorHandler()
             result = monit_handler.get_sync_status()
 
             # useful counts:

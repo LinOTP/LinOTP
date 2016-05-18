@@ -1,3 +1,28 @@
+# -*- coding: utf-8 -*-
+#
+#    LinOTP - the open source solution for two factor authentication
+#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#
+#    This file is part of LinOTP server.
+#
+#    This program is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU Affero General Public
+#    License, version 3, as published by the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the
+#               GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#    E-mail: linotp@lsexperts.de
+#    Contact: www.linotp.org
+#    Support: www.lsexperts.de
+#
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -47,8 +72,8 @@ setup(
     url='http://www.linotp.org',
     install_requires=[
         "Pylons>=0.9.7",
-        "WebOb",
-        "SQLAlchemy>=0.6,<=0.9.99",
+        "WebOb<1.4",
+        "SQLAlchemy>=0.6",
         "docutils>=0.4",
         "simplejson>=2.0",
         "pycryptodomex>=3.4",
@@ -62,8 +87,6 @@ setup(
         "pysodium>=0.6.8",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
-        "pysodium>=0.6.8",
-        "sqlalchemy-migrate",
     ],
     scripts=[
         'tools/linotp-convert-token',

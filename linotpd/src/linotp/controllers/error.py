@@ -27,10 +27,12 @@
 error controller - to display errors
 """
 
+
+
 import cgi
 
 from pylons import request
-from pylons.middleware import error_document_template
+from pylons.middleware  import error_document_template
 from pylons.controllers.util import forward
 
 from paste.urlparser import PkgResourcesParser
@@ -46,7 +48,6 @@ class ErrorController(BaseController):
     def document(self):
         """Render the error document"""
         resp = request.environ.get('pylons.original_response')
-
         if resp is not None:
             unicode_body = str2unicode(resp.body)
             content = literal(unicode_body)
@@ -65,13 +66,16 @@ class ErrorController(BaseController):
                  message=content)
         return page
 
+
     def img(self, id):
         """Serve Pylons' stock images"""
         return self._serve_file('/'.join(['media/img', id]))
 
+
     def style(self, id):
         """Serve Pylons' stock stylesheets"""
         return self._serve_file('/'.join(['media/style', id]))
+
 
     def _serve_file(self, path):
         """Call Paste's FileApp (a WSGI application) to serve the file
@@ -80,4 +84,6 @@ class ErrorController(BaseController):
         request.environ['PATH_INFO'] = '/%s' % path
         return forward(PkgResourcesParser('pylons', 'pylons'))
 
+
 #eof###########################################################################
+

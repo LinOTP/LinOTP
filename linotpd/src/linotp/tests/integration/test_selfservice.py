@@ -44,7 +44,6 @@ class TestSelfservice(TestCase):
     def test_selfservice(self):
         """Creates User-Id-Resolvers"""
         driver = self.driver
-
         Policy(driver, self.base_url, "SE_policy_selfservice",
                "selfservice", "setOTPPIN, ", self.realm_name.lower())
 

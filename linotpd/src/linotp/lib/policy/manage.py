@@ -39,7 +39,7 @@ from linotp.lib.policy import getPolicies
 
 from linotp.lib.error import ServerError
 from linotp.lib.context import request_context as context
-
+from linotp.lib.policy.forward import ForwardServerPolicy
 
 class PolicyWarning(Exception):
     pass
@@ -78,6 +78,8 @@ def setPolicy(param):
         policies = getPolicies()
 
     _check_policy_impact(policies=policies, **param)
+
+    action = ForwardServerPolicy.prepare_forward(action)
 
     ret["action"] = storeConfig("Policy.%s.action" % name,
                                 action, "", "a policy definition")
@@ -134,7 +136,7 @@ def deletePolicy(name, enforce=False):
             delEntries.append(entry)
 
     for entry in delEntries:
-        #delete this entry.
+        # delete this entry.
         log.debug("[deletePolicy] removing key: %s" % entry)
         ret = removeFromConfig(entry)
         res[entry] = ret
@@ -190,7 +192,7 @@ def _check_policy_impact(policies=None, scope='', action='', active='True',
             for act in policy.get('action', '').split(','):
                 p_actions.append(act.strip())
 
-            #check if there is a write in the actions
+            # check if there is a write in the actions
             if '*' in p_actions or 'write' in p_actions:
                 no_system_write_policy = False
                 break

@@ -37,12 +37,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#, python-format
-msgid ""
-"You do not have the rights to monitor these realms: %r. Check the policies!"
-msgstr ""
-"Sie haben keine Rechte in diesen Realms: %r. Überprüfen Sie die Richtlinien."
-
 msgid "Summary"
 msgstr "Übersicht"
 
@@ -54,6 +48,9 @@ msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
 
 msgid "The name of the policy must not be empty"
 msgstr "Der Name der Richtlinie darf nicht leer sein."
+
+msgid "<h1>contact support</h1>"
+msgstr ""
 
 msgid "You are not authenticated"
 msgstr "Sie sind nicht authentisiert"
@@ -93,8 +90,8 @@ msgstr "Die Seriennummer %s gehört nicht zu dem Benutzer %s@%s"
 msgid "see policy definition."
 msgstr "siehe Richtliniendefinition."
 
-#, python-format
-msgid "selfservice/usergetmultiotp failed: %s"
+#, fuzzy, python-format
+msgid "selfservice/usergetmultiotp failed: %r"
 msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %s"
 
 #, python-format
@@ -105,58 +102,23 @@ msgstr "Fehler bei der Suche im Audit Log: %s"
 msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
 msgstr "Gültige Werte sind 'ocra' oder 'ocra2'. Sie gaben %s an"
 
-msgid "Support not available, your product is unlicensed"
-msgstr "Sie haben keinen Support, sie benutzen dieses Produkt unlizensiert"
+msgid "Missing required parameter \"state\" or\"transactionid\"!"
+msgstr ""
 
-msgid "license file is empty!"
-msgstr "Die Lizenzdatei ist leer!"
+msgid "Missing required parameter \"serial\" or \"user\"!"
+msgstr ""
 
-msgid "signature could not be verified!"
-msgstr "Die Signatur ist nicht gültig!"
-
-msgid "no license expiration information in license "
-msgstr "Keine Lizenz-Ablauf-Information in der Lizenz"
-
-msgid "no license subscription information in license"
-msgstr "Keine Lizenz-Subskription-Information in der Lizenz"
-
-msgid "invalid license (old license style)"
-msgstr "Ungülitige Lizenz (altes Lizenzformat)"
-
-msgid "tokens used"
-msgstr "verwendete Token"
-
-msgid "tokens supported"
-msgstr "lizensierte Token"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "nicht unterstütztes Datumsformat %r"
-
-msgid "expired - valid till"
-msgstr "abgelaufen - gültig bis"
+#, fuzzy
+msgid "Missing required parameter \"pass\"!"
+msgstr "Fehlender Parameter: %r"
 
 #, python-format
 msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
+"You do not have the administrative right to do monitoring.You are missing a "
+"policyscope=monitoring, action=%s"
 msgstr ""
-"getTokenOwner: Der Benutzer %s/%s und der Token %s sind in mehreren Realms "
-"enthalten: %s."
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr ""
-"getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
-"Realm gefunden werden!"
-
-msgid "OTP seed"
-msgstr "OTP Seed"
-
-msgid "URL for OCRA token"
-msgstr "URL für OCRA-Token"
+"Sie haben nicht die administrativen Rechte zum Monitoring. Es fehlt dazu "
+"eine Richtlinie mit 'scope=monitoring' und 'action=%s'."
 
 #, python-format
 msgid "The provided PIN is too short. It should be at least %i characters."
@@ -220,6 +182,51 @@ msgstr "Der PIN beinhaltet Sonderzeichen obwohl dies nicht so sein sollte (%s)"
 msgid "The PIN contains other characters, although it should not! (%s)"
 msgstr ""
 "Der PIN beinhaltet besondere Zeichen, obwohl dies nicht so sein sollte (%s)"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to manage tools. You are missing a "
+"policy scope=tools, action=%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte die Tools auszuführen. Es fehlt "
+"dazu eine Richtlinie mit 'scope=tools' und 'action=%s'."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s definiert."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr ""
+"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
+"%s im Realm %s definiert."
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
+
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr ""
+"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
+"ausrollen."
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr ""
+"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
+"ggf. die Richtlinien."
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr ""
+"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr ""
@@ -302,6 +309,9 @@ msgstr ""
 "Seriennummer über die OTP's zu identifizieren - überprüfen Sie ggf. die "
 "Richtlinien."
 
+msgid "Due to license restrictions no more tokens could be enrolled!"
+msgstr ""
+
 #, python-format
 msgid "The tokentype '%s' could not be found."
 msgstr "Der Tokentype '%s' konnte nich gefunden werden."
@@ -326,12 +336,6 @@ msgid "You do not have the administrative right to init token %s of type %s."
 msgstr ""
 "Sie haben nicht die administrativen Rechte um den Token %s vom Typ %s "
 "auszurollen."
-
-msgid ""
-"You may not enroll any more tokens. Your maximum token number is reached!"
-msgstr ""
-"Die Maximalzahl an Token wurde erreicht. Sie können keine weiteren Token "
-"ausrollen."
 
 #, python-format
 msgid ""
@@ -381,10 +385,6 @@ msgstr ""
 "ggf. die Richtlinien."
 
 #, python-format
-msgid "Missing parameter: %r"
-msgstr "Fehlender Parameter: %r"
-
-#, python-format
 msgid ""
 "You do not have the administrative right to set MOTP PIN/ SC UserPIN for "
 "token %s. Check the policies."
@@ -432,8 +432,8 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to get the token owner in realm %s"
-"(%s)."
+"You do not have the administrative right to get the token owner in realm "
+"%s(%s)."
 msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen der Token Besitzer "
 "im Realm %s(%s)."
@@ -516,45 +516,6 @@ msgstr ""
 "dazu ein Richtlinie mit 'scope=audit' und 'action=view'."
 
 #, python-format
-msgid ""
-"You do not have the administrative right to manage tools. You are missing a "
-"policy scope=tools, action=%s"
-msgstr ""
-"Sie haben nicht die administrativen Rechte um auf die Tools zu zugreifen. Es "
-"fehlt dazu ein Richtlinie mit scope=tools und action=%s."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s definiert."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr ""
-"Es gibt keine Richtlinie, die im seflservice den max_count für den Tokentyp "
-"%s im Realm %s definiert."
-
-msgid "The policy settings do not allow you to issue this request!"
-msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
-
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
-"ggf. die Richtlinien."
-
-msgid "The policy settings do not allow you to request a serial by OTP!"
-msgstr ""
-"Die Richtlinien erlauben es nicht die Seriennummer über OTP zu erfragen!"
-
-#, python-format
-msgid "Unknown method in selfservice: %s"
-msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
-
-#, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
 msgstr ""
 "Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die System "
@@ -590,6 +551,80 @@ msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter controller %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
+
+#, fuzzy, python-format
+msgid "You do not have the rights to see these realms: %r. Check the policies!"
+msgstr ""
+"Sie haben keine Rechte in diesen Realms: %r. Überprüfen Sie die Richtlinien."
+
+msgid "Support not available, your product is unlicensed"
+msgstr "Sie haben keinen Support, sie benutzen dieses Produkt unlizensiert"
+
+#, fuzzy
+msgid "License already installed!"
+msgstr "Keine gültige Lizenz!"
+
+msgid "license file is empty!"
+msgstr "Die Lizenzdatei ist leer!"
+
+msgid "signature could not be verified!"
+msgstr "Die Signatur ist nicht gültig!"
+
+msgid "no license expiration information in license "
+msgstr "Keine Lizenz-Ablauf-Information in der Lizenz"
+
+msgid "no license subscription information in license"
+msgstr "Keine Lizenz-Subskription-Information in der Lizenz"
+
+msgid "invalid license (old license style)"
+msgstr "Ungülitige Lizenz (altes Lizenzformat)"
+
+msgid "tokens used"
+msgstr "verwendete Token"
+
+msgid "tokens supported"
+msgstr "lizensierte Token"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "nicht unterstütztes Datumsformat %r"
+
+msgid "expired - valid till"
+msgstr "abgelaufen - gültig bis"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr ""
+"getTokenOwner: Der Benutzer %s/%s und der Token %s sind in mehreren Realms "
+"enthalten: %s."
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr ""
+"getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
+"Realm gefunden werden!"
+
+msgid "OTP seed"
+msgstr "OTP Seed"
+
+msgid "URL for OCRA token"
+msgstr "URL für OCRA-Token"
+
+#, python-format
+msgid "Missing parameter: %r"
+msgstr "Fehlender Parameter: %r"
+
+#, fuzzy, python-format
+msgid ""
+"You do not have the administrative right to do this. You are missing a "
+"policy scope=%s, action=%s"
+msgstr ""
+"Sie haben nicht die administrativen Rechte die Tools auszuführen. Es fehlt "
+"dazu eine Richtlinie mit 'scope=tools' und 'action=%s'."
 
 msgid "E-mail OTP Token"
 msgstr "E-Mail OTP Token"
@@ -904,6 +939,26 @@ msgstr "OCRA Challenge Response Token - HMAC ereignisbasiert"
 
 msgid "URL for OCRA2 token"
 msgstr "URL für OCRA2 Token"
+
+#, fuzzy
+msgid "QRToken"
+msgstr "Tokenanzahl"
+
+#, fuzzy
+msgid "QRToken Settings"
+msgstr "Token Einstellungen:"
+
+#, fuzzy
+msgid "QRToken - challenge/response Token"
+msgstr "OCRA - Challenge/Response Token"
+
+#, fuzzy
+msgid "Enroll your QRToken"
+msgstr "Rollen Sie Ihren OCRA2 Token aus"
+
+#, fuzzy
+msgid "enroll qrtoken"
+msgstr "Token ausrollen"
 
 msgid "RADIUS Token"
 msgstr "RADIUS Token"
@@ -1331,8 +1386,11 @@ msgstr ""
 msgid ""
 "Please enter a valid http uri. It needs to start with http:// or https://"
 msgstr ""
-"Bitte geben Sie eine gültige HTTP URI ein, die mit http:// oder https:// "
+"Bitte geben Sie eine gültige LDAP URI ein, die mit http:// oder https:// "
 "anfängt."
+
+msgid "Please enter a timeout like: 5.0; 5.0 "
+msgstr ""
 
 msgid ""
 "Please enter a valid searchfilter like this: (sAMAccountName=*)"
@@ -1346,8 +1404,8 @@ msgid ""
 "Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
 "(objectClass=user))"
 msgstr ""
-"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: (&"
-"(sAMAccountName=%s)(objectClass=user))"
+"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: "
+"(&(sAMAccountName=%s)(objectClass=user))"
 
 msgid ""
 "Please enter a valid searchfilter like this: \n"
@@ -1431,8 +1489,12 @@ msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
 msgid "Please select only one user."
 msgstr "Bitte wählen Sie nur einen Benutzer aus."
 
+#, fuzzy
+msgid "Support Contact"
+msgstr "Support"
+
 msgid "Found the token: "
-msgstr "Folgender Token wurde gefunden:"
+msgstr "Gefundener Token:"
 
 msgid "The token belongs to "
 msgstr "Der Token gehört zu "
@@ -1441,6 +1503,10 @@ msgid "The upload of your support and subscription license failed: "
 msgstr "Das Laden der Support- und Subskriptions-Datei ist fehlgeschlagen: "
 
 msgid "License upload"
+msgstr "Lizenz hochladen"
+
+#, fuzzy
+msgid "License uploaded"
 msgstr "Lizenz hochladen"
 
 msgid "Invalid License"
@@ -1483,6 +1549,13 @@ msgstr "Tokenrealm setzen"
 msgid "Please select the token first."
 msgstr "Bitte wählen Sie zunächst einen Token aus."
 
+#, fuzzy
+msgid "No resolver selected"
+msgstr "zu Resolver"
+
+msgid "Please select at least one resolver from the resolver list."
+msgstr ""
+
 msgid "Close"
 msgstr "Schließen"
 
@@ -1511,8 +1584,9 @@ msgstr "Verbindungs Test: erfolgreich"
 msgid "LDAP Connection Test"
 msgstr "LDAP Verbindungs Test"
 
+#, fuzzy
 msgid "HTTP Connection Test"
-msgstr "HTTP Verbindungs Test"
+msgstr "LDAP Verbindungs Test"
 
 msgid "Form Validation Error"
 msgstr "Formular Eingabe Fehler"
@@ -1862,7 +1936,7 @@ msgstr "Tokeninformationen exportieren"
 msgid "Export Audit Trail"
 msgstr "Audit-Trail exportieren"
 
-msgid "Migrate resolver"
+msgid "Migrate Resolver"
 msgstr "Resolver Migration"
 
 msgid "Import Token File"
@@ -2351,16 +2425,13 @@ msgid "Copy PIN"
 msgstr "Kopiere PIN"
 
 msgid "Migrate assigned tokens to a new resolver"
-msgstr "Migriere zugewiesene Token zu einem anderen Resolver"
+msgstr "Migriere zugewiesene Token zu einem neuen Resolver"
 
 msgid "From resolver"
-msgstr "von Resolver"
+msgstr "Von Resolver"
 
 msgid "To resolver"
 msgstr "zu Resolver"
-
-msgid "Migrate Resolver"
-msgstr "Resolver migrieren"
 
 msgid "Migrate tokens"
 msgstr "Token migrieren"
@@ -2480,8 +2551,9 @@ msgstr "Hier können Sie die XML-Datei für Ihre Feitian Token importieren."
 msgid "Feitian XML Token file"
 msgstr "Feitian XML Tokendatei"
 
+#, fuzzy
 msgid "Import tokens from Vasco DPX file"
-msgstr "Vasco DPX Tokendatei importieren"
+msgstr "VASCO DPX Tokendatei importieren"
 
 msgid "Transport key:"
 msgstr "Transportschlüssel:"
@@ -3084,13 +3156,15 @@ msgstr ""
 msgid "Error loading LDAP resolver"
 msgstr "Fehler beim Laden des LDAP Resolvers"
 
+#, fuzzy
 msgid "HTTP Server configuration seems to be OK! Number of users found"
 msgstr ""
-"HTTP Server Konfiguration scheint OK!\n"
+"LDAP Server Konfiguration scheint OK!\n"
 "Anzahl der gefundenen Benutzer "
 
+#, fuzzy
 msgid "Error loading HTTP resolver"
-msgstr "Fehler beim Laden des HTTP Resolvers"
+msgstr "Fehler beim Laden des LDAP Resolvers"
 
 msgid "Error loading SQL resolver"
 msgstr "Fehler beim Laden des SQL Resolvers"
@@ -3510,14 +3584,14 @@ msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
 
+#~ msgid "Here you can upload your Vasco DPX file."
+#~ msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
+
 #~ msgid "volume exceeded:"
 #~ msgstr "Volumen überschritten:"
 
 #~ msgid "System config"
 #~ msgstr "System Konfiguration"
-
-#~ msgid "Here you can upload your Vasco DPX file."
-#~ msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
 
 #~ msgid "OCRA Suite"
 #~ msgstr "OCRA Suite"
@@ -3669,9 +3743,6 @@ msgstr ""
 #~ msgid "Setting OTP PIN failed: %s"
 #~ msgstr "Setzen der Token PIN ist fehlgeschlagen: %s"
 
-#~ msgid "License is not valid!"
-#~ msgstr "Keine gültige Lizenz!"
-
 #~ msgid "License reminder: %r"
 #~ msgstr "Lizenz Erinnerung: %r"
 
@@ -3681,9 +3752,6 @@ msgstr ""
 #~ msgid "Comment"
 #~ msgstr "Kommentar"
 
-#~ msgid "Token #"
-#~ msgstr "Tokenanzahl"
-
 #~ msgid "Contact Name"
 #~ msgstr "Kontakt"
 
@@ -3692,9 +3760,6 @@ msgstr ""
 
 #~ msgid "Expire"
 #~ msgstr "Ablaufdatum"
-
-#~ msgid "Support"
-#~ msgstr "Support"
 
 #~ msgid "LSE LinOTP Support"
 #~ msgstr "LSE LinOTP Support"

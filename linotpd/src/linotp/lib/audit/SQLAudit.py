@@ -195,9 +195,11 @@ class AuditTable(object):
             field_len = self._get_field_len(name)
             encoded_value = linotp.lib.crypt.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
-                log.warning("truncating audit data: [audit.%s] %s" % (name, value))
+                log.warning("truncating audit data: [audit.%s] %s",
+                            name, value)
                 if self.trunc_as_err != False:
-                    raise Exception("truncating audit data: [audit.%s] %s" % (name, value))
+                    raise Exception("truncating audit data: [audit.%s] %s" %
+                                    (name, value))
 
                 ## during the encoding the value might expand -
                 ## so we take this additional length into account
@@ -231,8 +233,43 @@ class AuditTable(object):
 
 orm.mapper(AuditTable, audit_table)
 
-########################################################################################
 
+# replace sqlalchemy-migrate by the ability to ad a column
+def add_column(engine, table, column):
+    """
+    small helper to add a column by calling a native 'ALTER TABLE' to
+    replace the need for sqlalchemy-migrate
+
+    from:
+    http://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
+
+    :param engine: the running sqlalchemy
+    :param table: in which table should this column be added
+    :param column: the sqlalchemy definition of a column
+
+    :return: boolean of success or not
+    """
+
+    result = False
+
+    table_name = table.description
+    column_name = column.compile(dialect=engine.dialect)
+    column_type = column.type.compile(engine.dialect)
+
+    try:
+        engine.execute('ALTER TABLE %s ADD COLUMN %s %s'
+                                % (table_name, column_name, column_type))
+        result = True
+
+    except Exception as exx:
+        # Obviously we already migrated the database.
+        log.info("[__init__] Error during database migration: %r" % exx)
+        result = False
+
+    return result
+
+
+###############################################################################
 class Audit(AuditBase):
     """
     Audit Implementation to the generic audit interface
@@ -278,14 +315,11 @@ class Audit(AuditBase):
         self.VerifyEVP.reset_context(md='sha256')
         self.VerifyEVP.assign_rsa(self.PublicKey)
 
-        try:
-            # create the column "client"
-            column = schema.Column("client", types.Unicode(80))
-            column.create(audit_table)
-        except Exception as exx:
-            # Obviously we already migrated the database.
-            log.info("[__init__] Error during database migration: %r" % exx)
+        # create the column "client"
+        column = schema.Column("client", types.Unicode(80))
+        add_column(self.engine, audit_table, column)
 
+        return
 
     def _attr_to_dict(self, audit_line):
 
@@ -634,7 +668,8 @@ def getAsString(data):
     client entry or before. Otherwise the old signatures will break!
     '''
 
-    s = "number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s, admin=%s, %s, %s, server=%s, %s, %s" % (
+    s = ("number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s,"
+         " admin=%s, %s, %s, server=%s, %s, %s") % (
                 str(data.get('id')), str(data.get('timestamp')),
                 data.get('action'), str(data.get('success')),
                 data.get('serial'), data.get('tokentype'),

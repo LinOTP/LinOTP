@@ -29,7 +29,7 @@ import binascii
 import string
 import re
 import netaddr
-
+import logging
 
 from pylons import config
 from pylons.controllers.util import abort
@@ -46,14 +46,15 @@ from linotp import (__version__ as linotp_version,
                     __copyright__ as linotp_copyright,
                     __product__ as linotp_product,
                     )
+
+
 try:
     from linotp import __api__ as linotp_api
 except ImportError:
     linotp_api = 2.0
 
 SESSION_KEY_LENGTH = 32
-
-import logging
+hostname_regex = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 log = logging.getLogger(__name__)
 
 optional = True
@@ -200,8 +201,8 @@ def check_selfservice_session(cookies=None, params=None, url=None):
     This function checks the session cookie for the
     selfservice / userservice session
     '''
-    cookie = cookies.get('linotp_selfservice').strip('"')
-    session = params.get('session')
+    cookie = cookies.get('linotp_selfservice', '').strip('"')
+    session = params.get('session', '').strip('"')
 
     log.debug("session: %r" % session)
     log.debug("cookie:  %r" % cookie)
@@ -352,8 +353,8 @@ def is_valid_fqdn(hostname, split_port=False):
     if hostname[-1:] == ".":
         hostname = hostname[:-1]
 
-    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
-    return all(allowed.match(x) for x in hostname.split("."))
+    
+    return all(hostname_regex.match(x) for x in hostname.split("."))
 
 
 def remove_empty_lines(doc):

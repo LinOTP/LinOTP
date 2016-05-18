@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
@@ -25,7 +25,7 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
--->
+</%doc>
 
 <%!
 from pylons.i18n.translation import get_lang

@@ -35,12 +35,12 @@ except ImportError:
 import re
 import webob
 import binascii
+from pylons import request, response, config, tmpl_context as c
 
 from useridresolver.UserIdResolver import ResolverLoadConfigError
 
+import linotp
 from linotp.lib.selftest import isSelfTest
-from pylons import request, response, config, tmpl_context as c
-
 from linotp.model.meta import Session
 
 from linotp.lib.base import BaseController
@@ -946,17 +946,19 @@ class SystemController(BaseController):
                 else:
                     realmConfig = "useridresolver.group." + realm
 
-                res["delRealm"] = {"result":removeFromConfig(realmConfig, iCase=True)}
+                res["delRealm"] = {"result":
+                                   removeFromConfig(realmConfig, iCase=True)}
 
             ret = deleteRealm(realm)
 
-            if hadDefRealmBefore == True:
+            if hadDefRealmBefore is True:
                 defRealm = getDefaultRealm()
                 if defRealm == "":
                     realms = getRealms()
-                    if len(realms) == 1:
+                    if len(realms) == 2:
                         for k in realms:
-                            setDefaultRealm(k)
+                            if k != realm:
+                                setDefaultRealm(k)
             c.audit['success'] = ret
             c.audit['info'] = realm
 
@@ -1277,17 +1279,23 @@ class SystemController(BaseController):
             # the contents of filestring needs to be parsed and stored as policies.
             from configobj import ConfigObj
             policies = ConfigObj(fileString.split('\n'), encoding="UTF-8")
-            log.info("[importPolicy] read the following policies: %s" % policies)
+            log.info("[importPolicy] read the following policies: %s",
+                     policies)
             res = len(policies)
             for policy_name in policies.keys():
-                ret = setPolicy({ 'name': policy_name,
-                              'action' : policies[policy_name].get('action', ""),
-                              'scope' : policies[policy_name].get('scope', ""),
-                              'realm' : policies[policy_name].get('realm', ""),
-                              'user' : policies[policy_name].get('user', ""),
-                              'time' : policies[policy_name].get('time', ""),
-                            'client': policies[policy_name].get('client', "")})
-                log.debug("[importPolicy] import policy %s: %s" % (policy_name, ret))
+                policy = policies[policy_name]
+                if not policy['action'] or not policy['scope']:
+                    raise ParameterError("Missing scope or action in"
+                                         " policy %s" % policy_name)
+                ret = setPolicy({'name': policy_name,
+                                 'action': policy['action'],
+                                 'scope': policy['scope'],
+                                 'realm': policy.get('realm', ""),
+                                 'user': policy.get('user', ""),
+                                 'time': policy.get('time', ""),
+                                 'client': policy.get('client', "")})
+                log.debug("[importPolicy] import policy %s: %s",
+                          policy_name, ret)
 
             c.audit['info'] = "Policies imported from file %s" % policy_file
             c.audit['success'] = 1
@@ -1624,29 +1632,15 @@ class SystemController(BaseController):
         return the support status, which is community support by default
         or the support subscription info, which could be the old license
         """
+        res = {}
         try:
 
-            details = None
-            try:
-                (lic, sig) = getSupportLicenseInfo()
-            except InvalidLicenseException as err:
-                if err.type <> 'UNLICENSED':
-                    raise # Certificate "formating" errors are not ignored!
-                # When no certificate was installed, then return an empty dictiuonary...
-                lic, sig = {}, None
-                details  = { 'valid': False, 'message': str(err) }
-
-            ### if you do not want details, just set "details = None"!
-            if details is None:
-                (chk, msg) = verifyLicenseInfo(lic, sig)
-                if chk:
-                    details = { 'valid': chk }
-                else:
-                    details = { 'valid': chk, 'message': msg }
-            ###
+            (lic_info, _sig) = linotp.lib.support.getSupportLicenseInfo()
+            res = {}
+            res.update(lic_info)
 
             c.audit['success'] = True
-            return sendResult(response, lic, 1, opt=details)
+            return sendResult(response, res, 1)
 
         except Exception as exx:
             log.exception("[getSupportInfo] : failed to access support info: %r" % exx)
@@ -1666,19 +1660,30 @@ class SystemController(BaseController):
         else
             value is false and the detail is returned as detail in the response
         """
+
+        res = {}
+        info = {}
         try:
 
-            chk = False
-            opt = None
+            license_txt = getFromConfig('license', '')
             try:
-                # getSupportLicenseInfo will return only if certificate is valid...
-                getSupportLicenseInfo()
-                chk = True
-            except InvalidLicenseException as err:
-                opt = { 'reason': str(err) }
+                licString = binascii.unhexlify(license_txt)
+            except TypeError:
+                licString = license_txt
 
-            c.audit['success'] = chk
-            return sendResult(response, chk, 1, opt=opt)
+
+            (res, msg,
+             lic_info) = linotp.lib.support.isSupportLicenseValid(licString)
+
+            if res is False:
+                info['reason'] = msg
+
+            if linotp.lib.support.do_nagging(lic_info):
+                info['download_licence_info'] = _("<h1>contact support</h1>")
+
+            c.audit['success'] = res
+            Session.commit()
+            return sendResult(response, res, 1, opt=info)
 
         except Exception as exx:
             log.exception("[isSupportValid] failed verify support info: %r" % exx)
@@ -1699,7 +1704,16 @@ class SystemController(BaseController):
         res = False
         message = None
 
+
+        sendResultMethod = sendResult
+        sendErrorMethod = sendError
+
         try:
+            format = request.POST.get('format')
+            if format == 'xml':
+                sendResultMethod = sendXMLResult
+                sendErrorMethod = sendXMLError
+
             licField = request.POST['license']
             log.info("[setSupport] setting support: %s" % (licField))
 
@@ -1713,19 +1727,19 @@ class SystemController(BaseController):
                 support_description = licField.encode('utf-8')
             log.debug("[setSupport] license %s", support_description)
 
-            res, msg = setSupportLicense(support_description)
+            res, msg = linotp.lib.support.setSupportLicense(support_description)
             if res is False:
                 message = {'reason': msg}
 
             c.audit['success'] = res
 
             Session.commit()
-            return sendResult(response, res, 1, opt=message)
+            return sendResultMethod(response, res, 1, opt=message)
 
         except Exception as exx:
             log.exception("[setSupport] failed to set support license: %r" % exx)
             Session.rollback()
-            return sendError(response, exx)
+            return sendErrorMethod(response, exx)
 
         finally:
             Session.close()

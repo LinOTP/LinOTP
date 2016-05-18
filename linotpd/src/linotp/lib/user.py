@@ -76,6 +76,66 @@ class User(object):
         self.resolvers_list = []
         self._exists = None
 
+    @staticmethod
+    def getUserObject(login, realm=None, check_if_exist=False):
+
+        f_realm = realm
+        f_login = login
+
+        if not realm:
+            if '@' in login:
+                realms = getRealms()
+                lo, rea = login.rsplit('@', 1)
+                if rea.lower() in realms:
+                    f_realm = rea.lower()
+                    f_login = lo
+                else:
+                    f_realm = getDefaultRealm()
+                    f_login = login
+
+        f_user = User(f_login, realm=f_realm)
+        if check_if_exist:
+            uid, resolver = f_user.get_uid_resolver()
+
+        return f_user
+
+    def get_uid_resolver(self, resolvers=None):
+        uid = None
+        resolver = None
+        resolvers_list = []
+
+        if not resolvers:
+            if self.realm:
+                realms = getRealms()
+                if self.realm.lower() in realms:
+                    resolvers_list = realms.get(self.realm.lower(), {}).\
+                                       get('useridresolver', [])
+        else:
+            resolvers_list = []
+            for search_resolver in resolvers:
+                fq_resolver = User.get_fq_resolver(search_resolver)
+                if fq_resolver:
+                    resolvers_list.append(fq_resolver)
+
+        if not resolvers_list:
+            return None, None
+
+        for resolver in resolvers_list:
+            try:
+                y = getResolverObject(resolver)
+                uid = y.getUserId(self.login)
+                if not uid:
+                    uid = None
+                    continue
+                self.resolverUid[resolver] = uid
+                self.exist = True
+                break
+
+            except Exception as exx:
+                log.exception("Error while accessing resolver %r", exx)
+
+        return (uid, resolver)
+
     def does_exists(self, resolvers=None):
         """
         """
@@ -324,6 +384,7 @@ def splitUser(username):
 def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
     realm = ""
 
+    # TODO: merge result - could this be removed
     if optional:
         optionalOrRequired = True
     if required:
@@ -366,8 +427,8 @@ def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
             res = getResolversOfUser(usr)
             usr.saveResolvers(res)
 
-    log.debug("[getUserFromParam] creating user object %r,%r,%r"
-              % (user, realm, resolver_config_id))
+    log.debug("[getUserFromParam] creating user object %r,%r,%r",
+              user, realm, resolver_config_id)
     log.debug("[getUserFromParam] created user object %r " % usr)
 
     return usr
@@ -449,9 +510,8 @@ def setRealm(realm, resolvers):
 
     # if this is the first one, make it the default
     realms = getRealms()
-    if 1 == len(realms):
-        for name in realms:
-            setDefaultRealm(name)
+    if 0 == len(realms):
+        setDefaultRealm(realm, check_if_exists=False)
 
     return True
 

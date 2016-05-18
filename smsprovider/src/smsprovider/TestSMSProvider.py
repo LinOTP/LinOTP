@@ -46,13 +46,8 @@ class TestSMSProvider(ISMSProvider):
 
     '''
 
-    def submitMessage(self, phone, message):
-
-        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
-        if msisdn:
-            phone = self._get_msisdn_phonenumber(phone)
-
-        return
+    def _submitMessage(self, phone, message):
+        return 'true' in message.lower()
 
     def getParameters(self, message, phone):
         return

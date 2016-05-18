@@ -77,7 +77,7 @@ def usage():
   --admin/-a   : If the admin interface of the LinOTP service requires authentication
                  you need to pass the username and will be asked for the password.
   --password   : The password of the admin. You should not use this option, since the password would
-    print "                 visible in the process list and history.
+                 be visible in the process list and history.
   --authtype   : The default authtype is 'Digest'. You may change this to 'Basic'
   --cert/-c    : If the admin interface of the LinOTP service requires authentication via client certificate
                  you may pass a P12 file here.
@@ -86,6 +86,7 @@ def usage():
   --version/-v : Print version
   --help/-h    : Print this help screen
   --automate   : read parameters from a config file to be used for automation
+  --disable_ssl_certificate_validation/-x : disable server certificate verification
 
   --command/-C :
     listtoken:    [--user | --serial ] [--csv]
@@ -372,6 +373,7 @@ def main():
               "file" : None,
               "admin" : None,
               "password" : None,
+              "disable_ssl_certificate_validation": False,
               "param" : {},
               "etng" : False,
               "pytoken" : False,
@@ -397,8 +399,8 @@ def main():
     _ask_password = None
 
     try:
-        opts, args = getopt(sys.argv[1:], "hvU:a:C:k:c:f:u:s:p:d:ew:t:w:m:H:r:",
-                ["help", "version", "url=", "admin=", "cert=", "key=", "command=", "file=",
+        opts, args = getopt(sys.argv[1:], "hvxU:a:C:k:c:f:u:s:p:d:ew:t:w:m:H:r:",
+                ["help", "version", "disable_ssl_certificate_validation", "url=", "admin=", "cert=", "key=", "command=", "file=",
                 "user=", "serial=", "pin=", "otpkey=", "description=", "etng", "maxfailcount=",
                 "syncwindow=", "otplen=", "otp1=", "otp2=", "pytoken", "type=", "otppin=",
                 "config=",
@@ -422,8 +424,10 @@ def main():
         if opt in ('-h', '--help'):
             usage()
             sys.exit(0)
+        elif opt in ('-x', '--disable_ssl_certificate_validation'):
+            config['disable_ssl_certificate_validation'] = True
         elif opt in ('-U', '--url'):
-            
+
             if arg.startswith('https://'):
                 config["protocol"] = "https"
                 config["host"] = arg[8:].rstrip('/')
@@ -433,7 +437,7 @@ def main():
             else:
                 print "Malformed url format. You need to start with http or https [" + arg + "]"
                 sys.exit(1)
-            
+
         elif opt in ('-a', '--admin'):
             config["admin"] = arg
             if _ask_password is None:
@@ -538,7 +542,8 @@ def main():
                 param[o[0]] = arg
 
     if _ask_password:
-        config["password"] = getpass.getpass(prompt="Please enter password for '%s':" % config["admin"])
+        config["password"] = getpass.getpass(prompt="Please enter password "
+                                             "for '%s':" % config["admin"])
 
     if config_file:
         config_from_file = read_config(config_file)
@@ -561,6 +566,9 @@ def main():
                          adminpw=config.get("password"),
                          cert=config.get("certificate"),
                          key=config.get("key"),
+                         disable_ssl_certificate_validation=
+                            config.get('disable_ssl_certificate_validation',
+                            False),
                          authtype=config.get("authtype"))
 
 ##### The commands

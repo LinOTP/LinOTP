@@ -35,8 +35,7 @@ from copy import deepcopy
 from netaddr import IPAddress
 from netaddr import IPNetwork
 
-
-import linotp.lib.token
+import linotp
 from linotp.lib.user import getUserRealms
 from linotp.lib.user import User
 from linotp.lib.user import getResolversOfUser
@@ -292,38 +291,19 @@ def getPolicy(param, display_inactive=False):
                     param['user'] in pol_users):
                     delete_it = False
 
-            # we support the verification of the user,
-            # to be in a resolver for the admin and system scope
-            local_scope = param.get('scope', '').lower()
-            if local_scope in ['admin', 'system', 'monitoring', 'reporting.access']:
-                policy_users = policy.get('user', '').split(',')
-                if delete_it:
-                    # check for matching of wildcard realm
-                    for policy_user in policy_users:
-                        policy_user = policy_user.strip()
-                        if len(policy_user) >= 2 and policy_user[0:2] == '*@':
-                            domain = policy_user[2:].lower()
-                            domain_user = param['user']
-                            if '@' in domain_user:
-                                (_user, _sep,
-                                 user_domain) = domain_user.rpartition('@')
-                                if (user_domain and
-                                    user_domain.lower() == domain.lower()):
-                                    delete_it = False
-                                    break
+            if delete_it:
+                # we support the verification of the user,
+                # to be in a resolver for the admin and system scope
+                local_scope = param.get('scope', '').lower()
+                if local_scope in ['admin', 'system', 'monitoring', 'reporting.access']:
 
-                if delete_it:
-                    # check existance in resolver
-                    for policy_user in policy_users:
-                        policy_user = policy_user.strip()
-                        # check if user is par of an resolver, independend
-                        # of an realms
-                        if policy_user and policy_user[-1] == ':':
-                            resolver = policy_user[:-1]
-                            f_user = User(login=param['user'])
-                            if f_user.does_exists([resolver]):
-                                delete_it = False
-                                break
+                    policy_users = policy.get('user', '').split(',')
+                    userObj = User(login=param['user'])
+
+                    # we do the extended user defintion comparison
+                    res = _filter_admin_user(policy_users, userObj)
+                    if res is True:
+                        delete_it = False
 
             if delete_it:
                 pol2delete.append(polname)
@@ -333,6 +313,67 @@ def getPolicy(param, display_inactive=False):
     log.debug("getting policies %s for params %s" % (Policies, param))
     return Policies
 
+def _filter_admin_user(policy_users, userObj):
+    """
+    filter the policies, wher the loged in user matches one of the
+    extended policy user filters.
+
+    Remark: currently without user attribute comarison, as the defintion
+            and the testing here is not completed
+
+    :param policy_users: lsit of policy user defintions
+    :param userObj: the logged in user as object
+
+    :return: boolean, true if user matched policy user defintion
+    """
+    res = False
+
+    for policy_user in policy_users:
+        user_def = policy_user.strip()
+        res = None
+
+        # check if there is an attribute filter in defintion
+        # !! currently unspecified and untested - so commented out!!
+        # if '#' in  user_def:
+        #    attr_comp = AttributeCompare()
+        #    domUserObj = userObj
+        #    u_d, _sep, av = user_def.rpartition('#')
+
+        #    # if we have a domain match, we try the compare
+        #    # literal, but the attrbute requires the existance!
+        #    if '@' in u_d:
+        #        if '@' in param['user']:
+        #            login, _sep, realm = param['user'].rpartition('@')
+        #            domUserObj = User(login=login, realm=realm)
+
+        #    res = attr_comp.compare(userObj, user_def)
+
+        # if no attribute filter -try domain match
+        if "@" in user_def:
+            domUserObj = userObj
+
+            # in case of domain match, we do string compare
+            # to use the same comparator, we have to establish the realm
+            # as last part of the login (if there)
+            if '@' in userObj.login:
+                login, _sep, realm = userObj.login.rpartition('@')
+                domUserObj = User(login=login, realm=realm)
+            domain_comp = UserDomainCompare()
+            res = domain_comp.compare(domUserObj, user_def)
+
+        # or try resolver filter, BUT with existance check
+        elif ':' in user_def:
+            domain_comp = UserDomainCompare()
+            res = domain_comp.exists(userObj, user_def)
+
+        # any other filter is returned as ignored
+        else:
+            continue
+
+        if res is True:
+            break
+
+    return res
 
 def parse_action_value(action_value):
     """
@@ -592,6 +633,22 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
     # catch all
     return False
 
+def checkMonitoringAuthorisation(method, context=None):
+    """
+    check if the authenticated user has the right to do the given action
+    :param method: the requested action
+    :param context:
+    :return: notheing if authorized, else raise PolicyException
+    """
+    _ = context['translate']
+    auth = getAuthorization("monitoring", method)
+    if auth['active'] and not auth['auth']:
+        log.warning("the admin >%r< is not allowed to "
+                    "view the audit trail" % auth['admin'])
+        ret = _("You do not have the administrative right to do monitoring."
+                "You are missing a policy"
+                "scope=monitoring, action=%s") % method
+        raise PolicyException(ret)
 
 def getSelfserviceActions(user):
     '''
@@ -1155,18 +1212,36 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
         realm = _getDefaultRealm()
 
     if 'show' == method:
-        log.debug("entering method %s" % method)
+        log.debug("[checkPolicyPre] entering method %s" % method)
 
         # get the realms for this administrator
         policies = getAdminPolicies('')
-        log.debug("The admin >%s< may manage the following realms: %s" %
-                  (policies['admin'], policies['realms']))
+        log.debug("[checkPolicyPre] The admin >%s< may manage the "
+                  "following realms: %s" % (policies['admin'],
+                                                policies['realms']))
         if policies['active'] and 0 == len(policies['realms']):
-            log.error("The admin >%s< has no rights in any realms!" %
-                      policies['admin'])
+            log.error("[checkPolicyPre] The admin >%s< has no rights in "
+                      "any realms!" % policies['admin'])
             raise PolicyException(_("You do not have any rights in any "
-                                  "realm! Check the policies."))
-        return {'realms': policies['realms'], 'admin': policies['admin']}
+                                      "realm! Check the policies."))
+        return {'realms': policies['realms'], 'admin': policies['admin'],
+                "active": policies['active']}
+
+    elif 'token_method' == method:
+        log.debug("[checkPolicyPre] entering method %s" % method)
+
+        # get the realms for this administrator
+        policies = getAdminPolicies('token_method')
+        log.debug("[checkPolicyPre] The admin >%s< may manage the "
+                  "following realms: %s" % (policies['admin'],
+                                            policies['realms']))
+        if policies['active'] and 0 == len(policies['realms']):
+            log.error("[checkPolicyPre] The admin >%s< has no rights in "
+                      "any realms!" % policies['admin'])
+            raise PolicyException(_("You do not have any rights in any "
+                                    "realm! Check the policies."))
+        return {'realms': policies['realms'], 'admin': policies['admin'],
+                "active": policies['active']}
 
     elif 'remove' == method:
         policies = getAdminPolicies("remove")
@@ -1293,7 +1368,12 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
         # initSPASS,     initHMAC,    initETNG, initSMS,     initMOTP
         policies = {}
         # default: we got HMAC / ETNG
-        log.debug("checking init action")
+        log.debug("[checkPolicyPre] checking init action")
+
+        if linotp.lib.support.check_license_restrictions():
+            raise PolicyException(_("Due to license restrictions no more"
+                                    " tokens could be enrolled!"))
+
         if ((not ttype) or
                 (ttype and (ttype.lower() == "hmac"))):
             p1 = getAdminPolicies("initHMAC")
@@ -2296,8 +2376,8 @@ def checkPolicyPost(controller, method, param=None, user=None):
 #
 
 def split_value(policy, attribute="client", marks=False):
-    # # This function returns the parameter "client" or
-    # # "user" in a policy as an array
+    # This function returns the parameter "client" or
+    # "user" in a policy as an array
     attrs = policy.get(attribute, "")
     if attrs == "None" or attrs is None:
         attrs = ""
@@ -2441,7 +2521,9 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
     # 3. If no user specific policy was found, we now take a look,
     #    if we find a policy with the matching resolver.
     (matched_policies,
-     empty_policies) = _user_filter_for_resolver(default_policies, userObj)
+     empty_policies,
+     ext_resolver_policies) = _user_filter_for_resolver(default_policies,
+                                                        userObj)
 
     if matched_policies:
         return matched_policies
@@ -2451,7 +2533,8 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
 
     # 4. if nothing matched before and there are extended user filter
     #    definitions, try these out - but only in scope 'selfservice'
-    if ext_policies and scope in ['selfservice']:
+    if ext_resolver_policies or ext_policies and scope in ['selfservice']:
+        ext_policies.update(ext_resolver_policies)
         (matched_policies,
          default_policies) = _user_filter_extended(ext_policies, userObj)
 
@@ -2494,6 +2577,11 @@ def _user_filter_extended(Policies, userObj):
                 domain_comp = UserDomainCompare()
                 res = domain_comp.compare(userObj, user_def)
 
+            # if there is an : in the user, we compare the resolver
+            elif ":" in user_def:
+                domain_comp = UserDomainCompare()
+                res = domain_comp.compare(userObj, user_def)
+
             # any other filter is returned as ignored
             else:
                 log.debug("adding %s (no resolvers) to empty_policies",
@@ -2512,7 +2600,7 @@ def _user_filter_extended(Policies, userObj):
 
 def _user_filter_for_resolver(Policies, userObj):
     """
-    check if user matches with a policy usee defintion like 'resolver:'
+    check if user matches with a policy user defintion like 'resolver:'
 
     :param Policies: the to be processed policies
     :param userObj: the user as User class object
@@ -2521,6 +2609,7 @@ def _user_filter_for_resolver(Policies, userObj):
 
     matched_policies = {}
     empty_policies = {}
+    ext_resolver_policies = {}
 
     # get the resolver of the user in the realm and search for this
     # resolver list in the policies. Therefore we trim the user resolver
@@ -2542,18 +2631,29 @@ def _user_filter_for_resolver(Policies, userObj):
             empty_policies[polname] = pol
             continue
 
+        # there might be some resolver prefixed by user like *.reso1:
+        # thus we extract the resolver as the last part before the last '.'
+        for reso_def in resolver_def:
+            sub_resolvers = set()
+            if '.' in reso_def:
+                sub_resolvers.add(reso_def.split('.')[-1])
+
         # if we have some, intersect them with the user resolvers
         if resolver_def & resolvers_of_user:
             log.debug("adding %s to matched_policies", polname)
             matched_policies[polname] = pol
+
+        # or if we have some sub-resolvers, intersect them
+        elif sub_resolvers & resolvers_of_user:
+            ext_resolver_policies[polname] = pol
 
         # if no intersection match, write a short log output
         else:
             log.debug("policy %s contains only resolvers (%r) other than %r",
                       polname, resolver_def, resolvers_of_user)
 
-    # return the identified Policies and if they are defualt
-    return matched_policies, empty_policies
+    # return the identified Policies and if they are default
+    return matched_policies, empty_policies, ext_resolver_policies
 
 
 def set_realm(login, realm, exception=False):
@@ -2645,12 +2745,12 @@ def get_auth_forward(user):
     client = _get_client()
 
     pol = get_client_policy(client, scope="authentication",
-                            action="forward", realm=user.realm,
+                            action="forward_server", realm=user.realm,
                             user=user.login, userObj=user)
     if not pol:
         return None
 
-    servers = getPolicyActionValue(pol, "forward", is_string=True)
+    servers = getPolicyActionValue(pol, "forward_server", is_string=True)
 
     return servers
 

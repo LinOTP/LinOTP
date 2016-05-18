@@ -1,3 +1,27 @@
+dnl
+dnl  LinOTP - the open source solution for two factor authentication
+dnl  Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+dnl
+dnl  This file is part of LinOTP authentication modules.
+dnl
+dnl  This program is free software: you can redistribute it and/or modify
+dnl  it under the terms of the GNU General Public License as published by
+dnl  the Free Software Foundation, either version 2 of the License, or
+dnl  (at your option) any later version.
+dnl
+dnl  This program is distributed in the hope that it will be useful,
+dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl  GNU General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+dnl   E-mail: linotp@lsexperts.de
+dnl   Contact: www.linotp.org
+dnl   Support: www.lsexperts.de
+dnl
+
 AC_INIT(rlm_linotp2.c)
 AC_REVISION($Revision: 1.4 $)
 AC_DEFUN(modname,[rlm_linotp2])

@@ -47,6 +47,7 @@ import time
 
 import re
 
+import linotp
 
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
@@ -182,7 +183,44 @@ class TokenClass(object):
         self.type = typ
         self.token.setType(typ)
 
-    #  --------------------------------------------------------------------------
+    def is_auth_only_token(self, user):
+        """
+        check if token is in the authenticate only mode
+        this is required to optimize the number of requests
+
+        :param user: the user / realm where the token policy is applied
+        :return: boolean
+        """
+        if len(self.mode) == 1 and 'authenticate' in self.mode:
+            return True
+
+        if len(self.mode) == 1 and 'challenge' in self.mode:
+            return False
+
+        import linotp.lib.policy
+        support_challenge_response = \
+            linotp.lib.policy.get_auth_challenge_response(user, self.type)
+
+        return not support_challenge_response
+
+    def is_challenge_and_auth_token(self, user):
+        """
+        check if token supports both authentication methods:
+          authenticate an challenge responser
+
+        :param user: the user / realm where the token policy is applied
+        :return: boolean
+        """
+
+        if 'authenticate' in self.mode and 'challenge' in self.mode:
+            import linotp.lib.policy
+            support_challenge_response = \
+                linotp.lib.policy.get_auth_challenge_response(user, self.type)
+            return support_challenge_response
+        else:
+            return False
+
+    # #########################################################################
 
     # interface hooks for generation of helper parameters in admin/init
 
@@ -219,7 +257,7 @@ class TokenClass(object):
 
         return {}
 
-    # --------------------------------------------------------------------------
+    # #########################################################################
 
     @classmethod
     def getClassType(cls):
@@ -333,9 +371,17 @@ class TokenClass(object):
 
         (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
         if res != -1:
-            pin_match = check_pin(self, pin, user=user, options=options)
-            if pin_match is True:
+            pin_policies = linotp.lib.policy.get_pin_policies(user)
+            if 1 in pin_policies:
                 otp_counter = check_otp(self, otpval, options=options)
+                if otp_counter >= 0:
+                    pin_match = check_pin(self, pin, user=user, options=options)
+                    if not pin_match:
+                        otp_counter = -1
+            else:
+                pin_match = check_pin(self, pin, user=user, options=options)
+                if pin_match is True:
+                    otp_counter = check_otp(self, otpval, options=options)
 
         # for special token that have no otp like passwordtoken
         if not self.auth_info and pin_match is True and otp_counter == 0:
@@ -441,6 +487,37 @@ class TokenClass(object):
             validity = 120
 
         return validity
+
+    def is_challenge_valid(self, challenge=None):
+        '''
+        This method verifies if the given challenge is still valid.
+
+        The default implementation checks, if the challenge start is in the
+        default validity time window.
+
+        **Please note**: This method does not check the response for the
+        challenge itself. This is done by the method
+        :py:meth:`~linotp.lib.tokenclass.TokenClass.checkResponse4Challenge`.
+        E.g. this very method ``is_challenge_valid`` is used by the method
+        :py:meth:`~linotp.lib.tokenclass.TokenClass.challenge_janitor`
+        to clean up old challenges.
+
+        :param challenge: The challenge to be checked
+        :type challenge: challenge object
+        :return: true or false
+        '''
+
+        validity = self.get_challenge_validity()
+        ret = False
+
+        if challenge is not None:
+            c_start_time = challenge.get('timestamp')
+            c_now = datetime.datetime.now()
+            if (c_now < c_start_time + datetime.timedelta(seconds=validity)
+                and c_now > c_start_time):
+                ret = True
+
+        return ret
 
     def initChallenge(self, transactionid, challenges=None, options=None):
         """
@@ -606,20 +683,68 @@ class TokenClass(object):
         if options is None:
             options = {}
 
-        # is the request refering to a previous challenge
-        if self.is_challenge_response(passw, user, options=options,
-                                      challenges=challenges):
+        # fallback in case of check_s, which does not provide a user
+        # but as for further prcessing a dummy user with only the realm defined
+        # is required for the policy evaluation
+        if user is None:
+            user = self.get_token_realm_user()
 
-            (res, reply) = self.check_challenges(challenges, user, passw,
-                                                 options=options)
+        # standard authentication token
+        if self.is_auth_only_token(user):
+            (res, reply) = self.check_authenticate(user, passw,
+                                                   options=options)
+            return (res, reply)
+
+        # only challenge response token authentication
+        if not self.is_challenge_and_auth_token(user):
+
+            # first check are there outstanding challenges
+            if self.is_challenge_response(passw, user,
+                                                options=options,
+                                                challenges=challenges):
+
+                (res, reply) = self.check_challenge_response(challenges,
+                                                             user, passw,
+                                                             options=options)
+                return (res, reply)
+
+            res = self.is_challenge_request(passw, user, options=options)
+            if res:
+                self.challenge_token.append(self)
+            else:
+                self.invalid_token.append(self)
+
+            return (False, None)
+
+        # else: tokens, which support both: challenge response
+        # and standard authentication
+
+        # first check are there outstanding challenges
+        if self.token.is_challenge_response(passw, user,
+                                            options=options,
+                                            challenges=challenges):
+
+            (res, reply) = self.check_challenge_response(challenges,
+                                                         user, passw,
+                                                         options=options)
+            return (res, reply)
+
+        # if all okay, we can return here
+        (res, reply) = self.check_authenticate(user, passw, options=options)
+        if res >= 0:
+            return (res, reply)
+
+        # any challenge trigger should return false
+        res = self.is_challenge_request(passw, user, options=options)
+        if res:
+            self.challenge_token.append(self)
         else:
-            # do the standard check
-            (res, reply) = self.check_standard(passw, user, options=options)
+            self.invalid_token.append(self)
 
-        return (res, reply)
+        return (False, None)
 
 
-    def check_challenges(self, challenges, user, passw, options=None):
+    def check_challenge_response(self, challenges, user, passw, options=None):
         """
         This function checks, if the given response (passw) matches
         any of the open challenges
@@ -652,6 +777,7 @@ class TokenClass(object):
 
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
             user, otp, options=options, challenges=check_challenges)
+
         if otpcount >= 0:
             self.matching_challenges = matching_challenges
             self.valid_token.append(self)
@@ -661,6 +787,45 @@ class TokenClass(object):
             self.invalid_token.append(self)
 
         return (otpcount, reply)
+
+    def get_token_realm_user(self):
+
+        user = None
+        realms = linotp.lib.token.getTokenRealms(self.getSerial())
+        if len(realms) == 1:
+            user = linotp.lib.user.User(login='', realm=realms[0])
+        elif len(realms) == 0:
+            realm = linotp.lib.token.getDefaultRealm()
+            user = linotp.lib.user.User(login='', realm=realm)
+            log.info('No token realm found - using default realm.')
+        else:
+            msg = ('Multiple realms for token found. But one dedicated '
+                   'realm is required for further processing.')
+            log.error(msg)
+            raise Exception(msg)
+
+        return user
+
+    def check_authenticate(self, user, passw, options=None):
+        '''
+        simple authentication with pin+otp
+
+        :param passw: the password, which should be checked
+        :param options: dict with additional request parameters
+
+        :return: tuple of matching otpcounter and a potential reply
+        '''
+
+        pin_match, otp_count, reply = self.authenticate(passw, user,
+                                                              options=options)
+        if otp_count >= 0:
+            self.valid_token.append(self)
+        elif pin_match is True:
+            self.pin_matching_token.append(self)
+        else:
+            self.invalid_token.append(self)
+
+        return (otp_count, reply)
 
     def check_standard(self, passw, user, options=None):
         """
@@ -1059,8 +1224,7 @@ class TokenClass(object):
     def incOtpFailCounter(self):
         log.debug('incOtpFailCounter')
 
-        if self.token.LinOtpFailCount < self.token.LinOtpMaxFail:
-            self.token.LinOtpFailCount = self.token.LinOtpFailCount + 1
+        self.token.LinOtpFailCount = self.token.LinOtpFailCount + 1
 
         try:
             self.token.storeToken()
@@ -1343,11 +1507,11 @@ class TokenClass(object):
                   (self.token.LinOtpCount, counter))
         self.token.LinOtpCount = counter + 1
 
-        if reset == True:
-            if getFromConfig("DefaultResetFailCount") is "True":
+        if reset is True:
+            if getFromConfig("DefaultResetFailCount") == "True":
                 resetCounter = True
 
-        if resetCounter == True:
+        if resetCounter is True:
             if (self.token.LinOtpFailCount < self.token.LinOtpMaxFail and
                     self.token.LinOtpIsactive == True):
                 self.token.LinOtpFailCount = 0
@@ -2846,4 +3010,4 @@ class OcraTokenClass(TokenClass):
         return url, hparam
 
 
-##eof##########################################################################
+# eof #########################################################################

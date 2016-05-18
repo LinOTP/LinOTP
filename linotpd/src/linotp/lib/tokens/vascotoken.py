@@ -31,7 +31,11 @@ from linotp.lib.util    import getParam
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.ImportOTP.vasco import vasco_otp_check
+
 from linotp.lib.context import request_context as context
+
+from linotp.lib.ImportOTP.vasco import compress
+from linotp.lib.ImportOTP.vasco import decompress
 
 import logging
 log = logging.getLogger(__name__)
@@ -141,25 +145,18 @@ class VascoTokenClass(TokenClass):
         '''
         res = -1
 
-        secObj = self._get_secret_object()
-        otpkey = secObj.getKey()
+        secObject = self.token.getHOtpKey()
+        otpkey = secObject.getKey()
+        data = decompress(otpkey)
+
         # let vasco handle the OTP checking
-        ret = vasco_otp_check(otpkey, anOtpVal)
-        if ret is None:
-            log.info("Failed to authenticate due to missing vasco dll!")
-            return -1
-
-        # if all is ok, we get the result tupple from the return
-        (res, otpkey) = ret
-
+        (res, data) = vasco_otp_check(data, anOtpVal)
         # update the vasco data blob
-        self.update({"otpkey": otpkey})
+        self.update({"otpkey" : compress(data)})
 
         if res != 0:
-            log.warning("[checkOtp] Vasco token failed to authenticate. "
-                        "Vasco Error code: %d" % res)
-            # TODO: Vasco gives much more detailed error codes. But at the
-            # moment we do not handle more error codes!
+            log.warning("[checkOtp] Vasco token failed to authenticate. Vasco Error code: %d" % res)
+            # TODO: Vasco gives much more detailed error codes. But at the moment we do not handle more error codes!
             res = -1
 
         return res

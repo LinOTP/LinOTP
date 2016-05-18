@@ -92,8 +92,7 @@ class ValidateController(BaseController):
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
-            if request_context: # XXX why this check?
-                request_context['Audit'] = audit
+            request_context['Audit'] = audit
             return response
 
         except Exception as exx:
@@ -701,7 +700,7 @@ class ValidateController(BaseController):
 
 
     def ok(self):
-        return sendResult(response, "TRUE", 0)
+        return sendResult(response, True, 0)
 
     def fail(self):
         return sendResult(response, False, 0)
@@ -762,7 +761,8 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[smspin] validate/smspin failed: %r" % exx)
-            # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
+            # If an internal error occurs or the SMS gateway did not send 
+            # the SMS, we write this to the detail info.
             c.audit['info'] = unicode(exx)
             Session.rollback()
             return sendResult(response, False, 0)
@@ -771,5 +771,5 @@ class ValidateController(BaseController):
             Session.close()
             log.debug("[smspin] done")
 
-#eof###########################################################################
+# eof #########################################################################
 

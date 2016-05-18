@@ -147,7 +147,7 @@ class TestSelfserviceAuthController(TestController):
         self.delete_policy('T1')
         self.delete_token('hmac123')
 
-    def test_selfservice_resolver(self):
+    def test_selfservice_resolver_attribute(self):
         '''
         Selfservice Authorization: test for resolver with attribute comparison
         '''
@@ -156,6 +156,39 @@ class TestSelfserviceAuthController(TestController):
                   'user': ' myDefRes:#mobile~=1234-24, ',
                   'realm': '*'
                  }
+        self.createPolicy(policy)
+
+        # for passthru_user1 do check if policy is defined
+        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
+        response = self.make_userservice_request('enroll',
+                                                 params=params,
+                                                 auth_user=auth_user)
+        self.assertTrue('"img": "<img ' in response, response)
+
+        # check for not beeing part of this resolver
+        auth_user = ('other_user@myotherrealm', 'geheim2')
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
+        response = self.make_userservice_request('enroll',
+                                                 params=params,
+                                                 auth_user=auth_user)
+        msg = "policy settings do not allow you to issue this request!"
+        self.assertTrue(msg in response, response)
+
+        self.delete_policy('T1')
+        self.delete_token('hmac123')
+
+    def test_selfservice_resolver(self):
+        '''
+        Selfservice Authorization: test for resolver with attribute comparison
+        '''
+        policy = {'name': 'T1',
+                  'action': 'enrollHMAC',
+                  'user': ' .*.myDefRes:',
+                  'realm': '*'
+                  }
         self.createPolicy(policy)
 
         # for passthru_user1 do check if policy is defined

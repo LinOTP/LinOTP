@@ -331,7 +331,7 @@ class TestRemoteToken(TestSpecialController):
         return
 
     @patch.object(httplib2.Http, 'request', mocked_http_request)
-    def test_0000_fix_12061(self):
+    def test_fix_12061(self):
         '''
         ticket 12061: timeout with remote tokens: many tokens + unicode pins
         '''
