@@ -541,7 +541,7 @@ function get_scope_actions(scope) {
                     var desc = "";
                     var sep = ""
                     for (var i = 0; i < arrayLength; i++) {
-                        if (i != 0) { sep = ", "; }
+                        if (i != 0) { sep = " "; }
                         desc = desc + sep + "<" +values[i] + ">";
                     }
                     action = k+ "= <" + desc + ">";
