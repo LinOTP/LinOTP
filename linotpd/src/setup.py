@@ -111,7 +111,6 @@ setup(
         'tools/linotp-convert-gemalto',
         'tools/linotp-restore',
         'tools/linotp-enroll-smstoken',
-        'tools/linotp-ini-configurator',
         ],
     setup_requires=[
         'PasteScript>=1.6.3',
