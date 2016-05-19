@@ -228,6 +228,12 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The sms number the challenge response should '
                         'be send to'
                 },
+            'support_offline': {
+                'type': 'set',
+                'value': ['qr', 'u2f'], # TODO: currently hardcoded
+                'desc': 'The token types that should support offline '
+                        'authentication'
+             }
             },
         'authorization': {
             'authorize': {

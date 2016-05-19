@@ -176,6 +176,7 @@ class TokenClass(object):
         self.auth_info = {}
         self.transId = None
         self.matching_challenges = []
+        self.supports_offline_mode = False
 
     def setType(self, typ):
         typ = u'' + typ
@@ -1483,6 +1484,9 @@ class TokenClass(object):
     def getAuthDetail(self):
 
         return self.auth_info
+
+    def getOfflineInfo(self):
+        return {}
 
     def getInitDetail(self, params, user=None):
         '''

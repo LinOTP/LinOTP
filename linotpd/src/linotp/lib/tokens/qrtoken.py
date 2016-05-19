@@ -147,6 +147,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         TokenClass.__init__(self, token_model_object)
         self.setType(u'qr')
         self.mode = ['challenge']
+        self.supports_offline_mode = True
 
 # ------------------------------------------------------------------------------
 
@@ -839,6 +840,23 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 hparam['alt'] = url
 
         return url, hparam
+
+    # --------------------------------------------------------------------------
+
+    def getOfflineInfo(self):
+
+        type_ = self.getType()
+        serial = self.getSerial()
+        general_info = {'token_type': type_, 'serial': serial}
+
+        public_key = self.getFromTokenInfo('user_public_key')
+        user_token_id = self.getFromTokenInfo('user_token_id')
+
+        token_info = {'token_info': {'public_key': public_key,
+                                     'user_token_id': user_token_id}}
+
+        general_info.update(token_info)
+        return general_info
 
     # --------------------------------------------------------------------------
 

@@ -29,6 +29,7 @@ from linotp.lib.challenges import Challenges
 from linotp.lib.error import UserError
 
 from linotp.lib.context import request_context as context
+from linotp.lib.policy import supports_offline
 
 log = logging.getLogger(__name__)
 
@@ -154,6 +155,31 @@ class FinishTokens(object):
             auth_info = self.options.get('auth_info', 'False')
             if auth_info.lower() == "true":
                 detail = token.getAuthDetail()
+
+            # 1. check if token supports offline at all
+            supports_offline_at_all = token.supports_offline_mode
+
+            # 2. check if policy allows to use offline authentication
+            if user.login and user.realm:
+                realms = [user.realm]
+            else:
+                realms = token.getRealms()
+
+            offline_is_allowed = supports_offline(realms, token)
+
+            # 3. check if parameter 'use_offline' is provided
+            use_offline_param = self.options.get('use_offline', 'False')
+            use_offline = use_offline_param.lower() == 'true'
+
+            if supports_offline_at_all and \
+               offline_is_allowed and \
+               use_offline:
+
+                offline_info = token.getOfflineInfo()
+                if detail is None:
+                    detail = {}
+                detail.update({'offline_info': offline_info})
+
             return (True, detail, action_detail)
 
         else:
