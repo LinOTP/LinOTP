@@ -38,21 +38,6 @@ log = logging.getLogger(__name__)
 
 
 class Challenges(object):
-    @staticmethod
-    def transform_challenges(challenges):
-        """
-        small helper to transfor a set of DB Challenges to a list
-        of challenge data as dicts
-
-        :param challenges: list of database challenges
-        :return: a list with challenge data dicts
-        """
-
-        channel_list = []
-        for challenge in challenges:
-            channel_list.append(challenge.get())
-        # return channel_list
-        return challenges
 
     @staticmethod
     def lookup_challenges(serial=None, transid=None, filter_open=False):

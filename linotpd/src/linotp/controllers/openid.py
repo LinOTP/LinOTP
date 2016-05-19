@@ -513,6 +513,7 @@ class OpenidController(BaseController):
 
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm or getDefaultRealm()
+
             vh = ValidationHandler()
             if same_user is True:
                 (ok, opt) = vh.checkUserPass(user, passw)

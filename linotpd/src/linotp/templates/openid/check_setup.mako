@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 <%inherit file="base.mako"/>
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
@@ -25,7 +25,7 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
--->
+</%doc>
 
 <p>The site <tt>${c.rely_party}</tt> has requested verification of your OpenID as <tt> ${c.identity}</tt>.
 </p>

@@ -252,7 +252,7 @@ class TestAdvancedController(TestController2):
             return retDict;
 
         # By default we perform only get requests
-        postMethod = True
+        postMethod = False
         if 'method' in params:
             # Allow only get and post methods!
             self.assertTrue(params['method'].lower() in ['get', 'post'],

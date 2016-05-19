@@ -1,5 +1,31 @@
 # -*- coding: utf-8 -*-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<%doc>
+ *
+ *   LinOTP - the open source solution for two factor authentication
+ *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+ *
+ *   This file is part of LinOTP server.
+ *
+ *   This program is free software: you can redistribute it and/or
+ *   modify it under the terms of the GNU Affero General Public
+ *   License, version 3, as published by the Free Software Foundation.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the
+ *              GNU Affero General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ *    E-mail: linotp@lsexperts.de
+ *    Contact: www.linotp.org
+ *    Support: www.lsexperts.de
+ *
+</%doc>
 <%!
 from pylons.i18n.translation import get_lang
 %>
@@ -16,8 +42,6 @@ if isinstance(lang, list):
 <head>
 <title>${_("LinOTP 2 Management")}</title>
 
-<meta name="author" content="Cornelius Kölbel">
-<meta name="date" content="2010-08-21T00:25:13+0200">
 <meta name="copyright" content="LSE Leading Security Experts GmbH">
 <meta name="keywords" content="LinOTP 2 manage">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -120,7 +144,7 @@ if isinstance(lang, list):
         <li>
             <li><a href='#'>${_("Help")}</a>
             <ul>
-                <li><a href='${c.help_url}' target="_blank" id="menu_help">${_("Documentation")}</a></li>
+                <li><a href='${c.help_url}' target="noreferrer" id="menu_help">${_("Documentation")}</a></li>
                 <li><a href='#' id='menu_view_support'>${_("Support and Subscription")}</a></li>
                 <li><a href='#' id='menu_about'>${_("About LinOTP")}</a></li>
             </ul>
@@ -128,7 +152,7 @@ if isinstance(lang, list):
     </ul>
     <div id="logo"></div>
 </div> <!-- header -->
-<div align="right" style="font-size: 70%">
+<div id="login-status" align="right" style="font-size: 70%">
     <p>${_("Logged in as")}: ${c.admin} | <a href=# onclick='Logout("${c.logout_url}");return false;' >${_("Logout")}</a>
     </p>
 </div>

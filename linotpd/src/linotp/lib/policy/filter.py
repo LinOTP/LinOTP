@@ -37,6 +37,14 @@ class UserDomainCompare(object):
     def __init__(self):
         self._compare = None
 
+    def exists(self, userObj, user_def):
+        """
+        existance test is the same as the attribute search for userid
+        """
+        attr_comp = AttributeCompare()
+        exists = attr_comp.compare(userObj, user_def + "#userid")
+        return exists
+
     def compare(self, userObj, user_def):
         """
         comparison method - the single entry of this class

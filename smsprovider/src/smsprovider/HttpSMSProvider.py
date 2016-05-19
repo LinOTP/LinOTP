@@ -53,10 +53,11 @@ except ImportError:
 
 
 class HttpSMSProvider(ISMSProvider):
+
     def __init__(self):
         self.config = {}
 
-    def submitMessage(self, phone, message):
+    def _submitMessage(self, phone, message):
         '''
         send out a message to a phone via an http sms connector
         :param phone: the phone number
@@ -65,10 +66,6 @@ class HttpSMSProvider(ISMSProvider):
         url = self.config.get('URL', None)
         if url is None:
             return
-
-        msisdn = 'true' in ("%r" % self.config.get('MSISDN', "false")).lower()
-        if msisdn:
-            phone = self._get_msisdn_phonenumber(phone)
 
         log.debug("[submitMessage] submitting message "
                   "%s to %s" % (message, phone))
@@ -509,9 +506,12 @@ class HttpSMSProvider(ISMSProvider):
         if type(parameter) == dict:
             params = []
             for key, value in parameter.items():
-                value = unicode(value).encode('utf-8')
                 key = unicode(key).encode('utf-8')
-                params.append("%s=%s" % (key, urllib.quote(value)))
+                if value:
+                    value = unicode(value).encode('utf-8')
+                    params.append("%s=%s" % (key, urllib.quote(value)))
+                else:
+                    params.append("%s" % key)
             encoded_params = "&".join(params)
         return str(encoded_params)
 

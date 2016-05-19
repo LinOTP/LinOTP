@@ -154,6 +154,14 @@ jQuery.validator.addMethod("http_uri", function(value, element, param){
     i18n.gettext("Please enter a valid http uri. It needs to start with http:// or https://")
 );
 
+//LDAPTIMEOUT: "(float or number) | (float or number; float or number)"
+jQuery.validator.addMethod("ldap_timeout", function(value, element, param){
+	var float_tuple = /(^[+]?[0-9]+(\.[0-9]+){0,1}$)|((^[+]?[0-9]+(\.[0-9]+){0,1})\s*;\s*([+]?[0-9]+(\.[0-9]+){0,1}$))/;
+    return value.match(float_tuple);
+    },
+    i18n.gettext("Please enter a timeout like: 5.0; 5.0 ")
+);
+
 // LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
 jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
     return value.match(/(\(\S+=(\S+).*\))+/);
@@ -286,15 +294,22 @@ function on_submit_flexi(){
  * callback, to add in parameters to the flexi grid
  */
     var active_realm = $('#realm').val();
+    var session = getsession();
+
     var params = [
         {name: 'realm', value: active_realm},
-        {name: 'session', value: getsession()},
+        {name: 'session', value: session},
+        ];
+
+    var policy_params = [
+        {name: 'session', value: session},
         ];
 
     $('#user_table').flexOptions({params: params});
     $('#audit_table').flexOptions({params: params});
     $('#token_table').flexOptions({params: params});
-    $('#policy_table').flexOptions({params: params});
+    $('#policy_table').flexOptions({params: policy_params});
+
     return true;
 }
 
@@ -668,9 +683,10 @@ function get_selected(){
     if ($('#tabs').tabs('option', 'active') == 2) {
         policy = get_selected_policy().join(',');
         if (policy) {
-            $.get('/system/getPolicy', {'name' : policy,
+        	var params = {'name' : policy,
                                         'display_inactive': '1',
-                                        'session':getsession()} ,
+                    'session':getsession()};
+            $.post('/system/getPolicy', params,
              function(data, textStatus, XMLHttpRequest){
                 if (data.result.status == true) {
                     policies = policy.split(',');
@@ -849,7 +865,7 @@ function save_token_config(){
 
     }
     //console_log(params)
-    $.get('/system/setConfig', params,
+    $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -984,9 +1000,22 @@ function check_license(){
                         'type': ERROR,
                         'is_escaped': true
                         });
-       return;
     }
+    if (obj['detail'] && obj.detail['download_licence_info']) {
+        var title = i18n.gettext('Support Contact');
+        var download_licence_info =  obj.detail['download_licence_info'];
+        alert_box({'title': title,
+                   'text': download_licence_info,
+                   'is_escaped': true});
+       /*
+       translate_support_view();
+       support_view();
+       $('#dialog_support_view').dialog('open');
+       */
+    }
+       return;
 }
+// correctly closed bracket??
 
 function check_serial(serial){
     var resp = clientUrlFetchSync('/admin/check_serial',{'serial':serial});
@@ -1397,7 +1426,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             if (users.length >= 1) {
                 var login = escape(users[0].login);
                 var user = login;
-                var email = escape(emails[0].trim())
+                var email = escape(jQuery.trim(emails[0]))
                 if (email.length > 0) {
                     user = "<a href=mailto:" +email+">"+login+"</a>"
                 }
@@ -1728,7 +1757,8 @@ function do_dialog_icons(){
 // realms and resolver functions
 //
 function _fill_resolvers(widget){
-    $.get('/system/getResolvers', {'session':getsession()} ,
+	var params = {'session':getsession()};
+    $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
         var resolversOptions = "";
         var value = {};
@@ -1746,10 +1776,10 @@ function _fill_resolvers(widget){
     return;
 }
 
-
 function _fill_realms(widget, also_none_realm){
     var defaultRealm = "";
-    $.get('/system/getRealms', {'session':getsession()} ,
+    var params = {'session':getsession()};
+    $.post('/system/getRealms', params,
      function(data, textStatus, XMLHttpRequest){
         // value._default_.realmname
         // value.XXXX.realmname
@@ -1999,18 +2029,57 @@ function parsePolicyImport(xml, textStatus) {
     hide_waiting();
 };
 
-function parseLicense(xhdr, textStatus){
-    // calback to handle response when license has been submitted
-    var resp = xhdr.responseText;
-    var obj = jQuery.parseJSON(resp);
-    var status = obj.result.status;
+// calback to handle response when license has been submitted
+function parseLicense(xml_response, textStatus, xhr){
+    var xml = null;
+
+    if(testXMLObject(xml_response)){
+        xml = xml_response;
+    }
+    else{
+        try{ // try for activeX errors
+            if( window.DOMParser ){ // good browser
+                var parser = new DOMParser();
+                xml = parser.parseFromString(xhr.responseText,"text/xml");
+            }
+            else{ // Internet Explorer
+                xml = new ActiveXObject("Microsoft.XMLDOM");
+                xml.async = "false";
+                if(typeof xhr.responseXML.xml !== 'undefined'){
+                    xml.loadXML(xhr.responseXML.xml);
+                }
+                else{ // IE 9
+                    alert(xhr.responseXML.activeElement.innerText);
+                    xmlstr = xhr.responseXML.activeElement.innerText.replace(/[\n\r]-?/g, '');
+                    xml.loadXML(xmlstr);
+                }
+            }
+            if(!testXMLObject(xml)){
+                throw "Error: xml could not be parsed";
+            }
+        }
+        catch(e){ // if nothing helped
+            xml = null;
+        }
+    }
+
+    var status = $(xml).find('status').text();
+    var value = $(xml).find('value').text();
+    var xml_message = $(xml).find('message').text();
+    var reason = $(xml).find('reason').text();
 
     var error_intro = i18n.gettext('The upload of your support and subscription license failed: ');
     var dialog_title = i18n.gettext('License upload');
 
     // error occured
-    if ( status === false) {
-        var message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.result.error.message);
+    if(xml == null){
+        var status_unkown = i18n.gettext('License uploaded');
+        alert_info_text({'text': status_unkown,
+                     'is_escaped': true
+                     });
+    }
+    else if(status.toLowerCase() == "false") {
+        var message = i18n.gettext('Invalid License') + ': <br>' + escape(xml_message);
         alert_info_text({'text': message,
                          'type': ERROR,
                          'is_escaped': true
@@ -2020,9 +2089,8 @@ function parseLicense(xhdr, textStatus){
                    'text': error_intro + message,
                    'is_escaped': true});
     } else {
-        value = obj.result.value;
-        if (value === false){
-            message = i18n.gettext('Invalid License') + ': <br>' + escape(obj.detail.reason);
+        if (value.toLowerCase() == "false"){
+            var message = i18n.gettext('Invalid License') + ': <br>' + escape(reason);
             alert_info_text({'text': message,
                              'type': ERROR,
                              'is_escaped': true});
@@ -2037,6 +2105,20 @@ function parseLicense(xhdr, textStatus){
     }
     hide_waiting();
 };
+
+function testXMLObject(xml){
+    try{
+        if($(xml).find('version').text() == ""){
+            throw "Error: xml needs reparsing";
+        }
+        else{
+            state = "successful"
+            return true;
+        }
+    }catch(e){
+        return false;
+    }
+}
 
 function import_policy() {
     show_waiting();
@@ -2159,7 +2241,8 @@ function support_view(){
     // clean out old data
     $("#dialog_support_view").html("");
 
-    $.get('/system/getSupportInfo', { 'session':getsession()} ,
+    var params = { 'session':getsession()};
+    $.post('/system/getSupportInfo', params,
      function(data, textStatus, XMLHttpRequest){
         support_info = data.result.value;
 
@@ -2184,7 +2267,7 @@ function support_view(){
             info += "</tbody></table>";
             info += "<div class='subscription_info'><br>" +
                 i18n.gettext("For support and subscription please contact us at") +
-                " <a href='https://www.lsexperts.de/service-support.html' target='_blank'>https://www.lsexperts.de</a> <br>" +
+                " <a href='https://www.lsexperts.de/service-support.html' target='noreferrer'>https://www.lsexperts.de</a> <br>" +
                 i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
             $("#dialog_support_view").html($.parseHTML(info));
         }
@@ -2194,7 +2277,8 @@ function support_view(){
 
 function load_system_config(){
     show_waiting();
-    $.get('/system/getConfig', { 'session':getsession()} ,
+    var params = {'session':getsession()};
+    $.post('/system/getConfig', params,
      function(data, textStatus, XMLHttpRequest){
         // checkboxes this way:
         hide_waiting();
@@ -2256,7 +2340,7 @@ function load_system_config(){
 
 function save_system_config(){
     show_waiting();
-    $.get('/system/setConfig', {
+    var params = {
         'DefaultMaxFailCount': $('#sys_maxFailCount').val(),
         'DefaultSyncWindow': $('#sys_syncWindow').val(),
         'DefaultOtpLen': $('#sys_otpLen').val(),
@@ -2272,7 +2356,9 @@ function save_system_config(){
         'OcraMaxChallenges' : $('#ocra_max_challenge').val(),
         'OcraChallengeTimeout' : $('#ocra_challenge_timeout').val(),
         'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
-        'session':getsession()},
+        'session':getsession()}
+
+    $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -2326,7 +2412,7 @@ function save_system_config(){
     if ($("#sys_x_forwarded_for").is(':checked')) {
         client_x_forward = "True";
     }
-    $.get('/system/setConfig', { 'session':getsession(),
+    var params = { 'session':getsession(),
             'PrependPin' :prepend,
             'FailCounterIncOnFalsePin' : fcounter ,
             'splitAtSign' : splitatsign,
@@ -2338,7 +2424,9 @@ function save_system_config(){
             'allowSamlAttributes' : allowsaml,
             'client.FORWARDED' : client_forward,
             'client.X_FORWARDED_FOR' : client_x_forward,
-             },
+            'allowSamlAttributes' : allowsaml,
+             };
+    $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){
         if (data.result.status == false) {
             alert_info_text({'text': "text_system_save_error_checkbox",
@@ -2432,14 +2520,40 @@ function save_http_config(){
 }
 
 
+function set_default_realm(realm) {
+/*
+ * set the default realm
+ *
+ * @param realm - as string
+ */
+    var params = {
+        'realm' : realm,
+        'session':getsession()
+        };
+
+    $.post('/system/setDefaultRealm', params,
+       function(){
+          realms_load();
+          fill_realms();
+      });
+}
+
 function save_realm_config(){
+/*
+ * save the realm config from the realm edit dialog
+ *
+ * @param - #realm_name is extracted from form entry
+ */
     check_license();
     var realm = $('#realm_name').val();
     show_waiting();
-    $.get('/system/setRealm', {
+    var params = {
         'realm' :realm,
         'resolvers' : g.resolvers_in_realm_to_edit,
-        'session':getsession() },
+        'session':getsession()
+        };
+
+    $.post('/system/setRealm', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -2460,13 +2574,18 @@ function save_realm_config(){
 function save_tokenrealm_config(){
     var tokens = get_selected_tokens();
     var realms = g.realms_of_token.join(",");
+    var params = {
+            'serial' :serial,
+            'realms' : realms,
+            'session':getsession()
+            };
     for (var i = 0; i < tokens.length; ++i) {
         serial = tokens[i];
+        params['serial'] = serial;
+
         show_waiting();
-        $.get('/admin/tokenrealm', {
-          'serial' :serial,
-          'realms' : realms,
-          'session':getsession()},
+
+        $.post('/admin/tokenrealm', params,
          function(data, textStatus, XMLHttpRequest){
             hide_waiting();
             if (data.result.status == false) {
@@ -2496,7 +2615,7 @@ function save_file_config(){
     params['fileName'] = fileName;
     params['session'] = getsession();
     show_waiting();
-    $.get('/system/setResolver', params,
+    $.post('/system/setResolver', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == false) {
@@ -2564,7 +2683,8 @@ function realms_load(){
 
     g.realm_to_edit = "";
     show_waiting();
-    $.get('/system/getRealms', { 'session': getsession() },
+    var params = { 'session': getsession() };
+    $.post('/system/getRealms', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
@@ -2595,7 +2715,7 @@ function realms_load(){
                 }); // end of each
             } // end of stop function
         }); // end of selectable
-    }); // end of $.get
+    }); // end of $.post
 }
 
 function realm_ask_delete(){
@@ -2614,7 +2734,8 @@ function realm_ask_delete(){
 
 function resolvers_load(){
     show_waiting();
-    $.get('/system/getResolvers', {'session':getsession()},
+    var params = {'session':getsession()};
+    $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
@@ -2643,14 +2764,16 @@ function resolvers_load(){
             $('#resolvers_list').html("");
             g.resolver_to_edit = "";
         };
-    }); // end of $.get
+    }); // end of $.post
 }
 
 
 function resolver_delete(){
     var reso = $('#delete_resolver_name').html();
+    var params = { 'resolver' : reso, 'session':getsession()};
+
     show_waiting();
-    $.get('/system/delResolver', { 'resolver' : reso, 'session':getsession()},
+    $.post('/system/delResolver', params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
         if (data.result.status == true) {
@@ -2676,7 +2799,8 @@ function resolver_delete(){
 
 function realm_delete(){
     var realm = $('#realm_delete_name').html();
-    $.get('/system/delRealm', {'realm' : realm,'session':getsession()},
+    var params = {'realm' : realm,'session':getsession()};
+    $.post('/system/delRealm', params,
      function(data, textStatus, XMLHttpRequest){
         if (data.result.status == true) {
             fill_realms();
@@ -3198,7 +3322,8 @@ function tokenbuttons(){
 
         // get all realms the admin is allowed to view
         var realms = '';
-        $.get('/system/getRealms', {'session':getsession()},
+        var params = {'session':getsession()}
+        $.post('/system/getRealms', params,
          function(data, textStatus, XMLHttpRequest){
             realms = '<ol id="tokenrealm_select" class="select_list" class="ui-selectable">';
             for (var key in data.result.value) {
@@ -3223,7 +3348,7 @@ function tokenbuttons(){
                     }); // end of stop function
                 } // end stop function
             }); // end of selectable
-        }); // end of $.get
+        }); // end of $.post
         if (tokens.length === 0) {
             alert_box({'title': i18n.gettext("Set Token Realm"),
                        'text': i18n.gettext("Please select the token first."),
@@ -3407,8 +3532,18 @@ $(document).ready(function(){
                             alert_box("Cannot save realm", "Please select at least one UserIdResolver from the list");
                             return;
                         }
-                        save_realm_config();
-                        $(this).dialog('close');
+                        /* first check if there is at least one resolver selected */
+                        var resolvers = g.resolvers_in_realm_to_edit.split(',');
+                        if (resolvers.length == 1 &&
+                            resolvers[0].length == 0) {
+                            alert_box({'title': i18n.gettext("No resolver selected"),
+                                       'text': i18n.gettext("Please select at least one resolver from the resolver list."),
+                                       'is_escaped': true});
+
+                        } else {
+                            save_realm_config();
+                            $(this).dialog('close');
+                        }
                     }
                 },
                 id: "button_editrealms_save",
@@ -4020,13 +4155,7 @@ $(document).ready(function(){
                 var realm = "";
                 if (g.realm_to_edit.match(/^(\S+)\s\[(.+)\]/)) {
                     realm = g.realm_to_edit.replace(/^(\S+)\s+\[(.+)\]/, "$1");
-                    $.get('/system/setDefaultRealm', {
-                      'realm' : realm,
-                      'session':getsession()},
-                     function(){
-                        realms_load();
-                        fill_realms();
-                    });
+                    set_default_realm(realm);
                 }
                 else if (g.realm_to_edit.match(/^\S+\s+\(Default\)\s+\[.+\]/)) {
                     alert_info_text({'text': "text_already_default_realm",
@@ -4043,7 +4172,8 @@ $(document).ready(function(){
                 text:"Set Default"
                 },
             'Clear Default': {click: function(){
-                $.get('/system/setDefaultRealm', {'session':getsession()},
+                var params = {'session':getsession()};
+                $.post('/system/setDefaultRealm', params,
                  function(){
                     realms_load();
                     fill_realms();
@@ -4093,7 +4223,7 @@ $(document).ready(function(){
                                         formName = $(this).find('label').first().text();
                                     }
                                     validation_fails = validation_fails +
-                                                "<li>" + escape(formName.trim()) +"</li>";
+                                                "<li>" + escape(jQuery.trim(formName)) +"</li>";
                                 }
                             }
                         }
@@ -4777,7 +4907,8 @@ function realm_edit(name){
 
     // get all resolvers
     var resolvers = '';
-    $.get('/system/getResolvers', {'session':getsession()},
+    var params = {'session':getsession()};
+    $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
         resolvers = '<ol id="resolvers_in_realms_select" class="select_list" class="ui-selectable">';
         for (var key in data.result.value) {
@@ -4798,47 +4929,12 @@ function realm_edit(name){
 
         $('#realm_edit_resolver_list').html(resolvers);
         $('#resolvers_in_realms_select').selectable({
-            stop: function(){
-                g.resolvers_in_realm_to_edit = '';
-                $(".ui-selected", this).each(function(){
-                    // also nur den resolvers-string zusammenbauen...
-                    if (g.resolvers_in_realm_to_edit) {
-                        g.resolvers_in_realm_to_edit += ',';
-                    }
-                    var index = $("#resolvers_in_realms_select li").index(this);
-                    var reso = escape($(this).html());
-                    if (reso.match(/(\S+)\s\[(\S+)\]/)) {
-                        var r = reso.replace(/(\S+)\s+\S+/, "$1");
-                        var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
-                    }
-                    else {
-                        alert_info_text({'text': "text_regexp_error",
-                                         'param': escape(reso),
-                                         'type': ERROR,
-                                         'is_escaped': true});
-                    }
-                    switch (t) {
-                        case 'ldapresolver':
-                            g.resolvers_in_realm_to_edit += 'useridresolver.LDAPIdResolver.IdResolver.' + r;
-                            break;
-                        case 'httpresolver':
-                            g.resolvers_in_realm_to_edit += 'useridresolver.HTTPIdResolver.IdResolver.' + r;
-                            break;
-                        case 'sqlresolver':
-                            g.resolvers_in_realm_to_edit += 'useridresolver.SQLIdResolver.IdResolver.' + r;
-                            break;
-                        case 'passwdresolver':
-                            g.resolvers_in_realm_to_edit += 'useridresolver.PasswdIdResolver.IdResolver.' + r;
-                            break;
-                    }
-                }); // end of each
-            } // end of stop function
+            stop: check_for_selected_resolvers
         }); // end of selectable
-    }); // end of $.get
+        check_for_selected_resolvers();
+    }); // end of $.post
     $dialog_edit_realms.dialog("option", "title", "Edit Realm " + realm);
     $dialog_edit_realms.dialog('open');
-
-
 
     $("#form_realmconfig").validate({
         rules: {
@@ -4851,6 +4947,42 @@ function realm_edit(name){
         }
     });
 }
+
+function check_for_selected_resolvers(){
+    var resolvers_in_realm_to_edit = new Array();
+    $.when.apply($, $(".ui-selected", this).each(function(){
+        var index = $("#resolvers_in_realms_select li").index(this);
+        var reso = escape($(this).html());
+        if (reso.match(/(\S+)\s\[(\S+)\]/)) {
+            var r = reso.replace(/(\S+)\s+\S+/, "$1");
+            var t = reso.replace(/\S+\s+\[(\S+)\]/, "$1");
+        }
+        else {
+            alert_info_text({'text': "text_regexp_error",
+                             'param': escape(reso),
+                             'type': ERROR,
+                             'is_escaped': true});
+        }
+        switch (t) {
+            case 'ldapresolver':
+                resolvers_in_realm_to_edit.push('useridresolver.LDAPIdResolver.IdResolver.' + r);
+                break;
+            case 'sqlresolver':
+                resolvers_in_realm_to_edit.push('useridresolver.SQLIdResolver.IdResolver.' + r);
+                break;
+            case 'httpresolver':
+                resolvers_in_realm_to_edit.push('useridresolver.HTTPIdResolver.IdResolver.' + r);
+                break;
+            case 'passwdresolver':
+                resolvers_in_realm_to_edit.push('useridresolver.PasswdIdResolver.IdResolver.' + r);
+                break;
+        }
+    })).done(function(){
+        g.resolvers_in_realm_to_edit = resolvers_in_realm_to_edit.join(",");
+    }); // end of each
+}
+
+
 
 function resolver_set_ldap(obj) {
     $('#ldap_uri').val(obj.result.value.data.LDAPURI);
@@ -4932,7 +5064,7 @@ function resolver_ldap(name){
             ldap_timeout: {
                 required: true,
                 minlength: 1,
-                number: true
+                ldap_timeout: true
             },
             ldap_resolvername: {
                 required: true,
@@ -5308,9 +5440,8 @@ function view_policy() {
         } else {
             pol_active = "False";
         }
-
-        $.get('/system/setPolicy',
-            { 'name' : $('#policy_name').val(),
+        var params = { 
+                'name' : $('#policy_name').val(),
               'user' : $('#policy_user').val(),
               'action' : $('#policy_action').val(),
               'scope' : $('#policy_scope_combo').val(),
@@ -5318,7 +5449,8 @@ function view_policy() {
               'time' : $('#policy_time').val(),
               'client' : $('#policy_client').val(),
               'active' : pol_active,
-              'session':getsession() },
+                'session':getsession() };
+        $.post('/system/setPolicy', params,
          function(data, textStatus, XMLHttpRequest){
             if (data.result.status == true) {
                 alert_info_text({'text': "text_policy_set",
@@ -5336,7 +5468,8 @@ function view_policy() {
         event.preventDefault();
         var policy = get_selected_policy().join(',');
         if (policy) {
-            $.get('/system/delPolicy', {'name' : policy, 'session':getsession()},
+            var params = {'name' : policy, 'session':getsession()};
+            $.post('/system/delPolicy', params,
              function(data, textStatus, XMLHttpRequest){
                 if (data.result.status == true) {
                     alert_info_text({'text': "text_policy_deleted",

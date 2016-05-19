@@ -48,12 +48,12 @@ UserIdResolvers
 ---------------
 
     LinOTP can use arbitrary methods to look up your user base - the userid
-    resolvers. With LinOTP comes a flatfile (passwd), the ldap/active directory
+    resolvers. With LinOPT comes a flatfile (passwd), the ldap/active directory
     resolver and a sql resolver.
 
 
 LinOTP is accessed via a simple http based api, which returns json object
-that are easy to integrate into your authentication solution. Or you can use
+that are easy to integrate into your authetication solution. Or you can use
 the simple webui which come with linotp
 
 '''

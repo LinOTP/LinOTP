@@ -188,8 +188,8 @@ def defineResolver(params):
 
     return res
 
-def similar_resolver_exists(config_identifier):
 
+def similar_resolver_exists(config_identifier):
     """
     Signifies if a resolver identified by config_identifer
     exists in the configuration.
@@ -494,6 +494,15 @@ def closeResolvers():
             log.exception("Failed to close resolver in context %r" % exx)
     return
 
+def getResolverClassName(resolver_type, resolver_name):
+
+    res = ""
+    for clazz_name, clazz_type in context.resolver_types.items():
+        if clazz_type == resolver_type:
+            res = "%s.%s" % (clazz_name, resolver_name)
+            break
+
+    return res
 
 def getResolverClassName(resolver_type, resolver_name):
 
@@ -575,5 +584,5 @@ def parse_resolver_spec(resolver_spec):
     cls_identifier, __, config_identifier = resolver_spec.rpartition('.')
     return cls_identifier, config_identifier
 
-#eof###########################################################################
+# eof #########################################################################
 

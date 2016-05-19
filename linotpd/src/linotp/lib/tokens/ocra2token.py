@@ -118,6 +118,7 @@ from linotp.lib.crypt import SecretObj
 from linotp.lib.policy  import getPolicy
 from linotp.lib.policy  import getPolicyActionValue
 
+from linotp.lib.auth.validate import check_pin
 
 ### TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
@@ -135,11 +136,6 @@ from linotp.lib.context import request_context as context
 import urllib
 
 import sys
-if sys.version_info[0:2] >= (2, 6):
-    pass
-else:
-    pass
-
 
 optional = True
 required = False
@@ -774,7 +770,7 @@ class Ocra2TokenClass(TokenClass):
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
 
-        ## set the pin onyl in the compliant hashed mode
+        # set the pin only in the compliant hashed mode
         pin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
@@ -967,7 +963,7 @@ class Ocra2TokenClass(TokenClass):
 
         counter = self.getOtpCount()
 
-        ## set the pin onyl in the compliant hashed mode
+        # set the pin only in the compliant hashed mode
         pin = ''
         if ocraSuite.P is not None:
             key, iv = self.token.getUserPin()
@@ -1054,7 +1050,12 @@ class Ocra2TokenClass(TokenClass):
     def is_challenge_response(self, passw, user, options=None,
                                                             challenges=None):
         '''
-        for the ocra token,
+        test for the ocra token, if this is a response to a challenge
+
+        normal challenge response brings in a password and there is at least
+        a stored challenge available. But OCRA support as well direct
+        challenges, which bring the challenge data and the otp within the same
+        request.
 
         :param passw: password, which might be pin or pin+otp
         :param user: the requesting user
@@ -1064,11 +1065,25 @@ class Ocra2TokenClass(TokenClass):
         '''
 
         challenge_response = False
-        if (passw is not None and  len(passw) > 0 and
-           challenges is not None and len(challenges) > 0):
-            challenge_response = True
 
-        if 'challenge' in options or 'data' in options:
+        if passw is not None and len(passw) > 0:
+            # for a challenge response a pin+otp is required
+            # if passw matches a password, this is a challenge request
+
+            # TODO: does this make sense in the verification to check the pin
+            #       already here and not in the check challenge4Response
+            if check_pin(self, passw, user, options=options):
+                return False
+
+            if challenges is not None and len(challenges) > 0:
+                challenge_response = True
+
+            # we might have a direct challenge:
+            # direct challenge comes along with a pin+otp and direct challenge
+            elif 'challenge' in options or 'data' in options:
+                challenge_response = True
+
+        elif 'challenge' in options or 'data' in options:
             challenge_response = False
 
         # we leave out the checkOtp, which is done later
@@ -1154,6 +1169,14 @@ class Ocra2TokenClass(TokenClass):
                     matching_challenges.append(mids.get(transid))
                     break
 
+            # direct challenge -
+            # brings the challange along with the matching pin
+            if not mids and 'challenge' in options:
+                otpcount = self.checkOtp(otpval, counter, window,
+                                         options=options)
+
+
+
         return (otpcount, matching_challenges)
 
     def checkOtp(self, passw , counter, window, options=None):
@@ -1215,7 +1238,7 @@ class Ocra2TokenClass(TokenClass):
                         # # add all untouched challenges
                         challenges.append(chall)
                     elif rec_valid is False:
-                        # # add all touched but failed challenges
+                        # add all touched but failed challenges
                         if chall.getTanCount() <= maxRequests:
                             challenges.append(chall)
 

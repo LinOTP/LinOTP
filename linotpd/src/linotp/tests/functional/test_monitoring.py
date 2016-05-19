@@ -33,6 +33,7 @@ from pylons import config
 
 from linotp.tests import TestController
 
+
 from linotp.lib.context import request_context_safety
 from linotp.lib.context import request_context as context
 
@@ -49,16 +50,17 @@ log = logging.getLogger(__name__)
 class TestMonitoringController(TestController):
 
     def setUp(self):
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+
         super(TestMonitoringController, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         return
 
     def tearDown(self):
-        self.delete_all_token()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
-        self.delete_all_policies()
         super(TestMonitoringController, self).tearDown()
 
     # helper functions
@@ -395,6 +397,5 @@ class TestMonitoringController(TestController):
             'mymixrealm')
         self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
         self.assertEqual(mymixrealm.get('myDefRes'), 24, response)
-
 
 # eof ########################################################################

@@ -127,10 +127,9 @@ class TestYubikeyController(TestController):
 
             for otp in self.valid_otps:
                 params = {'serial': serial, 'pass': otp}
-                response = self.app.get(url(controller='validate',
-                                            action='check_s'), params=params)
-                self.assertTrue('"value": true' in response, "Response: %r"
-                                % response)
+                response = self.app.get(url(controller='validate', action='check_s'),
+                                        params=params)
+                self.assertTrue('"value": true' in response, "Response: %r" % response)
 
             # Repeat an old (therefore invalid) OTP value
             invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
@@ -141,6 +140,7 @@ class TestYubikeyController(TestController):
                             % response)
 
         return
+
 
     def test_yubico_resync(self):
         """
@@ -208,3 +208,4 @@ class TestYubikeyController(TestController):
                 self.assertEqual(serial, get_serial, resp)
 
         return
+

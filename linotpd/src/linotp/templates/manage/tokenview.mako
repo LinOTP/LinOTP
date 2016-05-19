@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-    
-<!--
+<%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
  *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
@@ -24,7 +24,7 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
--->
+</%doc>
 <button class='ui-button' id='button_losttoken'>${_("Lost Token")}</button>
 <button class='ui-button' id='button_tokeninfo'>${_("Token Info")}</button>
 <button class='ui-button' id='button_resync'>${_("Resync Token")}</button>

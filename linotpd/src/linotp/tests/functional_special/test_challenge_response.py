@@ -497,10 +497,10 @@ class TestChallengeResponseController(TestSpecialController):
                                        action='challenge_response=hmac topt,')
 
         self.createToken(serial="H1", pin="h1", otpkey=otpkey,
-                                  user='passthru_user1', typ='hmac')
+                         user='passthru_user1', typ='hmac')
 
         self.createToken(serial="H2", pin="h2", otpkey=otpkey,
-                                  user='passthru_user1', typ='hmac')
+                         user='passthru_user1', typ='hmac')
 
         # submit a pin only request - to trigger a challenge
         for _i in range(1, 3):
@@ -664,6 +664,22 @@ class TestChallengeResponseController(TestSpecialController):
         response = self.app.get(url(controller='validate', action='check'),
                                 params=params)
         self.assertTrue('"value": true' in response, response)
+
+        # now try same with a wrong challenge reply
+
+        # submit a pin only request - to trigger a challenge
+        params = {"user": "passthru_user1", "pass": "geheim1"}
+        response = self.app.get(url(controller='validate', action='check'),
+                                                            params=params)
+
+        self.assertTrue('"value": false' in response, response)
+
+        # validate sms
+        otp = get_otp(counter, otpkey, mock_obj, sms_otp_func, typ)
+        params = {"user": "passthru_user1", "pass": "geheim2" + otp}
+        response = self.app.get(url(controller='validate', action='check'),
+                                params=params)
+        self.assertTrue('"value": false' in response, response)
 
         self.delete_token(serial)
         self.delete_policy('otpPin')
@@ -1537,6 +1553,13 @@ class TestChallengeResponseController(TestSpecialController):
         #         'No token found: unable to create challenge for'
         self.assertTrue('"value": false' in response, response)
 
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    'Failed to send SMS. We received a'
+        #                "message": "validate/check failed:'
+        self.assertTrue('"value": false' in response, response)
+        
         # check if simplecheck displays as well an error
         params = {"user": "passthru_user1", "pass": "shortpin"}
         response = self.app.get(url(controller='validate',
@@ -1545,6 +1568,11 @@ class TestChallengeResponseController(TestSpecialController):
 
         # due to security fixes to prevent information leakage, there is no
         # more ':-/'
+        self.assertTrue(':-(' in response, response)
+        # due to security fix to prevent information leakage the response
+        # of validate/check will be only true or false
+        # but wont contain the following message anymore
+        #    ':-/'
         self.assertTrue(':-(' in response, response)
 
         # finally check, if there is no open challenge left
@@ -1681,4 +1709,4 @@ class TestChallengeResponseController(TestSpecialController):
         return
 
 
-##eof##########################################################################
+# eof #########################################################################

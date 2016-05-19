@@ -31,6 +31,7 @@ import linotp
 import linotp.lib.policy
 
 from pylons import config
+from hashlib import sha256
 
 from linotp.lib.auth.finishtokens import FinishTokens
 from linotp.lib.auth.request import HttpRequest
@@ -51,51 +52,70 @@ log = logging.getLogger(__name__)
 
 
 def check_pin(token, passw, user=None, options=None):
-    """
+    '''
     check the provided pin w.r.t. the policy definition
 
-    :param token: the token to be checked
     :param passw: the to be checked pass
     :param user: if otppin==1, this is the user, which resolver should
                  be checked
     :param options: the optional request parameters
 
     :return: boolean, if pin matched True
-    """
+    '''
     res = False
     pin_policies = linotp.lib.policy.get_pin_policies(user)
 
-    if 0 in pin_policies or "token_pin" in pin_policies:
-        # old stuff: We check The fixed OTP PIN
-        log.debug('[__checkToken] pin policy=0: checkin the PIN')
-        res = token.checkPin(passw, options=options)
-
-    elif 1 in pin_policies or "password" in pin_policies:
+    if 1 in pin_policies:
         # We check the Users Password as PIN
-        log.debug('pin policy=1: checking the users password as pin')
-        if user is None or not user.login:
-            log.info('- fail for pin policy == 1 with user = None')
+        log.debug("pin policy=1: checking the users password as pin")
+        # this should not be the case
+        if not options:
+            options = {}
+
+        if 'pin_match' not in options:
+            options['pin_match'] = {}
+
+        hashed_passw = sha256(passw).hexdigest()
+
+        # if password already found, we can return result again
+        if hashed_passw in options['pin_match']:
+            log.debug("check if password already checked! %r " %
+                      options['pin_match'][hashed_passw])
+            return options['pin_match'][hashed_passw]
+
+        # if a password already matched, this one will fail
+        if 'found' in options['pin_match']:
+            log.debug("check if password already found but its not this one!")
             return False
 
-        (uid, _resolver, resolver_class) = getUserId(user)
-
-        r_obj = getResolverObject(resolver_class)
-        if r_obj.checkPass(uid, passw):
-            log.debug('[__checkToken] Successfully authenticated user %r.'
-                      % uid)
-            res = True
+        if user is None or not user.login:
+            log.info("fail for pin policy == 1 with user = None")
+            res = False
         else:
-            log.info('[__checkToken] user %r failed to auth.' % uid)
+            (uid, _resolver, resolver_class) = getUserId(user)
+            resolver = getResolverObject(resolver_class)
+            if resolver.checkPass(uid, passw):
+                log.debug("Successfully authenticated user %r." % uid)
+                res = True
+            else:
+                log.info("user %r failed to authenticate." % uid)
 
-    elif 2 in pin_policies or "only_otp" in pin_policies:
-        # NO PIN should be entered at all
-        log.debug('[__checkToken] pin policy=2: checking no pin')
+        # we register our result
+        key = sha256(passw).hexdigest()
+        options['pin_match'][key] = res
+        # and register the success, to shorten lookups after
+        # already one positive was found
+        if res is True:
+            options['pin_match']['found'] = True
+
+    elif 2 in pin_policies:
+        # NO PIN should be entered atall
+        log.debug("[__checkToken] pin policy=2: checking no pin")
         if len(passw) == 0:
             res = True
-
     else:
         # old stuff: We check The fixed OTP PIN
-        log.debug('[__checkToken] pin policy=0: checkin the PIN')
+        log.debug("[__checkToken] pin policy=0: checkin the PIN")
         res = token.checkPin(passw, options=options)
 
     return res
@@ -118,7 +138,6 @@ def check_otp(token, otpval, options=None):
     # This is only the OTP value, not the OTP PIN
     log.debug('OtpVal : %r' % otpval)
 
-    res = -1
     counter = token.getOtpCount()
     window = token.getOtpCountWindow()
 
@@ -550,7 +569,7 @@ class ValidationHandler(object):
 
             # start the token validation
             try:
-                # are there outstanding challenges
+                # TODO: assign their outstanding challenges for later processing
                 (_ex_challenges,
                  challenges) = Challenges.get_challenges(token,
                                                          options=check_options,

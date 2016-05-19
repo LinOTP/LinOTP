@@ -29,6 +29,7 @@ admin controller - interfaces to administrate LinOTP
 """
 
 import logging
+import json
 
 from pylons import request, response, config, tmpl_context as c
 
@@ -351,24 +352,26 @@ class AdminController(BaseController):
             # check admin authorization
             res = checkPolicyPre('admin', 'show', param , user=user)
 
-            filterRealm = res['realms']
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            pol = getAdminPolicies("show")
-            # If there are no admin policies, we are allowed to see all realms
-            if not pol['active']:
-                filterRealm = ["*"]
+            filterRealm = ['*']
+            if res['active'] and res['realms']:
+                filterRealm = res['realms']
 
-            # If the admin wants to see only one realm, then do it:
-            log.debug("[show] checking to only see tokens in realm <%s>" % realm)
             if realm:
+            # If the admin wants to see only one realm, then do it:
+                log.debug("[show] checking to only see tokens in realm <%s>",
+                          realm)
                 if realm in filterRealm or '*' in filterRealm:
                     filterRealm = [realm]
 
-            log.info("[show] admin >%s< may display the following realms: %s" % (res['admin'], filterRealm))
-            log.info("[show] displaying tokens: serial: %s, page: %s, filter: %s, user: %s", serial, page, filter, user.login)
+            log.info("[show] admin >%s< may display the following realms: %r",
+                     res['admin'], filterRealm)
+            log.info("[show] displaying tokens: serial: %s, page: %s, "
+                     "filter: %s, user: %s", serial, page, filter, user.login)
 
-            toks = TokenIterator(user, serial, page, psize, filter, sort, dir, filterRealm, user_fields)
+            toks = TokenIterator(user, serial, page, psize, filter, sort, dir,
+                                 filterRealm, user_fields)
 
             c.audit['success'] = True
             c.audit['info'] = "realm: %s, filter: %r" % (filterRealm, filter)
@@ -1513,10 +1516,19 @@ class AdminController(BaseController):
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
-        except Exception as e:
-            log.exception('%s :%r' % (msg, e))
+        except Exception as exx :
+            log.exception('%s: %r' % (msg, exx))
             Session.rollback()
-            return sendError(response, e)
+            # as this message is directly returned into the javascript
+            # alert as escaped string we remove here all escaping chars
+            error = "%r" % exx
+            error = error.replace('"', '|')
+            error = error.replace("'", ':')
+            error = error.replace('&', '+')
+            error = error.replace('>', ']')
+            error = error.replace('<', '[')
+            result = "%s: %s" % (msg, error)
+            return sendError(response, result)
 
         finally:
             Session.close()
@@ -2170,6 +2182,7 @@ class AdminController(BaseController):
                 elif "plain" == pskc_type:
                     TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
             elif typeString == "vasco":
+                # TODO: verify merge 2.8.1.2 with 2.9
                 vasco_otplen = int(request.POST.get('vasco_otplen', 6))
                 TOKENS = parseVASCOdata(fileString, vasco_otplen, transportkey)
                 if TOKENS is None:
@@ -2271,6 +2284,59 @@ class AdminController(BaseController):
             log.exception("[loadtokens] failed! %r" % e)
             Session.rollback()
             return sendErrorMethod(response, unicode(e))
+
+        finally:
+            Session.close()
+            log.debug('[loadtokens] done')
+
+    def token_method(self):
+
+        res = {}
+        params = {}
+        try:
+            params.update(request.params)
+            token_method = params['method']
+            tokentype, method = token_method.split('.')
+
+            # check admin authorization
+            filter_realms = []
+            res = checkPolicyPre('admin', 'token_method', params)
+            if res:
+                filter_realms = res.get('realms')
+
+            # check if the tokentype is known
+            glo = config['pylons.app_globals']
+            tokenclasses = glo.tokenclasses
+            if tokentype not in tokenclasses:
+                res = False
+                opt = {'message': 'unknown tokentype %r' % tokentype}
+                sendResult(response, res, 1, opt)
+
+            # check if method is in the admin methods
+            tclass = tokenclasses.get(tokentype)
+            tclass_object = newToken(tclass)
+            if hasattr(tclass_object, 'admin_methods'):
+                admin_methods = tclass_object.admin_methods()
+                if method not in admin_methods:
+                    res = False
+                    opt = {'message': 'unknown admin method %r' % method}
+                    sendResult(response, res, 1, opt)
+
+            if not hasattr(tclass_object, method):
+                res = False
+                opt = {'message': 'unable to call admin method %r' % method}
+                sendResult(response, res, 1, opt)
+
+            call_method = getattr(tclass_object, method)
+            result = call_method(params, filter_realms)
+
+            Session.commit()
+            return sendResult(response, result)
+
+        except Exception as e:
+            log.exception("[loadtokens] failed! %r" % e)
+            Session.rollback()
+            return sendError(response, unicode(e))
 
         finally:
             Session.close()
@@ -2503,5 +2569,38 @@ class AdminController(BaseController):
             log.debug('[ocra/checkstatus] done')
 
 
+def iterate_users(user_iterators):
+    """
+    build a userlist iterator / generator that returns the user data on demand
+
+    :param user_iterators: list of tuple (userlist iterators, resolver descr)
+    :return: generator of user data dicts (yield)
+    """
+
+    for itera in user_iterators:
+        user_iterator = itera[0]
+        reso = itera[1]
+        log.debug("iterating: %r" % reso)
+
+        try:
+            while True:
+                user_data = user_iterator.next()
+                if type(user_data) in [list]:
+                    for data in user_data:
+                        data['resolver'] = reso
+                        resp = "%s" % json.dumps(data)
+                        yield resp
+                else:
+                    user_data['resolver'] = reso
+                    resp = "%s" % json.dumps(user_data)
+                    yield resp
+        except StopIteration as exx:
+            # pass on to next iterator
+            pass
+        except Exception as exx:
+            log.exception("Problem during iteration of userlist iterators: %r"
+                       % exx)
+
+    raise StopIteration()
 
 #eof###########################################################################

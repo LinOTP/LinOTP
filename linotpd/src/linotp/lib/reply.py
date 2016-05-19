@@ -119,39 +119,6 @@ def _get_httperror_from_params(pylons_request):
     return httperror
 
 
-class LinOTPJsonEncoder(json.JSONEncoder):
-    __global_jsonencoders = {}
-    
-    def __init__(self, *args, **kwds):
-        super(LinOTPJsonEncoder, self).__init__(*args, **kwds)
-
-    @staticmethod
-    def registerEncoder(atype, aconvertor):
-        if atype in LinOTPJsonEncoder.__global_jsonencoders:
-            raise ValueError("Type json-encoder already registered")
-        LinOTPJsonEncoder.__global_jsonencoders[atype] = aconvertor
-
-    @staticmethod
-    def unregisterEncoder(atype):
-        del LinOTPJsonEncoder.__global_jsonencoders[atype]
-
-    def default(self, obj):
-        #encdict = LinOTPJsonEncoder.__global_jsonencoders
-        for atype, afunction in LinOTPJsonEncoder.__global_jsonencoders.items():
-            if isinstance(obj, atype):
-                try:
-                    # The first convertor which succeed, will also win!
-                    res = afunction(obj)
-                    if not res is None:
-                        return res
-                except Exception as err:
-                    log.debug('[LinOTPJsonEncoder.default] Error, the jsonencoder for type:%s failed with error: ' % (type(err).__name__, str(err)))
-                    pass
-
-        # Let the base class default method raise the TypeError
-        return super(LinOTPJsonEncoder, self).default(obj)
-
-
 def sendError(response, exception, id=1, context=None):
     '''
     sendError - return a HTML or JSON error result document
@@ -289,7 +256,7 @@ def sendError(response, exception, id=1, context=None):
                  "id": id
             }
 
-        ret = json.dumps(res, indent=3, cls=LinOTPJsonEncoder)
+        ret = json.dumps(res, indent=3)
 
         if context in ['before', 'after']:
             response._exception = exception
@@ -329,7 +296,7 @@ def sendResult(response, obj, id=1, opt=None):
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
 
-    return json.dumps(res, indent=3, cls=LinOTPJsonEncoder)
+    return json.dumps(res, indent=3)
 
 
 def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
@@ -378,7 +345,7 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
                             }
             log.exception("failed to convert paging request parameters: %r"
                           % exx)
-            yield json.dumps(err, cls=LinOTPJsonEncoder)
+            yield json.dumps(err)
             # finally we signal end of error result
             raise StopIteration()
 
@@ -398,7 +365,7 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
     if opt is not None and len(opt) > 0:
         res["detail"] = opt
 
-    surrounding = json.dumps(res, cls=LinOTPJsonEncoder)
+    surrounding = json.dumps(res)
     prefix, postfix = surrounding.split('"[DATA]"')
 
     # first return the opening
@@ -451,13 +418,18 @@ def sendCSVResult(response, obj, flat_lines=False,
     output = u""
 
     if not flat_lines:
-        # Do the header
-        for k, v in obj.get("data", {})[0].iteritems():
-            output += "%s%s%s, " % (delim, k, delim)
-        output += "\n"
 
-        # Do the data
-        for row in obj.get("data", {}):
+        headers_printed = False
+        data = obj.get("data", [])
+
+        for row in data:
+            # Do the header
+            if not headers_printed:
+                for k in data[0].keys():
+                    output += "%s%s%s, " % (delim, k, delim)
+                output += "\n"
+                headers_printed = True
+
             for val in row.values():
                 if type(val) in [str, unicode]:
                     value = val.replace("\n", " ")
@@ -474,7 +446,36 @@ def sendCSVResult(response, obj, flat_lines=False,
 
     return output
 
-def sendXMLResult(response, obj, id=1):
+
+def json2xml(json_obj, line_padding=""):
+    result_list = list()
+
+    json_obj_type = type(json_obj)
+
+    if json_obj_type is list:
+        for sub_elem in json_obj:
+            result_list.append("%s<value>" % line_padding)
+            result_list.append(json2xml(sub_elem, line_padding))
+            result_list.append("%s</value>" % line_padding)
+
+        return "".join(result_list)
+
+    if json_obj_type is dict:
+        for tag_name in json_obj:
+            sub_obj = json_obj[tag_name]
+            result_list.append("%s<%s>" % (line_padding, tag_name))
+            result_list.append(json2xml(sub_obj, "" + line_padding))
+            result_list.append("%s</%s>" % (line_padding, tag_name))
+
+        return "".join(result_list)
+
+    return "%s%s" % (line_padding, json_obj)
+
+
+def sendXMLResult(response, obj, id=1, opt=None):
+    """
+    send the result as an xml format
+    """
     response.content_type = 'text/xml'
     res = '<?xml version="1.0" encoding="UTF-8"?>\
             <jsonrpc version="%s">\
@@ -485,6 +486,20 @@ def sendXMLResult(response, obj, id=1):
             <version>%s</version>\
             <id>%s</id>\
             </jsonrpc>' % (get_api_version(), obj, get_version(), id)
+    xml_options = ""
+    if opt:
+        xml_options = "\n<options>" + json2xml(opt) + "</options>"
+    xml_object = json2xml(obj)
+
+    res = """<?xml version="1.0" encoding="UTF-8"?>
+<jsonrpc version="2.0">
+    <result>
+        <status>True</status>
+        <value>%s</value>
+    </result>
+    <version>%s</version>
+    <id>%s</id>%s
+</jsonrpc>""" % (xml_object, get_version(), id, xml_options)
     return res
 
 

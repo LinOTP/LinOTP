@@ -28,11 +28,13 @@ library for monitoring controller
 """
 
 import datetime
+
 from linotp.lib.resolver import parse_resolver_spec
 
 from linotp.model import Token, Realm, TokenRealm
 from linotp.model import Config as config_model
 from linotp.model.meta import Session
+
 
 from linotp.lib.config import LinOtpConfig
 from linotp.lib.config import storeConfig
@@ -52,6 +54,7 @@ class MonitorHandler(object):
     """
     provide functions for monitor controller
     """
+
 
     def token_count(self, realm_list, status=None):
         """
@@ -253,6 +256,7 @@ class MonitorHandler(object):
         :param realm: the realm to query
         :return: dict with resolvernames as keys and number of users as value
         """
+
         realminfo = context.get('Config').getRealms().get(realm)
         resolver_specs = realminfo.get('useridresolver', '')
         realmdict = {}

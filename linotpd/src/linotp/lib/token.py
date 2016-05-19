@@ -31,7 +31,11 @@ import datetime
 import logging
 import string
 import sys
-import traceback
+
+import re
+import binascii
+
+
 import os
 
 try:
@@ -39,11 +43,12 @@ try:
 except ImportError:
     import simplejson as json
 
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, not_
 from sqlalchemy import func
 
 
 from pylons import config
+from pylons.configuration import config as env
 
 from linotp.lib.challenges import Challenges
 
@@ -58,7 +63,9 @@ from linotp.lib.util import getParam
 from linotp.lib.util import generate_password
 
 from linotp.lib.realm import realm2Objects
+from linotp.lib.realm import getRealms
 
+import linotp
 import linotp.lib.policy
 
 from linotp import model
@@ -77,6 +84,9 @@ Session = linotp.model.meta.Session
 
 from linotp.lib.context import request_context as context
 
+from linotp.lib.policy import get_auth_forward
+from linotp.lib.policy.forward import ForwardServerPolicy
+
 log = logging.getLogger(__name__)
 
 optional = True
@@ -85,6 +95,7 @@ required = False
 ENCODING = "utf-8"
 
 ###############################################
+
 
 
 class TokenHandler(object):
@@ -1179,6 +1190,7 @@ class TokenHandler(object):
 
 
 # local
+
 def createTokenClassObject(token, typ=None):
     '''
     createTokenClassObject - create a token class object from a given type
@@ -1204,22 +1216,23 @@ def createTokenClassObject(token, typ=None):
 
     # search which tokenclass should be created and create it!
     tokenclasses = config['tokenclasses']
-    if typ.lower() in tokenclasses:
+    if tokenclasses.has_key(typ.lower()):
         try:
             token_class = tokenclasses.get(typ)
             tok = newToken(token_class)(token)
+
         except Exception as exx:
             log.exception('createTokenClassObject failed! %r', exx)
             raise TokenAdminError("createTokenClassObject failed:  %r"
                                   % exx, id=1609)
 
     else:
-        log.error('[createTokenClassObject] typ %r not found in '
-                  'tokenclasses: %r' % (typ, tokenclasses))
+        log.error('[createTokenClassObject] typ %r not found in tokenclasses: %r' %
+                  (typ, tokenclasses))
         #
         #  we try to use the parent class, which is able to handle most of the
-        #  administrative tasks. This will allow to unassigen and disable or
-        #  delete this 'abandoned token'
+        #  administrative tasks. This will allow to unassigen and disable or delete
+        #  this 'abandoned token'
         #
         from linotp.lib.tokenclass import TokenClass
         tok = TokenClass(token)
@@ -1227,7 +1240,6 @@ def createTokenClassObject(token, typ=None):
                  Using fallback 'TokenClass' for %r" % (typ, token))
 
     return tok
-
 
 def newToken(token_class):
     '''
@@ -1248,7 +1260,7 @@ def newToken(token_class):
     package_name = '.'.join(parts[:-1])
     class_name = parts[-1]
 
-    if package_name in sys.modules:
+    if sys.modules.has_key(package_name):
         mod = sys.modules.get(package_name)
     else:
         mod = __import__(package_name, globals(), locals(), [class_name])
@@ -1270,8 +1282,7 @@ def newToken(token_class):
 
 def get_token_type_list():
     '''
-    get_token_type_list - returns the list of the available tokentypes like
-                            hmac, spass, totp...
+    get_token_type_list - returns the list of the available tokentypes like hmac, spass, totp...
 
     :return: list of token types
     :rtype : list
@@ -1289,7 +1300,7 @@ def get_token_type_list():
     return token_type_list
 
 
-# local
+
 def getRealms4Token(user, tokenrealm=None):
     """
     get the realm objects of a user or from the tokenrealm defintion,
@@ -1304,7 +1315,7 @@ def getRealms4Token(user, tokenrealm=None):
     """
 
     realms = []
-    if user is not None and user.login != "":
+    if user is not None and user.login != "" :
         #  the getUserRealms should return the default realm if realm was empty
         realms = getUserRealms(user)
         #  hack: sometimes the realm of the user is not in the
@@ -1319,8 +1330,7 @@ def getRealms4Token(user, tokenrealm=None):
         log.debug("[getRealms4Token] tokenrealm given (%r). We will add the "
                   "new token to this realm" % tokenrealm)
         if type(tokenrealm) in [str, unicode]:
-            log.debug("[getRealms4Token] String: adding realm: %r"
-                        % tokenrealm)
+            log.debug("[getRealms4Token] String: adding realm: %r" % tokenrealm)
             realms.append(tokenrealm)
         elif type(tokenrealm) in [list]:
             for tr in tokenrealm:
@@ -1374,19 +1384,16 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
         # resolver class is adjusted
 
         user_resolver = k.replace('useridresolveree.', 'useridresolver.')
-        user_resolver = user_resolver.replace('useridresolver.',
-                                              'useridresolver%.')
+        user_resolver = user_resolver.replace('useridresolver.', 'useridresolver%.')
 
         ''' coout tokens: 0 1 or more '''
-        tokens = Session.query(Token).filter(
-                                Token.LinOtpTokenType == unicode(tok_type))\
-                .filter(Token.LinOtpIdResClass.like(unicode(user_resolver)))\
-                .filter(Token.LinOtpUserid == unicode(user_id))
+        tokens = Session.query(Token).filter(Token.LinOtpTokenType == unicode(tok_type))\
+                                       .filter(Token.LinOtpIdResClass.like(unicode(user_resolver)))\
+                                       .filter(Token.LinOtpUserid == unicode(user_id))
 
     elif serial is not None:
-        tokens = Session.query(Token)\
-                .filter(Token.LinOtpTokenType == unicode(tok_type))\
-                .filter(Token.LinOtpTokenSerialnumber == unicode(serial))
+        tokens = Session.query(Token).filter(Token.LinOtpTokenType == unicode(tok_type))\
+                                       .filter(Token.LinOtpTokenSerialnumber == unicode(serial))
 
     for token in tokens:
         info = token.LinOtpTokenInfo
@@ -1396,6 +1403,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
             if rollout is not None:
                 serials.append(token.LinOtpTokenSerialnumber)
 
+
     if len(serials) > 1:
         raise Exception('multiple tokens found in rollout state: %s'
                         % unicode(serials))
@@ -1404,7 +1412,6 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
         serial = serials[0]
 
     return serial
-
 
 def setRealms(serial, realmList):
     # set the tokenlist of DB tokens
@@ -1422,7 +1429,6 @@ def setRealms(serial, realmList):
 
     return len(tokenList)
 
-
 def getTokenRealms(serial):
     '''
     This function returns a list of the realms of a token
@@ -1431,15 +1437,12 @@ def getTokenRealms(serial):
 
     if len(tokenList) == 0:
         log.error("[getTokenRealms] No token with serial %r found." % serial)
-        raise TokenAdminError("getTokenRealms failed. No token with "
-                              "serial %s found" % serial, id=1119)
+        raise TokenAdminError("getTokenRealms failed. No token with serial %s found" % serial, id=1119)
 
     token = tokenList[0]
 
     return token.getRealmNames()
 
-
-# local
 def getRealmsOfTokenOrUser(token):
     '''
     This returns the realms of either the token or
@@ -1450,11 +1453,10 @@ def getRealmsOfTokenOrUser(token):
 
     if len(realms) == 0:
         uid, resolver, resolverClass = token.getUser()
-        log.debug("[getRealmsOfTokenOrUser] %r, %r, %r"
-                  % (uid, resolver, resolverClass))
+        log.debug("[getRealmsOfTokenOrUser] %r, %r, %r" % (uid, resolver, resolverClass))
         # No realm and no User, this is the case in /validate/check_s
         if resolver.find('.') >= 0:
-            _resotype, resoname = resolver.rsplit('.', 1)
+            resotype, resoname = resolver.rsplit('.', 1)
             realms = getUserRealms(User("dummy_user", "", resoname))
 
     log.debug("[getRealmsOfTokenOrUser] the token %r "
@@ -1481,7 +1483,6 @@ def getTokenInRealm(realm, active=True):
                             Realm.name == realm)).count()
     return sqlQuery
 
-
 def getTokenNumResolver(resolver=None, active=True):
     '''
     This returns the number of the (active) tokens
@@ -1492,8 +1493,7 @@ def getTokenNumResolver(resolver=None, active=True):
     '''
     if resolver is None:
         if active:
-            sqlQuery = Session.query(Token)\
-                    .filter(Token.LinOtpIsactive == True).count()
+            sqlQuery = Session.query(Token).filter(Token.LinOtpIsactive == True).count()
         else:
             sqlQuery = Session.query(Token).count()
         return sqlQuery
@@ -1510,14 +1510,10 @@ def getTokenNumResolver(resolver=None, active=True):
         resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
 
         if active:
-            sqlQuery = Session.query(Token)\
-            .filter(and_(Token.LinOtpIdResClass.like(resolver),
-                         Token.LinOtpIsactive == True)).count()
+            sqlQuery = Session.query(Token).filter(and_(Token.LinOtpIdResClass.like(resolver), Token.LinOtpIsactive == True)).count()
         else:
-            sqlQuery = Session.query(Token)\
-            .filter(Token.LinOtpIdResClass.like(resolver)).count()
+            sqlQuery = Session.query(Token).filter(Token.LinOtpIdResClass.like(resolver)).count()
         return sqlQuery
-
 
 def getAllTokenUsers():
     '''
@@ -1528,8 +1524,7 @@ def getAllTokenUsers():
     for token in sqlQuery:
         userInfo = {}
 
-        log.debug("[getAllTokenUsers] user serial (serial): %r"
-                    % token.LinOtpTokenSerialnumber)
+        log.debug("[getAllTokenUsers] user serial (serial): %r" % token.LinOtpTokenSerialnumber)
 
         serial = token.LinOtpTokenSerialnumber
         userId = token.LinOtpUserid
@@ -1547,7 +1542,9 @@ def getAllTokenUsers():
 
     return users
 
-def getTokens4UserOrSerial(user=None, serial=None, _class=True):
+
+def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
+                           _class=True):
     tokenList = []
     tokenCList = []
     tok = None
@@ -1557,13 +1554,24 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
         return tokenList
 
     if (serial is not None):
-        log.debug("[getTokens4UserOrSerial] getting token object "
-                                                "with serial: %r" % serial)
+        log.debug("[getTokens4UserOrSerial] getting"
+                  " token object with serial: %r" % serial)
         #  SAWarning of non unicode type
         serial = linotp.lib.crypt.uencode(serial)
+        sconditions = ()
+        if token_type:
+            sconditions += (and_(func.lower(Token.LinOtpTokenType) ==
+                                 token_type.lower()),)
 
-        sqlQuery = Session.query(Token).filter(
-                            Token.LinOtpTokenSerialnumber == serial)
+        if '*' in serial:
+            serial = serial.replace('*', '%')
+            sconditions += (and_(Token.LinOtpTokenSerialnumber.like(serial)),)
+        else:
+            sconditions += (and_(Token.LinOtpTokenSerialnumber == serial),)
+
+        # finally run the query on token serial
+        condition = and_(*sconditions)
+        sqlQuery = Session.query(Token).filter(condition)
 
         for token in sqlQuery:
             log.debug("[getTokens4UserOrSerial] user "
@@ -1576,8 +1584,9 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
 
         if not user.isEmpty() and user.login:
             users = []
+
             # getUserId triggers the lookup of the resolvers
-            # which could then be used for mutiple users in realm
+            # which could then be used for multiple users in realm
             getUserId(user)
             for resolverClass, uid in user.resolverUid.items():
                 users.append((uid, resolverClass))
@@ -1593,31 +1602,38 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
                 # Remark: when the token is loaded the response to the
                 # resolver class is adjusted
 
+                uconditions = ()
+
                 resolverClass = resolverClass.replace('useridresolveree.',
                                                       'useridresolver.')
                 resolverClass = resolverClass.replace('useridresolver.',
                                                       'useridresolver%.')
 
-                sqlQuery = Session.query(model.Token).filter(
-                            model.Token.LinOtpUserid == uid).filter(
-                            model.Token.LinOtpIdResClass.like(resolverClass))
+                uconditions += (and_(model.Token.LinOtpUserid == uid),)
+                uconditions += (and_(model.Token.LinOtpIdResClass.like(resolverClass)),)
+
+                if token_type:
+                    uconditions += (and_(func.lower(Token.LinOtpTokenType) ==
+                                         token_type.lower()),)
+
+                condition = and_(*uconditions)
+                sqlQuery = Session.query(Token).filter(condition)
 
                 for token in sqlQuery:
-                    # we have to check that the token is in
-                    # the same realm as the user
+                    # we have to check that the token is in the same realm as the user
                     t_realms = token.getRealmNames()
                     u_realm = user.getRealm()
                     if u_realm != '*':
                         if len(t_realms) > 0 and len(u_realm) > 0:
                             if u_realm.lower() not in t_realms:
-                                log.debug("user realm and token realm "
-                                          "missmatch %r::%r"
-                                          % (u_realm, t_realms))
+                                log.debug("user realm and token realm missmatch %r::%r"
+                                      % (u_realm, t_realms))
                                 continue
-
+    
                     log.debug("[getTokens4UserOrSerial] user serial (user): %r"
                               % token.LinOtpTokenSerialnumber)
                     tokenList.append(token)
+
 
     if _class == True:
         for tok in tokenList:
@@ -1628,7 +1644,6 @@ def getTokens4UserOrSerial(user=None, serial=None, _class=True):
 
 def setDefaults(token):
     #  set the defaults
-
     token.LinOtpOtpLen = int(getFromConfig("DefaultOtpLen", 6))
     token.LinOtpCountWindow = int(getFromConfig("DefaultCountWindow", 15))
     token.LinOtpMaxFail = int(getFromConfig("DefaultMaxFailCount", 15))
@@ -1651,7 +1666,7 @@ def tokenExist(serial):
         return False
 
 
-# local
+
 def get_token_owner(token):
     """
     provide the owner as a user object for a given tokenclass obj
@@ -1686,8 +1701,8 @@ def get_token_owner(token):
         common_realms = list(set(realms).intersection(t_realms))
         if len(common_realms) > 1:
             raise Exception(_("get_token_owner: The user %s/%s and the token"
-                              " %s is located in several realms: %s!"
-                              % (uid, resolverClass, serial, common_realms)))
+                              " %s is located in several realms: "
+                              "%s!" % (uid, resolverClass, serial, common_realms)))
         realm = common_realms[0]
     elif len(realms) == 0:
         raise Exception(_("get_token_owner: The user %s in the resolver"
@@ -1708,7 +1723,6 @@ def get_token_owner(token):
 
     return user
 
-
 def getTokenType(serial):
     '''
     Returns the tokentype of a given serial number
@@ -1725,7 +1739,6 @@ def getTokenType(serial):
     log.debug("[getTokenType] the token is of type: %r" % typ)
 
     return typ
-
 
 def add_last_accessed_info(list_of_tokenlist):
     """
@@ -1759,8 +1772,7 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
 
     parameter
         serial            - the serial number of the token
-        count             - number of the <count> next otp values (to be used
-                                with event or timebased tokens)
+        count             - number of the <count> next otp values (to be used with event or timebased tokens)
         epoch_start       - unix time start date (used with timebased tokens)
         epoch_end         - unix time end date (used with timebased tokens)
         curTime          - used for selftest
@@ -1768,18 +1780,13 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
     return
         dictionary of otp values
     '''
-    ret = {"result": False}
+    ret = {"result" : False}
     log.debug("[get_multi_otp] retrieving OTP values for token %r" % serial)
     toks = getTokens4UserOrSerial(None, serial)
 
-
-
-
     if len(toks) > 1:
-        log.error("[get_multi_otp] multiple tokens with serial %r found"
-                  " - cannot get OTP!" % serial)
-        raise TokenAdminError("multiple tokens found - cannot get OTP!",
-                              id=1201)
+        log.error("[get_multi_otp] multiple tokens with serial %r found - cannot get OTP!" % serial)
+        raise TokenAdminError("multiple tokens found - cannot get OTP!", id=1201)
 
     if len(toks) == 0:
         log.warning("[getOTP] there is no token with serial %r" % serial)
@@ -1787,16 +1794,10 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
 
     if len(toks) == 1:
         token = toks[0]
-        log.debug("[get_multi_otp] getting multiple otp values for token %r."
-                  " curTime=%r" % (token, curTime))
-        # if the token does not support getting the OTP value,
-        #     res==False is returned
-        (res, error, otp_dict) = token.get_multi_otp(count=count,
-                                                     epoch_start=epoch_start,
-                                                     epoch_end=epoch_end,
-                                                     curTime=curTime)
-        log.debug("[get_multi_otp] received %r, %r, %r"
-                  % (res, error, otp_dict))
+        log.debug("[get_multi_otp] getting multiple otp values for token %r. curTime=%r" % (token, curTime))
+        # if the token does not support getting the OTP value, res==False is returned
+        (res, error, otp_dict) = token.get_multi_otp(count=count, epoch_start=epoch_start, epoch_end=epoch_end, curTime=curTime)
+        log.debug("[get_multi_otp] received %r, %r, %r" % (res, error, otp_dict))
 
         if res == True:
             ret = otp_dict
@@ -1805,7 +1806,6 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
             ret["error"] = error
 
     return ret
-
 
 def getOtp(serial, curTime=None):
     '''
@@ -1828,8 +1828,7 @@ def getOtp(serial, curTime=None):
     toks = getTokens4UserOrSerial(None, serial)
 
     if len(toks) > 1:
-        raise TokenAdminError("multiple tokens found - cannot get OTP!",
-                              id=1101)
+        raise TokenAdminError("multiple tokens found - cannot get OTP!", id=1101)
 
     if len(toks) == 0:
         log.warning("[getOTP] there is no token with serial %r" % serial)
@@ -1837,8 +1836,7 @@ def getOtp(serial, curTime=None):
 
     if len(toks) == 1:
         token = toks[0]
-        # if the token does not support getting the OTP value, a
-        # -2 is returned.
+        # if the token does not support getting the OTP value, a -2 is returned.
         return token.getOtp(curTime=curTime)
 
 
@@ -1856,8 +1854,7 @@ def setPin(pin, user, serial, param=None):
         raise ParameterError("Parameter user or serial required!", id=1212)
 
     if (user is not None):
-        log.info("[setPin] setting Pin for user %r@%r"
-                 % (user.login, user.realm))
+        log.info("[setPin] setting Pin for user %r@%r" % (user.login, user.realm))
     if (serial is not None):
         log.info("[setPin] setting Pin for token with serial %r" % serial)
 
@@ -1868,6 +1865,7 @@ def setPin(pin, user, serial, param=None):
         token.setPin(pin, param)
 
     return len(tokenList)
+
 
 # local
 
@@ -1891,7 +1889,6 @@ def setPinUser(userPin, serial):
 
     return len(tokenList)
 
-
 ###############################################################################
 #  LinOtpTokenPinSO
 ###############################################################################
@@ -1911,7 +1908,6 @@ def setPinSo(soPin, serial):
 
     return len(tokenList)
 
-
 def resetToken(user=None, serial=None):
 
     if (user is None) and (serial is None):
@@ -1928,7 +1924,6 @@ def resetToken(user=None, serial=None):
     return len(tokenList)
 
 
-# local
 def _gen_serial(prefix, tokennum, min_len=8):
     '''
     helper to create a hex digit string
@@ -1945,6 +1940,42 @@ def _gen_serial(prefix, tokennum, min_len=8):
         h_serial = binascii.hexlify(os.urandom(h_len)).upper()[0:h_len]
     return "%s%s%s" % (prefix, num_str, h_serial)
 
+
+def genSerial(tokenType=None, prefix=None):
+    '''
+    generate a serial number similar to the one generated in the manage web gui
+
+    :param tokenType: the token type prefix is done by a lookup on the tokens
+    :return: serial number
+    '''
+    if tokenType is None:
+        tokenType = 'LSUN'
+
+    tokenprefixes = config['tokenprefixes']
+
+    if prefix is None:
+        prefix = tokenType.upper()
+        if tokenType.lower() in tokenprefixes:
+            prefix = tokenprefixes.get(tokenType.lower())
+
+    #  now search the number of ttypes in the token database
+    tokennum = Session.query(Token).filter(
+                    Token.LinOtpTokenType == u'' + tokenType).count()
+
+    serial = _gen_serial(prefix, tokennum + 1)
+
+    #  now test if serial already exists
+    while True:
+        numtokens = Session.query(Token).filter(
+                        Token.LinOtpTokenSerialnumber == u'' + serial).count()
+        if numtokens == 0:
+            #  ok, there is no such token, so we're done
+            break
+        #  else - rare case:
+        #  we add the numtokens to the number of existing tokens with serial
+        serial = _gen_serial(prefix, tokennum + numtokens)
+
+    return serial
 
 def getTokenConfig(tok, section=None):
     '''
@@ -1974,4 +2005,4 @@ def getTokenConfig(tok, section=None):
 
     return res
 
-#eof###########################################################################
+# eof #########################################################################

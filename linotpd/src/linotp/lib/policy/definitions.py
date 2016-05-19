@@ -52,6 +52,7 @@ def getPolicyDefinitions(scope=""):
             'remove': {'type': 'bool'},
             'userlist': {'type': 'bool'},
             'tokenowner': {'type': 'bool'},
+            'token_method': {'type': 'bool'},
             'checkstatus': {'type': 'bool'},
             'manageToken': {'type': 'bool'},
             'getserial': {'type': 'bool'},
@@ -185,8 +186,8 @@ def getPolicyDefinitions(scope=""):
                         'against the UserIdResolver, if the user has no '
                         'tokens assigned.'
                 },
-            'forward': {
-                'type': 'string',
+            'forward_server': {
+                'type': 'str',
                 'desc': 'If set, the users authentication request will be '
                         'forwarded to another linotp or radius server.'
                 },
@@ -319,10 +320,10 @@ def getPolicyDefinitions(scope=""):
         },
     }
 
-    ## now add generic policies, which every token should provide:
-    ## - init<TT>
-    ## - enroll<TT>, but only, if there is a rendering section
-
+    # now add generic policies, which every token should provide:
+    # - init<TT>
+    # - enroll<TT>, but only, if there is a rendering section
+    import linotp.lib.token
     token_type_list = linotp.lib.token.get_token_type_list()
 
     for ttype in token_type_list:
@@ -376,4 +377,4 @@ def getPolicyDefinitions(scope=""):
     if scope and scope in pol:
         pol = pol[scope]
 
-    return pol
+    return pol# -*- coding: utf-8 -*-

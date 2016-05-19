@@ -287,11 +287,13 @@ class BaseController(WSGIController):
                 config['openid_sql'] = exx
                 log.error("Failed to configure openid_sql: %r" % exx)
 
+        first_run = False
         app_setup_done = config.get('app_setup_done', False)
         if app_setup_done is False:
             try:
                 setup_app(config)
                 config['app_setup_done'] = True
+                first_run = True
             except Exception as exx:
                 config['app_setup_done'] = False
                 log.error("Failed to serve request: %r" % exx)
@@ -327,6 +329,32 @@ class BaseController(WSGIController):
                 config['resolver_setup_done'] = False
                 log.error("Failed to setup resolver: %r" % exx)
                 raise exx
+
+        # TODO: verify merge dropped
+        # initResolvers()
+
+        # if we are in the setup cycle, we check for the linotpLicenseFile
+        if first_run:
+            if "linotpLicenseFile" in config and 'license' not in l_config:
+                license_str = ''
+                filename = config.get("linotpLicenseFile", '')
+                try:
+                    with open(filename) as f:
+                        license_str = f.read()
+                except IOError:
+                    log.error("linotpLicenseFile: %s" % filename)
+
+                if not license_str:
+                    log.error("empty license file: %s" % filename)
+                else:
+                    import linotp.lib.support
+                    res, msg = linotp.lib.support.setSupportLicense(license_str)
+                    if res is False:
+                        log.error("failed to load license: %s: %s"
+                                  % (license_str, msg))
+
+                    else:
+                        log.info("license successfully loaded")
 
         return
 
@@ -492,4 +520,4 @@ class BaseController(WSGIController):
 
         request_context['SystemConfig'] = sysconfig
 
-###eof#########################################################################
+# eof ########################################################################

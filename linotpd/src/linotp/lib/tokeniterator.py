@@ -57,38 +57,47 @@ from linotp.lib.config  import getFromConfig
 
 
 log = logging.getLogger(__name__)
-
-
 class TokenIterator(object):
     '''
     TokenIterator class - support a smooth iterating through the tokens
     '''
 
+    def _get_serial_condition(self, serial, allowed_realm):
+        """
+        add condition for a given serial
 
-    def _get_serial_condition(self, serial, filterRealm):
+        :param serial: serial number of token
+        :param allowed_realm: the allowed realms
+        """
         scondition = None
+
+        log.debug('[TokenIterator::init] start search for serial: >%r<',
+                  (serial))
 
         if serial is None:
             return scondition
 
-        # check if the requested serial is in the realms of the admin (filterRealm)
-        log.debug('[TokenIterator::init] start search for serial: >%r<' % (serial))
-
+        # check if the requested serial is
+        # in the realms of the admin (filterRealm)
         allowed = False
-        if filterRealm == ['*']:
+        if "*" in allowed_realm:
             allowed = True
         else:
             realms = getTokenRealms(serial)
             for realm in realms:
-                if realm in filterRealm:
+                if realm in allowed_realm:
                     allowed = True
 
-        if allowed == True:
-            if "*" in serial:
-                like_serial = serial.replace("*", "%")
-                scondition = and_(Token.LinOtpTokenSerialnumber.like(like_serial))
-            else:
-                scondition = and_(Token.LinOtpTokenSerialnumber == serial)
+        # if we have a serial and no realm, we return a un-resolvable condition
+        if serial and not allowed:
+            scondition = and_(Token.LinOtpTokenSerialnumber == '')
+            return scondition
+
+        if "*" in serial:
+            like_serial = serial.replace("*", "%")
+            scondition = and_(Token.LinOtpTokenSerialnumber.like(like_serial))
+        else:
+            scondition = and_(Token.LinOtpTokenSerialnumber == serial)
 
         return scondition
 
@@ -308,7 +317,6 @@ class TokenIterator(object):
 
         return list(resolvers)
 
-
     def __init__(self, user, serial, page=None, psize=None, filter=None,
                  sort=None, sortdir=None, filterRealm=None, user_fields=None,
                  params=None):
@@ -316,8 +324,7 @@ class TokenIterator(object):
         constructor of Tokeniterator, which gathers all conditions to build
         a sqalchemy query - iterator
 
-        :param user:     User object - user provides as well the searchfield
-                                       entry
+        :param user:     User object - user provides as well the searchfield entry
         :type  user:     User class
         :param serial:   serial number of a token
         :type  serial:   string
@@ -331,13 +338,11 @@ class TokenIterator(object):
         :type  sort:     string
         :param sortdir:  sort direction: ascending or descending
         :type  sortdir:  string
-        :param filterRealm:  restrict the set of token to those in
-                             the filterRealm
+        :param filterRealm:  restrict the set of token to those in the filterRealm
         :type  filterRealm:  string or list
         :param user_fields:  list of additional fields from the user owner
         :type  user_fields: array
-        :param params:  list of additional request parameters
-                        - currently not used
+        :param params:  list of additional request parameters - currently not used
         :type  params: dict
 
         :return: - nothing / None
@@ -346,8 +351,7 @@ class TokenIterator(object):
         log.debug('[TokenIterator::init] begin. start creating TokenIterator \
         class with parameters: user:%r, serial:%r, page=%r, psize:%r, \
                     filter:%r, sort:%r, sortdir:%r, filterRealm:%r' %
-                (user, serial, page, psize, filter, sort, sortdir,
-                 filterRealm))
+                (user, serial, page, psize, filter, sort, sortdir, filterRealm))
 
         if params is None:
             params = {}
@@ -355,14 +359,10 @@ class TokenIterator(object):
         self.page = 1
         self.pages = 1
         self.tokens = 0
+
         self.user_fields = user_fields
         if self.user_fields == None:
             self.user_fields = []
-
-        condition = None
-        ucondition = None
-        scondition = None
-        r_condition = None
 
         if type(filterRealm) in (str, unicode):
             filterRealm = filterRealm.split(',')
@@ -403,6 +403,18 @@ class TokenIterator(object):
 
         order = Token.LinOtpTokenDesc
 
+        #   o LinOtp.TokenId: 17943
+        #   o LinOtp.TokenInfo: ""
+        #   o LinOtp.TokenType: "spass"
+        #   o LinOtp.TokenSerialnumber: "spass0000FBA3"
+        #   o User.description: "User Name,email@lsexperts.de,local,"
+        #   o LinOtp.IdResClass: "useridresolver.PasswdIdResolver.IdResolver._default_Passwd_"
+        #   o User.username: "user"
+        #   o LinOtp.TokenDesc: "Always Authenticate"
+        #   o User.userid: "1000"
+        #   o LinOtp.IdResolver: "/etc/passwd"
+        #   o LinOtp.Isactive: true
+
         if sort == "TokenDesc":
             order = Token.LinOtpTokenDesc
         elif sort == "TokenId":
@@ -437,8 +449,7 @@ class TokenIterator(object):
             self.toks = Session.query(Token).filter(condition).order_by(order).distinct()
             self.tokens = self.toks.count()
 
-            log.debug("[TokenIterator] DB-Query returned # of objects:"
-                      " %i" % self.tokens)
+            log.debug("[TokenIterator] DB-Query returned # of objects: %i" % self.tokens)
             self.pagesize = self.tokens
             self.it = iter(self.toks)
             return
@@ -461,11 +472,9 @@ class TokenIterator(object):
         start = thePage * pagesize
         stop = (thePage + 1) * pagesize
 
-        self.toks = Session.query(Token).filter(condition).\
-                                         order_by(order).distinct()
+        self.toks = Session.query(Token).filter(condition).order_by(order).distinct()
         self.tokens = self.toks.count()
-        log.debug("[TokenIterator::init] DB-Query returned # of objects:"
-                  " %i" % self.tokens)
+        log.debug("[TokenIterator::init] DB-Query returned # of objects: %i" % self.tokens)
         self.page = thePage + 1
         fpages = float(self.tokens) / float(pagesize)
         self.pages = int(fpages)
@@ -482,10 +491,10 @@ class TokenIterator(object):
         return
 
     def getResultSetInfo(self):
-        resSet = {"pages": self.pages,
-                  "pagesize": self.pagesize,
-                  "tokens": self.tokens,
-                  "page": self.page}
+        resSet = {"pages"   : self.pages,
+                  "pagesize" : self.pagesize,
+                  "tokens"  : self.tokens,
+                  "page"    : self.page}
         return resSet
 
     def getUserDetail(self, tok):
@@ -503,25 +512,23 @@ class TokenIterator(object):
             userInfo["User.userid"] = u'/:no user info:/'
             userInfo["User.username"] = u'/:no user info:/'
 
-            uInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver,
-                                tok.LinOtpIdResClass)
+            uInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
             if uInfo is not None and len(uInfo) > 0:
-                if "description" in uInfo:
+                if uInfo.has_key("description"):
                     description = uInfo.get("description")
                     if isinstance(description, str):
-                        userInfo["User.description"] = \
-                                description.decode(ENCODING)
+                        userInfo["User.description"] = description.decode(ENCODING)
                     else:
                         userInfo["User.description"] = description
 
-                if "userid" in uInfo:
+                if uInfo.has_key("userid"):
                     userid = uInfo.get("userid")
                     if isinstance(userid, str):
                         userInfo["User.userid"] = userid.decode(ENCODING)
                     else:
                         userInfo["User.userid"] = userid
 
-                if "username" in uInfo:
+                if uInfo.has_key("username"):
                     username = uInfo.get("username")
                     if isinstance(username, str):
                         userInfo["User.username"] = username.decode(ENCODING)
@@ -531,8 +538,7 @@ class TokenIterator(object):
                 for field in self.user_fields:
                     fieldvalue = uInfo.get(field, "")
                     if isinstance(fieldvalue, str):
-                        userInfo["User.%s" % field] = \
-                                    fieldvalue.decode(ENCODING)
+                        userInfo["User.%s" % field] = fieldvalue.decode(ENCODING)
                     else:
                         userInfo["User.%s" % field] = fieldvalue
 
@@ -544,7 +550,7 @@ class TokenIterator(object):
         tok = self.it.next()
         desc = tok.get_vars(save=True)
         ''' add userinfo to token description '''
-        (userInfo, _ret) = self.getUserDetail(tok)
+        (userInfo, ret) = self.getUserDetail(tok)
         desc.update(userInfo)
 
         return desc
@@ -553,4 +559,4 @@ class TokenIterator(object):
         log.debug("[__iter__] TokenIterator")
         return self
 
-#eof###########################################################################
+# eof #########################################################################

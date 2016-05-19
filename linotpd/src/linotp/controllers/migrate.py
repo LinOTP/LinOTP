@@ -50,6 +50,7 @@ from linotp.lib.reply   import sendResult, sendError
 
 from linotp.lib.policy import PolicyException
 from linotp.lib.migrate import MigrationHandler
+from linotp.lib.migrate import DecryptionError
 
 import logging
 log = logging.getLogger(__name__)
@@ -189,11 +190,19 @@ class MigrateController(BaseController):
 
         :param pass: passphrase used for encrypting data in the backup file
         :param backupid: used to controll the intermediate backup file
+        :param remove_backup (optional): if set to False, backup file will not
+                be deleted after backup.
+                Default is that backup is deleted, even in case of error
 
         """
         params = {}
         backup_file = ""
         remove_backup_file = True
+
+        # error conditions
+        missing_param = False
+        decryption_error = False
+
         try:
             params.update(request.params)
 
@@ -203,6 +212,7 @@ class MigrateController(BaseController):
                 remove_backup_file = (
                             params.get("remove_backup", "True") == "True")
             except KeyError as exx:
+                missing_param = True
                 raise Exception("missing Parameter:%r" % exx)
 
             mig = None
@@ -277,14 +287,21 @@ class MigrateController(BaseController):
             log.exception('[show] policy failed: %r' % pe)
             return sendError(response, unicode(pe), 1)
 
-        except Exception as e:
-            log.exception('[show] failed: %r' % e)
+        except DecryptionError as err:
+            decryption_error = True
+            log.exception('Error - failed with %r' % err)
             Session.rollback()
-            return sendError(response, e)
+            return sendError(response, err)
+
+        except Exception as err:
+            log.exception('Error - failed with %r' % err)
+            Session.rollback()
+            return sendError(response, err)
 
         finally:
             if remove_backup_file and os.path.isfile(backup_file):
-                os.remove(backup_file)
+                if not missing_param and not decryption_error:
+                    os.remove(backup_file)
             Session.close()
             log.debug("[restore] done")
 

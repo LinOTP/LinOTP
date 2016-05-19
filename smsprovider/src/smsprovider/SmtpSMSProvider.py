@@ -26,7 +26,8 @@
 
 """  This is the SMSClass to send SMS via HTTP Gateways """
 
-
+import SMSProvider
+from SMSProvider import getSMSProviderClass
 from SMSProvider import ISMSProvider
 
 import string
@@ -117,7 +118,7 @@ class SmtpSMSProvider(ISMSProvider):
 
         return {}
 
-    def submitMessage(self, phone, message, exception=True):
+    def _submitMessage(self, phone, message, exception=True):
         '''
         Submits the message for phone to the email gateway.
 

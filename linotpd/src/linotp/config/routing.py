@@ -53,9 +53,6 @@ def make_map(global_conf, app_conf,):
     routeMap.connect('/error/{action}', controller='error')
     routeMap.connect('/error/{action}/{id}', controller='error')
 
-    # routeMap.connect('/{controller}/{action}')
-    # routeMap.connect('/{controller}/{action}/{id}')
-
     # check if we are in migration mode -
     # ! this will disable all other controllers !
     migrate = app_conf.get('service.migrate', 'False') == 'True'
@@ -141,8 +138,12 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
-    # linotpGetotp.active
-    getotp = global_conf.get('linotpGetotp.active', 'False') == 'True'
+    # controller to get otp values
+    # fallback for the getotp is the global linotpGetopt, but as all services
+    # are in the app section, the app section one should be prefered
+    getotp = (app_conf.get('service.getotp',
+                           global_conf.get('linotpGetotp.active', 'False'))
+              == 'True')
     if getotp:
         for cont in ['gettoken']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
@@ -155,8 +156,8 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{realm}/{action}' % cont, controller=cont)
             routeMap.connect('/%s/{action}' % cont, controller=cont)
 
-    # linotp.selfTest
-    self_test = global_conf.get('linotp.selfTest', 'True') == 'True'
+    # testing - for test setup: http sms provider callback
+    self_test = app_conf.get('service.testing', 'False') == 'True'
     if self_test:
         for cont in ['testing']:
             routeMap.connect('/%s/{action}' % cont, controller=cont)
@@ -168,5 +169,6 @@ def make_map(global_conf, app_conf,):
         for cont in ['tools']:
             routeMap.connect('/%s/{action}' % cont, controller = cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
+
 
     return routeMap

@@ -31,9 +31,13 @@ Test the otp_pin_random policy
 
 from collections import deque
 from copy import deepcopy
-from distutils.version import LooseVersion
 
 from linotp.tests import TestController
+
+import logging
+log = logging.getLogger(__name__)
+
+
 
 
 class TestRandompinController(TestController):
@@ -176,6 +180,7 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                             commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 
@@ -212,6 +217,7 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                                 commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
+
         self._create_randompin_policy('myDefRealm')
         self._create_selfservice_policy('myDefRealm')
 

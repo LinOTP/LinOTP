@@ -359,22 +359,23 @@ class SmsTokenClass(HmacTokenClass):
         :return: returns true or false
         '''
 
-        challenge_response = False
-
         if "state" in options or "transactionid" in options:
-            challenge_response = True
+            return True
 
         # it as well might be a challenge response,
         # if the passw is longer than the pin
-        if challenge_response == False:
-            (res, pin, otpval) = split_pin_otp(self, passw, user=user,
-                                                            options=options)
-            if res >= 0:
-                res = check_pin(self, pin, user=user, options=options)
-                if res == True and len(otpval) > 0:
-                    challenge_response = True
+        (res, pin, otpval) = split_pin_otp(self, passw, user=user,
+                                           options=options)
+        if res >= 0:
+            otp_counter = check_otp(self, otpval, options=options)
+            if otp_counter >= 1:
+                pin_match = check_pin(self, pin, user=user, options=options)
+                if not pin_match:
+                    return False
+            if otp_counter >= 0:
+                return True
 
-        return challenge_response
+        return False
 
 # ## challenge interfaces starts here
     def is_challenge_request(self, passw, user, options=None):
@@ -393,7 +394,7 @@ class SmsTokenClass(HmacTokenClass):
         '''
 
         request_is_valid = False
-        # # do we need to call the
+        # do we need to call the
         # (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
         realms = self.token.getRealmNames()
         if trigger_sms(realms):
@@ -458,7 +459,7 @@ class SmsTokenClass(HmacTokenClass):
                     message = options.get('data',
                                           options.get('message', '<otp>'))
 
-		if not message:
+                if not message:
                     message = "<otp>"
 
                 transactionid = options.get('transactionid', None)
