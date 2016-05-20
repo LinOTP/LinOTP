@@ -90,10 +90,6 @@ class Resolver():
                           (self.type, unicode(resolvertypes)))
             raise e
 
-        if similar_resolver_exists(self.name):
-            raise Exception('resolver with similar name already exists (%s)' %
-                            self.name)
-
         resolver_config = get_resolver_classConfig(self.type)
         if self.type in resolver_config:
             config = resolver_config.get(self.type).get('config', {})
