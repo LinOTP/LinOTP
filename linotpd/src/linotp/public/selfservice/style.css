@@ -38,31 +38,37 @@ h1 {
 }
 
 body {
-    font-family: helvetica, impact, sans-serif;
+	font-family: helvetica, impact, sans-serif;
+	height: 100%;
+	margin: 0;
+	background: whitesmoke;
 }
 
 #wrap {
-    width:97%;
-    margin:0 auto;
+	background: white;
+	-webkit-box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.5);
+	-moz-box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.5);
+	box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.5);
+	padding: 10px;
 }
 
 
 #main {
-    float:right;
-    width:77%;
-    background: #080808;
-    padding: 3px;
+	float:right;
+	width:77%;
+	background: #080808;
+	padding: 3px;
 }
 
 #sidebar {
-    float:left;
-    max-width:20%;
-    display: block;
-    min-height: 33em;
-    background:#eeeeee;
-    border-right: 1px solid #fe8625;
-    margin: auto;
-    padding: 3px;
+	float:left;
+	max-width: 20%;
+	display: block;
+	box-sizing: border-box;
+	min-height: 33em;
+	background:#eeeeee;
+	border-right: 1px solid #fe8625;
+	padding: 1em .75em;
 }
 
 #imprint {
@@ -73,63 +79,52 @@ body {
 
 
 #header {
-    background: none repeat scroll 0 0 #EEEEEE;
-    font-size:medium;
-    margin-bottom: 0px;
-    padding: 0.3em;
-    padding-left: 1em;
-    height: 50px;
-    border-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border: 1px solid #AAAAAA;
+	background: none repeat scroll 0 0 #EEEEEE;
+	padding: .75em 1em;
+	border-radius: 4px;
+	border: 1px solid #AAAAAA;
 }
 
 #logo{
-    background-image:  url(/images/linotp_logo_103x35.png);
-    background-repeat: no-repeat;
-    background-position:center;
-    display: block;
-    height: 50px;
-    width: 110px;
+	background-image:  url(/images/linotp_logo_103x35.png);
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	height: 35px;
+	width: 110px;
 }
-
-.header {
-    width : 100%;
-}
-
 .float_left {
-    float:left;
+	float:left;
 }
 
 .float_right{
-    float:right;
-    text-align:right;
+	float:right;
+	text-align:right;
 }
 
 .portalname{
-    color: #fe8625;
-    font-size:200%;
-    /*	text-shadow:black 3px 2px 4px; */
+	color: #fe8625;
+	font-size:200%;
 }
 
 
 #menu {
-    width:100%;
+	width: 100%;
 }
+
 #nav {
-    background:#dddddd;
-    //float:left;
- }
+	background:#dddddd;
+}
 
 #logout {
-    float:right;
+	float:right;
 }
 .logout {
-    float:right;
-    text-align: right;
-    font-size: 0.7em;
-    margin-top: -0.5em;
-    padding-right: 2px;
+	float:right;
+	text-align: right;
+	font-size: 0.7em;
+	margin-top: -0.5em;
+	padding-right: 2px;
 }
 
 
@@ -139,12 +134,13 @@ body {
 
 
 #footer {
-    background: none repeat scroll 0 0 #080808;
-    border-radius: 4px;
-    clear: both;
-    color: white;
-    margin-top: 2px;
-    padding: 2px;
+	background: white;
+	border-top: 2px solid #F07F1C;
+	clear: both;
+	color: #555;
+	margin-top: 2px;
+	padding: 10px .4em 0;
+	font-size: .9em;
 }
 
  #nav ul {
@@ -160,13 +156,13 @@ body {
 
  #nav ul li a,
  #nav ul li a:visited {
-    color:#333;padding:0 10px;
-    height:30px;
-    border-right:1px solid #ffffff;
-    line-height:30px;
-    background:#fe8625;
-    text-decoration: none;
-    }
+	color:#333;padding:0 10px;
+	height:30px;
+	border-right:1px solid #ffffff;
+	line-height:30px;
+	background:#fe8625;
+	text-decoration: none;
+	}
 
  #nav ul li a:hover {
  	color:#ffffff;
@@ -210,4 +206,57 @@ label.error {
 	text-align: center;
 	padding: 10px 0;
 	margin: 5px 0;
+}
+
+.clearfix:after {
+	content: ".";
+	clear: both;
+	display: block;
+	visibility: hidden;
+	height: 0px;
+}
+
+ul.ui-widget-header {
+	background: #ddd;
+}
+
+div.ui-tabs {
+	padding: 0;
+}
+
+.ui-tabs ul.ui-tabs-nav,
+.ui-dialog .ui-dialog-titlebar {
+	border-top: none;
+	border-left: none;
+	border-right: none;
+	border-radius: 0;
+}
+
+#tokenDiv {
+	padding: 15px 5px;
+	background-color: white;
+	margin-top: 10px;
+	-webkit-box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.25);
+	-moz-box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.25);
+	box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.25);
+}
+
+#tokenDiv ul li:hover, #tokenDiv ul li:hover a {
+	background-color: #F7F7F7;
+}
+
+#tokenDiv ul li{
+	padding: 5px 5px 5px 10px;
+	border-bottom: 1px solid #EEE;
+	cursor: pointer;
+}
+
+#tokenDiv ul li:first-child{
+	border-top: 1px solid #EEE;
+}
+
+#tokenDiv ul {
+	list-style-position: inside;
+	margin: 0;
+	padding: 0;
 }

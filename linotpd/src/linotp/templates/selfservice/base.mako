@@ -87,8 +87,8 @@ if isinstance(lang, list):
 
 <div id="wrap">
 
-<div id="header">
-    <div class="header"> <span class="portalname float_left">${_("Selfservice Portal")}</span></div>
+<div id="header" class="clearfix">
+    <span class="portalname float_left">${_("Selfservice Portal")}</span>
     <div id="logo" class="float_right"> </div>
 </div>
 <div class="logout">

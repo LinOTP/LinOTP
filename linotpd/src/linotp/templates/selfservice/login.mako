@@ -54,10 +54,8 @@ $(document).ready(function() {
 
 <div id="wrap">
 
-    <div id="header">
-        <div class="header">
-            <span class="portalname float_left">${_("Selfservice Portal")}</span>
-        </div>
+    <div id="header" class="clearfix">
+        <span class="portalname float_left">${_("Selfservice Portal")}</span>
         <div id="logo" class="float_right"> </div>
     </div>
 
@@ -70,7 +68,9 @@ ${_("This is the LinOTP self service portal. You may login here with your userna
 <P>
 ${_("Within the self service portal you may reset the PINs of your tokens, assign new tokens or resync your tokens.")}
 </p>
+<p>
 ${_("If you lost a token, you may also disable this token.")}
+</p>
 
 </div> <!-- sidebar -->
 
