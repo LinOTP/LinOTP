@@ -10,9 +10,8 @@ Package: linotp
 Architecture: all
 Homepage: http://www.linotp.org/
 Depends: ${misc:Depends}, ${python:Depends}, apache2, libapache2-mod-wsgi,
- linotp-useridresolver (>=2.7~), libsodium-dev
-Pre-Depends: python-simplejson, python-crypto, python-docutils,
- python-sqlalchemy (>=0.6),
+ linotp-useridresolver (>=2.7~), python-pysodium, python-pycryptodomex
+Pre-Depends: python-simplejson, python-docutils, python-sqlalchemy (>=0.6),
  python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob,
  python-mako, python-decorator, python-formencode, python-pastescript,
  python-pastedeploy, python-paste, python-beaker, python-webhelpers,
