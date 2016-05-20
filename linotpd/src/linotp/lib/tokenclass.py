@@ -701,8 +701,8 @@ class TokenClass(object):
 
             # first check are there outstanding challenges
             if self.is_challenge_response(passw, user,
-                                                options=options,
-                                                challenges=challenges):
+                                          options=options,
+                                          challenges=challenges):
 
                 (res, reply) = self.check_challenge_response(challenges,
                                                              user, passw,
@@ -721,9 +721,9 @@ class TokenClass(object):
         # and standard authentication
 
         # first check are there outstanding challenges
-        if self.token.is_challenge_response(passw, user,
-                                            options=options,
-                                            challenges=challenges):
+        if self.is_challenge_response(passw, user,
+                                      options=options,
+                                      challenges=challenges):
 
             (res, reply) = self.check_challenge_response(challenges,
                                                          user, passw,
@@ -743,7 +743,6 @@ class TokenClass(object):
             self.invalid_token.append(self)
 
         return (False, None)
-
 
     def check_challenge_response(self, challenges, user, passw, options=None):
         """
