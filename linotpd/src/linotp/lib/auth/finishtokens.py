@@ -160,7 +160,7 @@ class FinishTokens(object):
             supports_offline_at_all = token.supports_offline_mode
 
             # 2. check if policy allows to use offline authentication
-            if user.login and user.realm:
+            if user and user.login and user.realm:
                 realms = [user.realm]
             else:
                 realms = token.getRealms()
