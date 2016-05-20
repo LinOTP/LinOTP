@@ -193,17 +193,24 @@ class TestU2FController(TestController):
 
     def _authentication2(self,
                          transactionid,
-                         authentication_response_message
+                         authentication_response_message,
+                         additional_params=None
                          ):
         """
         Performs the second authentication step
         """
+
+        if additional_params is None:
+            additional_params = {}
+
         parameters = {
             'user': 'root',
             'transactionid': transactionid
         }
 
         parameters['pass'] = authentication_response_message
+
+        parameters.update(additional_params)
 
         response = self.app.get(url(controller='validate', action='check'),
                                 params=parameters)
@@ -516,7 +523,12 @@ class TestU2FController(TestController):
             reply.append(response_authentication1['detail'])
         return reply
 
-    def _authentication_response(self, challenge, correct=True):
+    def _authentication_response(self, challenge, correct=True,
+                                 additional_params=None):
+
+        if additional_params is None:
+            additional_params = {}
+
         signrequest_authentication = challenge['signrequest']
         challenge_authentication = signrequest_authentication['challenge']
 
@@ -550,6 +562,7 @@ class TestU2FController(TestController):
         response_authentication2 = self.get_json_body(
             self._authentication2(transactionid_authentication,
                                   authentication_response_message,
+                                  additional_params
                                   )
             )
 
@@ -565,6 +578,8 @@ class TestU2FController(TestController):
             self.assertTrue(response_authentication2['result']['value'])
         else:
             self.assertFalse(response_authentication2['result']['value'])
+
+        return response_authentication2
 
     def _has_EC_support(self):
         has_ec_support = True
@@ -958,3 +973,103 @@ class TestU2FController(TestController):
         self.assertIn("missing ECDSA support for the NIST P-256 curve in OpenSSL",
                       response_registration2['result']['error']['message'])
 
+    def setOfflinePolicy(self, realm='*', name='u2f_offline',
+                         action='support_offline=u2f', active=True):
+
+        params = {
+            'name': name,
+            'user': '*',
+            'action': action,
+            'scope': 'authentication',
+            'realm': realm,
+            'time': '',
+            'client': '',
+            'active': active,
+            'session': self.session,
+            }
+
+        response = self.make_system_request("setPolicy", params=params)
+        self.assertTrue('"status": true' in response, response)
+
+    def authentication_with_use_offline(self):
+
+        """
+        Tests, if info for U2F offline mode is transfered
+        """
+
+        if not self._has_EC_support():
+            self.skipTest(
+                "Probably no OpenSSL support for the needed NIST P-256 curve!"
+                )
+
+        pin = 'test{pass}word_with{curly-braces{'
+        self._registration(pin)
+        # Authenticate twice
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0])
+        challenges = self._authentication_challenge(pin)
+
+        use_offline = {'use_offline': True}
+
+        response = self._authentication_response(challenges[0],
+                                                 additional_params=use_offline)
+
+        # policy is not set, so no offline info should be shown
+        self.assertNotIn('detail', response)
+
+        # set the policy and check again
+        self.setOfflinePolicy()
+
+        # Authenticate twice
+        challenges = self._authentication_challenge(pin)
+        self._authentication_response(challenges[0])
+        challenges = self._authentication_challenge(pin)
+
+        use_offline = {'use_offline': True}
+
+        response = self._authentication_response(challenges[0],
+                                                 additional_params=use_offline)
+
+        self.assertIn('detail', response)
+        detail = response.get('detail')
+
+        self.assertIn('offline_info', detail)
+        offline_info = detail.get('offline_info')
+
+        self.assertIn('token_type', offline_info)
+        token_type = offline_info.get('token_type')
+        self.assertIn('serial', offline_info)
+        serial = offline_info.get('serial')
+
+        self.assertEqual(serial, self.serial)
+
+        self.assertEqual(token_type, 'u2f')
+
+        self.assertIn('token_info', offline_info)
+        token_info = offline_info.get('token_info')
+
+        # prepare info for comparison
+
+        key_num = 1
+        key_set = self.key_set.get(key_num, None)
+        (key_handle_hex, ecc_key) = key_set
+        key_handle_bin = binascii.unhexlify(key_handle_hex)
+        key_handle_b64 = base64.urlsafe_b64encode(key_handle_bin)
+        public_key = str(ecc_key.pub().get_der())[-65:]
+        public_key_b64 = base64.urlsafe_b64encode(public_key)
+
+        self.assertIn('key_handle', token_info)
+        key_handle_rec = token_info.get('key_handle')
+        self.assertEqual(key_handle_b64, key_handle_rec)
+
+        self.assertIn('public_key', token_info)
+        public_key_rec = token_info.get('public_key')
+        self.assertEqual(public_key_b64, public_key_rec)
+
+        self.assertIn('app_id', token_info)
+        app_id = token_info.get('app_id')
+        self.assertEqual(app_id, self.origin)
+
+        self.assertIn('counter', token_info)
+        counter = token_info.get('counter')
+        self.assertEqual(counter, self.counter)
