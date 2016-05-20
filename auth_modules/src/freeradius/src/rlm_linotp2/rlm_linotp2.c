@@ -37,10 +37,11 @@
 #include	<freeradius-devel/conffile.h>
 
 #include	<curl/curl.h>
-// not needed with curl 7.1 anymore
-//#include	<curl/types.h>
-//#include 	<curl/easy.h>
 
+
+/*
+ * debug macros
+ */
 #define log(level, format, ...) \
 	radlog(level, "rlm_linotp: " format, ## __VA_ARGS__)
 
@@ -61,8 +62,12 @@
 
 // username and password was correct
 #define LINOTPD_OK			":-)"
-#define LINOTPD_REJECT		":-("
-#define LINOTPD_FAIL		":-/"
+#define LINOTPD_REJECT			":-("
+#define LINOTPD_FAIL			":-/"
+
+
+#define LINOTP_RECV_LIMIT		(1024*1024)
+
 
 /*****************************************************************************/
 
@@ -78,6 +83,36 @@ typedef struct LOTPInstance {
 	int allowemptypassword;
 	int prefer_nas_identifier;
 } lotp_inst_t;
+
+
+struct MemoryStruct {
+  char *memory;
+  size_t size;
+};
+
+
+/*****************************************************************************/
+
+char *createUrl4Post(CURL *curl_handle,
+		     const char *realm,
+		     const char *resConf,
+		     const char *user,
+		     const char *password,
+		     const char *client,
+		     const char *state);
+
+
+char *sendRequest(lotp_inst_t *lotp,
+		  CURL *curl_handle,
+		  const char *params);
+
+void split_stat_and_message(const char *s, char **stat, char **msg);
+
+
+
+
+
+/*****************************************************************************/
 
 /* A mapping of configuration file names to internal variables. */
 static const CONF_PARSER module_config[] =
@@ -135,18 +170,26 @@ static int lotp_instantiate(CONF_SECTION *conf, void **instancep)
 		return -1;
 	}
 
+	/* initialize CURL */
+	curl_global_init(CURL_GLOBAL_ALL);
+
+
 	*instancep = lotp;
 	return 0;
 }
 
 static int lotp_detach(void *instance)
 {
-	lotp_inst_t *lotp = instance;
-	if (lotp)
-	{
-		memset(lotp, 0, sizeof(*lotp));
-		free(lotp);
-	}
+	if (instance == NULL)
+		return 0;
+
+	/* shutdown CURL */
+	curl_global_cleanup();
+
+	/* free our context data */
+	memset(instance, 0, sizeof(lotp_inst_t));
+	free(instance);
+
 	return 0;
 }
 
@@ -154,46 +197,45 @@ static int lotp_detach(void *instance)
 
 static int lotp_acct(void *instance, REQUEST *request)
 {
+	(void)instance;		/* unused */
+	(void)request;		/* unused */
 	return RLM_MODULE_NOOP;
 }
 
 /*****************************************************************************/
 
-static int inline valid_char(unsigned char c)
+static inline int valid_char(unsigned char c)
 {
-	int i;
-
-	/* We disallow anything except known good */
-	const char allowed_nonalpha[] = "-_+.@";
-	
 	/* a-z A-Z 0-9*/
 	if (isalnum(c))
 		return 1;
 
-	/* Non-alphanumeric */
-	for (i=0; i < sizeof(allowed_nonalpha)-1; i++)
-		if (c == allowed_nonalpha[i])
-			return 1;
-			
+	/* Non-alphanumeric: we disallow anything except known good */
+	switch (c) {
+	case '-':
+	case '_':
+	case '+':
+	case '.':
+	case '@':
+		return 1;
+	}
+	
 	/* Invalid */
 	return 0;
 }
 
-static int inline valid_realm_char(unsigned char c)
+static inline int valid_realm_char(unsigned char c)
 {
-	int i;
-
-	/* We disallow anything except known good */
-	const char allowed_nonalpha[] = "-_";
-
 	/* a-z A-Z 0-9*/
 	if (isalnum(c))
 		return 1;
 
-	/* Non-alphanumeric */
-	for (i=0; i < sizeof(allowed_nonalpha)-1; i++)
-			if (c == allowed_nonalpha[i])
-					return 1;
+	/* Non-alphanumeric: we disallow anything except known good */
+	switch (c) {
+	case '-':
+	case '_':
+		return 1;
+	}
 
 	/* Invalid */
 	return 0;
@@ -209,16 +251,16 @@ static int inline valid_realm_char(unsigned char c)
 #endif
 
 
-static int inline valid_username(char *s)
+static inline int valid_username(const char *name)
 {
-	size_t len = 0;
+	const char *s = name;
 
 	while (*s)
 	{
 		if (!valid_char(*s))
 			return 0;
 
-		if (++len >= LINOTP_MAX_USERNAME_LEN)
+		if ((s-name) >= LINOTP_MAX_USERNAME_LEN)
 			return 0;
 
 		++s;
@@ -227,10 +269,11 @@ static int inline valid_username(char *s)
 	return 1;
 }
 
-static int inline valid_realm(char *s )
+static inline int valid_realm(const char *realm)
 {
-	size_t len = 0;
-	if (*s == NULL)
+	const char *s = realm;
+
+	if (*s == '\0')
 	{
 		return 1;
 	}
@@ -238,7 +281,7 @@ static int inline valid_realm(char *s )
 	{
 		if (!valid_realm_char(*s))
 			return 0;
-		if (++len >= LINOTP_MAX_REALMNAME_LEN)
+		if ((s-realm) >= LINOTP_MAX_REALMNAME_LEN)
 			return 0;
 		++s;
 	}
@@ -248,60 +291,50 @@ static int inline valid_realm(char *s )
 /***********************************************
    Curl stuff
 ***********************************************/
-struct MemoryStruct {
-  char *memory;
-  size_t size;
-};
-
-static void *myrealloc(void *ptr, size_t size)
-{
-	void * ret = NULL;
-
-	if (size > 1024 * 1024)
-	{
-		ret = NULL;
-	}
-
-	/* There might be a realloc() out there that doesn't like reallocing
-	NULL pointers, so we take care of it here */
-	if(ptr)
-		ret = realloc(ptr, size);
-	else
-		ret = malloc(size);
-
-	return ret;
-}
- 
 static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
 {
-	size_t realsize = size * nmemb;
 	struct MemoryStruct *mem = (struct MemoryStruct *)data;
+	size_t realsize;
 
-	/* failsafe */
-	if (realsize > 1024*1024)
+	/* limit size and nmemb by square root of maximum capacity of size_t */
+	if ((size >> (4*sizeof(size_t))) || (nmemb >> (4*sizeof(size_t)))) {
+		log_error("Possible integer overflow in WriteMemoryCallback detected");
+		return 0;
+	}
+	realsize = size * nmemb;
+
+	/* we actually allow much less than our 'overflow check' above does */
+	if (realsize > LINOTP_RECV_LIMIT || mem->size > LINOTP_RECV_LIMIT)
 	{
 		log_error("The linotpd responded to our authentication request with more than 1MB of data! Something is really wrong here!");
-		return mem->size;
+		return 0;
 	}
 
-	mem->memory = myrealloc(mem->memory, mem->size + realsize + 1);
-	if (mem->memory)
-	{
-		memcpy(&(mem->memory[mem->size]), ptr, realsize);
-		mem->size += realsize;
-		mem->memory[mem->size] = 0;
-	}
+	/* mem->size will be at most 2*LINOTP_RECV_LIMIT+1 */
+
+	if (mem->memory == NULL)
+		mem->memory = malloc(realsize + 1);
+	else
+		mem->memory = realloc(mem->memory, mem->size + realsize);
+
+	if (mem->memory == NULL)
+		return 0;
+
+	memcpy(mem->memory + mem->size, ptr, realsize);
+	mem->size += realsize;
+	mem->memory[mem->size] = '\0';
+
 	return realsize;
 }
 
 
-char * createUrl4Post(CURL *curl_handle,
-		char * realm,
-		char * resConf,
-		char * user,
-		char * password,
-		char * client,
-		char * state)
+char *createUrl4Post(CURL *curl_handle,
+		     const char *realm,
+		     const char *resConf,
+		     const char *user,
+		     const char *password,
+		     const char *client,
+		     const char *state)
 {
 	/*
 	doing a post request requires for curl to have all the parameters
@@ -321,7 +354,8 @@ char * createUrl4Post(CURL *curl_handle,
 	int  size = 0;
 
 	int argc = 6;
-	char * arry[argc][2];
+	const char *key_name[argc];
+	char *key_value[argc];
 
 	/* the return value */
 	char *param = NULL;
@@ -329,182 +363,168 @@ char * createUrl4Post(CURL *curl_handle,
 
 	log_debug("entering createUrl4Post.");
 	/*** initialize array****/
-	for (i= 0; i< argc; i++)
+	for (i= 0; i < argc; i++)
 	{
-		arry[i][0] = NULL; arry[i][1] = NULL;
+		key_name[i] = NULL;
+		key_value[i] = NULL;
 	}
 	i = 0;
 	if ( realm != NULL )
 	{
-		arry[i][0] = "realm";
-		arry[i][1] = curl_easy_escape(curl_handle, realm, 0);
+		key_name[i] = "realm";
+		key_value[i] = curl_easy_escape(curl_handle, realm, 0);
 		i++;
 	}
 	if ( resConf != NULL )
 	{
-		arry[i][0] = "resConf";
-		arry[i][1] = curl_easy_escape(curl_handle, resConf, 0);
+		key_name[i] = "resConf";
+		key_value[i] = curl_easy_escape(curl_handle, resConf, 0);
 		i++;
 	}
 	if ( user != NULL )
 	{
-		arry[i][0] = "user";
-		arry[i][1] = curl_easy_escape(curl_handle, user, 0);
+		key_name[i] = "user";
+		key_value[i] = curl_easy_escape(curl_handle, user, 0);
 		i++;
 	}
 	if ( password != NULL )
 	{
-		arry[i][0] = "pass";
-		arry[i][1] = curl_easy_escape(curl_handle, password, 0);
+		key_name[i] = "pass";
+		key_value[i] = curl_easy_escape(curl_handle, password, 0);
 		i++;
 	}
 	if ( client != NULL )
 	{
-		arry[i][0] = "client";
-		arry[i][1] = curl_easy_escape(curl_handle, client, 0);
+		key_name[i] = "client";
+		key_value[i] = curl_easy_escape(curl_handle, client, 0);
 		i++;
 	}
 	if ( state != NULL )
 	{
-		arry[i][0] = "state";
-		arry[i][1] = curl_easy_escape(curl_handle,state, 0);
+		key_name[i] = "state";
+		key_value[i] = curl_easy_escape(curl_handle,state, 0);
 		i++;
 	}
 
 	/* now we calculate the required size of the param str*/
-	int length= 0;
-	for (i= 0; i< argc; i++)
+	int length = 0;
+	for (i = 0; i < argc; i++)
 	{
-		if (arry[i][0] != NULL) 
+		if (key_name[i] != NULL) 
 		{
-			log_debug("[%d] %s=%s\n", i, arry[i][0], arry[i][1]);
-			length = length + strlen(arry[i][0]) + 1; /* add 1 for '&'*/
-			length = length + strlen(arry[i][1]) + 1; /* add 1 for '='*/
+			log_debug("[%d] %s=%s\n", i, key_name[i], key_value[i]);
+			length += strlen(key_name[i]) + 1; /* add 1 for '&'*/
+			length += strlen(key_value[i]) + 1; /* add 1 for '='*/
 		}
 	}
 
-	size = (length +1) *sizeof(char);
+	size = length + 1;
 	log_debug("allocating %d chars", size);
-	param = (char*) calloc(size, sizeof(char));
+	param = calloc(size, sizeof(char));
+	if (param == NULL) {
+		for (i = 0; i < argc; i++)
+			if (key_value[i] != NULL)
+				curl_free(key_value[i]);
+		return NULL;
+	}
 
 	/* concat the values in the param string*/
-	memset(param,'\0',size);
+	*param = '\0';
 	for (i= 0; i< argc; i++){
-		if (arry[i][0] != NULL && arry[i][1] != NULL) {
+		if (key_name[i] != NULL && key_value[i] != NULL) {
 			if (i>0) strcat(param,"&");
-			strcat(param, arry[i][0]);
+			strcat(param, key_name[i]);
 			strcat(param, "=");
-			strcat(param, arry[i][1]);
+			strcat(param, key_value[i]);
 
 			/* finally clean up the escaped data*/
-			log_debug("freeing escaped value for %s", arry[i][0]);
-			curl_free(arry[i][1]);
+			log_debug("freeing escaped value for %s", key_value[i]);
+			curl_free(key_value[i]);
 		}
 	}
-
 
 	return param;
-
 }
 
-int sendRequest(CURL *curl_handle, char * url, char * params,
-		struct MemoryStruct * chunk,
-		int nosslhostnameverify, int nosslcertverify, lotp_inst_t *lotp)
+char *sendRequest(lotp_inst_t *lotp,
+		  CURL *curl_handle,
+		  const char *params)
 {
-	int all_status	= 0;
-	int status	= 0;
+	struct MemoryStruct chunk = { NULL, 0 };
+	CURLcode status;
 
 	/* Setup the base url */
- 	status 	    = curl_easy_setopt(curl_handle, CURLOPT_URL, url);
-	all_status += status;
+ 	status = curl_easy_setopt(curl_handle, CURLOPT_URL, lotp->validateurl);
+ 	if (status != CURLE_OK)
+ 	{
+		if ( lotp->logpassword && lotp->loguser )
+			log_error("Error setting option CURLOPT_URL %s: %i", params, status);
+		else
+			log_error("Error setting option CURLOPT_URL %s: %i", lotp->validateurl, status);
+		return NULL;
+ 	}
 
 	/* Now specify the POST data */ 
-	status 	    = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, params);
- 	all_status += status;
-
- 	if (status)
+	status = curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, params);
+ 	if (status != CURLE_OK)
  	{
 		if ( lotp->logpassword && lotp->loguser )
-		{
-			log_error("Error setting option CURLOPT_URL %s: %i", params, status);
-		}
+			log_error("Error setting option CURLOPT_POSTFIELDS %s: %i", params, status);
 		else
-		{
-			log_error("Error setting option CURLOPT_URL %s: %i", lotp->validateurl, status);
-		}
+			log_error("Error setting option CURLOPT_POSTFIELDS %s: %i", lotp->validateurl, status);
+		return NULL;
  	}
- 	status 		= curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
- 	all_status += status;
 
- 	if (status)
- 	{
+ 	status 	= curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+ 	if (status != CURLE_OK) {
 		log_error("Error setting option CURLOPT_WRITEFUNCTION: %i", status);
+		return NULL;
  	}
 
- 	status 		= curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, chunk);
-	all_status += status;
-
- 	if (status)
- 	{
+ 	status 	= curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &chunk);
+ 	if (status != CURLE_OK) {
 		log_error("Error setting option CURLOPT_WRITEDATA: %i", status);
+		return NULL;
  	}
 
-	status 		= curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-	all_status += status;
-	if (status)
-	{
+	status = curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+	if (status != CURLE_OK) {
 		log_error("Error setting option CURLOPT_USERAGENT: %i", status);
+		/* XXX ignore this error? */
 	}
- 	if ( nosslhostnameverify )
- 	{
-		status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
- 	}
-	else
-	{
+
+ 	if ( lotp->sslhostnameverify )
 		status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 2L);
-	}
-	all_status += status;
-	if (status)
-	{
-		log_error("Error setting option CURLOPT_SSL_VERIFYHOST: %i", status);
-	}
-
- 	if ( nosslcertverify )
- 	{
- 		status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
- 	}
 	else
-	{
- 		status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 1L);
-	}
- 	all_status += status;
+		status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
 
- 	if (status)
- 	{
+	if (status != CURLE_OK) {
+		log_error("Error setting option CURLOPT_SSL_VERIFYHOST: %i", status);
+		return NULL;
+	}
+
+ 	if (lotp->sslcertverify)
+ 		status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 1L);
+	else
+ 		status = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+
+ 	if (status != CURLE_OK) {
 		log_error("Error setting option CURLOPT_SSL_VERIFYPEER: %i", status);
+		return NULL;
  	}
 
- 	status 		= curl_easy_perform(curl_handle);
- 	all_status += status;
- 	if (status)
- 	{
-		if ( lotp->logpassword && lotp->loguser )
-		{
-			log_error("Error in curl_easy_perform: %i, url: %s", status, url);
-		}
-		else
-		{
-			log_error("Error in curl_easy_perform: %i, url: %s", status, lotp->validateurl);
-		}
+ 	status = curl_easy_perform(curl_handle);
+ 	if (status != CURLE_OK) {
+		log_error("Error in curl_easy_perform: %i, url: %s", status, lotp->validateurl);
+
+		return NULL;
 	}
-	curl_easy_cleanup(curl_handle);
 
-	return all_status;
-
+	return chunk.memory;
 }
 
 
-void split_stat_and_message(char * s, char ** stat, char ** msg)
+void split_stat_and_message(const char *s, char **stat, char **msg)
 {
 	/*
 	in case of a challenge request, the reply of the linotp server
@@ -515,8 +535,8 @@ void split_stat_and_message(char * s, char ** stat, char ** msg)
 	and returns them by reference.
 
 	*/
-	*stat = (char *) "";
-	*msg = (char *) "";
+	**stat = '\0';
+	**msg = '\0';
 
 	char * fin = NULL;
 
@@ -526,8 +546,8 @@ void split_stat_and_message(char * s, char ** stat, char ** msg)
 	fin = strchr(s+strlen(LINOTPD_REJECT), ' ');
 	if (fin == NULL) return;
 
-	/*now search start of stat */
-	while(*fin != '\0')
+	/* now search start of stat */
+	while (*fin != '\0')
 	{
 		if (*fin == ' ')
 			fin++;
@@ -537,7 +557,7 @@ void split_stat_and_message(char * s, char ** stat, char ** msg)
 	if (*fin == '\0') return;
 
 	/* preserve the start of the stat*/
-	*stat = (char *) fin;
+	*stat = fin;
 
 	/* find the next blank after the stat */
 	fin = strchr(fin, ' ');
@@ -546,42 +566,36 @@ void split_stat_and_message(char * s, char ** stat, char ** msg)
 	/* mark the terminating of stat, the rest is msg*/
 	*fin = '\0';
 	fin++;
-	if (*fin != '\0') *msg = (char *) fin;
+	if (*fin != '\0') *msg = fin;
 
 	return;
-
 }
 
 /********** LinOTP stuff ***************************/
 
 static int lotp_auth(void *instance, REQUEST *request)
 {
-	/* quiet the compiler */
-	instance = instance;
-	request = request;
-
 	VALUE_PAIR *state_pair;
-	char * state = NULL;
+	char *state = NULL;
 	VALUE_PAIR *reply;
 
 	char errorBuffer[CURL_ERROR_SIZE];
-	CURL *	curl_handle		= NULL;
-	CURLcode all_status		= 0;
+	CURL *curl_handle = NULL;
 
-	lotp_inst_t *lotp 		= instance;
-	int nosslhostnameverify = ( !lotp->sslhostnameverify );
- 	int nosslcertverify		= ( !lotp->sslcertverify );
+	lotp_inst_t *lotp = instance;
 	int prefer_nas_identifier = (lotp->prefer_nas_identifier);
 
-	int returnValue		    	= RLM_MODULE_REJECT;
-	char *params 			= NULL;
+	int returnValue	= RLM_MODULE_REJECT;
+	char *params = NULL;
+	char *answer = NULL;
 	
-	char * shortname	= request->client->shortname;  // maybe we can use this (the definition from clients.conf) one day
+	/* maybe we can use this (the definition from clients.conf) one day */
+	//char * shortname	= request->client->shortname;
 
 	/*
 	 * find the client ip or use the nas ip if it is prefered and available
 	 */
-	char *client_ip;
+	const char *client_ip;
 	log_info("getting client ip now.");
 
 	/* check for the nas ip */
@@ -610,11 +624,6 @@ static int lotp_auth(void *instance, REQUEST *request)
 	}
 	log_info("got client ip: %s.", (client_ip != NULL ? client_ip : ""));
 
-	struct MemoryStruct chunk;
-		chunk.memory		= NULL; /* we expect realloc(NULL, size) to work */
-		chunk.size 		= 0;    /* no data at this point */
-
-	curl_global_init(CURL_GLOBAL_ALL);
 
 	if (!request)
 	{
@@ -665,7 +674,6 @@ static int lotp_auth(void *instance, REQUEST *request)
 	}
 
 	log_info("Doing curl_easy_init");
-	
 	curl_handle = curl_easy_init();
 	if (curl_handle == NULL)
 	{
@@ -708,35 +716,19 @@ static int lotp_auth(void *instance, REQUEST *request)
 	}
 
 
-	all_status = sendRequest(curl_handle, lotp->validateurl, params,
-			(void *)&chunk, nosslhostnameverify, nosslcertverify, lotp);
-
-	if (all_status != 0)
-	{
-		if ( lotp->logpassword && lotp->loguser )
-		{
-			log_error("Error talking to linotpd server %s: %s. See CURLcode in curl.h for detailes (%i)",
-					params, errorBuffer, all_status);
-		}
+	answer = sendRequest(lotp, curl_handle, params);
+	if (answer == NULL) {
+		if (lotp->logpassword && lotp->loguser)
+			log_error("Error talking to linotpd server %s: %s.", params, errorBuffer);
 		else
-		{
-			log_error("Error talking to linotpd server %s: %s. See CURLcode in curl.h for detailes (%i)",
-					lotp->validateurl, errorBuffer, all_status);
-		}
+			log_error("Error talking to linotpd server %s: %s.", lotp->validateurl, errorBuffer);
+
 		// Here we return a FAIL, so that the Freeradius may ask another redundant module
 		returnValue = RLM_MODULE_FAIL;
 		goto cleanup;
 	}
 
-	/*
-	* Now, our chunk.memory points to a memory block that is chunk.size
-	* bytes big and contains the remote file.
-	* You should be aware of the fact that at this point we might have an
-	* allocated data block, and nothing has yet deallocated that data. So when
-	* you're done with it, you should free() it as a nice application.
-	*/
-	if(chunk.memory == NULL)
-	{
+	if(*answer == '\0') {
 		if ( lotp->logpassword && lotp->loguser )
 			log_error("No response returned for %s: %s", params, errorBuffer);
 		else
@@ -744,14 +736,13 @@ static int lotp_auth(void *instance, REQUEST *request)
 		goto cleanup;
 	}
 
-	log_info("LinOTPd on %s returned '%s'\n", lotp->validateurl, chunk.memory);
-	if (strncmp(chunk.memory, LINOTPD_REJECT, strlen(LINOTPD_REJECT)) == 0)
+	log_info("LinOTPd on %s returned '%s'\n", lotp->validateurl, answer);
+	if (strncmp(answer, LINOTPD_REJECT, strlen(LINOTPD_REJECT)) == 0)
 	{
-		if (strlen(chunk.memory) > strlen(LINOTPD_REJECT)) 
-		{
-			char * stat = "";
-			char * msg  = "";
-			split_stat_and_message(chunk.memory,&stat,&msg);
+		if (strlen(answer) > strlen(LINOTPD_REJECT)) {
+			char *stat = NULL;
+			char *msg  = NULL;
+			split_stat_and_message(answer, &stat, &msg);
 
 			/*
 			 *  Create the challenge, and add it to the reply.
@@ -771,56 +762,57 @@ static int lotp_auth(void *instance, REQUEST *request)
 
 			returnValue = RLM_MODULE_HANDLED;
 
-		}
-		else
-		{
+		} else {
 			if ( lotp->loguser )
 				log_error( "Rejecting fall-through '%s'\n", request->username->vp_strvalue);
 			else
 				log_error( "Rejecting fall-through\n");
+
 			returnValue	= RLM_MODULE_REJECT;
 		}
 		goto cleanup;
 	}
 
-	if (strcmp(chunk.memory, LINOTPD_FAIL) == 0)
-	{
-		if ( lotp->loguser )
-			log_error( "authentication for '%s' failed", request->username->vp_strvalue);
+	if (strcmp(answer, LINOTPD_FAIL) == 0) {
+		if (lotp->loguser)
+			log_error("authentication for '%s' failed", request->username->vp_strvalue);
 		else
-			log_error( "authentication for some user failed" );
+			log_error("authentication for some user failed" );
+
 		returnValue = RLM_MODULE_INVALID;
 		goto cleanup;
 	}
-	if (strcmp(chunk.memory, LINOTPD_OK) == 0)
+
+	if (strcmp(answer, LINOTPD_OK) == 0)
 	{
-		if ( lotp->loguser )
-			log_info( "user '%s' authenticated successfully", request->username->vp_strvalue);
+		if (lotp->loguser)
+			log_info("user '%s' authenticated successfully", request->username->vp_strvalue);
 		else
-			log_info( "some user authenticated successfully");
+			log_info("some user authenticated successfully");
+
 		returnValue = RLM_MODULE_OK;
 		goto cleanup;
 	}
- 	{//default
-		if ( lotp->loguser )
-			log_error( "Rejecting fall-through '%s'\n", request->username->vp_strvalue);
-		else
-			log_error( "Rejecting fall-through" );
- 		returnValue	= RLM_MODULE_REJECT;
- 		goto cleanup;
- 	}
 
- cleanup:
 
+ 	/*
+	 * default
+	 */
+	if (lotp->loguser)
+		log_error("Rejecting fall-through '%s'\n", request->username->vp_strvalue);
+	else
+		log_error("Rejecting fall-through");
+
+	returnValue	= RLM_MODULE_REJECT;
+
+cleanup:
  	/* we're done with libcurl, so clean it up */ 
-	curl_global_cleanup();
+	if (curl_handle != NULL)
+		curl_easy_cleanup(curl_handle);
 
 	free(params);
+	free(answer);
 
-	if (chunk.memory != NULL)
-	{
-		free(chunk.memory);
-	}
 	return returnValue;
 }
 
@@ -843,4 +835,3 @@ module_t rlm_linotp2 = {
 		NULL			   /* post-auth */
 	},
 };
-
