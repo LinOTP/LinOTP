@@ -3161,4 +3161,30 @@ def check_token_reporting(realm):
                     actions.append(unicode(stat))
     return actions
 
-#eof###########################################################################
+
+def supports_offline(realms, token):
+
+    """
+    Check if offline is allowed for the given token.
+
+    :param realms: the realms to be checked
+    :param token: the token to be checked
+
+    :returns bool
+    """
+
+    if realms is None or len(realms) == 0:
+        realms = ['/:no realm:/']
+
+    for realm in realms:
+        policy = getPolicy({"scope": "authentication", 'realm': realm})
+        action_value = getPolicyActionValue(policy, 'support_offline',
+                                            is_string=True)
+        if action_value:
+            token_types = action_value.split()
+            if token.getType() in token_types:
+                return True
+
+    return False
+
+# eof ##########################################################################

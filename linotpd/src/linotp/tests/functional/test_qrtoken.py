@@ -39,6 +39,7 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Hash import SHA256
 from Cryptodome.Hash import HMAC
 from Cryptodome.Cipher import AES
+from base64 import b64encode
 
 log = logging.getLogger(__name__)
 
@@ -97,6 +98,26 @@ class TestQRToken(TestController):
         self.assertTrue('"status": true' in response, response)
 
         return response
+
+# ------------------------------------------------------------------------------
+
+    def setOfflinePolicy(self, realm='*', name='qr_offline',
+                         action='support_offline=qr', active=True):
+
+        params = {
+            'name': name,
+            'user': '*',
+            'action': action,
+            'scope': 'authentication',
+            'realm': realm,
+            'time': '',
+            'client': '',
+            'active': active,
+            'session': self.session,
+            }
+
+        response = self.make_system_request("setPolicy", params=params)
+        self.assertTrue('"status": true' in response, response)
 
 # ------------------------------------------------------------------------------
 
@@ -1773,4 +1794,144 @@ class TestQRToken(TestController):
 
         self.assertTrue(value_value)
 
+# ------------------------------------------------------------------------------
+
+    def test_offline_info(self):
+
+        """ QRTOKEN: Checking if offline info is transmitted on validation """
+
+        user_token_id = self.execute_correct_pairing()
+        token = self.tokens[user_token_id]
+        serial = token['serial']
+
         # ----------------------------------------------------------------------
+
+        self.setPinPolicy(action='otppin=1, ')
+        self.assign_token_to_user(serial=serial, user_login='molière')
+
+        # ----------------------------------------------------------------------
+
+        params = {'user': 'molière', 'pass': 'molière',
+                  'data': '2000 dollars to that nigerian prince'}
+        response = self.make_validate_request('check', params)
+        response_dict = json.loads(response.body)
+
+        self.assertIn('detail', response_dict)
+        detail = response_dict.get('detail')
+
+        # ----------------------------------------------------------------------
+
+        self.assertIn('transactionid', detail)
+        self.assertIn('message', detail)
+
+        challenge_url = detail.get('message')
+
+        self.assertTrue(challenge_url.startswith('lseqr://'))
+
+        challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
+
+        # ----------------------------------------------------------------------
+
+        transaction_id = challenge["transaction_id"]
+
+        params = {'user': 'molière',
+                  'transactionid': transaction_id,
+                  'pass': sig,
+                  'use_offline': True}
+
+        response = self.make_validate_request('check', params)
+        response_dict = json.loads(response.body)
+
+        # ----------------------------------------------------------------------
+
+        self.assertIn('result', response_dict)
+        result = response_dict.get('result')
+
+        self.assertIn('value', result)
+        value = result.get('value')
+
+        self.assertTrue(value)
+
+        # even if we provided the use_offline parameter, the data
+        # should not be returned because the policy was not set
+
+        self.assertNotIn('detail', response_dict)
+
+        # ----------------------------------------------------------------------
+
+        # now we set the policy and do it again
+
+        self.setOfflinePolicy()
+
+        # ----------------------------------------------------------------------
+
+        params = {'user': 'molière', 'pass': 'molière',
+                  'data': '2000 dollars to that nigerian prince'}
+        response = self.make_validate_request('check', params)
+        response_dict = json.loads(response.body)
+
+        self.assertIn('detail', response_dict)
+        detail = response_dict.get('detail')
+
+        # ----------------------------------------------------------------------
+
+        self.assertIn('transactionid', detail)
+        self.assertIn('message', detail)
+
+        challenge_url = detail.get('message')
+
+        self.assertTrue(challenge_url.startswith('lseqr://'))
+
+        challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
+
+        # ----------------------------------------------------------------------
+
+        transaction_id = challenge["transaction_id"]
+
+        params = {'user': 'molière',
+                  'transactionid': transaction_id,
+                  'pass': sig,
+                  'use_offline': True}
+
+        response = self.make_validate_request('check', params)
+        response_dict = json.loads(response.body)
+
+        # ----------------------------------------------------------------------
+
+        self.assertIn('result', response_dict)
+        result = response_dict.get('result')
+
+        self.assertIn('value', result)
+        value = result.get('value')
+
+        # ----------------------------------------------------------------------
+
+        self.assertTrue(value)
+
+        self.assertIn('detail', response_dict)
+        detail = response_dict.get('detail')
+
+        self.assertIn('offline_info', detail)
+        offline_info = detail.get('offline_info')
+
+        self.assertIn('token_type', offline_info)
+        self.assertIn('serial', offline_info)
+        self.assertIn('token_info', offline_info)
+
+        token_type = offline_info.get('token_type')
+        serial = offline_info.get('serial')
+
+        self.assertEqual(token_type, 'qr')
+        self.assertEqual(serial, token['serial'])
+
+        token_info = offline_info.get('token_info')
+        self.assertIn('user_token_id', token_info)
+        self.assertIn('public_key', token_info)
+
+        received_user_token_id = token_info.get('user_token_id')
+        self.assertEqual(user_token_id, received_user_token_id)
+
+        public_key = token_info.get('public_key')
+        self.assertEqual(public_key, b64encode(self.public_key))
+
+# ------------------------------------------------------------------------------
