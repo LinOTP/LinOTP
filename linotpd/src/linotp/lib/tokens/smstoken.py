@@ -514,7 +514,7 @@ class SmsTokenClass(HmacTokenClass):
             start = challenge.get('timestamp')
             expiry = start + datetime.timedelta(seconds=blocking_time)
             # # check if there is already a challenge underway
-            if now >= start and now <= expiry:
+            if now <= expiry:
                 transid = challenge.getTransactionId()
                 message = 'sms with otp already submitted'
                 success = False
