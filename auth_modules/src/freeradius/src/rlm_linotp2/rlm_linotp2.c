@@ -66,8 +66,6 @@
 #define LINOTPD_FAIL			":-/"
 
 
-#define LINOTP_RECV_LIMIT		(1024*1024)
-
 
 /*****************************************************************************/
 
@@ -163,7 +161,7 @@ static int lotp_instantiate(CONF_SECTION *conf, void **instancep)
 	}
 
 	/* Check required options */
-	if (!lotp->validateurl )
+	if (!lotp->validateurl)
 	{
 		log_error("options are incomplete");
 		free(lotp);
@@ -291,6 +289,13 @@ static inline int valid_realm(const char *realm)
 /***********************************************
    Curl stuff
 ***********************************************/
+
+/* don't accept more than CURL_RECV_LIMIT per callback-event from CURL.
+ * this also limits the maximum amount of data we can receive from LinOTP
+ * to 2*CURL_RECV_LIMIT.
+ */
+#define CURL_RECV_LIMIT		(1024*1024)
+
 static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
 {
 	struct MemoryStruct *mem = (struct MemoryStruct *)data;
@@ -304,13 +309,13 @@ static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *da
 	realsize = size * nmemb;
 
 	/* we actually allow much less than our 'overflow check' above does */
-	if (realsize > LINOTP_RECV_LIMIT || mem->size > LINOTP_RECV_LIMIT)
+	if (realsize > CURL_RECV_LIMIT || mem->size > CURL_RECV_LIMIT)
 	{
 		log_error("The linotpd responded to our authentication request with more than 1MB of data! Something is really wrong here!");
 		return 0;
 	}
 
-	/* mem->size will be at most 2*LINOTP_RECV_LIMIT+1 */
+	/* mem->size will be at most 2*CURL_RECV_LIMIT+1 */
 
 	if (mem->memory == NULL)
 		mem->memory = malloc(realsize + 1);
@@ -486,6 +491,12 @@ char *sendRequest(lotp_inst_t *lotp,
 		log_error("Error setting option CURLOPT_WRITEDATA: %i", status);
 		return NULL;
  	}
+
+	status = curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1L);
+	if (status != CURLE_OK) {
+		log_error("Error setting option CURLOPT_NOSIGNAL: %i", status);
+		return NULL;
+	}
 
 	status = curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 	if (status != CURLE_OK) {
@@ -821,17 +832,17 @@ cleanup:
 module_t rlm_linotp2 = {
 	RLM_MODULE_INIT,
 	"LinOTP2",
-	RLM_TYPE_THREAD_UNSAFE,  /* type: reserved */
-	lotp_instantiate,      /* instantiation */
-	lotp_detach,           /* detach */
+	RLM_TYPE_THREAD_SAFE,	/* type: reserved */
+	lotp_instantiate,	/* instantiation */
+	lotp_detach,		/* detach */
 	{
-		lotp_auth,         /* authentication */
-		NULL,              /* authorization */
-		NULL,              /* preaccounting */
-		lotp_acct,         /* accounting */
-		NULL,              /* checksimul */
-		NULL,			   /* pre-proxy */
-		NULL,			   /* post-proxy */
-		NULL			   /* post-auth */
+		lotp_auth,	/* authentication */
+		NULL,		/* authorization */
+		NULL,		/* preaccounting */
+		lotp_acct,	/* accounting */
+		NULL,		/* checksimul */
+		NULL,		/* pre-proxy */
+		NULL,		/* post-proxy */
+		NULL		/* post-auth */
 	},
 };
