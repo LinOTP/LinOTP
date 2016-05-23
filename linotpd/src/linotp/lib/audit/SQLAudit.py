@@ -38,9 +38,6 @@ uses a public/private key for signing the log entries
 import datetime
 from sqlalchemy import schema, types, orm, and_, or_, asc, desc
 
-## TODO: the wildcard import is bad!!
-from migrate import *
-
 from M2Crypto import EVP, RSA
 from binascii import hexlify
 from binascii import unhexlify
