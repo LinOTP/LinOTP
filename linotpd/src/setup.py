@@ -72,7 +72,7 @@ setup(
     url='http://www.linotp.org',
     install_requires=[
         "Pylons>=0.9.7",
-        "WebOb<1.4",
+        "WebOb",
         "SQLAlchemy>=0.6",
         "docutils>=0.4",
         "simplejson>=2.0",
