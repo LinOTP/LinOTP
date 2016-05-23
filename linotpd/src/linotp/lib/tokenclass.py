@@ -514,8 +514,7 @@ class TokenClass(object):
         if challenge is not None:
             c_start_time = challenge.get('timestamp')
             c_now = datetime.datetime.now()
-            if (c_now < c_start_time + datetime.timedelta(seconds=validity)
-                and c_now > c_start_time):
+            if c_now < c_start_time + datetime.timedelta(seconds=validity):
                 ret = True
 
         return ret

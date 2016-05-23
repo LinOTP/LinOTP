@@ -298,7 +298,6 @@ class EmailTokenClass(HmacTokenClass):
 
         for challenge in challenges:
             challenge_timestamp = challenge.get('timestamp')
-            assert(challenge_timestamp <= now)
             block_timeout = challenge_timestamp + \
                              datetime.timedelta(seconds=blocking_time)
             # check if there is a challenge that is blocking
