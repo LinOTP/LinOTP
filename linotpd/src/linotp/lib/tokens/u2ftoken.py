@@ -87,6 +87,7 @@ class U2FTokenClass(TokenClass):
         TokenClass.__init__(self, aToken)
         self.setType(u"u2f")
         self.mode = ['challenge']  # This is a challenge response token
+        self.supports_offline_mode = True
 
         log.debug("Token object created")
 
@@ -1023,3 +1024,22 @@ class U2FTokenClass(TokenClass):
             raise Exception("Unsupported phase: %s", requested_phase)
 
         return response_detail
+
+    def getOfflineInfo(self):
+
+        type_ = self.getType()
+        serial = self.getSerial()
+        general_info = {'token_type': type_, 'serial': serial}
+
+        public_key = self.getFromTokenInfo('publicKey')
+        key_handle = self.getFromTokenInfo('keyHandle')
+        counter = self.getFromTokenInfo('counter')
+        app_id = self.getFromTokenInfo('appId')
+
+        token_info = {'token_info': {'public_key': public_key,
+                                     'key_handle': key_handle,
+                                     'counter': counter,
+                                     'app_id': app_id}}
+
+        general_info.update(token_info)
+        return general_info
