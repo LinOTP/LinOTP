@@ -1027,19 +1027,13 @@ class U2FTokenClass(TokenClass):
 
     def getOfflineInfo(self):
 
-        type_ = self.getType()
-        serial = self.getSerial()
-        general_info = {'token_type': type_, 'serial': serial}
-
         public_key = self.getFromTokenInfo('publicKey')
         key_handle = self.getFromTokenInfo('keyHandle')
         counter = self.getFromTokenInfo('counter')
         app_id = self.getFromTokenInfo('appId')
 
-        token_info = {'token_info': {'public_key': public_key,
-                                     'key_handle': key_handle,
-                                     'counter': counter,
-                                     'app_id': app_id}}
+        return {'public_key': public_key,
+                'key_handle': key_handle,
+                'counter': counter,
+                'app_id': app_id}
 
-        general_info.update(token_info)
-        return general_info

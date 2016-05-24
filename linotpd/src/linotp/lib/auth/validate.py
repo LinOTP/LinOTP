@@ -47,6 +47,7 @@ from linotp.lib.user import (User, getUserId, getUserInfo)
 from linotp.lib.util import modhex_decode
 
 from linotp.lib.context import request_context as context
+from linotp.lib.policy import supports_offline
 
 log = logging.getLogger(__name__)
 
@@ -296,7 +297,7 @@ class ValidationHandler(object):
         return
 
     def check_status(self, transid=None, user=None, serial=None,
-                     password=None):
+                     password=None, use_offline=False):
         """
         check for open transactions - for polling support
 
@@ -304,6 +305,7 @@ class ValidationHandler(object):
         :param user: the token owner user
         :param serial: or the serial we are searching for
         :param password: the pin/password for authorization the request
+        :param use_offline: on success the offline info is returned
 
         :return: tuple of success and detail dict
         """
@@ -353,15 +355,32 @@ class ValidationHandler(object):
             ret = True
 
             trans_dict = {}
-            trans_dict['transactionid'] = ch.transid
+            token_dict = {'serial': serial, 'type': tokens[0].type}
+
             trans_dict['received_count'] = ch.received_count
             trans_dict['received_tan'] = ch.received_tan
             trans_dict['valid_tan'] = ch.valid_tan
-            trans_dict['linotp_tokenserial'] = serial
-            trans_dict['linotp_tokentype'] = tokens[0].type
             trans_dict['message'] = ch.challenge
 
-            transactions[serial] = trans_dict
+            # 1. check if token supports offline at all
+            supports_offline_at_all = token.supports_offline_mode
+
+            # 2. check if policy allows to use offline authentication
+            if user is not None and user.login and user.realm:
+                realms = [user.realm]
+            else:
+                realms = token.getRealms()
+
+            offline_is_allowed = supports_offline(realms, token)
+
+            if ch.valid_tan and \
+               supports_offline_at_all and \
+               offline_is_allowed and \
+               use_offline:
+                token_dict['offline_info'] = tokens[0].getOfflineInfo()
+
+            transactions['token'] = token_dict
+            transactions[ch.transid] = trans_dict
 
         if transactions:
             reply['transactions'] = transactions

@@ -1911,27 +1911,27 @@ class TestQRToken(TestController):
         self.assertIn('detail', response_dict)
         detail = response_dict.get('detail')
 
-        self.assertIn('offline_info', detail)
-        offline_info = detail.get('offline_info')
+        self.assertIn('offline', detail)
+        offline = detail.get('offline')
 
-        self.assertIn('token_type', offline_info)
-        self.assertIn('serial', offline_info)
-        self.assertIn('token_info', offline_info)
+        self.assertIn('type', offline)
+        self.assertIn('serial', offline)
+        self.assertIn('offline_info', offline)
 
-        token_type = offline_info.get('token_type')
-        serial = offline_info.get('serial')
+        token_type = offline.get('type')
+        serial = offline.get('serial')
 
         self.assertEqual(token_type, 'qr')
         self.assertEqual(serial, token['serial'])
 
-        token_info = offline_info.get('token_info')
-        self.assertIn('user_token_id', token_info)
-        self.assertIn('public_key', token_info)
+        offline_info = offline.get('offline_info')
+        self.assertIn('user_token_id', offline_info)
+        self.assertIn('public_key', offline_info)
 
-        received_user_token_id = token_info.get('user_token_id')
+        received_user_token_id = offline_info.get('user_token_id')
         self.assertEqual(user_token_id, received_user_token_id)
 
-        public_key = token_info.get('public_key')
+        public_key = offline_info.get('public_key')
         self.assertEqual(public_key, b64encode(self.public_key))
 
 # ------------------------------------------------------------------------------

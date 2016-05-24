@@ -160,7 +160,7 @@ class FinishTokens(object):
             supports_offline_at_all = token.supports_offline_mode
 
             # 2. check if policy allows to use offline authentication
-            if user and user.login and user.realm:
+            if user is not None and user.login and user.realm:
                 realms = [user.realm]
             else:
                 realms = token.getRealms()
@@ -178,7 +178,11 @@ class FinishTokens(object):
                 offline_info = token.getOfflineInfo()
                 if detail is None:
                     detail = {}
-                detail.update({'offline_info': offline_info})
+
+                offline = {'serial': token.serial, 'type': token.type}
+                offline['offline_info'] = offline_info
+
+                detail.update({'offline': offline})
 
             return (True, detail, action_detail)
 

@@ -845,18 +845,11 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def getOfflineInfo(self):
 
-        type_ = self.getType()
-        serial = self.getSerial()
-        general_info = {'token_type': type_, 'serial': serial}
-
         public_key = self.getFromTokenInfo('user_public_key')
         user_token_id = self.getFromTokenInfo('user_token_id')
 
-        token_info = {'token_info': {'public_key': public_key,
-                                     'user_token_id': user_token_id}}
-
-        general_info.update(token_info)
-        return general_info
+        return {'public_key': public_key,
+                'user_token_id': user_token_id}
 
     # --------------------------------------------------------------------------
 

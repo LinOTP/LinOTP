@@ -1033,20 +1033,20 @@ class TestU2FController(TestController):
         self.assertIn('detail', response)
         detail = response.get('detail')
 
-        self.assertIn('offline_info', detail)
-        offline_info = detail.get('offline_info')
+        self.assertIn('offline', detail)
+        offline = detail.get('offline')
 
-        self.assertIn('token_type', offline_info)
-        token_type = offline_info.get('token_type')
-        self.assertIn('serial', offline_info)
-        serial = offline_info.get('serial')
+        self.assertIn('offline_info', offline)
+        token_type = offline.get('token_type')
+        self.assertIn('serial', offline)
+        serial = offline.get('serial')
 
         self.assertEqual(serial, self.serial)
 
         self.assertEqual(token_type, 'u2f')
 
-        self.assertIn('token_info', offline_info)
-        token_info = offline_info.get('token_info')
+        self.assertIn('offline_info', offline)
+        offline_info = offline.get('offline_info')
 
         # prepare info for comparison
 
@@ -1058,18 +1058,18 @@ class TestU2FController(TestController):
         public_key = str(ecc_key.pub().get_der())[-65:]
         public_key_b64 = base64.urlsafe_b64encode(public_key)
 
-        self.assertIn('key_handle', token_info)
-        key_handle_rec = token_info.get('key_handle')
+        self.assertIn('key_handle', offline_info)
+        key_handle_rec = offline_info.get('key_handle')
         self.assertEqual(key_handle_b64, key_handle_rec)
 
-        self.assertIn('public_key', token_info)
-        public_key_rec = token_info.get('public_key')
+        self.assertIn('public_key', offline_info)
+        public_key_rec = offline_info.get('public_key')
         self.assertEqual(public_key_b64, public_key_rec)
 
-        self.assertIn('app_id', token_info)
-        app_id = token_info.get('app_id')
+        self.assertIn('app_id', offline_info)
+        app_id = offline_info.get('app_id')
         self.assertEqual(app_id, self.origin)
 
-        self.assertIn('counter', token_info)
-        counter = token_info.get('counter')
+        self.assertIn('counter', offline_info)
+        counter = offline_info.get('counter')
         self.assertEqual(counter, self.counter)

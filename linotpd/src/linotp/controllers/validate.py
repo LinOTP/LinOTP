@@ -294,9 +294,12 @@ class ValidateController(BaseController):
             if not passw:
                 raise ParameterError(_('Missing required parameter "pass"!'))
 
+            use_offline = param.get('use_offline', False)
+
             va = ValidationHandler()
             ok, opt = va.check_status(transid=transid, user=user,
-                                      serial=serial, password=passw)
+                                      serial=serial, password=passw,
+                                      use_offline=use_offline)
 
             c.audit['success'] = ok
             c.audit['info'] = unicode(opt)
@@ -761,7 +764,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.exception("[smspin] validate/smspin failed: %r" % exx)
-            # If an internal error occurs or the SMS gateway did not send 
+            # If an internal error occurs or the SMS gateway did not send
             # the SMS, we write this to the detail info.
             c.audit['info'] = unicode(exx)
             Session.rollback()
