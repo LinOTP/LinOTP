@@ -239,6 +239,7 @@ var g = {};
     g.realm_to_edit = "";
     g.resolvers_in_realm_to_edit = "";
     g.realms_of_token = new Array();
+    g.current_resolver_name = "";
 
 ERROR = "error";
 
@@ -2857,12 +2858,9 @@ function resolver_edit_type(){
     }
 }
 
-
 function resolver_new_type(){
-
     check_license();
     $dialog_ask_new_resolvertype.dialog('open');
-
 }
 
 function add_token_config()
@@ -3713,8 +3711,15 @@ $(document).ready(function(){
             'Save': { click: function(){
                     // Save the LDAP configuration
                     if ($("#form_ldapconfig").valid()) {
-                        save_ldap_config();
-                        //$(this).dialog('close');
+                        var defer = $.Deferred();
+
+                        // if it is save to save the provider, do it!
+                        defer.done(function(){
+                            save_ldap_config();
+                        });
+
+                        var r_name = $('#ldap_resolvername').val();
+                        check_for_resolver_name_change(defer, r_name);
                     }
                 },
                 id: "button_ldap_resolver_save",
@@ -3820,11 +3825,19 @@ $(document).ready(function(){
                 text: "Cancel"
                 },
             'Save': { click: function(){
-                    // Save the LDAP configuration
+                    // Save the HTTP configuration
                     if ($("#form_httpconfig").valid()) {
-                        save_http_config();
-                        //$(this).dialog('close');
+                        var defer = $.Deferred();
+
+                        // if it is save to save the provider, do it!
+                        defer.done(function(){
+                            save_http_config();
+                        });
+
+                        var r_name = $('#http_resolvername').val();
+                        check_for_resolver_name_change(defer, r_name);
                     }
+
                 },
                 id: "button_http_resolver_save",
                 text: "Save"
@@ -3884,11 +3897,18 @@ $(document).ready(function(){
                 text: "Cancel"
             },
             'Save': {click: function(){
-                // Save the SQL configuration
-                if ($("#form_sqlconfig").valid()) {
-                    save_sql_config();
-                    //$(this).dialog('close');
-                }
+                    // Save the SQL configuration
+                    if ($("#form_sqlconfig").valid()) {
+                        var defer = $.Deferred();
+
+                        // if it is save to save the provider, do it!
+                        defer.done(function(){
+                            save_sql_config();
+                        });
+
+                        var r_name = $('#sql_resolvername').val();
+                        check_for_resolver_name_change(defer, r_name);
+                    }
                 },
                 id: "button_resolver_sql_save",
                 text: "Save"
@@ -3957,11 +3977,18 @@ $(document).ready(function(){
                 text: "Cancel"
                 },
             'Save': {click: function(){
-                // Save the File configuration
-                if ($("#form_fileconfig").valid()) {
-                    save_file_config();
-                    //$(this).dialog('close');
-                }
+                    // Save the File configuration
+                    if ($("#form_fileconfig").valid()) {
+                        var defer = $.Deferred();
+
+                        // if it is save to save the provider, do it!
+                        defer.done(function(){
+                            save_file_config();
+                        });
+
+                        var r_name = $('#file_resolvername').val();
+                        check_for_resolver_name_change(defer, r_name);
+                    }
                 },
                 id: "button_resolver_file_save",
                 text: "Save"
@@ -4825,6 +4852,9 @@ function resolver_file(name){
             }
         }
     };
+
+    g.current_resolver_name = name;
+
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver',{'resolver' : name}, function(xhdr, textStatus) {
@@ -5024,6 +5054,7 @@ function resolver_ldap(name){
         }
     };
 
+    g.current_resolver_name = name;
 
     if (name) {
         // load the config of the resolver "name".
@@ -5166,6 +5197,7 @@ function resolver_http(name){
         }
     };
 
+    g.current_resolver_name = name;
 
     if (name) {
         // load the config of the resolver "name".
@@ -5233,10 +5265,7 @@ function resolver_http(name){
             }
         }
     });
-
 }
-
-
 
 function resolver_set_sql(obj) {
 
@@ -5276,6 +5305,8 @@ function resolver_sql(name){
             }
         }
     };
+
+    g.current_resolver_name = name;
 
     $('#progress_test_sql').hide();
 
@@ -5334,6 +5365,51 @@ function resolver_sql(name){
             }
         }
     });
+}
+
+function check_for_resolver_name_change(defer, new_resolver_name){
+    if(g.current_resolver_name !== new_resolver_name){
+        var resolvers = get_resolvers();
+
+        if($.inArray(new_resolver_name, resolvers) !== -1){
+            var text = '<div style="text-align: center"><br/>' +
+                i18n.gettext('A resolver with name') +
+                ' ' + new_resolver_name + ' ' +
+                i18n.gettext('already exists.') + '<br/><br/>' +
+                i18n.gettext('Do you want to overwrite the existing definition?') +
+                '</div>';
+
+            $(text).dialog({
+                title: i18n.gettext("Overwrite resolver definition"),
+                width: 500,
+                modal: true,
+                buttons: [
+                    {
+                        text: i18n.gettext("yes"),
+                        click: function() {
+                            defer.resolve("true");
+                            $( this ).dialog( "close" );
+                        }
+                    },
+                    {
+                        text: i18n.gettext("no"),
+                        click: function() {
+                            defer.reject("false");
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                ]
+            });
+        }
+        else {
+            defer.resolve("true");
+        }
+    }
+    else{
+        defer.resolve("true");
+    }
+
+    return defer.promise();
 }
 
 function split( val ) {
