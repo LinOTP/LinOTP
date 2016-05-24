@@ -347,14 +347,17 @@ class BaseController(WSGIController):
                 if not license_str:
                     log.error("empty license file: %s" % filename)
                 else:
-                    import linotp.lib.support
-                    res, msg = linotp.lib.support.setSupportLicense(license_str)
-                    if res is False:
-                        log.error("failed to load license: %s: %s"
-                                  % (license_str, msg))
+                    with request_context_safety():
+                        request_context['translate'] = translate
 
-                    else:
-                        log.info("license successfully loaded")
+                        import linotp.lib.support
+                        res, msg = linotp.lib.support.setSupportLicense(license_str)
+                        if res is False:
+                            log.error("failed to load license: %s: %s"
+                                      % (license_str, msg))
+
+                        else:
+                            log.info("license successfully loaded")
 
         return
 
