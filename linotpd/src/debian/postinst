@@ -186,12 +186,9 @@ evaluate_answers() {
 	db_get linotp/appliance || true
 	APPLIANCE_INSTALL=$RET
 
-	db_get linotp/generate_enckey
-	ENCKEY=$RET
-	db_set linotp/generate_enckey false
 	db_get linotp/apache/activate
 	APACHE=$RET
-	echo "LinOTP2: I got these keys: $ENCKEY, $APACHE"
+	echo "LinOTP2: I got this key: $APACHE"
 
 	if [ "$APACHE" = "true" ]; then
 		db_get linotp/apache/admin_password
@@ -319,11 +316,6 @@ configure)
 		TOKENDB="MySQL"
 		# We can get a certificate from UCS!
 		APACHE_SSL_CREATE="false"
-		if [ -f $ENCKEYFILE ]; then
-			ENCKEY="false"
-		else
-			ENCKEY="true"
-		fi
 		# local database
 		DBHOST="localhost"
 		DBNAME="LinOTP2"
@@ -347,7 +339,7 @@ configure)
 	# We are done with asking questions
 	#
 
-	if [  "$ENCKEY" = "true" ]; then
+	if [ "${DOING_NEW_INSTALLATION}" = "true" ] &&  [ ! -f ${ENCKEYFILE} ]; then
 		create_enc_key
 	fi
 
