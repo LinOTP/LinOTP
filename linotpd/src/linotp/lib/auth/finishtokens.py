@@ -23,13 +23,12 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
+from linotp.lib.challenges import Challenges
+from linotp.lib.context import request_context as context
+from linotp.lib.error import UserError
+from linotp.lib.policy import supports_offline
 import logging
 
-from linotp.lib.challenges import Challenges
-from linotp.lib.error import UserError
-
-from linotp.lib.context import request_context as context
-from linotp.lib.policy import supports_offline
 
 log = logging.getLogger(__name__)
 
@@ -179,7 +178,7 @@ class FinishTokens(object):
                 if detail is None:
                     detail = {}
 
-                offline = {'serial': token.serial, 'type': token.type}
+                offline = {'serial': token.getSerial(), 'type': token.type}
                 offline['offline_info'] = offline_info
 
                 detail.update({'offline': offline})
