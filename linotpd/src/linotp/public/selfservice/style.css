@@ -208,7 +208,8 @@ label.error {
 	margin: 5px 0;
 }
 
-.clearfix:after {
+.clearfix:after,
+#header:after {
 	content: ".";
 	clear: both;
 	display: block;
