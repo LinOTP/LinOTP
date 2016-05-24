@@ -27,7 +27,6 @@
 
 
 import logging
-import warnings
 import re
 import copy
 
@@ -46,16 +45,16 @@ required = True
 optional = False
 
 
-__all__ = [ 'defineResolver', 'parse_resolver_spec',
-            'getResolverList', 'getResolverInfo', 'deleteResolver',
-            'getResolverObject', 'initResolvers', 'closeResolvers',
-            'setupResolvers'
-            ]
+__all__ = ['defineResolver', 'parse_resolver_spec',
+           'getResolverList', 'getResolverInfo', 'deleteResolver',
+           'getResolverObject', 'initResolvers', 'closeResolvers',
+           'setupResolvers'
+          ]
 
 log = logging.getLogger(__name__)
 
 
-class Resolver():
+class Resolver(object):
     """
     helper class to define a new resolver
     """
@@ -79,18 +78,19 @@ class Resolver():
         # This only leads to problems.
         nameExp = "^[A-Za-z0-9_\-]+$"
         if re.match(nameExp, self.name) is None:
-            e = Exception("non conformant characters in resolver name: " + self.name + " (not in " + nameExp + ")")
-            raise e
+            exx = Exception("non conformant characters in resolver name: %s "
+                          " (not in %s)", self.name, nameExp)
+            raise exx
 
         # handle types
         self.type = getParam(param, 'type', required)
         resolvertypes = get_resolver_types()
         if self.type not in resolvertypes:
-            e = Exception("resolver type : %s not in %s" %
+            exx = Exception("resolver type : %s not in %s" %
                           (self.type, unicode(resolvertypes)))
-            raise e
+            raise exx
 
-        resolver_config = get_resolver_classConfig(self.type)
+        resolver_config = get_resolver_class_config(self.type)
         if self.type in resolver_config:
             config = resolver_config.get(self.type).get('config', {})
         else:
@@ -259,7 +259,8 @@ def getResolverList(filter_resolver_type=None):
                 r["entry"] = entry
                 r["type"] = typ
 
-                if (filter_resolver_type is None) or (filter_resolver_type and filter_resolver_type == typ):
+                if ((filter_resolver_type is None) or
+                        (filter_resolver_type and filter_resolver_type == typ)):
                     Resolvers[resolver[3]] = r
                 # Dont check the other resolver types
                 break
@@ -290,7 +291,7 @@ def getResolverInfo(resolvername):
         for typ in resolvertypes:
 
             # get the typed values of the descriptor!
-            resolver_conf = get_resolver_classConfig(typ)
+            resolver_conf = get_resolver_class_config(typ)
             if typ in resolver_conf:
                 descr = resolver_conf.get(typ).get('config', {})
             else:
@@ -321,7 +322,7 @@ def getResolverInfo(resolvername):
                             except:
                                 log.info("Decryption of resolver passwd failed: compatibility issue?")
 
-                resolver_dict[ resolver[2] ] = value
+                resolver_dict[resolver[2]] = value
                 # Dont check the other resolver types
 
                 break
@@ -353,7 +354,7 @@ def deleteResolver(resolvername):
         if lSplit > 3:
             rConf = rest[lSplit - 1]
             if rConf == resolvername:
-                if rest[0] == "linotp" or rest[0] == "enclinotp" :
+                if rest[0] == "linotp" or rest[0] == "enclinotp":
                     typ = rest[1]
                     if typ in resolvertypes:
                         delEntries.append(entry)
@@ -483,7 +484,7 @@ def closeResolvers():
     hook to close the resolvers at the end of the request
     """
     try:
-        for resolver in context.get('resolvers_loaded').values():
+        for resolver in context.get('resolvers_loaded', {}).values():
             if hasattr(resolver, 'close'):
                 resolver.close()
     except Exception as exx:
@@ -493,17 +494,7 @@ def closeResolvers():
 def getResolverClassName(resolver_type, resolver_name):
 
     res = ""
-    for clazz_name, clazz_type in context.resolver_types.items():
-        if clazz_type == resolver_type:
-            res = "%s.%s" % (clazz_name, resolver_name)
-            break
-
-    return res
-
-def getResolverClassName(resolver_type, resolver_name):
-
-    res = ""
-    for clazz_name, clazz_type in context.get('resolver_types').items():
+    for clazz_name, clazz_type in context.get('resolver_types', {}).items():
         if clazz_type == resolver_type:
             res = "%s.%s" % (clazz_name, resolver_name)
             break
@@ -545,7 +536,7 @@ def get_resolver_types():
     return context.get('resolver_types').values()
 
 
-def get_resolver_classConfig(claszzesType):
+def get_resolver_class_config(claszzesType):
     """
     get the configuration description of a resolver
 
@@ -577,7 +568,7 @@ def parse_resolver_spec(resolver_spec):
 
     """
 
-    cls_identifier, __, config_identifier = resolver_spec.rpartition('.')
+    cls_identifier, _sep, config_identifier = resolver_spec.rpartition('.')
     return cls_identifier, config_identifier
 
 # eof #########################################################################
