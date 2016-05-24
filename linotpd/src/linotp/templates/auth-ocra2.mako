@@ -60,8 +60,8 @@ ${_('To verify your result enter the OTP value into the form below.')}
                 <td>${_('OTP PIN')}</td>
                 <td><input type='text' id='pin' name="pass" maxlength="200"  class="required"></td>
                 </tr><tr>
-                    <td>${_('challenge')}</td>
-                    <td><textarea cols="40" rows="6" id='challenge' class="required"> </textarea></td>
+                    <td>${_('message / data')}</td>
+                    <td><textarea cols="40" rows="6" id='challenge' name="data" class="required"> </textarea></td>
                 </tr><tr>
                 <td> </td>
                         <td>
@@ -69,9 +69,8 @@ ${_('To verify your result enter the OTP value into the form below.')}
 
 
                 </tr></table>
-                </frameset>
-                </form>
-
+            </frameset>
+        </form>
         </td><td rowspan="3">
         <div id='display'> </div>
         </td>
