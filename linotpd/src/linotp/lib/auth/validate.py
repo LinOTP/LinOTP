@@ -76,7 +76,7 @@ def check_pin(token, passw, user=None, options=None):
         if 'pin_match' not in options:
             options['pin_match'] = {}
 
-        hashed_passw = sha256(passw).hexdigest()
+        hashed_passw = sha256(passw.encode('utf-8')).hexdigest()
 
         # if password already found, we can return result again
         if hashed_passw in options['pin_match']:
@@ -102,7 +102,7 @@ def check_pin(token, passw, user=None, options=None):
                 log.info("user %r failed to authenticate." % uid)
 
         # we register our result
-        key = sha256(passw).hexdigest()
+        key = sha256(passw.encode('utf-8')).hexdigest()
         options['pin_match'][key] = res
         # and register the success, to shorten lookups after
         # already one positive was found
