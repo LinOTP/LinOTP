@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
@@ -26,9 +25,10 @@
  *    Support: www.lsexperts.de
  *
 </%doc>
-<html>
-<head>
-<title>LinOTP OCRA Auth testing</title>
+
+<%block name="title">
+        <title>LinOTP OCRA Auth testing</title>
+</%block>
 
 <%inherit file="auth-base.mako"/>
 
@@ -97,4 +97,3 @@ ${_('Enter your username, the OTP PIN and the OTP value.')}
 
 
 </div>  <!-- end of main-->
-
