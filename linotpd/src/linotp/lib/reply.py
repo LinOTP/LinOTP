@@ -595,7 +595,7 @@ def create_png(data, alt=None):
     return o_data
 
 
-def create_img(data, width=0, alt=None):
+def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
     '''
         _create_img - create the qr image data
 
@@ -620,12 +620,12 @@ def create_img(data, width=0, alt=None):
         val = urllib.urlencode({'alt':alt})
         alt_str = " alt=%r " % (val[len('alt='):])
 
-    ret_img = '<img %s  %s  src="data:image/png;base64,%s"/>' % (alt_str, width_str, data_uri)
+    ret_img = '<img id="%s" %s  %s  src="data:image/png;base64,%s"/>' % (img_id, alt_str, width_str, data_uri)
 
     return ret_img
 
 
-def create_html(data, width=0, alt=None):
+def create_html(data, width=0, alt=None, list_id="challenge_data"):
     '''
         _create_html - create the qr image data embeded in html tag
 
@@ -646,15 +646,15 @@ def create_html(data, width=0, alt=None):
         elif type(alt) == dict:
             alta = []
             for k in alt.keys():
-                alta.append('<li> %s:%s </li>' % (k, alt.get(k)))
-            alt_str = '<ul>%s</ul>' % " ".join(alta)
+                alta.append('<li> %s: <span class="%s">%s</span> </li>' % (k, k, alt.get(k)))
+            alt_str = '<ul id="%s">%s</ul>' % ( list_id, " ".join(alta))
         elif type(alt) == list:
             alta = []
             for k in alt:
                 alta.append('<li> %s </li>' % (k))
 
 
-    ret_html = '<html><body>%s%s</body></html>' % (img , alt_str)
+    ret_html = '<html><body><div>%s%s</div></body></html>' % (img , alt_str)
 
     return ret_html
 
