@@ -25,29 +25,26 @@
 #
 """ validation processing logic"""
 
-import logging
-
-import linotp
-import linotp.lib.policy
-
-from pylons import config
 from hashlib import sha256
-
+import linotp
 from linotp.lib.auth.finishtokens import FinishTokens
 from linotp.lib.auth.request import HttpRequest
 from linotp.lib.auth.request import RadiusRequest
 from linotp.lib.challenges import Challenges
+from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError
+from linotp.lib.policy import supports_offline
+import linotp.lib.policy
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.resolver import getResolverObject
 from linotp.lib.token import TokenHandler
 from linotp.lib.token import getTokens4UserOrSerial
-
 from linotp.lib.user import (User, getUserId, getUserInfo)
 from linotp.lib.util import modhex_decode
+import logging
 
-from linotp.lib.context import request_context as context
-from linotp.lib.policy import supports_offline
+from pylons import config
+
 
 log = logging.getLogger(__name__)
 
@@ -259,7 +256,8 @@ class ValidationHandler(object):
             None, serial)
 
         if passw is None:
-            # other than zero or one token should not happen, as serial is unique
+            # other than zero or one token should not happen, as serial is
+            # unique
             if len(tokenList) == 1:
                 theToken = tokenList[0]
                 tok = theToken.token
@@ -345,8 +343,12 @@ class ValidationHandler(object):
                 continue
             involved_tokens.extend(tokens)
 
+            # as one challenge belongs exactly to only one token,
+            # we take this one as the token
+            token = tokens[0]
+
             if 1 not in pin_policies:
-                pin_match = check_pin(tokens[0], password, user=user,
+                pin_match = check_pin(token, password, user=user,
                                       options=None)
                 if not pin_match:
                     ret = False
@@ -355,7 +357,7 @@ class ValidationHandler(object):
             ret = True
 
             trans_dict = {}
-            token_dict = {'serial': serial, 'type': tokens[0].type}
+            token_dict = {'serial': serial, 'type': token.type}
 
             trans_dict['received_count'] = ch.received_count
             trans_dict['received_tan'] = ch.received_tan
@@ -377,7 +379,7 @@ class ValidationHandler(object):
                supports_offline_at_all and \
                offline_is_allowed and \
                use_offline:
-                token_dict['offline_info'] = tokens[0].getOfflineInfo()
+                token_dict['offline_info'] = token.getOfflineInfo()
 
             transactions['token'] = token_dict
             transactions[ch.transid] = trans_dict
@@ -415,10 +417,10 @@ class ValidationHandler(object):
                 user_exists = True
             except:
                 pass_on = context.get('Config').get(
-                                            'linotp.PassOnUserNotFound', False)
+                    'linotp.PassOnUserNotFound', False)
                 if pass_on and 'true' == pass_on.lower():
                     audit['action_detail'] = (
-                                        'authenticated by PassOnUserNotFound')
+                        'authenticated by PassOnUserNotFound')
                     return (True, opt)
                 else:
                     audit['action_detail'] = 'User not found'
@@ -454,14 +456,14 @@ class ValidationHandler(object):
                 return (True, opt)
 
             auto_enroll_return, opt = th.auto_enrollToken(passw, user,
-                                                            options=options)
+                                                          options=options)
             if auto_enroll_return is True:
                 # we always have to return a false, as
                 # we have a challenge tiggered
                 return (False, opt)
 
             pass_on = context.get('Config').get('linotp.PassOnUserNoToken',
-                                                         False)
+                                                False)
             if pass_on and 'true' == pass_on.lower():
                 audit['action_detail'] = 'authenticated by PassOnUserNoToken'
                 return (True, opt)
@@ -519,13 +521,15 @@ class ValidationHandler(object):
 
         options['user'] = user
 
-        # if there has been one token in challenge mode, we only handle challenges
+        # if there has been one token in challenge mode, we only handle
+        # challenges
 
         # if we got a validation against a sub_challenge, we extend this to
         # be a validation to all challenges of the transaction id
         import copy
         check_options = copy.deepcopy(options)
-        state = check_options.get('state', check_options.get('transactionid', ''))
+        state = check_options.get(
+            'state', check_options.get('transactionid', ''))
         if state and '.' in state:
             transid = state.split('.')[0]
             if 'state' in check_options:
@@ -583,7 +587,8 @@ class ValidationHandler(object):
                 continue
 
             if not token.check_auth_counter():
-                audit_entry['action_detail'] = "Authentication counter exceeded"
+                audit_entry[
+                    'action_detail'] = "Authentication counter exceeded"
                 token.set_count_auth(token.get_count_auth() + 1)
                 continue
 
@@ -594,7 +599,8 @@ class ValidationHandler(object):
 
             # start the token validation
             try:
-                # TODO: assign their outstanding challenges for later processing
+                # TODO: assign their outstanding challenges for later
+                # processing
                 (_ex_challenges,
                  challenges) = Challenges.get_challenges(token,
                                                          options=check_options,
@@ -692,7 +698,7 @@ class ValidationHandler(object):
 
         if len(tokenList) == 0:
             audit['action_detail'] = (
-                                'The serial %s could not be found!' % serialnum)
+                'The serial %s could not be found!' % serialnum)
             return res, opt
 
         # FIXME if the Token has set a PIN and the User does not want to enter

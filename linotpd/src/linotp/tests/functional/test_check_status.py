@@ -29,11 +29,11 @@
 Test for check_status, which could be used to support polling
 """
 
-import json
-import logging
 import datetime
-
+import json
 from linotp.tests import TestController
+import logging
+
 
 log = logging.getLogger(__name__)
 
@@ -129,7 +129,7 @@ class TestCheckStatus(TestController):
         response = self.make_validate_request('check_status', params)
         self.assertTrue('"received_tan": false' in response, response)
         self.assertTrue('"valid_tan": false' in response, response)
-        self.assertTrue('"received_count": 0, ' in response, response)
+        self.assertTrue('"received_count": 0' in response, response)
 
         # invalidate request
         params = {'user': 'passthru_user1',
@@ -146,7 +146,7 @@ class TestCheckStatus(TestController):
         response = self.make_validate_request('check_status', params)
         self.assertTrue('"received_tan": true' in response, response)
         self.assertTrue('"valid_tan": false' in response, response)
-        self.assertTrue('"received_count": 1, ' in response, response)
+        self.assertTrue('"received_count": 1' in response, response)
 
         # validate request
         params = {'user': 'passthru_user1',
@@ -164,7 +164,7 @@ class TestCheckStatus(TestController):
 
         self.assertTrue('"received_tan": true' in response, response)
         self.assertTrue('"valid_tan": true' in response, response)
-        self.assertTrue('"received_count": 2, ' in response, response)
+        self.assertTrue('"received_count": 2' in response, response)
 
         # verify that the challenge expires
         param = {'DefaultChallengeValidityTime': '1'}
@@ -247,7 +247,7 @@ class TestCheckStatus(TestController):
         response = self.make_validate_request('check_status', params)
         self.assertTrue('"received_tan": false' in response, response)
         self.assertTrue('"valid_tan": false' in response, response)
-        self.assertTrue('"received_count": 0, ' in response, response)
+        self.assertTrue('"received_count": 0' in response, response)
 
         self.assertTrue('"received_tan": true' not in response, response)
         self.assertTrue('"valid_tan": true' not in response, response)
@@ -267,10 +267,10 @@ class TestCheckStatus(TestController):
         response = self.make_validate_request('check_status', params)
         self.assertTrue('"received_tan": true' in response, response)
         self.assertTrue('"valid_tan": false' in response, response)
-        self.assertTrue('"received_count": 1, ' in response, response)
+        self.assertTrue('"received_count": 1' in response, response)
 
         self.assertTrue('"valid_tan": true' not in response, response)
-        self.assertTrue('"received_count": 0, ' not in response, response)
+        self.assertTrue('"received_count": 0' not in response, response)
         self.assertTrue('"received_tan": false' not in response, response)
 
         # validate request
@@ -290,8 +290,8 @@ class TestCheckStatus(TestController):
         self.assertTrue('"received_tan": true' in response, response)
         self.assertTrue('"valid_tan": true' in response, response)
         self.assertTrue('"valid_tan": false' in response, response)
-        self.assertTrue('"received_count": 2, ' in response, response)
-        self.assertTrue('"received_count": 1, ' in response, response)
+        self.assertTrue('"received_count": 2' in response, response)
+        self.assertTrue('"received_count": 1' in response, response)
 
         # verify that the challenge expires
         param = {'DefaultChallengeValidityTime': '1'}
