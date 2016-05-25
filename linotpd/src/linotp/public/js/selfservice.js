@@ -146,6 +146,17 @@ function get_selfservice_session() {
     return session;
 }
 
+function clientUrlFetchSync(myUrl, params) {
+    var resp = $.ajax({
+        url : myUrl,
+        data : params,
+        async : false,
+        type : 'POST',
+    }).responseText;
+
+    return resp;
+}
+
 function run_sync_request(url,params){
     /*
      * run_sync_request - to submit a syncronous  http request
@@ -354,6 +365,14 @@ function enroll_token(params) {
                 catch (e){
                     details = details + '<li> otpkey: ' + escape(detail.otpkey) + '</li>';
                 }
+            }
+            if (detail.hasOwnProperty('lse_qr_url')) {
+                details = details + '<li>' + detail.lse_qr_url.description + '</li>';
+                if (detail.lse_qr_url.hasOwnProperty('img')) {
+                   details = details + '<p>' + detail.lse_qr_url.img + '</p>';
+                }
+                details = details + '<p class="enrollment_value"><a href="' +
+                    detail.lse_qr_url.value + '">' + detail.lse_qr_url.value + '</a></li>';
             }
             if (detail.hasOwnProperty('ocraurl')) {
                 details = details + '<li>OCRA QR Code</li>';

@@ -135,24 +135,24 @@ class SelfserviceController(BaseController):
     # the following actions don't require a session parameter
     # as they are only callbacks to render a form
     form_access_methods = [
-            "activateqrtoken",
-            "assign",
-            "custom_style",
-            "delete",
-            "disable",
-            "enable",
-            "getotp",
-            "history",
-            "index",
-            "load_form",
-            "reset",
-            "resync",
-            "setmpin",
-            "setpin",
-            "unassign",
-            "webprovisiongoogletoken",
-            "webprovisionoathtoken"
-            ]
+        "activateqrtoken",
+        "assign",
+        "custom_style",
+        "delete",
+        "disable",
+        "enable",
+        "getotp",
+        "history",
+        "index",
+        "load_form",
+        "reset",
+        "resync",
+        "setmpin",
+        "setpin",
+        "unassign",
+        "webprovisiongoogletoken",
+        "webprovisionoathtoken"
+    ]
 
     def __before__(self, action):
         '''
@@ -184,8 +184,8 @@ class SelfserviceController(BaseController):
                 if action not in self.form_access_methods:
                     call_url = "selfservice/%s" % action
                     valid_session = check_selfservice_session(url=call_url,
-                                                    cookies=request.cookies,
-                                                    params=request.params)
+                                                              cookies=request.cookies,
+                                                              params=request.params)
                     if not valid_session:
                         c.audit['action'] = request.path[1:]
                         c.audit['info'] = "session expired"
@@ -233,7 +233,6 @@ class SelfserviceController(BaseController):
             c.otplen = -1
             c.totp_len = -1
 
-
             return response
 
         except webob.exc.HTTPUnauthorized as acc:
@@ -268,7 +267,7 @@ class SelfserviceController(BaseController):
                         (c.user, _foo, c.realm) = getParam(param,
                                                            "selftest_user",
                                                            True)\
-                                                           .rpartition('@')
+                            .rpartition('@')
                     else:
                         c.realm = ""
                         c.user = "--ua--"
@@ -365,7 +364,7 @@ class SelfserviceController(BaseController):
 
         except CompileException as exx:
             log.exception("[load_form] compile error while processing %r.%r:" %
-                                                                (tok, scope))
+                          (tok, scope))
             log.error("[load_form] %r" % exx)
             Session.rollback()
             raise Exception(exx)
@@ -373,7 +372,7 @@ class SelfserviceController(BaseController):
         except Exception as exx:
             Session.rollback()
             error = ('error (%r) accessing form data for: tok:%r, scope:%r'
-                                ', section:%r' % (exx, tok, scope, section))
+                     ', section:%r' % (exx, tok, scope, section))
             log.exception(error)
             return '<pre>%s</pre>' % error
 
@@ -486,7 +485,8 @@ class SelfserviceController(BaseController):
             return render('/selfservice/webprovisiongoogle.mako')
 
         except Exception as exx:
-            log.exception("[webprovisiongoogletoken] failed with error: %r" % exx)
+            log.exception(
+                "[webprovisiongoogletoken] failed with error: %r" % exx)
             return sendError(response, exx)
 
         finally:
@@ -498,8 +498,6 @@ class SelfserviceController(BaseController):
         '''
         res = render('/selfservice/tokenlist.mako')
         return res
-
-
 
 
 #eof##########################################################################

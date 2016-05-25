@@ -24,7 +24,7 @@
  *    Contact: www.linotp.org
  *    Support: www.lsexperts.de
  *
- * contains the ocra2 token web interface
+ * contains the qrtoken token web interface
 </%doc>
 
 %if c.scope == 'config.title' :
@@ -124,23 +124,19 @@ ${_("Enroll your QRToken")}
 	});
 
 
-function self_qrtoken_get_param()
-{
+function self_qrtoken_get_param() {
 	var urlparam = {};
 
-	urlparam['type'] = 'qrtoken';
+	urlparam['type'] = 'qr';
 	urlparam['description'] = $('#qrtoken_desc').val();
-	urlparam['hashlib'] = $('#qrtoken_hash_algorithm');
 	return urlparam;
 }
 
-function self_ocra2_clear()
-{
+function self_qrtoken_clear() {
 	$('#qrtoken_desc').val('');
-	$('#qrtoken_hash_algorithm').val('sha256');
 }
 
-function self_qrtoken_submit(){
+function self_qrtoken_submit() {
 
 	var params =  self_qrtoken_get_param();
 	enroll_token( params );
@@ -162,22 +158,12 @@ $( document ).ready(function() {
 </script>
 <h1>${_("Enroll your QRToken")}</h1>
 <div id='enroll_qrtoken_form'>
-	<form class="cmxform" id='form_enroll_qrtoken'>
+	<form class="cmxform">
 	<fieldset>
 		<table>
 			<tr>
 				<td><label id='qrtoken_desc_label2' for='qrtoken_desc'>${_("Token description")}</label></td>
 				<td><input id='qrtoken_desc' name='qrtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'/></td>
-			</tr>
-			<tr>
-				<td><label for="hash_algorithm">${_("Hash algorithm")}</label></td>
-				<td>
-				    <select name="hash_algorithm" id='qrtoken_hash_algorithm' >
-					<option selected value="sha256">SHA256</option>
-					<option value="sha512">SHA512</option>
-					<option value="sha1">SHA1</option>
-				    </select>
-				</td>
 			</tr>
         </table>
 	    <button class='action-button' id='button_enroll_qrtoken'>${_("enroll qrtoken")}</button>
@@ -186,3 +172,161 @@ $( document ).ready(function() {
 </div>
 
 %endif
+
+%if c.scope == 'selfservice.title.activate':
+${_("Activate your QRToken")}
+%endif
+
+%if c.scope == 'selfservice.activate':
+
+<script>
+
+$( document ).ready(function() {
+    $('#button_activate_qrtoken_start').click(function (e){
+        e.preventDefault();
+        self_qrtoken_activate_get_challenge();
+    });
+
+    $('#button_activate_qrtoken_finish').click(function (e){
+        e.preventDefault();
+        self_qrtoken_activate_submit_result();
+    });
+});
+
+function self_qrtoken_activate_get_challenge() {
+    var serial = $('#activate_qrtoken_serial').val();
+    var pin = $('#activate_qrtoken_pin').val();
+    var message = $('#activate_qrtoken_serial').val();
+
+    var targetselector = "#qrtoken_qr_code"
+
+    var params = {};
+    params['serial'] = serial;
+    params['pass'] = pin;
+    params['data'] = message;
+    params['qr'] = 'html';
+
+    var url = '/validate/check_s';
+
+    try {
+        var data = clientUrlFetchSync(url, params);
+        if ( typeof (data) == "object") {
+            var err = data.result.error.message;
+            alert(err);
+        } else {
+            var img = $(data).find('#challenge_qrcode');
+            $(targetselector).html(img);
+
+            var lseqrurl = $(data).find('#challenge_qrcode').attr("alt");
+            lseqrurl = decodeURIComponent(lseqrurl);
+            $(targetselector).append("<p><a href=\"" + lseqrurl + "\">" + lseqrurl + "</a></p>");
+
+            qrtoken_activation_transactionid = $(data).find('#challenge_data .transactionid').text();
+
+            self_qrtoken_activate_switch_phase("two");
+        }
+    } catch (e) {
+        alert(e);
+    }
+}
+
+function self_qrtoken_activate_submit_result() {
+    var otpvalue = $('#activate_qrtoken_otp_value').val();
+
+    var targetselector = "#qrtoken_qr_code"
+
+    var params = {};
+    params['transactionid'] = qrtoken_activation_transactionid;
+    params['pass'] = otpvalue;
+
+    var url = '/validate/check_t';
+
+    try {
+        var resp = clientUrlFetchSync(url, params);
+        var data = jQuery.parseJSON(resp);
+        if ( data.result.status === false || data.result.value.value === false) {
+            self_alert_box({'title':i18n.gettext("QRToken Activation"),
+                   'text': i18n.gettext("QRToken activation failed."),
+                   'escaped': true});
+        } else {
+            self_alert_box({'title':i18n.gettext("QRToken Activation"),
+                   'text': i18n.gettext("QRToken successfully activated."),
+                   'escaped': true});
+        }
+        self_qrtoken_activate_switch_phase("one");
+    } catch (e) {
+        alert(e);
+    }
+}
+
+function self_qrtoken_activate_switch_phase(phase) {
+    $('.activate_qrtoken_phase')
+        .not("#activate_qrtoken_phase_" + phase)
+        .addClass("hidden");
+    $("#activate_qrtoken_phase_" + phase).removeClass("hidden");
+    $("#activate_qrtoken_phase_" + phase).find("input").each(function(){
+        $( this ).val('');
+    })
+}
+
+</script>
+
+<h1>${_("Activate your QRToken")}</h1>
+
+<div id="activate_qrtoken_phase_one" class="activate_qrtoken_phase">
+    <form class="cmxform">
+        <table>
+            <tr>
+                <td>${_("Select QRToken: ")}</td>
+                <td>
+                    <input type="text" class="selectedToken ui-corner-all" disabled
+                        id="activate_qrtoken_serial"/>
+                </td>
+            </tr>
+            <tr>
+                <td>${_("Enter pin: ")}</td>
+                <td>
+                    <input type="password" class="text ui-widget-content ui-corner-all"
+                        id="activate_qrtoken_pin"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id='qr2_activate'>
+                        <button class="action-button" id="button_activate_qrtoken_start">${_("activate token")}</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="activate_qrtoken_phase_two" class="activate_qrtoken_phase hidden">
+    <form class="cmxform">
+        <table>
+            <tr>
+                <td>
+                    <h2>${_('Challenge triggered successfully')}</h2>
+                    <p>${_('Please scan the qr code and submit your response or enter the otp value in the form below.')}</p>
+                </td>
+                <td>
+                    <div id="qrtoken_qr_code" class="qrcode-inline"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>${_("OTP Value: ")}</td>
+                <td>
+                    <input type="text" class="ui-corner-all"
+                        id="activate_qrtoken_otp_value"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id='qr2_activate'>
+                        <button class="action-button" id="button_activate_qrtoken_finish">${_("finalize activation")}</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+% endif

@@ -261,3 +261,19 @@ div.ui-tabs {
 	margin: 0;
 	padding: 0;
 }
+
+.qrcode-inline {
+    word-break: break-all;
+}
+
+.qrcode-inline img{
+    max-width: 400px;
+}
+
+.hidden {
+	display: none;
+}
+
+.activate_qrtoken_phase table td:first-child {
+    width: 300px;
+}

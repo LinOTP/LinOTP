@@ -204,6 +204,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ----------------------------------------------------------------------
 
+        info['policy'] = {}
+
         auth_policies = {}
 
         for policy_name in ['qrtoken_pairing_callback_url',
@@ -213,7 +215,13 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
             auth_policies[policy_name] = {'type': 'str'}
 
-        info['policy'] = {'authentication': auth_policies}
+        info['policy']['authentication'] = auth_policies
+
+        info['policy']['selfservice'] = {'activate_QRToken':
+                                         {'type': 'bool',
+                                          'description': _('activate your '
+                                                           'qr token')}
+                                         }
 
         # ----------------------------------------------------------------------
 
@@ -235,8 +243,18 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                               'scope': 'selfservice.title.enroll'}
         ss_enroll['page'] = {'html': 'qrtoken.mako',
                              'scope': 'selfservice.enroll'}
+
+        ss_activate = {}
+        ss_activate['title'] = {'html': 'qrtoken.mako',
+                                'scope': 'selfservice.title.activate'}
+        ss_activate['page'] = {'html': 'qrtoken.mako',
+                               'scope': 'selfservice.activate'}
+
         selfservice_dict = {}
         selfservice_dict['enroll'] = ss_enroll
+        selfservice_dict['activate_QRToken'] = ss_activate
+
+        info['selfservice'] = selfservice_dict
 
         # ----------------------------------------------------------------------
 
@@ -500,8 +518,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     def update(self, params):
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(['type', 'hashlib', 'serial',
-                                       'key_size', 'user.login', 'pin',
+        init_rollout_state_keys = set(['type', 'hashlib', 'serial', '::scope::',
+                                       'key_size', 'user.login', 'description',
                                        'user.realm', 'session', 'otplen',
                                        'resConf', 'user', 'realm', 'qr'])
 
@@ -547,8 +565,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         response_detail = {}
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(['type', 'hashlib', 'serial',
-                                       'key_size', 'user.login', 'pin',
+        init_rollout_state_keys = set(['type', 'hashlib', 'serial', '::scope::',
+                                       'key_size', 'user.login', 'description',
                                        'user.realm', 'session', 'otplen',
                                        'resConf', 'user', 'realm', 'qr'])
 
@@ -598,16 +616,16 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             response_detail['pairing_url'] = pairing_url
 
             # create response tabs
-            response_detail['googleurl'] = {
-                                    'description': _('QR Token Pairing Url'),
-                                    'img': create_img(pairing_url, width=250),
-                                    'order': 0,
-                                    'value': pairing_url}
-            response_detail['otpkey'] = {
-                                    'description': _('QR Token Certificate'),
-                                    'img': create_img(pairing_url, width=250),
-                                    'order': 1,
-                                    'value': pairing_url}
+            response_detail['lse_qr_url'] = {
+                'description': _('QR Token Pairing Url'),
+                'img': create_img(pairing_url, width=250),
+                'order': 0,
+                'value': pairing_url}
+            response_detail['lse_qr_cert'] = {
+                'description': _('QR Token Certificate'),
+                'img': create_img(pairing_url, width=250),
+                'order': 1,
+                'value': pairing_url}
 
             response_detail['serial'] = self.getSerial()
 
@@ -624,7 +642,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         self.change_state('pairing_url_sent')
 
-        
         return response_detail
 
 # ------------------------------------------------------------------------------
@@ -644,7 +661,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         if options is None:
             options = {}
 
-        max_fail = int(getFromConfig('QrTokenMaxChallengeRequests', '3'))
+        max_fail = int(getFromConfig('QRMaxChallenges', '3'))
 
         # ----------------------------------------------------------------------
 
@@ -696,10 +713,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
             if compare_digest(correct_passwd, passwd):
 
-                if self.current_state == 'pairing_challenge_sent':
-                    self.change_state('pairing_complete')
-                    self.enable(True)
-
                 return 1
 
             else:
@@ -720,6 +733,13 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         return -1  # TODO: ??? semantics of this ret val?
 
+# ------------------------------------------------------------------------------
+
+    def statusValidationSuccess(self):
+
+        if self.current_state == 'pairing_challenge_sent':
+            self.change_state('pairing_complete')
+            self.enable(True)
 
 # ------------------------------------------------------------------------------
 

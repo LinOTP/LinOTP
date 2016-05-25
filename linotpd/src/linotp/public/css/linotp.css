@@ -78,6 +78,7 @@
 
 .enrollment_value {
   font-size: 50%;
+  word-wrap: break-word;
 }
 
 .sel_box {
