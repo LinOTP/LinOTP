@@ -638,7 +638,7 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
         :rtype:  string
     '''
     alt_str = ''
-    img = create_img(data, width=width, alt=alt)
+    img = create_img(data, width=width, alt=data)
 
     if alt is not None:
         if type(alt) in (str, u''):
