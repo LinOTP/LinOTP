@@ -90,6 +90,16 @@ class AuthController(BaseController):
         log.debug("[index3] index, authenticating user")
         return render("/auth3.mako")
 
+    def qrtoken(self):
+        '''
+        This is the method for testing authentication
+
+        Call it directly in your browser like this
+            http(s)://server/auth/qrtoken
+        '''
+        log.debug("[qrtoken] authenticating user")
+        return render("/auth-qrtoken.mako")
+
     def ocra(self):
         '''
         This is the method for testing ocra tokens

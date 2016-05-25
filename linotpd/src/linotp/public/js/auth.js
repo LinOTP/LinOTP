@@ -97,6 +97,105 @@ function getOcra2Challenge() {
     }
 }
 
+function getQRTokenChallenge() {
+    var user = $('#user').val();
+    var pin = $('#pin').val();
+    var data = $('#challenge').val();
+
+    var targetselector = '#display';
+    var transactionidselector = '#transactionid';
+
+    var params = {};
+    params['user'] = user;
+    params['pass'] = pin;
+    params['data'] = data;
+    params['qr'] = 'html';
+
+    var url = '/validate/check';
+
+    try {
+        var data = clientUrlFetchSync(url, params);
+        if ( typeof (data) == "object") {
+            var err = data.result.error.message;
+            alert(err);
+        } else {
+            var img = $(data).find('#challenge_qrcode');
+            $(targetselector).html(img);
+
+            var lseqrurl = $(data).find('#challenge_qrcode').attr("alt");
+            $(targetselector).append("<p>" + decodeURIComponent(lseqrurl) + "</p>");
+
+            var transactionid = $(data).find('#challenge_data .transactionid').text();
+            $(transactionidselector).val(transactionid);
+        }
+    } catch (e) {
+        alert(e);
+    }
+}
+
+function check_status() {
+    var user = $('#user').val();
+    var pin = $('#pin').val();
+    var transactionid = $('#transactionid').val();
+
+    var params = {};
+    params['user'] = user;
+    params['pass'] = pin;
+    params['transactionid'] = transactionid;
+
+    var url = '/validate/check_status';
+
+    var resp = clientUrlFetchSync(url, params);
+    var data = jQuery.parseJSON(resp);
+
+    if (false === data.result.status) {
+        alert(data.result.error.message);
+    } else {
+        if (true === data.result.value) {
+            if(data.detail.transactions[transactionid]["received_tan"] === true){
+                alert("User successfully authenticated!");
+            }
+            else if(data.detail.transactions[transactionid]["received_tan"] === false){
+                alert("User did not authenticate yet!");
+            }
+            else{
+                alert("Error during request! Check for challenge timeout...");
+            }
+        } else if ("detail" in data && "message" in data.detail) {
+            alert(data.detail.message)
+        } else {
+            alert("Error during request! Check for challenge timeout...");
+        }
+    }
+}
+
+function submitQRTokenResponse() {
+    var user = $('#user').val();
+    var otp = $('#otp').val();
+    var transactionid = $('#transactionid').val();
+
+    var params = {};
+    params['user'] = user;
+    params['pass'] = otp;
+    params['transactionid'] = transactionid;
+
+    var url = '/validate/check';
+
+    var resp = clientUrlFetchSync(url, params);
+    var data = jQuery.parseJSON(resp);
+
+    if (false == data.result.status) {
+        alert(data.result.error.message);
+    } else {
+        if (true == data.result.value) {
+            alert("User successfully authenticated!");
+        } else if ("detail" in data && "message" in data.detail) {
+            alert(data.detail.message)
+        } else {
+            alert("User failed to authenticate!");
+        }
+    }
+}
 
 function login_user(column) {
     var user = "";
@@ -163,6 +262,21 @@ $(document).ready(function() {
     $("#form_login_ocra").submit(function(submit_event) {
         submit_event.preventDefault();
         login_user( column = 2);
+    });
+
+    // auth/qrtoken
+    $("#form_challenge_qrtoken").submit(function(submit_event) {
+        submit_event.preventDefault();
+        getQRTokenChallenge();
+    });
+
+    $("#form_login_qrtoken").submit(function(submit_event) {
+        submit_event.preventDefault();
+        submitQRTokenResponse();
+    });
+
+    $("#check_status").click(function(click_event) {
+        check_status();
     });
 
     // auth/ocra2

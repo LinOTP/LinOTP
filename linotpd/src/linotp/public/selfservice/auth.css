@@ -1,0 +1,23 @@
+#auth.qrtoken table {
+    width: 100%;
+}
+
+#auth.qrtoken > table > tbody > tr:not(:last-child) > td {
+    border-bottom: 1px solid grey;
+}
+
+#auth.qrtoken > table table td:first-child {
+    width: 300px;
+}
+
+#auth.qrtoken > table table {
+    table-layout: fixed;
+}
+
+#auth.qrtoken #challenge_qrcode {
+    max-width: 400px;
+}
+
+#auth.qrtoken #display {
+    word-break: break-all;
+}

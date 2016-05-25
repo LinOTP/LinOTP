@@ -39,6 +39,7 @@
 
 
 	<link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
+	<link type="text/css" rel="stylesheet" href="/selfservice/auth.css" />
 	<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
 
 	<script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
