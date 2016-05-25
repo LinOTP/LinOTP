@@ -207,6 +207,8 @@ class TestController(unittest2.TestCase):
             params=None,
             headers=None,
             cookies=None,
+            upload_files=None,
+            client=None
             ):
         """
         Makes a request using WebTest app self.app
@@ -214,10 +216,19 @@ class TestController(unittest2.TestCase):
         if method is None:
             method = TestController.DEFAULT_WEB_METHOD
         assert controller and action
-        assert method in ['GET', 'POST']
+        assert method in ['GET', 'POST', 'PUT']
 
         # Clear state (e.g. cookies)
         self.app.reset()
+
+        if client:
+            if not headers:
+                headers = {}
+            headers['REMOTE_ADDR'] = client
+
+        pparams = {}
+        if upload_files:
+            pparams['upload_files'] = upload_files
 
         if cookies:
             for key in cookies:
@@ -227,12 +238,21 @@ class TestController(unittest2.TestCase):
                 url(controller=controller, action=action),
                 params=params,
                 headers=headers,
+                **pparams
+                )
+        elif method == 'PUT':
+            return self.app.put(
+                url(controller=controller, action=action),
+                params=params,
+                headers=headers,
+                **pparams
                 )
         else:
             return self.app.post(
                 url(controller=controller, action=action),
                 params=params,
                 headers=headers,
+                **pparams
                 )
 
     @staticmethod
@@ -297,6 +317,7 @@ class TestController(unittest2.TestCase):
             headers=None,
             cookies=None,
             auth_user='admin',
+            upload_files=None
             ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -305,11 +326,11 @@ class TestController(unittest2.TestCase):
         params = params or {}
         headers = headers or {}
         cookies = cookies or {}
-        if not 'session' in params:
+        if 'session' not in params:
             params['session'] = self.session
-        if not 'admin_session' in cookies:
+        if 'admin_session' not in cookies:
             cookies['admin_session'] = self.session
-        if not 'Authorization' in headers:
+        if 'Authorization' not in headers:
             headers['Authorization'] = TestController.get_http_digest_header(
                 username=auth_user
                 )
@@ -320,10 +341,11 @@ class TestController(unittest2.TestCase):
             params=params,
             headers=headers,
             cookies=cookies,
+            upload_files=upload_files,
             )
 
     def make_admin_request(self, action, params=None, method=None,
-                           auth_user='admin',):
+                           auth_user='admin', upload_files=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -335,6 +357,7 @@ class TestController(unittest2.TestCase):
             method=method,
             params=params,
             auth_user=auth_user,
+            upload_files=upload_files,
             )
 
     def make_audit_request(self, action, params=None, method=None,
@@ -353,7 +376,7 @@ class TestController(unittest2.TestCase):
             )
 
     def make_manage_request(self, action, params=None, method=None,
-                           auth_user='admin',):
+                           auth_user='admin', upload_files=None):
         """
         Makes an authenticated request to /manage/'action'
         """
@@ -365,10 +388,11 @@ class TestController(unittest2.TestCase):
             method=method,
             params=params,
             auth_user=auth_user,
+            upload_files=upload_files,
             )
 
     def make_system_request(self, action, params=None, method=None,
-                            auth_user='admin'):
+                            auth_user='admin', upload_files=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -380,9 +404,43 @@ class TestController(unittest2.TestCase):
             method=method,
             params=params,
             auth_user=auth_user,
+            upload_files=upload_files,
             )
 
-    def make_validate_request(self, action, params=None, method=None):
+    def make_ocra_request(self, action, params=None, method=None,
+                            auth_user='admin', upload_files=None):
+        """
+        Makes an authenticated request to /admin/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_authenticated_request(
+            'ocra',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            )
+
+    def make_gettoken_request(self, action, params=None, method=None,
+                              auth_user='admin', upload_files=None):
+        """
+        Makes an authenticated request to /admin/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_authenticated_request(
+            'gettoken',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            )
+
+    def make_validate_request(self, action, params=None, method=None,
+                              client=None):
         """
         Makes an unauthenticated request to /validate/'action'
         """
@@ -393,6 +451,7 @@ class TestController(unittest2.TestCase):
             action,
             method=method,
             params=params,
+            client=client,
             )
 
     def set_config_selftest(self):
@@ -683,7 +742,7 @@ class TestController(unittest2.TestCase):
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('userauthcookie')
-        self.assertIsNotNone(auth_cookie, "%r" % cookies)
+        self.assertIsNotNone(auth_cookie, "%r::%r" % (cookies, response.body))
 
         self.user_service[auth_user] = auth_cookie
 

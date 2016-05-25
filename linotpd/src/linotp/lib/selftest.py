@@ -31,7 +31,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def isSelfTest():
+def isSelfTest(config=None):
     '''
         check if we are running in the selftest mode, which is
         used especially for debugging / development or unit tests
@@ -41,10 +41,12 @@ def isSelfTest():
     '''
     ret = False
 
-    if False != getFromConfig("selfTest", False):
-        ret = True
+    if not config:
+        selftest = getFromConfig("selfTest", False) != False
+    else:
+        selftest = config.get("selfTest", False) != False
 
-    return ret
+    return selftest
 
 
 
