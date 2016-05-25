@@ -1802,7 +1802,7 @@ class UserserviceController(BaseController):
             c.audit['transactionid'] = transid
             c.audit['token_type'] = reply['token_type']
             c.audit['success'] = ok
-            c.audith['realm'] = self.authUser.realm
+            c.audit['realm'] = self.authUser.realm
 
             Session.commit()
             return sendResult(response, value, opt)
