@@ -362,14 +362,14 @@ class TestQRToken(TestController):
 
     def send_pairing_response(self, pairing_response):
 
-        params = {'type': 'qr', 'pairing_response': pairing_response}
+        params = {'pairing_response': pairing_response}
 
         # we use the standard calback url in here
         # in a real client we would use the callback
         # defined in the pairing url (and saved in
         # the 'token database' of the user)
 
-        response = self.make_admin_request('init', params)
+        response = self.make_validate_request('pair', params)
         response_dict = json.loads(response.body)
 
         return response_dict
@@ -831,18 +831,22 @@ class TestQRToken(TestController):
         status = result.get('status')
         self.assertEqual(status, False)
 
-        self.assertIn('error', result)
-        error = result.get('error')
+        # FIXME: removed since the new interface doesn't
+        # propagate error messages (should be fixed in
+        # the future, when there is a stable debug mode)
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('error', result)
+        # error = result.get('error')
 
-        self.assertIn('message', error)
-        self.assertIn('code', error)
+        # # --------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('message', error)
+        # self.assertIn('code', error)
 
-        self.assertIn('Unfitting request for this token', error.get('message'))
-        self.assertEqual(905, error.get('code'))
+        # # --------------------------------------------------------------------
+
+        # self.assertIn('Unfitting request for this token', error.get('message'))
+        # self.assertEqual(905, error.get('code'))
 
 # ------------------------------------------------------------------------------
 
@@ -856,24 +860,29 @@ class TestQRToken(TestController):
 
         # ----------------------------------------------------------------------
 
+
         result = response_dict.get('result', {})
         self.assertIn('status', result)
 
         status = result.get('status')
         self.assertEqual(status, False)
 
-        self.assertIn('error', result)
-        error = result.get('error')
+        # FIXME: removed since the new interface doesn't
+        # propagate error messages (should be fixed in
+        # the future, when there is a stable debug mode)
+
+        # self.assertIn('error', result)
+        # error = result.get('error')
 
         # ----------------------------------------------------------------------
 
-        self.assertIn('message', error)
-        self.assertIn('code', error)
+        # self.assertIn('message', error)
+        # self.assertIn('code', error)
 
         # ----------------------------------------------------------------------
 
-        self.assertIn('Malformed pairing response', error.get('message'))
-        self.assertEqual(905, error.get('code'))
+        # self.assertIn('Malformed pairing response', error.get('message'))
+        # self.assertEqual(905, error.get('code'))
 
 # ------------------------------------------------------------------------------
 
@@ -991,18 +1000,22 @@ class TestQRToken(TestController):
         status = result.get('status')
         self.assertEqual(status, False)
 
-        self.assertIn('error', result)
-        error = result.get('error')
+        # FIXME: removed since the new interface doesn't
+        # propagate error messages (should be fixed in
+        # the future, when there is a stable debug mode)
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('error', result)
+        # error = result.get('error')
 
-        self.assertIn('message', error)
-        self.assertIn('code', error)
+        # # --------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('message', error)
+        # self.assertIn('code', error)
 
-        self.assertIn('Unexpected pair-response version', error.get('message'))
-        self.assertEqual(-311, error.get('code'))
+        # # --------------------------------------------------------------------
+
+        # self.assertIn('Unexpected pair-response version', error.get('message'))
+        # self.assertEqual(-311, error.get('code'))
 
 # ------------------------------------------------------------------------------
 
@@ -1073,22 +1086,26 @@ class TestQRToken(TestController):
         status = result.get('status')
         self.assertEqual(status, False)
 
-        self.assertIn('error', result)
-        error = result.get('error')
+        # FIXME: removed since the new interface doesn't
+        # propagate error messages (should be fixed in
+        # the future, when there is a stable debug mode)
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('error', result)
+        # error = result.get('error')
 
-        self.assertIn('message', error)
-        self.assertIn('code', error)
+        # # --------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('message', error)
+        # self.assertIn('code', error)
 
-        # TODO: error mesage in here is pretty cryptic, because linotp
-        # creates a new token for WRONGSERIAL and then exits because it
-        # has the wrong state
+        # # --------------------------------------------------------------------
 
-        self.assertIn('Unfitting request for this token', error.get('message'))
-        self.assertEqual(905, error.get('code'))
+        # # TODO: error mesage in here is pretty cryptic, because linotp
+        # # creates a new token for WRONGSERIAL and then exits because it
+        # # has the wrong state
+
+        # self.assertIn('Unfitting request for this token', error.get('message'))
+        # self.assertEqual(905, error.get('code'))
 
 # ------------------------------------------------------------------------------
 
@@ -1161,18 +1178,22 @@ class TestQRToken(TestController):
         status = result.get('status')
         self.assertEqual(status, False)
 
-        self.assertIn('error', result)
-        error = result.get('error')
+        # FIXME: removed since the new interface doesn't
+        # propagate error messages (should be fixed in
+        # the future, when there is a stable debug mode)
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('error', result)
+        # error = result.get('error')
 
-        self.assertIn('message', error)
-        self.assertIn('code', error)
+        # # ----------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('message', error)
+        # self.assertIn('code', error)
 
-        self.assertIn('wrong token type', error.get('message'))
-        self.assertEqual(-311, error.get('code'))
+        # # ----------------------------------------------------------------------
+
+        # self.assertIn('wrong token type', error.get('message'))
+        # self.assertEqual(-311, error.get('code'))
 
 # ------------------------------------------------------------------------------
 
@@ -1244,18 +1265,22 @@ class TestQRToken(TestController):
         status = result.get('status')
         self.assertEqual(status, False)
 
-        self.assertIn('error', result)
-        error = result.get('error')
+        # FIXME: removed since the new interface doesn't
+        # propagate error messages (should be fixed in
+        # the future, when there is a stable debug mode)
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('error', result)
+        # error = result.get('error')
 
-        self.assertIn('message', error)
-        self.assertIn('code', error)
+        # # ----------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('message', error)
+        # self.assertIn('code', error)
 
-        self.assertIn('MAC check failed', error.get('message'))
-        self.assertEqual(-311, error.get('code'))
+        # # ----------------------------------------------------------------------
+
+        # self.assertIn('MAC check failed', error.get('message'))
+        # self.assertEqual(-311, error.get('code'))
 
 # ------------------------------------------------------------------------------
 
@@ -1298,18 +1323,22 @@ class TestQRToken(TestController):
         status = result.get('status')
         self.assertEqual(status, False)
 
-        self.assertIn('error', result)
-        error = result.get('error')
+        # FIXME: removed since the new interface doesn't
+        # propagate error messages (should be fixed in
+        # the future, when there is a stable debug mode)
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('error', result)
+        # error = result.get('error')
 
-        self.assertIn('message', error)
-        self.assertIn('code', error)
+        # # --------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------
+        # self.assertIn('message', error)
+        # self.assertIn('code', error)
 
-        self.assertIn('Unfitting request for this token', error.get('message'))
-        self.assertEqual(905, error.get('code'))
+        # # --------------------------------------------------------------------
+
+        # self.assertIn('Unfitting request for this token', error.get('message'))
+        # self.assertEqual(905, error.get('code'))
 
 # ------------------------------------------------------------------------------
 

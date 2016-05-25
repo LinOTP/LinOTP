@@ -266,7 +266,7 @@ def sendError(response, exception, id=1, context=None):
     return ret
 
 
-def sendResult(response, obj, id=1, opt=None):
+def sendResult(response, obj, id=1, opt=None, status=True):
     '''
         sendResult - return an json result document
 
@@ -287,7 +287,7 @@ def sendResult(response, obj, id=1, opt=None):
     response.content_type = 'application/json'
 
     res = { "jsonrpc": get_api_version(),
-            "result": { "status": True,
+            "result": { "status": status,
                         "value": obj,
                       },
            "version": get_version(),

@@ -28,7 +28,7 @@ import logging
 import struct
 import zlib
 from os import urandom
-from base64 import b64decode, b64encode
+from base64 import b64decode
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Cipher import AES
@@ -44,11 +44,9 @@ from linotp.lib.crypt import extract_tan
 from linotp.lib.crypt import encode_base64_urlsafe
 from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
-from linotp.lib.error import ValidateError
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.crypt import get_qrtoken_secret_key
 from linotp.lib.crypt import get_qrtoken_public_key
-from linotp.lib.qrtoken import decrypt_pairing_response
 from linotp.lib.pairing import generate_pairing_url
 from hmac import compare_digest
 
@@ -259,32 +257,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # is a request with a pin
 
         return (passw, '')
-
-# ------------------------------------------------------------------------------
-
-    @classmethod
-    def get_helper_params_pre(cls, params):
-
-        helper_params = {}
-
-        if 'pairing_response' in params:
-
-            # client sent back response to pairing url
-            # decrypt it and check its values
-
-            enc_response = params.get('pairing_response')
-            response = decrypt_pairing_response(enc_response)
-
-            if not response.serial:
-                raise ValidateError('Pairing responses with no serial attached '
-                                    'are currently not implemented.')
-
-            helper_params['serial'] = response.serial
-            helper_params['user_public_key'] = response.user_public_key
-            helper_params['user_token_id'] = response.user_token_id
-            helper_params['user'] = response.user_login
-
-        return helper_params
 
 # ------------------------------------------------------------------------------
 
@@ -590,60 +562,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ----------------------------------------------------------------------
 
-        elif 'pairing_response' in params:
-
-            # if a pairing response is in the parameters, we guess,
-            # that the request refers to a token in the state
-            # 'pairing_url_sent'
-
-            self.ensure_state('pairing_url_sent')
-
-            # ------------------------------------------------------------------
-
-            # adding the user's public key to the token info
-            # as well as the user_token_id, which is used to
-            # identify the token on the user's side
-
-            self.addToTokenInfo('user_token_id', params['user_token_id'])
-
-            # user public key arrives in the bytes format.
-            # we must convert to a string in order to be
-            # able to dump it as json in the db
-
-            b64_user_public_key = b64encode(params['user_public_key'])
-            self.addToTokenInfo('user_public_key', b64_user_public_key)
-
-            # ------------------------------------------------------------------
-
-            # create challenge through the challenge factory
-
-            # add the content type and the challenge data to the params
-            # (needed in the createChallenge method)
-
-            params['content_type'] = CONTENT_TYPE_PAIRING
-            params['data'] = self.getSerial()
-
-            self.change_state('pairing_response_received')
-
-            success, challenge_dict = Challenges.create_challenge(self, params)
-
-            if not success:
-                raise Exception('Unable to create challenge from '
-                                'pairing response %s' %
-                                params['pairing_response'])
-
-            challenge_url = challenge_dict['message']
-
-            # ------------------------------------------------------------------
-
-            self.addToInfo('pairing_challenge_url', challenge_url)
-
-            # ------------------------------------------------------------------
-
-            self.change_state('pairing_challenge_sent')
-
-        # ----------------------------------------------------------------------
-
         else:
 
             # make sure the call aborts, if request
@@ -673,18 +591,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             info = self.getInfo()
             pairing_url = info.get('pairing_url')
             response_detail['pairing_url'] = pairing_url
-
-        # ----------------------------------------------------------------------
-
-        elif 'pairing_response' in params:
-
-            # if we are in the second step we expect the update method
-            # to have generated a challenge_url, that can be used by
-            # the client to complete the pairing
-
-            info = self.getInfo()
-            challenge_url = info.get('pairing_challenge_url')
-            response_detail['challenge_url'] = challenge_url
 
         # ----------------------------------------------------------------------
 

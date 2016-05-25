@@ -856,17 +856,14 @@ class AdminController(BaseController):
             # ------------------------------------------------------------------
 
             # call the token class hook in order to enrich/overwrite the
-            # parameters (this is done because e.g. the pairing response
-            # provides the user in a encrypted format)
+            # parameters
 
             helper_params = token_cls.get_helper_params_pre(params)
             params.update(helper_params)
 
             # ------------------------------------------------------------------
 
-            # fetch user from parameters. in some cases (e.g. qrtoken) the user
-            # is not in the original params, but is added by the token class
-            # hook in the above section)
+            # fetch user from parameters.
 
             user = getUserFromParam(params, optional)
 
