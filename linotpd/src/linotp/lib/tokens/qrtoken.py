@@ -39,6 +39,8 @@ from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
+from linotp.lib.token import get_token_owner
+
 from linotp.lib.crypt import zerome
 from linotp.lib.crypt import extract_tan
 from linotp.lib.crypt import encode_base64_urlsafe
@@ -69,7 +71,7 @@ CONTENT_TYPE_FREE = 0
 CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_AUTH = 2
 
-QRTOKEN_VERSION       = 0
+QRTOKEN_VERSION = 0
 
 
 def transaction_id_to_u64(transaction_id):
@@ -98,8 +100,7 @@ def transaction_id_to_u64(transaction_id):
     return int(encoded)
 
 
-def get_single_auth_policy(policy_name, realms=None):
-
+def get_single_auth_policy(policy_name, user=None, realms=None):
     """
     Retrieves a policy value and checks if the value is consistent
     across realms.
@@ -114,13 +115,27 @@ def get_single_auth_policy(policy_name, realms=None):
     """
 
     action_values = []
+    login = None
+    ret = None
+
+    if user and user.login and user.realm:
+        realms = [user.realm]
+        login = user.login
 
     if realms is None or len(realms) == 0:
         realms = ['/:no realm:/']
 
+    params = {"scope": "authentication",
+              'action': policy_name}
+
     for realm in realms:
-        policy = getPolicy({"scope": "authentication", 'realm': realm})
-        action_value = getPolicyActionValue(policy, policy_name, is_string=True)
+        params['realm'] = realm
+        if login:
+            params['user'] = login
+
+        policy = getPolicy(params)
+        action_value = getPolicyActionValue(policy, policy_name,
+                                            is_string=True)
         if action_value:
             action_values.append(action_value)
 
@@ -129,10 +144,10 @@ def get_single_auth_policy(policy_name, realms=None):
             if value != action_values[0]:
                 raise Exception('conflicting policy values %r found for '
                                 'realm set: %r' % (action_values, realms))
-    if not action_values:
-        raise Exception('Policy %s must have a value' % policy_name)
+    if action_values:
+        ret = action_values[0]
 
-    return action_values[0]
+    return ret
 
 
 class QrTokenClass(TokenClass, StatefulTokenMixin):
@@ -157,12 +172,11 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         is_completely_finished = TokenClass.isActive(self)
         return is_completely_finished or \
-               self.current_state == 'pairing_challenge_sent'
+            self.current_state == 'pairing_challenge_sent'
 
 # ------------------------------------------------------------------------------
 
     def is_challenge_request(self, passw, user, options=None):
-
         """
         check, if the request would start a challenge
 
@@ -229,7 +243,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         info['init'] = init_dict
 
         config_dict = {}
-        config_dict['title'] = {'html': 'qrtoken.mako', 'scope': 'config.title'}
+        config_dict['title'] = {
+            'html': 'qrtoken.mako', 'scope': 'config.title'}
         config_dict['page'] = {'html': 'qrtoken.mako', 'scope': 'config'}
         info['config'] = config_dict
 
@@ -263,7 +278,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     def create_challenge_url(self, transaction_id, content_type, message,
                              callback_url, callback_sms_number,
                              use_compression=False):
-
         """
         creates a challenge url (looking like lseqr://chal/<base64string>)
         from a challenge dictionary as provided by Challanges.create_challenge
@@ -283,7 +297,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # sanity/format checks
 
         if content_type not in [CONTENT_TYPE_PAIRING,
-            CONTENT_TYPE_AUTH, CONTENT_TYPE_FREE]:
+                                CONTENT_TYPE_AUTH, CONTENT_TYPE_FREE]:
             raise InvalidFunctionParameter('content_type', 'content_type must '
                                            'be CONTENT_TYPE_PAIRING, '
                                            'CONTENT_TYPE_AUTH or '
@@ -338,7 +352,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         zerome(U1)
         zerome(U2)
 
-
         # ----------------------------------------------------------------------
 
         # create plaintext section
@@ -352,8 +365,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         if use_compression:
             flags |= CHALLENGE_HAS_COMPRESSION
 
-        #FIXME: sizecheck for message, callback url, sms number
-        #wiki specs are utf-8 byte length (without \0)
+        # FIXME: sizecheck for message, callback url, sms number
+        # wiki specs are utf-8 byte length (without \0)
 
         if callback_url is not None:
             flags |= CHALLENGE_HAS_URL
@@ -364,7 +377,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         if (content_type == CONTENT_TYPE_PAIRING):
             flags |= CHALLENGE_HAS_SIGNATURE
 
-        #-----------------------------------------------------------------------
+        #----------------------------------------------------------------------
 
         # generate plaintext header
 
@@ -378,7 +391,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         pt_header = struct.pack('<bbQ', content_type, flags, transaction_id)
         plaintext = pt_header
 
-        #-----------------------------------------------------------------------
+        #----------------------------------------------------------------------
 
         # create data package
 
@@ -489,8 +502,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ----------------------------------------------------------------------
 
-
-
         cipher = AES.new(skA, AES.MODE_EAX, nonce)
         cipher.update(data_header)
         ciphertext, tag = cipher.encrypt_and_digest(plaintext)
@@ -507,67 +518,44 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         param_keys = set(params.keys())
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
                                        'key_size', 'user.login',
-                                       'user.realm', 'session',
+                                       'user.realm', 'session', 'otplen',
                                        'resConf', 'user', 'realm', 'qr'])
 
         # ----------------------------------------------------------------------
 
-        if param_keys.issubset(init_rollout_state_keys):
-
-            # if param keys are in {'type', 'hashlib'} the token is
-            # initialized for the first time. this is e.g. done on the
-            # manage web ui. since the token doesn't exist in the database
-            # yet, its rollout state must be None (that is: they data for
-            # the rollout state doesn't exist yet)
-
-            self.ensure_state(None)
-
-            # ------------------------------------------------------------------
-
-            # collect data used for generating the pairing url
-
-            serial = params.get('serial')
-            hash_algorithm = params.get('hashlib')
-            pub_key = get_qrtoken_public_key()
-
-            cb_url = get_single_auth_policy('qrtoken_pairing_callback_url')
-            cb_sms = get_single_auth_policy('qrtoken_pairing_callback_sms')
-
-            # TODO: read from config
-            otp_pin_length = None
-
-            # ------------------------------------------------------------------
-
-            pairing_url = generate_pairing_url('qrtoken',
-                                          server_public_key=pub_key,
-                                          serial=serial,
-                                          callback_url=cb_url,
-                                          callback_sms_number=cb_sms,
-                                          otp_pin_length=otp_pin_length,
-                                          hash_algorithm=hash_algorithm)
-
-            # ------------------------------------------------------------------
-
-            self.addToInfo('pairing_url', pairing_url)
-
-            # we set the the active state of the token to False, because
-            # it should not be allowed to use it for validation before the
-            # pairing process is done
-
-            self.token.LinOtpIsactive = False
-
-            # ------------------------------------------------------------------
-
-            self.change_state('pairing_url_sent')
-
-        # ----------------------------------------------------------------------
-
-        else:
+        if not param_keys.issubset(init_rollout_state_keys):
 
             # make sure the call aborts, if request
             # type wasn't recognized
 
             raise Exception('Unknown request type for token type qr')
+
+        # if param keys are in {'type', 'hashlib'} the token is
+        # initialized for the first time. this is e.g. done on the
+        # manage web ui. since the token doesn't exist in the database
+        # yet, its rollout state must be None (that is: they data for
+        # the rollout state doesn't exist yet)
+
+        self.ensure_state(None)
+
+        # ------------------------------------------------------------------
+
+        # we set the the active state of the token to False, because
+        # it should not be allowed to use it for validation before the
+        # pairing process is done
+
+        self.token.LinOtpIsactive = False
+
+        # ------------------------------------------------------------------
+
+        self.change_state('pairing_url_sent')
+
+        if 'otplen' not in params:
+            params['otplen'] = getFromConfig("QRTokenDefault.otplen", 8)
+
+        # -------------------------------------------------------------- --
+
+        TokenClass.update(self, params, reset_failcount=True)
 
 # ------------------------------------------------------------------------------
 
@@ -578,18 +566,52 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         param_keys = set(params.keys())
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
                                        'key_size', 'user.login',
-                                       'user.realm', 'session',
+                                       'user.realm', 'session', 'otplen',
                                        'resConf', 'user', 'realm', 'qr'])
 
         # ----------------------------------------------------------------------
 
         if param_keys.issubset(init_rollout_state_keys):
 
-            # if we are at the first rollout step, the update method has
-            # generated a pairing_url and saved it in the token info
+            # collect data used for generating the pairing url
 
-            info = self.getInfo()
-            pairing_url = info.get('pairing_url')
+            serial = self.getSerial()
+            # for qrtoken hashlib is ignored
+            hash_algorithm = None
+            pub_key = get_qrtoken_public_key()
+            otp_pin_length = int(self.getOtpLen())
+
+            owner = get_token_owner(self)
+            if owner and owner.login and owner.realm:
+                realms = [owner.realm]
+                user = owner
+            else:
+                realms = self.getRealms()
+
+            pairing_policies = ['qrtoken_pairing_callback_url',
+                                'qrtoken_pairing_callback_sms']
+            cb_url = get_single_auth_policy(pairing_policies[0],
+                                            user=owner, realms=realms)
+            cb_sms = get_single_auth_policy(pairing_policies[1],
+                                            user=owner, realms=realms)
+
+            if not cb_url and not cb_sms:
+                raise Exception(_('Policy %s must have a value') %
+                                _(" or ").join(pairing_policies))
+
+            # ------------------------------------------------------------------
+
+            pairing_url = generate_pairing_url('qrtoken',
+                                               server_public_key=pub_key,
+                                               serial=serial,
+                                               callback_url=cb_url,
+                                               callback_sms_number=cb_sms,
+                                               otp_pin_length=otp_pin_length,
+                                               hash_algorithm=hash_algorithm)
+
+            # ------------------------------------------------------------------
+
+            self.addToInfo('pairing_url', pairing_url)
             response_detail['pairing_url'] = pairing_url
 
         # ----------------------------------------------------------------------
@@ -685,7 +707,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 # maybe we got a tan instead of a signature
 
                 correct_passwd_as_bytes = decode_base64_urlsafe(correct_passwd)
-                tan_length = 8 # TODO fetch from policy
+                tan_length = 8  # TODO fetch from policy
                 correct_tan = extract_tan(correct_passwd_as_bytes, tan_length)
 
                 # TODO PYLONS-HACK pylons silently converts integers in
@@ -696,13 +718,12 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 if compare_digest(correct_tan, passwd):
                     return 1
 
-        return -1 # TODO: ??? semantics of this ret val?
+        return -1  # TODO: ??? semantics of this ret val?
 
 
 # ------------------------------------------------------------------------------
 
     def createChallenge(self, transaction_id, options):
-
         """
         """
 
@@ -714,8 +735,23 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ----------------------------------------------------------------------
 
-        callback_url = get_single_auth_policy('qrtoken_challenge_callback_url')
-        callback_sms = get_single_auth_policy('qrtoken_challenge_callback_sms')
+        owner = get_token_owner(self)
+        if owner and owner.login and owner.realm:
+            realms = [owner.realm]
+            user = owner
+        else:
+            realms = self.getRealms()
+
+        callback_policies = ['qrtoken_challenge_callback_url',
+                             'qrtoken_challenge_callback_sms']
+        callback_url = get_single_auth_policy(callback_policies[0],
+                                              user=owner, realms=realms)
+        callback_sms = get_single_auth_policy(callback_policies[1],
+                                              user=owner, realms=realms)
+
+        if not callback_url and not callback_sms:
+            raise Exception(_('Policy %s must have a value') %
+                            _(" or ").join(callback_policies))
 
         # TODO: get from policy/config
         compression = False
@@ -761,7 +797,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     @property
     def server_hmac_secret(self):
-
         """ the server hmac secret for this specific token """
 
         server_secret_key = get_qrtoken_secret_key()
