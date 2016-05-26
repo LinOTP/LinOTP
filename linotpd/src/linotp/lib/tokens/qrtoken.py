@@ -191,7 +191,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     @classmethod
     def getClassPrefix(cls):
-        return "QRTOKEN"
+        # OATH standard compliant prefix: XXYY XX= vendor, YY - token type
+        return "LSQR"
 
 # ------------------------------------------------------------------------------
 
