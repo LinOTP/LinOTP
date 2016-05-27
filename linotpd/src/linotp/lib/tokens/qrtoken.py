@@ -549,8 +549,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ------------------------------------------------------------------
 
-        self.change_state('pairing_url_sent')
-
         if 'otplen' not in params:
             params['otplen'] = getFromConfig("QRTokenDefault.otplen", 8)
 
@@ -625,6 +623,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             raise Exception('Unknown request type for token type qr')
 
         # ----------------------------------------------------------------------
+
+        self.change_state('pairing_url_sent')
 
         return response_detail
 
