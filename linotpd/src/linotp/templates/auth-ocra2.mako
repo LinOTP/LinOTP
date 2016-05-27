@@ -66,8 +66,6 @@ ${_('To verify your result enter the OTP value into the form below.')}
                 <td> </td>
                         <td>
                         <input type="submit" value="${_('get challenge')}"/>
-
-
                 </tr></table>
             </frameset>
         </form>
