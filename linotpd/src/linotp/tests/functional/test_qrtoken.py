@@ -733,7 +733,7 @@ class TestQRToken(TestController):
 
         # calculate signature and tan
 
-        message = nonce + pt_header + data
+        message = nonce + pt_header + server_signature + data
         sig_hmac = HMAC.new(skB, message, digestmod=SHA256)
         sig = sig_hmac.digest()
 

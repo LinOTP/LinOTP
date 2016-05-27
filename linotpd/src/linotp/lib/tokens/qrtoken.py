@@ -476,6 +476,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # the server must send a hmac based signature with the
         # response
 
+        sig = ''
+
         if flags & CHALLENGE_HAS_SIGNATURE:
 
             hmac_message = nonce + pt_header + maybe_compressed_data_package
@@ -491,7 +493,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ----------------------------------------------------------------------
 
-        user_message = nonce + pt_header + data_package
+        user_message = nonce + pt_header + sig + data_package
         user_sig = HMAC.new(skB, user_message, digestmod=SHA256).digest()
 
         # the user sig will be given as urlsafe base64 in the
