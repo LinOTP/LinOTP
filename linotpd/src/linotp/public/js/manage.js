@@ -233,7 +233,7 @@ var $tokenConfigInbacks = {};
 
 // FIXME: global variable should be worked out
 var g = {};
-    g.display_genkey = false;
+    g.enroll_display_qrcodes = false;
     g.running_requests = 0;
     g.resolver_to_edit = "";
     g.realm_to_edit = "";
@@ -1418,7 +1418,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
         alert_info_text({'text': "text_created_token",
                          'param': escape(serial),
                          'is_escaped': true});
-        if (true == g.display_genkey) {
+        if (true == g.enroll_display_qrcodes) {
 
             // display the QR-Code of the URL. tab
             var users = get_selected_user();
@@ -1535,7 +1535,7 @@ function token_enroll(){
         params['realm'] = $('#realm').val();
     }
     // when the init process generated a key, this will be displayed to the administrator
-    g.display_genkey = false;
+    g.enroll_display_qrcodes = false;
     // get the token type and call the geturl_params() method for this token - if exist
     var typ = $('#tokentype').val();
     // dynamic tokens might overwrite this description
@@ -1583,8 +1583,8 @@ function token_enroll(){
             }
     }
     params['type'] = typ;
-    if (params['genkey'] == 1){
-        g.display_genkey = true;
+    if (params['genkey'] == 1 || typ == "qr"){
+        g.enroll_display_qrcodes = true;
     }
     clientUrlFetch(url, params, enroll_callback, serial);
 

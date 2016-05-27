@@ -37,6 +37,7 @@ from Cryptodome.Hash import SHA256
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges
+from linotp.lib.reply import create_img
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
 from linotp.lib.token import get_token_owner
@@ -560,6 +561,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def getInitDetail(self, params, user=None):
 
+        _ = context['translate']
         response_detail = {}
 
         param_keys = set(params.keys())
@@ -613,7 +615,21 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             self.addToInfo('pairing_url', pairing_url)
             response_detail['pairing_url'] = pairing_url
 
-        # ----------------------------------------------------------------------
+            # create response tabs
+            response_detail['googleurl'] = {
+                                    'description': _('QR Token Pairing Url'),
+                                    'img': create_img(pairing_url, width=250),
+                                    'order': 0,
+                                    'value': pairing_url}
+            response_detail['otpkey'] = {
+                                    'description': _('QR Token Certificate'),
+                                    'img': create_img(pairing_url, width=250),
+                                    'order': 1,
+                                    'value': pairing_url}
+
+            response_detail['serial'] = self.getSerial()
+
+        # ------------------------------------------------------------------ --
 
         else:
 
@@ -626,6 +642,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         self.change_state('pairing_url_sent')
 
+        
         return response_detail
 
 # ------------------------------------------------------------------------------
