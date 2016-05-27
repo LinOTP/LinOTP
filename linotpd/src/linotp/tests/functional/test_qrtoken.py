@@ -43,24 +43,24 @@ from base64 import b64encode
 
 log = logging.getLogger(__name__)
 
-FLAG_PAIR_SERIAL  = 1 << 0
-FLAG_PAIR_CBURL   = 1 << 1
-FLAG_PAIR_CBSMS   = 1 << 2
-FLAG_PAIR_DIGITS  = 1 << 3
-FLAG_PAIR_HMAC    = 1 << 4
+FLAG_PAIR_SERIAL = 1 << 0
+FLAG_PAIR_CBURL = 1 << 1
+FLAG_PAIR_CBSMS = 1 << 2
+FLAG_PAIR_DIGITS = 1 << 3
+FLAG_PAIR_HMAC = 1 << 4
 
-TYPE_QRTOKEN        = 2
-QRTOKEN_VERSION     = 0
-RESPONSE_VERSION  = 0
+TYPE_QRTOKEN = 2
+QRTOKEN_VERSION = 0
+RESPONSE_VERSION = 0
 
-QRTOKEN_CT_FREE     = 0
-QRTOKEN_CT_PAIR     = 1
-QRTOKEN_CT_AUTH     = 2
+QRTOKEN_CT_FREE = 0
+QRTOKEN_CT_PAIR = 1
+QRTOKEN_CT_AUTH = 2
 
-FLAG_QR_COMP      = 1
-FLAG_QR_HAVE_URL  = 2
-FLAG_QR_HAVE_SMS  = 4
-FLAG_QR_SRVSIG    = 8
+FLAG_QR_COMP = 1
+FLAG_QR_HAVE_URL = 2
+FLAG_QR_HAVE_SMS = 4
+FLAG_QR_SRVSIG = 8
 
 
 def u64_to_transaction_id(u64_int):
@@ -89,7 +89,7 @@ class TestQRToken(TestController):
             'client': '',
             'active': active,
             'session': self.session,
-            }
+        }
 
         response = self.make_system_request("setPolicy", params=params)
         self.assertTrue('"status": true' in response, response)
@@ -114,7 +114,7 @@ class TestQRToken(TestController):
             'client': '',
             'active': active,
             'session': self.session,
-            }
+        }
 
         response = self.make_system_request("setPolicy", params=params)
         self.assertTrue('"status": true' in response, response)
@@ -122,7 +122,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def create_dummy_cb_policies(self):
-
         """ sets some dummy callback policies. callback policies get ignored
         by the tests, but are nonetheless necessary for the backend """
 
@@ -133,14 +132,16 @@ class TestQRToken(TestController):
         params = {'name': 'dummy1',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_pairing_callback_url=foo'}
+                  'action': 'qrtoken_pairing_callback_url=foo',
+                  'user': '*'}
 
         self.setPolicy(params)
 
         params = {'name': 'dummy2',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_pairing_callback_sms=foo'}
+                  'action': 'qrtoken_pairing_callback_sms=foo',
+                  'user': '*'}
 
         self.setPolicy(params)
 
@@ -151,14 +152,16 @@ class TestQRToken(TestController):
         params = {'name': 'dummy3',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_challenge_callback_url=foo'}
+                  'action': 'qrtoken_challenge_callback_url=foo',
+                  'user': '*'}
 
         self.setPolicy(params)
 
         params = {'name': 'dummy4',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_challenge_callback_sms=foo'}
+                  'action': 'qrtoken_challenge_callback_sms=foo',
+                  'user': '*'}
 
         self.setPolicy(params)
 
@@ -182,8 +185,7 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def enroll_qrtoken(self, hashlib=None):
-
+    def enroll_qrtoken(self, hashlib=None, user=None):
         """
         enrolls a qrtoken
 
@@ -202,6 +204,9 @@ class TestQRToken(TestController):
 
         if hashlib is not None:
             params['hashlib'] = hashlib
+
+        if user:
+            params['user'] = user
 
         response = self.make_admin_request('init', params)
 
@@ -222,7 +227,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def setPolicy(self, params):
-
         """ sets a system policy defined by param """
 
         response = self.make_system_request('setPolicy', params)
@@ -241,7 +245,7 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_callback_policies(self):
-
+        """QRTOKEN: check if callback policies returned callbacks are correct"""
         # ----------------------------------------------------------------------
 
         # set pairing callback policies
@@ -249,14 +253,16 @@ class TestQRToken(TestController):
         params = {'name': 'dummy1',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_pairing_callback_url=/foo/bar/url, '}
+                  'action': 'qrtoken_pairing_callback_url=/foo/bar/url',
+                  'user': '*'}
 
         self.setPolicy(params)
 
         params = {'name': 'dummy2',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_pairing_callback_sms=1234'}
+                  'action': 'qrtoken_pairing_callback_sms=1234',
+                  'user': '*'}
 
         self.setPolicy(params)
 
@@ -267,14 +273,16 @@ class TestQRToken(TestController):
         params = {'name': 'dummy3',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_challenge_callback_url=/bar/baz/url'}
+                  'action': 'qrtoken_challenge_callback_url=/bar/baz/url',
+                  'user': '*'}
 
         self.setPolicy(params)
 
         params = {'name': 'dummy4',
                   'scope': 'authentication',
                   'realm': '*',
-                  'action': 'qrtoken_challenge_callback_sms=5678'}
+                  'action': 'qrtoken_challenge_callback_sms=5678',
+                  'user': '*'}
 
         self.setPolicy(params)
 
@@ -296,7 +304,8 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(user_token_id)
+        pairing_response = self.create_pairing_response_by_serial(
+            user_token_id)
 
         # ----------------------------------------------------------------------
 
@@ -329,7 +338,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def assign_token_to_user(self, serial, user_login, pin=None):
-
         """
         assign a token to a user
 
@@ -377,7 +385,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def pair_until_challenge(self, pairing_url):
-
         """
         Executes a pairing for an existing token until the last
         step in which the challenge response is sent.
@@ -396,7 +403,8 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(user_token_id)
+        pairing_response = self.create_pairing_response_by_serial(
+            user_token_id)
 
         # ----------------------------------------------------------------------
 
@@ -418,9 +426,8 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def execute_correct_pairing(self, hashlib=None,
+    def execute_correct_pairing(self, hashlib=None, user=None,
                                 use_tan=False, tan_length=8):
-
         """
         do the pairing for given parameters
 
@@ -435,7 +442,7 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken(hashlib)
+        pairing_url = self.enroll_qrtoken(hashlib, user=user)
 
         # ----------------------------------------------------------------------
 
@@ -503,7 +510,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def create_user_token_by_pairing_url(self, pairing_url):
-
         """
         parses the pairing url and saves the extracted data in
         the fake token database of this test class.
@@ -517,7 +523,7 @@ class TestQRToken(TestController):
         data_encoded = pairing_url[len('lseqr://pair/'):]
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack('<bbI', data[0:6])
-        server_public_key = data[6:6+32]
+        server_public_key = data[6:6 + 32]
 
         # validate protocol versions and type id
 
@@ -529,7 +535,7 @@ class TestQRToken(TestController):
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[6+32:]
+        custom_data = data[6 + 32:]
 
         token_serial = None
         if flags & FLAG_PAIR_SERIAL:
@@ -564,7 +570,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def decrypt_and_verify_challenge(self, challenge_url):
-
         """
         Decrypts the data packed in the challenge url, verifies
         its content, returns the parsed data as a dictionary,
@@ -625,8 +630,8 @@ class TestQRToken(TestController):
         # prepare decryption by seperating R from
         # ciphertext and tag
 
-        R = challenge_data[5:5+32]
-        ciphertext = challenge_data[5+32:-16]
+        R = challenge_data[5:5 + 32]
+        ciphertext = challenge_data[5 + 32:-16]
         tag = challenge_data[-16:]
 
         # ----------------------------------------------------------------------
@@ -672,8 +677,8 @@ class TestQRToken(TestController):
             # plaintext has a server signature as a header
             # extract it and check if it is correct
 
-            server_signature = plaintext[10:10+32]
-            data = plaintext[10+32:]
+            server_signature = plaintext[10:10 + 32]
+            data = plaintext[10 + 32:]
 
             # calculate secret
 
@@ -741,7 +746,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def create_pairing_response_by_serial(self, user_token_id):
-
         """
         Creates a base64-encoded pairing response that identifies
         the token by its serial
@@ -790,15 +794,33 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_sig(self):
-
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
         self.execute_correct_pairing()
 
+        return
+
+# ------------------------------------------------------------------------------
+
+    def test_pairing_sig(self):
+        """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
+
+        self.execute_correct_pairing(user='def')
+
+        return
+
+# ------------------------------------------------------------------------------
+
+    def test_0000_pairing_sig(self):
+        """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
+
+        self.execute_correct_pairing(user='def@mymixrealm')
+
+        return
+
 # ------------------------------------------------------------------------------
 
     def test_pairing_tan(self):
-
         """QRTOKEN: check if pairing mechanism works correctly (tan based)"""
 
         self.execute_correct_pairing(use_tan=True)
@@ -806,7 +828,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_response_after_pairing(self):
-
         """QRTOKEN: check if a sent pairing response after pairing will fail"""
 
         user_token_id = self.execute_correct_pairing()
@@ -815,7 +836,8 @@ class TestQRToken(TestController):
 
         # create another pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(user_token_id)
+        pairing_response = self.create_pairing_response_by_serial(
+            user_token_id)
 
         # ----------------------------------------------------------------------
 
@@ -838,12 +860,12 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
@@ -851,7 +873,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_ill_formatted_pairing_response(self):
-
         """QRTOKEN: check if error is thrown on ill-formatted pairing response """
 
         self.enroll_qrtoken()
@@ -859,7 +880,6 @@ class TestQRToken(TestController):
                                                    'the server')
 
         # ----------------------------------------------------------------------
-
 
         result = response_dict.get('result', {})
         self.assertIn('status', result)
@@ -887,7 +907,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_wrong_challenge_response(self):
-
         """
         QRTOKEN: Testing if a wrong challenge response in pairing will fail
         """
@@ -932,7 +951,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_response_wrong_response_version(self):
-
         """
         QRTOKEN: pairing response with wrong response version should fail
         """
@@ -1007,12 +1025,12 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('Unexpected pair-response version', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
@@ -1020,7 +1038,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_response_wrong_serial(self):
-
         """
         QRTOKEN: checking, if pairing response with wrong serial will fail
         """
@@ -1093,12 +1110,12 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # # TODO: error mesage in here is pretty cryptic, because linotp
         # # creates a new token for WRONGSERIAL and then exits because it
@@ -1110,7 +1127,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_response_wrong_token_type(self):
-
         """
         QRTOKEN: checking, if pairing response with wrong token type will fail
         """
@@ -1185,12 +1201,12 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # ----------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # ----------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('wrong token type', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
@@ -1198,7 +1214,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_response_wrong_R(self):
-
         """
         QRTOKEN: checking, if pairing response with wrong R will fail
         """
@@ -1272,12 +1287,12 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # ----------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # ----------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('MAC check failed', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
@@ -1285,7 +1300,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_pairing_response_double_send(self):
-
         """
         QRTOKEN: Testing if sending 2 pairing responses will fail.
         """
@@ -1306,13 +1320,14 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
-        pairing_response = self.create_pairing_response_by_serial(user_token_id)
+        pairing_response = self.create_pairing_response_by_serial(
+            user_token_id)
 
         # ----------------------------------------------------------------------
 
         # send pairing responses
 
-        __ = self.send_pairing_response(pairing_response) # should be ok
+        __ = self.send_pairing_response(pairing_response)  # should be ok
         response_dict = self.send_pairing_response(pairing_response)
 
         # ----------------------------------------------------------------------
@@ -1330,12 +1345,12 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # --------------------------------------------------------------------
+        # # -------------------------------------------------------------------
 
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
@@ -1343,7 +1358,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_challenge_response_serial_signature(self):
-
         """ QRTOKEN: Executing complete challenge response with serial/sig """
 
         self.execute_correct_serial_challenge()
@@ -1351,7 +1365,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_challenge_response_serial_tan(self):
-
         """ QRTOKEN: Executing complete challenge response with serial/tan """
 
         self.execute_correct_serial_challenge(use_tan=True)
@@ -1359,7 +1372,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_wrong_serial_challenge_response(self):
-
         """ QRTOKEN: Sending a wrong challenge response on token (serial) """
 
         challenge_url = self.trigger_challenge_by_serial()
@@ -1423,7 +1435,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_unpaired_challenge_serial(self):
-
         """
          QRTOKEN: Check if unpaired token refuses incoming challenge requests
         """
@@ -1459,7 +1470,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_validate_user_pin_policy_1_wrong_pin(self):
-
         """ QRTOKEN: Validating user with pin policy 1 (wrong pin)"""
 
         user_token_id = self.execute_correct_pairing()
@@ -1489,7 +1499,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def set_pin(self, serial, pin):
-
         """
         sets the pin for a token
 
@@ -1525,7 +1534,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def create_multiple_challenges(self, user_login, pin):
-
         """
         Creates 2 tokens, pairs them and assigns them to the same user
         with the same pin, then calls validate/check with user and pin
@@ -1584,7 +1592,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_multiple_challenges(self):
-
         """ QRTOKEN: creating multiple challenges and validate them """
 
         # ----------------------------------------------------------------------
@@ -1664,7 +1671,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_validate_user_pin_policy_1(self):
-
         """ QRTOKEN: Validating user with pin policy 1 """
 
         user_token_id = self.execute_correct_pairing()
@@ -1722,7 +1728,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_validate_user_pin_policy_2(self):
-
         """ QRTOKEN: Validating user with pin policy 2 """
 
         user_token_id = self.execute_correct_pairing()
@@ -1826,7 +1831,6 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def test_offline_info(self):
-
         """ QRTOKEN: Checking if offline info is transmitted on validation """
 
         user_token_id = self.execute_correct_pairing()

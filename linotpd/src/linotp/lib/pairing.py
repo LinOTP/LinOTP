@@ -40,14 +40,14 @@ please take a look into the appropriate token type lib (e.g. lib.qrtoken)
 
 PAIR_VERSION = 0
 
-FLAG_PAIR_SERIAL  = 1 << 0
-FLAG_PAIR_CBURL   = 1 << 1
-FLAG_PAIR_CBSMS   = 1 << 2
-FLAG_PAIR_DIGITS  = 1 << 3
-FLAG_PAIR_HMAC    = 1 << 4
+FLAG_PAIR_SERIAL = 1 << 0
+FLAG_PAIR_CBURL = 1 << 1
+FLAG_PAIR_CBSMS = 1 << 2
+FLAG_PAIR_DIGITS = 1 << 3
+FLAG_PAIR_HMAC = 1 << 4
 FLAG_PAIR_COUNTER = 1 << 5
-FLAG_PAIR_TSTART  = 1 << 6
-FLAG_PAIR_TSTEP   = 1 << 7
+FLAG_PAIR_TSTART = 1 << 6
+FLAG_PAIR_TSTEP = 1 << 7
 
 hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
 token_types = {'qrtoken': 2}
@@ -62,7 +62,6 @@ def generate_pairing_url(token_type,
                          callback_sms_number=None,
                          otp_pin_length=None,
                          hash_algorithm=None):
-
     """
     Generates a pairing url that should be sent to the client.
 
@@ -206,9 +205,9 @@ def generate_pairing_url(token_type,
     #            ---------------------------------------
 
     if flags & FLAG_PAIR_DIGITS:
-        if not(0 < len(otp_pin_length) <= 12):
+        if not(6 <= otp_pin_length <= 12):
             raise InvalidFunctionParameter('otp_pin_length', 'Pin length must '
-                                           'be in the range 1..12')
+                                           'be in the range 6..12')
         data += struct.pack('<b', otp_pin_length)
 
     if flags & FLAG_PAIR_HMAC:
@@ -233,4 +232,4 @@ def generate_pairing_url(token_type,
 
     return 'lseqr://pair/' + encode_base64_urlsafe(data)
 
-#eof############################################################################
+#eof######################################################################
