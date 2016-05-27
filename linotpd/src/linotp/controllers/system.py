@@ -102,7 +102,7 @@ from linotp.lib.context import request_context
 import logging
 import linotp.model.meta
 
-Session = linotp.model.meta
+Session = linotp.model.meta.Session
 
 audit = config.get('audit')
 log = logging.getLogger(__name__)
