@@ -200,7 +200,7 @@ class TestQRToken(TestController):
 
         # initialize an unfinished token on the server
 
-        params = {'type': 'qr'}
+        params = {'type': 'qr', 'pin': '1234'}
 
         if hashlib is not None:
             params['hashlib'] = hashlib
@@ -316,7 +316,6 @@ class TestQRToken(TestController):
         # ----------------------------------------------------------------------
 
         # check if returned json is correct
-
         self.assertIn('challenge_url', response_dict.get('detail', {}))
 
         challenge_url = response_dict.get('detail', {}).get('challenge_url')
@@ -384,7 +383,7 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def pair_until_challenge(self, pairing_url):
+    def pair_until_challenge(self, pairing_url, pin='1234'):
         """
         Executes a pairing for an existing token until the last
         step in which the challenge response is sent.
@@ -416,18 +415,50 @@ class TestQRToken(TestController):
 
         # check if returned json is correct
 
-        self.assertIn('challenge_url', response_dict.get('detail', {}))
+        self.assertIn('result', response_dict)
+        result = response_dict.get('result')
 
-        challenge_url = response_dict.get('detail', {}).get('challenge_url')
-        self.assertIsNotNone(challenge_url)
-        self.assertTrue(challenge_url.startswith('lseqr://chal/'))
+        self.assertIn('value', result)
+        value = result.get('value')
+        self.assertFalse(value)
+
+        self.assertIn('status', result)
+        status = result.get('status')
+        self.assertTrue(status)
+
+        # ----------------------------------------------------------------------
+
+        # trigger challenge
+
+        serial = self.tokens[user_token_id]['serial']
+
+        params = {'serial': serial,
+                  'pass': pin,
+                  'data': serial}
+
+        response = self.make_validate_request('check_s', params)
+        response_dict = json.loads(response.body)
+
+        print response_dict
+
+        # ----------------------------------------------------------------------
+
+        # check if challenge was triggered
+
+        self.assertIn('detail', response_dict)
+        detail = response_dict.get('detail')
+
+        self.assertIn('transactionid', detail)
+        self.assertIn('message', detail)
+
+        challenge_url = detail.get('message')
 
         return challenge_url
 
 # ------------------------------------------------------------------------------
 
     def execute_correct_pairing(self, hashlib=None, user=None,
-                                use_tan=False, tan_length=8):
+                                use_tan=False, tan_length=8, pin='1234'):
         """
         do the pairing for given parameters
 
@@ -448,7 +479,7 @@ class TestQRToken(TestController):
 
         # execute the first step of the pairing
 
-        challenge_url = self.pair_until_challenge(pairing_url)
+        challenge_url = self.pair_until_challenge(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -1741,7 +1772,7 @@ class TestQRToken(TestController):
 
         # ----------------------------------------------------------------------
 
-        params = {'user': 'root', 'pass': '',
+        params = {'user': 'root', 'pass': '1234',
                   'data': '2000 dollars to that nigerian prince'}
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
