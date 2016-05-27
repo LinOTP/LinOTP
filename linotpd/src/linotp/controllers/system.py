@@ -27,34 +27,30 @@
 system controller - to configure the system
 """
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
+import json
 import re
 import webob
 import binascii
+
 from pylons import request, response, config, tmpl_context as c
 
 from useridresolver.UserIdResolver import ResolverLoadConfigError
 
-import linotp
 from linotp.lib.selftest import isSelfTest
-from linotp.model.meta import Session
 
 from linotp.lib.base import BaseController
 
-from linotp.lib.config  import storeConfig
-from linotp.lib.config  import getLinotpConfig
-from linotp.lib.config  import getFromConfig
-from linotp.lib.config  import updateConfig
-from linotp.lib.config  import removeFromConfig
+from linotp.lib.config import storeConfig
+from linotp.lib.config import getLinotpConfig
+from linotp.lib.config import getFromConfig
+from linotp.lib.config import updateConfig
+from linotp.lib.config import removeFromConfig
 
-from linotp.lib.realm  import setDefaultRealm
-from linotp.lib.realm  import isRealmDefined
+from linotp.lib.realm import setDefaultRealm
+from linotp.lib.realm import isRealmDefined
 
-from linotp.lib.util  import check_session
+from linotp.lib.util import check_session
 from linotp.lib.util import get_client
 from linotp.lib.util import get_version_number
 
@@ -65,17 +61,17 @@ from linotp.lib.resolver import getResolverInfo
 from linotp.lib.resolver import deleteResolver
 from linotp.lib.resolver import parse_resolver_spec
 
-from linotp.lib.error   import ParameterError
+from linotp.lib.error import ParameterError
 
-from linotp.lib.util    import getParam, getLowerParams
-from linotp.lib.reply   import sendResult, sendError, sendXMLResult, sendXMLError
-from linotp.lib.realm   import getRealms
-from linotp.lib.realm   import getDefaultRealm
-from linotp.lib.user    import setRealm
-from linotp.lib.user    import getUserFromRequest
+from linotp.lib.util import getParam, getLowerParams
+from linotp.lib.reply import sendResult, sendError, sendXMLResult, sendXMLError
+from linotp.lib.realm import getRealms
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.user import setRealm
+from linotp.lib.user import getUserFromRequest
 
-from linotp.lib.realm   import deleteRealm
-from linotp.lib.token   import newToken
+from linotp.lib.realm import deleteRealm
+from linotp.lib.token import newToken
 
 from linotp.lib.policy import getPolicies
 from linotp.lib.policy import checkPolicyPre
@@ -90,19 +86,25 @@ from linotp.lib.policy.definitions import getPolicyDefinitions
 from linotp.lib.policy.manage import create_policy_export_file
 from linotp.lib.policy import get_client_policy
 
-from linotp.lib.support import InvalidLicenseException, \
-                               getSupportLicenseInfo, verifyLicenseInfo, \
-                               setSupportLicense
+from linotp.lib.support import InvalidLicenseException
+from linotp.lib.support import verifyLicenseInfo
 
+from linotp.lib.support import getSupportLicenseInfo
+from linotp.lib.support import isSupportLicenseValid
+from linotp.lib.support import do_nagging
+from linotp.lib.support import setSupportLicense
 from paste.fileapp import FileApp
 from cgi import escape
 from pylons.i18n.translation import _
 
 from linotp.lib.context import request_context
 
-audit = config.get('audit')
-
 import logging
+import linotp.model.meta
+
+Session = linotp.model.meta
+
+audit = config.get('audit')
 log = logging.getLogger(__name__)
 
 optional = True
@@ -235,10 +237,9 @@ class SystemController(BaseController):
         DefaultOtpLen\
         DefaultResetFailCount\
         "
-
-        keys = [ "DefaultMaxFailCount", "DefaultSyncWindow", "DefaultCountWindow", "DefaultOtpLen",
+        keys = ["DefaultMaxFailCount", "DefaultSyncWindow",
+                "DefaultCountWindow", "DefaultOtpLen",
                 "DefaultResetFailCount"]
-
 
         # config settings from here
         try:
@@ -1110,7 +1111,7 @@ class SystemController(BaseController):
             lines = []
             for pol in pols:
                 lines.append(
-                    { 'id' : pol,
+                    { 'id': pol,
                         'cell': [
                                  1 if pols[pol].get('active', "True") == "True" else 0,
                                  pol,
@@ -1125,8 +1126,8 @@ class SystemController(BaseController):
                     )
             # sorting
             reverse = False
-            sortnames = { 'active': 0, 'name' : 1, 'user' : 2, 'scope' : 3,
-                    'action' : 4, 'realm' : 5, 'client':6, 'time' : 7 }
+            sortnames = { 'active': 0, 'name': 1, 'user': 2, 'scope': 3,
+                    'action': 4, 'realm': 5, 'client':6, 'time': 7 }
             if sortorder == "desc":
                 reverse = True
             lines = sorted(lines, key=lambda policy: policy['cell'][sortnames[sortname]] , reverse=reverse)
@@ -1597,8 +1598,8 @@ class SystemController(BaseController):
                     raise Exception ('current activeSecurityModule >%r< is not initialized::%s:: - Please check your security module configuration and connection!' % (hsm_id, error))
 
                 ready = hsm.isReady()
-                res['setupSecurityModule'] = {'activeSecurityModule': hsm_id ,
-                                              'connected' : ready }
+                res['setupSecurityModule'] = {'activeSecurityModule': hsm_id,
+                                              'connected': ready}
                 ret = ready
             else:
                 if hsm_id != sep.activeOne:
@@ -1608,9 +1609,9 @@ class SystemController(BaseController):
 
                 hsm = c.hsm.get('obj')
                 ready = hsm.isReady()
-                res['setupSecurityModule'] = {'activeSecurityModule': hsm_id ,
-                                              'connected' : ready ,
-                                              'result' : ret}
+                res['setupSecurityModule'] = {'activeSecurityModule': hsm_id,
+                                              'connected': ready,
+                                              'result': ret}
 
             c.audit['success'] = ret
             Session.commit()
@@ -1635,7 +1636,7 @@ class SystemController(BaseController):
         res = {}
         try:
 
-            (lic_info, _sig) = linotp.lib.support.getSupportLicenseInfo()
+            (lic_info, _sig) = getSupportLicenseInfo()
             res = {}
             res.update(lic_info)
 
@@ -1673,12 +1674,12 @@ class SystemController(BaseController):
 
 
             (res, msg,
-             lic_info) = linotp.lib.support.isSupportLicenseValid(licString)
+             lic_info) = isSupportLicenseValid(licString)
 
             if res is False:
                 info['reason'] = msg
 
-            if linotp.lib.support.do_nagging(lic_info):
+            if do_nagging(lic_info):
                 info['download_licence_info'] = _("<h1>contact support</h1>")
 
             c.audit['success'] = res
@@ -1704,17 +1705,22 @@ class SystemController(BaseController):
         res = False
         message = None
 
-
         sendResultMethod = sendResult
         sendErrorMethod = sendError
 
         try:
-            format = request.POST.get('format')
-            if format == 'xml':
+
+            try:
+                licField = request.POST['license']
+            except KeyError as _keyerr:
+                return sendErrorMethod(response, 'No key \'license\': '
+                                       'Not a form request')
+
+            response_format = request.POST.get('format', '')
+            if response_format == 'xml':
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
 
-            licField = request.POST['license']
             log.info("[setSupport] setting support: %s" % (licField))
 
             # In case of normal post requests, it is a "instance" of
@@ -1727,7 +1733,7 @@ class SystemController(BaseController):
                 support_description = licField.encode('utf-8')
             log.debug("[setSupport] license %s", support_description)
 
-            res, msg = linotp.lib.support.setSupportLicense(support_description)
+            res, msg = setSupportLicense(support_description)
             if res is False:
                 message = {'reason': msg}
 
@@ -1746,5 +1752,4 @@ class SystemController(BaseController):
             log.error("[setSupport] done")
 
 
-#eof###########################################################################
-
+# eof ########################################################################

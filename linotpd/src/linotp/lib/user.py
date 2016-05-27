@@ -381,7 +381,8 @@ def splitUser(username):
     return (user, group)
 
 
-def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
+def getUserFromParam(param, optionalOrRequired, optional=False,
+                     required=False):
     realm = ""
 
     # TODO: merge result - could this be removed
@@ -392,7 +393,7 @@ def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
 
     log.debug("[getUserFromParam] entering function")
     user = getParam(param, "user", optionalOrRequired)
-    log.debug("[getUserFromParam] got user <<%r>>" % user)
+    log.debug("[getUserFromParam] got user <<%r>>", user)
 
     if user is None:
         user = ""
@@ -406,7 +407,7 @@ def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
         realm = param["realm"]
 
     if user != "":
-        if realm is None or realm == "" :
+        if not realm:
             realm = getDefaultRealm()
 
     usr = User(user, realm, "")
@@ -429,63 +430,64 @@ def getUserFromParam(param, optionalOrRequired, optional=False, required=False):
 
     log.debug("[getUserFromParam] creating user object %r,%r,%r",
               user, realm, resolver_config_id)
-    log.debug("[getUserFromParam] created user object %r " % usr)
+    log.debug("[getUserFromParam] created user object %r ", usr)
 
     return usr
 
 
-def getUserFromRequest(request):
+def getUserFromRequest(request, config=None):
     '''
     This function first tries to get the user from
      * a DigestAuth and otherwise from
      * basic auth and otherwise from
      * the client certificate
     '''
-    d_auth = { 'login' : '' }
+    d_auth = {'login': ''}
 
     param = request.params
 
     try:
         # Do BasicAuth
-        if request.environ.has_key('REMOTE_USER'):
+        if 'REMOTE_USER' in request.environ:
             d_auth['login'] = request.environ['REMOTE_USER']
             log.debug("[getUserFromRequest] BasicAuth: found the "
-                      "REMOTE_USER: %r" % d_auth)
+                      "REMOTE_USER: %r", d_auth)
 
         # Do DigestAuth
-        elif request.environ.has_key('HTTP_AUTHORIZATION'):
+        elif 'HTTP_AUTHORIZATION' in request.environ:
             a_auth = request.environ['HTTP_AUTHORIZATION'].split(",")
 
             for field in a_auth:
                 (key, _delimiter, value) = field.partition("=")
                 d_auth[key.lstrip(' ')] = value.strip('"')
 
-            if d_auth.has_key('Digest username'):
-                d_auth['login'] = d_auth['Digest username']
+            d_auth['login'] = d_auth.get('Digest username', '') or ''
 
             log.debug("[getUserFromRequest] DigestAuth: found "
-                      "this HTTP_AUTHORIZATION: %r" % d_auth)
+                      "this HTTP_AUTHORIZATION: %r", d_auth)
 
         # Do SSL Client Cert
-        elif request.environ.has_key('SSL_CLIENT_S_DN_CN'):
-            d_auth['login'] = request.environ.get('SSL_CLIENT_S_DN_CN')
+        elif 'SSL_CLIENT_S_DN_CN' in request.environ:
+            d_auth['login'] = request.environ.get('SSL_CLIENT_S_DN_CN', '')
             log.debug("[getUserFromRequest] SSLClientCert Auth: found "
-                      "this SSL_CLIENT_S_DN_CN: %r" % d_auth)
+                      "this SSL_CLIENT_S_DN_CN: %r", d_auth)
 
         # In case of selftest
-        log.debug("[getUserFromRequest] Doing selftest!: %r" % isSelfTest())
+        self_test = isSelfTest(config=config)
+        log.debug("[getUserFromRequest] Doing selftest!: %r", self_test)
 
-        if isSelfTest():
+        if self_test:
             log.debug("[getUserFromRequest] Doing selftest!")
             param = request.params
-            d_auth['login'] = getParam(param, "selftest_admin", True)
-            log.debug("[getUserFromRequest] Found the user: %r in the request."
-                       % d_auth)
+            login = getParam(param, "selftest_admin", True)
+            if login:
+                d_auth['login'] = login
+                log.debug("[getUserFromRequest] Found selfservice user: %r in "
+                          "the request.", d_auth)
 
-    except Exception as e:
-        log.exception("[getUserFromRequest] An error occurred when trying to fetch "
-                  "the user from the request: %r" % e)
-        pass
+    except Exception as exx:
+        log.exception("[getUserFromRequest] An error occurred when trying"
+                      " to fetch the user from the request: %r", exx)
 
     return d_auth
 

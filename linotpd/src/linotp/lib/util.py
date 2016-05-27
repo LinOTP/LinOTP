@@ -239,7 +239,9 @@ def _get_client_from_request(request=None):
     This function returns the client as it is passed in the HTTP Request.
     This is the very HTTP client, that contacts the LinOTP server.
     '''
-    client = request.environ.get('REMOTE_ADDR', None)
+
+    client = request.environ.get('REMOTE_ADDR',
+                                 request.environ.get('HTTP_REMOTE_ADDR', None))
 
     x_forwarded_for = config.get('client.X_FORWARDED_FOR', '')
     if x_forwarded_for.lower().strip() == 'true':

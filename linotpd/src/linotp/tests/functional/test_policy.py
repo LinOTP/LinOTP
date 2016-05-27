@@ -51,19 +51,18 @@ class TestPolicies(TestController):
         '''
         Overwrite the deleting of the realms!
 
-        If the realms are deleted also the table TokenRealm gets deleted and we loose the information
-        how many tokens are within a realm!
+        If the realms are deleted also the table TokenRealm gets deleted and
+        we loose the information how many tokens are within a realm!
         '''
 
         TestController.setUp(self)
-        self.set_config_selftest()
         return
 
     def tearDown(self):
         ''' Overwrite parent tear down, which removes all realms '''
         return
 
-    ### define Admins
+    # define Admins
 
     def test_00_init(self):
         '''
@@ -71,6 +70,7 @@ class TestPolicies(TestController):
         '''
         self.delete_all_policies()
         self.delete_all_token()
+
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -78,28 +78,30 @@ class TestPolicies(TestController):
         '''
         Policy 01: create a policy for the superadmin
         '''
-        parameters = { 'name' : 'ManageAll',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : '*',
-                       'user' : 'superadmin, Administrator',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'ManageAll',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': '*',
+                      'user': 'superadmin, Administrator',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
         self.assertTrue('"status": true' in response, response)
 
     def test_02getPolicy_Realm(self):
         '''
         Policy 02: create a policy for the realm admin
         '''
-        parameters = { 'name' : 'ManageRealm1',
-                       'scope' : 'admin',
-                       'realm' : 'myDefRealm',
-                       'action' : '*',
-                       'user' : 'adminR1, adminR2',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'ManageRealm1',
+                      'scope': 'admin',
+                      'realm': 'myDefRealm',
+                      'action': '*',
+                      'user': 'adminR1, adminR2',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -107,41 +109,49 @@ class TestPolicies(TestController):
         '''
         Policy 03: Realm admin reads policies
         '''
-        parameters = { 'selftest_admin' : 'adminR1'}
-        response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
+        parameters = {}
+        response = self.make_system_request(action='getPolicy',
+                                            params=parameters,
+                                            auth_user='adminR1')
 
         self.assertTrue('"status": true' in response, response)
 
-    ##### Define System access
+        return
+
+    # Define System access
 
     def test_04setPolicy_System(self):
         '''
         Policy 04: The superadmin is allowed to write to system and thus to set policies
         '''
-        parameters = { 'name' : 'sysSuper',
-                       'scope' : 'system',
-                       'realm' : '*',
-                       'action' : '*',
-                       'user' : 'superadmin',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'sysSuper',
+                      'scope': 'system',
+                      'realm': '*',
+                      'action': '*',
+                      'user': 'superadmin',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_05setPolicy_System(self):
         '''
         Policy 05: The realmAdmin is allowed to read the system config
         '''
-        parameters = { 'name' : 'sysRealms1Admin',
-                       'scope' : 'system',
-                       'realm' : '*',
-                       'action' : 'read',
-                       'enforce': 'true',
-                       'user' : 'adminR1',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'sysRealms1Admin',
+                      'scope': 'system',
+                      'realm': '*',
+                      'action': 'read',
+                      'enforce': 'true',
+                      'user': 'adminR1',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -153,18 +163,19 @@ class TestPolicies(TestController):
             have no access to the system
         """
 
-        parameters = { 'name': 'sysAdminEnroller',
-                       'scope': 'system',
-                       'realm': '*',
-                       'action': '',
-                       'user': 'adminEnroller',
-                       'selftest_admin': 'superadmin'
+        parameters = {'name': 'sysAdminEnroller',
+                      'scope': 'system',
+                      'realm': '*',
+                      'action': '',
+                      'user': 'adminEnroller',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('setPolicy failed: name and action required!' in response, response)
+        self.assertTrue('setPolicy failed: name and action required!' in
+                        response, response)
 
         return
 
@@ -173,75 +184,84 @@ class TestPolicies(TestController):
         Policy 07a: The setting of a policy with an empty action is not allowed
         """
 
-        parameters = { 'name' : 'sysAdminEnroller',
-                       'scope' : 'system',
-                       'realm' : '*',
-                       'action' : '',
-                       'user' : 'adminEnroller',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'sysAdminEnroller',
+                      'scope': 'system',
+                      'realm': '*',
+                      'action': '',
+                      'user': 'adminEnroller',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": false' in response, response)
         self.assertTrue('setPolicy failed: name and action required!' in response, response)
 
         return
 
-    #### now check the system rights
+    # now check the system rights
     def test_07checkPolicy_System(self):
         '''
         Policy 07: The realm Admin returns true, if he reads the system
         '''
-        parameters = {
-                       'selftest_admin' : 'adminR1'
-                      }
-        response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
+        parameters = {}
+        response = self.make_system_request(action='getPolicy',
+                                            params=parameters,
+                                            auth_user='adminR1')
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_08checkPolicy_System(self):
         '''
         Policy 08: The realm Admin returns false, if he tries to write to system
         '''
-        parameters = { 'name' : 'sysXXX',
-                       'scope' : 'system',
-                       'realm' : '*',
-                       'action' : '',
-                       'user' : 'neuerAdmin',
-                       'selftest_admin' : 'adminR1'
+        parameters = {'name': 'sysXXX',
+                      'scope': 'system',
+                      'realm': '*',
+                      'action': '',
+                      'user': 'neuerAdmin',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='adminR1')
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_09checkPolicy_System(self):
         '''
         Policy 09: The enroller Admin returns false, if he tries to write to system
         '''
-        parameters = { 'name' : 'sysXXX',
-                       'scope' : 'system',
-                       'realm' : '*',
-                       'action' : '',
-                       'user' : 'adminEnroller',
-                       'selftest_admin' : 'adminEnroller'
+        parameters = {'name': 'sysXXX',
+                      'scope': 'system',
+                      'realm': '*',
+                      'action': '',
+                      'user': 'adminEnroller',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='adminEnroller')
 
         self.assertTrue('"status": false' in response, response)
+        return
 
     def test_10checkPolicy_System(self):
         '''
         Policy 10: The enroller Admin returns false, if he tries to read to system
         '''
-        parameters = {
-                       'selftest_admin' : 'adminEnroller'
-                      }
-        response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
+        parameters = {}
+        response = self.make_system_request(action='getPolicy',
+                                            params=parameters,
+                                            auth_user='adminEnroller')
 
         self.assertTrue('"status": false' in response, response)
 
+        return
 
-    ##### define admin access
+    # define admin access
     '''
     Here we need to define admin rights and test the admin rights
     '''
@@ -250,311 +270,347 @@ class TestPolicies(TestController):
         Policy 201: creating all the administrators (scope admin) with all necessary policies.
         '''
         # one administrator for initialize
-        parameters = { 'name' : 'adm201',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'initSPASS, initHMAC, initETNG, initSMS, initMOTP',
-                       'user' : 'admin_init',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': ('initSPASS, initHMAC, initETNG, '
+                                 'initSMS, initMOTP'),
+                      'user': 'admin_init',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
         # one administrator for enabling and disabling
-        parameters = { 'name' : 'adm201a',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'enable, disable',
-                       'user' : 'admin_enable_disable',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201a',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': 'enable, disable',
+                      'user': 'admin_enable_disable',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         # one administrator for setting
-        parameters = { 'name' : 'adm201b',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'set',
-                       'user' : 'admin_set',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201b',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': 'set',
+                      'user': 'admin_set',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         # one administrator for setting
-        parameters = { 'name' : 'adm201c',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'setOTPPIN, setMOTPPIN, setSCPIN',
-                       'user' : 'admin_setpin',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201c',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': 'setOTPPIN, setMOTPPIN, setSCPIN',
+                      'user': 'admin_setpin',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         # one administrator for resyncing
-        parameters = { 'name' : 'adm201d',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'resync',
-                       'user' : 'admin_resync',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201d',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': 'resync',
+                      'user': 'admin_resync',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         # one administrator for resetting
-        parameters = { 'name' : 'adm201e',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'reset',
-                       'user' : 'admin_reset',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201e',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': 'reset',
+                      'user': 'admin_reset',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         # one administrator for removing
-        parameters = { 'name' : 'adm201f',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'remove',
-                       'user' : 'admin_remove',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201f',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': 'remove',
+                      'user': 'admin_remove',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         # one administrator for removing
-        parameters = { 'name' : 'adm201g',
-                       'scope' : 'admin',
-                       'realm' : '*',
-                       'action' : 'assign, unassign',
-                       'user' : 'admin_assign_unassign',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'adm201g',
+                      'scope': 'admin',
+                      'realm': '*',
+                      'action': 'assign, unassign',
+                      'user': 'admin_assign_unassign',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_202_initToken(self):
         '''
         Policy 202: Init tokens in different with different admins. "admin_init" is allowed to do so, "admin_reset" not.
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'type' : 'spass',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'cko_test_001',
+                      'type': 'spass',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user='admin_init')
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'cko_test_003',
-                       'type' : 'spass',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'cko_test_003',
+                      'type': 'spass',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user='admin_init')
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'cko_test_002',
-                       'type' : 'spass',
-                       'selftest_admin' : 'admin_reset'
+        parameters = {'serial': 'cko_test_002',
+                      'type': 'spass',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user='admin_reset')
 
         self.assertTrue('"status": false' in response, response)
 
+        return
 
     def test_203_enable_disbale(self):
         '''
         Policy 203: enabling and disabling tokens. "admin_enable_disable" is allowed, "admin_init" not.
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'cko_test_001',
                       }
-        response = self.app.get(url(controller='admin', action='disable'), params=parameters)
+        response = self.make_admin_request(action='disable',
+                                           params=parameters,
+                                           auth_user='admin_init')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_enable_disable'
-                      }
-        response = self.app.get(url(controller='admin', action='disable'), params=parameters)
+        parameters = {'serial': 'cko_test_001'}
+        response = self.make_admin_request(action='disable',
+                                           params=parameters,
+                                           auth_user='admin_enable_disable')
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_init'
-                      }
-        response = self.app.get(url(controller='admin', action='enable'), params=parameters)
+        parameters = {'serial': 'cko_test_001'}
+        response = self.make_admin_request(action='enable',
+                                           params=parameters,
+                                           auth_user='admin_init')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_enable_disable'
-                      }
-        response = self.app.get(url(controller='admin', action='enable'), params=parameters)
+        parameters = {'serial': 'cko_test_001'}
+        response = self.make_admin_request(action='enable',
+                                           params=parameters,
+                                           auth_user='admin_enable_disable')
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_204_set(self):
         '''
         Policy 204: setting token properties. "admin_set" is allowed, "admin_init" not.
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'maxFailCount' : '20',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'cko_test_001',
+                      'maxFailCount': '20',
                       }
-        response = self.app.get(url(controller='admin', action='set'), params=parameters)
+        response = self.make_admin_request(action='set',
+                                           params=parameters,
+                                           auth_user='admin_init')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'maxFailCount' : '20',
-                       'selftest_admin' : 'admin_set'
+        parameters = {'serial': 'cko_test_001',
+                      'maxFailCount': '20',
                       }
-        response = self.app.get(url(controller='admin', action='set'), params=parameters)
+        response = self.make_admin_request(action='set',
+                                           params=parameters,
+                                           auth_user='admin_set')
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_205_setPIN(self):
         '''
         Policy 205: setting PIN. "admin_setpin" is allowed, "admin_set" not!
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'userpin' : 'test',
-                       'selftest_admin' : 'admin_set'
+        parameters = {'serial': 'cko_test_001',
+                      'userpin': 'test',
                       }
-        response = self.app.get(url(controller='admin', action='setPin'), params=parameters)
+        response = self.make_admin_request(action='setPin',
+                                           params=parameters,
+                                           auth_user='admin_set')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'userpin' : 'test',
-                       'selftest_admin' : 'admin_setpin'
+        parameters = {'serial': 'cko_test_001',
+                      'userpin': 'test',
                       }
-        response = self.app.get(url(controller='admin', action='setPin'), params=parameters)
+        response = self.make_admin_request(action='setPin',
+                                           params=parameters,
+                                           auth_user='admin_setpin')
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'pin' : 'test',
-                       'selftest_admin' : 'admin_set'
+        parameters = {'serial': 'cko_test_001',
+                      'pin': 'test',
                       }
-        response = self.app.get(url(controller='admin', action='set'), params=parameters)
+        response = self.make_admin_request(action='set',
+                                           params=parameters,
+                                           auth_user='admin_set')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'pin' : 'test',
-                       'selftest_admin' : 'admin_setpin'
+        parameters = {'serial': 'cko_test_001',
+                      'pin': 'test',
                       }
-        response = self.app.get(url(controller='admin', action='set'), params=parameters)
+        response = self.make_admin_request(action='set',
+                                           params=parameters,
+                                           auth_user='admin_setpin')
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_206_resync(self):
         '''
         Policy 206: resynching token. "admin_resync" is allowed. "admin_set" not.
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'otp1' : '123456',
-                       'otp2' : '123456',
-                       'selftest_admin' : 'admin_set'
+        parameters = {'serial': 'cko_test_001',
+                      'otp1': '123456',
+                      'otp2': '123456',
                       }
-        response = self.app.get(url(controller='admin', action='resync'), params=parameters)
+        response = self.make_admin_request(action='resync',
+                                           params=parameters,
+                                           auth_user='admin_set')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'otp1' : '123456',
-                       'otp2' : '123456',
-                       'selftest_admin' : 'admin_resync'
+        parameters = {'serial': 'cko_test_001',
+                      'otp1': '123456',
+                      'otp2': '123456',
                       }
 
-        response = self.app.get(url(controller='admin', action='resync'), params=parameters)
+        response = self.make_admin_request(action='resync',
+                                           params=parameters,
+                                           auth_user='admin_resync')
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_207_reset(self):
         '''
         Policy 207: admin is allowed to reset a token
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_set'
-                      }
-        response = self.app.get(url(controller='admin', action='reset'), params=parameters)
+        parameters = {'serial': 'cko_test_001'}
+        response = self.make_admin_request(action='reset',
+                                           params=parameters,
+                                           auth_user='admin_set')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_reset'
-                      }
-        response = self.app.get(url(controller='admin', action='reset'), params=parameters)
+        parameters = {'serial': 'cko_test_001'}
+        response = self.make_admin_request(action='reset',
+                                           params=parameters,
+                                           auth_user='admin_reset'
+                                           )
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_208_assign_unassign(self):
         '''
         Policy 208: admin_assign_unassign is allowed to assign and unassign a token. admin_set is not allowed to assign
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'user' : 'root',
-                       'selftest_admin' : 'admin_set'
-                      }
-        response = self.app.get(url(controller='admin', action='assign'), params=parameters)
+        parameters = {'serial': 'cko_test_001',
+                      'user': 'root'}
+        response = self.make_admin_request(action='assign',
+                                           params=parameters,
+                                           auth_user='admin_set')
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'user' : 'root',
-                       'selftest_admin' : 'admin_assign_unassign'
-                      }
-        response = self.app.get(url(controller='admin', action='assign'), params=parameters)
+        parameters = {'serial': 'cko_test_001',
+                      'user': 'root'}
+        response = self.make_admin_request(action='assign',
+                                           params=parameters,
+                                           auth_user='admin_assign_unassign')
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_assign_unassign'
-                      }
-        response = self.app.get(url(controller='admin', action='unassign'), params=parameters)
+        parameters = {'serial': 'cko_test_001'}
+        response = self.make_admin_request(action='unassign',
+                                           params=parameters,
+                                           auth_user='admin_assign_unassign')
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_209_remove_fail(self):
         '''
         Policy 209: test remove fail
         '''
-        parameters = { 'serial' : 'cko_test_003',
-                       'selftest_admin' : 'admin_set'
-                      }
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
+        parameters = {'serial': 'cko_test_003'}
+        response = self.make_admin_request(action='remove',
+                                           params=parameters,
+                                           auth_user='admin_set')
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_210_remove_success(self):
         '''
         Policy 210: test remove success
         '''
-        parameters = { 'serial' : 'cko_test_001',
-                       'selftest_admin' : 'admin_remove'
-                      }
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
+        parameters = {'serial': 'cko_test_001'}
+        response = self.make_admin_request(action='remove',
+                                           params=parameters,
+                                           auth_user='admin_remove')
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_211_remove_in_wrong_realm(self):
         '''
@@ -565,53 +621,71 @@ class TestPolicies(TestController):
         realm = "realm211"
         realm_wrong = "realmwrong211"
         serial = "spass211"
-        response = self.app.get(url(controller="system", action="setPolicy"), params={'name' : policy,
-                                                                                  'scope' : 'admin',
-                                                                                  'action' : 'initHMAC, remove',
-                                                                                  'user' : admin,
-                                                                                  'realm' : realm,
-                                                                                  'selftest_admin' : 'superadmin'})
+        params = {'name': policy,
+                  'scope': 'admin',
+                  'action': 'initHMAC, remove',
+                  'user': admin,
+                  'realm': realm,
+                  }
 
+        response = self.make_system_request(action="setPolicy",
+                                            params=params,
+                                            auth_user='superadmin')
 
         self.assertTrue('"setPolicy pol211":' in response, response)
         self.assertTrue('"status": true,' in response, response)
 
         # add token to realm_wrong
-        response = self.app.get(url(controller="admin", action="init"), params={'serial' : serial,
-                                                                               'type' : 'spass',
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'serial': serial,
+                  'type': 'spass',
+                  }
+        response = self.make_admin_request(action="init",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller="admin", action="tokenrealm"), params={'serial' : serial,
-                                                                               'realms' : realm_wrong,
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'serial': serial,
+                  'realms': realm_wrong,
+                  }
+        response = self.make_admin_request(action="tokenrealm",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": 1' in response, response)
 
         # admin will fail to remove token in wrong realm
-        response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
-                                                                               'selftest_admin' : admin})
+        params = {'serial': serial}
+        response = self.make_admin_request(action="remove",
+                                           params=params,
+                                           auth_user=admin)
 
         self.assertTrue('"status": false,' in response, response)
-        self.assertTrue('You do not have the administrative right to remove token' in response, response)
+        self.assertTrue('You do not have the administrative right to remove'
+                        ' token' in response, response)
 
         # remove token
-        response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'serial': serial}
+        response = self.make_admin_request(action="remove",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": 1' in response, response)
 
         # remove policy
-        response = self.app.get(url(controller="system", action="delPolicy"), params={'name' : policy,
-                                                                                  'selftest_admin' : 'superadmin'})
-
+        params = {'name': policy, }
+        response = self.make_system_request(action="delPolicy",
+                                            params=params,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
-        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response, response)
+        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response,
+                        response)
+
+        return
 
     def test_212_remove_no_action(self):
         '''
@@ -623,73 +697,71 @@ class TestPolicies(TestController):
         serial = "spass212"
 
         # add token to realm_wrong
-        #response = self.app.get(url(controller="admin", action="init"),
-        #                        params={'serial' : serial,
-        #                                   'type' : 'spass',
-        #                                   'selftest_admin' : 'superadmin'})
-        #
-        #self.assertTrue('"status": true,' in response
-        #self.assertTrue('"value": true' in response
+        params = {'name': policy,
+                  'scope': 'admin',
+                  'action': 'initHMAC, initSPASS',
+                  'user': admin,
+                  'realm': realm,
+                  }
 
-
-        response = self.app.get(url(controller="system", action="setPolicy"),
-                                params={'name' : policy,
-                                          'scope' : 'admin',
-                                          'action' : 'initHMAC, initSPASS',
-                                          'user' : admin,
-                                          'realm' : realm,
-                                          'selftest_admin' : 'superadmin'
-                                        }
-                                )
-
+        response = self.make_system_request(action="setPolicy",
+                                            params=params,
+                                            auth_user='superadmin')
 
         self.assertTrue('"setPolicy pol212":' in response, response)
         self.assertTrue('"status": true,' in response, response)
 
         # add token to realm_wrong
-        response = self.app.get(url(controller="admin", action="init"),
-                                params={'serial' : serial,
-                                           'type' : 'spass',
-                                           'selftest_admin' : 'superadmin'})
+        params = {'serial': serial,
+                  'type': 'spass'}
+
+        response = self.make_admin_request(action="init",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller="admin", action="tokenrealm"),
-                                params={'serial' : serial,
-                                           'realms' : realm,
-                                           'selftest_admin' : 'superadmin'})
+        params = {'serial': serial,
+                  'realms': realm,
+                  }
+        response = self.make_admin_request(action="tokenrealm",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": 1' in response, response)
 
         # admin will fail to remove token in his right realm
-        response = self.app.get(url(controller="admin", action="remove"),
-                                params={'serial' : serial,
-                                           'selftest_admin' : admin})
+        params = {'serial': serial}
+        response = self.make_admin_request(action="remove",
+                                           params=params,
+                                           auth_user=admin)
 
         self.assertTrue('"status": false,' in response, response)
-        self.assertTrue('ERR410: You do not have the administrative right to remove token' in response, response)
+        self.assertTrue('ERR410: You do not have the administrative right to'
+                        ' remove token' in response, response)
 
         # remove token
-        response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'serial': serial}
+        response = self.make_admin_request(action="remove",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": 1' in response, response)
 
         # remove policy
-        response = self.app.get(url(controller="system", action="delPolicy"),
-                                params={'name' : policy,
-                                        'selftest_admin' : 'superadmin'})
-
+        params = {'name': policy}
+        response = self.make_system_request(action="delPolicy",
+                                            params=params,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
-        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response, response)
-
+        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response,
+                        response)
 
         return
-
 
     def test_213_remove_no_realm(self):
         '''
@@ -699,76 +771,90 @@ class TestPolicies(TestController):
         admin = "admin213"
         realm = "realm213"
         serial = "spass213"
-        response = self.app.get(url(controller="system", action="setPolicy"), params={'name' : policy,
-                                                                                  'scope' : 'admin',
-                                                                                  'action' : 'initHMAC, remove',
-                                                                                  'user' : admin,
-                                                                                  'realm' : realm,
-                                                                                  'selftest_admin' : 'superadmin'})
 
+        params = {'name': policy,
+                  'scope': 'admin',
+                  'action': 'initHMAC, remove',
+                  'user': admin,
+                  'realm': realm,
+                  }
+        response = self.make_system_request(action="setPolicy",
+                                            params=params,
+                                            auth_user='superadmin')
 
         self.assertTrue('"setPolicy pol213":' in response, response)
         self.assertTrue('"status": true,' in response, response)
 
         # token has no realm
-        response = self.app.get(url(controller="admin", action="init"), params={'serial' : serial,
-                                                                               'type' : 'spass',
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'serial': serial,
+                  'type': 'spass'}
+        response = self.make_admin_request(action="init",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": true' in response, response)
 
         # admin will fail to remove the token as it is in no realm of his
-        response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
-                                                                               'selftest_admin' : admin})
+        params = {'serial': serial}
+        response = self.make_admin_request(action="remove",
+                                           params=params,
+                                           auth_user=admin)
 
         self.assertTrue('"status": false,' in response, response)
-        self.assertTrue('You do not have the administrative right to remove token' in response, response)
+        self.assertTrue('You do not have the administrative right to remove'
+                        ' token' in response, response)
 
         # remove token
-        response = self.app.get(url(controller="admin", action="remove"), params={'serial' : serial,
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'serial': serial}
+        response = self.make_admin_request(action="remove",
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
         self.assertTrue('"value": 1' in response, response)
 
         # remove policy
-        response = self.app.get(url(controller="system", action="delPolicy"), params={'name' : policy,
-                                                                                  'selftest_admin' : 'superadmin'})
-
+        params = {'name': policy}
+        response = self.make_system_request(action="delPolicy",
+                                            params=params,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true,' in response, response)
-        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response, response)
+        self.assertTrue('"linotp.Policy.%s.scope": true' % policy in response,
+                        response)
 
+        # TODO: check different REALMS, manageRealms usw.
 
-    '''
-    TODO: check different REALMS, manageRealms usw.
-    '''
+        return
 
     def test_31_set_support_subscription(self):
         '''
         Policy 31: Check for a user not allowed to set the support subscription
         '''
-        parameters = {
-                       'selftest_admin' : 'adminEnroller'
-                      }
-        response = self.app.get(url(controller='system',
-                                    action='setSupport'), params=parameters)
+        parameters = {}
+        response = self.make_system_request(action='setSupport',
+                                            params=parameters,
+                                            auth_user='adminEnroller')
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_32_set_support_subscription(self):
         '''
         Policy 32: Check if the user superadmin is allowed to set the support subscription
         '''
-        parameters = {
-                       'selftest_admin' : 'superadmin'
-                      }
-        response = self.app.get(url(controller='system',
-                                    action='setSupport'), params=parameters)
+        parameters = {}
+        response = self.make_system_request(action='setSupport',
+                                            params=parameters,
+                                            auth_user='superadmin'
+                                            )
 
         self.assertTrue('No key \'license\': Not a form request' in response,
                         response)
+
+        return
 
     '''
     Check the self services
@@ -777,355 +863,441 @@ class TestPolicies(TestController):
         '''
         Policy 41: Test several self service policies
         '''
-        parameters = { 'name' : 'self_01',
-                       'scope' : 'selfservice',
-                       'realm' : 'myDefRealm',
-                       'action' : 'enrollSMS, enrollMOTP, assign',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'self_01',
+                      'scope': 'selfservice',
+                      'realm': 'myDefRealm',
+                      'action': 'enrollSMS, enrollMOTP, assign',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'name' : 'self_02',
-                       'scope' : 'selfservice',
-                       'realm' : 'myOtherRealm',
-                       'action' : 'enrollMOTP, disable, resync, setOTPPIN, setMOTPPIN',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'self_02',
+                      'scope': 'selfservice',
+                      'realm': 'myOtherRealm',
+                      'action': ('enrollMOTP, disable, resync, '
+                                 'setOTPPIN, setMOTPPIN'),
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'name' : 'self_03',
-                       'scope' : 'selfservice',
-                       'realm' : 'myMixRealm',
-                       'action' : 'webprovisionOATH, webprovisionGOOGLE',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'self_03',
+                      'scope': 'selfservice',
+                      'realm': 'myMixRealm',
+                      'action': 'webprovisionOATH, webprovisionGOOGLE',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_420_selfService_init(self):
         '''
         Policy 420: test enrolling of tokens in the selfservice portal
         '''
-        parameters = { 'type': 'motp',
-                       'serial': 'self001',
-                       'otpkey' : '1234123412341234',
-                       'otppin' : '1234',
-                       'selftest_user' : 'horst@myDefRealm'
+        parameters = {'type': 'motp',
+                      'serial': 'self001',
+                      'otpkey': '1234123412341234',
+                      'otppin': '1234',
                       }
-        response = self.app.get(url(controller='userservice', action='enroll'), params=parameters)
+        auth_user = ('horst@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='enroll',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'type': 'motp',
-                       'serial': 'self002',
-                       'otpkey' : '1234123412341234',
-                       'otppin' : '1234',
-                       'selftest_user' : 'postgres@myOtherRealm'
+        parameters = {'type': 'motp',
+                      'serial': 'self002',
+                      'otpkey': '1234123412341234',
+                      'otppin': '1234',
                       }
-        response = self.app.get(url(controller='userservice', action='enroll'), params=parameters)
+        auth_user = ('postgres@myOtherRealm', 'test123')
+        response = self.make_userservice_request(action='enroll',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         '''
         Users in myMixRealm are not allowed to init a token
         '''
-        parameters = { 'type': 'motp',
-                       'serial': 'self003',
-                       'otpkey' : '1234123412341234',
-                       'otppin' : '1234',
-                       'selftest_user' : 'horst@myMixRealm'
+        parameters = {'type': 'motp',
+                      'serial': 'self003',
+                      'otpkey': '1234123412341234',
+                      'otppin': '1234',
                       }
-        response = self.app.get(url(controller='userservice', action='enroll'), params=parameters)
+        auth_user = ('horst@myMixRealm', 'test123')
+        response = self.make_userservice_request(action='enroll',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_421_selfService_disable(self):
         '''
         Policy 421: Test disabling tokens in the selfservice portal
         '''
         # myDefRealm is not allowed to disable
-        parameters = { 'serial': 'self001',
-                       'selftest_user' : 'horst@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='disable'), params=parameters)
+        parameters = {'serial': 'self001'}
+        auth_user = ('horst@myMixRealm', 'test123')
+        response = self.make_userservice_request(action='disable',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
 
         # myOtherRealm is allowed to disable
-        parameters = { 'serial': 'self002',
-                       'selftest_user' : 'postgres@myOtherRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='disable'), params=parameters)
+        parameters = {'serial': 'self002'}
+        auth_user = ('postgres@myOtherRealm', 'test123')
+        response = self.make_userservice_request(action='disable',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"disable token": 1' in response, response)
 
-        # myOtherRealm: a user, not the owner of the token can not disable the token
-        parameters = { 'serial': 'self002',
-                       'selftest_user' : 'not_the_owner@myOtherRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='disable'), params=parameters)
+        # myOtherRealm: a user, not the owner of the token can not
+        # disable the token
+        parameters = {'serial': 'self002'}
+        auth_user = ('b1822@myOtherRealm', 'test123')
+        response = self.make_userservice_request(action='disable',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
-        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('"status": true' in response, response)
+        self.assertTrue('"value": {}' in response, response)
 
+        return
 
     def test_422_sefService_setOTPPIN(self):
         '''
         Policy 422: Test setting PIN in the selfserivce portal
         '''
         # myDefRealm is not allowed to disable
-        parameters = { 'serial': 'self001',
-                       'userpin' : 'test',
-                       'selftest_user' : 'horst@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'self001',
+                      'userpin': 'test'}
+        auth_user = ('horst@myDefRealm', 'test123')
+
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
 
         # myOtherRealm is allowed to set PIN
-        parameters = { 'serial': 'self002',
-                       'userpin' : 'test',
-                       'selftest_user' : 'postgres@myOtherRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'self002',
+                      'userpin': 'test'}
+        auth_user = ('postgres@myOtherRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial': 'self001',
-                       'selftest_admin': 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
+        parameters = {'serial': 'self001'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial': 'self002',
-                       'selftest_admin': 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='remove'), params=parameters)
+        parameters = {'serial': 'self002'}
+        auth_user = 'superadmin'
+
+        response = self.make_admin_request(action='remove',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_423_selfservice_webprovision(self):
         '''
         Policy 423: Testing webprovisioning. myMixRealm users are allowed to provision, users in myDefRealm not.
         '''
-        parameters = {
-                       'type' : 'oathtoken',
-                       'selftest_user' : 'horst@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
+
+        parameters = {'type': 'oathtoken'}
+        auth_user = ('user1@myDefRealm', 'geheim1')
+        response = self.make_userservice_request(action='webprovision',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
 
-        parameters = { 'type' : 'oathtoken',
-                       'selftest_user' : 'horst@myMixRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
+        parameters = {'type': 'oathtoken'}
+        auth_user = ('horst@myMixRealm', 'test123')
+        response = self.make_userservice_request(action='webprovision',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'type' : 'googleauthenticator',
-                       'selftest_user' : 'horst@myMixRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
+        parameters = {'type': 'googleauthenticator'}
+        auth_user = ('horst@myMixRealm', 'test123')
+        response = self.make_userservice_request(action='webprovision',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_423a_selfservice_assign(self):
         '''
         Policy 423a: users in myDefRealm are allowed to assign. use the token  cko_test_003
         '''
-        parameters = { 'serial' : 'cko_test_003',
-                       'realms' : 'myDefRealm',
-                       'selftest_admin' : 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
+        parameters = {'serial': 'cko_test_003',
+                      'realms': 'myDefRealm'}
+        auth_user = 'superadmin'
+
+        response = self.make_admin_request(action='tokenrealm',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='show'), params={ 'selftest_admin' : 'superadmin'})
+        response = self.make_admin_request(action='show',
+                                           params={},
+                                           auth_user=auth_user
+                                           )
 
-        self.assertTrue('"LinOtp.TokenSerialnumber": "cko_test_003"' in response, response)
+        self.assertTrue('"LinOtp.TokenSerialnumber": "cko_test_003"' in
+                        response, response)
         self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
         self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
         self.assertTrue('"User.description": ""' in response, response)
         self.assertTrue('"LinOtp.IdResClass": ""' in response, response)
         self.assertTrue('"mydefrealm"' in response, response)
 
-
-        parameters = { 'serial' : 'cko_test_003',
-                       'selftest_user' : 'horst@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
+        parameters = {'serial': 'cko_test_003'}
+        auth_user = ('horst@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='assign',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # unassign the token
-        parameters = { 'serial' : 'cko_test_003',
-                       'selftest_admin' : 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='unassign'), params=parameters)
+        parameters = {'serial': 'cko_test_003'}
+        auth_user = 'superadmin'
+
+        response = self.make_admin_request(action='unassign',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_424_selfservice_assign(self):
         '''
         Policy 424: user in myOtherRealm may not assign token
         '''
-        parameters = { 'serial' : 'cko_test_003',
-                       'realms': 'myOtherRealm',
-                       'selftest_admin' : 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
+        parameters = {'serial': 'cko_test_003',
+                      'realms': 'myOtherRealm'}
+        auth_user = 'superadmin'
+
+        response = self.make_admin_request(action='tokenrealm',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # user tries to assign
-        parameters = { 'serial' : 'cko_test_003',
-                       'selftest_user' : 'root@myOtherRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
+        parameters = {'serial': 'cko_test_003'}
+        auth_user = ('b1822@myOtherRealm', 'test123')
+        response = self.make_userservice_request(action='assign',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_425_selfservice_user(self):
         '''
         Policy 425: check a user dependent policy
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'self_user_pol1',
-                                                                                       'scope' : 'selfservice',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'user1',
-                                                                                       'action' : 'webprovisionOATH',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'self_user_pol1',
+                  'scope': 'selfservice',
+                  'realm': 'myDefRealm',
+                  'user': 'user1',
+                  'action': 'webprovisionOATH'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # user in realm, who has no policy
-        parameters = { 'type' : 'oathtoken',
-                       'selftest_user' : 'user2@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
+        parameters = {'type': 'oathtoken'}
+        auth_user = ('user2@myDefRealm', 'geheim2')
+        response = self.make_userservice_request(action='webprovision',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
 
         # user who has a policy
-        parameters = { 'type' : 'oathtoken',
-                       'selftest_user' : 'user1@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
+        parameters = {'type': 'oathtoken'}
+        auth_user = ('user1@myDefRealm', 'geheim1')
+        response = self.make_userservice_request(action='webprovision',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'self_user_pol1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'self_user_pol1'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # delete both tokens
-        response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'user': 'user1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user2',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'user': 'user2'}
+        auth_user = 'superadmin'
+
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_426_selfservice_resolver(self):
         '''
         Policy 426: check a resolver dependent policy
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'self_res_pol1',
-                                                                                       'scope' : 'selfservice',
-                                                                                       'realm' : 'myMixRealm',
-                                                                                       'user' : 'myDefRes:',
-                                                                                       'action' : 'webprovisionOATH',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'self_res_pol1',
+                  'scope': 'selfservice',
+                  'realm': 'myMixRealm',
+                  'user': 'myDefRes:',
+                  'action': 'webprovisionOATH'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        # delete the old self_03 policy, so that we can use the mixrealm to test
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'self_03',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        # delete the old self_03 policy, so that we can use
+        # the mixrealm to test
+        params = {'name': 'self_03'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # we list all the policy to find errors
-        response = self.app.get(url(controller='system', action='getPolicy'), params={'scope':'selfservice' ,
-                                                                                      'realm':'mymixrealm',
-                                                                                     'selftest_admin' : 'superadmin'})
+        params = {'scope': 'selfservice',
+                  'realm': 'mymixrealm'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='getPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # user in resolver myOtherRes, who is not allowed to enroll token
-        parameters = { 'type' : 'oathtoken',
-                       'selftest_user' : 'other_user@myMixRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
+        parameters = {'type': 'oathtoken'}
+        auth_user = ('max1@myMixRealm', 'password1')
+        response = self.make_userservice_request(action='webprovision',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
 
         # user in resolver myDefRes, who is allowed to enroll token
-        parameters = { 'type' : 'oathtoken',
-                       'selftest_user' : 'user1@myMixRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='webprovision'), params=parameters)
+        parameters = {'type': 'oathtoken'}
+        auth_user = ('user1@myMixRealm', 'geheim1')
+        response = self.make_userservice_request(action='webprovision',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'self_res_pol1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'self_res_pol1'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # delete both tokens
-        response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'user': 'user1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='remove'), params={'user' : 'user2',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'user': 'user2'}
+        auth_user = 'superadmin'
+
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_427_selfservice_assign(self):
         '''
         Policy 427: user in realm myDefRealm assignes a token, that is not contained in any realm
         '''
         serial = 'temp_spass_427'
-        parameters = { 'serial' : serial,
-                       'type' : 'spass',
-                       'pin' : 'something',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'serial': serial,
+                      'type': 'spass',
+                      'pin': 'something',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # check this token is in no realm
-        response = self.app.get(url(controller='admin', action='show'), params={})
+        response = self.make_admin_request(action='show',
+                                           params={},
+                                           auth_user=auth_user)
 
-        self.assertTrue('"LinOtp.TokenSerialnumber": "%s"' % serial in response, response)
+        self.assertTrue('"LinOtp.TokenSerialnumber": "%s"' % serial in
+                        response, response)
         self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
         self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
         self.assertTrue('"User.description": ""' in response, response)
@@ -1133,62 +1305,84 @@ class TestPolicies(TestController):
         self.assertTrue('"LinOtp.RealmNames": []' in response, response)
 
         # user tries to assign
-        parameters = { 'serial' : serial,
-                       'selftest_user' : 'horst@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
+        parameters = {'serial': serial}
+        auth_user = ('horst@myDefRealm', 'test123')
+
+        response = self.make_userservice_request(action='assign',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"assign token": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial':serial})
+        params = {'serial': serial}
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user='superadmin')
 
         self.assertTrue('"value": 1' in response, response)
 
+        return
 
     def test_428_selfservice_assign(self):
         '''
         Policy 428: user in realm myDefRealm can not assign a token that is contained in another realm
         '''
         serial = 'temp_spass_428'
-        parameters = { 'serial' : serial,
-                       'type' : 'spass',
-                       'pin' : 'something',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'serial': serial,
+                      'type': 'spass',
+                      'pin': 'something',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # set the realm of the token
-        response = self.app.get(url(controller='admin', action='tokenrealm'), params={'serial' : serial,
-                                                                                     'realms':'myOtherRealm',
-                                                                                     'selftest_admin' : 'superadmin'})
-
-        self.assertTrue('"value": 1'  in response, response)
-
-
-        # check this token is in no realm
-        response = self.app.get(url(controller='admin', action='show'), params={"serial" : serial})
-
-        self.assertTrue('"LinOtp.TokenSerialnumber": "temp_spass_428"'  in response, response)
-        self.assertTrue('"LinOtp.CountWindow": 10'  in response, response)
-        self.assertTrue('"LinOtp.MaxFail": 10'  in response, response)
-        self.assertTrue('"User.description": ""'  in response, response)
-        self.assertTrue('"LinOtp.IdResClass": ""'  in response, response)
-        self.assertTrue('"myotherrealm"'  in response, response)
-
-        # user tries to assign
-        parameters = { 'serial' : serial,
-                       'selftest_user' : 'horst@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='assign'), params=parameters)
-
-        self.assertTrue('"status": false' in response, response)
-        self.assertTrue('The token you want to assign is not contained in your realm!' in response, response)
-
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial':serial})
+        params = {'serial': serial,
+                  'realms': 'myOtherRealm'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='tokenrealm',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": 1' in response, response)
+
+        # check this token is in no realm
+        params = {"serial": serial}
+        response = self.make_admin_request(action='show',
+                                           params=params,
+                                           auth_user=auth_user)
+
+        self.assertTrue('"LinOtp.TokenSerialnumber": "temp_spass_428"' in
+                        response, response)
+        self.assertTrue('"LinOtp.CountWindow": 10' in response, response)
+        self.assertTrue('"LinOtp.MaxFail": 10' in response, response)
+        self.assertTrue('"User.description": ""' in response, response)
+        self.assertTrue('"LinOtp.IdResClass": ""' in response, response)
+        self.assertTrue('"myotherrealm"' in response, response)
+
+        # user tries to assign
+        parameters = {'serial': serial}
+        auth_user = ('horst@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='assign',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
+
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('The token you want to assign is not contained in'
+                        ' your realm!' in response, response)
+
+        params = {'serial': serial}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
+
+        self.assertTrue('"value": 1' in response, response)
+
+        return
 
     def test_429_get_serial_by_OTP(self):
         '''
@@ -1199,279 +1393,355 @@ class TestPolicies(TestController):
         otps = ["295354", "297395", "027303", "618651"]
 
         serial = 'oath429'
-        parameters = { 'serial' : serial,
-                       'type' : 'hmac',
-                       'otpkey' : seed,
-                       'pin' : 'something',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'serial': serial,
+                      'type': 'hmac',
+                      'otpkey': seed,
+                      'pin': 'something',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # set the realm of the token
-        response = self.app.get(url(controller='admin', action='tokenrealm'), params={'serial' : serial,
-                                                                                     'realms':'myDefRealm',
-                                                                                     'selftest_admin' : 'superadmin'})
+        params = {'serial': serial,
+                  'realms': 'myDefRealm'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='tokenrealm',
+                                           params=params,
+                                           auth_user=auth_user)
 
-        self.assertTrue('"value": 1'  in response, response)
+        self.assertTrue('"value": 1' in response, response)
 
         # check this token is in no realm
-        params = {"serial" : serial}
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=params)
+        params = {"serial": serial}
+        response = self.make_admin_request(action='show',
+                                           params=params,
+                                           auth_user=auth_user)
 
-        self.assertTrue('"LinOtp.TokenSerialnumber": "oath429"'  in response, response)
+        self.assertTrue('"LinOtp.TokenSerialnumber": "oath429"' in response,
+                        response)
 
         # user to get the serial of the OTP of the unassigned token.
-        parameters = { 'otp' : otps[3],
-                       'selftest_user' : 'passthru_user1@myDefRealm'
+        parameters = {'otp': otps[3],
+
                       }
-        response = self.app.get(url(controller='userservice', action='getSerialByOtp'), params=parameters)
+        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+        response = self.make_userservice_request(action='getSerialByOtp',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('The policy settings do not allow you to request a serial by OTP!' in response, response)
+        self.assertTrue('The policy settings do not allow you to request a '
+                        'serial by OTP!' in response, response)
 
         # set policy
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params={'name' : 'getSerial',
-                                         'scope' : 'selfservice',
-                                         'realm' : 'myDefRealm',
-                                         'action' : 'getserial',
-                                         'selftest_admin' : 'superadmin' })
+        params = {'name': 'getSerial',
+                  'scope': 'selfservice',
+                  'realm': 'myDefRealm',
+                  'action': 'getserial'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"value" : true', response)
 
         # try again to get the serial
-        parameters = { 'otp' : otps[0],
-                       'realm' : "myDefRealm",
-                       'selftest_user' : 'passthru_user1@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='getSerialByOtp'), params=parameters)
+        parameters = {'otp': otps[0],
+                      'realm': "myDefRealm"}
+        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+        response = self.make_userservice_request(action='getSerialByOtp',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
         self.assertTrue('"serial": "oath429"' in response, response)
 
-        parameters = { 'otp' : otps[3],
-                       'selftest_user' : 'passthru_user1@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='getSerialByOtp'), params=parameters)
+        parameters = {'otp': otps[3]}
+        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+        response = self.make_userservice_request(action='getSerialByOtp',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
         self.assertTrue('"serial": "oath429"' in response, response)
 
         # remove the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'getSerial',
-                                                                                     'selftest_admin' : 'superadmin' })
+        params = {'name': 'getSerial'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"value" : true', response)
 
         # remove the token
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial':serial})
+        params = {'serial': serial}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": 1' in response, response)
+
+        return
 
     def test_430_passthru_policy(self):
         '''
         Policy 430: check the passthru policy. passthru_user1/geheim1 is allowed, passthru_user2/geheim2 is not.
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'passthru',
-                                                                                       'scope' : 'authentication',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'passthru',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'passthru',
+                  'scope': 'authentication',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user1',
+                  'action': 'passthru'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # user1 is allowed to passthru as he has no token.
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'geheim1'})
+        params = {'user': 'passthru_user1', 'pass': 'geheim1'}
+        response = self.make_validate_request(action='check', params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # user2 is allowed to passthru as he is not in the policy
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'geheim2'})
+        params = {'user': 'passthru_user2', 'pass': 'geheim2'}
+        response = self.make_validate_request(action='check', params=params)
 
         self.assertTrue('"value": false' in response, response)
 
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'NoToken',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'NoToken'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_430_passOnNoToken_policy(self):
         '''
         Policy 430: check the passOnNoToken policy. passthru_user1 is allowed with any password, passthru_user2/geheim2 is not.
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'NoToken',
-                                                                                       'scope' : 'authentication',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'passOnNoToken',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'NoToken',
+                  'scope': 'authentication',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user1',
+                  'action': 'passOnNoToken'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # user1 is allowed to passthru as he has no token.
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'argsargs'})
+        params = {'user': 'passthru_user1', 'pass': 'argsargs'}
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'OtherPW'})
+        params = {'user': 'passthru_user1', 'pass': 'OtherPW'}
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # user2 is allowed to passthru as he is not in the policy
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'geheim2'})
+        params = {'user': 'passthru_user2', 'pass': 'geheim2'}
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": false' in response, response)
 
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'NoToken',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'NoToken'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_431_otppin_policy(self):
         '''
         Policy 431: check that passthru_user1 can authenticate with the password but passthru_user2 authenticates with OTP PIN.
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params={'name' : 'otppin',
-                                       'scope' : 'authentication',
-                                       'realm' : 'myDefRealm',
-                                       'user' : 'passthru_user1',
-                                       'action' : 'otppin=1',
-                                       'selftest_admin' : 'superadmin'
-                                       })
+        params = {'name': 'otppin',
+                  'scope': 'authentication',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user1',
+                  'action': 'otppin=1'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
-        response = self.app.get(url(controller='admin', action='init'),
-                                params={'user':'passthru_user1',
-                                       'type' : 'spass',
-                                       'serial' : 'spass_pin_1',
-                                       'pin' : 'otppin',
-                                       'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user1',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params={'user':'passthru_user2',
-                                       'type' : 'spass',
-                                       'serial' : 'spass_pin_2',
-                                       'pin' : 'otppin',
-                                       'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user2',
+                  'type': 'spass',
+                  'serial': 'spass_pin_2',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
-
 
         # user1 has otppin=1
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user':'passthru_user1',
-                                        'pass':'geheim1'})
+        params = {'user': 'passthru_user1',
+                  'pass': 'geheim1'}
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # user2 has default otppin=0
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user':'passthru_user2',
-                                        'pass':'geheim2'})
+        params = {'user': 'passthru_user2', 'pass': 'geheim2'}
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": false' in response, response)
 
-        response = self.app.get(url(controller='validate', action='check'),
-                                params={'user':'passthru_user2',
-                                        'pass':'otppin'})
+        params = {'user': 'passthru_user2',
+                  'pass': 'otppin'}
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='system', action='delPolicy'),
-                                params={'name' : 'otppin',
-                                       'selftest_admin' : 'superadmin'
-                                       })
+        params = {'name': 'otppin'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # remove the tokens
-        response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_2',
-                                                                                   'selftest_admin' : 'superadmin'})
+        params = {'serial': 'spass_pin_2'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_1',
-                                                                                   'selftest_admin' : 'superadmin'})
+        params = {'serial': 'spass_pin_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_440_check_authorize(self):
         '''
         Policy 440: check if a user is authorized (scope=authorization) to login from  a certain client
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'authorize_user1',
-                                                                                       'scope' : 'authorization',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'authorize',
-                                                                                       'client' : '192.168.17.15',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'authorize_user1',
+                  'scope': 'authorization',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user1',
+                  'action': 'authorize',
+                  'client': '192.168.17.15'}
+        auth_user = 'superadmin'
+
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_1',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user1',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
-                                                                               'type' : 'spass',
-                                                                               'serial' : 'spass_pin_2',
-                                                                               'pin' : 'otppin',
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user2',
+                  'type': 'spass',
+                  'serial': 'spass_pin_2',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
-
 
         # auth user 1
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.17.15'})
+        params = {'user': 'passthru_user1',
+                  'pass': 'otppin'}
+        client = '192.168.17.15'
+        response = self.make_validate_request(action='check',
+                                              params=params,
+                                              client=client)
 
         self.assertTrue('"value": true' in response, response)
 
         # auth user 1 fails. Wrong client
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.17.16'})
+        params = {'user': 'passthru_user1',
+                  'pass': 'otppin'}
+        client = '192.168.17.16'
+        response = self.make_validate_request(action='check',
+                                              params=params,
+                                              client=client)
 
         self.assertTrue('"value": false' in response, response)
 
         # user2 is not allowed to auth
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.17.15'})
+        params = {'user': 'passthru_user2',
+                  'pass': 'otppin'}
+        client = '192.168.17.15'
+        response = self.make_validate_request(action='check',
+                                              params=params,
+                                              client=client)
 
         self.assertTrue('"value": false' in response, response)
 
         # user2 may login at other clients
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.17.16'})
+        params = {'user': 'passthru_user2',
+                  'pass': 'otppin'}
+        client = '192.168.17.16'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
 
         self.assertTrue('"value": false' in response, response)
 
@@ -1481,865 +1751,1052 @@ class TestPolicies(TestController):
                   'realm': 'myDefRealm',
                   'user': 'passthru_user2',
                   'action': 'authorize',
-                  'client': '*',
-                  'selftest_admin': 'superadmin'
-                  }
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params=params)
+                  'client': '*'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # user2 may login at other clients
         params = {'user': 'passthru_user2',
-                'pass': 'otppin',
-                'client': '192.168.17.16'}
-
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
+                  'pass': 'otppin'}
+        client = '192.168.17.16'
+        response = self.make_validate_request(action='check',
+                                              params=params,
+                                              client=client)
 
         self.assertTrue('"value": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'authorize_user1'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user2',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'authorize_user2'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # remove the tokens
-        response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_2',
-                                                                                   'selftest_admin' : 'superadmin'})
-
+        params = {'serial': 'spass_pin_2'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_1',
-                                                                                   'selftest_admin' : 'superadmin'})
-
+        params = {'serial': 'spass_pin_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_440a_check_authorize_client_exclude(self):
         '''
         Policy 440a: check if authorize policy honor the excluded clients
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'authorize_root',
-                                                                                       'scope' : 'authorization',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'authorize',
-                                                                                       'client' : '192.168.17.15, 192.168.17.16',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'authorize_root',
+                  'scope': 'authorization',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user1',
+                  'action': 'authorize',
+                  'client': '192.168.17.15, 192.168.17.16'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'authorize_all',
-                                                                                       'scope' : 'authorization',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : '*',
-                                                                                       'action' : 'authorize',
-                                                                                       'client' : '192.168.0.0/16, -192.168.17.15, !192.168.17.16',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-
+        params = {'name': 'authorize_all',
+                  'scope': 'authorization',
+                  'realm': 'myDefRealm',
+                  'user': '*',
+                  'action': 'authorize',
+                  'client': '192.168.0.0/16, -192.168.17.15, !192.168.17.16'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_1',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user1',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
-                                                                               'type' : 'spass',
-                                                                               'serial' : 'spass_pin_2',
-                                                                               'pin' : 'otppin',
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user2',
+                  'type': 'spass',
+                  'serial': 'spass_pin_2',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
-
 
         # auth user 1
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.17.15'})
+        params = {'user': 'passthru_user1',
+                  'pass': 'otppin'}
+        client = '192.168.17.15'
+        response = self.make_validate_request(action='check',
+                                              params=params,
+                                              client=client)
 
         self.assertTrue('"value": true' in response, response)
 
         # auth user 1 can also auth on othe clients
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.20.1'})
+        params = {'user': 'passthru_user1',
+                  'pass': 'otppin'}
+        client = '192.168.20.1'
 
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
         # user2 is not allowed to auth on certain clients
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.17.15'})
+        params = {'user': 'passthru_user2',
+                  'pass': 'otppin'}
+        client = '192.168.17.15'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
 
         self.assertTrue('"value": false' in response, response)
 
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.17.16'})
+        params = {'user': 'passthru_user2',
+                  'pass': 'otppin'}
+        client = '192.168.17.16'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
 
         self.assertTrue('"value": false' in response, response)
 
         # user2 may login at other clients
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'pass':'otppin',
-                                                                                   'client' : '192.168.20.1'})
-
+        params = {'user': 'passthru_user2',
+                  'pass': 'otppin'}
+        client = '192.168.20.1'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_root',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+
+        params = {'name': 'authorize_root'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_all',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'authorize_all'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # remove the tokens
-        response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_2',
-                                                                                   'selftest_admin' : 'superadmin'})
+        params = {'serial': 'spass_pin_2'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='remove'), params={ 'serial' : 'spass_pin_1',
-                                                                                   'selftest_admin' : 'superadmin'})
+        params = {'serial': 'spass_pin_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_441_check_tokentype(self):
         '''
         Policy 441: check the authorization token type.
             User with tokentype PW may login, tokentype SPASS may not
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'authorize_user1',
-                                                                                       'scope' : 'authorization',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'tokentype=PW',
-                                                                                       'client' : '192.168.20.21',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-
+        params = {'name': 'authorize_user1',
+                  'scope': 'authorization',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user1',
+                  'action': 'tokentype=PW',
+                  'client': '192.168.20.21',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_1',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
-
+        params = {'user': 'passthru_user1',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # Token type SPASS is not allowed to login
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppin'})
+        params = {'user': 'passthru_user1', 'pass': 'otppin'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
 
         self.assertTrue('"value": false' in response, response)
 
         # Token type SPASS is allowed to login from another client
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'client' : '192.168.20.22',
-                                                                                   'pass':'otppin'})
-
+        params = {'user': 'passthru_user1',
+                  'pass': 'otppin'}
+        client = '192.168.20.22'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
-
         # delete old token SPASS and enroll PW token
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_1',
-                                                                                'selftest_admin' : 'superadmin'})
-
+        params = {'serial': 'spass_pin_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'pw',
-                                                                                'serial' : 'pw_1',
-                                                                                'pin' : 'otppin',
-                                                                                'otpkey' : 'secret',
-                                                                                'selftest_admin' : 'superadmin'})
-
+        params = {'user': 'passthru_user1',
+                  'type': 'pw',
+                  'serial': 'pw_1',
+                  'pin': 'otppin',
+                  'otpkey': 'secret'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # Token type PW is allowed to login
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppinsecret'})
-
+        params = {'user': 'passthru_user1', 'pass': 'otppinsecret'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
         # delete PW token
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'pw_1',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'serial': 'pw_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         #
         # enroll PW token for passthru_user2
         #
-
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
-                                                                               'type' : 'spass',
-                                                                               'serial' : 'spass_2',
-                                                                               'pin' : 'otppin',
-                                                                               'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user2',
+                  'type': 'spass',
+                  'serial': 'spass_2',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init', params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # user 2 can authenticate with other token, since he is not in policy
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppin'})
-
+        params = {'user': 'passthru_user2', 'pass': 'otppin'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
         # delete pw_2
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_2',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'serial': 'spass_2'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'authorize_user1'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_441b_check_auth_serial(self):
         '''
         Policy 441b: check the authorization serial.
             User with serial  may login, tokentype SPASS may not
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'authorize_user1',
-                                                                                       'scope' : 'authorization',
-                                                                                       'realm' : 'myDefRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'serial=^pw.*',
-                                                                                       'client' : '192.168.20.21',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-
+        params = {'name': 'authorize_user1',
+                  'scope': 'authorization',
+                  'realm': 'myDefRealm',
+                  'user': 'passthru_user1',
+                  'action': 'serial=^pw.*',
+                  'client': '192.168.20.21',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_1',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
-
+        params = {'user': 'passthru_user1',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin', }
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # Token type SPASS is not allowed to login
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppin'})
-
+        params = {'user': 'passthru_user1', 'pass': 'otppin'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": false' in response, response)
 
         # Token type SPASS is allowed to login from another client
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'client' : '192.168.20.22',
-                                                                                   'pass':'otppin'})
-
+        params = {'user': 'passthru_user1', 'pass': 'otppin'}
+        client = '192.168.20.22'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
-
         # delete old token SPASS and enroll PW token
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_1',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'serial': 'spass_pin_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'pw',
-                                                                                'serial' : 'pw_1',
-                                                                                'pin' : 'otppin',
-                                                                                'otpkey' : 'secret',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user1',
+                  'type': 'pw',
+                  'serial': 'pw_1',
+                  'pin': 'otppin',
+                  'otpkey': 'secret'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # Token type PW is allowed to login
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppinsecret'})
-
+        params = {'user': 'passthru_user1', 'pass': 'otppinsecret'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
         # delete PW token
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'pw_1',
-                                                                                'selftest_admin' : 'superadmin'})
-
+        params = {'serial': 'pw_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         #
         # enroll PW token for passthru_user2
         #
-
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
-                                                                               'type' : 'spass',
-                                                                               'serial' : 'spass_2',
-                                                                               'pin' : 'otppin',
-                                                                               'selftest_admin' : 'superadmin'})
-
+        params = {'user': 'passthru_user2',
+                  'type': 'spass',
+                  'serial': 'spass_2',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # user 2 can authenticate with other token, since he is not in policy
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppin'})
-
+        params = {'user': 'passthru_user2', 'pass': 'otppin'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": true' in response, response)
 
         # delete pw_2
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_2',
-                                                                                'selftest_admin' : 'superadmin'})
-
+        params = {'serial': 'spass_2'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'authorize_user1',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-
+        params = {'name': 'authorize_user1'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
-
+        return
 
     def test_442_set_realm(self):
         '''
         Policy 442: set the realm during authentication for a given user
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'set_realm',
-                                                                                       'scope' : 'authorization',
-                                                                                       'realm' : 'WrongRealm',
-                                                                                       'user' : 'passthru_user1',
-                                                                                       'action' : 'setrealm=myDefRealm',
-                                                                                       'client' : '192.168.20.21',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-
+        params = {'name': 'set_realm',
+                  'scope': 'authorization',
+                  'realm': 'WrongRealm',
+                  'user': 'passthru_user1',
+                  'action': 'setrealm=myDefRealm',
+                  'client': '192.168.20.21'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token for each user
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user1',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_1',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user1',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'passthru_user2',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_2',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'passthru_user2',
+                  'type': 'spass',
+                  'serial': 'spass_pin_2',
+                  'pin': 'otppin'}
+
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # Realm for user1 gets rewritten
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user1@WrongRealm',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppin'})
+        params = {'user': 'passthru_user1@WrongRealm', 'pass': 'otppin'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
 
         self.assertTrue('"value": true' in response, response)
 
         # Realm for user2 gets not rewritten
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2@WrongRealm',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppin'})
-
+        params = {'user': 'passthru_user2@WrongRealm', 'pass': 'otppin'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
         self.assertTrue('"value": false' in response, response)
 
         # User 2 can login with right realm
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'passthru_user2@myDefRealm',
-                                                                                   'client' : '192.168.20.21',
-                                                                                   'pass':'otppin'})
+        params = {'user': 'passthru_user2@myDefRealm', 'pass': 'otppin'}
+        client = '192.168.20.21'
+        response = self.make_validate_request(action='check', params=params,
+                                              client=client)
 
         self.assertTrue('"value": true' in response, response)
 
-
         # delete the tokens
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_1',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'serial': 'spass_pin_1'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'spass_pin_2',
-                                                                                'selftest_admin' : 'superadmin'})
-
+        params = {'serial': 'spass_pin_2'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
-
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'set_realm',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-
+        params = {'name': 'set_realm'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"status": true' in response, response)
 
-
+        return
 
     def test_501_check_userlist(self):
         '''
         Policy 501: check the userlisting for admins. Set up the policies
         '''
-        parameters = { 'name' : '501_user1',
-                      'scope' : 'admin',
-                      'realm' : 'MyDefRealm',
-                      'user' : '501_admin_def',
-                      'action' : 'userlist',
-                      'selftest_admin' : 'superadmin' }
-
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-
+        parameters = {'name': '501_user1',
+                      'scope': 'admin',
+                      'realm': 'MyDefRealm',
+                      'user': '501_admin_def',
+                      'action': 'userlist',
+                      }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
         self.assertTrue(('"realm": true' in response), response)
 
-        parameters = { 'name' : '501_user2',
-                      'scope' : 'admin',
-                      'realm' : 'MyOtherRealm',
-                      'user' : '501_admin_other',
-                      'action' : 'userlist',
-                      'selftest_admin' : 'superadmin' }
-
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
-
+        parameters = {'name': '501_user2',
+                      'scope': 'admin',
+                      'realm': 'MyOtherRealm',
+                      'user': '501_admin_other',
+                      'action': 'userlist',
+                      'selftest_admin': 'superadmin'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
         self.assertTrue(('"realm": true' in response), response)
+
+        return
 
     def test_502_check_userlist(self):
         '''
         Policy 502: check the userlisting rights. Userlisting allowed
         '''
-        parameters = { 'realm' : 'MyDefRealm',
-                      'selftest_admin' : '501_admin_def'}
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
+        parameters = {'realm': 'MyDefRealm'}
+        auth_user = '501_admin_def'
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='manage', action='userview_flexi'), params=parameters)
-
-
+        parameters = {'realm': 'MyDefRealm'}
+        auth_user = '501_admin_def'
+        response = self.make_manage_request(action='userview_flexi',
+                                            params=parameters,
+                                            auth_user=auth_user)
         self.assertTrue('"rows":' in response, response)
+
+        return
 
     def test_503_check_userlist(self):
         '''
         Policy 503: check the userlisting rights. Userlisting forbidden
         '''
-        parameters = { 'realm' : 'MyDefRealm',
-                      'selftest_admin' : '501_admin_other'}
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
 
-        assert('You do not have the administrative right to list users' in response)
+        parameters = {'realm': 'MyDefRealm'}
+        auth_user = '501_admin_other'
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
-        response = self.app.get(url(controller='manage', action='userview_flexi'), params=parameters)
+        self.assertTrue('You do not have the administrative right to'
+                        ' list users' in response, response)
 
+        parameters = {'realm': 'MyDefRealm'}
+        auth_user = '501_admin_other'
+        response = self.make_manage_request(action='userview_flexi',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
-        self.assertTrue('You do not have the administrative right to list users' in response, response)
+        self.assertTrue('You do not have the administrative right to '
+                        'list users' in response, response)
+
+        return
 
     def test_550_check_policy(self):
         '''
         Policy 550: Test the policy checker.
         '''
-        policies = [ {'name':'cp1',
-                    'selftest_admin':'superadmin',
-                    'scope' : 'admin',
-                    'user' : 'cp1_admin',
-                    'realm' : 'realm1',
-                    'action' : '*',
-                    },
-                    {'name':'cp2',
-                     'selftest_admin':'superadmin',
-                     'scope':'admin',
-                     'user':'cp2_admin',
-                     'realm' : 'realm1',
-                     'action' : 'remove'
+        policies = [
+                    {'name': 'cp1',
+                     'selftest_admin': 'superadmin',
+                     'scope': 'admin',
+                     'user': 'cp1_admin',
+                     'realm': 'realm1',
+                     'action': '*',
                      },
-                     {'name' : 'cp_enroll_1',
-                      'selftest_admin':'superadmin',
-                      'scope' : 'enrollment',
-                      'user' : 'user1',
-                      'action' : 'maxtoken=3',
-                      'realm' : 'myDefRealm'
+                    {
+                     'name': 'cp2',
+                     'selftest_admin': 'superadmin',
+                     'scope': 'admin',
+                     'user': 'cp2_admin',
+                     'realm': 'realm1',
+                     'action': 'remove'
+                     },
+                    {
+                     'name': 'cp_enroll_1',
+                     'scope': 'enrollment',
+                     'user': 'user1',
+                     'action': 'maxtoken=3',
+                     'realm': 'myDefRealm'
+                     },
+                    {
+                     'name': 'cp_enroll_2',
+                     'scope': 'enrollment',
+                     'user': '',
+                     'action': 'maxtoken=1',
+                     'realm': 'myDefRealm'
+                     },
+                    {
+                     'name': 'cp_auth_1',
+                     'scope': 'authentication',
+                     'user': 'user1',
+                     'action': 'otppin=0',
+                     'realm': 'myDefRealm'
                       },
-                      {'name' : 'cp_enroll_2',
-                      'selftest_admin':'superadmin',
-                      'scope' : 'enrollment',
-                      'user' : '',
-                      'action' : 'maxtoken=1',
-                      'realm' : 'myDefRealm'
-                      },
-                      {'name' : 'cp_auth_1',
-                      'selftest_admin':'superadmin',
-                      'scope' : 'authentication',
-                      'user' : 'user1',
-                      'action' : 'otppin=0',
-                      'realm' : 'myDefRealm'
-                      },
-                      {'name' : 'cp_auth_2',
-                      'selftest_admin':'superadmin',
-                      'scope' : 'authentication',
-                      'user' : '',
-                      'action' : 'otppin=1',
-                      'realm' : 'myDefRealm'
-                      },
-                      {'name' : 'cp_self_1',
-                      'selftest_admin':'superadmin',
-                      'scope' : 'selfservice',
-                      'user' : 'user1',
-                      'action' : 'initHMAC, setOTPPIN',
-                      'realm' : 'myDefRealm'
-                      },
-                      {'name' : 'cp_self_2',
-                      'selftest_admin':'superadmin',
-                      'scope' : 'selfservice',
-                      'user' : 'user1',
-                      'action' : 'initHMAC, setOTPPIN, webprovisionGOOGLE',
-                      'realm' : 'myDefRealm',
-                      'client' : '172.16.200.10'
-                      },
-                      {'name' : 'cp_self_3',
-                      'selftest_admin':'superadmin',
-                      'scope' : 'selfservice',
-                      'user' : '',
-                      'action' : 'initHMAC',
-                      'realm' : 'myDefRealm'
-                      }
+                    {
+                     'name': 'cp_auth_2',
+                     'scope': 'authentication',
+                     'user': '',
+                     'action': 'otppin=1',
+                     'realm': 'myDefRealm'
+                     },
+                    {
+                     'name': 'cp_self_1',
+                     'scope': 'selfservice',
+                     'user': 'user1',
+                     'action': 'initHMAC, setOTPPIN',
+                     'realm': 'myDefRealm'
+                     },
+                    {
+                     'name': 'cp_self_2',
+                     'scope': 'selfservice',
+                     'user': 'user1',
+                     'action': 'initHMAC, setOTPPIN, webprovisionGOOGLE',
+                     'realm': 'myDefRealm',
+                     'client': '172.16.200.10'
+                     },
+                    {
+                     'name': 'cp_self_3',
+                     'scope': 'selfservice',
+                     'user': '',
+                     'action': 'initHMAC',
+                     'realm': 'myDefRealm'
+                     }
                   ]
 
         # set the policies
         for pol in policies:
-            response = self.app.get(url(controller='system', action='setPolicy'), pol)
-
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='setPolicy',
+                                                params=pol,
+                                                auth_user=auth_user)
             self.assertTrue('"status": true' in response, response)
 
         # check the policies
         # cp1_admin is allowed to do all actions in realm1
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'cp1_admin',
-                                                                                'realm' : 'realm1',
-                                                                                'action' : 'initHMAC',
-                                                                                'scope' : 'admin',
-                                                                                'client' : ''})
-
+        params = {'user': 'cp1_admin',
+                  'realm': 'realm1',
+                  'action': 'initHMAC',
+                  'scope': 'admin',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"cp1": {' in response, response)
         self.assertTrue('"allowed": true' in response, response)
 
         # cp1_admin has no rights in realm2
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'cp1_admin',
-                                                                                'realm' : 'realm2',
-                                                                                'action' : 'initHMAC',
-                                                                                'scope' : 'admin',
-                                                                                'client' : ''})
-
+        params = {'user': 'cp1_admin',
+                  'realm': 'realm2',
+                  'action': 'initHMAC',
+                  'scope': 'admin',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"allowed": false' in response, response)
 
         # cp2_admin is allowed to remove in realm2
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'cp2_admin',
-                                                                                'realm' : 'realm1',
-                                                                                'action' : 'remove',
-                                                                                'scope' : 'admin',
-                                                                                'client' : ''})
-
+        params = {'user': 'cp2_admin',
+                  'realm': 'realm1',
+                  'action': 'remove',
+                  'scope': 'admin',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"cp2": {' in response, response)
         self.assertTrue('"allowed": true' in response, response)
 
         # cp2_admin is not allowed to enroll in realm2
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'cp2_admin',
-                                                                                'realm' : 'realm1',
-                                                                                'action' : 'initHMAC',
-                                                                                'scope' : 'admin',
-                                                                                'client' : ''})
-
+        params = {'user': 'cp2_admin',
+                  'realm': 'realm1',
+                  'action': 'initHMAC',
+                  'scope': 'admin',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
         self.assertTrue('"allowed": false' in response, response)
 
         # check scope enrollment, user1 may enroll 3 tokens, user2 only 1 token
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
-                                                                                'realm' : 'myDefRealm',
-                                                                                'action' : 'maxtoken',
-                                                                                'scope' : 'enrollment',
-                                                                                'client' : ''})
+        params = {'user': 'user1',
+                  'realm': 'myDefRealm',
+                  'action': 'maxtoken',
+                  'scope': 'enrollment',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"cp_enroll_1": {' in response, response)
         self.assertTrue('"action": "maxtoken=3",' in response, response)
 
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user2',
-                                                                                'realm' : 'myDefRealm',
-                                                                                'action' : 'maxtoken',
-                                                                                'scope' : 'enrollment',
-                                                                                'client' : ''})
+        params = {'user': 'user2',
+                  'realm': 'myDefRealm',
+                  'action': 'maxtoken',
+                  'scope': 'enrollment',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"cp_enroll_2": {' in response, response)
         self.assertTrue('"action": "maxtoken=1",' in response, response)
 
         # check scope authentication
         # user1 has otppin=0, all other suers otppin=1
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
-                                                                                'realm' : 'myDefRealm',
-                                                                                'action' : 'otppin',
-                                                                                'scope' : 'authentication',
-                                                                                'client' : ''})
+        params = {'user': 'user1',
+                  'realm': 'myDefRealm',
+                  'action': 'otppin',
+                  'scope': 'authentication',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"cp_auth_1": {' in response, response)
         self.assertTrue('"action": "otppin=0",' in response, response)
 
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user2',
-                                                                                'realm' : 'myDefRealm',
-                                                                                'action' : 'otppin',
-                                                                                'scope' : 'authentication',
-                                                                                'client' : ''})
+        params = {'user': 'user2',
+                  'realm': 'myDefRealm',
+                  'action': 'otppin',
+                  'scope': 'authentication',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"cp_auth_2": {' in response, response)
         self.assertTrue('"action": "otppin=1",' in response, response)
 
         # check scope selfservice
         # Webprovisioning from 192.168.20.1 is not allowed
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
-                                                                                'realm' : 'myDefRealm',
-                                                                                'action' : 'webprovisionGOOGLE',
-                                                                                'scope' : 'selfservice',
-                                                                                'client' : '192.168.20.1'})
+        params = {'user': 'user1',
+                  'realm': 'myDefRealm',
+                  'action': 'webprovisionGOOGLE',
+                  'scope': 'selfservice',
+                  'client': '192.168.20.1'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"allowed": false' in response, response)
 
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
-                                                                                'realm' : 'myDefRealm',
-                                                                                'action' : 'initHMAC',
-                                                                                'scope' : 'selfservice',
-                                                                                'client' : '192.168.20.1'})
+        params = {'user': 'user1',
+                  'realm': 'myDefRealm',
+                  'action': 'initHMAC',
+                  'scope': 'selfservice',
+                  'client': '192.168.20.1'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"allowed": true' in response, response)
-        self.assertTrue('"action": "initHMAC, setOTPPIN",' in response, response)
+        self.assertTrue('"action": "initHMAC, setOTPPIN",' in response,
+                        response)
 
         # webprovisioning from 172.16.200.X is allowrd
-        response = self.app.get(url(controller='system', action='checkPolicy'), { 'user' : 'user1',
-                                                                                'realm' : 'myDefRealm',
-                                                                                'action' : 'webprovisionGOOGLE',
-                                                                                'scope' : 'selfservice',
-                                                                                'client' : '172.16.200.10'})
+        params = {'user': 'user1',
+                  'realm': 'myDefRealm',
+                  'action': 'webprovisionGOOGLE',
+                  'scope': 'selfservice',
+                  'client': '172.16.200.10'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='checkPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
-
-        #response = self.app.get(url(controller='system', action='getPolicy'),{ 'selftest_admin':'superadmin' })
-        #
         self.assertTrue('"cp_self_2": {' in response, response)
-        self.assertTrue('"action": "initHMAC, setOTPPIN, webprovisionGOOGLE",' in response, response)
-
-
+        self.assertTrue('"action": "initHMAC, setOTPPIN, webprovisionGOOGLE",'
+                        in response, response)
 
         # delete the policies
         for policy in policies:
-            response = self.app.get(url(controller='system', action='delPolicy'), params={'name':policy['name']})
+            params = {'name': policy['name']}
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='delPolicy',
+                                                params=params,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_601_otppin_length01(self):
         '''
         Policy 601: set policy to allow setting OTP PIN
         '''
-        parameters = { 'name' : 'self_01',
-                       'scope' : 'selfservice',
-                       'realm' : 'myDefRealm',
-                       'action' : 'setOTPPIN',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'self_01',
+                      'scope': 'selfservice',
+                      'realm': 'myDefRealm',
+                      'action': 'setOTPPIN',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_602_otppin_length02(self):
         '''
         Policy 602: Set policy to define the length of the OTP PIN
         '''
-        parameters = { 'name' : 'self_pin01',
-                       'scope' : 'selfservice',
-                       'realm' : 'myDefRealm',
-                       'action' : 'otp_pin_maxlength=8, otp_pin_minlength=4 ',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'self_pin01',
+                      'scope': 'selfservice',
+                      'realm': 'myDefRealm',
+                      'action': 'otp_pin_maxlength=8, otp_pin_minlength=4 ',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_603_otppin_length02(self):
         '''
         Policy 603: prepare testing length of PIN: Assign token to user
         '''
-        parameters = { 'serial' : 'cko_test_004',
-                       'user': 'root@myDefRealm',
-                       'otpkey' : '1234123412341234',
-                       'otppin' : '1234',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'serial': 'cko_test_004',
+                      'user': 'root@myDefRealm',
+                      'otpkey': '1234123412341234',
+                      'otppin': '1234',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_604_otp_length_do(self):
         '''
         Policy 604: test the otp length
         '''
         # PIN to short
-        parameters = { 'serial' : 'cko_test_004',
-                       'userpin': 'bla',
-                       'selftest_user' : 'root@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
-
+        parameters = {'serial': 'cko_test_004', 'userpin': 'bla'}
+        auth_user = ('root@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
         self.assertTrue('"status": false' in response, response)
 
         # PIN to long
-        parameters = { 'serial' : 'cko_test_004',
-                       'userpin': '12345678test',
-                       'selftest_user' : 'root@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'cko_test_004', 'userpin': '12345678test'}
+        auth_user = ('root@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
 
         # PIN perfect
-        parameters = { 'serial' : 'cko_test_004',
-                       'userpin': '1234567',
-                       'selftest_user' : 'root@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'cko_test_004', 'userpin': '1234567'}
+        auth_user = ('root@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_605_otppin_contents(self):
         '''
         Policy 605: testing contents of pin: set policy contents=c
         '''
-        parameters = { 'name' : 'self_pin02',
-                       'scope' : 'selfservice',
-                       'realm' : 'myDefRealm',
-                       'action' : 'otp_pin_contents=c',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'self_pin02',
+                      'scope': 'selfservice',
+                      'realm': 'myDefRealm',
+                      'action': 'otp_pin_contents=c',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
+
 
     def test_606_otppin_contents(self):
         '''
         Policy 606: testing contents of pin: wrong pin
         '''
         # PIN wrong
-        parameters = { 'serial' : 'cko_test_004',
-                       'userpin': '123456',
-                       'selftest_user' : 'root@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'cko_test_004', 'userpin': '123456'}
+        auth_user = ('root@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_607_otppin_contents(self):
         '''
         Policy 607: testing contents of pin: PIN ok
         '''
         # PIN OK
-        parameters = { 'serial' : 'cko_test_004',
-                       'userpin': 'ab3456',
-                       'selftest_user' : 'root@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'cko_test_004', 'userpin': 'ab3456'}
+        auth_user = ('root@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_608_otppin_contents(self):
         '''
         Policy 608: testing contents of pin: contents=cns
         '''
-        parameters = { 'name' : 'self_pin02',
-                       'scope' : 'selfservice',
-                       'realm' : 'myDefRealm',
-                       'action' : 'otp_pin_contents=cns',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'self_pin02',
+                      'scope': 'selfservice',
+                      'realm': 'myDefRealm',
+                      'action': 'otp_pin_contents=cns',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_609_otppin_contents(self):
         '''
         Policy 609: testing contents of pin: wrong pin
         '''
         # PIN wrong
-        parameters = { 'serial' : 'cko_test_004',
-                       'userpin': 'ab3456',
-                       'selftest_user' : 'root@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'cko_test_004', 'userpin': 'ab3456'}
+        auth_user = ('root@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_610_otppin_contents(self):
         '''
         Policy 610: testing contents of pin: PIN ok
         '''
-        parameters = { 'serial' : 'cko_test_004',
-                       'userpin': 'ab3456!!',
-                       'selftest_user' : 'root@myDefRealm'
-                      }
-        response = self.app.get(url(controller='userservice', action='setpin'), params=parameters)
+        parameters = {'serial': 'cko_test_004', 'userpin': 'ab3456!!', }
+        auth_user = ('root@myDefRealm', 'test123')
+        response = self.make_userservice_request(action='setpin',
+                                                 params=parameters,
+                                                 auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        # We would also need to define enrollment policies.
+        # This will be done in the selfservice test script
 
-    '''
-        We would also need to define enrollment policies.
-        This will be done in the selfservice test script
-    '''
+        return
+
     def test_701_enrollment(self):
         '''
         Policy 701: testing enrollment settings: Token limit per user: 2, tokens per realm 5. Setting policy
         '''
 
-        parameters = { 'name' : 'enrollment_01',
-                       'scope' : 'enrollment',
-                       'realm' : 'myDefRealm',
-                       'action' : 'maxtoken=2, tokencount=3, otp_pin_random =4',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'enrollment_01',
+                      'scope': 'enrollment',
+                      'realm': 'myDefRealm',
+                      'action': 'maxtoken=2, tokencount=3, otp_pin_random =4',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_702_cleanup(self):
         '''
         Policy 702: Unassigning user root@myDefRealm and deleting all tokens from myDefRealm.
         '''
         for t in ['cko_test_003', 'cko_test_004']:
-            parameters = { 'serial' : t,
-                           'selftest_admin' : 'superadmin'
-                          }
-            response = self.app.get(url(controller='admin', action='remove'), params=parameters)
+            parameters = {'serial': t}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='remove',
+                                               params=parameters,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
+        return
 
     def test_703_enrollment01(self):
         '''
@@ -2347,32 +2804,40 @@ class TestPolicies(TestController):
         as the user may not own a 3rd token!
         '''
         # now assign tokens
-        parameters = { 'serial' : 'enroll_001',
-                       'type' : 'spass',
-                       'user' : 'root@myDefRealm',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'enroll_001',
+                      'type': 'spass',
+                      'user': 'root@myDefRealm',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'admin_init'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'type' : 'spass',
-                       'user' : 'root@myDefRealm',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'type': 'spass',
+                      'user': 'root@myDefRealm',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'admin_init'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # The user may not own a third token!
-        parameters = { 'serial' : 'enroll_003',
-                       'type' : 'spass',
-                       'user' : 'root@myDefRealm',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'enroll_003',
+                      'type': 'spass',
+                      'user': 'root@myDefRealm',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'admin_init'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
+
+        return
 
     def test_704_enrollment02(self):
         '''
@@ -2381,327 +2846,416 @@ class TestPolicies(TestController):
         This was defined in test_701_enrollment
         '''
 
-        parameters = { 'serial' : 'enroll_003',
-                       'type' : 'spass',
-                       'user' : 'remoteuser@myDefRealm',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'enroll_003',
+                      'type': 'spass',
+                      'user': 'remoteuser@myDefRealm',
+                      'selftest_admin': 'admin_init'
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'admin_init'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # this would be the 4th token, but only 3 allowed.
-        parameters = { 'serial' : 'enroll_004',
-                       'type' : 'spass',
-                       'user' : 'remoteuser@myDefRealm',
-                       'selftest_admin' : 'admin_init'
+        parameters = {'serial': 'enroll_004',
+                      'type': 'spass',
+                      'user': 'remoteuser@myDefRealm',
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'admin_init'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('You can not init any more tokens' in response, response)
+        self.assertTrue('You can not init any more tokens' in response,
+                        response)
+
+        return
 
     def test_705_tokencount(self):
         '''
         Policy 705: create a new token enroll_tc_01 and try to assign this token to auser in the realm. Assigning will fail, since realm is full
         '''
-        parameters = {  "serial": "enroll_tc_01",
-                        "otpkey" : "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
-                        "description" : "my EToken",
-                        'selftest_admin' : 'superadmin'
+        parameters = {"serial": "enroll_tc_01",
+                      "otpkey": "e56eb2bcbafb2eea9bce9463f550f86d587d6c71",
+                      "description": "my EToken",
                       }
-        response = self.app.get(url(controller='admin', action='init'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'enroll_tc_01',
-                       'user' : 'remoteuser@myDefRealm',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'serial': 'enroll_tc_01',
+                      'user': 'remoteuser@myDefRealm',
                       }
-        response = self.app.get(url(controller='admin', action='assign'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='assign',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        #self.assertTrue('You can not assign any more tokens' in response
+        # self.assertTrue('You can not assign any more tokens' in response
 
+        return
 
     def test_706_tokencount(self):
         '''
         Policy 706: Try to set the tokenrealm of the token enroll_tc_01 to the realm "myDefRealm". Will fail, since realm is full
         '''
-        parameters = { 'serial' : 'enroll_tc_01',
-                       'realms' : 'mydefrealm',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'serial': 'enroll_tc_01',
+                      'realms': 'mydefrealm',
                       }
-        response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='tokenrealm',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('You may not put any more tokens in realm' in response, response)
+        self.assertTrue('You may not put any more tokens in realm' in response,
+                        response)
 
+        return
 
     def test_707_tokencount(self):
         '''
         Policy 707: Try to enable a token in a full realm. Will fail, since realm is full
         '''
 
-        parameters = { 'serial' : 'enroll_003',
-                       'selftest_admin' : 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='disable'), params=parameters)
+        parameters = {'serial': 'enroll_003'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='disable',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'enroll_tc_01',
-                       'realms' : 'mydefrealm',
-                       'selftest_admin' : 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='tokenrealm'), params=parameters)
+        parameters = {'serial': 'enroll_tc_01',
+                      'realms': 'mydefrealm'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='tokenrealm',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        parameters = { 'serial' : 'enroll_003',
-                       'selftest_admin' : 'superadmin'
-                      }
-        response = self.app.get(url(controller='admin', action='enable'), params=parameters)
+        parameters = {'serial': 'enroll_003'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='enable',
+                                           params=parameters,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('You may not enable any more tokens in realm' in response, response)
+        self.assertTrue('You may not enable any more tokens in realm' in
+                        response, response)
 
+        return
 
     def test_708_tokencount(self):
         '''
         Policy 708: Import token into a realm, that is already full. This is done by and admin, who only has rights in this realm. Will fail!
         '''
-        parameters = { 'name' : 'realmadmin',
-                       'scope' : 'admin',
-                       'realm' : 'mydefrealm',
-                       'user' : 'realmadmin',
-                       'action' : 'import, importcsv',
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'realmadmin',
+                      'scope': 'admin',
+                      'realm': 'mydefrealm',
+                      'user': 'realmadmin',
+                      'action': 'import, importcsv',
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        parameters = {'type': 'oathcsv', 'file': 'import0001, 1234123412345'}
+        auth_user = 'realmadmin'
+        response = self.make_admin_request(
+                                    method='PUT',
+                                    action='loadtokens',
+                                    params=parameters,
+                                    auth_user=auth_user)
 
-        parameters = { 'type' : 'oathcsv',
-                       'file' : 'import0001, 1234123412345',
-                       'selftest_admin': 'realmadmin' }
-        response = self.app.put(url(controller="admin", action='loadtokens'), params=parameters)
+        self.assertTrue("The maximum number of allowed tokens in realm"
+                        in response, response)
 
-        self.assertTrue("The maximum number of allowed tokens in realm" in response, response)
+        return
 
     def test_709_maxtoken_with_user(self):
         '''
         Policy 709: Testing maxtoken per user. Policy will be applied for defined user, not for not defined user
-        We take myOtherRealm, since for myDefRealm already a maxtoken-policy exist
+
+        We take myOtherRealm, since for myDefRealm already a
+        maxtoken-policy exist
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'maxtoken_per_user',
-                                                                                       'scope' : 'enrollment',
-                                                                                       'realm' : 'myOtherRealm',
-                                                                                       'user' : 'max1',
-                                                                                       'action' : 'maxtoken=1',
-                                                                                       'client' : '',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'maxtoken_per_user',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max1',
+                  'action': 'maxtoken=1',
+                  'client': '',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token max1
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
-                                                                               'realm':'myOtherRealm',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_1',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max1',
+                  'realm': 'myOtherRealm',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
         # enroll 2nd token for max1 will fail
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
-                                                                               'realm':'myOtherRealm',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_2',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max1',
+                  'realm': 'myOtherRealm',
+                  'type': 'spass',
+                  'serial': 'spass_pin_2',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
-        self.assertTrue('maximum number of allowed tokens per user is exceeded' in response, response)
+        self.assertTrue('maximum number of allowed tokens per user is '
+                        'exceeded' in response, response)
 
         # enroll 2 tokens for max2
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
-                                                                               'realm':'myOtherRealm',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_3',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max2',
+                  'realm': 'myOtherRealm',
+                  'type': 'spass',
+                  'serial': 'spass_pin_3',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
-                                                                               'realm':'myOtherRealm',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_4',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max2',
+                  'realm': 'myOtherRealm',
+                  'type': 'spass',
+                  'serial': 'spass_pin_4',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
         # delete the tokens of the user
         for serial in ["spass_pin_1", "spass_pin_3", "spass_pin_4"]:
-            response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
-                                                                                 'selftest_admin' : 'superadmin'
-                                                                                  })
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='remove',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'maxtoken_per_user',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'maxtoken_per_user'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_710_otp_pin_random_for_users(self):
         '''
         Policy 710: Testing scope=enrollment, otp_pin_random for different users
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'otppinrandom_per_user',
-                                                                                       'scope' : 'enrollment',
-                                                                                       'realm' : 'myOtherRealm',
-                                                                                       'user' : 'max1',
-                                                                                       'action' : 'otp_pin_random=4',
-                                                                                       'client' : '',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'otppinrandom_per_user',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max1',
+                  'action': 'otp_pin_random=4',
+                  'client': '',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token max1
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
-                                                                               'realm':'myOtherRealm',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_1',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max1',
+                  'realm': 'myOtherRealm',
+                  'type': 'spass',
+                  'serial': 'spass_pin_1',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
         # enroll token for max2
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
-                                                                               'realm':'myOtherRealm',
-                                                                               'type' : 'spass',
-                                                                                'serial' : 'spass_pin_2',
-                                                                                'pin' : 'otppin',
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max2',
+                  'realm': 'myOtherRealm',
+                  'type': 'spass',
+                  'serial': 'spass_pin_2',
+                  'pin': 'otppin'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
         # validate token of max1: unknown otp pin
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'max1',
-                                                                               'realm':'myOtherRealm',
-                                                                               'pass' : 'otppin'
-                                                                                })
+        params = {'user': 'max1', 'realm': 'myOtherRealm', 'pass': 'otppin'}
+        response = self.make_validate_request(action='check', params=params)
 
         self.assertTrue('"value": false' in response, response)
 
         # validate token of max2: known otp pin
-        response = self.app.get(url(controller='validate', action='check'), params={'user':'max2',
-                                                                               'realm':'myOtherRealm',
-                                                                               'pass' : 'otppin'
-                                                                                })
+        params = {'user': 'max2', 'realm': 'myOtherRealm', 'pass': 'otppin'}
+        response = self.make_validate_request(action='check', params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # delete the tokens of the user
         for serial in ["spass_pin_1", "spass_pin_2"]:
-            response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
-                                                                                 'selftest_admin' : 'superadmin'
-                                                                                  })
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='remove',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'otppinrandom_per_user',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'otppinrandom_per_user'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_711_get_tokenlabel_for_users(self):
         '''
         Policy 711: Testing scope=enrollment, tokenlabel/tokenissuer for different users
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'tokenlabel_per_user',
-                                                                                       'scope' : 'enrollment',
-                                                                                       'realm' : 'myOtherRealm',
-                                                                                       'user' : 'max1',
-                                                                                       'action' : 'tokenlabel=<u>',
-                                                                                       'client' : '',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'tokenlabel_per_user',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max1',
+                  'action': 'tokenlabel=<u>',
+                  'client': '',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # enroll a token max1
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
-                                                                               'realm':'myOtherRealm',
-                                                                               'serial' : 'hmac1',
-                                                                               'type' : 'hmac',
-                                                                                'genkey' : 1,
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max1',
+                  'realm': 'myOtherRealm',
+                  'serial': 'hmac1',
+                  'type': 'hmac',
+                  'genkey': 1, }
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
-        self.assertTrue('"value": "otpauth://hotp/max1?' in response, response)
+        self.assertTrue('"value": "otpauth://hotp/max1?' in response,
+                        response)
 
         # enroll token for max2
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max2',
-                                                                               'realm':'myOtherRealm',
-                                                                                'serial' : 'hmac2',
-                                                                               'type' : 'hmac',
-                                                                                'genkey' : 1,
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max2',
+                  'realm': 'myOtherRealm',
+                  'serial': 'hmac2',
+                  'type': 'hmac',
+                  'genkey': 1}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('value": "otpauth://hotp/hmac2?' in response, response)
 
         # add tokenissuer policy
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'tokenissuer_with_realm',
-                                                                                       'scope' : 'enrollment',
-                                                                                       'realm' : 'myOtherRealm',
-                                                                                       'user' : 'max1',
-                                                                                       'action' : 'tokenissuer=fakeissuer-<r>',
-                                                                                       'client' : '',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'tokenissuer_with_realm',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max1',
+                  'action': 'tokenissuer=fakeissuer-<r>',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         # enroll another token for max1, now with issuer
-        response = self.app.get(url(controller='admin', action='init'), params={'user':'max1',
-                                                                               'realm':'myOtherRealm',
-                                                                               'serial' : 'hmac3',
-                                                                               'type' : 'hmac',
-                                                                                'genkey' : 1,
-                                                                                'selftest_admin' : 'superadmin'})
+        params = {'user': 'max1',
+                  'realm': 'myOtherRealm',
+                  'serial': 'hmac3',
+                  'type': 'hmac',
+                  'genkey': 1}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
-        self.assertTrue('"value": "otpauth://hotp/fakeissuer-myOtherRealm:max1?' in response, response)
+        self.assertTrue('"value": "otpauth://hotp/fakeissuer-'
+                        'myOtherRealm:max1?' in response, response)
         self.assertTrue('issuer=fakeissuer-myOtherRealm' in response, response)
 
         # delete the tokens of the user
         for serial in ["hmac1", "hmac2", "hmac3"]:
-            response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
-                                                                                 'selftest_admin' : 'superadmin'
-                                                                                  })
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='remove',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
         # delete the policies
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'tokenlabel_per_user',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
-
-        self.assertTrue('"status": true' in response, response)
-        response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : 'tokenissuer_with_realm',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'tokenlabel_per_user'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
+        params = {'name': 'tokenissuer_with_realm'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
+
+        self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_712_autoassignment_for_users(self):
         '''
@@ -2717,22 +3271,23 @@ class TestPolicies(TestController):
             'token1': {'type': 'hmac',
                        'otpkey': 'd9848218d9977592fa70522579ec00e30adc490a',
                        'otpval': '585489',
-                    },
+                       },
             'token2': {'type': 'hmac',
                        'otpkey': '6b9c172fd7a521e57891f758141ce66741694c59',
                        'otpval': '843851',
-                    },
-            }
-
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params={'name': 'autoassignment_user',
-                                       'scope': 'enrollment',
-                                       'realm': 'myOtherRealm',
-                                       'user': 'max1',
-                                       'action': 'autoassignment=6',
-                                       'client': '',
-                                       'selftest_admin': 'superadmin',
-                                       })
+                       },
+                  }
+        params = {'name': 'autoassignment_user',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max1',
+                  'action': 'autoassignment=6',
+                  'client': '',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -2751,38 +3306,39 @@ class TestPolicies(TestController):
             descr['otpkey'] = "%s%d" % (token_template['otpkey'][:-1], i)
             tokens[serial] = descr
 
-        for serial, descr in tokens.items():
         # enroll tokens in realm myOtherRealm
+        for serial, descr in tokens.items():
             params = {'type': 'hmac',
-                    'serial': serial,
-                    'otpkey': descr['otpkey'],
-                    'realm': 'myOtherRealm',
-                    'selftest_admin': 'superadmin'
-                    }
-            response = self.app.get(url(controller='admin', action='init'),
-                                        params=params)
+                      'serial': serial,
+                      'otpkey': descr['otpkey'],
+                      'realm': 'myOtherRealm',
+                      }
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='init',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"value": true' in response, response)
 
         for serial, descr in tokens.items():
             # set realm of tokens
             params = {'serial': serial,
-                    'realms': 'myOtherRealm',
-                    'selftest_admin': 'superadmin'
-                    }
-            response = self.app.get(url(controller='admin',
-                                        action='tokenrealm'),
-                                    params=params)
+                      'realms': 'myOtherRealm',
+                      }
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='tokenrealm',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
             self.assertTrue('"value": 1' in response, response)
 
             # check tokens in realm
-            params = {'selftest_admin': 'superadmin',
-                      'serial': serial,
-                    }
-            response = self.app.get(url(controller='admin', action='show'),
-                                params=params)
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='show',
+                                               params=params,
+                                               auth_user=auth_user)
 
             serial_str = '"LinOtp.TokenSerialnumber": "%s"' % serial
             self.assertTrue(serial_str in response, response)
@@ -2800,17 +3356,17 @@ class TestPolicies(TestController):
                   'realm': 'myotherrealm',
                   'pass': 'password%s' % descr['otpval']
                   }
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # check tokens belongs to max
-        params = {'selftest_admin': 'superadmin',
-                  'serial': serial,
-                }
-        response = self.app.get(url(controller='admin', action='show'),
-                            params=params)
+        params = {'serial': serial}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='show',
+                                           params=params,
+                                           auth_user=auth_user)
 
         serial_str = '"LinOtp.TokenSerialnumber": "%s"' % serial
         self.assertTrue(serial_str in response, response)
@@ -2827,27 +3383,27 @@ class TestPolicies(TestController):
                   }
 
         # max 2 can not autoassign a token pw2
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": false' in response, response)
 
         # delete the tokens of the user
         for serial in tokens.keys():
-            params = {'serial': serial,
-                    'selftest_admin': 'superadmin'
-                    }
-            response = self.app.get(url(controller='admin', action='remove'),
-                                    params=params)
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='remove',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        params = {'name': 'autoassignment_user',
-                'selftest_admin': 'superadmin'
-                }
-        response = self.app.get(url(controller='system', action='delPolicy'),
-                                params=params)
+        params = {'name': 'autoassignment_user'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -2868,22 +3424,23 @@ class TestPolicies(TestController):
             'token1': {'type': 'hmac',
                        'otpkey': 'd9848218d9977592fa70522579ec00e30adc490a',
                        'otpval': '585489',
-                    },
+                       },
             'token2': {'type': 'hmac',
                        'otpkey': '6b9c172fd7a521e57891f758141ce66741694c59',
                        'otpval': '843851',
-                    },
-            }
-
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params={'name': 'autoassignment_user',
-                                       'scope': 'enrollment',
-                                       'realm': 'myOtherRealm',
-                                       'user': 'max1',
-                                       'action': 'autoassignment',
-                                       'client': '',
-                                       'selftest_admin': 'superadmin',
-                                       })
+                       },
+                  }
+        params = {'name': 'autoassignment_user',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max1',
+                  'action': 'autoassignment',
+                  'client': '',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -2902,38 +3459,39 @@ class TestPolicies(TestController):
             descr['otpkey'] = "%s%d" % (token_template['otpkey'][:-1], i)
             tokens[serial] = descr
 
-        for serial, descr in tokens.items():
         # enroll tokens in realm myOtherRealm
+        for serial, descr in tokens.items():
             params = {'type': 'hmac',
-                    'serial': serial,
-                    'otpkey': descr['otpkey'],
-                    'realm': 'myOtherRealm',
-                    'selftest_admin': 'superadmin'
-                    }
-            response = self.app.get(url(controller='admin', action='init'),
-                                        params=params)
+                      'serial': serial,
+                      'otpkey': descr['otpkey'],
+                      'realm': 'myOtherRealm',
+                      }
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='init',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"value": true' in response, response)
 
         for serial, descr in tokens.items():
             # set realm of tokens
             params = {'serial': serial,
-                    'realms': 'myOtherRealm',
-                    'selftest_admin': 'superadmin'
-                    }
-            response = self.app.get(url(controller='admin',
-                                        action='tokenrealm'),
-                                    params=params)
+                      'realms': 'myOtherRealm',
+                      }
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='tokenrealm',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
             self.assertTrue('"value": 1' in response, response)
 
             # check tokens in realm
-            params = {'selftest_admin': 'superadmin',
-                      'serial': serial,
-                    }
-            response = self.app.get(url(controller='admin', action='show'),
-                                params=params)
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='show',
+                                               params=params,
+                                               auth_user=auth_user)
 
             serial_str = '"LinOtp.TokenSerialnumber": "%s"' % serial
             self.assertTrue(serial_str in response, response)
@@ -2951,17 +3509,17 @@ class TestPolicies(TestController):
                   'realm': 'myotherrealm',
                   'pass': 'password%s' % descr['otpval']
                   }
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": true' in response, response)
 
         # check tokens belongs to max
-        params = {'selftest_admin': 'superadmin',
-                  'serial': serial,
-                }
-        response = self.app.get(url(controller='admin', action='show'),
-                            params=params)
+        params = {'serial': serial}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='show',
+                                           params=params,
+                                           auth_user=auth_user)
 
         serial_str = '"LinOtp.TokenSerialnumber": "%s"' % serial
         self.assertTrue(serial_str in response, response)
@@ -2978,27 +3536,27 @@ class TestPolicies(TestController):
                   }
 
         # max 2 can not autoassign a token pw2
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=params)
+        response = self.make_validate_request(action='check',
+                                              params=params)
 
         self.assertTrue('"value": false' in response, response)
 
         # delete the tokens of the user
         for serial in tokens.keys():
-            params = {'serial': serial,
-                    'selftest_admin': 'superadmin'
-                    }
-            response = self.app.get(url(controller='admin', action='remove'),
-                                    params=params)
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='remove',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
         # delete the policy
-        params = {'name': 'autoassignment_user',
-                'selftest_admin': 'superadmin'
-                }
-        response = self.app.get(url(controller='system', action='delPolicy'),
-                                params=params)
+        params = {'name': 'autoassignment_user'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='delPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
@@ -3011,78 +3569,100 @@ class TestPolicies(TestController):
         max1 gets pwlen=10
         max2 gets pwlen=20
         '''
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'losttoken_user_1',
-                                                                                       'scope' : 'enrollment',
-                                                                                       'realm' : 'myOtherRealm',
-                                                                                       'user' : 'max1',
-                                                                                       'action' : 'lostTokenPWLen=8',
-                                                                                       'client' : '',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'losttoken_user_1',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max1',
+                  'action': 'lostTokenPWLen=8',
+                  'client': ''}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
-        response = self.app.get(url(controller='system', action='setPolicy'), params={'name' : 'losttoken_user_2',
-                                                                                       'scope' : 'enrollment',
-                                                                                       'realm' : 'myOtherRealm',
-                                                                                       'user' : 'max2',
-                                                                                       'action' : 'lostTokenPWLen=20',
-                                                                                       'client' : '',
-                                                                                       'selftest_admin' : 'superadmin'
-                                                                                       })
+        params = {'name': 'losttoken_user_2',
+                  'scope': 'enrollment',
+                  'realm': 'myOtherRealm',
+                  'user': 'max2',
+                  'action': 'lostTokenPWLen=20',
+                  'client': '',
+                  }
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=params,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
 
         # enroll tokens in realm myOtherRealm
-        response = self.app.get(url(controller='admin', action='init'), params={'type' : 'hmac',
-                                                                               'user' : "max1",
-                                                                               "realm" : "myOtherRealm",
-                                                                                'serial' : 'token1',
-                                                                                'otpkey' : 'd9848218d9977592fa70522579ec00e30adc490a',
-                                                                                'selftest_admin' : 'superadmin'})  # OTP: 585489
+        params = {'type': 'hmac',  # OTP: 585489
+                  'user': "max1",
+                  "realm": "myOtherRealm",
+                  'serial': 'token1',
+                  'otpkey': 'd9848218d9977592fa70522579ec00e30adc490a'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
-        response = self.app.get(url(controller='admin', action='init'), params={'type' : 'hmac',
-                                                                                'serial' : 'token2',
-                                                                                'user' : "max2",
-                                                                               "realm" : "myOtherRealm",
-                                                                                'otpkey' : '6b9c172fd7a521e57891f758141ce66741694c59',
-                                                                                'selftest_admin' : 'superadmin'})  # OTP: 843851
+        params = {'type': 'hmac',  # OTP: 843851
+                  'serial': 'token2',
+                  'user': "max2",
+                  "realm": "myOtherRealm",
+                  'otpkey': '6b9c172fd7a521e57891f758141ce66741694c59'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
         # generate lost tokens
-        response = self.app.get(url(controller='admin', action="losttoken"), params={"serial" : "token1",
-                                                                                    "selftest_admin": "superadmin"})
+        params = {"serial": "token1"}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action="losttoken",
+                                           params=params,
+                                           auth_user=auth_user)
 
         # check for password length 10
-        self.assertTrue(re.search('"password": "\S{8}"', unicode(response)) is not None, response)
+        self.assertTrue(re.search('"password": "\S{8}"',
+                                  unicode(response)) is not None, response)
 
-        response = self.app.get(url(controller='admin', action="losttoken"), params={"serial" : "token2",
-                                                                                    "selftest_admin": "superadmin"})
+        params = {"serial": "token2"}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action="losttoken",
+                                           params=params,
+                                           auth_user=auth_user)
 
-                # check for password length 10
-        self.assertTrue(re.search('"password": "\S{20}"', unicode(response)) is not None, response)
-
+        # check for password length 10
+        self.assertTrue(re.search('"password": "\S{20}"',
+                                  unicode(response)) is not None, response)
 
         # delete the tokens of the user
         for serial in ["token1", "token2", "losttoken1", "losttoken2"]:
-            response = self.app.get(url(controller='admin', action='remove'), params={'serial' : serial,
-                                                                                 'selftest_admin' : 'superadmin'
-                                                                                  })
+            params = {'serial': serial}
+            auth_user = 'superadmin'
+            response = self.make_admin_request(action='remove',
+                                               params=params,
+                                               auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
         # delete the policy
         for p in ["losttoken_user_1", "losttoken_user_2"]:
-            response = self.app.get(url(controller='system',
-                                        action='delPolicy'),
-                                     params={'name': p,
-                                             'selftest_admin': 'superadmin'
-                                            })
+            params = {'name': p}
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='delPolicy',
+                                                params=params,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
+
+        return
 
     def test_801_getqrtanurl(self):
         '''
@@ -3093,12 +3673,15 @@ class TestPolicies(TestController):
                       'scope': 'authentication',
                       'realm': '*',
                       'action': 'qrtanurl=%s' % URL,
-                      'selftest_admin': 'superadmin'
                       }
-        self.app.get(url(controller='system', action='setPolicy'),
-                                params=parameters)
+        auth_user = 'superadmin'
+        self.make_system_request(action='setPolicy',
+                                 params=parameters,
+                                 auth_user=auth_user)
 
-        response = self.app.get(url(controller='system', action='getPolicy'))
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='getPolicy',
+                                            auth_user=auth_user)
         self.assertIn(URL, response.body, response.body)
 
         with request_context_safety():
@@ -3109,19 +3692,22 @@ class TestPolicies(TestController):
 
         self.assertTrue(u == URL, u)
 
+        return
+
     def test_802_getqrtanurl(self):
         '''
         Policy 802: Testing Authentication Scope: the QR-TAN Url with a single realm
         '''
         URL = "https://testserver/ocra/check_t"
-        parameters = {'name' : 'authQRTAN',
-                      'scope' : 'authentication',
-                      'realm' : 'testrealm',
-                      'action' : 'qrtanurl=%s' % URL,
-                      'selftest_admin' : 'superadmin'
+        parameters = {'name': 'authQRTAN',
+                      'scope': 'authentication',
+                      'realm': 'testrealm',
+                      'action': 'qrtanurl=%s' % URL,
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params=parameters)
+        auth_user = 'superadmin'
+        _response = self.make_system_request(action='setPolicy',
+                                             params=parameters,
+                                             auth_user=auth_user)
 
         with request_context_safety():
 
@@ -3130,20 +3716,24 @@ class TestPolicies(TestController):
 
             u = get_qrtan_url(["testrealm"])
 
-        self.assertTrue(u == URL, u)
+            self.assertTrue(u == URL, u)
+
+        return
 
     def test_803_getqrtanurl(self):
         '''
         Policy 803: Testing Authentication Scope: the QR-TAN Url with 3 realms
         '''
         URL = "https://testserver/ocra/check_t"
-        parameters = { 'name' : 'authQRTAN',
-                       'scope' : 'authentication',
-                       'realm' : 'testrealm, realm2, realm3',
-                       'action' : 'qrtanurl=%s' % URL,
-                       'selftest_admin' : 'superadmin'
+        parameters = {'name': 'authQRTAN',
+                      'scope': 'authentication',
+                      'realm': 'testrealm, realm2, realm3',
+                      'action': 'qrtanurl=%s' % URL,
                       }
-        response = self.app.get(url(controller='system', action='setPolicy'), params=parameters)
+        auth_user = 'superadmin'
+        _response = self.make_system_request(action='setPolicy',
+                                             params=parameters,
+                                             auth_user=auth_user)
 
         with request_context_safety():
             context['Config'] = getLinotpConfig()
@@ -3151,88 +3741,130 @@ class TestPolicies(TestController):
 
             u = get_qrtan_url(["testrealm"])
 
-        self.assertTrue(u == URL, u)
+            self.assertTrue(u == URL, u)
+
+        return
 
     def test_804_ocra_policy(self):
         '''
         Policy 804: Testing the ocra policies
         '''
-        policies = [ {'name':'ocra_1',
-                     'scope' : 'ocra',
-                     'realm' : '*',
-                     'action' : 'request, status',
-                     'user' : 'ocra_admin_1',
-                     'selftest_admin' : 'superadmin',
-                     'client' : ''},
-                     {'name':'ocra_2',
-                     'scope' : 'ocra',
-                     'realm' : '*',
-                     'action' : 'activationcode, calcOTP',
-                     'user' : 'ocra_admin_2',
-                     'selftest_admin' : 'superadmin',
-                     'client' : ''}
+        policies = [{
+                     'name': 'ocra_1',
+                     'scope': 'ocra',
+                     'realm': '*',
+                     'action': 'request, status',
+                     'user': 'ocra_admin_1',
+                     'client': ''
+                     },
+                    {
+                     'name': 'ocra_2',
+                     'scope': 'ocra',
+                     'realm': '*',
+                     'action': 'activationcode, calcOTP',
+                     'user': 'ocra_admin_2',
+                     'client': ''
+                     }
                     ]
         # create policies
         for policy in policies:
-            response = self.app.get(url(controller='system', action='setPolicy'), params=policy)
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='setPolicy',
+                                                params=policy,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
-            self.assertTrue('"setPolicy %s"' % policy.get('name') in response, response)
+            self.assertTrue('"setPolicy %s"' % policy.get('name') in response,
+                            response)
 
         # check policies
         for policy in policies:
-            response = self.app.get(url(controller='system', action='getPolicy'), params={'name':policy.get('name')})
+            params = {'name': policy.get('name')}
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='getPolicy',
+                                                params=params,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
-
-        response = self.app.get(url(controller='ocra', action='request'), params={'selftest_admin':'ocra_admin_1',
-                                                                                 'user' : 'user1',
-                                                                                 'data' : 'Testdaten'})
+        params = {'user': 'user1', 'data': 'Testdaten'}
+        auth_user = 'ocra_admin_1'
+        response = self.make_ocra_request(action='request',
+                                          params=params,
+                                          auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('"No token found: unable to create challenge for ' in response, response)
+        self.assertTrue('"No token found: unable to create challenge for ' in
+                        response, response)
 
-        response = self.app.get(url(controller='ocra', action='checkstatus'), params={'selftest_admin':'ocra_admin_1',
-                                                                                     'user': 'user1'})
+        params = {'user': 'user1'}
+        auth_user = 'ocra_admin_1'
+        response = self.make_ocra_request(action='checkstatus',
+                                          params=params,
+                                          auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
         self.assertTrue('"values": []' in response, response)
 
-        response = self.app.get(url(controller='ocra', action='checkstatus'), params={'selftest_admin':'ocra_admin_2',
-                                                                                     'user': 'user1'})
+        params = {'user': 'user1'}
+        auth_user = 'ocra_admin_2'
+        response = self.make_ocra_request(action='checkstatus',
+                                          params=params,
+                                          auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('You do not have the administrative right to do an ocra/checkstatus' in response, response)
+        self.assertTrue('You do not have the administrative right to do an'
+                        ' ocra/checkstatus' in response, response)
 
-        response = self.app.get(url(controller='ocra', action='getActivationCode'), params={'selftest_admin':'ocra_admin_2'})
+        params = {}
+        auth_user = 'ocra_admin_2'
+        response = self.make_ocra_request(action='getActivationCode',
+                                          params=params,
+                                          auth_user=auth_user)
 
         self.assertTrue('"status": true' in response, response)
         self.assertTrue('"activationcode": "' in response, response)
 
-        response = self.app.get(url(controller='ocra', action='calculateOtp'), params={'selftest_admin':'ocra_admin_2'})
+        params = {}
+        auth_user = 'ocra_admin_2'
+        response = self.make_ocra_request(action='calculateOtp',
+                                          params=params,
+                                          auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('\'NoneType\' object has no attribute \'find\'' in response, response)
+        self.assertTrue('\'NoneType\' object has no attribute \'find\'' in
+                        response, response)
 
-        response = self.app.get(url(controller='ocra', action='calculateOtp'), params={'selftest_admin':'ocra_admin_1'})
+        params = {}
+        auth_user = 'ocra_admin_1'
+        response = self.make_ocra_request(action='calculateOtp',
+                                          params=params,
+                                          auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
         self.assertTrue('"code": 410' in response, response)
 
-        response = self.app.get(url(controller='ocra', action='getActivationCode'), params={'selftest_admin':'ocra_admin_1'})
+        params = {}
+        auth_user = 'ocra_admin_1'
+        response = self.make_ocra_request(action='getActivationCode',
+                                          params=params,
+                                          auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('You do not have the administrative right to do an ocra/getActivationCode' in response, response)
-
+        self.assertTrue('You do not have the administrative right to do an'
+                        ' ocra/getActivationCode' in response, response)
 
         # delete policies
         for policy in policies:
-            response = self.app.get(url(controller='system', action='delPolicy'), params={'name':policy.get('name')})
+            params = {'name': policy.get('name')}
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='delPolicy',
+                                                params=params,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true,' in response, response)
-            self.assertTrue('"linotp.Policy.%s.scope": true' % policy.get('name') in response, response)
-
+            self.assertTrue('"linotp.Policy.%s.scope": true'
+                            % policy.get('name') in response, response)
 
     def test_810_admin_is_not_allowed_to_show(self):
         '''
@@ -3241,85 +3873,99 @@ class TestPolicies(TestController):
         Although the admin is allowed to view tokens in two realms,
         he only wants to see the tokens of one realm.
         '''
-        policies = [ {'name':'admin_show_1',
-                     'scope' : 'admin',
-                     'realm' : 'testrealm, myDefRealm',
-                     'action' : 'show',
-                     'user' : 'show_admin_1',
-                     'selftest_admin' : 'superadmin',
-                     'client' : ''},
+        policies = [{'name': 'admin_show_1',
+                     'scope': 'admin',
+                     'realm': 'testrealm, myDefRealm',
+                     'action': 'show',
+                     'user': 'show_admin_1',
+                     'client': ''},
                     ]
         # create policies
         for policy in policies:
-            response = self.app.get(url(controller='system', action='setPolicy'), params=policy)
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='setPolicy',
+                                                params=policy,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
-            self.assertTrue('"setPolicy %s"' % policy.get('name') in response, response)
+            self.assertTrue('"setPolicy %s"' % policy.get('name') in response,
+                            response)
 
         # test, if admin show_admin_1 is not allowed to show
-        response = self.app.get(url(controller='admin', action='show'),
-                                params={'viewrealm' : 'testrealm',
-                                        'selftest_admin' : 'show_admin_1'
-                                        })
+        params = {'viewrealm': 'testrealm'}
+        auth_user = 'show_admin_1'
+        response = self.make_admin_request(action='show',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"status": true,' in response, response)
 
+        return
 
     def test_812_empty_policy_name(self):
         '''
         Policy 819: Saving policies with empty policy name is not possible
         '''
-        policy = {'name':'',
-                     'scope' : 'admin',
-                     'realm' : '*',
-                     'action' : 'initETNG',
-                     'selftest_admin' : 'superadmin'}
-        response = self.app.get(url(controller='system', action='setPolicy'), params=policy)
+        policy = {'name': '',
+                  'scope': 'admin',
+                  'realm': '*',
+                  'action': 'initETNG'}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='setPolicy',
+                                            params=policy,
+                                            auth_user=auth_user)
 
         self.assertTrue('"status": false' in response, response)
-        self.assertTrue('"message": "The name of the policy must not be empty"' in response, response)
+        self.assertTrue('"message": "The name of the policy must not'
+                        ' be empty"' in response, response)
+
+        return
 
     def test_820_detail_on_success(self):
         '''
         Policy 820: check the authorization/detail_on_success and detail_on_fail policy
         '''
         # enroll token
-        response = self.app.get(url(controller='admin', action='init'), params={'serial' : 'detail01',
-                                                                                'type' : 'spass',
-                                                                                'selftest_admin' : 'superadmin',
-                                                                                'pin' : 'secret',
-                                                                                'user' : 'detail_user',
-                                                                                'realm' : 'myMixRealm'
-                                                                                })
+        params = {'serial': 'detail01',
+                  'type': 'spass',
+                  'pin': 'secret',
+                  'user': 'detail_user',
+                  'realm': 'myMixRealm'
+                  }
+        auth_user = 'superadmin',
+        response = self.make_admin_request(action='init',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": true' in response, response)
 
-        policies = [ {'name':'detail_1',
-                     'scope' : 'authorization',
-                     'realm' : 'myMixRealm',
-                     'action' : 'detail_on_success',
-                     'user' : '*',
-                     'selftest_admin' : 'superadmin',
-                     'client' : ''},
-                    {'name':'detail_2',
-                     'scope' : 'authorization',
-                     'realm' : 'myMixRealm',
-                     'action' : 'detail_on_fail',
-                     'user' : '*',
-                     'selftest_admin' : 'superadmin',
-                     'client' : ''}
+        policies = [{'name': 'detail_1',
+                     'scope': 'authorization',
+                     'realm': 'myMixRealm',
+                     'action': 'detail_on_success',
+                     'user': '*',
+                     'client': ''},
+                    {'name': 'detail_2',
+                     'scope': 'authorization',
+                     'realm': 'myMixRealm',
+                     'action': 'detail_on_fail',
+                     'user': '*',
+                     'client': ''}
                     ]
 
         # set policy for authorization
         for pol in policies:
-            response = self.app.get(url(controller='system', action='setPolicy'), params=pol)
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='setPolicy',
+                                                params=pol,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
             self.assertTrue('"setPolicy detail_' in response, response)
 
         # check the successful validation
-        response = self.app.get(url(controller='validate', action='check'), params={'user' : 'detail_user@myMixRealm',
-                                                                                    'pass' : 'secret'})
+        params = {'user': 'detail_user@myMixRealm', 'pass': 'secret'}
+        response = self.make_validate_request(action='check', params=params)
 
         self.assertTrue('"value": true' in response, response)
         self.assertTrue('"serial": "detail01",' in response, response)
@@ -3328,67 +3974,85 @@ class TestPolicies(TestController):
         self.assertTrue('"tokentype": "spass"' in response, response)
 
         # check failed validation
-        response = self.app.get(url(controller='validate', action='check'), params={'user' : 'detail_user@myMixRealm',
-                                                                                    'pass' : 'wrong'})
+        params = {'user': 'detail_user@myMixRealm', 'pass': 'wrong'}
+        response = self.make_validate_request(action='check', params=params)
 
         self.assertTrue('"value": false' in response, response)
         self.assertTrue('"error": "wrong otp pin -1"' in response, response)
 
-        #delete policies
+        # delete policies
         for pol in ["detail_1", "detail_2"]:
-            response = self.app.get(url(controller='system', action='delPolicy'), params={'name' : pol,
-                                                                                          'selftest_admin' : 'superadmin'
-                                                                                          })
+            params = {'name': pol}
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='delPolicy',
+                                                params=params,
+                                                auth_user=auth_user)
+
             self.assertTrue('"status": true' in response, response)
             self.assertTrue('"delPolicy"' in response, response)
 
         # delete token
-        response = self.app.get(url(controller='admin', action='remove'), params={'serial' : 'detail01',
-                                                                                'selftest_admin' : 'superadmin'
-                                                                                })
+        params = {'serial': 'detail01'}
+        auth_user = 'superadmin'
+        response = self.make_admin_request(action='remove',
+                                           params=params,
+                                           auth_user=auth_user)
 
         self.assertTrue('"value": 1' in response, response)
+
+        return
 
     def test_998_cleanup_policies(self):
         '''
         Policy 998: remove (hopefully all policies)
         '''
         # generic delete of all policies
-        parameters = {'selftest_admin' : 'superadmin'}
-        response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
-
+        parameters = {}
+        auth_user = 'superadmin'
+        response = self.make_system_request(action='getPolicy',
+                                            params=parameters,
+                                            auth_user=auth_user)
 
         result = json.loads(response.body)
         names = result.get("result").get('value').keys()
 
-        ## delete all standard policies
+        # delete all standard policies
         for name in names:
             if name in ["ManageAll", "sysSuper"]:
                 continue
             parameters = {'name': name,
                           'enforce': 'true',
-                          'selftest_admin': 'superadmin'}
-            response = self.app.get(url(controller='system', action='delPolicy'), params=parameters)
+                          }
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='delPolicy',
+                                                params=parameters,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
-        ## delete all super policies as the end
+        # delete all super policies as the end
         for name in ["ManageAll", "sysSuper"]:
-            parameters = { 'name' : name,
-                          'selftest_admin' : 'superadmin' }
-            response = self.app.get(url(controller='system', action='delPolicy'), params=parameters)
+            parameters = {'name': name}
+            auth_user = 'superadmin'
+            response = self.make_system_request(action='delPolicy',
+                                                params=parameters,
+                                                auth_user=auth_user)
 
             self.assertTrue('"status": true' in response, response)
 
-
+        return
 
     def test_999_check_NO_policies(self):
         '''
         Policy 999: Check if all policies are deleted from the system
         '''
         # check if we deleted all policies
-        parameters = {'selftest_admin' : 'superadmin'}
-        response = self.app.get(url(controller='system', action='getPolicy'), params=parameters)
+        parameters = {'selftest_admin': 'superadmin'}
+        response = self.make_system_request(action='getPolicy',
+                                            params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
         self.assertTrue('"value": {}' in response, response)
+
+        return
