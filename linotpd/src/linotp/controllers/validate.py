@@ -54,7 +54,6 @@ from linotp.lib.reply import sendResult, sendError
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import get_tokenserial_of_transaction
-from linotp.lib.challenges import Challenges
 
 from linotp.lib.user import User
 from linotp.lib.user import getUserFromParam
@@ -829,15 +828,8 @@ class ValidateController(BaseController):
             params['data'] = serial
 
             token.change_state('pairing_response_received')
-            success, challenge_dict = Challenges.create_challenge(token, params)
-            if not success:
-                raise Exception('Unable to create challenge from pairing '
-                                'response %s' % enc_response)
-
-            detail_dict = {'challenge_url': challenge_dict['message']}
-            token.change_state('pairing_challenge_sent')
             Session.commit()
-            return sendResult(response, False, opt=detail_dict)
+            return sendResult(response, False)
 
         except Exception:
             Session.rollback()

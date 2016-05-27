@@ -173,28 +173,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         is_completely_finished = TokenClass.isActive(self)
         return is_completely_finished or \
+            self.current_state == 'pairing_response_received' or \
             self.current_state == 'pairing_challenge_sent'
-
-# ------------------------------------------------------------------------------
-
-    def is_challenge_request(self, passw, user, options=None):
-        """
-        check, if the request would start a challenge
-
-        :param passw: password, which might be pin or pin+otp
-        :param options: dictionary of additional request parameters
-
-        :return: returns true or false
-        """
-
-        if not passw and \
-           ('data' in options or 'challenge' in options):
-            return True
-        else:
-            return TokenClass.is_challenge_request(self, passw,
-                                                   user, options)
-
-        return False
 
 # ------------------------------------------------------------------------------
 
@@ -521,7 +501,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         param_keys = set(params.keys())
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
-                                       'key_size', 'user.login',
+                                       'key_size', 'user.login', 'pin',
                                        'user.realm', 'session', 'otplen',
                                        'resConf', 'user', 'realm', 'qr'])
 
@@ -568,7 +548,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         param_keys = set(params.keys())
         init_rollout_state_keys = set(['type', 'hashlib', 'serial',
-                                       'key_size', 'user.login',
+                                       'key_size', 'user.login', 'pin',
                                        'user.realm', 'session', 'otplen',
                                        'resConf', 'user', 'realm', 'qr'])
 
@@ -750,7 +730,11 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         valid_states = ['pairing_response_received', 'pairing_complete']
         self.ensure_state_is_in(valid_states)
 
-        content_type = options.get('content_type')
+        if self.current_state == 'pairing_response_received':
+            content_type = CONTENT_TYPE_PAIRING
+        else:
+            content_type = options.get('content_type')
+
         message = options.get('data')
 
         # ----------------------------------------------------------------------
@@ -786,6 +770,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                                                             compression)
 
         data = {'message': message, 'user_sig': user_sig}
+
+        if self.current_state == 'pairing_response_received':
+            self.change_state('pairing_challenge_sent')
 
         return (True, challenge_url, data, {})
 
