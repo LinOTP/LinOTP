@@ -120,12 +120,17 @@ class TestReportingController(TestController):
 
         self.create_token(serial='0001', realm='mymixrealm', user='hans')
 
-        engine = engine_from_config(config, 'sqlalchemy.')
-        Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
-        Session.configure(bind=engine)
-        # check if new entry was created in reporting table
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 1, table_content)
+        Session=None
+        try:
+            engine = engine_from_config(config, 'sqlalchemy.')
+            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session.configure(bind=engine)
+            # check if new entry was created in reporting table
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 1, table_content)
+        finally:
+            if Session:
+                Session.close()
 
     def test_reporting_status_active(self):
         # set policy:
@@ -145,22 +150,27 @@ class TestReportingController(TestController):
         self.create_token(serial='0015', realm='mymixrealm', user='lorca')
         self.create_token(serial='0016', realm='myotherrealm')
 
-        engine = engine_from_config(config, 'sqlalchemy.')
-        Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
-        Session.configure(bind=engine)
-        # check if new entry was created in reporting table
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 12, table_content)
+        Session=None
+        try:
+            engine = engine_from_config(config, 'sqlalchemy.')
+            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session.configure(bind=engine)
+            # check if new entry was created in reporting table
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 12, table_content)
 
-        parameters = {'user': 'hans'}
-        self.make_authenticated_request(controller='admin',
-                                                   action='disable',
-                                                   params=parameters)
-        # refresh Session
-        Session.commit()
-        table_content = Session.query(Reporting).filter(
-            Reporting.parameter == 'active')
-        self.assertEqual(table_content.count(), 7, table_content)
+            parameters = {'user': 'hans'}
+            self.make_authenticated_request(controller='admin',
+                                                       action='disable',
+                                                       params=parameters)
+            # refresh Session
+            Session.commit()
+            table_content = Session.query(Reporting).filter(
+                Reporting.parameter == 'active')
+            self.assertEqual(table_content.count(), 7, table_content)
+        finally:
+            if Session:
+                Session.close()
 
     def test_multi_actions_in_reporting_policy(self):
         # set policy:
@@ -176,95 +186,108 @@ class TestReportingController(TestController):
 
         self.create_token(serial='0021', realm='mymixrealm', user='hans')
 
-        engine = engine_from_config(config, 'sqlalchemy.')
-        Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
-        Session.configure(bind=engine)
-        # check if new entry was created in reporting table
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 3, table_content)
+        Session=None
+        try:
+            engine = engine_from_config(config, 'sqlalchemy.')
+            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session.configure(bind=engine)
+            # check if new entry was created in reporting table
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 3, table_content)
+        finally:
+            if Session:
+                Session.close()
 
     def test_del_before(self):
         """
         test delete rows from reporting table which are older than date
         """
+        Session=None
+        try:
+            engine = engine_from_config(config, 'sqlalchemy.')
+            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session.configure(bind=engine)
 
-        engine = engine_from_config(config, 'sqlalchemy.')
-        Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
-        Session.configure(bind=engine)
+            # create table entries
+            today = datetime.now()
+            yesterday = today - timedelta(days=1)
+            two_days_ago = today - timedelta(days=2)
 
-        # create table entries
-        today = datetime.now()
-        yesterday = today - timedelta(days=1)
-        two_days_ago = today - timedelta(days=2)
+            # create old reports:
+            report_2 = Reporting(timestamp=two_days_ago, event='token_init',
+                                 realm='mydefrealm', parameter='active', count=1)
+            report_1 = Reporting(timestamp=yesterday, event='token_init',
+                                 realm='mydefrealm', parameter='active', count=2)
+            report_0 = Reporting(event='token_init',
+                                 realm='mydefrealm', parameter='active', count=3)
+            Session.add(report_0)
+            Session.add(report_1)
+            Session.add(report_2)
+            Session.commit()
 
-        # create old reports:
-        report_2 = Reporting(timestamp=two_days_ago, event='token_init',
-                             realm='mydefrealm', parameter='active', count=1)
-        report_1 = Reporting(timestamp=yesterday, event='token_init',
-                             realm='mydefrealm', parameter='active', count=2)
-        report_0 = Reporting(event='token_init',
-                             realm='mydefrealm', parameter='active', count=3)
-        Session.add(report_0)
-        Session.add(report_1)
-        Session.add(report_2)
-        Session.commit()
+            # check if reports are in database
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 3, table_content)
 
-        # check if reports are in database
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 3, table_content)
-
-        # delete reports
-        yest = yesterday.strftime("%Y-%m-%d")
-        parameter = {'date': yest, 'realms': '*', 'status': 'active'}
-        response = self.make_authenticated_request(controller='reporting',
-                                                   action='delete_before',
-                                                   params=parameter)
-        resp = json.loads(response.body)
-        values = resp.get('result')
-        self.assertEqual(values.get('status'), True, response)
-        self.assertEqual(values.get('value'), 1, response)
+            # delete reports
+            yest = yesterday.strftime("%Y-%m-%d")
+            parameter = {'date': yest, 'realms': '*', 'status': 'active'}
+            response = self.make_authenticated_request(controller='reporting',
+                                                       action='delete_before',
+                                                       params=parameter)
+            resp = json.loads(response.body)
+            values = resp.get('result')
+            self.assertEqual(values.get('status'), True, response)
+            self.assertEqual(values.get('value'), 1, response)
+        finally:
+            if Session:
+                Session.close()
 
     def test_delete_all_reports(self):
+        Session=None
+        try:
+            engine = engine_from_config(config, 'sqlalchemy.')
+            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session.configure(bind=engine)
 
-        engine = engine_from_config(config, 'sqlalchemy.')
-        Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
-        Session.configure(bind=engine)
+            # check if table is empty
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 0, table_content)
 
-        # check if table is empty
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 0, table_content)
+            # create table entries
+            today = datetime.now()
+            yesterday = today - timedelta(days=1)
 
-        # create table entries
-        today = datetime.now()
-        yesterday = today - timedelta(days=1)
+            report_1 = Reporting(timestamp=yesterday, event='token_init',
+                                 realm='mydefrealm', parameter='active', count=1)
+            report_2 = Reporting(event='token_init',
+                                 realm='mydefrealm', parameter='active', count=2)
+            Session.add(report_1)
+            Session.add(report_2)
+            Session.commit()
 
-        report_1 = Reporting(timestamp=yesterday, event='token_init',
-                             realm='mydefrealm', parameter='active', count=1)
-        report_2 = Reporting(event='token_init',
-                             realm='mydefrealm', parameter='active', count=2)
-        Session.add(report_1)
-        Session.add(report_2)
-        Session.commit()
+            # check if reports are in database
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 2, table_content)
 
-        # check if reports are in database
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 2, table_content)
+            # delete reports
+            response = self.make_authenticated_request(controller='reporting',
+                                                       action='delete_all',
+                                                       params={'realm': '*',
+                                                               'status': 'active'})
+            resp = json.loads(response.body)
+            values = resp.get('result')
+            self.assertEqual(values.get('status'), True, response)
+            self.assertEqual(values.get('value'), 2, response)
 
-        # delete reports
-        response = self.make_authenticated_request(controller='reporting',
-                                                   action='delete_all',
-                                                   params={'realm': '*',
-                                                           'status': 'active'})
-        resp = json.loads(response.body)
-        values = resp.get('result')
-        self.assertEqual(values.get('status'), True, response)
-        self.assertEqual(values.get('value'), 2, response)
-
-        # refresh Session
-        Session.commit()
-        # check if database table is empty
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 0, table_content)
+            # refresh Session
+            Session.commit()
+            # check if database table is empty
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 0, table_content)
+        finally:
+            if Session:
+                Session.close()
 
     def test_selfservice(self):
         # set policies:
@@ -297,12 +320,17 @@ class TestReportingController(TestController):
                     'type': 'hmac',
                     'otpkey': 'c4a3923c8d97e03af6a12fa40264c54b8429cf0d',
                     })
-        engine = engine_from_config(config, 'sqlalchemy.')
-        Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
-        Session.configure(bind=engine)
-        # check if new entry was created in reporting table
-        table_content = Session.query(Reporting).count()
-        self.assertEqual(table_content, 1, table_content)
+        Session=None
+        try:
+            engine = engine_from_config(config, 'sqlalchemy.')
+            Session = scoped_session(sessionmaker(autocommit=False, autoflush=True))
+            Session.configure(bind=engine)
+            # check if new entry was created in reporting table
+            table_content = Session.query(Reporting).count()
+            self.assertEqual(table_content, 1, table_content)
+        finally:
+            if Session:
+                Session.close()
 
     def test_reporting_maximum(self):
         """
