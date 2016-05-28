@@ -27,288 +27,381 @@
 
 """
 """
-
-
 import os
 import logging
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 
 log = logging.getLogger(__name__)
 
+
 class TestSystemController(TestController):
 
-
-    ###############################################################################
+    # ########################################################################
     def setUp(self):
         TestController.setUp(self)
-        self.set_config_selftest()
+        self.delete_all_policies()
 
     def test_setDefault(self):
         '''
         Testing setting default values
         '''
 
-        """
-            response = self.app.get(url_for(controller='page', action='view', id=1))
-            get(url, params=None, headers=None, extra_environ=None, status=None, expect_errors=False)
+        params = {
+            "DefaultMaxFailCount": "21",
+            "DefaultSyncWindow": "200",
+            "DefaultCountWindow": "20",
+            "DefaultOtpLen": "8",
+            "DefaultResetFailCount": "False"
+        }
+        response = self.make_system_request(action='setDefault',
+                                            params=params)
+        # log.debug("response %s\n",response)
+        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
+        self.assertTrue('"set DefaultMaxFailCount": true' in response,
+                        response)
+        self.assertTrue('"set DefaultResetFailCount": true' in response,
+                        response)
+        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
+        self.assertTrue('"set DefaultMaxFailCount": true' in response,
+                        response)
+        self.assertTrue('"set DefaultCountWindow": true'in response, response)
 
-        setDefault: parameters are\
-            DefaultMaxFailCount\
-            DefaultSyncWindow\
-            DefaultCountWindow\
-            DefaultOtpLen\
-            DefaultResetFailCount\
-        "
+        params = {"DefaultMaxFailCount": "10",
+                  "DefaultSyncWindow": "1000",
+                  "DefaultCountWindow": "10",
+                  "DefaultOtpLen": "6",
+                  "DefaultResetFailCount": "True"
+                  }
 
+        response = self.make_system_request(action='setDefault',
+                                            params=params)
+        # log.info("response %s\n",response)
 
-        """
-
-
-        parameters = {
-                      "DefaultMaxFailCount":"21",
-                      "DefaultSyncWindow":"200",
-                      "DefaultCountWindow" : "20",
-                      "DefaultOtpLen" : "8",
-                      "DefaultResetFailCount" : "False"
-                      }
-        response = self.app.get(url(controller='system', action='setDefault'), params=parameters)
-        #log.debug("response %s\n",response)
-        assert '"set DefaultSyncWindow": true' in response
-        assert '"set DefaultMaxFailCount": true' in response
-        assert '"set DefaultResetFailCount": true' in response
-        assert '"set DefaultSyncWindow": true' in response
-        assert '"set DefaultMaxFailCount": true' in response
-        assert '"set DefaultCountWindow": true'in response
-
-
-
-        parameters = {
-                      "DefaultMaxFailCount":"10",
-                      "DefaultSyncWindow":"1000",
-                      "DefaultCountWindow" : "10",
-                      "DefaultOtpLen" : "6",
-                      "DefaultResetFailCount" : "True"
-                      }
-
-        response = self.app.get(url(controller='system', action='setDefault'), params=parameters)
-        #log.info("response %s\n",response)
-        assert '"set DefaultSyncWindow": true' in response
-        assert '"set DefaultMaxFailCount": true' in response
-        assert '"set DefaultResetFailCount": true' in response
-        assert '"set DefaultSyncWindow": true' in response
-        assert '"set DefaultMaxFailCount": true' in response
-        assert '"set DefaultCountWindow": true'in response
+        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
+        self.assertTrue('"set DefaultMaxFailCount": true' in response,
+                        response)
+        self.assertTrue('"set DefaultResetFailCount": true' in response,
+                        response)
+        self.assertTrue('"set DefaultSyncWindow": true' in response, response)
+        self.assertTrue('"set DefaultMaxFailCount": true' in response,
+                        response)
+        self.assertTrue('"set DefaultCountWindow": true'in response, response)
 
     def test_001_resolvers(self):
+        """
+        setup: delete realms
+        """
         self.delete_all_realms()
-        parameters = {
-                              "username":"root",
-                     }
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        parameters = {
-                      "username":"root",
-                      "realm":"myMixRealm"
-                      }
+        params = {"username": "root"}
+        response = self.make_admin_request(action='userlist', params=params)
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        log.debug(response)
+        pass
+        params = {"username": "root",
+                  "realm": "myMixRealm"}
 
+        response = self.make_admin_request(action='userlist', params=params)
+
+        pass
 
     def test_001_realms(self):
+        """
+        """
         self.create_common_resolvers()
         self.create_common_realms()
-        response = self.app.get(url(controller='system', action='getRealms'))
-        #log.info("response %s\n",response)
+        response = self.make_system_request(action='getRealms')
 
-        ## set realms
-        assert '"realmname": "mydefrealm"'in response
-        assert '"realmname": "myotherrealm"'in response
-        assert '"realmname": "mymixrealm"'in response
+        # set realms
+        self.assertTrue('"realmname": "mydefrealm"'in response, response)
+        self.assertTrue('"realmname": "myotherrealm"'in response, response)
+        self.assertTrue('"realmname": "mymixrealm"'in response, response)
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"root",
-                      "realm":"*"
-                      }
+        # now check for the different users in the different realms
+        params = {"username": "root",
+                  "realm": "*"}
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
+        response = self.make_admin_request(action='userlist', params=params)
 
-        ## http://127.0.0.1:5001/admin/userlist?username=root
-        ## # description: "root-def-passwd"
+        self.assertTrue('"useridresolver.PasswdIdResolver.'
+                        'IdResolver.myOtherRes"'in response, response)
+        self.assertTrue('"useridresolver.PasswdIdResolver.'
+                        'IdResolver.myDefRes"'in response, response)
 
+        # now check for the different users in the different realms
+        params = {"username": "root",
+                  "realm": "myDefRealm"
+                  }
 
-        assert '"useridresolver.PasswdIdResolver.IdResolver.myOtherRes"'in response
-        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"'in response
+        response = self.make_admin_request(action='userlist',
+                                           params=params)
+        # log.info("response %s\n",response)
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"root",
-                      "realm":"myDefRealm"
-                      }
+        self.assertTrue('"useridresolver.PasswdIdResolver.'
+                        'IdResolver.myDefRes"'in response, response)
+        self.assertTrue('"root-def-passwd"'in response, response)
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
+        # now check for the different users in the different realms
+        params = {"username": "root",
+                  "realm": "myMixRealm"}
 
-        print response
-        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"'in response
-        assert '"root-def-passwd"'in response
+        response = self.make_admin_request(action='userlist',
+                                           params=params)
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"root",
-                      "realm":"myMixRealm"
-                      }
+        self.assertTrue('"useridresolver.PasswdIdResolver.'
+                        'IdResolver.myOtherRes"'in response, response)
+        self.assertTrue('"root-myDom-passwd"'in response, response)
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
+        self.assertTrue('"useridresolver.PasswdIdResolver.'
+                        'IdResolver.myDefRes"'in response, response)
+        self.assertTrue('"root-def-passwd"'in response, response)
 
-        assert '"useridresolver.PasswdIdResolver.IdResolver.myOtherRes"'in response
-        assert '"root-myDom-passwd"'in response
+        # now check for the different users in the different realms
+        params = {"username": "root"}  # check in default
 
-        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"'in response
-        assert '"root-def-passwd"'in response
+        response = self.make_admin_request(action='userlist',
+                                           params=params)
 
+        self.assertTrue('"useridresolver.PasswdIdResolver.'
+                        'IdResolver.myDefRes"'in response, response)
+        self.assertTrue('"root-def-passwd"'in response, response)
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"root",  ## check in default
-                      }
+        # now set default to myDomain
+        params = {"realm": "myOtherRealm"}
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
+        response = self.make_system_request(action='setDefaultRealm',
+                                            params=params)
+        self.assertTrue('"value": true'in response, response)
 
-        assert '"useridresolver.PasswdIdResolver.IdResolver.myDefRes"'in response
-        assert '"root-def-passwd"'in response
+        # now check for the different users in the different realms
+        params = {"username": "root"}  # check in default
 
+        response = self.make_admin_request(action='userlist',
+                                           params=params)
 
-        ## now set default to myDomain
-        parameters = {
-                      "realm":"myOtherRealm"
-                      }
+        self.assertTrue('"useridresolver.PasswdIdResolver.'
+                        'IdResolver.myOtherRes"'in response, response)
+        self.assertTrue('"root-myDom-passwd"'in response, response)
 
-        response = self.app.get(url(controller='system', action='setDefaultRealm'), params=parameters)
-        assert '"value": true'in response
+        # now delete the default realm
+        params = {"realm": "myOtherRealm"}  # check in default
 
+        response = self.make_system_request(action='delRealm',
+                                            params=params)
 
+        self.assertTrue('"delRealm": {'in response, response)
+        self.assertTrue('"result": true'in response, response)
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"root",  ## check in default
-                      }
+        params = {"realms": "*"}
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
-        assert '"useridresolver.PasswdIdResolver.IdResolver.myOtherRes"'in response
-        assert '"root-myDom-passwd"'in response
+        response = self.make_system_request(action='getRealms',
+                                            params=params)
+        # set realms
+        self.assertTrue('"realmname": "mydefrealm"'in response, response)
+        self.assertTrue('"realmname": "myotherrealm"' not in response,
+                        response)
+        self.assertTrue('"realmname": "mymixrealm"'in response, response)
 
+        # now check for the different users in the different realms
+        params = {"username": "def"}  # check in default
 
-        ## now delete the default realm
-        parameters = {
-                      "realm":"myOtherRealm",  ## check in default
-                      }
+        response = self.make_admin_request(action='userlist', params=params)
 
-        response = self.app.get(url(controller='system', action='delRealm'), params=parameters)
-        #log.info("delRealm: %s ------\n%s" % (str(parameters), str(response)))
-        assert '"delRealm": {'in response
-        assert '"result": true'in response
+        self.assertTrue('"value": []'in response, response)
 
-        parameters = {
-                      "realms":"*",
-                      }
+        # now check for the different users in the different realms
+        params = {"username": "def",  # check in default
+                  "realm": "myDefRealm"
+                  }
 
-        response = self.app.get(url(controller='system', action='getRealms'))
-        ## set realms
-        assert '"realmname": "mydefrealm"'in response
-        assert '"realmname": "myotherrealm"' not in response
-        assert '"realmname": "mymixrealm"'in response
+        response = self.make_admin_request(action='userlist', params=params)
+        # log.info("response %s\n",response)
+        self.assertTrue('"description": "def User,,,,"'in response, response)
 
+        # now set default to myDomain
+        params = {"realm": "myDefRealm"}
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"def",  ## check in default
-                      }
+        response = self.make_system_request(action='setDefaultRealm',
+                                            params=params)
+        self.assertTrue('"value": true'in response, response)
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
-        assert '"value": []'in response
+        # now check for the different users in the different realms
+        params = {"username": "def"}  # check in default
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"def",  ## check in default
-                      "realm":"myDefRealm"
-                      }
+        response = self.make_admin_request(action='userlist', params=params)
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
-        assert '"description": "def User,,,,"'in response
+        self.assertTrue('"description": "def User,,,,"'in response, response)
 
+        # now set default to myDomain
+        params = {"realm": "myMixRealm"}
 
-        ## now set default to myDomain
-        parameters = {
-                      "realm":"myDefRealm"
-                      }
+        response = self.make_system_request(action='setDefaultRealm',
+                                            params=params)
+        self.assertTrue('"value": true'in response, response)
 
-        response = self.app.get(url(controller='system', action='setDefaultRealm'), params=parameters)
-        assert '"value": true'in response
+        # now check for the different users in the different realms
+        params = {"username": "root"}  # check in default
 
+        response = self.make_admin_request(action='userlist', params=params)
 
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"def",  ## check in default
-                      }
+        self.assertTrue('"root-def-passwd"'in response, response)
+        self.assertTrue('"root-myDom-passwd"'in response, response)
 
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
-        assert '"description": "def User,,,,"'in response
+        # now set default to myDomain
+        params = {"realm": "myOtherRealm"}
 
-        ## now set default to myDomain
-        parameters = {
-                      "realm":"myMixRealm"
-                      }
+        response = self.make_system_request(action='setDefaultRealm',
+                                            params=params)
+        self.assertTrue('"value": false'in response, response)
 
-        response = self.app.get(url(controller='system', action='setDefaultRealm'), params=parameters)
-        assert '"value": true'in response
+        # now check for the different users in the different realms
+        params = {"username": "def",  # check in default
+                  "resConf": "myDefRes"
+                  }
 
-
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"root",  ## check in default
-                      }
-
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
-        assert '"root-def-passwd"'in response
-        assert '"root-myDom-passwd"'in response
-
-
-
-        ## now set default to myDomain
-        parameters = {
-                      "realm":"myOtherRealm"
-                      }
-
-        response = self.app.get(url(controller='system', action='setDefaultRealm'), params=parameters)
-        assert '"value": false'in response
-
-
-
-
-        ## now check for the different users in the different realms
-        parameters = {
-                      "username":"def",  ## check in default
-                      "resConf":"myDefRes"
-                      }
-
-        response = self.app.get(url(controller='admin', action='userlist'), params=parameters)
-        #log.info("response %s\n",response)
-        assert '"description": "def User,,,,"'in response
+        response = self.make_admin_request(action='userlist',
+                                           params=params)
+        # log.info("response %s\n",response)
+        self.assertTrue('"description": "def User,,,,"'in response, response)
         self.delete_all_realms()
         self.delete_all_resolvers()
 
+    def test_set_default(self):
+        '''
+        System-controller: set default without matching keys
+        '''
+        params = {'wrongKey': 'wrongVal'}
+        response = self.make_system_request(action='setDefault',
+                                            params=params)
 
+        self.assertTrue('"status": false' in response, response)
+        self.assertTrue('Usage: setDefault: parameters are' in response,
+                        response)
+
+    def test_setconfig_backwards(self):
+        '''
+        testing setconfig backward compat
+        '''
+        params = {'key': 'test',
+                  'value': 'old',
+                  'description': 'old value'}
+        response = self.make_system_request(action='setConfig', params=params)
+
+        self.assertTrue('"setConfig test": true' in response, response)
+
+        params = {'key': 'some.resolver.config',
+                  'value': 'resolverText',
+                  'description': 'resolver test'}
+        response = self.make_system_request(action='setConfig', params=params)
+
+        self.assertTrue('"setConfig some.resolver.config": true' in response,
+                        response)
+
+    def test_setconfig_typing(self):
+        '''
+        Test: system/setConfig with typing
+        '''
+        params = {'secretkey': 'test123',
+                  'secretkey.type': 'password'}
+        response = self.make_system_request(action='setConfig', params=params)
+        log.info(response)
+        self.assertTrue('"setConfig secretkey:test123": true' in response,
+                        response)
+
+        # the value will be returned transparently
+        response = self.make_system_request(action='getConfig',
+                                            params={'key': 'secretkey'})
+        self.assertTrue("test123" not in response, response)
+
+        # the value will be returned transparently
+        params = {'key': 'enclinotp.secretkey'}
+        response = self.make_system_request(action='getConfig',
+                                            params=params)
+        self.assertTrue("test123" in response, response)
+
+        response = self.make_system_request(action='delConfig',
+                                            params={'key': 'secretkey'})
+        return
+
+    def test_delResolver(self):
+        '''
+        Testing the deleting of a resolver
+        '''
+        fixture_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'fixtures',
+        )
+
+        params = {'name': 'reso1',
+                  'type': 'passwdresolver',
+                  'fileName': os.path.join(fixture_path, 'my-pass2')}
+
+        response = self.make_system_request(action='setResolver',
+                                            params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        params = {'name': 'reso2',
+                  'type': 'passwdresolver',
+                  'fileName': os.path.join(fixture_path, 'my-pass2')}
+
+        response = self.make_system_request(action='setResolver',
+                                            params=params)
+
+        self.assertTrue('"value": true' in response, response)
+        params = {'name': 'reso3',
+                  'type': 'passwdresolver',
+                  'fileName': os.path.join(fixture_path, 'my-pass2')}
+
+        response = self.make_system_request(action='setResolver',
+                                            params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        response = self.make_system_request(action='getResolvers', params={})
+
+        self.assertTrue('"entry": "linotp.passwdresolver.fileName.reso2"' in
+                        response, response)
+        self.assertTrue('"entry": "linotp.passwdresolver.fileName.reso1"' in
+                        response, response)
+        self.assertTrue('"entry": "linotp.passwdresolver.fileName.reso3"' in
+                        response, response)
+
+        # create a realm
+        params = {'realm': 'realm1',
+                  'resolvers': 'passwdresolver.reso1, passwdresolver.reso2'
+                  }
+        response = self.make_system_request(action='setRealm', params=params)
+
+        self.assertTrue('"value": true' in response, response)
+
+        # try to delete a resolver, that is in a realm
+        response = self.make_system_request(action='delResolver',
+                                            params={'resolver': 'reso1'})
+
+        self.assertTrue('Resolver u\'reso1\'  still in use' in response,
+                        response)
+
+        response = self.make_system_request(action='delResolver',
+                                            params={'resolver': 'reso3'})
+        self.assertTrue('"value": true' in response, response)
+
+    def test_policy_wrong_name(self):
+        '''
+        testing to set a policy with a wrong name
+        '''
+        params = {'name': 'ads ads asd',
+                  'action': '*',
+                  'scope': 'admin',
+                  'realm': '*'}
+        response = self.make_system_request(action='setPolicy', params=params)
+
+        self.assertTrue('The name of the policy may only contain'
+                        ' the characters'in response, response)
+
+        self.delete_all_policies()
+
+        return
 
     def test_import_policy(self):
 
@@ -369,187 +462,87 @@ time = ""
 action = max_count_hotp=50
 scope = gettoken
 '''
-        response = self.app.post(url(controller='system', action='importPolicy'),
-                                 params={},
-                                 upload_files=[("file", "savedPolicy.txt", policy_content)])
-        print response
-        assert '<status>True</status>' in response
-        assert '<value>8</value>' in response
+
+        upload_files = [("file", "savedPolicy.txt", policy_content)]
+
+        response = self.make_system_request(action='importPolicy',
+                                            params={},
+                                            upload_files=upload_files)
+
+        self.assertTrue('<status>True</status>' in response, response)
+        self.assertTrue('<value>8</value>' in response, response)
 
         # Now check the policies, that we imported...
+        response = self.make_system_request(action='getPolicy', method='POST',
+                                            params={}, auth_user='superuser')
 
-        response = self.app.post(url(controller='system', action='getPolicy'),
-                                 params={'selftest_admin' : 'superuser'})
-        print response
-        assert '"resovler_ss1": {' in response
-        assert '"resovler_ss2": {' in response
-        assert '"ss1_maria": {' in response
-        assert '"SMS": {' in response
-        assert '"ss1_raff": {' in response
-        assert '"ocra": {' in response
-        assert '"ss1_ocra": {' in response
-        assert '"gettoken": {' in response
+        self.assertTrue('"resovler_ss1": {' in response, response)
+        self.assertTrue('"resovler_ss2": {' in response, response)
+        self.assertTrue('"ss1_maria": {' in response, response)
+        self.assertTrue('"SMS": {' in response, response)
+        self.assertTrue('"ss1_raff": {' in response, response)
+        self.assertTrue('"ocra": {' in response, response)
+        self.assertTrue('"ss1_ocra": {' in response, response)
+        self.assertTrue('"gettoken": {' in response, response)
 
         # Now we try to upload with access policies.
+        params = {'name': 'superuser',
+                  'scope': 'system',
+                  'action': 'read,write',
+                  'realm': '*',
+                  'user': 'superuser'}
 
-        response = self.app.post(url(controller='system', action='setPolicy'),
-                                 params={'selftest_admin' : 'superuser',
-                                         'name' : 'superuser',
-                                         'scope' : 'system',
-                                         'action' : 'read,write',
-                                         'realm' : '*',
-                                         'user' : 'superuser'})
-        print response
-        assert '"setPolicy superuser":' in response
+        response = self.make_system_request(action='setPolicy', method='POST',
+                                            params=params,
+                                            auth_user='superuser')
 
-        response = self.app.post(url(controller='system', action='setPolicy'),
-                                 params={'selftest_admin' : 'superuser',
-                                         'name' : 'readsystem',
-                                         'scope' : 'system',
-                                         'action' : 'read',
-                                         'realm' : '*',
-                                         'user' : 'readadmin'})
-        print response
-        assert '"setPolicy readsystem":' in response
+        self.assertTrue('"setPolicy superuser":' in response, response)
+
+        params = {'name': 'readsystem',
+                  'scope': 'system',
+                  'action': 'read',
+                  'realm': '*',
+                  'user': 'readadmin'}
+        response = self.make_system_request(action='setPolicy', method='POST',
+                                            params=params,
+                                            auth_user='superuser')
+
+        self.assertTrue('"setPolicy readsystem":' in response, response)
 
         # superuser is allowed to import
+        upload_files = [("file", "savedPolicy.txt", policy_content)]
+        response = self.make_system_request(action='importPolicy',
+                                            method='POST',
+                                            params={},
+                                            upload_files=upload_files,
+                                            auth_user='superuser')
 
-        response = self.app.post(url(controller='system', action='importPolicy'),
-                                 params={'selftest_admin': 'superuser'},
-                                 upload_files=[("file", "savedPolicy.txt", policy_content)])
-        print response
-        assert '<status>True</status>' in response
-        assert '<value>8</value>' in response
+        self.assertTrue('<status>True</status>' in response, response)
+        self.assertTrue('<value>8</value>' in response, response)
 
         # readadmin is not allowed to import
+        upload_files = [("file", "savedPolicy.txt", policy_content)]
+        response = self.make_system_request(action='importPolicy',
+                                            method='POST',
+                                            params={},
+                                            upload_files=upload_files,
+                                            auth_user='readadmin')
 
-        response = self.app.post(url(controller='system', action='importPolicy'),
-                                 params={'selftest_admin': 'readadmin'},
-                                 upload_files=[("file", "savedPolicy.txt", policy_content)])
-        print response
-        assert 'Policy check failed. You are not allowed to write system config' in response
+        self.assertTrue('Policy check failed. You are not allowed to'
+                        ' write system config' in response, response)
 
-    def test_set_default(self):
-        '''
-        System-controller: set default without matching keys
-        '''
-        response = self.app.get(url(controller='system', action='setDefault'),
-                                params={'wrongKey': 'wrongVal' })
-        print "test_set_default:", response
-        assert '"status": false' in response
-        assert 'Usage: setDefault: parameters are' in response
+        # finally remove all policies
+        names = []
+        for line in policy_content.split():
+            if line[0] == '[':
+                name = line.replace('[', '').replace(']', '')
+                names.append(name)
+        for name in names:
+            self.delete_policy(name, auth_user='superuser')
 
-    def test_setconfig_backwards(self):
-        '''
-        testing setconfig backward compat
-        '''
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params={'key': 'test',
-                                        'value': 'old',
-                                        'description':'old value'})
-        print response
-        assert '"setConfig test": true' in response
-
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params={'key': 'some.resolver.config',
-                                        'value': 'resolverText',
-                                        'description':'resolver test'})
-        print response
-        assert '"setConfig some.resolver.config": true' in response
-
-    def test_0000_setconfig_typing(self):
-        '''
-        Test: system/setConfig with typing
-        '''
-        response = self.app.get(url(controller='system', action='setConfig'),
-                                params={'secretkey': 'test123',
-                                        'secretkey.type': 'password'})
-        log.info(response)
-        assert '"setConfig secretkey:test123": true' in response
-
-        ## the value will be returned transparently
-        response = self.app.get(url(controller='system', action='getConfig'),
-                                params={'key': 'secretkey'})
-        assert "test123" not in response
-
-        ## the value will be returned transparently
-        response = self.app.get(url(controller='system', action='getConfig'),
-                                params={'key': 'enclinotp.secretkey'})
-        assert "test123" in response
-
-        response = self.app.get(url(controller='system', action='delConfig'),
-                                params={'key':'secretkey'})
-        log.info(response)
+        self.delete_policy('readsystem', auth_user='superuser')
+        self.delete_policy('superuser', auth_user='superuser')
 
         return
 
-    def test_delResolver(self):
-        '''
-        Testing the deleting of a resolver
-        '''
-        fixture_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'fixtures',
-            )
-        response = self.app.get(url(controller='system', action='setResolver'),
-                                params={'name':'reso1',
-                                        'type': 'passwdresolver',
-                                        'fileName': os.path.join(fixture_path, 'my-pass2')})
-        print response
-        assert '"value": true' in response
-
-        response = self.app.get(url(controller='system', action='setResolver'),
-                                params={'name':'reso2',
-                                        'type': 'passwdresolver',
-                                        'fileName': os.path.join(fixture_path, 'my-pass2')})
-        print response
-        assert '"value": true' in response
-
-        response = self.app.get(url(controller='system', action='setResolver'),
-                                params={'name':'reso3',
-                                        'type': 'passwdresolver',
-                                        'fileName': os.path.join(fixture_path, 'my-pass2')})
-        print response
-        assert '"value": true' in response
-
-        response = self.app.get(url(controller='system', action='getResolvers'),
-                                params={})
-        print response
-        assert '"entry": "linotp.passwdresolver.fileName.reso2"' in response
-        assert '"entry": "linotp.passwdresolver.fileName.reso1"' in response
-        assert '"entry": "linotp.passwdresolver.fileName.reso3"' in response
-
-        # create a realm
-
-        response = self.app.get(url(controller='system', action='setRealm'),
-                                params={'realm': 'realm1',
-                                        'resolvers': 'passwdresolver.reso1, '
-                                                     'passwdresolver.reso2'})
-        print response
-        assert '"value": true' in response
-
-        # try to delete a resolver, that is in a realm
-        response = self.app.get(url(controller='system', action='delResolver'),
-                                params={'resolver': 'reso1'})
-        print response
-        assert 'Resolver u\'reso1\'  still in use' in response
-
-        response = self.app.get(url(controller='system', action='delResolver'),
-                                params={'resolver': 'reso3'})
-        print response
-        assert '"value": true' in response
-
-
-    def test_policy_wrong_name(self):
-        '''
-        testing to set a policy with a wrong name
-        '''
-        response = self.app.get(url(controller='system', action='setPolicy'),
-                                params={'name':'ads ads asd',
-                                        'action':'*',
-                                        'scope':'admin',
-                                        'realm':'*'})
-        print response
-        assert 'The name of the policy may only contain the characters' in response
-
-
+# eof ########################################################################

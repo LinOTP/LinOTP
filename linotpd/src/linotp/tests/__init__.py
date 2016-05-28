@@ -116,7 +116,7 @@ class TestController(unittest2.TestCase):
         # provide the info of environment we are running in
         cls.env['pylons'] = LooseVersion(
             pkg_resources.get_distribution('pylons').version
-            )
+        )
         return
 
     @classmethod
@@ -136,10 +136,10 @@ class TestController(unittest2.TestCase):
         if response.content_type != 'application/json':
             raise ValueError(
                 "Content type is not JSON. Response: %r" % response
-                )
+            )
         current_webob = LooseVersion(
             pkg_resources.get_distribution('webob').version
-            )
+        )
         if current_webob >= LooseVersion('1.2'):
             return response.json_body
         else:
@@ -155,7 +155,7 @@ class TestController(unittest2.TestCase):
         """
         current_webtest = LooseVersion(
             pkg_resources.get_distribution('webtest').version
-            )
+        )
         if current_webtest >= LooseVersion('2.0.16'):
             app.set_cookie(key, value)
         else:
@@ -187,16 +187,16 @@ class TestController(unittest2.TestCase):
 
     def setUp(self):
         ''' here we do the system test init per test method '''
-        #self.delete_all_realms()
-        #self.delete_all_resolvers()
-        #self.create_common_resolvers()
-        #self.create_common_realms()
+        # self.delete_all_realms()
+        # self.delete_all_resolvers()
+        # self.create_common_resolvers()
+        # self.create_common_realms()
 
         return
 
     def tearDown(self):
-        #self.delete_all_realms()
-        #self.delete_all_resolvers()
+        # self.delete_all_realms()
+        # self.delete_all_resolvers()
         return
 
     def make_request(
@@ -209,7 +209,7 @@ class TestController(unittest2.TestCase):
             cookies=None,
             upload_files=None,
             client=None
-            ):
+    ):
         """
         Makes a request using WebTest app self.app
         """
@@ -239,21 +239,21 @@ class TestController(unittest2.TestCase):
                 params=params,
                 headers=headers,
                 **pparams
-                )
+            )
         elif method == 'PUT':
             return self.app.put(
                 url(controller=controller, action=action),
                 params=params,
                 headers=headers,
                 **pparams
-                )
+            )
         else:
             return self.app.post(
                 url(controller=controller, action=action),
                 params=params,
                 headers=headers,
                 **pparams
-                )
+            )
 
     @staticmethod
     def get_http_digest_header(username='admin', method='GET'):
@@ -294,8 +294,8 @@ class TestController(unittest2.TestCase):
                 clientNonce,
                 qop,
                 ha2
-                )
-            ).hexdigest()
+            )
+        ).hexdigest()
         auth_content = [
             "Digest username=\"%s\"" % username,
             "realm=\"%s\"" % realm,
@@ -305,7 +305,7 @@ class TestController(unittest2.TestCase):
             "nc=\"%s\"" % nonceCount,
             "cnonce=\"%s\"" % clientNonce,
             "response=\"%s\"" % response,
-            ]
+        ]
         return (', ').join(auth_content)
 
     def make_authenticated_request(
@@ -318,7 +318,7 @@ class TestController(unittest2.TestCase):
             cookies=None,
             auth_user='admin',
             upload_files=None
-            ):
+    ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
         'session' parameter).
@@ -333,7 +333,7 @@ class TestController(unittest2.TestCase):
         if 'Authorization' not in headers:
             headers['Authorization'] = TestController.get_http_digest_header(
                 username=auth_user
-                )
+            )
         return self.make_request(
             controller,
             action,
@@ -342,7 +342,7 @@ class TestController(unittest2.TestCase):
             headers=headers,
             cookies=cookies,
             upload_files=upload_files,
-            )
+        )
 
     def make_admin_request(self, action, params=None, method=None,
                            auth_user='admin', upload_files=None):
@@ -358,7 +358,7 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            )
+        )
 
     def make_audit_request(self, action, params=None, method=None,
                            auth_user='admin',):
@@ -373,10 +373,10 @@ class TestController(unittest2.TestCase):
             method=method,
             params=params,
             auth_user=auth_user,
-            )
+        )
 
     def make_manage_request(self, action, params=None, method=None,
-                           auth_user='admin', upload_files=None):
+                            auth_user='admin', upload_files=None):
         """
         Makes an authenticated request to /manage/'action'
         """
@@ -389,7 +389,7 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            )
+        )
 
     def make_system_request(self, action, params=None, method=None,
                             auth_user='admin', upload_files=None):
@@ -405,10 +405,10 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            )
+        )
 
     def make_ocra_request(self, action, params=None, method=None,
-                            auth_user='admin', upload_files=None):
+                          auth_user='admin', upload_files=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -421,7 +421,7 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            )
+        )
 
     def make_gettoken_request(self, action, params=None, method=None,
                               auth_user='admin', upload_files=None):
@@ -437,7 +437,7 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            )
+        )
 
     def make_validate_request(self, action, params=None, method=None,
                               client=None):
@@ -452,9 +452,9 @@ class TestController(unittest2.TestCase):
             method=method,
             params=params,
             client=client,
-            )
+        )
 
-    def set_config_selftest(self):
+    def set_config_selftest(self, auth_user='admin'):
         """
         Set selfTest in LinOTP Config to 'True'
 
@@ -476,15 +476,15 @@ class TestController(unittest2.TestCase):
         """
         params = {
             'selfTest': 'True',
-            }
-        response = self.make_system_request('setConfig', params)
+        }
+        response = self.make_system_request('setConfig', params,
+                                            auth_user=auth_user)
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue('setConfig selfTest:True'
                         in content['result']['value'])
         self.assertTrue(content['result']['value']['setConfig selfTest:True'])
         self.isSelfTest = True
-
 
     # *********************************************************************** #
         warnings.warn("The self-test modus is not recommended (anymore)!")
@@ -518,17 +518,19 @@ class TestController(unittest2.TestCase):
             resp = self.make_system_request('delResolver', params)
             assert('"status": true' in resp)
 
-    def delete_all_policies(self):
+    def delete_all_policies(self, auth_user='admin'):
         """
         Get all policies and delete them
         """
-        response = self.make_system_request('getPolicy', {})
+        response = self.make_system_request(action='getPolicy',
+                                            params={},
+                                            auth_user=auth_user)
         content = TestController.get_json_body(response)
         err_msg = "Error getting all policies. Response %s" % (content)
         self.assertTrue(content['result']['status'], err_msg)
         policies = content.get('result', {}).get('value', {}).keys()
         for policy in policies:
-            self.delete_policy(policy)
+            self.delete_policy(policy, auth_user=auth_user)
 
         return
 
@@ -545,11 +547,11 @@ class TestController(unittest2.TestCase):
             'realm': '*',
             'client': '',
             'time': '',
-            }
+        }
         lparams.update(params)
         expected_keys = set(
             ['name', 'scope', 'action', 'user', 'realm', 'client', 'time']
-            )
+        )
         self.assertTrue(set(lparams.keys()) == expected_keys,
                         "Some key is missing to create a policy")
 
@@ -565,19 +567,20 @@ class TestController(unittest2.TestCase):
                 u'time': True,
                 u'action': True,
                 u'scope': True
-                }
             }
+        }
         self.assertDictEqual(expected_value, content['result']['value'])
 
-    def delete_policy(self, name):
+    def delete_policy(self, name, auth_user='admin'):
         """
         Delete the policy with the given name
         """
         assert name, "Policy 'name' can't be empty or None"
         params = {
             'name': name,
-            }
-        response = self.make_system_request('delPolicy', params)
+        }
+        response = self.make_system_request(action='delPolicy', params=params,
+                                            auth_user=auth_user)
         content = TestController.get_json_body(response)
         expected_value = {
             u'delPolicy': {
@@ -589,9 +592,9 @@ class TestController(unittest2.TestCase):
                     u'linotp.Policy.%s.scope' % name: True,
                     u'linotp.Policy.%s.time' % name: True,
                     u'linotp.Policy.%s.user' % name: True
-                    }
                 }
             }
+        }
         self.assertTrue(content['result']['status'])
         self.assertDictEqual(expected_value, content['result']['value'])
 
@@ -619,7 +622,7 @@ class TestController(unittest2.TestCase):
         assert serial, "serial can not be empty or None"
         params = {
             'serial': serial,
-            }
+        }
         response = self.make_admin_request('remove', params=params)
         content = TestController.get_json_body(response)
         err_msg = "Error deleting token %s. Response %s" % (serial, content)
@@ -636,24 +639,24 @@ class TestController(unittest2.TestCase):
                 'name': 'myDefRes',
                 'fileName': '%(here)s/../data/testdata/def-passwd',
                 'type': 'passwdresolver',
-                },
+            },
             'myOtherRes': {
                 'name': 'myOtherRes',
                 'fileName': '%(here)s/../data/testdata/myDom-passwd',
                 'type': 'passwdresolver',
-                }
             }
+        }
         self.resolvers = {
             'myOtherRes':
                 'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
             'myDefRes':
                 'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
-            }
+        }
         params = resolver_params['myDefRes']
         response = self.create_resolver(
             name='myDefRes',
             params=params,
-            )
+        )
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
@@ -662,7 +665,7 @@ class TestController(unittest2.TestCase):
         response = self.create_resolver(
             name='myOtherRes',
             params=params,
-            )
+        )
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
@@ -700,7 +703,7 @@ class TestController(unittest2.TestCase):
         response = self.create_realm(
             realm='myDefRealm',
             resolvers=self.resolvers['myDefRes'],
-            )
+        )
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
@@ -709,7 +712,7 @@ class TestController(unittest2.TestCase):
         response = self.create_realm(
             realm='myOtherRealm',
             resolvers=self.resolvers['myOtherRes'],
-            )
+        )
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
@@ -718,7 +721,7 @@ class TestController(unittest2.TestCase):
         response = self.create_realm(
             realm='myMixRealm',
             resolvers=','.join(self.resolvers.values()),
-            )
+        )
         content = TestController.get_json_body(response)
         self.assertTrue(content['result']['status'])
         self.assertTrue(content['result']['value'])
@@ -759,7 +762,7 @@ class TestController(unittest2.TestCase):
 
         user, password = auth_user
         auth_cookie = self.user_service.get(user,
-                                    self._user_service_init(user, password))
+                                            self._user_service_init(user, password))
         TestController.set_cookie(self.app, 'userauthcookie', auth_cookie)
 
         params['session'] = auth_cookie
