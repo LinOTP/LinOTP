@@ -168,6 +168,12 @@ class TestQRToken(TestController):
 # ------------------------------------------------------------------------------
 
     def setUp(self):
+        # do the cleanup upfront for better post mortem debuggability
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+
         super(TestQRToken, self).setUp()
         self.create_common_resolvers()
         self.create_common_realms()
@@ -178,14 +184,12 @@ class TestQRToken(TestController):
         self.tan_length = 8
 
     def tearDown(self):
-        self.delete_all_token()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
+
         super(TestQRToken, self).tearDown()
 
 # ------------------------------------------------------------------------------
 
-    def enroll_qrtoken(self, hashlib=None, user=None):
+    def enroll_qrtoken(self, hashlib=None, user=None, pin='1234'):
         """
         enrolls a qrtoken
 
@@ -200,7 +204,7 @@ class TestQRToken(TestController):
 
         # initialize an unfinished token on the server
 
-        params = {'type': 'qr', 'pin': '1234'}
+        params = {'type': 'qr', 'pin': pin}
 
         if hashlib is not None:
             params['hashlib'] = hashlib
@@ -222,8 +226,31 @@ class TestQRToken(TestController):
         self.assertIsNotNone(pairing_url)
         self.assertTrue(pairing_url.startswith('lseqr://pair/'))
 
-        return pairing_url
+        return pairing_url, pin
 
+    def get_challenge(self, params=None):
+
+        if not params:
+            params = {}
+
+        response = self.make_validate_request('check_s', params)
+        response_dict = json.loads(response.body)
+
+        # ----------------------------------------------------------------------
+
+        # check if challenge was triggered
+
+        self.assertIn('detail', response_dict)
+        detail = response_dict.get('detail')
+
+        self.assertIn('transactionid', detail)
+        self.assertIn('message', detail)
+
+        challenge_url = detail.get('message')
+
+        challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
+
+        return challenge_url, detail.get('transactionid')
 # ------------------------------------------------------------------------------
 
     def setPolicy(self, params):
@@ -290,8 +317,8 @@ class TestQRToken(TestController):
 
         # check callback definitions in pairing url
 
-        pairing_url = self.enroll_qrtoken()
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        pairing_url, pin = self.enroll_qrtoken()
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         token = self.tokens[user_token_id]
         callback_url = token['callback_url']
@@ -316,12 +343,19 @@ class TestQRToken(TestController):
         # ----------------------------------------------------------------------
 
         # check if returned json is correct
-        self.assertIn('challenge_url', response_dict.get('detail', {}))
 
-        challenge_url = response_dict.get('detail', {}).get('challenge_url')
-        self.assertIsNotNone(challenge_url)
-        self.assertTrue(challenge_url.startswith('lseqr://chal/'))
+        self.assertFalse(response_dict.get('result', {}).get('value', True))
+        self.assertTrue(response_dict.get('result', {}).get('status', False))
 
+        # ----------------------------------------------------------------------
+
+        # get challenge
+
+        params = {'serial': token['serial'],
+                  'pass': token['pin'],
+                  'data': token['serial']}
+
+        challenge_url, transid = self.get_challenge(params=params)
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
         # ----------------------------------------------------------------------
@@ -396,7 +430,7 @@ class TestQRToken(TestController):
 
         # save data extracted from pairing url to the 'user database'
 
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -431,6 +465,7 @@ class TestQRToken(TestController):
         # trigger challenge
 
         serial = self.tokens[user_token_id]['serial']
+        pin = self.tokens[user_token_id]['pin']
 
         params = {'serial': serial,
                   'pass': pin,
@@ -444,14 +479,16 @@ class TestQRToken(TestController):
         # ----------------------------------------------------------------------
 
         # check if challenge was triggered
+        try:
+            self.assertIn('detail', response_dict)
+            detail = response_dict.get('detail')
 
-        self.assertIn('detail', response_dict)
-        detail = response_dict.get('detail')
+            self.assertIn('transactionid', detail)
+            self.assertIn('message', detail)
 
-        self.assertIn('transactionid', detail)
-        self.assertIn('message', detail)
-
-        challenge_url = detail.get('message')
+            challenge_url = detail.get('message')
+        except:
+            pass
 
         return challenge_url
 
@@ -473,7 +510,7 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken(hashlib, user=user)
+        pairing_url, pin = self.enroll_qrtoken(hashlib, user=user, pin=pin)
 
         # ----------------------------------------------------------------------
 
@@ -540,7 +577,7 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def create_user_token_by_pairing_url(self, pairing_url):
+    def create_user_token_by_pairing_url(self, pairing_url, pin=1234):
         """
         parses the pairing url and saves the extracted data in
         the fake token database of this test class.
@@ -591,7 +628,8 @@ class TestQRToken(TestController):
         self.tokens[user_token_id] = {'serial': token_serial,
                                       'server_public_key': server_public_key,
                                       'callback_url': callback_url,
-                                      'callback_sms': callback_sms}
+                                      'callback_sms': callback_sms,
+                                      'pin': pin}
 
         # ----------------------------------------------------------------------
 
@@ -833,7 +871,7 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def test_pairing_sig(self):
+    def test_pairing_sig_with_user(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
         self.execute_correct_pairing(user='def')
@@ -842,7 +880,7 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def test_0000_pairing_sig(self):
+    def test_pairing_sig_with_fquser(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
         self.execute_correct_pairing(user='def@mymixrealm')
@@ -946,13 +984,13 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken()
+        pairing_url, pin = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
         # execute the first step of the pairing
 
-        challenge_url = self.pair_until_challenge(pairing_url)
+        challenge_url = self.pair_until_challenge(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -988,13 +1026,13 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken()
+        pairing_url, pin = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
         # save data extracted from pairing url to the 'user database'
 
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -1075,13 +1113,13 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken()
+        pairing_url, pin = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
         # save data extracted from pairing url to the 'user database'
 
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -1164,13 +1202,13 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken()
+        pairing_url, pin = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
         # save data extracted from pairing url to the 'user database'
 
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -1251,13 +1289,13 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken()
+        pairing_url, pin = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
         # save data extracted from pairing url to the 'user database'
 
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -1339,13 +1377,13 @@ class TestQRToken(TestController):
 
         # enroll token
 
-        pairing_url = self.enroll_qrtoken()
+        pairing_url, pin = self.enroll_qrtoken()
 
         # ----------------------------------------------------------------------
 
         # save data extracted from pairing url to the 'user database'
 
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -1442,8 +1480,10 @@ class TestQRToken(TestController):
 
         token = self.tokens[user_token_id]
         serial = token['serial']
+        pin = token['pin']
 
         params = {'serial': serial,
+                  'pass': pin,
                   'data': 'Herzlichen Glückwunsch zum Kauf einer Waschmaschine'}
 
         response = self.make_validate_request('check_s', params)
@@ -1470,8 +1510,8 @@ class TestQRToken(TestController):
          QRTOKEN: Check if unpaired token refuses incoming challenge requests
         """
 
-        pairing_url = self.enroll_qrtoken()
-        user_token_id = self.create_user_token_by_pairing_url(pairing_url)
+        pairing_url, pin = self.enroll_qrtoken()
+        user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
         # ----------------------------------------------------------------------
 
@@ -1767,12 +1807,13 @@ class TestQRToken(TestController):
 
         # ----------------------------------------------------------------------
 
+        # otppin=2 - on validation NO PIN should be entered atall
         self.setPinPolicy(action='otppin=2, ')
         self.assign_token_to_user(serial=serial, user_login='root')
 
         # ----------------------------------------------------------------------
 
-        params = {'user': 'root', 'pass': '1234',
+        params = {'user': 'root', 'pass': '',
                   'data': '2000 dollars to that nigerian prince'}
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)

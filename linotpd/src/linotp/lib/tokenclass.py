@@ -105,17 +105,14 @@ class StatefulTokenMixin(object):
     rollout states (e.g. QRToken and OCRA)
     """
 
-
     @property
     def current_state(self):
-
         """ signifies the current state of the token """
 
         current_state_id = self.getFromTokenInfo('state')
         return current_state_id
 
     def ensure_state(self, state_id):
-
         """
         a barrier method to ensure that a token has a certain state.
 
@@ -126,9 +123,7 @@ class StatefulTokenMixin(object):
 
         self.ensure_state_is_in([state_id])
 
-
     def ensure_state_is_in(self, valid_state_ids):
-
         """
         a barrier method to ensure that the token state is
         in a list of valid_states
@@ -146,9 +141,7 @@ class StatefulTokenMixin(object):
                                   (self, ','.join(valid_state_ids),
                                    current_state_id))
 
-
     def change_state(self, state_id):
-
         """
         changes the state of this token
 
@@ -227,7 +220,6 @@ class TokenClass(object):
 
     @classmethod
     def get_helper_params_pre(cls, params):
-
         """
         hook method which gets called with the parameters given to admin/init
         and returns a dictionary which will be added to the helper_params.
@@ -242,7 +234,6 @@ class TokenClass(object):
 
     @classmethod
     def get_helper_params_post(cls, params, user):
-
         """
         hook method which gets called with the parameters given to admin/init
         and the user that possibly gets created from it.
@@ -376,7 +367,8 @@ class TokenClass(object):
             if 1 in pin_policies:
                 otp_counter = check_otp(self, otpval, options=options)
                 if otp_counter >= 0:
-                    pin_match = check_pin(self, pin, user=user, options=options)
+                    pin_match = check_pin(
+                        self, pin, user=user, options=options)
                     if not pin_match:
                         otp_counter = -1
             else:
@@ -600,7 +592,6 @@ class TokenClass(object):
                 if otp_counter >= 0:
                     matching_challenges.append(matching)
 
-
         return (otp_counter, matching_challenges)
 
     def challenge_janitor(self, matching_challenges, challenges):
@@ -816,7 +807,7 @@ class TokenClass(object):
         '''
 
         pin_match, otp_count, reply = self.authenticate(passw, user,
-                                                              options=options)
+                                                        options=options)
         if otp_count >= 0:
             self.valid_token.append(self)
         elif pin_match is True:
@@ -1580,9 +1571,10 @@ class TokenClass(object):
         else:
             # for hased pins we redo the hash and compare the hashes
             iv, hashed_token_pin = self.token.get_hashed_pin()
-            iv, hashed_pin = SecretObj.hash_pin(pin, iv, hsm=hsm)
-            if hashed_pin == hashed_token_pin:
-                res = True
+            if pin:
+                iv, hashed_pin = SecretObj.hash_pin(pin, iv, hsm=hsm)
+                if hashed_pin == hashed_token_pin:
+                    res = True
 
             # special case of empty pin, where pin has never been set
             # especialy in case of lost token with the pw token
