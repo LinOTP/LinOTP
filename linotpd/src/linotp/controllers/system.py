@@ -86,13 +86,16 @@ from linotp.lib.policy.definitions import getPolicyDefinitions
 from linotp.lib.policy.manage import create_policy_export_file
 from linotp.lib.policy import get_client_policy
 
-from linotp.lib.support import InvalidLicenseException
-from linotp.lib.support import verifyLicenseInfo
-
 from linotp.lib.support import getSupportLicenseInfo
-from linotp.lib.support import isSupportLicenseValid
-from linotp.lib.support import do_nagging
 from linotp.lib.support import setSupportLicense
+from linotp.lib.support import do_nagging
+from linotp.lib.support import isSupportLicenseValid
+
+from linotp.provider import getProvider
+from linotp.provider import setProvider
+from linotp.provider import delProvider
+from linotp.provider import setDefaultProvider
+
 from paste.fileapp import FileApp
 from cgi import escape
 from pylons.i18n.translation import _
@@ -1111,7 +1114,7 @@ class SystemController(BaseController):
             lines = []
             for pol in pols:
                 lines.append(
-                    { 'id': pol,
+                    {'id': pol,
                         'cell': [
                                  1 if pols[pol].get('active', "True") == "True" else 0,
                                  pol,
@@ -1126,8 +1129,8 @@ class SystemController(BaseController):
                     )
             # sorting
             reverse = False
-            sortnames = { 'active': 0, 'name': 1, 'user': 2, 'scope': 3,
-                    'action': 4, 'realm': 5, 'client':6, 'time': 7 }
+            sortnames = {'active': 0, 'name': 1, 'user': 2, 'scope': 3,
+                         'action': 4, 'realm': 5, 'client':6, 'time': 7}
             if sortorder == "desc":
                 reverse = True
             lines = sorted(lines, key=lambda policy: policy['cell'][sortnames[sortname]] , reverse=reverse)
@@ -1751,5 +1754,229 @@ class SystemController(BaseController):
             Session.close()
             log.error("[setSupport] done")
 
+    def setProvider(self):
+        """
+        method:
+            system/setProvider
 
-# eof ########################################################################
+        description:
+            creates or updates SMS- and Email-provider
+
+        arguments:
+            name        - the name of the provider in LinOTP
+            type        - the type of the provider [email, sms]
+            class       - the name of the provider
+            config      - the configuration for this provider
+            timeout     - the timeout
+
+        :return: boolean - True or False with message in detail
+        """
+
+        res = {}
+        params = {}
+
+        try:
+            params.update(request.params)
+            try:
+                _name = params['name']
+                _provider_type = params['type']
+                _provider_class = params['class']
+                _timeout = params['timeout']
+            except KeyError as exx:
+                raise ParameterError('missing key %r' % exx)
+
+            res, reply = setProvider(params)
+
+            c.audit['success'] = res
+            c.audit['info'] = _name
+
+            Session.commit()
+            return sendResult(response, res, 1, opt=reply)
+
+        except Exception as exx:
+            log.exception("error saving config: %r" % exx)
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+            log.debug('[setProvider] done')
+
+    def getProvider(self):
+        """
+        method:
+            system/getProviders
+
+        description:
+            get a dict of SMS- and Email-providers
+
+        arguments:
+            name (optional) - the name of the provider in LinOTP
+            type - the type of the provider: SMS or EMail
+
+        :return: dictionary of provider with its entries as dictionary
+                 {'ProviderA' : { 'Timeout': '100', ...}
+        """
+
+        res = {}
+        param = {}
+
+        try:
+            param.update(request.params)
+            try:
+                provider_type = param['type']
+            except KeyError as exx:
+                raise ParameterError('missing key %r' % exx)
+
+            # optional parameters
+            provider_name = param.get('name')
+
+            res = getProvider(provider_type, provider_name)
+
+            c.audit['success'] = len(res) > 0
+            c.audit['info'] = provider_name
+
+            Session.commit()
+            return sendResult(response, res, 1)
+
+        except Exception as exx:
+            log.exception("error saving config: %r" % exx)
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+            log.debug('[setProvider] done')
+
+    def delProvider(self):
+        """
+        method:
+            system/delProviders
+
+        description:
+            delete a SMS- and Email-providers
+
+        arguments:
+            name - the name of the SMS or EMail Provider
+            type - the provider type
+
+        :return: boolean, true if number of deleted config entries is > 0
+                          else False with message in detail
+        """
+
+        res = {}
+        params = {}
+
+        try:
+            params.update(request.params)
+            try:
+                provider_name = params['name']
+                provider_type = params['type']
+            except KeyError as exx:
+                raise ParameterError('missing key %r' % exx)
+
+            res, reply = delProvider(provider_type, provider_name)
+
+            c.audit['success'] = res > 0
+            c.audit['info'] = provider_name
+
+            Session.commit()
+            return sendResult(response, res > 0, 1, opt=reply)
+
+        except Exception as exx:
+            log.exception("error saving config: %r" % exx)
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+            log.debug('[setProvider] done')
+
+    def setDefaultProvider(self):
+        """
+        method:
+            system/setDefaultProvider
+
+        description:
+            set provider (SMS- and Email) as default
+
+        arguments:
+            name - the name of the SMS or EMail Provider
+            type - the provider type
+
+        :return: boolean, true if number of deleted config entries is > 0
+                          else False with message in detail
+        """
+
+        res = {}
+        params = {}
+
+        try:
+            params.update(request.params)
+            try:
+                provider_name = params['name']
+                provider_type = params['type']
+            except KeyError as exx:
+                raise ParameterError('missing key %r' % exx)
+
+            res, reply = setDefaultProvider(provider_type, provider_name)
+
+            c.audit['success'] = res
+            c.audit['info'] = provider_name
+
+            Session.commit()
+            return sendResult(response, res, 1, opt=reply)
+
+        except Exception as exx:
+            log.exception("error saving config: %r" % exx)
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+            log.debug('[setProvider] done')
+
+    def getProviderDef(self):
+        """
+        method:
+            system/getProviderDef
+
+        description:
+            get definition of a provider - used for automatic rendering
+
+        arguments:
+            type (required) - the provider type
+            class (optional) - the specific class definition or the parent
+                               class definition if not specified
+        :return:  dictionary with the class as key and the parameters with
+                  their types as dictionaries
+        """
+
+        res = {}
+        params = {}
+
+        try:
+            params.update(request.params)
+            try:
+                _provider_name = params['name']
+                _provider_type = params['type']
+            except KeyError as exx:
+                raise ParameterError('missing key %r' % exx)
+
+            # TODO:  to be implemented
+            res = {}
+
+            Session.commit()
+            return sendResult(response, res, 1)
+
+        except Exception as exx:
+            log.exception("error saving config: %r" % exx)
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+            log.debug('[setProvider] done')
+
+
+# eof #########################################################################

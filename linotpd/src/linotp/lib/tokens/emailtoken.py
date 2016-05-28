@@ -31,6 +31,7 @@ import datetime
 import logging
 import sys
 
+from linotp.provider import loadProviderFromPolicy
 
 from linotp.lib.token import get_token_owner
 
@@ -84,7 +85,7 @@ class EmailTokenClass(HmacTokenClass):
     """
 
     EMAIL_ADDRESS_KEY = "email_address"
-    DEFAULT_EMAIL_PROVIDER = "linotp.lib.emailprovider.SMTPEmailProvider"
+    DEFAULT_EMAIL_PROVIDER = "linotp.provider.emailprovider.SMTPEmailProvider"
     DEFAULT_EMAIL_BLOCKING_TIMEOUT = 120
 
     def __init__(self, aToken):
@@ -412,88 +413,12 @@ class EmailTokenClass(HmacTokenClass):
         subject = subject.replace("<otp>", otp)
         subject = subject.replace("<serial>", self.getSerial())
 
-        try:
-            email_provider_class = self._getEmailProviderClass()
-            email_provider = email_provider_class()
-        except Exception as exc:
-            LOG.exception("[sendEmail] Failed to load EmailProvider: %r" % exc)
-            raise exc
-
-        ## now we need the config from the env
-        LOG.debug("[sendEmail] loading e-mail configuration for class %s"
-                  % email_provider)
-        config = self._getEmailProviderConfig()
-        LOG.debug("[sendEmail] config: %r" % config)
-        email_provider.loadConfig(config)
+        email_provider = loadProviderFromPolicy(provider_type='email',
+                                                user=owner)
         status, status_message = email_provider.submitMessage(email_address,
                                                               subject=subject,
                                                               message=message)
         return status, status_message
-
-    def _getEmailProviderConfig(self):
-        """
-        get the defined e-mail provider config definition
-
-        :return: dict of the e-mail provider definition
-        :rtype: dict
-        """
-        LOG.debug('[getEmailProviderConfig] begin. load the e-mail ' +
-                  'provider config definition')
-
-        config = {}
-        tConfig = getFromConfig("enclinotp.EmailProviderConfig", None)
-        if tConfig is None:
-            tConfig = getFromConfig("EmailProviderConfig", "{}")
-
-        LOG.debug("[getEmailProviderConfig] provider config: %s"
-                  % tConfig)
-
-        try:
-            if tConfig is not None:
-                config = loads(tConfig)
-        except ValueError as exx:
-            raise ValueError('Failed to load provider config:%r %r'
-                             % (tConfig, exx))
-
-        LOG.debug('[getEmailProviderConfig] e-mail provider config'
-                  ' found: config %r' % (config))
-        return config
-
-    def _getEmailProviderClass(self):
-        """
-        getEmailProviderClass():
-
-        helper method to load the EmailProvider class from config
-
-        checks, if the submitMessage method exists
-        if not an error is thrown
-        """
-        LOG.debug('[getEmailProviderClass] begin. get the e-mail Provider '
-                  'class definition')
-        email_provider = getFromConfig("EmailProvider",
-                                       self.DEFAULT_EMAIL_PROVIDER)
-        if not email_provider:
-            raise Exception("No EmailProvider defined.")
-        (email_provider_package, email_provider_class_name) = \
-                                                email_provider.rsplit(".", 1)
-
-        if not email_provider_package or not email_provider_class_name:
-            raise Exception("Could not load e-mail provider class. Maybe "
-                            "EmailProvider is not set in the config file.")
-
-        mod = __import__(email_provider_package, globals(), locals(),
-                         [email_provider_class_name])
-
-        # TODO Kay sagt hier soll das Modul global geladen werden (mit einem
-        #     bisher nicht existierenden Hook)
-
-        provider_class = getattr(mod, email_provider_class_name)
-        if not hasattr(provider_class, "submitMessage"):
-            raise NameError("EmailProvider AttributeError: %s.%s instance of "
-                            "EmailProvider has no method 'submitMessage'" %
-                            (email_provider_package, email_provider_class_name))
-
-        return provider_class
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):
         """

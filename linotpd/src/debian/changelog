@@ -4,9 +4,11 @@ linotp (2.8.2~0dev0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 31 Jul 2015 18:53:25 +0200
 
-linotp (2.8.1.2~rc2-1) jessie; urgency=low
+linotp (2.8.1.1) jessie; urgency=low
 
   Enhancements:
+  * Server: Add support for multiple Providers
+  * Server: Add support for long config values
   * Server: Add support for demo licenses
 
   Bug Fixes:

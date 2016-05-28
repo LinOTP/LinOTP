@@ -90,12 +90,12 @@ $(document).ready(function () {
         <tr>
 	        <td><label for="c_email_provider">${_("Provider")}</label>: </td>
 	        <td><input type="text" name="email_provider" class="required"  id="c_email_provider" size="37" maxlength="80"
-	                   placeholder="linotp.lib.emailprovider.SMTPEmailProvider"></td>
+	                   placeholder="linotp.provider.emailprovider.SMTPEmailProvider"></td>
         </tr>
         <tr>
 	        <td><label for="c_email_provider_config">${_("Provider config")}</label>: </td>
 	        <td><textarea name="email_provider_config" class="required"  id="c_email_provider_config" cols='35' rows='6' maxlength="400"
-	                      placeholder='{ "SMTP_SERVER":"mail.example.com", "SMTP_USER":"secret_user", "SMTP_PASSWORD":"secret_pasword" "EMAIL_FROM":"linotp@example.com" "EMAIL_SUBJECT":"Your OTP"}'
+	                      placeholder='{ "SMTP_SERVER":"mail.example.com", "SMTP_USER":"secret_user", "SMTP_PASSWORD":"secret_pasword", "EMAIL_FROM":"linotp@example.com", "EMAIL_SUBJECT":"Your OTP"}'
 	            ></textarea></td>
         </tr>
         <tr>

@@ -41,7 +41,7 @@ except ImportError:
 from sqlalchemy.engine import create_engine
 import sqlalchemy
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
@@ -72,12 +72,12 @@ class SQLData(object):
             VALUES (:key, :value, :typ, :description);
             """ % (self.userTable, self.userTable)
 
-
         intoStr = iStr
 
         t = sqlalchemy.sql.expression.text(intoStr)
 
-        self.connection.execute(t, key=key, value=value, typ=typ, description=description)
+        self.connection.execute(t, key=key, value=value, typ=typ,
+                                description=description)
         return
 
     def updateData(self, key, value):
@@ -111,17 +111,11 @@ class SQLData(object):
         self.connection.execute(t, key=key)
         return
 
-
     def close(self):
         self.connection.close()
 
-
     def __del__(self):
         self.connection.close()
-
-
-
-
 
 
 class TestReplication(TestController):
@@ -130,11 +124,14 @@ class TestReplication(TestController):
 
         TestController.setUp(self)
 
-        #self.appconf = self.app.app.app.apps[1].application.app.application.app.app.app.config
         self.sqlconnect = self.appconf.get('sqlalchemy.url')
         sqlData = SQLData(connect=self.sqlconnect)
         log.debug(sqlData)
-
+        params = {
+            'key': 'enableReplication',
+            }
+        resp = self.make_system_request('delConfig', params)
+        self.assertTrue('"delConfig enableReplication": true' in resp)
         return
 
     def tearDown(self):
@@ -147,12 +144,11 @@ class TestReplication(TestController):
         typ = type(value).__name__
         sqlData.addData(key, value, typ, description)
         sec = random.randrange(1, 9)
-        sqlData.updateData("linotp.Config", str(datetime.now()
-                                               + timedelta(milliseconds=sec)))
+        sqlData.updateData("linotp.Config",
+                           str(datetime.now() + timedelta(milliseconds=sec)))
         sqlData.close()
 
         return
-
 
     def delData(self, key):
 
@@ -160,8 +156,8 @@ class TestReplication(TestController):
         sqlData.delData(key)
 
         sec = random.randrange(1, 9)
-        sqlData.updateData("linotp.Config", str(datetime.now()
-                                               + timedelta(milliseconds=sec)))
+        sqlData.updateData("linotp.Config",
+                           str(datetime.now() + timedelta(milliseconds=sec)))
         sqlData.close()
 
         return
@@ -170,27 +166,26 @@ class TestReplication(TestController):
 
         params = {
             'user': user,
-            'pin':user,
+            'pin': user,
             'serial': 's' + user,
-            'type':'spass',
+            'type': 'spass',
             }
         response = self.make_admin_request('init', params)
-        assert '"status": true,' in response
+        self.assertTrue('"status": true,' in response)
 
         return
 
     def authToken(self, user):
 
-        param = { 'user': user, 'pass':user}
-        response = self.app.get(url(controller='validate', action='check'), params=param)
+        param = {'user': user, 'pass': user}
+        response = self.make_validate_request('check', params=param)
         return response
 
     def showTokens(self):
 
         response = self.make_admin_request('show', {})
-        assert '"status": true,' in response
+        self.assertTrue('"status": true,' in response)
         return response
-
 
     def test_replication(self):
         '''
@@ -202,42 +197,39 @@ class TestReplication(TestController):
             - query the Config (system/getConfig, which should show the entry
 
             - del a entry in the Config Data vi SQL + update the timestamp
-            - query the Config (system/getConfig, which should show the entry no more
+            - query the Config (system/getConfig, which should show the
+              entry no more
 
         '''
-        ''' 0. '''
+        # 0.
         params = {
-            'enableReplication' : 'true',
+            'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        assert('"setConfig enableReplication:true": true' in resp)
+        self.assertTrue('"setConfig enableReplication:true": true' in resp)
 
-        ''' 1. '''
+        # 1.
         self.addData('replication', 'test1', 'test data')
 
-        ''' 2. '''
+        # 2.
         resp = self.make_system_request('getConfig', {})
-        assert('"replication": "test1"' in resp)
+        self.assertTrue('"replication": "test1"' in resp)
 
-
-        ''' 3. '''
+        # 3.
         self.delData('replication')
 
-        ''' 4. '''
+        # 4.
         resp = self.make_system_request('getConfig', {})
-        res = ('"replication": "test1"' in resp)
-        assert (res == False)
+        self.assertTrue('"replication": "test1"' not in resp)
 
-        ''' 5 - cleanup'''
+        # 5 - cleanup
         params = {
-            'key':'enableReplication',
+            'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        assert('"delConfig enableReplication": true' in resp)
+        self.assertTrue('"delConfig enableReplication": true' in resp)
 
         return
-
-
 
     def test_replication_2(self):
         '''
@@ -249,75 +241,64 @@ class TestReplication(TestController):
             - query the Config (system/getConfig, which should show the entry
 
             - del a entry in the Config Data vi SQL + update the timestamp
-            - query the Config (system/getConfig, which should show the entry no more
+            - query the Config (system/getConfig, which should show the
+              entry no more
 
         '''
-        ''' 0. '''
+        # 0.
         self.addData('replication', 'test1', 'test data')
 
-        ''' 1. '''
+        # 1.
         resp = self.make_system_request('getConfig', {})
-        res = ('"replication": "test1"' in resp)
-        assert (res == False)
+        self.assertTrue('"replication": "test1"' not in resp, resp)
 
-        ''' 2. '''
-        params = {
-            'enableReplication' : 'true',
-            }
+        # 2.
+        params = {'enableReplication': 'true'}
         resp = self.make_system_request('setConfig', params)
-        assert('"setConfig enableReplication:true": true' in resp)
+        self.assertTrue('"setConfig enableReplication:true": true' in resp)
 
-
-        ''' 3. '''
+        # 3.
         self.delData('replication')
 
-        ''' 3. '''
+        # 3.
         resp = self.make_system_request('getConfig', {})
-        res = ('"replication": "test1"' in resp)
-        assert (res == False)
-
+        self.assertTrue('"replication": "test1"' not in resp, resp)
 
         self.addData('replication', 'test1', 'test data')
 
-        ''' 4. '''
+        # 4.
         resp = self.make_system_request('getConfig', {})
-        res = ('"replication": "test1"' in resp)
-        assert (res == True)
+        self.assertTrue('"replication": "test1"' in resp, resp)
 
-
-        ''' 3. '''
+        # 4b
         self.delData('replication')
 
-        ''' 3. '''
         resp = self.make_system_request('getConfig', {})
-        res = ('"replication": "test1"' in resp)
-        assert (res == False)
+        self.assertTrue('"replication": "test1"' not in resp, resp)
 
-
-        ''' 5 - cleanup'''
+        # 5 - cleanup
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        assert('"delConfig enableReplication": true' in resp)
+        self.assertTrue('"delConfig enableReplication": true' in resp)
 
         return
-
 
     def test_updateResolver(self):
         '''
             test replication with resolver update
 
         '''
-        umap = { "userid" : "id",
+        umap = {"userid": "id",
                 "username": "user",
-                "phone" : "telephoneNumber",
-                "mobile" : "mobile",
-                "email" : "mail",
-                "surname" : "sn",
-                "givenname" : "givenName",
-                "password" : "password",
-                "salt" : "salt" }
+                "phone": "telephoneNumber",
+                "mobile": "mobile",
+                "email": "mail",
+                "surname": "sn",
+                "givenname": "givenName",
+                "password": "password",
+                "salt": "salt"}
 
         sqlResolver = {
             "sqlresolver.conParams.mySQL": None,
@@ -325,8 +306,9 @@ class TestReplication(TestController):
             "sqlresolver.Limit.mySQL": "20",
             "sqlresolver.User.mySQL": "user",
             "sqlresolver.Database.mySQL": "yourUserDB",
-            "sqlresolver.Password.mySQL": "157455c27f605ad309d6059e1d936a4" +
-                                        "e:7a812ba9e613fb931386f5f4fb025890",
+            "sqlresolver.Password.mySQL": ("157455c27f605ad309d6059e1d936a4"
+                                           "e:7a812ba9e613fb931386f5f4"
+                                           "fb025890"),
             "sqlresolver.Table.mySQL": "usertable",
             "sqlresolver.Server.mySQL": "127.0.0.1",
             "sqlresolver.Driver.mySQL": "mysql",
@@ -338,40 +320,37 @@ class TestReplication(TestController):
         for k in sqlResolver:
             self.delData(k)
 
-        ''' 0. '''
+        # 0.
         params = {
             'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        assert('"setConfig enableReplication:true": true' in resp)
+        self.assertTrue('"setConfig enableReplication:true": true' in resp)
 
         for k in sqlResolver:
             self.addData(k, sqlResolver.get(k), '')
 
         params = {
-            'resolver':'mySQL',
+            'resolver': 'mySQL',
             }
         resp = self.make_system_request('getResolver', params)
-        assert('"Database": "yourUserDB"' in resp)
+        self.assertTrue('"Database": "yourUserDB"' in resp)
 
         for k in sqlResolver:
             self.delData(k)
 
         params = {
-            'resolver':'mySQL',
+            'resolver': 'mySQL',
             }
         resp = self.make_system_request('getResolver', params)
-        assert('"data": {}' in resp)
+        self.assertTrue('"data": {}' in resp)
 
-
-        ''' 5 - cleanup'''
+        # 5 - cleanup
         params = {
-            'key':'enableReplication',
+            'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        assert('"delConfig enableReplication": true' in resp)
-
-
+        self.assertTrue('"delConfig enableReplication": true' in resp)
 
         return
 
@@ -380,8 +359,8 @@ class TestReplication(TestController):
             test replication with realm and resolver update
         '''
         realmDef = {
-            "useridresolver.group.realm":
-                    "useridresolver.PasswdIdResolver.IdResolver.resolverTest",
+            "useridresolver.group.realm": ("useridresolver.PasswdIdResolver."
+                                           "IdResolver.resolverTest"),
             "passwdresolver.fileName.resolverTest": "/etc/passwd",
             "DefaultRealm": "realm",
             }
@@ -390,41 +369,32 @@ class TestReplication(TestController):
             self.delData(k)
 
         params = {
-            'enableReplication' : 'true',
+            'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        assert('"setConfig enableReplication:true": true' in resp)
-
+        self.assertTrue('"setConfig enableReplication:true": true' in resp)
 
         resp = self.make_system_request('getRealms', {})
-        res = '"realmname": "realm"' in resp
-        assert res == False
-
+        self.assertTrue('"realmname": "realm"' not in resp, resp)
 
         for k in realmDef:
             self.addData(k, realmDef.get(k), '')
 
         resp = self.make_system_request('getRealms', {})
-        res = '"realmname": "realm"' in resp
-        assert res == True
+        self.assertTrue('"realmname": "realm"' in resp, resp)
 
-
-        ''' 5 - cleanup'''
+        # 5 - cleanup
         for k in realmDef:
             self.delData(k)
 
         resp = self.make_system_request('getRealms', {})
-        res = '"realmname": "realm"' in resp
-        assert res == False
-
+        self.assertTrue('"realmname": "realm"' not in resp, resp)
 
         params = {
-            'key':'enableReplication',
+            'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        assert('"delConfig enableReplication": true' in resp)
-
-
+        self.assertTrue('"delConfig enableReplication": true' in resp)
 
         return
 
@@ -441,65 +411,57 @@ class TestReplication(TestController):
 
         '''
         realmDef = {
-            "useridresolver.group.realm":
-                    "useridresolver.PasswdIdResolver.IdResolver.resolverTest",
+            "useridresolver.group.realm": ("useridresolver.PasswdIdResolver."
+                                           "IdResolver.resolverTest"),
             "passwdresolver.fileName.resolverTest": "/etc/passwd",
             "DefaultRealm": "realm",
             }
 
-        ''' 0. delete all related data'''
+        # 0. delete all related data
         for k in realmDef:
             self.delData(k)
 
-        ''' 1. switch on replication '''
+        # 1. switch on replication
         params = {
-            'enableReplication' : 'true',
+            'enableReplication': 'true',
             }
         resp = self.make_system_request('setConfig', params)
-        assert('"setConfig enableReplication:true": true' in resp)
+        self.assertTrue('"setConfig enableReplication:true": true' in resp)
 
-
-        ''' 1.b check that realm is not defined '''
+        # 1.b check that realm is not defined
         resp = self.make_system_request('getRealms', {})
-        res = '"realmname": "realm"' in resp
-        assert res == False
+        self.assertTrue('"realmname": "realm"' not in resp, resp)
 
-
-        ''' 2  write sql data '''
+        # 2  write sql data
         for k in realmDef:
             self.addData(k, realmDef.get(k), '')
 
-        ''' 3. lookup for the realm definition'''
+        # 3. lookup for the realm definition
         resp = self.make_system_request('getRealms', {})
-        res = '"realmname": "realm"' in resp
-        assert res == True
+        self.assertTrue('"realmname": "realm"' in resp, resp)
 
-        ''' 4. enroll token and auth for user root '''
+        # 4. enroll token and auth for user root
         self.addToken('root')
         res = self.authToken('root')
-        assert ('"value": true' in res)
+        self.assertTrue('"value": true' in res)
 
-
-        ''' 5 - cleanup'''
+        # 5 - cleanup
         for k in realmDef:
             self.delData(k)
 
-        ''' 5b. lookup for the realm definition'''
+        # 5b. lookup for the realm definition
         resp = self.make_system_request('getRealms', {})
-        res = '"realmname": "realm"' in resp
-        assert res == False
+        self.assertTrue('"realmname": "realm"' not in resp, resp)
 
         params = {
-            'key':'enableReplication',
+            'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        assert('"delConfig enableReplication": true' in resp)
-
+        self.assertTrue('"delConfig enableReplication": true' in resp)
 
         return
 
-
-    def test_0000_policy(self):
+    def test_policy(self):
         '''
             test the replication of policies
         '''
@@ -513,56 +475,54 @@ class TestReplication(TestController):
             "Policy.enrollPolicy.user": "*",
             }
 
-        ''' 0 - cleanup'''
-        params = {
-            'key':'enableReplication',
-            }
-        resp = self.make_system_request('delConfig', params)
-        assert('"delConfig enableReplication": true' in resp)
-
-        for k in policyDef:
-            self.delData(k)
-
-
-        ''' 1. switch on replication '''
-        params = {
-            'enableReplication' : 'true',
-            }
-        resp = self.make_system_request('setConfig', params)
-        assert('"setConfig enableReplication:true": true' in resp)
-
-        ''' 2  write sql data '''
-        for k in policyDef:
-            self.addData(k, policyDef.get(k), '')
-
-        ''' 3. getPolicy '''
-        params = {
-            'name': 'enrollPolicy',
-            }
-        resp = self.make_system_request('getPolicy', params)
-        assert('"action": "maxtoken=3' in resp)
-
-        ''' 5 - cleanup'''
-        for k in policyDef:
-            self.delData(k)
-
-        ''' 5b. lookup for the policy definition'''
-        params = {
-            'name' : 'enrollPolicy',
-            }
-        resp = self.make_system_request('getPolicy', params)
-        res = ('"action": "maxtoken=3' in resp)
-        assert res == False
-
-        ''' 5c. reset replication '''
+        # 0 - cleanup
         params = {
             'key': 'enableReplication',
             }
         resp = self.make_system_request('delConfig', params)
-        assert('"delConfig enableReplication": true' in resp)
+        self.assertTrue('"delConfig enableReplication": true' in resp)
 
+        for k in policyDef:
+            self.delData(k)
+
+        # 1. switch on replication
+        params = {
+            'enableReplication': 'true',
+            }
+        resp = self.make_system_request('setConfig', params)
+        self.assertTrue('"setConfig enableReplication:true": true' in resp,
+                        resp)
+
+        # 2  write sql data
+        for k in policyDef:
+            self.addData(k, policyDef.get(k), '')
+
+        # 3. getPolicy
+        params = {
+            'name': 'enrollPolicy',
+            }
+        resp = self.make_system_request('getPolicy', params)
+        self.assertTrue('"action": "maxtoken=3' in resp)
+
+        # 4. cleanup
+        for k in policyDef:
+            self.delData(k)
+
+        # 4b. lookup for the policy definition
+        params = {
+            'name': 'enrollPolicy',
+            }
+        resp = self.make_system_request('getPolicy', params)
+        res = ('"action": "maxtoken=3' in resp)
+        self.assertTrue(res is False, resp)
+
+        # 4c. reset replication
+        params = {
+            'key': 'enableReplication',
+            }
+        resp = self.make_system_request('delConfig', params)
+        self.assertTrue('"delConfig enableReplication": true' in resp)
 
         return
 
-##eof##########################################################################
-
+# eof #########################################################################

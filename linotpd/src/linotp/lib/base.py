@@ -200,7 +200,7 @@ def set_defaults():
 
     # emailtoken defaults
     set_config(key=u"EmailProvider",
-               value="linotp.lib.emailprovider.SMTPEmailProvider",
+               value="linotp.provider.emailprovider.SMTPEmailProvider",
                typ=u"string",
                description=u"Default EmailProvider class")
     set_config(key=u"EmailChallengeValidityTime",

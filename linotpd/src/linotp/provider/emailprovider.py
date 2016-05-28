@@ -29,11 +29,13 @@
 import smtplib
 from email.mime.text import MIMEText
 
+from linotp.provider import provider_registry
+
 import logging
 LOG = logging.getLogger(__name__)
 
 
-class IEmailProvider:
+class IEmailProvider(object):
     """
     An abstract class that has to be implemented by ever e-mail provider class
     """
@@ -69,6 +71,8 @@ class IEmailProvider:
         pass
 
 
+@provider_registry.class_entry('SMTPEmailProvider')
+@provider_registry.class_entry('linotp.provider.emailprovider.SMTPEmailProvider')
 class SMTPEmailProvider(IEmailProvider):
     """
     Sends e-mail over a SMTP server.
@@ -147,7 +151,7 @@ class SMTPEmailProvider(IEmailProvider):
                 LOG.error("[submitMessage] error(s) sending e-mail %r"
                           % errors)
                 success, status_message = False, ("error sending e-mail %s"
-                                                 % errors)
+                                                  % errors)
 
         except (smtplib.SMTPHeloError, smtplib.SMTPRecipientsRefused,
                 smtplib.SMTPSenderRefused, smtplib.SMTPDataError
@@ -155,6 +159,6 @@ class SMTPEmailProvider(IEmailProvider):
             LOG.error("[submitMessage] error(s) sending e-mail. Caught "
                       "exception: %r" % smtplib_exception)
             success, status_message = False, ("error sending e-mail %r"
-                                             % smtplib_exception)
+                                              % smtplib_exception)
         s.quit()
         return success, status_message
