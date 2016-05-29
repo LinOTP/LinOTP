@@ -537,6 +537,26 @@ class ValidationHandler(object):
             if 'transactionid' in check_options:
                 check_options['transactionid'] = transid
 
+        # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+        # transaction id optimization - part 1:
+        #
+        # if we have a transaction id, we check only those tokens
+        # that belong to this transaction id:
+
+        challenges = []
+        transaction_serials = []
+        transid = check_options.get('state',
+                                    check_options.get('transactionid', ''))
+        if transid:
+            expired, challenges = Challenges.get_challenges(transid=transid,
+                                                            filter_open=True)
+            for challenge in challenges:
+                serial = challenge.tokenserial
+                transaction_serials.append(serial)
+
+        # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
         audit_entry = {}
         audit_entry['action_detail'] = "no token found!"
 
@@ -552,6 +572,11 @@ class ValidationHandler(object):
         for token in tokenList:
             log.debug('Found user with loginId %r: %r:\n',
                       token.getUserId(), token.getSerial())
+
+            # transaction id optimization - part 2:
+            if transid:
+                if token.getSerial() not in transaction_serials:
+                    continue
 
             audit_entry['serial'] = token.getSerial()
             audit_entry['token_type'] = token.getType()
@@ -597,15 +622,19 @@ class ValidationHandler(object):
                 token.incOtpFailCounter()
                 continue
 
+            # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
             # start the token validation
-            try:
-                # TODO: assign their outstanding challenges for later
-                # processing
+
+            if not transid:
+                # if there is no transaction id given we check all token
+                # related challenges
                 (_ex_challenges,
                  challenges) = Challenges.get_challenges(token,
                                                          options=check_options,
                                                          filter_open=True)
 
+            try:
                 (ret, reply) = token.check_token(
                     passw, user, options=check_options, challenges=challenges)
             except Exception as exx:
