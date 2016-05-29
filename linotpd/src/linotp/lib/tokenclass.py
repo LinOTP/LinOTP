@@ -1571,10 +1571,9 @@ class TokenClass(object):
         else:
             # for hased pins we redo the hash and compare the hashes
             iv, hashed_token_pin = self.token.get_hashed_pin()
-            if pin:
-                iv, hashed_pin = SecretObj.hash_pin(pin, iv, hsm=hsm)
-                if hashed_pin == hashed_token_pin:
-                    res = True
+            iv, hashed_pin = SecretObj.hash_pin(pin, iv, hsm=hsm)
+            if hashed_pin == hashed_token_pin:
+                res = True
 
             # special case of empty pin, where pin has never been set
             # especialy in case of lost token with the pw token

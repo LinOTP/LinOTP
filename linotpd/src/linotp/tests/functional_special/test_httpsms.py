@@ -45,14 +45,17 @@ import urlparse
 import httplib2
 from mock import patch
 
-from pylons import url
 from linotp.lib.util import str2unicode
 from linotp.tests.functional_special import TestSpecialController
+
+import smsprovider.FileSMSProvider
+import smsprovider.HttpSMSProvider
 
 
 # mocking hook is startting here
 HTTP_RESPONSE_FUNC = None
 HTTP_RESPONSE = None
+
 
 def mocked_http_request(HttpObject, *argparams, **kwparams):
 
@@ -87,7 +90,6 @@ def mocked_http_request(HttpObject, *argparams, **kwparams):
     return resp, json.dumps(content)
 
 
-
 try:
     import json
 except ImportError:
@@ -105,6 +107,11 @@ class TestHttpSmsController(TestSpecialController):
         '''
         This sets up all the resolvers and realms
         '''
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+
         self.serials = ['sms01', 'sms02']
         self.max = 22
         for num in range(3, self.max):
@@ -112,10 +119,10 @@ class TestHttpSmsController(TestSpecialController):
             self.serials.append(serial)
 
         TestSpecialController.setUp(self)
-        self.set_config_selftest()
+        # self.set_config_selftest()
         self.create_common_resolvers()
         self.create_common_realms()
-        self.removeTokens()
+
         self.initTokens()
         self.initProvider()
 
@@ -123,15 +130,14 @@ class TestHttpSmsController(TestSpecialController):
                         self.paster_port)
 
     def tearDown(self):
-        self.delete_all_realms()
-        self.delete_all_resolvers()
         TestSpecialController.tearDown(self)
 
 ###############################################################################
     def removeTokens(self):
         for serial in self.serials:
             parameters = {'serial': serial}
-            response = self.make_admin_request('remove', params=parameters)
+            response = self.make_admin_request('remove', params=parameters,
+                                               auth_user='superadmin')
             self.assertTrue('"status": true' in response, response)
 
     def initTokens(self):
@@ -141,29 +147,29 @@ class TestHttpSmsController(TestSpecialController):
 
         parameters = {'serial': self.serials[0],
                       'otpkey': '1234567890123456789012345678901234567890' +
-                                  '123456789012345678901234',
+                      '123456789012345678901234',
                       'realm': 'myDefRealm',
                       'type': 'sms',
                       'user': 'user1',
                       'pin': '1234',
                       'phone': '016012345678',
-                      'selftest_admin': 'superadmin'
                       }
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request('init', params=parameters,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         parameters = {'serial': self.serials[1],
                       'otpkey': '1234567890123456789012345678901234567890' +
-                                  '123456789012345678901234',
+                      '123456789012345678901234',
                       'realm': 'myDefRealm',
                       'user': 'user2',
                       'type': 'sms',
                       'pin': '1234',
                       'phone': '016022222222',
-                      'selftest_admin': 'superadmin'
                       }
-        response = self.make_admin_request('init', params=parameters)
+        response = self.make_admin_request('init', params=parameters,
+                                           auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -175,9 +181,9 @@ class TestHttpSmsController(TestSpecialController):
                           'type': 'sms',
                           'pin': '',
                           'phone': '+49 01602/2222-222',
-                          'selftest_admin': 'superadmin'
                           }
-            response = self.make_admin_request('init', params=parameters)
+            response = self.make_admin_request('init', params=parameters,
+                                               auth_user='superadmin')
 
             self.assertTrue('"status": true' in response, response)
 
@@ -188,10 +194,10 @@ class TestHttpSmsController(TestSpecialController):
         Initialize the HttpSMSProvider
         '''
         parameters = {
-                'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-                'selftest_admin': 'superadmin'
-                   }
-        response = self.make_system_request('setConfig', params=parameters)
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+        }
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -203,10 +209,9 @@ class TestHttpSmsController(TestSpecialController):
         params = {'sortorder': 'desc',
                   'rp': num,
                   'page': page,
-                  'selftest_admin': 'superadmin'
-                 }
-        response = self.app.get(url(controller="audit", action="search"),
-                                params=params)
+                  }
+        response = self.make_audit_request(action="search",
+                                           params=params)
         return response
 
     def test_missing_param(self):
@@ -214,26 +219,28 @@ class TestHttpSmsController(TestSpecialController):
         Missing parameter at the SMS Gateway config. send SMS will fail
         '''
         sms_conf = {
-                "URL": self.sms_url,
-                "PARAMETER": {"account": "clickatel", "username": "legit"},
-                "SMS_TEXT_KEY": "text",
-                "SMS_PHONENUMBER_KEY": "to",
-                "HTTP_Method": "GET",
-                "RETURN_SUCCESS": "ID",
-                }
+            "URL": self.sms_url,
+            "PARAMETER": {"account": "clickatel", "username": "legit"},
+            "SMS_TEXT_KEY": "text",
+            "SMS_PHONENUMBER_KEY": "to",
+            "HTTP_Method": "GET",
+            "RETURN_SUCCESS": "ID",
+        }
 
         parameters = {
-                'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-                'SMSProviderConfig': json.dumps(sms_conf),
-                'selftest_admin': 'superadmin'
-                }
-        response = self.make_system_request('setConfig', params=parameters)
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         # check the saved configuration
-        response = self.make_system_request('getConfig',
-                                            {'key': 'SMSProviderConfig'})
+        response = self.make_system_request(action='getConfig',
+                                            params={
+                                                'key': 'SMSProviderConfig'},
+                                            auth_user='superadmin')
 
         self.assertIn(self.sms_url, response, response)
 
@@ -279,11 +286,11 @@ class TestHttpSmsController(TestSpecialController):
                     }
 
         parameters = {
-              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-              'SMSProviderConfig': json.dumps(sms_conf),
-               'selftest_admin': 'superadmin'
-            }
-        response = self.make_system_request('setConfig', params=parameters)
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -331,11 +338,11 @@ class TestHttpSmsController(TestSpecialController):
             "RETURN_SUCCESS": "ID"
         }
         parameters = {
-              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-              'SMSProviderConfig': json.dumps(sms_conf),
-              'selftest_admin': 'superadmin'
-            }
-        response = self.make_system_request('setConfig', params=parameters)
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -370,13 +377,13 @@ class TestHttpSmsController(TestSpecialController):
             "SMS_PHONENUMBER_KEY": "destination",
             "HTTP_Method": "GET",
             "RETURN_FAILED": "FAILED"
-            }
+        }
         parameters = {
-              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-              'SMSProviderConfig': json.dumps(sms_conf),
-              'selftest_admin': 'superadmin'
-                }
-        response = self.make_system_request('setConfig', params=parameters)
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -400,11 +407,11 @@ class TestHttpSmsController(TestSpecialController):
         filename = f.name
         sms_conf = {"file": filename}
         parameters = {
-              'SMSProvider': 'smsprovider.FileSMSProvider.FileSMSProvider',
-              'SMSProviderConfig': json.dumps(sms_conf),
-               'selftest_admin': 'superadmin'
-              }
-        response = self.make_system_request('setConfig', params=parameters)
+            'SMSProvider': 'smsprovider.FileSMSProvider.FileSMSProvider',
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
@@ -438,29 +445,27 @@ class TestHttpSmsController(TestSpecialController):
         Failed SMS sending with RETURN_FAIL
         '''
         sms_conf = {"URL": self.sms_url,
-            "PARAMETER": {"account": "clickatel", "username": "anotherone"},
-            "SMS_TEXT_KEY": "text",
-            "SMS_PHONENUMBER_KEY": "destination",
-            "HTTP_Method": "GET",
-            "RETURN_FAIL" : "FAILED",
-            "MSISDN": True,
-            "SUPPRESS_PREFIX" : '+',
-        }
+                    "PARAMETER": {"account": "clickatel", "username": "anotherone"},
+                    "SMS_TEXT_KEY": "text",
+                    "SMS_PHONENUMBER_KEY": "destination",
+                    "HTTP_Method": "GET",
+                    "RETURN_FAIL": "FAILED",
+                    "MSISDN": True,
+                    "SUPPRESS_PREFIX": '+',
+                    }
 
         parameters = {
-              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-              'SMSProviderConfig': json.dumps(sms_conf),
-              'selftest_admin': 'superadmin'
-                      }
-        response = self.make_system_request('setConfig', params=parameters)
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
 
         response = self.make_validate_request('smspin',
                                               params={'user': 'user1',
                                                       'pass': '1234'})
-
-
 
         # due to security fix to prevent information leakage the response
         # of validate/check will be only true or false
@@ -495,12 +500,12 @@ class TestHttpSmsController(TestSpecialController):
             sms_conf["PREFERRED_HTTPLIB"] = preferred_httplib
 
         parameters = {
-              'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
-              'SMSProviderConfig': json.dumps(sms_conf),
-              'selftest_admin': 'superadmin'
-            }
+            'SMSProvider': 'smsprovider.HttpSMSProvider.HttpSMSProvider',
+            'SMSProviderConfig': json.dumps(sms_conf),
+        }
 
-        response = self.make_system_request('setConfig', params=parameters)
+        response = self.make_system_request('setConfig', params=parameters,
+                                            auth_user='superadmin')
 
         self.assertTrue('"status": true' in response, response)
         return
@@ -511,6 +516,7 @@ class TestHttpSmsController(TestSpecialController):
         '''
         self.setSMSProvider(preferred_httplib='httplib', method='POST')
 
+        # check if its possible to trigger challenge with empty pin
         params = {'serial': self.serials[2], 'pass': ''}
         response = self.make_validate_request('check_s', params=params)
         self.assertTrue('"state":' in response,
@@ -593,15 +599,15 @@ class TestHttpSmsController(TestSpecialController):
         self.skipTest("Temporarily skip twilio tests due to known problems")
 
         args = [
-         {'preferred_httplib': 'httplib', 'method': 'GET'},
-         {'preferred_httplib': 'httplib', 'method': 'POST'},
+            {'preferred_httplib': 'httplib', 'method': 'GET'},
+            {'preferred_httplib': 'httplib', 'method': 'POST'},
         ]
         i = 7
         for arg in args:
             i = i + 1
             parameters = {"account": "twilio", "username": "legit"}
             arguments = {'return_check': {"RETURN_SUCCESS_REGEX":
-                                              '<Status>queued</Status>'},
+                                          '<Status>queued</Status>'},
                          'PARAMETERS': parameters,
                          }
             arguments.update(arg)
@@ -615,9 +621,9 @@ class TestHttpSmsController(TestSpecialController):
 
             parameters = {"account": "twilio", "username": "fail"}
             arguments = {'return_check': {"RETURN_FAIL_REGEX":
-                                            '<Status>400</Status>'},
-                        'PARAMETERS': parameters,
-                        }
+                                          '<Status>400</Status>'},
+                         'PARAMETERS': parameters,
+                         }
             arguments.update(arg)
             self.setSMSProvider(**arguments)
             i = i + 1
@@ -637,8 +643,8 @@ class TestHttpSmsController(TestSpecialController):
         self.skipTest("Temporarily skip twilio tests due to known problems")
 
         args = [
-         {'preferred_httplib': 'urllib', 'method': 'GET'},
-         {'preferred_httplib': 'urllib', 'method': 'POST'}
+            {'preferred_httplib': 'urllib', 'method': 'GET'},
+            {'preferred_httplib': 'urllib', 'method': 'POST'}
         ]
 
         i = 9
@@ -646,7 +652,7 @@ class TestHttpSmsController(TestSpecialController):
             i = i + 1
             parameters = {"account": "twilio", "username": "legit"}
             arguments = {'return_check': {"RETURN_SUCCESS_REGEX":
-                                              '<Status>queued</Status>'},
+                                          '<Status>queued</Status>'},
                          'PARAMETERS': parameters,
                          }
             arguments.update(arg)
@@ -660,9 +666,9 @@ class TestHttpSmsController(TestSpecialController):
 
             parameters = {"account": "twilio", "username": "fail"}
             arguments = {'return_check': {"RETURN_FAIL_REGEX":
-                                            '<Status>400</Status>'},
-                        'PARAMETERS': parameters,
-                        }
+                                          '<Status>400</Status>'},
+                         'PARAMETERS': parameters,
+                         }
             arguments.update(arg)
             self.setSMSProvider(**arguments)
             i = i + 1
@@ -698,8 +704,8 @@ class TestHttpSmsController(TestSpecialController):
                 return
 
         args = [
-         {'preferred_httplib': 'requests', 'method': 'GET'},
-         {'preferred_httplib': 'requests', 'method': 'POST'}
+            {'preferred_httplib': 'requests', 'method': 'GET'},
+            {'preferred_httplib': 'requests', 'method': 'POST'}
         ]
 
         i = 11
@@ -707,7 +713,7 @@ class TestHttpSmsController(TestSpecialController):
             i = i + 1
             parameters = {"account": "twilio", "username": "legit"}
             arguments = {'return_check': {"RETURN_SUCCESS_REGEX":
-                                              '<Status>queued</Status>'},
+                                          '<Status>queued</Status>'},
                          'PARAMETERS': parameters,
                          }
             arguments.update(arg)
@@ -720,9 +726,9 @@ class TestHttpSmsController(TestSpecialController):
 
             parameters = {"account": "twilio", "username": "fail"}
             arguments = {'return_check': {"RETURN_FAIL_REGEX":
-                                            '<Status>400</Status>'},
-                        'PARAMETERS': parameters,
-                        }
+                                          '<Status>400</Status>'},
+                         'PARAMETERS': parameters,
+                         }
             arguments.update(arg)
             self.setSMSProvider(**arguments)
             i = i + 1
