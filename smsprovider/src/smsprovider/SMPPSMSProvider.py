@@ -27,6 +27,7 @@
 
 """ the SMS Provider Interface """
 from smsprovider.SMSProvider import ISMSProvider
+from linotp.provider import provider_registry
 
 import smpplib
 import logging
@@ -34,6 +35,10 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@provider_registry.class_entry('SMPPSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.SMPPSMSProvider')
+@provider_registry.class_entry('smsprovider.SMPPSMSProvider.SMPPSMSProvider')
+@provider_registry.class_entry('smsprovider.SMPPSMSProvider')
 class SMPPSMSProvider(ISMSProvider):
 
     def __init__(self):
@@ -88,15 +93,15 @@ class SMPPSMSProvider(ISMSProvider):
                                     system_type=self.system_type)
 
             client.send_message(
-                            source_addr=self.source_addr,
-                            destination_addr=phone,
-                            short_message=message,
-                            source_addr_npi=self.source_addr_npi,
-                            source_addr_ton=self.source_addr_ton,
-                            dest_addr_npi=self.dest_addr_npi,
-                            dest_addr_ton=self.dest_addr_ton,
-                            #registered_delivery=self.registered_delivery
-                            )
+                source_addr=self.source_addr,
+                destination_addr=phone,
+                short_message=message,
+                source_addr_npi=self.source_addr_npi,
+                source_addr_ton=self.source_addr_ton,
+                dest_addr_npi=self.dest_addr_npi,
+                dest_addr_ton=self.dest_addr_ton,
+                # registered_delivery=self.registered_delivery
+            )
 
             log.debug("message %r submitted to %r" % (message, phone))
 
@@ -124,6 +129,7 @@ class SMPPSMSProvider(ISMSProvider):
         self.dest_addr_ton = int(self.config.get('dest_addr_ton', 1))
         #self.registered_delivery = int(self.config.get('registered_delivery', 0))
 
+
 def main(phone, message, config):
 
     print "SMPPSMSProvider - class load test "
@@ -147,7 +153,8 @@ if __name__ == "__main__":
     parser.add_argument("system_type", help="type of service")
     parser.add_argument("source_addr", help="name of sending phone")
     parser.add_argument("source_addr_npi", help="type of source addr")
-    parser.add_argument("source_addr_ton", help="type of number of source addr")
+    parser.add_argument(
+        "source_addr_ton", help="type of number of source addr")
     #parser.add_argument("dest_addr_npi", help="type of destination addr")
     #parser.add_argument("dest_addr_ton", help="type of number of destination addr")
     #parser.add_argument("registered_delivery", help="delivery report requested")
@@ -155,18 +162,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = {
-          args.server.split('=')[0]: args.server.split('=', 1)[1],
-          args.port.split('=')[0]: args.port.split('=', 1)[1],
-          args.system_id.split('=')[0]: args.system_id.split('=', 1)[1],
-          args.password.split('=')[0]: args.password.split('=', 1)[1],
-          args.system_type.split('=')[0]: args.system_type.split('=', 1)[1],
-          args.source_addr.split('=')[0]: args.source_addr.split('=', 1)[1],
-          args.source_addr_npi.split('=')[0]: args.source_addr_npi.split('=', 1)[1],
-          args.source_addr_ton.split('=')[0]: args.source_addr_ton.split('=', 1)[1],
-          #args.dest_addr_npi.split('=')[0]: args.dest_addr_npi.split('=', 1)[1],
-          #args.dest_addr_ton.split('=')[0]: args.dest_addr_ton.split('=', 1)[1],
-          #args.registered_delivery.split('=')[0]: args.registered_delivery.split('=', 1)[1],
-        }
+        args.server.split('=')[0]: args.server.split('=', 1)[1],
+        args.port.split('=')[0]: args.port.split('=', 1)[1],
+        args.system_id.split('=')[0]: args.system_id.split('=', 1)[1],
+        args.password.split('=')[0]: args.password.split('=', 1)[1],
+        args.system_type.split('=')[0]: args.system_type.split('=', 1)[1],
+        args.source_addr.split('=')[0]: args.source_addr.split('=', 1)[1],
+        args.source_addr_npi.split('=')[0]: args.source_addr_npi.split('=', 1)[1],
+        args.source_addr_ton.split('=')[0]: args.source_addr_ton.split('=', 1)[1],
+        # args.dest_addr_npi.split('=')[0]: args.dest_addr_npi.split('=', 1)[1],
+        # args.dest_addr_ton.split('=')[0]: args.dest_addr_ton.split('=', 1)[1],
+        # args.registered_delivery.split('=')[0]:
+        # args.registered_delivery.split('=', 1)[1],
+    }
 
     main(args.phone.split('=', 1)[1], args.message.split('=', 1)[1], config)
 

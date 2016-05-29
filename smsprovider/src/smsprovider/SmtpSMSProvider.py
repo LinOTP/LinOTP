@@ -29,6 +29,7 @@
 import SMSProvider
 from SMSProvider import getSMSProviderClass
 from SMSProvider import ISMSProvider
+from linotp.provider import provider_registry
 
 import string
 import smtplib
@@ -40,6 +41,10 @@ PHONE_TAG = "<phone>"
 MSG_TAG = "<otp>"
 
 
+@provider_registry.class_entry('SmtpSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.SmtpSMSProvider')
+@provider_registry.class_entry('smsprovider.SmtpSMSProvider.SmtpSMSProvider')
+@provider_registry.class_entry('smsprovider.SmtpSMSProvider')
 class SmtpSMSProvider(ISMSProvider):
 
     def __init__(self):
@@ -131,7 +136,7 @@ class SmtpSMSProvider(ISMSProvider):
         '''
         ret = False
         if ('mailserver' not in self.config or
-           'mailsender' not in self.config or 'mailto' not in self.config):
+                'mailsender' not in self.config or 'mailto' not in self.config):
             log.error("[submitMessage] incomplete config: %s. mailserver, "
                       "mailsender and mailto needed." % self.config)
             return ret

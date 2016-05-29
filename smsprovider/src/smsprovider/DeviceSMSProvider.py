@@ -41,6 +41,7 @@ connection = serial
 import SMSProvider
 from SMSProvider import getSMSProviderClass
 from SMSProvider import ISMSProvider
+from linotp.provider import provider_registry
 
 import subprocess
 import string
@@ -49,7 +50,12 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@provider_registry.class_entry('DeviceSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.DeviceSMSProvider')
+@provider_registry.class_entry('smsprovider.DeviceSMSProvider.DeviceSMSProvider')
+@provider_registry.class_entry('smsprovider.DeviceSMSProvider')
 class DeviceSMSProvider(ISMSProvider):
+
     def __init__(self):
         self.config = {}
 
@@ -67,8 +73,8 @@ class DeviceSMSProvider(ISMSProvider):
             log.info("[submitMessage] setting configfile to %s" % configfile)
 
         if (self.config.has_key('SMSC')):
-                smsc_number=self.config.get('SMSC')
-                smsc_option="--setsmsc"
+            smsc_number = self.config.get('SMSC')
+            smsc_option = "--setsmsc"
 
         # NOTE 1: The LinOTP service account need rw-access to /dev/ttyXXX
         # NOTE 2: we need gnokii 0.6.29, since 0.6.28 will crash with a bug
@@ -78,7 +84,7 @@ class DeviceSMSProvider(ISMSProvider):
         #log.info("[submitMessage] preparing to run : %s" % string.join(args) )
         #proc = subprocess.Popen(args,shell=False,stdin=subprocess.PIPE)
         #log.info("process run. Now sending message as input into pipe")
-        #proc.communicate(message+"\n")
+        # proc.communicate(message+"\n")
 
         command = ("echo %s | gnokii --config %s --sendsms %s %s %s"
                    % (message, configfile, phone, smsc_option, smsc_number))
@@ -92,15 +98,13 @@ class DeviceSMSProvider(ISMSProvider):
         log.info("loading config for DeviceSMSProvider")
 
 
-
 def main(phone, message):
     print "SMSProvider - class load test "
 
     # echo "text" | gnokii --config <filename> <ziel>
 
-    config = {'CONFIGFILE':'/home/user/.gnokiirc',
+    config = {'CONFIGFILE': '/home/user/.gnokiirc',
               }
-
 
     sms = getSMSProviderClass("DeviceSMSProvider", "DeviceSMSProvider")()
 
@@ -115,4 +119,3 @@ if __name__ == "__main__":
     message = "DeviceSMSProviderClass test. blocking. :-/"
     main(phone, message)
     print "... done!"
-

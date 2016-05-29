@@ -30,13 +30,14 @@
 import SMSProvider
 from SMSProvider import getSMSProviderClass
 from SMSProvider import ISMSProvider
-
+from linotp.provider import provider_registry
 
 import logging
 log = logging.getLogger(__name__)
 
 
 class TestSMSProvider(ISMSProvider):
+
     def __init__(self):
         self.config = {}
 
@@ -54,4 +55,3 @@ class TestSMSProvider(ISMSProvider):
 
     def loadConfig(self, configDict):
         self.config = configDict
-
