@@ -357,12 +357,14 @@ class ValidationHandler(object):
             ret = True
 
             trans_dict = {}
-            token_dict = {'serial': serial, 'type': token.type}
 
             trans_dict['received_count'] = ch.received_count
             trans_dict['received_tan'] = ch.received_tan
             trans_dict['valid_tan'] = ch.valid_tan
             trans_dict['message'] = ch.challenge
+            trans_dict['status'] = ch.getStatus()
+
+            token_dict = {'serial': serial, 'type': token.type}
 
             # 1. check if token supports offline at all
             supports_offline_at_all = token.supports_offline_mode
@@ -375,13 +377,13 @@ class ValidationHandler(object):
 
             offline_is_allowed = supports_offline(realms, token)
 
-            if ch.valid_tan and \
+            if not ch.is_open() and ch.valid_tan and \
                supports_offline_at_all and \
                offline_is_allowed and \
                use_offline:
                 token_dict['offline_info'] = token.getOfflineInfo()
 
-            transactions['token'] = token_dict
+            trans_dict['token'] = token_dict
             transactions[ch.transid] = trans_dict
 
         if transactions:
