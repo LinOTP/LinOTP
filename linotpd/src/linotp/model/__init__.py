@@ -975,7 +975,9 @@ class Challenge(object):
 
         :return: success - boolean
         """
-        session = json.loads(self.session) or {}
+        if self.session == '':
+            self.session = '{}'
+        session = json.loads(self.session)
         status = session.get('status', 'open')
         ret = status == 'open'
         return ret
