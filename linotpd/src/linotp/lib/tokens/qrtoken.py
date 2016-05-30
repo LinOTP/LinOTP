@@ -36,6 +36,7 @@ from Cryptodome.Hash import HMAC
 from Cryptodome.Hash import SHA256
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.policy import get_pairing_certificate_id
 from linotp.lib.challenges import Challenges
 from linotp.lib.reply import create_img
 from linotp.lib.tokenclass import TokenClass
@@ -49,7 +50,7 @@ from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
-from linotp.lib.crypt import get_qrtoken_secret_key
+from linotp.lib.crypt import get_qrtoken_dh_secret_key
 from linotp.lib.crypt import get_qrtoken_public_key
 from linotp.lib.pairing import generate_pairing_url
 from hmac import compare_digest
@@ -600,6 +601,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 raise Exception(_('Policy %s must have a value') %
                                 _(" or ").join(pairing_policies))
 
+            cert_id = get_pairing_certificate_id(realms=realms, user=user)
+
             # ------------------------------------------------------------------
 
             pairing_url = generate_pairing_url('qrtoken',
@@ -608,7 +611,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                                                callback_url=cb_url,
                                                callback_sms_number=cb_sms,
                                                otp_pin_length=otp_pin_length,
-                                               hash_algorithm=hash_algorithm)
+                                               hash_algorithm=hash_algorithm,
+                                               cert_id=cert_id)
 
             # ------------------------------------------------------------------
 
@@ -826,7 +830,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     def server_hmac_secret(self):
         """ the server hmac secret for this specific token """
 
-        server_secret_key = get_qrtoken_secret_key()
+        server_secret_key = get_qrtoken_dh_secret_key()
 
         # user public key is saved base64 encoded
 

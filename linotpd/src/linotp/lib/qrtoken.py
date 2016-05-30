@@ -33,7 +33,7 @@ from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.crypt import zerome
 from linotp.lib.error import ParameterError
-from linotp.lib.crypt import get_qrtoken_secret_key
+from linotp.lib.crypt import get_qrtoken_dh_secret_key
 
 # ------------------------------------------------------------------------------
 # Pairing logic
@@ -131,7 +131,7 @@ def decrypt_pairing_response(enc_pairing_response):
 
     # ----
 
-    secret_key = get_qrtoken_secret_key()
+    secret_key = get_qrtoken_dh_secret_key()
     ss = calc_dh(secret_key, R)
 
     # derive encryption key and nonce from the shared secret

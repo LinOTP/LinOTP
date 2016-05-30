@@ -237,6 +237,13 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The sms number the challenge response should '
                         'be send to'
                 },
+            'qrtoken_pairing_cert': {
+                'type': 'str',
+                'desc': 'Signifies the certificate id that should be used '
+                        'during pairing. If it is not set, the system will '
+                        'assume that pairing should be done without a '
+                        'certificate.'
+                },
             'support_offline': {
                 'type': 'set',
                 'value': ['qr', 'u2f'], # TODO: currently hardcoded

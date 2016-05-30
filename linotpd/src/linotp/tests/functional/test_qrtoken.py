@@ -34,6 +34,7 @@ from linotp.tests import TestController
 from linotp.lib.crypt import encode_base64_urlsafe
 from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.crypt import extract_tan
+from linotp.lib.crypt import dsa_to_dh_public
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Hash import SHA256
@@ -43,15 +44,17 @@ from base64 import b64encode
 
 log = logging.getLogger(__name__)
 
-FLAG_PAIR_SERIAL = 1 << 0
-FLAG_PAIR_CBURL = 1 << 1
-FLAG_PAIR_CBSMS = 1 << 2
-FLAG_PAIR_DIGITS = 1 << 3
-FLAG_PAIR_HMAC = 1 << 4
+FLAG_PAIR_PK = 1 << 0
+FLAG_PAIR_SERIAL = 1 << 1
+FLAG_PAIR_CBURL = 1 << 2
+FLAG_PAIR_CBSMS = 1 << 3
+FLAG_PAIR_DIGITS = 1 << 4
+FLAG_PAIR_HMAC = 1 << 5
 
 TYPE_QRTOKEN = 2
 QRTOKEN_VERSION = 0
 RESPONSE_VERSION = 0
+PAIRING_URL_VERSION = 1
 
 QRTOKEN_CT_FREE = 0
 QRTOKEN_CT_PAIR = 1
@@ -591,12 +594,13 @@ class TestQRToken(TestController):
         data_encoded = pairing_url[len('lseqr://pair/'):]
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack('<bbI', data[0:6])
-        server_public_key = data[6:6 + 32]
+        server_public_key_dsa = data[6:6 + 32]
+        server_public_key = dsa_to_dh_public(server_public_key_dsa)
 
         # validate protocol versions and type id
 
         self.assertEqual(token_type, TYPE_QRTOKEN)
-        self.assertEqual(version, RESPONSE_VERSION)
+        self.assertEqual(version, PAIRING_URL_VERSION)
 
         # ----------------------------------------------------------------------
 

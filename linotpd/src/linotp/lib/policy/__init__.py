@@ -3191,4 +3191,41 @@ def supports_offline(realms, token):
 
     return False
 
+
+def get_pairing_certificate_id(realms, user):
+    """
+    returns the certificate id that should be used
+    """
+    action_values = []
+    login = None
+    ret = None
+
+    if realms is None or len(realms) == 0:
+        realms = ['/:no realm:/']
+
+    action = 'qrtoken_pairing_cert'
+
+    params = {'scope': 'authentication',
+              'action': action}
+
+    for realm in realms:
+        params['realm'] = realm
+        if login:
+            params['user'] = login
+
+        policy = getPolicy(params)
+        action_value = getPolicyActionValue(policy, action,
+                                            is_string=True)
+        if action_value:
+            action_values.append(action_value)
+
+    if len(action_values) > 1:
+        for value in action_values:
+            if value != action_values[0]:
+                raise Exception('conflicting policy values %r found for '
+                                'realm set: %r' % (action_values, realms))
+    if action_values:
+        ret = action_values[0]
+
+    return ret
 # eof ##########################################################################

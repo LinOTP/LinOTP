@@ -40,6 +40,9 @@ import stat
 
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
+from pysodium import crypto_sign_keypair as gen_dsa_keypair
+from pysodium import sodium as c_libsodium
+from pysodium import __check as __libsodium_check
 
 ''' for the hmac algo, we have to check the python version '''
 import sys
@@ -58,6 +61,7 @@ import Cryptodome.Hash as CryptoHash
 from Cryptodome.Hash import HMAC
 from Cryptodome.Hash import SHA as SHA1
 from Cryptodome.Hash import SHA256
+from Cryptodome.Hash import SHA512
 from Cryptodome.Cipher import AES
 
 
@@ -809,14 +813,13 @@ def init_qrtoken_secret_key(config, cert_id='system'):
     """
 
     import linotp.lib.config
-    secret_key = os.urandom(32)
+
+    public_key, secret_key = gen_dsa_keypair()
     secret_key_entry = 'qrtokensk:' + base64.b64encode(secret_key)
 
     linotp.lib.config.storeConfig(key='QrTokenSecretKey.' + cert_id,
                                   val=secret_key_entry,
                                   typ='password')
-
-    public_key = calc_dh_base(secret_key)
 
     public_key_entry = 'qrtokenpk:' + base64.b64encode(public_key)
 
@@ -840,13 +843,13 @@ def get_qrtoken_secret_key(cert_id='system'):
         raise ConfigAdminError('Missing entry QrTokenSecretKey')
 
     if not secret_key_b64.startswith('qrtokensk:'):
-        raise ValidateError('Curve 25519 / QR secret key has an invalid '
+        raise ValidateError('QR secret key has an invalid '
                             'format. Must begin with \'qrtokensk:\'')
 
     secret_key = base64.b64decode(secret_key_b64[len('qrtokensk:'):])
-    if len(secret_key) != 32:
-        raise ValidateError('Curve 25519 / QR public key has an invalid '
-                            'format. Key must be 32 bytes long')
+    if len(secret_key) != 64:
+        raise ValidateError('QR secret key has an invalid '
+                            'format. Key must be 64 bytes long')
 
     return secret_key
 
@@ -873,6 +876,39 @@ def get_qrtoken_public_key(cert_id='system'):
                             'format. Key must be 32 bytes long')
 
     return public_key
+
+def dsa_to_dh_secret(dsa_secret_key):
+
+    out = ctypes.create_string_buffer(c_libsodium.crypto_scalarmult_bytes())
+    __libsodium_check(c_libsodium.crypto_sign_ed25519_sk_to_curve25519(
+                      out,
+                      dsa_secret_key))
+    return out.raw
+
+def dsa_to_dh_public(dsa_public_key):
+
+    out = ctypes.create_string_buffer(c_libsodium.crypto_scalarmult_bytes())
+    __libsodium_check(c_libsodium.crypto_sign_ed25519_pk_to_curve25519(
+                      out,
+                      dsa_public_key))
+    return out.raw
+
+def get_qrtoken_dh_secret_key():
+
+    """ transforms the qrtoken secret key (which is used for DSA) into
+    a Diffie-Hellman secret key """
+
+    dsa_secret_key = get_qrtoken_secret_key()
+    return dsa_to_dh_secret(dsa_secret_key)
+
+
+def get_qrtoken_dh_public_key():
+
+    """ transforms the qrtoken public key (which is used for DSA) into
+    a Diffie-Hellman public key """
+
+    dsa_public_key = get_qrtoken_public_key()
+    return dsa_to_dh_public(dsa_public_key)
 
 
 def extract_tan(signature, digits):

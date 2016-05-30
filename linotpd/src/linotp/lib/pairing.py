@@ -26,7 +26,9 @@
 
 import struct
 from linotp.lib.crypt import encode_base64_urlsafe
+from linotp.lib.crypt import get_qrtoken_secret_key
 from linotp.lib.error import InvalidFunctionParameter
+from pysodium import crypto_sign_detached
 
 """
 This module provides functions and constants for the generation of
@@ -38,16 +40,17 @@ please take a look into the appropriate token type lib (e.g. lib.qrtoken)
 # pairing constants (used for the low-level implementation in c)
 # ------------------------------------------------------------------------------
 
-PAIR_VERSION = 0
+PAIR_VERSION = 1
 
-FLAG_PAIR_SERIAL = 1 << 0
-FLAG_PAIR_CBURL = 1 << 1
-FLAG_PAIR_CBSMS = 1 << 2
-FLAG_PAIR_DIGITS = 1 << 3
-FLAG_PAIR_HMAC = 1 << 4
-FLAG_PAIR_COUNTER = 1 << 5
-FLAG_PAIR_TSTART = 1 << 6
-FLAG_PAIR_TSTEP = 1 << 7
+FLAG_PAIR_PK = 1 << 0
+FLAG_PAIR_SERIAL = 1 << 1
+FLAG_PAIR_CBURL = 1 << 2
+FLAG_PAIR_CBSMS = 1 << 3
+FLAG_PAIR_DIGITS = 1 << 4
+FLAG_PAIR_HMAC = 1 << 5
+FLAG_PAIR_COUNTER = 1 << 6
+FLAG_PAIR_TSTART = 1 << 7
+FLAG_PAIR_TSTEP = 1 << 8
 
 hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
 token_types = {'qrtoken': 2}
@@ -61,7 +64,8 @@ def generate_pairing_url(token_type,
                          callback_url=None,
                          callback_sms_number=None,
                          otp_pin_length=None,
-                         hash_algorithm=None):
+                         hash_algorithm=None,
+                         cert_id=None):
     """
     Generates a pairing url that should be sent to the client.
 
@@ -102,6 +106,9 @@ def generate_pairing_url(token_type,
         depends on the token type. qrtoken uses sha256 as default, while
         hotp/totp uses sha1.
 
+    :param cert_id: A certificate id that should be used during pairing.
+        default is None.
+
     The function can raise several exceptions:
 
     :raises InvalidFunctionParameter: If the string given in token_type
@@ -139,6 +146,8 @@ def generate_pairing_url(token_type,
 
     flags = 0
 
+    if cert_id is None:
+        flags |= FLAG_PAIR_PK
     if serial is not None:
         flags |= FLAG_PAIR_SERIAL
     if callback_url is not None:
@@ -172,7 +181,8 @@ def generate_pairing_url(token_type,
         raise InvalidFunctionParameter('server_public_key', 'Public key must '
                                        'be 32 bytes long')
 
-    data += server_public_key
+    if flags & FLAG_PAIR_PK:
+        data += server_public_key
 
     # --------------------------------------------------------------------------
 
@@ -229,6 +239,11 @@ def generate_pairing_url(token_type,
 
     # TODO: replace lseqr literal with global config value
     # or global constant
+
+    if cert_id is not None:
+        secret_key = get_qrtoken_secret_key(cert_id=cert_id)
+        server_sig = crypto_sign_detached(data, secret_key)
+        data += server_sig
 
     return 'lseqr://pair/' + encode_base64_urlsafe(data)
 
