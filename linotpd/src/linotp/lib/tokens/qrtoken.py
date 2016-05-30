@@ -48,6 +48,7 @@ from linotp.lib.crypt import encode_base64_urlsafe
 from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import InvalidFunctionParameter
+from linotp.lib.error import ParameterError
 from linotp.lib.crypt import get_qrtoken_secret_key
 from linotp.lib.crypt import get_qrtoken_public_key
 from linotp.lib.pairing import generate_pairing_url
@@ -407,9 +408,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # enforce max sizes specified by protocol
 
         if content_type == CONTENT_TYPE_FREE and len(utf8_message) > 511:
-            raise InvalidFunctionParameter('message', 'max string length '
-                                           '(encoded as utf8) is 511 for '
-                                           'content type FREE')
+            raise ParameterError('message (encoded as utf8) can only be 511 '
+                                 'characters long')
 
         elif content_type == CONTENT_TYPE_PAIRING and len(utf8_message) > 63:
             raise InvalidFunctionParameter('message', 'max string length '
