@@ -59,7 +59,7 @@
                             </tr>
                             <tr>
                                 <td>${_('message / data')}</td>
-                                <td><textarea cols="40" rows="6" id='challenge' name="data" class="required"> </textarea></td>
+                                <td><textarea cols="40" rows="6" maxlength="500" id='challenge' name="data" class="required"> </textarea></td>
                             </tr>
                             <tr>
                                 <td> </td>
