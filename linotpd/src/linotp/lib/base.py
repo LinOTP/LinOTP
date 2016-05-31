@@ -223,16 +223,9 @@ def set_defaults():
                value="120", typ=u"int",
                description=u"Time during which no new e-mail is sent out")
 
-    # 'QRChallengeValidityTime'
-    set_config(key=u"QRChallengeValidityTime",
-        value=u"600", typ=u"int",
-        description=u"Timeout for an open qr challenge")
-
-    # QRMaxChallenges
-    set_config(key=u"QRMaxChallenges",
-        value=u"3", typ=u"int",
-        description=u"Maximum open qr challenges")
-
+    set_config(key=u'OATHTokenSupport',
+        value=u"False", typ=u"bool",
+        description=u"support for hmac token in oath format")
 
 def setup_app(conf, conf_global=None, unitTest=False):
     '''

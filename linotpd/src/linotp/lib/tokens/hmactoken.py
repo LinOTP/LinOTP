@@ -654,20 +654,22 @@ class HmacTokenClass(TokenClass):
             except NoOtpAuthTokenException as exx:
                 log.warning("%r" % exx)
 
-            if user is not None:
-                try:
+            oath_support = getFromConfig('OATHTokenSupport', 'False') == 'True'
+            if oath_support:
+                if user is not None:
+                    try:
 
-                    oath_url = create_oathtoken_url(user.login, user.realm,
-                                                    otpkey, tok_type,
-                                                    serial=self.getSerial())
-                    response_detail["oathurl"] = {
-                           "order"      : '2',
-                           "description" : _("URL for OATH token"),
-                           "value" : oath_url,
-                           "img"   : create_img(oath_url, width=250)
-                           }
-                except Exception as ex:
-                    log.info('failed to set oath or google url: %r' % ex)
+                        oath_url = create_oathtoken_url(user.login, user.realm,
+                                                        otpkey, tok_type,
+                                                        serial=self.getSerial())
+                        response_detail["oathurl"] = {
+                               "order"      : '2',
+                               "description" : _("URL for OATH token"),
+                               "value" : oath_url,
+                               "img"   : create_img(oath_url, width=250)
+                               }
+                    except Exception as ex:
+                        log.info('failed to set oath or google url: %r' % ex)
 
         return response_detail
 
