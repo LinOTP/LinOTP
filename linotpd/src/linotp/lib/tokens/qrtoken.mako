@@ -33,13 +33,103 @@
 
 
 %if c.scope == 'config' :
+<script>
 
+/*
+ * 'typ'_get_config_val()
+ *
+ * this method is called, when the token config dialog is opened
+ * - it contains the mapping of config entries to the form id
+ * - according to the Config entries, the form entries will be filled
+ *
+ */
+function qr_get_config_val(){
+    var id_map = {};
+
+    id_map['QRTokenOtpLen'] = 'qrconfig_otplength';
+    id_map['QRMaxChallenges'] = 'qrconfig_max_challenges';
+    id_map['QRChallengeValidityTime'] = 'qrconfig_challenge_timeout';
+    var cert_id = $('#qrconfig_cert_id').val();
+    id_map['QrTokenPublicKey.' + cert_id] = 'qrconfig_pub_cert';
+
+    return id_map;
+
+}
+
+/*
+ * 'typ'_get_config_params()
+ *
+ * this method is called, when the token config is submitted
+ * - it will return a hash of parameters for system/setConfig call
+ *
+ */
+function qr_get_config_params(){
+
+    var url_params ={};
+
+    url_params['QRTokenOtpLen'] = $('#qrconfig_otplength').val();
+    url_params['QRMaxChallenges'] = $('#qrconfig_max_challenges').val();
+    url_params['QRChallengeValidityTime'] = $('#qrconfig_challenge_timeout').val();
+
+    return url_params;
+}
+
+</script>
 <form class="cmxform" id="form_qrtoken_config">
-<fieldset>
-	<legend>${_("QRToken Settings")}</legend>
-<table>
-</table>
-</fieldset>
+    <fieldset>
+        <legend>${_("QRToken Settings")}</legend>
+        <table>
+            <tr>
+                <td>
+                    <label for="qrconfig_max_challenges">
+                        ${_("Maximum concurrent challenges")}
+                    </label>
+                </td>
+                <td>
+                    <input class="required" type="number" name="qrconfig_max_challenges" id="qrconfig_max_challenges" class="text ui-widget-content ui-corner-all"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="qrconfig_challenge_timeout">
+                        ${_("Challenge Timeout")}
+                    </label>
+                </td>
+                <td>
+                    <input class="required" type="number" name="qrconfig_challenge_timeout" id="qrconfig_challenge_timeout" class="text ui-widget-content ui-corner-all"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="qrconfig_otplength">
+                        ${_("OTP length")}
+                    </label>
+                </td>
+                <td>
+                    <select name="qrconfig_potplength" id="qrconfig_otplength">
+                        <option value=6>${_("6 digits")}</option>
+                        <option value=8>${_("8 digits")}</option>
+                        <option value=10>${_("10 digits")}</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="qrconfig_cert_id">${_("Public key certificate")}</label>
+                </td>
+                <td>
+                    <input class="required" type="text" name="qrconfig_timeout" id="qrconfig_cert_id" value="system" disabled="true" placeholder="${_('certificate id')}" class="text ui-widget-content ui-corner-all"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <textarea disabled="true" name="qrconfig_pub_cert" id="qrconfig_pub_cert" rows="6" maxlength="400"></textarea>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
 </form>
 %endif
 
