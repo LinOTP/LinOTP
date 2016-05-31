@@ -130,6 +130,18 @@ def set_defaults():
         value=u"6", typ=u"int",
         description=u"The default len of the otp values")
 
+    set_config(key=u"QRTokenOtpLen",
+        value=u"8", typ=u"int",
+        description=u"The default len of the otp values")
+
+    set_config(key=u"QRChallengeValidityTime",
+        value=u"150", typ=u"int",
+        description=u"The default qrtoken time, a challenge is regarded as valid.")
+
+    set_config(key=u"QRMaxChallenges",
+        value=u"4", typ=u"int",
+        description=u"Maximum open qr token challenges")
+
     set_config(key=u"PrependPin",
         value=u"True", typ=u"bool",
         description=u"is the pin prepended - most cases")

@@ -551,7 +551,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------
 
         if 'otplen' not in params:
-            params['otplen'] = getFromConfig("QRTokenDefault.otplen", 8)
+            params['otplen'] = getFromConfig("QRTokenOtpLen", 8)
 
         # -------------------------------------------------------------- --
 
