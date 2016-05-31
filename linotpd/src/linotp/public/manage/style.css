@@ -529,3 +529,36 @@ label.error {
 	overflow: auto;
     height: 100%;
 }
+
+.flexigrid div.hDiv th.thOver div,
+.flexigrid div.hDiv th.sorted.thOver div {
+	border-bottom: none;
+	padding-bottom: none;
+}
+
+.flexigrid div.hDiv {
+	background: #F0F0F0;
+	border-bottom: 1px solid #ccc;
+}
+
+.flexigrid div.hDiv th.sorted {
+	background: #DDDDDD;
+}
+
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+	background: #eee!important;
+}
+
+.ui-state-active, 
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active {
+	background: white!important;
+}
+
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover {
+	background: #E1E1E1!important;
+}
