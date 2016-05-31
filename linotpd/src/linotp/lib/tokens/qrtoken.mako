@@ -381,6 +381,7 @@ function self_qrtoken_activate_submit_result() {
     } catch (e) {
         alert(e);
     }
+    showTokenlist();
 }
 
 function self_qrtoken_activate_switch_phase(phase) {
