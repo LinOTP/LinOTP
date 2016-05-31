@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/python2 -i
 
 import sys
 import requests
