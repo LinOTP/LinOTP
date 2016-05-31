@@ -368,10 +368,12 @@ function self_qrtoken_activate_get_challenge() {
 
     try {
         var data = clientUrlFetchSync(url, params);
-        if ( typeof (data) == "object") {
-            var err = data.result.error.message;
-            alert(err);
+        if ( data.responseJSON !== undefined ) {
+            self_alert_box({'title':i18n.gettext("Token activation failed"),
+                   'text': i18n.gettext("QRToken challenge for token activation could not be triggered."),
+                   'escaped': true});
         } else {
+            data = data.responseText;
             var img = $(data).find('#challenge_qrcode');
             $(targetselector).html(img);
 
@@ -400,8 +402,8 @@ function self_qrtoken_activate_submit_result() {
     var url = '/validate/check_t';
 
     try {
-        var resp = clientUrlFetchSync(url, params);
-        var data = jQuery.parseJSON(resp);
+        var data = clientUrlFetchSync(url, params).responseJSON;
+
         if ( data.result.status === false || data.result.value.value === false) {
             self_alert_box({'title':i18n.gettext("QRToken Activation"),
                    'text': i18n.gettext("QRToken activation failed."),

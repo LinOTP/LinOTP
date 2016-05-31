@@ -152,7 +152,7 @@ function clientUrlFetchSync(myUrl, params) {
         data : params,
         async : false,
         type : 'POST',
-    }).responseText;
+    });
 
     return resp;
 }
