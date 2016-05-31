@@ -325,9 +325,11 @@ class BaseController(WSGIController):
         l_config = initLinotpConfig()
 
         # initialize the elliptic curve secret + public key for the qr token
-        linotpQrTokenSecretKey = l_config.get('QrTokenSecretKey', False)
-        if not linotpQrTokenSecretKey:
-            init_qrtoken_secret_key(l_config)
+        if first_run:
+            linotpQrTokenSecretKey = l_config.get('QrTokenSecretKey.system',
+                                                  False)
+            if not linotpQrTokenSecretKey:
+                init_qrtoken_secret_key(l_config, cert_id='system')
 
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:

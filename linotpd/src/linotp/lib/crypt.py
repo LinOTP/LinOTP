@@ -802,7 +802,7 @@ def zerome(bufferObject):
     return
 
 
-def init_qrtoken_secret_key(config):
+def init_qrtoken_secret_key(config, cert_id='system'):
     """
     create an elliptic curve secret + public key pair and
     store it in the linotp config
@@ -812,7 +812,7 @@ def init_qrtoken_secret_key(config):
     secret_key = os.urandom(32)
     secret_key_entry = 'qrtokensk:' + base64.b64encode(secret_key)
 
-    linotp.lib.config.storeConfig(key='QrTokenSecretKey',
+    linotp.lib.config.storeConfig(key='QrTokenSecretKey.' + cert_id,
                                   val=secret_key_entry,
                                   typ='password')
 
@@ -820,21 +820,21 @@ def init_qrtoken_secret_key(config):
 
     public_key_entry = 'qrtokenpk:' + base64.b64encode(public_key)
 
-    linotp.lib.config.storeConfig(key='QrTokenPublicKey',
+    linotp.lib.config.storeConfig(key='QrTokenPublicKey.' + cert_id,
                                   val=public_key_entry)
 
     return
 
 
-def get_qrtoken_secret_key():
+def get_qrtoken_secret_key(cert_id='system'):
     """
     reads the config entry 'enclinotp.QrTokenSecretKey',
     extracts and decodes the secret key and returns it as a 32 bytes.
     """
     import linotp.lib.config
 
-    secret_key_b64 = linotp.lib.config.getFromConfig('enclinotp.'
-                                                     'QrTokenSecretKey')
+    secret_key_b64 = linotp.lib.config.getFromConfig(
+                        'enclinotp.QrTokenSecretKey.' + cert_id)
 
     if not secret_key_b64:
         raise ConfigAdminError('Missing entry QrTokenSecretKey')
@@ -851,14 +851,15 @@ def get_qrtoken_secret_key():
     return secret_key
 
 
-def get_qrtoken_public_key():
+def get_qrtoken_public_key(cert_id='system'):
     """
     reads the config entry 'linotp.QrTokenPublicKey',
     extracts and decodes the public key and returns it as a 32 bytes.
     """
     import linotp.lib.config
 
-    public_key_b64 = linotp.lib.config.getFromConfig('QrTokenPublicKey')
+    public_key_b64 = linotp.lib.config.getFromConfig(
+                                'QrTokenPublicKey.' + cert_id)
     if not public_key_b64:
         raise ConfigAdminError('Missing entry QrTokenPublicKey')
 
