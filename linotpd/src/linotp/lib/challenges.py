@@ -191,7 +191,7 @@ class Challenges(object):
                     challenge_obj.save()
                 else:
                     transactionid = ''
-                    reason = message
+                    reason = Exception(message)
 
         except Exception as exce:
             reason = exce
@@ -215,7 +215,7 @@ class Challenges(object):
         if reason is not None:
             message = "%r" % reason
             log.error("Failed to create or init challenge %r " % reason)
-            raise Exception(reason)
+            raise reason
 
         # prepare the response for the user
         if transactionid is not None:
