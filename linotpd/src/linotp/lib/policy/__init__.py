@@ -2113,9 +2113,13 @@ def _checkSystemPolicyPre(method, param={}, authUser=None, user=None):
         'checkPolicy': "read",
         'delPolicy': 'write',
         'setSupport': 'write',
+        'setProvider': 'write',
+        'setDefaultProvider': 'write',
+        'delProvider': 'write',
+        'getProvider': 'read',
         }
 
-    if not method in actions:
+    if method not in actions:
         log.error("an unknown method was passed in system: %s" % method)
         raise PolicyException(_("Failed to run checkPolicyPre. "
                               "Unknown method: %s") % method)

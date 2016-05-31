@@ -162,6 +162,14 @@ def getPolicyDefinitions(scope=""):
                         'token (in days).'},
             },
         'authentication': {
+            "email_provider": {
+                'type': 'str',
+                'desc': 'The email provider that should be used to '
+                        'send emails'},
+            "sms_provider": {
+                'type': 'str',
+                'desc': 'The sms provider that should be used to '
+                        'submit sms'},
             'trigger_sms': {
                 'type': 'bool',
                 'desc': 'should it be possible to trigger a sms challenge'
