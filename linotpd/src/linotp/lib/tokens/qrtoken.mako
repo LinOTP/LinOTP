@@ -240,19 +240,19 @@ ${_("Enroll your QRToken")}
 
 %if c.scope == 'selfservice.enroll':
 <script>
-	jQuery.extend(jQuery.validator.messages, {
-		required: "${_('required input field')}",
-		minlength: "${_('minimum length must be greater than {0}')}",
-		maxlength: "${_('maximum length must be lower than {0}')}",
-		range: '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}',
-	});
+    jQuery.extend(jQuery.validator.messages, {
+        required: "${_('required input field')}",
+        minlength: "${_('minimum length must be greater than {0}')}",
+        maxlength: "${_('maximum length must be lower than {0}')}",
+    });
 
 
 function self_qrtoken_get_param() {
 	var urlparam = {};
 
 	urlparam['type'] = 'qr';
-	urlparam['description'] = $('#qrtoken_desc').val();
+    urlparam['description'] = $('#qrtoken_desc').val();
+    urlparam['pin'] = $('#qrtoken_pin1').val();
 	return urlparam;
 }
 
@@ -261,7 +261,6 @@ function self_qrtoken_clear() {
 }
 
 function self_qrtoken_submit() {
-
 	var params =  self_qrtoken_get_param();
 	enroll_token( params );
 	return true;
@@ -275,20 +274,55 @@ function self_qrtoken_enroll_details(data) {
 $( document ).ready(function() {
     $('#button_enroll_qrtoken').click(function (e){
         e.preventDefault();
-        self_qrtoken_submit();
+        if($("#form_enroll_qrtoken").valid()){
+            self_qrtoken_submit();
+        }
+    });
+
+    $("#form_enroll_qrtoken").validate({
+        rules: {
+            qrtoken_pin1: {
+                required: true,
+                minlength: 3
+            },
+            qrtoken_pin2: {
+                equalTo: "#qrtoken_pin1"
+            }
+        }
     });
 });
 
 </script>
 <h1>${_("Enroll your QRToken")}</h1>
 <div id='enroll_qrtoken_form'>
-	<form class="cmxform">
+	<form class="cmxform" id="form_enroll_qrtoken">
 	<fieldset>
 		<table>
-			<tr>
-				<td><label id='qrtoken_desc_label2' for='qrtoken_desc'>${_("Token description")}</label></td>
-				<td><input id='qrtoken_desc' name='qrtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'/></td>
-			</tr>
+            <tr>
+                <td><label id='qrtoken_desc_label2' for='qrtoken_desc'>${_("Token description")}</label></td>
+                <td><input id='qrtoken_desc' name='qrtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'/></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <b>${_("Token PIN:")}</b>
+                </td>
+            </tr>
+            <tr>
+                <td class="description">
+                    <label for="qrtoken_pin1">${_("Enter PIN")}:</label>
+                </td>
+                <td>
+                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text" />
+                </td>
+            </tr>
+            <tr>
+                <td class="description">
+                    <label for="qrtoken_pin2">${_("Confirm PIN")}:</label>
+                </td>
+                <td>
+                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text" />
+                </td>
+            </tr>
         </table>
 	    <button class='action-button' id='button_enroll_qrtoken'>${_("enroll qrtoken")}</button>
     </fieldset>
