@@ -146,8 +146,14 @@ ${_("QRToken - challenge/response Token")}
  * this method is called, before the dialog is shown
  *
  */
-function qrtoken_enroll_setup_defaults(config, options){
-    qrtoken_clear_input_fields();
+function qr_enroll_setup_defaults(config, options){
+    qr_clear_input_fields();
+
+    if (options['otp_pin_random'] > 0) {
+        $(".qrtoken_pin_rows").hide();
+    } else {
+        $(".qrtoken_pin_rows").show();
+    }
 }
 
 /*
@@ -162,36 +168,64 @@ function qr_get_enroll_params(){
     var url = {};
     url['type'] = 'qrtan';
     url['description'] = $('#enroll_qrtan_desc').val();
-    url['hashlib'] = $('#qrtan_hash_algorithm').val();
+    if($('#qrtoken_pin1').val().length > 0) {
+        url['pin'] = $('#qrtoken_pin1').val();
+    }
+    url['otplen'] = $('#qrtoken_otplength').val();
 
     jQuery.extend(url, add_user_data());
 
-    qrtoken_clear_input_fields();
+    qr_clear_input_fields();
+
     return url;
 }
 
-function qrtoken_clear_input_fields() {
+function qr_clear_input_fields() {
     // Empty input fields for PINs and Keys
-    $('#enroll_qrtan_desc').val('')
-    $('#enroll_qrtan_desc').val('sha256')
+    $('#enroll_qrtoken_desc').val('${_("web ui generated")}')
+    $('#qrtoken_pin1').val('')
+    $('#qrtoken_pin2').val('')
 }
 </script>
 <hr>
 <table>
-<tr>
-	<td><label for="hash_algorithm">${_("Hash algorithm")}</label></td>
-	<td>
-	    <select name="hash_algorithm" id='qrtoken_hash_algorithm' >
-            	<option selected value="sha256">SHA256</option>
-            	<option value="sha512">SHA512</option>
-            	<option value="sha1">SHA1</option>
-    	    </select>
-	</td>
-</tr>
-<tr>
-    <td><label for="enroll_qrtoken_desc" id='enroll_qrtoken_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_qrtoken_desc" id="enroll_qrtoken_desc" value="webGUI_generated" class="text" /></td>
-</tr>
+    <tr>
+        <td><label for="enroll_qrtoken_desc">${_("Description")}</label></td>
+        <td><input type="text" name="enroll_qrtoken_desc" id="enroll_qrtoken_desc" class="text" /></td>
+    </tr>
+    <tr class="space">
+        <td>
+            <label for="qrtoken_pin1">${_("OTP Digits")}:</label>
+        </td>
+        <td>
+            <select name="qrtoken_otplength" id="qrtoken_otplength">
+                <option value=6>${_("6")}</option>
+                <option value=8>${_("8")}</option>
+                <option value=10>${_("10")}</option>
+            </select>
+        </td>
+    </tr>
+    <tr class="space qrtoken_pin_rows">
+        <th colspan="2">
+            ${_("Token PIN:")}
+        </th>
+    </tr>
+    <tr class="qrtoken_pin_rows">
+        <td class="description">
+            <label for="qrtoken_pin1">${_("Enter PIN")}:</label>
+        </td>
+        <td>
+            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text" />
+        </td>
+    </tr>
+    <tr class="qrtoken_pin_rows">
+        <td class="description">
+            <label for="qrtoken_pin2">${_("Confirm PIN")}:</label>
+        </td>
+        <td>
+            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text" />
+        </td>
+    </tr>
 </table>
 
 % endif
