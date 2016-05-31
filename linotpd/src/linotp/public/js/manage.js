@@ -5322,8 +5322,9 @@ function delete_sms_provider(provider){
                              'is_escaped': true});
 
         } else if (data.result.value == false) {
+            var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
             alert_box({'title': i18n.gettext('Failed to delete provider'),
-                       'text': escape(data.detail.message),
+                       'text': reason_text,
                        'type': ERROR,
                        'is_escaped': true});
 
@@ -5473,8 +5474,9 @@ function delete_email_provider(provider){
                              'is_escaped': true});
 
         } else if (data.result.value == false) {
+            var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
             alert_box({'title': i18n.gettext('Failed to delete provider'),
-                       'text': escape(data.detail.message),
+                       'text': reason_text,
                        'type': ERROR,
                        'is_escaped': true});
 
