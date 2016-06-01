@@ -301,13 +301,13 @@ def do_nagging(lic_info, nag_days=7):
     :param lic_info: the license info
     :return: boolean - True if nagging should be displayed
     """
-
     d_fmt = "%Y-%m-%d"
 
     # we start 7 days after download license was installed
     nag_offset = nag_days
 
-    if not (lic_info.license_type and lic_info.license_type == 'download'):
+    if not (lic_info.license_type and (lic_info.license_type == 'download' or
+                                       lic_info.license_type == 'demo')):
         return False
 
     # in case there is no duration definition in 'xx days' we do the nagging
