@@ -5551,7 +5551,7 @@ function resolver_file(name){
 function realm_modify(name) {
     var resolvers = get_resolvers();
     if (resolvers.length === 0) {
-        alert_box("Cannot " + (name.length === 0 ? "create" : "edit") + " a realm", "Please create a UserIdResolver first");
+        alert_box({ title: "Cannot " + (name.length === 0 ? "create" : "edit") + " a realm", text: "Please create a UserIdResolver first"});
     } else {
         realm_edit(name);
         realms_load();
