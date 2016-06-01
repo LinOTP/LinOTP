@@ -53,7 +53,7 @@ from linotp.model.meta import Session
 from linotp.model.meta import MetaData
 
 from linotp.lib.crypt import geturandom
-# from linotp.lib.crypt import encrypt, hash, SecretObj
+from linotp.lib.crypt import hash
 # from linotp.lib.crypt import encryptPin
 # from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import get_rand_digit_str

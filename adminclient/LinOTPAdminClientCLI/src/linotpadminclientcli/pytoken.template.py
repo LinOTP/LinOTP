@@ -67,7 +67,7 @@ def main():
 
     system = platform.system()
     if system == "Linux":
-	counter_file = os.path.join(os.getenv("HOME"), ".pytoken-counter")
+        counter_file = os.path.join(os.getenv("HOME"), ".pytoken-counter")
     elif system == "Windows":
         counter_file = os.path.join(os.getenv("HOMEDRIVE"), os.getenv("HOMEPATH"), "\pytoken-counter")
     else:

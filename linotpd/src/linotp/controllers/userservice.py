@@ -1352,7 +1352,7 @@ class UserserviceController(BaseController):
 
                 if ret1:
                         pparam = {'user.login': self.authUser.login,
-                                  'user.login': self.authUser.realm,
+                                  'user.realm': self.authUser.realm,
                                   'otpkey': otpkey,
                                   'serial': serial,
                                   'type': t_type,

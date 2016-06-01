@@ -125,7 +125,7 @@ class HttpRequest(Request):
         ssl_verify = (self.sysconfig.get("remote.verify_ssl_certificate",
                                          False) or False)
 
-        if isinstance(ssl_verify) in [str, unicode]:
+        if type(ssl_verify) in [str, unicode]:
             if ssl_verify.lower() == "true":
                 ssl_verify = True
             else:
