@@ -742,7 +742,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </script>
 
 
-<!------------------------ check policy ------------------------->
+<!-- ###################### check policy ####################### -->
 <div id="dialog_check_policy">
     <p>${_("Here you can check your policies.")}</p>
     <p>${_("You can enter the corresponding values and the system will check, if there is any matching policy for this scenario.")}</p>
@@ -780,7 +780,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
     }
 </script>
 
-<!------------------------ export token ------------------------------->
+<!-- ###################### export token ####################### -->
+
 
 <div id="dialog_export_token">
     <p>${_("Here you can export token information of the tokens you are allowed to view to a CSV file.")}</p>
@@ -797,7 +798,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     }
 </script>
 
-<!------------------------ export audit ------------------------------->
+<!-- ###################### export audit ####################### -->
 
 <div id="dialog_export_audit">
     <p>${_("Here you can export the audit information to a CSV file.")}</p>
