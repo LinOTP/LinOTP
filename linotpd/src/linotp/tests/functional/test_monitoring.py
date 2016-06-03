@@ -379,7 +379,7 @@ class TestMonitoringController(TestController):
 
     def test_userinfo_policy(self):
         # set policy:
-        policy_params = {'name': 'test_userinfo_poplicy',
+        policy_params = {'name': 'test_userinfo_policy',
                          'scope': 'monitoring',
                          'action': 'userinfo',
                          'user': '*',
@@ -397,5 +397,41 @@ class TestMonitoringController(TestController):
             'mymixrealm')
         self.assertEqual(mymixrealm.get('myOtherRes'), 8, response)
         self.assertEqual(mymixrealm.get('myDefRes'), 24, response)
+
+    def test_active_users(self):
+        # mydefrealm = mydefresolver
+        self.create_token(serial='0051', user='aἰσχύλος')
+        self.create_token(serial='0052', user='aἰσχύλος')
+        self.create_token(serial='0053', user='passthru_user1')
+        self.create_token(serial='0054', user='root')
+        self.create_token(serial='0055', user='susi')
+        self.create_token(serial='0056', user='susi')
+        self.create_token(serial='0057', user='shakespeare')
+        # myotherrealm = myotherresolver
+        self.create_token(serial='0058', user='max1@myotherrealm')
+        self.create_token(serial='0059', user='max2', realm='myotherrealm')
+        self.create_token(serial='0060', user='other_user', realm='myotherrealm')
+        self.create_token(serial='0061', user='other_user', realm='myotherrealm')
+        self.create_token(serial='0062', user='root', realm='myotherrealm')
+        # mymixrealm = both resolvers
+        self.create_token(serial='0063', user='root@myDefRes', realm='mymixrealm')
+        self.create_token(serial='0064', user='max1', realm='mymixrealm')
+
+        response = self.make_authenticated_request(
+            controller='monitoring', action='activeUsers', params={})
+        resp = json.loads(response.body)
+        self.assertEqual(
+            resp.get('result').get('value').get('total'), 9, response)
+        mydefrealm = resp.get('result').get('value').get('Realms').get(
+            'mydefrealm')
+        self.assertEqual(mydefrealm.get('myDefRes'), 5, response)
+        myotherrealm = resp.get('result').get('value').get('Realms').get(
+            'myotherrealm')
+        self.assertEqual(myotherrealm.get('myOtherRes'), 4, response)
+        mymixrealm = resp.get('result').get('value').get('Realms').get(
+            'mymixrealm')
+        self.assertEqual(mymixrealm.get('myOtherRes'), 2, response)
+        self.assertEqual(mymixrealm.get('myDefRes'), 0, response)
+
 
 # eof ########################################################################
