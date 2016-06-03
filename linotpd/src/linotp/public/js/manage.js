@@ -4977,7 +4977,8 @@ $(document).ready(function(){
             params: [{
                 name: 'realm',
                 value: new_realm
-            }]
+            }],
+            newp : 1
         });
         $('#user_table').flexReload();
         // remove the selected user display
@@ -5198,25 +5199,12 @@ $(document).ready(function(){
         }
     });
 
-
     fill_realms();
-
-    //$("#token_table").flexigrid();
-    //$("#user_table").flexigrid();
-    //$("#audit_table").flexigrid();
 
     // Log Div
     $("#logAccordion").accordion({
         fillSpace: true
     });
-    /*
-     $("#logAccordionResizer").resizable({
-     resize: function(){
-     $("#accordion").accordion("resize");
-     },
-     minHeight: 60
-     });
-     */
 
 
 });
