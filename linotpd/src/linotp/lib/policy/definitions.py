@@ -318,7 +318,10 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'Allow to see number of tokens in realms'},
             'userinfo': {
                 'type': 'bool',
-                'desc': 'Allow to get information on user-id-resolvers'}
+                'desc': 'Allow to get information on user-id-resolvers'},
+            'activeUsers': {
+                'type': 'bool',
+                'desc': 'Allow to get information on active user count'}
         },
         'reporting': {
             'token_total': {

@@ -366,7 +366,7 @@ class MonitoringController(BaseController):
             for a_realm in realms:
                 realm_info[a_realm] = monit_handler.resolverinfo(a_realm)
 
-            result[_('Realms')] = realm_info
+            result['Realms'] = realm_info
 
             Session.commit()
             return sendResult(response, result)
@@ -384,3 +384,68 @@ class MonitoringController(BaseController):
         finally:
             Session.close()
             log.debug('[resolvers] done')
+
+    def activeUsers(self):
+        """
+        method:
+            monitoring/activeUsers
+
+        description:
+            for each realm, display the resolvers and
+            the number of users which have at least one assigned active token
+            per resolver
+            the 'total' gives the number of all users, which are in an allowed
+            realm and own an active token
+            users are conted per resolver (not per realm), so if resolver is in
+            multiple realms and one user ons tokens in 2 realms, the user will
+            be counted only once
+
+        arguments:
+            * realms - optional: takes realms, only information on these realms
+                will be displayed
+        """
+        result = {}
+        try:
+            param = request.params
+            request_realms = param.get('realms', '').split(',')
+
+            monit_handl = MonitorHandler()
+
+            policies = getAdminPolicies('activeUsers', scope='monitoring')
+
+            realm_whitelist = []
+            if policies['active'] and policies['realms']:
+                realm_whitelist = policies.get('realms')
+
+            # if there are no policies for us, we are allowed to see all realms
+            if not realm_whitelist or '*' in realm_whitelist:
+                realm_whitelist = request_context['Realms'].keys()
+
+            realms = match_realms(request_realms, realm_whitelist)
+
+            realm_info = {}
+            for a_realm in realms:
+                realm_info[a_realm] = monit_handl.active_users_per_realm(a_realm)
+
+            result['Realms'] = realm_info
+            result['total'] = monit_handl.active_users_total(realms)
+
+            return sendResult(response, result)
+
+        except PolicyException as policy_exception:
+            log.exception(policy_exception)
+            Session.rollback()
+            return sendError(response, unicode(policy_exception), 1)
+
+        except Exception as exc:
+            log.exception(exc)
+            Session.rollback()
+            return sendError(response, exc)
+
+        finally:
+            Session.close()
+            log.debug('[resolvers] done')
+
+
+
+

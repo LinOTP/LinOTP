@@ -98,10 +98,6 @@ class MonitorHandler(object):
                               Realm.name == realm,
                               TokenRealm.token_id == Token.LinOtpTokenId),)
 
-        for realm in realms:
-            cond += (and_(TokenRealm.realm_id == Realm.id,
-                          Realm.name == realm,
-                          TokenRealm.token_id == Token.LinOtpTokenId),)
         # realm condition:
         r_condition = or_(*cond)
 
@@ -274,3 +270,57 @@ class MonitorHandler(object):
                     realmdict[key] += 1
 
         return realmdict
+
+    def active_users_per_realm(self, realm=None):
+        """
+        get the number of users which are assigned to an active token in total
+            or per realm and resolver
+        :param realm: name of realm
+        :return: dict with
+                keys: resolvernames
+                values: number of active token users
+        """
+        realminfo = context.get('Config').getRealms().get(realm)
+        resolver_specs = realminfo.get('useridresolver', '')
+        realmdict = {}
+
+        for resolver_spec in resolver_specs:
+            __, config_identifier = parse_resolver_spec(resolver_spec)
+            act_users_per_resolver = Session.query(Token)\
+                .join(TokenRealm)\
+                .join(Realm)\
+                .filter(and_(
+                            Token.LinOtpIsactive == True,
+                            Token.LinOtpIdResClass == resolver_spec,
+                            Realm.name == realm
+                ))\
+                .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver)
+
+            realmdict[config_identifier] = act_users_per_resolver.count()
+
+        return realmdict
+
+    def active_users_total(self, realmlist):
+        """
+        get the total number of users of active tokens
+        for all resolvers which are in allowed realms
+
+        users are counted per resolver, so if resolver is in more than one
+        realm, its uers will only be counted once
+
+        :param realmlist: list of (existing and allowed) realms
+        :return: number of users in allowed realms who own an active token
+        """
+        realm_cond = tuple()
+        for realm in realmlist:
+            realm_cond += (or_(Realm.name == realm),)
+
+        user_and_resolver = Session.query(Token)\
+            .join(TokenRealm)\
+            .join(Realm)\
+            .filter(or_(*realm_cond),
+                    and_(Token.LinOtpIsactive == True,
+                         Token.LinOtpIdResolver != ''))\
+            .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver, Token.LinOtpIdResClass)
+        all_server_total = user_and_resolver.count()
+        return all_server_total
