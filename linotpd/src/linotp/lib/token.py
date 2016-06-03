@@ -1294,7 +1294,7 @@ def get_token_type_list():
 
     except Exception as exx:
         log.exception('get_token_type_list failed! %r', exx)
-        raise TokenAdminError("get_token_type_list failed:  %r", exx, id=1611)
+        raise TokenAdminError('get_token_type_list failed:  %r' % exx, id=1611)
 
     token_type_list = tokenclasses.keys()
     return token_type_list

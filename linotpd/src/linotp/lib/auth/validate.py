@@ -435,7 +435,7 @@ class ValidationHandler(object):
             if servers:
                 if 'radius://' in servers:
                     rad = RadiusRequest(servers=servers)
-                    res, opt = rad.do_request(servers, user, passw, options)
+                    res, opt = rad.do_request(user, passw, options)
                     return res, opt
                 elif 'http://' in servers or 'https://' in servers:
                     http = HttpRequest(servers=servers)

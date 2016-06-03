@@ -337,9 +337,7 @@ class OcraTest(TestController):
                 ]
               },
 
-              { 'ocrasuite': 'OCRA-1:HOTP-SHA512-8:C-QN08',
-                'key': key64,
-                'keyh': key64h,
+              {'ocrasuite': 'OCRA-1:HOTP-SHA512-8:C-QN08',
                 'key': key64,
                 'keyh': key64h,
                 'vectors': [

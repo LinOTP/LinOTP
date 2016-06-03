@@ -343,8 +343,6 @@ class OcraTest(TestController):
              {'ocrasuite': 'OCRA-1:HOTP-SHA512-8:C-QN08',
               'key': key64,
               'keyh': key64h,
-              'key': key64,
-              'keyh': key64h,
               'vectors': [
                   {'params': {'C': '00000', 'Q': '00000000'},
                    'result': '07016083'},

@@ -225,7 +225,8 @@ def generate_pairing_url(token_type,
             HASH_ALGO = hash_algorithms[hash_algorithm]
         except KeyError:
             allowed_values = ", ".join(hash_algorithms.keys())
-            raise InvalidFunctionParameter('Unsupported hash algorithm %s, '
+            raise InvalidFunctionParameter('hash_algorithm',
+                                           'Unsupported hash algorithm %s, '
                                            'allowed values are %s' %
                                            (hash_algorithm, allowed_values))
         data += struct.pack('<b', HASH_ALGO)
