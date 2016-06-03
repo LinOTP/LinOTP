@@ -115,8 +115,6 @@ a.close_all {
 }
 
 .flexigrid {
-	overflow: initial;
-	position: initial;
 	padding-top: .8em;
 }
 
