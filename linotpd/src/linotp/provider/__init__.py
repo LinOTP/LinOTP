@@ -519,7 +519,26 @@ def _load_provider_class(provider_Class):
     provider_class_obj = provider_registry.get(provider_class)
 
     if provider_class_obj is None:
-        raise Exception("Unknown provider class: Identifier was %s" %
+
+        if '.' not in provider_class:
+            raise Exception("Unknown provider class: Identifier was %s" %
+                        provider_class)
+
+        # if there is no entry in the registry we try to fall back to
+        # the old style of loading a module definition
+
+        try:
+
+            packageName, _, className = provider_class.rpartition('.')
+            mod = __import__(packageName, globals(), locals(), [className])
+            provider_class_obj = getattr(mod, className)
+
+        except ImportError as err:
+            raise Exception("Unknown provider class: Identifier was %s" %
+                        provider_class)
+
+        except AttributeError as err:
+            raise Exception("Unknown provider class: Identifier was %s" %
                         provider_class)
 
     if not hasattr(provider_class_obj, "submitMessage"):

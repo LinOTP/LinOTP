@@ -1834,7 +1834,8 @@ class SystemController(BaseController):
             res = getProvider(provider_type, provider_name)
 
             c.audit['success'] = len(res) > 0
-            c.audit['info'] = provider_name
+            if provider_name:
+                c.audit['info'] = provider_name
 
             Session.commit()
             return sendResult(response, res, 1)
