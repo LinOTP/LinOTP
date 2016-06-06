@@ -187,7 +187,10 @@ class TestQRToken(TestController):
         self.tan_length = 8
 
     def tearDown(self):
-
+        self.delete_all_policies()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+        self.delete_all_token()
         super(TestQRToken, self).tearDown()
 
 # ------------------------------------------------------------------------------
