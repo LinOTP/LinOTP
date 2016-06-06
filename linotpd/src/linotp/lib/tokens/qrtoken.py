@@ -543,6 +543,45 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         # ------------------------------------------------------------------
 
+        # we check if callback policies are set. this must be done here
+        # because the token gets saved directly after the update method
+        # in the TokenHandler
+
+        _ = context['translate']
+
+        owner = get_token_owner(self)
+        if owner and owner.login and owner.realm:
+            realms = [owner.realm]
+        else:
+            realms = self.getRealms()
+
+        pairing_policies = ['qrtoken_pairing_callback_url',
+                            'qrtoken_pairing_callback_sms']
+
+        cb_url = get_single_auth_policy(pairing_policies[0],
+                                        user=owner, realms=realms)
+        cb_sms = get_single_auth_policy(pairing_policies[1],
+                                        user=owner, realms=realms)
+
+
+        if not cb_url and not cb_sms:
+            raise Exception(_('Policy %s must have a value') %
+                            _(" or ").join(pairing_policies))
+
+        challenge_policies = ['qrtoken_challenge_callback_url',
+                              'qrtoken_challenge_callback_sms']
+
+        cb_url = get_single_auth_policy(challenge_policies[0],
+                                        user=owner, realms=realms)
+        cb_sms = get_single_auth_policy(challenge_policies[1],
+                                        user=owner, realms=realms)
+
+        if not cb_url and not cb_sms:
+            raise Exception(_('Policy %s must have a value') %
+                            _(" or ").join(pairing_policies))
+
+        # ------------------------------------------------------------------
+
         # we set the the active state of the token to False, because
         # it should not be allowed to use it for validation before the
         # pairing process is done
@@ -592,14 +631,14 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
             pairing_policies = ['qrtoken_pairing_callback_url',
                                 'qrtoken_pairing_callback_sms']
+
+            # it is guaranteed, that either cb_url or cb_sms has a value
+            # because we checked it in the update method
+
             cb_url = get_single_auth_policy(pairing_policies[0],
                                             user=owner, realms=realms)
             cb_sms = get_single_auth_policy(pairing_policies[1],
                                             user=owner, realms=realms)
-
-            if not cb_url and not cb_sms:
-                raise Exception(_('Policy %s must have a value') %
-                                _(" or ").join(pairing_policies))
 
             cert_id = get_pairing_certificate_id(realms=realms, user=user)
 
@@ -766,7 +805,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         owner = get_token_owner(self)
         if owner and owner.login and owner.realm:
             realms = [owner.realm]
-            user = owner
         else:
             realms = self.getRealms()
 
