@@ -237,12 +237,19 @@ class DefaultSecurityModule(SecurityModule):
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)
         output = aes.decrypt(input)
-        eof = output.rfind('\x01\x02')
-        if eof >= 0:
-            output = output[:eof]
+
+        eof = len(output) - 1
+        if eof == -1:
+            raise Exception('invalid encoded secret!')
+
+        while output[eof] == '\0':
+            eof -= 1
+
+        if output[eof-1:eof+1] != '\x01\x02':
+            raise Exception('invalid encoded secret!')
 
         # convert output from ascii, back to bin data
-        data = binascii.a2b_hex(output)
+        data = binascii.a2b_hex(output[:eof-1])
 
         if self.crypted == False:
             zerome(key)
