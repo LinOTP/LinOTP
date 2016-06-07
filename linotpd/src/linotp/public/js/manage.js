@@ -811,6 +811,12 @@ function load_token_config() {
         }
     );
 
+    // reset form validation
+    $('#tab_token_settings div form').each(function(){
+        var validator = $(this).validate();
+        validator.resetForm();
+    })
+
     // might raise an error, which must be catched by the caller
     $systemConfig = get_server_config();
 
@@ -825,22 +831,30 @@ function load_token_config() {
             }
 
             for (var key in l_params) {
+                var elem = $('#'+l_params[key]);
                 if (key in $systemConfig) {
                     try{
-                        var input_id = '#'+l_params[key];
-                        if(key.startsWith("Default")){
-                            console.log();
-                        }
-                        if($(input_id).is(":checkbox")) {
+                        if(elem.is(":checkbox")) {
                             var checked = $systemConfig[key].toLowerCase() == "true";
-                            $(input_id).prop('checked', checked);
+                            elem.prop('checked', checked);
                         }
                         else {
-                            $(input_id).val( $systemConfig[key] );
+                            elem.val( $systemConfig[key] );
                         }
                     } catch(err) {
                         //console_log('error ' + err + "  " + key + ": " + l_params[key] + '  ' + 'not found!')
                     }
+                }
+                else if(elem.is("select")) {
+                    var defaultselected = $("option:first", elem).val();
+                    // check if a different than the first option is default
+                    $("option", elem).each(function(){
+                        if(this.defaultSelected){
+                            defaultselected = $(this).val();
+                            return false;
+                        }
+                    });
+                    elem.val(defaultselected);
                 }
             }
         }
@@ -4388,40 +4402,58 @@ $(document).ready(function(){
                     else
                     {
                         save_token_config();
+                        dialog_force_close = true;
                         $(this).dialog('close');
                     }
                 },
                 id: "button_token_save",
                 text:"Save Token config"
                 },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            Cancel: {
+                click: function(){
+                    $dialog_token_config.dialog('close');
                 },
                 id: "button_token_cancel",
                 text: "Cancel"
-                }
+            }
         },
         open: function(event, ui) {
+
+            load_token_config();
+
             /**
-             * we reset all labels to not contain the leadin star, which shows
+             * we reset all tab labels to not contain the leading star, which shows
              * something has changed before
              */
-            var selectTag = $('#tab_token_settings');
-            selectTag.find('li').each( function()
-            {
-                var a_ref = $(this).find("a");
-                var label = a_ref.text();
-                label = label.replace("* ","");
-                a_ref.text(label);
+            var tabs = $('#tab_token_settings li a').each( function() {
+                var label = $(this).text().replace("* ","");
+                $(this).text(label);
             });
-            /* clean up the array, so that it contains no token changed info*/
-            $token_config_changed.splice(0,$token_config_changed.length);
+
+            $token_config_changed = [];
+            dialog_force_close = false;
 
             /* sort token config tabs */
             sortChildsOfElement("#token_tab_index");
 
             do_dialog_icons();
             translate_token_settings();
+        },
+        beforeClose: function(event, ui) {
+            if (dialog_force_close != true && $token_config_changed.length  !== 0) {
+                        var dialog_name = i18n.gettext("Token Config");
+                        var defer = confirm_cancel_dialog(dialog_name);
+
+                        // if dialog should really be closed, do it!
+                        defer.done(function(){
+                            dialog_force_close = true;
+                            $dialog_token_config.dialog('close');
+                        });
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
         }
     });
     $('#tab_token_settings').tabs();
@@ -4744,8 +4776,7 @@ $(document).ready(function(){
     });
 
     $('#menu_token_config').click(function(){
-    try {
-          load_token_config();
+        try {
           $dialog_token_config.dialog('open');
         } catch (error) {
           alert_box({'title': '',
@@ -6037,6 +6068,39 @@ function check_for_resolver_name_change(defer, new_resolver_name){
         defer.resolve("true");
     }
 
+    return defer.promise();
+}
+
+function confirm_cancel_dialog(dialogname){
+    var defer = $.Deferred();
+    var text = '<div style="text-align: center"><br/>' +
+                i18n.gettext('The') +
+                ' ' + dialogname + ' ' +
+                i18n.gettext('dialog contains unsaved changes.') + '<br/><br/>' +
+                i18n.gettext('Do you really want to close the dialog?') +
+                '</div>';
+
+    $(text).dialog({
+        title: i18n.gettext("Abort Changes"),
+        width: 500,
+        modal: true,
+        buttons: [
+            {
+                text: i18n.gettext("yes"),
+                click: function() {
+                    defer.resolve("true");
+                    $( this ).dialog( "close" );
+                }
+            },
+            {
+                text: i18n.gettext("no"),
+                click: function() {
+                    defer.reject("false");
+                    $( this ).dialog( "close" );
+                }
+            }
+        ]
+    });
     return defer.promise();
 }
 
