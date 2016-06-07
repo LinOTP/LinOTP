@@ -256,7 +256,6 @@ function assign() {
             }
         } // end of else
     }
-    showTokenlist();
     return false;
 }
 
@@ -301,7 +300,6 @@ function token_call(formid, params) {
     } else {
         alert(i18n.gettext("Form data not valid."));
     }
-    showTokenlist();
     return false;
 
 }
@@ -380,7 +378,6 @@ function enroll_token(params) {
         alert(i18n.gettext("Failed to enroll token: ") + escape(data.result.error.message));
     };
 
-
     showTokenlist();
     return false;
 
@@ -394,7 +391,6 @@ function reset_failcounter() {
     var data = run_sync_request("/userservice/reset", params);
     if (data.result.status == true) {
         alert(i18n.gettext("Failcounter resetted successfully"));
-        showTokenlist();
         $('.selectedToken').val("");
     } else {
         alert(i18n.gettext("Failed to reset failcounter!\n") + escape(data.result.error.message));
@@ -470,7 +466,6 @@ function getotp() {
         } else {
             alert(i18n.gettext("Error getting otp values") + ":\n" + escape(data.result.value.error));
         }
-        showTokenlist();
         $('.selectedToken').val("");
     } else {
         alert(i18n.gettext("Error getting otp values") + ":\n" + escape(data.result.error.message));
@@ -517,7 +512,6 @@ function provisionOath() {
         if (data.result.value.init == true) {
             // The token was successfully initialized and we will display the url
             showTokenlist();
-            //$('#oath_info').hide();
             var url = data.result.value.oathtoken.url;
             var img = data.result.value.oathtoken.img;
             $('#oath_link').attr("href", url);
@@ -547,8 +541,6 @@ function provisionOcra() {
     if (data.result.status == true) {
         if (data.result.value.activate == true) {
             // The token was successfully initialized and we will display the url
-            showTokenlist();
-            // console_log(data.result.value)
             var img = data.result.value.ocratoken.img;
             var url = data.result.value.ocratoken.url;
             var trans = data.result.value.ocratoken.transaction;
@@ -584,10 +576,10 @@ function finishOcra() {
     if (data.result.status == true) {
         // The token was successfully initialized and we will display the url
         // if not (false) display an ocra_finish_fail message for retry
-        showTokenlist();
         if (data.result.value.result == false) {
             alert(ocra_finish_fail);
         } else {
+            showTokenlist();
             alert(String.sprintf(ocra_finish_ok, serial));
             $('#qr_completed').show();
             $('#qr_finish').hide();
@@ -611,9 +603,9 @@ function provisionGoogle() {
     var data = run_sync_request("/userservice/webprovision", params);
     if (data.result.status == true) {
         if (data.result.value.init == true) {
-            showTokenlist();
             // The token was successfully initialized and we will display the url
             //var qr_code = generate_qrcode(10, data.result.value.oathtoken.url);
+            showTokenlist();
             var url = data.result.value.oathtoken.url;
             var img = data.result.value.oathtoken.img;
             $('#google_link').attr("href", url);
