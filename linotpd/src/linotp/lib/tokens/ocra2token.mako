@@ -398,8 +398,6 @@ function provisionOcra2() {
 		if (data.result.status == true) {
 			if (data.result.value.activate == true) {
 				// The token was successfully initialized and we will display the url
-				showTokenlist();
-				// console_log(data.result.value)
 				var img = data.result.value.ocratoken.img;
 				var url = data.result.value.ocratoken.url;
 				var trans = data.result.value.ocratoken.transaction;
@@ -442,10 +440,10 @@ function finishOcra2() {
 		if (data.result.status == true) {
 			// The token was successfully initialized and we will display the url
 			// if not (false) display an ocra_finish_fail message for retry
-			showTokenlist();
 			if (data.result.value.result == false) {
 				alert(escape(ocra_finish_fail));
 			} else {
+				showTokenlist();
 				alert(escape(String.sprintf(ocra_finish_ok, serial)));
 				$('#qr2_completed').show();
 				$('#qr2_finish').hide();
@@ -457,10 +455,7 @@ function finishOcra2() {
 			alert("Failed to enroll token!\n" + escape(data.result.error.message));
 		}
 	});
-
 }
-
-
 
 	$('#qr2_finish').hide();
 	$('#qr2_completed').hide();
@@ -469,7 +464,4 @@ function finishOcra2() {
 	$('#ocra2_check').removeAttr("disabled");
 	$('#activationcode2').removeAttr("disabled");
 </script>
-
-
-
 % endif

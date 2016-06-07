@@ -194,7 +194,6 @@ class SelfserviceController(BaseController):
 
             c.user = self.authUser.login
             c.realm = self.authUser.realm
-            c.tokenArray = getTokenForUser(self.authUser)
 
             # only the defined actions should be displayed
             # - remark: the generic actions like enrollTT are allready approved
@@ -492,6 +491,7 @@ class SelfserviceController(BaseController):
         '''
         This returns a tokenlist as html output
         '''
+        c.tokenArray = getTokenForUser(self.authUser)
         res = render('/selfservice/tokenlist.mako')
         return res
 
