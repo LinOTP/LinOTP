@@ -957,7 +957,7 @@ def get_authenticated_user(username, realm, password=None,
     :param realm: the realm, where the user belongs to
     :param password: the to be checked userstore password
     :param realm_box: take the information, if realmbox is displayed
-    :parm authenticate: for the selftest, we skip the authentication
+    :param authenticate: for the selftest, we skip the authentication
 
     :return: None or authenticated user object
     '''
@@ -974,8 +974,6 @@ def get_authenticated_user(username, realm, password=None,
 
     users = []
     uid = None
-    resolver = None
-    resolverC = None
 
     # if we have an realmbox, we take the user as it is
     # - the realm is always given
@@ -1005,59 +1003,50 @@ def get_authenticated_user(username, realm, password=None,
                 user = User(u_name, u_realm, "")
                 users.append(user)
 
-    identified_users = []
-    for user in users:
-        username = user.login
-        realm = user.realm
-        res = getResolversOfUser(user, use_default_realm=False)
-        if (len(res) != 1):
-            if (len(res) == 0):
-                log.info("The username %r exists in NO resolver within the "
-                          "realm %r." % (username, realm))
-            else:
-                log.info("The username %r exists in more than one resolver "
-                          "within the realm %r" % (username, realm))
-            continue
-
-        # we got one resolver, so lets check if user exists
-        (uid, resolver, resolverC) = getUserId(user)
-        identified_users.append((user, uid, resolver, resolverC))
-        log.info("the user resolves to %r" % uid)
-        log.info("The username is found within the resolver %r" % resolver)
-
-    ide_user = len(identified_users)
-    if ide_user != 1:
-        if ide_user > 1:
-            log.info("The username %s could not be identified uniquely" %
-                     username)
-        if ide_user == 0:
-            log.info("The username %s could not be found." % username)
-        return None
-
-    (user, uid, resolver, resolverC) = identified_users[0]
-    if not authenticate:
-        return user
-
     # Authenticate user
     auth_user = None
-    try:
-        (package, module, class_, conf) = splitResolver(resolverC)
-        module = package + "." + module
-        y = getResolverObject(resolverC)
+    identified_users = []
 
-        if  y.checkPass(uid, password):
-            log.debug("Successfully authenticated user %r." % username)
+    for user in users:
+        resolvers = []
+
+        username = user.login
+        realm = user.realm
+
+        realm_info = getRealms(user.realm)
+        if realm_info and realm in realm_info:
+            resolvers = realm_info.get(user.realm).get('useridresolver', [])
+
+        for resolver_spec in resolvers:
+
+            y = getResolverObject(resolver_spec)
+            if y is None:
+                log.error("[getResolversOfUser] [ module %r not found!]"
+                          % (module))
+                continue
+
+            uid = y.getUserId(user.login)
+            if not uid:
+                log.debug("user %r not in resolver %r." % (username,
+                                                           resolver_spec))
+                continue
+
+            if authenticate:
+                if y.checkPass(uid, password):
+                    log.debug("Successfully authenticated user %r." % username)
+                else:
+                    log.info("user %r failed to authenticate." % username)
+                    continue
+
             auth_user = user
-        else:
-            log.info("user %r failed to authenticate." % username)
+            break
 
-    except UserError as exx:
-        log.info("failed to verify the username: %s@%s" % (user.login,
-                                                           user.realm))
+        if auth_user:
+            break
 
     if not auth_user:
         log.error("Error while trying to verify the username: %s" % username)
 
     return auth_user
 
-#eof###########################################################################
+# eof #########################################################################
