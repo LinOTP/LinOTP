@@ -34,6 +34,7 @@ from pylons.i18n import LanguageError
 from pylons.controllers import WSGIController
 
 from pylons import tmpl_context as c
+from pylons import tmpl_context as request_context
 from pylons import config
 from pylons import request
 
@@ -419,6 +420,8 @@ class BaseController(WSGIController):
         """
 
         linotp_config = getLinotpConfig()
+
+        setattr(request_context,'userinfo',{})
 
         self.request_context = {}
         self.request_context['Config'] = linotp_config

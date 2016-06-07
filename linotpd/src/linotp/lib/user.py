@@ -27,6 +27,7 @@
 import logging
 import re
 import sys
+import base64
 
 from linotp.lib.error   import UserError
 from linotp.lib.util    import getParam
@@ -41,6 +42,7 @@ from linotp.lib.resolver import getResolverObject
 from linotp.lib.resolver import getResolverClassName
 from linotp.lib.resolver import getResolverList
 
+from pylons import tmpl_context as request_context
 
 from linotp.lib.realm import createDBRealm
 from linotp.lib.selftest import isSelfTest
@@ -878,6 +880,13 @@ def getUserInfo(userid, resolver, resolverC):
     if not(userid):
         return userInfo
 
+    uid = "%r@%r" % (base64.b64encode(userid),
+                     base64.b64encode(resolverC))
+
+    request_userinfo = request_context.userinfo
+    if uid in request_userinfo:
+        return request_userinfo[uid]
+
     try:
         (package, module, _class, _conf) = splitResolver(resolverC)
         module = package + "." + module
@@ -886,6 +895,8 @@ def getUserInfo(userid, resolver, resolverC):
         log.debug("[getUserInfo] Getting user info for userid "
                   ">%r< in resolver" % userid)
         userInfo = y.getUserInfo(userid)
+
+        request_userinfo[uid] = userInfo
 
     except Exception as e:
         log.exception("[getUserInfo][ module %r notfound! :%r ]" % (module, e))
