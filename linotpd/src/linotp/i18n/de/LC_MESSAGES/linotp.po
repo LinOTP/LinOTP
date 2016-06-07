@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2016-02-07 12:59+0100\n"
+"PO-Revision-Date: 2016-06-07 17:38+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -36,13 +36,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Generator: Gtranslator 2.91.6\n"
 
-#, python-format
-msgid ""
-"You do not have the rights to monitor these realms: %r. Check the policies!"
-msgstr ""
-"Sie haben keine Rechte die folgenden Realms zu monitoren %r. Überprüfen Sie "
-"die Richtlinien!"
+msgid "You do not have the rights to monitor these realms."
+msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
 
 msgid "Summary"
 msgstr "Zusammenfassung"
@@ -55,6 +52,39 @@ msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
 
 msgid "The name of the policy must not be empty"
 msgstr "Der Name der Richtlinie darf nicht leer sein."
+
+msgid "Thank you for your interest in our products."
+msgstr "Danke für Ihr Interesse an unseren Produkten."
+
+msgid ""
+"Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
+"in a few days. For licenses for productive use or an extended evaluation "
+"period, "
+msgstr ""
+"Ihre aktuelle Demo-Lizenz der LSE LinOTP Smart Virtual Appliance läuft nur "
+"noch wenige Tage. Für Lizenzen zum produktiven Einsatz, oder einen "
+"verlängerten Testzeitraum, "
+
+msgid "please contact us"
+msgstr "können Sie sich gerne mit uns in Verbindung setzen."
+
+msgid ""
+"If you have questions about our products or your evaluation we are happy to "
+"answer your inquiry. We would also like to learn about your feedback "
+"concerning our products and your evaluation."
+msgstr ""
+"Bei Fragen zu unseren Produkten oder unseren Preismodellen helfen wir gerne "
+"weiter. Wir freuen uns auch über Ihr Feedback zu unseren Produkten und Ihrer "
+"Teststellung."
+
+msgid "sales@lsexperts.de"
+msgstr "sales@lsexperts.de"
+
+msgid "Sales hotline: "
+msgstr "Vertriebs-Hotline: "
+
+msgid "+49 6151 86086 277"
+msgstr "+49 6151 86086 277"
 
 msgid "You are not authenticated"
 msgstr "Sie sind nicht authentisiert"
@@ -111,8 +141,8 @@ msgid ""
 "You do not have the administrative right to do monitoring.You are missing a "
 "policyscope=monitoring, action=%s"
 msgstr ""
-"Sie haben nicht die administrativen Rechte zum Monitoring. Es fehlt dazu eine "
-"Richtlinie mit 'scope=monitoring' und 'action=%s'."
+"Sie haben nicht die administrativen Rechte zum Monitoring. Es fehlt dazu "
+"eine Richtlinie mit 'scope=monitoring' und 'action=%s'."
 
 #, python-format
 msgid "The provided PIN is too short. It should be at least %i characters."
@@ -303,6 +333,11 @@ msgstr ""
 "Seriennummer über die OTP's zu identifizieren - überprüfen Sie ggf. die "
 "Richtlinien."
 
+msgid "Due to license restrictions no more tokens could be enrolled!"
+msgstr ""
+"Aufgrund von Lizenzrestriktionen können keine weiteren Tokens ausgerollt "
+"werden."
+
 #, python-format
 msgid "The tokentype '%s' could not be found."
 msgstr "Der Tokentype '%s' konnte nich gefunden werden."
@@ -423,8 +458,8 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to get the token owner in realm %s"
-"(%s)."
+"You do not have the administrative right to get the token owner in realm "
+"%s(%s)."
 msgstr ""
 "Sie haben nicht die administrativen Rechte zum Anzeigen der Token Besitzer "
 "im Realm %s(%s)."
@@ -545,6 +580,9 @@ msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
 
 msgid "Support not available, your product is unlicensed"
 msgstr "Keine Support Unterstüzung"
+
+msgid "License already installed!"
+msgstr "Lizenz bereits installiert!"
 
 msgid "license file is empty!"
 msgstr "Die Lizenzdatei ist leer!"
@@ -1339,6 +1377,9 @@ msgstr ""
 "Bitte geben Sie eine gültige LDAP URI ein, die mit http:// oder https:// "
 "anfängt."
 
+msgid "Please enter a timeout like: 5.0; 5.0 "
+msgstr "Bitte geben Sie einen Timeout wie folgt ein: 5.0; 5.0 "
+
 msgid ""
 "Please enter a valid searchfilter like this: (sAMAccountName=*)"
 "(objectClass=user)"
@@ -1351,8 +1392,8 @@ msgid ""
 "Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)"
 "(objectClass=user))"
 msgstr ""
-"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: (&"
-"(sAMAccountName=%s)(objectClass=user))"
+"Bitte geben sie einen gültigen LDAP Benutzer Suchfilter ein, wie: "
+"(&(sAMAccountName=%s)(objectClass=user))"
 
 msgid ""
 "Please enter a valid searchfilter like this: \n"
@@ -1448,6 +1489,9 @@ msgstr "Das Laden der Support- und Subskriptions-Datei ist fehlgeschlagen: "
 msgid "License upload"
 msgstr "Lizenz hochladen"
 
+msgid "License uploaded"
+msgstr "Lizenz hochgeladen"
+
 msgid "Invalid License"
 msgstr "ungültige Lizenz"
 
@@ -1487,6 +1531,12 @@ msgstr "Tokenrealm setzen"
 
 msgid "Please select the token first."
 msgstr "Bitte wählen Sie zunächst einen Token aus."
+
+msgid "No resolver selected"
+msgstr "Kein Resolver ausgewählt"
+
+msgid "Please select at least one resolver from the resolver list."
+msgstr "Bitte wählen Sie mindestens einen Resolver aus der Resolverliste aus."
 
 msgid "Close"
 msgstr "Schließen"
@@ -2143,6 +2193,12 @@ msgstr "Konfiguration speichern"
 
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
+
+msgid "Support Contact"
+msgstr "Support Kontakt"
+
+msgid "Ok"
+msgstr "OK"
 
 msgid "LSE LinOTP Support and Subscription"
 msgstr "LSE LinOTP Support und Subskription "
@@ -3621,9 +3677,6 @@ msgstr ""
 #~ msgid "Setting OTP PIN failed: %s"
 #~ msgstr "Setzen der Token PIN ist fehlgeschlagen: %s"
 
-#~ msgid "License is not valid!"
-#~ msgstr "Keine gültige Lizenz!"
-
 #~ msgid "License reminder: %r"
 #~ msgstr "Lizenz Erinnerung: %r"
 
@@ -3645,9 +3698,6 @@ msgstr ""
 #~ msgid "Expire"
 #~ msgstr "Ablaufdatum"
 
-#~ msgid "Support"
-#~ msgstr "Support"
-
 #~ msgid "LSE LinOTP Support"
 #~ msgstr "LSE LinOTP Support"
 
@@ -3656,9 +3706,6 @@ msgstr ""
 
 #~ msgid "For professional LinOTP support and enterprise subscription, "
 #~ msgstr "Zum Erwerb von "
-
-#~ msgid "feel free to contact "
-#~ msgstr "professionellen LinOTP Support und Subskription für Unternehmen"
 
 #~ msgid "for support agreement purchase."
 #~ msgstr "können Sie und gerne kontaktieren"
