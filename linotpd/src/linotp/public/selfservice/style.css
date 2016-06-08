@@ -284,14 +284,14 @@ div.ui-tabs {
 	background: #eee!important;
 }
 
-.ui-state-active, 
+.ui-state-active,
 .ui-widget-content .ui-state-active,
 .ui-widget-header .ui-state-active {
 	background: white!important;
 }
 
-.ui-state-hover,
-.ui-widget-content .ui-state-hover,
-.ui-widget-header .ui-state-hover {
+.ui-state-hover:not(.ui-state-active),
+.ui-widget-content .ui-state-hover:not(.ui-state-active),
+.ui-widget-header .ui-state-hover:not(.ui-state-active) {
 	background: #E1E1E1!important;
 }
