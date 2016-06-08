@@ -1986,7 +1986,7 @@ function http_resolver_https() {
      * If so, it displays the CA certificate entry field.
      */
     var http_uri = $('#http_uri').val();
-    if (http_uri.toLowerCase().match(/^lhttpss:/)) {
+    if (http_uri.toLowerCase().match(/^https:/)) {
         $('#http_resolver_certificate').show();
     } else {
         $('#http_resolver_certificate').hide();
@@ -3976,6 +3976,19 @@ $(document).ready(function(){
                         var r_name = $('#http_resolvername').val();
                         check_for_resolver_name_change(defer, r_name);
                     }
+                    else {
+                        // get error list
+                        var error = $("#form_httpconfig").validate().errorList[0];
+                        if(error !== undefined) {
+                            // open tab that contains the first faulty input if it is hidden in another tab
+                            var tab_id = $(error.element.closest(".ui-tabs-panel")).attr("id")
+                            if(tab_id !== undefined) {
+                                var index = $('#http_setting_tabs a[href="#' + tab_id + '"]').parent().index();
+                                $("#http_setting_tabs").tabs("option", "active", index);
+                            }
+                            $(error.element).focus();
+                        }
+                    }
 
                 },
                 id: "button_http_resolver_save",
@@ -5896,6 +5909,7 @@ function resolver_http(name){
 
 
     $("#form_httpconfig").validate({
+        ignore: "",
         rules: {
             http_uri: {
                 required: true,
