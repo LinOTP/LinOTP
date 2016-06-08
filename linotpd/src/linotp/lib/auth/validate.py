@@ -681,7 +681,7 @@ class ValidationHandler(object):
 
         # now we care for all involved tokens and their challenges
         for token in (valid_tokens + pin_matching_tokens +
-                      challenge_tokens + valid_tokens):
+                      challenge_tokens + invalid_tokens):
             expired, _valid = Challenges.get_challenges(token)
             if expired:
                 Challenges.delete_challenges(None, expired)
