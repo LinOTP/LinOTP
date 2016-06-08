@@ -58,8 +58,8 @@ from linotp.lib.context import request_context_safety
 
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error
-import linotp.model
-Session = linotp.model.Session
+import linotp.model.meta
+Session = linotp.model.meta.Session
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
