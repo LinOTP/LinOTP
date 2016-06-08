@@ -3650,7 +3650,9 @@ $(document).ready(function(){
             'Save': { click: function(){
                     if ($("#form_realmconfig").valid()) {
                         if (!g.resolvers_in_realm_to_edit.length) {
-                            alert_box("Cannot save realm", "Please select at least one UserIdResolver from the list");
+                            alert_box({'title': i18n.gettext("Cannot save realm"),
+                                        'text': i18n.gettext("Please select at least one UserIdResolver from the list"),
+                                        'is_escaped': true});
                             return;
                         }
                         /* first check if there is at least one resolver selected */
@@ -3993,14 +3995,20 @@ $(document).ready(function(){
                             var usr_msg = sprintf(i18n.gettext("Number of users found: %d"),userarray.length);
                             var msg = i18n.gettext("Connection Test: successful") +
                                       "<p>" + usr_msg + "</p><p class='hint'>" + limit + "</p>";
-                            alert_box(i18n.gettext("HTTP Connection Test"), msg);
+                            alert_box({'title': i18n.gettext("HTTP Connection Test"),
+                                        'text': msg,
+                                        'is_escaped': true});
                         }
                         else {
-                            alert_box("HTTP Test", obj.result.value.desc);
+                            alert_box({'title': i18n.gettext("HTTP Test"),
+                                        'text': obj.result.value.desc,
+                                        'is_escaped': true});
                         }
                     }
                     else {
-                        alert_box("HTTP Test", obj.result.error.message);
+                        alert_box({'title': i18n.gettext("HTTP Test"),
+                                        'text': obj.result.error.message,
+                                        'is_escaped': true});
                     }
                     return false;
                  });
@@ -4078,8 +4086,7 @@ $(document).ready(function(){
                     } else {
                         alert_box({'title': "SQL Test",
                                    'text' : escape(obj.result.error.message),
-                                   'is_escaped': true,
-                                   });
+                                   'is_escaped': true});
                     }
                     return false;
                  });
@@ -4382,8 +4389,7 @@ $(document).ready(function(){
                         alert_box({'title': i18n.gettext("Form Validation Error"),
                                    'text': "text_form_validation_error1",
                                    'param':validation_fails,
-                                   'is_escaped': true
-                                   });
+                                   'is_escaped': true});
                     }
                     else
                     {
@@ -4914,8 +4920,7 @@ $(document).ready(function(){
             alert_box({'title': '',
                        'text': "text_catching_generic_error",
                        'param': escape(error),
-                       'is_escaped': true,
-                       });
+                       'is_escaped': true});
             return false;
         }
         // ajax call  w. callback//
@@ -5521,7 +5526,9 @@ function resolver_file(name){
 function realm_modify(name) {
     var resolvers = get_resolvers();
     if (resolvers.length === 0) {
-        alert_box({ title: "Cannot " + (name.length === 0 ? "create" : "edit") + " a realm", text: "Please create a UserIdResolver first"});
+        alert_box({'title': "Cannot " + (name.length === 0 ? "create" : "edit") + " a realm",
+                    'text': "Please create a UserIdResolver first",
+                    'is_escaped': true});
     } else {
         realm_edit(name);
         realms_load();
@@ -5838,7 +5845,10 @@ function resolver_http(name){
                 resolver_set_http(data);
             } else {
                 // error reading resolver
-                alert_box("", "text_http_load_error", obj.result.error.message);
+                alert_box({'title': "",
+                            'text': "text_http_load_error",
+                            'param': obj.result.error.message,
+                            'is_escaped': true});
             }
 
           });
