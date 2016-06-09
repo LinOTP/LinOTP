@@ -69,12 +69,13 @@ CHALLENGE_HAS_COMPRESSION = 1
 CHALLENGE_HAS_URL = 2
 CHALLENGE_HAS_SMS_NUMBER = 4
 CHALLENGE_HAS_SIGNATURE = 8
+CHALLENGE_SHOULD_RESET_URL = 16
 
 CONTENT_TYPE_FREE = 0
 CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_AUTH = 2
 
-QRTOKEN_VERSION = 0
+QRTOKEN_VERSION = 1
 
 
 def transaction_id_to_u64(transaction_id):
@@ -279,14 +280,14 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def create_challenge_url(self, transaction_id, content_type, message,
                              callback_url, callback_sms_number,
-                             use_compression=False):
+                             use_compression=False, reset_url=False):
         """
         creates a challenge url (looking like lseqr://chal/<base64string>)
         from a challenge dictionary as provided by Challanges.create_challenge
         in lib.challenge
 
         the version identifier of the challenge url is currently hardcoded
-        to 0.
+        to 1.
         """
 
         serial = self.getSerial()
@@ -377,6 +378,10 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             flags |= CHALLENGE_HAS_SMS_NUMBER
 
         if (content_type == CONTENT_TYPE_PAIRING):
+            flags |= CHALLENGE_HAS_SIGNATURE
+
+        if reset_url:
+            flags |= CHALLENGE_SHOULD_RESET_URL
             flags |= CHALLENGE_HAS_SIGNATURE
 
         #----------------------------------------------------------------------
@@ -795,8 +800,10 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         if self.current_state == 'pairing_response_received':
             content_type = CONTENT_TYPE_PAIRING
+            reset_url = True
         else:
             content_type = options.get('content_type')
+            reset_url = False
 
         message = options.get('data')
 
@@ -829,7 +836,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                                                             message,
                                                             callback_url,
                                                             callback_sms,
-                                                            compression)
+                                                            compression,
+                                                            reset_url)
 
         data = {'message': message, 'user_sig': user_sig}
 
