@@ -677,7 +677,7 @@ class ValidationHandler(object):
 
         # add to all tokens the last accessd time stamp
         linotp.lib.token.add_last_accessed_info(
-            [valid_tokens, pin_matching_tokens, challenge_tokens, valid_tokens])
+            [valid_tokens, pin_matching_tokens, challenge_tokens, invalid_tokens])
 
         # now we care for all involved tokens and their challenges
         for token in (valid_tokens + pin_matching_tokens +
