@@ -3502,9 +3502,10 @@ function tokenbuttons(){
 // =================================================================
 
 $(document).ready(function(){
-    // right after document loading we need to get the session an reload the realm box!
+    // right after document loading we need to get the session
     getsession();
-    //fill_realms();
+
+    var server_config = get_server_config();
 
     // hide the javascrip message
     $('#javascript_error').hide();
@@ -3513,18 +3514,7 @@ $(document).ready(function(){
 
     // install handler for https certificate entry field
     $('#http_uri').keyup(http_resolver_https);
-    /*
-     $('ul.sf-menu').superfish({
-     delay: 0,
-     animation: {
-     opacity: 'show',
-     //    height: 'show'
-     },
-     speed: 'fast',
-     autoArrows: true,
-     dropShadows: true
-     });
-     */
+
     $('ul.sf-menu').superfish({
         delay: 0,
         speed: 'fast'
@@ -3755,7 +3745,7 @@ $(document).ready(function(){
             }
         });
 
-    $dialog_ask_new_resolvertype = $('#dialog_resolver_create').dialog({
+    var dialog_resolver_create_config = {
         autoOpen: false,
         title: 'Creating a new UserIdResolver',
         width: 600,
@@ -3776,14 +3766,6 @@ $(document).ready(function(){
                     id: "button_new_resolver_type_ldap",
                     text: "LDAP"
 
-            },
-            'HTTP': { click: function(){
-                        // calling with no parameter, creates a new resolver
-                        resolver_http("");
-                        $(this).dialog('close');
-                    },
-                    id: "button_new_resolver_type_http",
-                    text: "HTTP"
             },
             'SQL': { click: function(){
                     // calling with no parameter, creates a new resolver
@@ -3806,7 +3788,21 @@ $(document).ready(function(){
             translate_dialog_resolver_create();
             do_dialog_icons();
         }
-    });
+    };
+
+    if(server_config['httpresolver_active'] == "True"){
+        dialog_resolver_create_config.buttons.HTTP = {
+            click: function(){
+                // calling with no parameter, creates a new resolver
+                resolver_http("");
+                $(this).dialog('close');
+            },
+            id: "button_new_resolver_type_http",
+            text: "HTTP"
+        }
+    }
+
+    $dialog_ask_new_resolvertype = $('#dialog_resolver_create').dialog(dialog_resolver_create_config);
 
     $dialog_import_policy = $('#dialog_import_policy').dialog({
         autoOpen: false,
