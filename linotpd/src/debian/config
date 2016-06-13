@@ -86,7 +86,6 @@
 #     INFO [linotp config] Version downgrade: true
 
 
-ENCKEY=/etc/linotp2/encKey
 MYSQLSERVER=/usr/sbin/mysqld
 MYSQLCLIENT=/usr/bin/mysql
 DBFILE_FS=/etc/linotp2/token.db
@@ -157,15 +156,6 @@ echo `print_timestamp` "INFO [linotp config] Version downgrade: ${VERSION_DOWNGR
 
 # In case of univention corparate server we do not use debconf!
 if [ !  $(check_ucs) ]; then
-	if [ -f $ENCKEY ]; then
-		db_input high linotp/generate_enckey || true
-		db_go
-	else
-		# If the key does not exist, we do not need to ask, but
-		# generate it right away.
-		db_set linotp/generate_enckey true
-	fi
-
 	db_input high linotp/apache/activate || true
 	db_go
 	db_get linotp/apache/activate

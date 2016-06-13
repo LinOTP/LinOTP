@@ -1,13 +1,3 @@
-Template: linotp/generate_enckey
-Type: boolean
-Default: false
-_Description: Do you want to generate a new encryption key?
- Sensitive data in the token database is encrypted using an encryption key.
- Here you may generate a new encryption key.
- If you are upgrading from a previous release, this is a very bad idea,
- since you will not be able to read your encrypted data anymore!
- If you are installing anew, you need to generate a new key.
-
 Template: linotp/apache/activate
 Type: boolean
 Default: true
