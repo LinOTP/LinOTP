@@ -1,3 +1,10 @@
+linotp (2.8.1.2+custom01-1) jessie; urgency=low
+
+  Enhancements:
+  * Selfservice: Authentication request optimization
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 13 Jun 2016 16:42:42 +0200
+
 linotp (2.8.1.2-1) jessie; urgency=low
 
   Enhancements:
