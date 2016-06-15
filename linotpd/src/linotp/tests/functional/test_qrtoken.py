@@ -1528,7 +1528,8 @@ class TestQRToken(TestController):
         # ----------------------------------------------------------------------
 
         params = {'serial': serial,
-                  'data': 'yikes! another possible catastrophe'}
+                  'data': 'yikes! another possible catastrophe',
+                  'pass': pin}
 
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
@@ -1540,10 +1541,10 @@ class TestQRToken(TestController):
         self.assertIn('value', result)
 
         status = result.get('status')
-        self.assertEqual(status, True)
+        self.assertEqual(status, True, response)
 
         value = result.get('value')
-        self.assertEqual(value, False)
+        self.assertEqual(value, False, response)
 
 # ------------------------------------------------------------------------------
 
