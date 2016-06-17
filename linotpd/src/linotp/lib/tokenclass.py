@@ -1571,7 +1571,7 @@ class TokenClass(object):
         else:
             # for hased pins we redo the hash and compare the hashes
             iv, hashed_token_pin = self.token.get_hashed_pin()
-            iv, hashed_pin = SecretObj.hash_pin(pin, iv, hsm=hsm)
+            iv, hashed_pin = SecretObj.hash_pin(pin or '', iv, hsm=hsm)
             if hashed_pin == hashed_token_pin:
                 res = True
 
