@@ -327,28 +327,37 @@ class Challenges(object):
         return expired_challenges, valid_chalenges
 
     @staticmethod
-    def handle_related_challenge(related_challenges):
+    def handle_related_challenge(matching_challenges):
         """
-        handle related challenges
+        handle related challenges and close these
+
+        :param matching_challenges: all challenges that have
+                                    been correctly answerd
         """
-        # if there are any related challenges, we have to call the
-        # token janitor, who decides if a challenge is still valid
-        # eg. expired
-        for related_challenge in related_challenges:
-            serial = related_challenge.tokenserial
-            token = linotp.lib.token.getTokens4UserOrSerial(serial=serial)[0]
+        from linotp.lib.token import getTokens4UserOrSerial
 
-            # get all challenges and the matching ones
-            ex_ch, val_ch = Challenges.get_challenges(token)
+        to_be_closed_challenges = []
 
-            all_challenges = Challenges.lookup_challenges(serial=serial)
-            matching_challenges = Challenges.lookup_challenges(serial=serial)
+        for matching_challenge in matching_challenges:
 
-            # call the janitor to select the invalid challenges
-            to_be_deleted = token.challenge_janitor(matching_challenges,
-                                                    all_challenges)
-            if to_be_deleted:
-                Challenges.delete_challenges(serial, to_be_deleted)
+            # gather all challenges which are now obsolete
+            # from the token point of view
+            serial = matching_challenge.tokenserial
+            token = getTokens4UserOrSerial(serial=serial)[0]
+            token_challenges = Challenges.lookup_challenges(serial=serial)
+            to_be_closed = token.challenge_janitor([matching_challenge],
+                                                   token_challenges)
+            to_be_closed_challenges.extend(to_be_closed)
+
+            # gather all challenges which are part of the same transaction
+            transid = matching_challenge.transid
+            if "." in transid:
+                transid = transid.split('.')[0]
+            transid_challenges = Challenges.lookup_challenges(transid=transid)
+            to_be_closed_challenges.extend(transid_challenges)
+
+        for challenge in set(to_be_closed_challenges):
+            challenge.close()
 
         return
 

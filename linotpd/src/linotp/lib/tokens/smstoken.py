@@ -514,6 +514,8 @@ class SmsTokenClass(HmacTokenClass):
         blocking_time = int(getFromConfig('SMSBlockingTimeout', 60))
 
         for challenge in challenges:
+            if not challenge.is_open():
+                continue
             start = challenge.get('timestamp')
             expiry = start + datetime.timedelta(seconds=blocking_time)
             # # check if there is already a challenge underway
