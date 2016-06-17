@@ -163,6 +163,7 @@ class HmacTokenClass(TokenClass):
         TokenClass.__init__(self, a_token)
         self.setType(u"HMAC")
         self.hKeyRequired = True
+        self.authenticated = None
 
         # we support various hashlib methods, but only on create
         # which is effectively set in the update
@@ -174,9 +175,7 @@ class HmacTokenClass(TokenClass):
             log.exception('[init] Failed to get the hotp.hashlib (%r)' % (ex))
             raise Exception(ex)
 
-
         log.debug("[init]  end. Token object created")
-        return
 
 
 
@@ -236,6 +235,45 @@ class HmacTokenClass(TokenClass):
 
         return trigger_challenge
 
+    def is_challenge_response(self, passw, user, options=None,
+                              challenges=None):
+        """
+        This method checks, if this is a request, that is the response to
+        a previously sent challenge.
+
+        The default behaviour to check if this is the response to a
+        previous challenge is simply by checking if the request contains
+        a parameter ``state`` or ``transactionid`` i.e. checking if the
+        ``options`` parameter contains a key ``state`` or ``transactionid``.
+
+        This method does not try to verify the response itself!
+        It only determines, if this is a response for a challenge or not.
+
+        :param passw: password, which might be pin or pin+otp
+        :type passw: string
+        :param user: the requesting user
+        :type user: User object
+        :param options: dictionary of additional request parameters
+        :type options: (dict)
+        :param challenges: A list of challenges for this token. These
+                           challenges may be used, to identify if this request
+                           is a response for a challenge.
+
+        :return: true or false
+        """
+
+        if "state" in options or "transactionid" in options:
+            return True
+
+        pin_match, otp_counter, reply = self.authenticate(
+            passw=passw, user=user, options=options)
+
+        if otp_counter >= 0:
+            self.authenticated = pin_match, otp_counter, reply
+            return True
+
+        return False
+
     def checkResponse4Challenge(self, user, passw, options=None, challenges=None):
         '''
         verify the response of a previous challenge
@@ -252,11 +290,15 @@ class HmacTokenClass(TokenClass):
         otp_counter = -1
         transid = None
         matching = None
-        matchin_challenges = []
+        matching_challenges = []
 
         if 'transactionid' in options or 'state' in options:
             ## fetch the transactionid
             transid = options.get('transactionid', options.get('state', None))
+
+        if not transid and self.authenticated is not None:
+            pin_match, otp_counter, reply = self.authenticated
+            return otp_counter, matching_challenges
 
         # check if the transactionid is in the list of challenges
         if transid is not None:
@@ -267,9 +309,9 @@ class HmacTokenClass(TokenClass):
             if matching is not None:
                 otp_counter = check_otp(self, passw, options=options)
                 if otp_counter >= 0:
-                    matchin_challenges.append(matching)
+                    matching_challenges.append(matching)
 
-        return (otp_counter, matchin_challenges)
+        return (otp_counter, matching_challenges)
 
 
     def createChallenge(self, state, options=None):
