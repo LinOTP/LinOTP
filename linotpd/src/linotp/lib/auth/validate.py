@@ -274,6 +274,7 @@ class ValidationHandler(object):
                 if theToken.is_challenge_request(passw, user, options=options):
                     (res, opt) = Challenges.create_challenge(
                         theToken, options)
+                    res = False
                 else:
                     raise ParameterError('Missing parameter: pass', id=905)
 

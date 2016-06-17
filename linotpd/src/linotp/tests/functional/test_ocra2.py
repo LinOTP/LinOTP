@@ -1092,7 +1092,7 @@ class OcraTest(TestController):
 
             response = self.app.get(url(controller='validate',
                                         action='check_s'), params=p)
-            self.assertTrue('"value": true' in response, response)
+            self.assertTrue('"value": false' in response, response)
 
             # -3.a- calculate the otp response from the challenge
             jresp = json.loads(response.body)
@@ -1262,7 +1262,7 @@ class OcraTest(TestController):
 
             response = self.app.get(url(controller='validate',
                                         action='check_s'), params=p)
-            self.assertTrue('"value": true' in response, response)
+            self.assertTrue('"value": false' in response, response)
 
             # -3.a- calculate the otp response from the challenge
             jresp = json.loads(response.body)
@@ -1578,7 +1578,7 @@ class OcraTest(TestController):
 
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -3.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
@@ -1684,7 +1684,7 @@ class OcraTest(TestController):
 
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -3.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
@@ -1830,7 +1830,7 @@ class OcraTest(TestController):
                      }
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -3.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
@@ -1859,7 +1859,7 @@ class OcraTest(TestController):
                      }
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -6.a- calculate the otp response from the challenge
                 jresp = json.loads(response.body)
@@ -1961,7 +1961,7 @@ class OcraTest(TestController):
                      }
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -3.a- from the response get the challenge
                 jresp = json.loads(response.body)
@@ -2055,7 +2055,7 @@ class OcraTest(TestController):
                      }
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -2b- from the response get the challenge
                 jresp = json.loads(response.body)
@@ -2088,7 +2088,7 @@ class OcraTest(TestController):
                      }
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -3b- from the response get the challenge
                 jresp = json.loads(response.body)
@@ -2193,7 +2193,7 @@ class OcraTest(TestController):
                      }
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -2b- from the response get the challenge
                 jresp = json.loads(response.body)
@@ -2226,7 +2226,7 @@ class OcraTest(TestController):
                      }
                 response = self.app.get(url(controller='validate',
                                             action='check_s'), params=p)
-                self.assertTrue('"value": true' in response, response)
+                self.assertTrue('"value": false' in response, response)
 
                 # -3b- from the response get the challenge
                 jresp = json.loads(response.body)
@@ -2302,7 +2302,7 @@ class OcraTest(TestController):
         response = self.app.get(url(controller='validate',
                                     action='check_s'), params=p)
 
-        self.assertTrue('"value": true' in response, response)
+        self.assertTrue('"value": false' in response, response)
 
         # -2b- from the response get the challenge
         jresp = json.loads(response.body)
@@ -4131,7 +4131,7 @@ class OcraTest(TestController):
             if i == 4:
                 self.assertTrue("/callback/" in curl, curl)
 
-            self.assertTrue('"value": true' in response, response)
+            self.assertTrue('"value": false' in response, response)
 
             otp = ocra.callcOtp(challenge, counter=i)
 
