@@ -35,6 +35,7 @@ from base64 import b64encode
 from pylons import request, response, config
 from pylons import tmpl_context as c
 from pylons.controllers.util import abort
+from pylons.i18n.translation import _
 
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.base import BaseController
@@ -54,6 +55,7 @@ from linotp.lib.reply import sendResult, sendError
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import get_tokenserial_of_transaction
+from linotp.lib.tokenclass import TokenClass
 
 from linotp.lib.user import User
 from linotp.lib.user import getUserFromParam
@@ -578,7 +580,7 @@ class ValidateController(BaseController):
             serial = getParam(param, 'serial', optional)
             if serial is None:
                 user = getParam(param, 'user', optional)
-                if user is  not None:
+                if user is not None:
                     user = getUserFromParam(param, optional)
                     toks = getTokens4UserOrSerial(user=user)
                     if len(toks) == 0:
@@ -632,7 +634,7 @@ class ValidateController(BaseController):
             log.exception("[check_s] validate/check_s failed: %r" % exx)
             c.audit['info'] = unicode(exx)
             Session.rollback()
-            return sendResult(response, False, 0)
+            return sendResult(response, False, id=0, status=False)
 
         finally:
             Session.close()
