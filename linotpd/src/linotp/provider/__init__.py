@@ -76,7 +76,7 @@ def reload_classes():
 
 reload_classes()
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 Provider_types = {
         'sms': {'prefix': 'linotp.SMSProvider.'},
@@ -210,7 +210,8 @@ def getProvider(provider_type, provider_name=None):
         if Legacy_Provider_Name not in providers:
             defintion = get_legacy_provider(provider_type=provider_type)
             if defintion:
-                if not default_provider:
+                if (not default_provider or
+                   default_provider == Legacy_Provider_Name):
                     defintion['Default'] = True
 
                 providers[Legacy_Provider_Name] = defintion
@@ -260,6 +261,7 @@ def delProvider(provider_type, provider_name):
     default_provider_key = Default_Provider_Key[provider_type]
     if default_provider_key in config:
         default_provider = config[default_provider_key]
+
         if provider_name == default_provider:
             detail = {'message': _('Default provider could not be deleted!')}
             ret = 0
@@ -278,15 +280,23 @@ def delProvider(provider_type, provider_name):
     del_entries = set()
     provider = prefix + provider_name
 
-    # first delete the provider root entry
-    if provider in config:
-        del_entries.add(provider)
+    # treat backward default legacy case
+    if provider_name == Legacy_Provider_Name:
+        entries = Legacy_Provider.get(provider_type, {})
+        for entry in entries.keys():
+            if entry in config:
+                del_entries.add(entry)
 
-    # now lookup the all decent entries
-    provider_prefix = provider + '.'
-    for key in config.keys():
-        if key[:len(provider_prefix)] == provider_prefix:
-            del_entries.add(key)
+    if not del_entries:
+        # first delete the provider root entry
+        if provider in config:
+            del_entries.add(provider)
+
+        # now lookup the all decent entries
+        provider_prefix = provider + '.'
+        for key in config.keys():
+            if key[:len(provider_prefix)] == provider_prefix:
+                del_entries.add(key)
 
     # when all entries are gathered, we can now delete them all
     for del_entry in del_entries:
@@ -366,7 +376,7 @@ def setDefaultProvider(provider_type, provider_name):
     detail = {}
 
     providers = getProvider(provider_type, provider_name)
-    if provider_name in providers:
+    if provider_name in providers or provider_name == Legacy_Provider_Name:
         default_provider_key = Default_Provider_Key[provider_type]
         storeConfig(key=default_provider_key, val=provider_name)
         res = True
@@ -522,7 +532,7 @@ def _load_provider_class(provider_Class):
 
         if '.' not in provider_class:
             raise Exception("Unknown provider class: Identifier was %s" %
-                        provider_class)
+                            provider_class)
 
         # if there is no entry in the registry we try to fall back to
         # the old style of loading a module definition
@@ -534,12 +544,12 @@ def _load_provider_class(provider_Class):
             provider_class_obj = getattr(mod, className)
 
         except ImportError as err:
-            raise Exception("Unknown provider class: Identifier was %s" %
-                        provider_class)
+            raise Exception("Unknown provider class: Identifier was %s - %r" %
+                            (provider_class, err))
 
         except AttributeError as err:
-            raise Exception("Unknown provider class: Identifier was %s" %
-                        provider_class)
+            raise Exception("Unknown provider class: Identifier was %s - %r" %
+                            (provider_class, err))
 
     if not hasattr(provider_class_obj, "submitMessage"):
         raise NameError("Provider AttributeError: %s "
@@ -548,4 +558,4 @@ def _load_provider_class(provider_Class):
 
     return provider_class_obj
 
-# eof ####################################################################
+# eof ########################################################################
