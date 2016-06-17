@@ -285,7 +285,7 @@ class ValidateController(BaseController):
 
             transid = param.get('state', param.get('transactionid', None))
             if not transid:
-                raise ParameterError(_('Missing required parameter "state" or'
+                raise ParameterError(_('Missing required parameter "state" or '
                                      '"transactionid"!'))
 
             serial = param.get('serial', None)

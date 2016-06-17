@@ -84,7 +84,7 @@
                 <table>
                     <tr>
                         <td><h2>${_('Check the status of your challenge:')}</h2></td>
-                        <td><button id="check_status">check status</button></td>
+                        <td><button id="check_status">${_('check status')}</button></td>
                     </tr>
                 </table>
         </tr>

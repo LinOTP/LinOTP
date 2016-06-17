@@ -6064,16 +6064,16 @@ function check_for_resolver_name_change(defer, new_resolver_name){
                 modal: true,
                 buttons: [
                     {
-                        text: i18n.gettext("yes"),
+                        text: i18n.gettext("Cancel"),
                         click: function() {
-                            defer.resolve("true");
+                            defer.reject("false");
                             $( this ).dialog( "close" );
                         }
                     },
                     {
-                        text: i18n.gettext("no"),
+                        text: i18n.gettext("Overwrite"),
                         click: function() {
-                            defer.reject("false");
+                            defer.resolve("true");
                             $( this ).dialog( "close" );
                         }
                     }
@@ -6094,28 +6094,28 @@ function check_for_resolver_name_change(defer, new_resolver_name){
 function confirm_cancel_dialog(dialogname){
     var defer = $.Deferred();
     var text = '<div style="text-align: center"><br/>' +
-                i18n.gettext('The') +
-                ' ' + dialogname + ' ' +
-                i18n.gettext('dialog contains unsaved changes.') + '<br/><br/>' +
-                i18n.gettext('Do you really want to close the dialog?') +
+                sprintf(i18n.gettext("The %s dialog contains unsaved changes."), dialogname) + 
+                '<br/><br/>' +
+                i18n.gettext('Do you really want to close the dialog and discard the changes?') +
                 '</div>';
 
     $(text).dialog({
-        title: i18n.gettext("Abort Changes"),
+        title: i18n.gettext("Close Dialog"),
         width: 500,
         modal: true,
         buttons: [
+
             {
-                text: i18n.gettext("yes"),
+                text: i18n.gettext("Cancel"),
                 click: function() {
-                    defer.resolve("true");
+                    defer.reject("false");
                     $( this ).dialog( "close" );
                 }
             },
             {
-                text: i18n.gettext("no"),
+                text: i18n.gettext("Discard"),
                 click: function() {
-                    defer.reject("false");
+                    defer.resolve("true");
                     $( this ).dialog( "close" );
                 }
             }

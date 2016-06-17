@@ -223,7 +223,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         info['policy']['selfservice'] = {'activate_QRToken':
                                          {'type': 'bool',
                                           'description': _('activate your '
-                                                           'qr token')}
+                                                           'QRToken')}
                                          }
 
         # ----------------------------------------------------------------------
@@ -665,12 +665,12 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
             # create response tabs
             response_detail['lse_qr_url'] = {
-                'description': _('QR Token Pairing Url'),
+                'description': _('QRToken Pairing Url'),
                 'img': create_img(pairing_url, width=250),
                 'order': 0,
                 'value': pairing_url}
             response_detail['lse_qr_cert'] = {
-                'description': _('QR Token Certificate'),
+                'description': _('QRToken Certificate'),
                 'img': create_img(pairing_url, width=250),
                 'order': 1,
                 'value': pairing_url}

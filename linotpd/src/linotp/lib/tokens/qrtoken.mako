@@ -199,9 +199,9 @@ function qr_clear_input_fields() {
         </td>
         <td>
             <select name="qrtoken_otplength" id="qrtoken_otplength">
-                <option value=6>${_("6")}</option>
-                <option value=8>${_("8")}</option>
-                <option value=10>${_("10")}</option>
+                <option value=6>${_("6 digits")}</option>
+                <option value=8>${_("8 digits")}</option>
+                <option value=10>${_("10 digits")}</option>
             </select>
         </td>
     </tr>
