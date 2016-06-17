@@ -661,9 +661,12 @@ class ValidationHandler(object):
             valid_tokens.extend(vToken)
 
         # end of token verification loop
+        matching_challenges = []
+        for token in valid_tokens:
+            matching_challenges.extend(token.matching_challenges)
 
         # if there are related / sub challenges, we have to call their janitor
-        Challenges.handle_related_challenge(related_challenges)
+        Challenges.handle_related_challenge(matching_challenges)
 
         # now we finalize the token validation result
         fh = FinishTokens(valid_tokens,
@@ -678,7 +681,7 @@ class ValidationHandler(object):
 
         # add to all tokens the last accessd time stamp
         linotp.lib.token.add_last_accessed_info(
-            [valid_tokens, pin_matching_tokens, challenge_tokens, invalid_tokens])
+            [valid_tokens, pin_matching_tokens, challenge_tokens, valid_tokens])
 
         # now we care for all involved tokens and their challenges
         for token in (valid_tokens + pin_matching_tokens +
