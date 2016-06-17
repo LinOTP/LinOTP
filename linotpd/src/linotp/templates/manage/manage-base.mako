@@ -531,7 +531,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                                 title="${_('This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-SHA256-8:C-QA08')}"></td></tr>
                         <tr><td><label for=ocra_default_qr_suite>${_("Default QR suite")}</label></td>
                             <td><input type="text" name="ocra_default_qr_suite" id="ocra_default_qr_suite" maxlength=40 size=30
-                                title='${_("This is the suite for newly enrolled QR tokens. Default is OCRA-1:HOTP-SHA256-6:C-QA64")}'></td></tr>
+                                title='${_("This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-SHA256-6:C-QA64")}'></td></tr>
                     </table>
                 </fieldset>
             </form>

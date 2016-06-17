@@ -804,7 +804,7 @@ class AdminController(BaseController):
             * ocrasuite (optional) - if you do not want to use the default
                 ocra suite OCRA-1:HOTP-SHA256-8:QA64
             * sharedsecret (optional) if you are in Step0 of enrolling an
-                OCRA/QR token the sharedsecret=1 specifies,
+                OCRA token the sharedsecret=1 specifies,
               that you want to generate a shared secret
             * activationcode (optional) if you are in Step1 of enrolling
                 an OCRA token you need to pass the
