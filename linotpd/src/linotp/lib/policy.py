@@ -226,6 +226,14 @@ def getPolicyDefinitions(scope=""):
                         'token (in days).'},
             },
         'authentication': {
+            "email_provider": {
+                'type': 'str',
+                'desc': 'The email provider that should be used to '
+                        'send emails'},
+            "sms_provider": {
+                'type': 'str',
+                'desc': 'The sms provider that should be used to '
+                        'submit sms'},
             'smstext': {
                 'type': 'str',
                 'desc': 'The text that will be send via SMS for an SMS token. '
@@ -2753,6 +2761,10 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
             'checkPolicy': "read",
             'delPolicy': 'write',
             'setSupport': 'write',
+            'setProvider': 'write',
+            'setDefaultProvider': 'write',
+            'delProvider': 'write',
+            'getProvider': 'read',
             }
 
         if not method in actions:

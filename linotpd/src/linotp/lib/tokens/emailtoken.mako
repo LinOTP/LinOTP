@@ -90,7 +90,7 @@ $(document).ready(function () {
         <tr>
 	        <td><label for="c_email_provider">${_("Provider")}</label>: </td>
 	        <td><input type="text" name="email_provider" class="required"  id="c_email_provider" size="37" maxlength="80"
-	                   placeholder="linotp.lib.emailprovider.SMTPEmailProvider"></td>
+	                   placeholder="linotp.provider.emailprovider.SMTPEmailProvider"></td>
         </tr>
         <tr>
 	        <td><label for="c_email_provider_config">${_("Provider config")}</label>: </td>

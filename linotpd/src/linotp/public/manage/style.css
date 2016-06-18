@@ -129,7 +129,13 @@ a.disabledToken {
 	text-decoration:line-through;
 }
 
-label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }
+label.error {
+    float: none;
+    display: block;
+    color: red;
+    padding-bottom: .5em;
+    vertical-align: top;
+}
 
 h1 {
 	color: #fe8625;
@@ -371,6 +377,57 @@ z-index: 1;
 
 label.error {
 	color: red;
+}
+
+.ui-dialog form.cmxform input,
+.ui-dialog form.cmxform textarea{
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ui-dialog form.cmxform td{
+    padding-right: 0;
+}
+
+.ui-dialog form.cmxform input[type="checkbox"],
+.ui-dialog form.cmxform input[type="radio"]{
+    width: inherit;
+}
+
+/*
+ *  Styles for sms and email provider config
+ */
+#sms_providers_list, #email_providers_list{
+    padding: 0 .5em;
+}
+
+#button_sms_provider_set_default, #button_email_provider_set_default{
+    float: right;
+    margin: .5em .5em 0 0;
+}
+
+/* Remove padding for secondary buttonpane in provider-configurations */
+#dialog_sms_providers .ui-dialog-buttonpane.flat,
+#dialog_email_providers .ui-dialog-buttonpane.flat {
+    padding: 0!important;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.ui-dialog form.cmxform table {
+    width: 100%;
+}
+
+#dialog_sms_providers,
+#dialog_email_providers{
+    padding: .5em 0 2.7em;
+}
+
+#dialog_sms_providers .list-wrapper,
+#dialog_email_providers .list-wrapper{
+    overflow: auto;
+    height: 100%;
 }
 
 

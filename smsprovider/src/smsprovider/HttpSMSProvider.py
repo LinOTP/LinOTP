@@ -27,6 +27,7 @@
 """This is the SMSClass to send SMS via HTTP Gateways"""
 
 from smsprovider.SMSProvider import ISMSProvider
+from linotp.provider import provider_registry
 
 import base64
 import re
@@ -35,6 +36,7 @@ import urllib
 import httplib2
 import urllib2
 from urlparse import urlparse
+
 
 import logging
 log = logging.getLogger(__name__)
@@ -52,6 +54,10 @@ except ImportError:
     log.info('Using socksipy socks')
 
 
+@provider_registry.class_entry('HttpSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.HttpSMSProvider')
+@provider_registry.class_entry('smsprovider.HttpSMSProvider.HttpSMSProvider')
+@provider_registry.class_entry('smsprovider.HttpSMSProvider')
 class HttpSMSProvider(ISMSProvider):
 
     def __init__(self):

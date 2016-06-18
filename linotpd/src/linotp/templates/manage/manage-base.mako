@@ -116,6 +116,12 @@ if isinstance(lang, list):
                 <li><a href='#' id='menu_edit_resolvers'>${_("UserIdResolvers")}</a></li>
                 <li><a href='#' id='menu_edit_realms'>${_("Realms")}</a></li>
                 <li><a href='#' id='menu_system_config'>${_("System Config")}</a></li>
+                <li><a href='#'>${_("Provider Config")}</a>
+                    <ul>
+                        <li><a href='#' id='menu_sms_provider_config'>${_("SMS Provider Config")}</a>
+                        <li><a href='#' id='menu_email_provider_config'>${_("Email Provider Config")}</a>
+                    </ul>
+                 </li>
                 <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
                 <li><a href='#' id='menu_policies'>${_("Policies")}</a></li>
             </ul>
@@ -219,6 +225,149 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <div id="all_dialogs" style="display:none; height:0px;">
 <!-- ############ DIALOGS ######################### -->
+<!-- ############ sms provider settings ################# -->
+<div id='dialog_sms_providers'>
+    <div class="list-wrapper"><div id='sms_providers_list'> </div></div>
+    <div class="ui-dialog-buttonpane flat"><button id='button_sms_provider_set_default'>${_("Set as default")}</button></div>
+</div>
+<script>
+    function translate_dialog_sms_providers() {
+        $("#dialog_sms_providers" ).dialog( "option", "title", '${_("SMS Provider: create and edit")}');
+        $('#button_sms_provider_new .ui-button-text').html('${_("New")}');
+        $('#button_sms_provider_edit .ui-button-text').html('${_("Edit")}');
+        $('#button_sms_provider_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_sms_providers_close .ui-button-text').html('${_("Close")}');
+    }
+</script>
+
+<!-- ############ sms provider edit ################# -->
+<div id="dialog_sms_provider_edit">
+    <form class="cmxform" id="form_smsprovider">
+        <table>
+            <tr>
+                <td><label for="sms_provider_name">${_("Name")}</label>: </td>
+                <td><input type="text" name="sms_provider_name" class="required"
+                                       id="sms_provider_name" size="37" maxlength="80"
+                                       placeholder=""></td>
+            </tr>
+            <tr>
+                <td><label for="sms_provider">${_("Class")}</label>: </td>
+                <td><input type="text" name="sms_provider_class" class="required"
+                                       id="sms_provider_class" size="37" maxlength="80"
+                                       placeholder="smsprovider.HttpSMSProvider.HttpSMSProvider"></td>
+            </tr>
+            <tr>
+                <td><label for='sms_provider_config'>${_("Config")}</label>: </td>
+                <td><textarea name="sms_provider_config" class="required"
+                              id="sms_provider_config" cols='35' rows='6' maxlength="400"
+                              placeholder='{ "URL":"http://smsproviderurl:5001/http2sms", "PARAMETER": {"your url parameter": "as json"}, "SMS_TEXT_KEY":"text", "SMS_PHONENUMBER_KEY":"to", "RETURN_SUCCESS":"ID"}'></textarea></td>
+            </tr>
+            <tr>
+                <td><label for='sms_provider_timeout'>${_("Timeout")}</label>: </td>
+                <td><input type="text" name="sms_provider_timeout" class="required"
+                              placeholder="120" id="sms_provider_timeout" size="5" maxlength="5"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script>
+    function translate_dialog_sms_provider_edit() {
+        $("#dialog_sms_provider_edit" ).dialog( "option", "title", '${_("SMS Provider")}' );
+        $('#button_sms_provider_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_sms_provider_save .ui-button-text').html('${_("Save")}');
+    }
+</script>
+
+<!-- ################## sms provider delete ###################### -->
+<div id='dialog_sms_provider_delete'>
+    <p>${_("Do you want to delete the provider?")}</p>
+</div>
+<script>
+    function translate_dialog_sms_provider_delete() {
+        $("#dialog_sms_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedSMSProvider );
+        $('#button_sms_provider_delete_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_sms_provider_delete_cancel .ui-button-text').html('${_("Cancel")}');
+    }
+</script>
+
+<!-- ############ email provider settings ################# -->
+<div id='dialog_email_providers'>
+    <div class="list-wrapper"><div id='email_providers_list'> </div></div>
+    <div class="ui-dialog-buttonpane flat"><button id='button_email_provider_set_default'>${_("Set as default")}</button></div>
+</div>
+<script>
+    function translate_dialog_email_providers() {
+        $("#dialog_email_providers" ).dialog( "option", "title", '${_("Email Provider: create and edit")}');
+        $('#button_email_provider_new .ui-button-text').html('${_("New")}');
+        $('#button_email_provider_edit .ui-button-text').html('${_("Edit")}');
+        $('#button_email_provider_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_email_providers_close .ui-button-text').html('${_("Close")}');
+    }
+</script>
+
+<!-- ############ email provider edit ################# -->
+<div id="dialog_email_provider_edit">
+    <form class="cmxform" id="form_emailprovider">
+        <table>
+            <tr>
+                <td><label for="email_provider_name">${_("Name")}</label>: </td>
+                <td><input type="text" name="email_provider_name" class="required"
+                                       id="email_provider_name" size="37" maxlength="80"
+                                       placeholder=""></td>
+            </tr>
+            <tr>
+                <td><label for="email_provider_class">${_("Class")}</label>: </td>
+                <td><input type="text" name="email_provider_class" class="required"
+                           id="email_provider_class" size="37" maxlength="80"
+                           placeholder="linotp.provider.emailprovider.SMTPEmailProvider"></td>
+            </tr>
+            <tr>
+                <td><label for='email_provider_config'>${_("Config")}</label>: </td>
+                <td><textarea name="email_provider_config" class="required"
+                              id="email_provider_config" cols='35' rows='6' maxlength="400"
+                              placeholder='{ "SMTP_SERVER":"mail.example.com", "SMTP_USER":"secret_user", "SMTP_PASSWORD":"secret_pasword", "EMAIL_FROM":"linotp@example.com", "EMAIL_SUBJECT":"Your OTP"}'></textarea></td>
+            </tr>
+            <tr>
+                <td><label for="email_provider_timeout">${_("Timeout (sec)")}</label>: </td>
+                <td><input type="number" name="email_provider_timeout" class="required"
+                              placeholder="120" id="email_provider_timeout" size="5" maxlength="5"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script>
+    function translate_dialog_email_provider_edit() {
+        $("#dialog_email_provider_edit" ).dialog( "option", "title", '${_("Email Provider")}' );
+        $('#button_email_provider_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_email_provider_save .ui-button-text').html('${_("Save")}');
+    }
+</script>
+
+<!-- ################## email provider delete ###################### -->
+<div id='dialog_email_provider_delete'>
+    <p>${_("Do you want to delete the Provider?")}</p>
+</div>
+<script>
+    function translate_dialog_email_provider_delete() {
+        $("#dialog_email_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedEmailProvider );
+        $('#button_email_provider_delete_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_email_provider_delete_cancel .ui-button-text').html('${_("Cancel")}');
+    }
+</script>
+
+<!-- ############ email provider settings ################# -->
+<div id='dialog_email_provider_settings'>
+
+</div>
+
+<script>
+    function translate_email_provider_settings() {
+        $("#dialog_email_provider_settings" ).dialog( "option", "title", '${_("Email Provider Configuration")}' );
+        $('#button_email_provider_save .ui-button-text').html('${_("Save Config")}');
+        $('#button_email_provider_cancel .ui-button-text').html('${_("Cancel")}');
+    }
+</script>
+
 <!-- ############ system settings ################# -->
 <div id=dialog_system_settings>
 <form class="cmxform" id="form_sysconfig">

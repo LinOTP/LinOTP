@@ -29,6 +29,7 @@
 import SMSProvider
 from SMSProvider import getSMSProviderClass
 from SMSProvider import ISMSProvider
+from linotp.provider import provider_registry
 
 import string
 import smtplib
@@ -39,6 +40,11 @@ log = logging.getLogger(__name__)
 PHONE_TAG = "<phone>"
 MSG_TAG = "<otp>"
 
+
+@provider_registry.class_entry('SmtpSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.SmtpSMSProvider')
+@provider_registry.class_entry('smsprovider.SmtpSMSProvider.SmtpSMSProvider')
+@provider_registry.class_entry('smsprovider.SmtpSMSProvider')
 class SmtpSMSProvider(ISMSProvider):
     def __init__(self):
         self.config = {}

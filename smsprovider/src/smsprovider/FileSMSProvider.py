@@ -32,10 +32,15 @@ import os
 import logging
 
 from linotp.lib.util import str2unicode
+from linotp.provider import provider_registry
 
 log = logging.getLogger(__name__)
 
 
+@provider_registry.class_entry('FileSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.FileSMSProvider')
+@provider_registry.class_entry('smsprovider.FileSMSProvider.FileSMSProvider')
+@provider_registry.class_entry('smsprovider.FileSMSProvider')
 class FileSMSProvider(ISMSProvider):
     def __init__(self):
         self.config = {}

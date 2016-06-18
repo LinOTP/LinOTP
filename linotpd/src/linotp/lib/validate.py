@@ -174,8 +174,9 @@ def create_challenge(token, options=None, challenge_id=None, id_postfix=''):
             challenge_obj.setChallenge(message)
             challenge_obj.save()
 
-            (res, message, data, attributes) = \
-                        token.createChallenge(transactionid, options=options)
+            (res, message,
+             data, attributes) = token.createChallenge(transactionid,
+                                                       options=options)
 
             if res is True:
                 # persist the final challenge data + message

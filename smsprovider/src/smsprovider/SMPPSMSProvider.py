@@ -27,6 +27,7 @@
 
 """ the SMS Provider Interface """
 from smsprovider.SMSProvider import ISMSProvider
+from linotp.provider import provider_registry
 
 import smpplib
 import logging
@@ -34,6 +35,10 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@provider_registry.class_entry('SMPPSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.SMPPSMSProvider')
+@provider_registry.class_entry('smsprovider.SMPPSMSProvider.SMPPSMSProvider')
+@provider_registry.class_entry('smsprovider.SMPPSMSProvider')
 class SMPPSMSProvider(ISMSProvider):
 
     def __init__(self):

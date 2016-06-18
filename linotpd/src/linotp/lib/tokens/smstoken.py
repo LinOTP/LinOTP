@@ -103,6 +103,8 @@ import time
 import datetime
 import traceback
 
+import linotp
+
 from linotp.lib.HMAC    import HmacOtp
 from linotp.lib.util    import getParam
 from linotp.lib.util    import required
@@ -114,7 +116,9 @@ from linotp.lib.validate import check_otp
 from linotp.lib.validate import split_pin_otp
 from linotp.lib.validate import get_challenges
 
-from linotp.lib.config  import getFromConfig
+from linotp.lib.config import getFromConfig
+from linotp.lib.token import get_token_owner
+
 
 from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.policy import getPolicy
@@ -122,10 +126,7 @@ from linotp.lib.policy import get_auth_AutoSMSPolicy
 
 
 import sys
-if sys.version_info[0:2] >= (2, 6):
-    from json import loads, dumps
-else:
-    from simplejson import loads, dumps
+from json import loads, dumps
 
 from pylons.i18n.translation import _
 
@@ -794,7 +795,7 @@ class SmsTokenClass(HmacTokenClass):
 
         '''
         log.debug("[sendSMS] begin. process the submitting of "
-                                              "the sms message %r" % (message))
+                  "the sms message %r" % (message))
 
         ret = None
 
@@ -824,115 +825,32 @@ class SmsTokenClass(HmacTokenClass):
             message = message.replace("<transactionid>", transactionid)
 
         log.debug("[sendSMS] sending SMS to phone number %s " % phone)
-        (SMSProvider, SMSProviderClass) = self.loadLinOtpSMSProvider()
-        log.debug("[sendSMS] smsprovider: %s, class: %s"
-                                             % (SMSProvider, SMSProviderClass))
 
-        try:
-            sms = getSMSProviderClass(SMSProvider, SMSProviderClass)()
-        except Exception as exc:
-            log.exception("[sendSMS] Failed to load SMSProvider: %r" % exc)
-            raise exc
+        owner = get_token_owner(self)
+        if not owner or not owner.login:
+            raise Exception("Missing required token owner")
 
-        try:
-            # # now we need the config from the env
-            log.debug("[sendSMS] loading SMS configuration for class %s" % sms)
-            config = self.loadLinOtpSMSProviderConfig()
-            log.debug("[sendSMS] config: %r" % config)
-            sms.loadConfig(config)
-        except Exception as exc:
-            log.exception("[sendSMS] Failed to load SMSProviderConfig: %r" % exc)
-            raise Exception("Failed to load SMSProviderConfig: %r" % exc)
+        import linotp.provider
+        sms_provider = linotp.provider.loadProviderFromPolicy(
+                                                        provider_type='sms',
+                                                        user=owner)
+        if not sms_provider:
+            raise Exception('unable to load provider')
 
         log.debug("[sendSMS] submitMessage: %r, to phone %r", message, phone)
-        ret = sms.submitMessage(phone, message)
+        ret = sms_provider.submitMessage(phone, message)
         if not ret:
             raise Exception("Failed to submit message")
+
         log.debug("[sendSMS] message submitted")
 
-        # # after submit set validity time
+        # after submit set validity time
         self.setValidUntil()
 
         # return OTP for selftest purposes
         log.debug("[sendSMS] end. sms message submitted: message %r"
                                                                 % (message))
         return ret, message
-
-    def loadLinOtpSMSProvider(self):
-        '''
-        get the SMS Provider class definition
-
-        :return: tuple of SMSProvider and Provider Class as string
-        :rtype: tuple of (string, string)
-        '''
-        log.debug('[loadLinOtpSMSProvider] begin. get the SMS Provider '
-                                                            'class definition')
-        smsProvider = getFromConfig("SMSProvider")
-
-        if smsProvider is not None:
-            (SMSProvider, SMSProviderClass) = smsProvider.rsplit(".", 1)
-
-        log.debug('[loadLinOtpSMSProvider] end. using the following '
-                   'SMS Provider class: (SMSProvider: %r,SMSProviderClass: %r)'
-                  % (SMSProvider, SMSProviderClass))
-        return (SMSProvider, SMSProviderClass)
-
-        # SMSProvider         = "smsprovider.HttpSMSProvider"
-        # #SMSProvider         = "HttpSMSProvider"
-        # SMSProviderClass    = "HttpSMSProvider"
-        # return (SMSProvider,SMSProviderClass)
-
-    def loadLinOtpSMSProviderConfig(self):
-        '''
-        load the defined sms provider config definition
-
-        :return: dict of the sms provider definition
-        :rtype: dict
-        '''
-        log.debug('[loadLinOtpSMSProviderConfig] begin. load the sms '
-                                                  'provider config definition')
-
-        # # get User realm
-        config = {}
-
-        tConfig = getFromConfig("enclinotp.SMSProviderConfig", None)
-        if tConfig is None:
-            tConfig = getFromConfig("SMSProviderConfig", "{}")
-
-        # # fix the handling of multiline config entries
-        lconfig = []
-        lines = tConfig.splitlines()
-        for line in lines:
-            line = line.strip('\\')
-            if len(line) > 0:
-                lconfig.append(line)
-
-        tConfig = " ".join(lconfig)
-        log.debug("[loadLinOtpSMSProviderConfig] providerconfig: %s"
-                                                                    % tConfig)
-        try:
-            if tConfig is not None:
-                config = loads(tConfig)
-        except ValueError as exx:
-            raise ValueError('Failed to load provider config:%r %r'
-                             % (tConfig, exx))
-
-        log.debug('[loadLinOtpSMSProviderConfig] sms provider config'
-                                                ' found: config %r' % (config))
-        return config
-
-        # config  = {'URL':'http://127.0.0.1:5001/validate/ok',
-        #      'PARAMETER': {
-        #                  'von':'OWN_NUMBER',
-        #                  'passwort':'PASSWORD',
-        #                  'absender':'TYPE',
-        #                  'konto':'1'
-        #       },
-        #       'SMS_TEXT_KEY':'text',
-        #       'SMS_PHONENUMBER_KEY':'ziel',
-        #       'HTTP_Method':'GET',
-        #      }
-        # return config
 
     def loadLinOtpSMSValidTime(self):
         '''

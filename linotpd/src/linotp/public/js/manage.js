@@ -143,6 +143,12 @@ jQuery.validator.addMethod("resolvername", function(value, element, param){
     i18n.gettext("Please enter a valid resolver name. It may contain characters, numbers and '_-'.")
 );
 
+jQuery.validator.addMethod("providername", function(value, element, param){
+    return value.match(/^[a-zA-z0-9_\-]+$/i);
+    },
+    i18n.gettext("Please enter a valid provider name. It may contain characters, numbers and '_-'.")
+);
+
 jQuery.validator.addMethod("ldap_uri", function(value, element, param){
     return value.match(param);
     },
@@ -1696,7 +1702,7 @@ function do_dialog_icons(){
             primary: 'ui-icon-document-b'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Set Default")').button({
+    $('.ui-dialog-buttonpane').find('button:contains("Set Default"), button:contains("Set as default")').button({
         icons: {
             primary: 'ui-icon-flag'
         }
@@ -2238,6 +2244,148 @@ function support_view(){
     });
     return false;
 }
+
+
+function load_sms_providers(){
+    show_waiting();
+    var params = {'type': 'sms',
+                  'session':getsession(),
+                  };
+    $.get('/system/getProvider', params,
+      function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+
+        smsProviders = data.result.value;
+
+        // Set selected provider globally
+        selectedSMSProvider = null;
+
+        var providers = $('<ol id="sms_providers_select" class="select_list ui-selectable"></ol>');
+        var count = 0;
+
+        $.each(smsProviders, function(key, provider){
+            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+            if(provider.Default === true){
+                element += ' <span class="default">(Default)</span>';
+            }
+            element += '</li>';
+            providers.append(element);
+            count++;
+        });
+
+        $("#button_sms_provider_edit").button("disable");
+        $("#button_sms_provider_delete").button("disable");
+        $("#button_sms_provider_set_default").button("disable");
+
+        if (count > 0) {
+            $('#sms_providers_list').html(providers);
+
+            $('#sms_providers_select').selectable({
+                stop: function(event, ui){
+                    if($("#sms_providers_select .ui-selected").length > 0){
+                        selectedSMSProvider = escape($("#sms_providers_select .ui-selected .name").html());
+                        $("#button_sms_provider_edit").button("enable");
+                        $("#button_sms_provider_delete").button("enable");
+                        if(smsProviders[selectedSMSProvider].Default !== true){
+                            $("#button_sms_provider_set_default").button("enable");
+                        }
+                        else{
+                            $("#button_sms_provider_set_default").button("disable");
+                        }
+                    }
+                    else{
+                        selectedSMSProvider = null;
+                        $("#button_sms_provider_edit").button("disable");
+                        $("#button_sms_provider_delete").button("disable");
+                        $("#button_sms_provider_set_default").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                        function(key,value){
+                            $(value).find('*').removeClass("ui-selected");
+                        }
+                    );
+                }
+            });
+        }
+        else {
+            $('#sms_providers_list').html("");
+        };
+    });
+}
+
+
+function load_email_providers(){
+    show_waiting();
+
+    var params = { 'type': 'email', 'session':getsession()};
+    $.post('/system/getProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+
+        emailProviders = data.result.value;
+
+        // Set selected provider globally
+        selectedEmailProvider = null;
+
+        var providers = $('<ol id="email_providers_select" class="select_list ui-selectable"></ol>');
+        var count = 0;
+
+        $.each(emailProviders, function(key, provider){
+            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+            if(provider.Default === true){
+                element += ' <span class="default">(Default)</span>';
+            }
+            element += '</li>';
+            providers.append(element);
+            count++;
+        });
+
+        $("#button_email_provider_edit").button("disable");
+        $("#button_email_provider_delete").button("disable");
+        $("#button_email_provider_set_default").button("disable");
+
+        if (count > 0) {
+            $('#email_providers_list').html(providers);
+
+            $('#email_providers_select').selectable({
+                stop: function(event, ui){
+                    if($("#email_providers_select .ui-selected").length > 0){
+                        selectedEmailProvider = escape($("#email_providers_select .ui-selected .name").html());
+                        $("#button_email_provider_edit").button("enable");
+                        $("#button_email_provider_delete").button("enable");
+                        if(emailProviders[selectedEmailProvider].Default !== true){
+                            $("#button_email_provider_set_default").button("enable");
+                        }
+                        else{
+                            $("#button_email_provider_set_default").button("disable");
+                        }
+                    }
+                    else{
+                        selectedEmailProvider = null;
+                        $("#button_email_provider_edit").button("disable");
+                        $("#button_email_provider_delete").button("disable");
+                        $("#button_email_provider_set_default").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                        function(key,value){
+                            $(value).find('*').removeClass("ui-selected");
+                        }
+                    );
+                }
+            });
+        }
+        else {
+            $('#email_providers_list').html("");
+        };
+    });
+}
+
 
 function load_system_config(){
     show_waiting();
@@ -4102,6 +4250,241 @@ $(document).ready(function(){
     });
     $('#tab_token_settings').tabs();
 
+    /*********************************************************************
+     * SMS Provider config
+     */
+
+    var $dialog_sms_provider_config = $('#dialog_sms_providers').dialog({
+        autoOpen: false,
+        title: 'SMS Provider Config',
+        dialogClass: "dialog-sms-provider",
+        width: 600,
+        maxHeight: 600,
+        minHeight: 300,
+        modal: true,
+        buttons: {
+            'New': { click:  function(){
+                    sms_provider_form_dialog("");
+                    },
+                id: "button_sms_provider_new",
+                text: "New"
+            },
+            'Edit': { click: function(){
+                    if(selectedSMSProvider){
+                        sms_provider_form_dialog(selectedSMSProvider);
+                    }
+                },
+                id:"button_sms_provider_edit",
+                text: "Edit"
+            },
+            'Delete': { click: function(){
+                    if(selectedSMSProvider){
+                        $('#dialog_sms_provider_delete').dialog("open");
+                    }
+                },
+                id: "button_sms_provider_delete",
+                text:"Delete"
+            },
+            'Close': { click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_sms_providers_close",
+                text:"Close"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_sms_providers();
+            do_dialog_icons();
+            $('.ui-dialog :button').blur();
+        }
+    });
+
+    $dialog_sms_provider_edit = $('#dialog_sms_provider_edit').dialog({
+        autoOpen: false,
+        title: 'SMS Provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Cancel': {click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_sms_provider_cancel",
+                text: "Cancel"
+                },
+            'Save': {click: function(){
+                    if ($("#form_smsprovider").valid()) {
+                        save_sms_provider_config();
+                    }
+                },
+                id: "button_sms_provider_save",
+                text: "Save"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_sms_provider_edit();
+            do_dialog_icons();
+        },
+        close: function(event, ui) {
+            load_sms_providers();
+        }
+    });
+
+    $dialog_sms_provider_delete = $('#dialog_sms_provider_delete').dialog({
+        autoOpen: false,
+        title: 'Deleting provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Delete': {
+                click: function(){
+                    delete_sms_provider(selectedSMSProvider);
+                    $(this).dialog('close');
+                },
+                id: "button_sms_provider_delete_delete",
+                text: "Delete"
+            },
+            "Cancel": {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_sms_provider_delete_cancel",
+                text: "Cancel"
+            }
+        },
+        open: function() {
+            do_dialog_icons();
+            translate_dialog_sms_provider_delete();
+        },
+        close: function(event, ui) {
+            load_sms_providers();
+        }
+    });
+
+    $('#button_sms_provider_set_default').click(function(){
+        if(selectedSMSProvider){
+            set_default_provider('sms', selectedSMSProvider);
+        }
+    });
+
+
+    /*********************************************************************
+     * Email provider config
+     */
+
+    var $dialog_email_provider_config = $('#dialog_email_providers').dialog({
+        autoOpen: false,
+        title: 'Email Provider Config',
+        dialogClass: "dialog-email-provider",
+        width: 600,
+        maxHeight: 600,
+        minHeight: 300,
+        modal: true,
+        buttons: {
+            'New': { click:  function(){
+                    email_provider_form_dialog("");
+                    },
+                id: "button_email_provider_new",
+                text: "New"
+            },
+            'Edit': { click: function(){
+                    if(selectedEmailProvider){
+                        email_provider_form_dialog(selectedEmailProvider);
+                    }
+                },
+                id:"button_email_provider_edit",
+                text: "Edit"
+            },
+            'Delete': { click: function(){
+                    if(selectedEmailProvider){
+                        $('#dialog_email_provider_delete').dialog("open");
+                    }
+                },
+                id: "button_email_provider_delete",
+                text:"Delete"
+            },
+            'Close': { click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_email_providers_close",
+                text:"Close"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_email_providers();
+            do_dialog_icons();
+            $('.ui-dialog :button').blur();
+        }
+    });
+
+    $dialog_email_provider_edit = $('#dialog_email_provider_edit').dialog({
+        autoOpen: false,
+        title: 'Email Provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_email_provider_cancel",
+                text: "Cancel"
+                },
+            'Save': {
+                click: function(){
+                    if ($("#form_emailprovider").valid()) {
+                        save_email_provider_config();
+                    }
+                },
+                id: "button_email_provider_save",
+                text: "Save"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_email_provider_edit();
+            do_dialog_icons();
+        },
+        close: function(event, ui) {
+            load_email_providers();
+        }
+    });
+
+    $dialog_email_provider_delete = $('#dialog_email_provider_delete').dialog({
+            autoOpen: false,
+            title: 'Deleting EMail provider',
+            width: 600,
+            modal: true,
+            buttons: {
+                'Delete': {
+                    click: function(){
+                        delete_email_provider(selectedEmailProvider);
+                        $(this).dialog('close');
+                    },
+                    id: "button_email_provider_delete_delete",
+                    text: "Delete"
+                },
+                "Cancel": {
+                    click: function(){
+                        $(this).dialog('close');
+                    },
+                    id: "button_email_provider_delete_cancel",
+                    text: "Cancel"
+                }
+            },
+            open: function() {
+                do_dialog_icons();
+                translate_dialog_email_provider_delete();
+            },
+            close: function(event, ui) {
+                load_email_providers();
+            }
+        });
+
+    $('#button_email_provider_set_default').click(function(){
+        if(selectedEmailProvider){
+            set_default_provider('email', selectedEmailProvider);
+        }
+    });
+
 
 
     /*********************************************************************
@@ -4171,7 +4554,17 @@ $(document).ready(function(){
         load_system_config();
         $dialog_system_config.dialog('open');
     });
+    
+    $('#menu_sms_provider_config').click(function(){
+        load_sms_providers();
+        $dialog_sms_provider_config.dialog('open');
+    });
 
+    $('#menu_email_provider_config').click(function(){
+        load_email_providers();
+        $dialog_email_provider_config.dialog('open');
+    });
+    
     $('#menu_token_config').click(function(){
     try {
           load_token_config();
@@ -4656,6 +5049,274 @@ $(document).ready(function(){
 });
 //--------------------------------------------------------------------------------------
 // End of document ready
+
+
+/************************************************************************
+ *
+ *  SMS Provider edit
+ */
+
+function sms_provider_form_dialog(name){
+    if(name){
+        $("#sms_provider_name").val(name);
+        $("#sms_provider_class").val(smsProviders[name].Class);
+        $("#sms_provider_config").val(smsProviders[name].Config);
+        $("#sms_provider_timeout").val(smsProviders[name].Timeout);
+    }
+    else{
+        $("#sms_provider_name").val($("#sms_provider_name").attr("placeholder"));
+        // to be replaced by getProviderDef
+        $("#sms_provider_class").val($("#sms_provider_class").attr("placeholder"));
+        $("#sms_provider_config").val($("#sms_provider_config").attr("placeholder"));
+        $("#sms_provider_timeout").val($("#sms_provider_timeout").attr("placeholder"));
+    }
+
+    $("#dialog_sms_provider_edit").dialog("open");
+
+    $("#form_smsprovider").validate({
+        rules: {
+            sms_provider_config: {
+                valid_json: true
+            },
+            sms_provider_name: {
+                required: true,
+                minlength: 4,
+                number: false,
+                providername: true
+            }
+        },
+        debug: true
+    });
+}
+
+function save_sms_provider_config(){
+    // Load Values from still opened form
+    var provider = $('#sms_provider_name').val();
+    var params = {
+        'name': provider,
+        'class': $('#sms_provider_class').val(),
+        'config': $('#sms_provider_config').val(),
+        'timeout': $('#sms_provider_timeout').val(),
+        'type': 'sms',
+        'session': getsession(),
+    };
+
+    show_waiting();
+
+    $.post('/system/setProvider', params,
+      function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+        load_sms_providers();
+        if (data.result.status == true && data.result.value == true) {
+            $dialog_sms_provider_edit.dialog('close');
+        } else if (data.result.value == false) {
+            alert_box({'title': i18n.gettext('Failed to save provider'),
+                       'text': escape(data.detail.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+
+            var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                                  escape(provider));
+            alert_info_text({'text': message,
+                             'type': ERROR,
+                             'is_escaped': true});
+        } else {
+            alert_box({'title': i18n.gettext('Error saving provider'),
+                       'text': escape(data.result.error.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+        }
+    });
+}
+
+function delete_sms_provider(provider){
+    show_waiting();
+    var params = {'name': provider,
+                  'type': 'sms',
+                  'session': getsession()
+                  };
+    $.post('/system/delProvider', params,
+      function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+        load_sms_providers();
+        if (data.result.status == true && data.result.value == true) {
+
+            var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                  escape(provider));
+
+            alert_info_text({'text': message,
+                             'is_escaped': true});
+
+        } else if (data.result.value == false) {
+            alert_box({'title': i18n.gettext('Failed to delete provider'),
+                       'text': escape(data.detail.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+
+            var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                  escape(provider));
+            alert_info_text({'text': message,
+                             'type': ERROR,
+                             'is_escaped': true});
+        } else {
+            alert_box({'title': i18n.gettext('Error deleting provider'),
+                       'text': escape(data.result.error.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+        }
+    });
+}
+
+function set_default_provider(type, provider){
+    show_waiting();
+            var params = {'name': provider,
+                          'type': type,
+                          'session': getsession()
+                         };
+            $.post('/system/setDefaultProvider', params,
+              function(data, textStatus, XMLHttpRequest){
+                hide_waiting();
+
+                window['load_'+type+'_providers']();
+
+                if (data.result.status == true && data.result.value == true) {
+
+                    var message = sprintf(i18n.gettext('Provider %s set as default'),
+                                          escape(provider));
+
+                    alert_info_text({'text': message,
+                                     'is_escaped': true});
+
+                } else if (data.result.value == false) {
+                    alert_box({'title': i18n.gettext('Failed to set default provider'),
+                               'text': escape(data.detail.message),
+                               'type': ERROR,
+                               'is_escaped': true});
+
+                    var message = sprintf(i18n.gettext('Failed to set default provider %s'),
+                                          escape(provider));
+                    alert_info_text({'text': message,
+                                     'type': ERROR,
+                                     'is_escaped': true});
+                } else {
+                    alert_box({'title': i18n.gettext('Error setting default provider'),
+                               'text': escape(data.result.error.message),
+                               'type': ERROR,
+                               'is_escaped': true});
+                }
+            });
+}
+
+/************************************************************************
+ *
+ *  Email provider edit
+ */
+
+function email_provider_form_dialog(name){
+    if(name){
+        $("#email_provider_name").val(name);
+        $("#email_provider_class").val(emailProviders[name].Class);
+        $("#email_provider_config").val(emailProviders[name].Config);
+        $("#email_provider_timeout").val(emailProviders[name].Timeout);
+    }
+    else{
+        $("#email_provider_name").val($("#email_provider_name").attr("placeholder"));
+        // to be replaced by getProviderDef
+        $("#email_provider_class").val($("#email_provider_class").attr("placeholder"));
+        $("#email_provider_config").val($("#email_provider_config").attr("placeholder"));
+        $("#email_provider_timeout").val($("#email_provider_timeout").attr("placeholder"));
+    }
+
+    $("#dialog_email_provider_edit").dialog("open");
+
+    $("#form_emailprovider").validate({
+        rules: {
+            email_provider_config: {
+                valid_json: true
+            },
+            email_provider_name: {
+                required: true,
+                minlength: 4,
+                number: false,
+                providername: true
+            }
+        }
+    });
+}
+
+function save_email_provider_config(){
+    // Load Values from still opened form
+    var provider = $('#email_provider_name').val();
+    var params = {
+        'name': provider,
+        'class': $('#email_provider_class').val(),
+        'config': $('#email_provider_config').val(),
+        'timeout': $('#email_provider_timeout').val(),
+        'type': 'email',
+        'session': getsession()
+    };
+    show_waiting();
+
+    $.post('/system/setProvider', params,
+    function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+        if (data.result.status == true && data.result.value == true) {
+            $dialog_email_provider_edit.dialog('close');
+        } else if (data.result.value == false) {
+            alert_box({'title': i18n.gettext('Failed to save provider'),
+                       'text': escape(data.detail.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+
+            var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                                  escape(provider));
+            alert_info_text({'text': message,
+                             'type': ERROR,
+                             'is_escaped': true});
+        } else {
+            alert_box({'title': i18n.gettext('Error saving provider'),
+                       'text': escape(data.result.error.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+        }
+    });
+}
+
+function delete_email_provider(provider){
+    show_waiting();
+    var params =  {'name': provider,
+                   'type': 'email',
+                   'session': getsession()};
+    $.post('/system/delProvider', params,
+      function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+        load_email_providers();
+        if (data.result.status == true && data.result.value == true) {
+            var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                  escape(provider));
+
+            alert_info_text({'text': message,
+                             'is_escaped': true});
+
+        } else if (data.result.value == false) {
+            alert_box({'title': i18n.gettext('Failed to delete provider'),
+                       'text': escape(data.detail.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+
+            var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                  escape(provider));
+            alert_info_text({'text': message,
+                             'type': ERROR,
+                             'is_escaped': true});
+        } else {
+            alert_box({'title': i18n.gettext('Error deleting provider'),
+                       'text': escape(data.result.error.message),
+                       'type': ERROR,
+                       'is_escaped': true});
+        }
+    });
+}
 
 
 /************************************************************************

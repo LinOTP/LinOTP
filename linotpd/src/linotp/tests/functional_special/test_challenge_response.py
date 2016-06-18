@@ -1416,7 +1416,7 @@ class TestChallengeResponseController(TestController):
         typ = 'email'
 
         params = {
-            'EmailProvider': 'linotp.lib.emailprovider.SMTPEmailProvider',
+            'EmailProvider': 'linotp.provider.emailprovider.SMTPEmailProvider',
             'EmailProviderConfig': '{ "SMTP_SERVER": "mail.example.com",\
                                "SMTP_USER": "secret_user",\
                                "SMTP_PASSWORD": "secret_pasword" }',
@@ -1765,7 +1765,7 @@ class TestChallengeResponseController(TestController):
         typ = 'email'
 
         params = {
-            'EmailProvider': 'linotp.lib.emailprovider.SMTPEmailProvider',
+            'EmailProvider': 'linotp.provider.emailprovider.SMTPEmailProvider',
             'EmailProviderConfig': '{ "SMTP_SERVER": "mail.example.com",\
                                "SMTP_USER": "secret_user",\
                                "SMTP_PASSWORD": "secret_pasword" }',
@@ -1924,7 +1924,7 @@ class TestChallengeResponseController(TestController):
         typ = 'email'
 
         params = {
-            'EmailProvider': 'linotp.lib.emailprovider.SMTPEmailProvider',
+            'EmailProvider': 'linotp.provider.emailprovider.SMTPEmailProvider',
             'EmailProviderConfig': '{ "SMTP_SERVER": "mailss.example.com",\
                                "SMTP_USER": "secret_user",\
                                "SMTP_PASSWORD": "secret_pasword" }',
