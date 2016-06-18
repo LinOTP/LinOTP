@@ -760,7 +760,7 @@ class OcraTest(TestController):
 
         response = self.app.get(url(controller='validate', action='check_s'),
                                 params=p)
-        self.assertTrue('"value": true' in response, response)
+        self.assertTrue('"value": false' in response, response)
 
         # -3.a- calculate the otp response from the challenge
         jresp = json.loads(response.body)
@@ -3795,7 +3795,7 @@ class OcraTest(TestController):
             if i == 4:
                 self.assertTrue("validate/check_t" in curl, curl)
 
-            self.assertTrue('"value": true' in response, response)
+            self.assertTrue('"value": false' in response, response)
 
             otp = ocra.callcOtp(challenge, counter=i)
 
@@ -4235,7 +4235,7 @@ class OcraTest(TestController):
                                                                 challenge_data=message,
                                                                 params=enroll_param)
 
-            self.assertTrue('"value": true' in response, response)
+            self.assertTrue('"value": false' in response, response)
 
             # now verify that the qrcode image is the same
             # as the qr code generated from the lseqr value
