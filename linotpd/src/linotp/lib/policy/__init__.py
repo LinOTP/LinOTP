@@ -2889,6 +2889,17 @@ def _get_auth_PinPolicy(realm=None, user=None):
         client: IP
         user  : some user
     '''
+
+    '''
+        policy value mapping - from policy defintion:
+            'value': [0, 1, 2, "token_pin", "password", "only_otp"],
+    '''
+    pin_policy_lookup = {
+        "token_pin": 0,
+        'password': 1,
+        "only_otp": 2,
+    }
+
     log.debug("[get_auth_PinPolicy]")
     client = _get_client()
 
@@ -2904,6 +2915,10 @@ def _get_auth_PinPolicy(realm=None, user=None):
     log.debug("got policy %s for user %s@%s  client %s"
               % (pol, login, realm, client))
     pin_check = getPolicyActionValue(pol, "otppin", max=False)
+
+    # we map the named values back, to provide interface compatibility
+    if pin_check in pin_policy_lookup:
+        pin_check = pin_policy_lookup[pin_check]
 
     return pin_check
 
