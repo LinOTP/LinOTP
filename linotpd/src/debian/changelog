@@ -1,3 +1,10 @@
+linotp (2.8.1.2+custom02-1) jessie; urgency=low
+
+  Enhancement:
+  * Server: Add multiple providers
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 20 Jun 2016 16:24:09 +0200
+
 linotp (2.8.1.2-1) jessie; urgency=low
 
   Enhancements:
