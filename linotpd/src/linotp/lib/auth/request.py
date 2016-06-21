@@ -122,14 +122,9 @@ class HttpRequest(Request):
         """
         log.debug("do_request")
 
-        ssl_verify = (self.sysconfig.get("remote.verify_ssl_certificate",
-                                         False) or False)
-
-        if type(ssl_verify) in [str, unicode]:
-            if ssl_verify.lower() == "true":
-                ssl_verify = True
-            else:
-                ssl_verify = False
+        verify_key = "remote.verify_ssl_certificate"
+        ssl_verify = (str(self.sysconfig.get(verify_key, False))
+                      .lower().strip() == 'true')
 
         params = {}
         params['pass'] = password.encode("utf-8")
