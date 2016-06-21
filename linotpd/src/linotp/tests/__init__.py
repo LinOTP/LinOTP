@@ -221,14 +221,15 @@ class TestController(unittest2.TestCase):
         # Clear state (e.g. cookies)
         self.app.reset()
 
+        pparams = {}
+        if upload_files:
+            pparams['upload_files'] = upload_files
+
         if client:
             if not headers:
                 headers = {}
             headers['REMOTE_ADDR'] = client
-
-        pparams = {}
-        if upload_files:
-            pparams['upload_files'] = upload_files
+            pparams['extra_environ'] = {'REMOTE_ADDR': client}
 
         if cookies:
             for key in cookies:
@@ -317,7 +318,8 @@ class TestController(unittest2.TestCase):
             headers=None,
             cookies=None,
             auth_user='admin',
-            upload_files=None
+            upload_files=None,
+            client=None
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -342,10 +344,11 @@ class TestController(unittest2.TestCase):
             headers=headers,
             cookies=cookies,
             upload_files=upload_files,
+            client=client
         )
 
     def make_admin_request(self, action, params=None, method=None,
-                           auth_user='admin', upload_files=None):
+                           auth_user='admin', client=None, upload_files=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -358,10 +361,11 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
+            client=client
         )
 
     def make_audit_request(self, action, params=None, method=None,
-                           auth_user='admin',):
+                           auth_user='admin', client=None,):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -373,10 +377,11 @@ class TestController(unittest2.TestCase):
             method=method,
             params=params,
             auth_user=auth_user,
+            client=client,
         )
 
     def make_manage_request(self, action, params=None, method=None,
-                            auth_user='admin', upload_files=None):
+                            auth_user='admin', client=None, upload_files=None):
         """
         Makes an authenticated request to /manage/'action'
         """
@@ -389,10 +394,11 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
+            client=client,
         )
 
     def make_system_request(self, action, params=None, method=None,
-                            auth_user='admin', upload_files=None):
+                            auth_user='admin', client=None, upload_files=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -405,10 +411,11 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
+            client=client
         )
 
     def make_ocra_request(self, action, params=None, method=None,
-                          auth_user='admin', upload_files=None):
+                          auth_user='admin', client=None, upload_files=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -421,10 +428,12 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
+            client=client,
         )
 
     def make_gettoken_request(self, action, params=None, method=None,
-                              auth_user='admin', upload_files=None):
+                              auth_user='admin', client=None,
+                              upload_files=None):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -437,7 +446,33 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
+            client=client
         )
+
+    # due to noestests search pattern for test, we have to mangle the name here :(
+    def make_t_esting_request(self, action, params=None, method=None,
+                              auth_user='admin', client=None,
+                              upload_files=None):
+        """
+        Makes an authenticated request to /admin/'action'
+        """
+        self.set_config_selftest()
+
+        if not params:
+            params = {}
+        res = self.make_authenticated_request(
+            'testing',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client
+        )
+        # unset the selftest after using the testing interface
+        self.set_config_selftest(unset=True)
+
+        return res
 
     def make_validate_request(self, action, params=None, method=None,
                               client=None):
@@ -454,7 +489,7 @@ class TestController(unittest2.TestCase):
             client=client,
         )
 
-    def set_config_selftest(self, auth_user='admin'):
+    def set_config_selftest(self, auth_user='admin', unset=False):
         """
         Set selfTest in LinOTP Config to 'True'
 
@@ -474,17 +509,27 @@ class TestController(unittest2.TestCase):
         All tests that still use set_config_selftest() should be slowly
         refactored to instead use the above mentioned methods.
         """
-        params = {
-            'selfTest': 'True',
-        }
-        response = self.make_system_request('setConfig', params,
-                                            auth_user=auth_user)
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue('setConfig selfTest:True'
-                        in content['result']['value'])
-        self.assertTrue(content['result']['value']['setConfig selfTest:True'])
-        self.isSelfTest = True
+        if unset:
+            params = {'key': 'selfTest'}
+            response = self.make_system_request('delConfig', params,
+                                                auth_user=auth_user)
+            content = TestController.get_json_body(response)
+            self.assertTrue(content['result']['status'])
+            self.assertTrue("delConfig selfTest" in response, response)
+            self.isSelfTest = False
+
+        else:
+            params = {
+                'selfTest': 'True',
+            }
+            response = self.make_system_request('setConfig', params,
+                                                auth_user=auth_user)
+            content = TestController.get_json_body(response)
+            self.assertTrue(content['result']['status'])
+            self.assertTrue('setConfig selfTest:True'
+                            in content['result']['value'])
+            self.assertTrue(content['result']['value']['setConfig selfTest:True'])
+            self.isSelfTest = True
 
     # *********************************************************************** #
         warnings.warn("The self-test modus is not recommended (anymore)!")
