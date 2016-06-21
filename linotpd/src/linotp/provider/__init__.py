@@ -466,19 +466,32 @@ def loadProvider(provider_type, provider_name=None):
 
     :return: the instantiated provider with already loaded configuration
     """
-    # if no provider is given, we try to lookup the default
-    if not provider_name:
-        config = getLinotpConfig()
-        default_provider_key = Default_Provider_Key[provider_type]
-        if default_provider_key in config:
-            provider_name = config[default_provider_key]
+    provider_info = {}
 
-    if provider_name:
+
+    config = getLinotpConfig()
+    default_provider_key = Default_Provider_Key[provider_type]
+
+    #
+    # if no provider is given, we try to lookup the default
+    #
+    if default_provider_key in config and not provider_name:
+        provider_name = config[default_provider_key]
+
+    #
+    # if there is no provider_name or the provider is a legacy one
+    # try to load it the legacy way
+    #
+    if not provider_name or provider_name == Legacy_Provider_Name:
+        provider_info = get_legacy_provider(provider_type=provider_type)
+
+    #
+    # in case of no provider_info the provider is
+    # either a new one or or a legacy converted one
+    #
+    if not provider_info:
         providers = getProvider(provider_type, provider_name=provider_name)
         provider_info = providers.get(provider_name)
-    else:
-        # if no given provider and no default, try to fallback to the old one
-        provider_info = get_legacy_provider(provider_type=provider_type)
 
     if not provider_info:
         raise Exception('Unable to load provider: %r' % provider_name)
@@ -494,7 +507,9 @@ def loadProvider(provider_type, provider_name=None):
     provider_config = {}
     config = provider_info['Config']
 
+    #
     # backward compatibility hack: fix the handling of multiline config entries
+    #
     lconfig = []
     lines = config.splitlines()
     for line in lines:
