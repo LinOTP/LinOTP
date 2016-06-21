@@ -180,9 +180,9 @@ def defineResolver(params):
     resolver.setDefinition(params)
     res = resolver.saveConfig()
 
-    getResolverObject(resolver_clazz + '.' + conf)
+    resolver = getResolverObject(resolver_clazz + '.' + conf)
 
-    return res
+    return resolver is not None
 
 
 def similar_resolver_exists(config_identifier):

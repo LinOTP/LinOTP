@@ -37,6 +37,7 @@ import json
 
 
 from sqlalchemy.engine import create_engine
+from sqlalchemy import engine_from_config
 import sqlalchemy
 
 from linotp.tests import TestController
@@ -61,6 +62,14 @@ class TestResolver(TestController):
         """
         create sql useridresolver
         """
+
+        engine = engine_from_config(config, 'sqlalchemy.')
+        db_url = engine.url
+
+        server = db_url.host
+        if db_url.port:
+            server = "%s:%s" % (db_url.host, db_url.port)
+
         if not user_mapping:
             user_mapping = {}
         usermap = {
@@ -82,15 +91,17 @@ class TestResolver(TestController):
         resolver_def = {
                 'Map': json.dumps(usermap),
                 'name': name,
-                'Database': u'yourUserDB',
+
+                'Server': server,
+                'Database': db_url.database,
+                'Driver': db_url.drivername,
+                'User': db_url.username,
+                'Password': db_url.password,
+
                 'Where': u'',
                 'Encoding': u'',
-                'Driver': u'mysql',
-                'Server': u'127.0.0.1',
                 'Limit': u'40',
-                'User': u'user',
                 'Table': u'usertable',
-                'Password': u'secret',
                 'type': u'sqlresolver',
                 'Port': u'3306',
                 'conParams': u''}

@@ -577,6 +577,7 @@ class SystemController(BaseController):
         """
         res = {}
         param = {}
+        resolver_loaded = False
 
         try:
             param.update(request.params)
@@ -592,10 +593,16 @@ class SystemController(BaseController):
                             " with same name", new_resolver_name)
                 res = deleteResolver(new_resolver_name)
 
-            res = defineResolver(param)
+            resolver_loaded = defineResolver(param)
+            if not resolver_loaded:
+                deleteResolver(new_resolver_name)
+                msg = (_("Unable to instantiate the resolver %r"
+                         "Please verify configuration or connection!") %
+                       new_resolver_name)
+                raise ResolverLoadConfigError(msg)
 
             Session.commit()
-            return sendResult(response, res, 1)
+            return sendResult(response, resolver_loaded, 1)
 
         except ResolverLoadConfigError as exx:
             log.exception("Failed to load resolver definition %r \n %r",
