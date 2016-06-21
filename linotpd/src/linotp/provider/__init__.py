@@ -488,7 +488,7 @@ def loadProvider(provider_type, provider_name=None):
         provider_class_obi = _load_provider_class(provider_class)
         provider = provider_class_obi()
     except Exception as exc:
-        log.exception("Failed to load provider: %r" % exc)
+        log.exception("Failed to load provider: %r - %r", provider_class, exc)
         raise exc
 
     provider_config = {}

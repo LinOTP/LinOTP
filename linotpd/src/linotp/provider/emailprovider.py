@@ -73,6 +73,7 @@ class IEmailProvider(object):
 
 @provider_registry.class_entry('SMTPEmailProvider')
 @provider_registry.class_entry('linotp.provider.emailprovider.SMTPEmailProvider')
+@provider_registry.class_entry('linotp.lib.emailprovider.SMTPEmailProvider')
 class SMTPEmailProvider(IEmailProvider):
     """
     Sends e-mail over a SMTP server.

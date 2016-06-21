@@ -867,7 +867,10 @@ class SmsTokenClass(HmacTokenClass):
 
         log.debug("[sendSMS] sending SMS to phone number %s " % phone)
 
+        # we require the token owner to get the phone number and the provider
         owner = get_token_owner(self)
+        if not owner or not owner.login:
+            raise Exception("Missing required token owner")
 
         sms_provider = loadProviderFromPolicy(provider_type='sms', user=owner)
 
