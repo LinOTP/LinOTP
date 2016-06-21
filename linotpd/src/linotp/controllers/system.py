@@ -581,6 +581,16 @@ class SystemController(BaseController):
         try:
             param.update(request.params)
             log.info("[setResolver] saving configuration: %r" % param)
+            new_resolver_name = param.get('name', '')
+            if not new_resolver_name:
+                raise ParameterError('missing required parameter "name"')
+
+            # delete resolver with same name if it exists
+            resolvers = getResolverList()
+            if new_resolver_name in resolvers:
+                log.warning("creating resolver <%s> removed previous resolver"
+                            " with same name", new_resolver_name)
+                res = deleteResolver(new_resolver_name)
 
             res = defineResolver(param)
 
@@ -588,8 +598,8 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except ResolverLoadConfigError as exx:
-            log.exception("Failed to load resolver definition %r \n %r"
-                      % (exx, param))
+            log.exception("Failed to load resolver definition %r \n %r",
+                          exx, param)
             Session.rollback()
             return sendError(response, exx)
 
