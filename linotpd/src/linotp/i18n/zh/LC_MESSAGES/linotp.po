@@ -103,7 +103,7 @@ msgstr "搜索审计日志出错： %s"
 msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
 msgstr "有效值是 'ocra' 或 'ocra2'. 您提供的是 %s"
 
-msgid "Missing required parameter \"state\" or\"transactionid\"!"
+msgid "Missing required parameter \"state\" or \"transactionid\"!"
 msgstr ""
 
 msgid "Missing required parameter \"serial\" or \"user\"!"
@@ -111,6 +111,63 @@ msgstr ""
 
 msgid "Missing required parameter \"pass\"!"
 msgstr ""
+
+#, fuzzy, python-format
+msgid "You do not have the rights to see these realms: %r. Check the policies!"
+msgstr "您没有权限监测下列域：%r。请检查您的策略！"
+
+msgid "Support not available, your product is unlicensed"
+msgstr "支持不可用"
+
+#, fuzzy
+msgid "License already installed!"
+msgstr "许可提醒："
+
+msgid "license file is empty!"
+msgstr "缺少许可证文件！"
+
+msgid "signature could not be verified!"
+msgstr "签名无效！"
+
+msgid "no license expiration information in license "
+msgstr "缺少许可证期限信息"
+
+msgid "no license subscription information in license"
+msgstr "缺少许可证订阅信息"
+
+msgid "invalid license (old license style)"
+msgstr "无效许可证（旧的许可证格式）"
+
+msgid "tokens used"
+msgstr "令牌已被使用"
+
+msgid "tokens supported"
+msgstr "令牌已被许可"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "不支持日期格式 %r"
+
+msgid "expired - valid till"
+msgstr "过期 - 期限至"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr "getTokenOwner：用户 %s/%s 和令牌 %s 包含在多个域： %s内。"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr "getTokenOwner：用户 %s 位于分配器 %s 的令牌 %s 无法在任何域内找到！"
+
+msgid "OTP seed"
+msgstr "OTP 密钥"
+
+msgid "URL for OCRA token"
+msgstr "OCRA 令牌链接"
 
 #, python-format
 msgid ""
@@ -172,40 +229,6 @@ msgstr "PIN 码包含特殊字符，虽然不应该如此（%s）"
 #, python-format
 msgid "The PIN contains other characters, although it should not! (%s)"
 msgstr "PIN 码包含特别字符，虽然不应该如此（%s）"
-
-#, python-format
-msgid ""
-"You do not have the administrative right to manage tools. You are missing a "
-"policy scope=tools, action=%s"
-msgstr "您没有运行这些工具的管理权限。缺少策略 'scope=tools' 和 'action=%s'。"
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr "策略 selfservice/max_count 缺少对令牌类型%s 的定义。"
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr "策略 selfservice/max_count 缺少对令牌类型 %s 在 %s 域中的定义。"
-
-msgid "The policy settings do not allow you to issue this request!"
-msgstr "该策略设置不允许您发起该请求！"
-
-msgid ""
-"You may not enroll any more tokens. Your maximum token number is reached!"
-msgstr "已达到最大令牌数量。您将不能登记更多的令牌。"
-
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr "支持的最大令牌数已溢出，请检查相关策略。"
-
-msgid "The policy settings do not allow you to request a serial by OTP!"
-msgstr "该策略不允许您请求 OTP 序列号！"
-
-#, python-format
-msgid "Unknown method in selfservice: %s"
-msgstr "自助服务中的未知方法： %s"
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr "您在所有域均没有权限：请检查您的策略。"
@@ -288,6 +311,10 @@ msgstr "您没有管理权限注册令牌 - 请检查策略。"
 msgid "You do not have the administrative right to init token %s of type %s."
 msgstr "您没有管理权限注册令牌 %s 类型为 %s 。"
 
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr "已达到最大令牌数量。您将不能登记更多的令牌。"
+
 #, python-format
 msgid ""
 "The maximum allowed number of tokens for the realm %s was reached. You can "
@@ -325,6 +352,10 @@ msgstr ""
 
 msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 msgstr "已超出最大允许令牌数量 - 请检查策略。"
+
+#, python-format
+msgid "Missing parameter: %r"
+msgstr ""
 
 #, python-format
 msgid ""
@@ -416,6 +447,12 @@ msgstr "在域 %s 内达到最大令牌数量 - 请检查策略 'tokencount'!"
 msgid "Failed to run checkPolicyPre. Unknown method: %s"
 msgstr "策略检查发生错误 - 未知方法： %s"
 
+#, fuzzy, python-format
+msgid ""
+"You do not have the administrative right to do this. You are missing a "
+"policy scope=%s, action=%s"
+msgstr "您没有运行这些工具的管理权限。缺少策略 'scope=tools' 和 'action=%s'。"
+
 #, python-format
 msgid "There is no policy gettoken/max_count definable for the tokentype %r"
 msgstr "缺少策略 'gettoken/maxcount' 针对令牌类型 %r"
@@ -424,6 +461,36 @@ msgid ""
 "You do not have the administrative right to view the audit trail. You are "
 "missing a policy scope=audit, action=view"
 msgstr "您没有管理权限查看审计日志。缺少策略 'scope=audit' 和 'action=view'。"
+
+#, python-format
+msgid ""
+"You do not have the administrative right to manage tools. You are missing a "
+"policy scope=tools, action=%s"
+msgstr "您没有运行这些工具的管理权限。缺少策略 'scope=tools' 和 'action=%s'。"
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr "策略 selfservice/max_count 缺少对令牌类型%s 的定义。"
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr "策略 selfservice/max_count 缺少对令牌类型 %s 在 %s 域中的定义。"
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "该策略设置不允许您发起该请求！"
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr "支持的最大令牌数已溢出，请检查相关策略。"
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr "该策略不允许您请求 OTP 序列号！"
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "自助服务中的未知方法： %s"
 
 #, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
@@ -454,91 +521,6 @@ msgstr "策略检查失败 - 未知控制器 %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "发现多个令牌 - 不能确定令牌的类型！"
-
-#, fuzzy, python-format
-msgid "You do not have the rights to see these realms: %r. Check the policies!"
-msgstr "您没有权限监测下列域：%r。请检查您的策略！"
-
-msgid "Support not available, your product is unlicensed"
-msgstr "支持不可用"
-
-#, fuzzy
-msgid "License already installed!"
-msgstr "许可提醒："
-
-msgid "license file is empty!"
-msgstr "缺少许可证文件！"
-
-msgid "signature could not be verified!"
-msgstr "签名无效！"
-
-msgid "no license expiration information in license "
-msgstr "缺少许可证期限信息"
-
-msgid "no license subscription information in license"
-msgstr "缺少许可证订阅信息"
-
-msgid "invalid license (old license style)"
-msgstr "无效许可证（旧的许可证格式）"
-
-msgid "tokens used"
-msgstr "令牌已被使用"
-
-msgid "tokens supported"
-msgstr "令牌已被许可"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "不支持日期格式 %r"
-
-msgid "expired - valid till"
-msgstr "过期 - 期限至"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
-msgstr "getTokenOwner：用户 %s/%s 和令牌 %s 包含在多个域： %s内。"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr "getTokenOwner：用户 %s 位于分配器 %s 的令牌 %s 无法在任何域内找到！"
-
-msgid "OTP seed"
-msgstr "OTP 密钥"
-
-msgid "URL for OCRA token"
-msgstr "OCRA 令牌链接"
-
-#, python-format
-msgid "Missing parameter: %r"
-msgstr ""
-
-#, fuzzy, python-format
-msgid ""
-"You do not have the administrative right to do this. You are missing a "
-"policy scope=%s, action=%s"
-msgstr "您没有运行这些工具的管理权限。缺少策略 'scope=tools' 和 'action=%s'。"
-
-msgid "E-mail OTP Token"
-msgstr "OTP 令牌邮件"
-
-msgid "E-mail provider config"
-msgstr "电子邮件配置"
-
-msgid "Provider"
-msgstr "供应商"
-
-msgid "Provider config"
-msgstr "供应商配置"
-
-msgid "Challenge validity (sec)"
-msgstr "电子邮件挑战码有效性（秒）"
-
-msgid "Time between e-mails (sec)"
-msgstr "电子邮件间隔时间（秒）"
 
 msgid "E-mail token"
 msgstr "电子邮件令牌"
@@ -591,6 +573,42 @@ msgstr "通过电子邮件发送的电子邮件令牌标题。参数为 <opt> �
 
 msgid "User is not allowed to set email address"
 msgstr "用户不允许设置电子邮件地址！"
+
+#, fuzzy
+msgid "Forwarding Token"
+msgstr "激活令牌时，发生错误\n"
+
+#, fuzzy
+msgid ""
+"Here you can define to which token the authentication request should be "
+"forwarded."
+msgstr "在此，您可以指定转发至请求身份验证的 LinOTP 服务器。"
+
+#, fuzzy
+msgid "You can forward the OTP to a target serial number."
+msgstr "该验证请求既可以通过远程序列号传送，又可以通过远程用户传送。"
+
+msgid "forward serial"
+msgstr ""
+
+#, fuzzy
+msgid "Protect your token with a static pin"
+msgstr "通过固定 PIN 码保护自己的令牌："
+
+#, fuzzy
+msgid "Token Pin:"
+msgstr "令牌 PIN 码："
+
+msgid "enter PIN"
+msgstr "设置 PIN 码"
+
+msgid "confirm PIN"
+msgstr "确认 PIN 码"
+
+msgid ""
+"Specify if the target token fail counter should be incremented / resets or "
+"not"
+msgstr ""
 
 msgid "HMAC Token Settings"
 msgstr "HMAC 令牌设置"
@@ -824,8 +842,42 @@ msgid "QRToken Settings"
 msgstr "令牌设置："
 
 #, fuzzy
+msgid "Maximum concurrent challenges"
+msgstr "OCRA2 最大同时挑战数量"
+
+#, fuzzy
+msgid "Challenge Timeout"
+msgstr "OCRA 挑战超时"
+
+msgid "OTP length"
+msgstr "OTP 长度"
+
+#, fuzzy
+msgid "6 digits"
+msgstr "OTP 号"
+
+#, fuzzy
+msgid "8 digits"
+msgstr "OTP 号"
+
+#, fuzzy
+msgid "10 digits"
+msgstr "OTP 号"
+
+#, fuzzy
+msgid "Public key certificate"
+msgstr "CA 证书"
+
+#, fuzzy
+msgid "certificate id"
+msgstr "CA 证书"
+
+#, fuzzy
 msgid "QRToken - challenge/response Token"
 msgstr "OCRA  - 挑战/响应令牌"
+
+msgid "web ui generated"
+msgstr ""
 
 #, fuzzy
 msgid "Enroll your QRToken"
@@ -834,6 +886,58 @@ msgstr "注册您的 OCRA2 令牌"
 #, fuzzy
 msgid "enroll qrtoken"
 msgstr "令牌注册"
+
+#, fuzzy
+msgid "Activate your QRToken"
+msgstr "激活二维码令牌"
+
+#, fuzzy
+msgid "Select QRToken: "
+msgstr "已选令牌"
+
+#, fuzzy
+msgid "Enter pin: "
+msgstr "设置 PIN 码"
+
+#, fuzzy
+msgid "activate token"
+msgstr "激活二维码令牌"
+
+#, fuzzy
+msgid "Challenge triggered successfully"
+msgstr "令牌已成功同步"
+
+#, fuzzy
+msgid ""
+"Please scan the qr code and submit your response or enter the otp value in "
+"the form below."
+msgstr "请输入您的 OTP 值用于校验。"
+
+#, fuzzy
+msgid "OTP Value: "
+msgstr "OTP 值"
+
+msgid "finalize activation"
+msgstr ""
+
+#, fuzzy
+msgid "activate your QRToken"
+msgstr "激活二维码令牌"
+
+#, python-format
+msgid "Policy %s must have a value"
+msgstr ""
+
+msgid " or "
+msgstr ""
+
+#, fuzzy
+msgid "QRToken Pairing Url"
+msgstr "令牌设置："
+
+#, fuzzy
+msgid "QRToken Certificate"
+msgstr "CA 证书"
 
 msgid "RADIUS Token"
 msgstr "RADIUS 令牌"
@@ -973,21 +1077,6 @@ msgstr "远程用户的域"
 
 msgid "Remote user UserIdResolver"
 msgstr "远程用户的用户 ID 解析器"
-
-msgid "SMS OTP Token"
-msgstr "短信 OTP 令牌"
-
-msgid "SMS provider config"
-msgstr "短信供应商配置"
-
-msgid "Provider Config"
-msgstr "供应商配置"
-
-msgid "Timeout"
-msgstr "超时"
-
-msgid "Time between SMS (sec.)"
-msgstr "短信间隔时间(秒)"
 
 msgid "SMS OTP"
 msgstr "短信 OTP"
@@ -1190,6 +1279,20 @@ msgstr "注册 YubiKey"
 msgid "%d tokens of %d migrated"
 msgstr "%d  %d 令牌转移"
 
+#, fuzzy
+msgid "Default provider could not be deleted!"
+msgstr "签名无效！"
+
+#, python-format
+msgid ""
+"Unable to delete - provider used in policies!\n"
+"[%s]"
+msgstr ""
+
+#, python-format
+msgid "Unknown provider! %r"
+msgstr ""
+
 msgid "Not a valid json string!"
 msgstr "缺少有效的 JSON 文本！"
 
@@ -1200,6 +1303,12 @@ msgstr "请指定有效的域的名称。这只能由字母、数字和 '_-.' �
 
 msgid ""
 "Please enter a valid resolver name. It may contain characters, numbers and "
+"'_-'."
+msgstr "请指定有效的解析器名。这只能由字母、数字和 '_-.' 组成。"
+
+#, fuzzy
+msgid ""
+"Please enter a valid provider name. It may contain characters, numbers and "
 "'_-'."
 msgstr "请指定有效的解析器名。这只能由字母、数字和 '_-.' 组成。"
 
@@ -1369,6 +1478,13 @@ msgid "Please select the token first."
 msgstr "请您选择一个令牌"
 
 #, fuzzy
+msgid "Cannot save realm"
+msgstr "远程用户的域"
+
+msgid "Please select at least one UserIdResolver from the list"
+msgstr ""
+
+#, fuzzy
 msgid "No resolver selected"
 msgstr "目标解析器"
 
@@ -1404,8 +1520,95 @@ msgstr "LDAP 连接测试"
 msgid "HTTP Connection Test"
 msgstr "LDAP 连接测试"
 
+#, fuzzy
+msgid "HTTP Test"
+msgstr "TOTP 令牌"
+
 msgid "Form Validation Error"
 msgstr "表单输入错误"
+
+msgid "Token Config"
+msgstr "令牌配置"
+
+#, fuzzy
+msgid "Failed to save provider"
+msgstr "激活令牌时，发生错误\n"
+
+#, fuzzy, python-format
+msgid "Failed to save provider %s"
+msgstr "激活令牌时，发生错误\n"
+
+#, fuzzy
+msgid "Error saving provider"
+msgstr "加载 SQL 解析时，发生错误"
+
+#, fuzzy, python-format
+msgid "Provider %s deleted"
+msgstr "指令已被删除。"
+
+msgid "Unknown server error occured"
+msgstr ""
+
+#, fuzzy
+msgid "Failed to delete provider"
+msgstr "删除令牌时，发生错误\n"
+
+#, fuzzy, python-format
+msgid "Failed to delete provider %s"
+msgstr "删除令牌时，发生错误\n"
+
+#, fuzzy
+msgid "Error deleting provider"
+msgstr "加载 SQL 解析时，发生错误"
+
+#, python-format
+msgid "Provider %s set as default"
+msgstr ""
+
+#, fuzzy
+msgid "Failed to set default provider"
+msgstr "错误计数器重置出错\n"
+
+#, fuzzy, python-format
+msgid "Failed to set default provider %s"
+msgstr "错误计数器重置出错\n"
+
+#, fuzzy
+msgid "Error setting default provider"
+msgstr "获取序列号错误"
+
+#, fuzzy
+msgid "A resolver with name"
+msgstr "解析器名称"
+
+msgid "already exists."
+msgstr ""
+
+#, fuzzy
+msgid "Do you want to overwrite the existing definition?"
+msgstr "您想删除解析器？"
+
+#, fuzzy
+msgid "Overwrite resolver definition"
+msgstr "请参照策略定义。"
+
+msgid "Overwrite"
+msgstr ""
+
+#, python-format
+msgid "The %s dialog contains unsaved changes."
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to close the dialog and discard the changes?"
+msgstr "您想删除域 "
+
+#, fuzzy
+msgid "Close Dialog"
+msgstr "关闭所有"
+
+msgid "Discard"
+msgstr ""
 
 msgid "Active"
 msgstr "启用"
@@ -1696,6 +1899,40 @@ msgstr "OCRA2 注册"
 msgid "OTP PIN"
 msgstr "OTP PIN 码"
 
+msgid "message / data"
+msgstr ""
+
+#, fuzzy
+msgid "Here you may try to authenticate using your QRToken."
+msgstr "在此，您可以测试 OTP 令牌认证。"
+
+#, fuzzy
+msgid "QRToken Login"
+msgstr "OCRA2 令牌"
+
+#, fuzzy
+msgid "Create challenge:"
+msgstr "获取挑战码"
+
+msgid "Check the status of your challenge:"
+msgstr ""
+
+msgid "check status"
+msgstr ""
+
+#, fuzzy
+msgid "Submit response:"
+msgstr "输入挑战码"
+
+msgid "Transaction-ID"
+msgstr ""
+
+msgid "OTP value"
+msgstr "OTP 值"
+
+msgid "submit"
+msgstr ""
+
 msgid "Here you may try to authenticate using your OTP token."
 msgstr "在此，您可以测试 OTP 令牌认证。"
 
@@ -1704,9 +1941,6 @@ msgstr "请输入您的用户名，OTP PIN 码和 OTP 值。"
 
 msgid "Login"
 msgstr "登录"
-
-msgid "OTP value"
-msgstr "OTP 值"
 
 msgid "LinOTP 2 Management"
 msgstr "LinOTP 管理"
@@ -1720,8 +1954,16 @@ msgstr "用户 ID 解析器"
 msgid "System Config"
 msgstr "系统配置"
 
-msgid "Token Config"
-msgstr "令牌配置"
+msgid "Provider Config"
+msgstr "供应商配置"
+
+#, fuzzy
+msgid "SMS Provider Config"
+msgstr "短信供应商配置"
+
+#, fuzzy
+msgid "Email Provider Config"
+msgstr "电子邮件配置"
 
 msgid "Policies"
 msgstr "策略"
@@ -1825,9 +2067,6 @@ msgstr "审计跟踪"
 msgid "Settings"
 msgstr "设置"
 
-msgid "Token defaults"
-msgstr "令牌默认"
-
 msgid "GUI settings"
 msgstr "GUI 设置"
 
@@ -1909,77 +2148,6 @@ msgstr ""
 "这是一个用逗号分隔的 IP 地址列表，将自有的 IP 地址用其它地址覆盖，并和授权策"
 "略共同发送。"
 
-msgid "OCRA settings"
-msgstr "OCRA 设置"
-
-msgid "Maximum concurrent OCRA challenges"
-msgstr "OCRA2 最大同时挑战数量"
-
-msgid "This is the maximum concurrent challenges per OCRA Token."
-msgstr "OCRA2 最大并发挑战数量，请求一个 OCRA2 令牌的最大挑战数量。"
-
-msgid "OCRA challenge timeout"
-msgstr "OCRA 挑战超时"
-
-msgid "Misc settings"
-msgstr "各项设定"
-
-msgid "DefaultResetFailCount"
-msgstr "重置默认错误计数器"
-
-msgid "Will reset the fail counter when the user authenticated successfully"
-msgstr "当用户使用此令牌成功登录则重置计数器。"
-
-msgid "DefaultMaxFailCount"
-msgstr "错误计数器标准最大值"
-
-msgid "This is the maximum allowed failed logins for a new enrolled token."
-msgstr ""
-"这是一个令牌登录尝试失败的最大数量。令牌将被锁定直到错误计数器手动复位。"
-
-msgid "DefaultSyncWindow"
-msgstr "标准重新同步窗口"
-
-msgid ""
-"A new token will have this windows to do the manual or automatic OTP sync."
-msgstr "这是一个令牌自动和手动重新同步的窗口。"
-
-msgid "DefaultOtpLen"
-msgstr "标准 OTP 长度"
-
-msgid "A new token will be set to this OTP length."
-msgstr "一个新令牌的 OTP 值为该长度。"
-
-msgid "DefaultCountWindow"
-msgstr "标准计数器窗口"
-
-msgid "This is the default look ahead window for counter based tokens."
-msgstr "当新令牌使用时，在计数器窗口内会默认搜索 OTP 值。"
-
-msgid "DefaultChallengeValidityTime"
-msgstr "挑战的标准有效期"
-
-msgid "Default validity timeframe of a challenge."
-msgstr "一个挑战的标准有效时间窗口"
-
-msgid "Default OCRA suite"
-msgstr "标准 OCRA 套件"
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-8:C-QA08"
-msgstr "新注册 OCRA 令牌的默认 OCRA 套件。标准：OCRA-1:HOTP-SHA256-8:C-QA08"
-
-msgid "Default QR suite"
-msgstr "标准二维码套件"
-
-msgid ""
-"This is the suite for newly enrolled QR tokens. Default is OCRA-1:HOTP-"
-"SHA256-6:C-QA64"
-msgstr ""
-"新注册二维码 OCRA 令牌的默认二维码 OCRA 套件。标准：OCRA-1:HOTP-SHA256-6:C-"
-"QA64"
-
 msgid "Selfservice portal"
 msgstr "自助服务门户"
 
@@ -2010,6 +2178,148 @@ msgstr ""
 
 msgid "Save Config"
 msgstr "保存配置"
+
+#, fuzzy
+msgid "Set as default"
+msgstr "设置为默认的域"
+
+#, fuzzy
+msgid "SMS Provider: create and edit"
+msgstr "短信供应商配置"
+
+msgid "New"
+msgstr "新建"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Class"
+msgstr ""
+
+#, fuzzy
+msgid "Config"
+msgstr "保存配置"
+
+msgid "Timeout"
+msgstr "超时"
+
+#, fuzzy
+msgid "SMS Provider"
+msgstr "供应商"
+
+msgid "Save"
+msgstr "保存"
+
+#, fuzzy
+msgid "Do you want to delete the provider?"
+msgstr "您想删除解析器？"
+
+#, fuzzy
+msgid "Deleting provider"
+msgstr "删除解析器"
+
+#, fuzzy
+msgid "Email Provider: create and edit"
+msgstr "电子邮件配置"
+
+#, fuzzy
+msgid "Timeout (sec)"
+msgstr "超时"
+
+#, fuzzy
+msgid "Email Provider"
+msgstr "供应商"
+
+#, fuzzy
+msgid "Do you want to delete the Provider?"
+msgstr "您想删除解析器？"
+
+#, fuzzy
+msgid "Email Provider Configuration"
+msgstr "电子邮件配置"
+
+#, fuzzy
+msgid "OCRA Token"
+msgstr "OCRA2 令牌"
+
+#, fuzzy
+msgid "Default Settings"
+msgstr "设置"
+
+#, fuzzy
+msgid "OCRA token settings"
+msgstr "OCRA2 令牌设置"
+
+msgid "Maximum concurrent OCRA challenges"
+msgstr "OCRA2 最大同时挑战数量"
+
+msgid "This is the maximum concurrent challenges per OCRA Token."
+msgstr "OCRA2 最大并发挑战数量，请求一个 OCRA2 令牌的最大挑战数量。"
+
+msgid "OCRA challenge timeout"
+msgstr "OCRA 挑战超时"
+
+msgid "Default OCRA suite"
+msgstr "标准 OCRA 套件"
+
+msgid ""
+"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+"SHA256-8:C-QA08"
+msgstr "新注册 OCRA 令牌的默认 OCRA 套件。标准：OCRA-1:HOTP-SHA256-8:C-QA08"
+
+msgid "Default QR suite"
+msgstr "标准二维码套件"
+
+#, fuzzy
+msgid ""
+"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+"SHA256-6:C-QA64"
+msgstr ""
+"新注册二维码 OCRA 令牌的默认二维码 OCRA 套件。标准：OCRA-1:HOTP-SHA256-6:C-"
+"QA64"
+
+#, fuzzy
+msgid "Default token settings"
+msgstr "远程令牌设置"
+
+msgid "DefaultResetFailCount"
+msgstr "重置默认错误计数器"
+
+msgid "Will reset the fail counter when the user authenticated successfully"
+msgstr "当用户使用此令牌成功登录则重置计数器。"
+
+msgid "DefaultMaxFailCount"
+msgstr "错误计数器标准最大值"
+
+msgid "This is the maximum allowed failed logins for a new enrolled token."
+msgstr ""
+"这是一个令牌登录尝试失败的最大数量。令牌将被锁定直到错误计数器手动复位。"
+
+msgid "DefaultCountWindow"
+msgstr "标准计数器窗口"
+
+msgid "This is the default look ahead window for counter based tokens."
+msgstr "当新令牌使用时，在计数器窗口内会默认搜索 OTP 值。"
+
+msgid "DefaultSyncWindow"
+msgstr "标准重新同步窗口"
+
+#, fuzzy
+msgid ""
+"A new token will have this window to do the manual or automatic OTP sync."
+msgstr "这是一个令牌自动和手动重新同步的窗口。"
+
+msgid "DefaultOtpLen"
+msgstr "标准 OTP 长度"
+
+msgid "A new token will be set to this OTP length."
+msgstr "一个新令牌的 OTP 值为该长度。"
+
+msgid "DefaultChallengeValidityTime"
+msgstr "挑战的标准有效期"
+
+msgid "Default validity timeframe of a challenge."
+msgstr "一个挑战的标准有效时间窗口"
 
 msgid "Tokentype Configuration"
 msgstr "令牌类型的配置"
@@ -2090,12 +2400,6 @@ msgstr "OCRA 密钥"
 
 msgid "Generate OCRA key."
 msgstr "OCRA 密钥由服务器生成。"
-
-msgid "enter PIN"
-msgstr "设置 PIN 码"
-
-msgid "confirm PIN"
-msgstr "确认 PIN 码"
 
 msgid "Enroll Token"
 msgstr "令牌注册"
@@ -2267,9 +2571,6 @@ msgstr "默认值："
 msgid "HOTP"
 msgstr "HOTP"
 
-msgid "OTP length"
-msgstr "OTP 长度"
-
 msgid "optional"
 msgstr "可选"
 
@@ -2330,12 +2631,6 @@ msgstr "导入策略文件"
 msgid "Create a new realm or select one available realm"
 msgstr "在此，您可以创建一个新的域，或编辑现有的域"
 
-msgid "New"
-msgstr "新建"
-
-msgid "Edit"
-msgstr "编辑"
-
 msgid "Set Default"
 msgstr "设置为默认的域"
 
@@ -2377,9 +2672,6 @@ msgstr "在此，您可以定义解析器属于哪个域"
 
 msgid "Edit Realm"
 msgstr "编辑域"
-
-msgid "Save"
-msgstr "保存"
 
 msgid ""
 "The following tokens will be permanently deleted and can not be recovered."
@@ -3075,9 +3367,6 @@ msgstr "用户令牌："
 msgid "in realm"
 msgstr "域"
 
-msgid "Activate your QR token"
-msgstr "激活二维码令牌"
-
 msgid "Activate your OCRA token"
 msgstr "激活 OCRA 令牌"
 
@@ -3290,6 +3579,44 @@ msgstr "安装配置文件"
 
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr "另外，您也可以通过 iPhone 扫描下面的二维码，导入配置文件。"
+
+#, fuzzy
+#~ msgid "activate your qr token"
+#~ msgstr "激活二维码令牌"
+
+#~ msgid "Activate your QR token"
+#~ msgstr "激活二维码令牌"
+
+#, fuzzy
+#~ msgid "no"
+#~ msgstr "信息"
+
+#~ msgid "E-mail OTP Token"
+#~ msgstr "OTP 令牌邮件"
+
+#~ msgid "Provider config"
+#~ msgstr "供应商配置"
+
+#~ msgid "Challenge validity (sec)"
+#~ msgstr "电子邮件挑战码有效性（秒）"
+
+#~ msgid "Time between e-mails (sec)"
+#~ msgstr "电子邮件间隔时间（秒）"
+
+#~ msgid "SMS OTP Token"
+#~ msgstr "短信 OTP 令牌"
+
+#~ msgid "Time between SMS (sec.)"
+#~ msgstr "短信间隔时间(秒)"
+
+#~ msgid "Token defaults"
+#~ msgstr "令牌默认"
+
+#~ msgid "OCRA settings"
+#~ msgstr "OCRA 设置"
+
+#~ msgid "Misc settings"
+#~ msgstr "各项设定"
 
 #~ msgid "enroll totp token"
 #~ msgstr "TOTP 令牌注册"

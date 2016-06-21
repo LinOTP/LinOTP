@@ -104,7 +104,7 @@ msgstr "Error durante la búsqueda en el registro de auditoría: %s"
 msgid "valid types are 'ocra' or 'ocra2'. You provided %s"
 msgstr "Valores válidos son 'ocra' o 'ocra2'. Usted ha introducido %s"
 
-msgid "Missing required parameter \"state\" or\"transactionid\"!"
+msgid "Missing required parameter \"state\" or \"transactionid\"!"
 msgstr ""
 
 msgid "Missing required parameter \"serial\" or \"user\"!"
@@ -112,6 +112,69 @@ msgstr ""
 
 msgid "Missing required parameter \"pass\"!"
 msgstr ""
+
+#, fuzzy, python-format
+msgid "You do not have the rights to see these realms: %r. Check the policies!"
+msgstr ""
+"No tiene derecho a controlar los dominios siguientes %r. ¡Compruebe las "
+"directrices!"
+
+msgid "Support not available, your product is unlicensed"
+msgstr "No hay asistencia de soporte técnico"
+
+#, fuzzy
+msgid "License already installed!"
+msgstr "Recordatorio de licencia:"
+
+msgid "license file is empty!"
+msgstr "¡El archivo de licencia está vacío!"
+
+msgid "signature could not be verified!"
+msgstr "¡La firma no es válida!"
+
+msgid "no license expiration information in license "
+msgstr "No hay información sobre la fecha de caducidad de la licencia"
+
+msgid "no license subscription information in license"
+msgstr "No hay información relativa a la suscripción de la licencia"
+
+msgid "invalid license (old license style)"
+msgstr "Licencia no válida (formato de licencia anterior)"
+
+msgid "tokens used"
+msgstr "Token usado"
+
+msgid "tokens supported"
+msgstr "Token con licencia"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "Formato de fecha no compatible %r"
+
+msgid "expired - valid till"
+msgstr "expirado - válido hasta"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr ""
+"getTokenOwner: El usuario %s/%s y el token %s están incluidos en varios "
+"dominios: %s."
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr ""
+"getTokenOwner: No se ha podido encontrar al usuario %s en el solucionador %s "
+"para el token %s en ningún dominio."
+
+msgid "OTP seed"
+msgstr "Semilla OTP"
+
+msgid "URL for OCRA token"
+msgstr "URL para token OCRA"
 
 #, python-format
 msgid ""
@@ -193,50 +256,6 @@ msgid "The PIN contains other characters, although it should not! (%s)"
 msgstr ""
 "El PIN introducido contiene caracteres especiales, aunque esto no debería "
 "ser así (%s)"
-
-#, python-format
-msgid ""
-"You do not have the administrative right to manage tools. You are missing a "
-"policy scope=tools, action=%s"
-msgstr ""
-" No tiene derechos de administración para ejecutar las herramientas. Para "
-"ello, falta una directriz con 'scope=tools' y 'action=%s'."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr ""
-"No hay ninguna directriz que defina el max_count en el autoservicio para el "
-"tipo de token %s."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr ""
-"No hay ninguna directriz que defina el max_count en el autoservicio para el "
-"tipo de token %s en el dominio %s."
-
-msgid "The policy settings do not allow you to issue this request!"
-msgstr "¡La configuración de la directriz impide realizar esta consulta!"
-
-msgid ""
-"You may not enroll any more tokens. Your maximum token number is reached!"
-msgstr ""
-"Se ha alcanzado el número máximo de token. No puede implementar ningún token "
-"más."
-
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Se ha superado el número máximo de token respaldados. Si es necesario, "
-"compruebe las directrices."
-
-msgid "The policy settings do not allow you to request a serial by OTP!"
-msgstr "Las directrices no permiten comprobar el número de serie de OTP."
-
-#, python-format
-msgid "Unknown method in selfservice: %s"
-msgstr "Método desconocido en el portal de autogestión: %s"
 
 msgid "You do not have any rights in any realm! Check the policies."
 msgstr "No tiene derechos en todos los dominios: compruebe las directrices."
@@ -345,6 +364,12 @@ msgid "You do not have the administrative right to init token %s of type %s."
 msgstr ""
 "No tiene derechos de administrador para  implementar el token %s de tipo %s."
 
+msgid ""
+"You may not enroll any more tokens. Your maximum token number is reached!"
+msgstr ""
+"Se ha alcanzado el número máximo de token. No puede implementar ningún token "
+"más."
+
 #, python-format
 msgid ""
 "The maximum allowed number of tokens for the realm %s was reached. You can "
@@ -391,6 +416,10 @@ msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 msgstr ""
 "Se ha superado el número máximo de token con licencia. Si es necesario, "
 "compruebe las directrices."
+
+#, python-format
+msgid "Missing parameter: %r"
+msgstr ""
 
 #, python-format
 msgid ""
@@ -512,6 +541,14 @@ msgstr ""
 msgid "Failed to run checkPolicyPre. Unknown method: %s"
 msgstr "Error durante la comprobación de la directriz, método desconocido: %s"
 
+#, fuzzy, python-format
+msgid ""
+"You do not have the administrative right to do this. You are missing a "
+"policy scope=%s, action=%s"
+msgstr ""
+" No tiene derechos de administración para ejecutar las herramientas. Para "
+"ello, falta una directriz con 'scope=tools' y 'action=%s'."
+
 #, python-format
 msgid "There is no policy gettoken/max_count definable for the tokentype %r"
 msgstr "No hay ninguna directriz 'gettoken/maxcount' para el tipo de token %r"
@@ -522,6 +559,44 @@ msgid ""
 msgstr ""
 "No tiene derechos de administrador para ver el registro de auditoría. Para "
 "ello, falta una directriz con 'scope=monitoring' y 'action=view'."
+
+#, python-format
+msgid ""
+"You do not have the administrative right to manage tools. You are missing a "
+"policy scope=tools, action=%s"
+msgstr ""
+" No tiene derechos de administración para ejecutar las herramientas. Para "
+"ello, falta una directriz con 'scope=tools' y 'action=%s'."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count definable for the token type %s."
+msgstr ""
+"No hay ninguna directriz que defina el max_count en el autoservicio para el "
+"tipo de token %s."
+
+#, python-format
+msgid ""
+"There is no policy selfservice/max_count defined for the tokentype %s in "
+"realm %s."
+msgstr ""
+"No hay ninguna directriz que defina el max_count en el autoservicio para el "
+"tipo de token %s en el dominio %s."
+
+msgid "The policy settings do not allow you to issue this request!"
+msgstr "¡La configuración de la directriz impide realizar esta consulta!"
+
+msgid "The maximum number of allowed tokens is exceeded. Check the policies"
+msgstr ""
+"Se ha superado el número máximo de token respaldados. Si es necesario, "
+"compruebe las directrices."
+
+msgid "The policy settings do not allow you to request a serial by OTP!"
+msgstr "Las directrices no permiten comprobar el número de serie de OTP."
+
+#, python-format
+msgid "Unknown method in selfservice: %s"
+msgstr "Método desconocido en el portal de autogestión: %s"
 
 #, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
@@ -561,99 +636,6 @@ msgstr ""
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr ""
 "Se han encontrado varios token. No es posible determinar el tipo de token."
-
-#, fuzzy, python-format
-msgid "You do not have the rights to see these realms: %r. Check the policies!"
-msgstr ""
-"No tiene derecho a controlar los dominios siguientes %r. ¡Compruebe las "
-"directrices!"
-
-msgid "Support not available, your product is unlicensed"
-msgstr "No hay asistencia de soporte técnico"
-
-#, fuzzy
-msgid "License already installed!"
-msgstr "Recordatorio de licencia:"
-
-msgid "license file is empty!"
-msgstr "¡El archivo de licencia está vacío!"
-
-msgid "signature could not be verified!"
-msgstr "¡La firma no es válida!"
-
-msgid "no license expiration information in license "
-msgstr "No hay información sobre la fecha de caducidad de la licencia"
-
-msgid "no license subscription information in license"
-msgstr "No hay información relativa a la suscripción de la licencia"
-
-msgid "invalid license (old license style)"
-msgstr "Licencia no válida (formato de licencia anterior)"
-
-msgid "tokens used"
-msgstr "Token usado"
-
-msgid "tokens supported"
-msgstr "Token con licencia"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "Formato de fecha no compatible %r"
-
-msgid "expired - valid till"
-msgstr "expirado - válido hasta"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
-msgstr ""
-"getTokenOwner: El usuario %s/%s y el token %s están incluidos en varios "
-"dominios: %s."
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr ""
-"getTokenOwner: No se ha podido encontrar al usuario %s en el solucionador %s "
-"para el token %s en ningún dominio."
-
-msgid "OTP seed"
-msgstr "Semilla OTP"
-
-msgid "URL for OCRA token"
-msgstr "URL para token OCRA"
-
-#, python-format
-msgid "Missing parameter: %r"
-msgstr ""
-
-#, fuzzy, python-format
-msgid ""
-"You do not have the administrative right to do this. You are missing a "
-"policy scope=%s, action=%s"
-msgstr ""
-" No tiene derechos de administración para ejecutar las herramientas. Para "
-"ello, falta una directriz con 'scope=tools' y 'action=%s'."
-
-msgid "E-mail OTP Token"
-msgstr "Correo electrónico de token OTP"
-
-msgid "E-mail provider config"
-msgstr "Configuración del correo electrónico"
-
-msgid "Provider"
-msgstr "Proveedor"
-
-msgid "Provider config"
-msgstr "Configuración del proveedor"
-
-msgid "Challenge validity (sec)"
-msgstr "Validez del desafío del correo electrónico (seg.)"
-
-msgid "Time between e-mails (sec)"
-msgstr "Tiempo entre mensajes de correo electrónico (seg.)"
 
 msgid "E-mail token"
 msgstr "Token del correo electrónico"
@@ -712,6 +694,46 @@ msgstr ""
 
 msgid "User is not allowed to set email address"
 msgstr "¡El usuario no puede establecer la dirección de correo electrónico!"
+
+#, fuzzy
+msgid "Forwarding Token"
+msgstr "Error durante la activación del token\n"
+
+#, fuzzy
+msgid ""
+"Here you can define to which token the authentication request should be "
+"forwarded."
+msgstr ""
+"Aquí se puede especificar a qué servidor LinOTP debe reenviarse la solicitud "
+"de autenticación."
+
+#, fuzzy
+msgid "You can forward the OTP to a target serial number."
+msgstr ""
+"La solicitud de autenticación puede transferirse a un número de serie remoto "
+"o a un usuario remoto."
+
+msgid "forward serial"
+msgstr ""
+
+#, fuzzy
+msgid "Protect your token with a static pin"
+msgstr "Proteja sus token por medio de un PIN fijo:"
+
+#, fuzzy
+msgid "Token Pin:"
+msgstr "PIN del token:"
+
+msgid "enter PIN"
+msgstr "Establecer PIN"
+
+msgid "confirm PIN"
+msgstr "Confirmar PIN"
+
+msgid ""
+"Specify if the target token fail counter should be incremented / resets or "
+"not"
+msgstr ""
 
 msgid "HMAC Token Settings"
 msgstr "Ajustes de token HMAC"
@@ -962,8 +984,42 @@ msgid "QRToken Settings"
 msgstr "Ajustes de token:"
 
 #, fuzzy
+msgid "Maximum concurrent challenges"
+msgstr "Número máximo de desafíos OCRA simultáneos"
+
+#, fuzzy
+msgid "Challenge Timeout"
+msgstr "Tiempo límite para el desafío OCRA"
+
+msgid "OTP length"
+msgstr "Longitud OTP"
+
+#, fuzzy
+msgid "6 digits"
+msgstr "Números OTP"
+
+#, fuzzy
+msgid "8 digits"
+msgstr "Números OTP"
+
+#, fuzzy
+msgid "10 digits"
+msgstr "Números OTP"
+
+#, fuzzy
+msgid "Public key certificate"
+msgstr "Certificado CA"
+
+#, fuzzy
+msgid "certificate id"
+msgstr "Certificado CA"
+
+#, fuzzy
 msgid "QRToken - challenge/response Token"
 msgstr "OCRA - Token desafío/respuesta"
+
+msgid "web ui generated"
+msgstr ""
 
 #, fuzzy
 msgid "Enroll your QRToken"
@@ -972,6 +1028,58 @@ msgstr "Implemente el token OCRA2"
 #, fuzzy
 msgid "enroll qrtoken"
 msgstr "Implementar token"
+
+#, fuzzy
+msgid "Activate your QRToken"
+msgstr "Activar token QR"
+
+#, fuzzy
+msgid "Select QRToken: "
+msgstr "Token seleccionado"
+
+#, fuzzy
+msgid "Enter pin: "
+msgstr "Establecer PIN"
+
+#, fuzzy
+msgid "activate token"
+msgstr "Activar token QR"
+
+#, fuzzy
+msgid "Challenge triggered successfully"
+msgstr "El token se ha sincronizado correctamente"
+
+#, fuzzy
+msgid ""
+"Please scan the qr code and submit your response or enter the otp value in "
+"the form below."
+msgstr "Por favor, introduzca el valor OTP para su verificación."
+
+#, fuzzy
+msgid "OTP Value: "
+msgstr "Valor OTP"
+
+msgid "finalize activation"
+msgstr ""
+
+#, fuzzy
+msgid "activate your QRToken"
+msgstr "Activar token QR"
+
+#, python-format
+msgid "Policy %s must have a value"
+msgstr ""
+
+msgid " or "
+msgstr ""
+
+#, fuzzy
+msgid "QRToken Pairing Url"
+msgstr "Ajustes de token:"
+
+#, fuzzy
+msgid "QRToken Certificate"
+msgstr "Certificado CA"
 
 msgid "RADIUS Token"
 msgstr "Token RADIUS"
@@ -1137,21 +1245,6 @@ msgstr "Dominio del usuario remoto"
 
 msgid "Remote user UserIdResolver"
 msgstr "UserIdResolver del usuario remoto"
-
-msgid "SMS OTP Token"
-msgstr "Token SMS OTP"
-
-msgid "SMS provider config"
-msgstr "Configuración del proveedor SMS"
-
-msgid "Provider Config"
-msgstr "Configuración del proveedor"
-
-msgid "Timeout"
-msgstr "Tiempo límite"
-
-msgid "Time between SMS (sec.)"
-msgstr "Tiempo entre SMS (seg.)"
 
 msgid "SMS OTP"
 msgstr "SMS OTP"
@@ -1375,6 +1468,20 @@ msgstr "Implementar Yubikey"
 msgid "%d tokens of %d migrated"
 msgstr "%d Token migrado desde %d"
 
+#, fuzzy
+msgid "Default provider could not be deleted!"
+msgstr "¡La firma no es válida!"
+
+#, python-format
+msgid ""
+"Unable to delete - provider used in policies!\n"
+"[%s]"
+msgstr ""
+
+#, python-format
+msgid "Unknown provider! %r"
+msgstr ""
+
 msgid "Not a valid json string!"
 msgstr "¡No hay ningún texto JSON válido!"
 
@@ -1387,6 +1494,14 @@ msgstr ""
 
 msgid ""
 "Please enter a valid resolver name. It may contain characters, numbers and "
+"'_-'."
+msgstr ""
+"Por favor, introduzca un nombre de solucionador válido. Este solo puede "
+"contener letras, números y '_-.'."
+
+#, fuzzy
+msgid ""
+"Please enter a valid provider name. It may contain characters, numbers and "
 "'_-'."
 msgstr ""
 "Por favor, introduzca un nombre de solucionador válido. Este solo puede "
@@ -1564,6 +1679,13 @@ msgid "Please select the token first."
 msgstr "Por favor, seleccione en primer lugar un token."
 
 #, fuzzy
+msgid "Cannot save realm"
+msgstr "Dominio del usuario remoto"
+
+msgid "Please select at least one UserIdResolver from the list"
+msgstr ""
+
+#, fuzzy
 msgid "No resolver selected"
 msgstr "al solucionador"
 
@@ -1602,8 +1724,95 @@ msgstr "Prueba de conexión LDAP"
 msgid "HTTP Connection Test"
 msgstr "Prueba de conexión LDAP"
 
+#, fuzzy
+msgid "HTTP Test"
+msgstr "Token TOTP"
+
 msgid "Form Validation Error"
 msgstr "Error de entrada en el formulario"
+
+msgid "Token Config"
+msgstr "Configuración de token"
+
+#, fuzzy
+msgid "Failed to save provider"
+msgstr "Error durante la activación del token\n"
+
+#, fuzzy, python-format
+msgid "Failed to save provider %s"
+msgstr "Error durante la activación del token\n"
+
+#, fuzzy
+msgid "Error saving provider"
+msgstr "Error al cargar solucionador de SQL"
+
+#, fuzzy, python-format
+msgid "Provider %s deleted"
+msgstr "Directriz eliminada."
+
+msgid "Unknown server error occured"
+msgstr ""
+
+#, fuzzy
+msgid "Failed to delete provider"
+msgstr "Error durante la eliminación del token\n"
+
+#, fuzzy, python-format
+msgid "Failed to delete provider %s"
+msgstr "Error durante la eliminación del token\n"
+
+#, fuzzy
+msgid "Error deleting provider"
+msgstr "Error al cargar solucionador de SQL"
+
+#, python-format
+msgid "Provider %s set as default"
+msgstr ""
+
+#, fuzzy
+msgid "Failed to set default provider"
+msgstr "Error durante la puesta a cero del contador de errores\n"
+
+#, fuzzy, python-format
+msgid "Failed to set default provider %s"
+msgstr "Error durante la puesta a cero del contador de errores\n"
+
+#, fuzzy
+msgid "Error setting default provider"
+msgstr "Error durante la determinación del número de serie"
+
+#, fuzzy
+msgid "A resolver with name"
+msgstr "Nombre del solucionador"
+
+msgid "already exists."
+msgstr ""
+
+#, fuzzy
+msgid "Do you want to overwrite the existing definition?"
+msgstr "¿Desea eliminar este solucionador?"
+
+#, fuzzy
+msgid "Overwrite resolver definition"
+msgstr "consulte la definición de directrices."
+
+msgid "Overwrite"
+msgstr ""
+
+#, python-format
+msgid "The %s dialog contains unsaved changes."
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to close the dialog and discard the changes?"
+msgstr "Desea eliminar el dominio "
+
+#, fuzzy
+msgid "Close Dialog"
+msgstr "Cerrar todos"
+
+msgid "Discard"
+msgstr ""
 
 msgid "Active"
 msgstr "Activo"
@@ -1900,6 +2109,40 @@ msgstr "Inicio de sesión OCRA2"
 msgid "OTP PIN"
 msgstr "PIN OTP"
 
+msgid "message / data"
+msgstr ""
+
+#, fuzzy
+msgid "Here you may try to authenticate using your QRToken."
+msgstr "Aquí puede probar la autenticación con su token OTP."
+
+#, fuzzy
+msgid "QRToken Login"
+msgstr "Token OCRA2"
+
+#, fuzzy
+msgid "Create challenge:"
+msgstr "Buscar desafío"
+
+msgid "Check the status of your challenge:"
+msgstr ""
+
+msgid "check status"
+msgstr ""
+
+#, fuzzy
+msgid "Submit response:"
+msgstr "Introducir desafío:"
+
+msgid "Transaction-ID"
+msgstr ""
+
+msgid "OTP value"
+msgstr "Valor OTP"
+
+msgid "submit"
+msgstr ""
+
 msgid "Here you may try to authenticate using your OTP token."
 msgstr "Aquí puede probar la autenticación con su token OTP."
 
@@ -1908,9 +2151,6 @@ msgstr "Introduzca su nombre de usuario, el PIN OTP y el valor OTP."
 
 msgid "Login"
 msgstr "Iniciar sesión"
-
-msgid "OTP value"
-msgstr "Valor OTP"
 
 msgid "LinOTP 2 Management"
 msgstr "Gestión LinOTP"
@@ -1924,8 +2164,16 @@ msgstr "UserIdResolvers"
 msgid "System Config"
 msgstr "Configuración del sistema"
 
-msgid "Token Config"
-msgstr "Configuración de token"
+msgid "Provider Config"
+msgstr "Configuración del proveedor"
+
+#, fuzzy
+msgid "SMS Provider Config"
+msgstr "Configuración del proveedor SMS"
+
+#, fuzzy
+msgid "Email Provider Config"
+msgstr "Configuración del correo electrónico"
 
 msgid "Policies"
 msgstr "Directrices"
@@ -2031,9 +2279,6 @@ msgstr "Pista de auditoría"
 msgid "Settings"
 msgstr "Ajustes"
 
-msgid "Token defaults"
-msgstr "Valores estándar del token"
-
 msgid "GUI settings"
 msgstr "Ajustes de la GUI"
 
@@ -2125,89 +2370,6 @@ msgstr ""
 "Se trata de una lista separada por comas de direcciones IP que pueden enviar "
 "una dirección IP distinta a la propia para las directrices de autorización."
 
-msgid "OCRA settings"
-msgstr "Ajustes OCRA"
-
-msgid "Maximum concurrent OCRA challenges"
-msgstr "Número máximo de desafíos OCRA simultáneos"
-
-msgid "This is the maximum concurrent challenges per OCRA Token."
-msgstr ""
-"Este es el número máximo de desafíos OCRA simultáneos que pueden solicitarse "
-"para un token OCRA."
-
-msgid "OCRA challenge timeout"
-msgstr "Tiempo límite para el desafío OCRA"
-
-msgid "Misc settings"
-msgstr "Varios ajustes"
-
-msgid "DefaultResetFailCount"
-msgstr "Restablecer contador de errores por defecto"
-
-msgid "Will reset the fail counter when the user authenticated successfully"
-msgstr ""
-"Restablece el contador de errores cuando el usuario ha iniciado sesión "
-"correctamente con este token."
-
-msgid "DefaultMaxFailCount"
-msgstr "Valor máximo estándar para el contador de errores"
-
-msgid "This is the maximum allowed failed logins for a new enrolled token."
-msgstr ""
-"Este es el número máximo de intentos de acceso fallidos con un token. Tras "
-"esto se bloqueará el token hasta que se restablezca el contador de errores "
-"manualmente."
-
-msgid "DefaultSyncWindow"
-msgstr "Ventana de resincronización estándar"
-
-msgid ""
-"A new token will have this windows to do the manual or automatic OTP sync."
-msgstr ""
-"Esta es la ventana de resincronización para la resincronización automática y "
-"manual de un token."
-
-msgid "DefaultOtpLen"
-msgstr "Longitud estándar OTP"
-
-msgid "A new token will be set to this OTP length."
-msgstr "El valor OTP de un token nuevo se interpretará con esta longitud."
-
-msgid "DefaultCountWindow"
-msgstr "Ventana del contador estándar"
-
-msgid "This is the default look ahead window for counter based tokens."
-msgstr ""
-"En esta ventana del contador se buscará por defecto el valor OTP en caso de "
-"haber un token nuevo."
-
-msgid "DefaultChallengeValidityTime"
-msgstr "Período de validez estándar de un desafío"
-
-msgid "Default validity timeframe of a challenge."
-msgstr "Ventana de tiempo de validez estándar para un desafío"
-
-msgid "Default OCRA suite"
-msgstr "OCRA Suite estándar"
-
-msgid ""
-"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
-"SHA256-8:C-QA08"
-msgstr ""
-"Esta es la suite OCRA por defecto para un token de OCRA recién implementado. "
-"Estándar: OCRA-1:HOTP-SHA256-8:C-QA08"
-
-msgid "Default QR suite"
-msgstr "Estándar QR-suite"
-
-msgid ""
-"This is the suite for newly enrolled QR tokens. Default is OCRA-1:HOTP-"
-"SHA256-6:C-QA64"
-msgstr ""
-"Este es la suite QR-OCRA estándar para un token de QR-OCRA recién "
-"implementado. Estándar: OCRA-1:HOTP-SHA256-6:C-QA64"
-
 msgid "Selfservice portal"
 msgstr "Portal de autogestión"
 
@@ -2240,6 +2402,160 @@ msgstr ""
 
 msgid "Save Config"
 msgstr "Guardar configuración"
+
+#, fuzzy
+msgid "Set as default"
+msgstr "Establecer como dominio predeterminado"
+
+#, fuzzy
+msgid "SMS Provider: create and edit"
+msgstr "Configuración del proveedor SMS"
+
+msgid "New"
+msgstr "Nuevo"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Class"
+msgstr ""
+
+#, fuzzy
+msgid "Config"
+msgstr "Guardar configuración"
+
+msgid "Timeout"
+msgstr "Tiempo límite"
+
+#, fuzzy
+msgid "SMS Provider"
+msgstr "Proveedor"
+
+msgid "Save"
+msgstr "Guardar"
+
+#, fuzzy
+msgid "Do you want to delete the provider?"
+msgstr "¿Desea eliminar este solucionador?"
+
+#, fuzzy
+msgid "Deleting provider"
+msgstr "Eliminar solucionador"
+
+#, fuzzy
+msgid "Email Provider: create and edit"
+msgstr "Configuración del correo electrónico"
+
+#, fuzzy
+msgid "Timeout (sec)"
+msgstr "Tiempo límite"
+
+#, fuzzy
+msgid "Email Provider"
+msgstr "Proveedor"
+
+#, fuzzy
+msgid "Do you want to delete the Provider?"
+msgstr "¿Desea eliminar este solucionador?"
+
+#, fuzzy
+msgid "Email Provider Configuration"
+msgstr "Configuración del correo electrónico"
+
+#, fuzzy
+msgid "OCRA Token"
+msgstr "Token OCRA2"
+
+#, fuzzy
+msgid "Default Settings"
+msgstr "Ajustes"
+
+#, fuzzy
+msgid "OCRA token settings"
+msgstr "Ajustes del token OCRA2"
+
+msgid "Maximum concurrent OCRA challenges"
+msgstr "Número máximo de desafíos OCRA simultáneos"
+
+msgid "This is the maximum concurrent challenges per OCRA Token."
+msgstr ""
+"Este es el número máximo de desafíos OCRA simultáneos que pueden solicitarse "
+"para un token OCRA."
+
+msgid "OCRA challenge timeout"
+msgstr "Tiempo límite para el desafío OCRA"
+
+msgid "Default OCRA suite"
+msgstr "OCRA Suite estándar"
+
+msgid ""
+"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+"SHA256-8:C-QA08"
+msgstr ""
+"Esta es la suite OCRA por defecto para un token de OCRA recién implementado. "
+"Estándar: OCRA-1:HOTP-SHA256-8:C-QA08"
+
+msgid "Default QR suite"
+msgstr "Estándar QR-suite"
+
+#, fuzzy
+msgid ""
+"This is the suite for newly enrolled OCRA tokens. Default is OCRA-1:HOTP-"
+"SHA256-6:C-QA64"
+msgstr ""
+"Este es la suite QR-OCRA estándar para un token de QR-OCRA recién "
+"implementado. Estándar: OCRA-1:HOTP-SHA256-6:C-QA64"
+
+#, fuzzy
+msgid "Default token settings"
+msgstr "Ajustes de token remoto"
+
+msgid "DefaultResetFailCount"
+msgstr "Restablecer contador de errores por defecto"
+
+msgid "Will reset the fail counter when the user authenticated successfully"
+msgstr ""
+"Restablece el contador de errores cuando el usuario ha iniciado sesión "
+"correctamente con este token."
+
+msgid "DefaultMaxFailCount"
+msgstr "Valor máximo estándar para el contador de errores"
+
+msgid "This is the maximum allowed failed logins for a new enrolled token."
+msgstr ""
+"Este es el número máximo de intentos de acceso fallidos con un token. Tras "
+"esto se bloqueará el token hasta que se restablezca el contador de errores "
+"manualmente."
+
+msgid "DefaultCountWindow"
+msgstr "Ventana del contador estándar"
+
+msgid "This is the default look ahead window for counter based tokens."
+msgstr ""
+"En esta ventana del contador se buscará por defecto el valor OTP en caso de "
+"haber un token nuevo."
+
+msgid "DefaultSyncWindow"
+msgstr "Ventana de resincronización estándar"
+
+#, fuzzy
+msgid ""
+"A new token will have this window to do the manual or automatic OTP sync."
+msgstr ""
+"Esta es la ventana de resincronización para la resincronización automática y "
+"manual de un token."
+
+msgid "DefaultOtpLen"
+msgstr "Longitud estándar OTP"
+
+msgid "A new token will be set to this OTP length."
+msgstr "El valor OTP de un token nuevo se interpretará con esta longitud."
+
+msgid "DefaultChallengeValidityTime"
+msgstr "Período de validez estándar de un desafío"
+
+msgid "Default validity timeframe of a challenge."
+msgstr "Ventana de tiempo de validez estándar para un desafío"
 
 msgid "Tokentype Configuration"
 msgstr "Configuración de los tipos de token"
@@ -2323,12 +2639,6 @@ msgstr "Clave OCRA"
 
 msgid "Generate OCRA key."
 msgstr "Dejar que el servidor genere la clave OCRA."
-
-msgid "enter PIN"
-msgstr "Establecer PIN"
-
-msgid "confirm PIN"
-msgstr "Confirmar PIN"
 
 msgid "Enroll Token"
 msgstr "Implementar token"
@@ -2517,9 +2827,6 @@ msgstr "Valores estándar"
 msgid "HOTP"
 msgstr "HOTP"
 
-msgid "OTP length"
-msgstr "Longitud OTP"
-
 msgid "optional"
 msgstr "Opcional"
 
@@ -2582,12 +2889,6 @@ msgstr "Importar archivo de directrices"
 msgid "Create a new realm or select one available realm"
 msgstr "Aquí puede crear un dominio nuevo o editar uno existente"
 
-msgid "New"
-msgstr "Nuevo"
-
-msgid "Edit"
-msgstr "Editar"
-
 msgid "Set Default"
 msgstr "Establecer como dominio predeterminado"
 
@@ -2631,9 +2932,6 @@ msgstr "Aquí puede definir qué solucionadores pertenecen al dominio"
 
 msgid "Edit Realm"
 msgstr "Editar dominio"
-
-msgid "Save"
-msgstr "Guardar"
 
 msgid ""
 "The following tokens will be permanently deleted and can not be recovered."
@@ -3361,9 +3659,6 @@ msgstr "Token del usuario:"
 msgid "in realm"
 msgstr "en el dominio"
 
-msgid "Activate your QR token"
-msgstr "Activar token QR"
-
 msgid "Activate your OCRA token"
 msgstr "Activar token OCRA"
 
@@ -3593,6 +3888,44 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "De manera alternativa, escanee el código QR que aparece abajo con su iPhone "
 "para importar el perfil."
+
+#, fuzzy
+#~ msgid "activate your qr token"
+#~ msgstr "Activar token QR"
+
+#~ msgid "Activate your QR token"
+#~ msgstr "Activar token QR"
+
+#, fuzzy
+#~ msgid "no"
+#~ msgstr "Información"
+
+#~ msgid "E-mail OTP Token"
+#~ msgstr "Correo electrónico de token OTP"
+
+#~ msgid "Provider config"
+#~ msgstr "Configuración del proveedor"
+
+#~ msgid "Challenge validity (sec)"
+#~ msgstr "Validez del desafío del correo electrónico (seg.)"
+
+#~ msgid "Time between e-mails (sec)"
+#~ msgstr "Tiempo entre mensajes de correo electrónico (seg.)"
+
+#~ msgid "SMS OTP Token"
+#~ msgstr "Token SMS OTP"
+
+#~ msgid "Time between SMS (sec.)"
+#~ msgstr "Tiempo entre SMS (seg.)"
+
+#~ msgid "Token defaults"
+#~ msgstr "Valores estándar del token"
+
+#~ msgid "OCRA settings"
+#~ msgstr "Ajustes OCRA"
+
+#~ msgid "Misc settings"
+#~ msgstr "Varios ajustes"
 
 #~ msgid "enroll totp token"
 #~ msgstr "Implementar token TOTP"
