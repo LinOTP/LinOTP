@@ -140,7 +140,7 @@ def set_defaults():
 
     set_config(key=u"QRMaxChallenges",
         value=u"4", typ=u"int",
-        description=u"Maximum open qr token challenges")
+        description=u"Maximum open QRToken challenges")
 
     set_config(key=u"PrependPin",
         value=u"True", typ=u"bool",
@@ -200,7 +200,7 @@ def set_defaults():
 
     set_config(key=u"QrOcraDefaultSuite",
         value=u"OCRA-1:HOTP-SHA256-8:C-QA64", typ=u"int",
-        description=u"Default OCRA suite for an ocra qr token ")
+        description=u"Default OCRA suite for an ocra token ")
 
     set_config(key=u"OcraMaxChallenges",
         value=u"4", typ=u"int",
@@ -329,7 +329,7 @@ class BaseController(WSGIController):
 
         l_config = initLinotpConfig()
 
-        # initialize the elliptic curve secret + public key for the qr token
+        # initialize the elliptic curve secret + public key for the qrtoken
         linotpQrTokenSecretKey = l_config.get('QrTokenSecretKey.system',
                                               False)
         if not linotpQrTokenSecretKey:

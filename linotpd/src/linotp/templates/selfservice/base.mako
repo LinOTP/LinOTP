@@ -123,10 +123,7 @@ if isinstance(lang, list):
         % endfor
 
         % if 'activateQR' in c.actions:
-            <li><a href="/selfservice/activateqrtoken"><span>${_("Activate your QR token")}</span></a></li>
-        %endif
-        % if 'webprovisionOCRAToken' in c.actions:
-            <li><a href="/selfservice/webprovisionocratoken"><span>${_("Activate your OCRA token")}</span></a></li>
+            <li><a href="/selfservice/activateocratoken"><span>${_("Activate your OCRA token")}</span></a></li>
         %endif
         % if 'webprovisionOATH' in c.actions:
             <li><a href="/selfservice/webprovisionoathtoken"><span>${_("Enroll OATH token")}</span></a></li>
