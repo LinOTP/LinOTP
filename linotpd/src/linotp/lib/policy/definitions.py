@@ -26,6 +26,7 @@
 """ static policy definitions """
 
 import linotp
+from linotp.lib.context import request_context
 
 
 def getPolicyDefinitions(scope=""):
@@ -91,7 +92,7 @@ def getPolicyDefinitions(scope=""):
             'otp_pin_minlength': {'type': 'int', 'value': range(0, 100)},
             'otp_pin_contents': {'type': 'str'},
             'activateQR': {'type': 'bool'},
-            'webprovisionOATH': {'type': 'bool'},
+
             'webprovisionGOOGLE': {'type': 'bool'},
             'webprovisionGOOGLEtime': {'type': 'bool'},
             'max_count_dpw': {'type': 'int'},
@@ -343,6 +344,13 @@ def getPolicyDefinitions(scope=""):
             'show': {'type': 'bool'},
         },
     }
+
+    linotp_config = request_context['Config']
+    oath_support = (str(linotp_config.get('linotp.OATHTokenSupport', 'False'))
+                    .lower() == 'True')
+
+    if oath_support:
+        pol['webprovisionOATH'] = {'type': 'bool'}
 
     # now add generic policies, which every token should provide:
     # - init<TT>
