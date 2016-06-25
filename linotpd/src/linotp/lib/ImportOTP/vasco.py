@@ -246,24 +246,24 @@ def parseVASCOdata(filename="Demo_GO6.DPX", arg_otplen=6):
     TOKENS = {}
 
     kp = TKernelParams()
-    kp.ParmCount = 19;
-    kp.ITimeWindow = 100;
-    kp.STimeWindow = 24;
-    kp.DiagLevel = 0;
-    kp.GMTAdjust = 0;
-    kp.CheckChallenge = 0;
+    kp.ParmCount = 19
+    kp.ITimeWindow = 100
+    kp.STimeWindow = 24
+    kp.DiagLevel = 0
+    kp.GMTAdjust = 0
+    kp.CheckChallenge = 0
     '''
     This is the failcounter! The failcounter needs to be reset manually
     When we set the failcounter=0 then we can rule the failcounter in LinOTP
     '''
-    kp.IThreshold = 0;
-    kp.SThreshold = 1;
-    kp.ChkInactDays = 0;
-    kp.DeriveVector = 0;
-    kp.SyncWindow = 2;
-    kp.OnLineSG = 1;
-    kp.EventWindow = 100;
-    kp.HSMSlotId = 0;
+    kp.IThreshold = 0
+    kp.SThreshold = 1
+    kp.ChkInactDays = 0
+    kp.DeriveVector = 0
+    kp.SyncWindow = 2
+    kp.OnLineSG = 1
+    kp.EventWindow = 100
+    kp.HSMSlotId = 0
 
 
     (res, fh, appl_count, appl_names, tokens) = vasco_dpxinit(filename=filename)
@@ -315,24 +315,24 @@ def parseVASCOdata(filename="Demo_GO6.DPX", arg_otplen=6):
 @check_vasco
 def vasco_otp_check(data, otp):
     kp = TKernelParams()
-    kp.ParmCount = 19;
-    kp.ITimeWindow = 100;
-    kp.STimeWindow = 24;
-    kp.DiagLevel = 0;
-    kp.GMTAdjust = 0;
-    kp.CheckChallenge = 0;
+    kp.ParmCount = 19
+    kp.ITimeWindow = 100
+    kp.STimeWindow = 24
+    kp.DiagLevel = 0
+    kp.GMTAdjust = 0
+    kp.CheckChallenge = 0
     '''
     This is the failcounter! The failcounter needs to be reset manually
     When we set the failcounter=0 then we can rule the failcounter in LinOTP
     '''
-    kp.IThreshold = 0;
-    kp.SThreshold = 1;
-    kp.ChkInactDays = 0;
-    kp.DeriveVector = 0;
-    kp.SyncWindow = 2;
-    kp.OnLineSG = 1;
-    kp.EventWindow = 100;
-    kp.HSMSlotId = 0;
+    kp.IThreshold = 0
+    kp.SThreshold = 1
+    kp.ChkInactDays = 0
+    kp.DeriveVector = 0
+    kp.SyncWindow = 2
+    kp.OnLineSG = 1
+    kp.EventWindow = 100
+    kp.HSMSlotId = 0
 
     return vasco_verify(data, kp, otp)
 

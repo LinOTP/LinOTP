@@ -63,7 +63,7 @@ class TestCase(unittest.TestCase):
         selenium_driver_language = get_from_tconfig(['selenium', 'language'],
                                                     default="en_us").lower()
         fp = webdriver.FirefoxProfile()
-        fp.set_preference("intl.accept_languages", selenium_driver_language);
+        fp.set_preference("intl.accept_languages", selenium_driver_language)
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--lang=' + selenium_driver_language)
 
