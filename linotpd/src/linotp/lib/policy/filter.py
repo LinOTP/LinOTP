@@ -109,6 +109,12 @@ class UserDomainCompare(object):
         if user_def == '*':
             return True
 
+        # support easy wildcard '*' to express regex wildcard '.*'
+        if '*' in user_def:
+            user_def = user_def.replace('*', '.*')
+            # revert double replacements
+            user_def = user_def.replace('..*', '.*')
+
         # otherwise compare the username
         user_pattern = re.compile(user_def + '$')
         compare_result = re.match(user_pattern, userObj.login)
