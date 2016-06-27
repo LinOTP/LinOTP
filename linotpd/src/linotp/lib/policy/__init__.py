@@ -315,16 +315,16 @@ def getPolicy(param, display_inactive=False):
 
 def _filter_admin_user(policy_users, userObj):
     """
-    filter the policies, wher the loged in user matches one of the
+    filter the policies, where the logged in user matches one of the
     extended policy user filters.
 
-    Remark: currently without user attribute comarison, as the defintion
+    Remark: currently without user attribute comparison, as the definition
             and the testing here is not completed
 
-    :param policy_users: lsit of policy user defintions
+    :param policy_users: list of policy user definitions
     :param userObj: the logged in user as object
 
-    :return: boolean, true if user matched policy user defintion
+    :return: boolean, true if user matched policy user definition
     """
     res = False
 
