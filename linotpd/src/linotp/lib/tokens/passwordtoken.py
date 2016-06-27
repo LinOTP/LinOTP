@@ -35,13 +35,14 @@ optional = True
 required = False
 
 from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.hmactoken import HmacTokenClass
 
 log = logging.getLogger(__name__)
 
 ###############################################
 
 
-class PasswordTokenClass(TokenClass):
+class PasswordTokenClass(HmacTokenClass):
     '''
     This Token does use a fixed Password as the OTP value.
     In addition, the OTP PIN can be used with this token.
