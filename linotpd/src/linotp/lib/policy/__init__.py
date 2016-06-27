@@ -265,6 +265,9 @@ def getPolicy(param, display_inactive=False):
             del Policies[polname]
 
     pol2delete = []
+    wildcard_match = {}
+    exact_user_match = {}
+    wildcard_user_match = {}
     if param.get('user', None) is not None:
         # log.debug("cleanup acccording to user %s" % param["user"])
         for polname, policy in Policies.items():
@@ -283,26 +286,37 @@ def getPolicy(param, display_inactive=False):
 
             # first check of wildcard in users
             if '*' in pol_users:
+                wildcard_match[polname] = policy
                 delete_it = False
 
             # then check for direct name match
             if delete_it:
                 if (param['user'].lower() in pol_users or
-                    param['user'] in pol_users):
+                     param['user'] in pol_users):
+                    exact_user_match[polname] = policy
                     delete_it = False
 
             if delete_it:
                 # we support the verification of the user,
                 # to be in a resolver for the admin and system scope
                 local_scope = param.get('scope', '').lower()
-                if local_scope in ['admin', 'system', 'monitoring', 'reporting.access']:
+                if local_scope in ['admin', 'system', 'monitoring',
+                                   'authentication',
+                                   'reporting.access']:
 
                     policy_users = policy.get('user', '').split(',')
                     userObj = User(login=param['user'])
 
+                    if 'realm' in param:
+                        userObj.realm = param['realm']
+                    else:
+                        import linotp.lib.realm
+                        userObj.realm = linotp.lib.realm.getDefaultRealm()
+
                     # we do the extended user defintion comparison
                     res = _filter_admin_user(policy_users, userObj)
                     if res is True:
+                        wildcard_user_match[polname] = policy
                         delete_it = False
 
             if delete_it:
@@ -310,8 +324,53 @@ def getPolicy(param, display_inactive=False):
         for polname in pol2delete:
             del Policies[polname]
 
+    # if we got policies and a user is defined on request
+    if len(Policies) > 0:
+        if exact_user_match:
+            Policies = exact_user_match
+            log.debug("getting exact user match %r for params %s",
+                      exact_user_match, param)
+
+        elif wildcard_user_match:
+            Policies = wildcard_user_match
+            log.debug("getting wildcard user match %r for params %s",
+                      wildcard_user_match, param)
+
+        elif wildcard_match:
+            Policies = wildcard_match
+            log.debug("getting wildcard user match %r for params %s",
+                      wildcard_match, param)
+
+    Policies = _post_realm_filter(Policies, param)
     log.debug("getting policies %s for params %s" % (Policies, param))
     return Policies
+
+
+def _post_realm_filter(policies, param):
+    """
+    best realm match - more precise policies should be prefered
+
+    algorithm:
+        if the param realm contains no wildcard
+        check if there are policies with exact match of
+        that realm
+
+    """
+    if 'realm' not in param or not param['realm'] or '*' == param['realm']:
+        return policies
+
+    exact_matching = {}
+
+    param_realm = param['realm'].lower()
+    for pol_name, pol in policies.items():
+        if pol['realm'].lower() == param_realm:
+            exact_matching[pol_name] = pol
+
+    if exact_matching:
+        return exact_matching
+
+    return policies
+
 
 def _filter_admin_user(policy_users, userObj):
     """
