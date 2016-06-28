@@ -42,9 +42,9 @@ def isSelfTest(config=None):
     ret = False
 
     if not config:
-        selftest = getFromConfig("selfTest", False) != False
+        selftest = getFromConfig("selfTest", False) is not False
     else:
-        selftest = config.get("selfTest", False) != False
+        selftest = config.get("selfTest", False) is not False
 
     return selftest
 

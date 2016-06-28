@@ -295,7 +295,7 @@ class User(object):
         return self._exists
 
     def checkPass(self, password):
-        if self.exists() == False:
+        if self.exists() is False:
             return False
 
         res = False
@@ -314,14 +314,13 @@ def getUserResolverId(user, report=False):
 
     (uuserid, uidResolver, uidResolverClass) = (u'', u'', u'')
 
-    if (user is not None and user.isEmpty() != True):
+    if (user is not None and user.isEmpty() is not True):
         try:
             (uuserid, uidResolver, uidResolverClass) = getUserId(user)
-        except Exception as exx:
-            log.exception('[getUserResolverId] for %r@%r failed: %r',
-                          user.login, user.realm, exx)
+        except Exception as e:
+            log.exception('[getUserResolverId] for %r@%r failed: %r' % (user.login, user.realm, e))
             if report is True:
-                raise UserError("getUserResolverId failed: %r" % exx, id=1112)
+                raise UserError("getUserResolverId failed: %r" % e, id=1112)
 
     return (uuserid, uidResolver, uidResolverClass)
 

@@ -495,7 +495,7 @@ def getPolicyActionValue(policies, action, max=True, is_string=False, subkey=Non
         ret = values.get(action_key, None)
 
         # the parameter String=False enforces a conversion into an int
-        if type(ret) in [str, unicode] and is_string == False:
+        if type(ret) in [str, unicode] and is_string is False:
             try:
                 ret = int(ret)
             except ValueError:
@@ -942,7 +942,7 @@ def get_autoassignment(user):
     if len(pol) > 0:
         val = getPolicyActionValue(pol, "autoassignment")
         # with  LinOTP 2.7 the autassign policy is treated as boolean
-        if val == True:
+        if val is True:
             ret = True
         # for backwar compatibility, we accept any values
         # other than -1, which indicates an error

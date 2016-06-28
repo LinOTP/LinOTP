@@ -89,7 +89,7 @@ class HmacOtp():
         res = -1
         start = self.counter
         end = self.counter + window
-        if symetric == True:
+        if symetric is True:
             # changed window/2 to window for TOTP
             start = self.counter - (window)
             start = 0 if (start < 0) else start

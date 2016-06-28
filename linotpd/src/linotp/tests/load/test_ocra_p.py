@@ -102,7 +102,7 @@ class OcraOtp(object):
         qdict = parse_qs(qs)
 
         ocrasuite = qdict.get('os', None)
-        if ocrasuite != None and len(ocrasuite) > 0:
+        if ocrasuite is not None and len(ocrasuite) > 0:
             ocrasuite = ocrasuite[0]
 
         self.ocrasuite = ocrasuite
@@ -124,11 +124,11 @@ class OcraOtp(object):
         qs = uri.query
         qdict = parse_qs(qs)
         nonce = qdict.get('no', None)
-        if nonce != None and len(nonce) > 0:
+        if nonce is not None and len(nonce) > 0:
             nonce = nonce[0]
 
         challenge = qdict.get('ch', None)
-        if challenge != None and len(challenge) > 0:
+        if challenge is not None and len(challenge) > 0:
             challenge = challenge[0]
 
         self.challenge = challenge
@@ -140,7 +140,7 @@ class OcraOtp(object):
 
     def _setup_(self):
 
-        if self.ocra != None and self.bkey != None:
+        if self.ocra is not None and self.bkey is not None:
             return
 
         key_len = 20
@@ -158,13 +158,13 @@ class OcraOtp(object):
 
     def callcOtp(self, challenge=None, ocrapin=None, counter= -1):
 
-        if self.ocra == None:
+        if self.ocra is None:
             self._setup_()
 
-        if ocrapin == None:
+        if ocrapin is None:
             ocrapin = self.ocrapin
 
-        if challenge == None:
+        if challenge is None:
             challenge = self.challenge
         if counter == -1:
             counter = self.counter
@@ -174,7 +174,7 @@ class OcraOtp(object):
         param['Q'] = challenge
         param['P'] = ocrapin
         param['S'] = ''
-        if self.ocra.T != None:
+        if self.ocra.T is not None:
             '''    Default value for G is 1M, i.e., time-step size is one minute and the
                    T represents the number of minutes since epoch time [UT].
             '''
@@ -548,30 +548,30 @@ class OcraTest(TestController):
         ''' -1- create an ocra token '''
         parameters = {}
 
-        if tokentype != None:
+        if tokentype is not None:
             parameters['type'] = tokentype
 
-        if pin != None:
+        if pin is not None:
             parameters['pin'] = pin
 
-        if genkey != None:
+        if genkey is not None:
             parameters['genkey'] = genkey
 
-        if otpkey != None:
+        if otpkey is not None:
             parameters['otpkey'] = otpkey
 
-        if sharedsecret != None:
+        if sharedsecret is not None:
             parameters['sharedsecret'] = sharedsecret
 
-        if ocrapin != None:
+        if ocrapin is not None:
             parameters['ocrapin'] = ocrapin
 
-        if ocrasuite != None:
+        if ocrasuite is not None:
             parameters['ocrasuite'] = ocrasuite
 
-        if user != None:
+        if user is not None:
             parameters['user'] = user
-        elif serial != None:
+        elif serial is not None:
             parameters['serial'] = serial
 
 
@@ -583,32 +583,32 @@ class OcraTest(TestController):
         ''' -2- acivate ocra token '''
         parameters = {}
 
-        if tokentype != None:
+        if tokentype is not None:
             parameters['type'] = tokentype
 
-        if pin != None:
+        if pin is not None:
             parameters['pin'] = pin
 
-        if message != None:
+        if message is not None:
             parameters['message'] = message
 
-        if genkey != None:
+        if genkey is not None:
             parameters['genkey'] = genkey
 
-        if ocrapin != None:
+        if ocrapin is not None:
             parameters['ocrapin'] = ocrapin
 
 
-        if user != None:
+        if user is not None:
             parameters['user'] = user
-        elif serial != None:
+        elif serial is not None:
             parameters['serial'] = serial
 
-        if activationkey == None:
+        if activationkey is None:
             activationkey = createActivationCode('1234567890')
         parameters['activationcode'] = activationkey
 
-        if ocrasuite != None:
+        if ocrasuite is not None:
             parameters['ocrasuite'] = ocrasuite
 
         response = self.app.get(genUrl(controller='admin', action='init'), params=parameters)
@@ -619,20 +619,20 @@ class OcraTest(TestController):
     def removeTokens(self, user=None, serial=None):
         serials = []
 
-        if user != None:
+        if user is not None:
             p = {"user" : user }
             response = self.app.get(genUrl(controller='admin', action='remove'), params=p)
             log.info("response %s\n", response)
             assert '"value": 1' in response
 
-        if serial != None:
+        if serial is not None:
             p = {"serial" : serial }
             response = self.app.get(genUrl(controller='admin', action='remove'), params=p)
             log.info("response %s\n", response)
             assert '"value": 1' in response
 
 
-        if serial == None and user == None:
+        if serial is None and user is None:
             parameters = {}
             response = self.app.get(genUrl(controller='admin', action='show'), params=parameters)
             log.info("response %s\n", response)
@@ -660,7 +660,7 @@ class OcraTest(TestController):
         p = {"serial"      : serial,
              "data"        : "0105037311 Konto 50150850 BLZ 1752,03 Eur"
             }
-        if data != None:
+        if data is not None:
             p[data] = data
 
         response = self.app.get(genUrl(controller='ocra', action='request'), params=p)
@@ -674,7 +674,7 @@ class OcraTest(TestController):
 
 
         now = datetime.now()
-        if ttime != None:
+        if ttime is not None:
             now = ttime
         stime = now.strftime("%s")
         itime = int(stime)
@@ -697,7 +697,7 @@ class OcraTest(TestController):
 
              "data"        : challenge_data,
             }
-        if user == None:
+        if user is None:
             p["serial"] = serial
         else:
             p["user"] = user
@@ -714,7 +714,7 @@ class OcraTest(TestController):
         return (response, challenge, transid)
 
     def createSpassToken(self, serial=None, user='root', pin='spass'):
-        if serial == None:
+        if serial is None:
             serial = "TSpass"
         parameters = {
                       "serial"      : serial,
@@ -859,7 +859,7 @@ class OcraTest(TestController):
             param['Q'] = challenge
             param['P'] = ocrapin
             param['S'] = ''
-            if ocra.T != None:
+            if ocra.T is not None:
                 '''    Default value for G is 1M, i.e., time-step size is one minute and the
                        T represents the number of minutes since epoch time [UT].
                 '''

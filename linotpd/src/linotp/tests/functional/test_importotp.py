@@ -223,8 +223,8 @@ sccSignature: MC4CFQDju23MCRqmkWC7Z9sVDB0y0TeEOwIVAOIibmqMFxhPiY7mLlkt5qmRT/xn  
         TOKENS = linotp.lib.ImportOTP.eTokenDat.parse_dat_data(data, '1.1.2000')
         log.error(TOKENS)
         assert(len(TOKENS) == 2)
-        assert(TOKENS.get("RAINER02") != None)
-        assert(TOKENS.get("RAINER01") != None)
+        assert(TOKENS.get("RAINER02") is not None)
+        assert(TOKENS.get("RAINER01") is not None)
         return
 
     def test_import_DAT(self):
@@ -408,9 +408,9 @@ sccSignature: MC4CFQDju23MCRqmkWC7Z9sVDB0y0TeEOwIVAOIibmqMFxhPiY7mLlkt5qmRT/xn  
                  do_checkserial=False)
         log.error(TOKENS)
         assert(len(TOKENS) == 3)
-        assert(TOKENS.get("306EUO4-00954") != None)
-        assert(TOKENS.get("306EUO4-00958") != None)
-        assert(TOKENS.get("306EUO4-00960") != None)
+        assert(TOKENS.get("306EUO4-00954") is not None)
+        assert(TOKENS.get("306EUO4-00958") is not None)
+        assert(TOKENS.get("306EUO4-00960") is not None)
 
 
     def test_parse_HOTP_PSKC(self):

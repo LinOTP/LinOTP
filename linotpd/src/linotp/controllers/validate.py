@@ -156,7 +156,7 @@ class ValidateController(BaseController):
         user.realm = set_realm(user.login, realm, exception=True)
         check_user_authorization(user.login, user.realm, exception=True)
 
-        if isSelfTest() == True:
+        if isSelfTest() is True:
             initTime = getParam(param, "init", optional)
             if initTime is not None:
                 if options is None:
@@ -175,7 +175,7 @@ class ValidateController(BaseController):
 
         # add additional details
         if is_auth_return(ok, user=user):
-            if opt == None:
+            if opt is None:
                 opt = {}
             if ok:
                 opt['realm'] = c.audit.get('realm')
@@ -243,7 +243,7 @@ class ValidateController(BaseController):
                 c.audit['info'] = unicode(exx)
                 ok = False
                 if is_auth_return(ok):
-                    if opt == None:
+                    if opt is None:
                         opt = {}
                     opt['error'] = c.audit.get('info')
 
@@ -457,7 +457,7 @@ class ValidateController(BaseController):
                 try:
                     allowSAML = getFromConfig("allowSamlAttributes")
                 except:
-                    log.warning("[samlcheck] Calling controller samlcheck. But allowSamlAttributes == False.")
+                    log.warning("[samlcheck] Calling controller samlcheck. But allowSamlAttributes is False.")
                 if "True" == allowSAML:
                     ## Now we get the attributes of the user
                     user = getUserFromParam(param, optional)
@@ -572,7 +572,7 @@ class ValidateController(BaseController):
                 del options[k]
 
         if 'init' in param:
-            if isSelfTest() == True:
+            if isSelfTest() is True:
                 options['initTime'] = param.get('init')
 
         try:
@@ -603,7 +603,7 @@ class ValidateController(BaseController):
 
             c.audit['serial'] = serial
 
-            if isSelfTest() == True:
+            if isSelfTest() is True:
                 initTime = getParam(param, "init", optional)
                 if initTime is not None:
                     if options is None:
@@ -680,13 +680,13 @@ class ValidateController(BaseController):
 
             Session.commit()
 
-            if ok == True:
+            if ok is True:
                 ret = u":-)"
             else:
                 ret = u":-("
             res.append(ret)
 
-            if opt != None:
+            if opt is not None:
 
                 if 'state' in opt or 'transactionid' in opt:
                     stat = opt.get('transactionid') or opt.get('state')

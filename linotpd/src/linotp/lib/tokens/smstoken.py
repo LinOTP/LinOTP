@@ -438,7 +438,7 @@ class SmsTokenClass(HmacTokenClass):
         # it is configurable, if sms should be triggered by a valid pin
         send_by_PIN = getFromConfig("sms.sendByPin") or True
 
-        if self.isActive() == True and send_by_PIN == True:
+        if self.isActive() is True and send_by_PIN is True:
             counter = self.getOtpCount()
             log.debug("[submitChallenge] counter=%r" % counter)
 
@@ -601,7 +601,7 @@ class SmsTokenClass(HmacTokenClass):
 
         if res >= 0:
             res = check_pin(self, pin, user=user, options=options)
-            if res == True:
+            if res is True:
                 otp_val = otp
 
         for challenge in challenges:
@@ -634,7 +634,7 @@ class SmsTokenClass(HmacTokenClass):
 
         ret = HmacTokenClass.checkOtp(self, anOtpVal, counter, window)
         if ret != -1:
-            if self.isValid() == False:
+            if self.isValid() is False:
                 ret = -1
 
         if ret >= 0:
@@ -816,7 +816,7 @@ class SmsTokenClass(HmacTokenClass):
         now = int(time.time())
         if dueDate >= now:
             ret = True
-        if ret == True:
+        if ret is True:
             msg = "the sms challenge is still valid"
         else:
             msg = "the sms challenge is no more valid"

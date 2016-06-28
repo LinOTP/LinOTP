@@ -196,10 +196,10 @@ class YubiSecurityModule(SecurityModule):
         '''
         log.debug("[login] login on slotid %i" % slotid)
 
-        if password == None:
+        if password is None:
             log.debug("[login] using password from the config file.")
             password = self.password
-        if password == None:
+        if password is None:
             log.info("[login] No password in config file. We have to wait for"
                      " it beeing set.")
 

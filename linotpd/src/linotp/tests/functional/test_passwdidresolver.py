@@ -130,7 +130,7 @@ class TestPasswdController(TestController):
 
         res = y.checkPass('2001', "wrongPW")
         print "result %r" % res
-        assert res == False
+        assert res is False
 
     def test_searchfields(self):
         '''

@@ -169,11 +169,11 @@ class SecurityProvider(object):
 
         log.debug("[loadSecurityModule] Loading module %s" % id)
 
-        if self.config.has_key(id) == False:
+        if self.config.has_key(id) is False:
             return ret
 
         config = self.config.get(id)
-        if config.has_key('module') == False:
+        if config.has_key('module') is False:
             return ret
 
         module = config.get('module')
@@ -188,7 +188,7 @@ class SecurityProvider(object):
         klass = getattr(mod, className)
 
         for method in methods:
-            if hasattr(klass, method) == False:
+            if hasattr(klass, method) is False:
                 error = ("[loadSecurityModule] Security Module %s misses the "
                          "following interface: %s" % (unicode(module), unicode(method)))
                 log.error(error)
@@ -243,7 +243,7 @@ class SecurityProvider(object):
         '''
         pool = None
         ## amount has to be taken from the hsm-id config
-        if hsm_id == None:
+        if hsm_id is None:
             ids = self.config
         else:
             if self.config.has_key(hsm_id):
@@ -311,7 +311,7 @@ class SecurityProvider(object):
         if sessionId is None:
             sessionId = unicode(thread.get_ident())
 
-        if self.config.has_key(hsm_id) == False:
+        if self.config.has_key(hsm_id) is False:
             error = ('[SecurityProvider:dropSecurityModule] no config found '
                      'for hsm with id %s ' % (unicode(hsm_id)))
             log.error(error)
@@ -339,7 +339,7 @@ class SecurityProvider(object):
         if sessionId is None:
             sessionId = unicode(thread.get_ident())
 
-        if self.config.has_key(hsm_id) == False:
+        if self.config.has_key(hsm_id) is False:
             error = ('[SecurityProvider:getSecurityModule] no config found for '
                      'hsm with id %s ' % (unicode(hsm_id)))
             log.error(error)
@@ -349,7 +349,7 @@ class SecurityProvider(object):
         tries = 0
         locked = False
 
-        while retry == True:
+        while retry is True:
             try:
                 pool = self._getHsmPool_(hsm_id)
                 self.rwLock.acquire_write()
@@ -388,7 +388,7 @@ class SecurityProvider(object):
                         retry = False
 
             finally:
-                if locked == True:
+                if locked is True:
                     self.rwLock.release()
 
         return found

@@ -50,7 +50,7 @@ class SetConfig:
 
     def setConfig(self, parameters):
         """Sets the config with the parameters
-           return True if result.value and result.status == True
+           return True if result.value and result.status is True
         """
         parameters['session'] = self.session
         r = requests.get(self.set_config_url,

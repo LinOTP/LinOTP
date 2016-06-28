@@ -870,7 +870,7 @@ class Ocra2TokenClass(TokenClass):
         attributes = self.prepare_message(store_data, state)
         attributes['challenge'] = challenge
 
-        if attributes != None and "data" in attributes:
+        if attributes is not None and "data" in attributes:
             message = attributes.get("data")
             del attributes['data']
 
@@ -1693,7 +1693,7 @@ class Ocra2TokenClass(TokenClass):
         if 'otpkey' in info:
             otpkey = info.get('otpkey')
 
-        if otpkey != None:
+        if otpkey is not None:
             response_detail["otpkey"] = {
                         "order"      : '1',
                         "description": _("OTP seed"),

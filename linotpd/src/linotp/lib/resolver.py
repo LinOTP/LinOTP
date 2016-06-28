@@ -98,10 +98,10 @@ class Resolver(object):
 
         for k in param:
             if k != 'name' and k != 'type':
-                if k.startswith('type.') == True:
+                if k.startswith('type.') is True:
                     key = k[len('type.'):]
                     self.types[key] = param.get(k)
-                elif k.startswith('desc.') == True:
+                elif k.startswith('desc.') is True:
                     key = k[len('desc.'):]
                     self.desc[key] = param.get(k)
 
@@ -117,7 +117,7 @@ class Resolver(object):
                                  "parameter for the resolver %r" % (k, self.type))
         # now check if we have for every type def an parameter
         ok = self._sanityCheck()
-        if ok != True:
+        if ok is not True:
             raise Exception("type definition does not match parameter! %s"
                             % unicode(param))
 
@@ -126,10 +126,10 @@ class Resolver(object):
     def _sanityCheck(self):
         ret = True
         for t in self.types:
-            if self.data.has_key(t) == False:
+            if self.data.has_key(t) is False:
                 ret = False
         for t in self.desc:
-            if self.data.has_key(t) == False:
+            if self.data.has_key(t) is False:
                 ret = False
 
         return ret

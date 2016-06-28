@@ -192,7 +192,7 @@ def sendError(response, exception, id=1, context=None):
 
     ## handle the different types of exception:
     ## Exception, LinOtpError, str/unicode
-    if hasattr(exception, '__class__') == True \
+    if hasattr(exception, '__class__') is True \
     and isinstance(exception, Exception):
         errDesc = unicode(exception)
         if isinstance(exception, LinotpError):

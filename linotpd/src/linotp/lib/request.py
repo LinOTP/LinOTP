@@ -189,7 +189,7 @@ class HttpRequest(RemoteRequest):
             status = result.get('result', {}).get('status', False)
             log.debug("Status: %r", status)
 
-            if status == True:
+            if status is True:
                 if result.get('result', {}).get('value', False) is True:
                     res = True
 

@@ -248,11 +248,11 @@ class MonitoringController(BaseController):
         :return: true if a new value gets encryptet before beeing stored in db
         """
         try:
-            if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+            if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
                 raise HSMException('no hsm defined in execution context!')
 
             hsm = c.hsm.get('obj')
-            if hsm is None or hsm.isReady() == False:
+            if hsm is None or hsm.isReady() is False:
                 raise HSMException('hsm not ready!')
 
             hsm_class = str(type(hsm))

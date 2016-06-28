@@ -578,7 +578,7 @@ class TokenClass(object):
         if 'transactionid' in options or 'state' in options:
             # fetch the transactionid
             transid = options.get('transactionid', None)
-            if transid == None:
+            if transid is None:
                 transid = options.get('state', None)
 
         # check if the transactionid is in the list of challenges
@@ -938,7 +938,7 @@ class TokenClass(object):
         #   if otpkey given - take this
         #   if not given
         #       if genkey == 1 : create one
-        #   if required and otpkey == None:
+        #   if required and otpkey is None:
         #      raise param Exception, that we require an otpkey
         ##
         otpKey = getParam(param, "otpkey", optional)
@@ -960,7 +960,7 @@ class TokenClass(object):
 
         # otpKey still None?? - raise the exception
         if otpKey is None:
-            if self.hKeyRequired == True:
+            if self.hKeyRequired is True:
                 otpKey = getParam(param, "otpkey", required)
 
         if otpKey is not None:
@@ -1503,7 +1503,7 @@ class TokenClass(object):
 
         if resetCounter is True:
             if (self.token.LinOtpFailCount < self.token.LinOtpMaxFail and
-                    self.token.LinOtpIsactive == True):
+                    self.token.LinOtpIsactive is True):
                 self.token.LinOtpFailCount = 0
 
         try:
@@ -1659,7 +1659,7 @@ class TokenClass(object):
         if 'otpkey' in info:
             otpkey = info.get('otpkey')
 
-        if otpkey != None:
+        if otpkey is not None:
             response_detail["otpkey"] = {"order": '1',
                                          "description": _("OTP seed"),
                                          "value":  "seed://%s" % otpkey,
@@ -2526,7 +2526,7 @@ class OcraTokenClass(TokenClass):
             raise Exception(ex)
 
         finally:
-            if ocraChallenge != None:
+            if ocraChallenge is not None:
                 ocraChallenge.save()
 
         log.debug('[statusValidationFail]')
@@ -2930,7 +2930,7 @@ class OcraTokenClass(TokenClass):
         challenges = []
 
         if serial is not None:
-            if currentOnly == False:
+            if currentOnly is False:
                 challenges = Session.query(OcraChallenge)\
                     .filter(OcraChallenge.tokenserial == u'' + serial)\
                     .order_by(desc(OcraChallenge.id))
@@ -2938,7 +2938,7 @@ class OcraTokenClass(TokenClass):
                 #  return the oldest transaction onyl -  orderby(id).limit(1)
                 challenges = Session.query(OcraChallenge)\
                     .filter(OcraChallenge.tokenserial == u'' + serial)\
-                    .filter(OcraChallenge.received_tan == False)\
+                    .filter(OcraChallenge.received_tan is False)\
                     .order_by(asc(OcraChallenge.id))
 
         if challenges is None:
@@ -2971,7 +2971,7 @@ class OcraTokenClass(TokenClass):
         if 'otpkey' in info:
             otpkey = info.get('otpkey')
 
-        if otpkey != None:
+        if otpkey is not None:
             response_detail["otpkey"] = {
                 "order": '1',
                 "description": _("OTP seed"),

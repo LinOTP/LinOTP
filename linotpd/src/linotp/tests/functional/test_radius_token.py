@@ -151,7 +151,7 @@ class TestRadiusToken(TestController):
             'config',
             'dictionary',
             )
-        self.assertTrue(os.path.isfile(radius_server_file) == True,
+        self.assertTrue(os.path.isfile(radius_server_file) is True,
                         "radius demo server not found: %s" % radius_server_file)
 
         self.p = subprocess.Popen(

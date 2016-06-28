@@ -2512,7 +2512,7 @@ class AdminController(BaseController):
                                                                filter_open=only_open_challenges))
 
             # # if we have a user
-            if user.isEmpty() == False:
+            if user.isEmpty() is False:
                 tokens = getTokens4UserOrSerial(user=user)
                 for token in tokens:
                     serial = token.getSerial()

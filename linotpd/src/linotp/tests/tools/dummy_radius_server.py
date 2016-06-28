@@ -214,7 +214,7 @@ def main():
                 "hosts": {myIP: client1, "127.0.0.1": client2},
                 }
 
-    if os.path.isfile(r_dict) == False:
+    if os.path.isfile(r_dict) is False:
         ## falback: try the relative one
         r_dict = "config/dictionary"
 

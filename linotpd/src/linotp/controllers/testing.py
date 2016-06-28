@@ -129,7 +129,7 @@ class TestingController(BaseController):
         param = request.params
         try:
 
-            if isSelfTest() == False:
+            if isSelfTest() is False:
                 Session.rollback()
                 return sendError(response, "The testing controller can only be used in SelfTest mode!", 0)
 

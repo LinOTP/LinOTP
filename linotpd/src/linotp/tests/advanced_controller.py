@@ -281,7 +281,7 @@ class TestAdvancedController(TestController2):
         # The result is always json!
         res = JsonUtils.getBody(rsp)  # rsp.json_body
         # result Status must be always True!
-        self.assertTrue(JsonUtils.getJson(res, ['result', 'status']) == True,
+        self.assertTrue(JsonUtils.getJson(res, ['result', 'status']) is True,
             ("Failed LinOTP %s.%s invocation (result: %s)"
                 % (linotpController, linotpAction, str(rsp))))
         value = JsonUtils.getJson(res, ['result', 'value'])
@@ -534,7 +534,7 @@ class TestAdvancedController(TestController2):
                                            valueErrorMessage=valueErrorMessage,
                                            passResponse=['detail'],
                                            **parameters)
-            if val == True:
+            if val is True:
                 return res
             else:
                 return None
@@ -637,7 +637,7 @@ class TestAdvancedController(TestController2):
                                            valueErrorMessage=valueErrorMessage,
                                            passResponse=['details'],
                                            **parameters)
-            if val == True:
+            if val is True:
                 return res
             else:
                 return None

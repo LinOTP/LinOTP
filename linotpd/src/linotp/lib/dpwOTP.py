@@ -76,7 +76,7 @@ class dpwOtp:
 
         key = self.secretObject.getKey()
 
-        if date_string == None:
+        if date_string is None:
             date_string = datetime.now().strftime("%d%m%y")
 
         input = key + date_string

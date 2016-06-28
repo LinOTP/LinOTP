@@ -697,7 +697,7 @@ class SystemController(BaseController):
                         fRealms.append(realm)
                         found = True
 
-            if found == True:
+            if found is True:
                 c.audit['failed'] = res
                 err = 'Resolver %r  still in use by the realms: %r' % \
                                     (resolver, fRealms)
@@ -798,7 +798,7 @@ class SystemController(BaseController):
 
             defRealm = defRealm.lower().strip()
             res = setDefaultRealm(defRealm)
-            if res == False and defRealm != "" :
+            if res is False and defRealm != "" :
                 c.audit['info'] = "The realm %s does not exist" % defRealm
 
             c.audit['success'] = True
@@ -959,7 +959,7 @@ class SystemController(BaseController):
                 hadDefRealmBefore = True
 
             # now test if realm is defined
-            if isRealmDefined(realm) == True:
+            if isRealmDefined(realm) is True:
                 if realm.lower() == defRealm.lower():
                     setDefaultRealm("")
                 if realm == "_default_":
@@ -1470,7 +1470,7 @@ class SystemController(BaseController):
             log.debug("[getPolicy] retrieving policy name: %s, realm: %s, scope: %s"
                       % (name, realm, scope))
             pol = {}
-            if name != None:
+            if name is not None:
                 for nam in name.split(','):
                     search_param = {'name':nam, 'realm':realm, 'scope': scope}
                     if action:
@@ -1489,7 +1489,7 @@ class SystemController(BaseController):
             if user:
                 rpol = {}
                 for p_name, policy in pol.items():
-                    if policy['user'] == None:
+                    if policy['user'] is None:
                         rpol[p_name] = policy
                     else:
                         users = policy['user'].split(',')

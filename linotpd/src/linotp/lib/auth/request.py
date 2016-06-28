@@ -178,8 +178,8 @@ class HttpRequest(Request):
                 status = result['result']['status']
                 log.debug("Status: %r", status)
 
-                if status == True:
-                    if result['result']['value'] == True:
+                if status is True:
+                    if result['result']['value'] is True:
                         res = True
 
                 if "detail" in result:

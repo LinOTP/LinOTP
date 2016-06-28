@@ -143,7 +143,7 @@ class DefaultSecurityModule(SecurityModule):
         :return: -
 
         '''
-        if self.crypted == False:
+        if self.crypted is False:
             return
         if not 'password' in param:
             raise Exception("missing password")
@@ -194,7 +194,7 @@ class DefaultSecurityModule(SecurityModule):
 
         log.debug('encrypt()')
 
-        if self.is_ready == False:
+        if self.is_ready is False:
             raise Exception('setup of security module incomplete')
 
         key = self.getSecret(id)
@@ -207,7 +207,7 @@ class DefaultSecurityModule(SecurityModule):
 
         res = aes.encrypt(input)
 
-        if self.crypted == False:
+        if self.crypted is False:
             zerome(key)
             del key
         return res
@@ -231,7 +231,7 @@ class DefaultSecurityModule(SecurityModule):
 
         log.debug('decrypt()')
 
-        if self.is_ready == False:
+        if self.is_ready is False:
             raise Exception('setup of security module incomplete')
 
         key = self.getSecret(id)
@@ -251,7 +251,7 @@ class DefaultSecurityModule(SecurityModule):
         # convert output from ascii, back to bin data
         data = binascii.a2b_hex(output[:eof-1])
 
-        if self.crypted == False:
+        if self.crypted is False:
             zerome(key)
             del key
 

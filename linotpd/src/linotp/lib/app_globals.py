@@ -125,7 +125,7 @@ class Globals(object):
 
             else:
                 conf = copy.deepcopy(config)
-                if replace == True:
+                if replace is True:
                     self.config = conf
                 else:
                     self.config.update(conf)

@@ -348,7 +348,7 @@ class TestRemoteToken(TestSpecialController):
             log.debug("Column Table name: %s : %s : %r"
                       % (column.name, column.type, column.index))
             if column.name == 'LinOtpTokenSerialnumber':
-                self.assertTrue(column.index == True, column.name)
+                self.assertTrue(column.index is True, column.name)
 
 
         # create token and remote token which points to this

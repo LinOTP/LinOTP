@@ -346,7 +346,7 @@ def create_token(lines, startdate=None):
     for line in lines:
         if line.startswith('#'):
             continue
-        if token == None:
+        if token is None:
             token = DatToken()
             if startdate is not None:
                 token.set_startdate(startdate)
@@ -368,7 +368,7 @@ def get_session(lino_url, user=None, pwd=None):
     http = httplib2.Http(disable_ssl_certificate_validation=True)
 
     session = None
-    if user != None:
+    if user is not None:
         url = lino_url + 'admin/getsession'
         http.add_credentials(user, pwd)
         resp, content = http.request(url, 'POST')
@@ -480,7 +480,7 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
         del lines[:]
 
     ## finally create tokens in the LinOTP
-    if lino_url != None:
+    if lino_url is not None:
         submit_tokens(lino_url, tokens, user=user, pwd=password)
 
     return

@@ -128,7 +128,7 @@ class SpassTokenClass(TokenClass):
         '''
         otp_count = -1
         pin_match = check_pin(self, passw, user=user, options=options)
-        if pin_match == True:
+        if pin_match is True:
             otp_count = 0
             self.auth_info = {'auth_info': [('pin_length', len(passw))]}
         return (pin_match, otp_count, None)

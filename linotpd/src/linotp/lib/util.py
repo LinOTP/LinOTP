@@ -113,7 +113,7 @@ def getParam(param, which, optional=True):
     if which in param:
         ret = param[which]
     else:
-        if (optional == False):
+        if (optional is False):
             raise ParameterError("Missing parameter: %r" % which, id=905)
 
     return ret
@@ -317,7 +317,7 @@ def get_client(request):
 
     params = {}
     params.update(request.params)
-    if client in may_overwrite or client == None:
+    if client in may_overwrite or client is None:
         log.debug("client %s may overwrite!" % client)
         if "client" in params:
             client = params["client"]

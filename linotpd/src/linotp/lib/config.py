@@ -89,10 +89,10 @@ def getLinotpConfig():
                 raise Exception(e)
         ret = c.linotpConfig
 
-        if ret.delay == True:
-            if hasattr(c, 'hsm') == True and isinstance(c.hsm, dict):
+        if ret.delay is True:
+            if hasattr(c, 'hsm') is True and isinstance(c.hsm, dict):
                 hsm = c.hsm.get('obj')
-                if hsm is not None and hsm.isReady() == True:
+                if hsm is not None and hsm.isReady() is True:
                     ret = LinOtpConfig()
                     c.linotpConfig = ret
 
@@ -100,10 +100,10 @@ def getLinotpConfig():
         log.debug("Bad Hack: LinotpConfig called out of controller context")
         ret = LinOtpConfig()
 
-        if ret.delay == True:
-            if hasattr(c, 'hsm') == True and isinstance(c.hsm, dict):
+        if ret.delay is True:
+            if hasattr(c, 'hsm') is True and isinstance(c.hsm, dict):
                 hsm = c.hsm.get('obj')
-                if hsm is not None and hsm.isReady() == True:
+                if hsm is not None and hsm.isReady() is True:
                     ret = LinOtpConfig()
 
     finally:
@@ -142,7 +142,7 @@ class LinOtpConfig(dict):
         if len(conf.keys()) == 0:
             do_reload = True
 
-        if self.glo.isConfigComplet() == False:
+        if self.glo.isConfigComplet() is False:
             do_reload = True
             self.delay = True
 
@@ -228,7 +228,7 @@ class LinOtpConfig(dict):
         :param des: literal, which describes the data
         :type  des: string
         '''
-        if key.startswith('linotp.') == False:
+        if key.startswith('linotp.') is False:
             key = 'linotp.' + key
 
         if type(val) in [str, unicode] and "%(here)s" in val:
@@ -295,8 +295,8 @@ class LinOtpConfig(dict):
             :return: value or None
             :rtype:  any type
         '''
-        if (self.parent.has_key(key) == False
-                and key.startswith('linotp.') == False):
+        if (self.parent.has_key(key) is False
+                and key.startswith('linotp.') is False):
             key = 'linotp.' + key
 
         # return default only if key does not exist
@@ -689,9 +689,9 @@ def _retrieveAllConfigDB():
         myTyp = type_dict.get(key)
         if myTyp is not None:
             if myTyp == 'password':
-                if hasattr(c, 'hsm') == True and isinstance(c.hsm, dict):
+                if hasattr(c, 'hsm') is True and isinstance(c.hsm, dict):
                     hsm = c.hsm.get('obj')
-                    if hsm is not None and hsm.isReady() == True:
+                    if hsm is not None and hsm.isReady() is True:
                         config['enc' + key] = decryptPassword(value)
                 else:
                     delay = True

@@ -376,7 +376,7 @@ class Token(object):
         :param save: in case all attributes are returned and save==True, the timestamp is
                      converted to a string representation
         '''
-        if key == None:
+        if key is None:
             return self.get_vars(save=save)
 
         if hasattr(self, key):
@@ -939,7 +939,7 @@ class Challenge(object):
         :param save: in case of all attributes and save==True, the timestamp is
                      converted to a string representation
         '''
-        if key == None:
+        if key is None:
             return self.get_vars(save=save)
 
         if hasattr(self, key):

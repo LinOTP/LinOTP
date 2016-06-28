@@ -1457,7 +1457,7 @@ class UserserviceController(BaseController):
             log.debug("[usergetmultiotp] retrieving OTP value for token %s",
                       serial)
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
-            if ret['result'] == False and max_count == -1:
+            if ret['result'] is False and max_count == -1:
                 ret['error'] = "%s - %s" % (ret['error'], _("see policy"
                                                             " definition."))
 

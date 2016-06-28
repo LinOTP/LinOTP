@@ -291,7 +291,7 @@ class TokenHandler(object):
         token_init['pin'] = passw
 
         (res, tokenObj) = self.initToken(token_init, user)
-        if res == False:
+        if res is False:
             msg = ('Failed to create token for user %s@%s during'
                    ' autoenrollment' % (user.login, user.realm))
             log.error(msg)
@@ -479,7 +479,7 @@ class TokenHandler(object):
 
         log.debug("[isTokenOwner] entering function isTokenOwner")
 
-        if user is not None and (user.isEmpty() == False):
+        if user is not None and (user.isEmpty() is False):
         # the upper layer will catch / at least should
             (userid, idResolver, idResolverClass) = getUserId(user)
 
@@ -847,7 +847,7 @@ class TokenHandler(object):
         if assigned is not None:
             # filter if assigned or not
             if "0" == unicode(assigned):
-                sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid == None,
+                sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid is None,
                                                Token.LinOtpUserid == ""))
             elif "1" == unicode(assigned):
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
@@ -880,7 +880,7 @@ class TokenHandler(object):
 
         :return: the number of deleted tokens
         """
-        if (user is None or user.isEmpty() == True) and (serial is None):
+        if (user is None or user.isEmpty() is True) and (serial is None):
             log.warning("[removeToken] Parameter user or serial required!")
             raise ParameterError("Parameter user or serial required!", id=1212)
 
@@ -1142,7 +1142,7 @@ class TokenHandler(object):
         for token in tokenList:
             token.addToSession(Session)
             res = token.resync(otp1, otp2, options)
-            if res == True:
+            if res is True:
                 ret = True
         return ret
 
@@ -1367,7 +1367,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
     serials = []
     tokens = []
 
-    if user is not None and user.isEmpty() == False and user.login:
+    if user is not None and user.isEmpty() is False and user.login:
         resolverUid = user.resolverUid
         v = None
         k = None
@@ -1475,7 +1475,7 @@ def getTokenInRealm(realm, active=True):
         sqlQuery = Session.query(TokenRealm, Realm, Token).filter(and_(
                             TokenRealm.realm_id == Realm.id,
                             Realm.name == u'' + realm,
-                            Token.LinOtpIsactive == True,
+                            Token.LinOtpIsactive is True,
                             TokenRealm.token_id == Token.LinOtpTokenId)).count()
     else:
         sqlQuery = Session.query(TokenRealm, Realm).filter(and_(
@@ -1493,7 +1493,7 @@ def getTokenNumResolver(resolver=None, active=True):
     '''
     if resolver is None:
         if active:
-            sqlQuery = Session.query(Token).filter(Token.LinOtpIsactive == True).count()
+            sqlQuery = Session.query(Token).filter(Token.LinOtpIsactive is True).count()
         else:
             sqlQuery = Session.query(Token).count()
         return sqlQuery
@@ -1510,7 +1510,7 @@ def getTokenNumResolver(resolver=None, active=True):
         resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
 
         if active:
-            sqlQuery = Session.query(Token).filter(and_(Token.LinOtpIdResClass.like(resolver), Token.LinOtpIsactive == True)).count()
+            sqlQuery = Session.query(Token).filter(and_(Token.LinOtpIdResClass.like(resolver), Token.LinOtpIsactive is True)).count()
         else:
             sqlQuery = Session.query(Token).filter(Token.LinOtpIdResClass.like(resolver)).count()
         return sqlQuery
@@ -1635,7 +1635,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                     tokenList.append(token)
 
 
-    if _class == True:
+    if _class is True:
         for tok in tokenList:
             tokenCList.append(createTokenClassObject(tok))
         return tokenCList
@@ -1799,7 +1799,7 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
         (res, error, otp_dict) = token.get_multi_otp(count=count, epoch_start=epoch_start, epoch_end=epoch_end, curTime=curTime)
         log.debug("[get_multi_otp] received %r, %r, %r" % (res, error, otp_dict))
 
-        if res == True:
+        if res is True:
             ret = otp_dict
             ret["result"] = True
         else:

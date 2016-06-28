@@ -472,7 +472,7 @@ class OcraController(BaseController):
                     tokens.extend(getTokens4UserOrSerial(serial=serial))
 
             ## if we have a user
-            if user.isEmpty() == False:
+            if user.isEmpty() is False:
                 try:
                     tokens.extend(getTokens4UserOrSerial(user=user))
                 except:

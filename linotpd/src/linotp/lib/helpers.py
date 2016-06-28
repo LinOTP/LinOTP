@@ -45,6 +45,6 @@ def getParam(param, which, optional):
     if param.has_key(which):
         return  param[which]
     else:
-        if (optional == False):
+        if (optional is False):
             raise ParameterError("Missing parameter: %r" % which, id=905)
     return

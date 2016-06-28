@@ -255,7 +255,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             raise Exception("missing password")
 
         slotid = params.get("slotid", None)
-        if slotid == None:
+        if slotid is None:
             slotid = self.slotid
 
         slotid = int(slotid)
@@ -372,10 +372,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         '''
         output("debug", "[login] login on slotid %i" % slotid)
 
-        if password == None:
+        if password is None:
             output("debug", "[login] using password from the config file.")
             password = self.password
-        if password == None:
+        if password is None:
             output("info", "[login] No password in config file. We have to"
                    " wait for it beeing set.")
 

@@ -99,7 +99,7 @@ def get_session(base_url, user=None, pwd=None):
     :return: session (string)
     '''
     session = None
-    if user != None:
+    if user is not None:
         url = base_url + 'admin/getsession'
         r = requests.get(url, auth=HTTPDigestAuth(user, pwd), verify=False)
 

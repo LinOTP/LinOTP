@@ -476,7 +476,7 @@ class TestLDAP(TestController):
 
         if self.appconf.has_key('linotp.ldapTestServerIp.' + hostname):
             self.ldapurl = self.appconf.get('linotp.ldapTestServerIp.' + hostname)
-        elif self.appconf.has_key('<include>') == True:
+        elif self.appconf.has_key('<include>') is True:
             try:
                 filename = self.appconf.get('<include>')
                 cfgParse = ConfigParser.ConfigParser()
@@ -605,7 +605,7 @@ class TestLDAP(TestController):
             if "Can't contact LDAP server" in msg:
                 ldapServerConnected = False
 
-        if ldapServerConnected == False:
+        if ldapServerConnected is False:
             self.fail("No LDAP connection")
 
 

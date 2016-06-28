@@ -329,7 +329,7 @@ def createActivationCode(acode=None, checksum=True):
     if acode is None:
         acode = geturandom(20)
     activationcode = base64.b32encode(acode)
-    if checksum == True:
+    if checksum is True:
         chsum = check(acode)
         activationcode = u'' + activationcode + chsum
 
@@ -373,7 +373,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
     activationcode = activationcode.replace('-', '')
 
     acode = activationcode
-    if checksum == True:
+    if checksum is True:
         acode = str(activationcode)[:-2]
 
     try:
@@ -384,7 +384,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
         log.error(error)
         raise Exception(error)
 
-    if checksum == True:
+    if checksum is True:
         checkCode = str(activationcode[-2:])
         veriCode = str(check(bcode)[-2:])
         if checkCode != veriCode:
@@ -410,11 +410,11 @@ def hash(val, seed, algo=None):
 def encryptPassword(password):
 
     log.debug('encryptPassword()')
-    if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+    if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
         raise HSMException('no hsm defined in execution context!')
 
     hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() == False:
+    if hsm is None or hsm.isReady() is False:
         raise HSMException('hsm not ready!')
 
     ret = hsm.encryptPassword(password)
@@ -427,11 +427,11 @@ def encryptPin(cryptPin, iv=None, hsm=None):
         hsm_obj = hsm.get('obj')
     else:
         log.debug('encryptPin()')
-        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
             raise HSMException('no hsm defined in execution context!')
         hsm_obj = c.hsm.get('obj')
 
-    if hsm_obj is None or hsm_obj.isReady() == False:
+    if hsm_obj is None or hsm_obj.isReady() is False:
         raise HSMException('hsm not ready!')
 
     ret = hsm_obj.encryptPin(cryptPin, iv)
@@ -441,11 +441,11 @@ def encryptPin(cryptPin, iv=None, hsm=None):
 def decryptPassword(cryptPass):
 
     log.debug('decryptPassword()')
-    if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+    if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
         raise HSMException('no hsm defined in execution context!')
 
     hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() == False:
+    if hsm is None or hsm.isReady() is False:
         raise HSMException('hsm not ready!')
 
     ret = hsm.decryptPassword(cryptPass)
@@ -458,11 +458,11 @@ def decryptPin(cryptPin, hsm=None):
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
-        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
             raise HSMException('no hsm defined in execution context!')
         hsm_obj = c.hsm.get('obj')
 
-    if hsm_obj is None or hsm_obj.isReady() == False:
+    if hsm_obj is None or hsm_obj.isReady() is False:
         raise HSMException('hsm not ready!')
 
     ret = hsm_obj.decryptPin(cryptPin)
@@ -487,11 +487,11 @@ def encrypt(data, iv, id=0, hsm=None):
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
-        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
             raise HSMException('no hsm defined in execution context!')
 
         hsm_obj = c.hsm.get('obj')
-    if hsm_obj is None or hsm_obj.isReady() == False:
+    if hsm_obj is None or hsm_obj.isReady() is False:
         raise HSMException('hsm not ready!')
     ret = hsm_obj.encrypt(data, iv, id)
     return ret
@@ -515,11 +515,11 @@ def decrypt(input, iv, id=0, hsm=None):
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
-        if hasattr(c, 'hsm') == False or isinstance(c.hsm, dict) == False:
+        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
             raise HSMException('no hsm defined in execution context!')
         hsm_obj = c.hsm.get('obj')
 
-    if hsm_obj is None or hsm_obj.isReady() == False:
+    if hsm_obj is None or hsm_obj.isReady() is False:
         raise HSMException('hsm not ready!')
 
     ret = hsm_obj.decrypt(input, iv, id)
@@ -634,15 +634,15 @@ def geturandom(len=20):
 
     '''
     log.debug('geturandom()')
-    if hasattr(c, 'hsm') == False:
+    if hasattr(c, 'hsm') is False:
         ret = os.urandom(len)
         return ret
 
-    if isinstance(c.hsm, dict) == False:
+    if isinstance(c.hsm, dict) is False:
         raise HSMException('hsm not found!')
 
     hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() == False:
+    if hsm is None or hsm.isReady() is False:
         raise HSMException('hsm not ready!')
 
     ret = hsm.random(len)

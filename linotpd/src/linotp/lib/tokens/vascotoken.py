@@ -102,7 +102,7 @@ class VascoTokenClass(TokenClass):
     def update(self, param):
 
         ## check for the required parameters
-        if (self.hKeyRequired == True):
+        if (self.hKeyRequired is True):
             getParam(param, "otpkey", required)
 
         TokenClass.update(self, param, reset_failcount=False)

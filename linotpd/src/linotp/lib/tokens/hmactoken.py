@@ -202,7 +202,7 @@ class HmacTokenClass(TokenClass):
         ## check if the key_size id provided
         ## if not, we could derive it from the hashlib
         key_size = getParam(param, 'key_size', optional)
-        if key_size == None:
+        if key_size is None:
             param['key_size'] = keylen.get(self.hashlibStr)
 
         param['hashlib'] = self.hashlibStr
@@ -671,7 +671,7 @@ class HmacTokenClass(TokenClass):
         if 'otpkey' in info:
             otpkey = info.get('otpkey')
 
-        if otpkey != None:
+        if otpkey is not None:
             response_detail["otpkey"] = {
                   "order"      : '1',
                   "description": _("OTP seed"),

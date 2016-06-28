@@ -242,7 +242,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         otpKey = ''
 
-        if (self.hKeyRequired == True):
+        if (self.hKeyRequired is True):
             genkey = int(getParam(param, "genkey", optional) or 0)
             if 1 == genkey:
                 # if hashlibStr not in keylen dict, this will raise an Exception
@@ -420,7 +420,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         oCount = self.getOtpCount() - 1
 
         initTime = -1
-        if options != None and type(options) == dict:
+        if options is not None and type(options) == dict:
             initTime = int(options.get('initTime', -1))
 
         if oCount < 0: oCount = 0
@@ -659,7 +659,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
             ret = True
 
-        if ret == True:
+        if ret is True:
             msg = "resync was successful"
         else:
             msg = "resync was not successful"

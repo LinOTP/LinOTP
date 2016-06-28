@@ -224,7 +224,7 @@ class JSONAuditIterator(object):
             res = "%s %s" % (res, json.dumps(entry, indent=3))
 
         except StopIteration as exx:
-            if self.closed == False:
+            if self.closed is False:
                 res = '%s ], "total": %d }' % (prefix, self.audit_query.get_total())
                 self.closed = True
             else:
@@ -285,7 +285,7 @@ class CSVAuditIterator(object):
             self.i = self.i + 1
 
         except StopIteration as exx:
-            if self.closed == False:
+            if self.closed is False:
                 res = "%s\n" % res
                 self.closed = True
             else:

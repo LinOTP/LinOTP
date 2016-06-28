@@ -131,7 +131,7 @@ class TokenIterator(object):
         if searchType == "blank":
             log.debug('[TokenIterator::init] search for empty user: >%r<' % (user.login))
             ucondition = and_(or_(Token.LinOtpUserid == u'',
-                                  Token.LinOtpUserid == None))
+                                  Token.LinOtpUserid is None))
 
         if searchType == "exact":
             log.debug('[TokenIterator::init] search for exact user: %r' % (user))
@@ -217,10 +217,10 @@ class TokenIterator(object):
             condition = None
         elif filter in ['/:active:/', '/:enabled:/',
                         '/:token is active:/', '/:token is enabled:/' ]:
-            condition = and_(Token.LinOtpIsactive == True)
+            condition = and_(Token.LinOtpIsactive is True)
         elif filter in ['/:inactive:/', '/:disabled:/',
                         '/:token is inactive:/', '/:token is disabled:/']:
-            condition = and_(Token.LinOtpIsactive == False)
+            condition = and_(Token.LinOtpIsactive is False)
         else:
             # search in other colums
             filter = linotp.lib.crypt.uencode(filter)
@@ -361,7 +361,7 @@ class TokenIterator(object):
         self.tokens = 0
 
         self.user_fields = user_fields
-        if self.user_fields == None:
+        if self.user_fields is None:
             self.user_fields = []
 
         if type(filterRealm) in (str, unicode):

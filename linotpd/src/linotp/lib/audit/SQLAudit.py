@@ -194,7 +194,7 @@ class AuditTable(object):
             if field_len != -1 and len(encoded_value) > field_len:
                 log.warning("truncating audit data: [audit.%s] %s",
                             name, value)
-                if self.trunc_as_err != False:
+                if self.trunc_as_err is not False:
                     raise Exception("truncating audit data: [audit.%s] %s" %
                                     (name, value))
 
