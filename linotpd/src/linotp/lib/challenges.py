@@ -356,8 +356,12 @@ class Challenges(object):
             transid_challenges = Challenges.lookup_challenges(transid=transid)
             to_be_closed_challenges.extend(transid_challenges)
 
+        hsm = context['hsm'].get('obj')
         for challenge in set(to_be_closed_challenges):
             challenge.close()
+            # and calculate the mac for this token data
+            challenge.signChallenge(hsm)
+            challenge.save()
 
         return
 

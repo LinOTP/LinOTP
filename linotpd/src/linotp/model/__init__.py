@@ -1091,7 +1091,7 @@ class Challenge(object):
         descr['tokenserial'] = self.tokenserial
         descr['data'] = self.getData()
         if save is True:
-            descr['timestamp'] = "%s" % self.timestamp
+            descr['timestamp'] = "%s" % self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         else:
             descr['timestamp'] = self.timestamp
         descr['received_tan'] = self.received_tan
