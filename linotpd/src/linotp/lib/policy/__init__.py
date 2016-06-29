@@ -2487,6 +2487,12 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
         param["action"] = action
     if realm:
         param["realm"] = realm
+    if user:
+        param["user"] = user
+    if userObj and userObj.login:
+        param["user"] = userObj.login
+    if userObj and userObj.realm:
+        param["realm"] = userObj.realm
 
     log.debug("[get_client_policy] with params %r, "
               "client %r and user %r" % (param, client, user))
