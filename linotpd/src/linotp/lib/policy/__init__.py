@@ -700,7 +700,7 @@ def checkMonitoringAuthorisation(method, context=None):
     :return: notheing if authorized, else raise PolicyException
     """
     _ = context['translate']
-    auth = getAuthorization("monitoring", method)
+    auth = _getAuthorization("monitoring", method)
     if auth['active'] and not auth['auth']:
         log.warning("the admin >%r< is not allowed to "
                     "view the audit trail" % auth['admin'])
