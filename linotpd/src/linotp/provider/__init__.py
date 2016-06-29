@@ -29,6 +29,8 @@ provider handling
 
 import json
 import logging
+from os import path
+from os import listdir
 
 from pylons.i18n.translation import _
 
@@ -40,9 +42,8 @@ from linotp.lib.config import removeFromConfig
 
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import getPolicyActionValue
+from linotp.lib.context import request_context
 
-from os import path
-from os import listdir
 from linotp.lib.registry import ClassRegistry
 
 # ------------------------------------------------------------------------------
@@ -71,47 +72,47 @@ def reload_classes():
             try:
                 __import__(mod_rel, globals=globals())
             except Exception as exx:
-                log.warning('unable to load resolver module : %r (%r)'
-                            % (mod_rel, exx))
+                log.error('unable to load resolver module : %r (%r)'
+                          % (mod_rel, exx))
 
 reload_classes()
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 Provider_types = {
-        'sms': {'prefix': 'linotp.SMSProvider.'},
-        'email': {'prefix': 'linotp.EmailProvider.'},
-        }
+    'sms': {'prefix': 'linotp.SMSProvider.'},
+    'email': {'prefix': 'linotp.EmailProvider.'},
+    }
 
 Legacy_Provider = {
-        'sms': {'linotp.SMSProvider': 'Class',
-                'linotp.SMSProviderTimeout': 'Timeout',
-                'linotp.SMSProviderConfig': 'Config'},
-        'email': {'linotp.EmailProvider': 'Class',
-                  # the timeout is not the same as we intent for the
-                  # provider timeout, but its a good start
-                  'linotp.EmailBlockingTimeout': 'Timeout',
-                  'linotp.EmailProviderConfig': 'Config'}
-        }
+    'sms': {'linotp.SMSProvider': 'Class',
+            'linotp.SMSProviderTimeout': 'Timeout',
+            'linotp.SMSProviderConfig': 'Config'},
+    'email': {'linotp.EmailProvider': 'Class',
+              # the timeout is not the same as we intent for the
+              # provider timeout, but its a good start
+              'linotp.EmailBlockingTimeout': 'Timeout',
+              'linotp.EmailProviderConfig': 'Config'}
+    }
 
 Legacy_Provider_Name = 'imported_default'
 Default_Provider_Key = {
-                         'email': 'linotp.Provider.Default.email_provider',
-                         'sms': 'linotp.Provider.Default.sms_provider'
-                        }
+    'email': 'linotp.Provider.Default.email_provider',
+    'sms': 'linotp.Provider.Default.sms_provider'
+    }
 
 Policy_action_name = {
-            'email': 'email_provider',
-            'sms': 'sms_provider',
-            }
+    'email': 'email_provider',
+    'sms': 'sms_provider',
+    }
 
 # lookup definition to support legacy provider classes definitions
 ProviderClass_lookup = {
-        "emailprovider.HttpemailProvider.HttpSMSProvider":
-            'linotp.provider.emailprovider.SMTPEmailProvider',
-        'linotp.lib.emailprovider.SMTPEmailProvider':
-            'linotp.provider.emailprovider.SMTPEmailProvider',
-        }
+    "emailprovider.HttpemailProvider.HttpSMSProvider":
+        'linotp.provider.emailprovider.SMTPEmailProvider',
+    'linotp.lib.emailprovider.SMTPEmailProvider':
+        'linotp.provider.emailprovider.SMTPEmailProvider',
+    }
 
 log = logging.getLogger(__name__)
 
@@ -125,13 +126,11 @@ def get_legacy_provider(provider_type):
     """
 
     provider = {}
+    config = getLinotpConfig()
 
     defintion = Legacy_Provider.get(provider_type, {})
     if not defintion:
-        raise Exception('unknow provider type %r' % provider_type)
-
-    # find out, which providers we have
-    config = getLinotpConfig()
+        raise Exception('unknown provider type %r' % provider_type)
 
     for key, translation in defintion.items():
         if key in config:
@@ -139,48 +138,40 @@ def get_legacy_provider(provider_type):
         if 'enc' + key in config:
             provider[translation] = config['enc' + key]
 
-    # if Config is not avail then nothing has been defined before
-    if 'Config' not in provider:
-        provider = {}
+    # prepare for return
+    legacy_provider = {}
+    if "Config" in provider:
+        provider['Default'] = False
+        legacy_provider[Legacy_Provider_Name] = provider
 
-    return provider
+    return legacy_provider
 
 
-def getProvider(provider_type, provider_name=None):
+def get_all_new_providers(provider_type):
     """
-    return a dict with  providers, each with it's description as dict
-
-    :param provider_type: either sms or email
-    :param provider_name: name of the provider (optional)
+    get all providers of the new format
+    :param provider_type: the type of the provider
+    :return: dict with all providers
     """
+
     providers = {}
+
+    provider_names = {}
 
     # find out, which provider type we have, currently only sms or email
     prefix = Provider_types.get(provider_type, {}).get('prefix')
     if not prefix:
-        raise Exception('unknow provider type %r' % provider_type)
-
-    default_provider_key = Default_Provider_Key[provider_type]
+        raise Exception('unknown provider type %r' % provider_type)
 
     # find out, which providers we have
     config = getLinotpConfig()
 
-    provider_names = {}
-
-    default_provider = None
-
-    # if provider by name is given, we select only this one
-    if provider_name:
-        name = prefix + provider_name
-        if name in config:
-            provider_names[name] = config[name]
-    else:
-        # first identify all providers by its name
-        for key, value in config.items():
-            if key[:len(prefix)] == prefix:
-                parts = key.split('.')
-                if len(parts) == 3:
-                    provider_names[key] = value
+    # first identify all providers by its name
+    for key, value in config.items():
+        if key[:len(prefix)] == prefix:
+            parts = key.split('.')
+            if len(parts) == 3:
+                provider_names[key] = value
 
     for provider, provider_class in provider_names.items():
 
@@ -199,42 +190,61 @@ def getProvider(provider_type, provider_name=None):
         name = provider.split('.')[2]
         providers[name] = defintion
 
+    return providers
+
+
+def get_default_provider(provider_type):
+    """
+    find out, which provider is declared as default
+
+    :param provider_type: sms or email
+    :return: the name of the default provider
+    """
+    config = getLinotpConfig()
+
     # finally care for the default provider
-    if default_provider_key in config:
-        default_provider = config.get(default_provider_key)
-        if default_provider in providers:
-            providers[default_provider]['Default'] = True
+    default_provider_key = Default_Provider_Key[provider_type]
+    default_provider = config.get(default_provider_key, None)
+    return default_provider
 
-    # if searched for a dedicated provider, ignore the legacy one
-    if not provider_name:
-        if Legacy_Provider_Name not in providers:
-            defintion = get_legacy_provider(provider_type=provider_type)
-            if defintion:
-                if (not default_provider or
-                   default_provider == Legacy_Provider_Name):
-                    defintion['Default'] = True
 
-                providers[Legacy_Provider_Name] = defintion
+def getProvider(provider_type, provider_name=None):
+    """
+    return a dict with  providers, each with it's description as dict
 
-    #
-    # finally check that we preserve and show the default:
-    #
-    # if in the current definition, we have a different default defined (s.o.)
-    # we trust this and overwrite the one of Config table (if any)
-    # This will create a consistent way to bootstrap a default even
-    # from import
+    :param provider_type: either sms or email
+    :param provider_name: name of the provider (optional)
+    :return: the dict with all providers
+    """
+    providers = {}
 
-    for provider in providers:
-        provider_info = providers[provider]
-        if provider_info.get('Default', False):
-            if config.get(default_provider_key, '') != provider:
-                storeConfig(default_provider_key, provider)
+    legacy_provider = get_legacy_provider(provider_type)
+    providers.update(legacy_provider)
 
-    # if there is only one defined, it must be the default :-)
-    if len(providers.keys()) == 1:
-        for provider, provider_info in providers.items():
-            provider_info['Default'] = True
-            storeConfig(default_provider_key, provider)
+    new_providers = get_all_new_providers(provider_type)
+    providers.update(new_providers)
+
+    if not providers:
+        return {}
+
+    # is there already one provider registered as default?
+    default_provider_name = get_default_provider(provider_type)
+    if default_provider_name and default_provider_name in providers:
+        provider = providers.get(default_provider_name)
+        provider['Default'] = True
+    else:
+        # we take the first one in the list as the default
+        firstone = providers.keys()[0]
+        provider = providers[firstone]
+        provider['Default'] = True
+        default_provider_key = Default_Provider_Key[provider_type]
+        storeConfig(default_provider_key, firstone)
+
+    if provider_name:
+        if provider_name in providers:
+            return {provider_name: providers[provider_name]}
+        else:
+            return {}
 
     return providers
 
@@ -271,8 +281,9 @@ def delProvider(provider_type, provider_name):
     provider_policies = _lookup_provider_policies(provider_type)
     if provider_name in provider_policies:
         detail = {
-          'message': (_('Unable to delete - provider used in policies!\n[%s]')
-                      % ','.join(provider_policies[provider_name]))
+            'message': (_('Unable to delete - provider used in '
+                          'policies!\n[%s]') %
+                        ','.join(provider_policies[provider_name]))
             }
         ret = 0
         return ret, detail
@@ -326,40 +337,71 @@ def setProvider(params):
     provider_type = params['type']
     provider_name = params['name']
 
+    if provider_name == Legacy_Provider_Name:
+        save_legacy_provider(provider_type, params)
+    else:
+        save_new_provider(provider_type, provider_name, params)
+
+    if 'default' in params:
+        default_provider_key = Default_Provider_Key[provider_type]
+        if params['default'] is True or params['default'].lower() == 'true':
+            storeConfig(key=default_provider_key, val=provider_name)
+
+    return True, {}
+
+
+def save_legacy_provider(provider_type, params):
+    """
+    save the provider to the legacy format
+
+    :param provider_type: sms or email provider
+    :param params: the provider description dict with 'class', 'config' and
+                   'timeout'
+
+    """
+
+    defintion = Legacy_Provider.get(provider_type, {})
+    if not defintion:
+        raise Exception('unknown provider type %r' % provider_type)
+
+    for config_name, spec in defintion.items():
+        if spec == 'Class' and 'class' in params:
+            storeConfig(key=config_name, val=params['class'])
+        if spec == 'Config' and 'config' in params:
+            storeConfig(key=config_name, val=params['config'], typ='password')
+        if spec == 'Timeout' and 'timeout' in params:
+            storeConfig(key=config_name, val=params['timeout'])
+
+    return
+
+
+def save_new_provider(provider_type, provider_name, params):
+    """
+    save the provider in the new provider format
+
+    remarks:
+        alternative to storing the whole config in encrypted way, we
+        might look if it's a json and store the next Config.  level
+        and look for the reserved additional appended type: password
+
+    :param provider_type: sms or email provider
+    :param provider_name: the name of the provider
+    :param params: the provider description dict with 'class', 'config',
+                   and 'timeout'
+
+    """
+
     prefix = Provider_types.get(provider_type, {}).get('prefix')
     if not prefix:
         raise Exception('unknown provider type %r' % provider_type)
 
     provider_prefix = prefix + provider_name
+
     storeConfig(key=provider_prefix, val=params['class'])
     storeConfig(key=provider_prefix + '.Timeout', val=params['timeout'])
 
-    # alternative to storing the whole config in encrypted way, we
-    # might look if it's a json and store the next Config.  level
-    # and look for the reserved additional appended type: password
     storeConfig(key=provider_prefix + '.Config', val=params['config'],
                 typ='password')
-
-    # finally we handle the default setting and the
-    # ability to delete legacy entries
-    drop_legacy = False
-    config = getLinotpConfig()
-    default_provider_key = Default_Provider_Key[provider_type]
-
-    if 'default' in params:
-        if params['default'] == True or params['default'].lower() == 'true':
-            storeConfig(key=default_provider_key, val=provider_name)
-            drop_legacy = True
-
-    elif provider_name == config.get(default_provider_key, ''):
-        drop_legacy = True
-
-    if drop_legacy:
-        # at this point we can drop the legacy definition
-        entries = Legacy_Provider[provider_type]
-        for entry in entries.keys():
-            if entry in config:
-                removeFromConfig(entry)
 
     return True, {}
 
@@ -411,11 +453,15 @@ def loadProviderFromPolicy(provider_type, user=None):
     realm = user.realm
     login = user.login
 
-    policies = getPolicy({'scope': 'authentication',
-                          'realm': realm,
-                          "action": provider_action_name,
-                          "user": login},
-                         )
+    params = {'scope': 'authentication',
+              'realm': realm,
+              'action': provider_action_name,
+              }
+
+    if user and user.login:
+        params['user'] = login
+
+    policies = getPolicy(params)
 
     if policies:
         provider_name = getPolicyActionValue(policies,
@@ -466,35 +512,52 @@ def loadProvider(provider_type, provider_name=None):
 
     :return: the instantiated provider with already loaded configuration
     """
-    # if no provider is given, we try to lookup the default
-    if not provider_name:
-        config = getLinotpConfig()
-        default_provider_key = Default_Provider_Key[provider_type]
-        if default_provider_key in config:
-            provider_name = config[default_provider_key]
+    provider_info = {}
 
-    if provider_name:
+    config = getLinotpConfig()
+    default_provider_key = Default_Provider_Key[provider_type]
+
+    #
+    # if no provider is given, we try to lookup the default
+    #
+    if default_provider_key in config and not provider_name:
+        provider_name = config[default_provider_key]
+
+    #
+    # if there is no provider_name or the provider is a legacy one
+    # try to load it the legacy way
+    #
+    if not provider_name or provider_name == Legacy_Provider_Name:
+        provider_info = get_legacy_provider(provider_type=provider_type)
+        provider_name = Legacy_Provider_Name
+
+    #
+    # in case of no provider_info the provider is
+    # either a new one or or a legacy converted one
+    #
+    if not provider_info:
         providers = getProvider(provider_type, provider_name=provider_name)
         provider_info = providers.get(provider_name)
-    else:
-        # if no given provider and no default, try to fallback to the old one
-        provider_info = get_legacy_provider(provider_type=provider_type)
 
     if not provider_info:
         raise Exception('Unable to load provider: %r' % provider_name)
 
+    provider_info = provider_info.get(provider_name, provider_info)
     provider_class = provider_info.get('Class')
+
     try:
         provider_class_obi = _load_provider_class(provider_class)
         provider = provider_class_obi()
     except Exception as exc:
-        log.exception("Failed to load provider: %r - %r", provider_class, exc)
+        log.exception("Failed to load provider: %r", exc)
         raise exc
 
     provider_config = {}
     config = provider_info['Config']
 
+    #
     # backward compatibility hack: fix the handling of multiline config entries
+    #
     lconfig = []
     lines = config.splitlines()
     for line in lines:
@@ -558,4 +621,4 @@ def _load_provider_class(provider_Class):
 
     return provider_class_obj
 
-# eof ########################################################################
+# eof ####################################################################
