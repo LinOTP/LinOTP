@@ -427,7 +427,7 @@ class OcraTest(TestController):
             (response2, activationkey) = self.init_1_QR_Token(
                                             user='root',
                                             message=message,
-                                            ctivationkey='GEZDGNBVGY3TQOJQ01',
+                                            activationkey='GEZDGNBVGY3TQOJQ01',
                                             ocrasuite=test['ocrasuite'])
             (challenge, transid) = ocra.init_2(response2, activationkey)
 

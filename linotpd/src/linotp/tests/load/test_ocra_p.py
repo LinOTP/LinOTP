@@ -737,7 +737,6 @@ class OcraTest(TestController):
         self.createPolicy_Super()
 
         if self.runs == -1:
-            forevers == True
             i = 0
             while(1 == 1):
                 i = i + 1
