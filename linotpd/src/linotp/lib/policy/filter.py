@@ -261,7 +261,7 @@ class AttributeCompare(object):
         :return: boolean
         """
 
-        return not(self._equal(user_info))
+        return not(self._attr_equal(user_info))
 
     def _attr_exist(self, user_info):
         """
