@@ -847,7 +847,7 @@ class TokenHandler(object):
         if assigned is not None:
             # filter if assigned or not
             if "0" == unicode(assigned):
-                sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid is None,
+                sqlQuery = sqlQuery.filter(or_(Token.LinOtpUserid == None,
                                                Token.LinOtpUserid == ""))
             elif "1" == unicode(assigned):
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
@@ -1475,7 +1475,7 @@ def getTokenInRealm(realm, active=True):
         sqlQuery = Session.query(TokenRealm, Realm, Token).filter(and_(
                             TokenRealm.realm_id == Realm.id,
                             Realm.name == u'' + realm,
-                            Token.LinOtpIsactive is True,
+                            Token.LinOtpIsactive == True,
                             TokenRealm.token_id == Token.LinOtpTokenId)).count()
     else:
         sqlQuery = Session.query(TokenRealm, Realm).filter(and_(
@@ -1493,7 +1493,7 @@ def getTokenNumResolver(resolver=None, active=True):
     '''
     if resolver is None:
         if active:
-            sqlQuery = Session.query(Token).filter(Token.LinOtpIsactive is True).count()
+            sqlQuery = Session.query(Token).filter(Token.LinOtpIsactive == True).count()
         else:
             sqlQuery = Session.query(Token).count()
         return sqlQuery
@@ -1510,9 +1510,12 @@ def getTokenNumResolver(resolver=None, active=True):
         resolver = resolver.resplace('useridresolver.', 'useridresolver%.')
 
         if active:
-            sqlQuery = Session.query(Token).filter(and_(Token.LinOtpIdResClass.like(resolver), Token.LinOtpIsactive is True)).count()
+            sqlQuery = Session.query(Token).filter(
+                and_(Token.LinOtpIdResClass.like(resolver),
+                     Token.LinOtpIsactive == True)).count()
         else:
-            sqlQuery = Session.query(Token).filter(Token.LinOtpIdResClass.like(resolver)).count()
+            sqlQuery = Session.query(Token).filter(
+                Token.LinOtpIdResClass.like(resolver)).count()
         return sqlQuery
 
 def getAllTokenUsers():

@@ -116,9 +116,9 @@ class MonitorHandler(object):
                 else:
                     conditions += (and_(Token.LinOtpUserid == ''),)
                 if 'active' in stati:
-                    conditions += (and_(Token.LinOtpIsactive is True),)
+                    conditions += (and_(Token.LinOtpIsactive == True),)
                 else:
-                    conditions += (and_(Token.LinOtpIsactive is False),)
+                    conditions += (and_(Token.LinOtpIsactive == False),)
             else:
                 # handle single expressions like
                 # status=unassigned,active
@@ -127,9 +127,9 @@ class MonitorHandler(object):
                 elif 'unassigned' == stat:
                     conditions += (and_(Token.LinOtpUserid == ''),)
                 elif 'active' == stat:
-                    conditions += (and_(Token.LinOtpIsactive is True),)
+                    conditions += (and_(Token.LinOtpIsactive == True),)
                 elif 'inactive' == stat:
-                    conditions += (and_(Token.LinOtpIsactive is False),)
+                    conditions += (and_(Token.LinOtpIsactive == False),)
 
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)
@@ -214,7 +214,7 @@ class MonitorHandler(object):
 
         :return: number of active tokens
         """
-        active = Token.LinOtpIsactive is True
+        active = Token.LinOtpIsactive == True
         token_active = Session.query(Token).filter(active).count()
         return token_active
 
@@ -290,7 +290,7 @@ class MonitorHandler(object):
                 .join(TokenRealm)\
                 .join(Realm)\
                 .filter(and_(
-                            Token.LinOtpIsactive is True,
+                            Token.LinOtpIsactive == True,
                             Token.LinOtpIdResClass == resolver_spec,
                             Realm.name == realm
                 ))\
@@ -319,7 +319,7 @@ class MonitorHandler(object):
             .join(TokenRealm)\
             .join(Realm)\
             .filter(or_(*realm_cond),
-                    and_(Token.LinOtpIsactive is True,
+                    and_(Token.LinOtpIsactive == True,
                          Token.LinOtpIdResolver != ''))\
             .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver, Token.LinOtpIdResClass)
         all_server_total = user_and_resolver.count()
