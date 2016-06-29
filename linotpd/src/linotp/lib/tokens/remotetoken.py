@@ -300,8 +300,8 @@ class RemoteTokenClass(TokenClass):
         remoteResConf = self.getFromTokenInfo("remote.resConf") or ""
         remoteResConf = remoteResConf.encode('utf-8')
 
-        ssl_verify = (str(getFromConfig("remote.verify_ssl_certificate", False)
-                      .lower().strip() == 'true'))
+        ssl_verify = (str(getFromConfig("remote.verify_ssl_certificate",
+                                        "False").lower().strip() == 'true'))
 
         # here we also need to check for remote.user and so on....
         log.debug("[checkOtp] checking OTP len:%r remotely on server: %r,"
