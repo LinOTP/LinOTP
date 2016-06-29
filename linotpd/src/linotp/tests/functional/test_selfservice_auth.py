@@ -375,3 +375,30 @@ class TestSelfserviceAuthController(TestController):
         self.delete_policy('T1')
         self.delete_token('hmac123')
 
+    def test_selfservice_attribute_not_equal(self):
+        '''
+        Selfservice Authorization: attribute comparison with exact match
+
+        1 define policy with attribute filter on exact string match
+        2 check for one user with attribute that he is allowed
+        3. other user is not allowed as attribute
+        '''
+        # the user defintion to mach the attribute in user only
+        policy = {'name': 'T1',
+                  'action': 'enrollHMAC',
+                  'user': ' #mobile != +49(0)1234-24, '
+                 }
+        self.createPolicy(policy)
+
+        # for passthru_user1 do check if policy is defined
+        auth_user = ('passthru_user1@myDefRealm', 'geheim1')
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
+        response = self.make_userservice_request('enroll',
+                                                 params=params,
+                                                 auth_user=auth_user)
+        msg = "policy settings do not allow you to issue this request!"
+        self.assertTrue(msg in response, response)
+
+        self.delete_policy('T1')
+
