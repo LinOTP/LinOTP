@@ -427,7 +427,7 @@ def setDefaultProvider(provider_type, provider_name):
     return res, detail
 
 
-def loadProviderFromPolicy(provider_type, user=None):
+def loadProviderFromPolicy(provider_type, realm=None, user=None):
     """
     interface for the provider user like email token or sms token
 
@@ -450,16 +450,16 @@ def loadProviderFromPolicy(provider_type, user=None):
         raise Exception('unknown user for policy lookup! %r'
                         % user)
 
-    realm = user.realm
-    login = user.login
-
     params = {'scope': 'authentication',
-              'realm': realm,
-              'action': provider_action_name,
+              'action': provider_action_name
               }
 
+    if realm:
+        params['realm'] = realm
+
     if user and user.login:
-        params['user'] = login
+        params["realm"] = user.realm
+        params["user"] = user.login
 
     policies = getPolicy(params)
 
