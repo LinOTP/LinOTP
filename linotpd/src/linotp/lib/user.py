@@ -27,17 +27,19 @@
 import logging
 import re
 
-from linotp.lib.error   import UserError
-from linotp.lib.util    import getParam
-from linotp.lib.config  import getFromConfig, storeConfig
-from linotp.lib.config  import getLinotpConfig
-from linotp.lib.realm   import setDefaultRealm
-from linotp.lib.realm   import getDefaultRealm
-from linotp.lib.realm   import getRealms
+from linotp.lib.error import UserError
+
+from linotp.lib.util import getParam
+
+from linotp.lib.config import getFromConfig, storeConfig
+from linotp.lib.config import getLinotpConfig
+
+from linotp.lib.realm import setDefaultRealm
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.realm import getRealms
 
 from linotp.lib.resolver import parse_resolver_spec
 from linotp.lib.resolver import getResolverObject
-
 
 from linotp.lib.realm import createDBRealm
 from linotp.lib.selftest import isSelfTest
@@ -46,7 +48,6 @@ from linotp.lib.resolver import getResolverClassName
 from linotp.lib.resolver import getResolverList
 
 from linotp.lib._compat import str_
-
 
 ENCODING = 'utf-8'
 
@@ -95,7 +96,7 @@ class User(object):
 
         f_user = User(f_login, realm=f_realm)
         if check_if_exist:
-            uid, resolver = f_user.get_uid_resolver()
+            _uid, _resolver = f_user.get_uid_resolver()
 
         return f_user
 
@@ -173,12 +174,11 @@ class User(object):
 
         return '<%s.%s@%s>' % (login, resolver_config_id, realm)
 
-
     def __repr__(self):
         ret = ('User(login=%r, realm=%r, conf=%r ::resolverUid:%r, '
-             'resolverConf:%r)' % (self.login, self.realm,
-                                   self.resolver_config_identifier,
-                                   self.resolverUid, self.resolverConf))
+               'resolverConf:%r)' % (self.login, self.realm,
+                                     self.resolver_config_identifier,
+                                     self.resolverUid, self.resolverConf))
         return ret
 
     def saveResolvers(self, resolvers):
@@ -277,16 +277,17 @@ class User(object):
         for realm_name, definition in realms.items():
             resolvers = definition.get('useridresolver', [])
             for realm_resolver in resolvers:
-                log.debug("checking in %r" % realm_resolver)
+                log.debug("checking in %r", realm_resolver)
                 y = getResolverObject(realm_resolver)
                 if y:
                     log.debug("checking in module %r" % y)
                     uid = y.getUserId(self.login)
                     found.append((self.login, realm_name, uid, realm_resolver))
-                    log.debug("type of uid: %s" % type(uid))
-                    log.debug("type of realm_resolver: %s" % type(realm_resolver))
+                    log.debug("type of uid: %s", type(uid))
+                    log.debug("type of realm_resolver: %s",
+                              type(realm_resolver))
                 else:
-                    log.error("module %r not found!" % (realm_resolver))
+                    log.error("module %r not found!", realm_resolver)
 
         if found:
             self._exists = True
@@ -306,19 +307,21 @@ class User(object):
 
         return res
 
+
 def getUserResolverId(user, report=False):
     # here we call the userid resolver!!"
-    log.debug('getUserResolverId for %r' % user)
+    log.debug('getUserResolverId for %r', user)
 
     (uuserid, uidResolver, uidResolverClass) = (u'', u'', u'')
 
     if (user is not None and user.isEmpty() != True):
         try:
             (uuserid, uidResolver, uidResolverClass) = getUserId(user)
-        except Exception as e:
-            log.exception('[getUserResolverId] for %r@%r failed: %r' % (user.login, user.realm, e))
-            if report == True:
-                raise UserError("getUserResolverId failed: %r" % e, id=1112)
+        except Exception as exx:
+            log.exception('[getUserResolverId] for %r@%r failed: %r',
+                          user.login, user.realm, exx)
+            if report is True:
+                raise UserError("getUserResolverId failed: %r" % exx, id=1112)
 
     return (uuserid, uidResolver, uidResolverClass)
 
@@ -333,7 +336,6 @@ def splitUser(username):
 
     user = username.strip()
     group = ""
-
 
     if '@' in user:
         (user, group) = user.rsplit('@', 1)
@@ -467,7 +469,7 @@ def setRealm(realm, resolvers):
         raise e
 
     ret = storeConfig("useridresolver.group.%s" % realm, resolvers)
-    if ret == False:
+    if ret is False:
         return ret
 
     createDBRealm(realm)
@@ -483,8 +485,8 @@ def setRealm(realm, resolvers):
 def getUserRealms(user, allRealms=None, defaultRealm=None):
     '''
     Returns the realms, a user belongs to.
-    If the user has no realm but only a useridresolver, than all realms, containing this
-    resolver are returned.
+    If the user has no realm but only a useridresolver, than all realms,
+    containing this resolver are returned.
     This function is used for the policy module
     '''
     if not allRealms:
@@ -504,14 +506,17 @@ def getUserRealms(user, allRealms=None, defaultRealm=None):
         Realms.append(user.realm.lower())
     else:
         # we got a resolver and will get all realms the resolver belongs to.
-        for key, v in allRealms.items():
-            log.debug("[getUserRealms] evaluating realm %r: %r " % (key, v))
-            for reso in v['useridresolver']:
+        for key, val in allRealms.items():
+            log.debug("[getUserRealms] evaluating realm %r: %r ", key, val)
+            for reso in val['useridresolver']:
                 resotype, resoname = reso.rsplit('.', 1)
-                log.debug("[getUserRealms] found resolver %r of type %r" % (resoname, resotype))
+                log.debug("[getUserRealms] found resolver %r of type %r",
+                          resoname, resotype)
                 if resoname == user.resolver_config_identifier:
                     Realms.append(key.lower())
-                    log.debug("[getUserRealms] added realm %r to Realms due to resolver %r" % (key, user.resolver_config_identifier))
+                    log.debug("[getUserRealms] added realm %r to Realms due to"
+                              " resolver %r", key,
+                              user.resolver_config_identifier)
 
     return Realms
 
@@ -520,13 +525,14 @@ def getRealmBox():
     '''
     returns the config value of selfservice.realmbox.
     if True, the realmbox in the selfservice login will be displayed.
-    if False, the realmbox will not be displayed and the user needs to login via user@realm
+    if False, the realmbox will not be displayed and the user needs to login
+              via user@realm
     '''
     rb_string = "linotp.selfservice.realmbox"
     log.debug("[getRealmBox] getting realmbox setting")
     conf = getLinotpConfig()
     if rb_string in conf:
-        log.debug("[getRealmBox] read setting: %r" % conf[rb_string])
+        log.debug("[getRealmBox] read setting: %r", conf[rb_string])
         return "True" == conf[rb_string]
     else:
         return False
@@ -568,6 +574,7 @@ def find_resolver_spec_for_config_identifier(realms_dict, config_identifier):
 
     return None
 
+
 def getResolvers(user):
     '''
     get the list of the Resolvers within a users.realm
@@ -580,7 +587,7 @@ def getResolvers(user):
     '''
     Resolver = []
 
-    realms = getRealms();
+    realms = getRealms()
 
     if user.resolver_config_identifier != "":
         resolver_spec = find_resolver_spec_for_config_identifier(realms,
@@ -602,7 +609,6 @@ def getResolvers(user):
                     for k in resDict:
                         Resolver.append(k)
 
-
                 elif user.realm.endswith('*') and len(user.realm) == 1:
                     for r in realms:
                         for idres in realms[r]["useridresolver"]:
@@ -613,12 +619,14 @@ def getResolvers(user):
         else:
             for k in realms:
                 r = realms[k]
-                if r.has_key("default"):
+                if "default" in r:
                     Resolver = r["useridresolver"]
 
     return Resolver
 
-def getResolversOfUser(user, use_default_realm=True, allRealms=None, defaultRealm=None):
+
+def getResolversOfUser(user, use_default_realm=True, allRealms=None,
+                       defaultRealm=None):
     '''
     This returns the list of the Resolvers of a user in a given realm.
     Usually this should only return one resolver
@@ -661,32 +669,38 @@ def getResolversOfUser(user, use_default_realm=True, allRealms=None, defaultReal
     else:
         Realm_resolvers = getResolvers(User("", realm, ""))
 
-        log.debug("[getResolversOfUser] check if user %r is in resolver %r"
-                   % (login, Realm_resolvers))
+        log.debug("[getResolversOfUser] check if user %r is in resolver %r",
+                  login, Realm_resolvers)
         # Search for user in each resolver in the realm_
         for resolver_spec in Realm_resolvers:
-            log.debug("[getResolversOfUser] checking in %r" % resolver_spec)
+            log.debug("[getResolversOfUser] checking in %r", resolver_spec)
 
             y = getResolverObject(resolver_spec)
             if y is None:
                 log.error('[getResolversOfUser] [resolver with spec %r '
-                          'not found!]' % (resolver_spec))
+                          'not found!]', resolver_spec)
 
             try:
-                log.debug("[getResolversOfUser] checking in module %r" % y)
+                log.debug("[getResolversOfUser] checking in module %r", y)
                 uid = y.getUserId(login)
-                log.debug("[getResolversOfUser] type of uid: %s" % type(uid))
-                log.debug("[getResolversOfUser] type of resolver_spec: %s" % type(resolver_spec))
-                log.debug("[getResolversOfUser] type of login: %s" % type(login))
+                log.debug("[getResolversOfUser] type of uid: %s", type(uid))
+                log.debug("[getResolversOfUser] type of resolver_spec: %s",
+                           type(resolver_spec))
+                log.debug("[getResolversOfUser] type of login: %s",
+                          type(login))
+
                 if uid not in ["", None]:
-                    log.info("[getResolversOfUser] user %r found in resolver %r" % (login, resolver_spec))
-                    log.info("[getResolversOfUser] userid resolved to %r " % uid)
+                    log.info("[getResolversOfUser] user %r found in resolver "
+                             "%r", login, resolver_spec)
+                    log.info("[getResolversOfUser] userid resolved to %r ",
+                             uid)
 
                     # Unicode Madness:
-                    # This will break as soon as the unicode "uid" is put into a tuple
+                    # This will break as soon as the unicode "uid" is put into
+                    # a tuple
                     # v = (login, realm_resolver, uid)
                     # log.info("[getResolversOfUser] %s %s %s" % v)
-                    resId = y.getResolverId();
+                    resId = y.getResolverId()
                     resCId = resolver_spec
                     Resolvers.append(resolver_spec)
                     __, config_identifier = parse_resolver_spec(resolver_spec)
@@ -694,14 +708,14 @@ def getResolversOfUser(user, use_default_realm=True, allRealms=None, defaultReal
                                         resId, resCId)
                 else:
                     log.debug("[getResolversOfUser] user %r not found"
-                              " in resolver %r" % (login, resolver_spec))
-            except Exception as e:
+                              " in resolver %r", login, resolver_spec)
+            except Exception as exx:
                 log.exception('[getResolversOfUser] error searching user in '
-                              'resolver with spec %r:%r' % (resolver_spec, e))
+                              'resolver with spec %r:%r', resolver_spec, exx)
 
-            log.debug("[getResolversOfUser] Resolvers: %r" % Resolvers)
+            log.debug("[getResolversOfUser] Resolvers: %r", Resolvers)
 
-    log.debug("[getResolversOfUser] Found the user %r in %r" % (login, Resolvers))
+    log.debug("[getResolversOfUser] Found the user %r in %r", login, Resolvers)
     return Resolvers
 
 
@@ -713,8 +727,7 @@ def getUserId(user, resolvers=None):
     """
 
     uid = ''
-    loginUser = u''
-    loginUser = user.login;
+    loginUser = user.login
 
     if not resolvers:
         resolvers = getResolversOfUser(user)
@@ -722,10 +735,9 @@ def getUserId(user, resolvers=None):
     for resolver_spec in resolvers:
         resId = ""
         resIdC = ""
-        conf = ""
         uid = user.getResolverUId(resolver_spec)
         if uid != '':
-            (resId, resIdC, conf) = user.getResolverConf(resolver_spec)
+            (resId, resIdC, _conf) = user.getResolverConf(resolver_spec)
             break
 
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
@@ -737,38 +749,38 @@ def getUserId(user, resolvers=None):
 
         # try to load the UserIdResolver Class
         try:
-            log.debug('[getUserId] Getting resolver class: [%s]' %
+            log.debug('[getUserId] Getting resolver class: [%s]',
                       cls_identifier)
             y = getResolverObject(resolver_spec)
-            log.debug("[getUserId] Getting UserID for user %r"
-                        % loginUser)
+            log.debug("[getUserId] Getting UserID for user %r", loginUser)
             uid = y.getUserId(loginUser)
-            log.debug("[getUserId] Got UserId for user %r: %r"
-                        % (loginUser, uid))
+            log.debug("[getUserId] Got UserId for user %r: %r",
+                      loginUser, uid)
 
             log.debug("[getUserId] Retrieving ResolverID...")
             resId = y.getResolverId()
 
             resIdC = resolver_spec
             log.debug("[getUserId] Got ResolverID: %r, Loginuser: %r, "
-                      "Uid: %r ]" % (resId, loginUser, uid))
+                      "Uid: %r ]", resId, loginUser, uid)
 
             if uid != "":
-                break;
+                break
 
-        except Exception as e:
-            log.exception("[getUserId] resolver class identifier %s: %r ]" %
-                          (cls_identifier, e))
+        except Exception as exx:
+            log.exception("[getUserId] resolver class identifier %s: %r ]",
+                          cls_identifier, exx)
             continue
 
     if (uid == ''):
         log.warning("[getUserId] No uid found for the user >%r< in realm %r"
                     % (loginUser, user.realm))
-        raise UserError(u"getUserId failed: no user >%s< found!"
-                         % unicode(loginUser), id=1205)
+        raise UserError("getUserId failed: no user >%s< found!"
+                        % unicode(loginUser), id=1205)
 
     log.debug("[getUserId] we are done!")
     return (unicode(uid), unicode(resId), unicode(resIdC))
+
 
 def getSearchFields(user):
 
@@ -778,7 +790,7 @@ def getSearchFields(user):
 
     for resolver_spec in getResolvers(User):
         """  """
-        cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
+        _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
         if len(user.resolver_config_identifier) > 0:
             lower_config_id = user.resolver_config_identifier.lower()
@@ -791,12 +803,13 @@ def getSearchFields(user):
             sf = y.getSearchFields()
             searchFields[resolver_spec] = sf
 
-        except Exception as e:
-            log.warning('[getSearchField][ resolver spec %s: %r ]' %
-                        (resolver_spec, e))
+        except Exception as exx:
+            log.warning('[getSearchField][ resolver spec %s: %r ]',
+                        resolver_spec, exx)
             continue
 
     return searchFields
+
 
 def getUserList(param, search_user):
 
@@ -815,7 +828,7 @@ def getUserList(param, search_user):
             continue
 
         searchDict[key] = lval
-        log.debug("[getUserList] Parameter key:%r=%r" % (key, lval))
+        log.debug("[getUserList] Parameter key:%r=%r", key, lval)
 
     resolverrrs = getResolvers(search_user)
 
@@ -830,10 +843,10 @@ def getUserList(param, search_user):
         # try to load the UserIdResolver Class
         try:
 
-            log.debug("[getUserList] Check for resolver: %r" % resolver_spec)
+            log.debug("[getUserList] Check for resolver: %r", resolver_spec)
             y = getResolverObject(resolver_spec)
-            log.debug("[getUserList] with this search dictionary: %r "
-                      % searchDict)
+            log.debug("[getUserList] with this search dictionary: %r ",
+                      searchDict)
 
             if hasattr(y, 'getUserListIterator'):
                 try:
@@ -841,11 +854,11 @@ def getUserList(param, search_user):
                     while True:
                         ulist = ulist_gen.next()
                         log.debug("[getUserList] setting the resolver <%r> "
-                                  "for each user" % resolver_spec)
+                                  "for each user", resolver_spec)
                         for u in ulist:
                             u["useridresolver"] = resolver_spec
-                        log.debug("[getUserList] Found this userlist: %r"
-                                  % ulist)
+                        log.debug("[getUserList] Found this userlist: %r",
+                                  ulist)
                         users.extend(ulist)
 
                 except StopIteration as exx:
@@ -856,17 +869,17 @@ def getUserList(param, search_user):
                 ulist = y.getUserList(searchDict)
                 for u in ulist:
                     u["useridresolver"] = resolver_spec
-                log.debug("[getUserList] Found this userlist: %r" % ulist)
+                log.debug("[getUserList] Found this userlist: %r", ulist)
                 users.extend(ulist)
 
         except KeyError as exx:
-            log.exception('[getUserList][ resolver class identifier %s:%r ]' %
-                          (cls_identifier, exx))
+            log.exception('[getUserList][ resolver class identifier %s:%r ]',
+                          cls_identifier, exx)
             raise exx
 
         except Exception as exx:
-            log.exception('[getUserList][ resolver class identifier %s:%r ]' %
-                          (cls_identifier, exx))
+            log.exception('[getUserList][ resolver class identifier %s:%r ]',
+                          cls_identifier, exx)
             continue
 
     return users
@@ -889,7 +902,7 @@ def getUserListIterators(param, search_user):
         del searchDict['realm']
     if 'resConf' in searchDict:
         del searchDict['resConf']
-    log.debug("searchDict %r" % searchDict)
+    log.debug("searchDict %r", searchDict)
 
     resolverrrs = getResolvers(search_user)
     for resolver_spec in resolverrrs:
@@ -902,9 +915,9 @@ def getUserListIterators(param, search_user):
 
         # try to load the UserIdResolver Class
         try:
-            log.debug('Check for resolver: %r' % resolver_spec)
+            log.debug('Check for resolver: %r', resolver_spec)
             y = getResolverObject(resolver_spec)
-            log.debug("With this search dictionary: %r " % searchDict)
+            log.debug("With this search dictionary: %r ", searchDict)
 
             if hasattr(y, 'getUserListIterator'):
                 uit = y.getUserListIterator(searchDict, limit_size=False)
@@ -914,20 +927,19 @@ def getUserListIterators(param, search_user):
             user_iters.append((uit, resolver_spec))
 
         except KeyError as exx:
-            log.exception('[ resolver class %r:%r ]' % (cls_identifier, exx))
+            log.exception('[ resolver class %r:%r ]', cls_identifier, exx)
             raise exx
 
         except Exception as exx:
-            log.exception('[ resolver class %r:%r ]' % (cls_identifier, exx))
+            log.exception('[ resolver class %r:%r ]', cls_identifier, exx)
             continue
 
     return user_iters
 
 
 def getUserInfo(userid, resolver, resolver_spec):
-    log.debug("[getUserInfo] uid:%r resolver:%r class:%r" %
-              (userid, resolver, resolver_spec))
-                # [PasswdIdResolver] [IdResolver]
+    log.debug("[getUserInfo] uid:%r resolver:%r class:%r",
+              userid, resolver, resolver_spec)
     userInfo = {}
 
     if not(userid):
@@ -936,12 +948,12 @@ def getUserInfo(userid, resolver, resolver_spec):
     try:
         y = getResolverObject(resolver_spec)
         log.debug("[getUserInfo] Getting user info for userid "
-                  ">%r< in resolver" % userid)
+                  ">%r< in resolver", userid)
         userInfo = y.getUserInfo(userid)
 
-    except Exception as e:
-        log.exception('[getUserInfo][ resolver %s notfound: %r ]' %
-                      (resolver_spec, e))
+    except Exception as exx:
+        log.exception('[getUserInfo][ resolver %s notfound: %r ]',
+                      resolver_spec, exx)
 
     return userInfo
 
@@ -967,22 +979,23 @@ def getUserPhone(user, phone_type='phone'):
     :param user: the user with the phone
     :type user: user object
 
-    :param phone_type: The type of the phone, i.e. either mobile or phone (land line)
+    :param phone_type: The type of the phone, i.e. either mobile or
+                       phone (land line)
     :type phone_type: string
 
     :returns: list with phone numbers of this user object
     '''
     (uid, resId, resClass) = getUserId(user)
-    log.debug("[getUserPhone] got uid %r, ResId %r, Class %r"
-              % (uid, resId, resClass))
+    log.debug("[getUserPhone] got uid %r, ResId %r, Class %r",
+              uid, resId, resClass)
     userinfo = getUserInfo(uid, resId, resClass)
-    if userinfo.has_key(phone_type):
-        log.debug("[getUserPhone] got user phone %r of type %r"
-                  % (userinfo[phone_type], phone_type))
+    if phone_type in userinfo:
+        log.debug("[getUserPhone] got user phone %r of type %r",
+                  userinfo[phone_type], phone_type)
         return userinfo[phone_type]
     else:
         log.warning("[getUserPhone] userobject (%r,%r,%r) has no phone of "
-                    "type %r." % (uid, resId, resClass, phone_type))
+                    "type %r.", uid, resId, resClass, phone_type)
         return ""
 
 
@@ -1004,8 +1017,8 @@ def get_authenticated_user(username, realm, password=None,
     :return: None or authenticated user object
     '''
 
-    log.info("User %r from realm %r tries to authenticate to selfservice"
-             % (username, realm))
+    log.info("User %r from realm %r tries to authenticate to selfservice",
+             username, realm)
 
     if type(username) != unicode:
         username = username.decode(ENCODING)
@@ -1016,8 +1029,6 @@ def get_authenticated_user(username, realm, password=None,
 
     users = []
     uid = None
-    resolver = None
-    resolverC = None
 
     # if we have an realmbox, we take the user as it is
     # - the realm is always given
@@ -1047,53 +1058,59 @@ def get_authenticated_user(username, realm, password=None,
                 user = User(u_name, u_realm, "")
                 users.append(user)
 
-    identified_users = []
-    for user in users:
-        username = user.login
-        realm = user.realm
-        res = getResolversOfUser(user, use_default_realm=False)
-        if not res:
-            log.info("The username %r exists in NO resolver within the "
-                      "realm %r.", username, realm)
-            continue
-
-        # fill in the set of resolvers
-        getUserId(user)
-        for resolverClass, uid in user.resolverUid.items():
-            identified_users.append((user, uid, resolverClass, resolverClass))
-            log.info("the user resolves to %r", uid)
-            log.info("The username is found within the resolver %r", resolver)
-
-    if not identified_users:
-        log.info("The username %s could not be found." % username)
-        return None
-
-    if not authenticate:
-        (user, uid, resolver, resolverC) = identified_users[0]
-        return user
-
     # Authenticate user
     auth_user = None
-    for identified_user in identified_users:
-        (user, uid, resolver, resolverC) = identified_user
-        try:
-            y = getResolverObject(resolverC)
 
-            if y.checkPass(uid, password):
-                # we stop with the first successful authenticated user
-                log.debug("Successfully authenticated user %r.", username)
-                auth_user = user
-                break
-            else:
-                log.info("user %r failed to authenticate.", username)
+    for user in users:
+        resolvers = []
 
-        except UserError as exx:
-            log.info("failed to verify the username: %s@%s: %r",
-                     user.login, user.realm, exx)
+        username = user.login
+        realm = user.realm
+
+        realm_info = getRealms(user.realm)
+        if realm_info and realm in realm_info:
+            resolvers = realm_info.get(user.realm).get('useridresolver', [])
+
+        found_uid = None
+        for resolver_spec in resolvers:
+
+            y = getResolverObject(resolver_spec)
+            if y is None:
+                log.error("[getResolversOfUser] [ module %r not found!]",
+                          resolver_spec)
+                continue
+
+            uid = y.getUserId(user.login)
+            if not uid:
+                log.debug("user %r not in resolver %r.",
+                          username, resolver_spec)
+                continue
+
+            if found_uid and uid != found_uid:
+                    raise Exception('user login %r : missmatch for userid: '
+                                    '%r:%r', user.login, found_uid, uid)
+
+            if authenticate:
+                if y.checkPass(uid, password):
+                    log.debug("Successfully authenticated user %r.", username)
+                else:
+                    log.info("user %r failed to authenticate.", username)
+                    if found_uid:
+                        raise Exception('previous authenticated user mismatch'
+                                        ' - password missmatch!')
+                    continue
+
+            # add the fully qualified resolver to the resolver list
+            user.resolvers_list.append(resolver_spec)
+
+            if not found_uid:
+                found_uid = uid
+
+            auth_user = user
 
     if not auth_user:
         log.error("Error while trying to verify the username: %s", username)
 
     return auth_user
 
-#eof###########################################################################
+# eof ---------------------------------------------------------------------- --
