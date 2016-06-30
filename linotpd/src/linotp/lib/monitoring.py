@@ -287,9 +287,9 @@ class MonitorHandler(object):
         for resolver_spec in resolver_specs:
             __, config_identifier = parse_resolver_spec(resolver_spec)
             act_users_per_resolver = Session.query(Token.LinOtpUserid,
-                                          Token.LinOtpIdResolver,
-                                          Token.LinOtpIdResClass,
-                                          Token.LinOtpIsactive)\
+                                                   Token.LinOtpIdResolver,
+                                                   Token.LinOtpIdResClass,
+                                                   Token.LinOtpIsactive)\
                 .join(TokenRealm)\
                 .join(Realm)\
                 .filter(and_(
@@ -297,7 +297,8 @@ class MonitorHandler(object):
                             Token.LinOtpIdResClass == resolver_spec,
                             Realm.name == realm
                 ))\
-                .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver)
+                .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver,
+                          Token.LinOtpIsactive, Token.LinOtpIdResClass)
 
             realmdict[config_identifier] = act_users_per_resolver.count()
 
@@ -327,6 +328,8 @@ class MonitorHandler(object):
             .filter(or_(*realm_cond),
                     and_(Token.LinOtpIsactive == True,
                          Token.LinOtpIdResolver != ''))\
-            .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver, Token.LinOtpIdResClass)
+            .group_by(Token.LinOtpUserid, Token.LinOtpIdResolver,
+                      Token.LinOtpIsactive, Token.LinOtpIdResClass)
+
         all_server_total = user_and_resolver.count()
         return all_server_total
