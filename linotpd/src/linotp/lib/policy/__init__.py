@@ -695,22 +695,6 @@ def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
     # catch all
     return False
 
-def checkMonitoringAuthorisation(method, context=None):
-    """
-    check if the authenticated user has the right to do the given action
-    :param method: the requested action
-    :param context:
-    :return: notheing if authorized, else raise PolicyException
-    """
-    _ = context['translate']
-    auth = _getAuthorization("monitoring", method)
-    if auth['active'] and not auth['auth']:
-        log.warning("the admin >%r< is not allowed to "
-                    "view the audit trail" % auth['admin'])
-        ret = _("You do not have the administrative right to do monitoring."
-                "You are missing a policy"
-                "scope=monitoring, action=%s") % method
-        raise PolicyException(ret)
 
 def getSelfserviceActions(user):
     '''
