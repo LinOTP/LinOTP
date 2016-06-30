@@ -286,7 +286,10 @@ class MonitorHandler(object):
 
         for resolver_spec in resolver_specs:
             __, config_identifier = parse_resolver_spec(resolver_spec)
-            act_users_per_resolver = Session.query(Token)\
+            act_users_per_resolver = Session.query(Token.LinOtpUserid,
+                                          Token.LinOtpIdResolver,
+                                          Token.LinOtpIdResClass,
+                                          Token.LinOtpIsactive)\
                 .join(TokenRealm)\
                 .join(Realm)\
                 .filter(and_(
@@ -315,7 +318,10 @@ class MonitorHandler(object):
         for realm in realmlist:
             realm_cond += (or_(Realm.name == realm),)
 
-        user_and_resolver = Session.query(Token)\
+        user_and_resolver = Session.query(Token.LinOtpUserid,
+                                          Token.LinOtpIdResolver,
+                                          Token.LinOtpIdResClass,
+                                          Token.LinOtpIsactive)\
             .join(TokenRealm)\
             .join(Realm)\
             .filter(or_(*realm_cond),
