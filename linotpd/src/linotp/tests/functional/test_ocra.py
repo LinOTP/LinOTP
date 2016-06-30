@@ -2387,7 +2387,7 @@ class OcraTest(TestController):
         (otp1, transid1) = self._getChallenge(
             ocrasuite, bkey, serial, ocrapin=ocrapin, count=22)
 
-        ## verify the token works
+        # verify the token works
         parameters = {"transactionid": transid1, "pass": 'pin' + otp1}
         response = self.make_ocra_request(
             action='check_t', auth_user='ocra_admin', params=parameters)
@@ -2395,7 +2395,7 @@ class OcraTest(TestController):
         assert '"result": true' in response
 
 
-        ''' check if the failcounter has incremented  '''
+        # check if the failcounter has incremented
         parameters = {"serial": serial}
         response = self.make_ocra_request(
             action='checkstatus', auth_user='ocra_admin', params=parameters)
