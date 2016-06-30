@@ -341,7 +341,10 @@ def getPolicy(param, display_inactive=False):
             log.debug("getting wildcard user match %r for params %s",
                       wildcard_match, param)
 
-    Policies = _post_realm_filter(Policies, param)
+    # only do the realm filtering if action was filtered before
+    if 'action' in param:
+        Policies = _post_realm_filter(Policies, param)
+
     log.debug("getting policies %s for params %s" % (Policies, param))
     return Policies
 
@@ -547,7 +550,7 @@ def getAdminPolicies(action, lowerRealms=False, scope='admin'):
                  " Admin authorization will be disabled.")
         active = False
 
-    # We may change this later to other authetnication schemes
+    # We may change this later to other authentication schemes
     admin_user = _getAuthenticatedUser()
     log.info("Evaluating policies for the "
              "user: %s" % admin_user['login'])
@@ -792,7 +795,8 @@ def _checkTokenNum(user=None, realm=None):
         policyFound = False
         maxToken = 0
         for R in Realms:
-            pol = getPolicy({'scope': 'enrollment', 'realm': R})
+            pol = getPolicy({'scope': 'enrollment', 'realm': R,
+                             'action': 'tokencount'})
             polTNum = getPolicyActionValue(pol, 'tokencount')
             if polTNum > -1:
                 policyFound = True
@@ -906,7 +910,7 @@ def get_tokenlabel(user="", realm="", serial=""):
 
     # TODO: What happens when we got no realms?
     # pol = getPolicy( {'scope': 'enrollment', 'realm': realm} )
-    pol = get_client_policy(client, scope="enrollment",
+    pol = get_client_policy(client, scope="enrollment", action="tokenlabel",
                             realm=realm, user=user)
     if len(pol) == 0:
         # No policy, so we use the serial number as label
@@ -1060,7 +1064,8 @@ def getOTPPINEncrypt(serial=None, user=None):
 
     log.debug("checking realms: %r" % Realms)
     for R in Realms:
-        pol = getPolicy({'scope': 'enrollment', 'realm': R})
+        pol = getPolicy({'scope': 'enrollment', 'realm': R,
+                         'action': 'otp_pin_encrypt'})
         log.debug("realm: %r, pol: %r" % (R, pol))
         if 1 == getPolicyActionValue(pol, 'otp_pin_encrypt'):
             encrypt_pin = 1
@@ -1091,13 +1096,26 @@ def _getOTPPINPolicies(user, scope="selfservice"):
 
     log.debug("searching for OTP PIN policies in scope=%r policies." % scope)
     for R in Realms:
+
         pol = get_client_policy(client, scope=scope, realm=R,
                                 user=user.login, userObj=user)
         if len(pol) == 0:
             log.debug("there is no scope=%r policy for Realm %r" % (scope, R))
             return ret
+
+        pol = get_client_policy(client, scope=scope, realm=R,
+                                action="otp_pin_maxlength",
+                                user=user.login, userObj=user)
         n_max = getPolicyActionValue(pol, "otp_pin_maxlength")
+
+        pol = get_client_policy(client, scope=scope, realm=R,
+                                action="otp_pin_minlength",
+                                user=user.login, userObj=user)
         n_min = getPolicyActionValue(pol, "otp_pin_minlength", max=False)
+
+        pol = get_client_policy(client, scope=scope, realm=R,
+                                action="otp_pin_contents",
+                                user=user.login, userObj=user)
         n_contents = getPolicyActionValue(pol, "otp_pin_contents", is_string=True)
 
         # find the maximum length
@@ -1862,7 +1880,8 @@ def _checkGetTokenPolicyPre(method, param={}, authUser=None, user=None):
         policies = {}
         for realm in trealms:
             pol = getPolicy({'scope': 'gettoken', 'realm': realm,
-                             'user': admin_user['login']})
+                             'user': admin_user['login'],
+                             'action': pol_action})
             log.error("got a policy: %r" % policies)
 
             policies.update(pol)
@@ -2238,34 +2257,34 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
 
     if 'admin' == controller:
         ret = _checkAdminPolicyPre(method=method, param=param,
-                                  authUser=authUser, user=user)
+                                   authUser=authUser, user=user)
 
     elif 'gettoken' == controller:
         ret = _checkGetTokenPolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user)
+                                      authUser=authUser, user=user)
     elif 'audit' == controller:
         ret = _checkAuditPolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user)
+                                   authUser=authUser, user=user)
 
     elif 'manage' == controller:
         ret = _checkManagePolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user)
+                                    authUser=authUser, user=user)
 
     elif controller in ['tools']:
         ret = _checkToolsPolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user)
+                                   authUser=authUser, user=user)
 
     elif 'selfservice' == controller:
         ret = _checkSelfservicePolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user)
+                                         authUser=authUser, user=user)
 
     elif 'system' == controller:
         ret = _checkSystemPolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user)
+                                    authUser=authUser, user=user)
 
     elif controller == 'ocra':
         ret = _checkOcraPolicyPre(method=method, param=param,
-                                     authUser=authUser, user=user)
+                                  authUser=authUser, user=user)
 
     else:
         # unknown controller
@@ -2487,12 +2506,6 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
         param["action"] = action
     if realm:
         param["realm"] = realm
-    if user:
-        param["user"] = user
-    if userObj and userObj.login:
-        param["user"] = userObj.login
-    if userObj and userObj.realm:
-        param["realm"] = userObj.realm
 
     log.debug("[get_client_policy] with params %r, "
               "client %r and user %r" % (param, client, user))
@@ -2637,7 +2650,7 @@ def _user_filter_extended(Policies, userObj):
             res = None
 
             # check if there is an attribute filter in defintion
-            if '#' in  user_def:
+            if '#' in user_def:
                 attr_comp = AttributeCompare()
                 res = attr_comp.compare(userObj, user_def)
 
@@ -3009,7 +3022,8 @@ def get_qrtan_url(realms):
         realms = []
 
     for realm in realms:
-        pol = getPolicy({"scope": "authentication", 'realm': realm})
+        pol = getPolicy({"scope": "authentication", 'realm': realm,
+                         'action': "qrtanurl"})
         url = getPolicyActionValue(pol, "qrtanurl", is_string=True)
         if url:
             urls.append(url)
@@ -3079,7 +3093,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
                 or len(tokentypes) == 0):
             res = True
     elif len(toks) == 0:
-        # # TODO if the user does not exis or does have no token
+        # # TODO if the user does not exist or does have no token
         ## ---- WHAT DO WE DO? ---
         # # At the moment we pass through: This is the old behaviour...
         res = True
@@ -3215,6 +3229,7 @@ def get_pin_policies(user):
 
     return pin_policies
 
+
 def check_token_reporting(realm):
     """
     parse reporting policies for given realm and user
@@ -3261,7 +3276,8 @@ def supports_offline(realms, token):
         realms = ['/:no realm:/']
 
     for realm in realms:
-        policy = getPolicy({"scope": "authentication", 'realm': realm})
+        policy = getPolicy({"scope": "authentication", 'realm': realm,
+                            'action': 'support_offline'})
         action_value = getPolicyActionValue(policy, 'support_offline',
                                             is_string=True)
         if action_value:
