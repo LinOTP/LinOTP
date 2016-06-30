@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2016-03-02 15:30+0100\n"
+"PO-Revision-Date: 2016-06-07 12:08+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: French <>\n"
 "Language: fr\n"
@@ -36,7 +36,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Gtranslator 2.91.7\n"
+
+msgid "You do not have the rights to monitor these realms."
+msgstr "Vous n'êtes pas autorisé à surveiller ces domaines."
 
 msgid "Summary"
 msgstr "Résumé"
@@ -45,10 +47,43 @@ msgid "Realms"
 msgstr "Domaines"
 
 msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
-msgstr "Le nom de la directive ne doit contenir que des caractères a-zA-Z0-9_."
+msgstr "Le nom de la directive ne peut contenir que les caractères a-zA-Z0-9_"
 
 msgid "The name of the policy must not be empty"
-msgstr "Le nom de la directive ne peut pas être vide."
+msgstr "Le nom de la directive ne doit  pas être vide"
+
+msgid "Thank you for your interest in our products."
+msgstr "Merci de votre intérêt pour nos produits."
+
+msgid ""
+"Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
+"in a few days. For licenses for productive use or an extended evaluation "
+"period, "
+msgstr ""
+"Votre licence LinOTP Smart Virtual Appliancedemo actuelle expirera d'ici "
+"quelques jours. Pour obtenir des licences destinées à un usage productif ou "
+"pour prolonger votre période d'évaluation, "
+
+msgid "please contact us"
+msgstr "veuillez nous contacter"
+
+msgid ""
+"If you have questions about our products or your evaluation we are happy to "
+"answer your inquiry. We would also like to learn about your feedback "
+"concerning our products and your evaluation."
+msgstr ""
+"Nous serons heureux de répondre à toutes vos questions sur nos produits ou "
+"votre évaluation. Nous souhaiterions également recevoir vos commentaires sur "
+"nos produits et votre évaluation."
+
+msgid "sales@lsexperts.de"
+msgstr "sales@lsexperts.de"
+
+msgid "Sales hotline: "
+msgstr "Support des ventes :"
+
+msgid "+49 6151 86086 277"
+msgstr "+49 6151 86086 277"
 
 msgid "<h1>contact support</h1>"
 msgstr ""
@@ -79,7 +114,7 @@ msgid ""
 "valid types are 'oathtoken' and 'googleauthenticator' and "
 "'googleauthenticator_time'. You provided %s"
 msgstr ""
-"Les types valides sont \"oathtoken\", \"googleauthenticator\" ou "
+"Les types valides sont \"oathtoken\", \"googleauthenticator\" et "
 "\"googleauthenticator_time\". Il a été entré %s"
 
 msgid "getotp is not activated."
@@ -340,6 +375,8 @@ msgstr ""
 
 msgid "Due to license restrictions no more tokens could be enrolled!"
 msgstr ""
+"Aucun token supplémentaire n'a pu être déployé à cause des restrictions de "
+"licences !"
 
 #, python-format
 msgid "The tokentype '%s' could not be found."
@@ -639,6 +676,80 @@ msgstr "Erreur lors de la vérification de la directive - contrôleur inconnu %s
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Plusieurs token trouvés - ne peut pas déterminer le type de token !"
+
+msgid "Support not available, your product is unlicensed"
+msgstr "Aucun soutien par le support"
+
+msgid "License already installed!"
+msgstr "Licence déjà installée !"
+
+msgid "license file is empty!"
+msgstr "Le fichier de licence est vide !"
+
+msgid "signature could not be verified!"
+msgstr "La signature n'est pas valide !"
+
+msgid "no license expiration information in license "
+msgstr "Aucune information concernant la date d'expiration de la licence"
+
+msgid "no license subscription information in license"
+msgstr "Aucune information concernant l'abonnement dans la licence"
+
+msgid "invalid license (old license style)"
+msgstr "Licence non valable (format de licence ultérieur)"
+
+msgid "tokens used"
+msgstr "token utilisé"
+
+msgid "tokens supported"
+msgstr "token sous license"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "Format de date non pris en charge %r"
+
+msgid "expired - valid till"
+msgstr "expiré - valable jusqu'au"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr ""
+"getTokenOwner : l'utilisateur %s/%s et le token %s sont contenus dans "
+"plusieurs domaines : %s."
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr ""
+"getTokenOwner : l'utilisateur %s du résolveur %s concernant le token %s n'a "
+"pu être trouvé dans aucun domaine !"
+
+msgid "OTP seed"
+msgstr "OTP Seed"
+
+msgid "URL for OCRA token"
+msgstr "URL pour le token OCRA"
+
+msgid "E-mail OTP Token"
+msgstr "E-mail token OTP"
+
+msgid "E-mail provider config"
+msgstr "Configuration e-mail"
+
+msgid "Provider"
+msgstr "Fournisseur d'accès"
+
+msgid "Provider config"
+msgstr "Configuration du fournisseur d'accès"
+
+msgid "Challenge validity (sec)"
+msgstr "Email validité du défi (sec.)"
+
+msgid "Time between e-mails (sec)"
+msgstr "Temps entre les e-mails (sec.)"
 
 msgid "E-mail token"
 msgstr "Token e-mail"
@@ -1248,6 +1359,21 @@ msgstr "Domaine de l'utilisateur remote"
 msgid "Remote user UserIdResolver"
 msgstr "UserIdResolver de l'utilisateur remote"
 
+msgid "SMS OTP Token"
+msgstr "SMS OTP Token"
+
+msgid "SMS provider config"
+msgstr "Configuration du fournisseur d'accès SMS"
+
+msgid "Provider Config"
+msgstr "Configuration du fournisseur d'accès"
+
+msgid "Timeout"
+msgstr "Délai d'attente"
+
+msgid "Time between SMS (sec.)"
+msgstr "Temps entre SMS (sec.)"
+
 msgid "SMS OTP"
 msgstr "SMS OTP"
 
@@ -1521,7 +1647,7 @@ msgstr ""
 "Veuillez entrer une LDAP URI valide, qui commence par http:// ou https://."
 
 msgid "Please enter a timeout like: 5.0; 5.0 "
-msgstr ""
+msgstr "Veuillez entrer un délai d'attente comme : 5.0 ; 5.0 "
 
 msgid ""
 "Please enter a valid searchfilter like this: (sAMAccountName=*)"
@@ -1635,9 +1761,8 @@ msgstr "Échec du chargement du fichier de support et d'abonnement : "
 msgid "License upload"
 msgstr "Télécharger la licence"
 
-#, fuzzy
 msgid "License uploaded"
-msgstr "Télécharger la licence"
+msgstr "Licence téléchargée"
 
 msgid "Invalid License"
 msgstr "Licence non valide"
@@ -1681,19 +1806,12 @@ msgstr "Définir le domaine du token"
 msgid "Please select the token first."
 msgstr "Veuillez d'abord sélectionner un token."
 
-#, fuzzy
-msgid "Cannot save realm"
-msgstr "Domaine de l'utilisateur remote"
-
-msgid "Please select at least one UserIdResolver from the list"
-msgstr ""
-
-#, fuzzy
 msgid "No resolver selected"
-msgstr "vers le résolveur"
+msgstr "Aucun résolveur sélectionné"
 
 msgid "Please select at least one resolver from the resolver list."
 msgstr ""
+"Veuillez sélectionner au moins un résolveur dans la liste des résolveurs."
 
 msgid "Close"
 msgstr "Fermer"
@@ -2291,11 +2409,8 @@ msgstr "Authentification"
 msgid "Split at @ sign (splitAtSign)"
 msgstr "Séparer au signe @"
 
-#, fuzzy
 msgid "This will use the part right of an @-sign as realm"
-msgstr ""
-"La partie à droite du signe @ est interprétée comme domaine, la partie à "
-"gauche du signe @ comme le nom d'utilisateur."
+msgstr "La partie à droite du signe @ sera utilisée."
 
 msgid "Return SAML attributes"
 msgstr "Retourner les attributs SAML"
@@ -2564,6 +2679,12 @@ msgstr "Fenêtre temporelle de validité pour un défi"
 
 msgid "Tokentype Configuration"
 msgstr "Configuration du type de token"
+
+msgid "Support Contact"
+msgstr "Contact du support"
+
+msgid "Ok"
+msgstr "OK"
 
 msgid "LSE LinOTP Support and Subscription"
 msgstr "LSE LinOTP support et abonnement "
@@ -3439,9 +3560,8 @@ msgstr "Échec de l'enregistrement des données de support"
 msgid "Support subscription import result"
 msgstr "Résultat de l'enregistrement du support"
 
-#, fuzzy
 msgid "Error saving ldap configuration."
-msgstr "Erreur lors de la sauvegarde de la configuration LDAP"
+msgstr "Erreur lors de la sauvegarde de la configuration LDAP."
 
 msgid "Error saving realm configuration."
 msgstr "Erreur lors de la sauvegarde de la configuration du domaine"

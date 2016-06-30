@@ -26,7 +26,7 @@
  *
 </%doc>
 <%
-    ttype = c.tokeninfo.get("LinOtp.TokenType").lower()
+    ttype = c.tokeninfo.get("LinOtp.TokenType","").lower()
 %>
 
 <table class=tokeninfoOuterTable>

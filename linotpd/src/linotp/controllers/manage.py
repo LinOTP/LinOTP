@@ -529,7 +529,7 @@ class ManageController(BaseController):
 
     def tokeninfo(self):
         '''
-        this returns the contents of /admin/show?serial=xyz in a html format
+        this returns the contents of /admin/show?serial=xyz in an html format
         '''
         param = request.params
 
@@ -540,24 +540,24 @@ class ManageController(BaseController):
             # check admin authorization
             res = checkPolicyPre('admin', 'show', param)
 
-            filterRealm = res['realms']
             # check if policies are active at all
             # If they are not active, we are allowed to SHOW any tokens.
-            pol = getAdminPolicies("show")
-            if not pol['active']:
-                filterRealm = ["*"]
+            filterRealm = ["*"]
+            if res['active'] and res['realms']:
+                filterRealm = res['realms']
 
-            log.info("[tokeninfo] admin >%s< may display the following realms: %s" % (res['admin'], filterRealm))
+            log.info("[tokeninfo] admin >%s< may display the following realms:"
+                     " %s" % (res['admin'], filterRealm))
             log.info("[tokeninfo] displaying tokens: serial: %s", serial)
 
-            toks = TokenIterator(User("", "", ""), serial, filterRealm=filterRealm)
+            toks = TokenIterator(User("", "", ""), serial,
+                                 filterRealm=filterRealm)
 
-            ### now row by row
+            # now row by row
             lines = []
             for tok in toks:
                 lines.append(tok)
             if len(lines) > 0:
-
                 c.tokeninfo = lines[0]
             else:
                 c.tokeninfo = {}
@@ -566,7 +566,8 @@ class ManageController(BaseController):
                 if "LinOtp.TokenInfo" == k:
                     try:
                         # Try to convert string to Dictionary
-                        c.tokeninfo['LinOtp.TokenInfo'] = json.loads(c.tokeninfo['LinOtp.TokenInfo'])
+                        c.tokeninfo['LinOtp.TokenInfo'] = json.loads(
+                                            c.tokeninfo['LinOtp.TokenInfo'])
                     except:
                         pass
 
