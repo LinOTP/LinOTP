@@ -1687,7 +1687,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <tr><td><label for=ldap_password>${_("Bind Password")}</label>:</td>
                 <td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" size="35" maxlength="60"></td></tr>
             <tr><td><label for=ldap_timeout>${_("Timeout")}</label>:</td>
-                <td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="5"></td></tr>
+                <td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="10"></td></tr>
             <tr><td><label for=ldap_sizelimit>${_("Sizelimit")}:</label></td>
                 <td><input type="text" name="ldap_sizelimit" class="required"  id="ldap_sizelimit" size="35" maxlength="10"></td></tr>
             <tr><td> </td>
