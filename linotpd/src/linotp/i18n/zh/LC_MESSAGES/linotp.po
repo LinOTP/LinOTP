@@ -27,8 +27,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2016-03-02 16:32+0100\n"
+"PO-Revision-Date: 2016-06-07 11:45+0800\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Chinese <>\n"
 "Language: zh\n"
@@ -36,7 +35,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Gtranslator 2.91.7\n"
+
+msgid "You do not have the rights to monitor these realms."
+msgstr "您没有权限监测这些域。"
 
 msgid "Summary"
 msgstr "概要："
@@ -50,8 +51,36 @@ msgstr "策略名只能包含字符 a-zA-Z0-9_。"
 msgid "The name of the policy must not be empty"
 msgstr "策略名不能为空。"
 
-msgid "<h1>contact support</h1>"
+msgid "Thank you for your interest in our products."
+msgstr "感谢您对我们的产品感兴趣。"
+
+msgid ""
+"Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
+"in a few days. For licenses for productive use or an extended evaluation "
+"period, "
 msgstr ""
+"您当前的 LinOTP 智能虚拟设备演示版许可证在几天内就要到期。要获得生产使用或更"
+"长评估期的许可证，"
+
+msgid "please contact us"
+msgstr "请联系我们"
+
+msgid ""
+"If you have questions about our products or your evaluation we are happy to "
+"answer your inquiry. We would also like to learn about your feedback "
+"concerning our products and your evaluation."
+msgstr ""
+"如果您对我们的产品或您的评估有任何疑问，我们乐意解答您的咨询。我们也想了解您"
+"对我们产品和您评估的反馈。"
+
+msgid "sales@lsexperts.de"
+msgstr "sales@lsexperts.de"
+
+msgid "Sales hotline: "
+msgstr "销售热线："
+
+msgid "+49 6151 86086 277"
+msgstr "+49 6151 86086 277"
 
 msgid "You are not authenticated"
 msgstr "您未被认证"
@@ -290,7 +319,7 @@ msgid ""
 msgstr "您没有管理权限在当前域通过 OTP 获得序列号。请检查策略。"
 
 msgid "Due to license restrictions no more tokens could be enrolled!"
-msgstr ""
+msgstr "由于许可证限制，不能注册更多令牌！"
 
 #, python-format
 msgid "The tokentype '%s' could not be found."
@@ -521,6 +550,76 @@ msgstr "策略检查失败 - 未知控制器 %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "发现多个令牌 - 不能确定令牌的类型！"
+
+msgid "Support not available, your product is unlicensed"
+msgstr "支持不可用"
+
+msgid "License already installed!"
+msgstr "许可证已被安装！"
+
+msgid "license file is empty!"
+msgstr "缺少许可证文件！"
+
+msgid "signature could not be verified!"
+msgstr "签名无效！"
+
+msgid "no license expiration information in license "
+msgstr "缺少许可证期限信息"
+
+msgid "no license subscription information in license"
+msgstr "缺少许可证订阅信息"
+
+msgid "invalid license (old license style)"
+msgstr "无效许可证（旧的许可证格式）"
+
+msgid "tokens used"
+msgstr "令牌已被使用"
+
+msgid "tokens supported"
+msgstr "令牌已被许可"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "不支持日期格式 %r"
+
+msgid "expired - valid till"
+msgstr "过期 - 期限至"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr "getTokenOwner：用户 %s/%s 和令牌 %s 包含在多个域： %s内。"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr "getTokenOwner：用户 %s 位于分配器 %s 的令牌 %s 无法在任何域内找到！"
+
+msgid "OTP seed"
+msgstr "OTP 密钥"
+
+msgid "URL for OCRA token"
+msgstr "OCRA 令牌链接"
+
+msgid "E-mail OTP Token"
+msgstr "OTP 令牌邮件"
+
+msgid "E-mail provider config"
+msgstr "电子邮件配置"
+
+msgid "Provider"
+msgstr "供应商"
+
+msgid "Provider config"
+msgstr "供应商配置"
+
+msgid "Challenge validity (sec)"
+msgstr "电子邮件挑战码有效性（秒）"
+
+msgid "Time between e-mails (sec)"
+msgstr "电子邮件间隔时间（秒）"
 
 msgid "E-mail token"
 msgstr "电子邮件令牌"
@@ -1321,7 +1420,7 @@ msgid ""
 msgstr "请指定有效的 LDAP 链接，由 http:// 或 https:// 开头。"
 
 msgid "Please enter a timeout like: 5.0; 5.0 "
-msgstr ""
+msgstr "请输入一个的超时，如：5.0; 5.0"
 
 msgid ""
 "Please enter a valid searchfilter like this: (sAMAccountName=*)"
@@ -1434,9 +1533,8 @@ msgstr "支持和订阅加载失败： "
 msgid "License upload"
 msgstr "上传许可证"
 
-#, fuzzy
 msgid "License uploaded"
-msgstr "上传许可证"
+msgstr "许可证已上传"
 
 msgid "Invalid License"
 msgstr "无效的许可证"
@@ -1477,19 +1575,11 @@ msgstr "设置令牌域"
 msgid "Please select the token first."
 msgstr "请您选择一个令牌"
 
-#, fuzzy
-msgid "Cannot save realm"
-msgstr "远程用户的域"
-
-msgid "Please select at least one UserIdResolver from the list"
-msgstr ""
-
-#, fuzzy
 msgid "No resolver selected"
-msgstr "目标解析器"
+msgstr "未选择解析器"
 
 msgid "Please select at least one resolver from the resolver list."
-msgstr ""
+msgstr "请从解析器列表中选择至少一个解析器。"
 
 msgid "Close"
 msgstr "关闭"
@@ -2077,9 +2167,8 @@ msgstr "认证"
 msgid "Split at @ sign (splitAtSign)"
 msgstr "在 @ 字符处断开"
 
-#, fuzzy
 msgid "This will use the part right of an @-sign as realm"
-msgstr "@ 字符的右侧部分是域，@ 字符的左侧部分是用户名。"
+msgstr "此过程将把 @ 字符的右侧部分作为域使用"
 
 msgid "Return SAML attributes"
 msgstr "返回 SAML 属性"
@@ -2323,6 +2412,12 @@ msgstr "一个挑战的标准有效时间窗口"
 
 msgid "Tokentype Configuration"
 msgstr "令牌类型的配置"
+
+msgid "Support Contact"
+msgstr "支持部门联系方式"
+
+msgid "Ok"
+msgstr "确定"
 
 msgid "LSE LinOTP Support and Subscription"
 msgstr "您的 LinOTP 支持和订阅 "
@@ -3138,9 +3233,8 @@ msgstr "支持数据注册失败"
 msgid "Support subscription import result"
 msgstr "支持注册的结果"
 
-#, fuzzy
 msgid "Error saving ldap configuration."
-msgstr "无法保存 LDAP 配置"
+msgstr "保存 LDAP 配置时出错。"
 
 msgid "Error saving realm configuration."
 msgstr "无法保存域配置"

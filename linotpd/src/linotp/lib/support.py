@@ -194,6 +194,9 @@ def parseSupportLicense(licString):
                                       type='INVALID_FORMAT')
 
     licInfo.signature = base64.b64decode(signature)
+    if 'days' in licInfo.get('expire', ''):
+        licInfo.license_expiration = licInfo['expire']
+
     return (licInfo, base64.b64decode(signature))
 
 
@@ -233,6 +236,8 @@ def isSupportLicenseValid(licString=None, lic_dict=None, lic_sign=None,
 def check_license_restrictions():
     """
     check if there are restrictions, which are caused by the license
+
+    :return: boolean - True if there are  restrictions
     """
 
     license_str = getFromConfig('license')
@@ -244,15 +249,22 @@ def check_license_restrictions():
     res, reason = verifyLicenseInfo(lic_dict, lic_sign,
                                     raiseException=False)
 
-    if not (lic_dict.license_type and lic_dict.license_type == 'demo'):
+    if not res:
+        log.info("license check: %r", reason)
+
+    license_type = lic_dict.license_type or 'standard'
+    if license_type != 'download' and license_type != 'demo':
         return False
 
+    # in case of a download license, we check hard limits
     import linotp.lib.token
     installed_tokens = int(linotp.lib.token.getTokenNumResolver())
     allowed_tokens = lic_dict.get('token-num', 'unlimited')
     try:
         allowed_tokens = int(allowed_tokens.strip())
         if installed_tokens >= allowed_tokens:
+            log.info("license check: too many tokens enrolled %r",
+                     allowed_tokens)
             return True
     except ValueError as _val_err:
         # in case of no int we ignore this restriction as it could
@@ -261,6 +273,7 @@ def check_license_restrictions():
 
     res, _msg = verify_expiration(lic_dict)
     if res is False:
+        log.info("license check: license expired!")
         return True
 
     return False
@@ -285,20 +298,20 @@ def setSupportLicense(licString):
     return ret, msg
 
 
-def do_nagging(lic_info):
+def do_nagging(lic_info, nag_days=7):
     """
     do nagging - answer the question if nagging should be done
 
     :param lic_info: the license info
     :return: boolean - True if nagging should be displayed
     """
-
     d_fmt = "%Y-%m-%d"
 
-    # we start 20 days after download license was installed
-    nag_offset = 20
+    # we start 7 days after download license was installed
+    nag_offset = nag_days
 
-    if not (lic_info.license_type and lic_info.license_type == 'download'):
+    if not (lic_info.license_type and (lic_info.license_type == 'download' or
+                                       lic_info.license_type == 'demo')):
         return False
 
     # in case there is no duration definition in 'xx days' we do the nagging
@@ -664,6 +677,9 @@ def verify_expiration(lic_dic):
 
     # we check only for the date string which has to be the first part of
     # the expiration date definition
+    if lic_dic.license_expiration and 'days' in lic_dic.license_expiration:
+        return check_duration(lic_dic.license_expiration, lic_dic)
+
     temp = (lic_dic.get('expire', '') or '').strip()
     if temp:
         if 'days' in temp:

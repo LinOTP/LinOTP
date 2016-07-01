@@ -662,6 +662,15 @@ ${c.version} --- &copy; ${c.licenseinfo}
     }
 </script>
 
+<!-- ################ Support Contact ################ -->
+<div id='dialog_support_contact'></div>
+
+<script>
+    function translate_support_contact() {
+        $("#dialog_support_view" ).dialog( "option", "title", '${_("Support Contact")}' );
+        $('#button_support_contact_close .ui-button-text').html(escape('${_("Ok")}'));
+    }
+</script>
 
 <!-- ################ Support view ################ -->
 <div id='dialog_support_view'>

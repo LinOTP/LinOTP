@@ -36,7 +36,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Gtranslator 2.91.7\n"
+"X-Generator: Gtranslator 2.91.6\n"
+
+msgid "You do not have the rights to monitor these realms."
+msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
 
 msgid "Summary"
 msgstr "Übersicht"
@@ -52,6 +55,39 @@ msgstr "Der Name der Richtlinie darf nicht leer sein."
 
 msgid "<h1>contact support</h1>"
 msgstr "<h1>Support kontaktieren</h1>"
+
+msgid "Thank you for your interest in our products."
+msgstr "Danke für Ihr Interesse an unseren Produkten."
+
+msgid ""
+"Your current LinOTP Smart Virtual Appliancedemo license is about to expire "
+"in a few days. For licenses for productive use or an extended evaluation "
+"period, "
+msgstr ""
+"Ihre aktuelle Demo-Lizenz der LSE LinOTP Smart Virtual Appliance läuft nur "
+"noch wenige Tage. Für Lizenzen zum produktiven Einsatz, oder einen "
+"verlängerten Testzeitraum, "
+
+msgid "please contact us"
+msgstr "können Sie sich gerne mit uns in Verbindung setzen."
+
+msgid ""
+"If you have questions about our products or your evaluation we are happy to "
+"answer your inquiry. We would also like to learn about your feedback "
+"concerning our products and your evaluation."
+msgstr ""
+"Bei Fragen zu unseren Produkten oder unseren Preismodellen helfen wir gerne "
+"weiter. Wir freuen uns auch über Ihr Feedback zu unseren Produkten und Ihrer "
+"Teststellung."
+
+msgid "sales@lsexperts.de"
+msgstr "sales@lsexperts.de"
+
+msgid "Sales hotline: "
+msgstr "Vertriebs-Hotline: "
+
+msgid "+49 6151 86086 277"
+msgstr "+49 6151 86086 277"
 
 msgid "You are not authenticated"
 msgstr "Sie sind nicht authentisiert"
@@ -627,6 +663,80 @@ msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter controller %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
+
+msgid "Support not available, your product is unlicensed"
+msgstr "Keine Support Unterstüzung"
+
+msgid "License already installed!"
+msgstr "Lizenz bereits installiert!"
+
+msgid "license file is empty!"
+msgstr "Die Lizenzdatei ist leer!"
+
+msgid "signature could not be verified!"
+msgstr "Die Signatur ist nicht gültig!"
+
+msgid "no license expiration information in license "
+msgstr "Keine Information über das Ablaufdatum der Lizenz"
+
+msgid "no license subscription information in license"
+msgstr "Keine Information über die Subskription in der Lizenz"
+
+msgid "invalid license (old license style)"
+msgstr "ungülige Lizenz (altes Lizenzformat)"
+
+msgid "tokens used"
+msgstr "verwendete Token"
+
+msgid "tokens supported"
+msgstr "lizensierte Token"
+
+#, python-format
+msgid "unsupported date format date %r"
+msgstr "Nicht unterstütztes Datumsformat %r"
+
+msgid "expired - valid till"
+msgstr "abgelaufen - gültig bis"
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s/%s and the token %s is located in several "
+"realms: %s!"
+msgstr ""
+"getTokenOwner: Der Benutzer %s/%s und der Token %s sind in mehreren Realms "
+"enthalten: %s."
+
+#, python-format
+msgid ""
+"get_token_owner: The user %s in the resolver %s for token %s could not be "
+"found in any realm!"
+msgstr ""
+"getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
+"Realm gefunden werden!"
+
+msgid "OTP seed"
+msgstr "OTP Seed"
+
+msgid "URL for OCRA token"
+msgstr "URL für OCRA-Token"
+
+msgid "E-mail OTP Token"
+msgstr "E-Mail OTP Token"
+
+msgid "E-mail provider config"
+msgstr "E-Mail Konfiguration"
+
+msgid "Provider"
+msgstr "Provider"
+
+msgid "Provider config"
+msgstr "Provider Konfiguration"
+
+msgid "Challenge validity (sec)"
+msgstr "E-Mail Challenge Gültigkeit (Sek.)"
+
+msgid "Time between e-mails (sec)"
+msgstr "Zeit zwischen E-Mails (Sek.)"
 
 msgid "E-mail token"
 msgstr "E-Mail Token"
@@ -1482,7 +1592,7 @@ msgstr ""
 "anfängt."
 
 msgid "Please enter a timeout like: 5.0; 5.0 "
-msgstr "Bitte geben Sie das Format für den Timeout wie folgt an: 5.0; 5.0"
+msgstr "Bitte geben Sie einen Timeout wie folgt ein: 5.0; 5.0 "
 
 msgid ""
 "Please enter a valid searchfilter like this: (sAMAccountName=*)"
@@ -1597,7 +1707,7 @@ msgid "License upload"
 msgstr "Lizenz hochladen"
 
 msgid "License uploaded"
-msgstr "Lizenz hochladen"
+msgstr "Lizenz hochgeladen"
 
 msgid "Invalid License"
 msgstr "ungültige Lizenz"
@@ -1649,7 +1759,7 @@ msgid "No resolver selected"
 msgstr "Kein Resolver ausgewählt"
 
 msgid "Please select at least one resolver from the resolver list."
-msgstr "Bitte wählen Sie mindestens Einen Resolver aus der Liste."
+msgstr "Bitte wählen Sie mindestens einen Resolver aus der Liste aus."
 
 msgid "Close"
 msgstr "Schließen"
@@ -1740,6 +1850,9 @@ msgstr "existiert bereits."
 
 msgid "Do you want to overwrite the existing definition?"
 msgstr "Wollen Sie die vorhandene Definition überschreiben?"
+
+msgid "Close"
+msgstr "Schließen"
 
 msgid "Overwrite resolver definition"
 msgstr "Resolverdefinition überschreiben"
@@ -2488,6 +2601,12 @@ msgstr "Standard Gültigkeits-Zeitfenster für eine Challenge"
 
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
+
+msgid "Support Contact"
+msgstr "Support Kontakt"
+
+msgid "Ok"
+msgstr "OK"
 
 msgid "LSE LinOTP Support and Subscription"
 msgstr "LSE LinOTP Support und Subskription "
@@ -4027,9 +4146,6 @@ msgstr ""
 
 #~ msgid "For professional LinOTP support and enterprise subscription, "
 #~ msgstr "Zum Erwerb von "
-
-#~ msgid "feel free to contact "
-#~ msgstr "professionellen LinOTP Support und Subskription für Unternehmen"
 
 #~ msgid "for support agreement purchase."
 #~ msgstr "können Sie und gerne kontaktieren"

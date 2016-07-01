@@ -40,11 +40,10 @@ class TestAdminShowController(TestController):
     Test the admin show Policy.
     """
 
-
     def setUp(self):
         TestController.setUp(self)
-        self.delete_all_token()
         self.delete_all_policies()
+        self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
         self.create_common_resolvers()
@@ -130,6 +129,58 @@ class TestAdminShowController(TestController):
 
         params = {'serial': serial}
         response = self.make_admin_request('show', params=params)
+
+        self.assertTrue(serial in response, response)
+
+        return
+
+    def test_manage_tokeninfo(self):
+        """
+        by default, there should be no restriction to show an token
+        """
+        # all policies are deleted before
+
+        serial = self.enroll_token()
+        params = {'serial': serial}
+        response = self.make_manage_request('tokeninfo', params=params)
+
+        self.assertTrue(serial in response, response)
+
+        # set open policy without restrictions
+        self.create_admin_policy()
+
+        params = {'serial': serial}
+        response = self.make_manage_request('tokeninfo', params=params)
+
+        self.assertTrue(serial in response, response)
+
+        # set policy with explicit show action and wildcard action
+        policy_def = {'action': 'show, *'}
+        self.create_admin_policy(policy_def=policy_def)
+
+        params = {'serial': serial}
+        response = self.make_manage_request('tokeninfo', params=params)
+
+        self.assertTrue(serial in response, response)
+
+        # set policy with not specified realm and wildcard action
+        policy_def = {'action': '*',
+                      'realm': 'unspecified_realm'}
+        self.create_admin_policy(policy_def=policy_def)
+
+        params = {'serial': serial}
+        response = self.make_manage_request('tokeninfo', params=params)
+
+        self.assertTrue(serial not in response, response)
+
+        # set policy with not specified realm and wildcard realm and
+        # dedicated action
+        policy_def = {'action': 'show',
+                      'realm': 'unspecified_realm, *'}
+        self.create_admin_policy(policy_def=policy_def)
+
+        params = {'serial': serial}
+        response = self.make_manage_request('tokeninfo', params=params)
 
         self.assertTrue(serial in response, response)
 
