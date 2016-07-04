@@ -651,63 +651,6 @@ msgstr "Errore durante la verifica dei criteri - controller sconosciuto %s"
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Trovati più token - impossibile determinare il tipo di token!"
 
-msgid "Support not available, your product is unlicensed"
-msgstr "Nessun supporto di assistenza"
-
-msgid "License already installed!"
-msgstr "Licenza già installata!"
-
-msgid "license file is empty!"
-msgstr "Il file di licenza è vuoto!"
-
-msgid "signature could not be verified!"
-msgstr "La firma non è valida!"
-
-msgid "no license expiration information in license "
-msgstr ""
-"Non sono disponibili informazioni circa la data di scadenza della licenza"
-
-msgid "no license subscription information in license"
-msgstr "Nessuna informazione relativa all'abbonamento nella licenza"
-
-msgid "invalid license (old license style)"
-msgstr "licenza non valida (vecchio formato licenza)"
-
-msgid "tokens used"
-msgstr "token utilizzati"
-
-msgid "tokens supported"
-msgstr "token su licenza"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "Formato data non supportato % r"
-
-msgid "expired - valid till"
-msgstr "scaduto - valido fino al"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
-msgstr ""
-"getTokenOwner: l'utente %s/%s e il token %s sono contenuti in diversi Realm: "
-"%s."
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr ""
-"getTokenOwner: l'utente %s nel resolver %s per il token %s non è stato "
-"trovato in nessun Realm!"
-
-msgid "OTP seed"
-msgstr "Seme OTP"
-
-msgid "URL for OCRA token"
-msgstr "URL per token OCRA"
-
 msgid "E-mail OTP Token"
 msgstr "E-mail token OTP"
 
@@ -2621,9 +2564,6 @@ msgstr "Finestra temporale standard di validità per una challenge"
 msgid "Tokentype Configuration"
 msgstr "Configurazione dei tipi di token"
 
-msgid "Support Contact"
-msgstr "Contatto di supporto"
-
 msgid "Ok"
 msgstr "Ok"
 
@@ -3960,18 +3900,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "no"
 #~ msgstr "Info"
-
-#~ msgid "E-mail OTP Token"
-#~ msgstr "E-mail token OTP"
-
-#~ msgid "Provider config"
-#~ msgstr "Configurazione provider"
-
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "Validità Email Challenge (sec.)"
-
-#~ msgid "Time between e-mails (sec)"
-#~ msgstr "Tempo tra messaggi e-mail (sec.)"
 
 #~ msgid "SMS OTP Token"
 #~ msgstr "SMS OTP Token"

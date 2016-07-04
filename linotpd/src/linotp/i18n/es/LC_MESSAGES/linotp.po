@@ -405,9 +405,6 @@ msgstr ""
 msgid "Due to license restrictions no more tokens could be enrolled!"
 msgstr "Debido a restricciones de licencia, ¡no pueden inscribirse más tokens!"
 
-msgid "Due to license restrictions no more tokens could be enrolled!"
-msgstr ""
-
 #, python-format
 msgid "The tokentype '%s' could not be found."
 msgstr "No se ha podido encontrar el tipo de token '%s'."
@@ -430,12 +427,6 @@ msgstr ""
 msgid "You do not have the administrative right to init token %s of type %s."
 msgstr ""
 "No tiene derechos de administrador para  implementar el token %s de tipo %s."
-
-msgid ""
-"You may not enroll any more tokens. Your maximum token number is reached!"
-msgstr ""
-"Se ha alcanzado el número máximo de token. No puede implementar ningún token "
-"más."
 
 #, python-format
 msgid ""
@@ -624,44 +615,6 @@ msgstr ""
 "ello, falta una directriz con 'scope=monitoring' y 'action=view'."
 
 #, python-format
-msgid ""
-"You do not have the administrative right to manage tools. You are missing a "
-"policy scope=tools, action=%s"
-msgstr ""
-" No tiene derechos de administración para ejecutar las herramientas. Para "
-"ello, falta una directriz con 'scope=tools' y 'action=%s'."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr ""
-"No hay ninguna directriz que defina el max_count en el autoservicio para el "
-"tipo de token %s."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr ""
-"No hay ninguna directriz que defina el max_count en el autoservicio para el "
-"tipo de token %s en el dominio %s."
-
-msgid "The policy settings do not allow you to issue this request!"
-msgstr "¡La configuración de la directriz impide realizar esta consulta!"
-
-msgid "The maximum number of allowed tokens is exceeded. Check the policies"
-msgstr ""
-"Se ha superado el número máximo de token respaldados. Si es necesario, "
-"compruebe las directrices."
-
-msgid "The policy settings do not allow you to request a serial by OTP!"
-msgstr "Las directrices no permiten comprobar el número de serie de OTP."
-
-#, python-format
-msgid "Unknown method in selfservice: %s"
-msgstr "Método desconocido en el portal de autogestión: %s"
-
-#, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
 msgstr ""
 "La directriz no permite la solicitud; no es posible visualizar o cambiar la "
@@ -698,62 +651,6 @@ msgstr ""
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr ""
 "Se han encontrado varios token. No es posible determinar el tipo de token."
-
-msgid "Support not available, your product is unlicensed"
-msgstr "No hay asistencia de soporte técnico"
-
-msgid "License already installed!"
-msgstr "¡Lincencia ya instalada!"
-
-msgid "license file is empty!"
-msgstr "¡El archivo de licencia está vacío!"
-
-msgid "signature could not be verified!"
-msgstr "¡La firma no es válida!"
-
-msgid "no license expiration information in license "
-msgstr "No hay información sobre la fecha de caducidad de la licencia"
-
-msgid "no license subscription information in license"
-msgstr "No hay información relativa a la suscripción de la licencia"
-
-msgid "invalid license (old license style)"
-msgstr "Licencia no válida (formato de licencia anterior)"
-
-msgid "tokens used"
-msgstr "Token usado"
-
-msgid "tokens supported"
-msgstr "Token con licencia"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "Formato de fecha no compatible %r"
-
-msgid "expired - valid till"
-msgstr "expirado - válido hasta"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several realms: "
-"%s!"
-msgstr ""
-"getTokenOwner: El usuario %s/%s y el token %s están incluidos en varios "
-"dominios: %s."
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr ""
-"getTokenOwner: No se ha podido encontrar al usuario %s en el solucionador %s "
-"para el token %s en ningún dominio."
-
-msgid "OTP seed"
-msgstr "Semilla OTP"
-
-msgid "URL for OCRA token"
-msgstr "URL para token OCRA"
 
 msgid "E-mail OTP Token"
 msgstr "Correo electrónico de token OTP"
@@ -2667,9 +2564,6 @@ msgstr "Ventana de tiempo de validez estándar para un desafío"
 
 msgid "Tokentype Configuration"
 msgstr "Configuración de los tipos de token"
-
-msgid "Support Contact"
-msgstr "Contacto de asistencia"
 
 msgid "Ok"
 msgstr "Ok"

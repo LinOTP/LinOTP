@@ -551,58 +551,6 @@ msgstr "策略检查失败 - 未知控制器 %s"
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "发现多个令牌 - 不能确定令牌的类型！"
 
-msgid "Support not available, your product is unlicensed"
-msgstr "支持不可用"
-
-msgid "License already installed!"
-msgstr "许可证已被安装！"
-
-msgid "license file is empty!"
-msgstr "缺少许可证文件！"
-
-msgid "signature could not be verified!"
-msgstr "签名无效！"
-
-msgid "no license expiration information in license "
-msgstr "缺少许可证期限信息"
-
-msgid "no license subscription information in license"
-msgstr "缺少许可证订阅信息"
-
-msgid "invalid license (old license style)"
-msgstr "无效许可证（旧的许可证格式）"
-
-msgid "tokens used"
-msgstr "令牌已被使用"
-
-msgid "tokens supported"
-msgstr "令牌已被许可"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "不支持日期格式 %r"
-
-msgid "expired - valid till"
-msgstr "过期 - 期限至"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
-msgstr "getTokenOwner：用户 %s/%s 和令牌 %s 包含在多个域： %s内。"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr "getTokenOwner：用户 %s 位于分配器 %s 的令牌 %s 无法在任何域内找到！"
-
-msgid "OTP seed"
-msgstr "OTP 密钥"
-
-msgid "URL for OCRA token"
-msgstr "OCRA 令牌链接"
-
 msgid "E-mail OTP Token"
 msgstr "OTP 令牌邮件"
 
@@ -2413,9 +2361,6 @@ msgstr "一个挑战的标准有效时间窗口"
 msgid "Tokentype Configuration"
 msgstr "令牌类型的配置"
 
-msgid "Support Contact"
-msgstr "支持部门联系方式"
-
 msgid "Ok"
 msgstr "确定"
 
@@ -3684,18 +3629,6 @@ msgstr "另外，您也可以通过 iPhone 扫描下面的二维码，导入配�
 #, fuzzy
 #~ msgid "no"
 #~ msgstr "信息"
-
-#~ msgid "E-mail OTP Token"
-#~ msgstr "OTP 令牌邮件"
-
-#~ msgid "Provider config"
-#~ msgstr "供应商配置"
-
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "电子邮件挑战码有效性（秒）"
-
-#~ msgid "Time between e-mails (sec)"
-#~ msgstr "电子邮件间隔时间（秒）"
 
 #~ msgid "SMS OTP Token"
 #~ msgstr "短信 OTP 令牌"

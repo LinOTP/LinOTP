@@ -664,62 +664,6 @@ msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter Controller %s"
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
 
-msgid "Support not available, your product is unlicensed"
-msgstr "Keine Support Unterstüzung"
-
-msgid "License already installed!"
-msgstr "Lizenz bereits installiert!"
-
-msgid "license file is empty!"
-msgstr "Die Lizenzdatei ist leer!"
-
-msgid "signature could not be verified!"
-msgstr "Die Signatur ist nicht gültig!"
-
-msgid "no license expiration information in license "
-msgstr "Keine Information über das Ablaufdatum der Lizenz"
-
-msgid "no license subscription information in license"
-msgstr "Keine Information über die Subskription in der Lizenz"
-
-msgid "invalid license (old license style)"
-msgstr "ungülige Lizenz (altes Lizenzformat)"
-
-msgid "tokens used"
-msgstr "verwendete Token"
-
-msgid "tokens supported"
-msgstr "lizensierte Token"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "Nicht unterstütztes Datumsformat %r"
-
-msgid "expired - valid till"
-msgstr "abgelaufen - gültig bis"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
-msgstr ""
-"getTokenOwner: Der Benutzer %s/%s und der Token %s sind in mehreren Realms "
-"enthalten: %s."
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr ""
-"getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
-"Realm gefunden werden!"
-
-msgid "OTP seed"
-msgstr "OTP Seed"
-
-msgid "URL for OCRA token"
-msgstr "URL für OCRA-Token"
-
 msgid "E-mail OTP Token"
 msgstr "E-Mail OTP Token"
 
@@ -1853,9 +1797,6 @@ msgstr "existiert bereits."
 msgid "Do you want to overwrite the existing definition?"
 msgstr "Wollen Sie die vorhandene Definition überschreiben?"
 
-msgid "Close"
-msgstr "Schließen"
-
 msgid "Overwrite resolver definition"
 msgstr "Resolverdefinition überschreiben"
 
@@ -2608,9 +2549,6 @@ msgstr "Standardwert des Gültigkeitszeitfensters für eine Challenge"
 
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
-
-msgid "Support Contact"
-msgstr "Support Kontakt"
 
 msgid "Ok"
 msgstr "OK"
@@ -3962,18 +3900,6 @@ msgstr ""
 
 #~ msgid "no"
 #~ msgstr "Nein"
-
-#~ msgid "E-mail OTP Token"
-#~ msgstr "E-Mail OTP Token"
-
-#~ msgid "Provider config"
-#~ msgstr "Providerkonfiguration"
-
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "E-Mail Challenge Gültigkeit (Sek.)"
-
-#~ msgid "Time between e-mails (sec)"
-#~ msgstr "Zeit zwischen E-Mails (Sek.)"
 
 #~ msgid "SMS OTP Token"
 #~ msgstr "SMS OTP Token"

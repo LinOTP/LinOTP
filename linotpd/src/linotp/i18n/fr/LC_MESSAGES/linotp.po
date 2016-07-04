@@ -677,62 +677,6 @@ msgstr "Erreur lors de la vérification de la directive - contrôleur inconnu %s
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Plusieurs token trouvés - ne peut pas déterminer le type de token !"
 
-msgid "Support not available, your product is unlicensed"
-msgstr "Aucun soutien par le support"
-
-msgid "License already installed!"
-msgstr "Licence déjà installée !"
-
-msgid "license file is empty!"
-msgstr "Le fichier de licence est vide !"
-
-msgid "signature could not be verified!"
-msgstr "La signature n'est pas valide !"
-
-msgid "no license expiration information in license "
-msgstr "Aucune information concernant la date d'expiration de la licence"
-
-msgid "no license subscription information in license"
-msgstr "Aucune information concernant l'abonnement dans la licence"
-
-msgid "invalid license (old license style)"
-msgstr "Licence non valable (format de licence ultérieur)"
-
-msgid "tokens used"
-msgstr "token utilisé"
-
-msgid "tokens supported"
-msgstr "token sous license"
-
-#, python-format
-msgid "unsupported date format date %r"
-msgstr "Format de date non pris en charge %r"
-
-msgid "expired - valid till"
-msgstr "expiré - valable jusqu'au"
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
-msgstr ""
-"getTokenOwner : l'utilisateur %s/%s et le token %s sont contenus dans "
-"plusieurs domaines : %s."
-
-#, python-format
-msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
-msgstr ""
-"getTokenOwner : l'utilisateur %s du résolveur %s concernant le token %s n'a "
-"pu être trouvé dans aucun domaine !"
-
-msgid "OTP seed"
-msgstr "OTP Seed"
-
-msgid "URL for OCRA token"
-msgstr "URL pour le token OCRA"
-
 msgid "E-mail OTP Token"
 msgstr "E-mail token OTP"
 
@@ -2284,9 +2228,6 @@ msgstr "UserIdResolvers"
 msgid "System Config"
 msgstr "Configuration système"
 
-msgid "Provider Config"
-msgstr "Configuration du fournisseur d'accès"
-
 #, fuzzy
 msgid "SMS Provider Config"
 msgstr "Configuration du fournisseur d'accès SMS"
@@ -2544,9 +2485,6 @@ msgstr ""
 msgid "Config"
 msgstr "Enregistrer la configuration"
 
-msgid "Timeout"
-msgstr "Timeout"
-
 #, fuzzy
 msgid "SMS Provider"
 msgstr "Fournisseur d'accès"
@@ -2679,9 +2617,6 @@ msgstr "Fenêtre temporelle de validité pour un défi"
 
 msgid "Tokentype Configuration"
 msgstr "Configuration du type de token"
-
-msgid "Support Contact"
-msgstr "Contact du support"
 
 msgid "Ok"
 msgstr "OK"
@@ -4043,24 +3978,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "no"
 #~ msgstr "Info"
-
-#~ msgid "E-mail OTP Token"
-#~ msgstr "E-mail token OTP"
-
-#~ msgid "Provider config"
-#~ msgstr "Configuration du fournisseur d'accès"
-
-#~ msgid "Challenge validity (sec)"
-#~ msgstr "Email validité du défi (sec.)"
-
-#~ msgid "Time between e-mails (sec)"
-#~ msgstr "Temps entre les e-mails (sec.)"
-
-#~ msgid "SMS OTP Token"
-#~ msgstr "SMS OTP Token"
-
-#~ msgid "Time between SMS (sec.)"
-#~ msgstr "Temps entre SMS (sec.)"
 
 #~ msgid "Token defaults"
 #~ msgstr "Valeurs par défaut du token"
