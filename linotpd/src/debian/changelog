@@ -1,10 +1,10 @@
-linotp (2.9~rc1-1) jessie; urgency=low
+linotp (2.9~rc2~0dev0-1) jessie; urgency=low
 
   Enhancements:
   * Server: Add support for multiple Providers
   * Server: Add support for long config values
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 Jul 2016 15:39:21 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 Jul 2016 16:02:36 +0200
 
 linotp (2.8.1.2-1) jessie; urgency=low
 
