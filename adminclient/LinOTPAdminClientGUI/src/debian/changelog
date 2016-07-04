@@ -1,8 +1,8 @@
-linotp-adminclient-gui (2.9~rc1~0dev0-1) jessie; urgency=low
+linotp-adminclient-gui (2.9~rc1-1) jessie; urgency=low
 
   * Set new version 2.8.2~0dev0-1~bpo70+1
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 22 Jun 2016 11:43:49 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 Jul 2016 15:39:16 +0200
 
 linotp-adminclient-gui (2.8.1.2-1) jessie; urgency=low
 

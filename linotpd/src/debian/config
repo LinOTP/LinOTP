@@ -119,7 +119,7 @@ function check_mysql_tables() {
 	#echo "DB: $DB_OK, TABLES: $TABLES_OK" >> /var/log/messages
 }
 
-NEW_VERSION=2.9~rc1~0dev0-1
+NEW_VERSION=2.9~rc1-1
 
 DOING_NEW_INSTALLATION=false
 DOING_RE_INSTALLATION=false
