@@ -1,6 +1,6 @@
 linotp-useridresolver (2.9~rc2~0dev0-1) jessie; urgency=low
 
-  * Set new version 2.8.2~0dev0-1~bpo70+1
+  * Add class registry and class aliases
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 Jul 2016 16:02:36 +0200
 

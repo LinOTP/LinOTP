@@ -1,8 +1,29 @@
 linotp (2.9~rc2~0dev0-1) jessie; urgency=low
 
   Enhancements:
-  * Server: Add support for multiple Providers
+  * Server: Add support for offline authentication
+  * Server: Add QRToken
+  * Server: Add forward token
+  * Server: Add reporting controller
+  * Server: Add support for multiple providers
   * Server: Add support for long config values
+  * Server: Add issuer label to OATH tokens
+  * Server: Allow one-time simplepass tokens
+  * Server: Allow multiple users with same username in one realm
+  * Server: Support migration of resolvers for assigned tokens
+  * Server: Add authorization policies for monitoring controller
+  * Server: Allow named otppin policies ('token_pin', 'password' and 'only_otp')
+  * WebUI: Slightly polished look and feel
+
+  Bug Fixes:
+  * WebUI: Hide 'Get OTP' button if getotp is deactivated in config
+  * WebUI: Several bug fixes in different dialogs and elements
+  * Server: Fix generating transactionids which failed in rare circumstances
+  * Server: Handle timestamp rounding instead of truncating in MySQL 5.6
+  * Server: Do not copy old PIN on lost simplepass token
+  * Packaging: Remove debconf entry 'linotp/generate_enckey'
+  * WebUI: Validate resolver configuration on resolver definition
+  * WebUI: In realms dialog, alert if no resolver selected
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 Jul 2016 16:02:36 +0200
 
