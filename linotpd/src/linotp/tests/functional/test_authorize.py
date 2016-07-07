@@ -652,4 +652,12 @@ class TestAuthorizeController(TestController):
                                               client=client)
         self.assertTrue('"value": false'in response, response)
 
+    def test_99_setrealm(self):
+
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_realms()
+
+
 # eof #########################################################################

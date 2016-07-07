@@ -77,6 +77,7 @@ class TestProviderController(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
+        self.delete_all_policies()
 
         super(TestProviderController, self).tearDown()
 

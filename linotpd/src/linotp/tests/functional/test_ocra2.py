@@ -390,12 +390,7 @@ class OcraTest(TestController):
              ]
 
     def setUp(self):
-        self.delete_all_policies()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
-
         TestController.setUp(self)
-
         self.set_config_selftest()
 
         self.create_common_resolvers()

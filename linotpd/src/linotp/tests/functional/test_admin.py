@@ -44,6 +44,7 @@ class TestAdminController(TestController):
         self.create_common_realms()
 
     def tearDown(self):
+        self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
