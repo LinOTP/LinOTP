@@ -42,7 +42,7 @@ from linotp.lib.config import getFromConfig
 
 from linotp.lib.useriterator import iterate_users
 
-from linotp.lib.user import getUserListIterators
+from linotp.lib.user import getUserListIterators, getUserList
 from linotp.lib.user import getUserFromParam
 
 from linotp.lib.context import request_context as context
@@ -262,12 +262,12 @@ class MonitorHandler(object):
             realmdict[config_identifier] = 0
 
         user = getUserFromParam({'realm': realm}, optionalOrRequired=True)
-        users_iters = iterate_users(getUserListIterators({'realm': realm}, user))
+        users = getUserList({'realm': realm, 'username': '*'}, user)
 
-        for next_one in users_iters:
-            for key in realmdict:
-                if key in next_one:
-                    realmdict[key] += 1
+        for next_one in users:
+            resolver = next_one['useridresolver'].split('.')[-1]
+            if resolver in realmdict:
+                realmdict[resolver] += 1
 
         return realmdict
 

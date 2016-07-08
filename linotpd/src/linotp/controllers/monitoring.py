@@ -362,6 +362,9 @@ class MonitoringController(BaseController):
 
             realms = match_realms(request_realms, realm_whitelist)
 
+            if '/:no realm:/' in realms:
+                realms.remove('/:no realm:/')
+
             realm_info = {}
             for a_realm in realms:
                 realm_info[a_realm] = monit_handler.resolverinfo(a_realm)
