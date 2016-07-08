@@ -364,8 +364,9 @@ class TestReportingController(TestController):
         resp = json.loads(response.body)
         values = resp.get('result')
         self.assertEqual(values.get('status'), True, response)
-        self.assertEqual(values.get('value').get('mydefrealm'), 4, response)
-        self.assertEqual(values.get('value').get('mymixrealm'), 1, response)
+        value = values.get('value')
+        self.assertEqual(value.get('mydefrealm').get('total'), 4, response)
+        self.assertEqual(value.get('mymixrealm').get('total'), 1, response)
 
     def test_reporting_access_policy(self):
         policy_params = {'name': 'test_report_policy',

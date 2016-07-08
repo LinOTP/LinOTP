@@ -160,8 +160,9 @@ class ReportingController(BaseController):
             realms = match_realms(request_realms, realm_whitelist)
 
             for realm in realms:
+                result[realm] = {}
                 for stat in status:
-                    result[realm] = get_max(realm, stat)
+                    result[realm][stat] = get_max(realm, stat)
 
             return sendResult(response, result)
 
