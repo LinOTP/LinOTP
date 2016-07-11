@@ -40,13 +40,13 @@ class TestForwardToken(TestController):
     serials = []
 
     def setUp(self):
-        self.delete_all_token()
-        self.delete_all_policies()
+        TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
-        TestController.setUp(self)
 
     def tearDown(self):
+        self.delete_all_token()
+        self.delete_all_policies()
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)

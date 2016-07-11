@@ -89,6 +89,7 @@ class TestController(unittest2.TestCase):
 
     DEFAULT_WEB_METHOD = 'POST'
     env = {}
+    run_state = 0
 
     def __init__(self, *args, **kwargs):
         '''
@@ -117,6 +118,7 @@ class TestController(unittest2.TestCase):
         cls.env['pylons'] = LooseVersion(
             pkg_resources.get_distribution('pylons').version
         )
+        TestController.run_state = 0
         return
 
     @classmethod
@@ -191,6 +193,14 @@ class TestController(unittest2.TestCase):
         # self.delete_all_resolvers()
         # self.create_common_resolvers()
         # self.create_common_realms()
+
+        if TestController.run_state == 0:
+            self.delete_all_policies()
+            self.delete_all_realms()
+            self.delete_all_resolvers()
+            self.delete_all_token()
+
+        TestController.run_state += 1
 
         return
 

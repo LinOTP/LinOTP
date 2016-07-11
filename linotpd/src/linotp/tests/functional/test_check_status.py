@@ -55,6 +55,9 @@ class TestCheckStatus(TestController):
 
     def tearDown(self):
         TestController.tearDown(self)
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+
 
     def create_hmac_token(self, user='root', pin='pin', serial='F722362',
                           otpkey="AD8EABE235FC57C815B26CEF3709075580B44738"):

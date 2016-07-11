@@ -55,7 +55,11 @@ class TestAdminAuthController(TestController):
 
     def tearDown(self):
         TestController.tearDown(self)
-        pass
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+
 
     def create_extra_resolver(self):
         resolver_params = {
