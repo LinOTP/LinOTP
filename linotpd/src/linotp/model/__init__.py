@@ -25,6 +25,21 @@
 #
 """
  This file contains the database definition / database model for linotp objects
+
+wrt. the column name limitations see:
+    http://www.gplivna.eu/papers/naming_conventions.htm
+
+Common rules
+1. Only letters, numbers, and the underscore are allowed in names. Although
+    Oracle allows $ and #, they are not necessary and may cause unexpected
+    problems.
+2. All names are in UPPERCASE. Or at least of no importance which case.
+    Ignoring this rule usually leads referencing to tables and columns very
+    clumsy because all names must be included in double quotes.
+3. The first character in the name must be letter.
+4. Keep the names meaningful, but in the same time don't use
+    long_names_describing_every_single_detail_of_particular_object.
+
 """
 
 
@@ -1120,23 +1135,20 @@ Reporting Table:
 """
 
 reporting_table =\
-    sa.Table('Reporting', meta.metadata,
-             sa.Column('id', sa.types.Integer(),
-                       sa.Sequence('token_seq_id', optional=True),
+    sa.Table('REPORTING', meta.metadata,
+             sa.Column('R_ID', sa.types.Integer(),
+                       sa.Sequence('reporting_seq_id', optional=True),
                        primary_key=True, nullable=False),
-             sa.Column(
-                 timestamp_column, sa.types.DateTime, default=datetime.now()),
-             sa.Column('event', sa.types.Unicode(250), default=u''),
-             sa.Column('realm', sa.types.Unicode(250), default=u''),
-             sa.Column('parameter', sa.types.Unicode(250), default=u''),
-             sa.Column('value', sa.types.Unicode(250),  default=u''),
-             sa.Column('count', sa.types.Integer(), default=0),
-             sa.Column('detail', sa.types.Unicode(2000), default=u''),
-             sa.Column('session', sa.types.Unicode(250), default=u''),
-             sa.Column('description', sa.types.Unicode(2000), default=u''),
+             sa.Column('R_TIMESTAMP', sa.types.DateTime, default=datetime.now()),
+             sa.Column('R_EVENT', sa.types.Unicode(250), default=u''),
+             sa.Column('R_REALM', sa.types.Unicode(250), default=u''),
+             sa.Column('R_PARAMETER', sa.types.Unicode(250), default=u''),
+             sa.Column('R_VALUE', sa.types.Unicode(250), default=u''),
+             sa.Column('R_COUNT', sa.types.Integer(), default=0),
+             sa.Column('R_DETAIL', sa.types.Unicode(2000), default=u''),
+             sa.Column('R_SESSION', sa.types.Unicode(250), default=u''),
+             sa.Column('R_DESCRIPTION', sa.types.Unicode(2000), default=u''),
              implicit_returning=implicit_returning,)
-
-REPORTING_ENCODE = []
 
 
 class Reporting(object):
@@ -1158,41 +1170,6 @@ class Reporting(object):
 
         log.debug('__init__ reporting table done')
 
-    def __setattr__(self, name, value):
-        """
-        to support unicode on all backends, we use the json encoder with
-        the ASCII encode default
-
-        :param name: db column name or class member
-        :param value: the corresponding value
-
-        :return: - nothing -
-        """
-        if name in REPORTING_ENCODE:
-            # # encode data
-            if value:
-                value = linotp.lib.crypt.uencode(value)
-        super(Reporting, self).__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """
-        to support unicode on all backends, we use the json decoder with
-        the ASCII decode default
-
-        :param name: db column name or class member
-
-        :return: the corresponding value
-        """
-        # Default behaviour
-        value = object.__getattribute__(self, name)
-        if name in REPORTING_ENCODE:
-            if value:
-                value = linotp.lib.crypt.udecode(value)
-            else:
-                value = ""
-
-        return value
-
     def get_vars(self, save=False):
         log.debug('get_vars()')
 
@@ -1210,6 +1187,22 @@ class Reporting(object):
 
         return ret
 
+reporting_mapping = {}
+reporting_mapping['id'] = reporting_table.c.R_ID
+reporting_mapping['session'] = reporting_table.c.R_SESSION
+reporting_mapping['timestamp'] = reporting_table.c.R_TIMESTAMP
+reporting_mapping['event'] = reporting_table.c.R_EVENT
+reporting_mapping['realm'] = reporting_table.c.R_REALM
+reporting_mapping['parameter'] = reporting_table.c.R_PARAMETER
+reporting_mapping['value'] = reporting_table.c.R_VALUE
+reporting_mapping['count'] = reporting_table.c.R_COUNT
+reporting_mapping['detail'] = reporting_table.c.R_DETAIL
+reporting_mapping['description'] = reporting_table.c.R_DESCRIPTION
+
+orm.mapper(Reporting,
+           reporting_table,
+           properties=reporting_mapping,
+           )
 
 #############################################################################
 
@@ -1233,10 +1226,10 @@ orm.mapper(Token, token_table, properties={
 orm.mapper(Realm, realm_table)
 orm.mapper(TokenRealm, tokenrealm_table)
 orm.mapper(Config, config_table)
-orm.mapper(Reporting, reporting_table)
 
-# # for oracle and the SQLAlchemy 0.7 we need a mapping of columns
-# # due to reserved keywords session and timestamp
+
+# for oracle and the SQLAlchemy 0.7 we need a mapping of columns
+# due to reserved keywords session and timestamp
 mapping = {}
 mapping['session'] = "%ssession" % COL_PREFIX
 mapping['timestamp'] = "%stimestamp" % COL_PREFIX
