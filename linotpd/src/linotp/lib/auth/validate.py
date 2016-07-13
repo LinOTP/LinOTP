@@ -26,25 +26,38 @@
 """ validation processing logic"""
 
 from hashlib import sha256
+
+from pylons import config
+from pylons.configuration import config as env
+
 import linotp
+
 from linotp.lib.auth.finishtokens import FinishTokens
 from linotp.lib.auth.request import HttpRequest
 from linotp.lib.auth.request import RadiusRequest
+
 from linotp.lib.challenges import Challenges
+
 from linotp.lib.context import request_context as context
+
 from linotp.lib.error import ParameterError
-from linotp.lib.policy import supports_offline
-import linotp.lib.policy
+
 from linotp.lib.realm import getDefaultRealm
+
 from linotp.lib.resolver import getResolverObject
+
 from linotp.lib.token import TokenHandler
 from linotp.lib.token import get_token_owner
 from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.user import (User, getUserId, getUserInfo)
-from linotp.lib.util import modhex_decode
-import logging
 
-from pylons import config
+from linotp.lib.user import User, getUserId, getUserInfo
+from linotp.lib.util import modhex_decode
+
+from linotp.lib.policy import supports_offline
+from linotp.lib.policy import get_auth_forward
+from linotp.lib.policy.forward import ForwardServerPolicy
+
+import logging
 
 
 log = logging.getLogger(__name__)
@@ -432,17 +445,11 @@ class ValidationHandler(object):
 
         # if we have an user, check if we forward the request to another server
         if user_exists:
-            from linotp.lib.policy import get_auth_forward
             servers = get_auth_forward(user)
             if servers:
-                if 'radius://' in servers:
-                    rad = RadiusRequest(servers=servers)
-                    res, opt = rad.do_request(user, passw, options)
-                    return res, opt
-                elif 'http://' in servers or 'https://' in servers:
-                    http = HttpRequest(servers=servers)
-                    res, opt = http.do_request(user, passw, options)
-                    return res, opt
+                res, opt = ForwardServerPolicy.do_request(servers, env,
+                                                          user, passw, options)
+                return res, opt
 
         tokenList = linotp.lib.token.getTokens4UserOrSerial(user, serial)
 

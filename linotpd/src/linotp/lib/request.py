@@ -109,7 +109,7 @@ class RemoteRequest(object):
                 value = ''
             # only add if key is not an empty strings
             if key.strip():
-                q[key.strip()] = value.strip()
+                q[urllib.unquote(key.strip())] = urllib.unquote(value.strip())
 
         url_info['query_params'] = q
         return url_info
