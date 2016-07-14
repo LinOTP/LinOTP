@@ -1,4 +1,4 @@
-linotp (2.9~rc2~0dev0-1) jessie; urgency=low
+linotp (2.9~rc2-1) jessie; urgency=low
 
   Enhancements:
   * Server: Add support for offline authentication
@@ -25,7 +25,7 @@ linotp (2.9~rc2~0dev0-1) jessie; urgency=low
   * WebUI: Validate resolver configuration on resolver definition
   * WebUI: In realms dialog, alert if no resolver selected
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 04 Jul 2016 16:02:36 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Jul 2016 13:50:37 +0200
 
 linotp (2.8.1.2-1) jessie; urgency=low
 
