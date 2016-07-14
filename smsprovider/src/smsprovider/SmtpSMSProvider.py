@@ -30,6 +30,7 @@ import SMSProvider
 from SMSProvider import getSMSProviderClass
 from SMSProvider import ISMSProvider
 from linotp.provider import provider_registry
+from hashlib import sha256
 
 import string
 import smtplib
@@ -153,14 +154,8 @@ class SmtpSMSProvider(ISMSProvider):
         start_tls = str(self.config.get("start_tls", False)).lower() == 'true'
         if start_tls:
             default_port = 587
-
-            keyfile = self.config.get("keyfile")
-            if keyfile:
-                start_tls_params['keyfile'] = keyfile
-
-            certfile = self.config.get("certfile")
-            if certfile:
-                start_tls_params['certfile'] = certfile
+            start_tls_params_keyfile = self.config.get("keyfile", None)
+            start_tls_params_certfile = self.config.get("certfile", None)
 
         use_ssl = str(self.config.get("use_ssl", False)).lower() == 'true'
         if use_ssl:
@@ -187,9 +182,13 @@ class SmtpSMSProvider(ISMSProvider):
 
         toaddr = string.replace(toaddr, PHONE_TAG, phone)
 
+        if not subject:
+            subject = "[LinOTP]"
         subject = string.replace(subject, PHONE_TAG, phone)
         subject = string.replace(subject, MSG_TAG, message)
 
+        if not body:
+            body = "<otp>"
         body = string.replace(body, PHONE_TAG, phone)
         body = string.replace(body, MSG_TAG, message)
 
@@ -207,12 +206,21 @@ class SmtpSMSProvider(ISMSProvider):
 
             serv.ehlo()
             if start_tls and not use_ssl:
-                serv.starttls(*start_tls_params)
-
+                if serv.has_extn('STARTTLS'):
+                    serv.starttls(start_tls_params_keyfile,
+                                  start_tls_params_certfile)
+                    serv.ehlo()
+                else:
+                    log.error("Start_TLS not supported:")
+                    raise Exception("Start_TLS requested but not supported"
+                                    " by server %r" % server)
             if user:
-                log.debug("authenticating to mailserver, user: %s, pass: %s",
-                          user, password)
-                serv.login(user, password)
+                if serv.has_extn('AUTH'):
+                    log.debug("authenticating to mailserver, user: %s, "
+                              "pass: %r", user, sha256(password).hexdigest())
+                    serv.login(user, password)
+                else:
+                    log.error("AUTH not supported:")
 
             data_dict = serv.sendmail(fromaddr, toaddr, msg)
             log.debug("sendmail: %r", data_dict)
