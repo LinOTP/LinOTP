@@ -752,23 +752,38 @@ function init_$tokentypes(){
 
 
 
-function get_server_config() {
+function get_server_config(search_key) {
 /*
  * retrieve the linotp server config
  *
  * return the config as dict
  * or raise an exception
+ *
  */
 
+    if ((search_key === undefined) === false) {
+        var params = {'key': search_key};
+    } else {
+        var params = {};
+    }
+
     var $systemConfig = {};
-    var resp = clientUrlFetchSync('/system/getConfig', {});
+    var resp = clientUrlFetchSync('/system/getConfig', params);
     try {
         var data = jQuery.parseJSON(resp);
         if (data.result.status == false) {
             //console_log("Failed to access linotp system config: " + data.result.error.message);
             throw("" + data.result.error.message);
         }else {
-            $systemConfig = data.result.value;
+            if ((search_key === undefined) === false) {
+                var config_dict = data.result.value;
+                for (var key in config_dict) {
+                    key_replace = key.replace('getConfig ','');
+                    $systemConfig[key_replace] = config_dict[key];
+                }
+            } else {
+                $systemConfig = data.result.value;
+            }
             //console_log("Access linotp system config: " + data.result.value);
         }
     }
@@ -1957,12 +1972,23 @@ function getSerialByOtp(otp, type, assigned, realm) {
 
 }
 
-
 function ldap_resolver_ldaps() {
     /*
      * This function checks if the LDAP URI is using SSL.
      * If so, it displays the CA certificate entry field.
      */
+    var sys_cert = false;
+    var use_sys_cert_key = 'certificates.use_system_certificates';
+    var server_config = get_server_config(use_sys_cert_key)
+    if (use_sys_cert_key in server_config) {
+        sys_cert = (server_config[use_sys_cert_key] == 'True');
+    }
+
+    if (sys_cert){
+        $('#ldap_resolver_certificate').hide();
+        return false;
+    }
+
     var ldap_uri = $('#ldap_uri').val();
     if (ldap_uri.toLowerCase().match(/^ldaps:/)) {
         $('#ldap_resolver_certificate').show();
@@ -2479,7 +2505,12 @@ function load_system_config(){
             $('#sys_forwarded').prop('checked', true);
         }
         $('#sys_forwarded_proxy').val(data.result.value['client.FORWARDED_PROXY']);
-        /*todo call the 'tok_fill_config.js */
+
+        /* should we use the system certificate handling*/
+        $('#sys_cert').prop('checked', false);
+        if (data.result.value['certificates.use_system_certificates'] == "True") {
+            $('#sys_cert').prop('checked', true);
+        }
     });
 }
 
@@ -2544,6 +2575,10 @@ function save_system_config(){
     if ($("#sys_x_forwarded_for").is(':checked')) {
         client_x_forward = "True";
     }
+    var use_sys_cert = "False";
+    if ($('#sys_cert').is(':checked')) {
+        use_sys_cert = "True";
+    }
     var params = { 'session':getsession(),
             'PrependPin' :prepend,
             'FailCounterIncOnFalsePin' : fcounter ,
@@ -2556,6 +2591,7 @@ function save_system_config(){
             'client.FORWARDED' : client_forward,
             'client.X_FORWARDED_FOR' : client_x_forward,
             'allowSamlAttributes' : allowsaml,
+            'certificates.use_system_certificates': use_sys_cert,
              };
     $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){

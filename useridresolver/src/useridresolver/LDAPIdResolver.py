@@ -32,26 +32,24 @@
   Dependencies: UserIdResolver
 """
 
+import binascii
+from datetime import datetime
+from hashlib import sha1
+from json import loads
+import logging
+import os
+import sys
+import tempfile
+
+import ldap
 from ldap.controls import SimplePagedResultsControl
+import ldap.filter
+from useridresolver.UserIdResolver import ResolverLoadConfigError
+from useridresolver.UserIdResolver import UserIdResolver
+from useridresolver.UserIdResolver import getResolverClass
 
 from . import resolver_registry
 
-from useridresolver.UserIdResolver import UserIdResolver
-from useridresolver.UserIdResolver import ResolverLoadConfigError
-from useridresolver.UserIdResolver import getResolverClass
-
-import ldap
-import ldap.filter
-
-import sys
-import binascii
-from hashlib import sha1
-import tempfile
-
-from datetime import datetime
-from json import loads
-
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -80,49 +78,26 @@ def escape_filter_chars(filterstr):
     return ''.join(ret)
 
 
-def _set_cacertificate(cacertificates, ca_dir=None):
-    '''
-    This function sets the CA certfificate.
-    It creates a temporary file if it does not exist.
+def _add_cacertificates_to_file(ca_file, cacertificates):
+    """
+    dump all certificates to a file
 
-    :param cacertificate: CA certificates that should be used for
-                          LDAP connections
-    :type cacertificate: list
-    :return: the cert file name or None
-    '''
-    ca_file = None
-    if len(cacertificates) == 0:
-        log.debug("[_set_cacertificate] No CA certificate.")
-        return ca_file
-
-    # Either set the ca file to be located in the linotp cache_dir or if it
-    # does not exist, in a temporaty directory.
-    if ca_dir is None:
-        ca_dir = tempfile.gettempdir()
-    ca_file = "%s/linotp_ldap_cacerts.pem" % ca_dir
-
-    # As the CA certificate can be written on every first request
-    # after the server start, we do not need to verify the old certificate.
-    try:
-        fil = open(ca_file, "w")
+    :param ca_file: the filename of the certfile
+    :param cacertificates: set of the certificates
+    :return: the filename of the certificates
+    """
+    with open(ca_file, "w") as fil:
         for cacert in cacertificates:
             cert = cacert.strip()
             if ("-----BEGIN CERTIFICATE-----" in cert and
                "-----END CERTIFICATE-----" in cert):
                 fil.write(cert)
                 fil.write("\n")
-        fil.close()
-    except Exception as exc:
-        log.exception("[_set_cacertificate] Error creating CA certificate"
-                      " file: %r. %r", ca_file, exc)
-        raise exc
-
-    log.debug("[_set_cacertificate] setting file %s" % ca_file)
-    reload(ldap)
-    ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, ca_file)
-    ca_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
 
     return ca_file
+
+
+
 
 
 @resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
@@ -137,6 +112,9 @@ class IdResolver (UserIdResolver):
     nameDict = {}
     conf = ""
 
+    # The mapping of these search fields to the ldap attributes is
+    # stored in self.userinfo
+
     fields = {
           "username": 1,
           "userid": 1,
@@ -149,6 +127,7 @@ class IdResolver (UserIdResolver):
           "gender": 0
               }
 
+
     searchFields = {
           "username": "text",
           "userid": "text",
@@ -158,13 +137,13 @@ class IdResolver (UserIdResolver):
           "surname": "text"
           }
 
-    # The mapping of these search fields to the ldap attributes it
-    # stored in self.userinfo
 
     CERTFILE = None
+    CERTFILE_last_modified = None
+    SYS_CERTFILE = None
+    SYS_CERTDIR = None
 
-    ca_certs = set()
-    ca_dir = None
+    ca_certs_dict = {}
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
@@ -176,39 +155,87 @@ class IdResolver (UserIdResolver):
         verified and set - if the CA certificate is specified.
 
         :param config: the linotp config
-        :type  config: the linotp config dict
+        :return: -nothing-
         '''
 
         log.info("[setup] Setting up the LDAPResolver")
         log.info("[setup] Finding CA certificate")
 
-        ca_resolvers = []
+        # preserve system certfile
+        cls.SYS_CERTFILE = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
+        cls.SYS_CERTDIR = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
 
-        cls.ca_dir = cache_dir
+        ca_resolvers = set()
 
-        log.info("Setting up the LDAPResolver")
+        if not cache_dir:
+            # Either set the ca file to be located in the linotp cache_dir
+            # or if it does not exist, in a temporaty directory.
+            cache_dir = tempfile.gettempdir()
+
+        cls.cert_dir = cache_dir
+        cls.CERTFILE = os.path.join(cls.cert_dir,"linotp_ldap_cacerts.pem")
+
+        log.info("Setting up the LDAPResolver Class")
         if config is not None:
             for entry in config:
                 if entry.startswith('linotp.ldapresolver.CACERTIFICATE'):
                     cacertificate = config.get(entry)
-                    if (cacertificate is not None and
-                        len(cacertificate) > 0 and
+                    if (cacertificate and
                         "-----BEGIN CERTIFICATE-----" in cacertificate and
                        "-----END CERTIFICATE-----" in cacertificate):
                         cert = cacertificate.strip().replace('\r\n', '\n')
-                        cls.ca_certs.add(cert)
-                        ca_resolvers.append(entry.split('.')[3])
+                        if cert:
+                            key = sha1(cert).hexdigest()
+                            cls.ca_certs_dict[key] = cert
+                            ca_resolvers.add(entry.split('.')[3])
 
-        if len(cls.ca_certs) > 0:
-            if cls.ca_dir is None:
-                cls.ca_dir = tempfile.gettempdir()
-            cls.CERTFILE = _set_cacertificate(cls.ca_certs, ca_dir=cls.ca_dir)
-            log.info("[setup] Using CA certificate from the following"
-                                                " resolvers %r" % ca_resolvers)
-        else:
-            cls.CERTFILE = None
+        # if there is any cert in the class dict, we build a certificate file
+        if cls.ca_certs_dict:
+            ca_certs = cls.ca_certs_dict.values()
+            _add_cacertificates_to_file(cls.CERTFILE, ca_certs)
+            try:
+                mtime = os.path.getmtime(cls.CERTFILE)
+            except OSError:
+                mtime = 0
+            cls.CERTFILE_last_modified = datetime.fromtimestamp(mtime)
+            log.info("Using CA certificate from the following resolvers: %r",
+                     ca_resolvers)
 
         return
+
+    @classmethod
+    def connect(cls, uri, caller, trace_level=0):
+        """
+        helper - to build up the initial ldap / ldaps connection
+
+        :param uri: the ldap url
+        :return: the ldap connection object
+        """
+
+        log.debug("Try to connect to %r", uri)
+        l_obj = ldap.initialize(uri, trace_level=trace_level)
+
+        if uri.startswith('ldap:'):
+            try:
+                log.debug("for %r connection try to start_tls", uri)
+                l_obj.start_tls_s()
+            except ldap.LDAPError as exx:
+                log.info("failed to start_tls for %r: %r", uri, exx)
+                l_obj = ldap.initialize(uri, trace_level=trace_level)
+
+        if not caller.use_sys_cert and caller.CERTFILE:
+            log.debug("using local cert file %r", caller.CERTFILE)
+            l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
+
+        if caller.noreferrals:
+            log.debug("using noreferrals: %r", caller.noreferrals)
+            l_obj.set_option(ldap.OPT_REFERRALS, 0)
+
+        # setup both timeouts, for network and response
+        l_obj.network_timeout = caller.network_timeout
+        l_obj.timeout = caller.response_timeout
+
+        return l_obj
 
     @classmethod
     def testconnection(cls, params):
@@ -235,50 +262,64 @@ class IdResolver (UserIdResolver):
         """
 
         old_cert_file = None
-        l = None
+
+        l_obj = None
         status = "success"
+        use_sys_cert = params.get('certificates.use_system_certificates',
+                                  "False") == "True"
+
+        class Caller(object):
+            pass
+
+        caller = Caller()
+        caller.CERTFILE = None
+        caller.noreferrals = True
+        caller.use_sys_cert = use_sys_cert
 
         try:
             # do a bind
             uri = params['LDAPURI']
-            l = ldap.initialize(uri, trace_level=0)
 
-            if uri.startswith('ldaps'):
-                # for test purpose, we create a temporary file
-                # with only this cert
+            if use_sys_cert:
+                sys_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
+                sys_cert_dir = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
+                log.info("using system certificate file:  %r or system "
+                         "certificate dir %r", sys_cert_file, sys_cert_dir)
+
+            # if there is a cert given we create a temporary test cert file
+            cert = params.get('CACERTIFICATE','').strip().replace('\r\n', '\n')
+            if cert:
+                # preserve the old cert
                 old_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
 
+                # use a temporary cert file
+                tmp_certfile = os.path.join(cls.cert_dir,
+                                            "linotp_test_cacerts.pem")
+
                 # put all certs in a set
-                test_set = set()
-                test_set.update(cls.ca_certs)
+                test_certs = set(cls.ca_certs_dict.values())
                 # including the test one
-                cert = params.get('CACERTIFICATE')
-                test_set.add(cert.strip().replace('\r\n', '\n'))
+                test_certs.add(cert)
 
-                cls.CERTFILE = _set_cacertificate(test_set, ca_dir=cls.ca_dir)
+                _add_cacertificates_to_file(tmp_certfile, test_certs)
+                caller.CERTFILE = tmp_certfile
 
-            # referrals for AD
-            log.debug("[testconnection] checking noreferrals: %s",
-                      params.get('NOREFERRALS', "False"))
-
-            if "True" == params.get('NOREFERRALS', "False"):
-                l.set_option(ldap.OPT_REFERRALS, 0)
+            caller.noreferrals = "True" == params.get('NOREFERRALS', "False")
 
             timeout = params['TIMEOUT']
             if ";" in timeout:
                 network_timeout, response_timeout = timeout.split(';')
-                network_timeout = float(network_timeout.strip())
-                response_timeout = float(response_timeout.strip())
+                caller.network_timeout = float(network_timeout.strip())
+                caller.response_timeout = float(response_timeout.strip())
             else:
-                network_timeout = float(timeout.strip())
-                response_timeout = TIMEOUT_NO_LIMIT
+                caller.network_timeout = float(timeout.strip())
+                caller.response_timeout = TIMEOUT_NO_LIMIT
 
-            l.network_timeout = network_timeout
-            l.timeout = response_timeout
+            l_obj = IdResolver.connect(uri, caller, trace_level=0)
 
             dn_encode = params['BINDDN'].encode(ENCODING)
             pw_encode = params['BINDPW'].encode(ENCODING)
-            l.simple_bind_s(dn_encode, pw_encode)
+            l_obj.simple_bind_s(dn_encode, pw_encode)
 
             # get a userlist:
             resultList = []
@@ -290,13 +331,13 @@ class IdResolver (UserIdResolver):
             except ValueError:
                 sizelimit = int(DEFAULT_SIZELIMIT)
 
-            ldap_result_id = l.search_ext(params['LDAPBASE'],
-                                          ldap.SCOPE_SUBTREE,
-                                          filterstr=searchFilter,
-                                          sizelimit=sizelimit)
+            ldap_result_id = l_obj.search_ext(params['LDAPBASE'],
+                                              ldap.SCOPE_SUBTREE,
+                                              filterstr=searchFilter,
+                                              sizelimit=sizelimit)
             while 1:
                 userdata = {}
-                result_type, result_data = l.result(ldap_result_id, 0)
+                result_type, result_data = l_obj.result(ldap_result_id, 0)
                 if (result_data == []):
                     break
                 else:
@@ -315,16 +356,20 @@ class IdResolver (UserIdResolver):
             log.exception("[testconnection] LDAP Error: %r", err)
             return (status, str(err))
 
-        finally:
-            # unbind
-            if l:
-                l.unbind_s()
-            # restore the old_cert_file
-            if old_cert_file is not None:
-                cls.CERTFILE = _set_cacertificate(cls.ca_certs,
-                                                  ca_dir=cls.ca_dir)
+        except Exception as exx:
+            pass
 
-        return (status, resultList)
+        finally:
+            # restore the old_cert_file if no system certificate handling
+            if not use_sys_cert and old_cert_file:
+                l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, old_cert_file)
+
+            # unbind
+            if l_obj:
+                l_obj.unbind_s()
+
+
+        return status, resultList
 
     def __init__(self):
         """
@@ -358,12 +403,24 @@ class IdResolver (UserIdResolver):
 
         try:
             if self.l_obj is not None:
+
+                # on close restore the system settings
+                if self.SYS_CERTFILE:
+                    self.l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE,
+                                          self.SYS_CERTFILE)
+
+                if self.SYS_CERTDIR:
+                    self.l_obj.set_option(ldap.OPT_X_TLS_CACERTDIR,
+                                          self.SYS_CERTDIR)
+
                 self.l_obj.unbind_s()
+
         except ldap.LDAPError as  error:
             log.warning("[unbind] LDAP error: %r", error)
 
         finally:
             self.l_obj = None
+
 
     def bind(self):
         """
@@ -392,32 +449,14 @@ class IdResolver (UserIdResolver):
         uri = ""
         urilist = self.ldapuri.split(',')
         i = 0
+
         log.debug("[bind] trying to bind to one of the servers: %r" % urilist)
         l_obj = None
         while i < len(urilist):
             uri = urilist[i]
             try:
-                log.debug("[bind] LDAP: Try to bind to %r", uri)
-                l_obj = ldap.initialize(uri, trace_level=0)
+                l_obj = IdResolver.connect(uri, caller=self)
 
-                if uri.startswith('ldaps'):
-                    # the setting of the CERTFILE is required only once
-                    old_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
-                    if self.CERTFILE is not None and old_cert_file is None:
-                        ldap.set_option(ldap.OPT_X_TLS_CACERTFILE,
-                                        self.CERTFILE)
-
-                # referrals for AD
-                log.debug("[bind] checking noreferrals: %r" % self.noreferrals)
-                if self.noreferrals:
-                    l_obj.set_option(ldap.OPT_REFERRALS, 0)
-
-                # setup both timeouts, for network and response
-                l_obj.network_timeout = self.network_timeout
-                l_obj.timeout = self.response_timeout
-
-                # This is HIGH debug
-                # log.debug("[bind] %s, %s" %(self.binddn, self.bindpw))
                 dn_encode = self.binddn.encode(ENCODING)
                 pw_encode = self.bindpw.encode(ENCODING)
                 l_obj.simple_bind_s(dn_encode, pw_encode)
@@ -428,14 +467,18 @@ class IdResolver (UserIdResolver):
 
                 self.l_obj = l_obj
                 return l_obj
+
             except ldap.LDAPError as  e:
                 log.exception("[bind] LDAP error: %r" % e)
                 i = i + 1
+
         # We were not able to do a successful bind! :-(
         self.bind_not_possible = True
         self.bind_not_possible_time = datetime.now()
         self.l_obj = l_obj
+
         return l_obj
+
 
     def unbind(self, lobj):
         """
@@ -443,9 +486,8 @@ class IdResolver (UserIdResolver):
         which is now done in the class destructor __del__()
 
         :param l: ldap object
-        :return: empty string
+        :return: -nothing-
         """
-
         return
 
     def getUserId(self, loginname):
@@ -498,13 +540,14 @@ class IdResolver (UserIdResolver):
         try:
             # log.error("%r : %r" % (self.uidType, attrlist))
             l_id = l_obj.search_ext(self.base,
-                              ldap.SCOPE_SUBTREE,
-                              filterstr=fil,
-                              sizelimit=self.sizelimit,
+                                    ldap.SCOPE_SUBTREE,
+                                    filterstr=fil,
+                                    sizelimit=self.sizelimit,
                                     attrlist=attrlist,
                                     timeout=self.response_timeout)
 
             resultList = l_obj.result(l_id, all=1)[1]
+
         except ldap.LDAPError as exc:
             log.exception("[getUserId] LDAP error: %r", exc)
             resultList = None
@@ -886,7 +929,9 @@ class IdResolver (UserIdResolver):
 
         log.debug("[loadConfig] Config:  %r" % config)
         log.debug("[loadConfig] Conf  :  %r" % conf)
+
         self.conf = conf
+
         self.filter = self.getConfigEntry(config,
                                           "linotp.ldapresolver.LDAPFILTER",
                                           conf)
@@ -974,10 +1019,35 @@ class IdResolver (UserIdResolver):
                                               "linotp.ldapresolver.BINDPW",
                                               conf, required=False)
 
+        use_sys_cert = self.getConfigEntry(config,
+                                "linotp.certificates.use_system_certificates",
+                                conf)
+        self.use_sys_cert = use_sys_cert == 'True'
+
         self.cacertificate = self.getConfigEntry(config,
                                                  "linotp.ldapresolver."
                                                  "CACERTIFICATE", conf,
                                                  required=False, default=None)
+
+        # if we have a certificate, check if it is already registrated
+        # and if not regenerate the cert file
+        if not self.use_sys_cert and self.cacertificate:
+            cert_hash = sha1(self.cacertificate).hexdigest()
+
+            # get last modified of local cert file
+            try:
+                mtime = os.path.getmtime(self.CERTFILE)
+            except OSError:
+                mtime = 0
+            last_modified_date = datetime.fromtimestamp(mtime)
+
+            if (cert_hash not in IdResolver.ca_certs_dict or
+                last_modified_date > IdResolver.CERTFILE_last_modified):
+
+                IdResolver.ca_certs_dict[cert_hash] = self.cacertificate
+                _add_cacertificates_to_file(self.CERTFILE,
+                                            IdResolver.ca_certs_dict.values())
+                IdResolver.CERTFILE_last_modified = last_modified_date
 
         return self
 
@@ -1096,25 +1166,13 @@ class IdResolver (UserIdResolver):
 
         while i < len(urilist):
             uri = urilist[i]
-            l = None
+            l_obj = None
             try:
                 log.info("[checkPass] check password for user %r "
                          "on LDAP server %r" % (DN, uri))
-                l = ldap.initialize(uri, trace_level=0)
-                # referrals for AD
-                log.debug("[checkPass] checking noreferrals: %s",
-                          self.noreferrals)
+                l_obj = IdResolver.connect(uri, caller=self)
 
-                if self.noreferrals:
-                    l.set_option(ldap.OPT_REFERRALS, 0)
-
-                # set the network connection timeout
-                l.network_timeout = self.network_timeout
-
-                # set the response timeout
-                l.timeout = self.response_timeout
-
-                l.simple_bind_s(DN, password)
+                l_obj.simple_bind_s(DN, password)
                 log.info("[checkPass] ldap bind for %r successful", DN)
                 return True
 
@@ -1126,8 +1184,8 @@ class IdResolver (UserIdResolver):
                 log.warning("[checkPass] checking password failed: %r", exc)
 
             finally:
-                if l is not None:
-                    l.unbind_s()
+                if l_obj is not None:
+                    l_obj.unbind_s()
 
             i = i + 1
         return False

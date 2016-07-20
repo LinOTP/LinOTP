@@ -2355,6 +2355,13 @@ class AdminController(BaseController):
                 param['NOREFERRALS'] = getParam(param, "noreferrals", optional)
                 param['CACERTIFICATE'] = getParam(param, "ldap_certificate", optional)
 
+                # check if we should use the system certificate handling,
+                # thus ignoring the cert_dir or cert_file setting
+
+                use_sys_cert = 'certificates.use_system_certificates'
+                linotp_config = request_context['Config']
+                param[use_sys_cert] = linotp_config.get(use_sys_cert, False)
+
                 (status, desc) = useridresolver.LDAPIdResolver.IdResolver.testconnection(param)
                 res['result'] = status
                 res['desc'] = desc

@@ -229,6 +229,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <li><a href='#tab_content_system_settings'>${_("Settings")}</a></li>
             <li><a href='#tab_content_system_gui'>${_("GUI settings")}</a></li>
             <li><a href='#tab_content_system_client'>${_("Client Identification")}</a></li>
+            <li><a href='#tab_content_system_cert'>${_("Certificates")}</a></li>
         </ul>
         <div id="tab_content_system_settings">
             <fieldset>
@@ -300,7 +301,21 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
                     </table>
             </fieldset>
-        </div>  <!-- tab system settings gui -->
+        </div>  <!-- tab system settings client -->
+        <div id='tab_content_system_cert'>
+            <fieldset>
+                    <legend>${_("Certificates")}</legend>
+                    <table>
+                        <tr><td><label for=sys_cert>${_("Use system certificate")}</label></td>
+                        <td><input type='checkbox' name='sys_cert' id='sys_cert' value='sys_cert'
+                            title='${_("If checked the linotp server will use system certificates")}'></td></tr>
+
+                        <!-- todo: button to display all used certificates, for migration -->
+
+                    </table>
+            </fieldset>
+        </div>  <!-- tab system certificate settings -->
+
 
     </div> <!-- tab container system settings -->
     </form>

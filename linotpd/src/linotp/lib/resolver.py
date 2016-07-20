@@ -442,18 +442,28 @@ def getResolverObject(resolver_spec):
 # external lib/base.py
 def setupResolvers(config=None, cache_dir="/tmp"):
     """
-    hook for the server start -
-        initialize the resolvers
-    """
-    glo = getGlobalObject()
+    hook at the server start to initialize the resolvers classes
 
+    :param config: the linotp config
+    :param cache_dir: the cache directory, which could be used in each resolver
+
+    :return: -nothing-
+    """
+
+    glo = getGlobalObject()
     resolver_classes = copy.deepcopy(glo.getResolverClasses())
-    for resolver_cls in resolver_classes.values():
+
+    # resolver classes is a dict with aliases as key and the resolver classes
+    # as values - as we require only unique classes we put them in a set.
+    # On server startup  we call the setup once for each resolver class.
+
+    for resolver_cls in set(resolver_classes.values()):
         if hasattr(resolver_cls, 'setup'):
             try:
                 resolver_cls.setup(config=config, cache_dir=cache_dir)
-            except:
-                log.exception("failed to call setup of %r" % resolver_cls)
+            except Exception as exx:
+                log.exception("failed to call setup of %r; %r",
+                              resolver_cls, exx)
 
     return
 

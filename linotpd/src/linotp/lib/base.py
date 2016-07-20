@@ -166,7 +166,6 @@ def set_defaults():
                value=u"0", typ=u"int",
                description=u"Delay until next challenge is created")
 
-
     # setup for totp defaults
     # "linotp.totp.timeStep";"60";"None";"None"
     # "linotp.totp.timeWindow";"600";"None";"None"
@@ -226,6 +225,13 @@ def set_defaults():
     set_config(key=u'OATHTokenSupport',
         value=u"False", typ=u"bool",
         description=u"support for hmac token in oath format")
+
+    # use the system certificate handling, especially for ldaps
+    set_config(key=u"certificates.use_system_certificates",
+        value=u"False", typ=u"bool",
+        description=u"use system certificate handling")
+
+    return
 
 def setup_app(conf, conf_global=None, unitTest=False):
     '''
