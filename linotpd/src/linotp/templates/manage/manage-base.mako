@@ -1812,7 +1812,7 @@ syst></textarea></td>
             <tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>
                 <td><input type="text" name="ldap_binddn" id="ldap_binddn" size="35" maxlength="200"></td></tr>
             <tr><td><label for=ldap_password>${_("Bind Password")}</label>:</td>
-                <td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" size="35" maxlength="60"></td></tr>
+                <td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" placeholder="************" size="35" maxlength="60"></td></tr>
             <tr><td><label for=ldap_timeout>${_("Timeout")}</label>:</td>
                 <td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="10"></td></tr>
             <tr><td><label for=ldap_sizelimit>${_("Sizelimit")}:</label></td>
@@ -1882,7 +1882,7 @@ syst></textarea></td>
             <tr><td><label for=http_authuser>${_("Auth User:")}</label></td>
                 <td><input type="text" name="Authuser" id="http_authuser" size="35" maxlength="200"></td></tr>
             <tr><td><label for=http_password>${_("Password")}</label>:</td>
-                <td><input type="password" autocomplete="off" name="Password" id="http_password" size="35" maxlength="60"></td></tr>
+                <td><input type="password" autocomplete="off" name="Password" placeholder="************" id="http_password" size="35" maxlength="60"></td></tr>
             <tr><td><label for=http_timeout>${_("Timeout")}</label>:</td>
                 <td><input type="text" name="Timeout" class="required"  id="http_timeout" size="35" maxlength="5"></td></tr>
             <tr><td> </td>
@@ -1983,7 +1983,7 @@ syst></textarea></td>
         <tr><td><label for=sql_user>${_("User")}:</label></td>
             <td><input type="text" name="sql_user"   id="sql_user" size="30" maxlength="60"></td></tr>
         <tr><td><label for=sql_password>${_("Password")}:</label></td>
-            <td><input type="password" autocomplete="off" name="sql_password"  id="sql_password" size="30" maxlength="60"></td></tr>
+            <td><input type="password" autocomplete="off" name="sql_password" placeholder="************" id="sql_password" size="30" maxlength="60"></td></tr>
         <tr><td><label for=sql_table>${_("Database table")}:</label></td>
             <td><input type="text" name="sql_table" class="required"  id="sql_table" size="30" maxlength="60"></td></tr>
         <tr><td><label for=sql_limit>${_("Limit")}:</label></td>

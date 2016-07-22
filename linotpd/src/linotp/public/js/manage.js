@@ -2727,7 +2727,6 @@ function save_ldap_config(){
         '#ldap_uri': 'LDAPURI',
         '#ldap_basedn': 'LDAPBASE',
         '#ldap_binddn': 'BINDDN',
-        '#ldap_password': 'BINDPW',
         '#ldap_timeout': 'TIMEOUT',
         '#ldap_sizelimit': 'SIZELIMIT',
         '#ldap_loginattr': 'LOGINNAMEATTRIBUTE',
@@ -2762,6 +2761,11 @@ function save_ldap_config(){
     params["EnforceTLS"] = ldap_enforce_tls;
 
     params["session"] = getsession();
+
+    if($('#ldap_password').val().length > 0){
+        params["BINDPW"] = $('#ldap_password').val();
+    }
+
     show_waiting();
 
     $.post(url, params,
@@ -2793,6 +2797,7 @@ function save_http_config(){
     params['type'] = resolvertype;
 
     show_waiting();
+
     clientUrlFetch(url, params,
          function(xhdr, textStatus, XMLHttpRequest){
             hide_waiting();
@@ -2931,7 +2936,6 @@ function save_sql_config(){
         '#sql_port': 'Port',
         '#sql_limit': 'Limit',
         '#sql_user': 'User',
-        '#sql_password': 'Password',
         '#sql_table': 'Table',
         '#sql_mapping': 'Map',
         '#sql_where': 'Where',
@@ -2948,7 +2952,13 @@ function save_sql_config(){
         params[new_key] = value;
     }
     params['session'] = getsession();
+
+    if($('#sql_password').val().length > 0){
+        params["Password"] = $('#sql_password').val();
+    }
+
     show_waiting();
+
     $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
@@ -6111,7 +6121,7 @@ function resolver_set_ldap(obj) {
     $('#ldap_uri').val(data.LDAPURI);
     $('#ldap_basedn').val(data.LDAPBASE);
     $('#ldap_binddn').val(data.BINDDN);
-    $('#ldap_password').val(data.BINDPW);
+    $('#ldap_password').val("");
     $('#ldap_timeout').val(data.TIMEOUT);
     $('#ldap_sizelimit').val(data.SIZELIMIT);
     $('#ldap_loginattr').val(data.LOGINNAMEATTRIBUTE);
@@ -6383,7 +6393,7 @@ function resolver_set_sql(obj) {
     $('#sql_database').val(obj.result.value.data.Database);
     $('#sql_table').val(obj.result.value.data.Table);
     $('#sql_user').val(obj.result.value.data.User);
-    $('#sql_password').val(obj.result.value.data.Password);
+    $('#sql_password').val("");
     $('#sql_mapping').val(obj.result.value.data.Map);
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);

@@ -127,7 +127,6 @@ class SystemController(BaseController):
     The functions are described below in more detail.
     '''
 
-
     def __before__(self, action, **params):
         '''
         __before__ is called before every action
@@ -432,10 +431,20 @@ class SystemController(BaseController):
                 keys = conf.keys()
                 keys.sort()
                 for key in keys:
-                    if key.startswith("enclinotp."):
+
+                    parts = key.split('.')
+
+                    if parts[0] == "enclinotp":
                         continue
-                    if key.startswith("linotp."):
+
+                    if parts[0] == "linotp":
                         Key = key[len("linotp."):]
+
+                        #
+                        # Todo: move the handling of extra data to the
+                        #       json reply formatter
+                        #
+
                         typ = type(conf.get(key)).__name__
                         if typ not in ['str', 'unicode']:
                             if typ == 'datetime':
@@ -445,18 +454,19 @@ class SystemController(BaseController):
                         else:
                             res[Key] = conf.get(key)
 
-                # as we return the decrypted values, we could do this in place
-                # and display the value under the original key
-                for key in keys:
-                    if key.startswith("enclinotp."):
-                        Key = key[len("enclinotp."):]
-                        res[Key] = conf.get(key)
-
                 c.audit['success'] = True
                 c.audit['info'] = "complete config"
 
             else:
                 key = getParam(param, "key", required)
+
+                #
+                # prevent access to the decrypted data
+                #
+
+                if key.startswith('enclinotp.'):
+                    key = 'linotp.%s' % key[len('enclinotp.'):]
+
                 ret = getFromConfig(key)
                 string = "getConfig " + key
                 res[string] = ret
@@ -582,21 +592,38 @@ class SystemController(BaseController):
 
         try:
             param.update(request.params)
-            log.info("[setResolver] saving configuration: %r" % param)
-            new_resolver_name = param.get('name', '')
-            if not new_resolver_name:
+
+            log.info("[setResolver] saving configuration %r", param.keys())
+
+            if 'name' not in param:
                 raise ParameterError('missing required parameter "name"')
 
-            # delete resolver with same name if it exists
-            resolvers = getResolverList()
-            if new_resolver_name in resolvers:
-                log.warning("creating resolver <%s> removed previous resolver"
-                            " with same name", new_resolver_name)
-                res = deleteResolver(new_resolver_name)
+            new_resolver_name = param['name']
+
+            #
+            # before storing the new resolver, we check if already a
+            # resolver with same name and different type if it exists.
+            # If so, we delete the all entries of the old one
+            #
+
+            if new_resolver_name in getResolverList():
+
+                old_resolver = getResolverInfo(new_resolver_name,
+                                               passwords=True)
+
+                if old_resolver and old_resolver.get('type') != param['type']:
+                    log.warning("creating resolver <%s> removes previous "
+                                "resolver with same name", new_resolver_name)
+                    deleteResolver(new_resolver_name)
+
+            #
+            # check if it is of the same type and if so, we merge the
+            # resolver info, especially the password has to be preserved
+            #
 
             resolver_loaded = defineResolver(param)
+
             if not resolver_loaded:
-                deleteResolver(new_resolver_name)
                 msg = (_("Unable to instantiate the resolver %r."
                          "Please verify configuration or connection!") %
                        new_resolver_name)
@@ -607,7 +634,7 @@ class SystemController(BaseController):
 
         except ResolverLoadConfigError as exx:
             log.exception("Failed to load resolver definition %r \n %r",
-                          exx, param)
+                          exx, param.keys())
             Session.rollback()
             return sendError(response, exx)
 
@@ -749,7 +776,7 @@ class SystemController(BaseController):
 
             resolver = getParam(param, "resolver", required)
             if (len(resolver) == 0):
-                raise Exception ("[getResolver] missing resolver name")
+                raise Exception("[getResolver] missing resolver name")
 
             res = getResolverInfo(resolver)
 

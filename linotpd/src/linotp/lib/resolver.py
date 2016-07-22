@@ -275,7 +275,7 @@ def getResolverList(filter_resolver_type=None):
     return Resolvers
 
 
-def getResolverInfo(resolvername):
+def getResolverInfo(resolvername, passwords=False):
     '''
     return the resolver info of the given resolvername
 
@@ -284,57 +284,77 @@ def getResolverInfo(resolvername):
 
     :return : dict of resolver description
     '''
-    resolver_dict = {}
-    typ = ""
-    resolvertypes = get_resolver_types()
 
+    result = {"type": None, "data": {}, "resolver": resolvername}
+
+    resolver_dict = {}
     descr = {}
 
-    conf = context.get('Config')
-    # conf = getLinotpConfig()
+    resolver_entries = {}
+    resolvertypes = get_resolver_types()
 
-    for entry in conf:
+    linotp_config = context.get('Config')
 
-        for typ in resolvertypes:
+    for typ in resolvertypes:
+        for config_entry in linotp_config:
+            if (config_entry.startswith("linotp." + typ) and
+               config_entry.endswith(resolvername)):
+                resolver_entries[config_entry] = linotp_config.get(config_entry)
 
-            if entry.startswith("linotp." + typ) and entry.endswith(resolvername):
-                # the realm might contain dots "."
-                # so take all after the 3rd dot for realm
-                resolver = entry.split(".", 3)
-                # An old entry without resolver name
-                if len(resolver) <= 3:
-                    break
+    if not resolver_entries:
+        return result
 
-                # get the typed values of the descriptor!
-                resolver_conf = get_resolver_class_config(typ)
-                if typ in resolver_conf:
-                    descr = resolver_conf.get(typ).get('config', {})
+    resolver_parts = resolver_entries.keys()[0].split('.')
+
+    #
+    # TODO: remove legacy code: An old entry without resolver name
+    #
+    if len(resolver_parts) <= 3:
+        return result
+
+    #
+    # get the type descriptions for the resolver type
+    #
+
+    resolver_type = resolver_parts[1]
+    resolver_conf = get_resolver_class_config(resolver_type)
+
+    if resolver_type in resolver_conf:
+        resolver_descr = resolver_conf.get(resolver_type).get('config', {})
+    else:
+        resolver_descr = resolver_conf
+
+    #
+    # build up the resolver dictionary
+    #
+
+    for key, value in resolver_entries.items():
+        resolver_key = key.split(".")[2]
+
+        if resolver_key in resolver_descr:
+
+            if (resolver_descr.get(resolver_key) == 'password' and
+               passwords is True):
+
+                # do we already have the decrypted pass?
+                if 'enc%s' % key in linotp_config:
+                    value = linotp_config.get('enc%s' % key)
                 else:
-                    descr = resolver_conf
+                    # if no, we take the entry and try to de crypt it
+                    value = linotp_config.get(key)
 
-                value = conf.get(entry)
-                if resolver[2] in descr:
-                    configEntry = resolver[2]
-                    if descr.get(configEntry) == 'password':
+                    try:
+                        value = decryptPassword(value)
+                    except Exception as exc:
+                        log.exception("Decryption of resolver entry "
+                                      "failed: %r", exc)
 
-                        # do we already have the decrypted pass?
-                        if 'enc' + entry in conf:
-                            value = conf.get('enc' + entry)
-                        else:
-                            # if no, we take the encpass and decrypt it
-                            value = conf.get(entry)
-                            try:
-                                en = decryptPassword(value)
-                                value = en
-                            except:
-                                log.info("Decryption of resolver passwd failed: compatibility issue?")
+            resolver_dict[resolver_key] = value
 
-                resolver_dict[resolver[2]] = value
-                # Dont check the other resolver types
+    result["type"] = resolver_type
+    result["data"] = resolver_dict
 
-                break
-
-    return {"type": typ, "data": resolver_dict, "resolver": resolvername}
+    return result
 
 
 def deleteResolver(resolvername):
