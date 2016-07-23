@@ -288,7 +288,9 @@ class TestMonitoringController(TestController):
             response = self.make_authenticated_request(
                 controller='monitoring', action='license', params={})
             resp = json.loads(response.body)
-            self.assertEqual(resp.get('result').get('value'), {}, response)
+            value = resp.get('result').get('value')
+            self.assertEqual(value.get('valid'), False, response)
+
 
         finally:
             # restore previous license...

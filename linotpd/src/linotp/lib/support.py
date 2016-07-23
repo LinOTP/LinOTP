@@ -457,7 +457,7 @@ def set_duration(lic_dict, raiseException=False):
     :param raiseException: switch to control if an exception should be thrown
            in case of a problem
     """
-
+    _ = context['translate']
     # if there is no expiration in the license we just can go on
     if not (lic_dict.license_expiration and
             'days' in lic_dict.license_expiration):
@@ -791,6 +791,7 @@ def check_date(expire_type, expire):
     """
     check if the license date is still valid
     """
+    _ = context['translate']
     today = datetime.datetime.now()
 
     # -with  support for two date formats

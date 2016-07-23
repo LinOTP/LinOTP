@@ -298,7 +298,7 @@ class MonitoringController(BaseController):
             license_ok, license_msg = verifyLicenseInfo(license_info,
                                                         license_sig)
             if not license_ok:
-                details = {'valid': license_ok,
+                res = {'valid': license_ok,
                            'message': license_msg
                            }
             else:
@@ -313,7 +313,7 @@ class MonitoringController(BaseController):
 
                 res['token-left'] = res['token-num'] - active_tokencount
 
-            return sendResult(response, res, 1, opt=details)
+            return sendResult(response, res, 1)
 
         except Exception as exception:
             log.exception(exception)
