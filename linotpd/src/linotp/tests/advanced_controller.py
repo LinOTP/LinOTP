@@ -204,7 +204,7 @@ class TestAdvancedController(TestController2):
         for temp in anotherDict:
             if not temp is None:
                 initialDict.update(temp)
-        return initialDict;
+        return initialDict
 
 
     # Return a predefined authentication token. The security token is
@@ -249,7 +249,7 @@ class TestAdvancedController(TestController2):
                             value = str(value)
 
                         retDict[key] = value
-            return retDict;
+            return retDict
 
         # By default we perform only get requests
         postMethod = False

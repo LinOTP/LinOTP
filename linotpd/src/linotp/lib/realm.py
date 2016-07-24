@@ -254,7 +254,7 @@ def isRealmDefined(realm):
     :rtype  :boolean
     '''
     ret = False
-    realms = getRealms();
+    realms = getRealms()
     if realms.has_key(realm.lower()):
         ret = True
     return ret
