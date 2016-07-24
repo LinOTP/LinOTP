@@ -38,6 +38,7 @@ import linotp.lib.policy
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.resolver import getResolverObject
 from linotp.lib.token import TokenHandler
+from linotp.lib.token import get_token_owner
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.user import (User, getUserId, getUserInfo)
 from linotp.lib.util import modhex_decode
@@ -746,7 +747,7 @@ class ValidationHandler(object):
         if res is not False and 'serial' in audit:
             serial = audit.get('serial', None)
             if serial is not None:
-                user = self.getTokenOwner(serial)
+                user = get_token_owner(tokenList[0])
                 audit['user'] = user.login
                 audit['realm'] = user.realm
                 opt = {'user': user.login, 'realm': user.realm}

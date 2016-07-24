@@ -380,7 +380,7 @@ class SecurityProvider(object):
                             error = ('[SecurityProvider:getSecurityModule] '
                                      'max_retry %d: could not bind hsm to '
                                      'session  - going to sleep for  %r'
-                                     % tries, 10 * tries)
+                                     % (tries, 10 * tries))
                             log.error(error)
                             raise Exception(error)
                         retry = True
