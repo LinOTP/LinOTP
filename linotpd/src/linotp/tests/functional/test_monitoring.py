@@ -75,7 +75,7 @@ class TestMonitoringController(TestController):
             # Test current license...
             with request_context_safety():
                 context['translate'] = lambda x: x
-                getSupportLicenseInfo(validate=True, raiseException=True)
+                getSupportLicenseInfo()
                 return 1
         except InvalidLicenseException as err:
             if err.type != 'UNLICENSED':
@@ -92,7 +92,7 @@ class TestMonitoringController(TestController):
             lic, sig = getSupportLicenseInfo()
             isSupportLicenseValid(lic_dict=lic, lic_sign=sig,
                                   raiseException=True)
-            return (lic, sig)
+            return lic, sig
 
     def setCurrentLicense(self, old_lic, old_sig):
         with request_context_safety():
@@ -290,7 +290,6 @@ class TestMonitoringController(TestController):
             resp = json.loads(response.body)
             value = resp.get('result').get('value')
             self.assertEqual(value.get('valid'), False, response)
-
 
         finally:
             # restore previous license...

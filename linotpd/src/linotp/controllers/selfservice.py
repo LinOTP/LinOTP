@@ -92,15 +92,11 @@ from pylons.i18n.translation import _
 from linotp.lib.context import request_context
 
 import logging
-log = logging.getLogger(__name__)
-
-audit = config.get('audit')
 
 ENCODING = "utf-8"
 
 optional = True
 required = False
-
 
 log = logging.getLogger(__name__)
 audit = config.get('audit')

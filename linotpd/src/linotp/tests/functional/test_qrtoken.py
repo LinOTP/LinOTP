@@ -485,6 +485,7 @@ class TestQRToken(TestController):
         # ----------------------------------------------------------------------
 
         # check if challenge was triggered
+        challenge_url = None
         try:
             self.assertIn('detail', response_dict)
             detail = response_dict.get('detail')
@@ -583,7 +584,7 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def create_user_token_by_pairing_url(self, pairing_url, pin=1234):
+    def create_user_token_by_pairing_url(self, pairing_url, pin='1234'):
         """
         parses the pairing url and saves the extracted data in
         the fake token database of this test class.

@@ -346,8 +346,8 @@ def createNonce(len=64):
     return binascii.hexlify(key)
 
 
-def kdf2(sharesecret, nonce, activationcode, len, iterations=10000,
-                               digest='SHA256', macmodule=HMAC, checksum=True):
+def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
+         digest='SHA256', macmodule=HMAC, checksum=True):
     '''
     key derivation function
 
@@ -392,7 +392,7 @@ def kdf2(sharesecret, nonce, activationcode, len, iterations=10000,
                             ' [%s]%s:%s' % (acode, veriCode, checkCode))
 
     activ = binascii.hexlify(bcode)
-    passphrase = u'' + sharesecret + activ + nonce[:-salt_len]
+    passphrase = u'' + sharedsecret + activ + nonce[:-salt_len]
     keyStream = PBKDF2(binascii.unhexlify(passphrase), bSalt,
                        iterations=iterations, digestmodule=digestmodule)
     key = keyStream.read(len)

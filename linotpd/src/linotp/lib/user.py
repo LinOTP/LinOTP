@@ -144,44 +144,6 @@ class User(object):
             return True
         return False
 
-    def get_uid_resolver(self, resolvers=None):
-        uid = None
-        resolver_spec = None
-        resolver_specs = []
-
-        if not resolvers:
-            if self.realm:
-                realms = getRealms()
-                if self.realm.lower() in realms:
-                    resolver_specs = realms.get(self.realm.lower(), {}).\
-                                       get('useridresolver', [])
-        else:
-            resolver_specs = []
-            for search_resolver in resolvers:
-                fq_resolver = User.get_fq_resolver(search_resolver)
-                if fq_resolver:
-                    resolver_specs.append(fq_resolver)
-
-        if not resolver_specs:
-            return None, None
-
-        for resolver_spec in resolver_specs:
-            try:
-                y = getResolverObject(resolver_spec)
-                uid = y.getUserId(self.login)
-                if not uid:
-                    uid = None
-                    continue
-                self.resolverUid[resolver_spec] = uid
-                self.exist = True
-                break
-
-            except Exception as exx:
-                log.exception("Error while accessing resolver %r", exx)
-
-        return (uid, resolver_spec)
-
-
     def getRealm(self):
         return self.realm
 
