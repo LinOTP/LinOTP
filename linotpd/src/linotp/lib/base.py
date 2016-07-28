@@ -226,10 +226,27 @@ def set_defaults():
         value=u"False", typ=u"bool",
         description=u"support for hmac token in oath format")
 
+
     # use the system certificate handling, especially for ldaps
     set_config(key=u"certificates.use_system_certificates",
         value=u"False", typ=u"bool",
         description=u"use system certificate handling")
+
+    set_config(key="user_lookup_cache.enabled",
+               value="False", typ="bool",
+               description="enable user loookup caching")
+
+    set_config(key="resolver_lookup_cache.enabled",
+               value="False", typ="bool",
+               description="enable realm resolver caching")
+
+    set_config(key='user_lookup_cache.expiration',
+               value="64800", typ="int",
+               description="expiration of user caching entries")
+
+    set_config(key='resolver_lookup_cache.expiration',
+               value="64800", typ="int",
+               description="expiration of resolver caching entries")
 
     return
 
@@ -393,7 +410,7 @@ class BaseController(WSGIController):
 
         with request_context_safety():
 
-            self.create_context(request)
+            self.create_context(request, environ)
 
             try:
                 if environ:
@@ -461,7 +478,7 @@ class BaseController(WSGIController):
 
         return
 
-    def create_context(self, request):
+    def create_context(self, request, environment):
         """
         create the request context for all controllers
         """
@@ -471,6 +488,7 @@ class BaseController(WSGIController):
         request_context['Config'] = linotp_config
         request_context['Policies'] = getPolicies()
         request_context['translate'] = translate
+        request_context['CacheManager'] = environment['beaker.cache']
 
         initResolvers()
 

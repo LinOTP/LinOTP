@@ -163,9 +163,17 @@ class TokenIterator(object):
                 if urealm == '*':
                     # if the realm is set to *, the getUserId
                     # triggers the identification of all resolvers, where the
-                    # user might reside: tigger the user resolver lookup
-                    (uid, resolver, resolverClass) = getUserId(usr)
-                    userlist.extend(usr.getUserPerConf())
+                    # user might reside: trigger the user resolver lookup
+                    for realm in getRealms().keys():
+                        if realm in valid_realms or '*' in valid_realms:
+                            usr.realm = realm
+                            try:
+                                (_uid, _resolver, _resolverClass) = getUserId(usr)
+                            except UserError as exx:
+                                log.info('user %r not found in realm%r',
+                                         usr, realm)
+                                continue
+                            userlist.extend(usr.getUserPerConf())
                 else:
                     userlist.append(usr)
 

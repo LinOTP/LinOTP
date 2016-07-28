@@ -131,7 +131,7 @@ class ValidateController(BaseController):
 
         options = {}
 
-        ## put everythin in the options but the user, pass, init
+        # put everything in the options but the user, pass, init
         options.update(param)
         for para in ["pass", "user", "init"]:
             if options.has_key(para):
@@ -151,7 +151,8 @@ class ValidateController(BaseController):
         c.audit['realm'] = realm
 
         # AUTHORIZATION Pre Check
-        # we need to overwrite the user.realm in case the user does not exist in the original realm (setrealm-policy)
+        # we need to overwrite the user.realm in case the
+        # user does not exist in the original realm (setrealm-policy)
         user.realm = set_realm(user.login, realm, exception=True)
         check_user_authorization(user.login, user.realm, exception=True)
 

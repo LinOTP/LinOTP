@@ -2593,6 +2593,24 @@ function load_system_config(){
         if (data.result.value['certificates.use_system_certificates'] == "True") {
             $('#sys_cert').prop('checked', true);
         }
+
+        /*todo call the 'tok_fill_config.js */
+       
+        /* caching settings */ 
+        $('#sys_resolver_cache_enable').prop('checked', false);
+        if (data.result.value['resolver_lookup_cache.enabled'] == "True") {
+            $('#sys_resolver_cache_enable').prop('checked', true);
+        }
+        var exp = data.result.value['resolver_lookup_cache.expiration'];
+        $('#sys_resolver_cache_expiration').val(exp || 123600);
+
+        $('#sys_user_cache_enable').prop('checked', false);
+        if (data.result.value['user_lookup_cache.enabled'] == "True") {
+            $('#sys_user_cache_enable').prop('checked', true);
+        }
+        var exp = data.result.value['user_lookup_cache.expiration'];
+        $('#sys_user_cache_expiration').val(exp || 123600);
+
     });
 }
 
@@ -2605,6 +2623,8 @@ function save_system_config(){
         'totp.timeStep': $('#totp_timeStep').val(),
         'totp.timeWindow': $('#totp_timeWindow').val(),
         'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
+        'user_lookup_cache.expiration':  $('#sys_user_cache_expiration').val(),
+        'resolver_lookup_cache.expiration':  $('#sys_resolver_cache_expiration').val(),
         'session':getsession()}
 
     $.post('/system/setConfig', params,
@@ -2657,10 +2677,21 @@ function save_system_config(){
     if ($("#sys_x_forwarded_for").is(':checked')) {
         client_x_forward = "True";
     }
+
     var use_sys_cert = "False";
     if ($('#sys_cert').is(':checked')) {
         use_sys_cert = "True";
     }
+
+    var user_cache_enabled = "False";
+    if ($("#sys_user_cache_enable").is(':checked')) {
+        user_cache_enabled = "True";
+    }
+    var resolver_cache_enabled = "False";
+    if ($("#sys_resolver_cache_enable").is(':checked')) {
+        resolver_cache_enabled = "True";
+    }
+
     var params = { 'session':getsession(),
             'PrependPin' :prepend,
             'FailCounterIncOnFalsePin' : fcounter ,
@@ -2674,6 +2705,9 @@ function save_system_config(){
             'client.X_FORWARDED_FOR' : client_x_forward,
             'allowSamlAttributes' : allowsaml,
             'certificates.use_system_certificates': use_sys_cert,
+            'user_lookup_cache.enabled': user_cache_enabled,
+            'resolver_lookup_cache.enabled': resolver_cache_enabled,
+            'user_lookup_cache.enabled': user_cache_enabled,
              };
     $.post('/system/setConfig', params,
      function(data, textStatus, XMLHttpRequest){

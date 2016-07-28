@@ -286,8 +286,7 @@ class ValidationHandler(object):
                 user.info = userInfo
 
                 if theToken.is_challenge_request(passw, user, options=options):
-                    (res, opt) = Challenges.create_challenge(
-                        theToken, options)
+                    (res, opt) = Challenges.create_challenge(theToken, options)
                     res = False
                 else:
                     raise ParameterError('Missing parameter: pass', id=905)
@@ -430,7 +429,8 @@ class ValidationHandler(object):
         if user is not None and (user.isEmpty() is False):
             # the upper layer will catch / at least should
             try:
-                (uid, _resolver, resolverClass) = getUserId(user)
+                (uid, _resolver, resolverClass) = getUserId(user,
+                                                            check_existance=True)
                 user_exists = True
             except:
                 pass_on = context.get('Config').get(
