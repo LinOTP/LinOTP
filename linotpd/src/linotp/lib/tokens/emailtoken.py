@@ -485,7 +485,7 @@ class EmailTokenClass(HmacTokenClass):
             return -1, []
 
         if options and ('transactionid' in options or 'state' in options):
-            ## fetch the transactionid
+            # fetch the transactionid
             transaction_id = options.get('transactionid', None)
             if transaction_id is None:
                 transaction_id = options.get('state', None)
@@ -500,9 +500,12 @@ class EmailTokenClass(HmacTokenClass):
         else:
             # If no transaction_id is set the request came through the WebUI
             # and we have to check all challenges
-            split_status, _, otp = split_pin_otp(self, passw, user, options)
+            split_status, pin, otp = split_pin_otp(self, passw, user, options)
             if split_status < 0:
                 raise Exception("Could not split passw")
+            if not check_pin(self, pin, user, options):
+                LOG.info('pin verification failed!')
+                return -1, []
 
         window = self.getOtpCountWindow()
 
