@@ -36,6 +36,8 @@ from linotp.provider import loadProviderFromPolicy
 from linotp.lib.token import get_token_owner
 
 from linotp.lib.auth.validate import split_pin_otp
+from linotp.lib.auth.validate import check_pin
+
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
@@ -493,9 +495,11 @@ class EmailTokenClass(HmacTokenClass):
         else:
             # If no transaction_id is set the request came through the WebUI
             # and we have to check all challenges
-            split_status, _, otp = split_pin_otp(self, passw, user, options)
+            split_status, pin, otp = split_pin_otp(self, passw, user, options)
             if split_status < 0:
                 raise Exception("Could not split passw")
+            if not check_pin(self, pin, user, options):
+                return -1, []
 
         window = self.getOtpCountWindow()
 
