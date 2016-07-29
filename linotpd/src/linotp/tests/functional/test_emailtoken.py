@@ -96,14 +96,75 @@ class TestEmailtokenController(TestController):
         """
         Test the default case: enroll, assign, send challenge, get successful response
         """
+        #
+        # check: correct otp and pin should be ok
+        #
+
         response, otp = self._trigger_challenge()
         self._assert_email_sent(response)
+
         response = self.app.get(url(controller='validate', action='check'),
-                                params={'user': 'root', 'pass': self.pin + otp})
+                                params={'user': 'root',
+                                        'pass': self.pin + otp})
         response_json = response.json
         self.assertTrue(response_json['result']['status'])
         self.assertTrue(response_json['result']['value'])
 
+        #
+        # check: wrong pin should fail
+        #
+
+        response, otp = self._trigger_challenge()
+        self._assert_email_sent(response)
+
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user': 'root',
+                                        'pass': "4321" + otp})
+        response_json = response.json
+        self.assertTrue(response_json['result']['status'])
+        self.assertFalse(response_json['result']['value'])
+
+        #
+        # replay with correct pin should fail
+        #
+
+        time.sleep(5)
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user': 'root',
+                                        'pass': self.pin + otp})
+        response_json = response.json
+        self.assertTrue(response_json['result']['status'])
+        self.assertFalse(response_json['result']['value'])
+
+        #
+        # check with wrong otp should fail as well
+        #
+
+        response, otp = self._trigger_challenge()
+        self._assert_email_sent(response)
+
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user': 'root',
+                                        'pass': self.pin + "123456"})
+        response_json = response.json
+        self.assertTrue(response_json['result']['status'])
+        self.assertFalse(response_json['result']['value'])
+
+        #
+        # check with correct otp and pin should be ok
+        #
+
+        response, otp = self._trigger_challenge()
+        self._assert_email_sent(response)
+
+        response = self.app.get(url(controller='validate', action='check'),
+                                params={'user': 'root',
+                                        'pass': self.pin + otp})
+        response_json = response.json
+        self.assertTrue(response_json['result']['status'])
+        self.assertTrue(response_json['result']['value'])
+
+        return
 
     def test_multiple_challenges(self):
         """
