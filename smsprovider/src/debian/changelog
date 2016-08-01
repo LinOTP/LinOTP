@@ -1,9 +1,9 @@
-linotp-smsprovider (2.8.1.2+custom03-1) jessie; urgency=low
+linotp-smsprovider (2.8.1.2+custom04-1) jessie; urgency=low
 
   Enhancements:
   * Add SMSProviders to provider registry
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 27 Jun 2016 12:11:42 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 01 Aug 2016 16:50:44 +0200
 
 linotp-smsprovider (2.8.1.2-1) jessie; urgency=low
 
