@@ -2487,7 +2487,6 @@ function save_tokenrealm_config(){
     var tokens = get_selected_tokens();
     var realms = g.realms_of_token.join(",");
     var params = {
-            'serial' :serial,
             'realms' : realms,
             'session':getsession()
             };
