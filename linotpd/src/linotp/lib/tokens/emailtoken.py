@@ -480,7 +480,7 @@ class EmailTokenClass(HmacTokenClass):
             return -1, []
 
         if options and ('transactionid' in options or 'state' in options):
-            ## fetch the transactionid
+            # fetch the transactionid
             transaction_id = options.get('transactionid', None)
             if transaction_id is None:
                 transaction_id = options.get('state', None)
