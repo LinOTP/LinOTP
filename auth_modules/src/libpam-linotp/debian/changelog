@@ -1,8 +1,8 @@
-libpam-linotp (2.9~rc2-1) jessie; urgency=low
+libpam-linotp (2.9-1) jessie; urgency=low
 
   * Set new version 2.9
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Jul 2016 13:50:37 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 11 Aug 2016 13:18:26 +0200
 
 libpam-linotp (2.8.1-1) jessie; urgency=low
 

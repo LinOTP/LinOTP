@@ -1,8 +1,8 @@
-linotp-useridresolver (2.9~rc2-1) jessie; urgency=low
+linotp-useridresolver (2.9-1) jessie; urgency=low
 
   * Add class registry and class aliases
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 14 Jul 2016 13:50:37 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 11 Aug 2016 13:18:26 +0200
 
 linotp-useridresolver (2.8.1.2-1) jessie; urgency=low
 
