@@ -37,6 +37,7 @@ setup-app`) and provides the base testing objects.
 
 """
 
+import cookielib
 import json
 import pylons.test
 import os
@@ -160,6 +161,28 @@ class TestController(unittest2.TestCase):
         )
         if current_webtest >= LooseVersion('2.0.16'):
             app.set_cookie(key, value)
+        elif current_webtest >= LooseVersion('2.0.0'):
+            # webtest 2.0.0 to 2.0.15 don't have a cookie setter interface
+            # This cookie setting code is taken from webtest 2.0.16
+            cookie = cookielib.Cookie(
+                version=0,
+                name=key,
+                value=value,
+                port=None,
+                port_specified=False,
+                domain='.localhost',
+                domain_specified=True,
+                domain_initial_dot=False,
+                path='/',
+                path_specified=True,
+                secure=False,
+                expires=None,
+                discard=False,
+                comment=None,
+                comment_url=None,
+                rest=None
+            )
+            app.cookiejar.set_cookie(cookie)
         else:
             app.cookies[key] = value
 

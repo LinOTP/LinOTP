@@ -43,6 +43,7 @@ values and in all of the cases the result values are tested by
 default (for success).
 """
 
+import cookielib
 import unittest2
 import warnings
 import json
@@ -184,6 +185,28 @@ class TestAdvancedController(TestController2):
             current_webtest = LooseVersion(pkg_resources.get_distribution('webtest').version)
             if current_webtest >= LooseVersion('2.0.16'):
                 self.app.set_cookie(name, value)
+            elif current_webtest >= LooseVersion('2.0.0'):
+                # webtest 2.0.0 to 2.0.15 don't have a cookie setter interface
+                # This cookie setting code is taken from webtest 2.0.16
+                cookie = cookielib.Cookie(
+                    version=0,
+                    name=name,
+                    value=value,
+                    port=None,
+                    port_specified=False,
+                    domain='.localhost',
+                    domain_specified=True,
+                    domain_initial_dot=False,
+                    path='/',
+                    path_specified=True,
+                    secure=False,
+                    expires=None,
+                    discard=False,
+                    comment=None,
+                    comment_url=None,
+                    rest=None
+                )
+                self.app.cookiejar.set_cookie(cookie)
             else:
                 self.app.cookies[name] = value
         def __delitem__(self, name):
