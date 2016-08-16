@@ -24,6 +24,7 @@
  */
 
 
+#include	<stdbool.h>
 #include	<stdlib.h>
 #include	<string.h>
 #include	<stdio.h>
@@ -104,9 +105,8 @@ char *sendRequest(lotp_inst_t *lotp,
 		  CURL *curl_handle,
 		  const char *params);
 
-void split_stat_and_message(const char *s, char **stat, char **msg);
 
-
+bool split_stat_and_msg(const char *str, char **stat, char **msg);
 
 
 
@@ -535,52 +535,48 @@ char *sendRequest(lotp_inst_t *lotp,
 }
 
 
-void split_stat_and_message(const char *s, char **stat, char **msg)
+/* split_stat_and_msg - extracts stat and message from LinOTP reject
+ *
+ * Input:
+ *   str is expected to point right after the sad smily of a reject message.
+ *   stat and msg must point to legal string-pointers for storing the result.
+ *
+ * Return:
+ *   True if everything is ok; *stat and *msg hold pointers to the expected
+ *   strings and must be freed after use.
+ *
+ *   False in case of error; stat and msg are undefined
+ */
+
+bool
+split_stat_and_msg(const char *str, char **stat, char **msg)
 {
-	/*
-	in case of a challenge request, the reply of the linotp server
-	contains after the not-smily, the stat - transaction reference
-	and then arbitrary, non defined message, which is displayed to
-	the user.
-	this method splits out the return value the stat and the message
-	and returns them by reference.
+	const char *a, *b;
 
-	*/
-	**stat = '\0';
-	**msg = '\0';
+	/* the first character after smiley must be an space */
+	if (*str != ' ')
+		return false;
 
-	char * fin = NULL;
+	/* find a and b such that [a, b) is the first word in str without spaces */
+	for (a = str+1; *a == ' '; a++);
+	for (b = a; *b != '\0' && *b != ' '; b++);
+	*stat = strndup(a, b-a);
+	if (*stat == NULL)
+		return false;
 
-	/* return, if there is nothing more than an ok */
-	if (strlen(LINOTPD_REJECT) >= strlen(s)) return;
-
-	fin = strchr(s+strlen(LINOTPD_REJECT), ' ');
-	if (fin == NULL) return;
-
-	/* now search start of stat */
-	while (*fin != '\0')
-	{
-		if (*fin == ' ')
-			fin++;
-		else
-			break;
+	/* find first non-space after b and take everything from there as msg */
+	while (*b == ' ') b++;
+	*msg = strdup(b);
+	if (*msg == NULL) {
+		free(*stat);
+		return false;
 	}
-	if (*fin == '\0') return;
 
-	/* preserve the start of the stat*/
-	*stat = fin;
-
-	/* find the next blank after the stat */
-	fin = strchr(fin, ' ');
-	if (fin == NULL) return;
-
-	/* mark the terminating of stat, the rest is msg*/
-	*fin = '\0';
-	fin++;
-	if (*fin != '\0') *msg = fin;
-
-	return;
+	return true;
 }
+
+
+
 
 /********** LinOTP stuff ***************************/
 
@@ -596,7 +592,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 	lotp_inst_t *lotp = instance;
 	int prefer_nas_identifier = (lotp->prefer_nas_identifier);
 
-	int returnValue	= RLM_MODULE_REJECT;
+	int returnValue	= RLM_MODULE_FAIL;
 	char *params = NULL;
 	char *answer = NULL;
 	
@@ -723,6 +719,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 	if (params == NULL)
 	{
 		log_error("could not allocate size for parameters!");
+		returnValue = RLM_MODULE_FAIL;
 		goto cleanup;
 	}
 
@@ -744,6 +741,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 			log_error("No response returned for %s: %s", params, errorBuffer);
 		else
 			log_error("No response returned: %s", errorBuffer);
+		returnValue = RLM_MODULE_FAIL;
 		goto cleanup;
 	}
 
@@ -751,17 +749,24 @@ static int lotp_auth(void *instance, REQUEST *request)
 	if (strncmp(answer, LINOTPD_REJECT, strlen(LINOTPD_REJECT)) == 0)
 	{
 		if (strlen(answer) > strlen(LINOTPD_REJECT)) {
-			char *stat = NULL;
-			char *msg  = NULL;
-			split_stat_and_message(answer, &stat, &msg);
+			char *stat, *msg;
+			if (!split_stat_and_msg(answer+strlen(LINOTPD_REJECT), &stat, &msg)) {
+				log_error("Format error in reject message: %s", answer);
+				returnValue = RLM_MODULE_REJECT;
+				goto cleanup;
+			}
+
 
 			/*
 			 *  Create the challenge, and add it to the reply.
 			 */
 			reply = pairmake("Reply-Message", msg, T_OP_EQ);
 			pairadd(&request->reply->vps, reply);
+			free(msg);
+
 			state_pair = pairmake("State", stat, T_OP_EQ);
 			pairadd(&request->reply->vps, state_pair);
+			free(stat);
 
 			/*
 			 *  Mark the packet as an Access-Challenge packet.
@@ -779,7 +784,7 @@ static int lotp_auth(void *instance, REQUEST *request)
 			else
 				log_error( "Rejecting fall-through\n");
 
-			returnValue	= RLM_MODULE_REJECT;
+			returnValue = RLM_MODULE_REJECT;
 		}
 		goto cleanup;
 	}
