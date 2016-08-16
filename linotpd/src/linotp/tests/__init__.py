@@ -99,6 +99,7 @@ class TestController(unittest2.TestCase):
 
         wsgiapp = pylons.test.pylonsapp
         self.app = webtest.TestApp(wsgiapp)
+
         self.session = 'justatest'
         self.resolvers = {}  # Set up of resolvers in create_common_resolvers
 
@@ -106,6 +107,34 @@ class TestController(unittest2.TestCase):
         unittest2.TestCase.__init__(self, *args, **kwargs)
 
         self.appconf = config
+
+        # ---------------------------------------------------------------------
+
+        current_webtest = LooseVersion(
+            pkg_resources.get_distribution('webtest').version
+        )
+        if current_webtest <= LooseVersion('2.0.14'):
+            # Fix application cookies for localhost for webtest versions
+            # 2.0.0 to 2.0.14 (https://github.com/Pylons/webtest/issues/84)
+            # The CookiePolicy code is taken from webtest
+
+            class CookiePolicy(cookielib.DefaultCookiePolicy):
+                """A subclass of DefaultCookiePolicy to allow cookie set for
+                Domain=localhost."""
+
+                def return_ok_domain(self, cookie, request):
+                    if cookie.domain == '.localhost':
+                        return True
+                    return cookielib.DefaultCookiePolicy.return_ok_domain(
+                        self, cookie, request)
+
+                def set_ok_domain(self, cookie, request):
+                    if cookie.domain == '.localhost':
+                        return True
+                    return cookielib.DefaultCookiePolicy.set_ok_domain(
+                        self, cookie, request)
+
+            self.app.cookiejar = cookielib.CookieJar(policy=CookiePolicy())
 
     @classmethod
     def setup_class(cls):

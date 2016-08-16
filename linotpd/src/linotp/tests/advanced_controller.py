@@ -99,6 +99,33 @@ else:
             # Configure url ...
             url._push_object(URLGenerator(config['routes.map'], environ))
 
+            # -----------------------------------------------------------------
+
+            current_webtest = LooseVersion(
+                pkg_resources.get_distribution('webtest').version
+            )
+            if current_webtest <= LooseVersion('2.0.14'):
+                # Fix application cookies for localhost for webtest versions
+                # 2.0.0 to 2.0.14 (https://github.com/Pylons/webtest/issues/84)
+                # The CookiePolicy code is taken from webtest
+
+                class CookiePolicy(cookielib.DefaultCookiePolicy):
+                    """A subclass of DefaultCookiePolicy to allow cookie set
+                    for Domain=localhost."""
+
+                    def return_ok_domain(self, cookie, request):
+                        if cookie.domain == '.localhost':
+                            return True
+                        return cookielib.DefaultCookiePolicy.return_ok_domain(
+                            self, cookie, request)
+
+                    def set_ok_domain(self, cookie, request):
+                        if cookie.domain == '.localhost':
+                            return True
+                        return cookielib.DefaultCookiePolicy.set_ok_domain(
+                            self, cookie, request)
+
+                self.app.cookiejar = cookielib.CookieJar(policy=CookiePolicy())
 
 
 # This is an utility class used to "seal" class implementation (forbid inheritance).
