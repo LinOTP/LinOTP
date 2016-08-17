@@ -1,3 +1,9 @@
+linotp-useridresolver (2.9.0.1+custom01-1) jessie; urgency=low
+
+  * Deactivate checking certificate in LDAP resolver
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 17 Aug 2016 16:54:37 +0200
+
 linotp-useridresolver (2.9-1) jessie; urgency=low
 
   * Add class registry and class aliases
