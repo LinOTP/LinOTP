@@ -43,6 +43,7 @@ values and in all of the cases the result values are tested by
 default (for success).
 """
 
+import cookielib
 import unittest2
 import warnings
 import json
@@ -98,6 +99,33 @@ else:
             # Configure url ...
             url._push_object(URLGenerator(config['routes.map'], environ))
 
+            # -----------------------------------------------------------------
+
+            current_webtest = LooseVersion(
+                pkg_resources.get_distribution('webtest').version
+            )
+            if current_webtest <= LooseVersion('2.0.14'):
+                # Fix application cookies for localhost for webtest versions
+                # 2.0.0 to 2.0.14 (https://github.com/Pylons/webtest/issues/84)
+                # The CookiePolicy code is taken from webtest
+
+                class CookiePolicy(cookielib.DefaultCookiePolicy):
+                    """A subclass of DefaultCookiePolicy to allow cookie set
+                    for Domain=localhost."""
+
+                    def return_ok_domain(self, cookie, request):
+                        if cookie.domain == '.localhost':
+                            return True
+                        return cookielib.DefaultCookiePolicy.return_ok_domain(
+                            self, cookie, request)
+
+                    def set_ok_domain(self, cookie, request):
+                        if cookie.domain == '.localhost':
+                            return True
+                        return cookielib.DefaultCookiePolicy.set_ok_domain(
+                            self, cookie, request)
+
+                self.app.cookiejar = cookielib.CookieJar(policy=CookiePolicy())
 
 
 # This is an utility class used to "seal" class implementation (forbid inheritance).
@@ -184,6 +212,28 @@ class TestAdvancedController(TestController2):
             current_webtest = LooseVersion(pkg_resources.get_distribution('webtest').version)
             if current_webtest >= LooseVersion('2.0.16'):
                 self.app.set_cookie(name, value)
+            elif current_webtest >= LooseVersion('2.0.0'):
+                # webtest 2.0.0 to 2.0.15 don't have a cookie setter interface
+                # This cookie setting code is taken from webtest 2.0.16
+                cookie = cookielib.Cookie(
+                    version=0,
+                    name=name,
+                    value=value,
+                    port=None,
+                    port_specified=False,
+                    domain='.localhost',
+                    domain_specified=True,
+                    domain_initial_dot=False,
+                    path='/',
+                    path_specified=True,
+                    secure=False,
+                    expires=None,
+                    discard=False,
+                    comment=None,
+                    comment_url=None,
+                    rest=None
+                )
+                self.app.cookiejar.set_cookie(cookie)
             else:
                 self.app.cookies[name] = value
         def __delitem__(self, name):
