@@ -119,10 +119,9 @@ def _set_cacertificate(cacertificates, ca_dir=None):
 
     log.debug("[_set_cacertificate] setting file %s" % ca_file)
     reload(ldap)
-    ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, ca_file)
-    ca_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
+    ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
 
-    return ca_file
+    return None
 
 
 @resolver_registry.class_entry('useridresolver.LDAPIdResolver.IdResolver')
