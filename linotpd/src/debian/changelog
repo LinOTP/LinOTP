@@ -1,3 +1,10 @@
+linotp (2.9.0.1-1) jessie; urgency=low
+
+  Bug Fixes:
+  * Server: Make constant time comparison compatible with python<=2.7.6
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 17 Aug 2016 15:33:51 +0200
+
 linotp (2.9-1) jessie; urgency=low
 
   Enhancements:
