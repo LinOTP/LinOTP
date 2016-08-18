@@ -847,24 +847,26 @@ def getUserList(param, search_user):
             log.debug("[getUserList] with this search dictionary: %r ",
                       searchDict)
 
-            if hasattr(y, 'getUserListIterator'):
-                try:
-                    ulist_gen = y.getUserListIterator(searchDict)
-                    while True:
-                        ulist = ulist_gen.next()
-                        log.debug("[getUserList] setting the resolver <%r> "
-                                  "for each user", resolver_spec)
-                        for u in ulist:
-                            u["useridresolver"] = resolver_spec
-                        log.debug("[getUserList] Found this userlist: %r",
-                                  ulist)
-                        users.extend(ulist)
+            try:
+                ulist_gen = y.getUserListIterator(searchDict)
+                while True:
+                    ulist = ulist_gen.next()
+                    log.debug("[getUserList] setting the resolver <%r> "
+                              "for each user", resolver_spec)
+                    for u in ulist:
+                        u["useridresolver"] = resolver_spec
+                    log.debug("[getUserList] Found this userlist: %r",
+                              ulist)
+                    users.extend(ulist)
 
-                except StopIteration as exx:
-                    # we are done: all users are fetched or
-                    # page size limit reached
-                    pass
-            else:
+            except StopIteration as exx:
+                # we are done: all users are fetched or
+                # page size limit reached
+                pass
+            except Exception as exc:
+                log.info("Getting userlist using iterator not possible. "
+                         "Falling back to fetching userlist without iterator. "
+                         "Reason: %r", exc)
                 ulist = y.getUserList(searchDict)
                 for u in ulist:
                     u["useridresolver"] = resolver_spec
