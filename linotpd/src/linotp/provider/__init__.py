@@ -40,7 +40,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.config import updateConfig
 from linotp.lib.config import removeFromConfig
 
-from linotp.lib.policy import getPolicy
+from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.context import request_context
 
@@ -450,18 +450,13 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
         raise Exception('unknown user for policy lookup! %r'
                         % user)
 
-    params = {'scope': 'authentication',
-              'action': provider_action_name
-              }
-
-    if realm:
-        params['realm'] = realm
-
     if user and user.login:
-        params["realm"] = user.realm
-        params["user"] = user.login
+        realm = user.realm
 
-    policies = getPolicy(params)
+    policies = get_client_policy(request_context['Client'],
+                                 scope='authentication',
+                                 action=provider_action_name, realm=realm,
+                                 user=user.login)
 
     if policies:
         provider_name = getPolicyActionValue(policies,
