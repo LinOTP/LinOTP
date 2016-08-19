@@ -1,3 +1,10 @@
+linotp (2.9.0.1+custom02-1) jessie; urgency=low
+
+  Bug Fixes:
+  *Server: Evaluate the client parameter in SMS and email policies
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 19 Aug 2016 17:28:51 +0200
+
 linotp (2.9.0.1+custom01-1) jessie; urgency=low
 
   Bug Fixes:
