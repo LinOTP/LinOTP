@@ -117,7 +117,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.token import get_token_owner
 
 from linotp.lib.policy import getPolicyActionValue
-from linotp.lib.policy import getPolicy
+from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 from linotp.lib.policy import trigger_sms
 
@@ -162,9 +162,8 @@ def get_auth_smstext(user="", realm=""):
     ret = False
     smstext = "<otp>"
 
-    pol = getPolicy({'scope': 'authentication',
-                     'realm': realm,
-                     "action": "smstext"})
+    pol = get_client_policy(context['Client'], scope="authentication",
+                            realm=realm, user=user, action="smstext")
 
     if len(pol) > 0:
         smstext = getPolicyActionValue(pol, "smstext", is_string=True)

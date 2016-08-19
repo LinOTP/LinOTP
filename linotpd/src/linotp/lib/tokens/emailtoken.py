@@ -41,7 +41,7 @@ from linotp.lib.auth.validate import check_pin
 from linotp.lib.HMAC import HmacOtp
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
-from linotp.lib.policy import getPolicy
+from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy import getPolicyActionValue
 
 from linotp.lib.tokens.hmactoken import HmacTokenClass
@@ -353,10 +353,10 @@ class EmailTokenClass(HmacTokenClass):
         realm = user.realm
         login = user.login
 
-        policies = getPolicy({'scope': 'authentication',
-                              'realm': realm,
-                              "action": "emailtext",
-                              "user": login})
+        policies = get_client_policy(context['Client'], scope="authentication",
+                                     realm=realm, user=login,
+                                     action="emailtext")
+
         if policies:
             message = getPolicyActionValue(policies, "emailtext", is_string=True)
 
@@ -379,10 +379,10 @@ class EmailTokenClass(HmacTokenClass):
         realm = user.realm
         login = user.login
 
-        policies = getPolicy({'scope': 'authentication',
-                              'realm': realm,
-                              "action": "emailsubject",
-                              "user": login})
+        policies = get_client_policy(context['Client'], scope="authentication",
+                                     realm=realm, user=login,
+                                     action="emailsubject")
+
         if policies:
             subject = getPolicyActionValue(policies, "emailsubject",
                                            is_string=True)
