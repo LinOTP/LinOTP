@@ -1502,26 +1502,6 @@ ${c.version} --- &copy; ${c.licenseinfo}
         $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
         $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
     }
-    function translate_dialog_ti_countauthmax() {
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
-    }
-    function translate_dialog_ti_countauthsuccessmax() {
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Successful Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
-    }
-    function translate_dialog_ti_validityPeriodStart() {
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity start")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
-    }
-    function translate_dialog_ti_validityPeriodEnd() {
-        $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity end")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
-    }
     function translate_dialog_ti_phone() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Mobile phone number")}' );
         $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
