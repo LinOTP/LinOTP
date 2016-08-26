@@ -3151,7 +3151,7 @@ function set_tokeninfo_buttons(){
         $dialog_tokeninfo_set.html('Format: %d/%m/%y %H:%M<br><input type="hidden" name="info_type" value="validityPeriodEnd">\
             <input id=info_value name=info_value></input>\
             ');
-        translate_dialog_ti_validityPeriodStart();
+        translate_dialog_ti_validityPeriodEnd();
         $dialog_tokeninfo_set.dialog('open');
     });
     $('#ti_button_mobile_phone').button({

@@ -47,10 +47,10 @@
         </table>
         <div id="toolbar" class="ui-widget-header ui-corner-all">
             <button id="ti_button_hashlib">${_("hashlib")}</button>
-            <button id="ti_button_count_auth_max">${_("count auth")}</button>
-            <button id="ti_button_count_auth_max_success">${_("count auth max")}</button>
-            <button id="ti_button_valid_start">${_("count auth max")}</button>
-            <button id="ti_button_valid_end">${_("count auth max")}</button>
+            <button id="ti_button_count_auth_max">${_("count auth max")}</button>
+            <button id="ti_button_count_auth_max_success">${_("count auth success max")}</button>
+            <button id="ti_button_valid_start">${_("validity start")}</button>
+            <button id="ti_button_valid_end">${_("validity end")}</button>
             %if ttype in [ "totp", "ocra" ]:
             <button id="ti_button_time_window">${_("time window")}</button>
             <button id="ti_button_time_step">${_("time step")}</button>
