@@ -338,7 +338,8 @@ def deleteRealm(realmname):
 
 def match_realms(request_realms, allowed_realms):
     """
-    Check if all requested realms are also allowed realms and
+    Check if all requested realms are also allowed realms
+    and that all allowed realms exist and
     return a filtered list with only the matched realms.
     In case of '*' in reques_realms, return all allowed realms
     including /:no realm:/
@@ -347,22 +348,31 @@ def match_realms(request_realms, allowed_realms):
     :param request_realms: list of allowed realms according to policies
     :return: list of realms which were in both lists
     """
+
+    all_realms = getRealms().keys()
+    all_allowed_realms = set()
+    for realm in allowed_realms:
+        if realm in all_realms:
+            all_allowed_realms.add(realm)
+        else:
+            log.info('Policy allowed a realm that does not exist: %r', realm)
+
     realms = []
 
     _ = context['translate']
 
     if not request_realms or request_realms == ['']:
-        realms = allowed_realms
+        realms = list(all_allowed_realms)
     # support for empty realms or no realms by realm = *
     elif '*' in request_realms:
-        realms = allowed_realms
+        realms = list(all_allowed_realms)
         realms.append('/:no realm:/')
     # other cases, we iterate through the realm list
     elif len(request_realms) > 0 and not (request_realms == ['']):
         invalid_realms = []
         for search_realm in request_realms:
             search_realm = search_realm.strip()
-            if search_realm in allowed_realms:
+            if search_realm in all_allowed_realms:
                 realms.append(search_realm)
             elif search_realm == '/:no realm:/':
                 realms.append(search_realm)
