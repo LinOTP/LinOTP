@@ -605,7 +605,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
         if not cb_url and not cb_sms:
             raise Exception(_('Policy %s must have a value') %
-                            _(" or ").join(pairing_policies))
+                            _(" or ").join(challenge_policies))
 
         # ------------------------------------------------------------------
 
