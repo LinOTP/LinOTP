@@ -30,7 +30,6 @@ monitoring controller - interfaces to monitor LinOTP
 import logging
 
 from pylons import request, response, config, tmpl_context as c
-from pylons.i18n.translation import _
 
 from linotp.lib.base import BaseController
 from linotp.lib.error import HSMException
@@ -178,8 +177,8 @@ class MonitoringController(BaseController):
                                                         status)
                 realm_info[a_realm] = token_count
 
-            result[_('Summary')] = monit_handler.token_count(realms, status)
-            result[_('Realms')] = realm_info
+            result['Summary'] = monit_handler.token_count(realms, status)
+            result['Realms'] = realm_info
 
             Session.commit()
             return sendResult(response, result)
