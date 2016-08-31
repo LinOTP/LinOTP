@@ -38,22 +38,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 "X-Generator: Poedit 1.8.8\n"
 
-msgid "Summary"
-msgstr "Sommaire"
-
-msgid "Realms"
-msgstr "Domaines"
-
-#, python-format
+#, fuzzy, python-format
 msgid ""
-"Unable to instantiate the resolver %rPlease verify configuration or "
+"Unable to instantiate the resolver %r.Please verify configuration or "
 "connection!"
 msgstr ""
 "Impossible d'initier le résolveur %rVeuillez vérifier la configuration ou la "
 "connexion !"
-
-msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
-msgstr "Le nom de la directive ne peut contenir que les caractères a-zA-Z0-9_"
 
 msgid "The name of the policy must not be empty"
 msgstr "Le nom de la directive ne doit  pas être vide"
@@ -671,6 +662,10 @@ msgstr "Erreur lors de la vérification de la directive - contrôleur inconnu %s
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Plusieurs token trouvés - ne peut pas déterminer le type de token !"
+
+#, fuzzy
+msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
+msgstr "Le nom de la directive ne peut contenir que les caractères a-zA-Z0-9_"
 
 msgid "E-mail token"
 msgstr "Token e-mail"
@@ -2149,6 +2144,9 @@ msgstr "Configuration LinOTP"
 msgid "UserIdResolvers"
 msgstr "UserIdResolvers"
 
+msgid "Realms"
+msgstr "Domaines"
+
 msgid "System Config"
 msgstr "Configuration système"
 
@@ -3570,11 +3568,20 @@ msgstr "Vider les champs"
 msgid "hashlib"
 msgstr "Algorithme Hash"
 
-msgid "count auth"
-msgstr "Compteur d'authentification"
-
 msgid "count auth max"
 msgstr "Compteur d'authentification maximum"
+
+#, fuzzy
+msgid "count auth success max"
+msgstr "Compteur d'authentification maximum"
+
+#, fuzzy
+msgid "validity start"
+msgstr "Début de la période de validité"
+
+#, fuzzy
+msgid "validity end"
+msgstr "Fin de la période de validité"
 
 msgid "time window"
 msgstr "Fenêtre temporelle"
@@ -3867,6 +3874,12 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Sinon, numérisez le code QR affiché ci-dessous avec votre iPhone pour "
 "importer le profil."
+
+#~ msgid "Summary"
+#~ msgstr "Sommaire"
+
+#~ msgid "count auth"
+#~ msgstr "Compteur d'authentification"
 
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "Vous n'êtes pas autorisé à surveiller ces domaines."

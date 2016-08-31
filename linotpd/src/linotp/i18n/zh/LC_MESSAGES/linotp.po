@@ -38,20 +38,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 "X-Generator: Poedit 1.8.8\n"
 
-msgid "Summary"
-msgstr "概述："
-
-msgid "Realms"
-msgstr "域"
-
-#, python-format
+#, fuzzy, python-format
 msgid ""
-"Unable to instantiate the resolver %rPlease verify configuration or "
+"Unable to instantiate the resolver %r.Please verify configuration or "
 "connection!"
 msgstr "无法实例化解析器 %r请验证配置或连接！"
-
-msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
-msgstr "策略名只能包含字符 a-zA-Z0-9_。"
 
 msgid "The name of the policy must not be empty"
 msgstr "策略名不能为空。"
@@ -548,6 +539,10 @@ msgstr "无法进行getPolicyPost。未知控制器： %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "发现多个令牌，无法确定令牌类型！"
+
+#, fuzzy
+msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
+msgstr "策略名只能包含字符 a-zA-Z0-9_。"
 
 msgid "E-mail token"
 msgstr "电子邮件令牌"
@@ -1926,6 +1921,9 @@ msgstr "LinOTP 配置"
 msgid "UserIdResolvers"
 msgstr "用户 ID 解析器"
 
+msgid "Realms"
+msgstr "域"
+
 msgid "System Config"
 msgstr "系统配置"
 
@@ -3246,11 +3244,20 @@ msgstr "空字段"
 msgid "hashlib"
 msgstr "哈希算法"
 
-msgid "count auth"
-msgstr "认证计数器"
-
 msgid "count auth max"
 msgstr "最大认证数量"
+
+#, fuzzy
+msgid "count auth success max"
+msgstr "最大认证数量"
+
+#, fuzzy
+msgid "validity start"
+msgstr "有效期开始"
+
+#, fuzzy
+msgid "validity end"
+msgstr "有效期结束"
 
 msgid "time window"
 msgstr "时间窗口"
@@ -3522,6 +3529,12 @@ msgstr "安装配置文件"
 
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr "或者您也可通过 iPhone 扫描下面的二维码，导入配置文件。"
+
+#~ msgid "Summary"
+#~ msgstr "概述："
+
+#~ msgid "count auth"
+#~ msgstr "认证计数器"
 
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "您没有权限监测这些域。"

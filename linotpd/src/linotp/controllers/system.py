@@ -29,9 +29,9 @@ system controller - to configure the system
 
 
 import json
-import re
 import webob
 import binascii
+from configobj import ConfigObj
 
 from pylons import request, response, config, tmpl_context as c
 
@@ -81,6 +81,7 @@ from linotp.lib.policy import PolicyException
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy.manage import setPolicy
 from linotp.lib.policy.manage import deletePolicy
+from linotp.lib.policy.manage import import_policies
 from linotp.lib.policy.definitions import getPolicyDefinitions
 
 from linotp.lib.policy.manage import create_policy_export_file
@@ -596,7 +597,7 @@ class SystemController(BaseController):
             resolver_loaded = defineResolver(param)
             if not resolver_loaded:
                 deleteResolver(new_resolver_name)
-                msg = (_("Unable to instantiate the resolver %r"
+                msg = (_("Unable to instantiate the resolver %r."
                          "Please verify configuration or connection!") %
                        new_resolver_name)
                 raise ResolverLoadConfigError(msg)
@@ -1039,10 +1040,6 @@ class SystemController(BaseController):
 
             name = getParam(param, "name", required)
 
-            # check that the name does not contain a .
-            if not re.match('^[a-zA-Z0-9_]*$', name):
-                raise Exception(_("The name of the policy may only contain "
-                                   "the characters a-zA-Z0-9_"))
             if not name:
                 raise Exception(_("The name of the policy must not be empty"))
 
@@ -1269,21 +1266,28 @@ class SystemController(BaseController):
         arguments:
             file - mandatory: The policy file in the POST request
         '''
+
+        # setup the response methods
         sendResultMethod = sendResult
         sendErrorMethod = sendError
 
         res = True
         try:
+
             log.debug("[importPolicy] getting POST request: %r" % request.POST)
 
             policy_file = request.POST['file']
             fileString = ""
-            log.debug("[importPolicy] loading policy file to server using POST request. File: %s" % policy_file)
+            log.debug("[importPolicy] loading policy file to server using POST"
+                      " request. File: %r" % policy_file)
 
+            # -- --------------------------------------------------------------
             # In case of form post requests, it is a "instance" of FieldStorage
-            # i.e. the Filename is selected in the browser and the data is transferred
-            # in an iframe. see: http://jquery.malsup.com/form/#sample4
-            #
+            # i.e. the Filename is selected in the browser and the data is
+            # transferred in an iframe.
+            #     see: http://jquery.malsup.com/form/#sample4
+            # -- --------------------------------------------------------------
+
             if type(policy_file).__name__ == 'instance':
                 log.debug("[importPolicy] Field storage file: %s", policy_file)
                 fileString = policy_file.value
@@ -1291,40 +1295,36 @@ class SystemController(BaseController):
                 sendErrorMethod = sendXMLError
             else:
                 fileString = policy_file
+
             log.debug("[importPolicy] fileString: %s", fileString)
 
             if fileString == "":
-                log.error("[importPolicy] Error loading/importing policy file. file empty!")
-                return sendErrorMethod(response, "Error loading policy. File empty!")
+                log.error("[importPolicy] Error loading/importing policy "
+                          "file. file empty!")
+                return sendErrorMethod(response, "Error loading policy. "
+                                       "File empty!")
 
-            # the contents of filestring needs to be parsed and stored as policies.
-            from configobj import ConfigObj
+            # the contents of filestring needs to be parsed and
+            # stored as policies.
+
             policies = ConfigObj(fileString.split('\n'), encoding="UTF-8")
-            log.info("[importPolicy] read the following policies: %s",
+            log.info("[importPolicy] read the following policies: %r",
                      policies)
-            res = len(policies)
-            for policy_name in policies.keys():
-                policy = policies[policy_name]
-                if not policy['action'] or not policy['scope']:
-                    raise ParameterError("Missing scope or action in"
-                                         " policy %s" % policy_name)
-                ret = setPolicy({'name': policy_name,
-                                 'action': policy['action'],
-                                 'scope': policy['scope'],
-                                 'realm': policy.get('realm', ""),
-                                 'user': policy.get('user', ""),
-                                 'time': policy.get('time', ""),
-                                 'client': policy.get('client', "")})
-                log.debug("[importPolicy] import policy %s: %s",
-                          policy_name, ret)
+
+            # -- ---------------------------------------------------------
+            # finally import the policies
+            # -- ---------------------------------------------------------
+            res = import_policies(policies)
 
             c.audit['info'] = "Policies imported from file %s" % policy_file
             c.audit['success'] = 1
+
             Session.commit()
+
             return sendResultMethod(response, res)
 
         except Exception as exx:
-            log.exception("[importPolicy] failed! %r" % exx)
+            log.exception("[importPolicy] failed! %r", exx)
             Session.rollback()
             return sendErrorMethod(response, exx)
 

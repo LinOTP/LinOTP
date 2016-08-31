@@ -403,6 +403,35 @@ class TestSystemController(TestController):
 
         return
 
+    def test_bad_policy_name_import(self):
+
+        policy_content = '''[ded-ee]
+realm = *
+active = True
+client = ""
+user = *
+time = ""
+action = "otppin=password "
+scope = authentication
+'''
+
+        upload_files = [("file", "savedPolicy.txt", policy_content)]
+
+        response = self.make_system_request(action='importPolicy',
+                                            params={},
+                                            upload_files=upload_files)
+
+        self.assertTrue('<status>False</status>' in response, response)
+        self.assertTrue('may only contain the characters'in response, response)
+
+        # Now check the policies, that we imported...
+        response = self.make_system_request(action='getPolicy', method='POST',
+                                            params={}, auth_user='superuser')
+
+        self.assertFalse('ded-ee' in response, response)
+
+        return
+
     def test_import_policy(self):
 
         policy_content = '''[resovler_ss1]
