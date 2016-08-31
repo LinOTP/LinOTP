@@ -2070,6 +2070,7 @@ def checkPolicyPre(controller, method, param={}, authUser=None, user=None):
             # default: we got HMAC / ETNG
             log.debug("[checkPolicyPre] checking init action")
 
+            from linotp.lib.support import check_license_restrictions
             if linotp.lib.support.check_license_restrictions():
                 raise PolicyException(_("Due to license restrictions no more"
                                         " tokens could be enrolled!"))
