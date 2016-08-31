@@ -27,25 +27,22 @@
               - VascoTokenClass (vasco)
 """
 
-from linotp.lib.util    import getParam
+import logging
+
+from linotp.lib.util import getParam
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.ImportOTP.vasco import vasco_otp_check
-
 from linotp.lib.context import request_context as context
 
-from linotp.lib.ImportOTP.vasco import compress
-from linotp.lib.ImportOTP.vasco import decompress
-
-import logging
 log = logging.getLogger(__name__)
-
-optional = True
-required = False
 
 
 ###############################################
 class VascoTokenClass(TokenClass):
+    """
+    Vasco Token Class - binding against the vasco dll
+    """
 
     def __init__(self, aToken):
         TokenClass.__init__(self, aToken)
@@ -82,16 +79,16 @@ class VascoTokenClass(TokenClass):
         _ = context['translate']
 
         res = {
-               'type' : 'vasco',
-               'title' : _('Vasco Token'),
-               'description' :
-                    _('Vasco Digipass Token Class - proprietary timebased tokens'),
-               'init'         : {},
-               'config'         : {},
-               'selfservice'   :  {},
+            'type': 'vasco',
+            'title': _('Vasco Token'),
+            'description':
+                _('Vasco Digipass Token Class - proprietary timebased tokens'),
+            'init': {},
+            'config': {},
+            'selfservice': {},
         }
 
-        if key is not None and res.has_key(key):
+        if key is not None and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
@@ -99,19 +96,18 @@ class VascoTokenClass(TokenClass):
 
         return ret
 
-    def update(self, param):
+    def update(self, param, reset_failcount=True):
 
-        ## check for the required parameters
-        if (self.hKeyRequired is True):
-            getParam(param, "otpkey", required)
+        # check for the required parameters
+        if self.hKeyRequired is True:
+            getParam(param, "otpkey", optional=False)
 
         TokenClass.update(self, param, reset_failcount=False)
 
         for key in ["vasco_appl", "vasco_type", "vasco_auth"]:
-            val = getParam(param, key, optional)
+            val = getParam(param, key, optional=True)
             if val is not None:
                 self.addToTokenInfo(key, val)
-
 
     def reset(self):
         TokenClass.reset(self)
@@ -124,7 +120,8 @@ class VascoTokenClass(TokenClass):
 
         :param otp: The OTP value to search for
         :type otp: string
-        :param window: In how many future OTP values the given OTP value should be searched
+        :param window: In how many future OTP values the given OTP value
+                       should be searched
         :type window: int
 
         :return: tuple of the result value and the data itself
@@ -137,26 +134,27 @@ class VascoTokenClass(TokenClass):
         '''
         Checks if the OTP value is valid.
 
-        Therefore the vasco data blob is fetched from the database and this very
-        blob and the otp value is passed to the vasco function vasco_otp_check.
+        Therefore the vasco data blob is fetched from the database and this
+        very blob and the otp value is passed to the vasco function
+        vasco_otp_check.
 
         After that the modified vasco blob needs to be stored (updated) in the
         database again.
         '''
-        res = -1
 
         secObject = self.token.getHOtpKey()
         otpkey = secObject.getKey()
-        data = decompress(otpkey)
 
         # let vasco handle the OTP checking
-        (res, data) = vasco_otp_check(data, anOtpVal)
+        (res, otpkey) = vasco_otp_check(otpkey, anOtpVal)
         # update the vasco data blob
-        self.update({"otpkey" : compress(data)})
+        self.update({"otpkey": otpkey})
 
         if res != 0:
-            log.warning("[checkOtp] Vasco token failed to authenticate. Vasco Error code: %d" % res)
-            # TODO: Vasco gives much more detailed error codes. But at the moment we do not handle more error codes!
+            log.warning("[checkOtp] Vasco token failed to authenticate. "
+                        "Vasco Error code: %d" % res)
+            # TODO: Vasco gives much more detailed error codes. But at the
+            # moment we do not handle more error codes!
             res = -1
 
         return res
