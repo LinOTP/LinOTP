@@ -2620,6 +2620,7 @@ function save_ldap_config(){
         '#ldap_mapping': 'USERINFO',
         '#ldap_uidtype': 'UIDTYPE',
         '#ldap_noreferrals' : 'NOREFERRALS',
+        '#ldap_enforce_tls': 'EnforceTLS',
         '#ldap_certificate': 'CACERTIFICATE',
     };
     var url = '/system/setResolver';
@@ -2637,6 +2638,12 @@ function save_ldap_config(){
         noreferrals = "True";
     }
     params["NOREFERRALS"] = noreferrals;
+
+    var ldap_enforce_tls="False";
+    if ($("#ldap_enforce_tls").is(':checked')) {
+        ldap_enforce_tls = "True";
+    }
+    params["EnforceTLS"] = ldap_enforce_tls;
 
     params["session"] = getsession();
     show_waiting();
@@ -3914,9 +3921,12 @@ $(document).ready(function(){
         params['ldap_uidtype']      = $('#ldap_uidtype').val();
         params['ldap_certificate']  = $('#ldap_certificate').val();
 
-
         if ($('#ldap_noreferrals').is(':checked')) {
             params["NOREFERRALS"] = "True";
+        }
+
+        if ($('#ldap_enforce_tls').is(':checked')) {
+            params["EnforceTLS"] = "True";
         }
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
@@ -5753,6 +5763,11 @@ function resolver_set_ldap(obj) {
     $('#ldap_uidtype').val(obj.result.value.data.UIDTYPE);
     $('#ldap_certificate').val(obj.result.value.data.CACERTIFICATE);
     $('#ldap_noreferrals').val(obj.result.value.data.NOREFERRALS);
+
+    // get the configuration value of the enforce TLS and adjust the checkbox
+    var checked = obj.result.value.data.EnforceTLS.toLowerCase() == "true";
+    $('#ldap_enforce_tls').prop('checked', checked);
+
     ldap_resolver_ldaps();
 }
 
@@ -5774,6 +5789,7 @@ function resolver_ldap(name){
                     'UIDTYPE': 'objectGUID',
                     'CACERTIFICATE' : '',
                     'NOREFERRALS' : 'True',
+                    'EnforceTLS' : 'True',
                 }
             }
         }
@@ -5804,6 +5820,10 @@ function resolver_ldap(name){
         resolver_set_ldap(obj);
     }
     $('#ldap_noreferrals').prop('checked', ("True" == obj.result.value.data.NOREFERRALS));
+
+    // adjust the checkbox of enforce TLS according to the configuration value
+    var checked = obj.result.value.data.EnforceTLS.toLowerCase() == "true";
+    $('#ldap_enforce_tls').prop('checked', checked);
 
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');

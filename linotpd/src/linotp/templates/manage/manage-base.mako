@@ -1699,7 +1699,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <tr><td> </td>
                 <td><input type="checkbox" name="noreferrals" value="noreferralss" id="ldap_noreferrals">
                     <label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
+            <tr><td> </td>
+                <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls">
+                    <label for="ldap_enforce_tls">${_("Enforce TLS")}</label></td></tr>
             </table>
+
             <button class="action-button" id="button_test_ldap">${_("Test LDAP Server connection")}</button>
             <div id="progress_test_ldap"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connection ...")} </div>
         </fieldset>

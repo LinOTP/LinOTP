@@ -2354,6 +2354,7 @@ class AdminController(BaseController):
                 param['SIZELIMIT'] = getParam(param, "ldap_sizelimit", required)
                 param['NOREFERRALS'] = getParam(param, "noreferrals", optional)
                 param['CACERTIFICATE'] = getParam(param, "ldap_certificate", optional)
+                param['EnforceTLS'] = getParam(param, "enforcetls", optional)
 
                 # check if we should use the system certificate handling,
                 # thus ignoring the cert_dir or cert_file setting

@@ -526,7 +526,6 @@ class ManageController(BaseController):
             Session.close()
             log.debug('[userview_flexi] done')
 
-
     def tokeninfo(self):
         '''
         this returns the contents of /admin/show?serial=xyz in an html format
