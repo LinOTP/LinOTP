@@ -1,3 +1,10 @@
+linotp (2.9.0.2-1) jessie; urgency=low
+
+  Bug Fixes:
+  * Server: Fix token enrollment using the API directly after a server restart
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 02 Sep 2016 16:27:13 +0200
+
 linotp (2.9.0.1-1) jessie; urgency=low
 
   Bug Fixes:
