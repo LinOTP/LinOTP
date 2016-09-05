@@ -27,27 +27,27 @@
 
 """ """
 
-import datetime
 import binascii
+import datetime
+from hashlib import sha1, sha256, sha512
 import hmac
+import logging
+import random
 import struct
 import time
-import random
+import traceback
+
+from freezegun import freeze_time
+
+from linotp.lib.crypt import geturandom
+from linotp.tests import TestController, url
 
 try:
     import json
 except ImportError:
     import simplejson as json
 
-import traceback
 
-from hashlib import sha1, sha256, sha512
-
-from linotp.lib.crypt   import geturandom
-from linotp.tests import TestController, url
-
-
-import logging
 log = logging.getLogger(__name__)
 
 
@@ -384,26 +384,31 @@ class TestTotpController(TestController):
 
         otpSet = set()
 
-        for i in range(1, 5):
-            offset = i * step
-            (otp, counter) = t1.getOtp(offset=offset)
-            tt = t1.getTimeFromCounter(counter)
-            log.debug("tokentime: %r" % tt)
+        # Freeze time to the current system time
+        with freeze_time(datetime.datetime.now()) as frozen_datetime:
+            for i in range(1, 5):
+                offset = i * step
+                (otp, counter) = t1.getOtp(offset=offset)
+                tt = t1.getTimeFromCounter(counter)
+                log.debug("tokentime: %r" % tt)
 
-            res = self.checkOtp(user, otp)
+                res = self.checkOtp(user, otp)
 
-            if otp not in otpSet:
-                assert '"value": true' in res.body
-                resInfo = self.getTokenInfo(tserial)
-                tInfo = json.loads(resInfo.get('result').get('value').get('data')[0].get('LinOtp.TokenInfo'))
-                tShift = tInfo.get('timeShift')
-                assert tShift <= offset and tShift >= offset - step
-            else:
-                assert '"value": false' in res.body
+                if otp not in otpSet:
+                    assert '"value": true' in res.body
+                    resInfo = self.getTokenInfo(tserial)
+                    tInfo = json.loads(resInfo.get('result').get('value').get('data')[0].get('LinOtp.TokenInfo'))
+                    tShift = tInfo.get('timeShift')
+                    assert tShift <= offset and tShift >= offset - step
+                else:
+                    assert '"value": false' in res.body
 
-            otpSet.add(otp)
-            time.sleep(step / 2)
-            log.debug('res')
+                otpSet.add(otp)
+
+                # Jump to the future
+                frozen_datetime.tick(delta=datetime.timedelta(seconds=step/2))
+
+                log.debug('res')
 
         return
 
@@ -428,27 +433,32 @@ class TestTotpController(TestController):
 
         otpSet = set()
 
-        for i in range(1):
-            offset = i * step * -1
-            (otp, counter) = t1.getOtp(offset=offset)
-            tt = t1.getTimeFromCounter(counter)
-            log.debug("tokentime: %r" % tt)
+        # Freeze time to the current system time
+        with freeze_time(datetime.datetime.now()) as frozen_time:
+            for i in range(1):
+                offset = i * step * -1
+                (otp, counter) = t1.getOtp(offset=offset)
+                tt = t1.getTimeFromCounter(counter)
+                log.debug("tokentime: %r" % tt)
 
-            res = self.checkOtp(user, otp)
+                res = self.checkOtp(user, otp)
 
-            if otp not in otpSet:
-                if '"value": true' not in res.body:
-                    assert '"value": true' in res.body
-                resInfo = self.getTokenInfo(tserial)
-                tInfo = json.loads(resInfo.get('result').get('value').get('data')[0].get('LinOtp.TokenInfo'))
-                tShift = tInfo.get('timeShift')
-                assert tShift <= offset and tShift >= offset - step
-            else:
-                assert '"value": false' in res.body
+                if otp not in otpSet:
+                    if '"value": true' not in res.body:
+                        assert '"value": true' in res.body
+                    resInfo = self.getTokenInfo(tserial)
+                    tInfo = json.loads(resInfo.get('result').get('value').get('data')[0].get('LinOtp.TokenInfo'))
+                    tShift = tInfo.get('timeShift')
+                    assert tShift <= offset and tShift >= offset - step
+                else:
+                    assert '"value": false' in res.body
 
-            otpSet.add(otp)
-            time.sleep(step)
-            log.debug('res')
+                otpSet.add(otp)
+
+                # Jump to the future
+                frozen_time.tick(delta=datetime.timedelta(seconds=step))
+
+                log.debug('res')
 
         return
 
@@ -459,35 +469,37 @@ class TestTotpController(TestController):
         user = 'root'
         step = 30
 
-        t1 = TotpToken(timestep=step)
-        key = t1.getKey().encode('hex')
-        step = t1.getTimeStep()
+        # Freeze time to the current system time
+        with freeze_time(datetime.datetime.now()) as frozen_time:
+            t1 = TotpToken(timestep=step)
+            key = t1.getKey().encode('hex')
+            step = t1.getTimeStep()
 
-        tserial = self.addToken(user=user, otplen=t1.digits, typ='totp', key=key, timeStep=step)
+            tserial = self.addToken(user=user, otplen=t1.digits, typ='totp', key=key, timeStep=step)
 
-        self.serials.append(tserial)
+            self.serials.append(tserial)
 
-        (otp, counter) = t1.getOtp()
-        tt = t1.getTimeFromCounter(counter)
-        log.debug("tokentime: %r" % tt)
+            (otp, counter) = t1.getOtp()
+            tt = t1.getTimeFromCounter(counter)
+            log.debug("tokentime: %r" % tt)
 
-        res = self.checkOtp(user, otp)
-        assert '"value": true' in res.body
+            res = self.checkOtp(user, otp)
+            assert '"value": true' in res.body
 
-        ''' reusing the otp again will fail'''
-        res = self.checkOtp(user, otp)
-        assert '"value": false' in res.body
+            ''' reusing the otp again will fail'''
+            res = self.checkOtp(user, otp)
+            assert '"value": false' in res.body
 
-        time.sleep(step)
+            # Jump to the future
+            frozen_time.tick(delta=datetime.timedelta(seconds=step))
 
+            ''' after a while, we could do a check again'''
+            (otp, counter) = t1.getOtp()
+            tt = t1.getTimeFromCounter(counter)
+            log.debug("tokentime: %r" % tt)
 
-        ''' after a while, we could do a check again'''
-        (otp, counter) = t1.getOtp()
-        tt = t1.getTimeFromCounter(counter)
-        log.debug("tokentime: %r" % tt)
-
-        res = self.checkOtp(user, otp)
-        assert '"value": true' in res.body
+            res = self.checkOtp(user, otp)
+            assert '"value": true' in res.body
 
         return
 
