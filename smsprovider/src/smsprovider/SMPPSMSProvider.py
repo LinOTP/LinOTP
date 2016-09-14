@@ -44,6 +44,9 @@ class SMPPSMSProvider(ISMSProvider):
     def __init__(self):
         self.config = {}
 
+        # limit provider to only support iso latin 1 encoding
+        self.target_encoding = 'ISO8859-1'
+
     def getConfigDescription(self):
         """
         """
@@ -63,11 +66,15 @@ class SMPPSMSProvider(ISMSProvider):
                                  'teleservice used on the air interface.'),
                  'source_addr_npi': ('Numbering Plan Indicator for source '
                                      'address.'),
-                 #'dest_addr_npi': ('Numbering Plan Indicator for dest '
+                 # 'dest_addr_npi': ('Numbering Plan Indicator for dest '
                  #                    'address.'),
-                 'source_addr_ton': ('Type of number of the ESME source address'),
-                 #'dest_addr_ton': ('Type of number of the ESME destination address'),
-                 #'registered_delivery': ('delivery receipt required'),
+                 'source_addr_ton': ('Type of number of the ESME source '
+                                     'address'),
+                 # 'dest_addr_ton': ('Type of number of the ESME destination'
+                 #                   ' address'),
+                 # 'registered_delivery': ('delivery receipt required'),
+                 # 'target_encoding': ('the encoding of the sms on the '
+                 #                     'target side - default is iso8859-15')
                  }
 
         return iface
@@ -77,57 +84,104 @@ class SMPPSMSProvider(ISMSProvider):
         submit the message to the SMPP Server
         """
 
+        result = True
+
         # setup the configuration
         if not self.config:
             raise Exception("missing configuration!")
 
         client = smpplib.client.Client(self.server, self.port)
         client.connect()
-        log.debug("connected to %r:%r" % (self.server, self.port))
+        log.debug("connected to %r:%r", self.server, self.port)
 
         try:
-            log.debug("binding to system_id %r (system_type %r)" %
-                      (self.system_id, self.system_type))
-            client.bind_transceiver(system_id=self.system_id,
-                                    password=self.password,
-                                    system_type=self.system_type)
+            log.debug("binding to system_id %r (system_type %r)",
+                      self.system_id, self.system_type)
 
-            client.send_message(
-                source_addr=self.source_addr,
-                destination_addr=phone,
-                short_message=message,
-                source_addr_npi=self.source_addr_npi,
-                source_addr_ton=self.source_addr_ton,
-                dest_addr_npi=self.dest_addr_npi,
-                dest_addr_ton=self.dest_addr_ton,
-                # registered_delivery=self.registered_delivery
-            )
+            # transform the arguments from unicode down to string / byte array
+            password = self.password.encode(self.target_encoding, 'ignore')
+            system_id = self.system_id.encode(self.target_encoding, 'ignore')
+            system_type = self.system_type.encode(self.target_encoding,
+                                                  'ignore')
 
-            log.debug("message %r submitted to %r" % (message, phone))
+            client.bind_transceiver(system_id=system_id,
+                                    password=password,
+                                    system_type=system_type)
+
+            # transform the arguments from unicode down to string / byte array
+            source_addr = self.source_addr.encode(self.target_encoding,
+                                                  'ignore')
+            destination_addr = phone.encode(self.target_encoding, 'ignore')
+            short_message = message.encode(self.target_encoding, 'ignore')
+
+            # according to spec messages should not be longer than 160 chars
+            if len(short_message) <= 160:
+                self._send(client, source_addr, destination_addr,
+                           short_message)
+                log.debug("message %r submitted to %r", short_message, phone)
+
+            else:
+                # messages longer than 160 chars should be
+                # split down into small chunks of 153 chars
+                max_msg_len = 153
+		for i in range(0, len(short_message), max_message_len):
+    		    msg = short_message[i : i + max_message_len]
+                    if not msg:
+                        continue
+                    self._send(client, source_addr, destination_addr, msg)
+                    log.debug("message %r submitted to %r", msg, phone)
 
         except Exception as exx:
             log.exception(exx)
+            result = False
 
         finally:
             client.unbind()
             client.disconnect()
 
-        return True
+        return result
+
+    def _send(self, client, source_addr, destination_addr, short_message):
+        """
+        small helper to submit the message chunks
+        """
+        res = client.send_message(
+                source_addr=source_addr,
+                destination_addr=destination_addr,
+                short_message=short_message,
+                source_addr_npi=int(self.source_addr_npi),
+                source_addr_ton=int(self.source_addr_ton),
+                dest_addr_npi=int(self.dest_addr_npi),
+                dest_addr_ton=int(self.dest_addr_ton),
+                data_coding=3
+            )
+        return res
 
     def loadConfig(self, configDict):
+        """
+        load the provider configuration from the config dict
+        """
         self.config = configDict
 
-        self.server = self.config['server']
+        self.server = unicode(self.config['server'])
         self.port = int(self.config.get('port', 5100))
-        self.system_id = self.config['system_id']
-        self.password = self.config['password']
-        self.source_addr = self.config['source_addr']
-        self.system_type = self.config.get('system_type', '')
+        self.system_id = unicode(self.config['system_id'])
+        self.password = unicode(self.config['password'])
+        self.system_type = unicode(self.config.get('system_type', ''))
+
+        self.source_addr = unicode(self.config['source_addr'])
         self.source_addr_npi = int(self.config.get('source_addr_npi', 1))
         self.source_addr_ton = int(self.config.get('source_addr_ton', 1))
+
         self.dest_addr_npi = int(self.config.get('dest_addr_npi', 1))
         self.dest_addr_ton = int(self.config.get('dest_addr_ton', 1))
-        #self.registered_delivery = int(self.config.get('registered_delivery', 0))
+
+        # not required:
+        # self.registered_delivery = int(self.config.get('registered_delivery',
+        #                                                0))
+
+        self.target_encoding = unicode(self.config.get('target_encoding',
+                                                       'ISO8859-1'))
 
 
 def main(phone, message, config):
@@ -142,42 +196,55 @@ def main(phone, message, config):
 
 if __name__ == "__main__":
     import argparse
+
     # for commandline testing
     parser = argparse.ArgumentParser()
-    parser.add_argument("phone", help="target phone number")
-    parser.add_argument("message", help="greeting message")
-    parser.add_argument("server", help="server address")
-    parser.add_argument("port", help="port number")
-    parser.add_argument("system_id", help="user name or system ID")
-    parser.add_argument("password", help="password")
-    parser.add_argument("system_type", help="type of service")
-    parser.add_argument("source_addr", help="name of sending phone")
-    parser.add_argument("source_addr_npi", help="type of source addr")
-    parser.add_argument(
-        "source_addr_ton", help="type of number of source addr")
-    #parser.add_argument("dest_addr_npi", help="type of destination addr")
-    #parser.add_argument("dest_addr_ton", help="type of number of destination addr")
-    #parser.add_argument("registered_delivery", help="delivery report requested")
+    parser.add_argument("--phone", help="target phone number")
+    parser.add_argument("--message", help="greeting message")
+    parser.add_argument("--server", help="server address")
+    parser.add_argument("--port", help="port number")
+
+    parser.add_argument("--password", help="password")
+    parser.add_argument("--system_type", help="type of service")
+    parser.add_argument("--source_addr", help="name of sending phone")
+    parser.add_argument("--source_addr_npi", help="type of source addr")
+    parser.add_argument("--source_addr_ton",
+                        help="type of number of source addr")
+    parser.add_argument("--system_id", help="user name or system ID")
+
+    # parser.add_argument("--target_encoding",
+    #                     help="the supported encoding of the sms submitter")
+
+    # parser.add_argument("dest_addr_npi", help="type of destination addr")
+    # parser.add_argument("dest_addr_ton", help=("type of number "
+    #                                            "of destination addr"))
+    # parser.add_argument("registered_delivery", help=("delivery report "
+    #                                                  "requested"))
 
     args = parser.parse_args()
 
-    config = {
-        args.server.split('=')[0]: args.server.split('=', 1)[1],
-        args.port.split('=')[0]: args.port.split('=', 1)[1],
-        args.system_id.split('=')[0]: args.system_id.split('=', 1)[1],
-        args.password.split('=')[0]: args.password.split('=', 1)[1],
-        args.system_type.split('=')[0]: args.system_type.split('=', 1)[1],
-        args.source_addr.split('=')[0]: args.source_addr.split('=', 1)[1],
-        args.source_addr_npi.split('=')[0]: args.source_addr_npi.split('=', 1)[1],
-        args.source_addr_ton.split('=')[0]: args.source_addr_ton.split('=', 1)[1],
-        # args.dest_addr_npi.split('=')[0]: args.dest_addr_npi.split('=', 1)[1],
-        # args.dest_addr_ton.split('=')[0]: args.dest_addr_ton.split('=', 1)[1],
-        # args.registered_delivery.split('=')[0]:
-        # args.registered_delivery.split('=', 1)[1],
-    }
+    config = {}
+    attrs = ['phone', 'message',
+             'server', 'port', 'password',
+             'system_type', 'system_id',
+             'source_addr', 'source_addr_npi', 'source_addr_ton',
+             'dest_addr_npi', 'dest_addr_ton',
+             # 'target_encoding',
+             'registered_delivery']
 
-    main(args.phone.split('=', 1)[1], args.message.split('=', 1)[1], config)
+    for key in attrs:
+        try:
+            val = getattr(args, key)
+            if val:
+                config[key] = val
+        except:
+            pass
+
+    phone = config['phone']
+    message = config['message']
+
+    main(phone, message, config)
 
     print("... done!")
 
-## eof ########################################################################
+# eof ########################################################################
