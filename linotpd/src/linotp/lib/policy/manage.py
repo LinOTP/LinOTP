@@ -28,7 +28,6 @@
 import re
 import logging
 
-from copy import deepcopy
 from configobj import ConfigObj
 
 from linotp.lib.config import getLinotpConfig
@@ -41,60 +40,104 @@ from linotp.lib.error import ServerError
 from linotp.lib.context import request_context as context
 from linotp.lib.policy.forward import ForwardServerPolicy
 
+
+PolicyNameRegex = re.compile('^[a-zA-Z0-9_]*$')
+
+
 class PolicyWarning(Exception):
     pass
 
 log = logging.getLogger(__name__)
 
 
-def setPolicy(param):
-    '''
-    Function to set a policy. It expects a dict of with the following keys:
+def import_policies(policies):
+    """
+    import policies
 
-      * name
-      * action
-      * scope
-      * realm
-      * user
-      * time
-      * client
+    :param policies: the ploicies as dict or as result of the parsed ConfigObj
+    :return: the number of the imported policies
+    """
+
+    for policy_name in policies:
+
+        policy_defintion = policies.get(policy_name)
+
+        policy = {'name': policy_name,
+                  'action': policy_defintion['action'],
+                  'active': policy_defintion.get('active', "True"),
+                  'scope': policy_defintion['scope'],
+                  'realm': policy_defintion.get('realm', ""),
+                  'user': policy_defintion.get('user', ""),
+                  'time': policy_defintion.get('time', ""),
+                  'client': policy_defintion.get('client', ""),
+                  }
+
+        if policy['scope'] == 'system':
+            policy['enforce'] = True
+
+        ret = setPolicy(policy)
+
+        log.debug("[importPolicy] import policy %s: %s", policy_name, ret)
+
+    return len(policies)
+
+
+def setPolicy(policy):
     '''
+    define and store a policy definition
+
+    :param policy: dict  with the following keys:
+
+          * name
+          * action
+          * scope
+          * realm
+          * user
+          * time
+          * client
+
+    :return: dict with the results of the stored entries
+    '''
+
     ret = {}
+    _ = context['translate']
 
-    name = param.get('name')
-    action = param.get('action')
-    scope = param.get('scope')
-    realm = param.get('realm')
-    user = param.get('user')
-    time = param.get('time')
-    client = param.get('client')
-    active = param.get('active', "True")
+    name = policy.get('name')
+
+    if 'active' not in policy:
+        policy['active'] = "True"
+
+    # check that the name does not contain any bad characters
+    if not PolicyNameRegex.match(name):
+        raise Exception(_("The name of the policy may only contain "
+                          "the characters  a-zA-Z0-9_."))
+
+    # verify the required policy attributes
+    required_attributes = ['action', 'scope', 'realm']
+    for required_attribute in required_attributes:
+        if (required_attribute not in policy or
+           not policy[required_attribute]):
+            raise PolicyWarning("Missing attribute % in "
+                                "policy %s" % (required_attribute, name))
 
     # before storing the policy, we have to check the impact:
     # if there is a problem, we will raise an exception with a warning
-    if context and 'Policies' in context:
-        policies = context['Policies']
-    else:
-        policies = getPolicies()
 
-    _check_policy_impact(policies=policies, **param)
+    _check_policy_impact(**policy)
 
-    action = ForwardServerPolicy.prepare_forward(action)
+    # transpose the forwardServer policy action as it might
+    # contain sensitive data
+    policy["action"] = ForwardServerPolicy.prepare_forward(policy["action"])
 
-    ret["action"] = storeConfig("Policy.%s.action" % name,
-                                action, "", "a policy definition")
-    ret["scope"] = storeConfig("Policy.%s.scope" % name,
-                               scope, "", "a policy definition")
-    ret["realm"] = storeConfig("Policy.%s.realm" % name,
-                               realm, "", "a policy definition")
-    ret["user"] = storeConfig("Policy.%s.user" % name,
-                              user, "", "a policy definition")
-    ret["time"] = storeConfig("Policy.%s.time" % name,
-                              time, "", "a policy definition")
-    ret["client"] = storeConfig("Policy.%s.client" % name,
-                                client, "", "a policy definition")
-    ret["active"] = storeConfig("Policy.%s.active" % name,
-                                active, "", "a policy definition")
+    attributes = ['action', 'scope', 'realm', 'user',
+                  'time', 'client', 'active']
+
+    for attr in attributes:
+        key = "Policy.%s.%s" % (name, attr)
+        value = policy[attr]
+        typ = ""
+        descr = "a policy definition"
+        ret[attr] = storeConfig(key, value, typ, descr)
 
     return ret
 
@@ -128,7 +171,7 @@ def deletePolicy(name, enforce=False):
         param['active'] = "False"
         param['name'] = name
         param['enforce'] = enforce
-        _check_policy_impact(policies=policies, **param)
+        _check_policy_impact(**param)
 
     delEntries = []
     for entry in Config:
@@ -144,7 +187,7 @@ def deletePolicy(name, enforce=False):
     return res
 
 
-def _check_policy_impact(policies=None, scope='', action='', active='True',
+def _check_policy_impact(scope='', action='', active='True',
                          client='', realm='', time=None, user=None, name='',
                          enforce=False):
     """
@@ -168,7 +211,9 @@ def _check_policy_impact(policies=None, scope='', action='', active='True',
            'time': time
            }
 
-    if not policies:
+    if context and 'Policies' in context:
+        policies = context['Policies']
+    else:
         policies = getPolicies()
 
     # in case of a policy change exclude this one from comparison

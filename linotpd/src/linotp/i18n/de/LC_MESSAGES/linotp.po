@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2016-07-01 19:09+0200\n"
+"PO-Revision-Date: 2016-09-02 16:38+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -38,23 +38,16 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 "X-Generator: Gtranslator 2.91.6\n"
 
-msgid "You do not have the rights to monitor these realms."
-msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
-
-msgid "Summary"
-msgstr "Übersicht"
-
-msgid "Realms"
-msgstr "Realms"
-
-msgid "The name of the policy may only contain the characters a-zA-Z0-9_"
-msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
+#, python-format
+msgid ""
+"Unable to instantiate the resolver %r.Please verify configuration or "
+"connection!"
+msgstr ""
+"Der Resolver %r konnte nicht in­s­tan­zi­ie­rt werden. Bitte überprüfen Sie die "
+"Konfiguration oder die Verbindung!"
 
 msgid "The name of the policy must not be empty"
 msgstr "Der Name der Richtlinie darf nicht leer sein."
-
-msgid "<h1>contact support</h1>"
-msgstr "<h1>Support kontaktieren</h1>"
 
 msgid "Thank you for your interest in our products."
 msgstr "Danke für Ihr Interesse an unseren Produkten."
@@ -211,14 +204,6 @@ msgid "URL for OCRA token"
 msgstr "URL für OCRA-Token"
 
 #, python-format
-msgid ""
-"You do not have the administrative right to do monitoring.You are missing a "
-"policyscope=monitoring, action=%s"
-msgstr ""
-"Sie haben nicht die administrativen Rechte zum Monitoring. Es fehlt dazu "
-"eine Richtlinie mit 'scope=monitoring' und 'action=%s'."
-
-#, python-format
 msgid "The provided PIN is too short. It should be at least %i characters."
 msgstr "Die angegebene PIN ist zu kurz. Es sollten mindestens %i Zeichen sein."
 
@@ -274,7 +259,8 @@ msgstr "Der PIN beinhaltet Ziffern, obwohl dies nicht so sein sollte (%s)"
 
 #, python-format
 msgid "The PIN contains special characters, although it should not! (%s)"
-msgstr "Der PIN beinhaltet Sonderzeichen, obwohl dies nicht so sein sollte (%s)"
+msgstr ""
+"Der PIN beinhaltet Sonderzeichen, obwohl dies nicht so sein sollte (%s)"
 
 #, python-format
 msgid "The PIN contains other characters, although it should not! (%s)"
@@ -319,8 +305,8 @@ msgid ""
 "You do not have the administrative right to disable token %s. Check the "
 "policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte, um den Token %s zu deaktivieren - "
-"überprüfen Sie ggf. die Richtlinien."
+"Sie haben nicht die administrativen Rechte, um den Token %s zu deaktivieren "
+"- überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
 msgid ""
@@ -383,8 +369,8 @@ msgid ""
 "You do not have the administrative right to enroll tokens. Check the "
 "policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte, um Token auszurollen - überprüfen "
-"Sie ggf. die Richtlinien."
+"Sie haben nicht die administrativen Rechte, um Token auszurollen - "
+"überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
 msgid "You do not have the administrative right to init token %s of type %s."
@@ -454,16 +440,16 @@ msgid ""
 "You do not have the administrative right to set MOTP PIN/ SC UserPIN for "
 "token %s. Check the policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte zum Setzen der mOTP-PIN / SC-"
-"User-PIN für den Token %s - überprüfen Sie ggf. die Richtlinien."
+"Sie haben nicht die administrativen Rechte zum Setzen der mOTP-PIN / SC-User-"
+"PIN für den Token %s - überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
 msgid ""
 "You do not have the administrative right to set Smartcard PIN for token %s. "
 "Check the policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte zum Setzen der Smardcard PIN "
-"für den Token %s - überprüfen Sie ggf. die Richtlinien."
+"Sie haben nicht die administrativen Rechte zum Setzen der Smardcard PIN für "
+"den Token %s - überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
 msgid ""
@@ -500,8 +486,8 @@ msgid ""
 "You do not have the administrative right to get the token owner in realm "
 "%s(%s)."
 msgstr ""
-"Sie haben nicht die administrativen Rechte zum Anzeigen der Tokenbesitzer "
-"im Realm %s(%s)."
+"Sie haben nicht die administrativen Rechte zum Anzeigen der Tokenbesitzer im "
+"Realm %s(%s)."
 
 #, python-format
 msgid ""
@@ -630,8 +616,8 @@ msgstr "Unbekannte Methode im Selbstverwaltungsportal: %s"
 #, python-format
 msgid "Policy check failed. You are not allowed to %s system config."
 msgstr ""
-"Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die System"
-"konfiguration anzusehen oder zu ändern (%s)."
+"Anfrage durch Richtlinie nicht erlaubt - es ist nicht möglich die "
+"Systemkonfiguration anzusehen oder zu ändern (%s)."
 
 #, python-format
 msgid "You do not have the administrative right to do an ocra/%s"
@@ -654,8 +640,8 @@ msgstr "Fehler bei der Richtlinieüberprüfung - unbekannter Methode %s"
 
 msgid "You do not have system config read rights and not realm admin policies."
 msgstr ""
-"Sie haben nicht die Rechte, um die Systemkonfiguration- oder die Realm"
-"administrationsrichtlinien zu lesen."
+"Sie haben nicht die Rechte, um die Systemkonfiguration- oder die "
+"Realmadministrationsrichtlinien zu lesen."
 
 #, python-format
 msgid "Failed to run getPolicyPost. Unknown controller: %s"
@@ -664,23 +650,9 @@ msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter Controller %s"
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
 
-msgid "E-mail OTP Token"
-msgstr "E-Mail OTP Token"
-
-msgid "E-mail provider config"
-msgstr "E-Mail Konfiguration"
-
-msgid "Provider"
-msgstr "Provider"
-
-msgid "Provider config"
-msgstr "Provider Konfiguration"
-
-msgid "Challenge validity (sec)"
-msgstr "E-Mail Challenge Gültigkeit (Sek.)"
-
-msgid "Time between e-mails (sec)"
-msgstr "Zeit zwischen E-Mails (Sek.)"
+#, fuzzy
+msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
+msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
 
 msgid "E-mail token"
 msgstr "E-Mail-Token"
@@ -788,8 +760,8 @@ msgid ""
 "The token seed is the secret that is used in the hmac algorithm to make your "
 "token unique. So please take care!"
 msgstr ""
-"Der Tokenschlüssel ist das Geheimnis, das in dem HMAC-Algorithmus "
-"verwendet wird und den Token einzigartig macht. Bitte darauf achten!"
+"Der Tokenschlüssel ist das Geheimnis, das in dem HMAC-Algorithmus verwendet "
+"wird und den Token einzigartig macht. Bitte darauf achten!"
 
 msgid "Token seed:"
 msgstr "Tokenseed:"
@@ -805,8 +777,8 @@ msgid ""
 "that these settings match your hardware token or software token capabilities."
 msgstr ""
 "Der HMAC-Algorithmus kann durch die folgenden Einstellungen beeinflusst "
-"werden. Bitte stellen Sie sicher, dass diese Einstellungen zu ihrem Hardware"
-"token bzw. zu den Fähigkeiten ihres Softtokens passen."
+"werden. Bitte stellen Sie sicher, dass diese Einstellungen zu ihrem "
+"Hardwaretoken bzw. zu den Fähigkeiten ihres Softtokens passen."
 
 msgid "Token settings:"
 msgstr "Tokeneinstellungen:"
@@ -1155,7 +1127,8 @@ msgstr ""
 
 msgid "Please specify the server, the secret and the username"
 msgstr ""
-"Bitte geben Sie den Server, das RADIUS Shared Secret und den Benutzernamen an."
+"Bitte geben Sie den Server, das RADIUS Shared Secret und den Benutzernamen "
+"an."
 
 msgid "RADIUS user"
 msgstr "RADIUS Benutzer"
@@ -1175,9 +1148,8 @@ msgstr "Remote-Token-Einstellungen"
 
 msgid "You need to enter the remote LinOTP server like https://remotelinotp"
 msgstr ""
-"Sie müssen den remote LinOTP Server im Format 'https://<FQDN des entfernten"
-" LinOTP Servers>' "
-"angeben."
+"Sie müssen den remote LinOTP Server im Format 'https://<FQDN des entfernten "
+"LinOTP Servers>' angeben."
 
 msgid "Remote server"
 msgstr "Remote-Server"
@@ -1225,8 +1197,8 @@ msgstr ""
 msgid ""
 "You can either forward the OTP to a remote serial number or to a remote user."
 msgstr ""
-"Die Authentsierungsanfrage kann entweder an eine entfernte Seriennummer oder an "
-"einen entfernten Benutzer weitergeleitet werden."
+"Die Authentsierungsanfrage kann entweder an eine entfernte Seriennummer oder "
+"an einen entfernten Benutzer weitergeleitet werden."
 
 msgid ""
 "If you do not enter a remote serial or a remote user, the request will be "
@@ -1238,8 +1210,8 @@ msgstr ""
 
 msgid "You need to enter the server like 'https://linotp2.my.domain'"
 msgstr ""
-"Sie müssen den Server im Format 'https://<FQDN des entfernten "
-"LinOTP Servers>' angeben"
+"Sie müssen den Server im Format 'https://<FQDN des entfernten LinOTP "
+"Servers>' angeben"
 
 msgid ""
 "The PIN can either be verified on this local LinOTP server or on the remote "
@@ -1379,8 +1351,8 @@ msgid ""
 "The :time step: defines the granularity of the time in seconds that is used "
 "in the HMAC algorithm."
 msgstr ""
-"Der :Zeitschritt: definiert die Granularität der Zeit in Sekunden, die in dem "
-"HMAC-Algorithmus verwendet werden."
+"Der :Zeitschritt: definiert die Granularität der Zeit in Sekunden, die in "
+"dem HMAC-Algorithmus verwendet werden."
 
 msgid "Time step"
 msgstr "Zeitschritt"
@@ -1637,9 +1609,6 @@ msgstr "Die Auswahl von mehr als einem Benutzer wird nicht unterstützt!"
 msgid "Please select only one user."
 msgstr "Bitte wählen Sie nur einen Benutzer aus."
 
-msgid "Support Contact"
-msgstr "Supportkontakt"
-
 msgid "Found the token: "
 msgstr "Gefundener Token:"
 
@@ -1857,7 +1826,6 @@ msgid "Login Attempts Failed"
 msgstr "Fehlgeschlagene Loginversuche"
 
 # TODO
-
 msgid "Max Login Attempts"
 msgstr "Max Login Fehlversuche"
 
@@ -2164,6 +2132,9 @@ msgstr "LinOTP Konfiguration"
 msgid "UserIdResolvers"
 msgstr "UserIdResolvers"
 
+msgid "Realms"
+msgstr "Realms"
+
 msgid "System Config"
 msgstr "Systemkonfiguration"
 
@@ -2285,7 +2256,6 @@ msgid "GUI settings"
 msgstr "GUI-Einstellungen"
 
 # TODO
-
 msgid "Client Identification"
 msgstr "Client Identifikation"
 
@@ -2302,8 +2272,7 @@ msgstr "SAML-Attribute zurückgeben"
 
 msgid "The /validate/samlcheck controller will also return user attributes"
 msgstr ""
-"Der Controller /validate/samlcheck gibt zusätzliche Benutzerattribute "
-"zurück."
+"Der Controller /validate/samlcheck gibt zusätzliche Benutzerattribute zurück."
 
 msgid "FailCounterIncOnFalsePin"
 msgstr "Den Fehlzähler bei falscher PIN hochzählen"
@@ -2371,9 +2340,9 @@ msgid ""
 "This is a comma separated list of clients, that may send another client IP "
 "for authorization policies."
 msgstr ""
-"Dies ist eine Komma-separierte Liste an IP-Adressen, die statt "
-"ihrer eigenen IP-Adresse eine andere IP-Adresse für Authorisierungs-"
-"Richtlinien mitschicken dürfen."
+"Dies ist eine Komma-separierte Liste an IP-Adressen, die statt ihrer eigenen "
+"IP-Adresse eine andere IP-Adresse für Authorisierungs-Richtlinien "
+"mitschicken dürfen."
 
 msgid "Selfservice portal"
 msgstr "Selbstverwaltungsportal"
@@ -2550,6 +2519,9 @@ msgstr "Standardwert des Gültigkeitszeitfensters für eine Challenge"
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
 
+msgid "Support Contact"
+msgstr "Supportkontakt"
+
 msgid "Ok"
 msgstr "OK"
 
@@ -2683,16 +2655,16 @@ msgid ""
 "Here you can export token information of the tokens you are allowed to view "
 "to a CSV file."
 msgstr ""
-"Hier können Sie die Informationen der Token, die Sie berechtigt sind einzusehen, "
-"als CSV-Datei exportieren."
+"Hier können Sie die Informationen der Token, die Sie berechtigt sind "
+"einzusehen, als CSV-Datei exportieren."
 
 msgid ""
 "You can enter additional attributes, you defined in the user mapping in the "
 "UserIdResolver. These attributes will be added to the CSV file."
 msgstr ""
 "Sie können zusätzliche Attribute eingeben, die in den CSV-Export mit "
-"aufgenommen werden sollen. Diese Attribute müssen in der Attributszuordnung im "
-"UserIdResolver definiert sein."
+"aufgenommen werden sollen. Diese Attribute müssen in der Attributszuordnung "
+"im UserIdResolver definiert sein."
 
 msgid "Export"
 msgstr "Exportieren"
@@ -2922,8 +2894,8 @@ msgstr "Sie legen hier einen neuen Realm an."
 
 msgid "You may add resolvers by holding down Ctrl-Key and left-clicking."
 msgstr ""
-"Sie können Resolver hinzufügen, indem Sie die Strg-Taste halten und "
-"mit der linken Maustaste beliebig viele Einträge selektieren."
+"Sie können Resolver hinzufügen, indem Sie die Strg-Taste halten und mit der "
+"linken Maustaste beliebig viele Einträge selektieren."
 
 msgid "Realm name"
 msgstr "Realmname"
@@ -3073,8 +3045,8 @@ msgstr "Definieren Sie zu welchen Realms dieser Token gehören soll:"
 
 msgid "You may add realms by holding down Ctrl-Key and left-clicking."
 msgstr ""
-"Sie können Realms hinzufügen, indem Sie die Strg-Taste halten und "
-"mit der linken Maustaste beliebig viele Einträge selektieren."
+"Sie können Realms hinzufügen, indem Sie die Strg-Taste halten und mit der "
+"linken Maustaste beliebig viele Einträge selektieren."
 
 msgid "Edit Realms of Token"
 msgstr "Realms des Tokens bearbeiten"
@@ -3194,8 +3166,8 @@ msgid ""
 "The UID (unique identifier) for your LDAP objects - could be DN, GUID or "
 "entryUUID (LDAP) or objectGUID (Active Directory)"
 msgstr ""
-"Der UID (unique identifier) für die LDAP-Objekte könnte DN, GUID,  "
-"entryUUID (LDAP) oder objectGUID (Active Directory) sein."
+"Der UID (unique identifier) für die LDAP-Objekte könnte DN, GUID,  entryUUID "
+"(LDAP) oder objectGUID (Active Directory) sein."
 
 msgid "UID Type"
 msgstr "UID-Typ"
@@ -3321,8 +3293,8 @@ msgstr ""
 
 msgid "When retrieving the token type you may only select one single Token."
 msgstr ""
-"Wenn Sie den Tokentyp bestimmen wollen, dürfen Sie nur einen einzelnen "
-"Token auswählen."
+"Wenn Sie den Tokentyp bestimmen wollen, dürfen Sie nur einen einzelnen Token "
+"auswählen."
 
 msgid "Error: unknown tokentype in function token_enroll()"
 msgstr "Fehler: unbekannter Tokentyp in der Funktion <em>token_enroll()</em>."
@@ -3589,11 +3561,20 @@ msgstr "Felder leeren"
 msgid "hashlib"
 msgstr "Hash-Algorithmus"
 
-msgid "count auth"
-msgstr "Authentisierungszähler"
-
 msgid "count auth max"
 msgstr "Authentisierungszähler Maximum"
+
+#, fuzzy
+msgid "count auth success max"
+msgstr "Authentisierungszähler Maximum"
+
+#, fuzzy
+msgid "validity start"
+msgstr "Start Gültigkeitszeitraum"
+
+#, fuzzy
+msgid "validity end"
+msgstr "Ende Gültigkeitszeitraum"
 
 msgid "time window"
 msgstr "Zeitfenster"
@@ -3885,6 +3866,43 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
+
+#~ msgid "You do not have the rights to monitor these realms."
+#~ msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
+
+#~ msgid "Summary"
+#~ msgstr "Übersicht"
+
+#~ msgid "<h1>contact support</h1>"
+#~ msgstr "<h1>Support kontaktieren</h1>"
+
+#~ msgid ""
+#~ "You do not have the administrative right to do monitoring.You are missing "
+#~ "a policyscope=monitoring, action=%s"
+#~ msgstr ""
+#~ "Sie haben nicht die administrativen Rechte zum Monitoring. Es fehlt dazu "
+#~ "eine Richtlinie mit 'scope=monitoring' und 'action=%s'."
+
+#~ msgid "E-mail OTP Token"
+#~ msgstr "E-Mail OTP Token"
+
+#~ msgid "E-mail provider config"
+#~ msgstr "E-Mail Konfiguration"
+
+#~ msgid "Provider"
+#~ msgstr "Provider"
+
+#~ msgid "Provider config"
+#~ msgstr "Provider Konfiguration"
+
+#~ msgid "Challenge validity (sec)"
+#~ msgstr "E-Mail Challenge Gültigkeit (Sek.)"
+
+#~ msgid "Time between e-mails (sec)"
+#~ msgstr "Zeit zwischen E-Mails (Sek.)"
+
+#~ msgid "count auth"
+#~ msgstr "Authentisierungszähler"
 
 #~ msgid "Discard Changes"
 #~ msgstr "Änderungen Verwerfen"
