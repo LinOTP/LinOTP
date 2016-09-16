@@ -65,33 +65,38 @@ class DeviceSMSProvider(ISMSProvider):
             - send out a message to a phone
 
         '''
-        if (not self.config.has_key('CONFIGFILE')):
+        if (not self.config.has_key("CONFIGFILE")):
             log.error("[submitMessage] No config key CONFIGFILE found!")
-            return
-        else:
-            configfile = self.config.get('CONFIGFILE')
-            log.info("[submitMessage] setting configfile to %s" % configfile)
-
-        if (self.config.has_key('SMSC')):
-            smsc_number = self.config.get('SMSC')
-            smsc_option = "--setsmsc"
+            return False
 
         # NOTE 1: The LinOTP service account need rw-access to /dev/ttyXXX
-        # NOTE 2: we need gnokii 0.6.29, since 0.6.28 will crash with a bug
+        # NOTE 2: we need gnokii 0.6.29 or higher, since 0.6.28 will crash with a bug
+        args = ["gnokii",
+                "--config",
+                self.config.get("CONFIGFILE"),
+                "--sendsms",
+                phone,
+                ]
 
-        # FIXME: Das blockiert hier noch!
-        #args = ['gnokii', "--config", configfile, "--sendsms", phone]
-        #log.info("[submitMessage] preparing to run : %s" % string.join(args) )
-        #proc = subprocess.Popen(args,shell=False,stdin=subprocess.PIPE)
-        #log.info("process run. Now sending message as input into pipe")
-        # proc.communicate(message+"\n")
+        if (self.config.has_key("SMSC")):
+            args.append("--smsc")
+            args.append(self.config.get("SMSC"))
 
-        command = ("echo %s | gnokii --config %s --sendsms %s %s %s"
-                   % (message, configfile, phone, smsc_option, smsc_number))
-        log.debug("[submitMessage] running command: %s" % command)
-        proc = subprocess.Popen([command], shell=True)
+        log.info("[submitMessage] sending SMS : %s" % " ".join(args) )
+        proc = subprocess.Popen(args,
+                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                close_fds=True)
 
-        return True
+        (smsout, smserr) = proc.communicate(message)
+
+        if proc.returncode == 0:
+            log.debug("[submitMessage] output: %s" % smsout)
+            return True
+
+        log.error("[submitMessage] output: %s" % smsout)
+        log.error("[submitMessage] SMS sending failed, return code: %s" % proc.returncode)
+
+        return False
 
     def loadConfig(self, configDict):
         self.config = configDict
