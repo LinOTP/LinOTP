@@ -33,9 +33,9 @@
 Verify your identity to the relying party?
 </p>
 
-<form action="checkid_submit" method="GET">
+<form action="checkid_submit" method="GET" action="">
      <input type="hidden" name="redirect_token" value="${c.redirect_token}"></input>
-     <p> <input type="checkbox" name="verify_always" value="always"> 
+     <p> <input type="checkbox" name="verify_always" value="always">
      Verify to this relying party always automatically. So, do not ask me again.</p>
      <button type="submit">Verify</button>
 </form>

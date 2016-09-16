@@ -32,7 +32,7 @@ ${_("SMS OTP")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 
 function sms_enroll_setup_defaults(config,options){
     sms_clear_input_fields();
@@ -87,18 +87,18 @@ function sms_clear_input_fields() {
 </tr>
 <tr>
     <td><label for="enroll_sms_desc" id='enroll_sms_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_sms_desc" id="enroll_sms_desc" value="webGUI_generated" class="text" /></td>
+    <td><input type="text" name="enroll_sms_desc" id="enroll_sms_desc" value="webGUI_generated" class="text"></td>
 </tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="sms_pin1" id="sms_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('sms_pin1','sms_pin2');" name="pin1" id="sms_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="sms_pin2" id="sms_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('sms_pin1','sms_pin2');" name="pin2" id="sms_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 </table>
 
@@ -125,7 +125,7 @@ ${_("Register SMS")}
 		phonenumber = ''
 %>
 
-<script>
+<script type="text/javascript">
 	jQuery.extend(jQuery.validator.messages, {
 		required:  "${_('required input field')}",
 		minlength: "${_('minimum length must be greater than 10')}",
@@ -182,7 +182,7 @@ function self_sms_submit(){
 
 <h1>${_("Register your SMS OTP Token / mobileTAN")}</h1>
 <div id='register_sms_form'>
-	<form class="cmxform" id='form_register_sms'>
+	<form class="cmxform" id='form_register_sms' action="">
 	<fieldset>
 		<table>
 		<tr>
@@ -196,12 +196,12 @@ function self_sms_submit(){
                            readonly  disabled
                     %endif
 
-                    />
+                   >
 		</td>
 		</tr>
 		<tr>
 		    <td><label for="sms_self_desc" id='sms_self_desc_label'>${_("Description")}</label></td>
-		    <td><input type="text" name="sms_self_desc" id="sms_self_desc" value="self_registered"; class="text" /></td>
+		    <td><input type="text" name="sms_self_desc" id="sms_self_desc" value="self_registered"; class="text"></td>
 		</tr>
         </table>
         <button class='action-button' id='button_register_sms' onclick="self_sms_submit();">${_("register SMS Token")}</button>

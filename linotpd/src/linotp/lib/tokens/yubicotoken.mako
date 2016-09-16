@@ -38,7 +38,7 @@ ${_("Enroll YubiKey")}
 %endif
 
 %if c.scope == 'config' :
-<script>
+<script type="text/javascript">
 
 /*
  * 'typ'_get_config_val()
@@ -78,7 +78,7 @@ function yubico_get_config_params(){
 
 </script>
 
-<form class="cmxform" id='form_config_yubico'>
+<form class="cmxform" id='form_config_yubico' action="">
 <fieldset>
 	<legend>${_("Yubico settings")}</legend>
 	<p>
@@ -92,15 +92,15 @@ function yubico_get_config_params(){
 	<tr>
 	<td><label for="sys_yubico_id" title='${_("You need to enter a valid API id")}'>
 		${_("Yubico ID")}</label></td>
-	<td><input class="required" type="text" name="sys_yubico_id" id="sys_yubico_id"
-		class="text ui-widget-content ui-corner-all"/></td>
+	<td><input type="text" name="sys_yubico_id" id="sys_yubico_id"
+		class="required text ui-widget-content ui-corner-all"></td>
 	</tr>
 
 	<tr>
 	<td><label for="sys_yubico_secret" title='${_("You need to enter a valid API key")}'>
 		${_("Yubico API key")}</label></td>
-	<td><input class="required" type="text" name="sys_yubico_secret" id="sys_yubico_secret"
-		class="text ui-widget-content ui-corner-all"/></td>
+	<td><input type="text" name="sys_yubico_secret" id="sys_yubico_secret"
+		class="required text ui-widget-content ui-corner-all"></td>
 	</tr>
 
 	</table>
@@ -114,7 +114,7 @@ ${_("YubiKey")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_enroll_setup_defaults()
  *
@@ -168,23 +168,23 @@ function yubico_clear_input_fields() {
 <tr>
 	<td><label for="yubico_token_id" title='${_("You need to enter the YubiKey token ID")}'>
 		${_("Token ID")}</label></td>
-	<td><input class="required" type="text" name="yubico_token_id" id="yubico_token_id" min=12
-		class="text ui-widget-content ui-corner-all"/></td>
+	<td><input type="text" name="yubico_token_id" id="yubico_token_id" min=12
+		class="required text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr>
     <td><label for="yubico_enroll_desc" id='yubico_enroll_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="yubico_enroll_desc" id="yubico_enroll_desc" value="Yubico Cloud token" class="text" /></td>
+    <td><input type="text" name="yubico_enroll_desc" id="yubico_enroll_desc" value="Yubico Cloud token" class="text"></td>
 </tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="yubico_pin1" id="yubico_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin1" id="yubico_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="yubico_pin2" id="yubico_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('yubico_pin1','yubico_pin2');" name="pin2" id="yubico_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 </table>
 
@@ -192,7 +192,7 @@ function yubico_clear_input_fields() {
 
 
 %if c.scope == 'selfservice.enroll':
-<script>
+<script type="text/javascript">
 
 function self_yubico_get_param()
 {
@@ -226,7 +226,7 @@ function self_yubico_submit(){
 
 <h1>${_("Enroll your YubiKey")}</h1>
 <div id='enroll_yubico_form'>
-	<form class="cmxform" id='form_enroll_yubico'>
+	<form class="cmxform" id='form_enroll_yubico' action="">
 		<p>
 			${_("Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the button.")}
 		</p>
@@ -235,11 +235,11 @@ function self_yubico_submit(){
 		<tr>
 			<td><label for='yubico_tokenid'>${_("YubiKey TokenId")+':'}</label></td>
 			<td><input id='yubico_tokenid' name='yubico_tokenid'
-				class="required ui-widget-content ui-corner-all" min="12" maxlength='44'/></td>
+				class="required ui-widget-content ui-corner-all" min="12" maxlength='44'></td>
 		</tr>
 		<tr>
 		    <td><label for="yubico_self_desc" id='yubico_self_desc_label'>${_("Description")}</label></td>
-		    <td><input type="text" name="yubico_self_desc" id="yubico_self_desc" value="Yubico Cloud (self)" class="text" /></td>
+		    <td><input type="text" name="yubico_self_desc" id="yubico_self_desc" value="Yubico Cloud (self)" class="text"></td>
 		</tr>
 
         </table>

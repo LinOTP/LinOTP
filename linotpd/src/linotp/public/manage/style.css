@@ -51,8 +51,16 @@
 	-moz-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
 	box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
 }
+
 #info_bar {
 	display:none;
+}
+
+#login-status {
+	font-size: 70%;
+	float: right;
+	padding: .3em .5em;
+	margin-bottom: 5px;
 }
 
 .error_box {
@@ -346,8 +354,8 @@ html {
 }
 
 #header {
-	float: left;
 	width: 100%;
+	box-sizing: border-box;
 	margin: 0 0 5px;
 	height: 45px;
 }
@@ -567,3 +575,14 @@ html {
 .ui-widget-header .ui-state-hover:not(.ui-state-active) {
 	background: #E1E1E1!important;
 }
+
+.clearfix:after {
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: "";
+	clear: both;
+	height: 0;
+	}
+* html .clearfix             { zoom: 1; } /* IE6 */
+*:first-child+html .clearfix { zoom: 1; } /* IE7 */

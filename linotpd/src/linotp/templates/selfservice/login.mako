@@ -36,10 +36,10 @@
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
-<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 
-<link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
-<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
+<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
 <script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
 
 </head>
@@ -81,7 +81,7 @@ ${_("If you lost a token, you may also disable this token.")}
     <form action="/account/dologin" method="POST">
       <table>
         <tr><td><label for=login>${_("Username")}:</label></td>
-        <td><input type="text" id="login" name="login" value="" /></td></tr>
+        <td><input type="text" id="login" name="login" value=""></td></tr>
         %if c.realmbox:
             <tr>
               <td>${_("Realm")}:</td>
@@ -101,16 +101,16 @@ ${_("If you lost a token, you may also disable this token.")}
             <tr style="display:none;">
               <td>${_("Realm")}:</td>
               <td><input type="text" id="realm" name="realm"
-                  value='' /></td>
+                  value=''></td>
             </tr>
         %endif
         <tr style="display:none;">
-            <td><input type="hidden" name="realmbox" value="${c.realmbox}"/></td>
-            <td><input type="hidden" name="defaultRealm" value="${c.defaultRealm}"/></td></tr>
+            <td><input type="hidden" name="realmbox" value="${c.realmbox}"></td>
+            <td><input type="hidden" name="defaultRealm" value="${c.defaultRealm}"></td></tr>
         <tr><td><label for=password>${_("Password")}:</label></td>
-        <td><input autocomplete="off" type="password" id="password" name="password" value ="" /></td></tr>
+        <td><input autocomplete="off" type="password" id="password" name="password"></td></tr>
         <tr><td> </td>
-        <td>   <input type="submit" value="Login" /></td></tr>
+        <td>   <input type="submit" value="Login"></td></tr>
       </table>
     </form>
   </p>

@@ -28,7 +28,7 @@
 <h2>${_("Provision your OATH soft token")}</h2>
 
 <div id='googletokenform' >
-    <form class="cmxform" name='myForm'>
+    <form class="cmxform" name='myForm' action="">
         <ol>
             <li>${_("You need an OATH compatible soft token app installed on your mobile device.")}
                <br>${_("(FreeOTP, Google Authenticator or another OATH compatible soft token)")}
@@ -44,13 +44,13 @@
                     ${_("enroll your token")}.
                     </button>
                 % elif 'webprovisionGOOGLE' in c.actions:
-                    <input type="hidden" id="google_type" value="hotp"/>
+                    <input type="hidden" id="google_type" value="hotp">
                     <br>
                     <button class='action-button' id='button_provisionGoogle_hotp' onclick="provisionGoogle(); return false;">
                     ${_("enroll your event based token")}.
                     </button>
                 % elif 'webprovisionGOOGLEtime' in c.actions:
-                    <input type="hidden" id="google_type" value="totp"/>
+                    <input type="hidden" id="google_type" value="totp">
                     <br>
                     <button class='action-button' id='button_provisionGoogle_totp' onclick="provisionGoogle(); return false;">
                     ${_("enroll your time based token")}.

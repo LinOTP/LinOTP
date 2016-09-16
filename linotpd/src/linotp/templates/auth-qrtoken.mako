@@ -43,7 +43,7 @@
     <table>
         <tr>
             <td>
-                <form class="cmxform"  id="form_challenge_qrtoken" method="post">
+                <form class="cmxform"  id="form_challenge_qrtoken" method="post" action="">
                     <frameset name=login>
                         <table>
                             <tr>
@@ -63,7 +63,7 @@
                             </tr>
                             <tr>
                                 <td> </td>
-                                <td><input type="submit" value="${_('get challenge')}"/></td>
+                                <td><input type="submit" value="${_('get challenge')}"></td>
                             </tr>
                         </table>
                     </frameset>
@@ -90,7 +90,7 @@
         </tr>
         <tr>
             <td>
-                <form class="cmxform"  id="form_login_qrtoken" method="post">
+                <form class="cmxform"  id="form_login_qrtoken" method="post" action="">
                     <frameset name=login>
                         <table>
                             <tr>
@@ -106,7 +106,7 @@
                             </tr>
                             <tr>
                                 <td> </td>
-                                <td><input type="submit" value="${_('submit')}"/></td>
+                                <td><input type="submit" value="${_('submit')}"></td>
                             </tr>
                         </table>
                     </frameset>

@@ -30,8 +30,8 @@
 <head>
 <title>${_("OTP values")}</title>
 
-<link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
-<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
+<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
 
 <%
 type=c.ret.get('type',"")
@@ -44,7 +44,7 @@ serial=c.ret.get('serial',"")
 <body>
 <p>
 ${_("Your token")} ${serial} ${_("is of type")} ${type}.
-</p> 
+</p>
 <table class=getotp>
 %for k in sorted(otps.iterkeys()):
 <tr class=getotp>

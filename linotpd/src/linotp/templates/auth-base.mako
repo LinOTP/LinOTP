@@ -35,17 +35,17 @@
 	<meta http-equiv="content-style-type" content="text/css">
 	<meta http-equiv="expires" content="0">
 
-	<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1" />
+	<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 
 
-	<link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
-	<link type="text/css" rel="stylesheet" href="/selfservice/auth.css" />
-	<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
+	<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+	<link type="text/css" rel="stylesheet" href="/selfservice/auth.css">
+	<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
 
 	<script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
 
 	<!-- jQuery UI -->
-	<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+	<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 
 	<!-- form validation -->

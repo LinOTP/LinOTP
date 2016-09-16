@@ -28,7 +28,7 @@
 
 <h1>${_("Assign OTP Token")}</h1>
 <div id='assignform'>
-    <form class="cmxform" name='myForm'>
+    <form class="cmxform" name='myForm' action="">
     <fieldset>
         %if 'getserial' in c.actions:
         ${_("You may either assign the token by entering the serial number or you can enter an OTP value of the token and the system will try to identify the token for you.")}
@@ -37,7 +37,7 @@
         %if 'getserial' in c.actions:
         <tr>
         <td><label for=otp_serial>${_("The OTP value of the Token to assign")}</label></td>
-        <td><input type='text' id='otp_serial' class='text ui-widget-content ui-corner-all' value='' size="20" />
+        <td><input type='text' id='otp_serial' class='text ui-widget-content ui-corner-all' value='' size="20">
             <button class='action-button' id='button_otp_serial' onclick="getserial(); return false">
                 ${_("Determine Serial Number")}
             </button>
@@ -47,7 +47,7 @@
         %endif
         <tr>
         <td><label for=serial>${_("Serialnumber of new Token")}</label></td>
-        <td><input type='text' id='assign_serial' class="text ui-widget-content ui-corner-all" value='' /></td>
+        <td><input type='text' id='assign_serial' class="text ui-widget-content ui-corner-all" value=''></td>
         </tr>
         </table>
         <button class='action-button' id='button_assign' onclick="assign(); return false">${_("Assign Token")}</button>

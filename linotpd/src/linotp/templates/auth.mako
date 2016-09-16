@@ -45,7 +45,7 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
 <div id="main">
 <h1>${_("Login")}</h1>
 <div id='register'>
-        <form class="cmxform"  id="form_login" method="post">
+        <form class="cmxform"  id="form_login" method="post" action="">
             <frameset name=login>
                 <table>
                 <tr>
@@ -58,7 +58,7 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
                 </tr>
                 </table>
             </frameset>
-            <input type="submit" value="${_('login')}" />
+            <input type="submit" value="${_('login')}">
         </form>
 </div>
 <div id='errorDiv'></div>

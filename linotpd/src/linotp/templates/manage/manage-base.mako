@@ -48,20 +48,20 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
-<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 
 %if c.debug:
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.css" />
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.css" />
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.css">
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.css">
 %else:
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.min.css" />
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.min.css" />
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.structure.min.css">
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.theme.min.css">
 %endif
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
-<link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css' />
-<link type="text/css" rel="stylesheet" href="/css/linotp.css"/>
-<link type="text/css" rel="stylesheet" href="/manage/style.css"/>
-<link type="text/css" rel="stylesheet" href="/manage/custom-style.css"/>
+<link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css'>
+<link type="text/css" rel="stylesheet" href="/css/linotp.css">
+<link type="text/css" rel="stylesheet" href="/manage/style.css">
+<link type="text/css" rel="stylesheet" href="/manage/custom-style.css">
 
 %if c.debug:
     <script type="text/javascript" src="/js/jquery-1.12.0.js"></script>
@@ -150,7 +150,7 @@ if isinstance(lang, list):
         <li>
             <li><a href='#'>${_("Help")}</a>
             <ul>
-                <li><a href='${c.help_url}' target="noreferrer" id="menu_help">${_("Documentation")}</a></li>
+                <li><a href='${c.help_url}' rel="noreferrer" target="_blank" id="menu_help">${_("Documentation")}</a></li>
                 <li><a href='#' id='menu_view_support'>${_("Support and Subscription")}</a></li>
                 <li><a href='#' id='menu_about'>${_("About LinOTP")}</a></li>
             </ul>
@@ -158,22 +158,22 @@ if isinstance(lang, list):
     </ul>
     <div id="logo"></div>
 </div> <!-- header -->
-<div id="login-status" align="right" style="font-size: 70%">
-    <p>${_("Logged in as")}: ${c.admin} | <a href=# onclick='Logout("${c.logout_url}");return false;' >${_("Logout")}</a>
-    </p>
+<div class="clearfix">
+    <div id="login-status">${_("Logged in as")}: ${c.admin} | <a href="#" onclick='Logout("${c.logout_url}");return false;' >${_("Logout")}</a>
+    </div>
 </div>
 <div class="javascript_error" id="javascript_error">
     ${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
 </div>
 
-<div id="left_and_right">
+<div class="clearfix">
 <div id="sidebar">
     <div class="sel_box">
-        <fieldset name="${_('Selected User')}" class="ui-corner-all ui-widget-content">
+        <fieldset class="ui-corner-all ui-widget-content">
         <legend id="selected_users_header" class="legend">${_("Selected User")}</legend>
         <div id="selected_users" class="sel_user_box"> </div>
         </fieldset>
-        <fieldset name="${_('Selected Token')}" class="ui-corner-all ui-widget-content">
+        <fieldset class="ui-corner-all ui-widget-content">
         <legend id="selected_tokens_header" class="legend">${_("Selected Token")}</legend>
         <div id="selected_tokens" class='sel_tok_box'> </div>
         </fieldset>
@@ -223,7 +223,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ############ DIALOGS ######################### -->
 <!-- ############ system settings ################# -->
 <div id=dialog_system_settings>
-<form class="cmxform" id="form_sysconfig">
+<form class="cmxform" id="form_sysconfig" action="">
     <div id='tab_system_settings'>
         <ul id='config_tab_index'>
             <li><a href='#tab_content_system_settings'>${_("Settings")}</a></li>
@@ -244,7 +244,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                         <td><input type="checkbox" name="sys_failCounterInc" id="sys_failCounterInc" value="sys_failCounterInc"
                             title="${_('This will increase the failcounter, if the user provided a wrong PIN.')}"></td></tr>
                     <tr><td><label for="sys_prependPin">${_("PrependPin")}: </label></td>
-                        <td><input type="checkbox" name="sys_prependPin" id="sys_prependPin" value="sys_prependPin" id="sys_prependPin"
+                        <td><input type="checkbox" name="sys_prependPin" id="sys_prependPin" value="sys_prependPin"
                             title="${_('This will prepend the PIN to the OTP value. Otherwise the PIN will be appended.')}"></td></tr>
                     <tr><td><label for="sys_autoResync"> ${_("Auto resync")}: </label></td>
                         <td><input type="checkbox" name="sys_autoResync" id="sys_autoResync" value="sys_autoResync"
@@ -321,7 +321,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_system_settings() {
         $("#dialog_system_settings" ).dialog( "option", "title", '${_("System Config")}' );
         $('#button_system_save .ui-button-text').html(escape('${_("Save Config")}'));
@@ -334,7 +334,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <div class="list-wrapper"><div id='sms_providers_list'> </div></div>
     <div class="ui-dialog-buttonpane flat"><button id='button_sms_provider_set_default'>${_("Set as default")}</button></div>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_sms_providers() {
         $("#dialog_sms_providers" ).dialog( "option", "title", '${_("SMS Provider: create and edit")}');
         $('#button_sms_provider_new .ui-button-text').html('${_("New")}');
@@ -346,7 +346,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <!-- ############ sms provider edit ################# -->
 <div id="dialog_sms_provider_edit">
-    <form class="cmxform" id="form_smsprovider">
+    <form class="cmxform" id="form_smsprovider" action="">
         <table>
             <tr>
                 <td><label for="sms_provider_name">${_("Name")}</label>: </td>
@@ -355,7 +355,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                                        placeholder=""></td>
             </tr>
             <tr>
-                <td><label for="sms_provider">${_("Class")}</label>: </td>
+                <td><label for="sms_provider_class">${_("Class")}</label>: </td>
                 <td><input type="text" name="sms_provider_class" class="required"
                                        id="sms_provider_class" size="37" maxlength="80"
                                        placeholder="smsprovider.HttpSMSProvider.HttpSMSProvider"></td>
@@ -363,7 +363,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <tr>
                 <td><label for='sms_provider_config'>${_("Config")}</label>: </td>
                 <td><textarea name="sms_provider_config" class="required"
-                              id="sms_provider_config" cols='35' rows='6' maxlength="400"
+                              id="sms_provider_config" cols='35' rows='6'
                               placeholder='{ "URL":"http://smsproviderurl:5001/http2sms", "PARAMETER": {"your url parameter": "as json"}, "SMS_TEXT_KEY":"text", "SMS_PHONENUMBER_KEY":"to", "RETURN_SUCCESS":"ID"}'></textarea></td>
             </tr>
             <tr>
@@ -374,7 +374,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </table>
     </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_sms_provider_edit() {
         $("#dialog_sms_provider_edit" ).dialog( "option", "title", '${_("SMS Provider")}' );
         $('#button_sms_provider_cancel .ui-button-text').html('${_("Cancel")}');
@@ -386,7 +386,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_sms_provider_delete'>
     <p>${_("Do you want to delete the provider?")}</p>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_sms_provider_delete() {
         $("#dialog_sms_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedSMSProvider );
         $('#button_sms_provider_delete_delete .ui-button-text').html('${_("Delete")}');
@@ -399,7 +399,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <div class="list-wrapper"><div id='email_providers_list'> </div></div>
     <div class="ui-dialog-buttonpane flat"><button id='button_email_provider_set_default'>${_("Set as default")}</button></div>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_email_providers() {
         $("#dialog_email_providers" ).dialog( "option", "title", '${_("Email Provider: create and edit")}');
         $('#button_email_provider_new .ui-button-text').html('${_("New")}');
@@ -411,7 +411,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <!-- ############ email provider edit ################# -->
 <div id="dialog_email_provider_edit">
-    <form class="cmxform" id="form_emailprovider">
+    <form class="cmxform" id="form_emailprovider" action="">
         <table>
             <tr>
                 <td><label for="email_provider_name">${_("Name")}</label>: </td>
@@ -428,7 +428,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <tr>
                 <td><label for='email_provider_config'>${_("Config")}</label>: </td>
                 <td><textarea name="email_provider_config" class="required"
-                              id="email_provider_config" cols='35' rows='6' maxlength="400"
+                              id="email_provider_config" cols='35' rows='6'
                               placeholder='{ "SMTP_SERVER":"mail.example.com", "SMTP_USER":"secret_user", "SMTP_PASSWORD":"secret_pasword", "EMAIL_FROM":"linotp@example.com", "EMAIL_SUBJECT":"Your OTP"}'></textarea></td>
             </tr>
             <tr>
@@ -439,7 +439,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </table>
     </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_email_provider_edit() {
         $("#dialog_email_provider_edit" ).dialog( "option", "title", '${_("Email Provider")}' );
         $('#button_email_provider_cancel .ui-button-text').html('${_("Cancel")}');
@@ -451,7 +451,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_email_provider_delete'>
     <p>${_("Do you want to delete the Provider?")}</p>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_email_provider_delete() {
         $("#dialog_email_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedEmailProvider );
         $('#button_email_provider_delete_delete .ui-button-text').html('${_("Delete")}');
@@ -464,7 +464,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_email_provider_settings() {
         $("#dialog_email_provider_settings" ).dialog( "option", "title", '${_("Email Provider Configuration")}' );
         $('#button_email_provider_save .ui-button-text').html('${_("Save Config")}');
@@ -491,7 +491,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <%doc>
             Ocra token config tab _static_
         </%doc>
-        <script>
+        <script type="text/javascript">
             /*
              * 'typ'_get_config_val()
              *
@@ -531,13 +531,13 @@ ${c.version} --- &copy; ${c.licenseinfo}
             }
         </script>
         <div id="ocra_token_settings">
-            <form class="cmxform" id="form_ocra_config">
+            <form class="cmxform" id="form_ocra_config" action="">
                 <fieldset id='ocra_config'>
                     <legend>${_("OCRA token settings")}</legend>
                     <table>
                         <tr><td><label for=ocra_max_challenge>${_("Maximum concurrent OCRA challenges")}</label></td>
                             <td><input type="text" id="ocra_max_challenge" maxlength="4" class=integer
-                                title='${_("This is the maximum concurrent challenges per OCRA Token.")}'/></td></tr>
+                                title='${_("This is the maximum concurrent challenges per OCRA Token.")}'></td></tr>
                         <tr><td><label for=ocra_challenge_timeout>${_("OCRA challenge timeout")}</label></td>
                             <td><input type="text" id="ocra_challenge_timeout" maxlength="6"
                                 title='${_("After this time a challenge can not be used anymore. Valid entries are like 1D, 2H or 5M where D=day, H=hour, M=minute.")}'></td></tr>
@@ -555,7 +555,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <%doc>
             Default token config tab _static_
         </%doc>
-        <script>
+        <script type="text/javascript">
             /*
              * 'typ'_get_config_val()
              *
@@ -601,7 +601,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             }
         </script>
         <div id="tokendefault_token_settings">
-            <form class="cmxform" id="form_default_token_config">
+            <form class="cmxform" id="form_default_token_config" action="">
                 <fieldset>
                     <legend>${_("Default token settings")}</legend>
                     <table>
@@ -669,7 +669,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </div> <!-- tab container system settings -->
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_token_settings() {
         $("#dialog_token_settings" ).dialog( "option", "title", '${_("Tokentype Configuration")}' );
         $('#button_token_save .ui-button-text').html(escape('${_("Save Config")}'));
@@ -680,7 +680,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ################ Support Contact ################ -->
 <div id='dialog_support_contact'></div>
 
-<script>
+<script type="text/javascript">
     function translate_support_contact() {
         $("#dialog_support_view" ).dialog( "option", "title", '${_("Support Contact")}' );
         $('#button_support_contact_close .ui-button-text').html(escape('${_("Ok")}'));
@@ -691,7 +691,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_support_view'>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_support_view() {
         $("#dialog_support_view" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
         $('#button_support_set .ui-button-text').html(escape('${_("Set Support and Subscription")}'));
@@ -706,12 +706,12 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <form id="set_support_form" action="/system/setSupport" method="post"
                 enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Please choose your support and subscription file")}:</p>
-        <p><input name="license" id="license_file" type="file" size="30" maxlength="100000" accept="text/*">
+        <p><input name="license" id="license_file" type="file" size="30" accept="text/*">
         </p>
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_support_set() {
         $("#dialog_set_support" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
         $('#button_support_set .ui-button-text').html(escape('${_("Set Support and Subscription")}'));
@@ -721,24 +721,24 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <!-- ################# about LinOTP ################ -->
 
-<div id='dialog_about' align="center">
+<div id='dialog_about'>
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
     <p id='about_copyright'>${_("Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
-    <p><a href="http://www.linotp.org/" target="_blank">http://www.linotp.org</a>
-    <br/>${_("or")}<br/>
-    <a href="http://www.lsexperts.de/" target="_blank">http://www.lsexperts.de</a></p>
+    <p><a href="http://www.linotp.org/" rel="noreferrer" target="_blank">http://www.linotp.org</a>
+    <br>${_("or")}<br>
+    <a href="http://www.lsexperts.de/" rel="noreferrer" target="_blank">http://www.lsexperts.de</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
         <br>Stefan Pietsch, Eric Sesterhenn, Marian Pascalau,
-        <br>Fabian Vallon, Veronika Schindler, Lukas Engelter, 
+        <br>Fabian Vallon, Veronika Schindler, Lukas Engelter,
         <br>Mirko Ahnert, Chris Halls
     </p>
 
 </div>
-<script>
+<script type="text/javascript">
     function translate_about() {
         $("#dialog_about").dialog( "option", "title", '${_("About LSE LinOTP")}' );
         $('#button_about_close .ui-button-text').html(escape('${_("Close")}'));
@@ -752,8 +752,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <span id='dialog_set_pin_token_string'> </span>
         </p>
 
-    <form>
-        <input id='setpin_tokens' type='hidden'>
+    <form action="">
+        <div><input id='setpin_tokens' type='hidden'></div>
         <fieldset>
             <table>
                 <tr><td>
@@ -768,18 +768,18 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 <label for="pin1">PIN</label>
                 </td><td>
                 <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin1" id="pin1"
-                    class="text ui-widget-content ui-corner-all" />
+                    class="text ui-widget-content ui-corner-all">
                 </td></tr><tr><td>
                 <label for="pin2">${_("PIN (again)")}</label>
                 </td><td>
-                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin2" id="pin2" class="text ui-widget-content ui-corner-all" />
+                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin2" id="pin2" class="text ui-widget-content ui-corner-all">
                 </td></tr>
             </table>
         </fieldset>
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_set_pin() {
         $("#dialog_set_pin" ).dialog( "option", "title", '${_("Set PIN")}' );
         $('#button_setpin_setpin .ui-button-text').html(escape('${_("Set PIN")}'));
@@ -801,10 +801,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <td><label for='enroll_info_text_nouser_cb'>${_("Currently this token will not be assigned to any users.")}</label></td>
         <td align="right"><label for='enroll_info_text_nouser_cb'>${_("[?]")}</label></td>
         </tr></table>
-        <blockquote>
         <input type='checkbox' id='enroll_info_text_nouser_cb' checked="checked"  style="display:none;"
             onclick="cb_changed('enroll_info_text_nouser_cb',['enroll_info_text_nouser_cb_more'])">
-        <label id='enroll_info_text_nouser_cb_more' class='italic_label' style="display:none;">${_("If you select one user, this token will be "+
+        <blockquote>
+            <label id='enroll_info_text_nouser_cb_more' class='italic_label' style="display:none;">${_("If you select one user, this token will be "+
                 "automatically assigned to this user. Anyhow, you can assign this token to any user later on.")}</label>
         </blockquote>
     </div>
@@ -814,7 +814,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </p>
     </div>
     <script type="text/javascript">tokentype_changed();</script>
-    <form id="form_enroll_token">
+    <form id="form_enroll_token" action="">
         <fieldset>
             <table>
                 <tr><td><label for="tokentype">${_("Token type")}</label></td><td>
@@ -831,27 +831,26 @@ ${c.version} --- &copy; ${c.licenseinfo}
                     </select>
                 </td></tr>
             </table>
-
             <div id="token_enroll_ocra">
                 <hr>
                 <p><span id='ocra_key_intro'>
                     ${_("Please enter or copy the OCRA key.")}</span></p>
                 <table><tr>
                 <td><label for="ocra_key" id='ocra_key_label'>${_("OCRA key")}</label></td>
-                <td><input type="text" name="ocra_key" id="ocra_key" value="" class="text ui-widget-content ui-corner-all" /></td>
+                <td><input type="text" name="ocra_key" id="ocra_key" value="" class="text ui-widget-content ui-corner-all"></td>
                 </tr>
                 <tr><td> </td><td><input type='checkbox' id='ocra_key_cb' onclick="cb_changed('ocra_key_cb',['ocra_key','ocra_key_label','ocra_key_intro']);">
                     <label for=ocra_key_cb>${_("Generate OCRA key.")}</label></td></tr>
                 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
-                <tr name="set_pin_rows" >
+                <tr name="set_pin_rows">
                     <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
-                            class="text ui-widget-content ui-corner-all" /></td>
+                            class="text ui-widget-content ui-corner-all"></td>
                 </tr>
                 <tr name="set_pin_rows" >
                     <td class="description"><label for="ocra_pin2" id="ocra_pin2_label">${_("confirm PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin2" id="ocra_pin2"
-                            class="text ui-widget-content ui-corner-all" /></td
+                            class="text ui-widget-content ui-corner-all"></td>
                 </tr>
                 </table>
             </div>
@@ -864,7 +863,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_token_enroll() {
         $("#dialog_token_enroll" ).dialog( "option", "title", '${_("Enroll Token")}' );
         $('#button_enroll_enroll .ui-button-text').html(escape('${_("Enroll")}'));
@@ -890,7 +889,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <input id='tools_getserial_otp'></p>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_get_serial() {
         $("#dialog_get_serial" ).dialog( "option", "title", '${_("Get Serial by OTP value")}' );
         $('#button_tools_getserial_ok .ui-button-text').html(escape('${_("Get Serial")}'));
@@ -903,7 +902,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id="dialog_check_policy">
     <p>${_("Here you can check your policies.")}</p>
     <p>${_("You can enter the corresponding values and the system will check, if there is any matching policy for this scenario.")}</p>
-    <form class="cmxform" id="form_check_policy">
+    <form class="cmxform" id="form_check_policy" action="">
     <table>
         <tr><td><label for=cp_scope>${_("Scope")}</label></td>
             <td>
@@ -929,7 +928,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_check_policy() {
         $("#dialog_check_policy" ).dialog( "option", "title", '${_("Check Policy")}' );
         $('#button_tools_checkpolicy_ok .ui-button-text').html(escape('${_("Check Policy")}'));
@@ -943,12 +942,12 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id="dialog_export_token">
     <p>${_("Here you can export token information of the tokens you are allowed to view to a CSV file.")}</p>
     <p>${_("You can enter additional attributes, you defined in the user mapping in the UserIdResolver. These attributes will be added to the CSV file.")}</p>
-    <form class="cmxform" id="form_export_token">
-        <input id="exporttoken_attributes">
+    <form class="cmxform" id="form_export_token" action="">
+        <div><input type="text" id="exporttoken_attributes"></div>
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_export_token() {
         $("#dialog_export_token" ).dialog( "option", "title", '${_("Export Token Info")}' );
         $('#button_export_token .ui-button-text').html(escape('${_("Export")}'));
@@ -969,7 +968,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </p>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_export_audit() {
         $("#dialog_export_audit" ).dialog( "option", "title", '${_("Export Audit Trail")}' );
         $('#button_export_audit .ui-button-text').html(escape('${_("Export")}'));
@@ -985,7 +984,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p><label for=copy_to_token>${_("To token")}</label> <input id='copy_to_token'></p>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_copy_token() {
         $("#dialog_copy_token").dialog( "option", "title", '${_("Copy Token PIN")}' );
         $('#button_tools_copytokenpin_ok .ui-button-text').html(escape('${_("Copy PIN")}'));
@@ -1008,7 +1007,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </table>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_migrateresolver() {
         $("#dialog_migrate_resolver" ).dialog( "option", "title", '${_("Migrate Resolver")}' );
         $('#button_tools_migrateresolver_ok .ui-button-text').html(escape('${_("Migrate tokens")}'));
@@ -1024,28 +1023,27 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Here you can upload the XML file that came with your SafeNet eToken PASS.")}</p>
         <p>${_("Please choose the token file")}:<br>
-        <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
-        <p>
+        <input name="file" type="file" size="30" accept="text/*">
+        <div>
             <label for=aladdin_hashlib>${_("Hash algorithm")}:</label>
              <select id='aladdin_hashlib' name=aladdin_hashlib >
                 <option value="auto">${_("automatic detection")}</option>
                 <option value="sha1">sha1</option>
                 <option value="sha256">sha256</option>
             </select>
-        </p>
-        <p>
-        <input name="type" type="hidden" value="aladdin-xml">
-        <input name="session" id="loadtokens_session_aladdin" type="hidden" value="">
-        <div id="safenet_realms" name="targetrealm">
-          <label for="safenet_realm">${_("Target realm")}:</label>
-          <select id="safenet_realm" name="realm"> </select>
         </div>
-
-        </p>
+        <div>
+            <input name="type" type="hidden" value="aladdin-xml">
+            <input name="session" id="loadtokens_session_aladdin" type="hidden" value="">
+            <div id="safenet_realms" name="targetrealm">
+              <label for="safenet_realm">${_("Target realm")}:</label>
+              <select id="safenet_realm" name="realm"> </select>
+            </div>
+        </div>
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_import_safenet() {
         $("#dialog_import_safenet" ).dialog( "option", "title", '${_("Aladdin XML Token File")}' );
         $('#button_aladdin_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1058,21 +1056,23 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <script type="text/javascript">pskc_type_changed();</script>
     <form id="load_tokenfile_form_pskc" action="/admin/loadtokens" method="post"
             enctype="multipart/form-data" onsubmit="return false;">
-            <p>${_("Here you may upload the XML file of any OATH compliant OTP Token."+
-                "The LinOTP server will automatically recognize "+
-                "if the token is an HOTP (event based) or a TOTP (time based) token. "+
-                "If the HMAC secrets are encrypted you either "+
-                "need - depending on the encryption - the password or the encryption key.")}</p>
-            <p>${_("Please choose the token file")}:<br>
-            <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
+        <p>${_("Here you may upload the XML file of any OATH compliant OTP Token."+
+            "The LinOTP server will automatically recognize "+
+            "if the token is an HOTP (event based) or a TOTP (time based) token. "+
+            "If the HMAC secrets are encrypted you either "+
+            "need - depending on the encryption - the password or the encryption key.")}</p>
+        <p>${_("Please choose the token file")}: </p>
+        <p>
+            <input name="file" type="file" size="30" accept="text/*">
             <input name="type" type="hidden" value="pskc">
-            <p>
-            <input type="checkbox" name="pskc_checkserial" value="True" id='pskc_checkserial'>
-                <label for='pskc_checkserial'>
-                    ${_("Check the serial numbers for OATH compliance (non-compliant serial numbers will be ignored)")}
-                    </label>
-            </p>
-            <p>
+        </p>
+        <p>
+        <input type="checkbox" name="pskc_checkserial" value="True" id='pskc_checkserial'>
+            <label for='pskc_checkserial'>
+                ${_("Check the serial numbers for OATH compliance (non-compliant serial numbers will be ignored)")}
+                </label>
+        </p>
+        <p>
             <select id='pskc_type' name='pskc_type' onchange="pskc_type_changed();">
                 <option value='plain' selected='selected'>${_("plain value")}</option>
                 <option value='key'>${_("preshared key")}</option>
@@ -1080,19 +1080,18 @@ ${c.version} --- &copy; ${c.licenseinfo}
             </select>
             <input id='pskc_password' name='pskc_password' type='password' size='32'>
             <input id='pskc_preshared' name='pskc_preshared' size='32'>
-            </p>
-            <input name="session" id="loadtokens_session_pskc" type="hidden" value="">
-            <div id="pskc_realms" name="targetrealm">
-              <label for="pskc_realm">${_("Target realm")}:</label>
-              <select id="pskc_realm" name="realm"> </select>
-            </div>
-
         </p>
-
+        <p>
+            <input name="session" id="loadtokens_session_pskc" type="hidden" value="">
+        </p>
+        <div id="pskc_realms" name="targetrealm">
+          <label for="pskc_realm">${_("Target realm")}:</label>
+          <select id="pskc_realm" name="realm"> </select>
+        </div>
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_import_pskc() {
         $("#dialog_import_pskc" ).dialog( "option", "title", '${_("PSKC Key File")}' );
         $('#button_pskc_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1119,7 +1118,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             </table>
         </fieldset>
         <p>${_("Please choose the token file")}:
-            <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
+            <input name="file" type="file" size="30" accept="text/*">
             <input name="type" type="hidden" value="oathcsv">\
             <input name="session" id="loadtokens_session_oathcsv" type="hidden" value="">\
         </p>
@@ -1131,7 +1130,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_import_oath() {
         $("#dialog_import_oath" ).dialog( "option", "title", '${_("OATH CSV Token File")}' );
         $('#button_oathcsv_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1145,20 +1144,18 @@ ${c.version} --- &copy; ${c.licenseinfo}
              enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Here you can upload a CSV file for your YubiKey token. The file is supposed to contain one token per line")}:</p>
         <p>${_("Please choose the token file")}:
-             <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
+             <input name="file" type="file" size="30" accept="text/*">
              <input name="type" type="hidden" value="yubikeycsv">\
              <input name="session" id="loadtokens_session_yubikeycsv" type="hidden" value="">
         </p>
-        <p>
-            <div id="yubi_realms" name="targetrealm">
-              <label for="yubi_realm">${_("Target realm")}:</label>
-              <select id="yubi_realm" name="realm"> </select>
-            </div>
-        </p>
+        <div id="yubi_realms" name="targetrealm">
+          <label for="yubi_realm">${_("Target realm")}:</label>
+          <select id="yubi_realm" name="realm"> </select>
+        </div>
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_import_yubikey() {
         $("#dialog_import_yubikey" ).dialog( "option", "title", '${_("YubiKey CSV Token File")}' );
         $('#button_yubikeycsv_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1171,20 +1168,20 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <form id="load_tokenfile_form_dpw" action="/admin/loadtokens" method="post"
             enctype="multipart/form-data" onsubmit="return false;">
         <p>${_("Here you can upload the data file that came with your Tagespasswort tokens.")}</p>
-        <p>${_("Please choose the token file")}:
-            <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
+        <p>${_("Please choose the token file")}: </p>
+        <p>
+            <input name="file" type="file" size="30" accept="text/*">
             <input name="type" type="hidden" value="dpw">
             <input name="session" id="loadtokens_session_dpw" type="hidden" value="">
-            <div id="dpw_realms" name="targetrealm">
-              <label for="dpw_realm">${_("Target realm")}:</label>
-              <select id="dpw_realm" name="realm"> </select>
-            </div>
-
         </p>
+        <div id="dpw_realms" name="targetrealm">
+          <label for="dpw_realm">${_("Target realm")}:</label>
+          <select id="dpw_realm" name="realm"> </select>
+        </div>
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_import_dpw() {
         $("#dialog_import_dpw" ).dialog( "option", "title", '${_("Tagespasswort Token File")}' );
         $('#button_dpw_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1197,12 +1194,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <form id="load_tokenfile_form_dat" action="/admin/loadtokens" method="post"
             enctype="multipart/form-data" onsubmit="return false;">
         <label for="upload_etoken_dat"> ${_("Upload the eToken data file:")}</label>
-            <input id='upload_etoken_dat' name="file" type="file"
-                    size="30" maxlength="1000000" accept="text/* data/*">
-        </p>
+        <input id='upload_etoken_dat' name="file" type="file"
+                size="30" accept="text/* data/*">
         <p>
             <label for='startdate'>Timebased eToken can use a different start date:</label>
-            <input id='startdate' name="startdate" type="datetime" value="1.1.2000 00:00:00"/>
+            <input id='startdate' name="startdate" type="datetime" value="1.1.2000 00:00:00">
         </p>
         <input name="type" type="hidden" value="dat">
         <input name="session" id="loadtokens_session_dat" type="hidden" value="">
@@ -1214,7 +1210,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_import_dat() {
         $("#dialog_import_dat" ).dialog( "option", "title", '${_("eToken DAT File")}' );
         $('#button_dat_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1229,7 +1225,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 enctype="multipart/form-data" onsubmit="return false;">
                 <p>${_("Here you can upload the XML file that came with your Feitian tokens.")}</p>
                 <p>${_("Please choose the token file")}:<br>
-                <input name="file" type="file" size="30" maxlength="1000000" accept="text/*">
+                <input name="file" type="file" size="30" accept="text/*">
                 <input name="type" type="hidden" value="feitian">
                 <input name="session" id="loadtokens_session_feit" type="hidden" value="">
                 <div id="feitian_realms" name="targetrealm">
@@ -1238,7 +1234,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 </div>
                 </p></form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_import_feitian() {
         $("#dialog_import_feitian" ).dialog( "option", "title", '${_("Feitian XML Token file")}' );
         $('#button_feitian_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1251,10 +1247,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <form id="load_tokenfile_form_vasco" action="/admin/loadtokens" method="post"\
         enctype="multipart/form-data" onsubmit="return false;">
         <p><b>${_("Import tokens from Vasco DPX file")}</b></p>
-        <p>
+        <div>
             <table>
             <tr><td><label for="vasco_file">${_("Please choose the token file")}:</label></td>
-                <td><input id="vasco_file" name="file" type="file" size="30" maxlength="1000000" accept="text/*"></td>
+                <td><input id="vasco_file" name="file" type="file" size="30" accept="text/*"></td>
             </tr>
             <tr><td><label for=vasco_otplen>${_("OTP length")}:</label></td>
                 <td><select name='vasco_otplen' id='vasco_otplen'>
@@ -1271,10 +1267,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
             </table>
             <input name="type" type="hidden" value="vasco">
             <input name="session" id="loadtokens_session_vasco" type="hidden" value="">
-        </p>
+        </div>
     </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_import_vasco() {
         $("#dialog_import_vasco" ).dialog( "option", "title", '${_("Vasco DPX File")}' );
         $('#button_vasco_load .ui-button-text').html(escape('${_("Load Token File")}'));
@@ -1288,11 +1284,11 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 enctype="multipart/form-data" onsubmit="return false;">
                 <p>${_("Here you can import your policy file.")}</p>
                 <p>${_("Please choose the policy file")}:<br>
-                <input name="file" type="file" size="30" maxlength="1000000" accept="text/*"></p>
+                <input name="file" type="file" size="30" accept="text/*"></p>
                 <input name="type" type="hidden" value="policy">
                 </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_import_policy() {
         $("#dialog_import_policies" ).dialog( "option", "title", '${_("Import policies")}' );
         $('#button_policy_load .ui-button-text').html(escape('${_("Import policy file")}'));
@@ -1307,7 +1303,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("Create a new realm or select one available realm")}:</p>
     <div id='realm_list'> </div>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_realms() {
         $("#dialog_realms" ).dialog( "option", "title", '${_("Realms")}' );
         $('#button_realms_new .ui-button-text').html(escape('${_("New")}'));
@@ -1323,7 +1319,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("Create a new or select one available UserIdResolver")}:</p>
     <div id='resolvers_list'> </div>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_resolvers() {
         $("#dialog_resolvers" ).dialog( "option", "title", '${_("Resolver")}');
         $('#button_resolver_new .ui-button-text').html(escape('${_("New")}'));
@@ -1337,7 +1333,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_resolver_create'>
     ${_("Which type of resolver do you want to create?")}
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_resolver_create() {
         $("#dialog_resolver_create" ).dialog( "option", "title", '${_("Creating a new UserIdResolver")}' );
         $('#button_new_resolver_type_ldap .ui-button-text').html('${_("LDAP")}');
@@ -1351,25 +1347,25 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ################### edit realm ####################################### -->
 <div id='dialog_edit_realms'>
     <!--${_("Here you can add or remove existing resolvers to the realm")}:-->
-    <form class="cmxform" id="form_realmconfig">
+    <form class="cmxform" id="form_realmconfig" action="">
         <div id='realm_intro_new'>
             <p>${_("You are creating a new realm.")}
             ${_("You may add resolvers by holding down Ctrl-Key and left-clicking.")}</p>\
             <p><label for=realm_name>${_("Realm name")}:</label>
-                <input type='text' class="required" id='realm_name' size='20' maxlength='60' value="" />
+                <input type='text' class="required" id='realm_name' size='20' maxlength='60' value="">
                 </p>
         </div>
         <div id='realm_intro_edit'>
             <p>${_("Here you may define the resolvers belonging to the realm")}:</p>
-                <p><b><span id='realm_edit_realm_name'> </span></b></p>
-                <p>${_("You may add resolvers by holding down Ctrl-Key and left-clicking.")}</p>
-                <input type='hidden' id='realm_name' size='20' maxlength='60'/>
+            <p><b><span id='realm_edit_realm_name'> </span></b></p>
+            <p>${_("You may add resolvers by holding down Ctrl-Key and left-clicking.")}</p>
+            <input type='hidden' id='realm_name' size='20' maxlength='60'>
         </div>
 
         <div id='realm_edit_resolver_list'> </div>
     </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_realm_edit() {
         $("#dialog_edit_realms" ).dialog( "option", "title", '${_("Edit Realm")}' );
         $('#button_editrealms_cancel .ui-button-text').html(escape('${_("Cancel")}'));
@@ -1383,7 +1379,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </p>
     <span id='delete_info'> </span>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_delete_token() {
         $("#dialog_delete_token" ).dialog( "option", "title", '${_("Delete selected tokens?")}' );
         $('#button_delete_delete .ui-button-text').html(escape('${_("Delete tokens")}'));
@@ -1400,7 +1396,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
     <div id='enroll_url'> </div>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_show_enroll_url() {
         $("#dialog_show_enroll_url" ).dialog( "option", "title", '${_("token enrollment")}' );
         $('#button_show_enroll_ok .ui-button-text').html(escape('${_("OK")}'));
@@ -1414,7 +1410,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </p>
     <div id='enroll_dialog'> </div>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_show_enroll_url() {
         $("#dialog_show_enroll_url" ).dialog( "option", "title", '${_("token enrollment")}' );
         $('#button_show_enroll_ok .ui-button-text').html(escape('${_("OK")}'));
@@ -1442,7 +1438,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     </select>
 
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_lost_token() {
         $("#dialog_lost_token" ).dialog( "option", "title", '${_("Lost Token")}' );
         $('#button_losttoken_ok .ui-button-text').html(escape('${_("Get Temporary Token")}'));
@@ -1453,7 +1449,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ##################### dialog token info######################### -->
 <div id='dialog_token_info'>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_token_info() {
         $("#dialog_token_info" ).dialog( "option", "title", '${_("Token Info")}' );
         $('#button_ti_hashlib .ui-button-text').html(escape('${_("Hashlib")}'));
@@ -1476,7 +1472,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_tokeninfo_set'>
 
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_ti_hashlib() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Hashlib")}');
         $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
@@ -1555,21 +1551,21 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_resync_token'>
     <p>${_("You may resync the token:")} <span id='tokenid_resync'> </span>.</p>
     <p>${_("Therefor please enter two OTP values.")}</p>
-    <form><fieldset><table>
+    <form action=""><fieldset><table>
             <tr><td>
             <label for="otp1">OTP 1</label>
             </td><td>
-            <input type="text" name="otp1" id="otp1" class="text ui-widget-content ui-corner-all" />
+            <input type="text" name="otp1" id="otp1" class="text ui-widget-content ui-corner-all">
             </td></tr><tr><td>
             <label for="otp2">OTP 2</label>
             </td><td>
-            <input type="text" name="otp2" id="otp2" class="text ui-widget-content ui-corner-all" />
+            <input type="text" name="otp2" id="otp2" class="text ui-widget-content ui-corner-all">
             </td></tr></table>
             </fieldset>
         </form>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_dialog_resync_token() {
         $("#dialog_resync_token" ).dialog( "option", "title", '${_("Resync Token")}' );
         $('#button_resync_resync .ui-button-text').html(escape('${_("Resync")}'));
@@ -1579,15 +1575,15 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <!-- ######################## dialog edit token realm ############# -->
 <div id='dialog_edit_tokenrealm'>
-    <form class="cmxform" id="form_tokenrealm">
+    <form class="cmxform" id="form_tokenrealm" action="">
     <p>${_("Define to which realms the token(s) shall belong to:")}*</p>
     <p><span id='tokenid_realm'> </span></p>
-    <input type='hidden' id='realm_name' size='20' maxlength='60'>
+    <p><input type='hidden' id='realm_name' size='20' maxlength='60'></p>
     <div id='token_realm_list'> </div>
-    <i>*${_("You may add realms by holding down Ctrl-Key and left-clicking.")}</i>
+    <p><i>*${_("You may add realms by holding down Ctrl-Key and left-clicking.")}</i></p>
     </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_token_realm() {
         $("#dialog_edit_tokenrealm" ).dialog( "option", "title", '${_("Edit Realms of Token")}' );
         $('#button_tokenrealm_save .ui-button-text').html(escape('${_("Set Realm")}'));
@@ -1599,10 +1595,10 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_getmulti'>
     <p>${_("You may get OTP values for token:")} <span id='tokenid_getmulti'> </span></p>
     <p><label for=otp_values_count>${_("Enter the number, how many OTP values you want to retrieve:")}</label></p>
-    <input id='otp_values_count' maxlength='6' class='required'></input>
+    <input id='otp_values_count' maxlength='6' class='required'>
 </div>
 
-<script>
+<script type="text/javascript">
     function translate_dialog_getmulti() {
         $("#dialog_getmulti" ).dialog( "option", "title", '${_("Get OTP values")}' );
         $('#button_getmulti_ok .ui-button-text').html(escape('${_("OK")}'));
@@ -1617,7 +1613,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <p>${_("The users will not be able to authenticate with this token anymore. Are you sure?")}
     </p>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_unassign() {
         $("#dialog_unassign_token" ).dialog( "option", "title", '${_("Unassign selected tokens?")}' );
         $('#button_unassign_unassign .ui-button-text').html(escape('${_("Unassign")}'));
@@ -1628,7 +1624,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_realm_ask_delete'>
     ${_("Do you want to delete the realm")} <b><span id='realm_delete_name'> </span></b>?
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_realm_ask_delete() {
         $("#dialog_realm_ask_delete" ).dialog( "option", "title", '${_("Deleting realm")}' );
         $('#button_realm_ask_delete_delete .ui-button-text').html(escape('${_("Delete")}'));
@@ -1643,7 +1639,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         ${_("Type")}: <span id='delete_resolver_type'> </span>
     </p>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_resolver_ask_delete() {
         $("#dialog_resolver_ask_delete" ).dialog( "option", "title", '${_("Deleting resolver")}' );
         $('#button_resolver_ask_delete_delete .ui-button-text').html(escape('${_("Delete")}'));
@@ -1662,7 +1658,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         ${_("Password")}: <span id='temp_token_password'> </span><br>
         ${_("End date")}: <span id='temp_token_enddate'> </span>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_view_temptoken() {
         $("#dialog_view_temporary_token" ).dialog( "option", "title", '${_("New Temporary Token")}' );
         $('#button_view_temporary_token_close .ui-button-text').html(escape('${_("Close")}'));
@@ -1672,8 +1668,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ################## dialog LDAP resolver ######################### -->
 
 <div id='dialog_ldap_resolver'>
-    <form class="cmxform" id="form_ldapconfig">
-        <fieldset name="Server config">
+    <form class="cmxform" id="form_ldapconfig" action="">
+        <fieldset>
             <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
             <table>
             <tr><td><label for=ldap_resolvername>${_("Resolver name")}:</label></td>
@@ -1708,7 +1704,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <div id="progress_test_ldap"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connection ...")} </div>
         </fieldset>
 
-        <fieldset name='${_("LDAP attributes")}'>
+        <fieldset>
             <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
             <table>
             <tr><td><label for="ldap_loginattr">${_("LoginName Attribute")}:</label></td>
@@ -1729,7 +1725,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </fieldset>
     </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_ldap_resolver() {
         $("#dialog_ldap_resolver" ).dialog( "option", "title", '${_("LDAP Resolver")}' );
         $('#button_test_ldap .ui-button-text').html(escape('${_("Test LDAP connection")}'));
@@ -1743,8 +1739,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- ################## dialog HTTP resolver ######################### -->
 
 <div id='dialog_http_resolver'>
-    <form class="cmxform" id="form_httpconfig">
-        <fieldset name="Server config">
+    <form class="cmxform" id="form_httpconfig" action="">
+        <fieldset>
             <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
             <table>
             <tr><td><label for=http_resolvername>${_("Resolver name:")}</label></td>
@@ -1773,7 +1769,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             </table>
 
         </fieldset>
-        <fieldset name="URL config">
+        <fieldset>
         <legend class='resolver_dialog_label'>${_("JSON Configuration")}</legend>
         <div id='http_setting_tabs'>
             <ul id='http_settings_index'>
@@ -1833,7 +1829,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </fieldset>
     </form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_http_resolver() {
         $("#dialog_http_resolver" ).dialog( "option", "title", 'HTTP Resolver');
         $('#button_test_http .ui-button-text').html('Test HTTP connection');
@@ -1845,8 +1841,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <!-- #################### dialog SQL resolver #################################### -->
 
 <div id='dialog_sql_resolver'>
-<form class="cmxform" id="form_sqlconfig">
-  <fieldset name='${_("Server config")}'>
+<form class="cmxform" id="form_sqlconfig" action="">
+  <fieldset>
     <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
     <table>
         <tr><td><label for=sql_resolvername>${_("Resolver name")}:</label></td>
@@ -1876,7 +1872,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
     </fieldset>
 
-    <fieldset name='${_("SQL attributes")}'>
+    <fieldset>
       <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
         <table>
         <tr><td><label for=sql_mapping>${_("Attribute mapping")}:</label></td>
@@ -1886,7 +1882,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         </table>
     </fieldset></form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_sql_resolver() {
         $("#dialog_sql_resolver" ).dialog( "option", "title", '${_("SQL Resolver")}' );
         $('#button_test_sql .ui-button-text').html(escape('${_("Test SQL connection")}'));
@@ -1897,14 +1893,14 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 
 <div id="dialog_file_resolver">
-<form class="cmxform" id="form_fileconfig"><fieldset name='${_("File configuration")}'><table>
+<form class="cmxform" id="form_fileconfig" action=""><fieldset><table>
         <tr><td><label for=file_resolvername>${_("Resolver name")}:</label></td>
             <td><input type="text" name="file_resolvername" class="required"  id="file_resolvername" size="35" maxlength="20"></td></tr>
         <tr><td><label for=file_filename>${_("filename")}:</label></td>
             <td><input type="text" name="file_filename" class="required"  id="file_filename" size="35" maxlength="200"></td></tr>
         </table></fieldset></form>
 </div>
-<script>
+<script type="text/javascript">
     function translate_dialog_sql_resolver() {
         $("#dialog_file_resolver" ).dialog( "option", "title", '${_("File Resolver")}' );
     }
@@ -1994,7 +1990,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 </div>
 
 <div id="do_waiting">
-    <img src="/images/ajax-loader.gif" border="0" alt="" /><span>${_("Communicating with LinOTP server...")}</span>
+    <img src="/images/ajax-loader.gif" alt="loading"><span>${_("Communicating with LinOTP server...")}</span>
 </div>
 
 

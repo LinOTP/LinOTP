@@ -29,14 +29,8 @@
 </%doc>
 <html>
   <head>
-    
-<title>{$c.title}</title>
+    <title>{$c.title}</title>
   </head>
   <body>
-
-
-
-    
   </body>
 </html>
-

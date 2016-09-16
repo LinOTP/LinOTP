@@ -33,7 +33,7 @@
 
 
 %if c.scope == 'config' :
-<script>
+<script type="text/javascript">
 
 /*
  * 'typ'_get_config_val()
@@ -75,7 +75,7 @@ function qr_get_config_params(){
 }
 
 </script>
-<form class="cmxform" id="form_qrtoken_config">
+<form class="cmxform" id="form_qrtoken_config" action="">
     <fieldset>
         <legend>${_("QRToken Settings")}</legend>
         <table>
@@ -86,7 +86,7 @@ function qr_get_config_params(){
                     </label>
                 </td>
                 <td>
-                    <input class="required" type="number" name="qrconfig_max_challenges" id="qrconfig_max_challenges" class="text ui-widget-content ui-corner-all"/>
+                    <input type="number" name="qrconfig_max_challenges" id="qrconfig_max_challenges" class="required text ui-widget-content ui-corner-all">
                 </td>
             </tr>
             <tr>
@@ -96,7 +96,7 @@ function qr_get_config_params(){
                     </label>
                 </td>
                 <td>
-                    <input class="required" type="number" name="qrconfig_challenge_timeout" id="qrconfig_challenge_timeout" class="text ui-widget-content ui-corner-all"/>
+                    <input type="number" name="qrconfig_challenge_timeout" id="qrconfig_challenge_timeout" class="required text ui-widget-content ui-corner-all">
                 </td>
             </tr>
             <tr>
@@ -118,14 +118,14 @@ function qr_get_config_params(){
                     <label for="qrconfig_cert_id">${_("Public key certificate")}</label>
                 </td>
                 <td>
-                    <input class="required" type="text" name="qrconfig_timeout" id="qrconfig_cert_id" value="system" disabled="true" placeholder="${_('certificate id')}" class="text ui-widget-content ui-corner-all"/>
+                    <input type="text" name="qrconfig_timeout" id="qrconfig_cert_id" value="system" disabled="disabled" placeholder="${_('certificate id')}" class="required text ui-widget-content ui-corner-all">
                 </td>
             </tr>
             <tr>
                 <td>
                 </td>
                 <td>
-                    <textarea disabled="true" name="qrconfig_pub_cert" id="qrconfig_pub_cert" rows="6" maxlength="400"></textarea>
+                    <textarea disabled="disabled" name="qrconfig_pub_cert" id="qrconfig_pub_cert" cols="40" rows="6"></textarea>
                 </td>
             </tr>
         </table>
@@ -139,7 +139,7 @@ ${_("QRToken - challenge/response Token")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_enroll_setup_defaults()
  *
@@ -191,7 +191,7 @@ function qr_clear_input_fields() {
 <table>
     <tr>
         <td><label for="enroll_qrtoken_desc">${_("Description")}</label></td>
-        <td><input type="text" name="enroll_qrtoken_desc" id="enroll_qrtoken_desc" class="text" /></td>
+        <td><input type="text" name="enroll_qrtoken_desc" id="enroll_qrtoken_desc" class="text"></td>
     </tr>
     <tr class="space">
         <td>
@@ -215,7 +215,7 @@ function qr_clear_input_fields() {
             <label for="qrtoken_pin1">${_("Enter PIN")}:</label>
         </td>
         <td>
-            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text" />
+            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text">
         </td>
     </tr>
     <tr class="qrtoken_pin_rows">
@@ -223,7 +223,7 @@ function qr_clear_input_fields() {
             <label for="qrtoken_pin2">${_("Confirm PIN")}:</label>
         </td>
         <td>
-            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text" />
+            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text">
         </td>
     </tr>
 </table>
@@ -239,7 +239,7 @@ ${_("Enroll your QRToken")}
 
 
 %if c.scope == 'selfservice.enroll':
-<script>
+<script type="text/javascript">
     jQuery.extend(jQuery.validator.messages, {
         required: "${_('required input field')}",
         minlength: "${_('minimum length must be greater than {0}')}",
@@ -295,12 +295,12 @@ $( document ).ready(function() {
 </script>
 <h1>${_("Enroll your QRToken")}</h1>
 <div id='enroll_qrtoken_form'>
-	<form class="cmxform" id="form_enroll_qrtoken">
+	<form class="cmxform" id="form_enroll_qrtoken" action="">
 	<fieldset>
 		<table>
             <tr>
                 <td><label id='qrtoken_desc_label2' for='qrtoken_desc'>${_("Token description")}</label></td>
-                <td><input id='qrtoken_desc' name='qrtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'/></td>
+                <td><input id='qrtoken_desc' name='qrtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'></td>
             </tr>
             <tr>
                 <td colspan="2">
@@ -312,7 +312,7 @@ $( document ).ready(function() {
                     <label for="qrtoken_pin1">${_("Enter PIN")}:</label>
                 </td>
                 <td>
-                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text" />
+                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text">
                 </td>
             </tr>
             <tr>
@@ -320,7 +320,7 @@ $( document ).ready(function() {
                     <label for="qrtoken_pin2">${_("Confirm PIN")}:</label>
                 </td>
                 <td>
-                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text" />
+                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text">
                 </td>
             </tr>
         </table>
@@ -337,7 +337,7 @@ ${_("Activate your QRToken")}
 
 %if c.scope == 'selfservice.activate':
 
-<script>
+<script type="text/javascript">
 
 $( document ).ready(function() {
     $('#button_activate_qrtoken_start').click(function (e){
@@ -435,20 +435,20 @@ function self_qrtoken_activate_switch_phase(phase) {
 <h1>${_("Activate your QRToken")}</h1>
 
 <div id="activate_qrtoken_phase_one" class="activate_qrtoken_phase">
-    <form class="cmxform">
+    <form class="cmxform" action="">
         <table>
             <tr>
                 <td>${_("Select QRToken: ")}</td>
                 <td>
                     <input type="text" class="selectedToken ui-corner-all" disabled
-                        id="activate_qrtoken_serial"/>
+                        id="activate_qrtoken_serial">
                 </td>
             </tr>
             <tr>
                 <td>${_("Enter pin: ")}</td>
                 <td>
                     <input type="password" class="text ui-widget-content ui-corner-all"
-                        id="activate_qrtoken_pin"/>
+                        id="activate_qrtoken_pin">
                 </td>
             </tr>
             <tr>
@@ -462,7 +462,7 @@ function self_qrtoken_activate_switch_phase(phase) {
     </form>
 </div>
 <div id="activate_qrtoken_phase_two" class="activate_qrtoken_phase hidden">
-    <form class="cmxform">
+    <form class="cmxform" action="">
         <table>
             <tr>
                 <td>
@@ -477,7 +477,7 @@ function self_qrtoken_activate_switch_phase(phase) {
                 <td>${_("OTP Value: ")}</td>
                 <td>
                     <input type="text" class="ui-corner-all"
-                        id="activate_qrtoken_otp_value"/>
+                        id="activate_qrtoken_otp_value">
                 </td>
             </tr>
             <tr>

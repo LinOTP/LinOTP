@@ -35,7 +35,7 @@
 
 
 %if c.scope == 'config' :
-<script>
+<script type="text/javascript">
 
 /*
  * 'typ'_get_config_val()
@@ -95,14 +95,14 @@ $("#form_config_radius").validate({
 
 </script>
 
-<form class="cmxform" id='form_config_radius'>
+<form class="cmxform" id='form_config_radius' action="">
 <fieldset>
 	<legend>${_("RADIUS token settings")}</legend>
 	<table>
 	<tr>
 	<td><label for="sys_radius_server" title='${_("You need to enter the server like myradius:1812")}'>
 		${_("RADIUS server")}</label></td>
-	<td><input class="required" type="text" name="sys_radius_server" id="sys_radius_server" class="text ui-widget-content ui-corner-all"/></td>
+	<td><input type="text" name="sys_radius_server" id="sys_radius_server" class="text ui-widget-content ui-corner-all required"></td>
 	</tr>
 
 	<tr><td><label for="sys_radius_local_checkpin" title='${_("The PIN can either be verified on this local LinOTP server or forwarded to the RADIUS server")}'>
@@ -114,7 +114,7 @@ $("#form_config_radius").validate({
 		</select></td>
 	</tr><tr>
 	<td><label for="sys_radius_secret">${_("RADIUS shared secret")}</label></td>
-	<td><input type="password" name="sys_radius_secret" id="sys_radius_secret" class="text ui-widget-content ui-corner-all" /></td>
+	<td><input type="password" name="sys_radius_secret" id="sys_radius_secret" class="text ui-widget-content ui-corner-all"></td>
 	</tr>
 	</table>
 </fieldset>
@@ -127,7 +127,7 @@ ${_("RADIUS token")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_enroll_setup_defaults()
  *
@@ -228,7 +228,7 @@ $("#form_enroll_token").validate({
 <table><tr>
     <td><label for="radius_server" title='${_("You need to enter the server like myradius:1812")}'>
         ${_("RADIUS server")}</label></td>
-    <td><input class="required" type="text" name="radius_server" id="radius_server" value="${sys_radius_server}" class="text ui-widget-content ui-corner-all"/></td>
+    <td><input type="text" name="radius_server" id="radius_server" value="${sys_radius_server}" class="required text ui-widget-content ui-corner-all"></td>
     </tr><tr>
     <td><label for="radius_local_checkpin" title='${_("The PIN can either be verified on this local LinOTP server or forwarded to the RADIUS server")}'>
         ${_("Check PIN")}</label></td>
@@ -239,21 +239,21 @@ $("#form_enroll_token").validate({
         </select></td>
     </tr><tr>
     <td><label for="radius_secret">${_("RADIUS shared secret")}</label></td>
-    <td><input type="password" name="radius_secret" id="radius_secret" value="${sys_radius_secret}" class="text ui-widget-content ui-corner-all" /></td>
+    <td><input type="password" name="radius_secret" id="radius_secret" value="${sys_radius_secret}" class="text ui-widget-content ui-corner-all"></td>
     </tr><tr>
     <td><label for="radius_user">${_("RADIUS user")}</label></td>
-    <td><input type="text" name="radius_user" id="radius_user" value="" class="text ui-widget-content ui-corner-all" /></td>
+    <td><input type="text" name="radius_user" id="radius_user" value="" class="text ui-widget-content ui-corner-all"></td>
     </tr>
     <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
     <tr name="set_pin_rows">
     <td class="description"><label for="radius_pin1" id="radius_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="pin1" id="radius_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
     </tr>
     <tr name="set_pin_rows">
     <td class="description"><label for="radius_pin2" id="radius_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('radius_pin1','radius_pin2');" name="radius_pin2" id="radius_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
     </tr></table>
 
 %endif

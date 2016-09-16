@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-    
+# -*- coding: utf-8 -*-
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
@@ -30,8 +30,8 @@
 <button id=policy_import>${_("Import policies")}</button>
 
 <table id="policy_table" class="flexme2" style="display:none"></table>
-   
-<form id="policy_form" action="#" method="post">   
+
+<form id="policy_form" action="#" method="post">
     <table>
     <tr>
         <td><label for=policy_active>${_("Active")}</label></td>
@@ -39,7 +39,7 @@
     </tr>
     <tr>
         <td><label for=policy_name>${_("Policy name")}</label></td>
-        <td><input type="text" class="required"  id="policy_name" size="40" maxlength="80" 
+        <td><input type="text" class="required"  id="policy_name" size="40" maxlength="80"
             title='${_("The name of the policy")}'></td>
     </tr>
     <tr>
@@ -55,27 +55,27 @@
     </tr>
         <tr>
         <td><label for="policy_action">${_("Action")}</label></td>
-        <td><input type="text" class="required"  id="policy_action" size="40" maxlength="2000" 
+        <td><input type="text" class="required"  id="policy_action" size="40" maxlength="2000"
             title='${_("The action that should be allowed. These are actions like: enrollSMS, enrollMOTP...The actions may be comma separated.")}'></td>
     </tr>
     <tr>
         <td><label for="policy_user">${_("User")}</label></td>
-        <td><input type="text"  id="policy_user" size="40" maxlength="80" 
+        <td><input type="text"  id="policy_user" size="40" maxlength="80"
             title='${_("The user or usergroup the policy should apply to")}'></td>
     </tr>
         <tr>
         <td><label for="policy_realm">${_("Realm")}</label></td>
-        <td><input type="text" class="required"  id="policy_realm" size="40" maxlength="80" 
+        <td><input type="text" class="required"  id="policy_realm" size="40" maxlength="80"
             title='${_("The realm the policy applies to")}'></td>
     </tr>
     <tr>
         <td><label for="policy_client">${_("Client")}</label></td>
-        <td><input type="text"  id="policy_client" size="40" maxlength="120" 
+        <td><input type="text"  id="policy_client" size="40" maxlength="120"
             title='${_("Comma separated list of client IPs and Subnets.")}'></td>
     </tr>
     <tr>
         <td><label for=policy_time>${_("Time")}</label></td>
-        <td><input type="text"  id="policy_time" size="40" maxlength="80" 
+        <td><input type="text"  id="policy_time" size="40" maxlength="80"
             title='${_("The time on which the policy should be applied")}'></td>
     </tr>
     <tr>
@@ -88,7 +88,7 @@
     </tr>
     </table>
 </form>
-<script type="text/javascript"> 
+<script type="text/javascript">
     view_policy();
 </script>
 
