@@ -357,7 +357,7 @@ html {
 	width: 100%;
 	box-sizing: border-box;
 	margin: 0 0 5px;
-	height: 45px;
+	height: 47px;
 }
 
 #header #logo {
@@ -396,7 +396,13 @@ html {
 	border-top: none;
 	color: black;
 	font-size: 16px;
-	height: 21px;
+	height: 20px;
+	padding-top: 12px;
+	padding-bottom: 13px;
+}
+
+#menu.sf-menu ul {
+    border: 1px solid rgb(170, 170, 170);
 }
 
 #header .sf-menu li:first-child a {
