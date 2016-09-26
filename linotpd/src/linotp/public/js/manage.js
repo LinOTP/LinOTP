@@ -1058,7 +1058,7 @@ function assign_callback(xhdr, textStatus, serial) {
     resp = xhdr.responseText;
     obj = jQuery.parseJSON(resp);
     if (obj.result.status == false) {
-        alert_info_text({'title': escape(obj.result.error.message),
+        alert_info_text({'text': escape(obj.result.error.message),
                          'type': ERROR,
                          'is_esacped': true});
     } else
