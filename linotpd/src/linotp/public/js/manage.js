@@ -5669,7 +5669,7 @@ function realm_edit(name){
 
 function check_for_selected_resolvers(){
     var resolvers_in_realm_to_edit = new Array();
-    $.when.apply($, $(".ui-selected", this).each(function(){
+    $(".ui-selected").each(function(){
         var index = $("#resolvers_in_realms_select li").index(this);
         var reso = escape($(this).html());
         if (reso.match(/(\S+)\s\[(\S+)\]/)) {
@@ -5696,7 +5696,7 @@ function check_for_selected_resolvers(){
                 resolvers_in_realm_to_edit.push('useridresolver.PasswdIdResolver.IdResolver.' + r);
                 break;
         }
-    })).done(function(){
+    }).promise().done(function(){
         g.resolvers_in_realm_to_edit = resolvers_in_realm_to_edit.join(",");
     }); // end of each
 }
