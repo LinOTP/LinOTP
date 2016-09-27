@@ -3255,7 +3255,7 @@ msgstr ""
 
 msgid "Error: unknown tokentype in function token_enroll()"
 msgstr ""
-"Errore: tipo di token sconosciuto nella funzione <em>token_enroll()</em>."
+"Errore: tipo di token sconosciuto nella funzione token_enroll()."
 
 msgid "Could not find a token for this OTP value."
 msgstr "Non è stato possibile rilevare alcun token per questo valore OTP."
@@ -3271,8 +3271,8 @@ msgstr "Tipo di token sconosciuto durante l'importazione!"
 
 msgid "You may only upload support subscription files ending with .pem"
 msgstr ""
-"Il file di supporto che si sta caricando deve avere l'estensione file <em>."
-"pem</em>."
+"Il file di supporto che si sta caricando deve avere l'estensione file ."
+"pem"
 
 msgid ""
 "Error saving SMS configuration. Please check your configuration and your "
@@ -3298,7 +3298,7 @@ msgstr ""
 msgid ""
 "Regexp error in realm. You need to select ONE realm to set it as default."
 msgstr ""
-"Errore nell'espressione regolare del Realm. Seleziona solo <em>un</em>Realm "
+"Errore nell'espressione regolare del Realm. Seleziona solo un Realm "
 "per farlo diventare Realm di default."
 
 msgid "There is an error in the realm name!"
