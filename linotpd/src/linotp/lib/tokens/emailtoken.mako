@@ -32,7 +32,7 @@ ${_("E-mail token")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 function email_enroll_setup_defaults(config, options){
     email_clear_input_fields();
 	// in case we enroll e-mail otp, we get the e-mail address of the user
@@ -78,17 +78,17 @@ function email_clear_input_fields() {
 </tr>
 <tr>
     <td><label for="enroll_email_desc" id='enroll_email_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_email_desc" id="enroll_email_desc" value="webGUI_generated" class="text" /></td>
+    <td><input type="text" name="enroll_email_desc" id="enroll_email_desc" value="webGUI_generated" class="text"></td>
 </tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr  name='set_pin_rows'>
     <td class="description"><label for="email_pin1" id="email_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin1" id="email_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 </tr><tr name='set_pin_rows'>
     <td class="description"><label for="email_pin2" id="email_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin2" id="email_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 </table>
 
@@ -113,7 +113,7 @@ ${_("Enroll EMail Token")}
         emailaddress = ''
 %>
 
-<script>
+<script type="text/javascript">
 
     $('#form_register_email').validate({
         rules: {
@@ -161,7 +161,7 @@ function self_email_submit(){
 
 <h1>${_("Enroll your email token")}</h1>
 <div id='register_email_form'>
-    <form class="cmxform" id='form_register_email'>
+    <form class="cmxform" id='form_register_email' action="">
     <fieldset>
         <table>
         <tr>
@@ -174,13 +174,13 @@ function self_email_submit(){
                     %if c.edit_email == 0:
                             readonly  disabled
                     %endif
-                    />
+                   >
         </td>
         </tr>
         <tr>
             <td><label for="email_self_desc" id='email_self_desc_label'>${_("Description")}</label></td>
             <td><input type="text" name="email_self_desc" id="email_self_desc"
-                        value="self_registered"; class="text" /></td>
+                        value="self_registered"; class="text"></td>
         </tr>
         </table>
         <button class='action-button' id='button_register_email'

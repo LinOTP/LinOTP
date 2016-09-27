@@ -47,14 +47,14 @@ if isinstance(lang, list):
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <meta http-equiv="content-style-type" content="text/css">
 
-<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
 
-<link type="text/css" rel="stylesheet" href="/css/linotp.css"/>
-<link type="text/css" rel="stylesheet" href="/selfservice/style.css" />
-<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css" />
+<link type="text/css" rel="stylesheet" href="/css/linotp.css">
+<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 
-<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
 
 
 <script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
@@ -96,7 +96,7 @@ if isinstance(lang, list):
 </div>
 
 <div id="do_waiting">
-    <img src="/images/ajax-loader.gif" border="0" alt="" /><span>${_("Communicating with LinOTP server...")}</span>
+    <img src="/images/ajax-loader.gif" border="0" alt=""><span>${_("Communicating with LinOTP server...")}</span>
 </div>
 
 <div id="sidebar">
@@ -179,8 +179,8 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 
 </div>  <!-- end of wrap -->
-<input type='hidden' id='token_enroll_fail' value='${_("Error enrolling token:\n %s")}'/>
-<input type='hidden' id='token_enroll_ok'   value='${_("Token enrolled successfully:\n %s")}'/>
+<input type='hidden' id='token_enroll_fail' value='${_("Error enrolling token:\n %s")}'>
+<input type='hidden' id='token_enroll_ok'   value='${_("Token enrolled successfully:\n %s")}'>
 
 <div id="alert_box">
     <span id="alert_box_text"> </span>

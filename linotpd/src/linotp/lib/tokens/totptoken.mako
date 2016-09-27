@@ -34,7 +34,7 @@
 
 
 %if c.scope == 'config' :
-<script>
+<script type="text/javascript">
 
 /*
  * 'typ'_get_config_val()
@@ -49,7 +49,7 @@
 function totp_get_config_val(){
 	var id_map = {};
 
-    id_map['totp.timeStep']   = 'totp_timeStep';
+    id_map['totp.timeStep']   = 'totp_timeStep_config';
     id_map['totp.timeShift']  = 'totp_timeShift';
     id_map['totp.timeWindow'] = 'totp_timeWindow';
 
@@ -69,19 +69,19 @@ function totp_get_config_params(){
 	var url_params ={};
 
     url_params['totp.timeShift'] 	= $('#totp_timeShift').val();
-    url_params['totp.timeStep'] 	= $('#totp_timeStep').val();
+    url_params['totp.timeStep'] 	= $('#totp_timeStep_config').val();
     url_params['totp.timeWindow'] 	= $('#totp_timeWindow').val();
 
 	return url_params;
 }
 
 </script>
-<form class="cmxform" id="form_totp_config">
+<form class="cmxform" id="form_totp_config" action="">
 <fieldset>
 	<legend>${_("TOTP token settings")}</legend>
 	<table>
-		<tr><td><label for='totp_timeStep'> ${_("time step")}: </label></td>
-		<td><input type="text" name="tot_timeStep" class="required"  id="totp_timeStep" size="2" maxlength="2"
+		<tr><td><label for='totp_timeStep_config'> ${_("time step")}: </label></td>
+		<td><input type="text" name="tot_timeStep" class="required"  id="totp_timeStep_config" size="2" maxlength="2"
 			title='${_("This is the time step for time based tokens. Usually this is 30 or 60.")}'> sec</td></tr>
 		<tr><td><label for='totp_timeShift'> ${_("time offset")}: </label></td>
 		<td><input type="text" name="totp_timeShift" class="required"  id="totp_timeShift" size="5" maxlength="5"
@@ -100,7 +100,7 @@ ${_("HMAC time based")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 
 /*
  * 'typ'_enroll_setup_defaults()
@@ -131,11 +131,10 @@ function totp_enroll_setup_defaults(config, options){
     } else {
         $("[name='set_pin_rows']").show();
     }
-}	
-
+}
 
 /*
- * helper function to controll the constrains if 
+ * helper function to controll the constrains if
  * token should be google authenticator compliant
  */
 function totp_google_constrains() {
@@ -143,7 +142,7 @@ function totp_google_constrains() {
         $('#totp_otplen').prop('disabled', false);
         $('#totp_algorithm').prop('disabled', false);
         $('#totp_timestep').prop('disabled', false);
-                
+
         $('#totp_google_compliant').prop('disabled', true);
         $('#totp_google_label').prop('disabled', true);
         $('#totp_google_label').addClass('disabled');
@@ -168,8 +167,6 @@ function totp_google_constrains() {
         }
     }
 }
-
-
 
 /*
  * 'typ'_get_enroll_params()
@@ -222,8 +219,6 @@ $('#totp_google_compliant').click(function() {
    totp_google_constrains();
 });
 
-
-
 });
 </script>
 
@@ -234,23 +229,18 @@ $('#totp_google_compliant').click(function() {
     <th colspan="2" title='${_("The token seed is the secret that is used in the hmac algorithm to make your token unique. So please take care!")}'
     >Token seed:</th>
 </tr>
-
 <tr>
     <td class="description" colspan='2'>
-        <input type="radio" name="totp_rbg_key_gen" value="gen_key" id='totp_rb_key_gen'/>
-        <label for"hmac_key_cb">${_("Generate random seed")}</label></td>
- </tr>
-
-
+        <input type="radio" name="totp_rbg_key_gen" value="gen_key" id='totp_rb_key_gen'>
+        <label for="totp_rb_key_gen">${_("Generate random seed")}</label></td>
+</tr>
 <tr>
     <td class="description" >
-        <input type="radio" name="totp_rbg_key_gen" value='no_gen_key' id='totp_rb_key_gen_no'/>
-        <label for"totp_rb_key_gen_no">${_("Enter seed")}</label></td>
+        <input type="radio" name="totp_rbg_key_gen" value='no_gen_key' id='totp_rb_key_gen_no'>
+        <label for="totp_rb_key_gen_no">${_("Enter seed")}</label></td>
     <td>
-        <input type="text" name="totp_key" id="totp_key" value="" class="text ui-widget-content ui-corner-all" /></td>
+        <input type="text" name="totp_key" id="totp_key" value="" class="text ui-widget-content ui-corner-all"></td>
 </tr>
-
-
 <tr class="space">
     <th colspan="2" title='${_("The hmac algorithm could be controlled by the following settings. Make sure that these settings match your hardware token or software token capabilities.")}'>
     Token settings:</th>
@@ -281,9 +271,9 @@ $('#totp_google_compliant').click(function() {
 </tr>
 <tr>
     <td class="description">
-        <label for='totp_timestep' 
+        <label for='totp_timestep'
                title='${_("The :time step: defines the granularity of the time in seconds that is used in the HMAC algorithm.")}'>
-        ${_("Time step")}</label></td>
+            ${_("Time step")}</label></td>
     <td>
     	<select id='totp_timestep'>
     	<option value='60' >60 ${_("seconds")}</option>
@@ -292,34 +282,29 @@ $('#totp_google_compliant').click(function() {
 </tr>
 <tr>
     <td class="description"><label for="enroll_totp_desc" id='enroll_totp_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_totp_desc" id="enroll_totp_desc" value="web ui generated" class="text" /></td>
+    <td><input type="text" name="enroll_totp_desc" id="enroll_totp_desc" value="web ui generated" class="text"></td>
 </tr>
-
-
 
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows" >
     <td class="description"><label for="totp_pin1" id="totp_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin1" id="totp_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr name="set_pin_rows" >
     <td class="description"><label for="totp_pin2" id="totp_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('totp_pin1','totp_pin2');" name="pin2" id="totp_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 </table>
-
 % endif
-
 
 %if c.scope == 'selfservice.title.enroll':
 ${_("Enroll TOTP Token")}
 %endif
 
-
 %if c.scope == 'selfservice.enroll':
-<script>
+<script type="text/javascript">
     jQuery.extend(jQuery.validator.messages, {
         required: "${_('required input field')}",
         minlength: "${_('minimum length must be greater than {0}')}",
@@ -341,7 +326,7 @@ var totp_self_validator = $('#form_enroll_totp').validate({
             maxlength: 64,
             number: false,
             content_check: true,
-            required: function() { 
+            required: function() {
                 return ! $('#totp_rb2_key_gen').is(':checked');
             }
         }
@@ -384,7 +369,7 @@ function self_totp_submit(){
     var ret = false;
     var params =  self_totp_get_param();
 
-    if  ( ($('#totp_rb2_key_gen').is(':checked') === false) 
+    if  ( ($('#totp_rb2_key_gen').is(':checked') === false)
            && ($('#form_enroll_totp').valid() === false)) {
         alert('${_("Form data not valid.")}');
         return ret
@@ -423,9 +408,7 @@ function totp_self_google_constrains() {
     }
 }
 
-
 $( document ).ready(function() {
-    
     $('input[name="totp_rbg2_key_gen"]').click(function() {
         cb_changed_deactivate('totp_rb2_key_gen',['totp_self_secret']);
         totp_self_validator.resetForm();
@@ -442,14 +425,11 @@ $( document ).ready(function() {
 
     $("#totp_rb2_key_gen").prop("checked", true);
     cb_changed_deactivate('totp_rb2_key_gen',['totp_self_secret']);
-
-
 });
-
 </script>
 <h2>${_("Enroll your TOTP token")}</h2>
 <div id='enroll_totp_form'>
-    <form class="cmxform" id='form_enroll_totp'>
+    <form class="cmxform" id='form_enroll_totp' action="">
     <fieldset>
         <table>
         <tr class="space"><th colspan="2">${_("Token Seed:")}</th></tr>
@@ -465,13 +445,13 @@ $( document ).ready(function() {
                 <label id='totp_self_secret_label'
                     for='totp_rb2_key_gen_no'>${_("enter token seed")}</label></td>
             <td><input id='totp_self_secret' name='totp_self_secret'
-                class="required ui-widget-content ui-corner-all"/></td>
+                class="required ui-widget-content ui-corner-all"></td>
         </tr>
         <tr class="space"><th>${_("Token Settings:")}</th></tr>
         <tr>
             <td class="description description_w_space">
                 <input type='checkbox' id='totp_self_google_compliant' name='totp_self_google_compliant'>
-                <label for='totp_self_google_compliant' id="totp_self_google_label" 
+                <label for='totp_self_google_compliant' id="totp_self_google_label"
                         title='${_("The Google Authenticator supports only 6 digits, SHA1 hashing and time step 30.")}'
                         >${_("Google Authenticator compliant")}</label>
             </td>
@@ -519,7 +499,7 @@ $( document ).ready(function() {
         %endif
         <tr>
             <td class='description'><label for="totp_self_desc" id='totp_self_desc_label'>${_("Description")}</label></td>
-            <td><input type="text" name="totp_self_desc" id="totp_self_desc" class="text" placeholder="${_('self enrolled')}"/></td>
+            <td><input type="text" name="totp_self_desc" id="totp_self_desc" class="text" placeholder="${_('self enrolled')}"></td>
         </tr>
         </table>
 
@@ -528,5 +508,4 @@ $( document ).ready(function() {
     </fieldset>
     </form>
 </div>
-
 % endif

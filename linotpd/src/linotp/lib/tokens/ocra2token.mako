@@ -33,7 +33,7 @@
 
 
 %if c.scope == 'config' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_get_config_val()
  *
@@ -71,13 +71,13 @@ function ocra2_get_config_params(){
 }
 </script>
 
-<form class="cmxform" id="form_ocra2_config">
+<form class="cmxform" id="form_ocra2_config" action="">
 <fieldset>
 	<legend>${_("OCRA2 token settings")}</legend>
 <table>
 	<tr><td><label for=ocra2_max_challenge>${_("Maximum concurrent OCRA2 challenges")}</label></td>
 		<td><input type="text" id="ocra2_max_challenge" maxlength="4" class=integer
-			title='${_("This is the maximum concurrent challenges per OCRA2 Token.")}'/></td></tr>
+			title='${_("This is the maximum concurrent challenges per OCRA2 Token.")}'></td></tr>
 	<tr><td><label for=ocra2_challenge_timeout>${_("OCRA2 challenge timeout")}</label></td>
 		<td><input type="text" id="ocra2_challenge_timeout" maxlength="6"
 			title='${_("After this time a challenge can not be used anymore. Valid entries are like 1D, 2H or 5M where D=day, H=hour, M=minute.")}'></td></tr>
@@ -92,7 +92,7 @@ ${_("OCRA2 - challenge/response Token")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_enroll_setup_defaults()
  *
@@ -156,7 +156,7 @@ function ocra2_clear_input_fields() {
 <table>
 <tr>
      <td><label for="ocra2_key" id='ocra2_key_label'>${_("OCRA2 key")}</label></td>
-     <td><input type="text" name="ocra2_key" id="ocra2_key" value="" class="text ui-widget-content ui-corner-all" /></td>
+     <td><input type="text" name="ocra2_key" id="ocra2_key" value="" class="text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr>
 	<td> </td>
@@ -172,19 +172,19 @@ function ocra2_clear_input_fields() {
 </tr>
 <tr>
     <td><label for="enroll_ocra2_desc" id='enroll_ocra2_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_ocra2_desc" id="enroll_ocra2_desc" value="webGUI_generated" class="text" /></td>
+    <td><input type="text" name="enroll_ocra2_desc" id="enroll_ocra2_desc" value="webGUI_generated" class="text"></td>
 </tr>
 
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="ocra2_pin1" id="ocra2_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin1" id="ocra2_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="ocra2_pin2" id="ocra2_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin2" id="ocra2_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 
 </table>
@@ -200,7 +200,7 @@ ${_("Enroll your OCRA2 Token")}
 
 
 %if c.scope == 'selfservice.enroll':
-<script>
+<script type="text/javascript">
 	jQuery.extend(jQuery.validator.messages, {
 		required: "${_('required input field')}",
 		minlength: "${_('minimum length must be greater than {0}')}",
@@ -260,7 +260,7 @@ function self_ocra2_submit(){
 	var ret = false;
 	var params =  self_ocra2_get_param();
 
-	if  (( $('#ocra2_key_cb2').is(':checked') === false 
+	if  (( $('#ocra2_key_cb2').is(':checked') === false
 		 && $('#form_enroll_ocra2').valid() === false)) {
 		alert('${_("Form data not valid.")}');
 		return ret;
@@ -285,7 +285,7 @@ $( document ).ready(function() {
 	ocra2_self_validator.resetForm();
 	$("#ocra2_key_cb2").prop("checked", true);
 	cb_changed_deactivate('ocra2_key_cb2',['ocra2_secret','ocra2_key_label2']);
-	
+
     $('input[name="ocra2_key_cb2"]').click(function() {
         ocra2_self_validator.resetForm();
 		cb_changed_deactivate('ocra2_key_cb2',['ocra2_secret','ocra2_key_label2']);
@@ -295,21 +295,20 @@ $( document ).ready(function() {
         self_ocra2_submit();
     });
 });
-
 </script>
 <h1>${_("Enroll your OCRA2 Token")}</h1>
 <div id='enroll_ocra2_form'>
-	<form class="cmxform" id='form_enroll_ocra2'>
+	<form class="cmxform" id='form_enroll_ocra2' action="">
 	<fieldset>
 		<table><tr>
 			<td><label id='ocra2_desc_label2' for='ocra2_desc'>${_("Token description")}</label></td>
-			<td><input id='ocra2_desc' name='ocra2_desc' class="ui-widget-content ui-corner-all" value='self enrolled'/></td>
+			<td><input id='ocra2_desc' name='ocra2_desc' class="ui-widget-content ui-corner-all" value='self enrolled'></td>
 		</tr><tr>
 			<td><label for='ocra2_key_cb'>${_("Generate OCRA2 seed")+':'}</label></td>
 			<td><input type='checkbox' name='ocra2_key_cb2' id='ocra2_key_cb2' ></td>
 		</tr><tr>
 			<td><label id='ocra2_key_label2' for='ocra2_secret'>${_("Enter seed for the new OCRA2 token:")}</label></td>
-			<td><input id='ocra2_secret' name='ocra2_secret' class="required ui-widget-content ui-corner-all" min="40" maxlength='64'/></td>
+			<td><input id='ocra2_secret' name='ocra2_secret' class="required ui-widget-content ui-corner-all" min="40" maxlength='64'></td>
 		</tr>
         </table>
 	    <button class='action-button' id='button_enroll_ocra2'>${_("enroll ocra2 token")}</button>
@@ -329,15 +328,15 @@ ${_("Activate your OCRA2 Token")}
 <h1>${_("Activate your OCRA2 Token")}</h1>
 
 <div id='oathtokenform2'>
-	<form class="cmxform" name='myForm'>
+	<form class="cmxform" name='myForm' action="">
 		<table>
 		<p id=oath_info>
 		<tr><td>${_("Your OCRA2 Token :")}      </td>
 		    <td> <input type='text' class='selectedToken' class="text ui-widget-content ui-corner-all" disabled
-		    	value='' id='serial2' onchange="resetOcraForm()"/></td></tr>
+		    	value='' id='serial2' onchange="resetOcraForm()"></td></tr>
 		<tr><td><label for=activationcode2>${_("1. Enter the activation code :")}</label> </td>
-		    <td><input type='text' class="text ui-widget-content ui-corner-all" value='' id='activationcode2'/></td>
-		        <input type='hidden' value='${_("Failed to enroll token!")}' id='ocra2_activate_fail'/>
+		    <td><input type='text' class="text ui-widget-content ui-corner-all" value='' id='activationcode2'></td>
+		        <input type='hidden' value='${_("Failed to enroll token!")}' id='ocra2_activate_fail'>
 		    <td><div id='qr2_activate'>
 			    <button class='action-button' id='button_provisionOcra2' onclick="provisionOcra2(); return false;">
 				${_("activate your OCRA2 Token")}
@@ -348,15 +347,15 @@ ${_("Activate your OCRA2 Token")}
 		<tr><td><div id='ocra2_qr_code'></div></td></tr>
 		</table>
 	</form>
-	<form class="cmxform" name='myForm2'>
+	<form class="cmxform" name='myForm2' action="">
 		<table>
 		<tr><td><div id='qr2_confirm1'><label for=ocra2_check>${_("2. Enter your confirmation code:")}
 				</label></div> </td>
 		    <td><div id='qr2_confirm2'>
-		        <input type='hidden' class="text ui-widget-content ui-corner-all" id='transactionid2' value='' />
-		        <input type='hidden' value='${_("OCRA rollout for token %s completed!")}' 			id='ocra2_finish_ok'  />
-		        <input type='hidden' value='${_("OCRA token rollout failed! Please retry")}' 		id='ocra2_finish_fail'/>
-		    	<input type='text' class="text ui-widget-content ui-corner-all"              		id='ocra2_check' value='' />
+		        <input type='hidden' class="text ui-widget-content ui-corner-all" id='transactionid2'>
+		        <input type='hidden' value='${_("OCRA rollout for token %s completed!")}' id='ocra2_finish_ok'>
+		        <input type='hidden' value='${_("OCRA token rollout failed! Please retry")}' id='ocra2_finish_fail'>
+		    	<input type='text' class="text ui-widget-content ui-corner-all" id='ocra2_check'>
 		    	</div>
 		    </td>
 			<td>
@@ -374,7 +373,7 @@ ${_("Activate your OCRA2 Token")}
 </div>
 
 
-<script>
+<script type="text/javascript">
 
 
 function provisionOcra2() {

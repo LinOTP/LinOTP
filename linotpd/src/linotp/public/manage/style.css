@@ -51,8 +51,16 @@
 	-moz-box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
 	box-shadow: inset 0px 0px 5px 0px rgba(255,255,255,0.5);
 }
+
 #info_bar {
 	display:none;
+}
+
+#login-status {
+	font-size: 70%;
+	float: right;
+	padding: .3em .5em;
+	margin-bottom: 5px;
 }
 
 .error_box {
@@ -346,10 +354,10 @@ html {
 }
 
 #header {
-	float: left;
 	width: 100%;
+	box-sizing: border-box;
 	margin: 0 0 5px;
-	height: 45px;
+	height: 47px;
 }
 
 #header #logo {
@@ -388,7 +396,13 @@ html {
 	border-top: none;
 	color: black;
 	font-size: 16px;
-	height: 21px;
+	height: 20px;
+	padding-top: 12px;
+	padding-bottom: 13px;
+}
+
+#menu.sf-menu ul {
+    border: 1px solid rgb(170, 170, 170);
 }
 
 #header .sf-menu li:first-child a {
@@ -567,3 +581,14 @@ html {
 .ui-widget-header .ui-state-hover:not(.ui-state-active) {
 	background: #E1E1E1!important;
 }
+
+.clearfix:after {
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: "";
+	clear: both;
+	height: 0;
+	}
+* html .clearfix             { zoom: 1; } /* IE6 */
+*:first-child+html .clearfix { zoom: 1; } /* IE7 */

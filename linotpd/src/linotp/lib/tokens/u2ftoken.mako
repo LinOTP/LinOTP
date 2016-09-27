@@ -44,7 +44,7 @@ ${_("Enroll FIDO U2F Token")}
         realm += '/'
 %>
 
-<script>
+<script type="text/javascript">
     function self_u2f_get_param()
     {
         var urlparam = {};
@@ -81,7 +81,7 @@ ${_("Enroll FIDO U2F Token")}
 <table>
 <tr>
     <td><label for="enroll_u2f_desc" id='enroll_u2f_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_u2f_desc" id="enroll_u2f_desc" value="self enrolled" class="ui-widget-content ui-corner-all" /></td>
+    <td><input type="text" name="enroll_u2f_desc" id="enroll_u2f_desc" value="self enrolled" class="ui-widget-content ui-corner-all"></td>
 </tr>
 <tr>
     <td><button type="button" role="button" id="enroll_u2f_data_button" class='action-button' onclick='self_u2f_submit();'>${_("Enroll token")}</button></td>

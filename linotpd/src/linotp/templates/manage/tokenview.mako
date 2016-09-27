@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-    
+# -*- coding: utf-8 -*-
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
@@ -34,8 +34,8 @@
 % endif
 
 <table id="token_table" class="flexme2" style="display:none"></table>
-   
-<script type="text/javascript"> 
+
+<script type="text/javascript">
 view_token();
 tokenbuttons();
 </script>

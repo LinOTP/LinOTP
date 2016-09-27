@@ -34,7 +34,7 @@ ${_("Forwarding Token")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_enroll_setup_defaults()
  *
@@ -80,19 +80,19 @@ function forward_get_enroll_params(){
 <p>${_("You can forward the OTP to a target serial number.")}</p>
 <table><tr>
 	<td><label for="forward_serial">${_("forward serial")}</label></td>
-	<td><input type="text" name="forward_serial" id="forward_serial" value="" class="text ui-widget-content ui-corner-all" /></td>
+	<td><input type="text" name="forward_serial" id="forward_serial" value="" class="text ui-widget-content ui-corner-all"></td>
 	</tr><tr>
 
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>	
+<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
 	<tr name="set_pin_rows">
     <td class="description"><label for="forward_pin1" id="forward_pin1_label">${_("enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('forward_pin1','forward_pin2');" name="pin1" id="forward_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 	</tr>
 	<tr name="set_pin_rows">
     <td class="description"><label for="forward_pin2" id="forward_pin2_label">${_("confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('forward_pin1','forward_pin2');" name="pin2" id="forward_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 	</tr></table>
 
 

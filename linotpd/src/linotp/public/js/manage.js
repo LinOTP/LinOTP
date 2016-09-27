@@ -2313,7 +2313,7 @@ function support_view(){
             info += "</tbody></table>";
             info += "<div class='subscription_info'><br>" +
                 i18n.gettext("For support and subscription please contact us at") +
-                " <a href='https://www.lsexperts.de/service-support.html' target='noreferrer'>https://www.lsexperts.de</a> <br>" +
+                " <a href='https://www.lsexperts.de/service-support.html' rel='noreferrer' target='_blank'>https://www.lsexperts.de</a> <br>" +
                 i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
             $("#dialog_support_view").html($.parseHTML(info));
         }
@@ -6164,7 +6164,7 @@ function check_for_resolver_name_change(defer, new_resolver_name){
 function confirm_cancel_dialog(dialogname){
     var defer = $.Deferred();
     var text = '<div style="text-align: center"><br/>' +
-                sprintf(i18n.gettext("The %s dialog contains unsaved changes."), dialogname) + 
+                sprintf(i18n.gettext("The %s dialog contains unsaved changes."), dialogname) +
                 '<br/><br/>' +
                 i18n.gettext('Do you really want to close the dialog and discard the changes?') +
                 '</div>';
@@ -6298,16 +6298,16 @@ function view_policy() {
         } else {
             pol_active = "False";
         }
-        var params = { 
-                'name' : $('#policy_name').val(),
-              'user' : $('#policy_user').val(),
-              'action' : $('#policy_action').val(),
-              'scope' : $('#policy_scope_combo').val(),
-              'realm' : $('#policy_realm').val(),
-              'time' : $('#policy_time').val(),
-              'client' : $('#policy_client').val(),
-              'active' : pol_active,
-                'session':getsession() };
+        var params = {
+            'name' : $('#policy_name').val(),
+            'user' : $('#policy_user').val(),
+            'action' : $('#policy_action').val(),
+            'scope' : $('#policy_scope_combo').val(),
+            'realm' : $('#policy_realm').val(),
+            'time' : $('#policy_time').val(),
+            'client' : $('#policy_client').val(),
+            'active' : pol_active,
+            'session':getsession() };
         $.post('/system/setPolicy', params,
          function(data, textStatus, XMLHttpRequest){
             if (data.result.status == true) {

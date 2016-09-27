@@ -49,7 +49,7 @@ ${_('To verify your result enter the OTP value into the form below.')}
 <div id='register'>
         <table>
         <tr><td>
-        <form class="cmxform"  id="form_challenge_ocra2" method="post">
+        <form class="cmxform"  id="form_challenge_ocra2" method="post" action="">
             <frameset name=login>
                 <table><tr>
                     <td><h2>${_('Submit a challenge:')}</h2></td>
@@ -65,7 +65,7 @@ ${_('To verify your result enter the OTP value into the form below.')}
                 </tr><tr>
                 <td> </td>
                         <td>
-                        <input type="submit" value="${_('get challenge')}"/>
+                        <input type="submit" value="${_('get challenge')}">
                 </tr></table>
             </frameset>
         </form>
@@ -78,7 +78,7 @@ ${_('To verify your result enter the OTP value into the form below.')}
             </td>
         </tr><tr>
         <td>
-        <form class="cmxform"  id="form_login_ocra2" method="post">
+        <form class="cmxform"  id="form_login_ocra2" method="post" action="">
             <frameset name=login>
                 <table><tr>
                     <td><h2>${_('Login:')}</h2></td>
@@ -90,7 +90,7 @@ ${_('To verify your result enter the OTP value into the form below.')}
                     <td><input type="password" autocomplete="off" name="pass" id="pass" maxlength=200 class=required></td>
                 </tr></table>
                 </frameset>
-                <input type="submit"  value="${_('login')}" />
+                <input type="submit"  value="${_('login')}">
                 </form>
         </td></tr>
         </table>

@@ -33,7 +33,7 @@ ${_("Simple Pass Token")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_enroll_setup_defaults()
  *
@@ -88,18 +88,18 @@ ${_("Anyway, you can set an OTP PIN, so that using this token the user can "+
 <table>
 <tr>
     <td><label for="enroll_spass_desc" id='enroll_spass_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_spass_desc" id="enroll_spass_desc" value="webGUI_generated" class="text" /></td>
+    <td><input type="text" name="enroll_spass_desc" id="enroll_spass_desc" value="webGUI_generated" class="text"></td>
 </tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="spass_pin1" id="spass_opin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('spass_pin1','spass_pin2');" name="pin1" id="spass_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="spass_pin2" id="spass_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('spass_pin1','spass_pin2');" name="pin2" id="spass_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 </table>
 

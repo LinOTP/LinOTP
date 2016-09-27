@@ -28,7 +28,7 @@
 <h2>${_("Provision your OATH Token")}</h2>
 
 <div id='oathtokenform'>
-    <form class="cmxform" name='myForm'>
+    <form class="cmxform" name='myForm' action="">
         <fieldset>
         <p id=oath_info>
         ${_("1. You first need to install the oathtoken to your iPhone.")}

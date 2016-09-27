@@ -45,7 +45,7 @@
 
 <h1>${_("Register your SMS OTP Token / mobileTAN")}</h1>
 <div id='registersmsform'>
-    <form class="cmxform" id='form_registersms'>
+    <form class="cmxform" id='form_registersms' action="">
     <fieldset>
         <table>
         <tr>
@@ -53,7 +53,7 @@
         <td><input id='mobilephone'
                     name='mobilephone'
                     class="required ui-widget-content ui-corner-all"
-                    value='${c.phonenumber}'/>
+                    value='${c.phonenumber}'>
         </td>
         </tr>
         <tr>

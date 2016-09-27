@@ -42,7 +42,7 @@ ${_("HMAC eventbased")}
 %endif
 
 %if c.scope == 'enroll' :
-<script>
+<script type="text/javascript">
 /*
  * 'typ'_enroll_setup_defaults()
  *
@@ -61,11 +61,10 @@ function hmac_enroll_setup_defaults(config, options){
     } else {
         $("[name='set_pin_rows']").show();
     }
-    
 }
 
 /*
- * helper function to controll the constrains if 
+ * helper function to controll the constrains if
  * token should be google authenticator compliant
  */
 function google_constrains() {
@@ -163,17 +162,17 @@ $('#hmac_google_compliant').click(function() {
 
 <tr>
     <td class="description" colspan='2'>
-        <input type="radio" name="hmac_seed_gen_radiogroup" value="gen_key" id='hmac_key_rb_gen'/>
-        <label for"hmac_key_rb_gen">${_("generate random seed")}</label></td>
+        <input type="radio" name="hmac_seed_gen_radiogroup" value="gen_key" id='hmac_key_rb_gen'>
+        <label for="hmac_key_rb_gen">${_("generate random seed")}</label></td>
  </tr>
 
 
 <tr>
     <td class="description" >
-        <input type="radio" name="hmac_seed_gen_radiogroup" value='no_gen_key' id='hmac_key_rb_no'/>
-        <label for"hmac_key_rb_no">${_("Enter seed")}</label></td>
+        <input type="radio" name="hmac_seed_gen_radiogroup" value='no_gen_key' id='hmac_key_rb_no'>
+        <label for="hmac_key_rb_no">${_("Enter seed")}</label></td>
     <td>
-        <input type="text" name="hmac_key" id="hmac_key" value="" class="text ui-widget-content ui-corner-all" /></td>
+        <input type="text" name="hmac_key" id="hmac_key" value="" class="text ui-widget-content ui-corner-all"></td>
 </tr>
 
 <tr class="space">
@@ -207,21 +206,21 @@ $('#hmac_google_compliant').click(function() {
 </tr>
 <tr>
     <td class="description"><label for="enroll_hmac_desc" id='enroll_hmac_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" id="enroll_hmac_desc" 
-                value="web ui generated" class="text" /></td>
+    <td><input type="text" id="enroll_hmac_desc"
+                value="web ui generated" class="text"></td>
 </tr>
 
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="hmac_pin1" id="hmac_pin1_label">${_("Enter PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" 
+    <td><input type="password" autocomplete="off"
                 onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin1" id="hmac_pin1"
-            class="text ui-widget-content ui-corner-all" /></td>
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="hmac_pin2" id="hmac_pin2_label">${_("Confirm PIN")}:</label></td>
     <td><input type="password" autocomplete="off" onkeyup="checkpins('hmac_pin1','hmac_pin2');" name="pin2" id="hmac_pin2"
-            class="text ui-widget-content ui-corner-all" /></td
+            class="text ui-widget-content ui-corner-all"></td>
 </tr>
 
 </table>
@@ -237,14 +236,14 @@ ${_("Enroll HOTP Token")}
 
 
 %if c.scope == 'selfservice.enroll':
-<script>
+<script type="text/javascript">
     jQuery.extend(jQuery.validator.messages, {
         required: "${_('required input field')}",
         minlength: "${_('minimum length must be greater than {0}')}",
         maxlength: "${_('maximum length must be lower than {0}')}",
         range: '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}',
     });
-    
+
 jQuery.validator.addMethod("content_check", function(value, element, param){
     var res1 = value.match(/^[a-fA-F0-9]+$/i);
     var res2 = !value;
@@ -281,12 +280,12 @@ function self_hmac_get_param()
     urlparam['type'] 	= typ;
     urlparam['hashlib'] = $('#hmac_self_hashlib').val();
     urlparam['otplen'] 	= $('#hmac_self_otplen').val();
-    
+
     var desc = $("#hmac_self_desc").val();
     if (desc.length > 0) {
        urlparam['description'] = $("#hmac_self_desc").val();
     }
-    
+
     return urlparam;
 }
 
@@ -301,7 +300,7 @@ function self_hmac_submit(){
     var ret = false;
     var params =  self_hmac_get_param();
 
-    if  ( ($('#hmac_key_rb2_gen').is(':checked') === false) 
+    if  ( ($('#hmac_key_rb2_gen').is(':checked') === false)
            && ($('#form_enroll_hmac').valid() === false)) {
         alert('${_("Form data not valid.")}');
         return ret
@@ -359,7 +358,7 @@ $( document ).ready(function() {
 </script>
 <h2>${_("Enroll your HOTP token")}</h2>
 <div id='enroll_hmac_form'>
-    <form class="cmxform" id='form_enroll_hmac'>
+    <form class="cmxform" id='form_enroll_hmac' action="">
     <fieldset>
         <table>
         <tr class="space"><th colspan="2">${_("Token Seed:")}</th></tr>
@@ -375,7 +374,7 @@ $( document ).ready(function() {
                 <label id='hmac_self_secret_label'
                     for='hmac_key_rb2_no'>${_("Enter token seed")}</label></td>
             <td><input id='hmac_self_secret' name='hmac_self_secret' disabled="disabled"
-                class="required ui-widget-content ui-corner-all"/></td>
+                class="required ui-widget-content ui-corner-all"></td>
         </tr>
         <tr class="space"><th>${_("Token Settings:")}</th></tr>
         <tr>
@@ -398,7 +397,7 @@ $( document ).ready(function() {
         %else:
             <input type='hidden' id='hmac_self_otplen' value='${c.otplen}'>
         %endif
-        
+
         %if c.hmac_hashlib == -1:
         <tr>
             <td class='description'><label for='hmac_self_hashlib'>${_("Hash algorithm")}</label></td>
@@ -421,7 +420,7 @@ $( document ).ready(function() {
 
         <tr>
             <td class='description'><label for="hmac_self_desc" id='hmac_self_desc_label'>${_("Description")}</label></td>
-            <td><input type="text" name="hmac_self_desc" id="hmac_self_desc" class="text" placeholder="${_('self enrolled')}"/></td>
+            <td><input type="text" name="hmac_self_desc" id="hmac_self_desc" class="text" placeholder="${_('self enrolled')}"></td>
         </tr>
         <tr class="space"></tr>
         </table>
