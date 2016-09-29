@@ -480,7 +480,7 @@ class Token(object):
         log.debug('storeToken()')
         Session.add(self)
         Session.flush()
-        Session.commit()
+
         log.debug('store token success')
         return True
 
@@ -689,8 +689,10 @@ class Realm(object):
             self.name = ''
         self.name = self.name.lower()
         log.debug('storeRealm()')
+
         Session.add(self)
-        Session.commit()
+        Session.flush()
+
         log.debug('store realm success')
         return True
 
@@ -812,8 +814,10 @@ class OcraChallenge(object):
 
     def save(self):
         log.debug('save ocra challenge')
+
         Session.add(self)
-        Session.commit()
+        Session.flush()
+
         log.debug('save ocra challenge : success')
         return self.transid
 
@@ -1085,7 +1089,8 @@ class Challenge(object):
         log.debug('[save] save challenge')
         try:
             Session.add(self)
-            Session.commit()
+            Session.flush()
+
             log.debug('save challenge : success')
 
         except Exception as exce:

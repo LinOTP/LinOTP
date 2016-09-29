@@ -730,13 +730,20 @@ def getSelfserviceActions(user):
     return list(acts)
 
 
-def _checkTokenNum(user=None, realm=None):
+def _checkTokenNum(user=None, realm=None, post_check=False):
     '''
     This internal function checks if the number of the tokens is valid...
     for a certain realm...
 
     Therefor it checks the policy
         "scope = enrollment", action = "tokencount = <number>"
+        
+    if there are more tokens assigned than in tokencount mentioned,
+    return will be false
+
+    :param user: the user in the realm
+    :param realm: the relevant realm
+    :return: boolean - True if token number is allowed
     '''
 
     # If there is an empty user, we need to set it to None
@@ -790,8 +797,12 @@ def _checkTokenNum(user=None, realm=None):
 
             log.info("Realm: %r, max: %i, tokens in realm: %i"
                      % (R, int(maxToken), int(tokenInRealms[R])))
-            if int(maxToken) > int(tokenInRealms[R]):
-                return True
+            if post_check:
+                if int(maxToken) >= int(tokenInRealms[R]):
+                    return True
+            else:
+                if int(maxToken) > int(tokenInRealms[R]):
+                    return True
 
         if policyFound is False:
             log.debug("there is no scope=enrollment, action=tokencount policy "
@@ -1581,19 +1592,6 @@ def _checkAdminPolicyPre(method, param={}, authUser=None, user=None):
                                   "right to assign token %s. Check the "
                                   "policies.") % serial)
 
-        # if a policy restricts the tokennumber for the realm/user
-        if not _checkTokenNum(user):
-            log.warning("the admin >%s< is not allowed to assign "
-                        "any more tokens for the realm %s(%s)"
-                        % (policies['admin'], user.realm,
-                        user.resolver_config_identifier))
-            raise PolicyException(_("The maximum allowed number of tokens "
-                                  "for the realm %s (%s) was reached. You "
-                                  "can not assign any more tokens. Check "
-                                  "the policies.")
-                                  % (user.realm,
-                                  user.resolver_config_identifier))
-
         # check the number of assigned tokens
         if not _checkTokenAssigned(user):
             log.warning("the maximum number of allowed tokens is exceeded. "
@@ -2297,6 +2295,7 @@ def _checkAdminPolicyPost(method, param=None, user=None):
     if method in ['init', 'assign', 'setPin', 'loadtokens']:
         # check if we are supposed to genereate a random OTP PIN
         randomPINLength = _getRandomOTPPINLength(user)
+
         if randomPINLength > 0:
             newpin = _getRandomPin(randomPINLength)
             log.debug("setting random pin for token with serial %s and user: "
@@ -2305,6 +2304,18 @@ def _checkAdminPolicyPost(method, param=None, user=None):
             log.debug("pin set")
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
+
+        if method == 'assign':
+            if not _checkTokenNum(realm=user.realm, post_check=True):
+                admin = context['AuthUser']
+                log.warning("the admin >%s< is not allowed to enroll any more "
+                            "tokens for the realm %s", admin, user.realm)
+                raise PolicyException(_("The maximum allowed number of tokens "
+                                      "for the realm %s was reached. You can "
+                                      "not init any more tokens. Check the "
+                                      "policies scope=enrollment, "
+                                      "action=tokencount.") % user.realm)            
+
     elif 'getserial' == method:
         # check if the serial/token, that was returned is in
         # the realms of the admin!
@@ -2426,14 +2437,17 @@ def checkPolicyPost(controller, method, param=None, user=None):
 
     elif 'system' == controller:
         ret = _checkSystemPolicyPost(method, param=param, user=user)
+
     elif 'selfservice' == controller:
         ret = _checkSelfservicePolicyPost(method, param=param, user=user)
+
     else:
         # unknown controller
         log.error("an unknown constroller <<%s>> "
                   "was passed." % controller)
         raise PolicyException(_("Failed to run getPolicyPost. "
                               "Unknown controller: %s") % controller)
+
     return ret
 
 
