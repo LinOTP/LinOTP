@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #   LinOTP - the open source solution for two factor authentication
-#   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#   Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #   This file is part of LinOTP authentication modules.
 #
@@ -39,8 +39,8 @@ setup(
     name='pam_py_linotp',
     version=__version__,
     description='LinOTP python PAM module',
-    author='LSE Leading Security Experts GmbH',
-    license='GPL v2, (C) LSE Leading Security Experts GmbH',
+    author='KeyIdentity GmbH',
+    license='GPL v2, (C) KeyIdentity GmbH',
     author_email='linotp-community@lsexperts.de',
     url='http://www.linotp.org',
     packages=['pam_py_linotp'],

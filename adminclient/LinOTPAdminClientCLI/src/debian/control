@@ -1,7 +1,7 @@
 Source: linotp-adminclient-cli
 Section: net
 Priority: optional
-Maintainer: LSE Leading Security Experts GmbH <linotp-community@lsexperts.de>
+Maintainer: KeyIdentity GmbH <linotp-community@lsexperts.de>
 Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49),
  python-setuptools
 Standards-Version: 3.9.1

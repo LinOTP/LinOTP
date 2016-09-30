@@ -3,7 +3,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+ *   Copyright (C) 2010 - 2016 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -42,7 +42,7 @@ if isinstance(lang, list):
 <head>
 <title>${_("LinOTP 2 Management")}</title>
 
-<meta name="copyright" content="LSE Leading Security Experts GmbH">
+<meta name="copyright" content="KeyIdentity GmbH">
 <meta name="keywords" content="LinOTP 2 manage">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
@@ -708,7 +708,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
 
 <div id='dialog_about' align="center">
     <p id='about_id'>${_("LinOTP - the open source solution for two factor authentication.")}</p>
-    <p id='about_copyright'>${_("Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH")}</p>
+    <p id='about_copyright'>${_("Copyright (C) 2010 - 2016 KeyIdentity GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
     <p><a href="http://www.linotp.org/" target="_blank">http://www.linotp.org</a>

@@ -1,7 +1,7 @@
 # German translations for LinOTP package - German messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -687,11 +687,11 @@ msgstr ""
 msgid "loading and trying to connect to server..."
 msgstr "Lade und versuche zum Server zu verbinden..."
 
-msgid "(c) LSE Leading Security Experts GmbH"
-msgstr "(c) LSE Leading Security Experts GmbH"
+msgid "(c) KeyIdentity GmbH"
+msgstr "(c) KeyIdentity GmbH"
 
-msgid "LSE Leading Security Experts GmbH"
-msgstr "LSE Leading Security Experts GmbH"
+msgid "KeyIdentity GmbH"
+msgstr "KeyIdentity GmbH"
 
 #, fuzzy
 msgid ""
@@ -794,7 +794,7 @@ msgstr ""
 "\n"
 "DIESER LIZENZVERTRAG IST EIN RECHTSGÜLTIGER VERTRAG ZWISCHEN\n"
 "IHNEN -ENTWEDER ALS NATÜRLICHE ODER ALS JURISTISCHE PERSON-\n"
-"(Nutzer) UND LSE LEADING SECURITY EXPERTS GMBH (LSE).\n"
+"(Nutzer) UND LSE LEADING SECURITY EXPERTS GMBH. (LSE)\n"
 "\n"
 "INDEM SIE DIE DIESEM VERTRAG BEIGEFÜGTE ODER AUF IHREM\n"
 "COMPUTER VORINSTALLIERTE SOFTWARE VERWENDEN, ERKLÄREN SIE SICH\n"

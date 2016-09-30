@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -54,7 +54,7 @@ setup(
 		('share//man//man1', ["doc/glinotpadm.py.1",
                               "tools/linotp-etng-enrollment.1"]),
 	],
-    license='AGPLv3, (C) LSE Leading Security Experts GmbH',
+    license='AGPLv3, (C) KeyIdentity GmbH',
     long_description='LinOTP is an open solution for strong two-factor authentication with One Time Passwords.\n\
 	LinOTP 2 is also open as far as its modular architecture is concerned. \n\
 	LinOTP 2 aims to not bind you to any  decision of the authentication protocol or \n\

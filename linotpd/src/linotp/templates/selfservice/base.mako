@@ -3,7 +3,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+ *   Copyright (C) 2010 - 2016 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -41,7 +41,7 @@ if isinstance(lang, list):
 <html>
 <head>
 <title>${_("LinOTP 2 User self service")}</title>
-<meta name="copyright" content="LSE Leading Security Experts GmbH">
+<meta name="copyright" content="KeyIdentity GmbH">
 <meta name="keywords" content="LinOTP 2, self service">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">

@@ -1,7 +1,7 @@
 Source: libpam-linotp
 Section: net
 Priority: optional
-Maintainer: LSE Leading Security Experts GmbH <linotp@lsexperts.de>
+Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
 Build-Depends: debhelper (>=7.4.0), cdbs (>=0.4.49), libpam0g-dev, libcurl4-openssl-dev, dh-autoreconf
 Standards-Version: 3.9.1
 

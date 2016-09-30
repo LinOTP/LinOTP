@@ -1,7 +1,7 @@
 # glinotpadm.py messages
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -794,11 +794,11 @@ msgid "loading and trying to connect to server..."
 msgstr ""
 
 #: ../glinotpadm.glade.h:1
-msgid "(c) LSE Leading Security Experts GmbH"
+msgid "(c) KeyIdentity GmbH"
 msgstr ""
 
 #: ../glinotpadm.glade.h:2
-msgid "LSE Leading Security Experts GmbH"
+msgid "KeyIdentity GmbH"
 msgstr ""
 
 #: ../glinotpadm.glade.h:3

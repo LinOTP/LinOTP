@@ -1,7 +1,7 @@
 <%doc>
  *
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+ *   Copyright (C) 2010 - 2016 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -28,7 +28,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<meta name="copyright" content="LSE Leading Security Experts GmbH">
+	<meta name="copyright" content="KeyIdentity GmbH">
 	<meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">

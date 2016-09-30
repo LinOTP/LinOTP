@@ -13,7 +13,7 @@
     <property name="deletable">False</property>
     <property name="program_name">LinOTP 2 Management Client</property>
     <property name="version">0.3</property>
-    <property name="copyright" translatable="yes" context="LinOTP2">(c) LSE Leading Security Experts GmbH</property>
+    <property name="copyright" translatable="yes" context="LinOTP2">(c) KeyIdentity GmbH</property>
     <property name="website">http://www.linotp.org</property>
     <property name="website_label" translatable="yes" context="LinOTP2">LinOTP</property>
     <property name="license" translatable="yes" context="LinOTP2">
@@ -645,7 +645,7 @@ GNU GENERAL PUBLIC LICENSE in the internet.
 >Cornelius Kölbel, Kay Winkler, Omar Kohl,
 Rainer Endres, Eric Sesterhenn, Stefan Pietsch
 and by the support of many more colleagues of
-    LSE Leading Security Experts GmbH.</property>
+    KeyIdentity GmbH.</property>
     <signal name="close" handler="on_aboutdialog_close" swapped="no"/>
     <signal name="response" handler="on_aboutdialog_response" swapped="no"/>
     <child internal-child="vbox">

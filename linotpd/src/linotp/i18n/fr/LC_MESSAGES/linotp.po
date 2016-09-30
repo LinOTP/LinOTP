@@ -1,7 +1,7 @@
 # French translations for LinOTP package - French messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -2548,8 +2548,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP - la solution Open Source pour l'authentification à deux facteurs."
 
-msgid "Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH"
-msgstr "Copyright (C) 2010-2016 LSE Leading Security Experts GmbH"
+msgid "Copyright (C) 2010 - 2016 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010-2016 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Distribué sous licence AGPLv3"

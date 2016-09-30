@@ -2,7 +2,7 @@
 
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP userid resolvers.
 #
@@ -57,7 +57,7 @@ setup(
     name='LinOtpUserIdResolver',
     version=__version__,
     description='LinOTP2 modules for resolving usernames',
-    author='LSE Leading Security Experts GmbH',
+    author='KeyIdentity GmbH',
     author_email='linotp@lsexperts.de',
     keywords='OTP LinOTP2 Login UserId LDAP SQL',
     url='http://www.linotp.org',
@@ -74,7 +74,7 @@ setup(
 		"Topic :: Security",
 		"Topic :: System :: Systems Administration :: Authentication/Directory"
 	],
-    license='AGPLv3, (C) LSE Leading Security Experts GmbH',
+    license='AGPLv3, (C) KeyIdentity GmbH',
     long_description=get_file_contents('DESCRIPTION')
 
 )
