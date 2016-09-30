@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -66,8 +66,8 @@ setup(
     name='LinOTP',
     version=__version__,
     description='LinOTP Service',
-    author='LSE Leading Security Experts GmbH',
-    license='AGPL v3, (C) LSE Leading Security Experts GmbH',
+    author='KeyIdentity GmbH',
+    license='AGPL v3, (C) KeyIdentity GmbH',
     author_email='linotp@lsexperts.de',
     url='http://www.linotp.org',
     install_requires=[

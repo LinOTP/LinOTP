@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP smsprovider.
 #
@@ -32,7 +32,7 @@ setup(
     name='SMSProvider',
     version=__version__,
     description='LinOTP2 modules for submitting SMS messages',
-    author='LSE Leading Security Experts GmbH',
+    author='KeyIdentity GmbH',
     author_email='linotp@lsexperts.de',
     keywords='OTP LinOTP2 SMS',
     url='http://www.linotp.org',
@@ -43,7 +43,7 @@ setup(
 #    scripts=['linotpadm.py'],
     data_files=[('share/linotp', ['test/test_sms.py' ]),
        ],
-    license='AGPLv3, (C) LSE Leading Security Experts GmbH',
+    license='AGPLv3, (C) KeyIdentity GmbH',
     long_description="""LinOTP is an open solution for strong two-factor authentication with One Time Passwords.
         LinOTP 2 is also open as far as its modular architecture is concerned.
         LinOTP 2 aims to not bind you to any  decision of the authentication protocol or

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -50,7 +50,7 @@ setup(
     name='LinOTPAdminClientCLI',
     version=__version__,
     description='LinOTP command-line client',
-    author='LSE Leading Security Experts GmbH',
+    author='KeyIdentity GmbH',
     author_email='linotp-community@lsexperts.de',
     url='http://www.linotp.org',
     packages=['linotpadminclientcli'],
@@ -58,6 +58,6 @@ setup(
      data_files=[('share/man/man1', ["doc/linotpadm.py.1"])],
 #    data_files=[('/usr/lib/python2.6/site-packages/',['linotp2-client.pth']),
 #       ],
-    license='AGPLv3, (C) LSE Leading Security Experts GmbH',
+    license='AGPLv3, (C) KeyIdentity GmbH',
     long_description=get_file_contents('DESCRIPTION')
 )

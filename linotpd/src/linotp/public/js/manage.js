@@ -1,6 +1,6 @@
 /*!
  *   LinOTP - the open source solution for two factor authentication
- *   Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+ *   Copyright (C) 2010 - 2016 KeyIdentity GmbH
  *
  *   This file is part of LinOTP server.
  *
@@ -2295,7 +2295,7 @@ function support_view(){
         if ($.isEmptyObject(support_info)) {
             var info = "";
             info += '<h2 class="contact_info">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
-            info += i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact <p class="contact_info"><a href="mailto:sales@lsexperts.de">LSE Leading Security Experts GmbH</a></p> for support agreement purchase.');
+            info += i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact <p class="contact_info"><a href="mailto:sales@lsexperts.de">KeyIdentity GmbH</a></p> for support agreement purchase.');
             $("#dialog_support_view").html($.parseHTML(info));
 
         } else {

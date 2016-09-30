@@ -1,6 +1,6 @@
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
 # 
 #    This file is part of LinOTP authentication modules.
 # 
@@ -20,7 +20,7 @@
 #
 #   Copyright 2002  The FreeRADIUS server project
 #   Copyright 2002  Boian Jordanov <bjordanov@orbitel.bg>
-#   Copyright 2011  LSE Leading Security Experts GmbH
+#   Copyright 2011  KeyIdentity GmbH
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
@@ -95,7 +95,7 @@ Access-Type 'scope1', this would look like:
 
 =head1 COPYRIGHT
 
-Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+Copyright (C) 2010 - 2016 KeyIdentity GmbH
 
 This library is free software; you can redistribute it 
 under the GPLv2.

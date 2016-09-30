@@ -1,7 +1,7 @@
 Source: linotp-useridresolver
 Section: net
 Priority: optional
-Maintainer: LSE Leading Security Experts GmbH <linotp@lsexperts.de>
+Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
 Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49),
   python (>=2.6), po-debconf, python-setuptools
 Standards-Version: 3.9.1

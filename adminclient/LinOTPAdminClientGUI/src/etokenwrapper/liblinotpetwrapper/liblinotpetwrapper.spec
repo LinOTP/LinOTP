@@ -2,14 +2,14 @@ Summary: wrapper library to make eToken NG-OTP work with LinOTP Management GUI
 Name: liblinotpetwrapper
 Version: 0.1
 Release: 1
-License: AGPLv3, (c) LSE Leading Security Experts GmbH
+License: AGPLv3, (c) KeyIdentity GmbH
 Packager:  linotp@lsexperts.de
 Group: Library/Security
 Requires: pkiclient 
 BuildRoot: /var/tmp/%{name}-buildroot
 URL: http://www.lsexperts.de
 Source: liblinotpetwrapper-0.1.tgz
-Vendor: LSE Leading Security Experts GmbH
+Vendor: KeyIdentity GmbH
 
 %description
 LSE LinOTP is a flexible OTP authentication solution.
