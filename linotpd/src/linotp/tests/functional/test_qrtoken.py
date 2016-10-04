@@ -53,7 +53,7 @@ FLAG_PAIR_HMAC = 1 << 5
 
 TYPE_QRTOKEN = 2
 QRTOKEN_VERSION = 1
-RESPONSE_VERSION = 0
+PAIR_RESPONSE_VERSION = 1
 PAIRING_URL_VERSION = 1
 
 QRTOKEN_CT_FREE = 0
@@ -834,9 +834,10 @@ class TestQRToken(TestController):
         token_serial = self.tokens[user_token_id]['serial']
         server_public_key = self.tokens[user_token_id]['server_public_key']
 
+        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
+
         pairing_response = b''
-        pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                        TYPE_QRTOKEN, user_token_id)
+        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -864,9 +865,10 @@ class TestQRToken(TestController):
         # encrypt in EAX mode
 
         cipher = AES.new(encryption_key, AES.MODE_EAX, nonce)
+        cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        return encode_base64_urlsafe(R + ciphertext + tag)
+        return encode_base64_urlsafe(header + R + ciphertext + tag)
 
 # ------------------------------------------------------------------------------
 
@@ -1050,10 +1052,10 @@ class TestQRToken(TestController):
         server_public_key = self.tokens[user_token_id]['server_public_key']
 
         NONEXISTENT_RESPONSE_VERSION = 127
+        header = struct.pack('<bI', NONEXISTENT_RESPONSE_VERSION, TYPE_QRTOKEN)
 
         pairing_response = b''
-        pairing_response += struct.pack('<bbI', NONEXISTENT_RESPONSE_VERSION,
-                                        TYPE_QRTOKEN, user_token_id)
+        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -1080,9 +1082,11 @@ class TestQRToken(TestController):
         # encrypt in EAX mode
 
         cipher = AES.new(encryption_key, AES.MODE_EAX, nonce)
+        cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(R + ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(header + R +
+                                                       ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
@@ -1133,12 +1137,13 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
+        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
+
         token_serial = "WRONGSERIAL!!11!!1"
         server_public_key = self.tokens[user_token_id]['server_public_key']
 
         pairing_response = b''
-        pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                        TYPE_QRTOKEN, user_token_id)
+        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -1165,9 +1170,11 @@ class TestQRToken(TestController):
         # encrypt in EAX mode
 
         cipher = AES.new(encryption_key, AES.MODE_EAX, nonce)
+        cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(R + ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(header + R +
+                                                       ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
@@ -1222,14 +1229,16 @@ class TestQRToken(TestController):
 
         # create the pairing response
 
+        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
+
         token_serial = self.tokens[user_token_id]['serial']
         server_public_key = self.tokens[user_token_id]['server_public_key']
 
         NON_EXISTENT_PROTOCOL = 127
 
         pairing_response = b''
-        pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                        NON_EXISTENT_PROTOCOL, user_token_id)
+        pairing_response += struct.pack('<bI', NON_EXISTENT_PROTOCOL,
+                                        user_token_id)
 
         pairing_response += self.public_key
 
@@ -1256,9 +1265,11 @@ class TestQRToken(TestController):
         # encrypt in EAX mode
 
         cipher = AES.new(encryption_key, AES.MODE_EAX, nonce)
+        cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(R + ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(header + R +
+                                                       ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
@@ -1308,13 +1319,13 @@ class TestQRToken(TestController):
         # ----------------------------------------------------------------------
 
         # create the pairing response
+        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
 
         token_serial = self.tokens[user_token_id]['serial']
         server_public_key = self.tokens[user_token_id]['server_public_key']
 
         pairing_response = b''
-        pairing_response += struct.pack('<bbI', RESPONSE_VERSION,
-                                        TYPE_QRTOKEN, user_token_id)
+        pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
@@ -1342,9 +1353,11 @@ class TestQRToken(TestController):
         # encrypt in EAX mode
 
         cipher = AES.new(encryption_key, AES.MODE_EAX, nonce)
+        cipher.update(header)
         ciphertext, tag = cipher.encrypt_and_digest(pairing_response)
 
-        wrong_pairing_response = encode_base64_urlsafe(R + ciphertext + tag)
+        wrong_pairing_response = encode_base64_urlsafe(header + R +
+                                                       ciphertext + tag)
 
         response_dict = self.send_pairing_response(wrong_pairing_response)
 
