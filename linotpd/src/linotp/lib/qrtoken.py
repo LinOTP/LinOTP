@@ -41,29 +41,19 @@ from linotp.lib.crypt import get_qrtoken_dh_secret_key
 
 # pairing constants
 #
-PAIR_VERSION        = 0
+PAIR_RESPONSE_VERSION = 1
 
-FLAG_PAIR_SERIAL    = 1 << 0
-FLAG_PAIR_CBURL     = 1 << 1
-FLAG_PAIR_CBSMS     = 1 << 2
-FLAG_PAIR_DIGITS    = 1 << 3
-FLAG_PAIR_HMAC      = 1 << 4
-FLAG_PAIR_COUNTER   = 1 << 5
-FLAG_PAIR_TSTART    = 1 << 6
-FLAG_PAIR_TSTEP     = 1 << 7
-
-RESPONSE_VERSION    = 0
-
-hash_algorithms = {'sha1' : 0, 'sha256': 1, 'sha512': 2}
+hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
 
 # QRToken constants
 
-QRTOKEN_VERSION       = 0
-TYPE_QRTOKEN          = 2
+QRTOKEN_VERSION = 0
+TYPE_QRTOKEN = 2
 
 PairingResponse = namedtuple('PairingResponse',
                              ['user_public_key', 'user_token_id',
                               'serial', 'user_login'])
+
 
 def decrypt_pairing_response(enc_pairing_response):
 
@@ -102,6 +92,13 @@ def decrypt_pairing_response(enc_pairing_response):
         token type than QRToken (also hardcoded)
 
     :raises ValueError:
+        If the pairing response field "partition" is not
+        identical to the field "token_type"
+        ("partition" is currently used for the token
+        type id. It is reserved for multiple key usage
+        in a future implementation.)
+
+    :raises ValueError:
         If the MAC of the response didn't match
 
     :return:
@@ -112,17 +109,31 @@ def decrypt_pairing_response(enc_pairing_response):
 
     # --------------------------------------------------------------------------
 
-    #            -----------------------
-    #  fields   | R  | ciphertext | MAC |
-    #            -----------------------
-    #  size     | 32 |      ?     | 16  |
-    #            -----------------------
+    #            --------------------------------------------
+    #  fields   | version | partition | R  | ciphertext | MAC |
+    #            --------------------------------------------
+    #  size     |    1    |     4     | 32 |      ?     | 16  |
+    #            --------------------------------------------
 
-    if len(data) < 32 + 16:
+    if len(data) < 1 + 4 + 32 + 16:
         raise ParameterError('Malformed pairing response')
 
-    R = data[0:32]
-    ciphertext = data[32:-16]
+    # --------------------------------------------------------------------------
+
+    # parse header
+
+    header = data[0:5]
+    version, partition = struct.unpack('<bI', header)
+
+    if version != PAIR_RESPONSE_VERSION:
+        raise ValueError('Unexpected pair-response version, '
+                         'expected: %d, got: %d' %
+                         (PAIR_RESPONSE_VERSION, version))
+
+    # --------------------------------------------------------------------------
+
+    R = data[5:32+5]
+    ciphertext = data[32+5:-16]
     mac = data[-16:]
 
     # --------------------------------------------------------------------------
@@ -144,6 +155,7 @@ def decrypt_pairing_response(enc_pairing_response):
 
     # decrypt response
     cipher = AES.new(encryption_key, AES.MODE_EAX, nonce)
+    cipher.update(header)
     plaintext = cipher.decrypt_and_verify(ciphertext, mac)
 
     # --------------------------------------------------------------------------
@@ -152,28 +164,36 @@ def decrypt_pairing_response(enc_pairing_response):
 
     # ----
 
-    plaintext_min_length = 1 + 1 + 4 + 32 + 1
+    plaintext_min_length = 1 + 4 + 32 + 1
     if len(data) < plaintext_min_length:
         raise ParameterError('Malformed pairing response')
 
-    # Parse Pairing Reponse Header (First 6 Bytes)
+    # --------------------------------------------------------------------------
 
-    #            -------------------------------------------
-    #  fields   | version  | type | user token id |   ...   |
-    #            -------------------------------------------
-    #  size     |    1     |  1   |       4       |    ?    |
-    #            -------------------------------------------
+    # get token type and user token id (unique id on the client)
 
-    resp_header = plaintext[0:6]
-    version, token_type, user_token_id = struct.unpack('<bbI', resp_header)
+    #            --------------------------------------
+    #  fields   | token type | user token id |   ...   |
+    #            --------------------------------------
+    #  size     |     1      |       4       |    ?    |
+    #            --------------------------------------
 
-    if version != 0:
-        raise ValueError('Unexpected pair-response version, '
-                         'expected: %d, got: %d' % (0, version))
+    token_type, user_token_id = struct.unpack('<bI', plaintext[0:5])
 
-    if token_type != 2:
-        raise ValueError('wrong token type in user response, '
-                         'expected: %d, got: %d' % (2, token_type))
+    if token_type != TYPE_QRTOKEN:
+        raise ValueError('unsupported token type %d, supported types '
+                         'are %s' % (token_type, [TYPE_QRTOKEN]))
+
+    # the partition field is currently used as
+    # an additional identifier for the token type.
+    # this will be changed in later versions, where
+    # LinOTP will support multiple key pairs
+    # for one token type.
+
+    if partition != token_type:
+        raise ValueError('wrong partition id in user response, '
+                         'expected id: %d, got: %d' %
+                         (token_type, partition))
 
     # --------------------------------------------------------------------------
 
@@ -182,10 +202,10 @@ def decrypt_pairing_response(enc_pairing_response):
     #            -----------------------------
     #  fields   | ... | user public key | ... |
     #            -----------------------------
-    #  size     |  6  |       32        |  ?  |
+    #  size     |  5  |       32        |  ?  |
     #            -----------------------------
 
-    user_public_key = plaintext[6:6+32]
+    user_public_key = plaintext[5:5+32]
 
     # --------------------------------------------------------------------------
 
@@ -194,12 +214,12 @@ def decrypt_pairing_response(enc_pairing_response):
     #            ---------------------------------
     #  fields   | ... | serial | NUL | user login |
     #            ---------------------------------
-    #  size     | 38  |   ?    |  1  |     ?      |
+    #  size     | 37  |   ?    |  1  |     ?      |
     #            ---------------------------------
 
     # parse token_serial and user identification
 
-    serial_user_data = plaintext[6+32:].split(b'\x00')
+    serial_user_data = plaintext[5+32:].split(b'\x00')
     serial = serial_user_data[0].decode('utf8')
     user_login = serial_user_data[1].decode('utf8')
 
