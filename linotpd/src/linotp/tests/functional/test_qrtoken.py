@@ -54,7 +54,7 @@ FLAG_PAIR_HMAC = 1 << 5
 TYPE_QRTOKEN = 2
 QRTOKEN_VERSION = 1
 PAIR_RESPONSE_VERSION = 1
-PAIRING_URL_VERSION = 1
+PAIRING_URL_VERSION = 2
 
 QRTOKEN_CT_FREE = 0
 QRTOKEN_CT_PAIR = 1
@@ -598,7 +598,9 @@ class TestQRToken(TestController):
         data_encoded = pairing_url[len('lseqr://pair/'):]
         data = decode_base64_urlsafe(data_encoded)
         version, token_type, flags = struct.unpack('<bbI', data[0:6])
-        server_public_key_dsa = data[6:6 + 32]
+        partition = struct.unpack('<I', data[6:10])[0]
+
+        server_public_key_dsa = data[10:10 + 32]
         server_public_key = dsa_to_dh_public(server_public_key_dsa)
 
         # validate protocol versions and type id
@@ -611,7 +613,7 @@ class TestQRToken(TestController):
         # extract custom data that may or may not be present
         # (depending on flags)
 
-        custom_data = data[6 + 32:]
+        custom_data = data[10 + 32:]
 
         token_serial = None
         if flags & FLAG_PAIR_SERIAL:
@@ -635,6 +637,7 @@ class TestQRToken(TestController):
         user_token_id = len(self.tokens)
         self.tokens[user_token_id] = {'serial': token_serial,
                                       'server_public_key': server_public_key,
+                                      'partition': partition,
                                       'callback_url': callback_url,
                                       'callback_sms': callback_sms,
                                       'pin': pin}
@@ -833,8 +836,9 @@ class TestQRToken(TestController):
 
         token_serial = self.tokens[user_token_id]['serial']
         server_public_key = self.tokens[user_token_id]['server_public_key']
+        partition = self.tokens[user_token_id]['partition']
 
-        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
+        header = struct.pack('<bI', PAIR_RESPONSE_VERSION, partition)
 
         pairing_response = b''
         pairing_response += struct.pack('<bI', TYPE_QRTOKEN, user_token_id)

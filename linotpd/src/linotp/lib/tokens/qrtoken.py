@@ -28,6 +28,7 @@ import logging
 import struct
 import zlib
 from os import urandom
+from base64 import b64encode
 from base64 import b64decode
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
@@ -36,7 +37,6 @@ from Cryptodome.Hash import HMAC
 from Cryptodome.Hash import SHA256
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import getPolicyActionValue
-from linotp.lib.policy import get_pairing_certificate_id
 from linotp.lib.challenges import Challenges
 from linotp.lib.reply import create_img
 from linotp.lib.tokenclass import TokenClass
@@ -51,7 +51,6 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
 from linotp.lib.crypt import get_qrtoken_dh_secret_key
-from linotp.lib.crypt import get_qrtoken_public_key
 from linotp.lib.pairing import generate_pairing_url
 
 # ------------------------------------------------------------------------------
@@ -287,6 +286,28 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             return info.get(key)
 
         return info
+
+# ------------------------------------------------------------------------------
+
+    def pair(self, pairing_data):
+
+        """
+        transfers the token to a paired state using the supplied
+        data from the pairing response
+
+        :param pairing_data: A QRTokenPairingData object
+        """
+
+        user_token_id = pairing_data.user_token_id
+        user_public_key = pairing_data.user_public_key
+
+        self.ensure_state('pairing_url_sent')
+
+        self.addToTokenInfo('user_token_id', user_token_id)
+        b64_user_public_key = b64encode(user_public_key)
+        self.addToTokenInfo('user_public_key', b64_user_public_key)
+
+        self.change_state('pairing_response_received')
 
 # ------------------------------------------------------------------------------
 
@@ -646,7 +667,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             serial = self.getSerial()
             # for qrtoken hashlib is ignored
             hash_algorithm = None
-            pub_key = get_qrtoken_public_key()
             otp_pin_length = int(self.getOtpLen())
 
             owner = get_token_owner(self)
@@ -667,18 +687,18 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             cb_sms = get_single_auth_policy(pairing_policies[1],
                                             user=owner, realms=realms)
 
-            cert_id = get_pairing_certificate_id(realms=realms, user=user)
-
             # ------------------------------------------------------------------
 
-            pairing_url = generate_pairing_url('qrtoken',
-                                               server_public_key=pub_key,
+            # FIXME: partition integration (currently dummy implementation)
+            # FIXME: certificate usage
+
+            pairing_url = generate_pairing_url(token_type='qr',
                                                serial=serial,
                                                callback_url=cb_url,
                                                callback_sms_number=cb_sms,
                                                otp_pin_length=otp_pin_length,
                                                hash_algorithm=hash_algorithm,
-                                               cert_id=cert_id)
+                                               use_cert=False)
 
             # ------------------------------------------------------------------
 

@@ -31,7 +31,6 @@ validate controller - to check the authentication request
 import logging
 
 import webob
-from base64 import b64encode
 from pylons import request, response, config
 from pylons import tmpl_context as c
 from pylons.controllers.util import abort
@@ -67,7 +66,7 @@ from linotp.lib.util import get_client
 from linotp.model.meta import Session
 from linotp.lib.context import request_context
 from linotp.lib.error import ValidateError
-from linotp.lib.qrtoken import decrypt_pairing_response
+from linotp.lib.pairing import decrypt_pairing_response
 
 CONTENT_TYPE_PAIRING = 1
 
@@ -785,26 +784,31 @@ class ValidateController(BaseController):
 
         try:
 
+            # ------------------------------------------------------------------
+
             params = dict(**request.params)
+
             enc_response = params.get('pairing_response')
+
             if enc_response is None:
                 raise Exception('Parameter missing')
 
-            dec_response = decrypt_pairing_response(enc_response)
+            # ------------------------------------------------------------------
 
-            if not dec_response.serial:
+            dec_response = decrypt_pairing_response(enc_response)
+            token_type = dec_response.token_type
+            pairing_data = dec_response.pairing_data
+
+            if not hasattr(pairing_data, 'serial') or \
+               pairing_data.serial is None:
+
                 raise ValidateError('Pairing responses with no serial attached '
                                     'are currently not implemented.')
 
-            serial = dec_response.serial
-            user_public_key = dec_response.user_public_key
-            user_token_id = dec_response.user_token_id
-            user = dec_response.user_login
-
-            user = getUserFromParam(params, optional)
+            # ------------------------------------------------------------------
 
             # TODO: pairing policy
-            tokens = getTokens4UserOrSerial(None, serial)
+            tokens = getTokens4UserOrSerial(None, pairing_data.serial)
 
             if not tokens:
                 raise Exception('Invalid serial in pairing response')
@@ -814,24 +818,23 @@ class ValidateController(BaseController):
 
             token = tokens[0]
 
+            # ------------------------------------------------------------------
+
             if token.type != 'qr':
                 raise Exception('Pairing is only implemented for the qrtoken')
 
-            token.ensure_state('pairing_url_sent')
-            token.addToTokenInfo('user_token_id', user_token_id)
-            b64_user_public_key = b64encode(user_public_key)
-            token.addToTokenInfo('user_public_key', b64_user_public_key)
+            if token.type != token_type:
+                raise Exception('Serial in pairing response doesn\'t match '
+                                'supplied token_type')
 
-            params['serial'] = serial
-            params['user_public_key'] = user_public_key
-            params['user_token_id'] = user_token_id
-            params['user'] = user
-            params['content_type'] = CONTENT_TYPE_PAIRING
-            params['data'] = serial
+            # ------------------------------------------------------------------
 
-            token.change_state('pairing_response_received')
+            token.pair(pairing_data)
+
             Session.commit()
             return sendResult(response, False)
+
+        # ----------------------------------------------------------------------
 
         except Exception:
             Session.rollback()
