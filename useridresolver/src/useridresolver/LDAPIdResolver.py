@@ -494,66 +494,88 @@ class IdResolver (UserIdResolver):
         if self.uidType.lower() != "dn":
             attrlist.append(self.uidType)
 
-        resultList = None
+        return_list = None
         try:
             # log.error("%r : %r" % (self.uidType, attrlist))
             l_id = l_obj.search_ext(self.base,
-                              ldap.SCOPE_SUBTREE,
-                              filterstr=fil,
-                              sizelimit=self.sizelimit,
+                                    ldap.SCOPE_SUBTREE,
+                                    filterstr=fil,
+                                    sizelimit=self.sizelimit,
                                     attrlist=attrlist,
                                     timeout=self.response_timeout)
 
-            resultList = l_obj.result(l_id, all=1)[1]
+            ldap_result = l_obj.result(l_id, all=1)
+            return_list = ldap_result[1]
+
         except ldap.LDAPError as exc:
             log.exception("[getUserId] LDAP error: %r", exc)
-            resultList = None
+            return_list = None
 
         finally:
             self.unbind(l_obj)
 
-        if not resultList:
-            log.info("[getUserId] : empty result ")
-            return userid
-        log.debug("[getUserId] : resultList :%r: ", resultList)
+        log.debug("[getUserId] : resultList :%r: ", return_list)
         log.debug('[getUserId] : uidType: %r ', self.uidType)
 
-        # [0][0] is the distinguished name
+        if not return_list:
+            log.info("[getUserId] : empty result ")
+            return userid
 
-        res = None
+        #
+        # resultList is a list of tuples like:
+        #   [
+        #     ( dn, [list of values]), (...)
+        #   ]
+        # with newer ads as well federation information is provided
+        # which are entries like
+        #
+        #     ( None, [ fed info])
+        #
+        # Thus we have to filter for those entries, which have a key like 'dn'
+        # as first part of the returned tuple and ignore those entries that
+        # have no key.
+        #
+
+        result_list = []
+        for return_entry in return_list:
+            if return_entry[0]:
+                result_list.append(return_entry)
+
+        if not result_list:
+            log.info("[getUserId] : empty result ")
+            return userid
+
+        if len(result_list) > 1:
+            log.warning("[getUserId] :  got multiple matches %r", result_list)
+
+        # we focus only on the first result, as we searched for the
+        # unique user identifier which should exist only once :-)
+        result_entry = res = result_list[0]
 
         if self.uidType.lower() == "dn":
-            res = resultList[0][0]
+            # the distinguished name is the key or [0][0] of the result entry
+            res = result_entry[0]
             if res is not None:
-                userid = unicode(res, ENCODING)
+                guid = unicode(res, ENCODING)
 
-        elif self.uidType.lower() == "objectguid":
-            res = resultList[0][1]
+        else:
+            res = result_entry[1]
             if res is not None:
-                userid = None
-                # we have to check the objectguid key case insentitiv !!!
                 for key in res:
                     if key.lower() == self.uidType.lower():
                         guid = res.get(key)[0]
-                        userid = self.guid2str(guid)
-                if userid is None:
-                    # should never be reached:
-                    raise Exception('[getUserId] - objectguid: no userid '
-                                    'found %r' % (res))
-        else:
-            # Ticket #754
-            if len(resultList) == 0:
-                log.info("[getUserId] resultList is empty")
-            else:
-                res = resultList[0][1]
-                if res is not None:
-                    for key in res:
-                        if key.lower() == self.uidType.lower():
-                            userid = res.get(key)[0]
+
+        if guid is None:
+            raise Exception('[getUserId] - %r: no userid '
+                            'found in %r' % (self.uidType.lower(), res))
+
+        userid = guid
+        if self.uidType.lower() == "objectguid":
+            userid = self.guid2str(guid)
 
         if res is None or not userid:
             log.info("[getUserId] : empty result for  %r - uidtype: %r"
-                      % (loginname, self.uidType.lower()))
+                     % (loginname, self.uidType.lower()))
         else:
             log.debug("[getUserId] userid: %r:%r" % (type(userid), userid))
             uname_hash = sha1(userid.encode("utf-8")).digest()
@@ -1594,11 +1616,11 @@ class IdResolver (UserIdResolver):
         # finally add all existing userinfos (wrt the mapping)
         for ukey, uval in self.userinfo.iteritems():
             if uval in account_info:
-            # An attribute can hold more than 1 value
-            # So we only take the first one at the moment
-            #   result_data[0][1][v][0]
-            # If we want to get all
-            #   result_data[0][1][v] gives us a list
+                # An attribute can hold more than 1 value
+                # So we only take the first one at the moment
+                #   result_data[0][1][v][0]
+                # If we want to get all
+                #   result_data[0][1][v] gives us a list
                 rdata = account_info[uval][0]
                 try:
                     udata = rdata.decode(ENCODING)
