@@ -25,22 +25,36 @@
 #
 
 import struct
+from collections import namedtuple
 from linotp.lib.crypt import encode_base64_urlsafe
+from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.crypt import get_qrtoken_secret_key
+from linotp.lib.crypt import get_qrtoken_public_key
+from linotp.lib.crypt import get_qrtoken_dh_secret_key
 from linotp.lib.error import InvalidFunctionParameter
+from linotp.lib.error import ParameterError
+from linotp.lib.error import ProgrammingError
 from pysodium import crypto_sign_detached
+from pysodium import crypto_scalarmult_curve25519 as calc_dh
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import SHA256
+from linotp.lib.crypt import zerome
+from linotp.lib.qrtoken import parse_qrtoken_pairing_data
 
 """
 This module provides functions and constants for the generation of
-pairing urls. For the response processing and challenge generation
-please take a look into the appropriate token type lib (e.g. lib.qrtoken)
+pairing urls and the decryption of pairing responses. For the token
+type specific pairing data parsing look at the appropriate token lib
+(e.g. lib.qrtoken). The pairing logic is handled partly in the
+validate/pair controller, partly in the token classes.
 """
 
 # ------------------------------------------------------------------------------
 # pairing constants (used for the low-level implementation in c)
 # ------------------------------------------------------------------------------
 
-PAIR_VERSION = 1
+PAIR_URL_VERSION = 2
+PAIR_RESPONSE_VERSION = 1
 
 FLAG_PAIR_PK = 1 << 0
 FLAG_PAIR_SERIAL = 1 << 1
@@ -52,20 +66,29 @@ FLAG_PAIR_COUNTER = 1 << 6
 FLAG_PAIR_TSTART = 1 << 7
 FLAG_PAIR_TSTEP = 1 << 8
 
+TYPE_QRTOKEN_ED25519 = 2
+SUPPORTED_TOKEN_TYPES = [TYPE_QRTOKEN_ED25519]
+
+# translation tables between low level enum types and
+# high level string identifiers
+
 hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
-token_types = {'qrtoken': 2}
+TOKEN_TYPES = {'qr': TYPE_QRTOKEN_ED25519}
+INV_TOKEN_TYPES = {v: k for k, v in TOKEN_TYPES.items()}
+
 
 # ------------------------------------------------------------------------------
 
 
 def generate_pairing_url(token_type,
-                         server_public_key,
+                         partition=None,
                          serial=None,
                          callback_url=None,
                          callback_sms_number=None,
                          otp_pin_length=None,
                          hash_algorithm=None,
-                         cert_id=None):
+                         use_cert=False):
+
     """
     Generates a pairing url that should be sent to the client.
 
@@ -74,9 +97,12 @@ def generate_pairing_url(token_type,
     :param: token_type The token type for which this url is generated
         as a string (currently supported is only 'qr')
 
-    :param: server_public_key: The servers public key as bytes (length: 32)
-
     Optional parameters:
+
+    :param partition: A partition id that should be used during pairing.
+        Partitions identitify a subspace of tokens, that share a common
+        key pair. This currently defaults to the enum id of the token
+        type when set to None and is reserved for future use.
 
     :param serial: When a token for the client was already enrolled
         (e.g. manually in the manage interface) its serial has to be
@@ -106,8 +132,8 @@ def generate_pairing_url(token_type,
         depends on the token type. qrtoken uses sha256 as default, while
         hotp/totp uses sha1.
 
-    :param cert_id: A certificate id that should be used during pairing.
-        default is None.
+    :param use_cert: A boolean, if a server certificate should be used
+        in the pairing url
 
     The function can raise several exceptions:
 
@@ -123,6 +149,7 @@ def generate_pairing_url(token_type,
     :raises InvalidFunctionParameter: If otp_pin_length value is not between
         1 and 127
 
+    :raises NotImplementedError: If partition is not None.
 
     :return: Pairing URL string
     """
@@ -132,9 +159,9 @@ def generate_pairing_url(token_type,
     # check the token type
 
     try:
-        TOKEN_TYPE = token_types[token_type]
+        TOKEN_TYPE = TOKEN_TYPES[token_type]
     except KeyError:
-        allowed_types = ', '.join(token_types.keys())
+        allowed_types = ', '.join(TOKEN_TYPES.keys())
         raise InvalidFunctionParameter('token_type',
                                        'Unsupported token type %s. Supported '
                                        'types for pairing are: %s' %
@@ -142,11 +169,21 @@ def generate_pairing_url(token_type,
 
     # --------------------------------------------------------------------------
 
+    if partition is not None:
+        raise NotImplementedError('non-dummy partition support is not '
+                                  'implemented yet')
+
+    # default for now
+
+    partition = TOKEN_TYPE
+
+    # --------------------------------------------------------------------------
+
     # initialize the flag bitmap
 
     flags = 0
 
-    if cert_id is None:
+    if not use_cert:
         flags |= FLAG_PAIR_PK
     if serial is not None:
         flags |= FLAG_PAIR_SERIAL
@@ -167,21 +204,34 @@ def generate_pairing_url(token_type,
     #  size     |    1    |  1   |   4   |  ?  |
     #            ------------------------------
 
-    data = struct.pack('<bbI', PAIR_VERSION, TOKEN_TYPE, flags)
+    data = struct.pack('<bbI', PAIR_URL_VERSION, TOKEN_TYPE, flags)
 
     # --------------------------------------------------------------------------
 
-    #            -------------------------------
-    #  fields   | ... | server public key | ... |
-    #            -------------------------------
-    #  size     |  6  |        32         |  ?  |
-    #            -------------------------------
+    #            -----------------------
+    #  fields   | ... | partition | ... |
+    #            -----------------------
+    #  size     |  6  |     4     |  ?  |
+    #            -----------------------
 
-    if len(server_public_key) != 32:
-        raise InvalidFunctionParameter('server_public_key', 'Public key must '
-                                       'be 32 bytes long')
+    data += struct.pack('<I', partition)
+
+    # --------------------------------------------------------------------------
+
+    #            --------------------------------
+    #  fields   | .... | server public key | ... |
+    #            --------------------------------
+    #  size     |  10  |        32         |  ?  |
+    #            --------------------------------
 
     if flags & FLAG_PAIR_PK:
+
+        server_public_key = get_dsa_public_key(partition)
+
+        if len(server_public_key) != 32:
+            raise InvalidFunctionParameter('server_public_key',
+                                           'Public key must be 32 bytes long')
+
         data += server_public_key
 
     # --------------------------------------------------------------------------
@@ -191,9 +241,9 @@ def generate_pairing_url(token_type,
     # the corresponding data will be added, too
 
     #            --------------------------------------------------------
-    #  fields   | ... | serial | NUL | cb url | NUL | cb sms | NUL | ... |
+    #  fields   | .... | serial | NUL | cb url | NUL | cb sms | NUL | ... |
     #            --------------------------------------------------------
-    #  size     | 38  |   ?    |  1  |   ?    |  1  |   ?    |  1  |  ?  |
+    #  size     |  42  |   ?    |  1  |   ?    |  1  |   ?    |  1  |  ?  |
     #            --------------------------------------------------------
 
     if flags & FLAG_PAIR_SERIAL:
@@ -241,11 +291,238 @@ def generate_pairing_url(token_type,
     # TODO: replace lseqr literal with global config value
     # or global constant
 
-    if cert_id is not None:
-        secret_key = get_qrtoken_secret_key(cert_id=cert_id)
+    if not (flags & FLAG_PAIR_PK):
+
+        secret_key = get_dsa_secret_key(partition)
         server_sig = crypto_sign_detached(data, secret_key)
         data += server_sig
 
     return 'lseqr://pair/' + encode_base64_urlsafe(data)
+
+# ------------------------------------------------------------------------------
+
+PairingResponse = namedtuple('PairingResponse', ['token_type', 'pairing_data'])
+
+# ------------------------------------------------------------------------------
+
+
+def get_pairing_data_parser(token_type):
+
+    """
+    fetches a parser for the decrypted inner layer
+    of a pairing response according to its token type.
+
+    :param token_type: the token type obtained from the
+        decrypted inner layer
+
+    :return: parser function
+    """
+
+    if token_type == TYPE_QRTOKEN_ED25519:
+        return parse_qrtoken_pairing_data
+
+    raise ValueError('unsupported token type %d, supported types '
+                     'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))
+
+# ------------------------------------------------------------------------------
+
+
+def get_dsa_secret_key(partition):
+
+    """
+    fetches the DSA secret key for the partition supplied in the
+    pairing response. this is currently a dummy implementation.
+    """
+
+    if partition == TYPE_QRTOKEN_ED25519:
+        return get_qrtoken_secret_key()
+
+    raise ValueError('unsupported partition %d, supported partitions '
+                     'are %s' % (partition, SUPPORTED_TOKEN_TYPES))
+
+# ------------------------------------------------------------------------------
+
+
+def get_dh_secret_key(partition):
+
+    """
+    fetches the Diffie-Hellman secret key for the partition supplied in the
+    pairing response. this is currently a dummy implementation.
+    """
+
+    if partition == TYPE_QRTOKEN_ED25519:
+        return get_qrtoken_dh_secret_key()
+
+    raise ValueError('unsupported partition %d, supported partitions '
+                     'are %s' % (partition, SUPPORTED_TOKEN_TYPES))
+
+# ------------------------------------------------------------------------------
+
+
+def get_dsa_public_key(partition):
+
+    """
+    fetches the DSA public key for the partition supplied in the
+    pairing response. this is currently a dummy implementation.
+    """
+
+    if partition == TYPE_QRTOKEN_ED25519:
+        return get_qrtoken_public_key()
+
+    raise ValueError('unsupported partition %d, supported partitions '
+                     'are %s' % (partition, SUPPORTED_TOKEN_TYPES))
+
+# ------------------------------------------------------------------------------
+
+
+def decrypt_pairing_response(enc_pairing_response):
+
+    """
+    Parses and decrypts a pairing response into a named tuple PairingResponse
+    consisting of
+
+    * user_public_key - the user's public key
+    * user_token_id   - an id for the client to uniquely identify the token.
+                        this id is necessary, because the client could
+                        communicate with more than one linotp, so serials
+                        could overlap.
+    * serial - the serial identifying the token in linotp
+    * user_login - the user login name
+
+    It is possible that either user_login or serial is None. Both
+    being None is a valid response according to this function but
+    will be considered an error in the calling method.
+
+    The following parameters are needed:
+
+    :param enc_pairing_response:
+        The urlsafe-base64 encoded string received from the client
+
+    The following exceptions can be raised:
+
+    :raises ParameterError:
+        If the pairing response has an invalid format
+
+    :raises ValueError:
+        If the pairing response has a different version
+        than this implementation (currently hardcoded)
+
+    :raises ValueError:
+        If the pairing response indicates a different
+        token type than QRToken (also hardcoded)
+
+    :raises ValueError:
+        If the pairing response field "partition" is not
+        identical to the field "token_type"
+        ("partition" is currently used for the token
+        type id. It is reserved for multiple key usage
+        in a future implementation.)
+
+    :raises ValueError:
+        If the MAC of the response didn't match
+
+    :return:
+        Parsed/decrypted PairingReponse
+    """
+
+    data = decode_base64_urlsafe(enc_pairing_response)
+
+    # --------------------------------------------------------------------------
+
+    #            --------------------------------------------
+    #  fields   | version | partition | R  | ciphertext | MAC |
+    #            --------------------------------------------
+    #  size     |    1    |     4     | 32 |      ?     | 16  |
+    #            --------------------------------------------
+
+    if len(data) < 1 + 4 + 32 + 16:
+        raise ParameterError('Malformed pairing response')
+
+    # --------------------------------------------------------------------------
+
+    # parse header
+
+    header = data[0:5]
+    version, partition = struct.unpack('<bI', header)
+
+    if version != PAIR_RESPONSE_VERSION:
+        raise ValueError('Unexpected pair-response version, '
+                         'expected: %d, got: %d' %
+                         (PAIR_RESPONSE_VERSION, version))
+
+    # --------------------------------------------------------------------------
+
+    R = data[5:32+5]
+    ciphertext = data[32+5:-16]
+    mac = data[-16:]
+
+    # --------------------------------------------------------------------------
+
+    # calculate the shared secret
+
+    # ----
+
+    secret_key = get_dh_secret_key(partition)
+    ss = calc_dh(secret_key, R)
+
+    # derive encryption key and nonce from the shared secret
+    # zero the values from memory when they are not longer needed
+    U = SHA256.new(ss).digest()
+    zerome(ss)
+    encryption_key = U[0:16]
+    nonce = U[16:32]
+    zerome(U)
+
+    # decrypt response
+    cipher = AES.new(encryption_key, AES.MODE_EAX, nonce)
+    cipher.update(header)
+    plaintext = cipher.decrypt_and_verify(ciphertext, mac)
+    zerome(encryption_key)
+
+    # --------------------------------------------------------------------------
+
+    # check format boundaries for type peaking
+    # (token type specific length boundaries are checked
+    #  in the appropriate functions)
+
+    plaintext_min_length = 1
+    if len(data) < plaintext_min_length:
+        raise ParameterError('Malformed pairing response')
+
+    # --------------------------------------------------------------------------
+
+    # get token type and parse decrypted response
+
+    #            ----------------------
+    #  fields   | token type |   ...   |
+    #            ----------------------
+    #  size     |     1      |    ?    |
+    #            ----------------------
+
+    token_type = struct.unpack('<b', plaintext[0])[0]
+
+    if token_type not in SUPPORTED_TOKEN_TYPES:
+        raise ValueError('unsupported token type %d, supported types '
+                         'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))
+
+    # --------------------------------------------------------------------------
+
+    # delegate the data parsing of the plaintext
+    # to the appropriate function and return the result
+
+    data_parser = get_pairing_data_parser(token_type)
+    pairing_data = data_parser(plaintext)
+    zerome(plaintext)
+
+    # get the appropriate high level type
+
+    try:
+        token_type_as_str = INV_TOKEN_TYPES[token_type]
+    except KeyError:
+        raise ProgrammingError('token_type %d is in SUPPORTED_TOKEN_TYPES',
+                               'however an appropriate mapping entry in '
+                               'TOKEN_TYPES is missing' % token_type)
+
+    return PairingResponse(token_type_as_str, pairing_data)
 
 #eof######################################################################

@@ -177,6 +177,10 @@ class TokenClass(object):
         self.type = typ
         self.token.setType(typ)
 
+    def pair(self, response_data):
+        raise NotImplementedError('token type %s doesn\'t support pairing '
+                                  % self.getType())
+
     def is_auth_only_token(self, user):
         """
         check if token is in the authenticate only mode
