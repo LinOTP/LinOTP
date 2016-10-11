@@ -54,7 +54,7 @@ def parse_qrtoken_pairing_data(plaintext):
     :param plaintext: The plaintext received from the decryption
         of the outer pairing response layer
 
-    :return: QRTokenPairingResponse: A named tuple holding
+    :return: QRTokenPairingData: A named tuple holding
         the parsed fields
     """
 

@@ -35,6 +35,7 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import HMAC
 from Cryptodome.Hash import SHA256
+from linotp.lib.policy import get_partition
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges
@@ -50,7 +51,7 @@ from linotp.lib.crypt import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
-from linotp.lib.crypt import get_qrtoken_dh_secret_key
+from linotp.lib.crypt import get_dh_secret_key
 from linotp.lib.pairing import generate_pairing_url
 
 # ------------------------------------------------------------------------------
@@ -628,6 +629,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             raise Exception(_('Policy %s must have a value') %
                             _(" or ").join(pairing_policies))
 
+        partition = get_partition(realms, owner)
+        self.addToTokenInfo('partition', partition)
+
         # ------------------------------------------------------------------
 
         # we set the the active state of the token to False, because
@@ -689,10 +693,12 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
             # ------------------------------------------------------------------
 
-            # FIXME: partition integration (currently dummy implementation)
+            partition = self.getFromTokenInfo('partition')
+
             # FIXME: certificate usage
 
             pairing_url = generate_pairing_url(token_type='qr',
+                                               partition=partition,
                                                serial=serial,
                                                callback_url=cb_url,
                                                callback_sms_number=cb_sms,
@@ -919,7 +925,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     def server_hmac_secret(self):
         """ the server hmac secret for this specific token """
 
-        server_secret_key = get_qrtoken_dh_secret_key()
+        partition = self.getFromTokenInfo('partition')
+        server_secret_key = get_dh_secret_key(partition)
 
         # user public key is saved base64 encoded
 
