@@ -806,76 +806,83 @@ def zerome(bufferObject):
     return
 
 
-def init_qrtoken_secret_key(config, cert_id='system'):
+def init_key_partition(config, partition, key_type='ed25519'):
+
     """
     create an elliptic curve secret + public key pair and
     store it in the linotp config
     """
 
+    if not key_type == 'ed25519':
+        raise ValueError('Unsupported keytype: %s', key_type)
+
     import linotp.lib.config
 
     public_key, secret_key = gen_dsa_keypair()
-    secret_key_entry = 'qrtokensk:' + base64.b64encode(secret_key)
+    secret_key_entry = base64.b64encode(secret_key)
 
-    linotp.lib.config.storeConfig(key='QrTokenSecretKey.' + cert_id,
+    linotp.lib.config.storeConfig(key='SecretKey.Partition.%d' % partition,
                                   val=secret_key_entry,
                                   typ='password')
 
-    public_key_entry = 'qrtokenpk:' + base64.b64encode(public_key)
+    public_key_entry = base64.b64encode(public_key)
 
-    linotp.lib.config.storeConfig(key='QrTokenPublicKey.' + cert_id,
-                                  val=public_key_entry)
+    linotp.lib.config.storeConfig(key='PublicKey.Partition.%d' % partition,
+                                  val=public_key_entry,
+                                  typ='password')
 
-    return
 
+def get_secret_key(partition):
 
-def get_qrtoken_secret_key(cert_id='system'):
     """
-    reads the config entry 'enclinotp.QrTokenSecretKey',
+    reads the config entry 'enclinotp.SecretKey.Partition.<partition>',
     extracts and decodes the secret key and returns it as a 32 bytes.
     """
+
     import linotp.lib.config
 
     secret_key_b64 = linotp.lib.config.getFromConfig(
-                        'enclinotp.QrTokenSecretKey.' + cert_id)
+                        'enclinotp.SecretKey.Partition.%d' % partition)
 
     if not secret_key_b64:
-        raise ConfigAdminError('Missing entry QrTokenSecretKey')
+        raise ConfigAdminError('No secret key found for %d' % partition)
 
-    if not secret_key_b64.startswith('qrtokensk:'):
-        raise ValidateError('QR secret key has an invalid '
-                            'format. Must begin with \'qrtokensk:\'')
+    secret_key = base64.b64decode(secret_key_b64)
 
-    secret_key = base64.b64decode(secret_key_b64[len('qrtokensk:'):])
+    # TODO: key type checking
+
     if len(secret_key) != 64:
-        raise ValidateError('QR secret key has an invalid '
+        raise ValidateError('Secret key has an invalid '
                             'format. Key must be 64 bytes long')
 
     return secret_key
 
 
-def get_qrtoken_public_key(cert_id='system'):
+def get_public_key(partition):
+
     """
-    reads the config entry 'linotp.QrTokenPublicKey',
+    reads the config entry 'enclinotp.PublicKey.Partition.<partition>',
     extracts and decodes the public key and returns it as a 32 bytes.
     """
+
     import linotp.lib.config
 
     public_key_b64 = linotp.lib.config.getFromConfig(
-                                'QrTokenPublicKey.' + cert_id)
+                        'enclinotp.PublicKey.Partition.%d' % partition)
+
     if not public_key_b64:
-        raise ConfigAdminError('Missing entry QrTokenPublicKey')
+        raise ConfigAdminError('No public key found for %d' % partition)
 
-    if not public_key_b64.startswith('qrtokenpk:'):
-        raise ValidateError('Curve 25519 / QR secret key has an invalid '
-                            'format. Must begin with \'qrtokenpk:\'')
+    public_key = base64.b64decode(public_key_b64)
 
-    public_key = base64.b64decode(public_key_b64[len('qrtokenpk:'):])
+    # TODO: key type checking
+
     if len(public_key) != 32:
-        raise ValidateError('Curve 25519 / QR public key has an invalid '
+        raise ValidateError('Public key has an invalid '
                             'format. Key must be 32 bytes long')
 
     return public_key
+
 
 def dsa_to_dh_secret(dsa_secret_key):
 
@@ -885,6 +892,7 @@ def dsa_to_dh_secret(dsa_secret_key):
                       dsa_secret_key))
     return out.raw
 
+
 def dsa_to_dh_public(dsa_public_key):
 
     out = ctypes.create_string_buffer(c_libsodium.crypto_scalarmult_bytes())
@@ -893,21 +901,22 @@ def dsa_to_dh_public(dsa_public_key):
                       dsa_public_key))
     return out.raw
 
-def get_qrtoken_dh_secret_key():
 
-    """ transforms the qrtoken secret key (which is used for DSA) into
+def get_dh_secret_key(partition):
+
+    """ transforms the ed25519 secret key (which is used for DSA) into
     a Diffie-Hellman secret key """
 
-    dsa_secret_key = get_qrtoken_secret_key()
+    dsa_secret_key = get_secret_key(partition)
     return dsa_to_dh_secret(dsa_secret_key)
 
 
-def get_qrtoken_dh_public_key():
+def get_dh_public_key(partition):
 
-    """ transforms the qrtoken public key (which is used for DSA) into
+    """ transforms the ed25519 public key (which is used for DSA) into
     a Diffie-Hellman public key """
 
-    dsa_public_key = get_qrtoken_public_key()
+    dsa_public_key = get_public_key(partition)
     return dsa_to_dh_public(dsa_public_key)
 
 
