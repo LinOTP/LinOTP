@@ -32,12 +32,8 @@ import os
 import json
 import unittest
 from unittest import TestCase
-import subprocess
 
-from os import getcwd
-from useridresolver.UserIdResolver import UserIdResolver
 from useridresolver.UserIdResolver import getResolverClass
-
 
 
 class TestResolve(TestCase):
@@ -45,7 +41,6 @@ class TestResolve(TestCase):
     y = None
     z = None
     proc = None
-    ldap_y = None
 
     def setUp(self):
         '''
@@ -69,27 +64,6 @@ class TestResolve(TestCase):
         self.w = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
         self.w.loadConfig(config3, "")
 
-        self.ldap_y = getResolverClass("useridresolver.LDAPIdResolver", "IdResolver")()
-
-        self.ldap_y.loadConfig({ 'linotp.ldapresolver.LDAPFILTER' : '(&(cn=%s))',
-                                  'linotp.ldapresolver.LDAPSEARCHFILTER' : '(cn=*)',
-                                  'linotp.ldapresolver.LOGINNAMEATTRIBUTE' : 'cn',
-                                  'linotp.ldapresolver.USERINFO' : '{"username":"cn", "description":"", \
-                                                "phone" : "telephoneNumber",\
-                                                "groups" : "o",\
-                                                "mobile" : "mobile", \
-                                                "email" : "email",\
-                                                "surname" : "sn",\
-                                                "givenname" : "givenName",\
-                                                "gender" : "" } ',
-                                    'linotp.ldapresolver.LDAPURI' : 'ldap://localhost:1389',
-                                    'linotp.ldapresolver.LDAPBASE'    : 'o=linotp,c=org',
-                                    'linotp.ldapresolver.BINDDN'  : '',
-                                    'linotp.ldapresolver.BINDPW'  : '',
-                                    'linotp.ldapresolver.TIMEOUT' : '5',
-                                    'linotp.ldapresolver.SIZELIMIT' : '10',
-                                    })
-
     def getUserList(self, obj, arg):
         '''
             call obj.getUserList(), but check that we have no errors before returning.
@@ -99,29 +73,6 @@ class TestResolve(TestCase):
             for key, val in item.iteritems():
                 self.assertNotIn('-ERR', str(val))
         return res
-
-    def tearDown(self):
-        '''
-        this is run after each test
-        '''
-        if self.proc is not None:
-            self._stop_ldap()
-
-    def _start_ldap(self):
-        '''
-        start the ldap server
-        '''
-        self.proc = subprocess.Popen(["tcpserver", "-RHl", "localhost", "0", "1389", "./tinyldap-64bit"]  ,
-                             cwd="%s/test/data" % getcwd())
-        assert self.proc != None
-
-
-    def _stop_ldap(self):
-        '''
-        Stop the ldap server
-        '''
-        self.proc.terminate()
-
 
     def test_sql_getUserId(self):
         '''
@@ -142,7 +93,6 @@ class TestResolve(TestCase):
         res = self.z.getUserId("user2")
         print "uid (user2): ", res
         assert res == "user2"
-
 
     def test_sql_checkpass(self):
         '''
@@ -244,68 +194,6 @@ class TestResolve(TestCase):
         assert self.z.getUsername("user1") == "user1"
         assert self.z.getUsername("user2") == "user2"
         assert self.z.getUsername("user5") == ""
-
-
-    def test_ldap_getUserId(self):
-        '''
-        LDAP: test the existance of the user1 and user2
-        '''
-        self._start_ldap()
-        res1 = self.ldap_y.getUserId("user1")
-        print "uid (user1): ", res1
-        res2 = self.ldap_y.getUserId("user2")
-        print "uid (user2): ", res2
-
-        assert res1 == u"cn=user1,o=linotp,c=org"
-        assert res2 == u"cn=user2,o=linotp,c=org"
-
-    def test_ldap_checkpass(self):
-        '''
-        LDAP: Check the password of user1 and user 2
-        '''
-        self._start_ldap()
-        r1 = self.ldap_y.checkPass(self.ldap_y.getUserId("user1"), "geheim")
-        r2 = self.ldap_y.checkPass(self.ldap_y.getUserId("user2"), "geheim")
-        assert r1
-        assert r2
-
-    def test_ldap_getUserId_unicode(self):
-        '''
-        LDAP: test the existance of user with german umlaut
-        '''
-        self._start_ldap()
-        res3 = self.ldap_y.getUserId("kölbel")
-        print "uid (kölbel): ", res3
-        #res4 = self.ldap_y.getUserId("weiß")
-        #print "uid (weiß): ", res4
-
-        assert res3 == u"cn=kölbel,o=linotp,c=org"
-
-    def test_ldap_getUserList(self):
-        '''
-        LDAP: testing the userlist
-        '''
-        # all users are two users
-        self._start_ldap()
-        list = self.ldap_y.getUserList({})
-        print list
-        assert len(list) == 4
-
-
-    def test_ldap_getUsername(self):
-        '''
-        LDAP: testing getting the username
-        '''
-        self._start_ldap()
-        r1 = self.ldap_y.getUsername(u"cn=user1,o=linotp,c=org")
-        r2 = self.ldap_y.getUsername(u"cn=kölbel,o=linotp,c=org")
-        r3 = self.ldap_y.getUsername(u"cn=niemand,o=linotp,c=org")
-        print "r1: " , r1
-        print "r2: " , r2
-        print "r3: " , r3
-        assert r1 == u"user1"
-        assert r2 == u"kölbel"
-        assert r3 == ""
 
 
 def main():
