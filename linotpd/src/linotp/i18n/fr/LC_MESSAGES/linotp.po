@@ -243,7 +243,7 @@ msgid ""
 "otp_pin_contents."
 msgstr ""
 "Le code PIN entré ne contient pas de caractères spéciaux conformément à la "
-"directive \"otp_pin_content\". Les caractères spéciaux peuvent être : ,;-_<>"
+"directive \"otp_pin_content\". Les caractères spéciaux peuvent être .: ,;-_<>"
 "+*~!/()=?$."
 
 msgid ""
@@ -677,7 +677,7 @@ msgid "Description"
 msgstr "Description"
 
 msgid "Protect your token with a static PIN"
-msgstr "Protégez vos tokens avec un code PIN fixe :"
+msgstr "Protégez vos tokens avec un code PIN fixe"
 
 msgid "Token PIN:"
 msgstr "Code PIN du token :"
@@ -745,7 +745,7 @@ msgid "Protect your token with a static pin"
 msgstr "Protégez vos tokens avec un code PIN fixe  :"
 
 msgid "Token Pin:"
-msgstr "Code PIN du token : "
+msgstr "Code PIN du token :"
 
 msgid "enter PIN"
 msgstr "Définir le code PIN"
@@ -1326,7 +1326,7 @@ msgid "TOTP Token"
 msgstr "Token TOTP"
 
 msgid "TOTP token settings"
-msgstr "Paramètres du token TOTP :"
+msgstr "Paramètres du token TOTP"
 
 msgid "time step"
 msgstr "Incrément de temps"
@@ -1622,7 +1622,7 @@ msgid "Please select only one user."
 msgstr "Veuillez ne sélectionner qu'un seul utilisateur."
 
 msgid "Found the token: "
-msgstr "Token trouvé :"
+msgstr "Token trouvé : "
 
 msgid "The token belongs to "
 msgstr "Le token appartient à "
@@ -1941,7 +1941,7 @@ msgid "Failed to resync Token"
 msgstr "Erreur lors de la synchronisation du token"
 
 msgid "Error resyncing Token: "
-msgstr "Erreur lors de la synchronisation du token :"
+msgstr "Erreur lors de la synchronisation du token : "
 
 msgid "You need to enter a serial number"
 msgstr "Entrez un numéro de série"
@@ -1954,7 +1954,7 @@ msgid "Token assigned successfully"
 msgstr "Le token a été attribué avec succès"
 
 msgid "Error assigning Token: "
-msgstr "Erreur dans l'attribution du token :"
+msgstr "Erreur dans l'attribution du token : "
 
 msgid "You need to enter an OTP value"
 msgstr "Vous devez spécifier une valeur OTP"
@@ -1975,7 +1975,7 @@ msgid "Token enrolled successfully "
 msgstr "Le token a été déployé avec succès"
 
 msgid "Failed to enroll token: "
-msgstr "Échec du déploiement du token :"
+msgstr "Échec du déploiement du token : "
 
 msgid "Failcounter resetted successfully"
 msgstr "Compteur d'erreurs réinitialisé avec succès"
@@ -3299,7 +3299,7 @@ msgstr ""
 
 msgid "Error: unknown tokentype in function token_enroll()"
 msgstr ""
-"Erreur : type de jeton inconnu dans la fonction <em>token_enroll()</em>."
+"Erreur : type de jeton inconnu dans la fonction token_enroll()."
 
 msgid "Could not find a token for this OTP value."
 msgstr "Aucun token n'a pu être déterminé pour cette valeur OTP."
@@ -3316,7 +3316,7 @@ msgstr "Type de jeton inconnu lors de l'import !"
 msgid "You may only upload support subscription files ending with .pem"
 msgstr ""
 "Le fichiers de support que vous téléchargez doit avoir l'extension de "
-"fichier <em>.pem</em>."
+"fichier .pem"
 
 msgid ""
 "Error saving SMS configuration. Please check your configuration and your "
@@ -3343,7 +3343,7 @@ msgid ""
 "Regexp error in realm. You need to select ONE realm to set it as default."
 msgstr ""
 "Erreur dans l'impression normale du domaine. Vous ne devez sélectionner qu' "
-"<em>un</em> domaine pour le définir comme domaine par défaut."
+"un domaine pour le définir comme domaine par défaut."
 
 msgid "There is an error in the realm name!"
 msgstr "Erreur dans le nom de domaine !"

@@ -3297,7 +3297,7 @@ msgstr ""
 "auswählen."
 
 msgid "Error: unknown tokentype in function token_enroll()"
-msgstr "Fehler: unbekannter Tokentyp in der Funktion <em>token_enroll()</em>."
+msgstr "Fehler: unbekannter Tokentyp in der Funktion token_enroll()."
 
 msgid "Could not find a token for this OTP value."
 msgstr "Zu diesem OTP-Wert konnte kein Token ermittelt werden."
@@ -3313,7 +3313,7 @@ msgstr "Unbekannter Tokentyp beim Import!"
 
 msgid "You may only upload support subscription files ending with .pem"
 msgstr ""
-"Die Supportdatei, die Sie hochladen, muss die Dateiendung <em>.pem</em> "
+"Die Supportdatei, die Sie hochladen, muss die Dateiendung .pem"
 "haben."
 
 msgid ""
@@ -3340,7 +3340,7 @@ msgstr ""
 msgid ""
 "Regexp error in realm. You need to select ONE realm to set it as default."
 msgstr ""
-"Fehler im regulären Ausdruck des Realms. Sie dürfen nur <em>einen</em> Realm "
+"Fehler im regulären Ausdruck des Realms. Sie dürfen nur einen Realm "
 "auswählen, um diesen zum Standardrealm zu machen."
 
 msgid "There is an error in the realm name!"
