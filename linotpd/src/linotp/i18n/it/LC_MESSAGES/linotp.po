@@ -417,14 +417,6 @@ msgstr ""
 "Non disponi dei diritti amministrativi per l'assegnazione utente per il "
 "token %s - Controlla eventualmente i criteri."
 
-#, python-format
-msgid ""
-"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
-"can not assign any more tokens. Check the policies."
-msgstr ""
-"Il numero massimo di token all'interno del Realm %s (%s) è stato raggiunto. "
-"Non è possibile srotolare ulteriori token. Controlla il criterio."
-
 msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 msgstr ""
 "Il numero massimo di token su licenza è stato superato - Controlla "
@@ -646,6 +638,14 @@ msgstr "Errore durante la verifica dei criteri - controller sconosciuto %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Trovati più token - impossibile determinare il tipo di token!"
+
+#, python-format
+msgid ""
+"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
+"can not assign any more tokens. Check the policies."
+msgstr ""
+"Il numero massimo di token all'interno del Realm %s (%s) è stato raggiunto. "
+"Non è possibile srotolare ulteriori token. Controlla il criterio."
 
 #, fuzzy
 msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
@@ -2124,6 +2124,10 @@ msgstr "Configurazione provider SMS"
 msgid "Email Provider Config"
 msgstr "Configurazione provider e-mail"
 
+#, fuzzy
+msgid "Push Provider Config"
+msgstr "Configurazione provider"
+
 msgid "Policies"
 msgstr "Criteri"
 
@@ -2233,6 +2237,10 @@ msgstr "Impostazioni GUI"
 
 msgid "Client Identification"
 msgstr "Autenticazione cliente"
+
+#, fuzzy
+msgid "Certificates"
+msgstr "Certificato CA"
 
 msgid "Split at @ sign (splitAtSign)"
 msgstr "Separazione nel carattere @"
@@ -2350,6 +2358,13 @@ msgid ""
 msgstr ""
 "L'indirizzo IP della proxy sicura in arrivo, che fornisce la REMOTE_ADDR."
 
+#, fuzzy
+msgid "Use system certificate"
+msgstr "Certificato chiave pubblico"
+
+msgid "If checked the linotp server will use system certificates"
+msgstr ""
+
 msgid "Save Config"
 msgstr "Salvataggio configurazione"
 
@@ -2399,6 +2414,18 @@ msgid "Do you want to delete the Provider?"
 msgstr "Vuoi eliminare il provider?"
 
 msgid "Email Provider Configuration"
+msgstr "Configurazione del provider e-mail"
+
+#, fuzzy
+msgid "Push Provider: create and edit"
+msgstr "Provider SMS: crea e modifica"
+
+#, fuzzy
+msgid "Push Provider"
+msgstr "Provider"
+
+#, fuzzy
+msgid "Push Provider Configuration"
 msgstr "Configurazione del provider e-mail"
 
 msgid "OCRA Token"
@@ -3096,14 +3123,14 @@ msgstr "Limite di dimensione"
 msgid "No anonymous referral chasing"
 msgstr "Nessuna tracciatura anonima del referral"
 
+msgid "Enforce TLS"
+msgstr ""
+
 msgid "Test LDAP Server connection"
 msgstr "Testare la connessione LDAP Server"
 
 msgid "Testing connection ..."
 msgstr "Test di connessione ..."
-
-msgid "LDAP attributes"
-msgstr "Attributi LDAP"
 
 msgid "Mapping Attributes"
 msgstr "Attributi di mappatura"
@@ -3184,9 +3211,6 @@ msgstr "Percorso risultati:"
 msgid "Attribute mapping:"
 msgstr "Attribuisci mappatura:"
 
-msgid "Server config"
-msgstr "Configurazione del server"
-
 msgid "Driver"
 msgstr "Driver"
 
@@ -3217,17 +3241,11 @@ msgstr "Testare la connessione SQL"
 msgid "Testing connections..."
 msgstr "Test della connessione LDAP..."
 
-msgid "SQL attributes"
-msgstr "Attributi SQL"
-
 msgid "Where statement"
 msgstr "Istruzione where"
 
 msgid "SQL Resolver"
 msgstr "Resolver SQL"
-
-msgid "File configuration"
-msgstr "Configurazione file"
 
 msgid "filename"
 msgstr "Nome file"
@@ -3819,6 +3837,18 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "In alternativa scansiona il codice QR con l'iPhone per importare il profilo."
 
+#~ msgid "LDAP attributes"
+#~ msgstr "Attributi LDAP"
+
+#~ msgid "Server config"
+#~ msgstr "Configurazione del server"
+
+#~ msgid "SQL attributes"
+#~ msgstr "Attributi SQL"
+
+#~ msgid "File configuration"
+#~ msgstr "Configurazione file"
+
 #~ msgid "Summary"
 #~ msgstr "Sommario"
 
@@ -3840,9 +3870,6 @@ msgstr ""
 
 #~ msgid "E-mail provider config"
 #~ msgstr "Configurazione E-mail"
-
-#~ msgid "Provider"
-#~ msgstr "Provider"
 
 #~ msgid "Provider config"
 #~ msgstr "Configurazione provider"

@@ -1880,7 +1880,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("error saving config: %r" % exx)
+            log.exception("error getting config: %r" % exx)
             Session.rollback()
             return sendError(response, exx)
 

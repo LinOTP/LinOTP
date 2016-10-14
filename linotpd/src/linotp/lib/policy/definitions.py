@@ -163,6 +163,10 @@ def getPolicyDefinitions(scope=""):
                         'token (in days).'},
             },
         'authentication': {
+            "push_provider": {
+                'type': 'str',
+                'desc': 'The push provider that should be used to '
+                        'send push notifications'},
             "email_provider": {
                 'type': 'str',
                 'desc': 'The email provider that should be used to '

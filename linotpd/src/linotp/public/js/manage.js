@@ -2460,6 +2460,78 @@ function load_email_providers(){
     });
 }
 
+function load_push_providers(){
+    show_waiting();
+
+    var params = { 'type': 'push', 'session': getsession()};
+    $.post('/system/getProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+
+        pushProviders = data.result.value;
+
+        // Set selected provider globally
+        selectedPushProvider = null;
+
+        var providers = $('<ol id="push_providers_select" class="select_list ui-selectable"></ol>');
+        var count = 0;
+
+        $.each(pushProviders, function(key, provider){
+            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+            if(provider.Default === true){
+                element += ' <span class="default">(Default)</span>';
+            }
+            element += '</li>';
+            providers.append(element);
+            count++;
+        });
+
+        $("#button_push_provider_edit").button("disable");
+        $("#button_push_provider_delete").button("disable");
+        $("#button_push_provider_set_default").button("disable");
+
+        if (count > 0) {
+            $('#push_providers_list').html(providers);
+
+            $('#push_providers_select').selectable({
+                stop: function(event, ui){
+                    if($("#push_providers_select .ui-selected").length > 0){
+                        selectedPushProvider = escape($("#push_providers_select .ui-selected .name").html());
+                        $("#button_push_provider_edit").button("enable");
+                        $("#button_push_provider_delete").button("enable");
+                        if(pushProviders[selectedPushProvider].Default !== true){
+                            $("#button_push_provider_set_default").button("enable");
+                        }
+                        else{
+                            $("#button_push_provider_set_default").button("disable");
+                        }
+                    }
+                    else{
+                        selectedEmailProvider = null;
+                        $("#button_email_provider_edit").button("disable");
+                        $("#button_email_provider_delete").button("disable");
+                        $("#button_email_provider_set_default").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                        function(key,value){
+                            $(value).find('*').removeClass("ui-selected");
+                        }
+                    );
+                }
+            });
+        }
+        else {
+            $('#email_providers_list').html("");
+        };
+    });
+}
+
+
+
+
 function load_system_config(){
     show_waiting();
     var params = {'session':getsession()};
@@ -4777,6 +4849,125 @@ $(document).ready(function(){
     });
 
     /*********************************************************************
+     * Push provider config
+     */
+
+    var $dialog_push_provider_config = $('#dialog_push_providers').dialog({
+        autoOpen: false,
+        title: 'Push Provider Config',
+        dialogClass: "dialog-push-provider",
+        width: 600,
+        maxHeight: 600,
+        minHeight: 300,
+        modal: true,
+        buttons: {
+            'New': { click:  function(){
+                    push_provider_form_dialog("");
+                    },
+                id: "button_push_provider_new",
+                text: "New"
+            },
+            'Edit': { click: function(){
+                    if(selectedPushProvider){
+                        push_provider_form_dialog(selectedPushProvider);
+                    }
+                },
+                id:"button_push_provider_edit",
+                text: "Edit"
+            },
+            'Delete': { click: function(){
+                    if(selectedPushProvider){
+                        $('#dialog_push_provider_delete').dialog("open");
+                    }
+                },
+                id: "button_push_provider_delete",
+                text:"Delete"
+            },
+            'Close': { click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_push_providers_close",
+                text:"Close"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_push_providers();
+            do_dialog_icons();
+            $('.ui-dialog :button').blur();
+        }
+    });
+
+    $dialog_push_provider_edit = $('#dialog_push_provider_edit').dialog({
+        autoOpen: false,
+        title: 'Push Provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_push_provider_cancel",
+                text: "Cancel"
+                },
+            'Save': {
+                click: function(){
+                    if ($("#form_pushprovider").valid()) {
+                        save_push_provider_config();
+                    }
+                },
+                id: "button_push_provider_save",
+                text: "Save"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_push_provider_edit();
+            do_dialog_icons();
+        },
+        close: function(event, ui) {
+            load_push_providers();
+        }
+    });
+
+    $dialog_push_provider_delete = $('#dialog_push_provider_delete').dialog({
+            autoOpen: false,
+            title: 'Deleting Push provider',
+            width: 600,
+            modal: true,
+            buttons: {
+                'Delete': {
+                    click: function(){
+                        delete_push_provider(selectedPushProvider);
+                        $(this).dialog('close');
+                    },
+                    id: "button_push_provider_delete_delete",
+                    text: "Delete"
+                },
+                "Cancel": {
+                    click: function(){
+                        $(this).dialog('close');
+                    },
+                    id: "button_push_provider_delete_cancel",
+                    text: "Cancel"
+                }
+            },
+            open: function() {
+                do_dialog_icons();
+                translate_dialog_push_provider_delete();
+            },
+            close: function(event, ui) {
+                load_push_providers();
+            }
+        });
+
+    $('#button_push_provider_set_default').click(function(){
+        if(selectedPushProvider){
+            set_default_provider('push', selectedPushProvider);
+        }
+    });
+
+    
+    /*********************************************************************
      * System config
      */
 
@@ -4827,6 +5018,12 @@ $(document).ready(function(){
         load_email_providers();
         $dialog_email_provider_config.dialog('open');
     });
+
+    $('#menu_push_provider_config').click(function(){
+        load_push_providers();
+        $dialog_push_provider_config.dialog('open');
+    });
+
 
     $('#menu_token_config').click(function(){
         try {
@@ -5567,6 +5764,118 @@ function delete_email_provider(provider){
                        'is_escaped': true});
         }
     });
+}
+
+/************************************************************************
+*
+*  Email provider edit
+*/
+
+function push_provider_form_dialog(name){
+   if(name){
+       $("#push_provider_name").val(name);
+       $("#push_provider_class").val(pushProviders[name].Class);
+       $("#push_provider_config").val(pushProviders[name].Config);
+       $("#push_provider_timeout").val(pushProviders[name].Timeout);
+   }
+   else{
+       $("#push_provider_name").val($("#push_provider_name").attr("placeholder"));
+       // to be replaced by getProviderDef
+       $("#push_provider_class").val($("#push_provider_class").attr("placeholder"));
+       $("#push_provider_config").val($("#push_provider_config").attr("placeholder"));
+       $("#push_provider_timeout").val($("#push_provider_timeout").attr("placeholder"));
+   }
+
+   $("#dialog_push_provider_edit").dialog("open");
+
+   $("#form_pushprovider").validate({
+       rules: {
+    	   push_provider_config: {
+               valid_json: true
+           },
+           push_provider_name: {
+               required: true,
+               minlength: 4,
+               number: false,
+               providername: true
+           }
+       }
+   });
+}
+
+function save_push_provider_config(){
+   // Load Values from still opened form
+   var provider = $('#push_provider_name').val();
+   var params = {
+       'name': provider,
+       'class': $('#push_provider_class').val(),
+       'config': $('#push_provider_config').val(),
+       'timeout': $('#push_provider_timeout').val(),
+       'type': 'push',
+       'session': getsession()
+   };
+   show_waiting();
+
+   $.post('/system/setProvider', params,
+   function(data, textStatus, XMLHttpRequest){
+       hide_waiting();
+       if (data.result.status == true && data.result.value == true) {
+           $dialog_push_provider_edit.dialog('close');
+       } else if (data.result.value == false) {
+           alert_box({'title': i18n.gettext('Failed to save provider'),
+                      'text': escape(data.detail.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error saving provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+   });
+}
+
+function delete_push_provider(provider){
+   show_waiting();
+   var params =  {'name': provider,
+                  'type': 'push',
+                  'session': getsession()};
+   $.post('/system/delProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+       hide_waiting();
+       load_push_providers();
+       if (data.result.status == true && data.result.value == true) {
+           var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                 escape(provider));
+
+           alert_info_text({'text': message,
+                            'is_escaped': true});
+
+       } else if (data.result.value == false) {
+           var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+           alert_box({'title': i18n.gettext('Failed to delete provider'),
+                      'text': reason_text,
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error deleting provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+   });
 }
 
 

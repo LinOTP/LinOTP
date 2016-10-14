@@ -31,12 +31,36 @@ class ISMSProvider(object):
     """
     Interface class for the SMS providers
     """
+
+    provider_type = 'sms'
+
     def __init__(self):
         self.config = {}
+
+    @staticmethod
+    def getConfigMapping():
+        """
+        for dynamic, adaptive config entries we provide the abilty to
+        have dedicated config entries
+
+        entries should look like:
+        {
+          key: (ConfigName, ConfigType)
+        }
+        """
+        config_mapping = {
+                'timeout': ('Timeout', None),
+                'config': ('Config', 'password')}
+
+        return config_mapping
 
     @classmethod
     def getClassInfo(cls, key=None):
         return {}
+
+    def _submitMessage(self, phone, message):
+        raise NotImplementedError("Every subclass of ISMSProvider has to "
+                                  "implement this method.")
 
     def submitMessage(self, phone, message):
         """
@@ -65,8 +89,6 @@ class ISMSProvider(object):
 
     def loadConfig(self, configDict):
         self.config = configDict
-        pass
-
 
     @staticmethod
     def _get_msisdn_phonenumber(phonenumber):
@@ -109,7 +131,7 @@ class ISMSProvider(object):
         the %r to print the representation to generalize the processing
         """
         as_str = str(config.get(key, default))
-        return 'true' == as_str.lower()
+        return as_str.lower() == 'true'
 
 
 def getSMSProviderClass(packageName, className):

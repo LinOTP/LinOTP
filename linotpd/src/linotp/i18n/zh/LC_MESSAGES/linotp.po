@@ -361,13 +361,6 @@ msgid ""
 "policies."
 msgstr "您没有管理权限分配令牌 %s。请检查策略。"
 
-#, python-format
-msgid ""
-"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
-"can not assign any more tokens. Check the policies."
-msgstr ""
-"在域 %s (%s) 内已达到最大允许令牌数量。您无法注册更多的令牌。请检查策略。"
-
 msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 msgstr "已超出最大允许令牌数量。请检查策略。"
 
@@ -539,6 +532,13 @@ msgstr "无法进行getPolicyPost。未知控制器： %s"
 
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "发现多个令牌，无法确定令牌类型！"
+
+#, python-format
+msgid ""
+"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
+"can not assign any more tokens. Check the policies."
+msgstr ""
+"在域 %s (%s) 内已达到最大允许令牌数量。您无法注册更多的令牌。请检查策略。"
 
 #, fuzzy
 msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
@@ -1937,6 +1937,10 @@ msgstr "短信供应商配置"
 msgid "Email Provider Config"
 msgstr "电子邮件供应商配置"
 
+#, fuzzy
+msgid "Push Provider Config"
+msgstr "供应商配置"
+
 msgid "Policies"
 msgstr "策略"
 
@@ -2045,6 +2049,10 @@ msgstr "GUI 设置"
 msgid "Client Identification"
 msgstr "客户端标识"
 
+#, fuzzy
+msgid "Certificates"
+msgstr "CA 证书"
+
 msgid "Split at @ sign (splitAtSign)"
 msgstr "在 @ 字符处断开"
 
@@ -2144,6 +2152,13 @@ msgid ""
 "REMOTE_ADDR."
 msgstr "受信任正向代理的 ip 地址，其提供 REMOTE_ADDR。"
 
+#, fuzzy
+msgid "Use system certificate"
+msgstr "公钥证书"
+
+msgid "If checked the linotp server will use system certificates"
+msgstr ""
+
 msgid "Save Config"
 msgstr "保存配置"
 
@@ -2193,6 +2208,18 @@ msgid "Do you want to delete the Provider?"
 msgstr "您是否想删除供应商？"
 
 msgid "Email Provider Configuration"
+msgstr "电子邮件供应商配置"
+
+#, fuzzy
+msgid "Push Provider: create and edit"
+msgstr "短信供应商：创建和编辑"
+
+#, fuzzy
+msgid "Push Provider"
+msgstr "供应商"
+
+#, fuzzy
+msgid "Push Provider Configuration"
 msgstr "电子邮件供应商配置"
 
 msgid "OCRA Token"
@@ -2841,14 +2868,14 @@ msgstr "长度限制"
 msgid "No anonymous referral chasing"
 msgstr "没有介绍人匿名追踪"
 
+msgid "Enforce TLS"
+msgstr ""
+
 msgid "Test LDAP Server connection"
 msgstr "测试 LDAP 服务器连接"
 
 msgid "Testing connection ..."
 msgstr "测试连接..."
-
-msgid "LDAP attributes"
-msgstr "LDAP 属性"
 
 msgid "Mapping Attributes"
 msgstr "映射属性"
@@ -2930,9 +2957,6 @@ msgstr "结果路径："
 msgid "Attribute mapping:"
 msgstr "属性映射："
 
-msgid "Server config"
-msgstr "服务器配置"
-
 msgid "Driver"
 msgstr "驱动"
 
@@ -2963,17 +2987,11 @@ msgstr "测试 SQL 连接"
 msgid "Testing connections..."
 msgstr "测试 LDAP 连接..."
 
-msgid "SQL attributes"
-msgstr "SQL 属性"
-
 msgid "Where statement"
 msgstr "Where 语句"
 
 msgid "SQL Resolver"
 msgstr "SQL 解析器"
-
-msgid "File configuration"
-msgstr "文件配置"
 
 msgid "filename"
 msgstr "文件名称"
@@ -3530,6 +3548,18 @@ msgstr "安装配置文件"
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr "或者您也可通过 iPhone 扫描下面的二维码，导入配置文件。"
 
+#~ msgid "LDAP attributes"
+#~ msgstr "LDAP 属性"
+
+#~ msgid "Server config"
+#~ msgstr "服务器配置"
+
+#~ msgid "SQL attributes"
+#~ msgstr "SQL 属性"
+
+#~ msgid "File configuration"
+#~ msgstr "文件配置"
+
 #~ msgid "Summary"
 #~ msgstr "概述："
 
@@ -3549,9 +3579,6 @@ msgstr "或者您也可通过 iPhone 扫描下面的二维码，导入配置文�
 
 #~ msgid "E-mail provider config"
 #~ msgstr "电子邮件配置"
-
-#~ msgid "Provider"
-#~ msgstr "供应商"
 
 #~ msgid "Provider config"
 #~ msgstr "供应商配置"
