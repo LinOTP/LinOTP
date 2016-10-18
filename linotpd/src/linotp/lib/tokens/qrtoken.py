@@ -568,10 +568,10 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
     def update(self, params):
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = {'type', 'hashlib', 'serial', '::scope::',
+        init_rollout_state_keys = set(['type', 'hashlib', 'serial', '::scope::',
                                    'key_size', 'user.login', 'description',
                                    'user.realm', 'session', 'otplen', 'resConf',
-                                   'user', 'realm', 'qr', 'pin'}
+                                   'user', 'realm', 'qr', 'pin'])
 
         # ----------------------------------------------------------------------
 
