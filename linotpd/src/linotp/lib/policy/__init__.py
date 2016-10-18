@@ -3287,20 +3287,20 @@ def supports_offline(realms, token):
     return False
 
 
-def get_pairing_certificate_id(realms, user):
+def get_partition(realms, user):
     """
-    returns the certificate id that should be used
+    returns the partition (key pair identifier) that should be used
     """
     action_values = []
     login = None
-    ret = None
+    ret = 0
 
     if realms is None or len(realms) == 0:
         realms = ['/:no realm:/']
 
-    action = 'qrtoken_pairing_cert'
+    action = 'partition'
 
-    params = {'scope': 'authentication',
+    params = {'scope': 'enrollment',
               'action': action}
 
     for realm in realms:
@@ -3320,7 +3320,7 @@ def get_pairing_certificate_id(realms, user):
                 raise Exception('conflicting policy values %r found for '
                                 'realm set: %r' % (action_values, realms))
     if action_values:
-        ret = action_values[0]
+        ret = int(action_values[0])
 
     return ret
 # eof ##########################################################################

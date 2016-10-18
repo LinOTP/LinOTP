@@ -28,9 +28,9 @@ import struct
 from collections import namedtuple
 from linotp.lib.crypt import encode_base64_urlsafe
 from linotp.lib.crypt import decode_base64_urlsafe
-from linotp.lib.crypt import get_qrtoken_secret_key
-from linotp.lib.crypt import get_qrtoken_public_key
-from linotp.lib.crypt import get_qrtoken_dh_secret_key
+from linotp.lib.crypt import get_secret_key
+from linotp.lib.crypt import get_dh_secret_key
+from linotp.lib.crypt import get_public_key
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
 from linotp.lib.error import ProgrammingError
@@ -149,8 +149,6 @@ def generate_pairing_url(token_type,
     :raises InvalidFunctionParameter: If otp_pin_length value is not between
         1 and 127
 
-    :raises NotImplementedError: If partition is not None.
-
     :return: Pairing URL string
     """
 
@@ -166,16 +164,6 @@ def generate_pairing_url(token_type,
                                        'Unsupported token type %s. Supported '
                                        'types for pairing are: %s' %
                                        (token_type, allowed_types))
-
-    # --------------------------------------------------------------------------
-
-    if partition is not None:
-        raise NotImplementedError('non-dummy partition support is not '
-                                  'implemented yet')
-
-    # default for now
-
-    partition = TOKEN_TYPE
 
     # --------------------------------------------------------------------------
 
@@ -226,7 +214,7 @@ def generate_pairing_url(token_type,
 
     if flags & FLAG_PAIR_PK:
 
-        server_public_key = get_dsa_public_key(partition)
+        server_public_key = get_public_key(partition)
 
         if len(server_public_key) != 32:
             raise InvalidFunctionParameter('server_public_key',
@@ -293,7 +281,7 @@ def generate_pairing_url(token_type,
 
     if not (flags & FLAG_PAIR_PK):
 
-        secret_key = get_dsa_secret_key(partition)
+        secret_key = get_secret_key(partition)
         server_sig = crypto_sign_detached(data, secret_key)
         data += server_sig
 
@@ -323,54 +311,6 @@ def get_pairing_data_parser(token_type):
 
     raise ValueError('unsupported token type %d, supported types '
                      'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))
-
-# ------------------------------------------------------------------------------
-
-
-def get_dsa_secret_key(partition):
-
-    """
-    fetches the DSA secret key for the partition supplied in the
-    pairing response. this is currently a dummy implementation.
-    """
-
-    if partition == TYPE_QRTOKEN_ED25519:
-        return get_qrtoken_secret_key()
-
-    raise ValueError('unsupported partition %d, supported partitions '
-                     'are %s' % (partition, SUPPORTED_TOKEN_TYPES))
-
-# ------------------------------------------------------------------------------
-
-
-def get_dh_secret_key(partition):
-
-    """
-    fetches the Diffie-Hellman secret key for the partition supplied in the
-    pairing response. this is currently a dummy implementation.
-    """
-
-    if partition == TYPE_QRTOKEN_ED25519:
-        return get_qrtoken_dh_secret_key()
-
-    raise ValueError('unsupported partition %d, supported partitions '
-                     'are %s' % (partition, SUPPORTED_TOKEN_TYPES))
-
-# ------------------------------------------------------------------------------
-
-
-def get_dsa_public_key(partition):
-
-    """
-    fetches the DSA public key for the partition supplied in the
-    pairing response. this is currently a dummy implementation.
-    """
-
-    if partition == TYPE_QRTOKEN_ED25519:
-        return get_qrtoken_public_key()
-
-    raise ValueError('unsupported partition %d, supported partitions '
-                     'are %s' % (partition, SUPPORTED_TOKEN_TYPES))
 
 # ------------------------------------------------------------------------------
 
