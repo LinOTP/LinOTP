@@ -657,10 +657,10 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         response_detail = {}
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = {'type', 'hashlib', 'serial', '::scope::',
+        init_rollout_state_keys = set(['type', 'hashlib', 'serial', '::scope::',
                                    'key_size', 'user.login', 'description',
                                    'user.realm', 'session', 'otplen', 'pin',
-                                   'resConf', 'user', 'realm', 'qr'}
+                                   'resConf', 'user', 'realm', 'qr'])
 
         # ----------------------------------------------------------------------
 
