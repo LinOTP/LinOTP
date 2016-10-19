@@ -1,6 +1,6 @@
 [gerrit]
 host=harrison
 project=linotp
-defaultbranch=master
+defaultbranch=sandbox/cloud
 defaultremote=origin
 defaultrebase=0
