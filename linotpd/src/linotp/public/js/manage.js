@@ -5669,7 +5669,7 @@ function realm_edit(name){
 
 function check_for_selected_resolvers(){
     var resolvers_in_realm_to_edit = new Array();
-    $(".ui-selected").each(function(){
+    $(".ui-selected", this).each(function(){
         var index = $("#resolvers_in_realms_select li").index(this);
         var reso = escape($(this).html());
         if (reso.match(/(\S+)\s\[(\S+)\]/)) {
