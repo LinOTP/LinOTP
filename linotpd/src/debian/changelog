@@ -1,3 +1,9 @@
+linotp (2.9.0.3~rc0-1) jessie; urgency=low
+
+  * Set new version 2.9.0.3~rc0-1
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 20 Oct 2016 14:33:39 +0200
+
 linotp (2.9.0.2-1) jessie; urgency=low
 
   Bug Fixes:
