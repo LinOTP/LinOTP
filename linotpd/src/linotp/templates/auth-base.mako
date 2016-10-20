@@ -42,7 +42,7 @@
 	<link type="text/css" rel="stylesheet" href="/selfservice/auth.css">
 	<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
 
-	<script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
+	<script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
 
 	<!-- jQuery UI -->
 	<link type="text/css" href="/css/jquery-ui/jquery-ui.min.css" rel="stylesheet">
