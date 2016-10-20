@@ -40,6 +40,7 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from linotp.lib.crypt import zerome
 from linotp.lib.qrtoken import parse_qrtoken_pairing_data
+from linotp.lib.pushtoken import parse_and_verify_pushtoken_pairing_data
 
 """
 This module provides functions and constants for the generation of
@@ -67,13 +68,14 @@ FLAG_PAIR_TSTART = 1 << 7
 FLAG_PAIR_TSTEP = 1 << 8
 
 TYPE_QRTOKEN_ED25519 = 2
-SUPPORTED_TOKEN_TYPES = [TYPE_QRTOKEN_ED25519]
+TYPE_PUSHTOKEN = 4
+SUPPORTED_TOKEN_TYPES = [TYPE_QRTOKEN_ED25519, TYPE_PUSHTOKEN]
 
 # translation tables between low level enum types and
 # high level string identifiers
 
 hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
-TOKEN_TYPES = {'qr': TYPE_QRTOKEN_ED25519}
+TOKEN_TYPES = {'qr': TYPE_QRTOKEN_ED25519, 'push': TYPE_PUSHTOKEN}
 INV_TOKEN_TYPES = {v: k for k, v in TOKEN_TYPES.items()}
 
 
@@ -308,6 +310,9 @@ def get_pairing_data_parser(token_type):
 
     if token_type == TYPE_QRTOKEN_ED25519:
         return parse_qrtoken_pairing_data
+
+    if token_type == TYPE_PUSHTOKEN:
+        return parse_and_verify_pushtoken_pairing_data
 
     raise ValueError('unsupported token type %d, supported types '
                      'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))

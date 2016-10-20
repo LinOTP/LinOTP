@@ -39,6 +39,7 @@ from linotp.lib.policy import get_partition
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.challenges import Challenges
+from linotp.lib.challenges import transaction_id_to_u64
 from linotp.lib.reply import create_img
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
@@ -100,30 +101,6 @@ CONTENT_TYPE_AUTH = 2
 QRTOKEN_VERSION = 1
 
 
-def transaction_id_to_u64(transaction_id):
-    """
-    converts a transaction_id to u64 format (used in the challenge-url format)
-    transaction_ids come in 2 formats:
-
-    - Normal Transaction - 49384
-    - Subtransaction - 213123.39
-
-    where the 2 places behind the point start with 01.
-
-    The function converts the strings by "multiplying" it with
-    100, so we well get 4938400 and 21312339
-    """
-
-    # HACK! remove when transaction id handling is
-    # refactored.
-
-    if '.' in transaction_id:
-        before, _, after = transaction_id.partition('.')
-        encoded = before + after
-    else:
-        encoded = transaction_id + '00'
-
-    return int(encoded)
 
 
 def get_single_auth_policy(policy_name, user=None, realms=None):
