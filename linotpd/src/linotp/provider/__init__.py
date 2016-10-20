@@ -31,6 +31,7 @@ import json
 import logging
 from os import path
 from os import listdir
+from os import walk
 
 from pylons.i18n.translation import _
 
@@ -45,45 +46,57 @@ from linotp.lib.policy import getPolicyActionValue
 from linotp.lib.context import request_context
 
 from linotp.lib.registry import ClassRegistry
+from linotp.lib.module_loader import import_submodules
 
-# ------------------------------------------------------------------------------
+log = logging.getLogger(__name__)
+
+# -------------------------------------------------------------------------- --
+# establish the global provider module registry
 
 provider_registry = ClassRegistry()
 
 
-def reload_classes():
+def load_provider_classes():
 
-    """ iterates through the modules in this package
-    and import every single one of them """
+    """ iterates through the modules in this package and import every single
+    one of them. This will trigger the registration of the providers in
+    the global provider_registry (s.o.), which registers all available
+    provider classes
 
-    # Find out the path this file resides in
-    abs_file = path.abspath(__file__)
-    abs_dir = path.dirname(abs_file)
+    :sideeffect: the classes in the submodules are registrated in the
+                 provider registry
+    """
 
-    # list files
-    files_in_ext_path = listdir(abs_dir)
+    try:
+        import_submodules(__name__)
+        import_submodules("%s.%s" % (__name__, "pushprovider"))
+        import_submodules("%s.%s" % (__name__, "emailprovider"))
+    except ImportError as exx:
+        log.error('unable to load provider module : %s (%r)', __name__, exx)
+        raise Exception(exx)
 
-    for fn in files_in_ext_path:
-        # filter python files
-        if fn.endswith('.py') and not fn == '__init__.py':
-            # translate them into module syntax
-            # and import
-            mod_rel = fn[0:-3]
-            try:
-                __import__(mod_rel, globals=globals())
-            except Exception as exx:
-                log.error('unable to load resolver module : %r (%r)'
-                          % (mod_rel, exx))
+    # the sms providers are optional, so we just log the error in case of an
+    # import error
+    try:
+        import smsprovider
+        import_submodules('smsprovider')
+    except ImportError as exx:
+        log.error('unable to load provider module : smsprovider (%r)', exx)
 
-reload_classes()
 
-# ------------------------------------------------------------------------------
+load_provider_classes()
 
+# -------------------------------------------------------------------------- --
+# some declarations for the loading and storing of provider configurations
+
+# the storing prefixes
 Provider_types = {
     'sms': {'prefix': 'linotp.SMSProvider.'},
     'email': {'prefix': 'linotp.EmailProvider.'},
+    'push': {'prefix': 'linotp.PushProvider.'},
     }
 
+# legacy keys used in the linotp config
 Legacy_Provider = {
     'sms': {'linotp.SMSProvider': 'Class',
             'linotp.SMSProviderTimeout': 'Timeout',
@@ -92,18 +105,21 @@ Legacy_Provider = {
               # the timeout is not the same as we intent for the
               # provider timeout, but its a good start
               'linotp.EmailBlockingTimeout': 'Timeout',
-              'linotp.EmailProviderConfig': 'Config'}
+              'linotp.EmailProviderConfig': 'Config'},
     }
 
 Legacy_Provider_Name = 'imported_default'
+
 Default_Provider_Key = {
     'email': 'linotp.Provider.Default.email_provider',
-    'sms': 'linotp.Provider.Default.sms_provider'
+    'sms': 'linotp.Provider.Default.sms_provider',
+    'push': 'linotp.Provider.Default.push_provider'
     }
 
 Policy_action_name = {
     'email': 'email_provider',
     'sms': 'sms_provider',
+    'push': 'push_provider',
     }
 
 # lookup definition to support legacy provider classes definitions
@@ -113,8 +129,6 @@ ProviderClass_lookup = {
     'linotp.lib.emailprovider.SMTPEmailProvider':
         'linotp.provider.emailprovider.SMTPEmailProvider',
     }
-
-log = logging.getLogger(__name__)
 
 
 def get_legacy_provider(provider_type):
@@ -158,7 +172,7 @@ def get_all_new_providers(provider_type):
 
     provider_names = {}
 
-    # find out, which provider type we have, currently only sms or email
+    # find out, which provider type we have, currently only push, sms or email
     prefix = Provider_types.get(provider_type, {}).get('prefix')
     if not prefix:
         raise Exception('unknown provider type %r' % provider_type)
@@ -197,7 +211,7 @@ def get_default_provider(provider_type):
     """
     find out, which provider is declared as default
 
-    :param provider_type: sms or email
+    :param provider_type: push, sms or email
     :return: the name of the default provider
     """
     config = getLinotpConfig()
@@ -212,14 +226,15 @@ def getProvider(provider_type, provider_name=None):
     """
     return a dict with  providers, each with it's description as dict
 
-    :param provider_type: either sms or email
+    :param provider_type: either push, sms or email
     :param provider_name: name of the provider (optional)
     :return: the dict with all providers
     """
     providers = {}
 
-    legacy_provider = get_legacy_provider(provider_type)
-    providers.update(legacy_provider)
+    if provider_type in Legacy_Provider.keys():
+        legacy_provider = get_legacy_provider(provider_type)
+        providers.update(legacy_provider)
 
     new_providers = get_all_new_providers(provider_type)
     providers.update(new_providers)
@@ -253,7 +268,7 @@ def delProvider(provider_type, provider_name):
     """
     delete a provider
 
-    :param provider_type: the type of Provider: sms or email
+    :param provider_type: the type of Provider: push, sms or email
     :param provider_name: the name of the provider
 
     :return: the number of deleted entries
@@ -325,7 +340,7 @@ def setProvider(params):
     :param params: generic parameter dictionary to support later more complex
                    provider definitions
                    in the dictionary currently required keys are
-                   :param type: sms or email
+                   :param type: push,sms or email
                    :param name: the provider name
                    :param config: the provider config
                    :param timeout: the provider timeout
@@ -354,7 +369,7 @@ def save_legacy_provider(provider_type, params):
     """
     save the provider to the legacy format
 
-    :param provider_type: sms or email provider
+    :param provider_type: push, sms or email provider
     :param params: the provider description dict with 'class', 'config' and
                    'timeout'
 
@@ -384,7 +399,7 @@ def save_new_provider(provider_type, provider_name, params):
         might look if it's a json and store the next Config.  level
         and look for the reserved additional appended type: password
 
-    :param provider_type: sms or email provider
+    :param provider_type: push, sms or email provider
     :param provider_name: the name of the provider
     :param params: the provider description dict with 'class', 'config',
                    and 'timeout'
@@ -398,10 +413,35 @@ def save_new_provider(provider_type, provider_name, params):
     provider_prefix = prefix + provider_name
 
     storeConfig(key=provider_prefix, val=params['class'])
-    storeConfig(key=provider_prefix + '.Timeout', val=params['timeout'])
 
-    storeConfig(key=provider_prefix + '.Config', val=params['config'],
-                typ='password')
+    config_mapping = {
+        'timeout': ('Timeout', None),
+        'config': ('Config', 'password')}
+
+    #
+    # alternative config entries are supported by the the adjustable config
+    # entries if the provider supports the 'getConfigMapping' interface:
+    #
+    try:
+        provider_class = _load_provider_class(params['class'])
+        config_mapping = provider_class.getConfigMapping()
+    except AttributeError as exx:
+        log.debug("provider %r does not support ConfigMapping: %r",
+                  provider_name, exx)
+
+    for config_entry in config_mapping.keys():
+
+        if config_entry not in params:
+            continue
+
+        # get the mapping entry and split the config name and type
+        mapping_entry = config_mapping[config_entry]
+        config_key, config_type = mapping_entry
+
+        # store the config entry
+        storeConfig(key=provider_prefix + '.' + config_key,
+                    val=params[config_entry],
+                    typ=config_type)
 
     return True, {}
 
@@ -431,7 +471,7 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
     """
     interface for the provider user like email token or sms token
 
-    :param provider_type: 'email' or 'sms
+    :param provider_type: 'push', 'email' or 'sms
     :param user: the user, who should receive the message, used for
                  the policy lookup
     :return: the instantiated provider with already loaded config
@@ -483,8 +523,7 @@ def _lookup_provider_policies(provider_type):
 
     # now have a look at all authentication policies
     policies = getPolicy({'scope': 'authentication',
-                          "action": provider_action_name,
-                          })
+                          "action": provider_action_name, })
 
     for policy in policies:
         provider_name = getPolicyActionValue(policies,
@@ -502,14 +541,14 @@ def loadProvider(provider_type, provider_name=None):
     """
     interface for the provider user like email token or sms token
 
-    :param provider_type: 'email' or 'sms
+    :param provider_type: 'push', 'email' or 'sms
     :param provider_name: the name of the provider configuration
 
     :return: the instantiated provider with already loaded configuration
     """
     provider_info = {}
-
     config = getLinotpConfig()
+
     default_provider_key = Default_Provider_Key[provider_type]
 
     #
@@ -547,43 +586,72 @@ def loadProvider(provider_type, provider_name=None):
         log.exception("Failed to load provider: %r", exc)
         raise exc
 
-    provider_config = {}
-    config = provider_info['Config']
-
-    #
-    # backward compatibility hack: fix the handling of multiline config entries
-    #
-    lconfig = []
-    lines = config.splitlines()
-    for line in lines:
-        line = line.strip('\\')
-        if len(line) > 0:
-            lconfig.append(line)
-
-    config = " ".join(lconfig)
-
-    try:
-        provider_config = json.loads(config)
-    except ValueError as exx:
-        log.exception('Failed to load provider config %r', config)
-        raise ValueError('Failed to load provider config:%r %r'
-                         % (config, exx))
-
+    provider_config = _build_provider_config(provider_info)
     provider.loadConfig(provider_config)
 
     return provider
 
 
-def _load_provider_class(provider_Class):
+def _build_provider_config(provider_info):
+    """
+    internal function to build up dict with the provider config
+
+    :param provider_info: loaded info for the provider (containing Config)
+    :return: dictionary with the config of the provider
+    """
+
+    provider_config = {}
+
+    line_config = provider_info['Config']
+    line_config = _fix_config_contiuation(line_config)
+
+    try:
+        provider_config = json.loads(line_config)
+    except ValueError as exx:
+        log.exception('Failed to load provider config %r', provider_config)
+        raise ValueError('Failed to load provider config:%r %r'
+                         % (provider_config, exx))
+
+    # we have to add the other, additional parameters like timeout
+    for additional, value in provider_info.items():
+        if additional not in ['Default', 'Config', 'Class']:
+            if additional == 'Timeout':
+                provider_config['timeout'] = value
+            else:
+                provider_config[additional] = value
+
+    return provider_config
+
+
+def _fix_config_contiuation(line_config):
+    """
+    backward compatibility hack: fix the handling of multiline config entries
+
+    :param line_config: configuration as a string value
+    :return: config as string value
+    """
+    lconfig = []
+    lines = line_config.splitlines()
+    for line in lines:
+        line = line.strip('\\')
+        if len(line) > 0:
+            lconfig.append(line)
+
+    return " ".join(lconfig)
+
+
+
+def _load_provider_class(provider_slass_spec):
     """
     _loadProviderClass():
 
     helper method to load the EmailProvider class from config
     """
-    if not provider_Class:
+    if not provider_slass_spec:
         raise Exception("No provider class defined.")
 
-    provider_class = ProviderClass_lookup.get(provider_Class, provider_Class)
+    provider_class = ProviderClass_lookup.get(provider_slass_spec,
+                                              provider_slass_spec)
     provider_class_obj = provider_registry.get(provider_class)
 
     if provider_class_obj is None:
@@ -597,7 +665,7 @@ def _load_provider_class(provider_Class):
 
         try:
 
-            packageName, _, className = provider_class.rpartition('.')
+            packageName, _, className = str(provider_class).rpartition('.')
             mod = __import__(packageName, globals(), locals(), [className])
             provider_class_obj = getattr(mod, className)
 
@@ -609,10 +677,22 @@ def _load_provider_class(provider_Class):
             raise Exception("Unknown provider class: Identifier was %s - %r" %
                             (provider_class, err))
 
-    if not hasattr(provider_class_obj, "submitMessage"):
+    #
+    # as not all providers are inherited from a super provider,
+    # we only can check for the existance of the required methods :-(
+    #
+
+    required_method = ['submitMessage', 'push_notification']
+    is_provider = False
+    for method in required_method:
+        if hasattr(provider_class_obj, method):
+            is_provider = True
+
+    if not is_provider:
         raise NameError("Provider AttributeError: %s "
-                        "Provider has no method 'submitMessage'" %
-                        (provider_class_obj.__name__))
+                        "Provider has no method %s" %
+                        (provider_class_obj.__name__,
+                         ' or '.join(required_method)))
 
     return provider_class_obj
 

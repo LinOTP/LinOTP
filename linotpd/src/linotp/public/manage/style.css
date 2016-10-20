@@ -511,19 +511,22 @@ html {
  *  Styles for sms and email provider config
  */
 #sms_providers_list,
-#email_providers_list{
+#email_providers_list,
+#push_providers_list{
 	padding: 0 .5em;
 }
 
 #button_sms_provider_set_default,
-#button_email_provider_set_default{
+#button_email_provider_set_default,
+#button_push_provider_set_default{
 	float: right;
     margin: .5em .5em 0 0;
 }
 
 /* Remove padding for secondary buttonpane in provider-configurations */
 #dialog_sms_providers .ui-dialog-buttonpane.flat,
-#dialog_email_providers .ui-dialog-buttonpane.flat {
+#dialog_email_providers .ui-dialog-buttonpane.flat,
+#dialog_push_providers .ui-dialog-buttonpane.flat {
 	padding: 0!important;
     position: absolute;
     bottom: 0;
@@ -535,12 +538,14 @@ html {
 }
 
 #dialog_sms_providers,
-#dialog_email_providers{
+#dialog_email_providers,
+#dialog_push_providers{
 	padding: .5em 0 2.7em;
 }
 
 #dialog_sms_providers .list-wrapper,
-#dialog_email_providers .list-wrapper{
+#dialog_email_providers .list-wrapper,
+#dialog_push_providers .list-wrapper{
 	overflow: auto;
     height: 100%;
 }

@@ -120,6 +120,7 @@ if isinstance(lang, list):
                     <ul>
                         <li><a href='#' id='menu_sms_provider_config'>${_("SMS Provider Config")}</a>
                         <li><a href='#' id='menu_email_provider_config'>${_("Email Provider Config")}</a>
+                        <li><a href='#' id='menu_push_provider_config'>${_("Push Provider Config")}</a>
                     </ul>
                  </li>
                 <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
@@ -471,6 +472,94 @@ ${c.version} --- &copy; ${c.licenseinfo}
         $('#button_email_provider_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
+
+<!-- ############ push provider settings ################# -->
+<div id='dialog_push_providers'>
+    <div class="list-wrapper"><div id='push_providers_list'> </div></div>
+    <div class="ui-dialog-buttonpane flat"><button id='button_push_provider_set_default'>${_("Set as default")}</button></div>
+</div>
+<script type="text/javascript">
+    function translate_dialog_push_providers() {
+        $("#dialog_push_providers" ).dialog( "option", "title", '${_("Push Provider: create and edit")}');
+        $('#button_push_provider_new .ui-button-text').html('${_("New")}');
+        $('#button_push_provider_edit .ui-button-text').html('${_("Edit")}');
+        $('#button_push_provider_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_push_providers_close .ui-button-text').html('${_("Close")}');
+    }
+</script>
+
+<!-- ############ push provider edit ################# -->
+<div id="dialog_push_provider_edit">
+    <form class="cmxform" id="form_pushprovider" action="">
+        <table>
+            <tr>
+                <td><label for="push_provider_name">${_("Name")}</label>: </td>
+                <td><input type="text" name="push_provider_name" class="required"
+                                       id="push_provider_name" size="37" maxlength="80"
+                                       placeholder=""></td>
+            </tr>
+            <tr>
+                <td><label for="push_provider_class">${_("Class")}</label>: </td>
+                <td><input type="text" name="push_provider_class" class="required"
+                           id="push_provider_class" size="37" maxlength="80"
+                           placeholder="KeyIdentityPushProvider"></td>
+            </tr>
+            <tr>
+                <td><label for='push_provider_config'>${_("Config")}</label>: </td>
+                <td><textarea name="push_provider_config" class="required"
+                              id="push_provider_config" cols='35' rows='6'
+                              placeholder=
+'{ 
+"push_url": "pnp.keyidentiy.com", 
+"access_certificate": "secret certificate", 
+"server_certificate":"server certificate"
+}'
+
+syst></textarea></td>
+            </tr>
+            <tr>
+                <td><label for="push_provider_timeout">${_("Timeout (sec)")}</label>: </td>
+                <td><input type="number" name="push_provider_timeout" class="required"
+                              placeholder="120" id="push_provider_timeout" size="5" maxlength="5"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script type="text/javascript">
+    function translate_dialog_push_provider_edit() {
+        $("#dialog_push_provider_edit" ).dialog( "option", "title", '${_("Push Provider")}' );
+        $('#button_push_provider_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_push_provider_save .ui-button-text').html('${_("Save")}');
+    }
+</script>
+
+<!-- ################## push provider delete ###################### -->
+<div id='dialog_push_provider_delete'>
+    <p>${_("Do you want to delete the Provider?")}</p>
+</div>
+<script type="text/javascript">
+    function translate_dialog_push_provider_delete() {
+        $("#dialog_push_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedPushProvider );
+        $('#button_push_provider_delete_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_push_provider_delete_cancel .ui-button-text').html('${_("Cancel")}');
+    }
+</script>
+
+<!-- ############ push provider settings ################# -->
+<div id='dialog_push_provider_settings'>
+
+</div>
+
+<script type="text/javascript">
+    function translate_push_provider_settings() {
+        $("#dialog_push_provider_settings" ).dialog( "option", "title", '${_("Push Provider Configuration")}' );
+        $('#button_push_provider_save .ui-button-text').html('${_("Save Config")}');
+        $('#button_push_provider_cancel .ui-button-text').html('${_("Cancel")}');
+    }
+</script>
+
+
+
 
 <!-- ############ dialog settings ################# -->
 <div id='dialog_token_settings'>
