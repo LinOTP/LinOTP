@@ -117,7 +117,7 @@ def setPolicy(policy):
     for required_attribute in required_attributes:
         if (required_attribute not in policy or
            not policy[required_attribute]):
-            raise PolicyWarning("Missing attribute % in "
+            raise PolicyWarning("Missing attribute %s in "
                                 "policy %s" % (required_attribute, name))
 
     # before storing the policy, we have to check the impact:
