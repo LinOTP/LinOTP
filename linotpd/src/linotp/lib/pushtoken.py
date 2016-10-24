@@ -124,11 +124,11 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     signature = plaintext[-64:]
     message = plaintext[:-64]
-    signature_ok = crypto_sign_verify_detached(signature,
-                                               message,
-                                               user_public_key)
 
-    if not signature_ok:
+    try:
+        crypto_sign_verify_detached(signature, message, user_public_key)
+    except ValueError:
+        # original value error is too generic
         raise ValueError('Invalid signature for pairing response data')
 
     # --------------------------------------------------------------------------
