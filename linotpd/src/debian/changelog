@@ -1,8 +1,11 @@
-linotp (2.9.0.3~rc0-1) jessie; urgency=low
+linotp (2.9.0.3-1) jessie; urgency=low
 
-  * Set new version 2.9.0.3~rc0-1
+  Bug Fixes:
+  * WebUI: Fix realm creation and editing for IE
+  * Server: Various small QRToken changes
+  * Server: Fix tokencount handling during assignment
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 20 Oct 2016 14:33:39 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Oct 2016 08:28:19 +0200
 
 linotp (2.9.0.2-1) jessie; urgency=low
 

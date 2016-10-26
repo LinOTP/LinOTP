@@ -1,8 +1,9 @@
-linotp-useridresolver (2.9.0.3~rc0-1) jessie; urgency=low
+linotp-useridresolver (2.9.0.3-1) jessie; urgency=low
 
-  * Set new version 2.9.0.3~rc0-1
+  Bug Fixes:
+  * LDAP: Fix result filtering for recent AD versions
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 20 Oct 2016 14:33:36 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Oct 2016 08:28:19 +0200
 
 linotp-useridresolver (2.9-1) jessie; urgency=low
 
