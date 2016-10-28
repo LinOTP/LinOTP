@@ -93,7 +93,12 @@ def integrationTestsNodes = ['beggar']
 
 node('master') {
     stage('Init') {
-        // Checkout LinOTP source
+        /*
+         * Checkout LinOTP source
+         *
+         * Once jenkins bug https://issues.jenkins-ci.org/browse/JENKINS-38046
+         * is implemented this can be simplified using a multibranch pipeline.
+         */
         try {
             // Try checking out gerrit patchsets
             println "GERRIT_BRANCH: ${GERRIT_BRANCH}"
