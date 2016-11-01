@@ -170,11 +170,7 @@ a.close_all {
 	border-bottom: 0;
 }
 
-.flexigrid {
-	padding-top: .8em;
-}
-
-#policy_form {
+.flexigrid, #policy_form {
 	margin-top: .8em;
 }
 
