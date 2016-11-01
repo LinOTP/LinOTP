@@ -1472,12 +1472,12 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
     handle_related_challenge(related_challenges)
 
     # now we finalize the token validation result
-    fh = FinishTokens(valid_tokens,
-                      challenge_tokens,
-                      pin_matching_tokens,
-                      invalid_tokens,
-                      validation_results,
-                      user, options,
+    fh = FinishTokens(valid_tokens=valid_tokens,
+                      challenge_tokens=challenge_tokens,
+                      pin_matching_tokens=pin_matching_tokens,
+                      invalid_tokens=invalid_tokens,
+                      validation_results=validation_results,
+                      user=user, options=options,
                       audit_entry=audit_entry)
 
     (res, reply) = fh.finish_checked_tokens()
@@ -1495,9 +1495,9 @@ def checkTokenList(tokenList, passw, user=User(), options=None):
 class FinishTokens(object):
 
     def __init__(self, valid_tokens, challenge_tokens,
-                        pin_matching_tokens, invalid_tokens,
-                        validation_results,
-                        user, options, audit_entry=None):
+                 pin_matching_tokens, invalid_tokens,
+                 validation_results,
+                 user, options, audit_entry=None):
         """
         create the finalisation object, that finishes the token processing
 
@@ -1527,11 +1527,13 @@ class FinishTokens(object):
 
         # do we have any valid tokens?
         if self.valid_tokens:
+
             (ret, reply, detail) = self.finish_valid_tokens()
-            self.reset_failcounter(self.valid_tokens
-                                   + self.invalid_tokens
-                                   + self.pin_matching_tokens
-                                   + self.challenge_tokens)
+
+            self.reset_failcounter(self.valid_tokens +
+                                   self.invalid_tokens +
+                                   self.pin_matching_tokens +
+                                   self.challenge_tokens)
 
             create_audit_entry(audit_entry=self.audit_entry,
                                action_detail=detail,
@@ -1560,6 +1562,15 @@ class FinishTokens(object):
                         % (self.pin_matching_tokens +
                            self.invalid_tokens)[0].getSerial())
 
+        if self.pin_matching_tokens:
+            (ret, reply, detail) = self.finish_pin_matching_tokens()
+            self.increment_failcounters(self.pin_matching_tokens)
+
+            create_audit_entry(audit_entry=self.audit_entry,
+                               action_detail=detail,
+                               tokens=self.pin_matching_tokens)
+            return ret, reply
+
         if self.invalid_tokens:
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
@@ -1568,15 +1579,7 @@ class FinishTokens(object):
                                action_detail=detail,
                                tokens=self.invalid_tokens)
 
-        if self.pin_matching_tokens:
-            (ret, reply, detail) = self.finish_pin_matching_tokens()
-            self.increment_failcounters(self.pin_matching_tokens)
-
-            create_audit_entry(audit_entry=self.audit_entry,
-                               action_detail=detail,
-                               tokens=self.pin_matching_tokens)
-
-        return ret, reply
+            return ret, reply
 
     def finish_valid_tokens(self):
         """
