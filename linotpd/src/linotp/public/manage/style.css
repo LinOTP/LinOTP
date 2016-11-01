@@ -118,6 +118,54 @@ a.close_all {
 	background: #F0F0F0;
 }
 
+.flexigrid div.pDiv div.pDiv2 {
+	margin: 3px 0;
+	float: inherit;
+	zoom: 1;
+}
+
+.flexigrid div.pDiv div.pDiv2::after {
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: "";
+	clear: both;
+	height: 0;
+}
+
+.flexigrid div.pDiv .pPageStat, .flexigrid div.pDiv .pcontrol {
+	top: auto;
+	height: 24px;
+  line-height: 24px;
+}
+
+.flexigrid div.pDiv input {
+	top: auto;
+	vertical-align: middle;
+}
+
+.flexigrid div.pDiv div.pButton,
+.flexigrid div.pDiv div.pButton span {
+	width: 24px;
+	height: 24px;
+}
+
+.flexigrid div.sDiv2 select[name="qtype"] {
+	margin-right: 4px;
+}
+
+.flexigrid div.pDiv div.pButton:hover,
+.flexigrid div.pDiv div.pButton.pBtnOver,
+.flexigrid div.pDiv div.pButton:hover span,
+.flexigrid div.pDiv div.pButton.pBtnOver span {
+    width: 22px;
+    height: 22px;
+}
+
+.flexigrid div.pDiv select{
+	height: 100%;
+}
+
 .flexigrid div.sDiv {
 	border-bottom: 0;
 }
