@@ -1586,17 +1586,8 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                   % user)
 
         if not user.isEmpty() and user.login:
-            users = []
-
-            # getUserId triggers the lookup of the resolvers
-            # which could then be used for multiple users in realm
-            getUserId(user)
-            for resolverClass, uid in user.resolverUid.items():
-                users.append((uid, resolverClass))
-
-            for lookup_user in users:
-                (uid, resolverClass) = lookup_user
-
+            for user_definition in user.get_uid_resolver():
+                uid, resolverClass = user_definition
                 # in the database could be tokens of ResolverClass:
                 #    useridresolver. or useridresolveree.
                 # so we have to make sure

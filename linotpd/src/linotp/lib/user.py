@@ -96,14 +96,26 @@ class User(object):
 
         f_user = User(f_login, realm=f_realm)
         if check_if_exist:
-            _uid, _resolver = f_user.get_uid_resolver()
+            try:
+                _uid, _resolver = f_user.get_uid_resolver().next()
+            except StopIteration:
+                f_user.exists = False
 
         return f_user
 
     def get_uid_resolver(self, resolvers=None):
+        """
+        generator to get the uid and resolver info of the user
+
+        :param resolvers: provide the resolver, where to check for the user
+        :return: the tuple of uid and resolver
+        """
+
         uid = None
-        resolver = None
         resolvers_list = []
+
+        # if the resolver is not provided, we make a lookup for all resolvers
+        # in the user realm
 
         if not resolvers:
             if self.realm:
@@ -119,30 +131,52 @@ class User(object):
                     resolvers_list.append(fq_resolver)
 
         if not resolvers_list:
-            return None, None
+            return
 
-        for resolver in resolvers_list:
+        for resolver_spec in resolvers_list:
             try:
-                y = getResolverObject(resolver)
+                y = getResolverObject(resolver_spec)
                 uid = y.getUserId(self.login)
                 if not uid:
                     uid = None
                     continue
-                self.resolverUid[resolver] = uid
+
+                # we add the gathered resolver info to our self for later usage
+
+                # 1. to the resolver uid list
+
+                self.resolverUid[resolver_spec] = uid
+
+                # 2. the resolver spec list
+
+                resId = y.getResolverId()
+                resCId = resolver_spec
+                __, conf = parse_resolver_spec(resolver_spec)
+                self.resolverConf[resolver_spec] = (resId, resCId, conf)
+
+                # remember that we identified the user
                 self.exist = True
-                break
+
+                yield uid, resolver_spec
 
             except Exception as exx:
                 log.exception("Error while accessing resolver %r", exx)
 
-        return (uid, resolver)
-
     def does_exists(self, resolvers=None):
         """
+        check if the user exists - will iterate through the resolvers
+
+        :param resolvers: list of resolvers, where to do the user lookup
+        :return: boolean - True if user exist in a resolver
         """
-        uid, _resolver = self.get_uid_resolver(resolvers=resolvers)
+        try:
+            uid, _reso = self.get_uid_resolver(resolvers=resolvers).next()
+        except StopIteration:
+            return False
+
         if uid is not None:
             return True
+
         return False
 
     def getRealm(self):
@@ -204,9 +238,10 @@ class User(object):
         if resolver:
             lookup_resolvers = [resolver]
 
-        userid, resolver_spec = self.get_uid_resolver(lookup_resolvers)
-
-        if not userid:
+        try:
+            (userid,
+             resolver_spec) = self.get_uid_resolver(lookup_resolvers).next()
+        except StopIteration:
             return {}
 
         try:
@@ -233,6 +268,9 @@ class User(object):
     def getResolverUId(self, resolver_spec):
         return self.resolverUid.get(resolver_spec, '')
 
+    def getResolverConf(self, resolver_spec):
+        return self.resolverConf.get(resolver_spec, '')
+
     def getUserPerConf(self):
         """
         a wildcard usr (realm = *) could have multiple configurations
@@ -256,9 +294,6 @@ class User(object):
             userlist.append(n_user)
 
         return userlist
-
-    def getResolverConf(self, resolver_spec):
-        return self.resolverConf.get(resolver_spec, '')
 
     def exists(self):
         """
@@ -703,6 +738,7 @@ def getResolversOfUser(user, use_default_realm=True, allRealms=None,
                     resCId = resolver_spec
                     Resolvers.append(resolver_spec)
                     __, config_identifier = parse_resolver_spec(resolver_spec)
+
                     user.addResolverUId(resolver_spec, uid, config_identifier,
                                         resId, resCId)
                 else:
@@ -763,6 +799,7 @@ def getUserId(user, resolvers=None):
             log.debug("[getUserId] Got ResolverID: %r, Loginuser: %r, "
                       "Uid: %r ]", resId, loginUser, uid)
 
+            # stop at the first defined user
             if uid != "":
                 break
 
