@@ -138,12 +138,21 @@ class TokenIterator(object):
             serials = []
             users = []
 
-            ## if search for a realmuser 'user@realm' we can take the
-            ## realm from the argument
+            # if search for a realmuser 'user@realm' we can take the
+            # realm from the argument
             if len(user.realm) > 0:
                 users.append(user)
             else:
-                for realm in valid_realms:
+                # otherwise we add all users which are possible combinations
+                # from loginname and entry of the valid realms.
+                # In case of a '*' wildcard in the list, we take all available
+                # realms
+                if '*' in valid_realms:
+                    valid_realm_list = getRealms().keys()
+                else:
+                    valid_realm_list = valid_realms
+
+                for realm in valid_realm_list:
                     users.append(User(user.login, realm))
 
             # resolve the realm with wildcard:

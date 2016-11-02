@@ -659,8 +659,9 @@ class TestController(unittest2.TestCase):
         expected_keys = set(
             ['name', 'scope', 'action', 'user', 'realm', 'client', 'time']
         )
-        self.assertTrue(set(lparams.keys()) == expected_keys,
-                        "Some key is missing to create a policy")
+        diff_set = expected_keys - set(lparams.keys())
+        self.assertTrue(len(diff_set) == 0,
+                        "Some key is missing to create a policy %r" % diff_set)
 
         response = self.make_system_request('setPolicy', lparams)
         content = TestController.get_json_body(response)
