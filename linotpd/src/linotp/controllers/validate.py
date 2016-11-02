@@ -493,7 +493,7 @@ class ValidateController(BaseController):
         param = {}
         value = {}
         ok = False
-        opt = None
+        opt = {}
 
         try:
             param.update(request.params)
@@ -511,12 +511,12 @@ class ValidateController(BaseController):
                 raise Exception("missing parameter: state or transactionid!")
 
             vh = ValidationHandler()
-            (ok, reply) = vh.check_by_transactionid(transid=transid,
+            (ok, opt) = vh.check_by_transactionid(transid=transid,
                                                     passw=passw,
                                                     options=param)
 
             value['value'] = ok
-            value['failcount'] = int(reply.get('failcount', 0))
+            value['failcount'] = int(opt.get('failcount', 0))
 
             c.audit['success'] = ok
             Session.commit()

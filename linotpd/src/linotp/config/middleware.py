@@ -37,8 +37,16 @@ from routes.middleware import RoutesMiddleware
 from linotp.config.environment import load_environment
 from contextlib import contextmanager
 
+#
+# pylint has problems to identity the location distutils.version
+# which is different to the distutils location.
+# Thus we beg to ignore the high prio warning by adding the pylint hint
+#
+# pragma pylint: disable=import-error
+# pragma pylint: disable=no-name-in-module
 from distutils.version import LooseVersion
-
+# pragma pylint: enable=import-error
+# pragma pylint: enable=no-name-in-module
 
 from pylons import __version__ as pylons_version
 

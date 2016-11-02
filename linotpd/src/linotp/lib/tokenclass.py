@@ -264,11 +264,11 @@ class TokenClass(object):
         return "UNK"
 
     def getRealms(self):
+        realms = []
 
         if hasattr(self, 'realms'):
-            return self.realms
+            return self.realms # pylint: disable=E0203
 
-        realms = []
         tokenrealms = self.token.getRealms()
         for realm in tokenrealms:
             realms.append(realm.name)

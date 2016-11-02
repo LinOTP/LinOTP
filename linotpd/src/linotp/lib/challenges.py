@@ -119,7 +119,9 @@ class Challenges(object):
         # the allocated db challenge object
         challenge_obj = None
         retry_counter = 0
+
         reason = None
+        ReasonException = Exception()
 
         hsm = context['hsm'].get('obj')
 
@@ -146,7 +148,8 @@ class Challenges(object):
 
             except Exception as exce:
                 log.info("Failed to create Challenge: %r", exce)
-                reason = exce
+                reason = "%r" % exce
+                ReasonException = exce
 
             # prevent an unlimited loop
             retry_counter = retry_counter + 1
@@ -191,10 +194,12 @@ class Challenges(object):
                     challenge_obj.save()
                 else:
                     transactionid = ''
-                    reason = Exception(message)
+                    reason = message
+                    ReasonException = Exception(message)
 
         except Exception as exce:
-            reason = exce
+            reason = "%r" % exce
+            ReasonException = exce
             res = False
 
         # if something goes wrong with the challenge, remove it
@@ -213,9 +218,8 @@ class Challenges(object):
 
         # in case that create challenge fails, we must raise this reason
         if reason is not None:
-            message = "%r" % reason
-            log.error("Failed to create or init challenge %r " % reason)
-            raise reason
+            log.error("Failed to create or init challenge %r ", reason)
+            raise ReasonException
 
         # prepare the response for the user
         if transactionid is not None:

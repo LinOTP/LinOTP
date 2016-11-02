@@ -160,7 +160,9 @@ class LinOtpConfig(dict):
                 if str(db_conf_date) != str(e_conf_date):
                     do_reload = True
 
-        return self.refreshConfig(do_reload=do_reload)
+        self.refreshConfig(do_reload=do_reload)
+
+        return
 
     def refreshConfig(self, do_reload=False):
 

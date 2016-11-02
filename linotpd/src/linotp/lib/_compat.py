@@ -37,7 +37,7 @@ pypy = hasattr(sys, 'pypy_version_info')
 win32 = sys.platform.startswith('win')
 
 if py3k:
-    from threading import get_ident as get_thread_ident
+    from threading import get_ident as get_thread_ident  # pylint: disable=import-error
     str_ = str
 else:
     from thread import get_ident as get_thread_ident
