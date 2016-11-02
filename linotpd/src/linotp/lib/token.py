@@ -1474,13 +1474,13 @@ def getTokenInRealm(realm, active=True):
     if active:
         sqlQuery = Session.query(TokenRealm, Realm, Token).filter(and_(
                             TokenRealm.realm_id == Realm.id,
-                            Realm.name == u'' + realm,
+                            func.lower(Realm.name) == realm.lower(),
                             Token.LinOtpIsactive == True,
                             TokenRealm.token_id == Token.LinOtpTokenId)).count()
     else:
         sqlQuery = Session.query(TokenRealm, Realm).filter(and_(
                             TokenRealm.realm_id == Realm.id,
-                            Realm.name == realm)).count()
+                            func.lower(Realm.name) == realm.lower())).count()
     return sqlQuery
 
 def getTokenNumResolver(resolver=None, active=True):

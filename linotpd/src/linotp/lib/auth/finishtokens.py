@@ -103,6 +103,14 @@ class FinishTokens(object):
                         % (self.pin_matching_tokens +
                            self.invalid_tokens)[0].getSerial())
 
+        if self.pin_matching_tokens:
+            (ret, reply, detail) = self.finish_pin_matching_tokens()
+            self.increment_failcounters(self.pin_matching_tokens)
+
+            self.create_audit_entry(action_detail=detail,
+                                    tokens=self.pin_matching_tokens)
+            return ret, reply
+
         if self.invalid_tokens:
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
@@ -110,14 +118,7 @@ class FinishTokens(object):
             self.create_audit_entry(action_detail=detail,
                                     tokens=self.invalid_tokens)
 
-        if self.pin_matching_tokens:
-            (ret, reply, detail) = self.finish_pin_matching_tokens()
-            self.increment_failcounters(self.pin_matching_tokens)
-
-            self.create_audit_entry(action_detail=detail,
-                                    tokens=self.pin_matching_tokens)
-
-        return ret, reply
+            return ret, reply
 
     def finish_valid_tokens(self):
         """
