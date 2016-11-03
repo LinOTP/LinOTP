@@ -735,30 +735,41 @@ ${c.version} --- &copy; ${c.licenseinfo}
 <div id='dialog_set_pin'>
     <p>${_("You may reset the PINs for the tokens")}
         <span id='dialog_set_pin_token_string'> </span>
-        </p>
-
+    </p>
     <form>
         <input id='setpin_tokens' type='hidden'>
         <fieldset>
             <table>
-                <tr><td>
-                <label for="pintype">${_("PIN type")}</label>
-                </td><td>
-                <select name="pintype" id="pintype">
-                <option value="motp">mOTP PIN</option>
-                <option value="ocra">OCRA PIN</option>
-                <option selected value="otp">OTP PIN</option>
-                </select>
-                </td></tr><tr><td>
-                <label for="pin1">PIN</label>
-                </td><td>
-                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin1" id="pin1"
-                    class="text ui-widget-content ui-corner-all" />
-                </td></tr><tr><td>
-                <label for="pin2">${_("PIN (again)")}</label>
-                </td><td>
-                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin2" id="pin2" class="text ui-widget-content ui-corner-all" />
-                </td></tr>
+                <tr>
+                    <td>
+                        <label for="pintype">${_("PIN type")}</label>
+                    </td>
+                    <td>
+                        <select name="pintype" id="pintype">
+                            <option value="motp">mOTP PIN</option>
+                            <option value="ocra">OCRA PIN</option>
+                            <option selected value="otp">OTP PIN</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="pin1">PIN</label>
+                    </td>
+                    <td>
+                        <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin1" id="pin1"
+                            class="text ui-widget-content ui-corner-all" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="pin2">${_("PIN (again)")}</label>
+                    </td>
+                    <td>
+                        <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin2" id="pin2"
+                            class="text ui-widget-content ui-corner-all" />
+                    </td>
+                </tr>
             </table>
         </fieldset>
     </form>
