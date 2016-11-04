@@ -6201,9 +6201,6 @@ function view_policy() {
                 {display: i18n.gettext('Time'), name : 'time', width : 50, sortable : true}
                 ],
             height: 200,
-            searchitems : [
-                {display: i18n.gettext('All other columns'), name : 'all', isdefault: true}
-                ],
             rpOptions: [10,15,20,50,100],
             sortname: "name",
             sortorder: "asc",
@@ -6216,8 +6213,7 @@ function view_policy() {
             onError: error_flexi,
             onSubmit: on_submit_flexi,
             addTitleToCell: true,
-            dblClickResize: true,
-            searchbutton: true
+            dblClickResize: true
     });
 
     $('#policy_export').attr("href", '/system/getPolicy/policy.cfg?session=' + getsession());
