@@ -63,6 +63,32 @@ ArrayList chunk(ArrayList l, int n) {
 }
 
 
+/**
+ * Get all test files starting at the directory given as parameter as well as in
+ * every subdirectory by recursively descending into the directory tree.
+ *
+ * @param dir Directory to look for test files
+ * @param prefix Prefix to prepend to each test file found. This could i.e. be
+ *               part of the base directory's path
+ * @return ArrayList containing the names of the test files found
+ *
+ */
+ArrayList getTestFilesRecurse(File dir, String prefix) {
+    def testFilenames = []
+    def filesList = dir.listFiles()
+    for ( int i = 0; i < filesList.size(); i++ ) {
+        if ( filesList[i].isDirectory() ) {
+            testFilenames += getTestFilesRecurse(filesList[i], prefix + filesList[i].name + '/')
+        } else {
+            if ( filesList[i].name ==~ /test_.*\.py/ ) {
+                testFilenames << prefix + filesList[i].name
+            }
+        }
+    }
+    return testFilenames
+}
+
+
 /*
  * Define nodes lists and maps
  */
@@ -163,31 +189,8 @@ node('master') {
      * functionalDir.eachFileMatch FileType.FILES, ~/test_.*\.py/, {functionalList << it.name}
      * functionalSpecialDir.eachFileMatch FileType.FILES, ~/test_.*\.py/, {functionalSpecialList << it.name}
      */
-     /** This snippet is broken by a recent jenkins plugins upgrade (2016-09-12)
-    for ( f in functionalDir.listFiles() ) {
-        if ( f.name ==~ /test_.*\.py/ ) {
-            functionalList << 'linotp/tests/functional/' + f.name
-        }
-    }
-    for ( f in functionalSpecialDir.listFiles() ) {
-        if ( f.name ==~ /test_.*\.py/ ) {
-            functionalSpecialList << 'linotp/tests/functional_special/' + f.name
-        }
-    }
-    */
-    def functionalDirFiles = functionalDir.listFiles()
-    for (int i = 0; i < functionalDirFiles.size(); i++) {
-        if ( functionalDirFiles[i].name ==~ /test_.*\.py/ ) {
-            functionalList << 'linotp/tests/functional/' + functionalDirFiles[i].name
-        }
-    }
-    def functionalSpecialDirFiles = functionalSpecialDir.listFiles()
-    for (int i = 0; i < functionalSpecialDirFiles.size(); i++) {
-        if ( functionalSpecialDirFiles[i].name ==~ /test_.*\.py/ ) {
-            functionalSpecialList << 'linotp/tests/functional_special/' + functionalSpecialDirFiles[i].name
-        }
-    }
-
+    functionalList = getTestFilesRecurse(functionalDir, 'linotp/tests/functional/')
+    functionalSpecialList = getTestFilesRecurse(functionalSpecialDir, 'linotp/tests/functional_special/')
 
     /*
      * Shuffle functional tests. This is done to ensure that the tests are independent of each other
