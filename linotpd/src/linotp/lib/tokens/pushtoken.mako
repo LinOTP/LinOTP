@@ -92,7 +92,7 @@ function push_get_config_params(){
                     </label>
                 </td>
                 <td>
-                    <input type="number" name="qrconfig_challenge_timeout" id="qrconfig_challenge_timeout" class="required text ui-widget-content ui-corner-all">
+                    <input type="number" name="pushconfig_challenge_timeout" id="pushconfig_challenge_timeout" class="required text ui-widget-content ui-corner-all">
                 </td>
             </tr>
         </table>
@@ -315,68 +315,25 @@ function self_pushtoken_activate_get_challenge() {
     var pin = $('#activate_pushtoken_pin').val();
     var message = $('#activate_pushtoken_serial').val();
 
-    var targetselector = "#pushtoken_qr_code"
-
     var params = {};
     params['serial'] = serial;
     params['pass'] = pin;
     params['data'] = message;
-    params['qr'] = 'html';
 
     var url = '/validate/check_s';
 
     try {
         var data = clientUrlFetchSync(url, params);
-        if ( data.responseJSON !== undefined ) {
+        if ( data.responseJSON == undefined || data.responseJSON.result.status == false) {
             self_alert_box({'title':i18n.gettext("Token activation failed"),
                    'text': i18n.gettext("PushToken challenge for token activation could not be triggered."),
                    'escaped': true});
         } else {
-            data = data.responseText;
-            var img = $(data).find('#challenge_qrcode');
-            $(targetselector).html(img);
-
-            var lseqrurl = $(data).find('#challenge_qrcode').attr("alt");
-            lseqrurl = decodeURIComponent(lseqrurl);
-            $(targetselector).append("<p><a href=\"" + lseqrurl + "\">" + lseqrurl + "</a></p>");
-
-            pushtoken_activation_transactionid = $(data).find('#challenge_data .transactionid').text();
-
             self_pushtoken_activate_switch_phase("two");
         }
     } catch (e) {
         alert(e);
     }
-}
-
-function self_pushtoken_activate_submit_result() {
-    var otpvalue = $('#activate_pushtoken_otp_value').val();
-
-    var targetselector = "#pushtoken_qr_code"
-
-    var params = {};
-    params['transactionid'] = pushtoken_activation_transactionid;
-    params['pass'] = otpvalue;
-
-    var url = '/validate/check_t';
-
-    try {
-        var data = clientUrlFetchSync(url, params).responseJSON;
-
-        if ( data.result.status === false || data.result.value.value === false) {
-            self_alert_box({'title':i18n.gettext("PushToken Activation"),
-                   'text': i18n.gettext("PushToken activation failed."),
-                   'escaped': true});
-        } else {
-            self_alert_box({'title':i18n.gettext("PushToken Activation"),
-                   'text': i18n.gettext("PushToken successfully activated."),
-                   'escaped': true});
-        }
-        self_pushtoken_activate_switch_phase("one");
-    } catch (e) {
-        alert(e);
-    }
-    showTokenlist();
 }
 
 function self_pushtoken_activate_switch_phase(phase) {
@@ -421,32 +378,7 @@ function self_pushtoken_activate_switch_phase(phase) {
     </form>
 </div>
 <div id="activate_pushtoken_phase_two" class="activate_pushtoken_phase hidden">
-    <form class="cmxform" action="">
-        <table>
-            <tr>
-                <td>
-                    <h2>${_('Challenge triggered successfully')}</h2>
-                    <p>${_('Please scan the qr code and submit your response or enter the otp value in the form below.')}</p>
-                </td>
-                <td>
-                    <div id="pushtoken_qr_code" class="qrcode-inline"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>${_("OTP Value: ")}</td>
-                <td>
-                    <input type="text" class="ui-corner-all"
-                        id="activate_pushtoken_otp_value">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div id='qr2_activate'>
-                        <button class="action-button" id="button_activate_pushtoken_finish">${_("finalize activation")}</button>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </form>
+    <h2>${_('Challenge triggered successfully')}</h2>
+    <p>${_('A push notification has been sent. Please check your mobile phone.')}</p>
 </div>
 % endif
