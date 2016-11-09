@@ -603,7 +603,8 @@ class TestSelfserviceController(TestController):
                                         'type': 'googleauthenticator',
                                         'selftest_user': 'root@myDefRealm'
                                         })
-        self.assertTrue('"url": "otpauth://hotp/LSGO' in response, response)
+        self.assertTrue('"url": "otpauth://hotp/LinOTP:LSGO' in response,
+                        response)
 
         # test
         response = self.app.get(url(controller='admin', action='show'),

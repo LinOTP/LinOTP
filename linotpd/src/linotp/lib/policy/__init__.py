@@ -872,7 +872,7 @@ def get_tokenissuer(user="", realm="", serial=""):
 
     This function is used to create 'otpauth' tokens
     '''
-    tokenissuer = ""
+    tokenissuer = "LinOTP"
     client = _get_client()
     pol = get_client_policy(client, scope="enrollment",
                             realm=realm, user=user)
