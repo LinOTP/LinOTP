@@ -38,6 +38,7 @@ from linotp import __version__
 # Taken from kennethreitz/requests/setup.py
 package_directory = os.path.realpath(os.path.dirname(__file__))
 
+
 def get_file_contents(file_path):
     """Get the context of the file using full path name."""
     content = ""
@@ -47,6 +48,7 @@ def get_file_contents(file_path):
     except:
         print >> sys.stderr, "### could not open file: %r" % file_path
     return content
+
 
 def get_debian_package():
     """
@@ -84,6 +86,7 @@ setup(
         "qrcode>=2.4",
         "configobj>=4.6.0",
         "httplib2",
+        "requests",
         "pysodium>=0.6.8",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
