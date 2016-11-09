@@ -78,10 +78,10 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     #            ---------------------------------------------
     #  fields   | token type | user token id |   ...   | sign |
     #            ---------------------------------------------
-    #  size     |     1      |       2       |    ?    |  64  |
+    #  size     |     1      |       4       |    ?    |  64  |
     #            ---------------------------------------------
 
-    user_token_id = struct.unpack('<H', plaintext[1:3])[0]
+    user_token_id = struct.unpack('<I', plaintext[1:5])[0]
 
     # --------------------------------------------------------------------------
 
@@ -90,10 +90,10 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     #            ------------------------------------
     #  fields   | ... | user public key | ... | sign |
     #            ------------------------------------
-    #  size     |  3  |       32        |  ?  |  64  |
+    #  size     |  5  |       32        |  ?  |  64  |
     #            ------------------------------------
 
-    user_public_key = plaintext[3:3+32]
+    user_public_key = plaintext[5:5+32]
 
     # --------------------------------------------------------------------------
 
@@ -102,12 +102,12 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     #            ----------------------------------------------------------
     #  fields   | ... | serial | NUL | user login | NUL | gda | NUL | sign |
     #            ----------------------------------------------------------
-    #  size     | 35  |   ?    |  1  |     ?      |  1  |  ?  |  1  |  64  |
+    #  size     | 37  |   ?    |  1  |     ?      |  1  |  ?  |  1  |  64  |
     #            ----------------------------------------------------------
 
     # parse token_serial and user identification
 
-    str_parts = plaintext[3+32:-64].split(b'\x00')
+    str_parts = plaintext[5+32:-64].split(b'\x00')
 
     # enforce format
 

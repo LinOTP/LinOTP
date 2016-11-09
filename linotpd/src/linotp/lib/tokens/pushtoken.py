@@ -725,14 +725,14 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         #            ---------------------------------------------------
         #           |          header         |          body           |
         #            ---------------------------------------------------
-        #  size     |    1    |       2       |  32 |      ?     |  64  |
+        #  size     |    1    |       4       |  32 |      ?     |  64  |
         #            ---------------------------------------------------
         #
 
         # create header
 
         user_token_id = self.getFromTokenInfo('user_token_id')
-        data_header = struct.pack('<bH', CHALLENGE_URL_VERSION, user_token_id)
+        data_header = struct.pack('<bI', CHALLENGE_URL_VERSION, user_token_id)
 
         # ----------------------------------------------------------------------
 

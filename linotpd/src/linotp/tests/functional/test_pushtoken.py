@@ -465,8 +465,8 @@ class TestPushToken(TestController):
         # parse and verify header information in the
         # encrypted challenge data
 
-        header = challenge_data[0:3]
-        version, user_token_id = struct.unpack('<bH', header)
+        header = challenge_data[0:5]
+        version, user_token_id = struct.unpack('<bI', header)
         self.assertEqual(version, CHALLENGE_URL_VERSION)
 
         # ----------------------------------------------------------------------
@@ -481,8 +481,8 @@ class TestPushToken(TestController):
         # prepare decryption by seperating R from
         # ciphertext and server signature
 
-        R = challenge_data[3:3 + 32]
-        ciphertext = challenge_data[3 + 32:-64]
+        R = challenge_data[5:5 + 32]
+        ciphertext = challenge_data[5 + 32:-64]
         server_signature = challenge_data[-64:]
 
         # check signature
@@ -589,7 +589,7 @@ class TestPushToken(TestController):
         header = struct.pack('<bI', PAIR_RESPONSE_VERSION, partition)
 
         pairing_response = b''
-        pairing_response += struct.pack('<bH', TYPE_PUSHTOKEN, user_token_id)
+        pairing_response += struct.pack('<bI', TYPE_PUSHTOKEN, user_token_id)
 
         pairing_response += self.public_key
 
