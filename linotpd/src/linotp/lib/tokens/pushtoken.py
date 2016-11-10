@@ -299,10 +299,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         callback_url = get_single_auth_policy(callback_policy_name,
                                               user=owner, realms=realms)
 
-        # FIXME: what does get_single_auth_policy return
-        # is policy is not set? None? ''?
         if not callback_url:
-            callback_url = ''
+            raise Exception(_('Policy pushtoken_challenge_callback_url must '
+                              'have a value'))
 
         # ----------------------------------------------------------------------
 
@@ -379,7 +378,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # send the challenge_url to the push notification proxy
 
         token_info = self.getTokenInfo()
-        push_provider.push_notification(challenge_url, token_info)
+        gda = token_info['gda']
+        push_provider.push_notification(challenge_url, gda)
 
         # ----------------------------------------------------------------------
 
@@ -522,10 +522,10 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         """
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(['type', 'hashlib', 'serial',
-                                       '::scope::', 'key_size', 'user.login',
-                                       'description', 'user.realm', 'session',
-                                       'otplen', 'resConf', 'user', 'realm',
+        init_rollout_state_keys = set(['type', 'serial', '::scope::',
+                                       'user.login', 'description',
+                                       'user.realm', 'session', 'key_size',
+                                       'resConf', 'user', 'realm',
                                        'pin'])
 
         # ----------------------------------------------------------------------
