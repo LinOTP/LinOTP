@@ -1,3 +1,11 @@
+linotp (2.8.1.6-1) jessie; urgency=low
+
+  Bug Fixes:
+  * Server: In case of a matching PIN and wrong OTP, increment fail counters of
+    PIN-matching tokens only.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 10 Nov 2016 10:53:00 +0100
+
 linotp (2.8.1.5-1) jessie; urgency=low
 
   Bug Fixes:
