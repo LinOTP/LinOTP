@@ -917,15 +917,82 @@ class TestValidateController(TestController):
         # assure that we have at least one data row found
         self.assertGreater(len(data), 0, response)
 
-        # now check, if the FailCounter has incremented
+        # now check, if the FailCounter has incremented:
+        # -> if the 3. token has max fail of 10 it will become invalid
+        # -> thus there is no pin matching token any more and all
+        #    tokens are invalid and incremented!!
+        # => finally we have 2 tokens with FailCounter 9 and one with 19
+
         tokens = 0
-        for token_entry in data:
+        for token in data:
             tokens += 1
-            fail_count = token_entry.get('LinOtp.FailCount', 0)
-            self.assertEqual(fail_count, 19, response)
+            if token.get('LinOtp.TokenSerialnumber') == 'F722362':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 9)
+            if token.get('LinOtp.TokenSerialnumber') == 'F722363':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 9)
+            if token.get('LinOtp.TokenSerialnumber') == 'F722364':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 19)
 
         # check if we did see any token
         self.assertEqual(tokens, 3, response)
+
+        self.delete_token("F722364")
+        self.delete_token("F722363")
+        self.delete_token("F722362")
+
+    def test_check_failcounter(self):
+        '''
+        checking tokens with pin matching - wrong otp only increment these
+        '''
+        self.createToken()
+
+        # we change the pin of the 3. token to be different to the other ones
+        parameters = {"serial": "F722364", 'pin': 'Pin3!'}
+        response = self.app.get(url(controller='admin', action='set'),
+                                params=parameters)
+        self.assertTrue('"set pin": 1' in response, response)
+
+        parameters = {"user": "root", "pass": "pin123456"}
+        response = self.app.get(url(controller='validate', action='check'),
+                                params=parameters)
+        self.assertTrue('"value": false' in response, response)
+
+        parameters = {"user": "root"}
+        response = self.app.get(url(controller='admin', action='show'),
+                                params=parameters)
+
+        # check all 3 tokens - the last one is it
+        jresp = json.loads(response.body)
+        tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+
+        for token in tokens:
+            if token.get('LinOtp.TokenSerialnumber') == 'F722362':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 1)
+            if token.get('LinOtp.TokenSerialnumber') == 'F722363':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 1)
+            if token.get('LinOtp.TokenSerialnumber') == 'F722364':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
+
+        # check all 3 tokens - one of them matches an resets all fail counter
+        parameters = {"user": "root", "pass": "Pin3!280395"}
+        response = self.app.get(url(controller='validate', action='check'),
+                                params=parameters)
+        self.assertTrue('"value": true' in response, response)
+
+        parameters = {"user": "root"}
+        response = self.app.get(url(controller='admin', action='show'),
+                                params=parameters)
+
+        jresp = json.loads(response.body)
+        tokens = jresp.get('result', {}).get('value', {}).get('data', [])
+
+        for token in tokens:
+            if token.get('LinOtp.TokenSerialnumber') == 'F722362':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
+            if token.get('LinOtp.TokenSerialnumber') == 'F722363':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
+            if token.get('LinOtp.TokenSerialnumber') == 'F722364':
+                self.assertEqual(token.get('LinOtp.FailCount', -1), 0)
 
         self.delete_token("F722364")
         self.delete_token("F722363")
