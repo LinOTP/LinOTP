@@ -28,6 +28,7 @@ import os
 import json
 import struct
 import mock
+from tempfile import NamedTemporaryFile
 from collections import defaultdict
 from linotp.tests import TestController
 from linotp.lib.crypt import dsa_to_dh_public
@@ -40,7 +41,7 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
 from pysodium import crypto_sign_detached
 from pysodium import crypto_sign_verify_detached
-import linotp.provider.pushprovider.KeyIdentityPushProvider as default_provider
+import linotp.provider.pushprovider.default_push_provider as default_provider
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
@@ -102,12 +103,20 @@ class TestPushToken(TestController):
 
         # ----------------------------------------------------------------------
 
+        # we need a dummy file to sneak past the file existence check
+        # in the initial provider configuration
+
+        self.dummy_temp_cert = NamedTemporaryFile()
+
+        # ----------------------------------------------------------------------
+
         # make dummy provider config
 
         params = {'name': 'dummy_provider',
-                  'class': 'KeyIdentityPushProvider',
-                  'config': '{"push_url":"","access_certificate":"",'
-                            '"server_certificate":""}',
+                  'class': 'DefaultPushProvider',
+                  'config': '{"push_url":"","access_certificate":"%s",'
+                            '"server_certificate":""}'
+                            % self.dummy_temp_cert.name,
                   'timeout': '120',
                   'type': 'push'}
 
@@ -143,6 +152,12 @@ class TestPushToken(TestController):
                   'type': 'push'}
 
         self.make_system_request('delProvider', params=params)
+
+        # ----------------------------------------------------------------------
+
+        # delete temp file
+
+        self.dummy_temp_cert.close()
 
 # ------------------------------------------------------------------------------
 
@@ -667,7 +682,7 @@ class TestPushToken(TestController):
         # push_notification) to get the generated challenge_url passed
         # to it (which would normaly be sent over the PNP)
 
-        with mock.patch.object(default_provider.KeyIdentityPushProvider,
+        with mock.patch.object(default_provider.DefaultPushProvider,
                                'push_notification',
                                autospec=True) as mock_push_notification:
 
