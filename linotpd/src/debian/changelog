@@ -1,3 +1,14 @@
+linotp (2.9.0.4-1) jessie; urgency=low
+
+  Bug Fixes:
+  * Server: In case of a matching PIN and wrong OTP, increment fail counters of
+    PIN-matching tokens only
+  * Server: Fix maxtoken policy
+  * Server: Fix import of vasco tokens using transport encoding
+  * WebUI: Remove policy search bar
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 14 Nov 2016 16:56:24 +0100
+
 linotp (2.9.0.3-1) jessie; urgency=low
 
   Bug Fixes:
