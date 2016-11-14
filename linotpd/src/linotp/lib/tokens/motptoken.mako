@@ -107,7 +107,7 @@
                 <label for="motp_pin1">mOTP PIN</label>
             </td>
             <td>
-                <input onkeyup="checkpins('motp_pin1','motp_pin2');" autocomplete="off" type="password" name="motp_pin1" id="motp_pin1" value="" class="text ui-widget-content ui-corner-all" />
+                <input onkeyup="checkpins('#motp_pin1,#motp_pin2');" autocomplete="off" type="password" name="motp_pin1" id="motp_pin1" value="" class="text ui-widget-content ui-corner-all" />
             </td>
         </tr>
         <tr>
@@ -115,7 +115,7 @@
                 <label for="motp_pin2">${_("(again)")}</label>
             </td>
             <td>
-                <input onkeyup="checkpins('motp_pin1','motp_pin2');" autocomplete="off" type="password" name="motp_pin2" id="motp_pin2" value="" class="text ui-widget-content ui-corner-all" />
+                <input onkeyup="checkpins('#motp_pin1,#motp_pin2');" autocomplete="off" type="password" name="motp_pin2" id="motp_pin2" value="" class="text ui-widget-content ui-corner-all" />
             </td>
         </tr>
         <tr>
@@ -130,12 +130,12 @@
         <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
         <tr name='set_pin_rows'>
             <td class="description"><label for="motp_tokenpin1" id="motp_tokenpin1_label">${_("Enter PIN")}:</label></td>
-            <td><input type="password" autocomplete="off" onkeyup="checkpins('motp_tokenpin1','motp_tokenpin2');" name="pin1" id="motp_tokenpin1"
+            <td><input type="password" autocomplete="off" name="pin1" id="motp_tokenpin1"
                     class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr name='set_pin_rows'>
             <td class="description"><label for="motp_tokenpin2" id="motp_tokenpin2_label">${_("Confirm PIN")}:</label></td>
-            <td><input type="password" autocomplete="off" onkeyup="checkpins('motp_tokenpin1','motp_tokenpin2');" name="pin2" id="motp_tokenpin2"
+            <td><input type="password" autocomplete="off" name="pin2" id="motp_tokenpin2"
                     class="text ui-widget-content ui-corner-all" /></td
         </tr>
     </table>
@@ -206,7 +206,7 @@
                             <label for="motp_s_pin1">${_("mOTP PIN")}</label>
                         </td>
                         <td>
-                            <input autocomplete="off" type="password" onkeyup="checkpins('motp_s_pin1', 'motp_s_pin2');" id="motp_s_pin1" class="required text ui-widget-content ui-corner-all" />
+                            <input autocomplete="off" type="password" onkeyup="checkpins('#motp_s_pin1,#motp_s_pin2');" id="motp_s_pin1" class="required text ui-widget-content ui-corner-all" />
                         </td>
                     </tr>
                     <tr>
@@ -214,7 +214,7 @@
                             <label for="motp_s_pin2">${_("mOTP PIN (again)")}</label>
                         </td>
                         <td>
-                            <input autocomplete="off" type="password" onkeyup="checkpins('motp_s_pin1', 'motp_s_pin2');" id="motp_s_pin2" class="required text ui-widget-content ui-corner-all" />
+                            <input autocomplete="off" type="password" onkeyup="checkpins('#motp_s_pin1,#motp_s_pin2');" id="motp_s_pin2" class="required text ui-widget-content ui-corner-all" />
                         </td>
                     </tr>
                     <tr>

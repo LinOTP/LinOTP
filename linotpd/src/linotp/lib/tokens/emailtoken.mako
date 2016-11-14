@@ -82,12 +82,12 @@ function email_clear_input_fields() {
 </tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr  name='set_pin_rows'>
-    <td class="description"><label for="email_pin1" id="email_pin1_label">${_("Enter PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin1" id="email_pin1"
+    <td class="description"><label for="pin1" id="email_pin1_label">${_("Enter PIN")}:</label></td>
+    <td><input type="password" autocomplete="off" name="pin1" id="email_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr><tr name='set_pin_rows'>
-    <td class="description"><label for="email_pin2" id="email_pin2_label">${_("Confirm PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('email_pin1','email_pin2');" name="pin2" id="email_pin2"
+    <td class="description"><label for="pin2" id="email_pin2_label">${_("Confirm PIN")}:</label></td>
+    <td><input type="password" autocomplete="off" name="pin2" id="email_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 </tr>
 </table>
