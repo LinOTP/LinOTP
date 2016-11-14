@@ -195,7 +195,7 @@ function qr_clear_input_fields() {
     </tr>
     <tr class="space">
         <td>
-            <label for="qrtoken_pin1">${_("OTP Digits")}:</label>
+            <label for="qrtoken_otplength">${_("OTP Digits")}:</label>
         </td>
         <td>
             <select name="qrtoken_otplength" id="qrtoken_otplength">
@@ -212,18 +212,18 @@ function qr_clear_input_fields() {
     </tr>
     <tr class="qrtoken_pin_rows">
         <td class="description">
-            <label for="qrtoken_pin1">${_("Enter PIN")}:</label>
+            <label for="pin1">${_("Enter PIN")}:</label>
         </td>
         <td>
-            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text">
+            <input type="password" autocomplete="off" name="pin1" id="qrtoken_pin1" class="text">
         </td>
     </tr>
     <tr class="qrtoken_pin_rows">
         <td class="description">
-            <label for="qrtoken_pin2">${_("Confirm PIN")}:</label>
+            <label for="pin2">${_("Confirm PIN")}:</label>
         </td>
         <td>
-            <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text">
+            <input type="password" autocomplete="off" name="pin2" id="qrtoken_pin2" class="text">
         </td>
     </tr>
 </table>
@@ -309,18 +309,18 @@ $( document ).ready(function() {
             </tr>
             <tr>
                 <td class="description">
-                    <label for="qrtoken_pin1">${_("Enter PIN")}:</label>
+                    <label for="pin1">${_("Enter PIN")}:</label>
                 </td>
                 <td>
-                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin1" id="qrtoken_pin1" class="text">
+                    <input type="password" autocomplete="off" onkeyup="checkpins('#qrtoken_pin1,#qrtoken_pin2');" name="pin1" id="qrtoken_pin1" class="text">
                 </td>
             </tr>
             <tr>
                 <td class="description">
-                    <label for="qrtoken_pin2">${_("Confirm PIN")}:</label>
+                    <label for="pin2">${_("Confirm PIN")}:</label>
                 </td>
                 <td>
-                    <input type="password" autocomplete="off" onkeyup="checkpins('qrtoken_pin1','qrtoken_pin2');" name="qrtoken_pin2" id="qrtoken_pin2" class="text">
+                    <input type="password" autocomplete="off" onkeyup="checkpins('#qrtoken_pin1,#qrtoken_pin2');" name="pin2" id="qrtoken_pin2" class="text">
                 </td>
             </tr>
         </table>

@@ -38,11 +38,11 @@
         </tr>
         <tr>
         <td><label for=pin1>PIN</label></td>
-        <td><input autocomplete="off" type='password' onkeyup="checkpins('pin1', 'pin2');" id='pin1' class="text ui-widget-content ui-corner-all"></td>
+        <td><input autocomplete="off" type='password' onkeyup="checkpins('#pin1,#pin2');" name='pin1' id='pin1' class="text ui-widget-content ui-corner-all"></td>
         </tr>
         <tr>
         <td><label for=pin2>${_("repeat PIN")}</label></td>
-        <td><input autocomplete="off" type='password' onkeyup="checkpins('pin1', 'pin2');" id='pin2' class="text ui-widget-content ui-corner-all"></td>
+        <td><input autocomplete="off" type='password' onkeyup="checkpins('#pin1,#pin2');" name='pin2' id='pin2' class="text ui-widget-content ui-corner-all"></td>
         </tr>
         </table>
         <button class='action-button' id='button_setpin' onclick="setpin(); return false;">${_("set PIN")}</button>
