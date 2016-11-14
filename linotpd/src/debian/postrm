@@ -24,3 +24,4 @@ if [ "$1" = "purge" -a -e /usr/share/debconf/confmodule ]; then
 	mv -f /etc/linotp2/linotp.ini /etc/linotp2/linotp.ini.old
 fi
 
+#DEBHELPER#

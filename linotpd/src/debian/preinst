@@ -6,4 +6,4 @@ if [ "$1" = "upgrade" ]; then
 	touch /etc/linotp2/we_are_doing_an_upgrade
 fi
 
-exit 0
+#DEBHELPER#

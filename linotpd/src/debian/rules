@@ -1,11 +1,15 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
 
-DEB_PYTHON_SYSTEM := pysupport
+#export DH_VERBOSE = 1
+export PYBUILD_NAME=linotp
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/python-distutils.mk
+# LinOTP functional tests require special system setup
+export PYBUILD_DISABLE=test
 
-clean::
-	rm -rf build build-stamp configure-stamp build/ MANIFEST
+%:
+	dh $@ --with python2 --buildsystem=pybuild
+
+override_dh_clean:
 	dh_clean
+	debconf-updatepo
+

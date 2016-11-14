@@ -21,3 +21,5 @@ if [ "$RET" = "true" ]; then
 	invoke-rc.d apache2 reload
 fi
 
+#DEBHELPER#
+
