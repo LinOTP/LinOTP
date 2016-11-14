@@ -21,6 +21,7 @@ Depends: apache2,
          linotp-useridresolver (>=2.7~),
          python-pycryptodomex,
          python-pysodium,
+         python-requests,
          ${misc:Depends},
          ${python:Depends}
 Pre-Depends: adduser,
