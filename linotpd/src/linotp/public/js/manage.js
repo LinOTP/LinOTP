@@ -6074,22 +6074,25 @@ function check_for_selected_resolvers(){
 
 
 function resolver_set_ldap(obj) {
-    $('#ldap_uri').val(obj.result.value.data.LDAPURI);
-    $('#ldap_basedn').val(obj.result.value.data.LDAPBASE);
-    $('#ldap_binddn').val(obj.result.value.data.BINDDN);
-    $('#ldap_password').val(obj.result.value.data.BINDPW);
-    $('#ldap_timeout').val(obj.result.value.data.TIMEOUT);
-    $('#ldap_sizelimit').val(obj.result.value.data.SIZELIMIT);
-    $('#ldap_loginattr').val(obj.result.value.data.LOGINNAMEATTRIBUTE);
-    $('#ldap_searchfilter').val(obj.result.value.data.LDAPSEARCHFILTER);
-    $('#ldap_userfilter').val(obj.result.value.data.LDAPFILTER);
-    $('#ldap_mapping').val(obj.result.value.data.USERINFO);
-    $('#ldap_uidtype').val(obj.result.value.data.UIDTYPE);
-    $('#ldap_certificate').val(obj.result.value.data.CACERTIFICATE);
-    $('#ldap_noreferrals').val(obj.result.value.data.NOREFERRALS);
 
-    // get the configuration value of the enforce TLS and adjust the checkbox
-    var checked = obj.result.value.data.EnforceTLS.toLowerCase() == "true";
+    var data = obj.result.value.data;
+
+    $('#ldap_uri').val(data.LDAPURI);
+    $('#ldap_basedn').val(data.LDAPBASE);
+    $('#ldap_binddn').val(data.BINDDN);
+    $('#ldap_password').val(data.BINDPW);
+    $('#ldap_timeout').val(data.TIMEOUT);
+    $('#ldap_sizelimit').val(data.SIZELIMIT);
+    $('#ldap_loginattr').val(data.LOGINNAMEATTRIBUTE);
+    $('#ldap_searchfilter').val(data.LDAPSEARCHFILTER);
+    $('#ldap_userfilter').val(data.LDAPFILTER);
+    $('#ldap_mapping').val(data.USERINFO);
+    $('#ldap_uidtype').val(data.UIDTYPE);
+    $('#ldap_certificate').val(data.CACERTIFICATE);
+    $('#ldap_noreferrals').val(data.NOREFERRALS);
+
+    // get the configuration value of the enforce TLS (if exists) and adjust the checkbox
+    var checked = !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true";
     $('#ldap_enforce_tls').prop('checked', checked);
 
     ldap_resolver_ldaps();
