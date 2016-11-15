@@ -3044,7 +3044,7 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
     # 2. Within those policies select the policy with the user.
     #     if there is a policy with this very user, return only
     #     these policies, otherwise return all policies
-
+    exact_matched_policies = {}
     matched_policies = {}
     default_policies = {}
     ext_policies = {}
@@ -3062,13 +3062,19 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
             default_policies[polname] = pol
             continue
 
-        if user in policy_users or '*' in policy_users:
+        if '*' not in policy_users and user in policy_users:
+            log.debug("adding %s to own_policies", polname)
+            exact_matched_policies[polname] = pol
+        elif '*' in policy_users:
             log.debug("adding %s to own_policies", polname)
             matched_policies[polname] = pol
         else:
             log.debug("policy %s contains only users (%s) other than %s",
                       polname, policy_users, user)
             ext_policies[polname] = pol
+
+    if exact_matched_policies:
+        return exact_matched_policies
 
     if matched_policies:
         return matched_policies
