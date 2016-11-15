@@ -820,9 +820,6 @@ class ValidateController(BaseController):
 
             # ------------------------------------------------------------------
 
-            if token.type != 'qr':
-                raise Exception('Pairing is only implemented for the qrtoken')
-
             if token.type != token_type:
                 raise Exception('Serial in pairing response doesn\'t match '
                                 'supplied token_type')

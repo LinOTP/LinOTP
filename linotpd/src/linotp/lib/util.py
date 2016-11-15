@@ -42,6 +42,7 @@ from linotp.lib.crypt import (urandom,
 
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.error import ParameterError
+from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.config import getFromConfig
 
 from linotp import (__version__ as linotp_version,
@@ -491,3 +492,33 @@ def parse_duration(duration_str):
             time_params[name] = int(param)
 
     return timedelta(**time_params)
+
+def int_from_bytes(bytes_, byteorder='little'):
+
+    """
+    converts bytes to an integer
+
+    :param bytes_: The bytes, that should be converted
+    :param byteorder: 'little' for little endian (default)
+        or 'big' for big endian
+    """
+
+    if byteorder not in ['little', 'big']:
+        raise InvalidFunctionParameter('byteorder', 'byte order can only '
+                                       'be \'little\' or \'big\'')
+
+    order = -1 if byteorder == 'little' else 1
+
+    # we calculate the result by interpreting data as coefficients of the
+    # polynomial
+    #
+    #   p(X) := data[15] * X^15  + ... + data[1] * X + data[0]
+    #
+    # and evulating p(2^8) using horner's scheme.
+
+    res = 0
+    for byte in bytes_[::order]:
+        res *= 256
+        res += ord(byte)
+
+    return res
