@@ -29,6 +29,7 @@
   * the jquery selector or object and visualizes the result
   * via ui-state-error class
   * @param {Object|string} pin_inputs - an selector or jQuery object referencing all inputs to compare
+  * @returns Boolean
   */
 function checkpins(pin_inputs){
     var pins = $(pin_inputs)
@@ -36,9 +37,11 @@ function checkpins(pin_inputs){
 
     if(array_entries_equal(pins)) {
         $(pin_inputs).removeClass('ui-state-error');
+        return true;
     }
     else {
         $(pin_inputs).addClass('ui-state-error');
+        return false;
     }
 }
 
