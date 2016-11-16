@@ -845,24 +845,36 @@ syst></textarea></td>
         <div><input id='setpin_tokens' type='hidden'></div>
         <fieldset>
             <table>
-                <tr><td>
-                <label for="pintype">${_("PIN type")}</label>
-                </td><td>
-                <select name="pintype" id="pintype">
-                <option value="motp">mOTP PIN</option>
-                <option value="ocra">OCRA PIN</option>
-                <option selected value="otp">OTP PIN</option>
-                </select>
-                </td></tr><tr><td>
-                <label for="pin1">PIN</label>
-                </td><td>
-                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin1" id="pin1"
-                    class="text ui-widget-content ui-corner-all">
-                </td></tr><tr><td>
-                <label for="pin2">${_("PIN (again)")}</label>
-                </td><td>
-                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin2" id="pin2" class="text ui-widget-content ui-corner-all">
-                </td></tr>
+                <tr>
+                    <td>
+                        <label for="pintype">${_("PIN type")}</label>
+                    </td>
+                    <td>
+                        <select name="pintype" id="pintype">
+                            <option value="motp">mOTP PIN</option>
+                            <option value="ocra">OCRA PIN</option>
+                            <option selected value="otp">OTP PIN</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="pin1">PIN</label>
+                    </td>
+                    <td>
+                        <input type="password" autocomplete="off" onkeyup="checkpins('#pin1,#pin2');" name="pin1" id="pin1"
+                            class="text ui-widget-content ui-corner-all">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="pin2">${_("PIN (again)")}</label>
+                    </td>
+                    <td>
+                        <input type="password" autocomplete="off" onkeyup="checkpins('#pin1,#pin2');" name="pin2" id="pin2"
+                            class="text ui-widget-content ui-corner-all">
+                    </td>
+                </tr>
             </table>
         </fieldset>
     </form>
@@ -902,7 +914,6 @@ syst></textarea></td>
                 "you need to select only one user.  Anyhow, you can assign this token to any user later on.")}
         </p>
     </div>
-    <script type="text/javascript">tokentype_changed();</script>
     <form id="form_enroll_token" action="">
         <fieldset>
             <table>
@@ -920,7 +931,7 @@ syst></textarea></td>
                     </select>
                 </td></tr>
             </table>
-            <div id="token_enroll_ocra">
+            <div class="token_enroll_frame" id="token_enroll_ocra">
                 <hr>
                 <p><span id='ocra_key_intro'>
                     ${_("Please enter or copy the OCRA key.")}</span></p>
@@ -933,19 +944,19 @@ syst></textarea></td>
                 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
                 <tr name="set_pin_rows">
                     <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
-                    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
+                    <td><input type="password" autocomplete="off" name="pin1" id="ocra_pin1"
                             class="text ui-widget-content ui-corner-all"></td>
                 </tr>
                 <tr name="set_pin_rows" >
                     <td class="description"><label for="ocra_pin2" id="ocra_pin2_label">${_("confirm PIN")}:</label></td>
-                    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin2" id="ocra_pin2"
-                            class="text ui-widget-content ui-corner-all"></td>
+                    <td><input type="password" autocomplete="off" name="pin2" id="ocra_pin2"
+                            class="text ui-widget-content ui-corner-all"></td
                 </tr>
                 </table>
             </div>
 
             %for tok in c.token_enroll_div:
-             <div id="token_enroll_${tok}">${c.token_enroll_div[tok] |n}</div>
+             <div class="token_enroll_frame" id="token_enroll_${tok}">${c.token_enroll_div[tok] |n}</div>
             %endfor
 
         </fieldset>

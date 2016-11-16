@@ -298,12 +298,12 @@ $("#form_enroll_token").validate({
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 	<tr name="set_pin_rows">
     <td class="description"><label for="remote_pin1" id="remote_pin1_label">${_("Enter PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('remote_pin1','remote_pin2');" name="pin1" id="remote_pin1"
+    <td><input type="password" autocomplete="off" name="pin1" id="remote_pin1"
             class="text ui-widget-content ui-corner-all"></td>
 	</tr>
 	<tr name="set_pin_rows">
     <td class="description"><label for="remote_pin2" id="remote_pin2_label">${_("Confirm PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('remote_pin1','remote_pin2');" name="pin2" id="remote_pin2"
+    <td><input type="password" autocomplete="off" name="pin2" id="remote_pin2"
             class="text ui-widget-content ui-corner-all"></td>
 	</tr></table>
 
