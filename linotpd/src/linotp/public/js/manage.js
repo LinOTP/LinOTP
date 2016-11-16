@@ -1289,11 +1289,21 @@ function setpin_callback(xhdr, textStatus) {
         }
 }
 
+/**
+ * token_setpin is used to process the "set pin" dialog in the token view
+ * @returns {Boolean} whether the inputs are valid and the request was processed
+ **/
 function token_setpin(){
     var token_string = $('#setpin_tokens').val();
     var tokens = token_string.split(",");
     var count = tokens.length;
     var pin = $('#pin1').val();
+    var pin2 = $('#pin2').val();
+
+    if(pin !== pin2) {
+        throw "PinMatchError";
+    }
+
     var pintype = $('#pintype').val();
 
     for ( i = 0; i < count; i++) {
@@ -1310,7 +1320,7 @@ function token_setpin(){
                              'type': ERROR,
                              'is_escaped': true});
     }
-
+    return true;
 }
 
 function view_setpin_dialog(tokens) {
@@ -5277,20 +5287,30 @@ $(document).ready(function(){
         width: 400,
         modal: true,
         buttons: {
-            'Set PIN': {click: function(){
-                token_setpin();
-                $(this).dialog('close');
+            'Set PIN': {
+                click: function(){
+                    try {
+                        token_setpin();
+                        $(this).dialog('close');
+                    }
+                    catch (e) {
+                        alert_box({'title': i18n.gettext('Failed to set PIN'),
+                           'text': i18n.gettext('The entered PINs do not match!'),
+                           'type': ERROR,
+                           'is_escaped': true});
+                    }
                 },
                 id: "button_setpin_setpin",
                 text: "Set PIN"
-                },
-            Cancel: { click: function(){
-                $(this).effect('puff');
-                $(this).dialog('close');
+            },
+            'Cancel': {
+                click: function(){
+                    $(this).effect('puff');
+                    $(this).dialog('close');
                 },
                 id: "button_setpin_cancel",
                 text: "Cancel"
-                }
+            }
         },
         open: function() {
             translate_set_pin();
