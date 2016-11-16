@@ -29,7 +29,6 @@ admin controller - interfaces to administrate LinOTP
 """
 
 import logging
-import json
 
 from pylons import request, response, config, tmpl_context as c
 
@@ -2521,38 +2520,4 @@ class AdminController(BaseController):
             log.debug('[ocra/checkstatus] done')
 
 
-def iterate_users(user_iterators):
-    """
-    build a userlist iterator / generator that returns the user data on demand
-
-    :param user_iterators: list of tuple (userlist iterators, resolver descr)
-    :return: generator of user data dicts (yield)
-    """
-
-    for itera in user_iterators:
-        user_iterator = itera[0]
-        reso = itera[1]
-        log.debug("iterating: %r" % reso)
-
-        try:
-            while True:
-                user_data = user_iterator.next()
-                if type(user_data) in [list]:
-                    for data in user_data:
-                        data['resolver'] = reso
-                        resp = "%s" % json.dumps(data)
-                        yield resp
-                else:
-                    user_data['resolver'] = reso
-                    resp = "%s" % json.dumps(user_data)
-                    yield resp
-        except StopIteration as exx:
-            # pass on to next iterator
-            pass
-        except Exception as exx:
-            log.exception("Problem during iteration of userlist iterators: %r"
-                       % exx)
-
-    raise StopIteration()
-
-#eof###########################################################################
+# eof ########################################################################

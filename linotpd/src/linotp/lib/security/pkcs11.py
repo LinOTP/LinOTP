@@ -43,7 +43,7 @@
 
 """
 
-from linotp.lib.security import SecurityModule
+from linotp.lib.security.default import DefaultSecurityModule
 
 from ctypes import *
 import string
