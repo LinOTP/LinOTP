@@ -1454,21 +1454,35 @@ class TestQRToken(TestController):
     def test_challenge_response_serial_signature(self):
         """ QRTOKEN: Executing complete challenge response with serial/sig """
 
-        self.execute_correct_serial_challenge()
+        self.execute_correct_serial_challenge(QRTOKEN_CT_FREE)
+
+# ------------------------------------------------------------------------------
+
+    def test_challenge_response_serial_signature_login(self):
+        """ QRTOKEN: Executing complete login flow with serial/sig """
+
+        self.execute_correct_serial_challenge(QRTOKEN_CT_AUTH)
 
 # ------------------------------------------------------------------------------
 
     def test_challenge_response_serial_tan(self):
         """ QRTOKEN: Executing complete challenge response with serial/tan """
 
-        self.execute_correct_serial_challenge(use_tan=True)
+        self.execute_correct_serial_challenge(QRTOKEN_CT_FREE, use_tan=True)
+
+# ------------------------------------------------------------------------------
+
+    def test_challenge_response_serial_tan_login(self):
+        """ QRTOKEN: Executing complete login flow with serial/tan """
+
+        self.execute_correct_serial_challenge(QRTOKEN_CT_AUTH, use_tan=True)
 
 # ------------------------------------------------------------------------------
 
     def test_wrong_serial_challenge_response(self):
         """ QRTOKEN: Sending a wrong challenge response on token (serial) """
 
-        challenge_url = self.trigger_challenge_by_serial()
+        challenge_url = self.trigger_challenge_by_serial(QRTOKEN_CT_FREE)
 
         # ----------------------------------------------------------------------
 
@@ -1497,7 +1511,7 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def trigger_challenge_by_serial(self):
+    def trigger_challenge_by_serial(self, content_type):
 
         user_token_id = self.execute_correct_pairing()
 
@@ -1509,7 +1523,12 @@ class TestQRToken(TestController):
 
         params = {'serial': serial,
                   'pass': pin,
-                  'data': 'Herzlichen Glückwunsch zum Kauf einer Waschmaschine'}
+                  'content_type': content_type}
+
+        if content_type == QRTOKEN_CT_FREE:
+            params['data'] = '5 million dollar sheeeeesh'
+        elif content_type == QRTOKEN_CT_AUTH:
+            params['data'] = 'root@localhost'
 
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
@@ -1881,9 +1900,9 @@ class TestQRToken(TestController):
 
 # ------------------------------------------------------------------------------
 
-    def execute_correct_serial_challenge(self, use_tan=False):
+    def execute_correct_serial_challenge(self, content_type, use_tan=False):
 
-        challenge_url = self.trigger_challenge_by_serial()
+        challenge_url = self.trigger_challenge_by_serial(content_type)
 
         # ----------------------------------------------------------------------
 
@@ -1893,8 +1912,8 @@ class TestQRToken(TestController):
 
         # check if the content type is right
 
-        content_type = challenge['content_type']
-        self.assertEqual(content_type, QRTOKEN_CT_FREE)
+        returned_content_type = challenge['content_type']
+        self.assertEqual(returned_content_type, content_type)
 
         # ----------------------------------------------------------------------
 

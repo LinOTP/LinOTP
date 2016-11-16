@@ -847,12 +847,28 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         valid_states = ['pairing_response_received', 'pairing_complete']
         self.ensure_state_is_in(valid_states)
 
+        # ----------------------------------------------------------------------
+
         if self.current_state == 'pairing_response_received':
             content_type = CONTENT_TYPE_PAIRING
             reset_url = True
         else:
-            content_type = options.get('content_type')
+
+            content_type_as_str = options.get('content_type')
             reset_url = False
+
+            if content_type_as_str is None:
+                content_type = None
+            else:
+                try:
+                    # pylons silently converts all ints in json
+                    # to unicode :(
+                    content_type = int(content_type_as_str)
+                except:
+                    raise ValueError('Unrecognized content type: %s'
+                                     % content_type_as_str)
+
+        # ----------------------------------------------------------------------
 
         message = options.get('data')
 
