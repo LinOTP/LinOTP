@@ -108,6 +108,11 @@ if isinstance(lang, list):
 </head>
 <body>
 
+<noscript>
+    <div class="javascript_error">${_("You need to enable Javascript to use the LinOTP Management Web UI.")}</div>
+    <style type="text/css">#wrap{display:none;}</style>
+</noscript>
+
 <div id="wrap">
 <div id="header" class="ui-widget-header ui-corner-all">
     <ul id='menu' class='sf-menu sf-vertical'>
@@ -163,10 +168,6 @@ if isinstance(lang, list):
     <div id="login-status">${_("Logged in as")}: ${c.admin} | <a href="#" onclick='Logout("${c.logout_url}");return false;' >${_("Logout")}</a>
     </div>
 </div>
-<div class="javascript_error" id="javascript_error">
-    ${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
-</div>
-
 <div class="clearfix">
 <div id="sidebar">
     <div class="sel_box">

@@ -57,14 +57,16 @@
 	<%block name="title"/>
 </head>
 <body>
+
+	<noscript>
+		<div class="javascript_error">${_("You need to enable Javascript to use the authentication forms.")}</div>
+		<style type="text/css">#wrap{display:none;}</style>
+	</noscript>
+
 	<div id="wrap">
 	<div id="header">
         <span class="portalname float_left">${_("Authentication")}</span>
 	    <div id="logo" class="float_right"> </div>
-	</div>
-
-	<div class="javascript_error" id="javascript_error">
-	    ${_("You need to enable Javascript to use the authentication forms.")}
 	</div>
 
 	${self.body()}

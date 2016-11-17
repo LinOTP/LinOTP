@@ -3608,9 +3608,6 @@ $(document).ready(function(){
 
     var server_config = get_server_config();
 
-    // hide the javascrip message
-    $('#javascript_error').hide();
-
     $("button").button();
 
     // install handler for https certificate entry field

@@ -234,7 +234,6 @@ function login_user(column) {
 
 $(document).ready(function() {
 
-    $('#javascript_error').hide();
     $("button").button();
 
     /*
