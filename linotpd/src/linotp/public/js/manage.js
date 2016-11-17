@@ -1551,8 +1551,19 @@ function _extract_tab_content(theDetail, k) {
     return dia_text;
 }
 
+/**
+ * @throws {PinMatchError} token pins must match
+ */
 function token_enroll(){
     check_license();
+
+    // stop here if pins do not match
+    var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"],' +
+                       '.token_enroll_frame.active-frame [name="pin2"]');
+    if(!checkpins(pin_inputs)) {
+        throw "PinMatchError";
+    }
+
     var users = get_selected_user();
     var url = '/admin/init';
     var params = {};
@@ -1616,7 +1627,7 @@ function token_enroll(){
         g.enroll_display_qrcodes = true;
     }
     clientUrlFetch(url, params, enroll_callback, serial);
-
+    return true;
 }
 
 function get_enroll_infotext(){
@@ -1670,13 +1681,13 @@ function tokentype_changed(){
             }
         }
 
-        // enable visual pin validation
-        var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"], .token_enroll_frame.active-frame [name="pin2"]');
+        // enable visual pin validation and trigger it for the first time
+        var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"],' +
+                           '.token_enroll_frame.active-frame [name="pin2"]');
 
         pin_inputs.on('change keyup', function(e) {
             checkpins(pin_inputs);
-        });
-
+        }).change();
     }
     catch(err) {
         alert_box({'title': i18n.gettext('unknown token type'),
@@ -4977,8 +4988,16 @@ $(document).ready(function(){
         buttons: {
             'Enroll': {
                 click: function(){
-                    token_enroll();
-                    $(this).dialog('close');
+                    try {
+                        token_enroll();
+                        $(this).dialog('close');
+                    }
+                    catch(e) {
+                        alert_box({'title': i18n.gettext('Failed to enroll token'),
+                                   'text': i18n.gettext('The entered PINs do not match!'),
+                                   'type': ERROR,
+                                   'is_escaped': true});
+                    }
                 },
                 id: "button_enroll_enroll",
                 text: "Enroll"
