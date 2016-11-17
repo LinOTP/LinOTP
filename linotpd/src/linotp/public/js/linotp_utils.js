@@ -103,16 +103,10 @@ function cb_changed_deactivate(checkbox_id,arry){
 
 function show_waiting() {
     $('#do_waiting').show();
-    //$('#statusline').show();
-    //var milliseconds = (new Date()).getTime();
-    //console.log("show: " +milliseconds);
 }
 
 function hide_waiting() {
     $("#do_waiting").hide();
-    //$('#statusline').hide();
-    //var milliseconds = (new Date()).getTime();
-    //console.log("hide: " +milliseconds);
 }
 
 function getcookie(search_key) {
