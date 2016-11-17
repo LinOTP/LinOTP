@@ -1641,59 +1641,48 @@ function get_enroll_infotext(){
 
 function tokentype_changed(){
     var $tokentype = $("#tokentype").val();
-    var html = "unknown tokentype!";
 
     // might raise an error, which must be catched by the caller
     $systemConfig = get_server_config();
 
-    // verify that the tokentypes is a defined dict
-    if ($tokentypes == undefined) {
-        $tokentypes = {};
-    }
+    try{
+        $('.token_enroll_frame').not('#token_enroll_' + $tokentype).removeClass('active-frame').hide();
+        $('#token_enroll_' + $tokentype).addClass('active-frame').show();
 
-    if (len($tokentypes) > 0) {
-        for (var k in $tokentypes){
-            var tt = '#token_enroll_'+k;
-            //console_log(tt);
-            $(tt).hide();
-        }
-    }
-
-    $('#token_enroll_ocra').hide();
-
-    switch ($tokentype) {
-        case "ocra":
-            $('#token_enroll_ocra').show();
-            break;
-        case undefined:
-            break;
-        default:
-            // call the setup default method for the token enrollment, before shown
+        if($tokentype !== "ocra") {
             var functionString = ''+$tokentype+'_enroll_setup_defaults';
             var funct = window[functionString];
             var exi = typeof funct;
-            try{
-                if (exi == 'function') {
-                    var rand_pin = 0;
-                    var options = {};
-                    var selected_users = get_selected_user();
-                    if (selected_users.length == 1) {
-                        var policy_def = {'scope':'enrollment',
-                                      'action': 'otp_pin_random'};
-                        policy_def['realm'] = selected_users[0].realm;
-                        policy_def['user']  = selected_users[0].login;
-                        rand_pin = get_policy(policy_def).length;
-                        options = {'otp_pin_random':rand_pin}
-                    }
-                    var l_params = window[functionString]($systemConfig, options);
-                }
-            }
-            catch(err) {
-                //console_log('callbacack for ' + functionString + ' not found!')
-            }
 
-            $('#token_enroll_'+$tokentype).show();
-            break;
+            if (exi == 'function') {
+                var rand_pin = 0;
+                var options = {};
+                var selected_users = get_selected_user();
+                if (selected_users.length == 1) {
+                    var policy_def = {'scope':'enrollment',
+                                  'action': 'otp_pin_random'};
+                    policy_def['realm'] = selected_users[0].realm;
+                    policy_def['user']  = selected_users[0].login;
+                    rand_pin = get_policy(policy_def).length;
+                    options = {'otp_pin_random':rand_pin}
+                }
+                var l_params = window[functionString]($systemConfig, options);
+            }
+        }
+
+        // enable visual pin validation
+        var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"], .token_enroll_frame.active-frame [name="pin2"]');
+
+        pin_inputs.on('change keyup', function(e) {
+            checkpins(pin_inputs);
+        });
+
+    }
+    catch(err) {
+        alert_box({'title': i18n.gettext('unknown token type'),
+            'text': i18n.gettext('Error during token type change processing for type "' + $tokentype + '".<br><pre>' + err + "</pre>"),
+            'type': ERROR,
+            'is_escaped': true});
     }
 }
 
@@ -3000,22 +2989,6 @@ function resolver_edit_type(){
 function resolver_new_type(){
     check_license();
     $dialog_ask_new_resolvertype.dialog('open');
-}
-
-function add_token_config()
-{
-
-    if ($tokentypes == undefined) {
-        $tokentypes = {};
-    }
-
-    if (len($tokentypes) > 0) {
-        for (var k in $tokentypes){
-            var tt = '#token_enroll_'+k;
-            //console_log(tt);
-            $(tt).hide();
-        }
-    }
 }
 
 function set_tokeninfo_buttons(){
@@ -4994,6 +4967,7 @@ $(document).ready(function(){
 
         return false;
     }
+
     var $dialog_enroll_token = $('#dialog_token_enroll').dialog({
         autoOpen: false,
         title: 'Enroll Token',
@@ -5001,19 +4975,21 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Enroll': {click: function(){
-                token_enroll();
-                $(this).dialog('close');
+            'Enroll': {
+                click: function(){
+                    token_enroll();
+                    $(this).dialog('close');
                 },
                 id: "button_enroll_enroll",
                 text: "Enroll"
-                },
-            Cancel: { click: function(){
-                $(this).dialog('close');
+            },
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_enroll_cancel",
                 text: "Cancel"
-                }
+            }
         },
         open: do_dialog_icons
     });

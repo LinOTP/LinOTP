@@ -23,22 +23,44 @@
  *    Support: www.lsexperts.de
  *
  */
-function checkpins(otp_pin1,otp_pin2){
-/*
- *  check pins: verifies, that the pins in both
- *  referenced entries are equal
- */
-    var pin1 = $('#'+otp_pin1).val();
-    var pin2 = $('#'+otp_pin2).val();
-    if (pin1 == pin2) {
-        $('#'+otp_pin1).removeClass('ui-state-error');
-        $('#'+otp_pin2).removeClass('ui-state-error');
+
+ /**
+  * checkpins compares the values of the inputs given via
+  * the jquery selector or object and visualizes the result
+  * via ui-state-error class
+  * @param {Object|string} pin_inputs - an selector or jQuery object referencing all inputs to compare
+  */
+function checkpins(pin_inputs){
+    var pins = $(pin_inputs)
+        .map(function(){return $(this).val();}).get();
+
+    if(array_entries_equal(pins)) {
+        $(pin_inputs).removeClass('ui-state-error');
     }
     else {
-        $('#'+otp_pin1).addClass('ui-state-error');
-        $('#'+otp_pin2).addClass('ui-state-error');
+        $(pin_inputs).addClass('ui-state-error');
     }
-    return false;
+}
+
+/**
+ * array_entries_equal returns true if all entries of 'array' are equal
+ * @oaram {Array} array - the unit under test
+ * @return {Boolean}
+ */
+function array_entries_equal(array) {
+
+    if(!$.isArray(array)) {
+        throw "array_entries_equal expects an array as param";
+    }
+
+    if(array.length > 1) {
+        for(var i = 1; i < array.length; i++) {
+            if(array[i] !== array[0]) {
+                return false;
+            }
+        }
+    }
+    return true
 }
 
 function cb_changed(checkbox_id,arry){

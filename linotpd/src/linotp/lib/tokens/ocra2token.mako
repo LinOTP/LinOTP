@@ -178,12 +178,12 @@ function ocra2_clear_input_fields() {
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="ocra2_pin1" id="ocra2_pin1_label">${_("Enter PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin1" id="ocra2_pin1"
+    <td><input type="password" autocomplete="off" name="pin1" id="ocra2_pin1"
             class="text ui-widget-content ui-corner-all" /></td>
 </tr>
 <tr name="set_pin_rows">
     <td class="description"><label for="ocra2_pin2" id="ocra2_pin2_label">${_("Confirm PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra2_pin1','ocra2_pin2');" name="pin2" id="ocra2_pin2"
+    <td><input type="password" autocomplete="off" name="pin2" id="ocra2_pin2"
             class="text ui-widget-content ui-corner-all" /></td
 </tr>
 
