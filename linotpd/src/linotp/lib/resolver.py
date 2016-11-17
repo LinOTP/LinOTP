@@ -290,13 +290,6 @@ def getResolverInfo(resolvername):
 
         for typ in resolvertypes:
 
-            # get the typed values of the descriptor!
-            resolver_conf = get_resolver_class_config(typ)
-            if typ in resolver_conf:
-                descr = resolver_conf.get(typ).get('config', {})
-            else:
-                descr = resolver_conf
-
             if entry.startswith("linotp." + typ) and entry.endswith(resolvername):
                 # the realm might contain dots "."
                 # so take all after the 3rd dot for realm
@@ -304,6 +297,13 @@ def getResolverInfo(resolvername):
                 # An old entry without resolver name
                 if len(resolver) <= 3:
                     break
+
+                # get the typed values of the descriptor!
+                resolver_conf = get_resolver_class_config(typ)
+                if typ in resolver_conf:
+                    descr = resolver_conf.get(typ).get('config', {})
+                else:
+                    descr = resolver_conf
 
                 value = conf.get(entry)
                 if resolver[2] in descr:
