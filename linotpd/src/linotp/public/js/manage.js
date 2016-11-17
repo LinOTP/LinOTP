@@ -1276,18 +1276,18 @@ function setpin_callback(xhdr, textStatus) {
 
 /**
  * token_setpin is used to process the "set pin" dialog in the token view
- * @returns {Boolean} whether the inputs are valid and the request was processed
+ * @throws {PinMatchError} both entered pins must be equal
  **/
 function token_setpin(){
     var token_string = $('#setpin_tokens').val();
     var tokens = token_string.split(",");
     var count = tokens.length;
-    var pin = $('#pin1').val();
-    var pin2 = $('#pin2').val();
 
-    if(pin !== pin2) {
+    if(!checkpins('#pin1, #pin2')) {
         throw "PinMatchError";
     }
+
+    var pin = $('#pin1').val();
 
     var pintype = $('#pintype').val();
 
