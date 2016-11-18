@@ -35,15 +35,33 @@ from linotp.lib.crypt import encryptPassword
 from linotp.lib.error import ConfigAdminError
 from linotp.model import Config
 from linotp.model.meta import Session
+
+
+from linotp.lib.text_utils import UTF8_MAX_BYTES
+from linotp.lib.text_utils import simple_slice
+from linotp.lib.text_utils import utf8_slice
+
 import logging
 import os
 import time
 
 from pylons import tmpl_context as c
 
+import linotp.model.meta
+
+Session = linotp.model.meta.Session
+
 
 ENCODING = 'utf-8'
-MAX_VALUE_LEN = 2000
+
+#
+# MAX_VALUE_LEN defines the max len before we split the config entries into
+#  continuous config entries blocks.
+#
+
+
+MAX_VALUE_LEN = 2000 - UTF8_MAX_BYTES
+
 
 log = logging.getLogger(__name__)
 
@@ -460,6 +478,7 @@ def _getConfigFromEnv():
     return linotpConfig
 
 
+
 def _storeConfigDB(key, val, typ=None, desc=None):
     """
     insert or update the entry with  key, value, type and
@@ -487,9 +506,6 @@ def _storeConfigDB(key, val, typ=None, desc=None):
 
     # for strings or unicode, we support continued entries
     # check if we have to split the value
-    number_of_chunks = (len(value) / MAX_VALUE_LEN)
-    if number_of_chunks == 0:
-        return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
 
     # the continuous type is a split over multiple entries:
     # * every entry will have an enumerated key but the first one which has the
@@ -499,9 +515,35 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     # * For description all entries contains the enumeration, but the last the
     #   original description
 
-    for i in range(number_of_chunks + 1):
-        # iterate through the chunks, the last one might be empty though
-        cont_value = value[i * MAX_VALUE_LEN: (i + 1) * MAX_VALUE_LEN]
+    #
+    # we check the split algorithm depending on the value data -
+    # in case of only ascii, we can use the much faster simple algorithm
+    # in case of unicode characters we have to take the much slower one
+    #
+
+    chunks = []
+    if len(value) < len(value.encode('utf-8')):
+        text_slice = utf8_slice
+    else:
+        text_slice = simple_slice
+
+    # the number of chunks is oriented toward the max length defined
+    # by utf8 in bytes + the clipping of 6 bytes each. But as this could
+    # vary, we could not calculate the number of chunks and thus benefit
+    # from the iterator
+
+    for cont_value in text_slice(value, MAX_VALUE_LEN):
+        chunks.append(cont_value)
+
+    number_of_chunks = len(chunks)
+
+    # special simple case: either empty value or single entry
+    if number_of_chunks == 1:
+        return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
+
+    i = 0
+    for cont_value in chunks:
+        i = i + 1
 
         cont_typ = "C"
         cont_desc = "%d:%d" % (i, number_of_chunks)

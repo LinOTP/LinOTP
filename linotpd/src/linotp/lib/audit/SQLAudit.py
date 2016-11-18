@@ -50,6 +50,8 @@ import traceback
 
 import linotp
 
+from linotp.lib.text_utils import utf8_slice
+
 # Create the logging object from the linotp.ini config file
 ini_file = config.get("__file__")
 if ini_file is not None:
@@ -99,14 +101,14 @@ AUDIT_ENCODE = ["action", "serial", "success", "user", "realm", "tokentype",
 class AuditTable(object):
 
     def __init__(self, serial=u"", action=u"", success=u"False",
-                tokentype=u"", user=u"",
-                realm=u"", administrator=u"",
-                action_detail=u"", info=u"",
-                linotp_server=u"",
-                client=u"",
-                log_level=u"INFO",
-                clearance_level=0,
-                config_param=None):
+                 tokentype=u"", user=u"",
+                 realm=u"", administrator=u"",
+                 action_detail=u"", info=u"",
+                 linotp_server=u"",
+                 client=u"",
+                 log_level=u"INFO",
+                 clearance_level=0,
+                 config_param=None):
         """
         build an audit db entry
 
@@ -158,8 +160,14 @@ class AuditTable(object):
         self.user = unicode(user or '')
         self.realm = unicode(realm or '')
         self.administrator = unicode(administrator or '')
-        self.action_detail = unicode(action_detail or '')
-        self.info = unicode(info or '')
+
+        #
+        # we have to truncate the 'action_detail' and the 'info' data
+        # in utf-8 compliant way
+        #
+        self.action_detail = utf8_slice(unicode(action_detail or ''), 512).next()
+        self.info = utf8_slice(unicode(info or ''), 512).next()
+
         self.linotp_server = unicode(linotp_server or '')
         self.client = unicode(client or '')
         self.log_level = unicode(log_level or '')
@@ -389,10 +397,10 @@ class Audit(AuditBase):
         try:
             serial = param.get('serial', '') or ''
             if not serial:
-                ## if no serial, do as before
+                # if no serial, do as before
                 self.log_entry(param)
             else:
-                ## look if we have multiple serials inside
+                # look if we have multiple serials inside
                 serials = serial.split(',')
                 for serial in serials:
                     p = {}
