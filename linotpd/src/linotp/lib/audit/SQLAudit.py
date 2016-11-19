@@ -320,10 +320,6 @@ class Audit(AuditBase):
         self.VerifyEVP.reset_context(md='sha256')
         self.VerifyEVP.assign_rsa(self.PublicKey)
 
-        # create the column "client"
-        column = schema.Column("client", types.Unicode(80))
-        add_column(self.engine, audit_table, column)
-
         return
 
     def _attr_to_dict(self, audit_line):
