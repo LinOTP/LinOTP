@@ -36,9 +36,11 @@ $ virtualenv /opt/selenium-venv
 $ source /opt/selenium-venv/bin/activate
 $ pip install -r requirements.txt
 
-You also need an X-Server on your machine (or a virtual framebuffer such as
-xvfb) and Firefox. When using a virtual framebuffer set the $DISPLAY env
-variable before executing the tests.
+If you are not using a remote instance, you also need an X-Server on your
+machine (or a virtual framebuffer such as xvfb) and Firefox or Chrome.
+
+When using a virtual framebuffer set the $DISPLAY env variable before
+executing the tests.
 
 
 Server Configuration file
@@ -81,6 +83,25 @@ $ chmod 755 chromedriver-2.16
 $ ln -s chromedriver-2.16 chromedriver
 $ cd /usr/bin/
 $ ln -s chromium-browser google-chrome
+
+
+Remote driver
+============================================
+
+The remote setting allows testing within a remote Selenium or
+Selenium grid. It can also be used to test against the
+standalone Docker images supplied by the Selenium project.
+
+To enable remote, the configuration should add:
+
+ remote = True
+
+Optionally, a remote URL can be specified in the form:
+
+ remote_url = http://selenium-grid:4444/wd/hub
+
+The driver setting will be used to determine which driver is
+requested from the remote instance.
 
 
 Execution

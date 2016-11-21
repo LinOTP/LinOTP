@@ -23,13 +23,12 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-"""Basic LinOTP Selenium Test-Case"""
-
 import unittest
 import warnings
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common import desired_capabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -39,7 +38,6 @@ from helper import get_from_tconfig
 from realm import RealmManager
 from policy import PolicyManager
 from user_id_resolver import UserIdResolverManager
-
 
 class TestCase(unittest.TestCase):
     """Basic LinOTP TestCase class"""
@@ -57,6 +55,11 @@ class TestCase(unittest.TestCase):
             ":" + self.http_password + "@" + self.http_host
         if self.http_port:
             self.base_url += ":" + self.http_port
+
+        remote_setting = get_from_tconfig(['selenium', 'remote'], default='False')
+        remote_enable = remote_setting.lower() == 'true'
+        remote_url = get_from_tconfig(['selenium', 'remoteurl'])
+
         self.driver = None
         selenium_driver = get_from_tconfig(['selenium', 'driver'],
                                            default="firefox").lower()
@@ -67,18 +70,34 @@ class TestCase(unittest.TestCase):
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--lang=' + selenium_driver_language)
 
-        if selenium_driver == 'chrome':
+        if not remote_enable:
+            if selenium_driver == 'chrome':
+                try:
+                    self.driver = webdriver.Chrome(chrome_options=chrome_options)
+                except WebDriverException, e:
+                    warnings.warn("Error creating Chrome driver. Maybe you need to install"
+                                  " 'chromedriver'. If you wish to use another browser please"
+                                  " adapt your configuratiion file. Error message: %s" % str(e))
+            elif selenium_driver == 'firefox':
+                self.driver = webdriver.Firefox(firefox_profile=fp)
+
+            if self.driver is None:
+                warnings.warn("Falling back to Firefox driver.")
+                self.driver = webdriver.Firefox(firefox_profile=fp)
+        else:
+            desired_capabilities = {'browserName': selenium_driver}
+
+            # Remote driver
+            if not remote_url:
+                remote_url = 'http://127.0.0.1:4444/wd/hub'
+
             try:
-                self.driver = webdriver.Chrome(chrome_options=chrome_options)
-            except WebDriverException, e:
-                warnings.warn("Error creating Chrome driver. Maybe you need to install"
-                              " 'chromedriver'. If you wish to use another browser please"
-                              " adapt your configuratiion file. Error message: %s" % str(e))
-        elif selenium_driver == 'firefox':
-            self.driver = webdriver.Firefox(firefox_profile=fp)
-        if self.driver is None:
-            warnings.warn("Falling back to Firefox driver.")
-            self.driver = webdriver.Firefox(firefox_profile=fp)
+                driver = webdriver.Remote(remote_url, desired_capabilities)
+            except Exception as e:
+                warnings.warn("Could not start driver: %s", e)
+
+            self.driver = driver
+
         self.enableImplicitWait()
         self.verification_errors = []
         self.accept_next_alert = True
