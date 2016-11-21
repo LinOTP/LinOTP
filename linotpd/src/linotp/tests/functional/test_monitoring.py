@@ -431,8 +431,8 @@ class TestMonitoringController(TestController):
         self.assertEqual(myotherrealm.get('myOtherRes'), 4, response)
         mymixrealm = resp.get('result').get('value').get('Realms').get(
             'mymixrealm')
-        self.assertEqual(mymixrealm.get('myOtherRes'), 2, response)
-        self.assertEqual(mymixrealm.get('myDefRes'), 0, response)
+        self.assertEqual(mymixrealm.get('myOtherRes'), 1, response)
+        self.assertEqual(mymixrealm.get('myDefRes'), 1, response)
 
 
 # eof ########################################################################

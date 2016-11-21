@@ -229,6 +229,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <div id='tab_system_settings'>
         <ul id='config_tab_index'>
             <li><a href='#tab_content_system_settings'>${_("Settings")}</a></li>
+            <li><a href='#tab_content_system_caching'>${_("Caching")}</a></li>
             <li><a href='#tab_content_system_gui'>${_("GUI settings")}</a></li>
             <li><a href='#tab_content_system_client'>${_("Client Identification")}</a></li>
             <li><a href='#tab_content_system_cert'>${_("Certificates")}</a></li>
@@ -273,6 +274,29 @@ ${c.version} --- &copy; ${c.licenseinfo}
                     <label for=sys_mayOverwriteClient>${_("Override authentication client")}:</label>
                     <input type='text' name='sys_mayOverwriteClient' id='sys_mayOverwriteClient' size='40'
                     title="${_('This is a comma separated list of clients, that may send another client IP for authorization policies.')}">
+            </fieldset>
+        </div>
+        <div id="tab_content_system_caching">
+            <fieldset>
+                <legend>${_("Resolver Lookup Caching")}</legend>
+                <table>
+                <tr><td><label for=sys_resolver_cache_enable>${_("Enable")}</label></td>
+                    <td><input type="checkbox" name="sys_resolver_cache_enable" id="sys_resolver_cache_enable" value="sys.resolver_lookup_cache.enabled"
+                        title="${_('Enable caching of the realm to user id resolver lookup')}"></td></tr>
+                <tr><td><label for=sys_resolver_cache_enable>${_("Expiration")} </label></td>
+                    <td><input type="text" name="sys_resolver_cache_expiration" id="sys_resolver_cache_expiration" size="35"
+                        title='${_("The expiration of the resolver lookup caching in seconds")}'></td></tr>
+                </table>
+            </fieldset><fieldset>
+                <legend>${_("User Lookup Caching")}</legend>
+                <table>
+                <tr><td><label for=sys_user_cache_enable>${_("Enable")}</label></td>
+                    <td><input type="checkbox" name="sys_user_cache_enable" id="sys_user_cache_enable" value="sys_user_lookup_cache_enabled"
+                        title="${_('Enable the caching of user lookup in a resolver')}"></td></tr>
+                <tr><td><label for=sys_user_cache_enable>${_("Expiration")} </label></td>
+                    <td><input type="text" name="sys_user_cache_expiration" id="sys_user_cache_expiration" size="35"
+                        title='${_("The expiration of the user lookup caching in seconds")}'></td></tr>
+                </table>
             </fieldset>
         </div> <!-- tab with settings -->
         <div id='tab_content_system_gui'>

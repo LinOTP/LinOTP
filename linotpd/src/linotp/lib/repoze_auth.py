@@ -35,6 +35,8 @@ from linotp.lib.util import str2unicode
 from linotp.lib.context import request_context
 from linotp.lib.context import request_context_safety
 from linotp.lib.config import getLinotpConfig
+from linotp.lib.config import getGlobalObject
+from linotp.lib.resolver import initResolvers
 
 import traceback
 
@@ -82,10 +84,25 @@ class UserModelPlugin(object):
         with request_context_safety():
             linotp_config = getLinotpConfig()
             request_context['Config'] = linotp_config
+
+            # add the cache manager to the context
+            glo = getGlobalObject()
+            cache_manager = glo.cache_manager
+            request_context['CacheManager'] = cache_manager
+
+            # and also add the hsm - enables us to do otp validation :-)
+            sep = glo.security_provider
+            hsm = sep.getSecurityModule()
+            request_context['hsm'] = hsm
+
+            resolver_context = initResolvers()
+            request_context.update(resolver_context)
+
             user = get_authenticated_user(username, realm, password,
-                                              realm_box=realm_mbox,
-                                              authenticate=authenticate,
-                                              options=options)
+                                          realm_box=realm_mbox,
+                                          authenticate=authenticate,
+                                          options=options)
+
         if not user:
             return None
 

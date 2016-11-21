@@ -372,12 +372,13 @@ class TestHTTPError(TestController):
             }
         TestController.set_cookie(self.app, 'admin_session', self.session)
 
-        return self.app.get(
+        ret = self.app.get(
             url(controller='admin', action=action),
             params=params,
             headers=headers,
             status=status,
             )
+        return ret
 
 
     def _del_errors_from_config(self):

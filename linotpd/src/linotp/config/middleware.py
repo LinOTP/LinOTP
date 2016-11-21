@@ -127,6 +127,9 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     app = SessionMiddleware(app, config)
     app = CacheMiddleware(app, config)
 
+    g = config['pylons.app_globals']
+    g.cache_manager = app.cache_manager
+
     # CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
 
     if asbool(full_stack):
