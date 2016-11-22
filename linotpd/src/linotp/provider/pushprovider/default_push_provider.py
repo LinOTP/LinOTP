@@ -31,6 +31,7 @@
 import os
 import logging
 import requests
+from urlparse import urlparse
 
 from linotp.provider import provider_registry
 from linotp.provider.pushprovider import IPushProvider
@@ -89,6 +90,11 @@ class DefaultPushProvider(IPushProvider):
             # define the request calling endpoint
             #
 
+            # verify the url scheme
+            parsed_url = urlparse(configDict['push_url'])
+            if parsed_url.scheme not in ['http', 'https']:
+                raise requests.exceptions.InvalidSchema(configDict['push_url'])
+
             self.push_server_url = configDict['push_url']
 
             #
@@ -97,17 +103,27 @@ class DefaultPushProvider(IPushProvider):
 
             self.client_cert = configDict['access_certificate']
             if not os.path.isfile(self.client_cert):
-                raise Exception("required authenticating client cert could "
-                                "not be found %r" % self.client_cert)
+                raise IOError("required authenticating client"
+                              " cert could not be found %r" %
+                              self.client_cert)
 
             #
-            # for the first version, we ignore the dedicated server
-            # certificate and rely on the requests default server verification
+            # default is no server verification, but if provided
+            # it must be either a file or directory reference
             #
 
-            if 'server_certificate' in configDict:
-                # self.server_cert = '/etc/ssl/certs'
-                self.server_cert = None
+            if ('server_certificate' in configDict and
+               configDict['server_certificate']):
+
+                server_cert = configDict['server_certificate']
+
+                if (not os.path.isfile(server_cert) and
+                   not os.path.isdir(server_cert)):
+                    raise IOError("server certificate verification could not"
+                                  " be made as certificate could not be found"
+                                  " %r" % server_cert)
+
+                self.server_cert = server_cert
 
             #
             # timeout could come with capital letter
@@ -137,6 +153,15 @@ class DefaultPushProvider(IPushProvider):
             #
 
             if 'proxy' in configDict:
+
+                # verify the url scheme
+                parsed_url = urlparse(configDict['proxy'])
+                if parsed_url.scheme not in ['http', 'https']:
+                    raise requests.exceptions.InvalidSchema(configDict['proxy'])
+
+                if parsed_url.path and parsed_url.path != '/':
+                    raise requests.exceptions.InvalidSchema(configDict['proxy'])
+
                 self.proxy = DefaultPushProvider.get_proxy_definition(
                                     configDict.get('proxy'))
 
