@@ -541,9 +541,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     if number_of_chunks == 1:
         return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
 
-    i = 0
-    for cont_value in chunks:
-        i = i + 1
+    for i, cont_value in enumerate(chunks):
 
         cont_typ = "C"
         cont_desc = "%d:%d" % (i, number_of_chunks)
