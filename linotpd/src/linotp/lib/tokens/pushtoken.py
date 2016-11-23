@@ -387,7 +387,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # we need it in checkOtp to verify the signature
 
         b64_plaintext = b64encode(pt)
-        data = {'message': message, 'plaintext': b64_plaintext}
+        data = {'plaintext': b64_plaintext}
 
         if self.current_state == 'pairing_response_received':
             self.change_state('pairing_challenge_sent')
