@@ -220,7 +220,7 @@ class DefaultPushProvider(IPushProvider):
         """
 
         params = {}
-        params['message'] = message
+        params['challenge'] = message
         params['gda'] = gda
 
         #
