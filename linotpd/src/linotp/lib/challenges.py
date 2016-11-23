@@ -231,6 +231,13 @@ class Challenges(object):
         if attributes is not None and type(attributes) == dict:
             challenge.update(attributes)
 
+        #
+        # add token specific info like tokentype and serial
+        #
+
+        challenge["linotp_tokenserial"] = token.getSerial()
+        challenge["linotp_tokentype"] = token.type
+
         return (res, challenge)
 
     @staticmethod
