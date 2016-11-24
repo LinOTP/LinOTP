@@ -142,6 +142,14 @@ def set_defaults():
         value=u"4", typ=u"int",
         description=u"Maximum open QRToken challenges")
 
+    set_config(key=u"PushChallengeValidityTime",
+        value=u"150", typ=u"int",
+        description=u"The pushtoken default time, a challenge is regarded as valid.")
+
+    set_config(key=u"PushMaxChallenges",
+        value=u"4", typ=u"int",
+        description=u"Maximum open pushtoken challenges")
+
     set_config(key=u"PrependPin",
         value=u"True", typ=u"bool",
         description=u"is the pin prepended - most cases")
