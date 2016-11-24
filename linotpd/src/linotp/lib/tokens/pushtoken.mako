@@ -48,6 +48,8 @@ function push_get_config_val(){
 
     id_map['PushMaxChallenges'] = 'pushconfig_max_challenges';
     id_map['PushChallengeValidityTime'] = 'pushconfig_challenge_timeout';
+    var cert_id = $('#pushconfig_cert_id').val();
+    id_map['PublicKey.' + cert_id] = 'pushconfig_pub_cert';
 
     return id_map;
 
@@ -93,6 +95,21 @@ function push_get_config_params(){
                 </td>
                 <td>
                     <input type="number" name="pushconfig_challenge_timeout" id="pushconfig_challenge_timeout" class="required text ui-widget-content ui-corner-all">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="pushconfig_cert_id">${_("Public key certificate")}</label>
+                </td>
+                <td>
+                    <input type="text" name="pushconfig_cert_id" id="pushconfig_cert_id" value="Partition.0" disabled="disabled" placeholder="${_('certificate id')}" class="required text ui-widget-content ui-corner-all">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <textarea disabled="disabled" name="pushconfig_pub_cert" id="pushconfig_pub_cert" cols="40" rows="6"></textarea>
                 </td>
             </tr>
         </table>
