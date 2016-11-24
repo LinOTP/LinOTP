@@ -527,7 +527,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 <td><label for="push_provider_class">${_("Class")}</label>: </td>
                 <td><input type="text" name="push_provider_class" class="required"
                            id="push_provider_class" size="37" maxlength="80"
-                           placeholder="KeyIdentityPushProvider"></td>
+                           placeholder="DefaultPushProvider"></td>
             </tr>
             <tr>
                 <td><label for='push_provider_config'>${_("Config")}</label>: </td>
