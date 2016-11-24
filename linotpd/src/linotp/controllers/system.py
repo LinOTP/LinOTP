@@ -52,7 +52,7 @@ from linotp.lib.realm import isRealmDefined
 
 from linotp.lib.util import check_session
 from linotp.lib.util import get_client
-from linotp.lib.util import get_version_number
+from linotp.lib.util import getLowerParams
 
 from linotp.lib.resolver import defineResolver
 from linotp.lib.resolver import getResolverObject
@@ -63,17 +63,22 @@ from linotp.lib.resolver import parse_resolver_spec
 
 from linotp.lib.error import ParameterError
 
-from linotp.lib.util import getParam, getLowerParams
-from linotp.lib.reply import sendResult, sendError, sendXMLResult, sendXMLError
+
+from linotp.lib.reply import sendResult
+from linotp.lib.reply import sendError
+from linotp.lib.reply import sendXMLResult
+from linotp.lib.reply import sendXMLError
+
 from linotp.lib.realm import getRealms
 from linotp.lib.realm import getDefaultRealm
+from linotp.lib.realm import deleteRealm
+
+
 from linotp.lib.user import setRealm
 from linotp.lib.user import getUserFromRequest
 
-from linotp.lib.realm import deleteRealm
 from linotp.lib.token import newToken
 
-from linotp.lib.policy import getPolicies
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import checkPolicyPost
 from linotp.lib.policy import PolicyException
@@ -111,16 +116,14 @@ Session = linotp.model.meta.Session
 audit = config.get('audit')
 log = logging.getLogger(__name__)
 
-optional = True
-required = False
 
 
 class SystemController(BaseController):
 
     '''
-    The linotp.controllers are the implementation of the web-API to talk to the LinOTP server.
-    The SystemController is used to configure the LinOTP server.
-    The functions of the SystemController are invoked like this
+    The linotp.controllers are the implementation of the web-API to talk to
+    the LinOTP server. The SystemController is used to configure the LinOTP
+    server. The functions of the SystemController are invoked like this
 
         https://server/system/<functionname>
 
@@ -138,7 +141,7 @@ class SystemController(BaseController):
         :return: return response
         :rtype:  pylon response
         '''
-        log.debug("[__before__::%r] %r" % (action, params))
+        log.debug("[__before__::%r] %r", action, params.keys())
         try:
 
             c.audit = request_context['audit']
@@ -158,27 +161,26 @@ class SystemController(BaseController):
             return response
 
         except PolicyException as pex:
-            log.exception("[__before__::%r] policy exception %r" % (action, pex))
+            log.exception("[__before__::%r] policy exception %r", action, pex)
             Session.rollback()
             Session.close()
             return sendError(response, pex, context='before')
 
         except webob.exc.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
-            log.exception("[__before__::%r] webob.exception %r" % (action, acc))
+            log.exception("[__before__::%r] webob.exception %r", action, acc)
             Session.rollback()
             Session.close()
             raise acc
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
+            log.exception("[__before__::%r] exception %r", action, exx)
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
 
         finally:
-            log.debug("[__before__::%r] done" % (action))
-
+            log.debug("[__before__::%r] done", action)
 
     def __after__(self):
         '''
@@ -194,7 +196,7 @@ class SystemController(BaseController):
             return response
 
         except Exception as exx:
-            log.exception("[__after__] exception %r" % (exx))
+            log.exception("[__after__] exception %r", exx)
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='after')
@@ -216,11 +218,16 @@ class SystemController(BaseController):
             not affect already enrolled tokens.
 
         arguments:
-            DefaultMaxFailCount    - Default value for the maximum allowed authentication failures
-            DefaultSyncWindow      - Default value for the synchronization window
-            DefaultCountWindow     - Default value for the coutner window
-            DefaultOtpLen          - Default value for the OTP value length -- usuall 6 or 8
-            DefaultResetFailCount  - Default value, if the FailCounter should be reset on successful authentication [True|False]
+            DefaultMaxFailCount    - Default value for the maximum allowed
+                                     authentication failures
+            DefaultSyncWindow      - Default value for the
+                                     synchronization window
+            DefaultCountWindow     - Default value for the counter window
+            DefaultOtpLen          - Default value for the OTP value length --
+                                     usuall 6 or 8
+            DefaultResetFailCount  - Default value, if the FailCounter should
+                                     be reset on successful authentication
+                                     [True|False]
 
 
         returns:
@@ -244,14 +251,14 @@ class SystemController(BaseController):
                 "DefaultCountWindow", "DefaultOtpLen",
                 "DefaultResetFailCount"]
 
-        # config settings from here
         try:
             param = getLowerParams(request.params)
-            log.info("[setDefault] saving default configuration: %r" % param)
+            log.info("[setDefault] saving default configuration: %r",
+                     param.keys())
 
             for k in keys:
-                if param.has_key(k.lower()):
-                    value = getParam(param, k.lower(), required)
+                if k.lower() in param:
+                    value = param[k.lower()]
                     ret = storeConfig(k, value)
                     des = "set " + k
                     res[des] = ret
@@ -260,16 +267,16 @@ class SystemController(BaseController):
                     c.audit['success'] = count
                     c.audit['info'] += "%s=%s, " % (k, value)
 
-            if count == 0 :
-                log.warning("[setDefault] Failed saving config. Could not find any known parameter. %s"
-                    % description)
+            if count == 0:
+                log.warning("[setDefault] Failed saving config. Could not "
+                            "find any known parameter. %s", description)
                 raise ParameterError("Usage: %s" % description, id=77)
 
             Session.commit()
             return sendResult(response, res)
 
         except Exception as exx:
-            log.exception('[setDefault] commit failed: %r' % exx)
+            log.exception('[setDefault] commit failed: %r', exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -309,7 +316,7 @@ class SystemController(BaseController):
 
         try:
             param.update(request.params)
-            log.info("[setConfig] saving configuration: %r" % param)
+            log.info("[setConfig] saving configuration: %r", param.keys())
 
             if "key" in param:
 
@@ -353,7 +360,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[setConfig] error saving config: %r" % exx)
+            log.exception("[setConfig] error saving config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -376,9 +383,11 @@ class SystemController(BaseController):
 
         try:
             param = getLowerParams(request.params)
-            log.info("[delConfig] with params: %r" % param)
+            log.info("[delConfig] with params: %r", param)
 
-            key = getParam(param, "key", required)
+            if 'key' not in param:
+                raise ParameterError("missing required parameter: key")
+            key = param["key"]
             ret = removeFromConfig(key)
             string = "delConfig " + key
             res[string] = ret
@@ -390,7 +399,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delConfig] error deleting config: %r" % exx)
+            log.exception("[delConfig] error deleting config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -420,7 +429,7 @@ class SystemController(BaseController):
         param = {}
         try:
             param.update(request.params)
-            log.debug("[getConfig] with params: %r" % param)
+            log.debug("[getConfig] with params: %r", param)
 
             if 'session' in param:
                 del param['session']
@@ -458,7 +467,9 @@ class SystemController(BaseController):
                 c.audit['info'] = "complete config"
 
             else:
-                key = getParam(param, "key", required)
+                if 'key' not in param:
+                    raise ParameterError("missing required parameter: key")
+                key = param["key"]
 
                 #
                 # prevent access to the decrypted data
@@ -478,7 +489,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getConfig] error getting config: %r" % exx)
+            log.exception("[getConfig] error getting config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -510,32 +521,35 @@ class SystemController(BaseController):
         see the realms, he is admin of.
         '''
 
-
-
-
-        # config settings from here
         try:
             param = getLowerParams(request.params)
-            log.debug("[getRealms] with params: %r" % param)
-            res = getRealms()
+            log.debug("[getRealms] with params: %r", param)
+
             c.audit['success'] = True
+            all_realms = getRealms()
 
-            # If the admin is not allowed to see all realms, (policy scope=system, action=read)
-            # the realms, where he has no administrative rights need, to be stripped.
+            #
+            # If the admin is not allowed to see all realms,
+            #                 (policy scope=system, action=read)
+            # the realms, where he has no administrative rights need,
+            # to be stripped, which is done by the checkPolicyPost, that
+            # returns the acl with the allowed realms as entry
+            #
 
-            polPost = checkPolicyPost('system', 'getRealms', {'realms': res })
+            polPost = checkPolicyPost('system', 'getRealms',
+                                      {'realms': all_realms})
             res = polPost['realms']
 
             Session.commit()
             return sendResult(response, res, 1)
 
         except PolicyException as pex:
-            log.exception("[getRealms] policy exception: %r" % pex)
+            log.exception("[getRealms] policy exception: %r", pex)
             Session.rollback()
             return sendError(response, pex)
 
         except Exception as exx:
-            log.exception("[getRealms] error getting realms: %r" % exx)
+            log.exception("[getRealms] error getting realms: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -586,7 +600,7 @@ class SystemController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        res = {}
+
         param = {}
         resolver_loaded = False
 
@@ -597,7 +611,6 @@ class SystemController(BaseController):
 
             if 'name' not in param:
                 raise ParameterError('missing required parameter "name"')
-
             new_resolver_name = param['name']
 
             #
@@ -616,10 +629,6 @@ class SystemController(BaseController):
                                 "resolver with same name", new_resolver_name)
                     deleteResolver(new_resolver_name)
 
-            #
-            # check if it is of the same type and if so, we merge the
-            # resolver info, especially the password has to be preserved
-            #
 
             resolver_loaded = defineResolver(param)
 
@@ -639,7 +648,7 @@ class SystemController(BaseController):
             return sendError(response, exx)
 
         except Exception as exx:
-            log.exception("[setResolver] error saving config: %r" % exx)
+            log.exception("[setResolver] error saving config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -676,7 +685,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getResolvers] error getting resolvers: %r" % exx)
+            log.exception("[getResolvers] error getting resolvers: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -708,9 +717,12 @@ class SystemController(BaseController):
 
         try:
             param = getLowerParams(request.params)
-            log.info("[delResolver] deleting resolver: %r" % param)
+            log.info("[delResolver] deleting resolver: %r", param)
 
-            resolver = getParam(param, "resolver", required)
+            if 'resolver' not in param:
+                raise ParameterError("missing required parameter: resolver")
+            resolver = param["resolver"]
+
             # only delete a resolver, if it is not used by any realm
             found = False
             fRealms = []
@@ -727,8 +739,8 @@ class SystemController(BaseController):
 
             if found is True:
                 c.audit['failed'] = res
-                err = 'Resolver %r  still in use by the realms: %r' % \
-                                    (resolver, fRealms)
+                err = ('Resolver %r  still in use by the realms: %r' %
+                       (resolver, fRealms))
                 c.audit['info'] = err
                 raise Exception('%r !' % err)
 
@@ -740,7 +752,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delResolver] error deleting resolver: %r" % exx)
+            log.exception("[delResolver] error deleting resolver: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -772,9 +784,12 @@ class SystemController(BaseController):
 
         try:
             param = getLowerParams(request.params)
-            log.debug("[getResolver] with param: %r" % param)
+            log.debug("[getResolver] with param: %r", param)
 
-            resolver = getParam(param, "resolver", required)
+            if 'resolver' not in param:
+                raise ParameterError("missing required parameter: resolver")
+            resolver = param["resolver"]
+
             if (len(resolver) == 0):
                 raise Exception("[getResolver] missing resolver name")
 
@@ -787,7 +802,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getResolver] error getting resolver: %r" % exx)
+            log.exception("[getResolver] error getting resolver: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -818,15 +833,13 @@ class SystemController(BaseController):
 
         try:
             param = getLowerParams(request.params)
-            log.info("[setDefaultRealm] with param: %r" % param)
+            log.info("[setDefaultRealm] with param: %r", param)
 
-            defRealm = getParam(param, "realm", optional)
-            if defRealm is None:
-                defRealm = ""
+            defRealm = param.get("realm", '')
 
             defRealm = defRealm.lower().strip()
             res = setDefaultRealm(defRealm)
-            if res is False and defRealm != "" :
+            if res is False and defRealm != "":
                 c.audit['info'] = "The realm %s does not exist" % defRealm
 
             c.audit['success'] = True
@@ -836,7 +849,8 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[setDefaultRealm] setting default realm failed: %r" % exx)
+            log.exception("[setDefaultRealm] setting default realm failed: %r",
+                          exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -875,7 +889,8 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getDefaultRealm] return default realm failed: %r" % exx)
+            log.exception("[getDefaultRealm] return default realm failed: %r",
+                          exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -912,10 +927,16 @@ class SystemController(BaseController):
 
         try:
             param.update(request.params)
-            log.info("[setRealm] setting a realm: %r" % param)
+            log.info("[setRealm] setting a realm: %r", param)
 
-            realm = getParam(param, "realm", required)
-            resolver_specs_str = getParam(param, "resolvers", required)
+            if 'realm' not in param:
+                raise ParameterError("missing required parameter: realm")
+            realm = param["realm"]
+
+            if 'resolvers' not in param:
+                raise ParameterError("missing required parameter: resolver")
+
+            resolver_specs_str = param["resolvers"]
             resolver_specs = resolver_specs_str.split(',')
 
             valid_resolver_specs = []
@@ -942,7 +963,7 @@ class SystemController(BaseController):
 
         except Exception as exx:
             err = ("Failed to set realm with %r " % param)
-            log.exception("[setRealm] %r %r" % (err, exx))
+            log.exception("[setRealm] %r %r", err, exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -973,14 +994,18 @@ class SystemController(BaseController):
 
         try:
             param = request.params
-            log.info("[delRealm] deleting realm: %r " % param)
+            log.info("[delRealm] deleting realm: %r ", param)
 
-            realm = getParam(param, "realm", required)
+            if 'realm' not in param:
+                raise ParameterError("missing required parameter: realm")
+            realm = param["realm"]
 
-
+            #
             # we test if before delete there has been a default
             # if yes - check after delete, if still one there
             #         and set the last available to default
+            #
+
             defRealm = getDefaultRealm()
             hadDefRealmBefore = False
             if defRealm != "":
@@ -1015,7 +1040,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delRealm] error deleting realm: %r" % exx)
+            log.exception("[delRealm] error deleting realm: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1033,8 +1058,8 @@ class SystemController(BaseController):
 
         description:
             Stores a policy that define ACL or behaviour of several different
-            actions in LinOTP. The policy is stored as configuration values like
-            this::
+            actions in LinOTP. The policy is stored as configuration values
+            like this::
 
                 Policy.<NAME>.action
                 Policy.<NAME>.scope
@@ -1059,34 +1084,44 @@ class SystemController(BaseController):
         res = {}
         param = {}
         try:
-            log.debug("[setPolicy] params: %r" % request.params)
+            log.debug("[setPolicy] params: %r", request.params)
             param.update(request.params)
 
             if 'session' in param:
                 del param['session']
 
-            name = getParam(param, "name", required)
+            if 'name' not in param:
+                raise ParameterError("missing required parameter: name")
+            name = param["name"]
 
             if not name:
                 raise Exception(_("The name of the policy must not be empty"))
 
-            action = getParam(param, "action", required)
-            scope = getParam(param, "scope", required)
-            realm = getParam(param, "realm", required)
-            user = getParam(param, "user", optional)
-            time = getParam(param, "time", optional)
-            client = getParam(param, "client", optional)
+            if 'action' not in param:
+                raise ParameterError("missing required parameter: action")
+            action = param["action"]
+
+            if 'scope' not in param:
+                raise ParameterError("missing required parameter: scope")
+            scope = param["scope"]
+
+            if 'realm' not in param:
+                raise ParameterError("missing required parameter: realm")
+            realm = param["realm"]
+
+            user = param.get("user")
+            time = param.get("time")
+            client = param.get("client")
             active = param.get("active", 'True')
 
             p_param = {'name': name,
-                      'action': action,
-                      'scope': scope,
-                      'realm': realm,
-                      'user': user,
-                      'time': time,
-                      'client': client,
-                      'active': active
-                      }
+                       'action': action,
+                       'scope': scope,
+                       'realm': realm,
+                       'user': user,
+                       'time': time,
+                       'client': client,
+                       'active': active}
 
             enforce = param.get('enforce', 'False')
             if enforce.lower() == 'true':
@@ -1096,9 +1131,9 @@ class SystemController(BaseController):
             c.audit['action_detail'] = unicode(param)
 
             if len(name) > 0 and len(action) > 0:
-                log.debug("[setPolicy] saving policy %r" % p_param)
+                log.debug("[setPolicy] saving policy %r", p_param)
                 ret = setPolicy(p_param)
-                log.debug("[setPolicy] policy %s successfully saved." % name)
+                log.debug("[setPolicy] policy %s successfully saved.", name)
 
                 string = "setPolicy " + name
                 res[string] = ret
@@ -1107,8 +1142,8 @@ class SystemController(BaseController):
 
                 Session.commit()
             else:
-                log.error("[setPolicy] failed: policy with empty name or action %r"
-                                                                % p_param)
+                log.error("[setPolicy] failed: policy with empty name"
+                          " or action %r", p_param)
                 string = "setPolicy <%r>" % name
                 res[string] = False
 
@@ -1118,7 +1153,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[setPolicy] error saving policy: %r" % exx)
+            log.exception("[setPolicy] error saving policy: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1138,59 +1173,66 @@ class SystemController(BaseController):
 
         try:
             param = getLowerParams(request.params)
-            log.debug("[policies_flexi] viewing policies with params: %r" % param)
+            log.debug("[policies_flexi] viewing policies with params: %r",
+                      param)
 
-            name = getParam(param, "name", optional)
-            realm = getParam(param, "realm", optional)
-            scope = getParam(param, "scope", optional)
-            sortname = getParam(param, "sortname", optional)
-            sortorder = getParam(param, "sortorder", optional)
+            name = param.get("name")
+            realm = param.get("realm")
+            scope = param.get("scope")
+            sortname = param.get("sortname")
+            sortorder = param.get("sortorder")
 
             log.debug("[policies_flexi] retrieving policy name: %s, realm:"
-                      " %s, scope: %s, sort:%s by %s"
-                % (name, realm, scope, sortorder, sortname))
+                      " %s, scope: %s, sort:%s by %s", name, realm, scope,
+                      sortorder, sortname)
+
             pols = getPolicy({'name': name, 'realm': realm, 'scope': scope},
                              display_inactive=True)
 
             lines = []
             for pol in pols:
-                lines.append(
-                    {'id': pol,
-                        'cell': [
-                                 1 if pols[pol].get('active', "True") == "True" else 0,
-                                 pol,
-                                 pols[pol].get('user', ""),
-                                 pols[pol].get('scope', ""),
-                                 escape(pols[pol].get('action', "") or ""),
-                                 pols[pol].get('realm', ""),
-                                 pols[pol].get('client', ""),
-                                 pols[pol].get('time', "")
-                             ]
-                    }
-                    )
+
+                active = 0
+                if pols[pol].get('active', "True") == "True":
+                    active = 1
+
+                cell = [active,
+                        pol,
+                        pols[pol].get('user', ""),
+                        pols[pol].get('scope', ""),
+                        escape(pols[pol].get('action', "") or ""),
+                        pols[pol].get('realm', ""),
+                        pols[pol].get('client', ""),
+                        pols[pol].get('time', "")]
+
+                lines.append({'id': pol, 'cell': cell})
             # sorting
             reverse = False
             sortnames = {'active': 0, 'name': 1, 'user': 2, 'scope': 3,
-                         'action': 4, 'realm': 5, 'client':6, 'time': 7}
+                         'action': 4, 'realm': 5, 'client': 6, 'time': 7}
+
             if sortorder == "desc":
                 reverse = True
-            lines = sorted(lines, key=lambda policy: policy['cell'][sortnames[sortname]] , reverse=reverse)
+            lines = sorted(lines,
+                           key=lambda policy: policy['cell'][sortnames[sortname]],
+                           reverse=reverse)
             # end: sorting
 
             # We need to return 'page', 'total', 'rows'
-            res = { "page": 1,
-                "total": len(lines),
-                "rows": lines }
+            res = {"page": 1,
+                   "total": len(lines),
+                   "rows": lines}
 
             c.audit['success'] = True
-            c.audit['info'] = "name = %s, realm = %s, scope = %s" % (name, realm, scope)
+            c.audit['info'] = ("name = %s, realm = %s, scope = %s" %
+                               (name, realm, scope))
 
             Session.commit()
             response.content_type = 'application/json'
             return json.dumps(res, indent=3)
 
         except Exception as exx:
-            log.exception("[policies_flexi] error in policy flexi: %r" % exx)
+            log.exception("[policies_flexi] error in policy flexi: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1205,11 +1247,12 @@ class SystemController(BaseController):
             system/getPolicyDef
 
         description:
-            This is a helper function that returns the POSSIBLE policy definitions, that can
-            be used to define your policies.
+            This is a helper function that returns the POSSIBLE policy
+            definitions, that can be used to define your policies.
 
         arguments:
-            scope - optional - if given, the function will only return policy definitions for the given scope.
+            scope - optional - if given, the function will only return policy
+                               definitions for the given scope.
 
         returns:
              the policy definitions of
@@ -1224,9 +1267,9 @@ class SystemController(BaseController):
 
         try:
             param = getLowerParams(request.params)
-            log.debug("[getPolicy] getting policy definitions: %r" % param)
+            log.debug("[getPolicy] getting policy definitions: %r", param)
 
-            scope = getParam(param, "scope", optional)
+            scope = param.get("scope")
             pol = getPolicyDefinitions(scope)
             dynpol = self._add_dynamic_tokens(scope)
             pol.update(dynpol)
@@ -1238,7 +1281,8 @@ class SystemController(BaseController):
             return sendResult(response, pol, 1)
 
         except Exception as exx:
-            log.exception("[getPolicyDef] error getting policy definitions: %r" % exx)
+            log.exception("[getPolicyDef] error getting policy "
+                          "definitions: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1266,18 +1310,22 @@ class SystemController(BaseController):
         tokenclasses = glo.tokenclasses
 
         for tok in tokenclasses.keys():
+
             tclass = tokenclasses.get(tok)
             tclass_object = newToken(tclass)
+
             if hasattr(tclass_object, 'getClassInfo'):
+
                 # check if we have a policy in the definition
                 try:
                     policy = tclass_object.getClassInfo('policy', ret=None)
-                    if policy is not None and policy.has_key(scope):
+                    if policy is not None and scope in policy:
                         scope_policy = policy.get(scope)
                         pol.update(scope_policy)
+
                 except Exception as exx:
-                    log.info('[dynamicToken] no policy for tokentype %r found (%r)'
-                             % (tok, exx))
+                    log.info("[dynamicToken] no policy for tokentype %r "
+                             "found (%r)", tok, exx)
 
         return pol
 
@@ -1301,12 +1349,12 @@ class SystemController(BaseController):
         res = True
         try:
 
-            log.debug("[importPolicy] getting POST request: %r" % request.POST)
+            log.debug("[importPolicy] getting POST request: %r", request.POST)
 
             policy_file = request.POST['file']
             fileString = ""
             log.debug("[importPolicy] loading policy file to server using POST"
-                      " request. File: %r" % policy_file)
+                      " request. File: %r", policy_file)
 
             # -- ----------------------------------------------------------- --
             # In case of form post requests, it is a "instance" of FieldStorage
@@ -1328,8 +1376,8 @@ class SystemController(BaseController):
             if fileString == "":
                 log.error("[importPolicy] Error loading/importing policy "
                           "file. file empty!")
-                return sendErrorMethod(response, "Error loading policy. "
-                                       "File empty!")
+                return sendErrorMethod(response,
+                                       "Error loading policy. File is empty!")
 
             # the contents of filestring needs to be parsed and
             # stored as policies.
@@ -1366,7 +1414,8 @@ class SystemController(BaseController):
             system/checkPolicy
 
         description:
-            this function checks if a the given parameter will trigger a policy or not.
+            this function checks if a the given parameter will trigger a
+            policy or not.
 
         arguments:
             * user   - the name of the user
@@ -1388,35 +1437,50 @@ class SystemController(BaseController):
         try:
             param = getLowerParams(request.params)
 
-            user = getParam(param, "user", required)
-            realm = getParam(param, "realm", required)
-            scope = getParam(param, "scope", required)
-            action = getParam(param, "action", required)
-            client = getParam(param, "client", required)
+            if 'user' not in param:
+                raise ParameterError("missing required parameter: user")
+            user = param["user"]
+
+            if 'realm' not in param:
+                raise ParameterError("missing required parameter: realm")
+            realm = param["realm"]
+
+            if 'scope' not in param:
+                raise ParameterError("missing required parameter: scope")
+            scope = param["scope"]
+
+            if 'action' not in param:
+                raise ParameterError("missing required parameter: action")
+            action = param["action"]
+
+            if 'client' not in param:
+                raise ParameterError("missing required parameter: client")
+            client = param["client"]
 
             pol = {}
             if scope in ["admin", "system"]:
                 pol = getPolicy({"scope": scope})
-                log.debug("CKO %s" % pol)
                 if len(pol) > 0:
                     # Policy active for this scope!
-                    pol = getPolicy({"user":user,
-                                      "realm":realm,
-                                      "scope":scope,
-                                      "action":action,
-                                      "client":client})
+                    pol = getPolicy({"user": user,
+                                     "realm": realm,
+                                     "scope": scope,
+                                     "action": action,
+                                     "client": client})
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
                         c.audit['info'] = "allowed by policy %s" % pol.keys()
                 else:
                     # No policy active for this scope
-                    c.audit['info'] = "allowed since no policies in scope %s" % scope
+                    c.audit['info'] = ("allowed since no policies in scope %s"
+                                       % scope)
                     res["allowed"] = True
                     res["policy"] = "No policies in scope %s" % scope
             else:
-                log.debug("[checkPolicy] checking policy for client %s, scope %s, action %s, realm %s and user %s" %
-                          (client, scope, action, realm, user))
+                log.debug("[checkPolicy] checking policy for client %s, "
+                          "scope %s, action %s, realm %s and user %s",
+                          client, scope, action, realm, user)
 
                 pol = get_client_policy(client, scope, action, realm, user)
                 res["allowed"] = len(pol) > 0
@@ -1424,15 +1488,15 @@ class SystemController(BaseController):
                 if len(pol) > 0:
                     c.audit['info'] = "allowed by policy %s" % pol.keys()
 
-            c.audit['action_detail'] = "action = %s, realm = %s, scope = %s"\
-                    % (action, realm, scope)
+            c.audit['action_detail'] = ("action = %s, realm = %s, scope = %s"
+                                        % (action, realm, scope))
             c.audit['success'] = True
 
             Session.commit()
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[checkPolicy] error checking policy: %r" % exx)
+            log.exception("[checkPolicy] error checking policy: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1452,13 +1516,19 @@ class SystemController(BaseController):
 
         arguments:
             * realm - (optional) will return all policies in the given realm
-            * name  - (optional) will only return the policy with the given name
-            * action  (optional) will only return the policy with the given action
+            * name  - (optional) will only return the policy with the given
+                                name
+            * action  (optional) will only return the policy with the given
+                                 action
             * user    (optional) will only return the policy for this user
-            * scope - (optional) will only return the policies within the given scope
-            * export - (optional) The filename needs to be specified as the third part of the URL like /system/getPolicy/policy.cfg. It
-                    will then be exported to this file.
-            * display_inactive - (optional) if set, then also inactive policies will be displayed
+            * scope - (optional) will only return the policies within the
+                                 given scope
+            * export - (optional) The filename needs to be specified as the
+                                  third part of the URL like
+                                  /system/getPolicy/policy.cfg.
+                                  It will then be exported to this file.
+            * display_inactive - (optional) if set, then also inactive policies
+                                            will be displayed
 
         returns:
             a json result with the configuration of the specified policies
@@ -1468,51 +1538,57 @@ class SystemController(BaseController):
 
         """
 
-
-        pol = {}
         param = getLowerParams(request.params)
 
-        log.debug("[getPolicy] getting policy: %r" % param)
+        log.debug("[getPolicy] getting policy: %r", param)
         export = None
-
-        # config settings from here
         action = None
         user = None
+
         try:
-            name = getParam(param, "name", optional)
-            realm = getParam(param, "realm", optional)
-            scope = getParam(param, "scope", optional)
+            name = param.get("name")
+            realm = param.get("realm")
+            scope = param.get("scope")
+
             if 'action' in param:
                 action = param.get('action') or None
             if 'user' in param:
                 user = param.get('user') or None
 
-            display_inactive = getParam(param, "display_inactive", optional)
+            display_inactive = param.get("display_inactive")
             if display_inactive:
                 display_inactive = True
 
             route_dict = request.environ.get('pylons.routes_dict')
             export = route_dict.get('id')
 
-            log.debug("[getPolicy] retrieving policy name: %s, realm: %s, scope: %s"
-                      % (name, realm, scope))
+            log.debug("[getPolicy] retrieving policy name: %s, realm: %s,"
+                      " scope: %s", name, realm, scope)
             pol = {}
             if name is not None:
                 for nam in name.split(','):
-                    search_param = {'name':nam, 'realm':realm, 'scope': scope}
+                    search_param = {'name': nam,
+                                    'realm': realm,
+                                    'scope': scope}
                     if action:
                         search_param['action'] = action
                     poli = getPolicy(search_param,
                                      display_inactive=display_inactive)
                     pol.update(poli)
             else:
-                search_param = {'name':name, 'realm':realm, 'scope': scope}
+                search_param = {'name': name,
+                                'realm': realm,
+                                'scope': scope}
                 if action:
                     search_param['action'] = action
                 pol = getPolicy(search_param,
                                 display_inactive=display_inactive)
 
-            # due to bug in getPolicy we have to post check if user is in policy!
+            #
+            # due to bug in getPolicy we have to post check
+            # if user is in policy!
+            #
+
             if user:
                 rpol = {}
                 for p_name, policy in pol.items():
@@ -1520,15 +1596,15 @@ class SystemController(BaseController):
                         rpol[p_name] = policy
                     else:
                         users = policy['user'].split(',')
-                        for use in users:
-                            if use.strip() == user.strip() or use.strip() == '*':
+                        for usr in users:
+                            if (usr.strip() == user.strip() or
+                               usr.strip() == '*'):
                                 rpol[p_name] = policy
                 pol = rpol
 
-
             c.audit['success'] = True
-            c.audit['info'] = "name = %s, realm = %s, scope = %s" \
-                                % (name, realm, scope)
+            c.audit['info'] = ("name = %s, realm = %s, scope = %s"
+                               % (name, realm, scope))
 
             Session.commit()
 
@@ -1540,7 +1616,7 @@ class SystemController(BaseController):
                 return sendResult(response, pol, 1)
 
         except Exception as exx:
-            log.exception("[getPolicy] error getting policy: %r" % exx)
+            log.exception("[getPolicy] error getting policy: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1572,7 +1648,7 @@ class SystemController(BaseController):
         param = {}
         try:
             param.update(request.params)
-            log.info("[delPolicy] deleting policy: %r" % param)
+            log.info("[delPolicy] deleting policy: %r", param)
 
             # support the ignor of policy impact check
             enforce = param.get("enforce", 'False')
@@ -1584,7 +1660,7 @@ class SystemController(BaseController):
             name_param = param["name"]
             names = name_param.split(',')
             for name in names:
-                log.debug("[delPolicy] trying to delete policy %s" % name)
+                log.debug("[delPolicy] trying to delete policy %s", name)
                 ret.update(deletePolicy(name, enforce))
 
             res["delPolicy"] = {"result": ret}
@@ -1596,7 +1672,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[delPolicy] error deleting policy: %r" % exx)
+            log.exception("[delPolicy] error deleting policy: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1612,12 +1688,12 @@ class SystemController(BaseController):
 
         try:
             params = getLowerParams(request.params)
-            log.debug("[setupSecurityModule] parameters: %r" % params)
+            log.debug("[setupSecurityModule] parameters: %r", params.keys())
             log.debug("[setupSecurityModule] : start setup")
 
             hsm_id = params.get('hsm_id', None)
 
-            from linotp.lib.config  import getGlobalObject
+            from linotp.lib.config import getGlobalObject
             glo = getGlobalObject()
             sep = glo.security_provider
 
@@ -1635,14 +1711,15 @@ class SystemController(BaseController):
                     if type(hsm).__name__ == 'ErrSecurityModule':
                         hsm_id = sep.setupModule('default', params)
 
-
-
             if hsm_id is None:
                 hsm_id = sep.activeOne
                 hsm = c.hsm.get('obj')
                 error = c.hsm.get('error')
                 if hsm is None or len(error) != 0:
-                    raise Exception ('current activeSecurityModule >%r< is not initialized::%s:: - Please check your security module configuration and connection!' % (hsm_id, error))
+                    raise Exception("current activeSecurityModule >%r< is not"
+                                    "initialized::%s:: - Please check your "
+                                    "security module configuration and "
+                                    "connection!" % (hsm_id, error))
 
                 ready = hsm.isReady()
                 res['setupSecurityModule'] = {'activeSecurityModule': hsm_id,
@@ -1650,7 +1727,9 @@ class SystemController(BaseController):
                 ret = ready
             else:
                 if hsm_id != sep.activeOne:
-                    raise Exception ('current activeSecurityModule >%r< could only be changed through the configuration!' % sep.activeOne)
+                    raise Exception("current activeSecurityModule >%r< could"
+                                    " only be changed through the "
+                                    "configuration!" % sep.activeOne)
 
                 ret = sep.setupModule(hsm_id, config=params)
 
@@ -1665,7 +1744,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[setupSecurityModule] : setup failed: %r" % exx)
+            log.exception("[setupSecurityModule] : setup failed: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1691,7 +1770,8 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("[getSupportInfo] : failed to access support info: %r" % exx)
+            log.exception("[getSupportInfo] : failed to access support info:"
+                          " %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1790,7 +1870,7 @@ class SystemController(BaseController):
                 sendResultMethod = sendXMLResult
                 sendErrorMethod = sendXMLError
 
-            log.info("[setSupport] setting support: %s" % (licField))
+            log.info("[setSupport] setting support: %s", licField)
 
             # In case of normal post requests, it is a "instance" of
             # FieldStorage
@@ -1812,7 +1892,8 @@ class SystemController(BaseController):
             return sendResultMethod(response, res, 1, opt=message)
 
         except Exception as exx:
-            log.exception("[setSupport] failed to set support license: %r" % exx)
+            log.exception("[setSupport] failed to set support license: %r",
+                          exx)
             Session.rollback()
             return sendErrorMethod(response, exx)
 
@@ -1860,7 +1941,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1, opt=reply)
 
         except Exception as exx:
-            log.exception("error saving config: %r" % exx)
+            log.exception("error saving config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1907,7 +1988,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("error getting config: %r" % exx)
+            log.exception("error getting config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1951,7 +2032,7 @@ class SystemController(BaseController):
             return sendResult(response, res > 0, 1, opt=reply)
 
         except Exception as exx:
-            log.exception("error saving config: %r" % exx)
+            log.exception("error saving config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -1995,7 +2076,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1, opt=reply)
 
         except Exception as exx:
-            log.exception("error saving config: %r" % exx)
+            log.exception("error saving config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
@@ -2037,7 +2118,7 @@ class SystemController(BaseController):
             return sendResult(response, res, 1)
 
         except Exception as exx:
-            log.exception("error saving config: %r" % exx)
+            log.exception("error saving config: %r", exx)
             Session.rollback()
             return sendError(response, exx)
 
