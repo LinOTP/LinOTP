@@ -50,7 +50,7 @@ function qr_get_config_val(){
     id_map['QRMaxChallenges'] = 'qrconfig_max_challenges';
     id_map['QRChallengeValidityTime'] = 'qrconfig_challenge_timeout';
     var cert_id = $('#qrconfig_cert_id').val();
-    id_map['QrTokenPublicKey.' + cert_id] = 'qrconfig_pub_cert';
+    id_map['PublicKey.' + cert_id] = 'qrconfig_pub_cert';
 
     return id_map;
 
@@ -118,7 +118,7 @@ function qr_get_config_params(){
                     <label for="qrconfig_cert_id">${_("Public key certificate")}</label>
                 </td>
                 <td>
-                    <input class="required" type="text" name="qrconfig_timeout" id="qrconfig_cert_id" value="system" disabled="true" placeholder="${_('certificate id')}" class="text ui-widget-content ui-corner-all"/>
+                    <input class="required" type="text" name="qrconfig_cert_id" id="qrconfig_cert_id" value="Partition.0" disabled="true" placeholder="${_('certificate id')}" class="text ui-widget-content ui-corner-all"/>
                 </td>
             </tr>
             <tr>
