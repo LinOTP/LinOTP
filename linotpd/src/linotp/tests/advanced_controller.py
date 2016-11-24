@@ -99,7 +99,7 @@ else:
             # Configure url ...
             url._push_object(URLGenerator(config['routes.map'], environ))
 
-            # -----------------------------------------------------------------
+            # -------------------------------------------------------------- --
 
             current_webtest = LooseVersion(
                 pkg_resources.get_distribution('webtest').version
@@ -376,7 +376,7 @@ class TestAdvancedController(TestController2):
 
     # *********************************************************************
     # Start of LinOTP wrapped api...
-    # ---------------------------------------------------------------------
+    # ------------------------------------------------------------------ --
     # Here, are located only calls to LinOTP server. By default all return
     # values are validated against a default (expected) value.
     # *********************************************************************
@@ -701,7 +701,7 @@ class TestAdvancedController(TestController2):
 
     # *********************************************************************
     # Start of LinOTP test api...
-    # ---------------------------------------------------------------------
+    # ------------------------------------------------------------------ --
     # Here, are located only calls to LinOTP server which are designed to
     # initialize the test environment.
     # *********************************************************************

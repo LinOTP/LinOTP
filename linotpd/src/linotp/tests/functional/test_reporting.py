@@ -56,7 +56,7 @@ class TestReportingController(TestController):
         self.delete_all_token()
         super(TestReportingController, self).tearDown()
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
     # Helper functions
 
     def create_token(self, serial="1234567", realm=None, user=None,
@@ -105,7 +105,7 @@ class TestReportingController(TestController):
         values = resp.get('result')
         self.assertEqual(values.get('status'), True, response)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
     # Tests
 
     def test_init_token(self):

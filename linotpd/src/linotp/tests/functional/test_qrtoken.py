@@ -102,7 +102,7 @@ class TestQRToken(TestController):
 
         return response
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def setOfflinePolicy(self, realm='*', name='qr_offline',
                          action='support_offline=qr', active=True):
@@ -122,13 +122,13 @@ class TestQRToken(TestController):
         response = self.make_system_request("setPolicy", params=params)
         self.assertTrue('"status": true' in response, response)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_dummy_cb_policies(self):
         """ sets some dummy callback policies. callback policies get ignored
         by the tests, but are nonetheless necessary for the backend """
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # set pairing callback policies
 
@@ -148,7 +148,7 @@ class TestQRToken(TestController):
 
         self.setPolicy(params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # set challenge callback policies
 
@@ -168,7 +168,7 @@ class TestQRToken(TestController):
 
         self.setPolicy(params)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def setUp(self):
         # do the cleanup upfront for better post mortem debuggability
@@ -193,7 +193,7 @@ class TestQRToken(TestController):
         self.delete_all_token()
         super(TestQRToken, self).tearDown()
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def enroll_qrtoken(self, hashlib=None, user=None, pin='1234'):
         """
@@ -220,7 +220,7 @@ class TestQRToken(TestController):
 
         response = self.make_admin_request('init', params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # response should contain pairing url, check if it was
         # sent and validate
@@ -242,7 +242,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if challenge was triggered
 
@@ -257,7 +257,7 @@ class TestQRToken(TestController):
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
         return challenge_url, detail.get('transactionid')
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def setPolicy(self, params):
         """ sets a system policy defined by param """
@@ -275,11 +275,11 @@ class TestQRToken(TestController):
 
         response = self.make_system_request('getPolicy', params)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_callback_policies(self):
         """QRTOKEN: check if callback policies returned callbacks are correct"""
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # set pairing callback policies
 
@@ -299,7 +299,7 @@ class TestQRToken(TestController):
 
         self.setPolicy(params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # set challenge callback policies
 
@@ -319,7 +319,7 @@ class TestQRToken(TestController):
 
         self.setPolicy(params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check callback definitions in pairing url
 
@@ -333,27 +333,27 @@ class TestQRToken(TestController):
         self.assertEqual(callback_url, '/foo/bar/url')
         self.assertEqual(callback_sms, '1234')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
             user_token_id)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send pairing response
 
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if returned json is correct
 
         self.assertFalse(response_dict.get('result', {}).get('value', True))
         self.assertTrue(response_dict.get('result', {}).get('status', False))
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # get challenge
 
@@ -364,7 +364,7 @@ class TestQRToken(TestController):
         challenge_url, transid = self.get_challenge(params=params)
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if returned callbacks are correct
 
@@ -374,7 +374,7 @@ class TestQRToken(TestController):
         callback_sms = challenge['callback_sms']
         self.assertEqual(callback_sms, '5678')
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def assign_token_to_user(self, serial, user_login, pin=None):
         """
@@ -395,7 +395,7 @@ class TestQRToken(TestController):
         response = self.make_admin_request('assign', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
@@ -405,7 +405,7 @@ class TestQRToken(TestController):
 
         self.assertTrue(value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def send_pairing_response(self, pairing_response):
 
@@ -421,7 +421,7 @@ class TestQRToken(TestController):
 
         return response_dict
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def pair_until_challenge(self, pairing_url, pin='1234'):
         """
@@ -438,20 +438,20 @@ class TestQRToken(TestController):
 
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
             user_token_id)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send pairing response
 
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if returned json is correct
 
@@ -466,7 +466,7 @@ class TestQRToken(TestController):
         status = result.get('status')
         self.assertTrue(status)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # trigger challenge
 
@@ -482,7 +482,7 @@ class TestQRToken(TestController):
 
         print response_dict
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if challenge was triggered
         challenge_url = None
@@ -499,7 +499,7 @@ class TestQRToken(TestController):
 
         return challenge_url
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def execute_correct_pairing(self, hashlib=None, user=None,
                                 use_tan=False, tan_length=8, pin='1234'):
@@ -513,29 +513,29 @@ class TestQRToken(TestController):
 
         self.tan_length = tan_length
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # enroll token
 
         pairing_url, pin = self.enroll_qrtoken(hashlib, user=user, pin=pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # execute the first step of the pairing
 
         challenge_url = self.pair_until_challenge(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check request response
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # parse, descrypt and verify the challenge url
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if the content type is right (we are doing pairing
         # right now, so type must be QRTOKEN_CT_PAIR)
@@ -550,7 +550,7 @@ class TestQRToken(TestController):
         serial = self.tokens[user_token_id]['serial']
         self.assertEqual(challenge['message'], serial)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare params for validate
 
@@ -569,7 +569,7 @@ class TestQRToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -582,7 +582,7 @@ class TestQRToken(TestController):
 
         return user_token_id
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_user_token_by_pairing_url(self, pairing_url, pin='1234'):
         """
@@ -608,7 +608,7 @@ class TestQRToken(TestController):
         self.assertEqual(token_type, TYPE_QRTOKEN)
         self.assertEqual(version, PAIRING_URL_VERSION)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # extract custom data that may or may not be present
         # (depending on flags)
@@ -630,7 +630,7 @@ class TestQRToken(TestController):
         if flags & FLAG_PAIR_CBSMS:
             callback_sms, __, custom_data = custom_data.partition(b'\x00')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # save token data for later use
 
@@ -642,12 +642,12 @@ class TestQRToken(TestController):
                                       'callback_sms': callback_sms,
                                       'pin': pin}
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         return user_token_id
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def decrypt_and_verify_challenge(self, challenge_url):
         """
@@ -690,7 +690,7 @@ class TestQRToken(TestController):
         challenge_data_encoded = challenge_url[len('lseqr://chal/'):]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # parse and verify header information in the
         # encrypted challenge data
@@ -699,13 +699,13 @@ class TestQRToken(TestController):
         version, user_token_id = struct.unpack('<bI', header)
         self.assertEqual(version, QRTOKEN_VERSION)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # get token from client token database
 
         token = self.tokens[user_token_id]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare decryption by seperating R from
         # ciphertext and tag
@@ -714,7 +714,7 @@ class TestQRToken(TestController):
         ciphertext = challenge_data[5 + 32:-16]
         tag = challenge_data[-16:]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # key derivation
 
@@ -726,7 +726,7 @@ class TestQRToken(TestController):
         skB = U2[0:16]
         nonce = U2[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # decrypt and verify challenge
 
@@ -734,7 +734,7 @@ class TestQRToken(TestController):
         cipher.update(header)
         plaintext = cipher.decrypt_and_verify(ciphertext, tag)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # parse/check plaintext header
 
@@ -748,7 +748,7 @@ class TestQRToken(TestController):
         if content_type == QRTOKEN_CT_PAIR:
             self.assertTrue(flags & FLAG_QR_SRVSIG)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # retrieve plaintext data depending on flags
 
@@ -784,7 +784,7 @@ class TestQRToken(TestController):
 
             server_signature = b''
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # extract message and (optional) callback
         # parameters from data
@@ -799,7 +799,7 @@ class TestQRToken(TestController):
         if flags & FLAG_QR_HAVE_SMS:
             callback_sms, _, suffix = suffix.partition(b'\x00')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare the parsed challenge data
 
@@ -823,7 +823,7 @@ class TestQRToken(TestController):
         return challenge, encoded_sig, tan
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_pairing_response_by_serial(self, user_token_id):
         """
@@ -847,7 +847,7 @@ class TestQRToken(TestController):
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create public diffie hellman component
         # (used to decrypt and verify the reponse)
@@ -855,7 +855,7 @@ class TestQRToken(TestController):
         r = os.urandom(32)
         R = calc_dh_base(r)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # derive encryption key and nonce
 
@@ -864,7 +864,7 @@ class TestQRToken(TestController):
         encryption_key = U[0:16]
         nonce = U[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # encrypt in EAX mode
 
@@ -874,7 +874,7 @@ class TestQRToken(TestController):
 
         return encode_base64_urlsafe(header + R + ciphertext + tag)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_sig(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
@@ -883,7 +883,7 @@ class TestQRToken(TestController):
 
         return
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_user(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
@@ -892,7 +892,7 @@ class TestQRToken(TestController):
 
         return
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_fquser(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
@@ -901,34 +901,34 @@ class TestQRToken(TestController):
 
         return
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_tan(self):
         """QRTOKEN: check if pairing mechanism works correctly (tan based)"""
 
         self.execute_correct_pairing(use_tan=True)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_response_after_pairing(self):
         """QRTOKEN: check if a sent pairing response after pairing will fail"""
 
         user_token_id = self.execute_correct_pairing()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create another pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
             user_token_id)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send pairing response
 
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
         self.assertIn('status', result)
@@ -943,17 +943,17 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_ill_formatted_pairing_response(self):
         """QRTOKEN: check if error is thrown on ill-formatted pairing response """
@@ -962,7 +962,7 @@ class TestQRToken(TestController):
         response_dict = self.send_pairing_response('look, mom! i\'m crashing '
                                                    'the server')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
         self.assertIn('status', result)
@@ -977,36 +977,36 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # self.assertIn('Malformed pairing response', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_wrong_challenge_response(self):
         """
         QRTOKEN: Testing if a wrong challenge response in pairing will fail
         """
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # enroll token
 
         pairing_url, pin = self.enroll_qrtoken()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # execute the first step of the pairing
 
         challenge_url = self.pair_until_challenge(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -1019,7 +1019,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
         self.assertIn('status', result)
@@ -1031,7 +1031,7 @@ class TestQRToken(TestController):
         value = result.get('value')
         self.assertEqual(value, False)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_response_version(self):
         """
@@ -1042,13 +1042,13 @@ class TestQRToken(TestController):
 
         pairing_url, pin = self.enroll_qrtoken()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # save data extracted from pairing url to the 'user database'
 
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
 
@@ -1065,14 +1065,14 @@ class TestQRToken(TestController):
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create public diffie hellman component
 
         r = os.urandom(32)
         R = calc_dh_base(r)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # derive encryption key and nonce
 
@@ -1081,7 +1081,7 @@ class TestQRToken(TestController):
         encryption_key = U[0:16]
         nonce = U[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # encrypt in EAX mode
 
@@ -1097,7 +1097,7 @@ class TestQRToken(TestController):
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('status', result)
         status = result.get('status')
@@ -1110,17 +1110,17 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('Unexpected pair-response version', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_serial(self):
         """
@@ -1131,13 +1131,13 @@ class TestQRToken(TestController):
 
         pairing_url, pin = self.enroll_qrtoken()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # save data extracted from pairing url to the 'user database'
 
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
 
@@ -1153,14 +1153,14 @@ class TestQRToken(TestController):
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create public diffie hellman component
 
         r = os.urandom(32)
         R = calc_dh_base(r)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # derive encryption key and nonce
 
@@ -1169,7 +1169,7 @@ class TestQRToken(TestController):
         encryption_key = U[0:16]
         nonce = U[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # encrypt in EAX mode
 
@@ -1185,7 +1185,7 @@ class TestQRToken(TestController):
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('status', result)
         status = result.get('status')
@@ -1198,12 +1198,12 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # # TODO: error mesage in here is pretty cryptic, because linotp
         # # creates a new token for WRONGSERIAL and then exits because it
@@ -1212,7 +1212,7 @@ class TestQRToken(TestController):
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_token_type(self):
         """
@@ -1223,13 +1223,13 @@ class TestQRToken(TestController):
 
         pairing_url, pin = self.enroll_qrtoken()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # save data extracted from pairing url to the 'user database'
 
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
 
@@ -1248,14 +1248,14 @@ class TestQRToken(TestController):
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create public diffie hellman component
 
         r = os.urandom(32)
         R = calc_dh_base(r)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # derive encryption key and nonce
 
@@ -1264,7 +1264,7 @@ class TestQRToken(TestController):
         encryption_key = U[0:16]
         nonce = U[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # encrypt in EAX mode
 
@@ -1280,7 +1280,7 @@ class TestQRToken(TestController):
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('status', result)
         status = result.get('status')
@@ -1293,17 +1293,17 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('wrong token type', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_response_wrong_R(self):
         """
@@ -1314,13 +1314,13 @@ class TestQRToken(TestController):
 
         pairing_url, pin = self.enroll_qrtoken()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # save data extracted from pairing url to the 'user database'
 
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
         header = struct.pack('<bI', PAIR_RESPONSE_VERSION, TYPE_QRTOKEN)
@@ -1335,7 +1335,7 @@ class TestQRToken(TestController):
 
         pairing_response += token_serial.encode('utf8') + b'\x00\x00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create wrong public diffie hellman component
 
@@ -1343,7 +1343,7 @@ class TestQRToken(TestController):
         probably_not_the_same_r = os.urandom(32)
         R = calc_dh_base(probably_not_the_same_r)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # derive encryption key and nonce
 
@@ -1352,7 +1352,7 @@ class TestQRToken(TestController):
         encryption_key = U[0:16]
         nonce = U[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # encrypt in EAX mode
 
@@ -1368,7 +1368,7 @@ class TestQRToken(TestController):
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('status', result)
         status = result.get('status')
@@ -1381,50 +1381,50 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('MAC check failed', error.get('message'))
         # self.assertEqual(-311, error.get('code'))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_pairing_response_double_send(self):
         """
         QRTOKEN: Testing if sending 2 pairing responses will fail.
         """
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # enroll token
 
         pairing_url, pin = self.enroll_qrtoken()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # save data extracted from pairing url to the 'user database'
 
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(
             user_token_id)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send pairing responses
 
         __ = self.send_pairing_response(pairing_response)  # should be ok
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
         self.assertIn('status', result)
@@ -1439,52 +1439,52 @@ class TestQRToken(TestController):
         # self.assertIn('error', result)
         # error = result.get('error')
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('message', error)
         # self.assertIn('code', error)
 
-        # # -------------------------------------------------------------------
+        # # ---------------------------------------------------------------- --
 
         # self.assertIn('Unfitting request for this token', error.get('message'))
         # self.assertEqual(905, error.get('code'))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_signature(self):
         """ QRTOKEN: Executing complete challenge response with serial/sig """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_FREE)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_signature_login(self):
         """ QRTOKEN: Executing complete login flow with serial/sig """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_AUTH)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_tan(self):
         """ QRTOKEN: Executing complete challenge response with serial/tan """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_FREE, use_tan=True)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_challenge_response_serial_tan_login(self):
         """ QRTOKEN: Executing complete login flow with serial/tan """
 
         self.execute_correct_serial_challenge(QRTOKEN_CT_AUTH, use_tan=True)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_wrong_serial_challenge_response(self):
         """ QRTOKEN: Sending a wrong challenge response on token (serial) """
 
         challenge_url = self.trigger_challenge_by_serial(QRTOKEN_CT_FREE)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
@@ -1497,7 +1497,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
         self.assertIn('status', result)
@@ -1509,13 +1509,13 @@ class TestQRToken(TestController):
         value = result.get('value')
         self.assertEqual(value, False)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def trigger_challenge_by_serial(self, content_type):
 
         user_token_id = self.execute_correct_pairing()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         token = self.tokens[user_token_id]
         serial = token['serial']
@@ -1536,7 +1536,7 @@ class TestQRToken(TestController):
         self.assertIn('detail', response_dict)
         detail = response_dict.get('detail')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('transactionid', detail)
         self.assertIn('message', detail)
@@ -1547,7 +1547,7 @@ class TestQRToken(TestController):
 
         return challenge_url
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_unpaired_challenge_serial(self):
         """
@@ -1557,12 +1557,12 @@ class TestQRToken(TestController):
         pairing_url, pin = self.enroll_qrtoken()
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         token = self.tokens[user_token_id]
         serial = token['serial']
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'serial': serial,
                   'data': 'yikes! another possible catastrophe',
@@ -1571,7 +1571,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         result = response_dict.get('result', {})
         self.assertIn('status', result)
@@ -1583,7 +1583,7 @@ class TestQRToken(TestController):
         value = result.get('value')
         self.assertEqual(value, False, response)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_validate_user_pin_policy_1_wrong_pin(self):
         """ QRTOKEN: Validating user with pin policy 1 (wrong pin)"""
@@ -1592,12 +1592,12 @@ class TestQRToken(TestController):
         token = self.tokens[user_token_id]
         serial = token['serial']
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.setPinPolicy(action='otppin=1, ')
         self.assign_token_to_user(serial=serial, user_login='molière')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'user': 'molière', 'pass': 'wrongpassword',
                   'data': '2000 dollars to that nigerian prince'}
@@ -1612,7 +1612,7 @@ class TestQRToken(TestController):
 
         self.assertFalse(value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def set_pin(self, serial, pin):
         """
@@ -1627,7 +1627,7 @@ class TestQRToken(TestController):
         response = self.make_admin_request('set', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
@@ -1637,7 +1637,7 @@ class TestQRToken(TestController):
 
         self.assertTrue(status)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('value', result)
         value = result.get('value')
@@ -1647,7 +1647,7 @@ class TestQRToken(TestController):
 
         self.assertEqual(set_pin, 1)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_multiple_challenges(self, user_login, pin):
         """
@@ -1669,12 +1669,12 @@ class TestQRToken(TestController):
         self.set_pin(serial1, pin)
         self.set_pin(serial2, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'user': 'root', 'pass': '1234',
                   'data': '2000 dollars to that nigerian prince'}
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
@@ -1685,7 +1685,7 @@ class TestQRToken(TestController):
         self.assertIn('challenges', detail)
         challenges = detail.get('challenges')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn(serial1, challenges)
         data_1 = challenges.get(serial1)
@@ -1693,7 +1693,7 @@ class TestQRToken(TestController):
         self.assertIn(serial2, challenges)
         data_2 = challenges.get(serial2)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('transactionid', data_1)
         self.assertIn('transactionid', data_2)
@@ -1701,20 +1701,20 @@ class TestQRToken(TestController):
         self.assertIn('message', data_1)
         self.assertIn('message', data_2)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         return response_dict
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_multiple_challenges(self):
         """ QRTOKEN: creating multiple challenges and validate them """
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # validate by parent transaction_id
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         response_dict = self.create_multiple_challenges('root', '1234')
         challenges = response_dict['detail']['challenges']
@@ -1727,7 +1727,7 @@ class TestQRToken(TestController):
         transaction_id = response_dict['detail']['transactionid']
         params = {'transactionid': transaction_id, 'pass': sig}
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         response = self.make_validate_request('check_t', params)
         response_dict = json.loads(response.body)
@@ -1736,7 +1736,7 @@ class TestQRToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -1747,11 +1747,11 @@ class TestQRToken(TestController):
 
         self.assertTrue(value_value)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # validate by child transaction_id
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         response_dict = self.create_multiple_challenges('root', '1234')
         challenges = response_dict['detail']['challenges']
@@ -1764,7 +1764,7 @@ class TestQRToken(TestController):
         transaction_id = challenges[serial]['transactionid']
         params = {'transactionid': transaction_id, 'pass': sig}
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         response = self.make_validate_request('check_t', params)
         response_dict = json.loads(response.body)
@@ -1773,7 +1773,7 @@ class TestQRToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -1784,7 +1784,7 @@ class TestQRToken(TestController):
 
         self.assertTrue(value_value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_validate_user_pin_policy_1(self):
         """ QRTOKEN: Validating user with pin policy 1 """
@@ -1793,12 +1793,12 @@ class TestQRToken(TestController):
         token = self.tokens[user_token_id]
         serial = token['serial']
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.setPinPolicy(action='otppin=1, ')
         self.assign_token_to_user(serial=serial, user_login='molière')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'user': 'molière', 'pass': 'molière',
                   'data': '2000 dollars to that nigerian prince'}
@@ -1808,7 +1808,7 @@ class TestQRToken(TestController):
         self.assertIn('detail', response_dict)
         detail = response_dict.get('detail')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('transactionid', detail)
         self.assertIn('message', detail)
@@ -1819,7 +1819,7 @@ class TestQRToken(TestController):
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         transaction_id = challenge["transaction_id"]
 
@@ -1829,7 +1829,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
@@ -1837,11 +1837,11 @@ class TestQRToken(TestController):
         self.assertIn('value', result)
         value = result.get('value')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertTrue(value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_validate_user_pin_policy_2(self):
         """ QRTOKEN: Validating user with pin policy 2 """
@@ -1850,13 +1850,13 @@ class TestQRToken(TestController):
         token = self.tokens[user_token_id]
         serial = token['serial']
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # otppin=2 - on validation NO PIN should be entered atall
         self.setPinPolicy(action='otppin=2, ')
         self.assign_token_to_user(serial=serial, user_login='root')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'user': 'root', 'pass': '',
                   'data': '2000 dollars to that nigerian prince'}
@@ -1866,7 +1866,7 @@ class TestQRToken(TestController):
         self.assertIn('detail', response_dict)
         detail = response_dict.get('detail')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('transactionid', detail)
         self.assertIn('message', detail)
@@ -1877,7 +1877,7 @@ class TestQRToken(TestController):
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         transaction_id = challenge["transaction_id"]
 
@@ -1885,7 +1885,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
@@ -1893,29 +1893,29 @@ class TestQRToken(TestController):
         self.assertIn('value', result)
         value = result.get('value')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertTrue(value)
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def execute_correct_serial_challenge(self, content_type, use_tan=False):
 
         challenge_url = self.trigger_challenge_by_serial(content_type)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if the content type is right
 
         returned_content_type = challenge['content_type']
         self.assertEqual(returned_content_type, content_type)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare params for validate
 
@@ -1934,7 +1934,7 @@ class TestQRToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -1945,7 +1945,7 @@ class TestQRToken(TestController):
 
         self.assertTrue(value_value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_offline_info(self):
         """ QRTOKEN: Checking if offline info is transmitted on validation """
@@ -1954,12 +1954,12 @@ class TestQRToken(TestController):
         token = self.tokens[user_token_id]
         serial = token['serial']
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.setPinPolicy(action='otppin=1, ')
         self.assign_token_to_user(serial=serial, user_login='molière')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'user': 'molière', 'pass': 'molière',
                   'data': '2000 dollars to that nigerian prince'}
@@ -1969,7 +1969,7 @@ class TestQRToken(TestController):
         self.assertIn('detail', response_dict)
         detail = response_dict.get('detail')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('transactionid', detail)
         self.assertIn('message', detail)
@@ -1980,7 +1980,7 @@ class TestQRToken(TestController):
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         transaction_id = challenge["transaction_id"]
 
@@ -1992,7 +1992,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
@@ -2007,13 +2007,13 @@ class TestQRToken(TestController):
 
         self.assertNotIn('detail', response_dict)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # now we set the policy and do it again
 
         self.setOfflinePolicy()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'user': 'molière', 'pass': 'molière',
                   'data': '2000 dollars to that nigerian prince'}
@@ -2023,7 +2023,7 @@ class TestQRToken(TestController):
         self.assertIn('detail', response_dict)
         detail = response_dict.get('detail')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('transactionid', detail)
         self.assertIn('message', detail)
@@ -2034,7 +2034,7 @@ class TestQRToken(TestController):
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         transaction_id = challenge["transaction_id"]
 
@@ -2046,7 +2046,7 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check', params)
         response_dict = json.loads(response.body)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertIn('result', response_dict)
         result = response_dict.get('result')
@@ -2054,7 +2054,7 @@ class TestQRToken(TestController):
         self.assertIn('value', result)
         value = result.get('value')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.assertTrue(value)
 
@@ -2084,4 +2084,4 @@ class TestQRToken(TestController):
         public_key = offline_info.get('public_key')
         self.assertEqual(public_key, b64encode(self.public_key))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --

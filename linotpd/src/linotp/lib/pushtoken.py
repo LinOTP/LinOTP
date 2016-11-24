@@ -61,7 +61,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     :return: PushTokenPairingData
     """
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # check format boundaries
 
@@ -69,7 +69,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     if len(plaintext) < plaintext_min_length:
         raise ParameterError('Malformed pairing response for type PushToken')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get user token id (unique id on the client)
     # (token type was already processed in
@@ -83,7 +83,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     user_token_id = struct.unpack('<I', plaintext[1:5])[0]
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get user public key (next 32 bytes)
 
@@ -95,7 +95,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     user_public_key = plaintext[5:5+32]
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get serial, user login and gda
 
@@ -118,7 +118,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     user_login = str_parts[1].decode('utf8')
     gda = str_parts[2].decode('utf8')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get signature and verify
 
@@ -131,7 +131,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
         # original value error is too generic
         raise ValueError('Invalid signature for pairing response data')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     return PushTokenPairingData(user_public_key,
                                 user_token_id,

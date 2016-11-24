@@ -42,7 +42,7 @@ class QRTokenPairingData(_QRTokenPairingData):
 
     pass
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 
 def parse_qrtoken_pairing_data(plaintext):
@@ -58,7 +58,7 @@ def parse_qrtoken_pairing_data(plaintext):
         the parsed fields
     """
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # check format boundaries
 
@@ -66,7 +66,7 @@ def parse_qrtoken_pairing_data(plaintext):
     if len(plaintext) < plaintext_min_length:
         raise ParameterError('Malformed pairing response for type QrToken')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get user token id (unique id on the client)
     # (token type was already processed in
@@ -80,7 +80,7 @@ def parse_qrtoken_pairing_data(plaintext):
 
     user_token_id = struct.unpack('<I', plaintext[1:5])[0]
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get user public key (next 32 bytes)
 
@@ -92,7 +92,7 @@ def parse_qrtoken_pairing_data(plaintext):
 
     user_public_key = plaintext[5:5+32]
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get serial and/or user login
 
@@ -108,7 +108,7 @@ def parse_qrtoken_pairing_data(plaintext):
     serial = serial_user_data[0].decode('utf8')
     user_login = serial_user_data[1].decode('utf8')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # check serial / user login max length
 
@@ -120,7 +120,7 @@ def parse_qrtoken_pairing_data(plaintext):
         raise ParameterError('Malformed pairing response for type QrToken:'
                              'User login too long')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     return QRTokenPairingData(user_public_key,
                               user_token_id,

@@ -74,7 +74,7 @@ def u64_to_transaction_id(u64_int):
         before = u64_int // 100
         return '%s.%s' % (str(before), str(rest))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 
 class TestPushToken(TestController):
@@ -90,25 +90,25 @@ class TestPushToken(TestController):
         self.create_common_realms()
         self.create_dummy_cb_policies()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         self.gda = 'DEADBEEF'
         self.tokens = defaultdict(dict)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         pk, sk = gen_dsa_keypair()
         self.secret_key = sk
         self.public_key = pk
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # we need a dummy file to sneak past the file existence check
         # in the initial provider configuration
 
         self.dummy_temp_cert = NamedTemporaryFile()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # make dummy provider config
 
@@ -122,7 +122,7 @@ class TestPushToken(TestController):
 
         self.make_system_request('setProvider', params=params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         params = {'name': 'dummy_push_policy',
                   'scope': 'authentication',
@@ -134,7 +134,7 @@ class TestPushToken(TestController):
 
         self.create_policy(params=params)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def tearDown(self):
 
@@ -144,7 +144,7 @@ class TestPushToken(TestController):
         self.delete_all_token()
         super(TestPushToken, self).tearDown()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # delete dummy provider config
 
@@ -153,13 +153,13 @@ class TestPushToken(TestController):
 
         self.make_system_request('delProvider', params=params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # delete temp file
 
         self.dummy_temp_cert.close()
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def setPolicy(self, params):
 
@@ -178,14 +178,14 @@ class TestPushToken(TestController):
 
         response = self.make_system_request('getPolicy', params)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_dummy_cb_policies(self):
 
         """ sets some dummy callback policies. callback policies get ignored
         by the tests, but are nonetheless necessary for the backend """
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # set pairing callback policies
 
@@ -197,7 +197,7 @@ class TestPushToken(TestController):
 
         self.setPolicy(params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # set challenge callback policies
 
@@ -209,7 +209,7 @@ class TestPushToken(TestController):
 
         self.setPolicy(params)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def enroll_pushtoken(self, user=None, pin='1234'):
 
@@ -232,7 +232,7 @@ class TestPushToken(TestController):
 
         response = self.make_admin_request('init', params)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # response should contain pairing url, check if it was
         # sent and validate
@@ -246,7 +246,7 @@ class TestPushToken(TestController):
 
         return pairing_url
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def execute_correct_pairing(self, user=None, pin='1234'):
 
@@ -260,25 +260,25 @@ class TestPushToken(TestController):
         :return user_token_id (key for self.tokens)
         """
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # enroll token
 
         pairing_url = self.enroll_pushtoken(user=user, pin=pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # execute the first step of the pairing
 
         challenge_url = self.pair_until_challenge(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # parse, descrypt and verify the challenge url
 
         challenge, sig = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if the content type is right (we are doing pairing
         # right now, so type must be CONTENT_TYPE_PAIRING)
@@ -286,7 +286,7 @@ class TestPushToken(TestController):
         content_type = challenge['content_type']
         self.assertEqual(content_type, CONTENT_TYPE_PAIRING)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare params for validate
 
@@ -302,7 +302,7 @@ class TestPushToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -315,7 +315,7 @@ class TestPushToken(TestController):
 
         return user_token_id
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def pair_until_challenge(self, pairing_url, pin='1234'):
 
@@ -335,19 +335,19 @@ class TestPushToken(TestController):
 
         user_token_id = self.create_user_token_by_pairing_url(pairing_url, pin)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create the pairing response
 
         pairing_response = self.create_pairing_response_by_serial(user_token_id)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send pairing response
 
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if returned json is correct
 
@@ -362,7 +362,7 @@ class TestPushToken(TestController):
         status = result.get('status')
         self.assertTrue(status)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # trigger challenge
 
@@ -370,7 +370,7 @@ class TestPushToken(TestController):
 
         return challenge_url
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_user_token_by_pairing_url(self, pairing_url, pin='1234'):
 
@@ -398,7 +398,7 @@ class TestPushToken(TestController):
         self.assertEqual(token_type, TYPE_PUSHTOKEN)
         self.assertEqual(version, PAIRING_URL_VERSION)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # extract custom data that may or may not be present
         # (depending on flags)
@@ -415,7 +415,7 @@ class TestPushToken(TestController):
         else:
             raise NotImplementedError('Callback URL is mandatory for PushToken')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # save token data for later use
 
@@ -426,12 +426,12 @@ class TestPushToken(TestController):
                                       'callback_url': callback_url,
                                       'pin': pin}
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         return user_token_id
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def decrypt_and_verify_challenge(self, challenge_url):
 
@@ -475,7 +475,7 @@ class TestPushToken(TestController):
         challenge_data_encoded = challenge_url[len('lseqr://chal/'):]
         challenge_data = decode_base64_urlsafe(challenge_data_encoded)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # parse and verify header information in the
         # encrypted challenge data
@@ -484,14 +484,14 @@ class TestPushToken(TestController):
         version, user_token_id = struct.unpack('<bI', header)
         self.assertEqual(version, CHALLENGE_URL_VERSION)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # get token from client token database
 
         token = self.tokens[user_token_id]
         server_public_key = token['server_public_key']
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare decryption by seperating R from
         # ciphertext and server signature
@@ -505,7 +505,7 @@ class TestPushToken(TestController):
         data = challenge_data[0:-64]
         crypto_sign_verify_detached(server_signature, data, server_public_key)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # key derivation
 
@@ -516,7 +516,7 @@ class TestPushToken(TestController):
         sk = U[0:16]
         nonce = U[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # decrypt and verify challenge
 
@@ -525,7 +525,7 @@ class TestPushToken(TestController):
         cipher = AES.new(sk, AES.MODE_CTR, counter=ctr)
         plaintext = cipher.decrypt(ciphertext)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # parse/check plaintext header
 
@@ -533,14 +533,14 @@ class TestPushToken(TestController):
         content_type, transaction_id = struct.unpack('<bQ', pt_header)
         transaction_id = u64_to_transaction_id(transaction_id)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare the parsed challenge data
 
         challenge = {}
         challenge['content_type'] = content_type
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # retrieve plaintext data depending on content_type
 
@@ -560,7 +560,7 @@ class TestPushToken(TestController):
             challenge['login'] = login
             challenge['host'] = host
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare the parsed challenge data
 
@@ -575,13 +575,13 @@ class TestPushToken(TestController):
 
         return challenge, encoded_sig
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_correct_pairing(self):
         """ PushToken: Check if pairing works correctly """
         self.execute_correct_pairing()
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_pairing_response_by_serial(self, user_token_id):
 
@@ -597,7 +597,7 @@ class TestPushToken(TestController):
         server_public_key = self.tokens[user_token_id]['server_public_key']
         partition = self.tokens[user_token_id]['partition']
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # assemble header and plaintext
 
@@ -614,7 +614,7 @@ class TestPushToken(TestController):
         signature = crypto_sign_detached(pairing_response, self.secret_key)
         pairing_response += signature
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create public diffie hellman component
         # (used to decrypt and verify the reponse)
@@ -622,7 +622,7 @@ class TestPushToken(TestController):
         r = os.urandom(32)
         R = calc_dh_base(r)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # derive encryption key and nonce
 
@@ -632,7 +632,7 @@ class TestPushToken(TestController):
         encryption_key = U[0:16]
         nonce = U[16:32]
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # encrypt in EAX mode
 
@@ -642,7 +642,7 @@ class TestPushToken(TestController):
 
         return encode_base64_urlsafe(header + R + ciphertext + tag)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def send_pairing_response(self, pairing_response):
 
@@ -660,7 +660,7 @@ class TestPushToken(TestController):
 
         return response_dict
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def trigger_challenge(self, user_token_id, content_type=None, data=None):
 
@@ -676,7 +676,7 @@ class TestPushToken(TestController):
         if data is not None:
             params['data'] = data
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # we mock the interface of the push provider (namely the method
         # push_notification) to get the generated challenge_url passed
@@ -702,11 +702,11 @@ class TestPushToken(TestController):
             self.assertTrue(status)
             self.assertFalse(value)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         return challenge_url
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_signreq(self):
 
@@ -721,14 +721,14 @@ class TestPushToken(TestController):
 
         challenge, sig = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if the content type is right
 
         content_type = challenge['content_type']
         self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare params for validate
 
@@ -744,7 +744,7 @@ class TestPushToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -753,7 +753,7 @@ class TestPushToken(TestController):
         value_value = value.get('value')
         self.assertTrue(value_value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_failed_signreq(self):
 
@@ -769,14 +769,14 @@ class TestPushToken(TestController):
         challenge, __ = self.decrypt_and_verify_challenge(challenge_url)
         wrong_sig = encode_base64_urlsafe('DEADBEEF' * 32)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if the content type is right
 
         content_type = challenge['content_type']
         self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare params for validate
 
@@ -803,7 +803,7 @@ class TestPushToken(TestController):
         self.assertGreater(failcount, 0)
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_repairing(self):
 
@@ -816,7 +816,7 @@ class TestPushToken(TestController):
         tmp_gda = self.gda
         self.gda = '7777'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send repairing pairing response
 
@@ -824,7 +824,7 @@ class TestPushToken(TestController):
 
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if returned json is correct
 
@@ -839,13 +839,13 @@ class TestPushToken(TestController):
         status = result.get('status')
         self.assertTrue(status)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # reset the gda
 
         self.gda = tmp_gda
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_repairing_fail_sig(self):
 
@@ -858,7 +858,7 @@ class TestPushToken(TestController):
         tmp_secret_key = self.secret_key
         self.secret_key = '7' * 32
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send repairing pairing response
 
@@ -866,7 +866,7 @@ class TestPushToken(TestController):
 
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if returned json is correct
 
@@ -881,13 +881,13 @@ class TestPushToken(TestController):
         status = result.get('status')
         self.assertFalse(status)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # reset the secret key
 
         self.secret_key = tmp_secret_key
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_repairing_fail_pubkey(self):
 
@@ -904,7 +904,7 @@ class TestPushToken(TestController):
         self.secret_key = sk
         self.public_key = pk
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send repairing pairing response
 
@@ -912,7 +912,7 @@ class TestPushToken(TestController):
 
         response_dict = self.send_pairing_response(pairing_response)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if returned json is correct
 
@@ -927,14 +927,14 @@ class TestPushToken(TestController):
         status = result.get('status')
         self.assertFalse(status)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # reset the secret key
 
         self.secret_key = tmp_secret_key
         self.public_key = tmp_public_key
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_login(self):
 
@@ -946,14 +946,14 @@ class TestPushToken(TestController):
 
         challenge, sig = self.decrypt_and_verify_challenge(challenge_url)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # check if the content type is right
 
         content_type = challenge['content_type']
         self.assertEqual(content_type, CONTENT_TYPE_LOGIN)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # prepare params for validate
 
@@ -969,7 +969,7 @@ class TestPushToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -978,7 +978,7 @@ class TestPushToken(TestController):
         value_value = value.get('value')
         self.assertTrue(value_value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def test_unsupported_content_type(self):
 
@@ -1008,4 +1008,4 @@ class TestPushToken(TestController):
         self.assertFalse(status)
         self.assertFalse(value)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --

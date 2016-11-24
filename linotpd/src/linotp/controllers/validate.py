@@ -785,7 +785,7 @@ class ValidateController(BaseController):
 
         try:
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             params = dict(**request.params)
 
@@ -794,7 +794,7 @@ class ValidateController(BaseController):
             if enc_response is None:
                 raise Exception('Parameter missing')
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             dec_response = decrypt_pairing_response(enc_response)
             token_type = dec_response.token_type
@@ -806,7 +806,7 @@ class ValidateController(BaseController):
                 raise ValidateError('Pairing responses with no serial attached '
                                     'are currently not implemented.')
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # TODO: pairing policy
             tokens = getTokens4UserOrSerial(None, pairing_data.serial)
@@ -819,20 +819,20 @@ class ValidateController(BaseController):
 
             token = tokens[0]
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             if token.type != token_type:
                 raise Exception('Serial in pairing response doesn\'t match '
                                 'supplied token_type')
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             token.pair(pairing_data)
 
             Session.commit()
             return sendResult(response, False)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         except Exception:
             Session.rollback()

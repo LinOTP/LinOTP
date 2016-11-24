@@ -1281,12 +1281,12 @@ class SystemController(BaseController):
             log.debug("[importPolicy] loading policy file to server using POST"
                       " request. File: %r" % policy_file)
 
-            # -- --------------------------------------------------------------
+            # -- ----------------------------------------------------------- --
             # In case of form post requests, it is a "instance" of FieldStorage
             # i.e. the Filename is selected in the browser and the data is
             # transferred in an iframe.
             #     see: http://jquery.malsup.com/form/#sample4
-            # -- --------------------------------------------------------------
+            # -- ----------------------------------------------------------- --
 
             if type(policy_file).__name__ == 'instance':
                 log.debug("[importPolicy] Field storage file: %s", policy_file)
@@ -1311,9 +1311,9 @@ class SystemController(BaseController):
             log.info("[importPolicy] read the following policies: %r",
                      policies)
 
-            # -- ---------------------------------------------------------
+            # -- ------------------------------------------------------ --
             # finally import the policies
-            # -- ---------------------------------------------------------
+            # -- ------------------------------------------------------ --
             res = import_policies(policies)
 
             c.audit['info'] = "Policies imported from file %s" % policy_file

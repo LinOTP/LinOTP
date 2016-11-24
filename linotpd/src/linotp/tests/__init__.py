@@ -108,7 +108,7 @@ class TestController(unittest2.TestCase):
 
         self.appconf = config
 
-        # ---------------------------------------------------------------------
+        # ------------------------------------------------------------------ --
 
         current_webtest = LooseVersion(
             pkg_resources.get_distribution('webtest').version

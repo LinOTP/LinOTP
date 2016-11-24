@@ -479,7 +479,7 @@ class TestAutoassignmentController(TestController):
                 token['otps'][j],
                 )
 
-    # -------- Private helper methods --------
+    # -------- Private helper methods ----- --
 
     def _enroll_token(self, token_list):
         """

@@ -68,7 +68,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
     """
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 #   Overview of the different token states:
 #
@@ -86,7 +86,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 #                                                             createChallenge
 #                                                                checkOtp
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def __init__(self, token_model_object):
         TokenClass.__init__(self, token_model_object)
@@ -94,7 +94,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         self.mode = ['challenge']
         self.supports_offline_mode = False
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def isActive(self):
 
@@ -108,7 +108,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             self.current_state == 'pairing_response_received' or \
             self.current_state == 'pairing_challenge_sent'
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     # type identifier interface
 
@@ -121,7 +121,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # OATH standard compliant prefix: XXYY XX= vendor, YY - token type
         return "KIPT"
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     # info interface definition
 
@@ -135,7 +135,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         info['description'] = 'Challenge-Response-Token over Push ' + \
                               'Notifications - Curve 25519 based'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         info['policy'] = {}
 
@@ -154,7 +154,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                                            'PushToken')}
                                          }
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # wire the templates
 
@@ -187,14 +187,14 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         info['selfservice'] = selfservice_dict
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if key is not None:
             return info.get(key)
 
         return info
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def pair(self, pairing_data):
 
@@ -223,7 +223,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state_is_in(valid_states)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if self.current_state == 'unpaired':
 
@@ -238,7 +238,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             self.change_state('pairing_response_received')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if self.current_state == 'active':
 
@@ -256,7 +256,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             self.addToTokenInfo('gda', gda)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def createChallenge(self, transaction_id, options):
 
@@ -284,7 +284,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state_is_in(valid_states)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # inside the challenge url we sent a callback url for the client
         # which is defined by an authentication policy
@@ -303,7 +303,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             raise Exception(_('Policy pushtoken_challenge_callback_url must '
                               'have a value'))
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # load and configure provider
 
@@ -319,7 +319,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                                realm=realm,
                                                user=owner)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if self.current_state == 'pairing_response_received':
 
@@ -346,7 +346,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 raise ValueError('Unrecognized content type: %s'
                                  % content_type_as_str)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             if content_type == CONTENT_TYPE_SIGNREQ:
 
@@ -356,7 +356,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                                               callback_url,
                                                               message=message)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             elif content_type == CONTENT_TYPE_LOGIN:
 
@@ -373,7 +373,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
                 raise ValueError('Unrecognized content type: %s' % content_type)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # send the challenge_url to the push notification proxy
 
@@ -381,7 +381,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         gda = token_info['gda']
         push_provider.push_notification(challenge_url, gda)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # we save the plaintext in the challenge data, because
         # we need it in checkOtp to verify the signature
@@ -392,13 +392,13 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         if self.current_state == 'pairing_response_received':
             self.change_state('pairing_challenge_sent')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # don't pass the challenge_url as message to the user
 
         return (True, '', data, {})
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def checkOtp(self, passwd, counter, window, options=None):
 
@@ -425,7 +425,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state_is_in(valid_states)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         filtered_challenges = []
         serial = self.getSerial()
@@ -435,11 +435,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         max_fail = int(getFromConfig('PushMaxChallenges', '3'))
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if 'transactionid' in options:
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # fetch all challenges that match the transaction id or serial
 
@@ -447,7 +447,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             challenges = Challenges.lookup_challenges(serial, transaction_id)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # filter into filtered_challenges
 
@@ -467,7 +467,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 elif not tan_is_valid and fail_counter <= max_fail:
                     filtered_challenges.append(challenge)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if not filtered_challenges:
             return -1
@@ -494,7 +494,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         return -1
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def statusValidationSuccess(self):
 
@@ -502,7 +502,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             self.change_state('active')
             self.enable(True)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def update(self, params):
 
@@ -528,7 +528,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                        'resConf', 'user', 'realm',
                                        'pin'])
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if not param_keys.issubset(init_rollout_state_keys):
 
@@ -545,7 +545,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state(None)
 
-        # ------------------------------------------------------------------
+        # --------------------------------------------------------------- --
 
         # we check if callback policies are set. this must be done here
         # because the token gets saved directly after the update method
@@ -569,7 +569,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         partition = get_partition(realms, owner)
         self.addToTokenInfo('partition', partition)
 
-        # ------------------------------------------------------------------
+        # --------------------------------------------------------------- --
 
         # we set the the active state of the token to False, because
         # it should not be allowed to use it for validation before the
@@ -585,7 +585,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.change_state('initialized')
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def getInitDetail(self, params, user=None):
 
@@ -611,13 +611,13 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state('initialized')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # collect data used for generating the pairing url
 
         serial = self.getSerial()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         owner = get_token_owner(self)
         if owner and owner.login and owner.realm:
@@ -631,7 +631,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         cb_url = get_single_auth_policy('pushtoken_pairing_callback_url',
                                         user=owner, realms=realms)
 
-        # ------------------------------------------------------------------
+        # --------------------------------------------------------------- --
 
         partition = self.getFromTokenInfo('partition')
 
@@ -643,12 +643,12 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                            callback_url=cb_url,
                                            use_cert=False)
 
-        # ------------------------------------------------------------------
+        # --------------------------------------------------------------- --
 
         self.addToInfo('pairing_url', pairing_url)
         response_detail['pairing_url'] = pairing_url
 
-        # ------------------------------------------------------------------
+        # --------------------------------------------------------------- --
 
         # add response tabs (used in the manage view on enrollment)
 
@@ -666,7 +666,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         return response_detail
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     def create_challenge_url(self,
                              transaction_id,
@@ -704,7 +704,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         serial = self.getSerial()
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # sanity/format checks
 
@@ -715,7 +715,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                            'CONTENT_TYPE_PAIRING or '
                                            'CONTENT_TYPE_LOGIN.')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         #  after the lseqr://push/ prefix the following data is encoded
         #  in urlsafe base64:
@@ -734,7 +734,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         user_token_id = self.getFromTokenInfo('user_token_id')
         data_header = struct.pack('<bI', CHALLENGE_URL_VERSION, user_token_id)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create body
 
@@ -753,11 +753,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         nonce = U[16:32]
         zerome(U)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create plaintext section
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # generate plaintext header
 
@@ -771,7 +771,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         pt_header = struct.pack('<bQ', content_type, transaction_id)
         plaintext = pt_header
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         utf8_callback_url = callback_url.encode('utf8')
 
@@ -782,11 +782,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                                            'length (encoded as utf8) is '
                                            '511')
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create data package depending on content type
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if content_type == CONTENT_TYPE_PAIRING:
 
@@ -804,7 +804,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             plaintext += utf8_serial + b'\00' + utf8_callback_url + b'\00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if content_type == CONTENT_TYPE_SIGNREQ:
 
@@ -830,7 +830,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             plaintext += utf8_message + b'\00' + utf8_callback_url + b'\00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         if content_type == CONTENT_TYPE_LOGIN:
 
@@ -867,7 +867,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             plaintext += utf8_host + b'\00'
             plaintext += utf8_callback_url + b'\00'
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # encrypt inner layer
 
@@ -877,7 +877,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         ciphertext = cipher.encrypt(plaintext)
         unsigned_raw_data = data_header + R + ciphertext
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         # create signature
 
