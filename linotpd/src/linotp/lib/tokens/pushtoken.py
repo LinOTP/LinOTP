@@ -55,11 +55,17 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from Cryptodome.Util import Counter
 
+import logging
+
+log = logging.getLogger(__name__)
+
 CHALLENGE_URL_VERSION = 0
 
 CONTENT_TYPE_SIGNREQ = 0
 CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_LOGIN = 2
+
+
 
 
 class PushTokenClass(TokenClass, StatefulTokenMixin):
@@ -379,6 +385,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         token_info = self.getTokenInfo()
         gda = token_info['gda']
+
+        log.debug("pushing notification: %r : %r", challenge_url, gda)
+
         push_provider.push_notification(challenge_url, gda)
 
         # ------------------------------------------------------------------- --
