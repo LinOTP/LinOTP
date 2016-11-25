@@ -782,10 +782,13 @@ class ValidateController(BaseController):
             log.debug("[smspin] done")
 
     def pair(self):
+        """
+        validate/pair: for the enrollment of qr and push token
+        """
 
         try:
 
-            # --------------------------------------------------------------- --
+            # -------------------------------------------------------------- --
 
             params = dict(**request.params)
 
@@ -794,7 +797,7 @@ class ValidateController(BaseController):
             if enc_response is None:
                 raise Exception('Parameter missing')
 
-            # --------------------------------------------------------------- --
+            # -------------------------------------------------------------- --
 
             dec_response = decrypt_pairing_response(enc_response)
             token_type = dec_response.token_type
@@ -803,10 +806,10 @@ class ValidateController(BaseController):
             if not hasattr(pairing_data, 'serial') or \
                pairing_data.serial is None:
 
-                raise ValidateError('Pairing responses with no serial attached '
-                                    'are currently not implemented.')
+                raise ValidateError('Pairing responses with no serial attached'
+                                    ' are currently not implemented.')
 
-            # --------------------------------------------------------------- --
+            # --------------------------------------------------------------- -
 
             # TODO: pairing policy
             tokens = getTokens4UserOrSerial(None, pairing_data.serial)
@@ -819,6 +822,17 @@ class ValidateController(BaseController):
 
             token = tokens[0]
 
+            # prepare some audit entries
+            t_owner = token.getUser()
+
+            realms = token.getRealms()
+            realm = ''
+            if realms:
+                realm = realms[0]
+
+            c.audit['user'] = t_owner or ''
+            c.audit['realm'] = realm
+
             # --------------------------------------------------------------- --
 
             if token.type != token_type:
@@ -828,13 +842,16 @@ class ValidateController(BaseController):
             # --------------------------------------------------------------- --
 
             token.pair(pairing_data)
+            c.audit['success'] = 1
 
             Session.commit()
             return sendResult(response, False)
 
         # ------------------------------------------------------------------- --
 
-        except Exception:
+        except Exception as exx:
+            log.exception("validate/pair failed: %r" % exx)
+            c.audit['info'] = unicode(exx)
             Session.rollback()
             return sendResult(response, False, 0, status=False)
 
