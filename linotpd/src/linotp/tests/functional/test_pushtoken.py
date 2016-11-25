@@ -101,28 +101,29 @@ class TestPushToken(TestController):
         self.secret_key = sk
         self.public_key = pk
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         # we need a dummy file to sneak past the file existence check
         # in the initial provider configuration
 
         self.dummy_temp_cert = NamedTemporaryFile()
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         # make dummy provider config
+        p_config = {"push_url": "http://pushproxy.keyidentity.com",
+                    "access_certificate": self.dummy_temp_cert.name,
+                    "server_certificate": ""}
 
         params = {'name': 'dummy_provider',
                   'class': 'DefaultPushProvider',
-                  'config': '{"push_url":"","access_certificate":"%s",'
-                            '"server_certificate":""}'
-                            % self.dummy_temp_cert.name,
+                  'config': json.dumps(p_config),
                   'timeout': '120',
                   'type': 'push'}
 
         self.make_system_request('setProvider', params=params)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         params = {'name': 'dummy_push_policy',
                   'scope': 'authentication',
