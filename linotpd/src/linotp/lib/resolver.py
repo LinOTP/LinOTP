@@ -349,7 +349,7 @@ def getResolverInfo(resolvername, passwords=False):
                         log.exception("Decryption of resolver entry "
                                       "failed: %r", exc)
 
-            resolver_dict[resolver_key] = value
+        resolver_dict[resolver_key] = value
 
     result["type"] = resolver_type
     result["data"] = resolver_dict
