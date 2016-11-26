@@ -317,7 +317,7 @@ class TestSystemController(TestController):
         params = {'key': 'enclinotp.secretkey'}
         response = self.make_system_request(action='getConfig',
                                             params=params)
-        self.assertTrue("test123" in response, response)
+        self.assertTrue("test123" not in response, response)
 
         response = self.make_system_request(action='delConfig',
                                             params={'key': 'secretkey'})
