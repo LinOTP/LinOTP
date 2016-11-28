@@ -9,6 +9,10 @@ export PYBUILD_DISABLE=test
 %:
 	dh $@ --with python2 --buildsystem=pybuild
 
+override_dh_auto_install:
+	dh_auto_install -- --after-install \
+		"mv {destdir}/usr/etc {destdir}/etc"
+
 override_dh_clean:
 	dh_clean
 	debconf-updatepo

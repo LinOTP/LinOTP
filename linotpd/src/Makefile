@@ -24,10 +24,13 @@
 #    Support: www.lsexperts.de
 #
 
-PYTHON=`which python`
+PYTHON:=$(shell which python)
 DESTDIR=/
-BUILDIR=$(CURDIR)/debian/linotp
+BUILDDIR=$(PWD)/../build
 PROJECT=LinOTP
+LINOTP_SRC_VERSION=$(shell python setup.py --version)
+DEB_BUILDDIR:=$(BUILDDIR)/linotp
+
 COPYSTUFF = tools setup.* linotp config debian Makefile DESCRIPTION MANIFEST.in README.txt
 
 I18N_LANGUAGES = de fr it es zh
@@ -65,7 +68,7 @@ translate:
 
 translate-%: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 	gtranslator $<
-	make compile_catalog
+	$(MAKE) compile_catalog
 
 # Compile a .po file to a .json file using the `pojson` tool.
 $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
@@ -79,17 +82,15 @@ compile_catalog: $(I18N_JSON_FILES)
 	python setup.py compile_catalog
 
 .PHONY: buildtranslation
-buildtranslation: extract
-	make compile_catalog
+buildtranslation: extract compile_catalog
 
 .PHONY: source
-source: buildtranslation
-	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
+source:
+	mkdir -p $(BUILDDIR)
+	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=$(BUILDDIR)
 
 .PHONY: create
 create: source
-	mkdir -p ../build
-	cp dist/*.tar* ../build/
 
 .PHONY: install
 install:
@@ -99,57 +100,51 @@ install:
 buildrpm: buildtranslation
 	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
 
+.PHONY: prepare-deb-source
+prepare-deb-source: source
+	mkdir -pv $(DEB_BUILDDIR)
+
+	# Unpack clean sources to a staging directory for building from. This is to ensure
+	# that we have built linotp from the same source tarball contents.
+
+	# The debian packaging directory is not included in the source tarball.
+	# See <https://wiki.debian.org/UpstreamGuide#Pristine_Upstream_Source> for rationale
+
+	# Create a symlink to the tarball in the format expected by dpkg-source
+	cd $(DEB_BUILDDIR) \
+		&& upstream_version=$(shell dpkg-parsechangelog -Sversion | cut -d- -f1) ;\
+		package_name=$(shell dpkg-parsechangelog -Ssource) ;\
+		orig_tar_name="../$${package_name}_$${upstream_version}.orig.tar.gz" ;\
+		cp $(BUILDDIR)/$(PROJECT)-*.tar.gz $${orig_tar_name} \
+		&& tar --strip-components=1 -xf $${orig_tar_name}
+
+	cp -r debian $(DEB_BUILDDIR)
+
+# Ubuntu builds create source packages in linotpd/src
 .PHONY: ppa-preprocess
-ppa-preprocess: buildtranslation
-	rm -f *.dsc
-	rm -f *.changes
-	rm -f *.upload
-	rm -fr linotp-build
-	mkdir -p linotp-build
-	cp -r $(COPYSTUFF) linotp-build
-	rm -f linotp_*_source.changes
-	(cd linotp-build; touch LINOTP_DEBIAN_PACKAGE;  debuild -S)
+ppa-preprocess: buildtranslation source
+	$(MAKE) prepare-deb-source DEB_BUILDDIR=linotp-build
+	cd linotp-build && debuild -S
 
-builddeblocal:
-	# build the source package in the parent directory
-	# then rename it to project_version.orig.tar.gz
-	# We need to touch this file, so that the setup.py knows, that we are building a debian package!
-	touch LINOTP_DEBIAN_PACKAGE
-	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
-	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
-	# build the package
-	mkdir -p debian/linotp/var/log/linotp/
-	dpkg-buildpackage -i -I -rfakeroot
 
+# Debian builds create binary packages in linotpd/build
+.PHONY: builddeb
 builddeb:
-	mkdir -p ../build
-	make buildtranslation
-	# Apply quilt patches in the distribution's subdirectory if available
-	( if [ -f "debian/patches/`lsb_release -sc`/series" ]; then QUILT_PATCHES="debian/patches/`lsb_release -sc`" quilt push; fi )
-	mkdir -p linotp-build
-	cp -r $(COPYSTUFF)  linotp-build
-	(cd linotp-build ; make builddeblocal )
-	# Remove applied quilt patches
-	( if [ -f "debian/patches/`lsb_release -sc`/series" ]; then QUILT_PATCHES="debian/patches/`lsb_release -sc`" quilt pop; fi )
-	rm -fr linotp-build
-	mv linotp*.deb ../build
+	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR)
+	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot
 
 .PHONY: clean
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST dist/
+	rm -rf MANIFEST
 	find . -name '*.pyc' -delete
-	#rm -r dist/
-	rm -f ./linotp*.deb
-	rm -f ./linotp*.dsc
-	rm -f ./linotp*.changes
-	rm -f ./*.build
-	rm -f ./*.upload
-	rm -f ./*.tar.gz
 	rm -fr ./LinOTP.egg-info/
 	rm -f $(I18N_JSON_FILES)
-	fakeroot $(MAKE) -f $(CURDIR)/debian/rules clean
-	rm -rf ../build/
+	rm -rf ../build/ \
+		linotp-build-ubuntu
+	rm -f *.dsc \
+		*.changes \
+		*.upload
 
 
 test:
