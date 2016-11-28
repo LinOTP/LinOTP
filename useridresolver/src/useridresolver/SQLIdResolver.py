@@ -540,7 +540,13 @@ class IdResolver (UserIdResolver):
                                 'Database': 'string',
                                 'User': 'string',
                                 'Password': 'password',
-                                 }
+                                'Table': 'string',
+                                'Limit': 'string',
+                                'Where': 'sting',
+                                'Encoding': 'string',
+                                'UserInfo': 'string',
+                                'conParams': 'string', }
+
         return {typ: descriptor}
 
     def getResolverDescriptor(self):
