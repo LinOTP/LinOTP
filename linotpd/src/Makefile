@@ -24,7 +24,6 @@
 #    Support: www.lsexperts.de
 #
 
-ECHO    = echo
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/linotp
@@ -38,6 +37,7 @@ I18N_PO_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_SRC)/$(lang)/LC_MESSAGE
 I18N_JSON_FILES := $(foreach lang,$(I18N_LANGUAGES),$(I18N_JSON_DEST)/$(lang).json)
 
 
+.PHONY: all
 all:
 	@echo "make source - Create source package"
 	@echo "make create - Create the source packages"
@@ -48,6 +48,7 @@ all:
 	@echo "make translate"
 
 
+.PHONY: extract
 extract:
 	python setup.py extract_messages
 	$(foreach lang, \
@@ -58,6 +59,7 @@ extract:
 
 $(I18N_SRC)/%/LC_MESSAGES/linotp.po: extract
 
+.PHONY: translate
 translate:
 	@echo "Execute translate-LANG (e.g. translate-de)"
 
@@ -72,34 +74,36 @@ $(I18N_JSON_DEST)/%.json: $(I18N_SRC)/%/LC_MESSAGES/linotp.po
 
 # Compile all .po files to .mo files using babel. As a dependency,
 # the .po files are compiled to .json files. The order doesn't matter.
+.PHONY: compile_catalog
 compile_catalog: $(I18N_JSON_FILES)
 	python setup.py compile_catalog
 
+.PHONY: buildtranslation
 buildtranslation: extract
 	make compile_catalog
 
-source:
-	make buildtranslation
-	$(PYTHON) setup.py sdist $(COMPILE)
+.PHONY: source
+source: buildtranslation
+	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
-create:
+.PHONY: create
+create: source
 	mkdir -p ../build
-	make buildtranslation
-	make source
 	cp dist/*.tar* ../build/
 
+.PHONY: install
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
-buildrpm:
-	make buildtranslation
+.PHONY: buildrpm
+buildrpm: buildtranslation
 	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
 
-ppa-preprocess:
+.PHONY: ppa-preprocess
+ppa-preprocess: buildtranslation
 	rm -f *.dsc
 	rm -f *.changes
 	rm -f *.upload
-	make buildtranslation
 	rm -fr linotp-build
 	mkdir -p linotp-build
 	cp -r $(COPYSTUFF) linotp-build
@@ -130,6 +134,7 @@ builddeb:
 	rm -fr linotp-build
 	mv linotp*.deb ../build
 
+.PHONY: clean
 clean:
 	$(PYTHON) setup.py clean
 	rm -rf build/ MANIFEST dist/
