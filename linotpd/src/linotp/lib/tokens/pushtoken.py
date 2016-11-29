@@ -66,8 +66,6 @@ CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_LOGIN = 2
 
 
-
-
 class PushTokenClass(TokenClass, StatefulTokenMixin):
 
     """
@@ -332,9 +330,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             content_type = CONTENT_TYPE_PAIRING
 
             message = ''
-            challenge_url, pt = self.create_challenge_url(transaction_id,
-                                                          content_type,
-                                                          callback_url)
+            challenge_url, sig_base = self.create_challenge_url(transaction_id,
+                                                                content_type,
+                                                                callback_url)
 
         else:
 
@@ -357,10 +355,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             if content_type == CONTENT_TYPE_SIGNREQ:
 
                 message = options.get('data')
-                challenge_url, pt = self.create_challenge_url(transaction_id,
-                                                              content_type,
-                                                              callback_url,
-                                                              message=message)
+                challenge_url, sig_base = self.create_challenge_url(
+                                                transaction_id, content_type,
+                                                callback_url, message=message)
 
             # --------------------------------------------------------------- --
 
@@ -369,11 +366,10 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 message = options.get('data')
                 login, __, host = message.partition('@')
 
-                challenge_url, pt = self.create_challenge_url(transaction_id,
-                                                              content_type,
-                                                              callback_url,
-                                                              login=login,
-                                                              host=host)
+                challenge_url, sig_base = self.create_challenge_url(
+                                                transaction_id, content_type,
+                                                callback_url, login=login,
+                                                host=host)
 
             else:
 
@@ -392,11 +388,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         # ------------------------------------------------------------------- --
 
-        # we save the plaintext in the challenge data, because
-        # we need it in checkOtp to verify the signature
+        # we save sig_base in the challenge data, because we need it in
+        # checkOtp to verify the signature
 
-        b64_plaintext = b64encode(pt)
-        data = {'plaintext': b64_plaintext}
+        b64_sig_base = b64encode(sig_base)
+        data = {'sig_base': b64_sig_base}
 
         if self.current_state == 'pairing_response_received':
             self.change_state('pairing_challenge_sent')
@@ -491,12 +487,14 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             user_dsa_public_key = b64decode(b64_dsa_public_key)
 
             data = challenge.getData()
-            plaintext = data['plaintext']
+            sig_base = data['sig_base']
 
             passwd_as_bytes = decode_base64_urlsafe(passwd)
-            pt_as_bytes = b64decode(plaintext)
+            sig_base_as_bytes = b64decode(sig_base)
             try:
-                verify_sig(passwd_as_bytes, pt_as_bytes, user_dsa_public_key)
+                verify_sig(passwd_as_bytes,
+                           sig_base_as_bytes,
+                           user_dsa_public_key)
                 return 1
             except ValueError:  # signature mismatch
                 return -1
@@ -706,9 +704,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         :param host: hostname of the user. Only for content type
             CONTENT_TYPE_LOGIN
 
-        :returns: tuple (challenge_url, challenge_data), with challenge_url
-            being the push url and challenge data being the data, that
-            will be used as message in the signing step.
+        :returns: tuple (challenge_url, sig_base), with challenge_url being
+            the push url and sig_base the message, that is used for
+            the client signature
         """
 
         serial = self.getSerial()
@@ -897,4 +895,4 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         url = 'lseqr://push/' + encode_base64_urlsafe(raw_data)
 
-        return url, plaintext
+        return url, (signature + plaintext)

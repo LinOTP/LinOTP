@@ -571,7 +571,8 @@ class TestPushToken(TestController):
 
         # calculate signature
 
-        sig = crypto_sign_detached(plaintext, self.secret_key)
+        sig_base = server_signature + plaintext
+        sig = crypto_sign_detached(sig_base, self.secret_key)
         encoded_sig = encode_base64_urlsafe(sig)
 
         return challenge, encoded_sig
