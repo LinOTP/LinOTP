@@ -781,12 +781,17 @@ def _get_resolver_lookup_cache(realm):
     :return: the resolver lookup cache
     """
     config = request_context['Config']
-    expiration = int(config.get('linotp.resolver_lookup_cache.expiration',
-                                36 * 3600))
 
     enabled = config.get('linotp.resolver_lookup_cache.enabled',
                          'True') == 'True'
     if not enabled:
+        return None
+
+    try:
+        expiration = int(config.get('linotp.resolver_lookup_cache.expiration',
+                                    36 * 3600))
+    except ValueError:
+        log.info("resolver caching is disabled due to a value error in resolver_lookup_cache.expiration config")
         return None
 
     cache_manager = request_context['CacheManager']
@@ -889,12 +894,17 @@ def _get_user_lookup_cache(resolver_spec):
     """
 
     config = request_context['Config']
-    expiration = int(config.get('linotp.user_lookup_cache.expiration',
-                                36 * 3600))
 
     enabled = config.get('linotp.user_lookup_cache.enabled',
                          'True') == 'True'
     if not enabled:
+        return None
+
+    try:
+        expiration = int(config.get('linotp.user_lookup_cache.expiration',
+                                36 * 3600))
+    except ValueError:
+        log.info("user caching is disabled due to a value error in user_lookup_cache.expiration config")
         return None
 
     cache_manager = request_context['CacheManager']
