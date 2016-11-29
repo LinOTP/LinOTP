@@ -112,10 +112,13 @@ class DefaultPushProvider(IPushProvider):
             # it must be either a file or directory reference
             #
 
-            if ('server_certificate' in configDict and
-               configDict['server_certificate']):
+            server_cert = configDict.get('server_certificate')
 
-                server_cert = configDict['server_certificate']
+            # server cert can be a string (file location, cert dir)
+            # None or not present (cert gets fetched from local trust
+            # store) or False (no certificate verification)
+
+            if server_cert:
 
                 if (not os.path.isfile(server_cert) and
                    not os.path.isdir(server_cert)):
@@ -123,7 +126,7 @@ class DefaultPushProvider(IPushProvider):
                                   " be made as certificate could not be found"
                                   " %r" % server_cert)
 
-                self.server_cert = server_cert
+            self.server_cert = server_cert
 
             #
             # timeout could come with capital letter
@@ -245,7 +248,7 @@ class DefaultPushProvider(IPushProvider):
             if self.client_cert and os.path.isfile(self.client_cert):
                 http_session.cert = self.client_cert
 
-            if self.server_cert:
+            if self.server_cert is not None:
                 http_session.verify = self.server_cert
 
             response = http_session.post(self.push_server_url,
