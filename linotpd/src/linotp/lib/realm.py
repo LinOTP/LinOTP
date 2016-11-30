@@ -278,12 +278,17 @@ def _get_realm_config_cache():
     """
 
     config = context['Config']
-    expiration = int(config.get('linotp.resolver_lookup_cache.expiration',
-                                36 * 3600))
 
     enabled = config.get('linotp.resolver_lookup_cache.enabled',
                          'True') == 'True'
     if not enabled:
+        return None
+
+    try:
+        expiration = int(config.get('linotp.resolver_lookup_cache.expiration',
+                                    36 * 3600))
+    except ValueError:
+        log.info("resolver caching is disabled due to a value error in resolver_lookup_cache.expiration config")
         return None
 
     cache_manager = context['CacheManager']
