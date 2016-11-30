@@ -49,6 +49,8 @@ from linotp.lib.selftest import isSelfTest
 from linotp.lib.resolver import getResolverClassName
 from linotp.lib.resolver import getResolverList
 
+from linotp.lib.type_utils import get_duration
+
 from functools import partial
 
 from linotp.lib._compat import str_
@@ -788,10 +790,13 @@ def _get_resolver_lookup_cache(realm):
         return None
 
     try:
-        expiration = int(config.get('linotp.resolver_lookup_cache.expiration',
-                                    36 * 3600))
+        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
+                                     36 * 3600)
+        expiration = get_duration(expiration_conf)
+
     except ValueError:
-        log.info("resolver caching is disabled due to a value error in resolver_lookup_cache.expiration config")
+        log.info("resolver caching is disabled due to a value error in "
+                 "resolver_lookup_cache.expiration config")
         return None
 
     cache_manager = request_context['CacheManager']

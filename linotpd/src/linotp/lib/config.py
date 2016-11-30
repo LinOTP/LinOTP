@@ -41,6 +41,8 @@ from linotp.lib.text_utils import UTF8_MAX_BYTES
 from linotp.lib.text_utils import simple_slice
 from linotp.lib.text_utils import utf8_slice
 
+from linotp.lib.type_utils import is_duration
+
 import logging
 import os
 import time
@@ -48,6 +50,13 @@ import time
 from pylons import tmpl_context as c
 
 import linotp.model.meta
+
+
+Config_Types = {
+    'linotp.user_lookup_cache.expiration':  ('duration', is_duration),
+    'linotp.resolver_lookup_cache.expiration': ('duration', is_duration),
+    }
+
 
 Session = linotp.model.meta.Session
 
@@ -254,6 +263,8 @@ class LinOtpConfig(dict):
         if type(val) in [str, unicode] and "%(here)s" in val:
             val = _expandHere(val)
 
+        self._check_type(key, val)
+
         res = self.__setitem__(key, val, typ, des)
         return res
 
@@ -272,6 +283,8 @@ class LinOtpConfig(dict):
         '''
 
         now = datetime.now()
+
+        self._check_type(key, val)
 
         if typ == 'password':
 
@@ -297,6 +310,32 @@ class LinOtpConfig(dict):
         _storeConfigDB('linotp.Config', now)
 
         return res
+
+    def _check_type(self, key, value):
+        """
+        check if we have a type description for this entry:
+        - if so, we take the tuple of type 'as literal' and
+          the type check function, we are running against the given value
+
+        :param key: the to be stored key
+        :param value: the to be stored value
+
+        :return: - nothing -
+        :raises: ValueError - if value is not type compliant
+
+        """
+
+        if key in Config_Types:
+
+            #
+            # get the tuple of type as literal and type checking function
+            #
+
+            typ, check_type_function = Config_Types[key]
+
+            if not check_type_function(value):
+                raise ValueError("Config Error: %s must be of type %r" %
+                                 (key, typ))
 
     def get(self, key, default=None):
         '''
@@ -397,10 +436,30 @@ class LinOtpConfig(dict):
         :return : return the std value like the std dict does, whatever this is
         :rtype  : any value a dict update will return
         '''
+
+        #
+        # first check if all data is type compliant
+        #
+
+        for key, val in dic.items():
+            self._check_type(key, val)
+
+        #
+        # put the data in the parent dictionary
+        #
+
         res = self.parent.update(dic)
-        # sync the lobal dict
+
+        #
+        # and sync the data with the global config dict
+        #
+
         self.glo.setConfig(dic)
-        # sync to disc
+
+        #
+        # finally sync the entries to the database
+        #
+
         for key in dic:
             if key != 'linotp.Config':
                 _storeConfigDB(key, dic.get(key))
@@ -770,6 +829,7 @@ def updateConfig(confi):
     for entry in confi:
         typ = confi.get(entry + ".type", None)
         des = confi.get(entry + ".desc", None)
+
         # check if we have a descriptive entry
         if typ is not None or des is not None:
             typing = True
@@ -849,14 +909,18 @@ def removeFromConfig(key, iCase=False):
 def setDefaultMaxFailCount(maxFailCount):
     return storeConfig(u"DefaultMaxFailCount", maxFailCount)
 
+
 def setDefaultSyncWindow(syncWindowSize):
     return storeConfig(u"DefaultSyncWindow", syncWindowSize)
+
 
 def setDefaultCountWindow(countWindowSize):
     return storeConfig(u"DefaultCountWindow", countWindowSize)
 
+
 def setDefaultOtpLen(otpLen):
     return storeConfig(u"DefaultOtpLen", otpLen)
+
 
 def setDefaultResetFailCount(resetFailCount):
     return storeConfig(u"DefaultResetFailCount", resetFailCount)

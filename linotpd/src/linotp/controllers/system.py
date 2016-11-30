@@ -359,6 +359,11 @@ class SystemController(BaseController):
             Session.commit()
             return sendResult(response, res, 1)
 
+        except ValueError as exx:
+            log.exception("[setConfig] error saving config: %r", exx)
+            Session.rollback()
+            return sendError(response, exx)
+
         except Exception as exx:
             log.exception("[setConfig] error saving config: %r", exx)
             Session.rollback()

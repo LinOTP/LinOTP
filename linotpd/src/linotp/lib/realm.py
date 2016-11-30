@@ -36,6 +36,8 @@ from linotp.lib.config import storeConfig
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
 
+from linotp.lib.type_utils import get_duration
+
 from sqlalchemy import func
 
 
@@ -285,10 +287,13 @@ def _get_realm_config_cache():
         return None
 
     try:
-        expiration = int(config.get('linotp.resolver_lookup_cache.expiration',
-                                    36 * 3600))
+        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
+                                     36 * 3600)
+        expiration = get_duration(expiration_conf)
+
     except ValueError:
-        log.info("resolver caching is disabled due to a value error in resolver_lookup_cache.expiration config")
+        log.info("resolver caching is disabled due to a value error in "
+                 "resolver_lookup_cache.expiration config")
         return None
 
     cache_manager = context['CacheManager']

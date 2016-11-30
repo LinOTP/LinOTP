@@ -28,8 +28,7 @@
 import binascii
 import string
 import re
-from datetime import timedelta
-import logging
+
 import netaddr
 import logging
 
@@ -57,8 +56,6 @@ except ImportError:
 
 SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
-duration_regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?'
-                   '((?P<seconds>\d+?)s)?')
 
 log = logging.getLogger(__name__)
 
@@ -467,31 +464,6 @@ def dict_copy(dict_):
             fragment = {key: value}
         copy.update(fragment)
     return copy
-
-
-def parse_duration(duration_str):
-    """
-    transform a duration string into a time delta object
-
-    from:
-        http://stackoverflow.com/questions/35626812/how-to-parse-timedelta-from-strings
-
-    :param duration_str:  duration string like '1h' '3h 20m 10s' '10s'
-    :return: timedelta
-    """
-    # remove all white spaces for easier parsing
-    duration_str = ''.join(duration_str.split())
-
-    parts = duration_regex.match(duration_str.lower())
-    if not parts:
-        return
-    parts = parts.groupdict()
-    time_params = {}
-    for (name, param) in parts.iteritems():
-        if param:
-            time_params[name] = int(param)
-
-    return timedelta(**time_params)
 
 def int_from_bytes(bytes_, byteorder='little'):
 

@@ -48,8 +48,9 @@ from linotp.lib.policy import (get_client_policy,
 
 from linotp.lib.util import (get_version,
                              get_copyright_info,
-                             parse_duration
                              )
+
+from linotp.lib.type_utils import parse_duration
 
 from linotp.lib.realm import getRealms
 

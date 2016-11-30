@@ -205,6 +205,18 @@ class TestReplication(TestController):
             msg = '"setConfig %s:%s": true' % (cache, enable_str)
             self.assertTrue(msg in response, response)
 
+    def set_cache_expiry(self, expiration):
+
+        caches = ["user_lookup_cache.expiration",
+                  "resolver_lookup_cache.expiration"]
+
+        for cache in caches:
+
+            params = {cache: expiration}
+            response = self.make_system_request('setConfig', params)
+            msg = '"setConfig %s:%s": true' % (cache, expiration)
+            self.assertTrue(msg in response, response)
+
         return
 
     def test_replication(self):
@@ -594,7 +606,10 @@ class TestReplication(TestController):
         """
         test replication with realm and resolver update  with caching enabled
         """
+
         self.set_caching(enable=True)
+        self.set_cache_expiry(expiration='3 hours')
+
         try:
             self.updateRealm_test()
 
@@ -612,11 +627,44 @@ class TestReplication(TestController):
 
         return
 
+    def test_caching_expiration_value(self):
+        """
+        test replication with resolver update with caching enabled
+        """
+
+        self.set_caching(enable=True)
+
+        with self.assertRaises(AssertionError) as ass_err:
+            self.set_cache_expiry(expiration='3600 xx')
+
+        error_message = ass_err.exception.message
+        self.assertTrue("must be of type 'duration'" in error_message)
+
+        with self.assertRaises(AssertionError) as ass_err:
+            self.set_cache_expiry(expiration='3600 years')
+
+        error_message = ass_err.exception.message
+        self.assertTrue("must be of type 'duration'" in error_message)
+
+        self.set_cache_expiry(expiration='3600 seconds')
+        self.set_cache_expiry(expiration=3600)
+        self.set_cache_expiry(expiration='3600')
+        self.set_cache_expiry(expiration='3600 s')
+        self.set_cache_expiry(expiration='3 hours')
+
+        self.set_cache_expiry(expiration='180 minutes')
+
+        self.set_cache_expiry(expiration='1h 20 minutes 90 s')
+        return
+
     def test_updateResolver_with_caching(self):
         """
         test replication with resolver update with caching enabled
         """
+
         self.set_caching(enable=True)
+        self.set_cache_expiry(expiration='3600 seconds')
+
         try:
             self.updateResolver_test()
 

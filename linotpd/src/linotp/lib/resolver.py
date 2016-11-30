@@ -40,6 +40,9 @@ from linotp.lib.config import removeFromConfig
 from linotp.lib.config import getLinotpConfig
 
 from linotp.lib.util import getParam
+
+from linotp.lib.type_utils import get_duration
+
 from linotp.lib.crypt import decryptPassword
 
 required = True
@@ -640,10 +643,14 @@ def _get_resolver_config_cache():
         return None
 
     try:
-        expiration = int(config.get('linotp.resolver_lookup_cache.expiration',
-                                    36 * 3600))
+        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
+                                     36 * 3600)
+
+        expiration = get_duration(expiration_conf)
+
     except ValueError:
-        log.info("resolver caching is disabled due to a value error in resolver_lookup_cache.expiration config")
+        log.info("resolver caching is disabled due to a value error in "
+                 "resolver_lookup_cache.expiration config")
         return None
 
     cache_manager = context['CacheManager']
