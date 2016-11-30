@@ -688,6 +688,7 @@ class TestPushToken(TestController):
                                'push_notification',
                                autospec=True) as mock_push_notification:
 
+            mock_push_notification.return_value = (True, None)
             response = self.make_validate_request('check_s', params)
             challenge_url = mock_push_notification.call_args[0][1]
 

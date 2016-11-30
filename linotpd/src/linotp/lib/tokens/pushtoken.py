@@ -384,7 +384,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         log.debug("pushing notification: %r : %r", challenge_url, gda)
 
-        push_provider.push_notification(challenge_url, gda)
+        success, response = push_provider.push_notification(challenge_url, gda)
+
+        if not success:
+            raise Exception('push mechanism failed. response was %r'
+                            % response)
 
         # ------------------------------------------------------------------- --
 
