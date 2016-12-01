@@ -2572,35 +2572,44 @@ function load_system_config(){
         $('#sys_autoResyncTimeout').val(data.result.value.AutoResyncTimeout);
         $('#sys_mayOverwriteClient').val(data.result.value.mayOverwriteClient);
 
-        $('#sys_x_forwarded_for').prop('checked', false);
         if (data.result.value['client.X_FORWARDED_FOR'] == "True") {
             $('#sys_x_forwarded_for').prop('checked', true);
         }
-        $('#sys_forwarded').prop('checked', false);
+        else {
+            $('#sys_x_forwarded_for').prop('checked', false);
+        }
+
         if (data.result.value['client.FORWARDED'] == "True") {
             $('#sys_forwarded').prop('checked', true);
+        } else {
+            $('#sys_forwarded').prop('checked', false);
         }
+
         $('#sys_forwarded_proxy').val(data.result.value['client.FORWARDED_PROXY']);
 
         /* should we use the system certificate handling*/
-        $('#sys_cert').prop('checked', false);
         if (data.result.value['certificates.use_system_certificates'] == "True") {
             $('#sys_cert').prop('checked', true);
+        } else {
+            $('#sys_cert').prop('checked', false);
         }
 
         /*todo call the 'tok_fill_config.js */
        
-        /* caching settings */ 
-        $('#sys_resolver_cache_enable').prop('checked', false);
+        /* caching settings */
         if (data.result.value['resolver_lookup_cache.enabled'] == "True") {
             $('#sys_resolver_cache_enable').prop('checked', true);
+        } else {
+            $('#sys_resolver_cache_enable').prop('checked', false);
         }
+
         var exp = data.result.value['resolver_lookup_cache.expiration'];
         $('#sys_resolver_cache_expiration').val(exp || 123600);
 
-        $('#sys_user_cache_enable').prop('checked', false);
         if (data.result.value['user_lookup_cache.enabled'] == "True") {
             $('#sys_user_cache_enable').prop('checked', true);
+        } else {
+            $('#sys_user_cache_enable').prop('checked', false);
         }
         var exp = data.result.value['user_lookup_cache.expiration'];
         $('#sys_user_cache_expiration').val(exp || 123600);
