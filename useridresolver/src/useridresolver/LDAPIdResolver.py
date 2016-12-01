@@ -243,7 +243,7 @@ class IdResolver (UserIdResolver):
                 log.debug("for %r connection try to start_tls", uri)
                 l_obj.start_tls_s()
 
-            except ldap.CONNECT_ERROR as exx:
+            except ldap.LDAPError as exx:
 
                 if caller.enforce_tls:
                     log.error("failed to start_tls for %r: %r", uri, exx)
