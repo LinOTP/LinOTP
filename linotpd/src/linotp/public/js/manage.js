@@ -3667,6 +3667,9 @@ $(document).ready(function(){
 
     var server_config = get_server_config();
 
+    // set linotp version to global object as dom is loaded now
+    g.linotp_version = $('#linotp_version').text();
+
     $("button").button();
 
     // install handler for https certificate entry field
