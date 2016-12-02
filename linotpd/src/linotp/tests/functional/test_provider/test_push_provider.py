@@ -76,11 +76,13 @@ class TestPushProviderController(TestController):
     R_AUTH_STATUS = 200
     R_AUTH_DETAIL = VALID_REQUEST
 
+
     def setUp(self):
         return
 
     def tearDown(self):
-        return
+        self.delete_all_resolvers()
+        super(TestPushProviderController, self).tearDown()
 
     def _fixture_file(self, file_name):
         """
