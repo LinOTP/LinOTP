@@ -1048,14 +1048,18 @@ function check_license(){
         $('#dialog_support_contact').html(obj.detail['download_licence_info']);
         $dialog_support_contact.dialog('open');
     }
-       return;
+    return;
 }
-// correctly closed bracket??
+// correctly closed bracket?? yes!
 
-function check_serial(serial){
-    var resp = clientUrlFetchSync('/admin/check_serial',{'serial':serial});
+/**
+ * checks the license status for enterprise subscription
+ * @return {Boolean} true if a valid license was found
+ */
+function is_license_valid() {
+    var resp = clientUrlFetchSync('/system/isSupportValid',{});
     var obj = jQuery.parseJSON(resp);
-    return obj.result.value.new_serial;
+    return obj.result.value === true;
 }
 
 // ####################################################
