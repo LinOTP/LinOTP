@@ -191,3 +191,23 @@ function escape(data) {
 function descape(data) {
 	return traverse(data, entity_decode);
 }
+
+
+/**
+ * tests object for the existance of a given key
+ * or chain of keys for nested search
+ * @param  {Object}                object the haystack to search in
+ * @param  {String|Array<String>}  key    the name of the key(s) to search from
+ * @return {Boolean}                      true if key exists in object
+ */
+function isDefinedKey(object, key){
+    if(object !== null && key.length > 0) {
+        var result = object.hasOwnProperty(key[0]);
+        if(key.length == 1) {
+            return result;
+        }
+        // if object has the first part of the key, search this object with the rest of the key
+        return (result ? isDefinedKey(object[key.shift()], key) : false);
+    }
+    return false;
+}
