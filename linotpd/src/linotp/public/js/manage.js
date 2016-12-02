@@ -879,11 +879,13 @@ function load_token_config() {
     }
     return;
 }
+
 /*
 callback save_token_config()
 */
 function save_token_config(){
     show_waiting();
+
     /* for every token call the getParamCallback */
     var params = {'session': getsession()};
     for (tt in $tokenConfigCallbacks) {
@@ -901,35 +903,23 @@ function save_token_config(){
                 }
             }
         }
-        catch(err) {
-            //console_log('callbacack for ' + tt + ' not found!')
-        }
-
-
+        catch(err) {}
     }
-    //console_log(params)
-    $.post('/system/setConfig', params,
-     function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-        if (data.result.status == false) {
-            alert_info_text({'text': escape(data.result.error.message),
-                             'type': ERROR,
-                             'is_escaped': true});
-        }
-    });
+
+    setSystemConfig(params);
 }
 
-
-/*
- * Retrieve session cookie if it does not exist
+/**
+ * returns the admin_session cookie or requests it from the server if not set
+ * @return {String} admin_session
  */
-
-
 function getsession(){
     var session="";
     if (document.cookie) {
         session = getcookie("admin_session");
-   }
+    }
+
+   // Retrieve session cookie if it does not exist
    if ("" == session) {
         // we need to get the session ID synchronous or we will have unpredictiable
         // behavious
@@ -2620,6 +2610,8 @@ function load_system_config(){
 
 function save_system_config(){
     show_waiting();
+
+    // block of config values which are input based
     var params = {
         'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
         'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
@@ -2631,16 +2623,9 @@ function save_system_config(){
         'resolver_lookup_cache.expiration':  $('#sys_resolver_cache_expiration').val(),
         'session':getsession()}
 
-    $.post('/system/setConfig', params,
-     function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-        if (data.result.status == false) {
-            alert_info_text({'text': "text_system_save_error",
-                             'type': ERROR,
-                             'is_escape': true});
-        }
-    });
+    setSystemConfig(params);
 
+    // second block of config values which are checkbox based
     var allowsaml = "False";
     if ($("#sys_allowSamlAttributes").is(':checked')) {
         allowsaml = "True";
@@ -2696,27 +2681,44 @@ function save_system_config(){
         resolver_cache_enabled = "True";
     }
 
-    var params = { 'session':getsession(),
-            'PrependPin' :prepend,
-            'FailCounterIncOnFalsePin' : fcounter ,
-            'splitAtSign' : splitatsign,
-            'AutoResync' :    autoresync,
-            'PassOnUserNotFound' : passOUNFound,
-            'PassOnUserNoToken' : passOUNToken,
-            'selfservice.realmbox' : realmbox,
-            'allowSamlAttributes' : allowsaml,
-            'client.FORWARDED' : client_forward,
-            'client.X_FORWARDED_FOR' : client_x_forward,
-            'allowSamlAttributes' : allowsaml,
-            'certificates.use_system_certificates': use_sys_cert,
-            'user_lookup_cache.enabled': user_cache_enabled,
-            'resolver_lookup_cache.enabled': resolver_cache_enabled,
-            'user_lookup_cache.enabled': user_cache_enabled,
-             };
-    $.post('/system/setConfig', params,
+    var params = {
+        'session':getsession(),
+        'PrependPin' :prepend,
+        'FailCounterIncOnFalsePin' : fcounter ,
+        'splitAtSign' : splitatsign,
+        'AutoResync' :    autoresync,
+        'PassOnUserNotFound' : passOUNFound,
+        'PassOnUserNoToken' : passOUNToken,
+        'selfservice.realmbox' : realmbox,
+        'allowSamlAttributes' : allowsaml,
+        'client.FORWARDED' : client_forward,
+        'client.X_FORWARDED_FOR' : client_x_forward,
+        'allowSamlAttributes' : allowsaml,
+        'certificates.use_system_certificates': use_sys_cert,
+        'user_lookup_cache.enabled': user_cache_enabled,
+        'resolver_lookup_cache.enabled': resolver_cache_enabled,
+        'user_lookup_cache.enabled': user_cache_enabled,
+    };
+
+    setSystemConfig(params);
+}
+
+/**
+ * sends the object containing system config entries
+ * to the server to save them in the database
+ * @param {Object.<string, *>} values - the key value pairs representing the config to save
+ */
+function setSystemConfig(values) {
+    $.post('/system/setConfig', values,
      function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
-            alert_info_text({'text': "text_system_save_error_checkbox",
+            var message = "Error saving system configuration. Please check your configuration and your server.";
+            // if a more specific server error is available use this one
+            if (data.result.error && data.result.error.message)
+                message += "<br>" + escape(data.result.error.message);
+
+            alert_info_text({'text': message,
                              'type': ERROR,
                              'is_escaped': true});
         }
