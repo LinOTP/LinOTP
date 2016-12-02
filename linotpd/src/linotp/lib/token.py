@@ -255,7 +255,7 @@ class TokenHandler(object):
         if token_type == 'sms':
             mobile = u_info.get('mobile', None)
             if not mobile:
-                msg = ('auto_enrollemnt for user %s faild: missing '
+                msg = ('auto_enrollment for user %s failed: missing '
                        'mobile number!' % user)
                 log.warning(msg)
                 return False, {'error': msg}
@@ -266,7 +266,7 @@ class TokenHandler(object):
         elif token_type == 'email':
             email = u_info.get('email', None)
             if not email:
-                msg = ('auto_enrollemnt for user %s faild: missing email!'
+                msg = ('auto_enrollment for user %s failed: missing email!'
                             % user)
                 log.warning(msg)
                 return False, {'error': msg}
@@ -274,7 +274,7 @@ class TokenHandler(object):
 
         # else: token type undefined
         else:
-            msg = ('auto_enrollemnt for user %s faild: unknown token type %r'
+            msg = ('auto_enrollment for user %s failed: unknown token type %r'
                         % (user, token_type))
             log.warning(msg)
             return False, {'error': msg}
