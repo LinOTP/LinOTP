@@ -1,19 +1,17 @@
 #!/usr/bin/make -f
 
+
 #export DH_VERBOSE = 1
-export PYBUILD_NAME=linotp
 
-# LinOTP functional tests require special system setup
-export PYBUILD_DISABLE=test
+DEB_PYTHON_SYSTEM := pysupport
 
-%:
-	dh $@ --with python2 --buildsystem=pybuild
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/python-distutils.mk
 
-override_dh_auto_install:
-	dh_auto_install -- --after-install \
-		"mv {destdir}/usr/etc {destdir}/etc"
+binary-install/linotp::
+	mv debian/linotp/usr/etc debian/linotp/etc
 
-override_dh_clean:
+clean::
 	dh_clean
 	debconf-updatepo
 

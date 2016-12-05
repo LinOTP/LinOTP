@@ -110,11 +110,11 @@ prepare-deb-source: source
 	# The debian packaging directory is not included in the source tarball.
 	# See <https://wiki.debian.org/UpstreamGuide#Pristine_Upstream_Source> for rationale
 
-	# Create a symlink to the tarball in the format expected by dpkg-source
+	# Create tarball copy in the format expected by dpkg-source
 	cd $(DEB_BUILDDIR) \
-		&& upstream_version=$(shell dpkg-parsechangelog -Sversion | cut -d- -f1) ;\
-		package_name=$(shell dpkg-parsechangelog -Ssource) ;\
-		orig_tar_name="../$${package_name}_$${upstream_version}.orig.tar.gz" ;\
+		&& upstream_version=$(shell dpkg-parsechangelog | grep "^Version:" |cut -d' ' -f2 | cut -d- -f1) ;\
+		package_name=$(shell dpkg-parsechangelog | grep "^Source:" |cut -d' ' -f2 ) ;\
+		orig_tar_name="../$${package_name}_$${upstream_version}.$(TAR_SUFFIX)" ;\
 		cp $(BUILDDIR)/$(PROJECT)-*.tar.gz $${orig_tar_name} \
 		&& tar --strip-components=1 -xf $${orig_tar_name}
 
@@ -123,14 +123,14 @@ prepare-deb-source: source
 # Ubuntu builds create source packages in linotpd/src
 .PHONY: ppa-preprocess
 ppa-preprocess: buildtranslation source
-	$(MAKE) prepare-deb-source DEB_BUILDDIR=linotp-build
+	$(MAKE) prepare-deb-source DEB_BUILDDIR=linotp-build TAR_SUFFIX=ubuntu-temp.tar.gz
 	cd linotp-build && debuild -S
 
 
 # Debian builds create binary packages in linotpd/build
 .PHONY: builddeb
 builddeb:
-	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR)
+	$(MAKE) prepare-deb-source DEB_BUILDDIR=$(DEB_BUILDDIR) TAR_SUFFIX=orig.tar.gz
 	cd $(DEB_BUILDDIR); dpkg-buildpackage -i -I -rfakeroot
 
 .PHONY: clean
@@ -141,10 +141,13 @@ clean:
 	rm -fr ./LinOTP.egg-info/
 	rm -f $(I18N_JSON_FILES)
 	rm -rf ../build/ \
-		linotp-build-ubuntu
-	rm -f *.dsc \
-		*.changes \
-		*.upload
+		linotp-build
+	rm -f linotp_*.dsc \
+		linotp_*.build \
+		linotp_*.tar.gz \
+		linotp_*.diff.gz \
+		linotp_*.changes \
+		linotp_*.upload
 
 
 test:

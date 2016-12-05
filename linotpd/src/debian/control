@@ -2,15 +2,16 @@ Source: linotp
 Section: net
 Priority: optional
 Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
-Build-Depends: debhelper (>=9),
-               dh-python,
+Build-Depends: cdbs,
+               debhelper (>=9),
                lsb-release,
                po-debconf,
                python-all,
                python-babel,
                python-pastescript,
                python-pylons (>=0.9.7),
-               python-setuptools
+               python-setuptools,
+               python-support (>=0.6)
 Standards-Version: 3.9.8
 Homepage: https://www.linotp.org/
 X-Python-Version: >= 2.7
