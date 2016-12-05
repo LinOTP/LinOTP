@@ -201,6 +201,7 @@ function descape(data) {
  * @return {Boolean}                      true if key exists in object
  */
 function isDefinedKey(object, key){
+    if(key.constructor !== Array) key = [key]; // make sure the key is wrapped in an array or wrap it
     if(object !== null && key.length > 0) {
         var result = object.hasOwnProperty(key[0]);
         if(key.length == 1) {

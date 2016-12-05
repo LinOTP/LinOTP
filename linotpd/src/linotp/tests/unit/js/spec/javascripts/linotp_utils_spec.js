@@ -5,13 +5,13 @@ describe("isDefinedKey", function() {
     "a": "value a",
     "b with spaces": " ",
     "c": undefined,
-    "d": { "a": false}
+    "d": { "a": false},
+    "emil": { "a": false}
   }
 
   it("finds direct key", function() {
-    var result = isDefinedKey(simpleObject, "a");
-
-    expect(result).toBe(true);
+    expect(isDefinedKey(simpleObject, "a")).toBe(true);
+    expect(isDefinedKey(simpleObject, "emil")).toBe(true);
   });
 
   it("finds direct key as array", function() {
@@ -27,8 +27,8 @@ describe("isDefinedKey", function() {
   });
 
   it("does not find a key that is not defined", function() {
-    var result_with_arraykey = isDefinedKey(simpleObject, ["e"]);
-    var result_with_stringkey = isDefinedKey(simpleObject, "e");
+    var result_with_arraykey = isDefinedKey(simpleObject, ["f"]);
+    var result_with_stringkey = isDefinedKey(simpleObject, "f");
 
     expect(result_with_arraykey).toBe(false);
     expect(result_with_stringkey).toBe(false);
