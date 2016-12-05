@@ -408,16 +408,13 @@ def sendCSVResult(response, obj, flat_lines=False,
     :param response: The pylons response object
     :param obj: The data, that gets serialized as CSV
     :type obj: JSON object
-    :param flat_lines: If True the object only contains a list of the
-                         dict { 'cell': ..., 'id': ... }
-                       as in all the flexigrid functions.
+    :param flat_lines: If True the object only contains a list of the dict { 'cell': ..., 'id': ... }
+                        as in all the flexigrid functions.
     'type flat_lines: boolean
     '''
     delim = "'"
-    seperator = ';'
     response.content_type = "application/force-download"
-    response.headers['Content-disposition'] = ('attachment; filename=%s'
-                                               % filename)
+    response.headers['Content-disposition'] = 'attachment; filename=%s' % filename
     output = u""
 
     if not flat_lines:
@@ -429,7 +426,7 @@ def sendCSVResult(response, obj, flat_lines=False,
             # Do the header
             if not headers_printed:
                 for k in data[0].keys():
-                    output += "%s%s%s%s " % (delim, k, delim, seperator)
+                    output += "%s%s%s, " % (delim, k, delim)
                 output += "\n"
                 headers_printed = True
 
@@ -438,12 +435,12 @@ def sendCSVResult(response, obj, flat_lines=False,
                     value = val.replace("\n", " ")
                 else:
                     value = val
-                output += "%s%s%s%s " % (delim, value, delim, seperator)
+                output += "%s%s%s, " % (delim, value, delim)
             output += "\n"
     else:
         for l in obj:
             for elem in l.get("cell", []):
-                output += "'%s'%s " % (elem, seperator)
+                output += "'%s', " % elem
 
             output += "\n"
 
