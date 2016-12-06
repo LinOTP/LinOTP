@@ -12,7 +12,8 @@
 #   - dist/**/*.js
 #
 src_files:
-  - linotp_utils.js
+  - "jquery-1.12.4.js"
+  - "linotp_utils.js"
 
 # stylesheets
 #
