@@ -215,7 +215,7 @@ if isinstance(lang, list):
 
 </div>
 <div id="footer">
-${c.version} --- &copy; ${c.licenseinfo}
+    <span id="linotp_version">${c.version}</span> --- &copy; ${c.licenseinfo}
 </div>
 
 <span id="include_footer"> </span>
