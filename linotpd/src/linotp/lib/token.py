@@ -1323,6 +1323,8 @@ def checkUserPass(user, passw, options=None):
 
         #  Check if there is an authentication policy passthru
         from linotp.lib.policy import get_auth_passthru
+        from linotp.lib.policy import get_auth_passOnNoToken
+
         if get_auth_passthru(user):
             log.debug("[checkUserPass] user %r has no token. Checking for "
                       "passthru in realm %r" % (user.login, user.realm))
@@ -1331,9 +1333,9 @@ def checkUserPass(user, passw, options=None):
             if  y.checkPass(uid, passw):
                 return (True, opt)
 
-        #  Check if there is an authentication policy passOnNoToken
-        from linotp.lib.policy import get_auth_passOnNoToken
-        if get_auth_passOnNoToken(user):
+        # Check alternatively if there is an authentication
+        # policy passOnNoToken
+        elif get_auth_passOnNoToken(user):
             log.info("[checkUserPass] user %r has not token. PassOnNoToken set - authenticated!")
             c.audit['action_detail'] = "Authenticated by passOnNoToken policy"
             return (True, opt)
