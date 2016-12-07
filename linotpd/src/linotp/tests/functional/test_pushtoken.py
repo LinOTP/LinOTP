@@ -517,7 +517,7 @@ class TestPushToken(TestController):
         sk = U[0:16]
         nonce = U[16:32]
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         # decrypt and verify challenge
 
@@ -526,38 +526,46 @@ class TestPushToken(TestController):
         cipher = AES.new(sk, AES.MODE_CTR, counter=ctr)
         plaintext = cipher.decrypt(ciphertext)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         # parse/check plaintext header
 
-        pt_header = plaintext[0:9]
-        content_type, transaction_id = struct.unpack('<bQ', pt_header)
+        # 1 - for content type
+        # 8 - for transaction id
+        # 8 - for time stamp
+        offset = 1 + 8 + 8
+
+        pt_header = plaintext[0:offset]
+        (content_type,
+         transaction_id,
+         _time_stamp) = struct.unpack('<bQQ', pt_header)
+
         transaction_id = u64_to_transaction_id(transaction_id)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         # prepare the parsed challenge data
 
         challenge = {}
         challenge['content_type'] = content_type
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         # retrieve plaintext data depending on content_type
 
         if content_type == CONTENT_TYPE_PAIRING:
 
-            serial, callback_url, __ = plaintext[9:].split('\x00')
+            serial, callback_url, __ = plaintext[offset:].split('\x00')
             challenge['serial'] = serial
 
         elif content_type == CONTENT_TYPE_SIGNREQ:
 
-            message, callback_url, __ = plaintext[9:].split('\x00')
+            message, callback_url, __ = plaintext[offset:].split('\x00')
             challenge['message'] = message
 
         elif content_type == CONTENT_TYPE_LOGIN:
 
-            login, host, callback_url, __ = plaintext[9:].split('\x00')
+            login, host, callback_url, __ = plaintext[offset:].split('\x00')
             challenge['login'] = login
             challenge['host'] = host
 
