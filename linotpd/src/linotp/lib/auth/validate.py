@@ -479,8 +479,10 @@ class ValidationHandler(object):
                 audit['action_detail'] = 'authenticated by PassOnUserNoToken'
                 return (True, opt)
 
-            #  Check if there is an authentication policy passthru
+            # Check if there is an authentication policy passthru
             from linotp.lib.policy import get_auth_passthru
+            from linotp.lib.policy import get_auth_passOnNoToken
+
             if get_auth_passthru(user):
                 log.debug('user %r has no token. Checking for '
                           'passthru in realm %r' % (user.login, user.realm))
@@ -489,9 +491,9 @@ class ValidationHandler(object):
                 if y.checkPass(uid, passw):
                     return (True, opt)
 
-            #  Check if there is an authentication policy passOnNoToken
-            from linotp.lib.policy import get_auth_passOnNoToken
-            if get_auth_passOnNoToken(user):
+            # Check alternatively if there is an authentication
+            # policy passOnNoToken
+            elif get_auth_passOnNoToken(user):
                 log.info('user %r has not token. PassOnNoToken'
                          ' set - authenticated!')
                 audit['action_detail'] = (
