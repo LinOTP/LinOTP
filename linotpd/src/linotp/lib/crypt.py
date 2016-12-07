@@ -31,6 +31,7 @@ encapsulate security aspects
 import hmac
 import logging
 import struct
+
 from hashlib import sha256
 import base64
 
@@ -765,27 +766,18 @@ class urandom(object):
 
 def get_rand_digit_str(length=16):
     '''
-    return a sting of digits with a defined length using the urandom
+    return a string of digits with a defined length using the urandom
 
-    if we have leading zeros, the len of s could be smaller. Therefore
-    we run in a repeat-until-int(len) matches loop
-
-    :param length: number of digits the string should return (w.o. leading 0s)
-    :return: return string, which will contain length digits, even when
-             converted to an int
+    :param length: number of digits the string should return
+    :return: return string, which will contain length digits
     '''
 
-    s = ""
-    while len(s) < length:
-        # some optimization len int chars does not require len hex bytes
-        missing = (length - len(s)) + 1  # prevent getting zero in next step
-        randd = geturandom(len=int(missing / 2))
-        s2 = "%d" % (int(randd.encode('hex'), 16))
-        s = s + s2[:missing]
+    digit_str = str(1 + (struct.unpack(">I", os.urandom(4))[0] % 9))
 
-    if len(s) > length:
-        s = s[:length]
-    return s
+    for _i in range(length - 1):
+        digit_str += str(struct.unpack("<I", os.urandom(4))[0] % 10)
+
+    return digit_str
 
 
 def zerome(bufferObject):
