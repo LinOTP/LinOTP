@@ -25,6 +25,8 @@
 #
 
 import struct
+import time
+
 from os import urandom
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
@@ -772,15 +774,15 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         # generate plaintext header
 
-        #            --------------------------------------
-        #  fields   | content_type  | transaction_id | ... |
-        #            --------------------------------------
-        #  size     |       1       |        8       |  ?  |
-        #            --------------------------------------
+        #            ------------------------------------------------
+        #  fields   | content_type  | transaction_id | timestamp | ..
+        #            ------------------------------------------------
+        #  size     |       1       |        8       |     8     |  ?
+        #            -------------------------------------------------
 
         transaction_id = transaction_id_to_u64(transaction_id)
-        pt_header = struct.pack('<bQ', content_type, transaction_id)
-        plaintext = pt_header
+        plaintext = struct.pack('<bQQ', content_type, transaction_id,
+                                int(time.time()))
 
         # ------------------------------------------------------------------- --
 
