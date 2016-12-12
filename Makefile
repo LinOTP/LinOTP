@@ -219,3 +219,16 @@ docker-build-debs: docker-build-linotp-builder
 		$(DOCKER_CONTAINER_NAME):/pkg/apt $(DESTDIR)
 	docker rm $(DOCKER_CONTAINER_NAME)
 
+# Dockerfy tool
+.PHONY: get-dockerfy
+get-dockerfy: $(BUILDDIR)/dockerfy
+
+# Obtain dockerfy binary
+# TODO: Build from source
+$(BUILDDIR)/dockerfy:
+	mkdir -pv $(BUILDDIR)/dockerfy-tmp
+	wget --no-verbose --directory-prefix=$(BUILDDIR)/dockerfy-tmp \
+		https://github.com/SocialCodeInc/dockerfy/releases/download/1.1.0/dockerfy-linux-amd64-1.1.0.tar.gz
+	tar -C $(BUILDDIR) -xvf $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*.gz
+	rm -r $(BUILDDIR)/dockerfy-tmp
+
