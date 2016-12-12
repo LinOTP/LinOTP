@@ -107,10 +107,20 @@ requested from the remote instance.
 Execution
 ============================================
 
-$ nosetests --tc-file=server_cfg.ini test_create_useridresolvers.py
+To execute all tests:
 
-It is possible to overwrite some specific cfg settings as follows:
+ $ nosetests --tc-file=server_cfg.ini
 
-$ nosetests --tc-file=server_cfg.ini --tc=linotp.host:10.76.124.35 \
-    test_create_useridresolvers.py
+To execute all tests in one file:
 
+ $ nosetests --tc-file=server_cfg.ini test_create_useridresolvers.py
+
+It is possible to overwrite some specific configuration settings as follows:
+
+ $ nosetests --tc-file=server_cfg.ini --tc=<SECTION>.<NAME>:<VALUE>
+
+See the configuration file for the parameters that can be set.
+
+For example, to execute tests by connecting to a remotely running linotp instance:
+
+ $ nosetests --tc-file=server_cfg.ini --tc=linotp.host:10.76.124.35
