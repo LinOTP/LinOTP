@@ -2325,6 +2325,171 @@ function support_view(){
     return false;
 }
 
+/**
+ * determines if some sort of welcome screen should be shown and does it
+ */
+function check_for_welcome_screen() {
+
+    if(is_license_valid()) {
+        return;
+    }
+
+    var serverConfig = get_server_config();
+    var currenttime = new Date().getTime();
+
+    var currentMinorVersion = parseMinorVersionNumber(g.linotp_version);
+
+    if(!isDefinedKey(serverConfig, "welcome_screen.version")) {
+
+        setSystemConfig({
+            "welcome_screen.version": currentMinorVersion,
+            "welcome_screen.last_shown": currenttime,
+            "welcome_screen.opt_out": false
+        });
+
+        var title = i18n.gettext("Welcome to LinOTP");
+        var text = '<p>' + i18n.gettext("Welcome to your fresh LinOTP installation.") + '</p>'
+            + '<p>' + i18n.gettext("If you have questions about the setup or installation of LinOTP, please <a href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>.") + '</p>'
+            + '<p>' + i18n.gettext("<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an enterprise 2FA solution.") + '</p>'
+            + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity, and want to be informed about:") 
+            + '<ul>'
+            + '<li>' + i18n.gettext("updates of our products,") + '</li>'
+            + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
+            + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
+            + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
+            + '</ul>'
+            + i18n.gettext("consider subscribing to our quarterly newsletter.")
+            + '</p>'
+            + '<br/>'
+            + '<div id="welcome-buttons">'
+            + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe to newsletter") + '</a>'
+            + '</div>'
+        var button = i18n.gettext("OK");
+
+        show_welcome_screen(title, text, button);
+    }
+    else {
+        var currentMajorVersion = parseMajorVersionNumber(g.linotp_version);
+        var welcomeScreenVersion = parseMajorVersionNumber(serverConfig["welcome_screen.version"]);
+
+        var timedelta = 1000*60*60*24*7;
+
+        if (compareVersionNumbers(currentMajorVersion, welcomeScreenVersion) !== 0) {
+
+            setSystemConfig({
+                "welcome_screen.version": currentMinorVersion,
+                "welcome_screen.last_shown": currenttime
+            });
+
+            var title = i18n.gettext("Changelog");
+            var text = '<p>'
+                + sprintf(i18n.gettext("Your installation of LinOTP was updated to version %s. You can find the Changelog and other informations about this release at:"), currentMinorVersion)
+                + '</p>'
+                + '<p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">https://www.linotp.org/resources/changelogs.html</a></p>'
+                + '<p>' + i18n.gettext("Our newsletter will inform you about:")
+                + '<ul>'
+                + '<li>' + i18n.gettext("updates of our products,") + '</li>'
+                + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
+                + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
+                + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
+                + '</ul>'
+                + '</p>'
+                + '<p>' + i18n.gettext("We are happy to receive your feedback about LinOTP.") + '</p>'
+                + '<br/>'
+                + '<div id="welcome-buttons">'
+                + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
+                + '<a class="light-text-color feedback-button" href="https://www.keyidentity.com/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
+                + '</div>'
+            var button = i18n.gettext("Close");
+
+            show_welcome_screen(title, text, button);
+        }
+        else if(serverConfig["welcome_screen.opt_out"].toLowerCase() !== "true" &&
+                parseInt(serverConfig["welcome_screen.last_shown"]) + timedelta < currenttime) {
+
+            setSystemConfig({
+                "welcome_screen.last_shown": currenttime
+            });
+
+            var title = i18n.gettext("Thank you for using LinOTP");
+            var text = '<p>' + i18n.gettext("We are happy you are using LinOTP by KeyIdentity as your 2FA solution.") + '</p>'
+                + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity with LinOTP at its core, and want to be informed about:") 
+                + '<ul>'
+                + '<li>' + i18n.gettext("updates of our products,") + '</li>'
+                + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
+                + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
+                + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
+                + '</ul>'
+                + i18n.gettext("please consider subscribing to our quarterly newsletter.")
+                + '</p>'
+                + '<p>' + i18n.gettext("We are happy to receive your feedback about LinOTP.") + '</p>'
+                + '<br/>'
+                + '<div id="welcome-buttons">'
+                + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
+                + '<a class="light-text-color feedback-button" href="https://www.keyidentity.com/contact-us/" target="_blank">' + i18n.gettext("Feedback") + '</a>'
+                + '</div>'
+            var button = i18n.gettext("OK");
+
+            var dialog = show_welcome_screen(title, text, button);
+
+            var optOutLabel =
+                '<div class="ui-dialog-buttonset welcome-screen-option-buttonset">'
+                + '<label><input type="checkbox" id="welcome_screen_option" name="welcome_screen_option">'
+                + i18n.gettext("Do not repeat this reminder")
+                + '</label>'
+                + '</div>';
+            $(dialog)
+                .parent()
+                .find('.ui-dialog-buttonpane')
+                .prepend(optOutLabel);
+        }
+    }
+}
+
+function show_welcome_screen(title, text, button_text) {
+    var dialog_body =
+        '<div><br/>'
+        + text
+        + '<br/></div>';
+
+    return $(dialog_body).dialog({
+        title: title,
+        width: 600,
+        minHeight: 400,
+        modal: true,
+        buttons: [
+            {
+                text: button_text,
+                click: function() {
+                    if($('#welcome_screen_option').is(':checked')) {
+                        setSystemConfig({
+                            "welcome_screen.opt_out": true
+                        });
+                    }
+                    $( this ).dialog( "close" );
+                }
+            }
+        ],
+        create: function() {
+            $('#welcome-buttons .newsletter-button').button({
+                icons: { primary: 'ui-icon-mail-closed' },
+                classes: {
+                    "ui-button": "ui-corner-all"
+                }
+            });
+            $('#welcome-buttons .feedback-button').button({
+                icons: { primary: 'ui-icon-pencil' },
+                classes: {
+                    "ui-button": "ui-corner-all"
+                }
+            });
+        },
+        open: function() {
+            $('#welcome-buttons').children().first().focus();
+        }
+    });
+}
+
 function load_sms_providers(){
     show_waiting();
     var params = {'type': 'sms',
@@ -5564,6 +5729,9 @@ $(document).ready(function(){
     $("#logAccordion").accordion({
         fillSpace: true
     });
+
+    // display welcome screen if required
+    check_for_welcome_screen();
 
 
 });

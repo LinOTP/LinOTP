@@ -201,6 +201,7 @@ function descape(data) {
  * @return {Boolean}                      true if key exists in object
  */
 function isDefinedKey(object, key){
+    if(key.constructor !== Array) key = [key]; // make sure the key is wrapped in an array or wrap it
     if(object !== null && key.length > 0) {
         var result = object.hasOwnProperty(key[0]);
         if(key.length == 1) {
@@ -210,4 +211,79 @@ function isDefinedKey(object, key){
         return (result ? isDefinedKey(object[key.shift()], key) : false);
     }
     return false;
+}
+
+/**
+ * parses the linotp version string to a unified presentation
+ * of minor release level that can be compared.
+ * @param  {String} linotp_version the version string containing product name and version number
+ * @return {String}                the version number containing generation, major and minor
+ *                                 releases and not patch and dev releases
+ */
+function parseMinorVersionNumber(linotp_version) {
+
+    // the expectation is, that the version number does not
+    // contain any spaces, the product name may eventually
+    var versionNumber = linotp_version.substring(linotp_version.lastIndexOf(" ") + 1).split(".");
+
+    // fill array with equivalent value of non existant
+    while(versionNumber.length < 3) versionNumber.push("0");
+
+    // "ignore" dev releases
+    for(var i = 0; i < versionNumber.length; i++) {
+        if(versionNumber[i].indexOf("dev") === 0) {
+            versionNumber[i] = "0";
+        }
+    }
+
+    return versionNumber.slice(0,3).join(".");
+}
+
+/**
+ * parses the linotp version string to a unified presentation
+ * of major release level that can be compared.
+ * @param  {String} linotp_version the version string containing product name and version number
+ * @return {String}                the version number containing generation and major relases
+ *                                 not minor, patch and dev releases
+ */
+function parseMajorVersionNumber(linotp_version) {
+
+    // the expectation is, that the version number does not
+    // contain any spaces, the product name may eventually
+    var versionNumber = linotp_version.substring(linotp_version.lastIndexOf(" ") + 1).split(".");
+
+    // fill array with equivalent value of non existant
+    while(versionNumber.length < 3) versionNumber.push("0");
+
+    // "ignore" dev releases
+    for(var i = 0; i < versionNumber.length; i++) {
+        if(versionNumber[i].indexOf("dev") === 0) {
+            versionNumber[i] = "0";
+        }
+    }
+
+    return versionNumber.slice(0,2).join(".");
+}
+
+/**
+ * compares two version number strings containing nummerical values joined by dots
+ * @param  {String} v1 first version number
+ * @param  {String} v2 second version number
+ * @return {Number}    1 if first, -1 if second version number is greater or 0 if they are equal
+ */
+function compareVersionNumbers(v1, v2) {
+    var v1parts = v1.split("."), v2parts = v2.split(".");
+
+    while (v1parts.length < v2parts.length) v1parts.push("0");
+    while (v2parts.length < v1parts.length) v2parts.push("0");
+
+    v1parts = $.map(v1parts, Number);
+    v2parts = $.map(v2parts, Number);
+
+    for(var i = 0; i < v1parts.length; i++) {
+        if(v1parts[i] > v2parts[i]) return 1;
+        if(v1parts[i] < v2parts[i]) return -1;
+    }
+
+    return 0;
 }

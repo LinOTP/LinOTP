@@ -840,9 +840,10 @@ syst></textarea></td>
     <p id='about_copyright'>${_("Copyright (C) 2010 - 2016 KeyIdentity GmbH")}</p>
     <p id='about_licens'>${_("Licensed under AGPLv3")}</p>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
-    <p><a href="http://www.linotp.org/" rel="noreferrer" target="_blank">http://www.linotp.org</a>
+    <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
     <br>${_("or")}<br>
-    <a href="http://www.lsexperts.de/" rel="noreferrer" target="_blank">http://www.lsexperts.de</a></p>
+    <a href="https://www.lsexperts.de" rel="noreferrer" target="_blank">https://www.lsexperts.de</a></p>
+    <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}q</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,

@@ -641,3 +641,31 @@ html {
 	}
 * html .clearfix             { zoom: 1; } /* IE6 */
 *:first-child+html .clearfix { zoom: 1; } /* IE7 */
+
+
+/*
+ *  Styles for welcome screen
+ */
+.ui-dialog-buttonset.welcome-screen-option-buttonset {
+	float: left!important;
+	margin: .6em 0 0 .5em;
+	padding: 0.6em;
+	font-size: .8em;
+}
+
+#welcome-buttons a{
+	background: #F07F1C;
+    color: white;
+}
+
+#welcome-buttons a:not(:last-child){
+	margin-right: .5em;
+}
+
+#welcome-buttons{
+	text-align: center;
+}
+
+.light-text-color .ui-icon {
+	background-image: url(/css/jquery-ui/images/ui-icons_ffffff_256x240.png)!important;
+}
