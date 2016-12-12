@@ -234,6 +234,18 @@ docker-build-linotpd: $(BUILDDIR)/dockerfy
 		-t linotpd \
 		$(BUILDDIR)
 
+.PHONY: docker-run-linotp-sqlite
+docker-run-linotp-sqlite: docker-build-linotpd
+	# Run linotp in a standalone container
+	cd linotpd/src \
+		&& $(DOCKER_RUN) -it \
+			 -e LINOTP_APACHE_SSL=false \
+			 -e LINOTP_DB_TYPE=sqlite \
+			 -e LINOTP_DB_NAME=//tmp/sqlite \
+			 -e APACHE_PORT=80 \
+			 -p 80 \
+			linotpd
+
 # Dockerfy tool
 .PHONY: get-dockerfy
 get-dockerfy: $(BUILDDIR)/dockerfy
