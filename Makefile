@@ -175,6 +175,7 @@ deb-install: builddeb
 # ---------------------------------------------------------------------------------------------------
 # linotp-builder | Dockerfile.builder             | Container ready to build linotp packages
 # linotpd        | linotpd/src                    | Runs linotpd in apache
+# selenium-test  | linotpd/src/tests/integration  | Run LinOTP Selenium tests against selenium remote
 
 # Extra arguments can be passed to docker build
 DOCKER_BUILD_ARGS=
@@ -190,6 +191,12 @@ DOCKER_RUN_ARGS=
 
 DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
+SELENIUM_TESTS_COMPOSEFILE=linotpd/src/linotp/tests/integration/docker-compose.yml
+
+# Build and run Selenium tests
+docker-run-selenium: docker-build-linotpd
+	docker-compose -f $(SELENIUM_TESTS_COMPOSEFILE) up selenium_tester
+
 # The linotp builder container contains all build dependencies
 # needed to build linotp, plus a copy of the linotp
 # sources under /pkg/linotp
@@ -233,6 +240,18 @@ docker-build-linotpd: $(BUILDDIR)/dockerfy
 	$(DOCKER_BUILD) \
 		-t linotpd \
 		$(BUILDDIR)
+
+.PHONY: docker-build-selenium
+docker-build-selenium: docker-build-linotpd
+	$(DOCKER_BUILD) \
+		-t selenium_test \
+		$(dir $(SELENIUM_TESTS_COMPOSEFILE))
+
+	cd $(dir $(SELENIUM_TESTS_COMPOSEFILE)) \
+	&& docker-compose build
+
+.PHONY: docker-run-selenium
+docker-run-selenium: docker-build-selenium
 
 .PHONY: docker-run-linotp-sqlite
 docker-run-linotp-sqlite: docker-build-linotpd
