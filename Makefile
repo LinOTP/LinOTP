@@ -193,9 +193,19 @@ DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
 SELENIUM_TESTS_COMPOSEFILE=linotpd/src/linotp/tests/integration/docker-compose.yml
 
+## Toplevel targets
+# Toplevel target to build all containers
+docker-build-all: docker-build-debs  docker-build-linotpd docker-build-selenium
+
+# Toplevel target to build linotpd container
+docker-linotpd: docker-build-debs  docker-build-linotpd
+
 # Build and run Selenium tests
 docker-run-selenium: docker-build-linotpd
 	docker-compose -f $(SELENIUM_TESTS_COMPOSEFILE) up selenium_tester
+
+##
+.PHONY: docker-build-all docker-linotpd docker-run-selenium
 
 # The linotp builder container contains all build dependencies
 # needed to build linotp, plus a copy of the linotp
