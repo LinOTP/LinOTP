@@ -93,3 +93,32 @@ run-in-linotpd-projs = $(call run-in-directories,$(LINOTPD_PROJS),$(1))
 develop:
 	$(call run-in-linotpd-projs,$(PYTHON) setup.py $@)
 
+
+#####################
+# Unit test targets
+#
+#
+# These targets can be run directly from a development
+# environment, within a container or an installed system
+#
+# unittests - just the unit tests
+# integrationtests - selenium integration tests
+# test - all tests
+
+ifndef NOSETESTS_ARGS
+NOSETESTS_ARGS?=-v
+endif
+
+test: unittests integrationtests
+
+unittests:
+	$(MAKE) -C linotpd/src/linotp/tests/unit $@
+	nosetests $(NOSETESTS_ARGS) .
+
+# integrationtests - selenium integration tests
+# Use the SELENIUMTESTS_ARGS to supply test arguments
+integrationtests:
+	$(MAKE) -C linotpd/src/linotp/tests/integration $@
+
+.PHONY: test unittests integrationtests
+
