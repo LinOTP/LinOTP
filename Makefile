@@ -201,3 +201,21 @@ docker-build-linotp-builder:
 		-f Dockerfile.builder \
 		-t linotp-builder \
 		.
+
+# A unique name to reference containers for this build
+NAME_PREFIX := linotpbuilder-$(shell date +%H%M%S-%N)
+DOCKER_CONTAINER_NAME = $(NAME_PREFIX)-$@
+
+.PHONY: docker-build-debs
+docker-build-debs: docker-build-linotp-builder
+	# Build the debs in a container, then extract them from the image
+	$(DOCKER_RUN) \
+		--workdir=/pkg/linotp \
+		--name=$(DOCKER_CONTAINER_NAME) \
+		linotp-builder \
+		make deb-install DESTDIR=/pkg/apt DEBUILD_OPTS="$(DEBUILD_OPTS)"
+	mkdir -p $(DESTDIR)/incoming
+	docker cp \
+		$(DOCKER_CONTAINER_NAME):/pkg/apt $(DESTDIR)
+	docker rm $(DOCKER_CONTAINER_NAME)
+
