@@ -103,6 +103,14 @@ class FinishTokens(object):
                         % (self.pin_matching_tokens +
                            self.invalid_tokens)[0].getSerial())
 
+        if self.pin_matching_tokens:
+            (ret, reply, detail) = self.finish_pin_matching_tokens()
+            self.increment_failcounters(self.pin_matching_tokens)
+
+            self.create_audit_entry(action_detail=detail,
+                                    tokens=self.pin_matching_tokens)
+            return ret, reply
+
         if self.invalid_tokens:
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
@@ -110,14 +118,7 @@ class FinishTokens(object):
             self.create_audit_entry(action_detail=detail,
                                     tokens=self.invalid_tokens)
 
-        if self.pin_matching_tokens:
-            (ret, reply, detail) = self.finish_pin_matching_tokens()
-            self.increment_failcounters(self.pin_matching_tokens)
-
-            self.create_audit_entry(action_detail=detail,
-                                    tokens=self.pin_matching_tokens)
-
-        return ret, reply
+            return ret, reply
 
     def finish_valid_tokens(self):
         """
@@ -213,8 +214,10 @@ class FinishTokens(object):
 
         if len(challenge_tokens) == 1:
             challenge_token = challenge_tokens[0]
+
             _res, reply = Challenges.create_challenge(
                 challenge_token, options=options)
+
             return (False, reply, action_detail)
 
         # processing of multiple challenges
@@ -244,11 +247,6 @@ class FinishTokens(object):
                     id_postfix=id_postfix
                 )
                 transactionid = reply.get('transactionid').rsplit('.')[0]
-
-                # add token type and serial to ease the type specific
-                # processing
-                reply['linotp_tokentype'] = challenge_token.type
-                reply['linotp_tokenserial'] = challenge_token.getSerial()
                 key = challenge_token.getSerial()
                 all_reply['challenges'][key] = reply
 

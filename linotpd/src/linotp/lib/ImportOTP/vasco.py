@@ -309,10 +309,10 @@ def parseVASCOdata(fileString=None, arg_otplen=6, transportkey=None):
     kp.DiagLevel = 0
     kp.GMTAdjust = 0
     kp.CheckChallenge = 0
-    # -- ------
+    # -- --- --
     # This is the failcounter! The failcounter needs to be reset manually
     # When we set the failcounter=0 then we can rule the failcounter in LinOTP
-    # -- -----
+    # -- -- --
     kp.IThreshold = 0
     kp.SThreshold = 1
     kp.ChkInactDays = 0

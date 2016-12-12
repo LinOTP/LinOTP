@@ -118,15 +118,59 @@ a.close_all {
 	background: #F0F0F0;
 }
 
+.flexigrid div.pDiv div.pDiv2 {
+	margin: 3px 0;
+	float: inherit;
+	zoom: 1;
+}
+
+.flexigrid div.pDiv div.pDiv2::after {
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: "";
+	clear: both;
+	height: 0;
+}
+
+.flexigrid div.pDiv .pPageStat, .flexigrid div.pDiv .pcontrol {
+	top: auto;
+	height: 24px;
+  line-height: 24px;
+}
+
+.flexigrid div.pDiv input {
+	top: auto;
+	vertical-align: middle;
+}
+
+.flexigrid div.pDiv div.pButton,
+.flexigrid div.pDiv div.pButton span {
+	width: 24px;
+	height: 24px;
+}
+
+.flexigrid div.sDiv2 select[name="qtype"] {
+	margin-right: 4px;
+}
+
+.flexigrid div.pDiv div.pButton:hover,
+.flexigrid div.pDiv div.pButton.pBtnOver,
+.flexigrid div.pDiv div.pButton:hover span,
+.flexigrid div.pDiv div.pButton.pBtnOver span {
+    width: 22px;
+    height: 22px;
+}
+
+.flexigrid div.pDiv select{
+	height: 100%;
+}
+
 .flexigrid div.sDiv {
 	border-bottom: 0;
 }
 
-.flexigrid {
-	padding-top: .8em;
-}
-
-#policy_form {
+.flexigrid, #policy_form {
 	margin-top: .8em;
 }
 
@@ -511,19 +555,22 @@ html {
  *  Styles for sms and email provider config
  */
 #sms_providers_list,
-#email_providers_list{
+#email_providers_list,
+#push_providers_list{
 	padding: 0 .5em;
 }
 
 #button_sms_provider_set_default,
-#button_email_provider_set_default{
+#button_email_provider_set_default,
+#button_push_provider_set_default{
 	float: right;
     margin: .5em .5em 0 0;
 }
 
 /* Remove padding for secondary buttonpane in provider-configurations */
 #dialog_sms_providers .ui-dialog-buttonpane.flat,
-#dialog_email_providers .ui-dialog-buttonpane.flat {
+#dialog_email_providers .ui-dialog-buttonpane.flat,
+#dialog_push_providers .ui-dialog-buttonpane.flat {
 	padding: 0!important;
     position: absolute;
     bottom: 0;
@@ -535,12 +582,14 @@ html {
 }
 
 #dialog_sms_providers,
-#dialog_email_providers{
+#dialog_email_providers,
+#dialog_push_providers{
 	padding: .5em 0 2.7em;
 }
 
 #dialog_sms_providers .list-wrapper,
-#dialog_email_providers .list-wrapper{
+#dialog_email_providers .list-wrapper,
+#dialog_push_providers .list-wrapper{
 	overflow: auto;
     height: 100%;
 }

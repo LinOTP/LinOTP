@@ -392,17 +392,25 @@ class SecurityProvider(object):
                     self.rwLock.release()
 
         return found
-        #return self.loadSecurityModule(id)
 
 
 def main():
-    ## hook for local provider test
-    sep = SecurityProvider()
+
+    class DummySecLock():
+
+        def release(self):
+            return
+
+        def acquire_write(self):
+            return
+
+    # hook for local provider test
+    sep = SecurityProvider(secLock=DummySecLock())
     sep.load_config({})
     sep.createHSMPool('default')
-    sep.setupModule('default', {'passwd' : 'test123'})
+    sep.setupModule('default', {'passwd': 'test123'})
 
-    ## runtime catch an hsm for session
+    # runtime catch an hsm for session
     hsm = sep.getSecurityModule()
 
     passwo = 'password'
@@ -419,7 +427,7 @@ def main():
 
     zerome(passw)
 
-    ## session shutdown
+    # session shutdown
     sep.dropSecurityModule(sessionId='session2')
     sep.dropSecurityModule()
 

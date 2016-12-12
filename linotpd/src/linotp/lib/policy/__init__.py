@@ -737,7 +737,7 @@ def _checkTokenNum(user=None, realm=None, post_check=False):
 
     Therefor it checks the policy
         "scope = enrollment", action = "tokencount = <number>"
-        
+
     if there are more tokens assigned than in tokencount mentioned,
     return will be false
 
@@ -2567,7 +2567,7 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
     # 2. Within those policies select the policy with the user.
     #     if there is a policy with this very user, return only
     #     these policies, otherwise return all policies
-
+    exact_matched_policies = {}
     matched_policies = {}
     default_policies = {}
     ext_policies = {}
@@ -2585,13 +2585,19 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
             default_policies[polname] = pol
             continue
 
-        if user in policy_users or '*' in policy_users:
+        if '*' not in policy_users and user in policy_users:
+            log.debug("adding %s to own_policies", polname)
+            exact_matched_policies[polname] = pol
+        elif '*' in policy_users:
             log.debug("adding %s to own_policies", polname)
             matched_policies[polname] = pol
         else:
             log.debug("policy %s contains only users (%s) other than %s",
                       polname, policy_users, user)
             ext_policies[polname] = pol
+
+    if exact_matched_policies:
+        return exact_matched_policies
 
     if matched_policies:
         return matched_policies
@@ -3321,6 +3327,56 @@ def get_partition(realms, user):
                                 'realm set: %r' % (action_values, realms))
     if action_values:
         ret = int(action_values[0])
+
+    return ret
+
+
+def get_single_auth_policy(policy_name, user=None, realms=None):
+    """
+    Retrieves a policy value and checks if the value is consistent
+    across realms.
+
+    :param policy_name: the name of the policy, e.g:
+        * qrtoken_pairing_callback_url
+        * qrtoken_pairing_callback_sms
+        * qrtoken_challenge_response_url
+        * qrtoken_challenge_response_sms
+
+    :param realms: the realms that his policy should be effective in
+    """
+
+    action_values = []
+    login = None
+    ret = None
+
+    if user and user.login and user.realm:
+        realms = [user.realm]
+        login = user.login
+
+    if realms is None or len(realms) == 0:
+        realms = ['/:no realm:/']
+
+    params = {"scope": "authentication",
+              'action': policy_name}
+
+    for realm in realms:
+        params['realm'] = realm
+        if login:
+            params['user'] = login
+
+        policy = getPolicy(params)
+        action_value = getPolicyActionValue(policy, policy_name,
+                                            is_string=True)
+        if action_value:
+            action_values.append(action_value)
+
+    if len(action_values) > 1:
+        for value in action_values:
+            if value != action_values[0]:
+                raise Exception('conflicting policy values %r found for '
+                                'realm set: %r' % (action_values, realms))
+    if action_values:
+        ret = action_values[0]
 
     return ret
 # eof ##########################################################################

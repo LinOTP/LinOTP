@@ -29,6 +29,8 @@
 import logging
 import re
 import copy
+import json
+from functools import partial
 
 from linotp.lib.context import request_context as context
 
@@ -38,8 +40,10 @@ from linotp.lib.config import removeFromConfig
 from linotp.lib.config import getLinotpConfig
 
 from linotp.lib.util import getParam
-from linotp.lib.crypt import decryptPassword
 
+from linotp.lib.type_utils import get_duration
+
+from linotp.lib.crypt import decryptPassword
 
 required = True
 optional = False
@@ -126,10 +130,10 @@ class Resolver(object):
     def _sanityCheck(self):
         ret = True
         for t in self.types:
-            if self.data.has_key(t) is False:
+            if t not in self.data:
                 ret = False
         for t in self.desc:
-            if self.data.has_key(t) is False:
+            if t not in self.data:
                 ret = False
 
         return ret
@@ -180,9 +184,15 @@ def defineResolver(params):
     resolver.setDefinition(params)
     res = resolver.saveConfig()
 
-    resolver = getResolverObject(resolver_clazz + '.' + conf)
+    resolver_spec = resolver_clazz + '.' + conf
+    resolver = getResolverObject(resolver_spec)
 
-    return resolver is not None
+    if resolver is None:
+        return False
+
+    # finally, in case of an update, we have to flush the cache
+    _flush_user_resolver_cache(resolver_spec)
+    return True
 
 
 def similar_resolver_exists(config_identifier):
@@ -268,7 +278,7 @@ def getResolverList(filter_resolver_type=None):
     return Resolvers
 
 
-def getResolverInfo(resolvername):
+def getResolverInfo(resolvername, passwords=False):
     '''
     return the resolver info of the given resolvername
 
@@ -277,57 +287,77 @@ def getResolverInfo(resolvername):
 
     :return : dict of resolver description
     '''
-    resolver_dict = {}
-    typ = ""
-    resolvertypes = get_resolver_types()
 
+    result = {"type": None, "data": {}, "resolver": resolvername}
+
+    resolver_dict = {}
     descr = {}
 
-    conf = context.get('Config')
-    # conf = getLinotpConfig()
+    resolver_entries = {}
+    resolvertypes = get_resolver_types()
 
-    for entry in conf:
+    linotp_config = context.get('Config')
 
-        for typ in resolvertypes:
+    for typ in resolvertypes:
+        for config_entry in linotp_config:
+            if (config_entry.startswith("linotp." + typ) and
+               config_entry.endswith(resolvername)):
+                resolver_entries[config_entry] = linotp_config.get(config_entry)
 
-            # get the typed values of the descriptor!
-            resolver_conf = get_resolver_class_config(typ)
-            if typ in resolver_conf:
-                descr = resolver_conf.get(typ).get('config', {})
-            else:
-                descr = resolver_conf
+    if not resolver_entries:
+        return result
 
-            if entry.startswith("linotp." + typ) and entry.endswith(resolvername):
-                # the realm might contain dots "."
-                # so take all after the 3rd dot for realm
-                resolver = entry.split(".", 3)
-                # An old entry without resolver name
-                if len(resolver) <= 3:
-                    break
+    resolver_parts = resolver_entries.keys()[0].split('.')
 
-                value = conf.get(entry)
-                if resolver[2] in descr:
-                    configEntry = resolver[2]
-                    if descr.get(configEntry) == 'password':
+    #
+    # TODO: remove legacy code: An old entry without resolver name
+    #
+    if len(resolver_parts) <= 3:
+        return result
 
-                        # do we already have the decrypted pass?
-                        if 'enc' + entry in conf:
-                            value = conf.get('enc' + entry)
-                        else:
-                            # if no, we take the encpass and decrypt it
-                            value = conf.get(entry)
-                            try:
-                                en = decryptPassword(value)
-                                value = en
-                            except:
-                                log.info("Decryption of resolver passwd failed: compatibility issue?")
+    #
+    # get the type descriptions for the resolver type
+    #
 
-                resolver_dict[resolver[2]] = value
-                # Dont check the other resolver types
+    resolver_type = resolver_parts[1]
+    resolver_conf = get_resolver_class_config(resolver_type)
 
-                break
+    if resolver_type in resolver_conf:
+        resolver_descr = resolver_conf.get(resolver_type).get('config', {})
+    else:
+        resolver_descr = resolver_conf
 
-    return {"type": typ, "data": resolver_dict, "resolver": resolvername}
+    #
+    # build up the resolver dictionary
+    #
+
+    for key, value in resolver_entries.items():
+        resolver_key = key.split(".")[2]
+
+        if resolver_key in resolver_descr:
+
+            if (resolver_descr.get(resolver_key) == 'password' and
+               passwords is True):
+
+                # do we already have the decrypted pass?
+                if 'enc%s' % key in linotp_config:
+                    value = linotp_config.get('enc%s' % key)
+                else:
+                    # if no, we take the entry and try to de crypt it
+                    value = linotp_config.get(key)
+
+                    try:
+                        value = decryptPassword(value)
+                    except Exception as exc:
+                        log.exception("Decryption of resolver entry "
+                                      "failed: %r", exc)
+
+        resolver_dict[resolver_key] = value
+
+    result["type"] = resolver_type
+    result["data"] = resolver_dict
+
+    return result
 
 
 def deleteResolver(resolvername):
@@ -347,6 +377,7 @@ def deleteResolver(resolvername):
     # conf = getLinotpConfig()
 
     delEntries = []
+    resolver_specs = set()
 
     for entry in conf:
         rest = entry.split(".", 3)
@@ -358,6 +389,10 @@ def deleteResolver(resolvername):
                     typ = rest[1]
                     if typ in resolvertypes:
                         delEntries.append(entry)
+                        resolver_conf = get_resolver_class_config(typ)
+                        resolver_class = resolver_conf.get(typ, {}).get('clazz')
+                        fqn = ".".join([resolver_class, resolvername])
+                        resolver_specs.add(fqn)
 
     if len(delEntries) > 0:
         try:
@@ -369,6 +404,11 @@ def deleteResolver(resolvername):
             log.exception("deleteResolver: %r" % e)
             res = False
 
+    if res:
+        # on success we can flush the caches
+        for resolver_spec in resolver_specs:
+            _flush_user_resolver_cache(resolver_spec)
+            _delete_from_resolver_config_cache(resolver_spec)
 
     return res
 
@@ -435,9 +475,203 @@ def getResolverObject(resolver_spec):
             log.error('resolver config loading failed for resolver with '
                       'specification %s' % resolver_spec)
             return None
+
+        # in case of the replication there might by difference
+        # in the used resolver config and the config from the LinOTP config
+        _check_for_resolver_cache_flush(resolver_spec, config_identifier)
+
         resolvers_loaded[resolver_spec] = resolver
 
         return resolver
+
+
+def _check_for_resolver_cache_flush(resolver_spec, config_identifier):
+    """
+    check if the current resolver config is still the current one
+
+    this is done by using as well the caching with a dedicated cache
+    that holds the former configuration. If the current config does not match
+    the retrieved value, the cache is out dated and we have to flush the
+    related caches
+
+    :param resolver_spec: resolver spec - fully qualified resolver
+    :param config_identifier: the resolver config identifier
+    """
+
+    resolver_config = _get_resolver_config(config_identifier)
+    resolver_config_dump = json.dumps(resolver_config)
+
+    res_conf_hash = _lookup_resolver_config(resolver_spec, resolver_config)
+
+    if res_conf_hash != resolver_config_dump:
+        # now we delete the user_resolver cache
+        _flush_user_resolver_cache(resolver_spec)
+
+        # and establish the new config in the resolver config cache
+        # by deleting the reference key and adding the entry
+
+        _delete_from_resolver_config_cache(resolver_spec)
+        _lookup_resolver_config(resolver_spec, resolver_config)
+
+    return
+
+
+def _flush_user_resolver_cache(resolver_spec):
+    """
+    flush the user realm cache
+        in case of a change of the resolver, all realms which use
+        this resolver must be flushed
+
+    :param resolver_spec: the resolve which has been updated
+    :return: - nothing -
+    """
+
+    from linotp.lib.user import delete_resolver_user_cache
+    from linotp.lib.user import delete_realm_resolver_cache
+
+    delete_resolver_user_cache(resolver_spec)
+
+    config = context["Config"]
+    realms = config.getRealms()
+
+    # if a resolver is redefined, we have to refresh the related realm cache
+    for realm_name, realm_spec in realms.items():
+        resolvers = realm_spec.get('useridresolver', [])
+        if resolver_spec in resolvers:
+            delete_realm_resolver_cache(realm_name)
+
+
+def _get_resolver_config(resolver_config_identifier):
+    """
+    get the resolver config of a resolver identified by its config identifier
+        helper to access the resolver configuration
+
+    :param resolver_config_identifier: resolver config identifier as string
+    :return: dict with the resolver configuration
+    """
+
+    # identify the fully qualified resolver spec by all possible resolver
+    # prefixes, which are taken from the resolver_classes list
+    lookup_keys = []
+    config_keys = context['resolver_classes'].keys()
+    for entry in config_keys:
+        lookup_keys.append('linotp.' + entry)
+
+    # we got the resolver prefix, now we can search in the config for
+    # all resolver configuration entries
+    resolver_config = {}
+    config = context['Config']
+
+    for key, value in config.items():
+        if key.endswith(resolver_config_identifier):
+            for entry in lookup_keys:
+                if key.startswith(entry):
+                    resolver_config[key] = value
+
+    return resolver_config
+
+
+# -- -------------------------------------------------------------------- --
+
+def _lookup_resolver_config(resolver_spec, resolver_config=None):
+    """
+    lookup resolver configuration for a given resolver spec
+
+    :param resolver_spec: resolver specification (full qualified)
+    :param resolver_config: used for cache filling
+
+    :return: resolver configuration as dict
+    """
+
+    def __lookup_resolver_config(resolver_spec, resolver_config=None):
+        """
+        inner function which is called on a cache miss
+
+        :param resolver_spec: resolver specification (full qualified)
+        :param resolver_config: used for cache filling
+
+        :return: resolver configuration as dict
+
+        """
+        if resolver_config:
+            return json.dumps(resolver_config)
+
+        return None
+
+    # get the resolver configuration cache, if any
+    resolver_config_cache = _get_resolver_config_cache()
+    if not resolver_config_cache:
+        return __lookup_resolver_config(resolver_spec, resolver_config)
+
+    # define the cache lookup function as partial as the standard
+    # beaker cache manager does not support arguments
+    # for the inner cache function
+    p_lookup_resolver_config = partial(__lookup_resolver_config,
+                                       resolver_spec, resolver_config)
+
+    p_key = resolver_spec
+
+    # retrieve config from the cache, accessed by the p_key
+    conf_hash = resolver_config_cache.get_value(key=p_key,
+                                        createfunc=p_lookup_resolver_config,
+                                                )
+
+    return conf_hash
+
+
+def _get_resolver_config_cache():
+    """
+    helper - common getter to access the resolver_config cache
+
+    the resolver config cache is used to track the resolver configuration
+    changes. therefore for each resolver spec the resolver config is stored
+    in a cache. In case of an request the comparison of the resolver config
+    with the cache value is made and in case of inconsistancy the resolver
+    user cache is flushed.
+
+    :remark: This cache is only enabled, if the resolver user lookup cache
+             is enabled too
+
+    :return: the resolver config cache
+    """
+
+    config = context['Config']
+
+    enabled = config.get('linotp.resolver_lookup_cache.enabled',
+                         'True') == 'True'
+    if not enabled:
+        return None
+
+    try:
+        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
+                                     36 * 3600)
+
+        expiration = get_duration(expiration_conf)
+
+    except ValueError:
+        log.info("resolver caching is disabled due to a value error in "
+                 "resolver_lookup_cache.expiration config")
+        return None
+
+    cache_manager = context['CacheManager']
+    cache_name = 'resolver_config'
+    resolver_config_cache = cache_manager.get_cache(cache_name,
+                                                    type="memory",
+                                                    expiretime=expiration)
+
+    return resolver_config_cache
+
+
+def _delete_from_resolver_config_cache(resolver_spec):
+    """
+    delete one entry from the resolver config lookup cache
+    :param resolver_spec: the resolver spec (fully qualified)
+    :return: - nothing -
+    """
+    resolver_config_cache = _get_resolver_config_cache()
+    if resolver_config_cache:
+        resolver_config_cache.remove_value(key=resolver_spec)
+
 
 # external lib/base.py
 def setupResolvers(config=None, cache_dir="/tmp"):
@@ -486,7 +720,7 @@ def initResolvers():
 
     except Exception as exx:
         log.exception("Failed to initialize resolver in context %r" % exx)
-    return
+    return context
 
 # external lib/base.py
 def closeResolvers():

@@ -26,12 +26,12 @@
 '''Interface to an EMail provider and implementation of the SMPT email provider
 '''
 
+import logging
 import smtplib
 from email.mime.text import MIMEText
-
 from linotp.provider import provider_registry
 
-import logging
+
 LOG = logging.getLogger(__name__)
 
 
@@ -39,8 +39,26 @@ class IEmailProvider(object):
     """
     An abstract class that has to be implemented by ever e-mail provider class
     """
+    provider_type = 'email'
+
     def __init__(self):
         pass
+
+    @staticmethod
+    def getConfigMapping():
+        """
+        for dynamic, adaptive config entries we provide the abilty to
+        have dedicated config entries
+
+        entries should look like:
+        {
+          key: (ConfigName, ConfigType)
+        }
+        """
+        config_mapping = {'timeout': ('Timeout', None),
+                          'config': ('Config', 'password')}
+
+        return config_mapping
 
     def submitMessage(self, email_to, message, subject=None):
         """
@@ -72,7 +90,8 @@ class IEmailProvider(object):
 
 
 @provider_registry.class_entry('SMTPEmailProvider')
-@provider_registry.class_entry('linotp.provider.emailprovider.SMTPEmailProvider')
+@provider_registry.class_entry('linotp.provider.emailprovider.'
+                               'SMTPEmailProvider')
 @provider_registry.class_entry('linotp.lib.emailprovider.SMTPEmailProvider')
 class SMTPEmailProvider(IEmailProvider):
     """
@@ -143,23 +162,23 @@ class SMTPEmailProvider(IEmailProvider):
         msg['From'] = self.email_from
         msg['To'] = email_to
 
-        s = smtplib.SMTP(self.smtp_server)
+        smtp_connection = smtplib.SMTP(self.smtp_server)
         if self.smtp_user:
-            s.login(self.smtp_user, self.smtp_password)
+            smtp_connection.login(self.smtp_user, self.smtp_password)
         try:
-            errors = s.sendmail(self.email_from, email_to, msg.as_string())
+            errors = smtp_connection.sendmail(self.email_from,
+                                              email_to, msg.as_string())
             if len(errors) > 0:
-                LOG.error("[submitMessage] error(s) sending e-mail %r"
-                          % errors)
+                LOG.error("error(s) sending e-mail %r", errors)
                 success, status_message = False, ("error sending e-mail %s"
                                                   % errors)
 
         except (smtplib.SMTPHeloError, smtplib.SMTPRecipientsRefused,
                 smtplib.SMTPSenderRefused, smtplib.SMTPDataError
-                ) as smtplib_exception:
-            LOG.error("[submitMessage] error(s) sending e-mail. Caught "
-                      "exception: %r" % smtplib_exception)
+               ) as smtplib_exception:
+            LOG.error("error(s) sending e-mail. Caught exception: %r",
+                      smtplib_exception)
             success, status_message = False, ("error sending e-mail %r"
                                               % smtplib_exception)
-        s.quit()
+        smtp_connection.quit()
         return success, status_message

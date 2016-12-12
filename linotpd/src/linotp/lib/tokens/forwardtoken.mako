@@ -86,12 +86,12 @@ function forward_get_enroll_params(){
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static pin")}'><th colspan="2">${_("Token Pin:")}</th></tr>
 	<tr name="set_pin_rows">
     <td class="description"><label for="forward_pin1" id="forward_pin1_label">${_("enter PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('forward_pin1','forward_pin2');" name="pin1" id="forward_pin1"
+    <td><input type="password" autocomplete="off" name="pin1" id="forward_pin1"
             class="text ui-widget-content ui-corner-all"></td>
 	</tr>
 	<tr name="set_pin_rows">
     <td class="description"><label for="forward_pin2" id="forward_pin2_label">${_("confirm PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('forward_pin1','forward_pin2');" name="pin2" id="forward_pin2"
+    <td><input type="password" autocomplete="off" name="pin2" id="forward_pin2"
             class="text ui-widget-content ui-corner-all"></td>
 	</tr></table>
 

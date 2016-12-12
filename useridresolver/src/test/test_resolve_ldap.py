@@ -32,6 +32,7 @@ import subprocess
 import ldap
 
 from os import getcwd
+from copy import deepcopy
 from useridresolver.UserIdResolver import getResolverClass
 from useridresolver import LDAPIdResolver
 
@@ -59,6 +60,7 @@ class LDAPResolverTest(unittest.TestCase):
                                     'linotp.ldapresolver.BINDPW'  : '',
                                     'linotp.ldapresolver.TIMEOUT' : '5',
                                     'linotp.ldapresolver.SIZELIMIT' : '10',
+                                    'linotp.certificates.use_system_certificates' : False,
                                     })
 
     def getUserList(self, obj, arg):
@@ -85,7 +87,6 @@ class LDAPResolverTest(unittest.TestCase):
         res = self.ldap_y.getUserId(user)
 
         return res
-
 
 class LDAPInProcessTests(LDAPResolverTest):
     def test_ldap_getuserid_ad(self):
@@ -122,6 +123,31 @@ class LDAPInProcessTests(LDAPResolverTest):
                     {'entryUUID': ['ef50cce4-1df9-1033-90e7-713823084e1f']})]
         res = self.mocked_ldap_getuserid('bach', ldapret)
         self.assertEqual(res, ldapret[0][0])
+
+    def test_start_tls_connect_exception(self):
+        '''
+        LDAP: Test handling of start_tls exceptions
+
+        These exceptions should be silently caught and the connection retried without
+        STARTTLS
+        '''
+        for effect in [ldap.CONNECT_ERROR, ldap.UNAVAILABLE]:
+            with mock.patch('useridresolver.LDAPIdResolver.ldap.initialize', autospec=True) as mock_ldap_init:
+                l_obj = mock_ldap_init.return_value
+                mock_start_tls = l_obj.start_tls_s
+                mock_start_tls.side_effect = effect("This exception should be caught")
+
+                caller = deepcopy(self.ldap_y)
+                caller.enforce_tls = False
+                caller.use_sys_cert = False
+
+                self.ldap_y.connect('ldap://localhost', caller)
+                mock_start_tls.assert_called_once()
+                self.assertEqual(mock_ldap_init.call_count, 2,
+                                 "ldap.initialize should have been called twice (with starttls, without starttls).\nException:%s\nCalls:%s".format(
+                                     effect,
+                                     mock_ldap_init.call_args_list)
+                                 )
 
 class LDAPResolverExtTest(LDAPResolverTest):
     proc = None  # LDAP process

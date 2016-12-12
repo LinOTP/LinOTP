@@ -2,23 +2,60 @@ Source: linotp
 Section: net
 Priority: optional
 Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
-Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49),
- python (>=2.6),  po-debconf, python-setuptools, python-pastescript,
- python-pylons (>=0.9.7), lsb-release, quilt
-Standards-Version: 3.9.1
+Build-Depends: cdbs,
+               debhelper (>=9),
+               lsb-release,
+               po-debconf,
+               python-all,
+               python-babel,
+               python-pastescript,
+               python-pylons (>=0.9.7),
+               python-setuptools,
+               python-support (>=0.6)
+Standards-Version: 3.9.8
+Homepage: https://www.linotp.org/
+X-Python-Version: >= 2.7
 
 Package: linotp
 Architecture: all
-Homepage: http://www.linotp.org/
-Depends: ${misc:Depends}, ${python:Depends}, apache2, libapache2-mod-wsgi,
- linotp-useridresolver (>=2.7~), python-pysodium, python-pycryptodomex
-Pre-Depends: python-simplejson, python-docutils, python-sqlalchemy (>=0.6),
- python-pylons (>=0.9.7), python-tempita, python-weberror, python-webob,
- python-mako, python-decorator, python-formencode, python-pastescript,
- python-pastedeploy, python-paste, python-beaker, python-webhelpers,
- python-routes, python-pygments, python-ldap, adduser, debconf, pwgen,
- python-m2crypto, python-mysqldb, python-pyrad, openssl, python-netaddr,
- python-repoze.who (<=1.9), python-qrcode, python-configobj, python-httplib2,
+Depends: apache2,
+         libapache2-mod-wsgi,
+         linotp-useridresolver (>=2.7~),
+         python-pycryptodomex,
+         python-pysodium,
+         python-requests,
+         ${misc:Depends},
+         ${python:Depends}
+Pre-Depends: adduser,
+             debconf,
+             openssl,
+             pwgen,
+             python-beaker,
+             python-configobj,
+             python-decorator,
+             python-docutils,
+             python-formencode,
+             python-httplib2,
+             python-ldap,
+             python-m2crypto,
+             python-mako,
+             python-mysqldb,
+             python-netaddr,
+             python-paste,
+             python-pastedeploy,
+             python-pastescript,
+             python-pygments,
+             python-pylons (>=0.9.7),
+             python-pyrad,
+             python-qrcode,
+             python-repoze.who (<=1.9),
+             python-routes,
+             python-simplejson,
+             python-sqlalchemy (>=0.6),
+             python-tempita,
+             python-weberror,
+             python-webhelpers,
+             python-webob
 Replaces: linotp-ee (<< 2.7-1~)
 Breaks: linotp-ee (<< 2.7-1~)
 Description: Server Core of the LinOTP 2 authentication solution

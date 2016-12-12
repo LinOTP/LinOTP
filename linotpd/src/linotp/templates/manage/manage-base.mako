@@ -64,7 +64,7 @@ if isinstance(lang, list):
 <link type="text/css" rel="stylesheet" href="/manage/custom-style.css">
 
 %if c.debug:
-    <script type="text/javascript" src="/js/jquery-1.12.0.js"></script>
+    <script type="text/javascript" src="/js/jquery-1.12.4.js"></script>
     <script type="text/javascript" src="/js/jquery-ui.js"></script>
     <script type="text/javascript" src="/js/jquery.validate.js"></script>
     <script type="text/javascript" src="/js/jquery.form.js"></script>
@@ -72,7 +72,7 @@ if isinstance(lang, list):
     <script type='text/javascript' src='/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/js/superfish.js'></script>
 %else:
-    <script type="text/javascript" src="/js/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
     <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
     <script type="text/javascript" src="/js/jquery.form.min.js"></script>
@@ -108,6 +108,11 @@ if isinstance(lang, list):
 </head>
 <body>
 
+<noscript>
+    <div class="javascript_error">${_("You need to enable Javascript to use the LinOTP Management Web UI.")}</div>
+    <style type="text/css">#wrap{display:none;}</style>
+</noscript>
+
 <div id="wrap">
 <div id="header" class="ui-widget-header ui-corner-all">
     <ul id='menu' class='sf-menu sf-vertical'>
@@ -120,6 +125,7 @@ if isinstance(lang, list):
                     <ul>
                         <li><a href='#' id='menu_sms_provider_config'>${_("SMS Provider Config")}</a>
                         <li><a href='#' id='menu_email_provider_config'>${_("Email Provider Config")}</a>
+                        <li><a href='#' id='menu_push_provider_config'>${_("Push Provider Config")}</a>
                     </ul>
                  </li>
                 <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
@@ -162,10 +168,6 @@ if isinstance(lang, list):
     <div id="login-status">${_("Logged in as")}: ${c.admin} | <a href="#" onclick='Logout("${c.logout_url}");return false;' >${_("Logout")}</a>
     </div>
 </div>
-<div class="javascript_error" id="javascript_error">
-    ${_("You need to enable Javascript to use the LinOTP Management Web UI.")}
-</div>
-
 <div class="clearfix">
 <div id="sidebar">
     <div class="sel_box">
@@ -213,7 +215,7 @@ if isinstance(lang, list):
 
 </div>
 <div id="footer">
-${c.version} --- &copy; ${c.licenseinfo}
+    <span id="linotp_version">${c.version}</span> --- &copy; ${c.licenseinfo}
 </div>
 
 <span id="include_footer"> </span>
@@ -227,6 +229,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
     <div id='tab_system_settings'>
         <ul id='config_tab_index'>
             <li><a href='#tab_content_system_settings'>${_("Settings")}</a></li>
+            <li><a href='#tab_content_system_caching'>${_("Caching")}</a></li>
             <li><a href='#tab_content_system_gui'>${_("GUI settings")}</a></li>
             <li><a href='#tab_content_system_client'>${_("Client Identification")}</a></li>
             <li><a href='#tab_content_system_cert'>${_("Certificates")}</a></li>
@@ -271,6 +274,29 @@ ${c.version} --- &copy; ${c.licenseinfo}
                     <label for=sys_mayOverwriteClient>${_("Override authentication client")}:</label>
                     <input type='text' name='sys_mayOverwriteClient' id='sys_mayOverwriteClient' size='40'
                     title="${_('This is a comma separated list of clients, that may send another client IP for authorization policies.')}">
+            </fieldset>
+        </div>
+        <div id="tab_content_system_caching">
+            <fieldset>
+                <legend>${_("Resolver Lookup Caching")}</legend>
+                <table>
+                <tr><td><label for=sys_resolver_cache_enable>${_("Enable")}</label></td>
+                    <td><input type="checkbox" name="sys_resolver_cache_enable" id="sys_resolver_cache_enable" value="sys.resolver_lookup_cache.enabled"
+                        title="${_('Enable caching of the realm to user id resolver lookup')}"></td></tr>
+                <tr><td><label for=sys_resolver_cache_enable>${_("Expiration")} </label></td>
+                    <td><input type="text" name="sys_resolver_cache_expiration" id="sys_resolver_cache_expiration" size="35"
+                        title='${_("The expiration of the resolver lookup caching in seconds")}'></td></tr>
+                </table>
+            </fieldset><fieldset>
+                <legend>${_("User Lookup Caching")}</legend>
+                <table>
+                <tr><td><label for=sys_user_cache_enable>${_("Enable")}</label></td>
+                    <td><input type="checkbox" name="sys_user_cache_enable" id="sys_user_cache_enable" value="sys_user_lookup_cache_enabled"
+                        title="${_('Enable the caching of user lookup in a resolver')}"></td></tr>
+                <tr><td><label for=sys_user_cache_enable>${_("Expiration")} </label></td>
+                    <td><input type="text" name="sys_user_cache_expiration" id="sys_user_cache_expiration" size="35"
+                        title='${_("The expiration of the user lookup caching in seconds")}'></td></tr>
+                </table>
             </fieldset>
         </div> <!-- tab with settings -->
         <div id='tab_content_system_gui'>
@@ -471,6 +497,94 @@ ${c.version} --- &copy; ${c.licenseinfo}
         $('#button_email_provider_cancel .ui-button-text').html('${_("Cancel")}');
     }
 </script>
+
+<!-- ############ push provider settings ################# -->
+<div id='dialog_push_providers'>
+    <div class="list-wrapper"><div id='push_providers_list'> </div></div>
+    <div class="ui-dialog-buttonpane flat"><button id='button_push_provider_set_default'>${_("Set as default")}</button></div>
+</div>
+<script type="text/javascript">
+    function translate_dialog_push_providers() {
+        $("#dialog_push_providers" ).dialog( "option", "title", '${_("Push Provider: create and edit")}');
+        $('#button_push_provider_new .ui-button-text').html('${_("New")}');
+        $('#button_push_provider_edit .ui-button-text').html('${_("Edit")}');
+        $('#button_push_provider_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_push_providers_close .ui-button-text').html('${_("Close")}');
+    }
+</script>
+
+<!-- ############ push provider edit ################# -->
+<div id="dialog_push_provider_edit">
+    <form class="cmxform" id="form_pushprovider" action="">
+        <table>
+            <tr>
+                <td><label for="push_provider_name">${_("Name")}</label>: </td>
+                <td><input type="text" name="push_provider_name" class="required"
+                                       id="push_provider_name" size="37" maxlength="80"
+                                       placeholder=""></td>
+            </tr>
+            <tr>
+                <td><label for="push_provider_class">${_("Class")}</label>: </td>
+                <td><input type="text" name="push_provider_class" class="required"
+                           id="push_provider_class" size="37" maxlength="80"
+                           placeholder="DefaultPushProvider"></td>
+            </tr>
+            <tr>
+                <td><label for='push_provider_config'>${_("Config")}</label>: </td>
+                <td><textarea name="push_provider_config" class="required"
+                              id="push_provider_config" cols='35' rows='6'
+                              placeholder=
+'{ 
+"push_url": "pnp.keyidentiy.com", 
+"access_certificate": "secret certificate", 
+"server_certificate":"server certificate"
+}'
+
+syst></textarea></td>
+            </tr>
+            <tr>
+                <td><label for="push_provider_timeout">${_("Timeout (sec)")}</label>: </td>
+                <td><input type="number" name="push_provider_timeout" class="required"
+                              placeholder="120" id="push_provider_timeout" size="5" maxlength="5"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script type="text/javascript">
+    function translate_dialog_push_provider_edit() {
+        $("#dialog_push_provider_edit" ).dialog( "option", "title", '${_("Push Provider")}' );
+        $('#button_push_provider_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_push_provider_save .ui-button-text').html('${_("Save")}');
+    }
+</script>
+
+<!-- ################## push provider delete ###################### -->
+<div id='dialog_push_provider_delete'>
+    <p>${_("Do you want to delete the Provider?")}</p>
+</div>
+<script type="text/javascript">
+    function translate_dialog_push_provider_delete() {
+        $("#dialog_push_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedPushProvider );
+        $('#button_push_provider_delete_delete .ui-button-text').html('${_("Delete")}');
+        $('#button_push_provider_delete_cancel .ui-button-text').html('${_("Cancel")}');
+    }
+</script>
+
+<!-- ############ push provider settings ################# -->
+<div id='dialog_push_provider_settings'>
+
+</div>
+
+<script type="text/javascript">
+    function translate_push_provider_settings() {
+        $("#dialog_push_provider_settings" ).dialog( "option", "title", '${_("Push Provider Configuration")}' );
+        $('#button_push_provider_save .ui-button-text').html('${_("Save Config")}');
+        $('#button_push_provider_cancel .ui-button-text').html('${_("Cancel")}');
+    }
+</script>
+
+
+
 
 <!-- ############ dialog settings ################# -->
 <div id='dialog_token_settings'>
@@ -756,24 +870,36 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <div><input id='setpin_tokens' type='hidden'></div>
         <fieldset>
             <table>
-                <tr><td>
-                <label for="pintype">${_("PIN type")}</label>
-                </td><td>
-                <select name="pintype" id="pintype">
-                <option value="motp">mOTP PIN</option>
-                <option value="ocra">OCRA PIN</option>
-                <option selected value="otp">OTP PIN</option>
-                </select>
-                </td></tr><tr><td>
-                <label for="pin1">PIN</label>
-                </td><td>
-                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin1" id="pin1"
-                    class="text ui-widget-content ui-corner-all">
-                </td></tr><tr><td>
-                <label for="pin2">${_("PIN (again)")}</label>
-                </td><td>
-                <input type="password" autocomplete="off" onkeyup="checkpins('pin1','pin2');" name="pin2" id="pin2" class="text ui-widget-content ui-corner-all">
-                </td></tr>
+                <tr>
+                    <td>
+                        <label for="pintype">${_("PIN type")}</label>
+                    </td>
+                    <td>
+                        <select name="pintype" id="pintype">
+                            <option value="motp">mOTP PIN</option>
+                            <option value="ocra">OCRA PIN</option>
+                            <option selected value="otp">OTP PIN</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="pin1">PIN</label>
+                    </td>
+                    <td>
+                        <input type="password" autocomplete="off" onkeyup="checkpins('#pin1,#pin2');" name="pin1" id="pin1"
+                            class="text ui-widget-content ui-corner-all">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="pin2">${_("PIN (again)")}</label>
+                    </td>
+                    <td>
+                        <input type="password" autocomplete="off" onkeyup="checkpins('#pin1,#pin2');" name="pin2" id="pin2"
+                            class="text ui-widget-content ui-corner-all">
+                    </td>
+                </tr>
             </table>
         </fieldset>
     </form>
@@ -813,7 +939,6 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 "you need to select only one user.  Anyhow, you can assign this token to any user later on.")}
         </p>
     </div>
-    <script type="text/javascript">tokentype_changed();</script>
     <form id="form_enroll_token" action="">
         <fieldset>
             <table>
@@ -831,7 +956,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
                     </select>
                 </td></tr>
             </table>
-            <div id="token_enroll_ocra">
+            <div class="token_enroll_frame" id="token_enroll_ocra">
                 <hr>
                 <p><span id='ocra_key_intro'>
                     ${_("Please enter or copy the OCRA key.")}</span></p>
@@ -844,19 +969,19 @@ ${c.version} --- &copy; ${c.licenseinfo}
                 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
                 <tr name="set_pin_rows">
                     <td class="description"><label for="ocra_pin1" id="ocra_pin1_label">${_("enter PIN")}:</label></td>
-                    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin1" id="ocra_pin1"
+                    <td><input type="password" autocomplete="off" name="pin1" id="ocra_pin1"
                             class="text ui-widget-content ui-corner-all"></td>
                 </tr>
                 <tr name="set_pin_rows" >
                     <td class="description"><label for="ocra_pin2" id="ocra_pin2_label">${_("confirm PIN")}:</label></td>
-                    <td><input type="password" autocomplete="off" onkeyup="checkpins('ocra_pin1','ocra_pin2');" name="pin2" id="ocra_pin2"
-                            class="text ui-widget-content ui-corner-all"></td>
+                    <td><input type="password" autocomplete="off" name="pin2" id="ocra_pin2"
+                            class="text ui-widget-content ui-corner-all"></td
                 </tr>
                 </table>
             </div>
 
             %for tok in c.token_enroll_div:
-             <div id="token_enroll_${tok}">${c.token_enroll_div[tok] |n}</div>
+             <div class="token_enroll_frame" id="token_enroll_${tok}">${c.token_enroll_div[tok] |n}</div>
             %endfor
 
         </fieldset>
@@ -1687,7 +1812,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>
                 <td><input type="text" name="ldap_binddn" id="ldap_binddn" size="35" maxlength="200"></td></tr>
             <tr><td><label for=ldap_password>${_("Bind Password")}</label>:</td>
-                <td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" size="35" maxlength="60"></td></tr>
+                <td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" placeholder="************" size="35" maxlength="60"></td></tr>
             <tr><td><label for=ldap_timeout>${_("Timeout")}</label>:</td>
                 <td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="10"></td></tr>
             <tr><td><label for=ldap_sizelimit>${_("Sizelimit")}:</label></td>
@@ -1757,7 +1882,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
             <tr><td><label for=http_authuser>${_("Auth User:")}</label></td>
                 <td><input type="text" name="Authuser" id="http_authuser" size="35" maxlength="200"></td></tr>
             <tr><td><label for=http_password>${_("Password")}</label>:</td>
-                <td><input type="password" autocomplete="off" name="Password" id="http_password" size="35" maxlength="60"></td></tr>
+                <td><input type="password" autocomplete="off" name="Password" placeholder="************" id="http_password" size="35" maxlength="60"></td></tr>
             <tr><td><label for=http_timeout>${_("Timeout")}</label>:</td>
                 <td><input type="text" name="Timeout" class="required"  id="http_timeout" size="35" maxlength="5"></td></tr>
             <tr><td> </td>
@@ -1858,7 +1983,7 @@ ${c.version} --- &copy; ${c.licenseinfo}
         <tr><td><label for=sql_user>${_("User")}:</label></td>
             <td><input type="text" name="sql_user"   id="sql_user" size="30" maxlength="60"></td></tr>
         <tr><td><label for=sql_password>${_("Password")}:</label></td>
-            <td><input type="password" autocomplete="off" name="sql_password"  id="sql_password" size="30" maxlength="60"></td></tr>
+            <td><input type="password" autocomplete="off" name="sql_password" placeholder="************" id="sql_password" size="30" maxlength="60"></td></tr>
         <tr><td><label for=sql_table>${_("Database table")}:</label></td>
             <td><input type="text" name="sql_table" class="required"  id="sql_table" size="30" maxlength="60"></td></tr>
         <tr><td><label for=sql_limit>${_("Limit")}:</label></td>

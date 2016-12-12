@@ -35,15 +35,42 @@ from linotp.lib.crypt import encryptPassword
 from linotp.lib.error import ConfigAdminError
 from linotp.model import Config
 from linotp.model.meta import Session
+
+
+from linotp.lib.text_utils import UTF8_MAX_BYTES
+from linotp.lib.text_utils import simple_slice
+from linotp.lib.text_utils import utf8_slice
+
+from linotp.lib.type_utils import is_duration
+
 import logging
 import os
 import time
 
 from pylons import tmpl_context as c
 
+import linotp.model.meta
+
+
+Config_Types = {
+    'linotp.user_lookup_cache.expiration':  ('duration', is_duration),
+    'linotp.resolver_lookup_cache.expiration': ('duration', is_duration),
+    }
+
+
+Session = linotp.model.meta.Session
+
 
 ENCODING = 'utf-8'
-MAX_VALUE_LEN = 2000
+
+#
+# MAX_VALUE_LEN defines the max len before we split the config entries into
+#  continuous config entries blocks.
+#
+
+
+MAX_VALUE_LEN = 2000 - UTF8_MAX_BYTES
+
 
 log = logging.getLogger(__name__)
 
@@ -160,7 +187,9 @@ class LinOtpConfig(dict):
                 if str(db_conf_date) != str(e_conf_date):
                     do_reload = True
 
-        return self.refreshConfig(do_reload=do_reload)
+        self.refreshConfig(do_reload=do_reload)
+
+        return
 
     def refreshConfig(self, do_reload=False):
 
@@ -234,6 +263,8 @@ class LinOtpConfig(dict):
         if type(val) in [str, unicode] and "%(here)s" in val:
             val = _expandHere(val)
 
+        self._check_type(key, val)
+
         res = self.__setitem__(key, val, typ, des)
         return res
 
@@ -252,6 +283,8 @@ class LinOtpConfig(dict):
         '''
 
         now = datetime.now()
+
+        self._check_type(key, val)
 
         if typ == 'password':
 
@@ -277,6 +310,32 @@ class LinOtpConfig(dict):
         _storeConfigDB('linotp.Config', now)
 
         return res
+
+    def _check_type(self, key, value):
+        """
+        check if we have a type description for this entry:
+        - if so, we take the tuple of type 'as literal' and
+          the type check function, we are running against the given value
+
+        :param key: the to be stored key
+        :param value: the to be stored value
+
+        :return: - nothing -
+        :raises: ValueError - if value is not type compliant
+
+        """
+
+        if key in Config_Types:
+
+            #
+            # get the tuple of type as literal and type checking function
+            #
+
+            typ, check_type_function = Config_Types[key]
+
+            if not check_type_function(value):
+                raise ValueError("Config Error: %s must be of type %r" %
+                                 (key, typ))
 
     def get(self, key, default=None):
         '''
@@ -377,10 +436,30 @@ class LinOtpConfig(dict):
         :return : return the std value like the std dict does, whatever this is
         :rtype  : any value a dict update will return
         '''
+
+        #
+        # first check if all data is type compliant
+        #
+
+        for key, val in dic.items():
+            self._check_type(key, val)
+
+        #
+        # put the data in the parent dictionary
+        #
+
         res = self.parent.update(dic)
-        # sync the lobal dict
+
+        #
+        # and sync the data with the global config dict
+        #
+
         self.glo.setConfig(dic)
-        # sync to disc
+
+        #
+        # finally sync the entries to the database
+        #
+
         for key in dic:
             if key != 'linotp.Config':
                 _storeConfigDB(key, dic.get(key))
@@ -458,6 +537,7 @@ def _getConfigFromEnv():
     return linotpConfig
 
 
+
 def _storeConfigDB(key, val, typ=None, desc=None):
     """
     insert or update the entry with  key, value, type and
@@ -485,9 +565,6 @@ def _storeConfigDB(key, val, typ=None, desc=None):
 
     # for strings or unicode, we support continued entries
     # check if we have to split the value
-    number_of_chunks = (len(value) / MAX_VALUE_LEN)
-    if number_of_chunks == 0:
-        return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
 
     # the continuous type is a split over multiple entries:
     # * every entry will have an enumerated key but the first one which has the
@@ -497,9 +574,33 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     # * For description all entries contains the enumeration, but the last the
     #   original description
 
-    for i in range(number_of_chunks + 1):
-        # iterate through the chunks, the last one might be empty though
-        cont_value = value[i * MAX_VALUE_LEN: (i + 1) * MAX_VALUE_LEN]
+    #
+    # we check the split algorithm depending on the value data -
+    # in case of only ascii, we can use the much faster simple algorithm
+    # in case of unicode characters we have to take the much slower one
+    #
+
+    chunks = []
+    if len(value) < len(value.encode('utf-8')):
+        text_slice = utf8_slice
+    else:
+        text_slice = simple_slice
+
+    # the number of chunks is oriented toward the max length defined
+    # by utf8 in bytes + the clipping of 6 bytes each. But as this could
+    # vary, we could not calculate the number of chunks and thus benefit
+    # from the iterator
+
+    for cont_value in text_slice(value, MAX_VALUE_LEN):
+        chunks.append(cont_value)
+
+    number_of_chunks = len(chunks)
+
+    # special simple case: either empty value or single entry
+    if number_of_chunks == 1:
+        return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
+
+    for i, cont_value in enumerate(chunks):
 
         cont_typ = "C"
         cont_desc = "%d:%d" % (i, number_of_chunks)
@@ -728,6 +829,7 @@ def updateConfig(confi):
     for entry in confi:
         typ = confi.get(entry + ".type", None)
         des = confi.get(entry + ".desc", None)
+
         # check if we have a descriptive entry
         if typ is not None or des is not None:
             typing = True
@@ -807,14 +909,18 @@ def removeFromConfig(key, iCase=False):
 def setDefaultMaxFailCount(maxFailCount):
     return storeConfig(u"DefaultMaxFailCount", maxFailCount)
 
+
 def setDefaultSyncWindow(syncWindowSize):
     return storeConfig(u"DefaultSyncWindow", syncWindowSize)
+
 
 def setDefaultCountWindow(countWindowSize):
     return storeConfig(u"DefaultCountWindow", countWindowSize)
 
+
 def setDefaultOtpLen(otpLen):
     return storeConfig(u"DefaultOtpLen", otpLen)
+
 
 def setDefaultResetFailCount(resetFailCount):
     return storeConfig(u"DefaultResetFailCount", resetFailCount)

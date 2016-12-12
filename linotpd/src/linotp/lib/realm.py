@@ -24,6 +24,10 @@
 #    Support: www.lsexperts.de
 #
 """realm processing logic"""
+
+import json
+from functools import partial
+
 from linotp.model import Realm, TokenRealm
 from linotp.model.meta import Session
 
@@ -31,6 +35,8 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
+
+from linotp.lib.type_utils import get_duration
 
 from sqlalchemy import func
 
@@ -60,6 +66,7 @@ def createDBRealm(realm):
 
     return ret
 
+
 def realm2Objects(realmList):
     '''
     convert a list of realm names to a list of realmObjects
@@ -85,6 +92,7 @@ def realm2Objects(realmList):
                 realmObjList.append(realmObj)
     return realmObjList
 
+
 def getRealmObject(name=u"", id=0):
     '''
     returns the Realm Object for a given realm name.
@@ -101,14 +109,18 @@ def getRealmObject(name=u"", id=0):
     :rtype  : the sql db object
     '''
 
-    log.debug("[getRealmObject] getting Realm object for name=%s, id=%i" % (name, id))
+    log.debug("[getRealmObject] getting Realm object for name=%s, id=%i",
+               name, id)
     realmObj = None
+
     name = u'' + str(name)
     if (0 == id):
         realmObjects = Session.query(Realm).filter(func.lower(Realm.name) == name.lower())
         if realmObjects.count() > 0:
             realmObj = realmObjects[0]
+
     return realmObj
+
 
 def getRealms(aRealmName=""):
     '''
@@ -117,21 +129,32 @@ def getRealms(aRealmName=""):
     :note:  the realms dict is inserted into the LinOtp Config object
     so that a lookup has not to reparse the whole config again
 
-    :param aRealmName: a realmname - the realm, that is of interestet, if =="" all realms are returned
+    :param aRealmName: a realmname - the realm, that is of interestet,
+                                     if empty, all realms are returned
     :type  aRealmName: string
 
     :return:  a dict with realm description like
     :rtype :  dict : {
-                u'myotherrealm': {'realmname': u'myotherrealm',
-                                'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myOtherRes'],
-                                'entry': u'linotp.useridresolver.group.myotherrealm'},
-                u'mydefrealm': {'default': 'true',
-                                'realmname': u'mydefrealm',
-                                'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myDefRes'],
-                                'entry': u'linotp.useridresolver.group.mydefrealm'},
-               u'mymixrealm': {'realmname': u'mymixrealm',
-                               'useridresolver': ['useridresolver.PasswdIdResolver.IdResolver.myOtherRes', 'useridresolver.PasswdIdResolver.IdResolver.myDefRes'],
-                               'entry': u'linotp.useridresolver.group.mymixrealm'}}
+                u'myotherrealm': {
+                    'realmname': u'myotherrealm',
+                    'useridresolver': [
+                        'useridresolver.PasswdIdResolver.IdResolver.myOtherRes'
+                        ],
+                    'entry': u'linotp.useridresolver.group.myotherrealm'},
+                u'mydefrealm': {
+                    'default': 'true',
+                    'realmname': u'mydefrealm',
+                    'useridresolver': [
+                        'useridresolver.PasswdIdResolver.IdResolver.myDefRes'
+                        ],
+                    'entry': u'linotp.useridresolver.group.mydefrealm'},
+               u'mymixrealm': {
+                    'realmname': u'mymixrealm',
+                    'useridresolver': [
+                        'useridresolver.PasswdIdResolver.IdResolver.myOtherRes',
+                        'useridresolver.PasswdIdResolver.IdResolver.myDefRes'
+                        ],
+                    entry': u'linotp.useridresolver.group.mymixrealm'}}
 
     '''
     ret = {}
@@ -144,13 +167,152 @@ def getRealms(aRealmName=""):
         realms = _initalGetRealms()
         config.setRealms(realms)
 
-    ''' check if only one realm is searched '''
-    if aRealmName != "" :
+        # -- ------------------------------------------------------------ --
+        # for each realm definition we check if there are some
+        # resolvers dropped from the former resolver list
+        # in this case, we have to delete the realm_resolver_cache
+        # which is used for the user resolver lookup for a given realm
+        # -- ------------------------------------------------------------ --
+
+        for realm_name, realm_defintion in realms.items():
+
+            # get the resolvers list of the realm definition
+            realm_resolvers = realm_defintion.get('useridresolver', [])
+
+            # and the former definition from the local cache
+            former_realm_resolvers = _lookup_realm_config(realm_name,
+                                                          realm_resolvers)
+
+            # we check if there has been something dropped from the
+            # former resolver definition by using set().difference
+            former_res_set = set(former_realm_resolvers)
+            new_res_set = set(realm_resolvers)
+            flush_resolvers = former_res_set.difference(new_res_set)
+
+            if flush_resolvers:
+
+                # refresh the user resolver lookup in the realm user cache
+                from linotp.lib.user import delete_realm_resolver_cache
+                delete_realm_resolver_cache(realm_name)
+
+                # maintain the new realm configuration in the cache
+                _delete_from_realm_config_cache(realm_name)
+                _lookup_realm_config(realm_name, realm_resolvers)
+
+    # check if only one realm is searched
+    if aRealmName != "":
         if aRealmName in realms:
             ret[aRealmName] = realms.get(aRealmName)
     else:
         ret.update(realms)
     return ret
+
+
+def _lookup_realm_config(realm_name, realm_defintion=None):
+    """
+    realm configuration cache handling -
+        per realm the list of resolvers are stored
+
+    - as the other caches, this cache lookup is using the inner function
+    - the additional argument, the resolver definition is used to fill
+      the cache
+
+    :param realm_name: the realm name
+    :param realm_defintion: the list of the resolvers
+
+    :return: return the list of resolver strings or None
+    """
+
+    def __lookup_realm_config(realm_name, realm_defintion=None):
+        """
+        realm definition lookup function which retrieves the value
+            only called on a cache miss
+
+        :param realm_name: the realm name
+        :param realm_defintion: the list of the resolvers
+               - used to fill the cache
+
+        :return: return the list of resolver strings or None
+        """
+
+        if realm_defintion:
+            return json.dumps(realm_defintion)
+
+        log.info("cache miss %r", p_key)
+        return None
+
+    realm_config_cache = _get_realm_config_cache()
+
+    if not realm_config_cache:
+        conf_entry = __lookup_realm_config(realm_name, realm_defintion)
+        if conf_entry:
+            conf_entry = json.loads(conf_entry)
+        return conf_entry
+
+    p_lookup_resolver_config = partial(__lookup_realm_config,
+                                       realm_name, realm_defintion)
+
+    p_key = realm_name
+
+    conf_entry = realm_config_cache.get_value(key=p_key,
+                                            createfunc=p_lookup_resolver_config,
+                                              )
+
+    if conf_entry:
+        conf_entry = json.loads(conf_entry)
+    return conf_entry
+
+
+def _get_realm_config_cache():
+    """
+    helper - common getter to access the realm_config cache
+
+    the realm config cache is used to track the realm definition
+    changes. therefore for each realm name the realm config is stored
+    in a cache. In case of an request the comparison of the realm config
+    with the cache value is made and in case of inconsistancy the
+    realm -> resolver cache could be flushed.
+
+    :remark: This cache is only enabled, if the resolver user lookup cache
+             is enabled too
+
+    :return: the realm config cache
+    """
+
+    config = context['Config']
+
+    enabled = config.get('linotp.resolver_lookup_cache.enabled',
+                         'True') == 'True'
+    if not enabled:
+        return None
+
+    try:
+        expiration_conf = config.get('linotp.resolver_lookup_cache.expiration',
+                                     36 * 3600)
+        expiration = get_duration(expiration_conf)
+
+    except ValueError:
+        log.info("resolver caching is disabled due to a value error in "
+                 "resolver_lookup_cache.expiration config")
+        return None
+
+    cache_manager = context['CacheManager']
+    cache_name = 'realm_config'
+    realm_config_cache = cache_manager.get_cache(cache_name,
+                                                 type="memory",
+                                                 expiretime=expiration)
+
+    return realm_config_cache
+
+
+def _delete_from_realm_config_cache(realm_name):
+    """
+    delete one entry from the realm config cache
+    """
+    realm_config_cache = _get_realm_config_cache()
+    if realm_config_cache:
+        realm_config_cache.remove_value(key=realm_name)
+
 
 def _initalGetRealms():
     '''
@@ -165,7 +327,6 @@ def _initalGetRealms():
     realmConf = "linotp.useridresolver.group."
     defaultRealmDef = "linotp.DefaultRealm"
     defaultRealm = None
-
 
     dc = getLinotpConfig()
     for entry in dc:
@@ -214,6 +375,7 @@ def _initalGetRealms():
 
     return Realms
 
+
 def _setDefaultRealm(realms, defaultRealm):
     """
     internal method to set in the realm array the default attribute
@@ -242,6 +404,7 @@ def _setDefaultRealm(realms, defaultRealm):
             if r.has_key("default"):
                 del r["default"]
     return ret
+
 
 def isRealmDefined(realm):
     '''
@@ -306,6 +469,7 @@ def getDefaultRealm(config=None):
 
     return defaultRealm.lower()
 
+
 def deleteRealm(realmname):
     '''
     delete the realm from the Database Table with the given name
@@ -332,6 +496,10 @@ def deleteRealm(realmname):
         log.warning("[deleteRealm] There is no realm object with the name %s to be deleted." % realmname)
         return False
     # now delete all relations, i.e. remove all Tokens from this realm.
+
+    # finally we delete the 'realmname' cache
+    from linotp.lib.user import delete_realm_resolver_cache
+    delete_realm_resolver_cache(realmname)
 
     return True
 

@@ -131,7 +131,7 @@ class ValidateController(BaseController):
 
         options = {}
 
-        ## put everythin in the options but the user, pass, init
+        # put everything in the options but the user, pass, init
         options.update(param)
         for para in ["pass", "user", "init"]:
             if options.has_key(para):
@@ -151,7 +151,8 @@ class ValidateController(BaseController):
         c.audit['realm'] = realm
 
         # AUTHORIZATION Pre Check
-        # we need to overwrite the user.realm in case the user does not exist in the original realm (setrealm-policy)
+        # we need to overwrite the user.realm in case the
+        # user does not exist in the original realm (setrealm-policy)
         user.realm = set_realm(user.login, realm, exception=True)
         check_user_authorization(user.login, user.realm, exception=True)
 
@@ -493,7 +494,7 @@ class ValidateController(BaseController):
         param = {}
         value = {}
         ok = False
-        opt = None
+        opt = {}
 
         try:
             param.update(request.params)
@@ -511,12 +512,12 @@ class ValidateController(BaseController):
                 raise Exception("missing parameter: state or transactionid!")
 
             vh = ValidationHandler()
-            (ok, reply) = vh.check_by_transactionid(transid=transid,
+            (ok, opt) = vh.check_by_transactionid(transid=transid,
                                                     passw=passw,
                                                     options=param)
 
             value['value'] = ok
-            value['failcount'] = int(reply.get('failcount', 0))
+            value['failcount'] = int(opt.get('failcount', 0))
 
             c.audit['success'] = ok
             Session.commit()
@@ -781,10 +782,13 @@ class ValidateController(BaseController):
             log.debug("[smspin] done")
 
     def pair(self):
+        """
+        validate/pair: for the enrollment of qr and push token
+        """
 
         try:
 
-            # ------------------------------------------------------------------
+            # -------------------------------------------------------------- --
 
             params = dict(**request.params)
 
@@ -793,7 +797,7 @@ class ValidateController(BaseController):
             if enc_response is None:
                 raise Exception('Parameter missing')
 
-            # ------------------------------------------------------------------
+            # -------------------------------------------------------------- --
 
             dec_response = decrypt_pairing_response(enc_response)
             token_type = dec_response.token_type
@@ -802,10 +806,10 @@ class ValidateController(BaseController):
             if not hasattr(pairing_data, 'serial') or \
                pairing_data.serial is None:
 
-                raise ValidateError('Pairing responses with no serial attached '
-                                    'are currently not implemented.')
+                raise ValidateError('Pairing responses with no serial attached'
+                                    ' are currently not implemented.')
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- -
 
             # TODO: pairing policy
             tokens = getTokens4UserOrSerial(None, pairing_data.serial)
@@ -818,25 +822,36 @@ class ValidateController(BaseController):
 
             token = tokens[0]
 
-            # ------------------------------------------------------------------
+            # prepare some audit entries
+            t_owner = token.getUser()
 
-            if token.type != 'qr':
-                raise Exception('Pairing is only implemented for the qrtoken')
+            realms = token.getRealms()
+            realm = ''
+            if realms:
+                realm = realms[0]
+
+            c.audit['user'] = t_owner or ''
+            c.audit['realm'] = realm
+
+            # --------------------------------------------------------------- --
 
             if token.type != token_type:
                 raise Exception('Serial in pairing response doesn\'t match '
                                 'supplied token_type')
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             token.pair(pairing_data)
+            c.audit['success'] = 1
 
             Session.commit()
             return sendResult(response, False)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
-        except Exception:
+        except Exception as exx:
+            log.exception("validate/pair failed: %r" % exx)
+            c.audit['info'] = unicode(exx)
             Session.rollback()
             return sendResult(response, False, 0, status=False)
 

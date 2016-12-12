@@ -28,8 +28,7 @@
 import binascii
 import string
 import re
-from datetime import timedelta
-import logging
+
 import netaddr
 import logging
 
@@ -42,6 +41,7 @@ from linotp.lib.crypt import (urandom,
 
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.error import ParameterError
+from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.config import getFromConfig
 
 from linotp import (__version__ as linotp_version,
@@ -56,8 +56,6 @@ except ImportError:
 
 SESSION_KEY_LENGTH = 32
 hostname_regex = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
-duration_regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?'
-                   '((?P<seconds>\d+?)s)?')
 
 log = logging.getLogger(__name__)
 
@@ -467,27 +465,32 @@ def dict_copy(dict_):
         copy.update(fragment)
     return copy
 
+def int_from_bytes(bytes_, byteorder='little'):
 
-def parse_duration(duration_str):
     """
-    transform a duration string into a time delta object
+    converts bytes to an integer
 
-    from:
-        http://stackoverflow.com/questions/35626812/how-to-parse-timedelta-from-strings
-
-    :param duration_str:  duration string like '1h' '3h 20m 10s' '10s'
-    :return: timedelta
+    :param bytes_: The bytes, that should be converted
+    :param byteorder: 'little' for little endian (default)
+        or 'big' for big endian
     """
-    # remove all white spaces for easier parsing
-    duration_str = ''.join(duration_str.split())
 
-    parts = duration_regex.match(duration_str.lower())
-    if not parts:
-        return
-    parts = parts.groupdict()
-    time_params = {}
-    for (name, param) in parts.iteritems():
-        if param:
-            time_params[name] = int(param)
+    if byteorder not in ['little', 'big']:
+        raise InvalidFunctionParameter('byteorder', 'byte order can only '
+                                       'be \'little\' or \'big\'')
 
-    return timedelta(**time_params)
+    order = -1 if byteorder == 'little' else 1
+
+    # we calculate the result by interpreting data as coefficients of the
+    # polynomial
+    #
+    #   p(X) := data[15] * X^15  + ... + data[1] * X + data[0]
+    #
+    # and evulating p(2^8) using horner's scheme.
+
+    res = 0
+    for byte in bytes_[::order]:
+        res *= 256
+        res += ord(byte)
+
+    return res

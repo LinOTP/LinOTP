@@ -297,7 +297,7 @@ class TestRealmContextController(TestController):
             expected='value-false',
         )
 
-    # -------- Private helper methods --------
+    # -------- Private helper methods ----- --
 
     def _create_or_update_otppin2_policy(self, realm):
         """

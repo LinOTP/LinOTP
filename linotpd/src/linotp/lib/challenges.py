@@ -119,7 +119,9 @@ class Challenges(object):
         # the allocated db challenge object
         challenge_obj = None
         retry_counter = 0
+
         reason = None
+        ReasonException = Exception()
 
         hsm = context['hsm'].get('obj')
 
@@ -145,8 +147,9 @@ class Challenges(object):
                     break
 
             except Exception as exce:
-                log.info("Failed to create Challenge: %r", exce)
-                reason = exce
+                log.exception("Failed to create Challenge: %r", exce)
+                reason = "%r" % exce
+                ReasonException = exce
 
             # prevent an unlimited loop
             retry_counter = retry_counter + 1
@@ -191,10 +194,13 @@ class Challenges(object):
                     challenge_obj.save()
                 else:
                     transactionid = ''
-                    reason = Exception(message)
+                    reason = message
+                    ReasonException = Exception(message)
 
         except Exception as exce:
-            reason = exce
+            log.exception("Failed to create Challenge: %r", exce)
+            reason = "%r" % exce
+            ReasonException = exce
             res = False
 
         # if something goes wrong with the challenge, remove it
@@ -213,9 +219,9 @@ class Challenges(object):
 
         # in case that create challenge fails, we must raise this reason
         if reason is not None:
-            message = "%r" % reason
-            log.error("Failed to create or init challenge %r " % reason)
-            raise reason
+            log.exception("Failed to create Challenge: %r", ReasonException)
+            log.error("Failed to create or init challenge %r ", reason)
+            raise ReasonException
 
         # prepare the response for the user
         if transactionid is not None:
@@ -226,6 +232,13 @@ class Challenges(object):
 
         if attributes is not None and type(attributes) == dict:
             challenge.update(attributes)
+
+        #
+        # add token specific info like tokentype and serial
+        #
+
+        challenge["linotp_tokenserial"] = token.getSerial()
+        challenge["linotp_tokentype"] = token.type
 
         return (res, challenge)
 
@@ -430,3 +443,29 @@ class Challenges(object):
         # and calculate the mac for this token data
         result = challenge.checkChallengeSignature(hsm)
         return result
+
+
+def transaction_id_to_u64(transaction_id):
+    """
+    converts a transaction_id to u64 format (used in the challenge-url format)
+    transaction_ids come in 2 formats:
+
+    - Normal Transaction - 49384
+    - Subtransaction - 213123.39
+
+    where the 2 places behind the point start with 01.
+
+    The function converts the strings by "multiplying" it with
+    100, so we well get 4938400 and 21312339
+    """
+
+    # HACK! remove when transaction id handling is
+    # refactored.
+
+    if '.' in transaction_id:
+        before, _, after = transaction_id.partition('.')
+        encoded = before + after
+    else:
+        encoded = transaction_id + '00'
+
+    return int(encoded)

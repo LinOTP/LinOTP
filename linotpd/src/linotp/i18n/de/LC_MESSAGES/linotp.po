@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2016-09-02 16:38+0200\n"
+"PO-Revision-Date: 2016-10-14 17:50+0200\n"
 "Last-Translator: linotp@lsexperts.de\n"
 "Language-Team: Deutsch <>\n"
 "Language: de\n"
@@ -417,15 +417,6 @@ msgstr ""
 "Sie haben nicht die administrativen Rechte für die Benutzerzuweisung für den "
 "Token %s - überprüfen Sie ggf. die Richtlinien."
 
-#, python-format
-msgid ""
-"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
-"can not assign any more tokens. Check the policies."
-msgstr ""
-"Die maximale Anzahl an Token innerhalb des Realms %s (%s) wurde erreicht. "
-"Sie koennen keine weiteren Token ausrollen. Bitte überprüfen Sie die "
-"Richtlinie."
-
 msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 msgstr ""
 "Die Maximalzahl an lizensierten Token wurde überschritten - überprüfen Sie "
@@ -650,7 +641,15 @@ msgstr "Fehler bei der Richtlinie Überprüfung - unbekannter Controller %s"
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Mehrere Token gefunden - kann den Tokentyp nicht bestimmen!"
 
-#, fuzzy
+#, python-format
+msgid ""
+"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
+"can not assign any more tokens. Check the policies."
+msgstr ""
+"Die maximale Anzahl an Token innerhalb des Realms %s (%s) wurde erreicht. "
+"Sie koennen keine weiteren Token ausrollen. Bitte überprüfen Sie die "
+"Richtlinie."
+
 msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
 msgstr "Der Name der Richtlinie darf nur die Zeichen a-zA-Z0-9_ enthalten."
 
@@ -2147,6 +2146,9 @@ msgstr "SMS Providerkonfiguration"
 msgid "Email Provider Config"
 msgstr "E-Mail Providerkonfiguration"
 
+msgid "Push Provider Config"
+msgstr "Push Providerkonfiguration"
+
 msgid "Policies"
 msgstr "Richtlinien"
 
@@ -2258,6 +2260,9 @@ msgstr "GUI-Einstellungen"
 # TODO
 msgid "Client Identification"
 msgstr "Client Identifikation"
+
+msgid "Certificates"
+msgstr "Zertifikate"
 
 msgid "Split at @ sign (splitAtSign)"
 msgstr "Trenne am @-Zeichen"
@@ -2376,6 +2381,13 @@ msgstr ""
 "Die IP-Adresse des weiterleitenden Proxies, der durch die REMOTE_ADDR "
 "bestimmt ist."
 
+msgid "Use system certificate"
+msgstr "System Zertifikate verwenden"
+
+msgid "If checked the linotp server will use system certificates"
+msgstr ""
+"Bei Aktivierung wird der LinOTP Server die Zertifikate des Systems verwenden."
+
 msgid "Save Config"
 msgstr "Konfiguration speichern"
 
@@ -2426,6 +2438,15 @@ msgstr "Möchten Sie den Resolver löschen?"
 
 msgid "Email Provider Configuration"
 msgstr "E-Mail-Providerkonfiguration"
+
+msgid "Push Provider: create and edit"
+msgstr "Push-Provider: Erstellen und Bearbeiten"
+
+msgid "Push Provider"
+msgstr "Push Provider"
+
+msgid "Push Provider Configuration"
+msgstr "Push-Providerkonfiguration"
 
 msgid "OCRA Token"
 msgstr "OCRA-Token"
@@ -3138,14 +3159,14 @@ msgstr "Größenlimit"
 msgid "No anonymous referral chasing"
 msgstr "Kein anonymes Verfolgen der Referrals"
 
+msgid "Enforce TLS"
+msgstr "TLS erforderlich"
+
 msgid "Test LDAP Server connection"
 msgstr "LDAP-Server - Verbindung testen"
 
 msgid "Testing connection ..."
 msgstr "Teste Verbindung..."
-
-msgid "LDAP attributes"
-msgstr "LDAP-Attribute"
 
 msgid "Mapping Attributes"
 msgstr "Attributszuordnungen"
@@ -3226,9 +3247,6 @@ msgstr "Zielpfad: "
 msgid "Attribute mapping:"
 msgstr "Attributszuordnung"
 
-msgid "Server config"
-msgstr "Serverkonfiguration"
-
 msgid "Driver"
 msgstr "Treiber"
 
@@ -3259,17 +3277,11 @@ msgstr "SQL-Verbindung testen"
 msgid "Testing connections..."
 msgstr "Teste LDAP-Verbindung..."
 
-msgid "SQL attributes"
-msgstr "SQL-Attribute"
-
 msgid "Where statement"
 msgstr "Where Anweisung"
 
 msgid "SQL Resolver"
 msgstr "SQL-Resolver"
-
-msgid "File configuration"
-msgstr "Dateikonfiguration"
 
 msgid "filename"
 msgstr "Dateiname"
@@ -3564,15 +3576,12 @@ msgstr "Hash-Algorithmus"
 msgid "count auth max"
 msgstr "Authentisierungszähler Maximum"
 
-#, fuzzy
 msgid "count auth success max"
-msgstr "Authentisierungszähler Maximum"
+msgstr "Erfolgs Authentisierungszähler Maximum"
 
-#, fuzzy
 msgid "validity start"
 msgstr "Start Gültigkeitszeitraum"
 
-#, fuzzy
 msgid "validity end"
 msgstr "Ende Gültigkeitszeitraum"
 
@@ -3867,6 +3876,18 @@ msgstr ""
 "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem iPhone, um "
 "das Profil zu importieren."
 
+#~ msgid "LDAP attributes"
+#~ msgstr "LDAP-Attribute"
+
+#~ msgid "Server config"
+#~ msgstr "Serverkonfiguration"
+
+#~ msgid "SQL attributes"
+#~ msgstr "SQL-Attribute"
+
+#~ msgid "File configuration"
+#~ msgstr "Dateikonfiguration"
+
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
 
@@ -3888,9 +3909,6 @@ msgstr ""
 
 #~ msgid "E-mail provider config"
 #~ msgstr "E-Mail Konfiguration"
-
-#~ msgid "Provider"
-#~ msgstr "Provider"
 
 #~ msgid "Provider config"
 #~ msgstr "Provider Konfiguration"

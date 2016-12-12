@@ -47,7 +47,11 @@ from linotp.lib.security import SecurityModule
 
 import binascii
 import logging
-import pyhsm
+
+try:
+    import pyhsm  # pylint: disable=import-error
+except ImportError as imp_error:
+    raise imp_error
 
 from linotp.lib.security.provider import DEFAULT_KEY
 from linotp.lib.security.provider import CONFIG_KEY

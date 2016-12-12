@@ -363,7 +363,7 @@ class TestRandompinController(TestController):
                 )
         return
 
-    # -------- Private helper methods --------
+    # -------- Private helper methods ----- --
     def _create_randompin_policy(self, realm):
         """
         Creates an otp_pin_random policy for 'realm'. Schedules the policy for

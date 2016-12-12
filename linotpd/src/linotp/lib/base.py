@@ -59,7 +59,6 @@ from linotp.lib.context import request_context_safety
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error
 import linotp.model.meta
-Session = linotp.model.meta.Session
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
@@ -67,6 +66,8 @@ from linotp.lib.util import get_client
 
 import logging
 log = logging.getLogger(__name__)
+
+Session = linotp.model.meta.Session
 
 Audit = config.get('audit')
 
@@ -106,86 +107,102 @@ def set_defaults():
 
     log.info("Adding config default data...")
 
-    set_config(key=u"DefaultMaxFailCount",
-        value=u"10", typ=u"int",
-        description=u"The default maximum count for unsuccessful logins")
+    set_config(key="DefaultMaxFailCount",
+               value="10", typ="int",
+               description=("The default maximum count for"
+                            " unsuccessful logins"))
 
-    set_config(key=u"DefaultCountWindow",
-        value=u"10", typ=u"int",
-        description=u"The default lookup window for tokens out of sync ")
+    set_config(key="DefaultCountWindow",
+               value="10", typ="int",
+               description=("The default lookup window for tokens "
+                            "out of sync "))
 
-    set_config(key=u"DefaultSyncWindow",
-        value=u"1000", typ=u"int",
-        description=u"The default lookup window for tokens out of sync ")
+    set_config(key="DefaultSyncWindow",
+               value="1000", typ="int",
+               description=("The default lookup window for tokens "
+                            "out of sync "))
 
-    set_config(key=u"DefaultChallengeValidityTime",
-        value=u"120", typ=u"int",
-        description=u"The default time, a challenge is regarded as valid.")
+    set_config(key="DefaultChallengeValidityTime",
+               value="120", typ="int",
+               description=("The default time, a challenge is regarded"
+                            " as valid."))
 
-    set_config(key=u"DefaultResetFailCount",
-        value=u"True", typ=u"bool",
-        description=u"The default maximum count for unsucessful logins")
+    set_config(key="DefaultResetFailCount",
+               value="True", typ="bool",
+               description="The default maximum count for unsucessful logins")
 
-    set_config(key=u"DefaultOtpLen",
-        value=u"6", typ=u"int",
-        description=u"The default len of the otp values")
+    set_config(key="DefaultOtpLen",
+               value="6", typ="int",
+               description="The default len of the otp values")
 
-    set_config(key=u"QRTokenOtpLen",
-        value=u"8", typ=u"int",
-        description=u"The default len of the otp values")
+    set_config(key="QRTokenOtpLen",
+               value="8", typ="int",
+               description="The default len of the otp values")
 
-    set_config(key=u"QRChallengeValidityTime",
-        value=u"150", typ=u"int",
-        description=u"The default qrtoken time, a challenge is regarded as valid.")
+    set_config(key="QRChallengeValidityTime",
+               value="150", typ="int",
+               description=("The default qrtoken time, a challenge is regarded"
+                            " as valid."))
 
-    set_config(key=u"QRMaxChallenges",
-        value=u"4", typ=u"int",
-        description=u"Maximum open QRToken challenges")
+    set_config(key="QRMaxChallenges",
+               value="4", typ="int",
+               description="Maximum open QRToken challenges")
 
-    set_config(key=u"PrependPin",
-        value=u"True", typ=u"bool",
-        description=u"is the pin prepended - most cases")
+    set_config(key="PushChallengeValidityTime",
+               value="150", typ="int",
+               description=("The pushtoken default time, a challenge is "
+                            "regarded as valid."))
 
-    set_config(key=u"FailCounterIncOnFalsePin",
-        value=u"True", typ=u"bool",
-        description=u"increment the FailCounter, if pin did not match")
+    set_config(key="PushMaxChallenges",
+               value="4", typ="int",
+               description="Maximum open pushtoken challenges")
 
-    set_config(key=u"SMSProvider",
-        value=u"smsprovider.HttpSMSProvider.HttpSMSProvider", typ=u"text",
-        description=u"SMS Default Provider via HTTP")
+    set_config(key="PrependPin",
+               value="True", typ="bool",
+               description="is the pin prepended - most cases")
 
-    set_config(key=u"SMSProviderTimeout",
-               value=u"300", typ=u"int",
-               description=u"Timeout until registration must be done")
+    set_config(key="FailCounterIncOnFalsePin",
+               value="True", typ="bool",
+               description="increment the FailCounter, if pin did not match")
 
-    set_config(key=u"SMSBlockingTimeout",
-               value=u"30", typ=u"int",
-               description=u"Delay until next challenge is created")
+    set_config(key="SMSProvider",
+               value="smsprovider.HttpSMSProvider.HttpSMSProvider",
+               typ="text",
+               description="SMS Default Provider via HTTP")
 
-    set_config(key=u"DefaultBlockingTimeout",
-               value=u"0", typ=u"int",
-               description=u"Delay until next challenge is created")
+    set_config(key="SMSProviderTimeout",
+               value="300", typ="int",
+               description="Timeout until registration must be done")
+
+    set_config(key="SMSBlockingTimeout",
+               value="30", typ="int",
+               description="Delay until next challenge is created")
+
+    set_config(key="DefaultBlockingTimeout",
+               value="0", typ="int",
+               description="Delay until next challenge is created")
 
     # setup for totp defaults
     # "linotp.totp.timeStep";"60";"None";"None"
     # "linotp.totp.timeWindow";"600";"None";"None"
     # "linotp.totp.timeShift";"240";"None";"None"
 
-    set_config(key=u"totp.timeStep",
-        value=u"30", typ=u"int",
-        description=u"Time stepping of the time based otp token ")
+    set_config(key="totp.timeStep",
+               value="30", typ="int",
+               description="Time stepping of the time based otp token ")
 
-    set_config(key=u"totp.timeWindow",
-        value=u"300", typ=u"int",
-        description=u"Lookahead time window of the time based otp token ")
+    set_config(key="totp.timeWindow",
+               value="300", typ="int",
+               description=("Lookahead time window of the time based "
+                            "otp token "))
 
-    set_config(key=u"totp.timeShift",
-        value=u"0", typ=u"int",
-        description=u"Shift between server and totp token")
+    set_config(key="totp.timeShift",
+               value="0", typ="int",
+               description="Shift between server and totp token")
 
-    set_config(key=u"AutoResyncTimeout",
-        value=u"240", typ=u"int",
-        description=u"Autosync timeout for an totp token")
+    set_config(key="AutoResyncTimeout",
+               value="240", typ="int",
+               description="Autosync timeout for an totp token")
 
     # setup for ocra defaults
     # OcraDefaultSuite
@@ -193,45 +210,65 @@ def set_defaults():
     # OcraMaxChallenges
     # OcraChallengeTimeout
 
-    set_config(key=u"OcraDefaultSuite",
-        value=u"OCRA-1:HOTP-SHA256-8:C-QN08", typ=u"string",
-        description=u"Default OCRA suite for an ocra token ")
+    set_config(key="OcraDefaultSuite",
+               value="OCRA-1:HOTP-SHA256-8:C-QN08",
+               typ="string",
+               description="Default OCRA suite for an ocra token ")
 
-    set_config(key=u"QrOcraDefaultSuite",
-        value=u"OCRA-1:HOTP-SHA256-8:C-QA64", typ=u"int",
-        description=u"Default OCRA suite for an ocra token ")
+    set_config(key="QrOcraDefaultSuite",
+               value="OCRA-1:HOTP-SHA256-8:C-QA64",
+               typ="string",
+               description="Default OCRA suite for an ocra token ")
 
-    set_config(key=u"OcraMaxChallenges",
-        value=u"4", typ=u"int",
-        description=u"Maximum open ocra challenges")
+    set_config(key="OcraMaxChallenges",
+               value="4", typ="int",
+               description="Maximum open ocra challenges")
 
-    set_config(key=u"OcraChallengeTimeout",
-        value=u"300", typ=u"int",
-        description=u"Timeout for an open ocra challenge")
+    set_config(key="OcraChallengeTimeout",
+               value="300", typ="int",
+               description="Timeout for an open ocra challenge")
 
     # emailtoken defaults
-    set_config(key=u"EmailProvider",
+    set_config(key="EmailProvider",
                value="linotp.provider.emailprovider.SMTPEmailProvider",
-               typ=u"string",
-               description=u"Default EmailProvider class")
-    set_config(key=u"EmailChallengeValidityTime",
-               value="600", typ=u"int",
-               description=u"Time that an e-mail token challenge stays valid"
-                            " (seconds)")
-    set_config(key=u"EmailBlockingTimeout",
-               value="120", typ=u"int",
-               description=u"Time during which no new e-mail is sent out")
+               typ="string",
+               description="Default EmailProvider class")
 
-    set_config(key=u'OATHTokenSupport',
-        value=u"False", typ=u"bool",
-        description=u"support for hmac token in oath format")
+    set_config(key="EmailChallengeValidityTime",
+               value="600", typ="int",
+               description=("Time that an e-mail token challenge stays valid"
+                            " (seconds)"))
+    set_config(key="EmailBlockingTimeout",
+               value="120", typ="int",
+               description="Time during which no new e-mail is sent out")
+
+    set_config(key='OATHTokenSupport',
+               value="False", typ="bool",
+               description="support for hmac token in oath format")
 
     # use the system certificate handling, especially for ldaps
-    set_config(key=u"certificates.use_system_certificates",
-        value=u"False", typ=u"bool",
-        description=u"use system certificate handling")
+    set_config(key="certificates.use_system_certificates",
+               value="False", typ="bool",
+               description="use system certificate handling")
+
+    set_config(key="user_lookup_cache.enabled",
+               value="False", typ="bool",
+               description="enable user loookup caching")
+
+    set_config(key="resolver_lookup_cache.enabled",
+               value="False", typ="bool",
+               description="enable realm resolver caching")
+
+    set_config(key='user_lookup_cache.expiration',
+               value="64800", typ="int",
+               description="expiration of user caching entries")
+
+    set_config(key='resolver_lookup_cache.expiration',
+               value="64800", typ="int",
+               description="expiration of resolver caching entries")
 
     return
+
 
 def setup_app(conf, conf_global=None, unitTest=False):
     '''
@@ -393,7 +430,7 @@ class BaseController(WSGIController):
 
         with request_context_safety():
 
-            self.create_context(request)
+            self.create_context(request, environ)
 
             try:
                 if environ:
@@ -461,7 +498,7 @@ class BaseController(WSGIController):
 
         return
 
-    def create_context(self, request):
+    def create_context(self, request, environment):
         """
         create the request context for all controllers
         """
@@ -471,6 +508,7 @@ class BaseController(WSGIController):
         request_context['Config'] = linotp_config
         request_context['Policies'] = getPolicies()
         request_context['translate'] = translate
+        request_context['CacheManager'] = environment['beaker.cache']
 
         initResolvers()
 
@@ -507,8 +545,7 @@ class BaseController(WSGIController):
         request_context['Client'] = client
 
         request_context['Audit'] = Audit
-        request_context['audit'] = Audit.initialize(request,
-                                                         client=client)
+        request_context['audit'] = Audit.initialize(request, client=client)
 
         defaultRealm = ""
         try:

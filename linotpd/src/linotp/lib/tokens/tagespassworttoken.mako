@@ -85,26 +85,26 @@ function dpw_clear_input_fields() {
 <hr>
 <p>${_("Here you can define the 'Tagespasswort' token, that changes every day.")}</p>
 <table>
-<tr>
-	<td><label for="dpw_key">${_("DPW key")}</label></td>
-	<td><input type="text" name="dpw_key" id="dpw_key" value="" class="text ui-widget-content ui-corner-all"></td>
-</tr>
-<tr>
-    <td><label for="enroll_dpw_desc" id='enroll_dpw_desc_label'>${_("Description")}</label></td>
-    <td><input type="text" name="enroll_dpw_desc" id="enroll_dpw_desc" value="webGUI_generated" class="text"></td>
-</tr>
-<tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'>
-    <th colspan="2">${_("Token PIN:")}</th></tr>
-<tr name="set_pin_rows">
-    <td class="description"><label for="dpw_pin1" id="dpw_pin1_label">${_("Enter PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('dpw_pin1','dpw_pin2');" name="pin1" id="dpw_pin1"
-            class="text ui-widget-content ui-corner-all"></td>
-</tr>
-<tr name="set_pin_rows">
-    <td class="description"><label for="dpw_pin2" id="dpw_pin2_label">${_("Confirm PIN")}:</label></td>
-    <td><input type="password" autocomplete="off" onkeyup="checkpins('dpw_pin1','dpw_pin2');" name="pin2" id="dpw_pin2"
-            class="text ui-widget-content ui-corner-all"></td>
-</tr>
+    <tr>
+    	<td><label for="dpw_key">${_("DPW key")}</label></td>
+    	<td><input type="text" name="dpw_key" id="dpw_key" value="" class="text ui-widget-content ui-corner-all"></td>
+    </tr>
+    <tr>
+        <td><label for="enroll_dpw_desc" id='enroll_dpw_desc_label'>${_("Description")}</label></td>
+        <td><input type="text" name="enroll_dpw_desc" id="enroll_dpw_desc" value="webGUI_generated" class="text"></td>
+    </tr>
+    <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'>
+        <th colspan="2">${_("Token PIN:")}</th></tr>
+    <tr name="set_pin_rows">
+        <td class="description"><label for="pin1" id="dpw_pin1_label">${_("Enter PIN")}:</label></td>
+        <td><input type="password" autocomplete="off" name="pin1" id="dpw_pin1"
+                class="text ui-widget-content ui-corner-all"></td>
+    </tr>
+    <tr name="set_pin_rows">
+        <td class="description"><label for="pin2" id="dpw_pin2_label">${_("Confirm PIN")}:</label></td>
+        <td><input type="password" autocomplete="off" name="pin2" id="dpw_pin2"
+                class="text ui-widget-content ui-corner-all"></td>
+    </tr>
 </table>
 
 

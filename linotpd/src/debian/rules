@@ -1,11 +1,17 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
+
+
+#export DH_VERBOSE = 1
 
 DEB_PYTHON_SYSTEM := pysupport
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/python-distutils.mk
 
+binary-install/linotp::
+	mv debian/linotp/usr/etc debian/linotp/etc
+
 clean::
-	rm -rf build build-stamp configure-stamp build/ MANIFEST
 	dh_clean
+	debconf-updatepo
+

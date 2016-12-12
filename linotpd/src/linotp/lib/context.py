@@ -31,9 +31,9 @@ from linotp.lib.error import ProgrammingError
 from contextlib import contextmanager
 from functools import partial
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 # Context stack tracing
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 # a security measure to avoid programming oversights, when working
 # with thread locals and context managers
@@ -104,9 +104,9 @@ def is_on_context_stack(manager_id):
     return manager_id in context_stack
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 # request context
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
     # replaces the old templ_context provided by pylons
 

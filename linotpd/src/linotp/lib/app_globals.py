@@ -63,6 +63,7 @@ class Globals(object):
 
         self.resolver_clazzes = {}
         self.resolver_types = {}
+        self.cache_manager = None
 
     def setResolverClasses(self, resolver_clazzes=None):
         '''

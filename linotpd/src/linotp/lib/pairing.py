@@ -40,6 +40,7 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from linotp.lib.crypt import zerome
 from linotp.lib.qrtoken import parse_qrtoken_pairing_data
+from linotp.lib.pushtoken import parse_and_verify_pushtoken_pairing_data
 
 """
 This module provides functions and constants for the generation of
@@ -49,9 +50,9 @@ type specific pairing data parsing look at the appropriate token lib
 validate/pair controller, partly in the token classes.
 """
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 # pairing constants (used for the low-level implementation in c)
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 PAIR_URL_VERSION = 2
 PAIR_RESPONSE_VERSION = 1
@@ -67,17 +68,18 @@ FLAG_PAIR_TSTART = 1 << 7
 FLAG_PAIR_TSTEP = 1 << 8
 
 TYPE_QRTOKEN_ED25519 = 2
-SUPPORTED_TOKEN_TYPES = [TYPE_QRTOKEN_ED25519]
+TYPE_PUSHTOKEN = 4
+SUPPORTED_TOKEN_TYPES = [TYPE_QRTOKEN_ED25519, TYPE_PUSHTOKEN]
 
 # translation tables between low level enum types and
 # high level string identifiers
 
 hash_algorithms = {'sha1': 0, 'sha256': 1, 'sha512': 2}
-TOKEN_TYPES = {'qr': TYPE_QRTOKEN_ED25519}
+TOKEN_TYPES = {'qr': TYPE_QRTOKEN_ED25519, 'push': TYPE_PUSHTOKEN}
 INV_TOKEN_TYPES = {v: k for k, v in TOKEN_TYPES.items()}
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 
 def generate_pairing_url(token_type,
@@ -152,7 +154,7 @@ def generate_pairing_url(token_type,
     :return: Pairing URL string
     """
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # check the token type
 
@@ -165,7 +167,7 @@ def generate_pairing_url(token_type,
                                        'types for pairing are: %s' %
                                        (token_type, allowed_types))
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # initialize the flag bitmap
 
@@ -184,7 +186,7 @@ def generate_pairing_url(token_type,
     if otp_pin_length is not None:
         flags |= FLAG_PAIR_DIGITS
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     #            ------------------------------
     #  fields   | version | type | flags | ... |
@@ -194,7 +196,7 @@ def generate_pairing_url(token_type,
 
     data = struct.pack('<bbI', PAIR_URL_VERSION, TOKEN_TYPE, flags)
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     #            -----------------------
     #  fields   | ... | partition | ... |
@@ -204,7 +206,7 @@ def generate_pairing_url(token_type,
 
     data += struct.pack('<I', partition)
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     #            --------------------------------
     #  fields   | .... | server public key | ... |
@@ -222,7 +224,7 @@ def generate_pairing_url(token_type,
 
         data += server_public_key
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # Depending on flags additional data may be sent. If serial was provided
     # serial will be sent back. If callback url or callback sms was provided
@@ -241,7 +243,7 @@ def generate_pairing_url(token_type,
     if flags & FLAG_PAIR_CBSMS:
         data += callback_sms_number.encode('utf8') + b'\x00'
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # Other optional values: allowed pin length of otp (number of digits)
     # and custom hash algorithm
@@ -269,7 +271,7 @@ def generate_pairing_url(token_type,
                                            (hash_algorithm, allowed_values))
         data += struct.pack('<b', HASH_ALGO)
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # TODO missing token details for other protocols (hotp, hmac, etc)
     # * counter (u64le)
@@ -287,11 +289,11 @@ def generate_pairing_url(token_type,
 
     return 'lseqr://pair/' + encode_base64_urlsafe(data)
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 PairingResponse = namedtuple('PairingResponse', ['token_type', 'pairing_data'])
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 
 def get_pairing_data_parser(token_type):
@@ -309,10 +311,13 @@ def get_pairing_data_parser(token_type):
     if token_type == TYPE_QRTOKEN_ED25519:
         return parse_qrtoken_pairing_data
 
+    if token_type == TYPE_PUSHTOKEN:
+        return parse_and_verify_pushtoken_pairing_data
+
     raise ValueError('unsupported token type %d, supported types '
                      'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 
 def decrypt_pairing_response(enc_pairing_response):
@@ -367,7 +372,7 @@ def decrypt_pairing_response(enc_pairing_response):
 
     data = decode_base64_urlsafe(enc_pairing_response)
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     #            --------------------------------------------
     #  fields   | version | partition | R  | ciphertext | MAC |
@@ -378,7 +383,7 @@ def decrypt_pairing_response(enc_pairing_response):
     if len(data) < 1 + 4 + 32 + 16:
         raise ParameterError('Malformed pairing response')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # parse header
 
@@ -390,17 +395,17 @@ def decrypt_pairing_response(enc_pairing_response):
                          'expected: %d, got: %d' %
                          (PAIR_RESPONSE_VERSION, version))
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     R = data[5:32+5]
     ciphertext = data[32+5:-16]
     mac = data[-16:]
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # calculate the shared secret
 
-    # ----
+    # - --
 
     secret_key = get_dh_secret_key(partition)
     ss = calc_dh(secret_key, R)
@@ -419,7 +424,7 @@ def decrypt_pairing_response(enc_pairing_response):
     plaintext = cipher.decrypt_and_verify(ciphertext, mac)
     zerome(encryption_key)
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # check format boundaries for type peaking
     # (token type specific length boundaries are checked
@@ -429,7 +434,7 @@ def decrypt_pairing_response(enc_pairing_response):
     if len(data) < plaintext_min_length:
         raise ParameterError('Malformed pairing response')
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # get token type and parse decrypted response
 
@@ -445,7 +450,7 @@ def decrypt_pairing_response(enc_pairing_response):
         raise ValueError('unsupported token type %d, supported types '
                          'are %s' % (token_type, SUPPORTED_TOKEN_TYPES))
 
-    # --------------------------------------------------------------------------
+    # ----------------------------------------------------------------------- --
 
     # delegate the data parsing of the plaintext
     # to the appropriate function and return the result

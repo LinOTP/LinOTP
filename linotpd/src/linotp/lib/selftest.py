@@ -23,23 +23,26 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-""" idetify if module runs in selftest """
+
+"""
+check if we are running in selftest mode
+"""
+
+import logging
 
 from linotp.lib.config import getFromConfig
 
-import logging
 log = logging.getLogger(__name__)
 
 
 def isSelfTest(config=None):
     '''
-        check if we are running in the selftest mode, which is
-        used especially for debugging / development or unit tests
+    check if we are running in the selftest mode, which is
+    used especially for debugging / development or unit tests
 
-        @return : True or False
-        @rtype  : boolean
+    :param config: config dictionary
+    :return: boolean
     '''
-    ret = False
 
     if not config:
         selftest = getFromConfig("selfTest", False) is not False
@@ -48,6 +51,4 @@ def isSelfTest(config=None):
 
     return selftest
 
-
-
-
+# eof ########################################################################

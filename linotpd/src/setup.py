@@ -38,6 +38,7 @@ from linotp import __version__
 # Taken from kennethreitz/requests/setup.py
 package_directory = os.path.realpath(os.path.dirname(__file__))
 
+
 def get_file_contents(file_path):
     """Get the context of the file using full path name."""
     content = ""
@@ -47,19 +48,6 @@ def get_file_contents(file_path):
     except:
         print >> sys.stderr, "### could not open file: %r" % file_path
     return content
-
-def get_debian_package():
-    """
-    returns the slash, if we do a debian installation
-    Set the environment variable LINOTP_DEBIAN_PACKAGE_PREFIX
-    """
-    check_file = os.path.join(package_directory, "LINOTP_DEBIAN_PACKAGE")
-    print
-    print check_file
-    print
-    if os.path.isfile(check_file):
-        return "/"
-    return ""
 
 
 setup(
@@ -84,6 +72,7 @@ setup(
         "qrcode>=2.4",
         "configobj>=4.6.0",
         "httplib2",
+        "requests",
         "pysodium>=0.6.8",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
@@ -119,7 +108,7 @@ setup(
     include_package_data=True,
     data_files=[
         (
-            get_debian_package() + 'etc/linotp2/',
+            'etc/linotp2/',
             [
                 'config/linotp.ini.example',
                 'config/linotp.ini.paster',
@@ -129,7 +118,7 @@ setup(
                 ]
             ),
         (
-            get_debian_package() + 'etc/linotp2/apache2.2-example/',
+            'etc/linotp2/apache2.2-example/',
             [
                 'config/apache2.2-example/linotp2',
                 'config/apache2.2-example/linotp2-radius',
@@ -138,13 +127,13 @@ setup(
                 ]
             ),
         (
-            get_debian_package() + 'etc/linotp2/apache2.4-example/',
+            'etc/linotp2/apache2.4-example/',
             [
                 'config/apache2.4-example/linotp2.conf',
                 ]
             ),
         (
-            get_debian_package() + 'etc/init.d/',
+            'etc/init.d/',
             [
                 'config/linotp2-paster'
                 ]

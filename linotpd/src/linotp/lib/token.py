@@ -255,7 +255,7 @@ class TokenHandler(object):
         if token_type == 'sms':
             mobile = u_info.get('mobile', None)
             if not mobile:
-                msg = ('auto_enrollemnt for user %s faild: missing '
+                msg = ('auto_enrollment for user %s failed: missing '
                        'mobile number!' % user)
                 log.warning(msg)
                 return False, {'error': msg}
@@ -266,7 +266,7 @@ class TokenHandler(object):
         elif token_type == 'email':
             email = u_info.get('email', None)
             if not email:
-                msg = ('auto_enrollemnt for user %s faild: missing email!'
+                msg = ('auto_enrollment for user %s failed: missing email!'
                             % user)
                 log.warning(msg)
                 return False, {'error': msg}
@@ -274,7 +274,7 @@ class TokenHandler(object):
 
         # else: token type undefined
         else:
-            msg = ('auto_enrollemnt for user %s faild: unknown token type %r'
+            msg = ('auto_enrollment for user %s failed: unknown token type %r'
                         % (user, token_type))
             log.warning(msg)
             return False, {'error': msg}
@@ -1474,13 +1474,13 @@ def getTokenInRealm(realm, active=True):
     if active:
         sqlQuery = Session.query(TokenRealm, Realm, Token).filter(and_(
                             TokenRealm.realm_id == Realm.id,
-                            Realm.name == u'' + realm,
+                            func.lower(Realm.name) == realm.lower(),
                             Token.LinOtpIsactive == True,
                             TokenRealm.token_id == Token.LinOtpTokenId)).count()
     else:
         sqlQuery = Session.query(TokenRealm, Realm).filter(and_(
                             TokenRealm.realm_id == Realm.id,
-                            Realm.name == realm)).count()
+                            func.lower(Realm.name) == realm.lower())).count()
     return sqlQuery
 
 def getTokenNumResolver(resolver=None, active=True):
@@ -1586,17 +1586,8 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                   % user)
 
         if not user.isEmpty() and user.login:
-            users = []
-
-            # getUserId triggers the lookup of the resolvers
-            # which could then be used for multiple users in realm
-            getUserId(user)
-            for resolverClass, uid in user.resolverUid.items():
-                users.append((uid, resolverClass))
-
-            for lookup_user in users:
-                (uid, resolverClass) = lookup_user
-
+            for user_definition in user.get_uid_resolver():
+                uid, resolverClass = user_definition
                 # in the database could be tokens of ResolverClass:
                 #    useridresolver. or useridresolveree.
                 # so we have to make sure

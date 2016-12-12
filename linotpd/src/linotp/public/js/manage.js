@@ -879,11 +879,13 @@ function load_token_config() {
     }
     return;
 }
+
 /*
 callback save_token_config()
 */
 function save_token_config(){
     show_waiting();
+
     /* for every token call the getParamCallback */
     var params = {'session': getsession()};
     for (tt in $tokenConfigCallbacks) {
@@ -901,35 +903,23 @@ function save_token_config(){
                 }
             }
         }
-        catch(err) {
-            //console_log('callbacack for ' + tt + ' not found!')
-        }
-
-
+        catch(err) {}
     }
-    //console_log(params)
-    $.post('/system/setConfig', params,
-     function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-        if (data.result.status == false) {
-            alert_info_text({'text': escape(data.result.error.message),
-                             'type': ERROR,
-                             'is_escaped': true});
-        }
-    });
+
+    setSystemConfig(params);
 }
 
-
-/*
- * Retrieve session cookie if it does not exist
+/**
+ * returns the admin_session cookie or requests it from the server if not set
+ * @return {String} admin_session
  */
-
-
 function getsession(){
     var session="";
     if (document.cookie) {
         session = getcookie("admin_session");
-   }
+    }
+
+   // Retrieve session cookie if it does not exist
    if ("" == session) {
         // we need to get the session ID synchronous or we will have unpredictiable
         // behavious
@@ -1048,14 +1038,18 @@ function check_license(){
         $('#dialog_support_contact').html(obj.detail['download_licence_info']);
         $dialog_support_contact.dialog('open');
     }
-       return;
+    return;
 }
-// correctly closed bracket??
+// correctly closed bracket?? yes!
 
-function check_serial(serial){
-    var resp = clientUrlFetchSync('/admin/check_serial',{'serial':serial});
+/**
+ * checks the license status for enterprise subscription
+ * @return {Boolean} true if a valid license was found
+ */
+function is_license_valid() {
+    var resp = clientUrlFetchSync('/system/isSupportValid',{});
     var obj = jQuery.parseJSON(resp);
-    return obj.result.value.new_serial;
+    return obj.result.value === true;
 }
 
 // ####################################################
@@ -1289,11 +1283,21 @@ function setpin_callback(xhdr, textStatus) {
         }
 }
 
+/**
+ * token_setpin is used to process the "set pin" dialog in the token view
+ * @throws {PinMatchError} both entered pins must be equal
+ **/
 function token_setpin(){
     var token_string = $('#setpin_tokens').val();
     var tokens = token_string.split(",");
     var count = tokens.length;
+
+    if(!checkpins('#pin1, #pin2')) {
+        throw "PinMatchError";
+    }
+
     var pin = $('#pin1').val();
+
     var pintype = $('#pintype').val();
 
     for ( i = 0; i < count; i++) {
@@ -1310,7 +1314,7 @@ function token_setpin(){
                              'type': ERROR,
                              'is_escaped': true});
     }
-
+    return true;
 }
 
 function view_setpin_dialog(tokens) {
@@ -1556,8 +1560,19 @@ function _extract_tab_content(theDetail, k) {
     return dia_text;
 }
 
+/**
+ * @throws {PinMatchError} token pins must match
+ */
 function token_enroll(){
     check_license();
+
+    // stop here if pins do not match
+    var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"],' +
+                       '.token_enroll_frame.active-frame [name="pin2"]');
+    if(!checkpins(pin_inputs)) {
+        throw "PinMatchError";
+    }
+
     var users = get_selected_user();
     var url = '/admin/init';
     var params = {};
@@ -1621,7 +1636,7 @@ function token_enroll(){
         g.enroll_display_qrcodes = true;
     }
     clientUrlFetch(url, params, enroll_callback, serial);
-
+    return true;
 }
 
 function get_enroll_infotext(){
@@ -1646,59 +1661,48 @@ function get_enroll_infotext(){
 
 function tokentype_changed(){
     var $tokentype = $("#tokentype").val();
-    var html = "unknown tokentype!";
 
     // might raise an error, which must be catched by the caller
     $systemConfig = get_server_config();
 
-    // verify that the tokentypes is a defined dict
-    if ($tokentypes == undefined) {
-        $tokentypes = {};
-    }
+    try{
+        $('.token_enroll_frame').not('#token_enroll_' + $tokentype).removeClass('active-frame').hide();
+        $('#token_enroll_' + $tokentype).addClass('active-frame').show();
 
-    if (len($tokentypes) > 0) {
-        for (var k in $tokentypes){
-            var tt = '#token_enroll_'+k;
-            //console_log(tt);
-            $(tt).hide();
-        }
-    }
-
-    $('#token_enroll_ocra').hide();
-
-    switch ($tokentype) {
-        case "ocra":
-            $('#token_enroll_ocra').show();
-            break;
-        case undefined:
-            break;
-        default:
-            // call the setup default method for the token enrollment, before shown
+        if($tokentype !== "ocra") {
             var functionString = ''+$tokentype+'_enroll_setup_defaults';
             var funct = window[functionString];
             var exi = typeof funct;
-            try{
-                if (exi == 'function') {
-                    var rand_pin = 0;
-                    var options = {};
-                    var selected_users = get_selected_user();
-                    if (selected_users.length == 1) {
-                        var policy_def = {'scope':'enrollment',
-                                      'action': 'otp_pin_random'};
-                        policy_def['realm'] = selected_users[0].realm;
-                        policy_def['user']  = selected_users[0].login;
-                        rand_pin = get_policy(policy_def).length;
-                        options = {'otp_pin_random':rand_pin}
-                    }
-                    var l_params = window[functionString]($systemConfig, options);
-                }
-            }
-            catch(err) {
-                //console_log('callbacack for ' + functionString + ' not found!')
-            }
 
-            $('#token_enroll_'+$tokentype).show();
-            break;
+            if (exi == 'function') {
+                var rand_pin = 0;
+                var options = {};
+                var selected_users = get_selected_user();
+                if (selected_users.length == 1) {
+                    var policy_def = {'scope':'enrollment',
+                                  'action': 'otp_pin_random'};
+                    policy_def['realm'] = selected_users[0].realm;
+                    policy_def['user']  = selected_users[0].login;
+                    rand_pin = get_policy(policy_def).length;
+                    options = {'otp_pin_random':rand_pin}
+                }
+                var l_params = window[functionString]($systemConfig, options);
+            }
+        }
+
+        // enable visual pin validation and trigger it for the first time
+        var pin_inputs = $('.token_enroll_frame.active-frame [name="pin1"],' +
+                           '.token_enroll_frame.active-frame [name="pin2"]');
+
+        pin_inputs.on('change keyup', function(e) {
+            checkpins(pin_inputs);
+        }).change();
+    }
+    catch(err) {
+        alert_box({'title': i18n.gettext('unknown token type'),
+            'text': i18n.gettext('Error during token type change processing for type "' + $tokentype + '".<br><pre>' + err + "</pre>"),
+            'type': ERROR,
+            'is_escaped': true});
     }
 }
 
@@ -2460,6 +2464,78 @@ function load_email_providers(){
     });
 }
 
+function load_push_providers(){
+    show_waiting();
+
+    var params = { 'type': 'push', 'session': getsession()};
+    $.post('/system/getProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
+
+        pushProviders = data.result.value;
+
+        // Set selected provider globally
+        selectedPushProvider = null;
+
+        var providers = $('<ol id="push_providers_select" class="select_list ui-selectable"></ol>');
+        var count = 0;
+
+        $.each(pushProviders, function(key, provider){
+            var element = '<li class="ui-widget-content"><span class="name">' + escape(key) + '</span>';
+            if(provider.Default === true){
+                element += ' <span class="default">(Default)</span>';
+            }
+            element += '</li>';
+            providers.append(element);
+            count++;
+        });
+
+        $("#button_push_provider_edit").button("disable");
+        $("#button_push_provider_delete").button("disable");
+        $("#button_push_provider_set_default").button("disable");
+
+        if (count > 0) {
+            $('#push_providers_list').html(providers);
+
+            $('#push_providers_select').selectable({
+                stop: function(event, ui){
+                    if($("#push_providers_select .ui-selected").length > 0){
+                        selectedPushProvider = escape($("#push_providers_select .ui-selected .name").html());
+                        $("#button_push_provider_edit").button("enable");
+                        $("#button_push_provider_delete").button("enable");
+                        if(pushProviders[selectedPushProvider].Default !== true){
+                            $("#button_push_provider_set_default").button("enable");
+                        }
+                        else{
+                            $("#button_push_provider_set_default").button("disable");
+                        }
+                    }
+                    else{
+                        selectedEmailProvider = null;
+                        $("#button_email_provider_edit").button("disable");
+                        $("#button_email_provider_delete").button("disable");
+                        $("#button_email_provider_set_default").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
+                        function(key,value){
+                            $(value).find('*').removeClass("ui-selected");
+                        }
+                    );
+                }
+            });
+        }
+        else {
+            $('#email_providers_list').html("");
+        };
+    });
+}
+
+
+
+
 function load_system_config(){
     show_waiting();
     var params = {'session':getsession()};
@@ -2496,26 +2572,55 @@ function load_system_config(){
         $('#sys_autoResyncTimeout').val(data.result.value.AutoResyncTimeout);
         $('#sys_mayOverwriteClient').val(data.result.value.mayOverwriteClient);
 
-        $('#sys_x_forwarded_for').prop('checked', false);
         if (data.result.value['client.X_FORWARDED_FOR'] == "True") {
             $('#sys_x_forwarded_for').prop('checked', true);
         }
-        $('#sys_forwarded').prop('checked', false);
+        else {
+            $('#sys_x_forwarded_for').prop('checked', false);
+        }
+
         if (data.result.value['client.FORWARDED'] == "True") {
             $('#sys_forwarded').prop('checked', true);
+        } else {
+            $('#sys_forwarded').prop('checked', false);
         }
+
         $('#sys_forwarded_proxy').val(data.result.value['client.FORWARDED_PROXY']);
 
         /* should we use the system certificate handling*/
-        $('#sys_cert').prop('checked', false);
         if (data.result.value['certificates.use_system_certificates'] == "True") {
             $('#sys_cert').prop('checked', true);
+        } else {
+            $('#sys_cert').prop('checked', false);
         }
+
+        /*todo call the 'tok_fill_config.js */
+       
+        /* caching settings */
+        if (data.result.value['resolver_lookup_cache.enabled'] == "True") {
+            $('#sys_resolver_cache_enable').prop('checked', true);
+        } else {
+            $('#sys_resolver_cache_enable').prop('checked', false);
+        }
+
+        var exp = data.result.value['resolver_lookup_cache.expiration'];
+        $('#sys_resolver_cache_expiration').val(exp || 123600);
+
+        if (data.result.value['user_lookup_cache.enabled'] == "True") {
+            $('#sys_user_cache_enable').prop('checked', true);
+        } else {
+            $('#sys_user_cache_enable').prop('checked', false);
+        }
+        var exp = data.result.value['user_lookup_cache.expiration'];
+        $('#sys_user_cache_expiration').val(exp || 123600);
+
     });
 }
 
 function save_system_config(){
     show_waiting();
+
+    // block of config values which are input based
     var params = {
         'AutoResyncTimeout': $('#sys_autoResyncTimeout').val(),
         'mayOverwriteClient': $('#sys_mayOverwriteClient').val(),
@@ -2523,18 +2628,13 @@ function save_system_config(){
         'totp.timeStep': $('#totp_timeStep').val(),
         'totp.timeWindow': $('#totp_timeWindow').val(),
         'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
+        'user_lookup_cache.expiration':  $('#sys_user_cache_expiration').val(),
+        'resolver_lookup_cache.expiration':  $('#sys_resolver_cache_expiration').val(),
         'session':getsession()}
 
-    $.post('/system/setConfig', params,
-     function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-        if (data.result.status == false) {
-            alert_info_text({'text': "text_system_save_error",
-                             'type': ERROR,
-                             'is_escape': true});
-        }
-    });
+    setSystemConfig(params);
 
+    // second block of config values which are checkbox based
     var allowsaml = "False";
     if ($("#sys_allowSamlAttributes").is(':checked')) {
         allowsaml = "True";
@@ -2575,28 +2675,59 @@ function save_system_config(){
     if ($("#sys_x_forwarded_for").is(':checked')) {
         client_x_forward = "True";
     }
+
     var use_sys_cert = "False";
     if ($('#sys_cert').is(':checked')) {
         use_sys_cert = "True";
     }
-    var params = { 'session':getsession(),
-            'PrependPin' :prepend,
-            'FailCounterIncOnFalsePin' : fcounter ,
-            'splitAtSign' : splitatsign,
-            'AutoResync' :    autoresync,
-            'PassOnUserNotFound' : passOUNFound,
-            'PassOnUserNoToken' : passOUNToken,
-            'selfservice.realmbox' : realmbox,
-            'allowSamlAttributes' : allowsaml,
-            'client.FORWARDED' : client_forward,
-            'client.X_FORWARDED_FOR' : client_x_forward,
-            'allowSamlAttributes' : allowsaml,
-            'certificates.use_system_certificates': use_sys_cert,
-             };
-    $.post('/system/setConfig', params,
+
+    var user_cache_enabled = "False";
+    if ($("#sys_user_cache_enable").is(':checked')) {
+        user_cache_enabled = "True";
+    }
+    var resolver_cache_enabled = "False";
+    if ($("#sys_resolver_cache_enable").is(':checked')) {
+        resolver_cache_enabled = "True";
+    }
+
+    var params = {
+        'session':getsession(),
+        'PrependPin' :prepend,
+        'FailCounterIncOnFalsePin' : fcounter ,
+        'splitAtSign' : splitatsign,
+        'AutoResync' :    autoresync,
+        'PassOnUserNotFound' : passOUNFound,
+        'PassOnUserNoToken' : passOUNToken,
+        'selfservice.realmbox' : realmbox,
+        'allowSamlAttributes' : allowsaml,
+        'client.FORWARDED' : client_forward,
+        'client.X_FORWARDED_FOR' : client_x_forward,
+        'allowSamlAttributes' : allowsaml,
+        'certificates.use_system_certificates': use_sys_cert,
+        'user_lookup_cache.enabled': user_cache_enabled,
+        'resolver_lookup_cache.enabled': resolver_cache_enabled,
+        'user_lookup_cache.enabled': user_cache_enabled,
+    };
+
+    setSystemConfig(params);
+}
+
+/**
+ * sends the object containing system config entries
+ * to the server to save them in the database
+ * @param {Object.<string, *>} values - the key value pairs representing the config to save
+ */
+function setSystemConfig(values) {
+    $.post('/system/setConfig', values,
      function(data, textStatus, XMLHttpRequest){
+        hide_waiting();
         if (data.result.status == false) {
-            alert_info_text({'text': "text_system_save_error_checkbox",
+            var message = "Error saving system configuration. Please check your configuration and your server.";
+            // if a more specific server error is available use this one
+            if (data.result.error && data.result.error.message)
+                message += "<br>" + escape(data.result.error.message);
+
+            alert_info_text({'text': message,
                              'type': ERROR,
                              'is_escaped': true});
         }
@@ -2611,7 +2742,6 @@ function save_ldap_config(){
         '#ldap_uri': 'LDAPURI',
         '#ldap_basedn': 'LDAPBASE',
         '#ldap_binddn': 'BINDDN',
-        '#ldap_password': 'BINDPW',
         '#ldap_timeout': 'TIMEOUT',
         '#ldap_sizelimit': 'SIZELIMIT',
         '#ldap_loginattr': 'LOGINNAMEATTRIBUTE',
@@ -2646,6 +2776,11 @@ function save_ldap_config(){
     params["EnforceTLS"] = ldap_enforce_tls;
 
     params["session"] = getsession();
+
+    if($('#ldap_password').val().length > 0){
+        params["BINDPW"] = $('#ldap_password').val();
+    }
+
     show_waiting();
 
     $.post(url, params,
@@ -2677,6 +2812,7 @@ function save_http_config(){
     params['type'] = resolvertype;
 
     show_waiting();
+
     clientUrlFetch(url, params,
          function(xhdr, textStatus, XMLHttpRequest){
             hide_waiting();
@@ -2815,7 +2951,6 @@ function save_sql_config(){
         '#sql_port': 'Port',
         '#sql_limit': 'Limit',
         '#sql_user': 'User',
-        '#sql_password': 'Password',
         '#sql_table': 'Table',
         '#sql_mapping': 'Map',
         '#sql_where': 'Where',
@@ -2832,7 +2967,13 @@ function save_sql_config(){
         params[new_key] = value;
     }
     params['session'] = getsession();
+
+    if($('#sql_password').val().length > 0){
+        params["Password"] = $('#sql_password').val();
+    }
+
     show_waiting();
+
     $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
@@ -3033,22 +3174,6 @@ function resolver_edit_type(){
 function resolver_new_type(){
     check_license();
     $dialog_ask_new_resolvertype.dialog('open');
-}
-
-function add_token_config()
-{
-
-    if ($tokentypes == undefined) {
-        $tokentypes = {};
-    }
-
-    if (len($tokentypes) > 0) {
-        for (var k in $tokentypes){
-            var tt = '#token_enroll_'+k;
-            //console_log(tt);
-            $(tt).hide();
-        }
-    }
 }
 
 function set_tokeninfo_buttons(){
@@ -3542,8 +3667,8 @@ $(document).ready(function(){
 
     var server_config = get_server_config();
 
-    // hide the javascrip message
-    $('#javascript_error').hide();
+    // set linotp version to global object as dom is loaded now
+    g.linotp_version = $('#linotp_version').text();
 
     $("button").button();
 
@@ -4777,6 +4902,125 @@ $(document).ready(function(){
     });
 
     /*********************************************************************
+     * Push provider config
+     */
+
+    var $dialog_push_provider_config = $('#dialog_push_providers').dialog({
+        autoOpen: false,
+        title: 'Push Provider Config',
+        dialogClass: "dialog-push-provider",
+        width: 600,
+        maxHeight: 600,
+        minHeight: 300,
+        modal: true,
+        buttons: {
+            'New': { click:  function(){
+                    push_provider_form_dialog("");
+                    },
+                id: "button_push_provider_new",
+                text: "New"
+            },
+            'Edit': { click: function(){
+                    if(selectedPushProvider){
+                        push_provider_form_dialog(selectedPushProvider);
+                    }
+                },
+                id:"button_push_provider_edit",
+                text: "Edit"
+            },
+            'Delete': { click: function(){
+                    if(selectedPushProvider){
+                        $('#dialog_push_provider_delete').dialog("open");
+                    }
+                },
+                id: "button_push_provider_delete",
+                text:"Delete"
+            },
+            'Close': { click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_push_providers_close",
+                text:"Close"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_push_providers();
+            do_dialog_icons();
+            $('.ui-dialog :button').blur();
+        }
+    });
+
+    $dialog_push_provider_edit = $('#dialog_push_provider_edit').dialog({
+        autoOpen: false,
+        title: 'Push Provider',
+        width: 600,
+        modal: true,
+        buttons: {
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_push_provider_cancel",
+                text: "Cancel"
+                },
+            'Save': {
+                click: function(){
+                    if ($("#form_pushprovider").valid()) {
+                        save_push_provider_config();
+                    }
+                },
+                id: "button_push_provider_save",
+                text: "Save"
+            }
+        },
+        open: function(event, ui) {
+            translate_dialog_push_provider_edit();
+            do_dialog_icons();
+        },
+        close: function(event, ui) {
+            load_push_providers();
+        }
+    });
+
+    $dialog_push_provider_delete = $('#dialog_push_provider_delete').dialog({
+            autoOpen: false,
+            title: 'Deleting Push provider',
+            width: 600,
+            modal: true,
+            buttons: {
+                'Delete': {
+                    click: function(){
+                        delete_push_provider(selectedPushProvider);
+                        $(this).dialog('close');
+                    },
+                    id: "button_push_provider_delete_delete",
+                    text: "Delete"
+                },
+                "Cancel": {
+                    click: function(){
+                        $(this).dialog('close');
+                    },
+                    id: "button_push_provider_delete_cancel",
+                    text: "Cancel"
+                }
+            },
+            open: function() {
+                do_dialog_icons();
+                translate_dialog_push_provider_delete();
+            },
+            close: function(event, ui) {
+                load_push_providers();
+            }
+        });
+
+    $('#button_push_provider_set_default').click(function(){
+        if(selectedPushProvider){
+            set_default_provider('push', selectedPushProvider);
+        }
+    });
+
+    
+    /*********************************************************************
      * System config
      */
 
@@ -4827,6 +5071,12 @@ $(document).ready(function(){
         load_email_providers();
         $dialog_email_provider_config.dialog('open');
     });
+
+    $('#menu_push_provider_config').click(function(){
+        load_push_providers();
+        $dialog_push_provider_config.dialog('open');
+    });
+
 
     $('#menu_token_config').click(function(){
         try {
@@ -5030,6 +5280,7 @@ $(document).ready(function(){
 
         return false;
     }
+
     var $dialog_enroll_token = $('#dialog_token_enroll').dialog({
         autoOpen: false,
         title: 'Enroll Token',
@@ -5037,19 +5288,29 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Enroll': {click: function(){
-                token_enroll();
-                $(this).dialog('close');
+            'Enroll': {
+                click: function(){
+                    try {
+                        token_enroll();
+                        $(this).dialog('close');
+                    }
+                    catch(e) {
+                        alert_box({'title': i18n.gettext('Failed to enroll token'),
+                                   'text': i18n.gettext('The entered PINs do not match!'),
+                                   'type': ERROR,
+                                   'is_escaped': true});
+                    }
                 },
                 id: "button_enroll_enroll",
                 text: "Enroll"
-                },
-            Cancel: { click: function(){
-                $(this).dialog('close');
+            },
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_enroll_cancel",
                 text: "Cancel"
-                }
+            }
         },
         open: do_dialog_icons
     });
@@ -5080,20 +5341,30 @@ $(document).ready(function(){
         width: 400,
         modal: true,
         buttons: {
-            'Set PIN': {click: function(){
-                token_setpin();
-                $(this).dialog('close');
+            'Set PIN': {
+                click: function(){
+                    try {
+                        token_setpin();
+                        $(this).dialog('close');
+                    }
+                    catch (e) {
+                        alert_box({'title': i18n.gettext('Failed to set PIN'),
+                           'text': i18n.gettext('The entered PINs do not match!'),
+                           'type': ERROR,
+                           'is_escaped': true});
+                    }
                 },
                 id: "button_setpin_setpin",
                 text: "Set PIN"
-                },
-            Cancel: { click: function(){
-                $(this).effect('puff');
-                $(this).dialog('close');
+            },
+            'Cancel': {
+                click: function(){
+                    $(this).effect('puff');
+                    $(this).dialog('close');
                 },
                 id: "button_setpin_cancel",
                 text: "Cancel"
-                }
+            }
         },
         open: function() {
             translate_set_pin();
@@ -5569,6 +5840,118 @@ function delete_email_provider(provider){
     });
 }
 
+/************************************************************************
+*
+*  Email provider edit
+*/
+
+function push_provider_form_dialog(name){
+   if(name){
+       $("#push_provider_name").val(name);
+       $("#push_provider_class").val(pushProviders[name].Class);
+       $("#push_provider_config").val(pushProviders[name].Config);
+       $("#push_provider_timeout").val(pushProviders[name].Timeout);
+   }
+   else{
+       $("#push_provider_name").val($("#push_provider_name").attr("placeholder"));
+       // to be replaced by getProviderDef
+       $("#push_provider_class").val($("#push_provider_class").attr("placeholder"));
+       $("#push_provider_config").val($("#push_provider_config").attr("placeholder"));
+       $("#push_provider_timeout").val($("#push_provider_timeout").attr("placeholder"));
+   }
+
+   $("#dialog_push_provider_edit").dialog("open");
+
+   $("#form_pushprovider").validate({
+       rules: {
+    	   push_provider_config: {
+               valid_json: true
+           },
+           push_provider_name: {
+               required: true,
+               minlength: 4,
+               number: false,
+               providername: true
+           }
+       }
+   });
+}
+
+function save_push_provider_config(){
+   // Load Values from still opened form
+   var provider = $('#push_provider_name').val();
+   var params = {
+       'name': provider,
+       'class': $('#push_provider_class').val(),
+       'config': $('#push_provider_config').val(),
+       'timeout': $('#push_provider_timeout').val(),
+       'type': 'push',
+       'session': getsession()
+   };
+   show_waiting();
+
+   $.post('/system/setProvider', params,
+   function(data, textStatus, XMLHttpRequest){
+       hide_waiting();
+       if (data.result.status == true && data.result.value == true) {
+           $dialog_push_provider_edit.dialog('close');
+       } else if (data.result.value == false) {
+           alert_box({'title': i18n.gettext('Failed to save provider'),
+                      'text': escape(data.detail.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to save provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error saving provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+   });
+}
+
+function delete_push_provider(provider){
+   show_waiting();
+   var params =  {'name': provider,
+                  'type': 'push',
+                  'session': getsession()};
+   $.post('/system/delProvider', params,
+     function(data, textStatus, XMLHttpRequest){
+       hide_waiting();
+       load_push_providers();
+       if (data.result.status == true && data.result.value == true) {
+           var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                 escape(provider));
+
+           alert_info_text({'text': message,
+                            'is_escaped': true});
+
+       } else if (data.result.value == false) {
+           var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+           alert_box({'title': i18n.gettext('Failed to delete provider'),
+                      'text': reason_text,
+                      'type': ERROR,
+                      'is_escaped': true});
+
+           var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                 escape(provider));
+           alert_info_text({'text': message,
+                            'type': ERROR,
+                            'is_escaped': true});
+       } else {
+           alert_box({'title': i18n.gettext('Error deleting provider'),
+                      'text': escape(data.result.error.message),
+                      'type': ERROR,
+                      'is_escaped': true});
+       }
+   });
+}
+
 
 /************************************************************************
  *
@@ -5715,7 +6098,7 @@ function realm_edit(name){
 
 function check_for_selected_resolvers(){
     var resolvers_in_realm_to_edit = new Array();
-    $(".ui-selected").each(function(){
+    $(".ui-selected", this).each(function(){
         var index = $("#resolvers_in_realms_select li").index(this);
         var reso = escape($(this).html());
         if (reso.match(/(\S+)\s\[(\S+)\]/)) {
@@ -5750,22 +6133,25 @@ function check_for_selected_resolvers(){
 
 
 function resolver_set_ldap(obj) {
-    $('#ldap_uri').val(obj.result.value.data.LDAPURI);
-    $('#ldap_basedn').val(obj.result.value.data.LDAPBASE);
-    $('#ldap_binddn').val(obj.result.value.data.BINDDN);
-    $('#ldap_password').val(obj.result.value.data.BINDPW);
-    $('#ldap_timeout').val(obj.result.value.data.TIMEOUT);
-    $('#ldap_sizelimit').val(obj.result.value.data.SIZELIMIT);
-    $('#ldap_loginattr').val(obj.result.value.data.LOGINNAMEATTRIBUTE);
-    $('#ldap_searchfilter').val(obj.result.value.data.LDAPSEARCHFILTER);
-    $('#ldap_userfilter').val(obj.result.value.data.LDAPFILTER);
-    $('#ldap_mapping').val(obj.result.value.data.USERINFO);
-    $('#ldap_uidtype').val(obj.result.value.data.UIDTYPE);
-    $('#ldap_certificate').val(obj.result.value.data.CACERTIFICATE);
-    $('#ldap_noreferrals').val(obj.result.value.data.NOREFERRALS);
 
-    // get the configuration value of the enforce TLS and adjust the checkbox
-    var checked = obj.result.value.data.EnforceTLS.toLowerCase() == "true";
+    var data = obj.result.value.data;
+
+    $('#ldap_uri').val(data.LDAPURI);
+    $('#ldap_basedn').val(data.LDAPBASE);
+    $('#ldap_binddn').val(data.BINDDN);
+    $('#ldap_password').val("");
+    $('#ldap_timeout').val(data.TIMEOUT);
+    $('#ldap_sizelimit').val(data.SIZELIMIT);
+    $('#ldap_loginattr').val(data.LOGINNAMEATTRIBUTE);
+    $('#ldap_searchfilter').val(data.LDAPSEARCHFILTER);
+    $('#ldap_userfilter').val(data.LDAPFILTER);
+    $('#ldap_mapping').val(data.USERINFO);
+    $('#ldap_uidtype').val(data.UIDTYPE);
+    $('#ldap_certificate').val(data.CACERTIFICATE);
+    $('#ldap_noreferrals').val(data.NOREFERRALS);
+
+    // get the configuration value of the enforce TLS (if exists) and adjust the checkbox
+    var checked = !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true";
     $('#ldap_enforce_tls').prop('checked', checked);
 
     ldap_resolver_ldaps();
@@ -6025,7 +6411,7 @@ function resolver_set_sql(obj) {
     $('#sql_database').val(obj.result.value.data.Database);
     $('#sql_table').val(obj.result.value.data.Table);
     $('#sql_user').val(obj.result.value.data.User);
-    $('#sql_password').val(obj.result.value.data.Password);
+    $('#sql_password').val("");
     $('#sql_mapping').val(obj.result.value.data.Map);
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);
@@ -6257,9 +6643,6 @@ function view_policy() {
                 {display: i18n.gettext('Time'), name : 'time', width : 50, sortable : true}
                 ],
             height: 200,
-            searchitems : [
-                {display: i18n.gettext('All other columns'), name : 'all', isdefault: true}
-                ],
             rpOptions: [10,15,20,50,100],
             sortname: "name",
             sortorder: "asc",
@@ -6272,8 +6655,7 @@ function view_policy() {
             onError: error_flexi,
             onSubmit: on_submit_flexi,
             addTitleToCell: true,
-            dblClickResize: true,
-            searchbutton: true
+            dblClickResize: true
     });
 
     $('#policy_export').attr("href", '/system/getPolicy/policy.cfg?session=' + getsession());

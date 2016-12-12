@@ -108,7 +108,7 @@ class TestController(unittest2.TestCase):
 
         self.appconf = config
 
-        # ---------------------------------------------------------------------
+        # ------------------------------------------------------------------ --
 
         current_webtest = LooseVersion(
             pkg_resources.get_distribution('webtest').version
@@ -247,6 +247,14 @@ class TestController(unittest2.TestCase):
         # self.create_common_realms()
 
         if TestController.run_state == 0:
+
+            # disable caching as this will change the behavior
+            params = {
+                'linotp.user_lookup_cache.enabled': True,
+                'linotp.resolver_lookup_cache.enabled': True,
+                }
+            self.make_system_request('setConfig', params=params)
+
             self.delete_all_policies()
             self.delete_all_realms()
             self.delete_all_resolvers()
@@ -659,8 +667,9 @@ class TestController(unittest2.TestCase):
         expected_keys = set(
             ['name', 'scope', 'action', 'user', 'realm', 'client', 'time']
         )
-        self.assertTrue(set(lparams.keys()) == expected_keys,
-                        "Some key is missing to create a policy")
+        diff_set = expected_keys - set(lparams.keys())
+        self.assertTrue(len(diff_set) == 0,
+                        "Some key is missing to create a policy %r" % diff_set)
 
         response = self.make_system_request('setPolicy', lparams)
         content = TestController.get_json_body(response)

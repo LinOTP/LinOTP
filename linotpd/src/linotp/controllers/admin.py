@@ -29,7 +29,6 @@ admin controller - interfaces to administrate LinOTP
 """
 
 import logging
-import json
 
 from pylons import request, response, config, tmpl_context as c
 
@@ -834,7 +833,7 @@ class AdminController(BaseController):
             params = dict(request.params)
             params.setdefault('key_size', 20)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # determine token class
 
@@ -853,7 +852,7 @@ class AdminController(BaseController):
             token_cls_identifier = tokenclasses.get(lower_alias)
             token_cls = newToken(token_cls_identifier)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # call the token class hook in order to enrich/overwrite the
             # parameters
@@ -861,19 +860,19 @@ class AdminController(BaseController):
             helper_params = token_cls.get_helper_params_pre(params)
             params.update(helper_params)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # fetch user from parameters.
 
             user = getUserFromParam(params, optional)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # check admin authorization
 
             res = checkPolicyPre('admin', 'init', params, user=user)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # if no user is given, we put the token in all realms of the admin
 
@@ -882,17 +881,17 @@ class AdminController(BaseController):
                 log.debug("[init] setting tokenrealm %s" % res['realms'])
                 tokenrealm = res['realms']
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             helper_params = token_cls.get_helper_params_post(params, user=user)
             params.update(helper_params)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             serial = params.get('serial', None)
             prefix = params.get('prefix', None)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             th = TokenHandler()
             if not serial:
@@ -902,12 +901,12 @@ class AdminController(BaseController):
             log.info("[init] initialize token. user: %s, serial: %s"
                      % (user.login, serial))
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             (ret, token) = th.initToken(params, user,
                                         tokenrealm=tokenrealm)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # different token types return different information on
             # initialization (e.g. otpkey, pairing_url, etc)
@@ -915,7 +914,7 @@ class AdminController(BaseController):
             initDetail = token.getInitDetail(params, user)
             response_detail.update(initDetail)
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # prepare data for audit
 
@@ -932,12 +931,12 @@ class AdminController(BaseController):
 
             logTokenNum(c.audit)
             c.audit['success'] = ret
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             checkPolicyPost('admin', 'init', params, user=user)
             Session.commit()
 
-            # ------------------------------------------------------------------
+            # --------------------------------------------------------------- --
 
             # depending on parameters send back an qr image
             # or a text result
@@ -950,7 +949,7 @@ class AdminController(BaseController):
             else:
                 return sendResult(response, ret, opt=response_detail)
 
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------- --
 
         except PolicyException as pe:
             log.exception("[init] policy failed %r" % pe)
@@ -2521,38 +2520,4 @@ class AdminController(BaseController):
             log.debug('[ocra/checkstatus] done')
 
 
-def iterate_users(user_iterators):
-    """
-    build a userlist iterator / generator that returns the user data on demand
-
-    :param user_iterators: list of tuple (userlist iterators, resolver descr)
-    :return: generator of user data dicts (yield)
-    """
-
-    for itera in user_iterators:
-        user_iterator = itera[0]
-        reso = itera[1]
-        log.debug("iterating: %r" % reso)
-
-        try:
-            while True:
-                user_data = user_iterator.next()
-                if type(user_data) in [list]:
-                    for data in user_data:
-                        data['resolver'] = reso
-                        resp = "%s" % json.dumps(data)
-                        yield resp
-                else:
-                    user_data['resolver'] = reso
-                    resp = "%s" % json.dumps(user_data)
-                    yield resp
-        except StopIteration as exx:
-            # pass on to next iterator
-            pass
-        except Exception as exx:
-            log.exception("Problem during iteration of userlist iterators: %r"
-                       % exx)
-
-    raise StopIteration()
-
-#eof###########################################################################
+# eof ########################################################################

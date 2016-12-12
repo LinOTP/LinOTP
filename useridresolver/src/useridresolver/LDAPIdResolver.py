@@ -221,6 +221,9 @@ class IdResolver (UserIdResolver):
 
         l_obj = ldap.initialize(uri, trace_level=trace_level)
 
+        # Set LDAP protocol version used
+        l_obj.protocol_version = ldap.VERSION3
+
         if uri.startswith('ldaps://') or caller.enforce_tls:
 
             # If we establish an ldaps connection, we currently accept
@@ -231,6 +234,30 @@ class IdResolver (UserIdResolver):
             if caller.only_trusted_certs:
                 l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
                                  ldap.OPT_X_TLS_DEMAND)
+
+        #
+        # handle local certificates
+        #
+
+        if not caller.use_sys_cert and caller.CERTFILE:
+            log.debug("using local cert file %r", caller.CERTFILE)
+            l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
+
+            #
+            # Force lib ldap to create a new SSL context (must be last
+            # TLS option!) from:
+            # https://github.com/rbarrois/python-ldap/blob/master/Demo/initialize.py
+            #
+
+            l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
+
+        else:
+
+            sys_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
+            sys_cert_dir = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
+            log.info("using system certificate file:  %r or system "
+                     "certificate dir %r", sys_cert_file, sys_cert_dir)
+
 
         if uri.startswith('ldap:'):
 
@@ -243,7 +270,7 @@ class IdResolver (UserIdResolver):
                 log.debug("for %r connection try to start_tls", uri)
                 l_obj.start_tls_s()
 
-            except ldap.CONNECT_ERROR as exx:
+            except ldap.LDAPError as exx:
 
                 if caller.enforce_tls:
                     log.error("failed to start_tls for %r: %r", uri, exx)

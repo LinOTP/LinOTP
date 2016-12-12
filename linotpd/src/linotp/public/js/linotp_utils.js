@@ -23,22 +23,47 @@
  *    Support: www.lsexperts.de
  *
  */
-function checkpins(otp_pin1,otp_pin2){
-/*
- *  check pins: verifies, that the pins in both
- *  referenced entries are equal
- */
-    var pin1 = $('#'+otp_pin1).val();
-    var pin2 = $('#'+otp_pin2).val();
-    if (pin1 == pin2) {
-        $('#'+otp_pin1).removeClass('ui-state-error');
-        $('#'+otp_pin2).removeClass('ui-state-error');
+
+ /**
+  * checkpins compares the values of the inputs given via
+  * the jquery selector or object and visualizes the result
+  * via ui-state-error class
+  * @param {Object|string} pin_inputs - an selector or jQuery object referencing all inputs to compare
+  * @returns Boolean
+  */
+function checkpins(pin_inputs){
+    var pins = $(pin_inputs)
+        .map(function(){return $(this).val();}).get();
+
+    if(array_entries_equal(pins)) {
+        $(pin_inputs).removeClass('ui-state-error');
+        return true;
     }
     else {
-        $('#'+otp_pin1).addClass('ui-state-error');
-        $('#'+otp_pin2).addClass('ui-state-error');
+        $(pin_inputs).addClass('ui-state-error');
+        return false;
     }
-    return false;
+}
+
+/**
+ * array_entries_equal returns true if all entries of 'array' are equal
+ * @oaram {Array} array - the unit under test
+ * @return {Boolean}
+ */
+function array_entries_equal(array) {
+
+    if(!$.isArray(array)) {
+        throw "array_entries_equal expects an array as param";
+    }
+
+    if(array.length > 1) {
+        for(var i = 1; i < array.length; i++) {
+            if(array[i] !== array[0]) {
+                return false;
+            }
+        }
+    }
+    return true
 }
 
 function cb_changed(checkbox_id,arry){
@@ -78,16 +103,10 @@ function cb_changed_deactivate(checkbox_id,arry){
 
 function show_waiting() {
     $('#do_waiting').show();
-    //$('#statusline').show();
-    //var milliseconds = (new Date()).getTime();
-    //console.log("show: " +milliseconds);
 }
 
 function hide_waiting() {
     $("#do_waiting").hide();
-    //$('#statusline').hide();
-    //var milliseconds = (new Date()).getTime();
-    //console.log("hide: " +milliseconds);
 }
 
 function getcookie(search_key) {
@@ -171,4 +190,24 @@ function escape(data) {
 
 function descape(data) {
 	return traverse(data, entity_decode);
+}
+
+
+/**
+ * tests object for the existance of a given key
+ * or chain of keys for nested search
+ * @param  {Object}                object the haystack to search in
+ * @param  {String|Array<String>}  key    the name of the key(s) to search from
+ * @return {Boolean}                      true if key exists in object
+ */
+function isDefinedKey(object, key){
+    if(object !== null && key.length > 0) {
+        var result = object.hasOwnProperty(key[0]);
+        if(key.length == 1) {
+            return result;
+        }
+        // if object has the first part of the key, search this object with the rest of the key
+        return (result ? isDefinedKey(object[key.shift()], key) : false);
+    }
+    return false;
 }

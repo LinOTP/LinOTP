@@ -138,12 +138,21 @@ class TokenIterator(object):
             serials = []
             users = []
 
-            ## if search for a realmuser 'user@realm' we can take the
-            ## realm from the argument
+            # if search for a realmuser 'user@realm' we can take the
+            # realm from the argument
             if len(user.realm) > 0:
                 users.append(user)
             else:
-                for realm in valid_realms:
+                # otherwise we add all users which are possible combinations
+                # from loginname and entry of the valid realms.
+                # In case of a '*' wildcard in the list, we take all available
+                # realms
+                if '*' in valid_realms:
+                    valid_realm_list = getRealms().keys()
+                else:
+                    valid_realm_list = valid_realms
+
+                for realm in valid_realm_list:
                     users.append(User(user.login, realm))
 
             # resolve the realm with wildcard:
@@ -154,9 +163,17 @@ class TokenIterator(object):
                 if urealm == '*':
                     # if the realm is set to *, the getUserId
                     # triggers the identification of all resolvers, where the
-                    # user might reside: tigger the user resolver lookup
-                    (uid, resolver, resolverClass) = getUserId(usr)
-                    userlist.extend(usr.getUserPerConf())
+                    # user might reside: trigger the user resolver lookup
+                    for realm in getRealms().keys():
+                        if realm in valid_realms or '*' in valid_realms:
+                            usr.realm = realm
+                            try:
+                                (_uid, _resolver, _resolverClass) = getUserId(usr)
+                            except UserError as exx:
+                                log.info('user %r not found in realm%r',
+                                         usr, realm)
+                                continue
+                            userlist.extend(usr.getUserPerConf())
                 else:
                     userlist.append(usr)
 

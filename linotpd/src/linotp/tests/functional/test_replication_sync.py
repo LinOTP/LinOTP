@@ -187,6 +187,38 @@ class TestReplication(TestController):
         self.assertTrue('"status": true,' in response)
         return response
 
+    def set_caching(self, enable=True):
+        """
+
+        """
+        caches = ["user_lookup_cache.enabled",
+                  "resolver_lookup_cache.enabled"]
+
+        enable_str = "False"
+        if enable:
+            enable_str = "True"
+
+        for cache in caches:
+
+            params = {cache: enable_str}
+            response = self.make_system_request('setConfig', params)
+            msg = '"setConfig %s:%s": true' % (cache, enable_str)
+            self.assertTrue(msg in response, response)
+
+    def set_cache_expiry(self, expiration):
+
+        caches = ["user_lookup_cache.expiration",
+                  "resolver_lookup_cache.expiration"]
+
+        for cache in caches:
+
+            params = {cache: expiration}
+            response = self.make_system_request('setConfig', params)
+            msg = '"setConfig %s:%s": true' % (cache, expiration)
+            self.assertTrue(msg in response, response)
+
+        return
+
     def test_replication(self):
         '''
             test replication of an simple config entry
@@ -285,7 +317,7 @@ class TestReplication(TestController):
 
         return
 
-    def test_updateResolver(self):
+    def updateResolver_test(self):
         '''
             test replication with resolver update
 
@@ -354,15 +386,15 @@ class TestReplication(TestController):
 
         return
 
-    def test_updateRealm(self):
+    def updateRealm_test(self):
         '''
             test replication with realm and resolver update
         '''
         realmDef = {
-            "useridresolver.group.realm": ("useridresolver.PasswdIdResolver."
-                                           "IdResolver.resolverTest"),
-            "passwdresolver.fileName.resolverTest": "/etc/passwd",
-            "DefaultRealm": "realm",
+            "linotp.useridresolver.group.realm":
+                "useridresolver.PasswdIdResolver.IdResolver.resolverTest",
+            "linotp.passwdresolver.fileName.resolverTest": "/etc/passwd",
+            "linotp.DefaultRealm": "realm",
             }
 
         for k in realmDef:
@@ -406,16 +438,35 @@ class TestReplication(TestController):
           1. enable replication
           2. write sql data
           3. lookup for the realm definition
-          4. enroll token and auth for user root
-          5. cleanup: remove realm definition + replication flag
+          4. enroll token and auth for user passthru_user1
+          5. add new resolver definition
+          6. check that user in the realm is not defined
+          7. lookup for the realm definition
+          8. add resolver definition again
+          9. check that user is defined in realm again
+          10. cleanup
+          11. lookup if the realm definition is removed
+          12. disable replication
 
         '''
+        self.create_common_resolvers()
+        self.create_common_realms()
+
+        res_group = {
+                "resolverTest":
+                "useridresolver.PasswdIdResolver.IdResolver.resolverTest",
+                "myDefRes":
+                "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+                }
+
         realmDef = {
-            "useridresolver.group.realm": ("useridresolver.PasswdIdResolver."
-                                           "IdResolver.resolverTest"),
-            "passwdresolver.fileName.resolverTest": "/etc/passwd",
-            "DefaultRealm": "realm",
+            "linotp.passwdresolver.fileName.resolverTest": "/etc/passwd",
+            "linotp.useridresolver.group.realm":
+                "useridresolver.PasswdIdResolver.IdResolver.myDefRes",
+            "linotp.DefaultRealm": "realm",
             }
+
+        realmDef["linotp.useridresolver.group.realm"] = ','.join(res_group.values())
 
         # 0. delete all related data
         for k in realmDef:
@@ -440,19 +491,45 @@ class TestReplication(TestController):
         resp = self.make_system_request('getRealms', {})
         self.assertTrue('"realmname": "realm"' in resp, resp)
 
-        # 4. enroll token and auth for user root
-        self.addToken('root')
-        res = self.authToken('root')
+        # 4. enroll token and auth for user passthru_user1
+        self.addToken('passthru_user1')
+        res = self.authToken('passthru_user1')
         self.assertTrue('"value": true' in res)
 
-        # 5 - cleanup
+        # 5. set new resolver definition
+        realmDef["linotp.useridresolver.group.realm"] = res_group["resolverTest"]
+        for key, value in realmDef.items():
+            self.delData(key)
+            self.addData(key, value, '')
+
+        # 6. check that user in the realm is not defined
+        res = self.authToken('passthru_user1')
+        self.assertTrue('"value": false' in res)
+
+        # 7. lookup for the realm definition
+        resp = self.make_system_request('getRealms',)
+        self.assertTrue('"realmname": "realm"' in resp, resp)
+        self.assertTrue("resolverTest" in resp, resp)
+
+        # 8. add new resolver definition again
+        realmDef["linotp.useridresolver.group.realm"] = res_group["myDefRes"]
+        for key, value in realmDef.items():
+            self.delData(key)
+            self.addData(key, value, '')
+
+        # 9. check that user is defined in realm again
+        res = self.authToken('passthru_user1')
+        self.assertTrue('"value": true' in res)
+
+        # 10. cleanup
         for k in realmDef:
             self.delData(k)
 
-        # 5b. lookup for the realm definition
+        # 11. lookup if the realm definition is removed
         resp = self.make_system_request('getRealms', {})
         self.assertTrue('"realmname": "realm"' not in resp, resp)
 
+        # 12. disable replication
         params = {
             'key': 'enableReplication',
             }
@@ -524,5 +601,86 @@ class TestReplication(TestController):
         self.assertTrue('"delConfig enableReplication": true' in resp)
 
         return
+
+    def test_updateRealm_with_caching(self):
+        """
+        test replication with realm and resolver update  with caching enabled
+        """
+
+        self.set_caching(enable=True)
+        self.set_cache_expiry(expiration='3 hours')
+
+        try:
+            self.updateRealm_test()
+
+        finally:
+            self.set_caching(enable=False)
+
+        return
+
+    def test_updateRealm_wo_caching(self):
+        """
+        test replication with realm and resolver update  with caching disabled
+        """
+        self.set_caching(enable=False)
+        self.updateRealm_test()
+
+        return
+
+    def test_caching_expiration_value(self):
+        """
+        test replication with resolver update with caching enabled
+        """
+
+        self.set_caching(enable=True)
+
+        with self.assertRaises(AssertionError) as ass_err:
+            self.set_cache_expiry(expiration='3600 xx')
+
+        error_message = ass_err.exception.message
+        self.assertTrue("must be of type 'duration'" in error_message)
+
+        with self.assertRaises(AssertionError) as ass_err:
+            self.set_cache_expiry(expiration='3600 years')
+
+        error_message = ass_err.exception.message
+        self.assertTrue("must be of type 'duration'" in error_message)
+
+        self.set_cache_expiry(expiration='3600 seconds')
+        self.set_cache_expiry(expiration=3600)
+        self.set_cache_expiry(expiration='3600')
+        self.set_cache_expiry(expiration='3600 s')
+        self.set_cache_expiry(expiration='3 hours')
+
+        self.set_cache_expiry(expiration='180 minutes')
+
+        self.set_cache_expiry(expiration='1h 20 minutes 90 s')
+        return
+
+    def test_updateResolver_with_caching(self):
+        """
+        test replication with resolver update with caching enabled
+        """
+
+        self.set_caching(enable=True)
+        self.set_cache_expiry(expiration='3600 seconds')
+
+        try:
+            self.updateResolver_test()
+
+        finally:
+            self.set_caching(enable=False)
+
+        return
+
+    def test_updateResolver_wo_caching(self):
+        """
+        test replication with resolver update with caching disabled
+        """
+        self.set_caching(enable=False)
+        self.updateResolver_test()
+
+        return
+
 
 # eof #########################################################################
