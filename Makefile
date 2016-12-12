@@ -30,6 +30,11 @@
 
 PYTHON:=python2
 
+# This directory is used as destination for the various parts of
+# the build phase. The various install targets default to this directory
+# but can be overriden by DESTDIR
+BUILDDIR:=$(PWD)/build
+
 # Targets to operate on LinOTPd and its dependent projects shipped
 # in this repository
 LINOTPD_PROJS := smsprovider useridresolver linotpd adminclient/LinOTPAdminClientCLI
@@ -69,6 +74,9 @@ $(MAKEFILE_TARGETS):
 # etc.
 .SECONDEXPANSION:
 $(LINOTPD_TARGETS): $$(basename $$@).subdirmake
+
+clean:
+	if [ -d $(BUILDDIR) ]; then rm -rf $(BUILDDIR) ;fi
 
 # Run a command in a list of directories
 # $(call run-in-directories,DIRS,COMMAND)
@@ -121,4 +129,39 @@ integrationtests:
 	$(MAKE) -C linotpd/src/linotp/tests/integration $@
 
 .PHONY: test unittests integrationtests
+
+
+#####################
+# Packaging targets
+#
+
+# These targets run the various commands needed
+# to create packages of linotp
+
+# builddeb: Generate .debs
+# deb-install: Build .debs and install to DESTDIR
+
+DEBPKG_PROJS := linotpd useridresolver smsprovider adminclient/LinOTPAdminClientCLI
+BUILDARCH := $(shell dpkg-architecture -q DEB_BUILD_ARCH)
+CHANGELOG = "$(shell cd linotpd/src ; dpkg-parsechangelog)"
+
+# Output is placed in DESTDIR, but this
+# can be overriden
+ifndef DESTDIR
+DESTDIR = $(BUILDDIR)
+endif
+
+.PHONY: builddeb
+builddeb:
+	# builddeb: Run debuild in each directory to generate .deb
+	$(call run-in-directories,$(DEBPKG_PROJS),$(MAKE) builddeb)
+
+.PHONY: deb-install
+deb-install: builddeb
+	# deb-install: move the built .deb files into an archive directory and
+	# 			    generate Packages file
+	mkdir -pv $(DESTDIR)
+	cp $(foreach dir,$(DEBPKG_PROJS),$(dir)/build/*.deb) $(DESTDIR)
+	find $(DESTDIR)
+	cd $(DESTDIR) && dpkg-scanpackages -m . > Packages
 
