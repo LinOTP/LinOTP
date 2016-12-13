@@ -105,6 +105,14 @@ def set_defaults():
     :return: - nothing -
     '''
 
+    is_upgrade = 0 != Session.query(linotp.model.Config).filter().count()
+
+    if(is_upgrade):
+        # if it is an upgrade and no welcome screen was shown before,
+        # make sure an upgrade screen is shown
+        set_config(key="welcome_screen.version",
+                   value="0", typ="text")
+
     log.info("Adding config default data...")
 
     set_config(key="DefaultMaxFailCount",
