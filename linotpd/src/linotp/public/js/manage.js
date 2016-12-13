@@ -5290,19 +5290,21 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Setup Support': {click: function(){
-                $dialog_set_support.dialog('open');
-                $(this).dialog('close');
+            'Setup Support': {
+                click: function(){
+                    $(this).dialog('close');
+                    $dialog_set_support.dialog('open');
                 },
                 id: "button_support_set",
                 text:"Setup support subscription"
-                },
-            'Close': {click: function(){
-                $(this).dialog('close');
+            },
+            'Close': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_support_close",
                 text: "Close"
-                }
+            }
         },
         open: function(event, ui) {
             do_dialog_icons();
@@ -5322,19 +5324,21 @@ $(document).ready(function(){
         width: 600,
         modal: true,
         buttons: {
-            'Set subscription': {click: function(){
-                support_set();
-                $(this).dialog('close');
+            'Set subscription': {
+                click: function(){
+                    support_set();
+                    $(this).dialog('close');
                 },
                 id: "button_support_set",
                 text: "Set subscription"
-                },
-            Cancel: {click: function(){
-                $(this).dialog('close');
+            },
+            Cancel: {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_support_cancel",
                 text: "Cancel"
-                }
+            }
         },
         open: do_dialog_icons
     });
@@ -5352,8 +5356,8 @@ $(document).ready(function(){
         buttons: {
             'Close': {
                 click: function(){ $(this).dialog('close');},
-                id: "button_about_close",
-                text: "Close"
+                    id: "button_about_close",
+                    text: "Close"
                 }
         },
         open: do_dialog_icons
