@@ -851,22 +851,26 @@ challenges_table = sa.Table('challenges', meta.metadata,
                             sa.Column('transid', sa.types.Unicode(64),
                                       unique=True, nullable=False,
                                       index=True),
-                            sa.Column(
-                                'data', sa.types.Unicode(512), default=u''),
-                            sa.Column(
-                                'challenge', sa.types.Unicode(512), default=u''),
-                            sa.Column(
-                                session_column, sa.types.Unicode(512), default=u''),
-                            sa.Column(
-                                'tokenserial', sa.types.Unicode(64), default=u''),
+                            sa.Column('ptransid', sa.types.Unicode(64),
+                                      index=True),
+                            sa.Column('data',
+                                      sa.types.Unicode(512), default=u''),
+                            sa.Column('challenge',
+                                      sa.types.Unicode(512), default=u''),
+                            sa.Column('lchallenge',
+                                      sa.types.Unicode(2000), default=u''),
+                            sa.Column(session_column,
+                                      sa.types.Unicode(512), default=u''),
+                            sa.Column('tokenserial',
+                                      sa.types.Unicode(64), default=u''),
                             sa.Column(timestamp_column, sa.types.DateTime,
                                       default=datetime.now()),
-                            sa.Column(
-                                'received_count', sa.types.Integer(), default=0),
-                            sa.Column(
-                                'received_tan', sa.types.Boolean, default=False),
-                            sa.Column(
-                                'valid_tan', sa.types.Boolean, default=False),
+                            sa.Column('received_count',
+                                      sa.types.Integer(), default=0),
+                            sa.Column('received_tan',
+                                      sa.types.Boolean, default=False),
+                            sa.Column('valid_tan',
+                                      sa.types.Boolean, default=False),
                             implicit_returning=implicit_returning,
                             )
 
@@ -882,7 +886,19 @@ class Challenge(object):
         log.debug('Challenge: __init__ ')
 
         self.transid = u'' + transid
+
+        #
+        # for future use: subtransactions will refer to their parent
+
+        self.ptransid = u''
+
+        #
+        # for migration of the challenge column to a new format
+        # we require a new target for the old challenge in the orm mapping
+
         self.challenge = u'' + challenge
+        self.ochallenge = ''
+
         self.tokenserial = u'' + tokenserial
         self.data = u'' + data
         self.timestamp = datetime.now()
@@ -1134,6 +1150,22 @@ class Challenge(object):
 
     __str__ = __unicode__
 
+
+#
+# with the orm.mapper, we can overwrite the
+# implicit mappings to point to a different class members
+
+challenge_mapping = {}
+challenge_mapping['ptransid'] = challenges_table.c.ptransid
+
+# old challenge column maps to ochallenge member
+challenge_mapping['ochallenge'] = challenges_table.c.challenge
+
+# new challenge column point now to the challenge member
+challenge_mapping['challenge'] = challenges_table.c.lchallenge
+orm.mapper(Challenge, challenges_table, properties=challenge_mapping,)
+
+
 #############################################################################
 """
 Reporting Table:
@@ -1238,14 +1270,6 @@ mapping = {}
 mapping['session'] = "%ssession" % COL_PREFIX
 mapping['timestamp'] = "%stimestamp" % COL_PREFIX
 
-# # create challenges ORM mapping to the Challenge class
-
-challenge_properties = {}
-if len(COL_PREFIX) > 0:
-    for key, value in mapping.items():
-        challenge_properties[key] = challenges_table.columns[value]
-
-orm.mapper(Challenge, challenges_table, properties=challenge_properties)
 
 # # create Ocra ORM mapping to the Ocra class
 ocra_properties = {}
