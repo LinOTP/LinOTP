@@ -2454,6 +2454,7 @@ function show_welcome_screen(title, text, button_text) {
         buttons: [
             {
                 text: button_text,
+                id: 'welcome_screen_close',
                 click: function() {
                     if($('#welcome_screen_option').is(':checked')) {
                         setSystemConfig({
