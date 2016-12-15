@@ -108,7 +108,8 @@ class ManageUi(object):
         """
         if reload_page or not self._is_url_open():
             self.open_manage()
-        self.find_by_css(toplevel_selector).click()
+        menu_element = self.find_by_css(toplevel_selector)
+        helper.hover(self.driver, menu_element)
         self.find_by_id(menu_id).click()
 
         assert self.driver.find_element_by_id(dialog_id), 'Dialog id needs to be present: %s' % (dialog_id,)
