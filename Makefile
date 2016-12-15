@@ -174,6 +174,7 @@ deb-install: builddeb
 # Container name | Dockerfile location | Purpose
 # ---------------------------------------------------------------------------------------------------
 # linotp-builder | Dockerfile.builder             | Container ready to build linotp packages
+# linotpd        | linotpd/src                    | Runs linotpd in apache
 
 # Extra arguments can be passed to docker build
 DOCKER_BUILD_ARGS=
@@ -218,6 +219,20 @@ docker-build-debs: docker-build-linotp-builder
 	docker cp \
 		$(DOCKER_CONTAINER_NAME):/pkg/apt $(DESTDIR)
 	docker rm $(DOCKER_CONTAINER_NAME)
+
+.PHONY: docker-build-linotpd
+docker-build-linotpd: $(BUILDDIR)/dockerfy
+	cp linotpd/src/Dockerfile \
+		linotpd/src/config/*.tmpl \
+		linotpd/src/tools/linotp-create-htdigest \
+		$(BUILDDIR)
+
+	# We show the files sent to Docker context here to aid in debugging
+	find $(BUILDDIR) -ls
+
+	$(DOCKER_BUILD) \
+		-t linotpd \
+		$(BUILDDIR)
 
 # Dockerfy tool
 .PHONY: get-dockerfy
