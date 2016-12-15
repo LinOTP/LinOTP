@@ -165,3 +165,39 @@ deb-install: builddeb
 	find $(DESTDIR)
 	cd $(DESTDIR) && dpkg-scanpackages -m . > Packages
 
+#####################
+# Docker container targets
+#
+# These targets are for building and running docker containers
+# for integration and builds
+
+# Container name | Dockerfile location | Purpose
+# ---------------------------------------------------------------------------------------------------
+# linotp-builder | Dockerfile.builder             | Container ready to build linotp packages
+
+# Extra arguments can be passed to docker build
+DOCKER_BUILD_ARGS=
+
+# Uncomment the following if using apt-cacher-ng to cache packages:
+#DOCKER_BUILD_ARGS+=--build-arg=http_proxy=http://172.17.0.1:3142
+
+# Default Docker run arguments.
+# Extra run arguments can be given here. It can also be used to
+# override runtime parameters. For example, to specify a port mapping:
+#  make docker-run-linotp-sqlite DOCKER_RUN_ARGS='-p 1234:80'
+DOCKER_RUN_ARGS=
+
+DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS)
+DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
+# The linotp builder container contains all build dependencies
+# needed to build linotp, plus a copy of the linotp
+# sources under /pkg/linotp
+#
+# To use this container as a playground to test build linotp:
+#   docker run -it linotp-builder
+.PHONY: docker-build-linotp-builder
+docker-build-linotp-builder:
+	$(DOCKER_BUILD) \
+		-f Dockerfile.builder \
+		-t linotp-builder \
+		.
