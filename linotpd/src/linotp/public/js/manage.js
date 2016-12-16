@@ -4198,6 +4198,8 @@ $(document).ready(function(){
         var url = '/admin/testresolver';
         var params = {};
         params['type']              = 'ldap';
+        params['name']              = $('#ldap_resolvername').val();
+
         params['ldap_uri']          = $('#ldap_uri').val();
         params['ldap_basedn']       = $('#ldap_basedn').val();
         params['ldap_binddn']       = $('#ldap_binddn').val();
@@ -4403,17 +4405,19 @@ $(document).ready(function(){
         $('#progress_test_sql').show();
         var url = '/admin/testresolver';
         var params = {};
-        params['type'] = 'sql';
-        params['sql_driver']    = $('#sql_driver').val();
-        params['sql_user']      = $('#sql_user').val();
-        params['sql_password']  = $('#sql_password').val();
-        params['sql_server']    = $('#sql_server').val();
-        params['sql_port']      = $('#sql_port').val();
-        params['sql_database']  = $('#sql_database').val();
-        params['sql_table']     = $('#sql_table').val();
-        params['sql_where']     = $('#sql_where').val();
-        params['sql_conparams'] = $('#sql_conparams').val();
-        params['sql_encoding']  = $('#sql_encoding').val();
+        params['type']              = 'sql';
+        params['name']              = $('#sql_resolvername').val();
+
+        params['sql_driver']        = $('#sql_driver').val();
+        params['sql_user']          = $('#sql_user').val();
+        params['sql_password']      = $('#sql_password').val();
+        params['sql_server']        = $('#sql_server').val();
+        params['sql_port']          = $('#sql_port').val();
+        params['sql_database']      = $('#sql_database').val();
+        params['sql_table']         = $('#sql_table').val();
+        params['sql_where']         = $('#sql_where').val();
+        params['sql_conparams']     = $('#sql_conparams').val();
+        params['sql_encoding']      = $('#sql_encoding').val();
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;

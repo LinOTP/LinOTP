@@ -29,19 +29,14 @@
 """
 
 import logging
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 import copy
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
-log = logging.getLogger(__name__)
-
+import json
 from sqlalchemy.engine import create_engine
 import sqlalchemy
-q = '"'
+
+log = logging.getLogger(__name__)
 
 
 class SQLUser(object):
@@ -192,12 +187,7 @@ class SQLUser(object):
         self.connection.close()
 
 
-class TestOrphandTokens(TestController):
-
-    def setUp(self):
-        TestController.setUp(self)
-        self.set_config_selftest()
-        self.setUpSQL()
+class OrphandTestHelpers(object):
 
     def setUpSQL(self):
 
@@ -242,7 +232,8 @@ class TestOrphandTokens(TestController):
             'salt': 't123',
             'uid': '__9999',
             },
-            {'user': 'knöt',
+            {
+            'user': 'knöt',
             'telephonenumber': '012345-678-99998',
             'mobile': '00123-456-99998',
             'sn': 'knöt',
@@ -251,7 +242,8 @@ class TestOrphandTokens(TestController):
             'salt': 't123',
             'uid': '__9998',
             },
-            {'user': 'kn%t',
+            {
+            'user': 'kn%t',
             'telephonenumber': '012345-678-99997',
             'mobile': '00123-456-99997',
             'sn': 'kn%t',
@@ -285,17 +277,18 @@ class TestOrphandTokens(TestController):
         parameters['type'] = 'sqlresolver'
         parameters['Limit'] = '20'
 
-        resp = self.app.get(url(controller='system', action='setResolver'),
-                            params=parameters)
+        resp = self.make_system_request(action='setResolver',
+                                        params=parameters)
+
         self.assertTrue('"value": true' in resp, resp)
 
-        resp = self.app.get(url(controller='system', action='getResolvers'))
+        resp = self.make_system_request(action='getResolvers')
         self.assertTrue('"resolvername": "%s"' % (name) in resp, resp)
 
         param2 = {'resolver': name
                   }
-        resp = self.app.get(url(controller='system', action='getResolver'),
-                            params=param2)
+        resp = self.make_system_request(action='getResolver',
+                                        params=param2)
         self.assertTrue('"Table": "User2"' in resp, resp)
 
         return
@@ -305,8 +298,8 @@ class TestOrphandTokens(TestController):
         parameters = {
             'resolver': name,
         }
-        resp = self.app.get(url(controller='system', action='delResolver'),
-                            params=parameters)
+        resp = self.make_system_request(action='delResolver',
+                                        params=parameters)
         self.assertTrue('"value": true' in resp, resp)
 
         return resp
@@ -314,7 +307,7 @@ class TestOrphandTokens(TestController):
     def addSqlRealm(self, realmName, resolverName, defaultRealm=False):
         resolver = 'useridresolver.SQLIdResolver.IdResolver.%s' % resolverName
         parameters = {'resolvers': resolver,
-             'realm': realmName}
+                      'realm': realmName}
 
         resp = self.make_system_request('setRealm', params=parameters)
         self.assertTrue('"value": true' in resp, resp)
@@ -329,8 +322,8 @@ class TestOrphandTokens(TestController):
         parameters = {
             'realm': realmName,
         }
-        resp = self.app.get(url(controller='system', action='delRealm'),
-                            params=parameters)
+        resp = self.make_system_request(action='delRealm',
+                                        params=parameters)
         self.assertTrue('"result": true' in resp, resp)
 
         return resp
@@ -338,8 +331,8 @@ class TestOrphandTokens(TestController):
     def getUserList(self, resolver):
 
         param = {'username': '*', 'resConf': resolver}
-        response = self.app.get(url(controller='admin', action='userlist'),
-                                params=param)
+        response = self.make_admin_request(action='userlist',
+                                           params=param)
         if ("error") in response:
             body = json.loads(response.body)
             result = body.get('result')
@@ -361,8 +354,8 @@ class TestOrphandTokens(TestController):
                  'serial': 's' + user,
                  'type': 'spass'}
 
-        response = self.app.get(url(controller='admin', action='init'),
-                                params=param)
+        response = self.make_admin_request(action='init',
+                                           params=param)
         self.assertTrue('"status": true,' in response, response)
 
         return
@@ -370,17 +363,24 @@ class TestOrphandTokens(TestController):
     def authToken(self, user):
 
         param = {'user': user, 'pass': user}
-        response = self.app.get(url(controller='validate', action='check'),
-                                params=param)
+        response = self.make_validate_request(action='check',
+                                              params=param)
         return response
 
     def showTokens(self):
 
         param = None
-        response = self.app.get(url(controller='admin', action='show'),
-                                params=param)
+        response = self.make_admin_request(action='show',
+                                           params=param)
         self.assertTrue('"status": true,' in response, response)
         return response
+
+
+class TestOrphandTokens(TestController, OrphandTestHelpers):
+
+    def setUp(self):
+        TestController.setUp(self)
+        self.setUpSQL()
 
     def test_orphandTokens_byUser(self):
         '''
@@ -481,7 +481,7 @@ class TestOrphandTokens(TestController):
             message = "%r" % e
             log.error(message)
         self.assertTrue(len(empty_user_list) == 0, empty_user_list)
-        #assert "invalid resolver class specification" in message
+        # assert "invalid resolver class specification" in message
 
         ret = self.authToken(user)
         self.assertTrue('"value": false' in ret, ret)
@@ -516,53 +516,53 @@ class TestOrphandTokens(TestController):
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
         parameters = {'username': 'knöt'}
-        response = self.app.get(url(controller='admin', action='userlist'),
-                                                            params=parameters)
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters)
 
         self.assertTrue('"userid": "__9998"' in response, response)
         self.assertTrue('"userid": "__9997"' not in response, response)
         self.assertTrue('"userid": "__9999"' not in response, response)
 
-        ## ignore SQL wildcards
+        # ignore SQL wildcards
         parameters = {'username': 'kn%t'}
-        response = self.app.get(url(controller='admin', action='userlist'),
-                                                            params=parameters)
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters)
 
         self.assertTrue('"userid": "__9998"' not in response, response)
         self.assertTrue('"userid": "__9997"' in response, response)
         self.assertTrue('"userid": "__9999"' not in response, response)
 
-        ## ignore SQL wildcards
+        # ignore SQL wildcards
         parameters = {'username': 'kn_t'}
-        response = self.app.get(url(controller='admin', action='userlist'),
-                                                            params=parameters)
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters)
 
         self.assertTrue('"userid": "__9998"' not in response, response)
         self.assertTrue('"userid": "__9997"' not in response, response)
         self.assertTrue('"userid": "__9999"' in response, response)
 
-        ## support LinOTP wildcards
+        # support LinOTP wildcards
         parameters = {'username': 'kn*t'}
-        response = self.app.get(url(controller='admin', action='userlist'),
-                                                            params=parameters)
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters)
 
         self.assertTrue('"userid": "__9998"' in response, response)
         self.assertTrue('"userid": "__9997"' in response, response)
         self.assertTrue('"userid": "__9999"' in response, response)
 
-        ## support LinOTP wildcards
+        # support LinOTP wildcards
         parameters = {'username': 'kn.t'}
-        response = self.app.get(url(controller='admin', action='userlist'),
-                                                            params=parameters)
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters)
 
         self.assertTrue('"userid": "__9998"' in response, response)
         self.assertTrue('"userid": "__9997"' in response, response)
         self.assertTrue('"userid": "__9999"' in response, response)
 
-        ## support LinOTP wildcards for other fields
+        # support LinOTP wildcards for other fields
         parameters = {'userid': '*9*'}
-        response = self.app.get(url(controller='admin', action='userlist'),
-                                                            params=parameters)
+        response = self.make_admin_request(action='userlist',
+                                           params=parameters)
 
         self.assertTrue('"userid": "__9"' in response, response)
         self.assertTrue('"userid": "__9998"' in response, response)

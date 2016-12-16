@@ -97,6 +97,7 @@ from linotp.lib.reporting import token_reporting
 
 import os
 
+from linotp.lib.resolver import getResolverList
 
 # For logout
 from webob.exc import HTTPUnauthorized
@@ -2334,32 +2335,73 @@ class AdminController(BaseController):
 
         try:
             param = getLowerParams(request.params)
+            linotp_config = request_context['Config']
 
-            typ = getParam(param, "type", required)
+            try:
+
+                name = getParam(param, "name", required)
+                typ = param["type"]
+
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: '%r'" % exx.message)
+
             log.debug("[testresolver] testing resolver of type %s" % typ)
 
-            if typ == "ldap":
+            if typ in ["ldap", 'ldapresolver']:
                 import useridresolver.LDAPIdResolver
 
-                param['BINDDN'] = getParam(param, "ldap_binddn", required)
-                param['BINDPW'] = getParam(param, "ldap_password", required)
-                param['LDAPURI'] = getParam(param, "ldap_uri", required)
-                param['TIMEOUT'] = getParam(param, "ldap_timeout", required)
-                param['LDAPBASE'] = getParam(param, "ldap_basedn", required)
-                param['LOGINNAMEATTRIBUTE'] = getParam(param, "ldap_loginattr", required)
-                param['LDAPSEARCHFILTER'] = getParam(param, "ldap_searchfilter", required)
-                param['LDAPFILTER'] = getParam(param, "ldap_userfilter", required)
-                param['USERINFO'] = getParam(param, "ldap_mapping", required)
-                param['SIZELIMIT'] = getParam(param, "ldap_sizelimit", required)
-                param['NOREFERRALS'] = getParam(param, "noreferrals", optional)
-                param['CACERTIFICATE'] = getParam(param, "ldap_certificate", optional)
-                param['EnforceTLS'] = getParam(param, "enforcetls", optional)
+                # get the required parameters
+                try:
 
+                    param['LDAPBASE'] = param["ldap_basedn"]
+                    param['LDAPURI'] = param["ldap_uri"]
+                    param['BINDDN'] = param["ldap_binddn"]
+                    param['TIMEOUT'] = param["ldap_timeout"]
+                    param['LDAPBASE'] = param["ldap_basedn"]
+                    param['LOGINNAMEATTRIBUTE'] = param["ldap_loginattr"]
+                    param['LDAPSEARCHFILTER'] = param["ldap_searchfilter"]
+                    param['LDAPFILTER'] = param["ldap_userfilter"]
+                    param['USERINFO'] = param["ldap_mapping"]
+                    param['SIZELIMIT'] = param["ldap_sizelimit"]
+
+                except KeyError as exx:
+                    raise ParameterError("Missing parameter: '%r'" %
+                                         exx.message)
+
+                #
+                # get the optional parameters
+
+                param['NOREFERRALS'] = param.get("noreferrals", 'True')
+                param['CACERTIFICATE'] = param.get("ldap_certificate", '')
+                param['EnforceTLS'] = param.get("enforcetls", 'False')
+
+                #
+                # support to retrieve the password for the testconnection from
+                # an already defined resolver - which must be of the same
+                # ldap url and ldap base
+
+                BindPW = param.get("ldap_password", '')
+                if not BindPW and name in getResolverList():
+
+                    LDAPBASE = linotp_config.get('linotp.ldapresolver.'
+                                                 'LDAPBASE.%s' % name)
+
+                    LDAPURI = linotp_config.get('linotp.ldapresolver.'
+                                                'LDAPURI.%s' % name)
+
+                    if (LDAPURI == param['LDAPURI'] and
+                       LDAPBASE == param['LDAPBASE']):
+
+                        BindPW = linotp_config.get('enclinotp.ldapresolver.'
+                                                   'BINDPW.%s' % name)
+
+                param['BINDPW'] = BindPW
+
+                #
                 # check if we should use the system certificate handling,
                 # thus ignoring the cert_dir or cert_file setting
 
                 use_sys_cert = 'certificates.use_system_certificates'
-                linotp_config = request_context['Config']
                 param[use_sys_cert] = linotp_config.get(use_sys_cert, False)
 
                 (status, desc) = useridresolver.LDAPIdResolver.IdResolver.testconnection(param)
@@ -2376,18 +2418,50 @@ class AdminController(BaseController):
                 res['result'] = status
                 res['desc'] = desc
 
-            elif typ == "sql":
+            elif typ in ["sql", 'sqlresolver']:
+
                 import useridresolver.SQLIdResolver
 
-                param["Driver"] = getParam(param, "sql_driver", required)
-                param["Server"] = getParam(param, "sql_server", required)
-                param["Port"] = getParam(param, "sql_port", required)
-                param["Database"] = getParam(param, "sql_database", required)
-                param["User"] = getParam(param, "sql_user", required)
-                param["Password"] = getParam(param, "sql_password", required)
-                param["Table"] = getParam(param, "sql_table", required)
-                param["Where"] = getParam(param, "sql_where", optional)
-                param["ConnectionParams"] = getParam(param, "sql_conparams", optional)
+                try:
+
+                    param["Driver"] = param["sql_driver"]
+                    param["Server"] = param["sql_server"]
+                    param["Port"] = param["sql_port"]
+                    param["Database"] = param["sql_database"]
+                    param["User"] = param["sql_user"]
+                    param["Table"] = param["sql_table"]
+
+                except KeyError as exx:
+                    raise ParameterError("Missing parameter: '%r'" %
+                                         exx.message)
+
+                param["Where"] = param.get("sql_where", '')
+                param["ConnectionParams"] = param.get("sql_conparams", '')
+
+                #
+                # support to retrieve the password for the testconnection from
+                # an already defined resolver - which must be of the same
+                # ldap url and ldap base
+                #
+
+                sql_password = param.get("sql_password", '')
+                if not sql_password and name in getResolverList():
+
+                    matching = True
+
+                    for key in ['Driver', 'Server', 'User', 'Database', 'Table']:
+                        value = linotp_config.get('linotp.sqlresolver.%s.%s' %
+                                                  (key, name))
+                        if value != param[key]:
+                            matching = False
+
+                    if matching:
+                        sql_password = linotp_config.get('enclinotp.'
+                                                         'sqlresolver.'
+                                                         'Password.%s' % name,
+                                                         '')
+
+                param["Password"] = sql_password
 
                 (num, err_str) = useridresolver.SQLIdResolver.testconnection(param)
                 res['result'] = True
