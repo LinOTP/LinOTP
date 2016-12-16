@@ -77,6 +77,7 @@ $(LINOTPD_TARGETS): $$(basename $$@).subdirmake
 
 clean:
 	if [ -d $(BUILDDIR) ]; then rm -rf $(BUILDDIR) ;fi
+	if [ -d RELEASE ]; then rm -rf RELEASE; fi
 
 # Run a command in a list of directories
 # $(call run-in-directories,DIRS,COMMAND)
