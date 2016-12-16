@@ -223,23 +223,25 @@ docker-build-linotp-builder:
 
 # A unique name to reference containers for this build
 NAME_PREFIX := linotpbuilder-$(shell date +%H%M%S-%N)
-DOCKER_CONTAINER_NAME = $(NAME_PREFIX)-$@
+DOCKER_CONTAINER_NAME = $(NAME_PREFIX)
 
 .PHONY: docker-build-debs
-docker-build-debs: docker-build-linotp-builder
+docker-build-debs: docker-build-linotp-builder $(BUILDDIR)/apt/Packages
+
+$(BUILDDIR)/apt/Packages:
 	# Build the debs in a container, then extract them from the image
 	$(DOCKER_RUN) \
 		--workdir=/pkg/linotp \
-		--name=$(DOCKER_CONTAINER_NAME) \
+		--name=$(DOCKER_CONTAINER_NAME)-apt \
 		linotp-builder \
 		make deb-install DESTDIR=/pkg/apt DEBUILD_OPTS="$(DEBUILD_OPTS)"
 	mkdir -p $(DESTDIR)/incoming
 	docker cp \
-		$(DOCKER_CONTAINER_NAME):/pkg/apt $(DESTDIR)
-	docker rm $(DOCKER_CONTAINER_NAME)
+		$(DOCKER_CONTAINER_NAME)-apt:/pkg/apt $(DESTDIR)
+	docker rm $(DOCKER_CONTAINER_NAME)-apt
 
 .PHONY: docker-build-linotpd
-docker-build-linotpd: $(BUILDDIR)/dockerfy
+docker-build-linotpd: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
