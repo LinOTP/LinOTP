@@ -36,16 +36,25 @@ FROM debian:jessie
 # set LINOTP_APACHE_AUTH=false.
 #
 # To serve via HTTP instead of HTTPS:
-# LINOTP_APACHE_SSL=false
-# APACHE_PORT=80
+#  LINOTP_APACHE_SSL=false
+#  APACHE_PORT=80
+#
+# To use a MySQL database:
+#  LINOTP_DB_TYPE=mysql
+# and also substitute suitable values:
+#  LINOTP_DB_HOST=hostname
+#  LINOTP_DB_PORT=3306
+#  LINOTP_DB_USER=user
+#  LINOTP_DB_PASSWORD=password
+#  LINOTP_DB_NAME=database-name
 
 ENV LINOTP_USER=linotp \
-	LINOTP_DB_TYPE=mysql \
-	LINOTP_DB_HOST=mysqldb \
+	LINOTP_DB_TYPE=sqlite \
+	LINOTP_DB_NAME=//tmp/linotp.db \
+	LINOTP_DB_HOST=dbhost \
 	LINOTP_DB_PORT=3306 \
-	LINOTP_DB_USER=mysql \
-	LINOTP_DB_PASSWORD=secret \
-	LINOTP_DB_NAME=linotp \
+	LINOTP_DB_USER=dbuser \
+	LINOTP_DB_PASSWORD=dbpass \
 	LINOTP_ADMIN_USER=admin \
 	LINOTP_ADMIN_PASSWORD=admin \
 	LINOTP_APACHE_AUTH=true \
