@@ -274,6 +274,8 @@ docker-run-linotp-sqlite: docker-build-linotpd
 			 -e LINOTP_APACHE_SSL=false \
 			 -e LINOTP_DB_TYPE=sqlite \
 			 -e LINOTP_DB_NAME=//tmp/sqlite \
+			 -e LINOTP_DB_HOST= \
+			 -e LINOTP_DB_PORT= \
 			 -e APACHE_PORT=80 \
 			 -p 80 \
 			linotpd

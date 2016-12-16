@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install \
 RUN echo "deb http://ftp.debian.org/debian/ jessie-backports main" > /etc/apt/sources.list.d/999jessie-backports.list \
 		&& apt-get update \
 		&& apt-get install python-selenium chromedriver \
-		&& rm /etc/apt/sources.list.d/999jessie-backports.list 
+		&& rm /etc/apt/sources.list.d/999jessie-backports.list
 
 ENV LINOTP_HOST=linotp \
 	LINOTP_PORT=80 \
@@ -26,10 +26,12 @@ COPY . /opt/linotp/tests/
 
 WORKDIR /opt/linotp/tests
 
-ENTRYPOINT [ "/usr/local/bin/dockerfy", \
-		"--template", "docker_cfg.ini.tmpl:server_cfg.ini"]
-
-CMD [	"/usr/bin/make", \
-		"integrationtests" \
+ENTRYPOINT [
+		"/usr/local/bin/dockerfy", \
+			"--template", "docker_cfg.ini.tmpl:server_cfg.ini", \
+			"--wait", "tcp://{{ .Env.SELENIUM_HOST }}:{{ .Env.SELENIUM_PORT }}", "--timeout", "20s", \
+			"--wait", "tcp://{{ .Env.LINOTP_HOST }}:{{ .Env.LINOTP_PORT }}", "--timeout", "20s", \
+		    "--" \
 	]
-	
+
+CMD [ "/usr/bin/make", "integrationtests" ]

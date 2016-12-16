@@ -127,6 +127,9 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
 		"openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
      "--", \
      "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
+     "--run", "/bin/sh", "-c", \
+        "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \
+        "--", \
      "--run", "/bin/su", "linotp", "-s", "/bin/sh", "-c", "paster setup-app /etc/linotp2/linotp.ini", "--" \
      ]
 
