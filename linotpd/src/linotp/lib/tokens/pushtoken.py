@@ -61,7 +61,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-CHALLENGE_URL_VERSION = 0
+CHALLENGE_URL_VERSION = 1
 
 CONTENT_TYPE_SIGNREQ = 0
 CONTENT_TYPE_PAIRING = 1
