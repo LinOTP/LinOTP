@@ -24,11 +24,11 @@
 #    Support: www.lsexperts.de
 #
 import unittest
-import warnings
+import logging
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.common import desired_capabilities
+from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -38,6 +38,8 @@ from helper import get_from_tconfig
 from realm import RealmManager
 from policy import PolicyManager
 from user_id_resolver import UserIdResolverManager
+
+logger = logging.getLogger(__name__)
 
 class TestCase(unittest.TestCase):
     """Basic LinOTP TestCase class"""
@@ -58,45 +60,60 @@ class TestCase(unittest.TestCase):
 
         remote_setting = get_from_tconfig(['selenium', 'remote'], default='False')
         remote_enable = remote_setting.lower() == 'true'
-        remote_url = get_from_tconfig(['selenium', 'remoteurl'])
+        remote_url = get_from_tconfig(['selenium', 'remote_url'])
 
         self.driver = None
         selenium_driver = get_from_tconfig(['selenium', 'driver'],
                                            default="firefox").lower()
         selenium_driver_language = get_from_tconfig(['selenium', 'language'],
                                                     default="en_us").lower()
-        fp = webdriver.FirefoxProfile()
-        fp.set_preference("intl.accept_languages", selenium_driver_language)
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--lang=' + selenium_driver_language)
-
         if not remote_enable:
             if selenium_driver == 'chrome':
+                chrome_options = webdriver.ChromeOptions()
+                chrome_options.add_argument('--lang=' + selenium_driver_language)
+
                 try:
                     self.driver = webdriver.Chrome(chrome_options=chrome_options)
                 except WebDriverException, e:
-                    warnings.warn("Error creating Chrome driver. Maybe you need to install"
+                    logger.error("Error creating Chrome driver. Maybe you need to install"
                                   " 'chromedriver'. If you wish to use another browser please"
                                   " adapt your configuratiion file. Error message: %s" % str(e))
-            elif selenium_driver == 'firefox':
-                self.driver = webdriver.Firefox(firefox_profile=fp)
+                    raise
 
-            if self.driver is None:
-                warnings.warn("Falling back to Firefox driver.")
+            elif selenium_driver == 'firefox':
+                fp = webdriver.FirefoxProfile()
+                fp.set_preference("intl.accept_languages", selenium_driver_language)
+
                 self.driver = webdriver.Firefox(firefox_profile=fp)
+            else:
+                logger.error('Unknown Selenium driver: %s\nValid drivers: firefox, chrome', self.driver)
+                raise('Invalid driver:%s' % (self.driver))
         else:
-            desired_capabilities = {'browserName': selenium_driver}
+            # Remote driver. We need to build a desired capabilities
+            # request for the remote instance
+
+            # Map the requested driver to the remote capabilities
+            # listed in selenium.webdriver.DesiredCapabilities
+            #  e.g. firefox -> FIREFOX
+
+            selenium_driver = selenium_driver.upper()
+
+            try:
+                desired_capabilities = getattr(DesiredCapabilities, selenium_driver).copy()
+            except AttributeError:
+                logger.warning("Could not find capabilities for the given remote driver %s", selenium_driver)
+                desired_capabilities = {'browserName': selenium_driver}
 
             # Remote driver
             if not remote_url:
                 remote_url = 'http://127.0.0.1:4444/wd/hub'
 
             try:
-                driver = webdriver.Remote(remote_url, desired_capabilities)
+                self.driver = webdriver.Remote(command_executor=remote_url,
+                                               desired_capabilities=desired_capabilities)
             except Exception as e:
-                warnings.warn("Could not start driver: %s", e)
-
-            self.driver = driver
+                logger.error("Could not start driver: %s", e)
+                raise
 
         self.enableImplicitWait()
         self.verification_errors = []
