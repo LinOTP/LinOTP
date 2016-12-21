@@ -3,7 +3,7 @@ services:
   selenium:
     image: selenium/standalone-chrome-debug
     ports:
-     - "5900:5900"
+     - "5900"
 
   selenium_tester:
     build: .
@@ -16,29 +16,25 @@ services:
 
   linotp:
     image: linotpd
-    links:
-      - db
     restart: always
     environment:
       LINOTP_DB_TYPE: "mysql"
       LINOTP_DB_HOST: "db"
+      LINOTP_DB_PORT: "3306"
       LINOTP_DB_USER: "linotpuser"
       LINOTP_DB_PASSWORD: "linotppass"
       LINOTP_DB_NAME: "linotp_db"
-      LINOTP_APACHE_SSL: "false"
       LINOTP_APACHE_AUTH: "false"
-      APACHE_PORT: "80"
     depends_on: 
       - db
     ports:
-      - "80"
+      - "443"
 
   db:
-    image: kihub.corp.lsexperts.de/mysql_debian_stable:20161101
+    image: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Test123!
-      MYSQL_DATABASE: linotp_db
-      MYSQL_USER: linotpuser
-      MYSQL_PASSWORD: linotppass
+      MYSQL_ROOT_PASSWORD: "Test123!"
+      MYSQL_DATABASE: "linotp_db"
+      MYSQL_USER: "linotpuser"
+      MYSQL_PASSWORD: "linotppass"
     restart: always
-
