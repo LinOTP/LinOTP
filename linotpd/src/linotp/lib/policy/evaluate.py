@@ -32,7 +32,7 @@ from netaddr import IPNetwork
 
 from linotp.lib.policy.filter import UserDomainCompare
 from linotp.lib.user import User
-
+from linotp.lib.realm import getRealms
 
 class PolicyEvaluater(object):
     """
@@ -455,13 +455,59 @@ def user_list_compare(policy_conditions, login):
 
     for condition in conditions:
 
-        # in case of a match of the non condition, we must return imediatly
-        if condition[0] in ['-', '!']:
-            if domain_comp.compare(user, condition[1:]):
-                return False
+        its_a_not_condition = False
 
-        if domain_comp.compare(user, condition):
+        # in case of a match of the non condition, we must return immediatly
+        if condition[0] in ['-', '!']:
+            condition = condition[1:]
+            its_a_not_condition = True
+
+        if '@' in condition:  # domain condition requires a domain compare
+
+            #
+            # we support fake users, where login is of type string
+            # and who have an '@' in it - we rely on that real users
+            # are identified up front and then login will of type User
+
+            if ((isinstance(login, str) or isinstance(login, unicode)) and
+               '@' in login):
+                u_login, _, r_login = login.rpartition('@')
+                c_user = User(u_login, r_login)
+            else:
+                c_user = user
+            identified = domain_comp.compare(c_user, condition)
+
+        elif ':' in condition:  # resolver condition - by user exists check
+
+            #
+            # special treatment of literal user definition with an @ in login:
+            # we can split last part and check if it is an existing realm. If
+            # not we treat the user login as literal only
+
+            if ((isinstance(login, str) or isinstance(login, unicode)) and
+               '@' in login):
+
+                usr, _sep, realm = login.rpartition('@')
+
+                if realm in getRealms():
+                    c_user = User(usr, realm)
+                else:
+                    c_user = User(login)
+
+            else:
+                c_user = user
+
+            identified = domain_comp.exists(c_user, condition)
+
+        else:  # simple user condition with string compare and wild cards
+
+            identified = domain_comp.compare(user, condition)
+
+        if identified:
             matched = True
+
+            if its_a_not_condition:  # early exit on a not condition
+                return False
 
     return matched
 
