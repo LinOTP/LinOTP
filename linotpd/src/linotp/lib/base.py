@@ -70,7 +70,8 @@ import linotp.model.meta
 from linotp.model.migrate import run_data_model_migration
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
+from linotp.lib.policy.util import parse_policies
+
 from linotp.lib.util import get_client
 from uuid import uuid4
 from datetime import datetime
@@ -601,7 +602,7 @@ class BaseController(WSGIController):
         linotp_config = getLinotpConfig()
 
         request_context['Config'] = linotp_config
-        request_context['Policies'] = getPolicies()
+        request_context['Policies'] = parse_policies(linotp_config)
         request_context['translate'] = translate
         request_context['CacheManager'] = environment['beaker.cache']
 

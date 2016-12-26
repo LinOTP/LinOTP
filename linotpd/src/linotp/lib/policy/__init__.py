@@ -49,6 +49,7 @@ from linotp.lib.policy.definitions import SYSTEM_ACTIONS
 
 from linotp.lib.policy.util import get_realm_from_policies
 from linotp.lib.policy.util import get_resolvers_for_realms
+from linotp.lib.policy.util import are_the_same
 
 from linotp.lib.policy.evaluate import PolicyEvaluater
 
@@ -66,7 +67,6 @@ from linotp.lib.util import uniquify
 from linotp.lib.policy.filter import AttributeCompare
 from linotp.lib.policy.filter import UserDomainCompare
 
-from linotp.lib.policy.util import _getPolicies
 from linotp.lib.policy.util import _getAuthenticatedUser
 from linotp.lib.policy.util import _get_client
 from linotp.lib.policy.util import _get_pin_values
@@ -100,53 +100,40 @@ def _getUserRealms(user):
                          allRealms=context['Realms'],
                          defaultRealm=context['defaultRealm'])
 
-def getPolicies():
-    # First we load ALL policies from the Config
-    lConfig = context['Config']
-
-    Policies = {}
-    for entry in lConfig:
-        if entry.startswith("linotp.Policy."):
-            policy = entry.split(".", 4)
-            if len(policy) == 4:
-                name = policy[2]
-                key = policy[3]
-                value = lConfig.get(entry)
-
-                # prepare the value to be at least an empty string
-                if value is None and key in ('user', 'client', 'realm'):
-                    value = ''
-                if key == "realm":
-                    value = value.lower()
-
-                if name in Policies:
-                    Policies[name][key] = value
-                else:
-                    Policies[name] = {key: value}
-
-    return Policies
-
 
 def getPolicy(param, display_inactive=False):
     """
     migration method for the getPolicy old and new
     """
 
-    retro = legacy_getPolicy(param, display_inactive=display_inactive)
-    new_pols = new_getPolicy(param, display_inactive=display_inactive)
+    pols_old = legacy_getPolicy(param,
+                                display_inactive=display_inactive)
+    pols_new = new_getPolicy(param,
+                             display_inactive=display_inactive)
 
-    not_the_same = (retro == new_pols)
+    the_same = are_the_same(pols_old, pols_new)
 
-    if not_the_same:
+    if not the_same:
         log.error('PolicyEvaluation is not the same for params %r', param)
-        log.error('old: new %r <> %r', retro, new_pols)
+        log.error('old: new %r <> %r', pols_old, pols_new)
+
+        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
+                                          'True')
+        pols_old = legacy_getPolicy(param,
+                                display_inactive=display_inactive)
+        pols_new = new_getPolicy(param,
+                                 display_inactive=display_inactive)
+
+        if raise_exx.lower() == 'true':
+            raise Exception('Policy Engine missmatch: %r:%r' %
+                            (pols_old, pols_new))
 
     use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
 
     if use_new_one.lower() == 'true':
-        return new_pols
+        return pols_new
 
-    return retro
+    return pols_old
 
 
 def parse_action_value(action_value):
@@ -295,11 +282,21 @@ def _getAuthorization(scope, action):
     new_pols = new_getAuthorization(scope, action)
     retro = legacy_getAuthorization(scope, action)
 
-    not_the_same = retro == new_pols
-    if not_the_same:
+    the_same = are_the_same(retro, new_pols)
+
+    if not the_same:
         log.error('PolicyEvaluation is not the same for params %r,%r',
                   scope, action)
         log.error('old: new %r <> %r', retro, new_pols)
+
+        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
+                                          'True')
+
+        new_pols = new_getAuthorization(scope, action)
+
+        if raise_exx.lower() == 'true':
+            raise Exception('Policy Engine missmatch: %r:%r' %
+                            (retro, new_pols))
 
     use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
     if use_new_one.lower() == 'true':

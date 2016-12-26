@@ -42,7 +42,6 @@ from pylons import response
 from linotp.model.meta import Session
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
 
 log = logging.getLogger(__name__)
 

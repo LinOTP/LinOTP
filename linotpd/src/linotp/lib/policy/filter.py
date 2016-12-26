@@ -29,6 +29,8 @@
 
 import re
 import logging
+
+
 log = logging.getLogger(__name__)
 
 
@@ -146,7 +148,7 @@ class UserDomainCompare(object):
         if not similar_resolver_exists(def_resolver):
             return False
 
-        # if we have no user part and came that far, we ar e done
+        # if we have no user part and came that far, we are done
         if def_resolver == user_def[:-1]:
             return True
 
@@ -339,6 +341,7 @@ class AttributeCompare(object):
         def_resolver = self.user_spec[:-1]
         if '.' in def_resolver:
             def_resolver = def_resolver.split('.')[-1]
+
         # get the user_info from the target resolver
         return self.userObj.getUserInfo(def_resolver)
 

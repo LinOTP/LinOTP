@@ -28,7 +28,7 @@
 import logging
 
 from linotp.lib.policy.util import _getAuthenticatedUser
-from linotp.lib.policy.util import _getPolicies
+from linotp.lib.policy.util import get_policies
 
 
 from linotp.lib.policy.evaluate import PolicyEvaluater
@@ -58,7 +58,7 @@ def new_getPolicy(param, display_inactive=False):
     #
     # filter the policies with the new engine
 
-    policy_elve = PolicyEvaluater(_getPolicies())
+    policy_elve = PolicyEvaluater(get_policies())
 
     #
     # install the filters
@@ -101,9 +101,7 @@ def new_getAuthorization(scope, action):
     active = True
     auth = False
 
-    #
-    # alternative the new policy engine
-    policy_elve = PolicyEvaluater(_getPolicies())
+    policy_elve = PolicyEvaluater(get_policies())
 
     policy_elve.set_filters({'scope': scope})
     p_at_all = policy_elve.evaluate()

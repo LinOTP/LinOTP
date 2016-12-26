@@ -64,7 +64,6 @@ from linotp.lib.util import get_client
 from linotp.lib.util import unicode_compare
 from linotp.lib.config import getLinotpConfig
 
-from linotp.lib.policy import getPolicies
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy import getAdminPolicies

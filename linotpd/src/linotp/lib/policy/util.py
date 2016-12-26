@@ -53,8 +53,11 @@ def _getLinotpConfig(config=None):
     return lConfig
 
 
-def _getPolicies():
+def get_policies():
+    return context['Policies']
 
+
+def get_copy_of_policies():
     lPolicies = deepcopy(context['Policies'])
     return lPolicies
 
@@ -76,6 +79,25 @@ def _getDefaultRealm():
 def _getRealms():
     return context['Realms']
 
+
+def are_the_same(dict1, dict2):
+    if not dict1 and not dict2:
+        return True
+
+    if dict1 and not dict2:
+        return False
+
+    if not dict1 and dict2:
+        return False
+
+    if len(dict1.keys()) != len(dict2.keys()):
+        return False
+
+    unmatch = set(dict1.keys()) ^ set(dict2.keys())
+    if len(unmatch) != 0:
+        return False
+
+    return True
 
 def get_realm_from_policies(policies):
     """
@@ -115,3 +137,34 @@ def get_resolvers_for_realms(realms):
                 resolvers.add(resolver.strip(" "))
 
     return list(resolvers)
+
+
+def parse_policies(lConfig):
+    """
+    parse all policie defintions in the config into one policy dict
+
+    :param lconfig: the linotp config dict
+    :return: dict with all policies of the config
+    """
+    Policies = {}
+    for entry in lConfig:
+        if entry.startswith("linotp.Policy."):
+            # log.debug("[getPolicy] entry: %s" % entry )
+            policy = entry.split(".", 4)
+            if len(policy) == 4:
+                name = policy[2]
+                key = policy[3]
+                value = lConfig.get(entry)
+
+                # prepare the value to be at least an empty string
+                if value is None and key in ('user', 'client', 'realm'):
+                    value = ''
+                if key == "realm":
+                    value = value.lower()
+
+                if name in Policies:
+                    Policies[name][key] = value
+                else:
+                    Policies[name] = {key: value}
+
+    return Policies

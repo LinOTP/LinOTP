@@ -30,7 +30,7 @@ import logging
 from linotp.lib.user import User
 
 from linotp.lib.policy.util import _getAuthenticatedUser
-from linotp.lib.policy.util import _getPolicies
+from linotp.lib.policy.util import get_copy_of_policies
 
 from linotp.lib.policy.filter import UserDomainCompare
 
@@ -89,7 +89,6 @@ def legacy_getAuthorization(scope, action):
     return {'active': active, 'auth': auth, 'admin': admin_user['login']}
 
 
-
 def legacy_getPolicy(param, display_inactive=False):
     '''
     Function to retrieve the list of policies.
@@ -111,7 +110,7 @@ def legacy_getPolicy(param, display_inactive=False):
     Policies = {}
 
     # First we load ALL policies from the Config
-    lPolicies = _getPolicies()
+    lPolicies = get_copy_of_policies()
 
     if param.get('name', None):
         # If a named policy was requested, we add

@@ -54,7 +54,6 @@ from linotp.lib.util import get_client
 from linotp.model.meta import Session
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
 
 from linotp.lib.context import request_context
 

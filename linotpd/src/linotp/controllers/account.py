@@ -45,7 +45,6 @@ from linotp.lib.realm    import getDefaultRealm
 from linotp.lib.user     import getRealmBox
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
 
 import logging
 import webob

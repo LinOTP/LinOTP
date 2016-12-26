@@ -56,7 +56,6 @@ from linotp.lib.policy import checkPolicyPre, PolicyException
 from linotp.lib.reply import sendResult, sendError
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
 
 from linotp.model.meta import Session
 from linotp.lib.context import request_context
