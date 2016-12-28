@@ -23,18 +23,259 @@
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
 #
-""" legacy policy functions """
+
+""" policy processing functions """
 
 import logging
 
 from linotp.lib.policy.util import _getAuthenticatedUser
 from linotp.lib.policy.util import get_policies
-
+from linotp.lib.policy.util import are_the_same
 
 from linotp.lib.policy.evaluate import PolicyEvaluater
+from linotp.lib.policy.legacy import legacy_get_client_policy
+from linotp.lib.policy.legacy import legacy_getPolicy
+from linotp.lib.policy.legacy import legacy_getAuthorization
 
+from linotp.lib.context import request_context as context
 
 LOG = logging.getLogger(__name__)
+
+
+def _getAuthorization(scope, action):
+    """
+    migration stub for the new policy engine
+    """
+
+    new_pols = new_getAuthorization(scope, action)
+    retro = legacy_getAuthorization(scope, action)
+
+    the_same = are_the_same(retro, new_pols)
+
+    if not the_same:
+        LOG.error('PolicyEvaluation is not the same for params %r,%r',
+                  scope, action)
+        LOG.error('old: new %r <> %r', retro, new_pols)
+
+        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
+                                          'True')
+
+        new_pols = new_getAuthorization(scope, action)
+
+        if raise_exx.lower() == 'true':
+            raise Exception('Policy Engine missmatch: %r:%r' %
+                            (retro, new_pols))
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+    if use_new_one.lower() == 'true':
+        return new_pols
+
+    return retro
+
+
+def has_client_policy(client, scope=None, action=None, realm=None, user=None,
+                      find_resolver=True, userObj=None):
+
+    pols_old = legacy_get_client_policy(client, scope=scope,
+                                        action=action,
+                                        realm=realm, user=user,
+                                        find_resolver=find_resolver,
+                                        userObj=userObj)
+
+    pols_new = new_has_client_policy(client, scope=scope,
+                                     action=action,
+                                     realm=realm, user=user,
+                                     find_resolver=find_resolver,
+                                     userObj=userObj)
+
+    the_same = are_the_same(pols_old, pols_new)
+
+    if not the_same:
+        LOG.error('PolicyEvaluation is not the same for params %r', client)
+        LOG.error('old: new %r <> %r', pols_old, pols_new)
+
+        pols_old = legacy_get_client_policy(client, scope=scope,
+                                            action=action,
+                                            realm=realm, user=user,
+                                            find_resolver=find_resolver,
+                                            userObj=userObj)
+
+        pols_new = new_has_client_policy(client, scope=scope,
+                                         action=action,
+                                         realm=realm, user=user,
+                                         find_resolver=find_resolver,
+                                         userObj=userObj)
+
+        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
+                                          'True')
+
+        if raise_exx.lower() == 'true':
+            raise Exception('Policy Engine missmatch: %r:%r' %
+                            (pols_old, pols_new))
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() == 'true':
+        return pols_new
+
+    return pols_old
+
+
+def get_client_policy(client, scope=None, action=None, realm=None, user=None,
+                      find_resolver=True, userObj=None):
+
+    pols_old = legacy_get_client_policy(client, scope=scope,
+                                        action=action,
+                                        realm=realm, user=user,
+                                        find_resolver=find_resolver,
+                                        userObj=userObj)
+
+    pols_new = new_get_client_policy(client, scope=scope,
+                                     action=action,
+                                     realm=realm, user=user,
+                                     find_resolver=find_resolver,
+                                     userObj=userObj)
+
+    the_same = are_the_same(pols_old, pols_new)
+
+    if not the_same:
+        LOG.error('PolicyEvaluation is not the same for params %r', client)
+        LOG.error('old: new %r <> %r', pols_old, pols_new)
+
+        pols_old = legacy_get_client_policy(client, scope=scope,
+                                            action=action,
+                                            realm=realm, user=user,
+                                            find_resolver=find_resolver,
+                                            userObj=userObj)
+
+        pols_new = new_get_client_policy(client, scope=scope,
+                                         action=action,
+                                         realm=realm, user=user,
+                                         find_resolver=find_resolver,
+                                         userObj=userObj)
+
+        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
+                                          'True')
+
+        if raise_exx.lower() == 'true':
+            raise Exception('Policy Engine missmatch: %r:%r' %
+                            (pols_old, pols_new))
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() == 'true':
+        return pols_new
+
+    return pols_old
+
+
+def getPolicy(param, display_inactive=False):
+    """
+    migration method for the getPolicy old and new
+    """
+
+    pols_old = legacy_getPolicy(param,
+                                display_inactive=display_inactive)
+    pols_new = new_getPolicy(param,
+                             display_inactive=display_inactive)
+
+    the_same = are_the_same(pols_old, pols_new)
+
+    if not the_same:
+        LOG.error('PolicyEvaluation is not the same for params %r', param)
+        LOG.error('old: new %r <> %r', pols_old, pols_new)
+
+        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
+                                          'True')
+        pols_old = legacy_getPolicy(param,
+                                    display_inactive=display_inactive)
+        pols_new = new_getPolicy(param,
+                                 display_inactive=display_inactive)
+
+        if raise_exx.lower() == 'true':
+            raise Exception('Policy Engine missmatch: %r:%r' %
+                            (pols_old, pols_new))
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() == 'true':
+        return pols_new
+
+    return pols_old
+
+
+def search_policy(param, display_inactive=False):
+
+    pols_old = legacy_getPolicy(param,
+                                display_inactive=display_inactive)
+
+    pols_new = new_search_policy(param,
+                                 display_inactive=display_inactive)
+
+    the_same = are_the_same(pols_old, pols_new)
+
+    if not the_same:
+        LOG.error('PolicyEvaluation is not the same for params %r', param)
+        LOG.error('old: new %r <> %r', pols_old, pols_new)
+
+        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
+                                          'True')
+        pols_old = legacy_getPolicy(param,
+                                    display_inactive=display_inactive)
+        pols_new = new_getPolicy(param,
+                                 display_inactive=display_inactive)
+
+        if raise_exx.lower() == 'true':
+            raise Exception('Policy Engine missmatch: %r:%r' %
+                            (pols_old, pols_new))
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() == 'true':
+        return pols_new
+
+    return pols_old
+
+
+def new_search_policy(param, display_inactive=False):
+    '''
+    Function to retrieve the list of policies.
+
+    attributes:
+
+    - name:   (optional) will only return the policy with the name
+    - user:   (optional) will only return the policies for this user
+    - realm:  (optional) will only return the policies of this realm
+    - scope:  (optional) will only return the policies within this scope
+    - action: (optional) will only return the policies with this action
+         The action can also be something like "otppin" and will
+         return policies containing "otppin = 2"
+
+    :return: a dictionary with the policies. The name of the policy being
+             the key
+    '''
+
+    #
+    # filter the policies with the new engine
+
+    policy_elve = PolicyEvaluater(get_policies())
+
+    #
+    # install the filters
+
+    policy_elve.set_filters(params=param)
+
+    #
+    # add the special filter for activ or inactive policies
+
+    policy_elve.filter_for_inactive(state=display_inactive)
+
+    #
+    # finally we apply the filter
+
+    new_pols = policy_elve.evaluate(multiple=True)
+
+    return new_pols
 
 
 def new_getPolicy(param, display_inactive=False):
@@ -103,8 +344,7 @@ def new_getAuthorization(scope, action):
 
     policy_elve = PolicyEvaluater(get_policies())
 
-    policy_elve.set_filters({'scope': scope})
-    p_at_all = policy_elve.evaluate()
+    p_at_all = policy_elve.has_policy({'scope': scope})
 
     if len(p_at_all) == 0:
         LOG.info("No policies in scope %s found. Checking "
@@ -132,5 +372,94 @@ def new_getAuthorization(scope, action):
     return {'active': active,
             'auth': auth,
             'admin': admin_user['login']}
+
+
+def new_get_client_policy(client, scope=None, action=None, realm=None,
+                          user=None, find_resolver=True, userObj=None):
+    '''
+    This function returns the dictionary of policies for the given client.
+
+    1. First it searches for all policies matching (scope, action, realm) and
+    checks, whether the given client is contained in the policy field client.
+    If no policy for the given client is found it takes the policy without
+    a client
+
+    2. Then it strips down the returnable policies to those, that only contain
+    the username - UNLESS - none of the above policies contains a username
+
+    3. then we try to find resolvers in the username (OPTIONAL)
+
+    4. if nothing matched so far, we try the extended policy check
+
+    '''
+
+    policy_eval = PolicyEvaluater(get_policies())
+
+    if realm:
+        policy_eval.filter_for_realm(realm)
+
+    if scope:
+        policy_eval.filter_for_scope(scope)
+
+    if action:
+        policy_eval.filter_for_action(action)
+
+    if client:
+        policy_eval.filter_for_client(client)
+
+    if userObj:
+        policy_eval.filter_for_user(userObj)
+    elif user:
+        policy_eval.filter_for_user(user)
+
+    policies = policy_eval.evaluate(multiple=False)
+
+    return policies
+
+
+def new_has_client_policy(client, scope=None, action=None, realm=None,
+                          user=None, find_resolver=True, userObj=None):
+    '''
+    This function returns the dictionary of policies for the given client.
+
+    1. First it searches for all policies matching (scope, action, realm) and
+    checks, whether the given client is contained in the policy field client.
+    If no policy for the given client is found it takes the policy without
+    a client
+
+    2. Then it strips down the returnable policies to those, that only contain
+    the username - UNLESS - none of the above policies contains a username
+
+    3. then we try to find resolvers in the username (OPTIONAL)
+
+    4. if nothing matched so far, we try the extended policy check
+
+    '''
+
+    policy_eval = PolicyEvaluater(get_policies())
+
+    param = {}
+
+    if realm:
+        param['realm'] = realm
+
+    if scope:
+        param['scope'] = scope
+
+    if action:
+        param['action'] = action
+
+    if client:
+        param['client'] = client
+
+    if userObj:
+        param['user'] = userObj
+    elif user:
+        param['user'] = user
+
+    policies = policy_eval.has_policy(param)
+
+    return policies
+
 
 # eof

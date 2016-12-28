@@ -217,11 +217,9 @@ class AttributeCompare(object):
         else:
             if '@' in udef:
                 self.set_user_access(udef, 'domain_compare')
-            elif ':' == udef[-1]:
-            # resolver match
+            elif ':' == udef[-1]:  # resolver match
                 self.set_user_access(udef, 'get_resolver')
-            elif len(udef) > 0:
-            # simple username compare
+            elif len(udef) > 0:  # simple username compare
                 self.set_user_access(udef, 'simple_name')
 
     def _attr_equal(self, user_info):

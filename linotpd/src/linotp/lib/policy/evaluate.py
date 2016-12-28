@@ -31,8 +31,10 @@ from netaddr import IPAddress
 from netaddr import IPNetwork
 
 from linotp.lib.policy.filter import UserDomainCompare
+from linotp.lib.policy.filter import AttributeCompare
 from linotp.lib.user import User
 from linotp.lib.realm import getRealms
+
 
 class PolicyEvaluater(object):
     """
@@ -91,7 +93,29 @@ class PolicyEvaluater(object):
         self.all_policies = all_policies
         self.filters = []
 
-    def evaluate(self, policy_set=None):
+    def has_policy(self, param):
+        """
+        check if a policy for example 'scope:admin' exists
+
+        :param: dict with filter conditions
+        :return: list of matching policies
+        """
+
+        try:
+
+            # preserve the old filters
+            sec_filters = self.filters
+
+            self.set_filters(param)
+            policies = self.evaluate(multiple=True)
+
+        finally:
+            # and restore the preserved ones
+            self.filters = sec_filters
+
+        return policies
+
+    def evaluate(self, policy_set=None, multiple=True):
         """
         evaluate - compare all policies against the access request
 
@@ -107,12 +131,21 @@ class PolicyEvaluater(object):
 
         :param policy_set: optional, base policies against which all filter
                            are evaluated
+        :param multiple: define if the plolicies should be post processed to
+                         return the best matching ones. Default is to do no
+                         post proessing
         :return: the set of matching policies
         """
 
         matching_policies = {}
 
+        #
+        # provide information about the policy evaluation - for debugging :)
+
+        matching_details = {}
+
         all_policies = self.all_policies
+
         if policy_set:
             all_policies = policy_set
 
@@ -133,15 +166,66 @@ class PolicyEvaluater(object):
             # evaluate each filter against the policy. if one filter fails
             # we can skip the evaluation the given policy
 
+            match_info = {}
             for (f_key, f_value, f_compare) in self.filters:
 
                 policy_condition = p_dict.get(f_key)
                 matching = f_compare(policy_condition, f_value)
+                match_info[f_key] = {matching: (policy_condition, f_value)}
+
                 if not matching:
                     break
 
             if matching:
                 matching_policies[p_name] = p_dict
+            matching_details[p_name] = match_info
+
+        # if we have multiple policies and post processing should be made:
+        if not multiple and len(matching_policies):
+
+            #
+            # so we do some post selection but dont care for the result, as
+            # this is done in the upper level
+
+            matching_policies = self._most_precise_policy(matching_policies)
+            return matching_policies
+
+        return matching_policies
+
+    def _most_precise_policy(self, matching_policies):
+
+        no_wild_card_match = {}
+
+        for key in ['user', 'client', 'realm']:
+            entry = []
+            for name, policy in matching_policies.items():
+                conditions = [x.strip() for x in policy[key].split(',')]
+                if '*' not in conditions:
+                    entry.append(name)
+
+            if len(entry) > 0:
+                no_wild_card_match[key] = entry
+
+        res = None
+
+        if ('realm' in no_wild_card_match and
+           len(no_wild_card_match['realm']) == 1):
+
+            res = no_wild_card_match['realm']
+
+        elif ('client' in no_wild_card_match and
+              len(no_wild_card_match['client']) == 1):
+
+            res = no_wild_card_match['client']
+
+        elif ('user' in no_wild_card_match and
+              len(no_wild_card_match['user']) == 1):
+
+            res = no_wild_card_match['user']
+
+        if res:
+            policy_name = res[0]
+            return {policy_name: matching_policies[policy_name]}
 
         return matching_policies
 
@@ -155,18 +239,20 @@ class PolicyEvaluater(object):
         for key, value in params.items():
             if key == 'active':
                 self.filter_for_active(state=value)
-            if key == 'scope':
+            elif key == 'scope':
                 self.filter_for_scope(scope=value)
-            if key == 'user':
+            elif key == 'user':
                 self.filter_for_user(user=value)
-            if key == 'realm':
+            elif key == 'realm':
                 self.filter_for_realm(realm=value)
-            if key == 'action':
+            elif key == 'action':
                 self.filter_for_action(action=value)
-            if key == 'name':
+            elif key == 'name':
                 self.filter_for_name(name=value)
-            if key == 'time':
+            elif key == 'time':
                 self.filter_for_time(time=value)
+            elif key == 'client':
+                self.filter_for_client(client=value)
 
         return self
 
@@ -178,9 +264,10 @@ class PolicyEvaluater(object):
 
     def add_filter(self, key, value, value_compare):
         """
-        low level filter interface
-
-
+        low level filter interface which adds a tuple of
+            key, value and comparering_method
+        like
+           ('user , 'hugo', user_list_compare)
         """
         self.filters.append((key, value, value_compare))
 
@@ -265,7 +352,7 @@ class PolicyEvaluater(object):
         """
 
         if client is not None:
-            self.add_filter('realm', client, ip_list_compare)
+            self.add_filter('client', client, ip_list_compare)
 
     def filter_for_time(self, time=None):
         """
@@ -394,8 +481,9 @@ def bool_compare(policy_condition, value):
     :return: booleans
     """
 
-    active_condition = str(policy_condition).lower() == 'true'
-    if active_condition == value:
+    boolean_condition = str(policy_condition).lower() == 'true'
+
+    if boolean_condition == value:
         return True
 
     return False
@@ -418,11 +506,25 @@ def ip_list_compare(policy_conditions, client):
     allowed = False
 
     for condition in conditions:
+        identified = False
+        its_a_not_condition = False
+
+        if not condition:
+            continue
 
         if condition[0] in ['-', '!']:
-            if IPAddress(client) in IPNetwork(condition[1:]):
-                return False
+            condition = condition[1:]
+            its_a_not_condition = True
+
+        if condition == '*':
+            identified = True
+
         elif IPAddress(client) in IPNetwork(condition):
+            identified = True
+
+        if identified:
+            if its_a_not_condition:
+                return False
             allowed = True
 
     return allowed
@@ -452,8 +554,12 @@ def user_list_compare(policy_conditions, login):
     matched = False
 
     domain_comp = UserDomainCompare()
+    attr_comp = AttributeCompare()
 
     for condition in conditions:
+
+        if not condition:
+            continue
 
         its_a_not_condition = False
 
@@ -462,7 +568,24 @@ def user_list_compare(policy_conditions, login):
             condition = condition[1:]
             its_a_not_condition = True
 
-        if '@' in condition:  # domain condition requires a domain compare
+        if '#' in condition:
+
+            if ((isinstance(login, str) or isinstance(login, unicode)) and
+               '@' in login):
+
+                usr, _sep, realm = login.rpartition('@')
+
+                if realm in getRealms():
+                    c_user = User(usr, realm)
+                else:
+                    c_user = User(login)
+
+            else:
+                c_user = user
+
+            identified = attr_comp.compare(c_user, condition)
+
+        elif '@' in condition:  # domain condition requires a domain compare
 
             #
             # we support fake users, where login is of type string

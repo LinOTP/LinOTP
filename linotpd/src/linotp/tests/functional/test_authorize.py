@@ -496,7 +496,6 @@ class TestAuthorizeController(TestController):
                         'scope': 'authentication',
                         'realm': '*',
                         'action': 'autosms',
-                        'user': None
                         })
 
         parameters = {'user': 'horst'}
