@@ -184,8 +184,14 @@ DOCKER_BUILD_ARGS=
 # An http_proxy can be passed in via the make command line or here:
 DOCKER_BUILD_HTTP_PROXY=
 
+# List of tags to add to built linotp images, using the '-t' flag to docker-build
+DOCKER_TAGS=latest
+
 # Override to change the debian mirror used for image building
 DOCKER_BUILD_DEBIAN_MIRROR=
+
+# Override to supply an http proxy to docker build:
+# DOCKER_BUILD_HTTP_PROXY
 
 ifneq "$(DOCKER_BUILD_HTTP_PROXY)" ""
 DOCKER_BUILD_ARGS+= --build-arg=http_proxy=$(DOCKER_BUILD_HTTP_PROXY)
@@ -220,6 +226,9 @@ docker-run-selenium: docker-build-linotp
 
 ##
 .PHONY: docker-build-all docker-linotp docker-run-selenium
+
+# This is expanded during build to add image tags
+DOCKER_TAG_ARGS=$(foreach tag,$(DOCKER_TAGS),-t $(DOCKER_IMAGE):$(tag))
 
 # The linotp builder container contains all build dependencies
 # needed to build linotp, plus a copy of the linotp
@@ -259,6 +268,7 @@ $(BUILDDIR)/apt/Packages:
 	docker rm $(DOCKER_CONTAINER_NAME)-apt
 
 .PHONY: docker-build-linotp
+docker-build-linotp: DOCKER_IMAGE=linotp
 docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
@@ -269,7 +279,8 @@ docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	find $(BUILDDIR) -ls
 
 	$(DOCKER_BUILD) \
-		-t linotp \
+		$(DOCKER_TAG_ARGS) \
+		-t $(DOCKER_IMAGE) \
 		$(BUILDDIR)
 
 SELENIUM_DB_IMAGE=mysql:latest
