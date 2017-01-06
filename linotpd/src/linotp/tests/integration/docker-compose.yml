@@ -15,7 +15,7 @@ services:
       - linotp
 
   linotp:
-    image: linotpd
+    image: linotp
     restart: always
     environment:
       LINOTP_DB_TYPE: "mysql"

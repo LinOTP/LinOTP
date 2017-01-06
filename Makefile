@@ -175,7 +175,7 @@ deb-install: builddeb
 # Container name | Dockerfile location | Purpose
 # ---------------------------------------------------------------------------------------------------
 # linotp-builder | Dockerfile.builder             | Container ready to build linotp packages
-# linotpd        | linotpd/src                    | Runs linotpd in apache
+# linotp         | linotpd/src                    | Runs linotp in apache
 # selenium-test  | linotpd/src/tests/integration  | Run LinOTP Selenium tests against selenium remote
 
 # Extra arguments can be passed to docker build
@@ -206,20 +206,20 @@ SELENIUM_TESTS_DIR=linotpd/src/linotp/tests/integration
 
 ## Toplevel targets
 # Toplevel target to build all containers
-docker-build-all: docker-build-debs  docker-build-linotpd docker-build-selenium
+docker-build-all: docker-build-debs  docker-build-linotp docker-build-selenium
 
-# Toplevel target to build linotpd container
-docker-linotpd: docker-build-debs  docker-build-linotpd
+# Toplevel target to build linotp container
+docker-linotp: docker-build-debs  docker-build-linotp
 
 # Build and run Selenium tests
-docker-run-selenium: docker-build-linotpd
+docker-run-selenium: docker-build-linotp
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose up selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose down selenium_tester
 
 ##
-.PHONY: docker-build-all docker-linotpd docker-run-selenium
+.PHONY: docker-build-all docker-linotp docker-run-selenium
 
 # The linotp builder container contains all build dependencies
 # needed to build linotp, plus a copy of the linotp
@@ -256,8 +256,8 @@ $(BUILDDIR)/apt/Packages:
 		$(DOCKER_CONTAINER_NAME)-apt:/pkg/apt $(DESTDIR)
 	docker rm $(DOCKER_CONTAINER_NAME)-apt
 
-.PHONY: docker-build-linotpd
-docker-build-linotpd: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
+.PHONY: docker-build-linotp
+docker-build-linotp: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	cp linotpd/src/Dockerfile \
 		linotpd/src/config/*.tmpl \
 		linotpd/src/tools/linotp-create-htdigest \
@@ -267,12 +267,12 @@ docker-build-linotpd: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 	find $(BUILDDIR) -ls
 
 	$(DOCKER_BUILD) \
-		-t linotpd \
+		-t linotp \
 		$(BUILDDIR)
 
 SELENIUM_DB_IMAGE=mysql:latest
 .PHONY: docker-build-selenium
-docker-build-selenium: docker-build-linotpd
+docker-build-selenium: docker-build-linotp
 	cd $(SELENIUM_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
 			-t selenium_tester .
@@ -284,7 +284,7 @@ docker-build-selenium: docker-build-linotpd
 docker-run-selenium: docker-build-selenium
 
 .PHONY: docker-run-linotp-sqlite
-docker-run-linotp-sqlite: docker-build-linotpd
+docker-run-linotp-sqlite: docker-build-linotp
 	# Run linotp in a standalone container
 	cd linotpd/src \
 		&& $(DOCKER_RUN) -it \
@@ -293,7 +293,7 @@ docker-run-linotp-sqlite: docker-build-linotpd
 			 -e LINOTP_DB_HOST= \
 			 -e LINOTP_DB_PORT= \
 			 -e APACHE_LOGLEVEL=DEBUG \
-			linotpd
+			linotp
 
 # Dockerfy tool
 .PHONY: get-dockerfy

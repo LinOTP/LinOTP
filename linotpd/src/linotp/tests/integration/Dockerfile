@@ -1,4 +1,4 @@
-FROM linotpd
+FROM linotp
 
 RUN apt-get update && apt-get install \
   		make \
