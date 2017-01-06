@@ -1,5 +1,29 @@
 #!/usr/bin/env groovy
 
+/*
+ *   LinOTP - the open source solution for two factor authentication
+ *   Copyright (C) 2016 KeyIdentity GmbH
+ *
+ *   This file is part of LinOTP authentication modules.
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *    E-mail: linotp@lsexperts.de
+ *    Contact: www.linotp.org
+ *    Support: www.keyidentity.com
+ */
+
 import groovy.io.FileType
 
 /*
@@ -18,104 +42,59 @@ import groovy.io.FileType
  */
 
 
-/**
- * Return at most n continous chunks of l. If the division is not exact
- * the extra elements will be evenly distributed starting at the
- * beginning.
- * If n exceeds the length of the list only len(l) chunks will be returned.
- *
- * @param l A list. It cannot be empty.
- * @param n The number of chunks to generate. If this number exceeds
- *          len(l) then len(l) chunks of size 1 are generated instead. This number
- *          has to be positive.
- * @return  Chunks (lists) of l
- *
- * For example to divide the list [0, 1, 2, ... 9] into 4 chunks:
- * >>> list(chunk(range(10), 4))
- * [[0, 1, 2], [3, 4, 5], [6, 7], [8, 9]]
- * >>> list(chunk(range(10), 10))
- * [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]
- * >>> list(chunk(range(10), 20))
- * [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]
- */
-ArrayList chunk(ArrayList l, int n) {
-    /* Check parameters */
-    assert l.size() > 0
-    assert n > 0 && n <= l.size()
-
-    int div = l.size().intdiv(n)
-    int remainder = l.size() % n
-    int i = 0
-    def retList = new ArrayList(n)
-
-    for ( int s = 0; s < n; s++ ) {
-        if ( remainder > 0 ) {
-            retList[s] = l[i..i + div]
-            remainder--
-            i += (div + 1)
-        } else {
-            retList[s] = l[i..i + div - 1]
-            i += div
-        }
-    }
-
-    return retList
-}
-
-
-/**
- * Get all test files starting at the directory given as parameter as well as in
- * every subdirectory by recursively descending into the directory tree.
- *
- * @param dir Directory to look for test files
- * @param prefix Prefix to prepend to each test file found. This could i.e. be
- *               part of the base directory's path
- * @return ArrayList containing the names of the test files found
- *
- */
-ArrayList getTestFilesRecurse(File dir, String prefix) {
-    def testFilenames = []
-    def filesList = dir.listFiles()
-    for ( int i = 0; i < filesList.size(); i++ ) {
-        if ( filesList[i].isDirectory() ) {
-            testFilenames += getTestFilesRecurse(filesList[i], prefix + filesList[i].name + '/')
-        } else {
-            if ( filesList[i].name ==~ /test_.*\.py/ ) {
-                testFilenames << prefix + filesList[i].name
-            }
-        }
-    }
-    return testFilenames
-}
-
+println """++++++++++ Parameters: ++++++++++
+           * Commit: ${PARAM_GIT_REF}
+           * Docker registry URL: ${PARAM_DOCKER_REGISTRY_URL}
+           * Debian mirror: ${PARAM_DEBIAN_MIRROR}
+           * Build docker images? ${PARAM_BUILD_DOCKER_IMAGES}
+           * Publish docker images? ${PARAM_PUBLISH_DOCKER_IMAGES}
+           * Run integration tests? ${PARAM_RUN_TESTS_INTEGRATION}
+           * Publish job in Rancher? ${PARAM_PUBLISH_JOB_IN_RANCHER}
+           * Rancher URL: ${PARAM_RANCHER_URL}
+           """.stripIndent()
 
 /*
- * Define nodes lists and maps
- */
-def buildNodesDeb = ['wolfhound': ['jessie', 'debian-jessie-amd64']]
-def buildsUbuntu = ['precise': 'ubuntu-precise-amd64',
-                    'trusty': 'ubuntu-trusty-amd64']
-                    // 'xenial': 'ubuntu-xenial-amd64']
-def buildNodeUbuntu = 'zoe'
-def buildNodesPyPI = ['wolfhound']
-def installNodesPyPI = ['beggar']
-def seleniumHost = 'matisse'
-def integrationTestsNodes = ['beggar']
-
-
-/*
- *         ______________________________________________________________
- *        /XXXXXX/       /        /       /         /         /         /\
- *       /XXXXXX/       /        /       /         /         /         /||\
- *      /XXXXXX/       /        /       /         /         /         /||||\
- *     (      ( Unit  ( Func-  (       ( Publish (         ( Inte-   (||||||)
- *     | Init | Tests | tional | Build | inter-  | Install | gration ||||||||
- *     (      (       ( Tests  (       ( nally   (         ( Tests   (||||||)
- *      \XXXXXX\       \        \       \         \         \         \||||/
- *       \XXXXXX\       \        \       \         \         \         \||/
- *        \XXXXXX\_______\________\_______\_________\_________\_________\/
+ * Image names
  *
+ * Currently, the pipeline can be triggered from Gerrit a change, a Gerrit
+ * ref change or manually.
+ *
+ * If a Gerrit ref is supplied, we build images associated with this ref.
+ * Otherwise we generate a name based on the
+ * branch.
  */
+
+
+docker_make_args="DEBIAN_MIRROR=${PARAM_DEBIAN_MIRROR}"
+
+try {
+    jobname = PARAM_JOBNAME
+}
+catch(MissingPropertyException) {
+    jobname = env.JOB_NAME.replaceAll('/', '-')
+}
+
+try {
+    println "GERRIT_BRANCH: ${GERRIT_BRANCH}"
+    println "GERRIT_CHANGE: ${GERRIT_CHANGE}"
+    println "GERRIT_REFSPEC: ${GERRIT_REFSPEC}"
+    gerrit_build = true
+    build_name = "${jobname}-${GERRIT_BRANCH}-${GERRIT_CHANGE}"
+}
+catch(MissingPropertyException e) {
+    def ref = PARAM_GIT_REF.replaceFirst('heads/','')
+    build_name = "${jobname}-${ref}"
+    gerrit_build = false
+}
+
+docker_image_tag = build_name.replaceAll('/', '-')
+
+println """++ Variables: ++
+           * Make args: ${docker_make_args}
+           * Job name: ${job_name}
+           * Docker / Rancher image tag: ${docker_image_tag}
+           * Gerrit build: ${gerrit_build}
+           """.stripIndent()
 
 node('master') {
     stage('Init') {
@@ -125,568 +104,123 @@ node('master') {
          * Once jenkins bug https://issues.jenkins-ci.org/browse/JENKINS-38046
          * is implemented this can be simplified using a multibranch pipeline.
          */
-        try {
-            // Try checking out gerrit patchsets
-            println "GERRIT_BRANCH: ${GERRIT_BRANCH}"
-            println "GERRIT_REFSPEC: ${GERRIT_REFSPEC}"
-            checkout([$class: 'GitSCM',
-                      branches: [[name: "${GERRIT_BRANCH}"]],
-                      browser: [$class: 'GitWeb', repoUrl: 'https://harrison/gitweb?p=LinOTP.git'],
-                      doGenerateSubmoduleConfigurations: false,
-                      extensions: [[$class: 'CleanCheckout'],
-                                   [$class: 'BuildChooserSetting', buildChooser: [$class: 'com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTriggerBuildChooser']]],
-                      submoduleCfg: [],
-                      userRemoteConfigs: [[refspec: "${GERRIT_REFSPEC}", url: 'ssh://jenkins@harrison:29418/LinOTP.git']]
-                      ])
-        } catch(MissingPropertyException e) {
-            // No gerrit variables set. Probably manual build...
-            checkout([$class: 'GitSCM',
-                      branches: [[name: "${PARAM_GIT_REF}"]],
+
+        def parms = [$class: 'GitSCM',
+                      branches: [],
                       browser: [$class: 'GitWeb', repoUrl: 'https://harrison/gitweb?p=LinOTP.git'],
                       doGenerateSubmoduleConfigurations: false,
                       extensions: [[$class: 'CleanCheckout']],
                       submoduleCfg: [],
-                      userRemoteConfigs: [[name: 'origin', refspec: '+refs/*:refs/remotes/origin/*', url: 'ssh://jenkins@harrison:29418/LinOTP.git']]
-                      ])
+                      userRemoteConfigs: [[
+                        url: 'ssh://jenkins@harrison:29418/LinOTP.git']]
+                      ]
+
+        if (gerrit_build) {
+            // Gerrit change
+            parms.branches << [name: "${GERRIT_BRANCH}"]
+            parms.extensions << [
+                $class: 'BuildChooserSetting',
+                buildChooser: [$class: 'com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTriggerBuildChooser']
+                ]
+            parms.userRemoteConfigs[0].refspec = "${GERRIT_REFSPEC}"
+
+        } else {
+            // Manual build
+            parms.branches << [name: "${PARAM_GIT_REF}"]
+            parms.userRemoteConfigs[0].name = 'origin'
+            parms.userRemoteConfigs[0].refspec = '+refs/*:refs/remotes/origin/*'
         }
+
+        println "Checkout parameters: ${parms}"
+        checkout(parms)
+
+        if (PARAM_DOCKERFY_URL) {
+            sh "mkdir -pv build; cd build; wget --no-verbose ${PARAM_DOCKERFY_URL}; chmod ugo+x dockerfy"
+        }
+        stash includes: '**', name: 'linotpd', useDefaultExcludes: false
+
     }
+}
 
-    /*
-     * This seems pretty dirty. However, this is the officially recommended way
-     * to get the git commit hash (see example in jenkinsci's git repository
-     * https://github.com/jenkinsci/pipeline-examples/blob/master/pipeline-examples/gitcommit/gitcommit.groovy).
-     */
-    sh('git rev-parse HEAD > GIT_COMMIT')
-    def GIT_COMMIT = readFile('GIT_COMMIT')
+def doMake(target, timeout_minutes) {
+    def make_cmd = "make ${target} ${docker_make_args} DOCKER_TAGS='latest ${docker_image_tag}' LINOTP_IMAGE_TAG=${docker_image_tag} RANCHER_STACK_ID=${docker_image_tag}"
 
-    stash includes: '**', name: 'linotpd', useDefaultExcludes: false
-
-    int NUM_TEST_GROUPS = 4
-    int SEED
-    if ( PARAM_SEED == '__BUILD_NUMBER__') {
-        SEED = env.BUILD_NUMBER.toInteger()
-    } else {
-        SEED = PARAM_SEED.toInteger()
+    timeout(time:timeout_minutes, unit:'MINUTES') {
+        sh make_cmd
     }
+}
 
-    println "\n\n++++++++++ Parameters: ++++++++++\n* Commit: ${PARAM_GIT_REF}\n* Seed: ${SEED}\n\n"
+node('docker') {
+    docker.withRegistry(PARAM_DOCKER_REGISTRY_URL, PARAM_DOCKER_REGISTRY_CREDENTIALS) {
 
-    def cwd = pwd()
-    def functionalPath = 'linotpd/src/linotp/tests/functional/'
-    def functionalSpecialPath = 'linotpd/src/linotp/tests/functional_special/'
+        deleteDir()
+        unstash 'linotpd'
 
-    // Assemble list of all test files for functional and functional_special tets
-    def functionalList = []
-    def functionalSpecialList = []
-    def functionalDir = new File(cwd, functionalPath)
-    def functionalSpecialDir = new File(cwd, functionalSpecialPath)
-    /*
-     * Once pipeline bug #26481 is fixed (see https://issues.jenkins-ci.org/browse/JENKINS-26481)
-     * the following for loops can be replaced by the following lines. However, at the very moment the
-     * closures are executed only once due to the mentioned pipeline bug.
-     * This took some time to find out that this is a pipeline bug and not me messing up with groovy :-/
-     *
-     * functionalDir.eachFileMatch FileType.FILES, ~/test_.*\.py/, {functionalList << it.name}
-     * functionalSpecialDir.eachFileMatch FileType.FILES, ~/test_.*\.py/, {functionalSpecialList << it.name}
-     */
-    functionalList = getTestFilesRecurse(functionalDir, 'linotp/tests/functional/')
-    functionalSpecialList = getTestFilesRecurse(functionalSpecialDir, 'linotp/tests/functional_special/')
+        if(PARAM_BUILD_DOCKER_IMAGES) {
+            stage('Linotp builder') {
+                /*
+                 * Build the linotp builder docker image
+                 */
+                doMake('docker-build-linotp-builder', 5)
+            }
 
-    /*
-     * Shuffle functional tests. This is done to ensure that the tests are independent of each other
-     * and the order in which they're executed in. The RNG's seed can be set as a build parameter
-     * (defaults to the current build number) so that builds can be exactly reproduced.
-     */
-    Collections.shuffle(functionalList, new Random(SEED))
+            stage('debs') {
+                /*
+                 * Build the linotp debs in the builder image
+                 */
+                doMake('docker-build-debs', 5)
+            }
 
-    def nodes = ['blackeyedpea', 'angelmarie']
+            stage('Linotp image') {
+                /*
+                 * Build the linotp docker image from the debs
+                 */
+                doMake('docker-build-linotp', 5)
+            }
+        }
 
-    def chunkedList = chunk(functionalList, NUM_TEST_GROUPS)
-    for ( int i = 0; i < chunkedList.size(); i++ ) {
-        println "test[${i}]: ${chunkedList[i]}"
-    }
-    println "test[special]: ${functionalSpecialList}"
+        if(PARAM_RUN_TESTS_INTEGRATION) {
+            stage('Build test env') {
+                doMake('docker-build-selenium', 5)
+            }
+        }
 
-    // TODO: Can we use the Parallel Test Executor Plugin together with its splitTest construct instead of manually chunking tests?
+        if(PARAM_PUBLISH_DOCKER_IMAGES) {
+            if (!PARAM_BUILD_DOCKER_IMAGES) {
+                error("Cannot enable publish docker images without building first (PARAM_BUILD_DOCKER_IMAGES must be set)")
+            }
+            stage('Push images') {
+                docker.image("linotp:${docker_image_tag}").push()
+            }
+        }
 
+        if(PARAM_PUBLISH_JOB_IN_RANCHER) {
+            if (!PARAM_PUBLISH_DOCKER_IMAGES) {
+                error("Cannot enable publish to Rancher without enabling pushing the image")
+            }
+            stage('Rancher') {
+                withCredentials([usernamePassword(credentialsId: '${PARAM_RANCHER_ACCESS_KEY}',
+                                                    passwordVariable: 'RANCHER_SECRET_KEY',
+                                                    usernameVariable: 'RANCHER_ACCESS_KEY')
+                                ]) {
+                    withEnv(['RANCHER_URL=${PARAM_RANCHER_URL}']) {
+                        doMake('rancher-linotp-create', 2)
 
-    /*
-     *         ______________________________________________________________
-     *        /      /XXXXXXX/        /       /         /         /         /\
-     *       /      /XXXXXXX/        /       /         /         /         /||\
-     *      /      /XXXXXXX/        /       /         /         /         /||||\
-     *     (      ( Unit  ( Func-  (       ( Publish (         ( Inte-   (||||||)
-     *     | Init | Tests | tional | Build | inter-  | Install | gration ||||||||
-     *     (      (       ( Tests  (       ( nally   (         ( Tests   (||||||)
-     *      \      \XXXXXXX\        \       \         \         \         \||||/
-     *       \      \XXXXXXX\        \       \         \         \         \||/
-     *        \______\XXXXXXX\________\_______\_________\_________\_________\/
-     *
-     */
-
-    stage('Unit Tests') {
-        if (PARAM_RUN_TESTS.toBoolean()) {
-            /*
-             * Run the unittests on blackeyedpea
-             */
-            node('blackeyedpea') {
-                // Try deleting remaining files
-                deleteDir()
-                unstash 'linotpd'
-                wrap([$class: 'ConfigFileBuildWrapper',
-                      managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1465200221303', targetLocation: 'unittest.sh']]
-                      ]) {
-                    try {
-                        sh 'sh unittest.sh'
-                    } catch (hudson.AbortException e) {
-                        // See detailed description in functional tests
+                        if(PARAM_START_JOB_IN_RANCHER) {
+                            doMake('rancher-linotp-up', 2)
+                        }
                     }
-                    step([$class: 'JUnitResultArchiver', testResults: '**/nosetests.xml'])
-                    step([$class: 'WarningsPublisher', canResolveRelativePaths: false,
-                          defaultEncoding: '', excludePattern: '', healthy: '',
-                          includePattern: '', messagesPattern: '',
-                          parserConfigurations: [[parserName: 'PyLint', pattern: '**/pylint.log']],
-                          thresholdLimit: 'high', unHealthy: '', unstableNewHigh: '1'])
                 }
             }
         }
-    }
 
-
-    /*
-     *         ______________________________________________________________
-     *        /      /       /XXXXXXXX/       /         /         /         /\
-     *       /      /       /XXXXXXXX/       /         /         /         /||\
-     *      /      /       /XXXXXXXX/       /         /         /         /||||\
-     *     (      ( Unit  ( Func-  (       ( Publish (         ( Inte-   (||||||)
-     *     | Init | Tests | tional | Build | inter-  | Install | gration ||||||||
-     *     (      (       ( Tests  (       ( nally   (         ( Tests   (||||||)
-     *      \      \       \XXXXXXXX\       \         \         \         \||||/
-     *       \      \       \XXXXXXXX\       \         \         \         \||/
-     *        \______\_______\XXXXXXXX\_______\_________\_________\_________\/
-     *
-     */
-
-    stage('Functional Tests') {
-        if (PARAM_RUN_TESTS.toBoolean()) {
-            /*
-             * Run the functional tests on the machines determined above
-             */
-
-            if (!PARAM_WITH_COVERAGE.toBoolean()) {
+        if(PARAM_RUN_TESTS_INTEGRATION) {
+            stage('Selenium tests') {
                 /*
-                 * This is the default case. Split the LinOTP tests into 5 chunks and
-                 * run them in parallel in order to decrease the total test running time.
+                 * Run the Selenium unit tests in a docker compose environment
                  */
-
-                // Create map of nodes
-                def nodesMap = [:]
-                for ( name in nodes ) {
-                    // Create name - closure pairs
-                    def subName = ''
-                    /*
-                     * Once Jenkins bug #26481 (see https://issues.jenkins-ci.org/browse/JENKINS-26481), this should be replaced with
-                     * chunkedList.eachWithIndex {list, i ->
-                     */
-                    for ( int i=0; i < chunkedList.size(); i++ ) {
-                        def testChunk = chunkedList[i].join(' ')
-                        def innerI = i
-                        def innerName = name
-                        subName = innerName + "_${i + 1}"
-                        nodesMap[subName] = {
-                            node(innerName) {
-                                // Copy references of outer scope to local variables
-                                def localI = innerI
-                                def localTestChunk = testChunk
-                                def localName = innerName
-                                deleteDir()
-                                unstash 'linotpd'
-                                wrap([$class: 'ConfigFileBuildWrapper',
-                                      managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1464678927581', targetLocation: 'functional_test.sh']]
-                                      ]) {
-                                    withEnv(["PARAM_GIT_REF=${PARAM_GIT_REF}",
-                                             'PARAM_TEST_TYPE=system',
-                                             "PARAM_TEST_NUMBER=${localI + 1}",
-                                             'PARAM_RUN_PASTER=false',
-                                             "PARAM_WITH_COVERAGE=false",
-                                             "PARAM_TEST_LIST=${localTestChunk}"
-                                             ]) {
-                                        try {
-                                            lock("${localName}-functional-venv-${localI + 1}") {
-                                                sh 'bash functional_test.sh'
-                                            }
-                                        } catch (hudson.AbortException e) {
-                                            /*
-                                             * We need to catch the AbortException because we cannot retrieve the return value of
-                                             * the sh command (see jenkins bug https://issues.jenkins-ci.org/browse/JENKINS-26133)
-                                             * and the sh command will raise this exception on test failures.
-                                             *
-                                             * Catching the exception gets us in a bit of a situation: We want to continue the
-                                             * build on test failures (i.e. archive the test results) but on the other hand, on
-                                             * a manual job abort, we want to quit the job instantly. This can currently only be
-                                             * achieved by some groovy exception handling heuristics which would bring several lines
-                                             * of boilerplate code into the pipeline (see jenkins bug
-                                             * https://issues.jenkins-ci.org/browse/JENKINS-34376).
-                                             *
-                                             * It seems to me that the solution in jenkins bug #34376 could potentially lead to
-                                             * some issues in the future which would be hard to find and resolve. Therefore it
-                                             * seems safer to me to catch the AbortException until jenkins bug #26133 is resolved.
-                                             * However, if a build is aborted manually during the sh step, the pipeline will
-                                             * continue running the following steps (i.e. the JUnitResultArchiver), which should
-                                             * usually finish in a few seconds.
-                                             */
-                                        }
-                                    }
-                                }
-                                step([$class: 'JUnitResultArchiver', testResults: 'linotpd/src/nosetests*.xml'])
-                            }
-                        }
-                    }
-
-                    // Functional special tests
-                    def innerName = name
-                    subName = innerName + '_special'
-                    nodesMap[subName] = {
-                        node(innerName) {
-                            def localName = innerName
-                            deleteDir()
-                            unstash 'linotpd'
-                            wrap([$class: 'ConfigFileBuildWrapper',
-                                  managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1464678927581', targetLocation: 'functional_test.sh']]
-                                  ]) {
-                                withEnv(["PARAM_GIT_REF=${PARAM_GIT_REF}",
-                                         'PARAM_TEST_TYPE=system',
-                                         'PARAM_TEST_NUMBER=5',
-                                         'PARAM_RUN_PASTER=true',
-                                         "PARAM_WITH_COVERAGE=false",
-                                         "PARAM_TEST_LIST=${functionalSpecialList.join(' ')}"
-                                         ]) {
-                                    try {
-                                        lock("${localName}-functional-venv-5") {
-                                            sh 'bash functional_test.sh'
-                                        }
-                                    } catch (hudson.AbortException e) {
-                                        // See detailed comment in functional tests
-                                    }
-                                }
-                            }
-                            step([$class: 'JUnitResultArchiver', testResults: 'linotpd/src/nosetests*.xml'])
-                        }
-                    }
-                }
-
-                parallel(nodesMap)
-            } else { //PARAM_WITH_COVERAGE
-                /*
-                 * Run the tests and create a test coverage report
-                 * To get a complete report, the tests must run in only one chunk.
-                 * This is a much simpler setup than the default one (splitting in 5 chunks)
-                 * but leads to drastically longer run times. Therefore this is switched
-                 * off by default.
-                 */
-                node('blackeyedpea') {
-                    deleteDir()
-                    unstash 'linotpd'
-                    wrap([$class: 'ConfigFileBuildWrapper',
-                          managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1464678927581', targetLocation: 'functional_test.sh']]
-                          ]) {
-                        withEnv(["PARAM_GIT_REF=${PARAM_GIT_REF}",
-                                 'PARAM_TEST_TYPE=system',
-                                 'PARAM_TEST_NUMBER=1',
-                                 'PARAM_RUN_PASTER=true',
-                                 "PARAM_WITH_COVERAGE=true",
-                                 "PARAM_TEST_LIST=${(functionalSpecialList + functionalList).join(' ')}"
-                                 ]) {
-                            try {
-                                lock("blackeyedpea-functional-venv-1") {
-                                    sh 'bash functional_test.sh'
-                                }
-                            } catch (hudson.AbortException e) {
-                                // See detailed comment in functional tests
-                            }
-                        }
-                    }
-                    step([$class: 'JUnitResultArchiver', testResults: 'linotpd/src/nosetests*.xml'])
-                    step([$class: 'ArtifactArchiver', artifacts: 'HTML_COVERAGE/**/*', excludes: null])
-                }
+                doMake('docker-run-selenium', 120)
             }
-        } // PARAM_RUN_TESTS
+        }
     }
-
-
-    /*
-     *         ______________________________________________________________
-     *        /      /       /        /XXXXXXX/         /         /         /\
-     *       /      /       /        /XXXXXXX/         /         /         /||\
-     *      /      /       /        /XXXXXXX/         /         /         /||||\
-     *     (      ( Unit  ( Func-  (       ( Publish (         ( Inte-   (||||||)
-     *     | Init | Tests | tional | Build | inter-  | Install | gration ||||||||
-     *     (      (       ( Tests  (       ( nally   (         ( Tests   (||||||)
-     *      \      \       \        \XXXXXXX\         \         \         \||||/
-     *       \      \       \        \XXXXXXX\         \         \         \||/
-     *        \______\_______\________\XXXXXXX\_________\_________\_________\/
-     *
-     */
-
-    stage('Build') {
-        /*
-         * Build steps
-         */
-        if (PARAM_RUN_BUILD.toBoolean()) {
-            lock('linotp-build-stage') {
-                /*
-                 * .deb builds
-                 */
-                def buildNodesMap = [:]
-
-                /*
-                 * We would like to write something like 'for (name in buildNodesDeb.keySet())', but, however,
-                 * this results in an not serializable exception (jenkins workflow bug
-                 * https://issues.jenkins-ci.org/browse/JENKINS-27421). Therefore, we manually convert the set
-                 * to an ArrayList…
-                 */
-                ArrayList buildNodesDebKeys = new ArrayList(buildNodesDeb.keySet())
-                for (name in buildNodesDebKeys) {
-                    buildNodesMap[name + '_deb'] = {
-                        node(name) {
-                            def localName = name
-                            deleteDir()
-                            unstash 'linotpd'
-                            wrap([$class: 'ConfigFileBuildWrapper',
-                                  managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1463756076444', targetLocation: 'build_script.sh']]
-                                  ]) {
-                                sh 'sh build_script.sh'
-                            }
-                            step([$class: 'ArtifactArchiver', artifacts: 'RELEASE/**/*', excludes: null, fingerprint: true])
-                            // Additionally stash the debs for publishing to avocado
-                            stash includes: 'RELEASE/**/*.deb', name: "debs-${buildNodesDeb[localName][0]}"
-                        }
-                    }
-                }
-
-                /*
-                 * Ubuntu builds (using pbuilder-dist)
-                 */
-                ArrayList buildsUbuntuKeys = new ArrayList(buildsUbuntu.keySet())
-                for (name in buildsUbuntuKeys) {
-                    def innerName = name
-                    buildNodesMap[buildNodeUbuntu + '_' + innerName] = {
-                        node(buildNodeUbuntu) {
-                            def localName = innerName
-                            deleteDir()
-                            unstash 'linotpd'
-                            wrap([$class: 'ConfigFileBuildWrapper',
-                                  managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1465833346291', targetLocation: 'build_script.sh']]
-                                  ]) {
-                                lock("${buildNodeUbuntu}-pbuilder") {
-                                    sh "sh build_script.sh ${localName}"
-                                }
-                            }
-                            step([$class: 'ArtifactArchiver', artifacts: 'RELEASE/**/*', excludes: null, fingerprint: true])
-                            // Additionally stash the debs for publishing to avocado
-                            stash includes: 'RELEASE/**/*.deb', name: "debs-${localName}"
-                        }
-                    }
-                }
-
-                /*
-                 * PyPI builds
-                 */
-                for (name in buildNodesPyPI) {
-                    buildNodesMap[name + '_pypi'] = {
-                        node(name) {
-                            deleteDir()
-                            unstash 'linotpd'
-                            wrap([$class: 'ConfigFileBuildWrapper',
-                                  managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1466414260758', targetLocation: 'build_script.sh']]
-                                  ]) {
-                                sh 'sh build_script.sh'
-                            }
-                            step([$class: 'ArtifactArchiver', artifacts: 'RELEASE/**/*', excludes: null, fingerprint: true])
-                            stash includes: 'RELEASE/**/*.tar.gz', name: 'pypi'
-                        }
-                    }
-                }
-
-                parallel(buildNodesMap)
-            }
-        } // PARAM_RUN_BUILD
-    }
-
-
-    /*
-     *         ______________________________________________________________
-     *        /      /       /        /       /XXXXXXXXX/         /         /\
-     *       /      /       /        /       /XXXXXXXXX/         /         /||\
-     *      /      /       /        /       /XXXXXXXXX/         /         /||||\
-     *     (      ( Unit  ( Func-  (       ( Publish (         ( Inte-   (||||||)
-     *     | Init | Tests | tional | Build | inter-  | Install | gration ||||||||
-     *     (      (       ( Tests  (       ( nally   (         ( Tests   (||||||)
-     *      \      \       \        \       \XXXXXXXXX\         \         \||||/
-     *       \      \       \        \       \XXXXXXXXX\         \         \||/
-     *        \______\_______\________\_______\XXXXXXXXX\_________\_________\/
-     *
-     */
-
-    stage('Publish internally') {
-        /*
-         * Publishing steps (to avocado)
-         */
-        if (PARAM_RUN_BUILD.toBoolean() && PARAM_BUILD_PUBLISH.toBoolean()) {
-            lock('linotp-publish-stage') {
-                def publishNodesMap = [:]
-
-                /*
-                 * Publish .deb packages
-                 */
-                ArrayList buildNodesDebValues = new ArrayList(buildNodesDeb.values())
-                for (dist in buildNodesDebValues) {
-                    def innerDist = dist
-                    publishNodesMap["publish_debs_${dist[0]}"] = {
-                        node('avocado') {
-                            // Copy references of outer scope to local variables
-                            def localDist = innerDist
-
-                            deleteDir()
-                            unstash "debs-${dist[0]}"
-                            wrap([$class: 'ConfigFileBuildWrapper',
-                                  managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1466427703881', targetLocation: 'publish_script.sh']]
-                                  ]) {
-                                sh "sh publish_script.sh ${dist[0]} ${PARAM_GIT_REF} ${dist[1]} ${GIT_COMMIT}"
-                            }
-                        }
-                    }
-                }
-
-                /*
-                 * Publish ubuntu .deb packages
-                 */
-                ArrayList pubUbuntuKeys = new ArrayList(buildsUbuntu.keySet())
-                for (dist in pubUbuntuKeys) {
-                    def innerDist = dist
-                    publishNodesMap["publish_debs_${dist}"] = {
-                        node('avocado') {
-                            // Copy references of outer scope to local variables
-                            def localDist = innerDist
-
-                            deleteDir()
-                            unstash "debs-${localDist}"
-                            wrap([$class: 'ConfigFileBuildWrapper',
-                                  managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1466427703881', targetLocation: 'publish_script.sh']]
-                                  ]) {
-                                sh "sh publish_script.sh ${localDist} ${PARAM_GIT_REF} ${buildsUbuntu[localDist]} ${GIT_COMMIT}"
-                            }
-                        }
-                    }
-                }
-
-                /*
-                 * Publish PyPI packages
-                 */
-                publishNodesMap['publish_pypi'] = {
-                    node('avocado') {
-                        deleteDir()
-                        unstash 'pypi'
-                        wrap([$class: 'ConfigFileBuildWrapper',
-                              managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1467024509905', targetLocation: 'publish_script.sh']]
-                              ]) {
-                            sh "sh publish_script.sh"
-                        }
-                    }
-                }
-
-                parallel(publishNodesMap)
-            }
-        } // PARAM_BUILD_PUBLISH
-    }
-
-
-    /*
-     *         ______________________________________________________________
-     *        /      /       /        /       /         /XXXXXXXXX/         /\
-     *       /      /       /        /       /         /XXXXXXXXX/         /||\
-     *      /      /       /        /       /         /XXXXXXXXX/         /||||\
-     *     (      ( Unit  ( Func-  (       ( Publish (         ( Inte-   (||||||)
-     *     | Init | Tests | tional | Build | inter-  | Install | gration ||||||||
-     *     (      (       ( Tests  (       ( nally   (         ( Tests   (||||||)
-     *      \      \       \        \       \         \XXXXXXXXX\         \||||/
-     *       \      \       \        \       \         \XXXXXXXXX\         \||/
-     *        \______\_______\________\_______\_________\XXXXXXXXX\_________\/
-     *
-     */
-
-    stage('Install') {
-        /*
-         * Installation steps
-         */
-        if (PARAM_RUN_BUILD.toBoolean() && PARAM_RUN_INSTALL.toBoolean()) {
-            lock('linotp-install-stage') {
-                def installNodesMap = [:]
-                for (name in installNodesPyPI) {
-                    def innerName = name
-                    node(innerName) {
-                        deleteDir()
-                        wrap([$class: 'ConfigFileBuildWrapper',
-                              managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1467027942512', targetLocation: 'install_script.sh']]
-                              ]) {
-                            sh "sh install_script.sh"
-                        }
-                    }
-                }
-
-                parallel(installNodesMap)
-            }
-        } // PARAM_RUN_INSTALL
-    }
-
-
-    /*
-     *         ______________________________________________________________
-     *        /      /       /        /       /         /         /XXXXXXXXX/\
-     *       /      /       /        /       /         /         /XXXXXXXXX/||\
-     *      /      /       /        /       /         /         /XXXXXXXXX/||||\
-     *     (      ( Unit  ( Func-  (       ( Publish (         ( Inte-   (||||||)
-     *     | Init | Tests | tional | Build | inter-  | Install | gration ||||||||
-     *     (      (       ( Tests  (       ( nally   (         ( Tests   (||||||)
-     *      \      \       \        \       \         \         \XXXXXXXXX\||||/
-     *       \      \       \        \       \         \         \XXXXXXXXX\||/
-     *        \______\_______\________\_______\_________\_________\XXXXXXXXX\/
-     *
-     */
-
-    stage('Integration tests') {
-        /*
-         * Integration tests steps
-         */
-        if (PARAM_RUN_BUILD.toBoolean() && PARAM_RUN_INSTALL.toBoolean() && PARAM_RUN_TESTS_INTEGRATION.toBoolean()) {
-            lock('linotp-integrationtests-stage') {
-                def integrationTestsNodesMap = [:]
-                for (name in integrationTestsNodes) {
-                    def innerName = name
-                    node(seleniumHost) {
-                        deleteDir()
-                        wrap([$class: 'ConfigFileBuildWrapper',
-                              managedFiles: [[fileId: 'org.jenkinsci.plugins.managedscripts.ScriptConfig1467031870513', targetLocation: 'integration_test_script.sh']]
-                              ]) {
-                            try {
-                                sh "sh integration_test_script.sh ${innerName}"
-                            } catch (hudson.AbortException e) {
-                                // See detailed description in functional tests
-                            }
-                            step([$class: 'JUnitResultArchiver', testResults: '**/nosetests.xml'])
-                        }
-                    }
-                }
-
-                parallel(integrationTestsNodesMap)
-            }
-        } // PARAM_RUN_TESTS_INTEGRATION
-    }
-
-    /*
-     * Send mails
-     */
-    step([$class: 'Mailer', notifyEveryUnstableBuild: true,
-          recipients: 'christian.pommranz@lsexperts.de bianca.wellkamp@lsexperts.de alexander.dalloz@lsexperts.de',
-          sendToIndividuals: true])
 }
