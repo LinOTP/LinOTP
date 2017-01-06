@@ -28,6 +28,11 @@
 
 FROM debian:jessie
 
+ARG DEBIAN_MIRROR=deb.debian.org
+
+RUN sed "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
+	< /etc/apt/sources.list > /etc/apt/sources.list.new && mv -f /etc/apt/sources.list.new /etc/apt/sources.list
+
 RUN apt-get update && apt-get \
 		--no-install-recommends --yes install \
 		build-essential devscripts equivs libfile-fcntllock-perl

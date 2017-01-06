@@ -181,8 +181,18 @@ deb-install: builddeb
 # Extra arguments can be passed to docker build
 DOCKER_BUILD_ARGS=
 
-# Uncomment the following if using apt-cacher-ng to cache packages:
-#DOCKER_BUILD_ARGS+=--build-arg=http_proxy=http://172.17.0.1:3142
+# An http_proxy can be passed in via the make command line or here:
+DOCKER_BUILD_HTTP_PROXY=
+
+# Override to change the debian mirror used for image building
+DOCKER_BUILD_DEBIAN_MIRROR=
+
+ifneq "$(DOCKER_BUILD_HTTP_PROXY)" ""
+DOCKER_BUILD_ARGS+= --build-arg=http_proxy=$(DOCKER_BUILD_HTTP_PROXY)
+endif
+ifneq "$(DOCKER_BUILD_DEBIAN_MIRROR)" ""
+DOCKER_BUILD_ARGS+= --build-arg=DEBIAN_MIRROR=$(DOCKER_BUILD_DEBIAN_MIRROR)
+endif
 
 # Default Docker run arguments.
 # Extra run arguments can be given here. It can also be used to
