@@ -249,8 +249,10 @@ $(BUILDDIR)/apt/Packages:
 	$(DOCKER_RUN) \
 		--workdir=/pkg/linotp \
 		--name=$(DOCKER_CONTAINER_NAME)-apt \
+		--volume=$(PWD):/pkg/linotpsrc:ro \
 		linotp-builder \
-		make deb-install DESTDIR=/pkg/apt DEBUILD_OPTS="$(DEBUILD_OPTS)"
+		sh -c "cp -ra /pkg/linotpsrc/* /pkg/linotp && \
+			make deb-install DESTDIR=/pkg/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" "
 	mkdir -p $(DESTDIR)/incoming
 	docker cp \
 		$(DOCKER_CONTAINER_NAME)-apt:/pkg/apt $(DESTDIR)

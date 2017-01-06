@@ -51,8 +51,7 @@ RUN for D in linotp useridresolver smsprovider ;\
 		mk-build-deps --install --remove --tool "apt-get --yes --no-install-recommends" ;\
 	done
 
-# Finally, copy all the sources into the container
-RUN mkdir -v -p /pkg/linotp
-COPY . /pkg/linotp
+# The sources will be mounted at runtime into the volume /pkg/linotp
+VOLUME /pkg/linotpsrc
 
 WORKDIR /pkg/linotp
