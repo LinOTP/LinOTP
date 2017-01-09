@@ -28,6 +28,9 @@
 
 FROM debian:jessie
 
+ARG DEBIAN_MIRROR=deb.debian.org
+ARG LINOTP_MIRROR=www.linotp.org
+
 # The following environment variables can be set to
 # configure the runtime behaviour of the container.
 # Most of these should be self explanitory.
@@ -72,6 +75,9 @@ RUN echo 'APT::Install-Recommends "0"; \n\
 			APT::Install-Suggests "0";' \
 		> /etc/apt/apt.conf.d/01buildconfig
 
+RUN sed "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
+    < /etc/apt/sources.list > /etc/apt/sources.list.new && mv -f /etc/apt/sources.list.new /etc/apt/sources.list
+
 # Add LinOTP packaging key to keyring in order to install
 # dependencies
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
@@ -81,7 +87,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
 # need to be an exhaustive list because apt will install any
 # missing packages.
 RUN \
-    echo "deb http://www.linotp.org/apt/debian jessie linotp" > /etc/apt/sources.list.d/linotp.list \
+    echo "deb http://${LINOTP_MIRROR}/apt/debian jessie linotp" > /etc/apt/sources.list.d/linotp.list \
     && apt-get update \
     && extraPackages=' \
 	make \

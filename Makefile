@@ -187,8 +187,8 @@ DOCKER_BUILD_HTTP_PROXY=
 # List of tags to add to built linotp images, using the '-t' flag to docker-build
 DOCKER_TAGS=latest
 
-# Override to change the debian mirror used for image building
-DOCKER_BUILD_DEBIAN_MIRROR=
+# Override to change the mirror used for image building
+DEBIAN_MIRROR=
 
 # Override to supply an http proxy to docker build:
 # DOCKER_BUILD_HTTP_PROXY
@@ -196,8 +196,8 @@ DOCKER_BUILD_DEBIAN_MIRROR=
 ifneq "$(DOCKER_BUILD_HTTP_PROXY)" ""
 DOCKER_BUILD_ARGS+= --build-arg=http_proxy=$(DOCKER_BUILD_HTTP_PROXY)
 endif
-ifneq "$(DOCKER_BUILD_DEBIAN_MIRROR)" ""
-DOCKER_BUILD_ARGS+= --build-arg=DEBIAN_MIRROR=$(DOCKER_BUILD_DEBIAN_MIRROR)
+ifneq "$(DEBIAN_MIRROR)" ""
+DOCKER_BUILD_ARGS+= --build-arg=DEBIAN_MIRROR=$(DEBIAN_MIRROR)
 endif
 
 # Default Docker run arguments.
