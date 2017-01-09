@@ -223,11 +223,7 @@ docker-build-all: docker-build-debs  docker-build-linotp docker-build-selenium
 docker-linotp: docker-build-debs  docker-build-linotp
 
 # Build and run Selenium tests
-docker-run-selenium: docker-build-linotp
-	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose up selenium_tester
-	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose down selenium_tester
+docker-selenium: docker-build-linotp docker-build-selenium docker-run-selenium
 
 ##
 .PHONY: docker-build-all docker-linotp docker-run-selenium
@@ -300,6 +296,10 @@ docker-build-selenium: docker-build-linotp
 
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
+	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose up --no-build selenium_tester
+	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose down
 
 .PHONY: docker-run-linotp-sqlite
 docker-run-linotp-sqlite: docker-build-linotp
