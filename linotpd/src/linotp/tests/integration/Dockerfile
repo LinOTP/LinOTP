@@ -1,5 +1,7 @@
 FROM linotp
 
+ARG DEBIAN_MIRROR=deb.debian.org
+
 RUN apt-get update && apt-get install \
   		make \
   		python-nose-testconfig \
@@ -7,7 +9,7 @@ RUN apt-get update && apt-get install \
   		linotp-adminclient-cli
 
 # Install python-selenium from jessie backports
-RUN echo "deb http://ftp.debian.org/debian/ jessie-backports main" > /etc/apt/sources.list.d/999jessie-backports.list \
+RUN echo "deb http://${DEBIAN_MIRROR}/debian jessie-backports main" > /etc/apt/sources.list.d/999jessie-backports.list \
 		&& apt-get update \
 		&& apt-get install python-selenium \
 		&& rm /etc/apt/sources.list.d/999jessie-backports.list
