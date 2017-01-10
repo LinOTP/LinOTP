@@ -12,6 +12,7 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - DEBIAN_MIRROR
     environment:
       SELENIUM_DRIVER: "chrome"
       NOSETESTS_ARGS: "-v"

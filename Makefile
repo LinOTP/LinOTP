@@ -190,7 +190,7 @@ DOCKER_BUILD_ARGS=
 DOCKER_TAGS=latest
 
 # Override to change the mirror used for image building
-DEBIAN_MIRROR=
+DEBIAN_MIRROR=ftp.debian.org
 
 # Pass proxy environment variables through to docker build by default
 DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-arg=no_proxy
