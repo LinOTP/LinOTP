@@ -6,7 +6,12 @@ services:
      - "5900"
 
   selenium_tester:
-    build: .
+    build:
+      context: .
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
     environment:
       SELENIUM_DRIVER: "chrome"
       NOSETESTS_ARGS: "-v"

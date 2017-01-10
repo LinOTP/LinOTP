@@ -186,21 +186,15 @@ deb-install: builddeb
 # Extra arguments can be passed to docker build
 DOCKER_BUILD_ARGS=
 
-# An http_proxy can be passed in via the make command line or here:
-DOCKER_BUILD_HTTP_PROXY=
-
 # List of tags to add to built linotp images, using the '-t' flag to docker-build
 DOCKER_TAGS=latest
 
 # Override to change the mirror used for image building
 DEBIAN_MIRROR=
 
-# Override to supply an http proxy to docker build:
-# DOCKER_BUILD_HTTP_PROXY
+# Pass proxy environment variables through to docker build by default
+DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-arg=no_proxy
 
-ifneq "$(DOCKER_BUILD_HTTP_PROXY)" ""
-DOCKER_BUILD_ARGS+= --build-arg=http_proxy=$(DOCKER_BUILD_HTTP_PROXY)
-endif
 ifneq "$(DEBIAN_MIRROR)" ""
 DOCKER_BUILD_ARGS+= --build-arg=DEBIAN_MIRROR=$(DEBIAN_MIRROR)
 endif
@@ -211,7 +205,7 @@ endif
 #  make docker-run-linotp-sqlite DOCKER_RUN_ARGS='-p 1234:80'
 DOCKER_RUN_ARGS=
 
-DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS)
+DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS) $(DOCKER_PROXY_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
 SELENIUM_TESTS_DIR=linotpd/src/linotp/tests/integration
 
