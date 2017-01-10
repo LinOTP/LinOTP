@@ -143,7 +143,7 @@ integrationtests:
 # deb-install: Build .debs and install to DESTDIR
 
 DEBPKG_PROJS := linotpd useridresolver smsprovider adminclient/LinOTPAdminClientCLI
-BUILDARCH := $(shell dpkg-architecture -q DEB_BUILD_ARCH)
+BUILDARCH = $(shell dpkg-architecture -q DEB_BUILD_ARCH)
 CHANGELOG = "$(shell cd linotpd/src ; dpkg-parsechangelog)"
 
 # Output is placed in DESTDIR, but this
