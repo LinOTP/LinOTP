@@ -108,7 +108,9 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
 	&& apt-get update \
 	&& apt-get install linotp linotp-smsprovider linotp-useridresolver  \
 	&& rm /etc/apt/sources.list.d/linotp-local.list \
-	&& rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf
+	&& rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
+	&& rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
+
 WORKDIR $LINOTP_HOME
 
 # Get dockerfy and configuration template files from build context
@@ -124,8 +126,8 @@ ENTRYPOINT [ "/usr/local/bin/dockerfy", \
      "--run", "/bin/grep", "url", "/etc/linotp2/linotp.ini", "--", \
      "--run", "mkdir", "-p", "/etc/ssl/private", "/etc/ssl/certs", "--", \
      "--run", "/bin/sh", "-c", \
-		"openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
-     "--", \
+        "openssl req -new -x509 -newkey rsa:2048 -subj /CN=`hostname`.`dnsdomainname` -days 768 -out /etc/ssl/certs/linotpserver.pem  -keyout /etc/ssl/private/linotpserver.key -nodes", \
+        "--", \
      "--run", "/usr/local/bin/linotp-create-htdigest", "{{ .Env.LINOTP_ADMIN_USER }}", "{{ .Env.LINOTP_ADMIN_PASSWORD }}", "--", \
      "--run", "/bin/sh", "-c", \
         "if [ {{ .Env.LINOTP_DB_TYPE }} != sqlite ]; then /usr/local/bin/dockerfy --wait tcp://{{ .Env.LINOTP_DB_HOST }}:{{ .Env.LINOTP_DB_PORT }} --timeout 30s; fi", \

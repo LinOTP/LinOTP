@@ -142,6 +142,7 @@ clean:
 	rm -f $(I18N_JSON_FILES)
 	rm -rf ../build/ \
 		linotp-build
+
 	rm -f linotp_*.dsc \
 		linotp_*.build \
 		linotp_*.tar.gz \
