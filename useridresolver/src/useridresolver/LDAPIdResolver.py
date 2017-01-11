@@ -239,7 +239,9 @@ class IdResolver (UserIdResolver):
         # handle local certificates
         #
 
-        if not caller.use_sys_cert and caller.CERTFILE:
+        if (not caller.use_sys_cert and
+           caller.CERTFILE and os.path.isfile(caller.CERTFILE)):
+
             log.debug("using local cert file %r", caller.CERTFILE)
             l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
 
@@ -257,7 +259,6 @@ class IdResolver (UserIdResolver):
             sys_cert_dir = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
             log.info("using system certificate file:  %r or system "
                      "certificate dir %r", sys_cert_file, sys_cert_dir)
-
 
         if uri.startswith('ldap:'):
 
