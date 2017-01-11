@@ -27,6 +27,15 @@
 #
 # LinOTP toplevel makefile
 #
+#
+# If you are running in a local development environment, you can
+# set these environment variables to configure make behaviour:
+# export http_proxy=http://proxy.hostname:port
+# export no_proxy=localhost,127.0.0.1,.my.local.domain
+# export RANCHER_URL=https://rancher.hostname/v1
+# export RANCHER_ACCESS_KEY=copy-from-rancher-UI-API-section
+# export RANCHER_SECRET_KEY=copy-from-rancher-UI-API-section
+# export DOCKER_REGISTRY_URL=registry.local.domain
 
 PYTHON:=python2
 
