@@ -192,7 +192,7 @@ DOCKER_RUN_ARGS=
 
 DOCKER_BUILD = docker build $(DOCKER_BUILD_ARGS)
 DOCKER_RUN = docker run $(DOCKER_RUN_ARGS)
-SELENIUM_TESTS_COMPOSEFILE=linotpd/src/linotp/tests/integration/docker-compose.yml
+SELENIUM_TESTS_DIR=linotpd/src/linotp/tests/integration
 
 ## Toplevel targets
 # Toplevel target to build all containers
@@ -203,7 +203,10 @@ docker-linotpd: docker-build-debs  docker-build-linotpd
 
 # Build and run Selenium tests
 docker-run-selenium: docker-build-linotpd
-	docker-compose -f $(SELENIUM_TESTS_COMPOSEFILE) up selenium_tester
+	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose up selenium_tester
+	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose down selenium_tester
 
 ##
 .PHONY: docker-build-all docker-linotpd docker-run-selenium
@@ -257,14 +260,15 @@ docker-build-linotpd: $(BUILDDIR)/dockerfy $(BUILDDIR)/apt/Packages
 		-t linotpd \
 		$(BUILDDIR)
 
+SELENIUM_DB_IMAGE=mysql:latest
 .PHONY: docker-build-selenium
 docker-build-selenium: docker-build-linotpd
-	$(DOCKER_BUILD) \
-		-t selenium_test \
-		$(dir $(SELENIUM_TESTS_COMPOSEFILE))
+	cd $(SELENIUM_TESTS_DIR) \
+		&& $(DOCKER_BUILD) \
+			-t selenium_tester .
 
-	cd $(dir $(SELENIUM_TESTS_COMPOSEFILE)) \
-	&& docker-compose build
+	cd $(SELENIUM_TESTS_DIR) \
+		&& docker-compose build
 
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
