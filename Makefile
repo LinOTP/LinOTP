@@ -321,3 +321,64 @@ $(BUILDDIR)/dockerfy:
 	tar -C $(BUILDDIR) -xvf $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*.gz
 	rm -r $(BUILDDIR)/dockerfy-tmp
 
+#####################
+# Rancher targets
+#
+# These targets are for deploying built linotp images to rancher
+
+# Override with ID e.g. branch name, tag or git commit
+LINOTP_IMAGE_TAG=$(shell git rev-parse --short HEAD)
+RANCHER_STACK_ID=$(shell git rev-parse --short HEAD)
+
+# Override with type, e.g. prod, qa
+RANCHER_STACK_TYPE=dev
+
+RANCHER_STACK_NAME=linotp-$(RANCHER_STACK_TYPE)-$(RANCHER_STACK_ID)
+
+DOCKER_REGISTRY=$(subst https://,,$(DOCKER_REGISTRY_URL))
+
+$(BUILDDIR)/rancher/docker-compose.yml:
+	$(MAKE) rancher-prepare
+
+rancher-prepare:
+	# Overrides to compose file specific to this stack
+	mkdir -pv $(BUILDDIR)/rancher
+	( echo 'version: "2"' ;\
+	  echo 'services:' ;\
+	  echo '  linotp:' ;\
+	  echo '    image: $(DOCKER_REGISTRY)/linotp:$(LINOTP_IMAGE_TAG)' ;\
+	) > $(BUILDDIR)/rancher/docker-compose.yml
+
+RANCHER_COMPOSE=rancher-compose --project-name $(RANCHER_STACK_NAME)
+RANCHER_COMPOSE_FILES_LINOTP=-f linotpd/src/docker-compose.yml \
+								-f $(BUILDDIR)/rancher/docker-compose.yml
+
+# Uncomment to aid debugging
+# export RANCHER_CLIENT_DEBUG=true
+
+# Run a given command
+rancher-linotp-do:
+	$(RANCHER_COMPOSE) $(RANCHER_COMPOSE_FILES_LINOTP) $(CMD)
+.PHONY: rancher-prepare rancher-linotp-do
+
+rancher-linotp-create: rancher-prepare
+	$(MAKE) rancher-linotp-do CMD=create
+
+rancher-linotp-rm: $(BUILDDIR)/rancher/docker-compose.yml
+	$(MAKE) rancher-linotp-do CMD=rm
+
+rancher-linotp-start: $(BUILDDIR)/rancher/docker-compose.yml
+	$(MAKE) rancher-linotp-do CMD="start -d"
+
+rancher-linotp-stop: $(BUILDDIR)/rancher/docker-compose.yml
+	$(MAKE) rancher-linotp-do CMD=stop
+
+rancher-linotp-up: $(BUILDDIR)/rancher/docker-compose.yml
+	$(MAKE) rancher-linotp-do CMD="up -d"
+
+rancher-linotp-down: $(BUILDDIR)/rancher/docker-compose.yml
+	$(MAKE) rancher-linotp-do CMD=down
+
+.PHONY: rancher-linotp-create rancher-linotp-rm
+.PHONY: rancher-linotp-start rancher-linotp-stop
+.PHONY: rancher-linotp-up rancher-linotp-down
