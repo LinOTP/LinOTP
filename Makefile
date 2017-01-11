@@ -226,7 +226,10 @@ NAME_PREFIX := linotpbuilder-$(shell date +%H%M%S-%N)
 DOCKER_CONTAINER_NAME = $(NAME_PREFIX)
 
 .PHONY: docker-build-debs
-docker-build-debs: docker-build-linotp-builder $(BUILDDIR)/apt/Packages
+docker-build-debs: docker-build-linotp-builder
+	# Force rebuild of debs
+	rm -f $(BUILDDIR)/apt/Packages
+	$(MAKE) $(BUILDDIR)/apt/Packages
 
 $(BUILDDIR)/apt/Packages:
 	# Build the debs in a container, then extract them from the image
