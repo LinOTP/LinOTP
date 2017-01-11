@@ -27,20 +27,37 @@
 #
 
 #####################
+# Unit test configuration
+#
+# Overrides can be specified on the make command line
+# For example:
+#   make integrationtests TCFILE=my_cfg.ini LOGGINGFILTER=
+
+# The test settings ini file to use. Override to use a different file.
+TCFILE=server_cfg.ini
+
+# Nosetests arguments
+NOSETESTS_ARGS=-v
+
+# Additional test arguments can be specified in SELENIUMTESTS_ARGS
+SELENIUMTESTS_ARGS=
+
+# The default log filter does not show debug messages from the Selenium connection and urllib connections.
+# Override this to include them.
+LOGGINGFILTER=-requests.packages.urllib3.connectionpool,-selenium.webdriver.remote.remote_connection
+
+#####################
 # Unit test targets
 #
 
-ifndef TCFILE
-TCFILE=server_cfg.ini
+ifdef LOGGINGFILTER
+LOGFILTER_ARGS=--logging-filter=${LOGGINGFILTER}
 endif
 
 test: integrationtests
 
 integrationtests:
 	# integrationtests - selenium integration tests
-	#   NOSETESTS_ARGS: nosetests arguments, e.g. -v
-	#   TCFILE: test configuration file, defaults to server_cfg.ini
-	#   SELENIUMTESTS_ARGS: additional test arguments
-	nosetests $(NOSETESTS_ARGS) --tc-file=$(TCFILE) $(SELENIUMTESTS_ARGS)
+	nosetests $(NOSETESTS_ARGS) --tc-file=$(TCFILE) $(LOGFILTER_ARGS) $(SELENIUMTESTS_ARGS)
 
 .PHONY: test integrationtests
