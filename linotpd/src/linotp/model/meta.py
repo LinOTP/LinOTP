@@ -27,9 +27,7 @@
  This file contains the common db object
 """
 
-
-
-"""SQLAlchemy Metadata and Session object"""
+# SQLAlchemy Metadata and Session object
 from sqlalchemy import MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
 

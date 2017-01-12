@@ -60,6 +60,11 @@ from linotp.lib.context import request_context_safety
 # would otherwise show session.close() as error
 import linotp.model.meta
 
+#
+# manual schema migration
+# - should become part of schema migration tool like alembic
+from linotp.model.migrate import run_data_model_migration
+
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
 from linotp.lib.util import get_client
@@ -96,6 +101,24 @@ def set_config(key, value, typ, description=None):
         Session.add(config_entry)
 
     return
+
+
+def get_config(key):
+    '''
+    get an intial config entry, if it does not exist return None
+
+    :param key: the key
+    :return: entry or None
+    '''
+
+    entries = Session.query(linotp.model.Config).filter(
+                          linotp.model.Config.Key == "linotp." + key).all()
+
+    if entries:
+        return entries[0]
+
+    return None
+
 
 
 def set_defaults():
@@ -300,7 +323,39 @@ def setup_app(conf, conf_global=None, unitTest=False):
     log.info("Creating tables...")
     meta.metadata.create_all(bind=meta.engine)
 
-    if conf.has_key("linotpSecretFile"):
+    #
+    # hook for schema upgrade -
+    # - called by paster setup-app or on the first request to linotp
+    #
+
+    # define the most recent target version
+    sql_data_model_version = "2.9.1.0"
+
+    # get the actual version - should be None or should be the same
+    # if migration is finished
+    current_data_model_version = get_config('sql_data_model_version')
+
+    #
+    # in case of unitTest the database has been erased and recreated - thus
+    # the db model update is not require - so we have already the most recent
+    # target version
+
+    if unitTest:
+        current_data_model_version = sql_data_model_version
+        set_config('sql_data_model_version',
+                   sql_data_model_version, typ='text')
+
+
+    if current_data_model_version != sql_data_model_version:
+        run_data_model_migration(meta, target_version=sql_data_model_version)
+        set_config('sql_data_model_version',
+                   sql_data_model_version, typ='text')
+
+    #
+    # create the secret key file if it does not exist
+    #
+
+    if "linotpSecretFile" in conf:
         filename = conf.get("linotpSecretFile")
         try:
             with open(filename):
