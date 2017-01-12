@@ -287,7 +287,8 @@ class IdResolver (UserIdResolver):
 
         # handle local certificates
 
-        if not caller.use_sys_cert and caller.CERTFILE:
+        if (not caller.use_sys_cert and caller.CERTFILE and
+           os.path.isfile(caller.CERTFILE)):
             log.debug("using local cert file %r", caller.CERTFILE)
             l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
 
@@ -456,7 +457,8 @@ class IdResolver (UserIdResolver):
 
         finally:
             # restore the old_cert_file if no system certificate handling
-            if not use_sys_cert and old_cert_file and l_obj:
+            if (not use_sys_cert and old_cert_file and l_obj and
+               os.path.isfile(old_cert_file)):
                 l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, old_cert_file)
 
             # unbind
@@ -501,11 +503,11 @@ class IdResolver (UserIdResolver):
             if self.l_obj is not None:
 
                 # on close restore the system settings
-                if self.SYS_CERTFILE:
+                if self.SYS_CERTFILE and os.path.isfile(self.SYS_CERTFILE):
                     self.l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE,
                                           self.SYS_CERTFILE)
 
-                if self.SYS_CERTDIR:
+                if self.SYS_CERTDIR and os.path.isdir(self.SYS_CERTDIR):
                     self.l_obj.set_option(ldap.OPT_X_TLS_CACERTDIR,
                                           self.SYS_CERTDIR)
 
