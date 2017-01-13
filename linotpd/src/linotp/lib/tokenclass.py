@@ -1573,14 +1573,14 @@ class TokenClass(object):
             if encrypted_token_pin == encrypted_pin:
                 res = True
         else:
-            # for hased pins we redo the hash and compare the hashes
+            # for hashed pins we re-do the hash and compare the hashes
             iv, hashed_token_pin = self.token.get_hashed_pin()
             iv, hashed_pin = SecretObj.hash_pin(pin or '', iv, hsm=hsm)
             if hashed_pin == hashed_token_pin:
                 res = True
 
             # special case of empty pin, where pin has never been set
-            # especialy in case of lost token with the pw token
+            # especially in case of lost token with the pw token
             if len(hashed_token_pin) == 0 and len(pin) == 0:
                 res = True
 

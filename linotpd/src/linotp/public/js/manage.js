@@ -1981,14 +1981,8 @@ function ldap_resolver_ldaps() {
      * This function checks if the LDAP URI is using SSL.
      * If so, it displays the CA certificate entry field.
      */
-    var sys_cert = false;
-    var use_sys_cert_key = 'certificates.use_system_certificates';
-    var server_config = get_server_config(use_sys_cert_key)
-    if (use_sys_cert_key in server_config) {
-        sys_cert = (server_config[use_sys_cert_key] == 'True');
-    }
 
-    if (sys_cert){
+    if (g.use_system_certificates){
         $('#ldap_resolver_certificate').hide();
         return false;
     }
@@ -6358,6 +6352,10 @@ function resolver_ldap(name){
     };
 
     g.current_resolver_name = name;
+
+    var config_key = 'certificates.use_system_certificates';
+    var server_config = get_server_config(config_key);
+    g.use_system_certificates = isDefinedKey(server_config, config_key) && server_config[config_key] == 'True';
 
     if (name) {
         // load the config of the resolver "name".
