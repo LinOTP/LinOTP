@@ -2393,7 +2393,7 @@ class AdminController(BaseController):
                        LDAPBASE == param['LDAPBASE']):
 
                         BindPW = linotp_config.get('enclinotp.ldapresolver.'
-                                                   'BINDPW.%s' % name)
+                                                   'BINDPW.%s' % name, '')
 
                 param['BINDPW'] = BindPW
 

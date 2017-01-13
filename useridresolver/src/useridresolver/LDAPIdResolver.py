@@ -239,26 +239,27 @@ class IdResolver (UserIdResolver):
         # handle local certificates
         #
 
-        if (not caller.use_sys_cert and
-           caller.CERTFILE and os.path.isfile(caller.CERTFILE)):
-
-            log.debug("using local cert file %r", caller.CERTFILE)
-            l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
-
-            #
-            # Force lib ldap to create a new SSL context (must be last
-            # TLS option!) from:
-            # https://github.com/rbarrois/python-ldap/blob/master/Demo/initialize.py
-            #
-
-            l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
-
-        else:
+        if caller.use_sys_cert:
 
             sys_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
             sys_cert_dir = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
             log.info("using system certificate file:  %r or system "
                      "certificate dir %r", sys_cert_file, sys_cert_dir)
+
+        else:
+
+            if caller.CERTFILE and os.path.isfile(caller.CERTFILE):
+
+                log.debug("using local cert file %r", caller.CERTFILE)
+                l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, caller.CERTFILE)
+
+                #
+                # Force lib ldap to create a new SSL context (must be last
+                # TLS option!) from:
+                # https://github.com/rbarrois/python-ldap/blob/master/Demo/initialize.py
+                #
+
+                l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
         if uri.startswith('ldap:'):
 
@@ -367,6 +368,7 @@ class IdResolver (UserIdResolver):
             uri = params['LDAPURI']
 
             if caller.use_sys_cert:
+
                 sys_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
                 sys_cert_dir = ldap.get_option(ldap.OPT_X_TLS_CACERTDIR)
                 log.info("using system certificate file:  %r or system "
