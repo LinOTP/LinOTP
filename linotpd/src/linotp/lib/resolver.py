@@ -78,86 +78,110 @@ class Resolver(object):
             handle name
         '''
         self.name = getParam(param, 'name', required)
-        # We should have no \.
+
+        # We should have no \. in resolver name
         # This only leads to problems.
         nameExp = "^[A-Za-z0-9_\-]+$"
         if re.match(nameExp, self.name) is None:
             exx = Exception("non conformant characters in resolver name: %s "
-                          " (not in %s)", self.name, nameExp)
+                            " (not in %s)", self.name, nameExp)
             raise exx
 
-        # handle types
+        # handle resolver types
         self.type = getParam(param, 'type', required)
         resolvertypes = get_resolver_types()
         if self.type not in resolvertypes:
             exx = Exception("resolver type : %s not in %s" %
-                          (self.type, unicode(resolvertypes)))
+                            (self.type, unicode(resolvertypes)))
             raise exx
+
+        #
+        # retrieve the resolver typing info
 
         resolver_config = get_resolver_class_config(self.type)
         if self.type in resolver_config:
-            config = resolver_config.get(self.type).get('config', {})
+            res_config = resolver_config.get(self.type).get('config', {})
         else:
-            config = resolver_config
+            res_config = resolver_config
 
-        for k in param:
-            if k != 'name' and k != 'type':
-                if k.startswith('type.') is True:
-                    key = k[len('type.'):]
-                    self.types[key] = param.get(k)
-                elif k.startswith('desc.') is True:
-                    key = k[len('desc.'):]
-                    self.desc[key] = param.get(k)
+        #
+        # process the provided arguments
 
-                elif 'session' == k:
-                    # supress session parameter
-                    pass
-                else:
-                    self.data[k] = param.get(k)
-                    if k in config:
-                        self.types[k] = config.get(k)
-                    else:
-                        log.warn("[setDefinition]: the passed key %r is not a "
-                                 "parameter for the resolver %r" % (k, self.type))
-        # now check if we have for every type def an parameter
-        ok = self._sanityCheck()
-        if ok is not True:
-            raise Exception("type definition does not match parameter! %s"
-                            % unicode(param))
+        for key, data_ in param.items():
+            type_ = None
+            desc_ = None
+
+            #
+            # skip not necessary parameter
+
+            if key in ['name', 'type', 'session']:
+                continue
+
+            #
+            # skip parameterized type and description entries
+            # - we integrate these information below
+
+            if key.startswith('desc.') or key.startswith('type.'):
+                continue
+            #
+            # get the 'type' information from the resolver
+
+            if key in res_config:
+                type_ = res_config[key]
+
+            #
+            # if provided use type information from the parameters and
+            # overwrite the resolver specific typing
+
+            if 'type.' + key in param:
+                type_ = param["type." + key]
+
+            #
+            # if provided, use description information from the parameters
+
+            if 'desc.' + key in param:
+                desc_ = param["desc." + key]
+
+            self.data[key] = (data_, type_, desc_)
 
         return
 
-    def _sanityCheck(self):
-        ret = True
-        for t in self.types:
-            if t not in self.data:
-                ret = False
-        for t in self.desc:
-            if t not in self.data:
-                ret = False
+    def getConfig(self, linotp_prefix=''):
+        """
+        generator to access the resolver entries
 
-        return ret
+        :param linotp_prefix: the pre prefix for the key
+        :return: generator for the access of the next() element
+        """
+
+        if self.name is None:
+            raise Exception("no resolver name defined")
+
+        #
+        # prepare the fully qualified key name
+
+        prefix = "%s%s" % (linotp_prefix, self.type)
+        postfix = self.name
+
+        for entry_name, entry in self.data.items():
+
+            key = "%s.%s.%s" % (prefix, entry_name, postfix)
+            val, type_, desc = entry
+
+            yield key, val, type_, desc
 
     def saveConfig(self):
-        res = 'success'
-        if self.name is None:
-            return "no resolver name defined"
-        # do the setConfig()'s
-        prefix = self.type + "."
-        postfix = "." + self.name
+        """
+        save the processed config to the global linotp config and to the db
 
-        for d in self.data:
-            key = prefix + d + postfix
-            val = self.data.get(d)
-            typ = None
-            desc = None
-            if d in self.types:
-                typ = self.types.get(d)
+        """
+        res = True
 
-            if d in self.desc:
-                desc = self.desc.get(d)
+        config = self.getConfig()
 
-            res = storeConfig(key, val, typ, desc)
+        for entry in config:
+            key, val, type_, desc = entry
+            res = storeConfig(key, val, type_, desc)
 
         return res
 
@@ -165,6 +189,16 @@ class Resolver(object):
 def defineResolver(params):
     """
     set up a new resolver from request parameters
+
+    the setup of the resolver includes the loading of the resolver config.
+    this is required to allow the resolver to check if all required parameters
+    are available.
+
+    As the resolver (for historical reasons) has access to the overall LinOTP
+    config, we have to prepare the resolver definition, which is done by the
+    Resolver() class. Thus during the defineResolver, we have first to merge
+    the LinOTP config with the new resolver config (from the params) and if the
+    loading of the config went well, we will do the saving of the resolver.
 
     :param params: dict of request parameters
     """
@@ -180,17 +214,46 @@ def defineResolver(params):
     if not resolver_clazz:
         raise Exception("no such resolver type '%r' defined!" % typ)
 
-    resolver = Resolver()
-    resolver.setDefinition(params)
-    res = resolver.saveConfig()
-
     resolver_spec = resolver_clazz + '.' + conf
-    resolver = getResolverObject(resolver_spec)
+
+    #
+    # we have to add the system wide configurations like
+    # "linotp.certificates.use_system_certificates"
+
+    config = {}
+    lconf = context['Config']
+    config.update(lconf)
+
+    #
+    # get the adjusted resolver configuration from the parameters
+
+    rconf = {}
+    resolver_definition = Resolver()
+    resolver_definition.setDefinition(params)
+
+    resolver_config = resolver_definition.getConfig(linotp_prefix='linotp.')
+
+    for entry in resolver_config:
+        key, val, _type_, _desc = entry
+        rconf[key] = val
+
+    #
+    # merge that config definition into the overall config, which is required
+    # for the loading of the resolvers - that will do the check if all
+    # required parameter are provided
+
+    config.update(rconf)
+
+    resolver = getResolverObject(resolver_spec, config=config)
 
     if resolver is None:
         return False
 
-    # finally, in case of an update, we have to flush the cache
+    #
+    # if all went fine we finally save the config and
+    # in case of an update, flush the cache
+
+    resolver_definition.saveConfig()
     _flush_user_resolver_cache(resolver_spec)
     return True
 
@@ -414,7 +477,7 @@ def deleteResolver(resolvername):
 
 
 # external in token.py user.py validate.py
-def getResolverObject(resolver_spec):
+def getResolverObject(resolver_spec, config=None):
 
     """
     get the resolver instance from a resolver specification.
@@ -442,6 +505,9 @@ def getResolverObject(resolver_spec):
 
     resolvers_loaded = context.setdefault('resolvers_loaded', {})
 
+    if not config:
+        config = getLinotpConfig()
+
     # test if the resolver is in the cache
     if resolver_spec in resolvers_loaded:
         return resolvers_loaded.get(resolver_spec)
@@ -465,7 +531,6 @@ def getResolverObject(resolver_spec):
 
         resolver = resolver_cls()
 
-        config = getLinotpConfig()
         try:
             resolver.loadConfig(config, config_identifier)
         except:

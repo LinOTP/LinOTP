@@ -1114,16 +1114,17 @@ class IdResolver (UserIdResolver):
             self.bindpw = self.getConfigEntry(config,
                                               "enclinotp.ldapresolver.BINDPW",
                                               conf)
-        except:
+        except Exception as exx:
             # if no enclinotp, the password obviously is not encrypted!
             self.bindpw = self.getConfigEntry(config,
                                               "linotp.ldapresolver.BINDPW",
-                                              conf, required=False)
+                                              conf)
 
         use_sys_cert = self.getConfigEntry(config,
                                            ("linotp.certificates."
                                             "use_system_certificates"),
-                                           conf)
+                                           conf,
+                                           required=False, default=False)
 
         self.use_sys_cert = use_sys_cert == 'True'
 
