@@ -29,6 +29,7 @@ except ImportError:
     from ez_setup import use_setuptools
     use_setuptools()
     from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
 
 import os
 import sys
@@ -37,6 +38,16 @@ from linotp import __version__
 
 # Taken from kennethreitz/requests/setup.py
 package_directory = os.path.realpath(os.path.dirname(__file__))
+
+
+# Inspired by http://www.mattlayman.com/2015/i18n.html
+class Build(build_py):
+    """Custom ``build_py`` command to ensure that mo files are always created."""
+
+    def run(self):
+        self.run_command('compile_catalog')
+        # build_py is an old style class so super cannot be used.
+        build_py.run(self)
 
 
 def get_file_contents(file_path):
@@ -103,9 +114,11 @@ setup(
         ],
     setup_requires=[
         'PasteScript>=1.6.3',
+        'Babel'
         ],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
+    package_data={'linotp': ['linotp/i18n/*/LC_MESSAGES/*.mo']},
     data_files=[
         (
             'etc/linotp2/',
@@ -254,6 +267,7 @@ setup(
     [nose.plugins]
     pylons = pylons.test:PylonsPlugin
     """,
-    long_description=get_file_contents('DESCRIPTION')
+    long_description=get_file_contents('DESCRIPTION'),
+    cmdclass={'build_py': Build}
 
 )
