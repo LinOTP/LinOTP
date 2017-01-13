@@ -267,7 +267,8 @@ class RemoteTokenClass(TokenClass):
 
         return request_is_valid
 
-    def do_request(self, passw, transactionid=None, user=None, autoassign=False):
+    def do_request(self, passw, transactionid=None, user=None,
+                   autoassign=False):
         """
         run the http request against the remote host
 
@@ -300,13 +301,14 @@ class RemoteTokenClass(TokenClass):
         remoteResConf = self.getFromTokenInfo("remote.resConf") or ""
         remoteResConf = remoteResConf.encode('utf-8')
 
-        ssl_verify = (str(getFromConfig("remote.verify_ssl_certificate",
-                                        "False").lower().strip() == 'true'))
+        ssl_verify_config = getFromConfig("remote.verify_ssl_certificate",
+                                          "False")
+        ssl_verify = str(ssl_verify_config).lower().strip() == 'true'
 
         # here we also need to check for remote.user and so on....
         log.debug("[checkOtp] checking OTP len:%r remotely on server: %r,"
-                  " serial: %r, user: %r" %
-                  (len(otpval), remoteServer, remoteSerial, remoteUser))
+                  " serial: %r, user: %r",
+                  len(otpval), remoteServer, remoteSerial, remoteUser)
         params = {}
 
         if autoassign:
@@ -366,7 +368,7 @@ class RemoteTokenClass(TokenClass):
                 # 'disable_ssl_certificate_validation'
 
                 log.warning("httplib2 'disable_ssl_certificate_validation' "
-                            "attribute error: %r" % exx)
+                            "attribute error: %r", exx)
                 # so we run in fallback mode
                 http = httplib2.Http()
 
