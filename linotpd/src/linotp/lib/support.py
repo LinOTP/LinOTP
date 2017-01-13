@@ -718,7 +718,7 @@ def verify_volume(lic_dict):
                       (lic_dict.get('token-num'), err))
         return False, "max %d" % token_volume
 
-    if num >= token_volume:
+    if num > token_volume:
         log.error("licensed token volume exceeded %r>%r" % (num, token_volume))
         used = _("tokens used")
         licnu = _("tokens supported")
