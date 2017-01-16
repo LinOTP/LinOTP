@@ -97,7 +97,7 @@ install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
 .PHONY: buildrpm
-buildrpm: buildtranslation
+buildrpm:
 	$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
 
 .PHONY: prepare-deb-source
@@ -122,7 +122,7 @@ prepare-deb-source: source
 
 # Ubuntu builds create source packages in linotpd/src
 .PHONY: ppa-preprocess
-ppa-preprocess: buildtranslation source
+ppa-preprocess: source
 	$(MAKE) prepare-deb-source DEB_BUILDDIR=linotp-build TAR_SUFFIX=ubuntu-temp.tar.gz
 	cd linotp-build && debuild -S
 

@@ -634,7 +634,6 @@ class SystemController(BaseController):
                                 "resolver with same name", new_resolver_name)
                     deleteResolver(new_resolver_name)
 
-
             resolver_loaded = defineResolver(param)
 
             if not resolver_loaded:
