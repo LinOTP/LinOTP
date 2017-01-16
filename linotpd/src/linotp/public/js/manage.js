@@ -887,7 +887,7 @@ function save_token_config(){
     show_waiting();
 
     /* for every token call the getParamCallback */
-    var params = {'session': getsession()};
+    var params = {};
     for (tt in $tokenConfigCallbacks) {
         try{
             if ($.inArray(tt, $token_config_changed)!==-1) {
@@ -2788,8 +2788,8 @@ function save_system_config(){
         'totp.timeWindow': $('#totp_timeWindow').val(),
         'client.FORWARDED_PROXY': $('#sys_forwarded_proxy').val(),
         'user_lookup_cache.expiration':  $('#sys_user_cache_expiration').val(),
-        'resolver_lookup_cache.expiration':  $('#sys_resolver_cache_expiration').val(),
-        'session':getsession()}
+        'resolver_lookup_cache.expiration':  $('#sys_resolver_cache_expiration').val()
+    }
 
     setSystemConfig(params);
 
@@ -2850,7 +2850,6 @@ function save_system_config(){
     }
 
     var params = {
-        'session':getsession(),
         'PrependPin' :prepend,
         'FailCounterIncOnFalsePin' : fcounter ,
         'splitAtSign' : splitatsign,
@@ -2877,6 +2876,7 @@ function save_system_config(){
  * @param {Object.<string, *>} values - the key value pairs representing the config to save
  */
 function setSystemConfig(values) {
+    values["session"] = getsession();
     $.post('/system/setConfig', values,
      function(data, textStatus, XMLHttpRequest){
         hide_waiting();
