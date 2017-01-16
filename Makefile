@@ -204,9 +204,7 @@ DEBIAN_MIRROR=ftp.debian.org
 # Pass proxy environment variables through to docker build by default
 DOCKER_PROXY_BUILD_ARGS= --build-arg=http_proxy --build-arg=https_proxy --build-arg=no_proxy
 
-ifneq "$(DEBIAN_MIRROR)" ""
 DOCKER_BUILD_ARGS+= --build-arg=DEBIAN_MIRROR=$(DEBIAN_MIRROR)
-endif
 
 # Default Docker run arguments.
 # Extra run arguments can be given here. It can also be used to
