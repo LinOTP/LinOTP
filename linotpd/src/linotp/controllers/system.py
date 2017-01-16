@@ -1185,6 +1185,8 @@ class SystemController(BaseController):
             scope = param.get("scope")
             sortname = param.get("sortname")
             sortorder = param.get("sortorder")
+            page = param.get("page", "1")
+            psize = param.get("rp", )
 
             log.debug("[policies_flexi] retrieving policy name: %s, realm:"
                       " %s, scope: %s, sort:%s by %s", name, realm, scope,
@@ -1221,16 +1223,25 @@ class SystemController(BaseController):
                            key=lambda policy: policy['cell'][sortnames[sortname]],
                            reverse=reverse)
             # end: sorting
+            lines_total = len(lines)
+
+            # reducing the page
+            if page and psize:
+                page = int(page)
+                psize = int(psize)
+                start = psize * (page - 1)
+                end = start + psize
+                lines = lines[start:end]
 
             # We need to return 'page', 'total', 'rows'
-            res = {"page": 1,
-                   "total": len(lines),
+            response.content_type = 'application/json'
+            res = {"page": int(page),
+                   "total": lines_total,
                    "rows": lines}
 
             c.audit['success'] = True
             c.audit['info'] = ("name = %s, realm = %s, scope = %s" %
                                (name, realm, scope))
-
             Session.commit()
             response.content_type = 'application/json'
             return json.dumps(res, indent=3)
