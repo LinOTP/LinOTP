@@ -31,8 +31,8 @@ WORKDIR /opt/linotp/tests
 ENTRYPOINT [ \
 		"/usr/local/bin/dockerfy", \
 			"--template", "docker_cfg.ini.tmpl:server_cfg.ini", \
-			"--wait", "tcp://{{ .Env.SELENIUM_HOST }}:{{ .Env.SELENIUM_PORT }}", "--timeout", "20s", \
-			"--wait", "tcp://{{ .Env.LINOTP_HOST }}:{{ .Env.LINOTP_PORT }}", "--timeout", "20s", \
+			"--wait", "tcp://{{ .Env.SELENIUM_HOST }}:{{ .Env.SELENIUM_PORT }}", "--timeout", "60s", \
+			"--wait", "tcp://{{ .Env.LINOTP_HOST }}:{{ .Env.LINOTP_PORT }}", "--timeout", "60s", \
 		    "--" \
 	]
 
