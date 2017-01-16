@@ -1,7 +1,7 @@
 # Spanish translations for LinOTP package - Spanish messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -22,7 +22,7 @@
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
-# linotp@lsexperts.de <>, 2015, 2016.
+# linotp@lsexperts.de <>, 2015, 2017.
 #
 msgid ""
 msgstr ""
@@ -2561,8 +2561,8 @@ msgid "LinOTP - the open source solution for two factor authentication."
 msgstr ""
 "LinOTP, la solución de código abierto para la autenticación de dos factores."
 
-msgid "Copyright (C) 2010 - 2016 KeyIdentity GmbH"
-msgstr "Copyright (C) 2010 - 2016 KeyIdentity GmbH"
+msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+msgstr "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "Bajo licencia AGPLv3"

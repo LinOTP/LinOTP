@@ -1,7 +1,7 @@
 # Chinese translations for LinOTP package - Chinese messages for LinOTP.
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH
+#    Copyright (C) 2010 - 2017 LSE Leading Security Experts GmbH
 #
 #    This file is part of LinOTP admin clients.
 #
@@ -22,7 +22,7 @@
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
 #    Support: www.lsexperts.de
-# linotp@lsexperts.de <>, 2015, 2016.
+# linotp@lsexperts.de <>, 2015, 2017.
 #
 msgid ""
 msgstr ""
@@ -2318,8 +2318,8 @@ msgstr "请选择您的支持和订阅文件"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP，双因素身份验证的开源解决方案。"
 
-msgid "Copyright (C) 2010 - 2016 LSE Leading Security Experts GmbH"
-msgstr "版权所有 (C) 2010 - 2016 LSE Leading Security Experts GmbH"
+msgid "Copyright (C) 2010 - 2017 LSE Leading Security Experts GmbH"
+msgstr "版权所有 (C) 2010 - 2017 LSE Leading Security Experts GmbH"
 
 msgid "Licensed under AGPLv3"
 msgstr "AGPLv3 版权公约"
