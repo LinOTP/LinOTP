@@ -60,7 +60,7 @@
     </tr>
     <tr>
         <td><label for="policy_user">${_("User")}</label></td>
-        <td><input type="text"  id="policy_user" size="40" maxlength="80"
+        <td><input type="text"  id="policy_user" size="40" maxlength="240"
             title='${_("The user or usergroup the policy should apply to")}'></td>
     </tr>
         <tr>
