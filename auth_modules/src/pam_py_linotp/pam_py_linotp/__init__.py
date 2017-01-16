@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #   LinOTP - the open source solution for two factor authentication
-#   Copyright (C) 2010 - 2016 KeyIdentity GmbH
+#   Copyright (C) 2010 - 2017 KeyIdentity GmbH
 #
 #   This file is part of LinOTP authentication modules.
 #
@@ -27,7 +27,7 @@
 # indirectly) import any module that might not yet be installed when installing
 # pam_py_linotp.
 
-__copyright__ = "Copyright (C) 2010 - 2016 KeyIdentity GmbH"
+__copyright__ = "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
 __email__ = "linotp@lsexperts.de"
