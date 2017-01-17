@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -135,6 +135,10 @@ def set_defaults():
         # make sure an upgrade screen is shown
         set_config(key="welcome_screen.version",
                    value="0", typ="text")
+        set_config(key="welcome_screen.last_shown",
+                   value="0", typ="text")
+        set_config(key="welcome_screen.opt_out",
+                   value="false", typ="text")
 
     log.info("Adding config default data...")
 
