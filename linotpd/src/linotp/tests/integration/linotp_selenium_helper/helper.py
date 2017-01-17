@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -45,7 +45,7 @@ def _find_and_wait(driver, by, value):
     for it to appear.
     """
     return WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((by, value))
+        EC.visibility_of_element_located((by, value))
         )
 
 def find_by_css(driver, selector):

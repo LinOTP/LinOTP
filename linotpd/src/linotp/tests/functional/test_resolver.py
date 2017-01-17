@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -56,6 +56,41 @@ class TestResolver(TestController):
         TestController.tearDown(self)
         self.delete_all_resolvers()
         return
+
+    def define_ldap_resolver(self, name, params=None):
+        """
+        """
+        u_map = {"username": "sAMAccountName",
+                 "phone": "telephoneNumber",
+                 "mobile": "mobile",
+                 "email": "mail",
+                 "surname": "sn",
+                 "givenname": "givenName"}
+
+        iparams = {
+            'BINDDN': 'cn=administrator,dc=yourdomain,dc=tld',
+            'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
+            'LDAPBASE': 'dc=yourdomain,dc=tld',
+            'name': name,
+            'CACERTIFICATE': '',
+            'LOGINNAMEATTRIBUTE': 'sAMAccountName',
+            'LDAPURI': 'ldap://linotpserver1, ldap://linotpserver2',
+            'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
+            'UIDTYPE': 'objectGUID',
+            # 'BINDPW': 'Test123!',
+            'USERINFO': json.dumps(u_map),
+            'TIMEOUT': u'5',
+            'SIZELIMIT': u'500',
+            'NOREFERRALS': u'True',
+            'type': u'ldapresolver',
+            'EnforceTLS': u'True'}
+
+        if params:
+            iparams.update(params)
+
+        response = self.make_system_request('setResolver', params=iparams)
+
+        return response, iparams
 
     def createSQLResolver(self, name='name', resolver_spec=None,
                           user_mapping=None):
@@ -113,6 +148,41 @@ class TestResolver(TestController):
                                             params=resolver_spec)
 
         return response
+
+    def test_try_to_create_faulty_resolver(self):
+        """
+        test: it's not possible to define a resolver w.o. required parameters
+        """
+
+        #
+        # define resolver LDA w. the required BINDPW
+
+        params = {'BINDPW': 'Test123!'}
+        response, params = self.define_ldap_resolver('LDA', params=params)
+        self.assertTrue('"status": true,' in response, response)
+
+        #
+        # and check if its available
+
+        response = self.make_system_request('getResolvers', params=params)
+        self.assertTrue("LDA" in response, response)
+
+        #
+        # now try to define resolver LDA2 w.o. the required BINDPW
+
+        response, params = self.define_ldap_resolver('LDA2')
+        msg1 = "Unable to instantiate the resolver u'LDA2'"
+        msg2 = "Please verify configuration or connection!"
+        self.assertIn(msg1, response, response)
+        self.assertIn(msg2, response, response)
+
+        #
+        # and check that it is not available
+
+        response = self.make_system_request('getResolvers', params={})
+        self.assertFalse("LDA2" in response, response)
+
+        return
 
     def test_resolver_duplicate(self):
         """
