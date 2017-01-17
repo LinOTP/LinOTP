@@ -4194,6 +4194,12 @@ $(document).ready(function(){
         open: function() {
             do_dialog_icons();
             ldap_resolver_ldaps();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
+
         }
     });
 
@@ -4329,6 +4335,11 @@ $(document).ready(function(){
         open: function() {
             do_dialog_icons();
             http_resolver_https();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
         }
     });
 
@@ -4403,7 +4414,14 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: do_dialog_icons
+        open: function() {
+            do_dialog_icons();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
+        }
     });
 
     $('#button_test_sql').click(function(event){
@@ -4484,7 +4502,14 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: do_dialog_icons
+        open: function() {
+            do_dialog_icons();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
+        }
     });
 
 
