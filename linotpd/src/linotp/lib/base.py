@@ -128,7 +128,8 @@ def set_defaults():
     :return: - nothing -
     '''
 
-    is_upgrade = 0 != Session.query(linotp.model.Config).filter().count()
+    is_upgrade = 0 != Session.query(linotp.model.Config).filter(
+                          linotp.model.Config.Key == "linotp.Config").count()
 
     if(is_upgrade):
         # if it is an upgrade and no welcome screen was shown before,
