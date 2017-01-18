@@ -41,8 +41,10 @@ Defines the rough interface for a UserId Resolver
 
 """
 
+
 class ResolverLoadConfigError(Exception):
     pass
+
 
 class UserIdResolver(object):
 
@@ -53,6 +55,9 @@ class UserIdResolver(object):
               }
     name = ""
     id = ""
+
+    critical_parameters = []
+    crypted_parameters = []
 
     def __init(self):
         """

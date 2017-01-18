@@ -28,13 +28,9 @@
 """ """
 
 import logging
-import random
-from datetime import datetime
-from datetime import timedelta
 from pylons import config
 
 import json
-
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy import engine_from_config
@@ -68,22 +64,24 @@ class TestResolver(TestController):
                  "givenname": "givenName"}
 
         iparams = {
-            'BINDDN': 'cn=administrator,dc=yourdomain,dc=tld',
-            'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
-            'LDAPBASE': 'dc=yourdomain,dc=tld',
             'name': name,
-            'CACERTIFICATE': '',
-            'LOGINNAMEATTRIBUTE': 'sAMAccountName',
+            'BINDDN': 'cn=administrator,dc=yourdomain,dc=tld',
+            'LDAPBASE': 'dc=yourdomain,dc=tld',
             'LDAPURI': 'ldap://linotpserver1, ldap://linotpserver2',
+
+            'CACERTIFICATE': '',
+
+            'LOGINNAMEATTRIBUTE': 'sAMAccountName',
             'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
+            'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
             'UIDTYPE': 'objectGUID',
-            # 'BINDPW': 'Test123!',
             'USERINFO': json.dumps(u_map),
-            'TIMEOUT': u'5',
-            'SIZELIMIT': u'500',
-            'NOREFERRALS': u'True',
-            'type': u'ldapresolver',
-            'EnforceTLS': u'True'}
+
+            'TIMEOUT': '5',
+            'SIZELIMIT': '500',
+            'NOREFERRALS': 'True',
+            'type': 'ldapresolver',
+            'EnforceTLS': 'True'}
 
         if params:
             iparams.update(params)
@@ -92,8 +90,7 @@ class TestResolver(TestController):
 
         return response, iparams
 
-    def createSQLResolver(self, name='name', resolver_spec=None,
-                          user_mapping=None):
+    def define_sql_resolver(self, name, params=None, user_mapping=None):
         """
         create sql useridresolver
         """
@@ -120,19 +117,19 @@ class TestResolver(TestController):
                 }
         user_mapping.update(usermap)
 
-        if not resolver_spec:
-            resolver_spec = {}
+        if not params:
+            params = {}
 
         resolver_def = {
-                'Map': json.dumps(usermap),
                 'name': name,
 
                 'Server': server,
                 'Database': db_url.database,
                 'Driver': db_url.drivername,
                 'User': db_url.username,
-                'Password': db_url.password,
+                # 'Password': db_url.password,
 
+                'Map': json.dumps(usermap),
                 'Where': u'',
                 'Encoding': u'',
                 'Limit': u'40',
@@ -141,13 +138,13 @@ class TestResolver(TestController):
                 'Port': u'3306',
                 'conParams': u''}
 
-        resolver_spec.update(resolver_def)
-        resolver_spec['name'] = name
+        resolver_def.update(params)
+        resolver_def['name'] = name
 
         response = self.make_system_request('setResolver',
-                                            params=resolver_spec)
+                                            params=resolver_def)
 
-        return response
+        return response, resolver_def
 
     def test_try_to_create_faulty_resolver(self):
         """
@@ -186,8 +183,7 @@ class TestResolver(TestController):
 
     def test_resolver_duplicate(self):
         """
-        verify that it is not possible to have multiple resolvers
-        with same name and differnt type
+        test: it is not possible to have multiple resolvers with same name
         """
 
         params = {'resolver': 'myDefRes'}
@@ -201,22 +197,130 @@ class TestResolver(TestController):
         value = jresp.get('result', {}).get('value', {})
         self.assertIn('passwdresolver.fileName.myDefRes', value, response)
 
-        response = self.createSQLResolver(name='myDefRes')
-        self.assertTrue('"value": true'in response, response)
+        response, _defi = self.define_sql_resolver(name='myDefRes')
+        msg = "Cound not create resolver, resolver u'myDefRes' already exists!"
+        self.assertTrue(msg in response, response)
 
         response = self.make_system_request('getConfig')
         jresp = json.loads(response.body)
         value = jresp.get('result', {}).get('value', {})
-        self.assertNotIn('passwdresolver.fileName.myDefRes', value, response)
-        self.assertIn('sqlresolver.Limit.myDefRes', value, response)
+        self.assertIn('passwdresolver.fileName.myDefRes', value, response)
+        self.assertNotIn('sqlresolver.Limit.myDefRes', value, response)
 
         params = {'resolver': 'myDefRes'}
         response = self.make_system_request('getResolver', params=params)
         jresp = json.loads(response.body)
         data = jresp.get('result', {}).get('value', {}).get('data', {})
-        self.assertNotIn('fileName', data, response)
-        self.assertIn('Server', data, response)
+        self.assertIn('fileName', data, response)
+        self.assertNotIn('Server', data, response)
 
         return
+
+    def test_rename_resolver(self):
+        """
+        test: it's possible to rename a resolver w.o. required parameters
+        """
+
+        #
+        # define resolver LDA w. the required BINDPW
+
+        params = {'BINDPW': 'Test123!'}
+        response, params = self.define_ldap_resolver('LDX', params=params)
+        self.assertTrue('"status": true,' in response, response)
+
+        #
+        # rename resolver LDX to LDZ w.o. password
+        # as no critical changes are made
+
+        params = {'previous_name': 'LDX'}
+        response, params = self.define_ldap_resolver('LDZ', params=params)
+        self.assertTrue('"status": true,' in response, response)
+
+        response = self.make_system_request('getResolvers')
+        self.assertNotIn('LDX', response, response)
+        self.assertIn('LDZ', response, response)
+
+    def test_update_critical_data_ldap(self):
+        """
+        test: it's not possible to define a resolver w. critical changes
+        """
+
+        #
+        # define resolver LDA w. the required BINDPW
+
+        params = {'BINDPW': 'Test123!'}
+        response, params = self.define_ldap_resolver('LDX', params=params)
+        self.assertTrue('"status": true,' in response, response)
+
+        #
+        # rename resolver LDA to LDB with critical changes
+        # w.o. password will fail
+
+        params = {'previous_name': 'LDX',
+                  'BINDDN': 'ou=roundabout, '
+                            'cn=administrator,dc=yourdomain,dc=tld', }
+        response, params = self.define_ldap_resolver('LDZ', params=params)
+        self.assertTrue('"status": false,' in response, response)
+
+        response = self.make_system_request('getResolvers')
+        self.assertNotIn('LDZ', response, response)
+        self.assertIn('LDX', response, response)
+
+        #
+        # rename resolver LDA to LDB with critical changes
+        # w. password will have success
+
+        params = {'previous_name': 'LDX',
+                  'BINDPW': 'Test123!',
+                  'BINDDN': 'ou=roundabout, '
+                            'cn=administrator,dc=yourdomain,dc=tld', }
+
+        response, params = self.define_ldap_resolver('LDZ', params=params)
+        self.assertTrue('"status": true,' in response, response)
+
+        response = self.make_system_request('getResolvers')
+        self.assertNotIn('LDX', response, response)
+        self.assertIn('LDZ', response, response)
+
+    def test_update_critical_data_sql(self):
+        """
+        test: it's not possible to define a resolver w. critical changes
+        """
+
+        #
+        # define resolver SQX w. the required Password
+
+        params = {"Password": "Test123!", }
+        response, params = self.define_sql_resolver('SQX', params=params)
+        self.assertTrue('"status": true,' in response, response)
+
+        #
+        # rename resolver SQX to SQZ with critical changes
+        # w.o. password will fail
+
+        params = {'previous_name': 'SQX',
+                  'User': 'dummy_user', }
+
+        response, params = self.define_sql_resolver('SQZ', params=params)
+        self.assertTrue('"status": false,' in response, response)
+
+        response = self.make_system_request('getResolvers')
+        self.assertNotIn('SQZ', response, response)
+        self.assertIn('SQX', response, response)
+
+        #
+        # rename resolver SQX to SQZ with critical changes
+        # w. password will have success
+
+        params = {'previous_name': 'SQX',
+                  'User': 'dummy_user',
+                  'Password': 'Test123!'}
+
+        response, params = self.define_sql_resolver('SQZ', params=params)
+        self.assertTrue('"status": true,' in response, response)
+
+        response = self.make_system_request('getResolvers')
+        self.assertNotIn('SQX', response, response)
+        self.assertIn('SQZ', response, response)
 
 # eof #########################################################################
