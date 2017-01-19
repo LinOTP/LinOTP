@@ -1450,6 +1450,7 @@ syst></textarea></td>
         $("#dialog_resolvers" ).dialog( "option", "title", '${_("Resolver")}');
         $('#button_resolver_new .ui-button-text').html(escape('${_("New")}'));
         $('#button_resolver_edit .ui-button-text').html(escape('${_("Edit")}'));
+        $('#button_resolver_duplicate .ui-button-text').html(escape('${_("Duplicate")}'));
         $('#button_resolver_delete .ui-button-text').html(escape('${_("Delete")}'));
         $('#button_resolver_close .ui-button-text').html(escape('${_("Close")}'));
     }
