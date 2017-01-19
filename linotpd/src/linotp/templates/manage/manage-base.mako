@@ -1798,32 +1798,43 @@ syst></textarea></td>
         <fieldset>
             <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
             <table>
-            <tr><td><label for=ldap_resolvername>${_("Resolver name")}:</label></td>
-                <td><input type="text" name="ldap_resolvername" class="required"  id="ldap_resolvername" size="35" maxlength="20"></td></tr>
-            <tr><td><label for=ldap_uri>${_("Server-URI")}:</label></td>
-                <td><input type="text" name="ldap_uri" class="required"  id="ldap_uri" size="35" maxlength="200"
-                    onkeyup="ldap_resolver_ldaps();"></td></tr>
-            <tr id="ldap_resolver_certificate"><td>
-                <label for="ldap_certificate">${_("CA Certificate")}:</label></td>
-                <td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"
-                    title='${_("If you are using LDAPS you can enter the CA certificate in PEM format here.")}'> </textarea></td>
+                <colgroup>
+                    <col span="1" class="label-column">
+                    <col span="1">
+                </colgroup>
+                <tr><td><label for=ldap_resolvername>${_("Resolver name")}:</label></td>
+                    <td><input type="text" name="ldap_resolvername" class="required"  id="ldap_resolvername" size="35" maxlength="20"></td></tr>
+                <tr><td><label for=ldap_uri>${_("Server-URI")}:</label></td>
+                    <td><input type="text" name="ldap_uri" class="required"  id="ldap_uri" size="35" maxlength="200"
+                        onkeyup="ldap_resolver_ldaps();"></td></tr>
+                <tr id="ldap_resolver_certificate"><td>
+                    <label for="ldap_certificate">${_("CA Certificate")}:</label></td>
+                    <td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"
+                        title='${_("If you are using LDAPS you can enter the CA certificate in PEM format here.")}'> </textarea></td>
+                    </tr>
+                <tr><td><label for=ldap_basedn>${_("BaseDN")}:</label></td>
+                    <td><input type="text" name="ldap_basedn" class="required"  id="ldap_basedn" size="35" maxlength="200"></td></tr>
+                <tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>
+                    <td><input type="text" name="ldap_binddn" id="ldap_binddn" size="35" maxlength="200"></td></tr>
+                <tr>
+                    <td>
+                        <label for=ldap_password>${_("Bind Password")}</label>:
+                    </td>
+                    <td>
+                        <input type="password" autocomplete="off" name="ldap_password" id="ldap_password" size="35" maxlength="60">
+                        <div class="input_hint">${_("If security relevant information is changed, for example the URL, the password has to be provided to avoid unprivileged exposure of the password.")}</div>
+                    </td>
                 </tr>
-            <tr><td><label for=ldap_basedn>${_("BaseDN")}:</label></td>
-                <td><input type="text" name="ldap_basedn" class="required"  id="ldap_basedn" size="35" maxlength="200"></td></tr>
-            <tr><td><label for=ldap_binddn>${_("BindDN")}:</label></td>
-                <td><input type="text" name="ldap_binddn" id="ldap_binddn" size="35" maxlength="200"></td></tr>
-            <tr><td><label for=ldap_password>${_("Bind Password")}</label>:</td>
-                <td><input type="password" autocomplete="off" name="ldap_password" id="ldap_password" size="35" maxlength="60" data-msg-required='${_("It is required to enter the password to save the resolver")}'></td></tr>
-            <tr><td><label for=ldap_timeout>${_("Timeout")}</label>:</td>
-                <td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="10"></td></tr>
-            <tr><td><label for=ldap_sizelimit>${_("Sizelimit")}:</label></td>
-                <td><input type="text" name="ldap_sizelimit" class="required"  id="ldap_sizelimit" size="35" maxlength="10"></td></tr>
-            <tr><td> </td>
-                <td><input type="checkbox" name="noreferrals" value="noreferralss" id="ldap_noreferrals">
-                    <label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
-            <tr><td> </td>
-                <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls">
-                    <label for="ldap_enforce_tls">${_("Enforce TLS")}</label></td></tr>
+                <tr><td><label for=ldap_timeout>${_("Timeout")}</label>:</td>
+                    <td><input type="text" name="ldap_timeout" class="required"  id="ldap_timeout" size="35" maxlength="10"></td></tr>
+                <tr><td><label for=ldap_sizelimit>${_("Sizelimit")}:</label></td>
+                    <td><input type="text" name="ldap_sizelimit" class="required"  id="ldap_sizelimit" size="35" maxlength="10"></td></tr>
+                <tr><td> </td>
+                    <td><input type="checkbox" name="noreferrals" value="noreferralss" id="ldap_noreferrals">
+                        <label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
+                <tr><td> </td>
+                    <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls">
+                        <label for="ldap_enforce_tls">${_("Enforce TLS")}</label></td></tr>
             </table>
 
             <button class="action-button" id="button_test_ldap">${_("Test LDAP Server connection")}</button>
@@ -1833,21 +1844,26 @@ syst></textarea></td>
         <fieldset>
             <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
             <table>
-            <tr><td><label for="ldap_loginattr">${_("LoginName Attribute")}:</label></td>
-                <td><input type="text" name="ldap_loginattr" class="required"  id="ldap_loginattr" size="35" maxlength="60"></td></tr>
-            <tr><td><label for="ldap_searchfilter">${_("Searchfilter")}:</label></td>
-                <td><input type="text" name="ldap_searchfilter" class="required"  id="ldap_searchfilter" size="35" maxlength="200"></td></tr>
-            <tr><td><label for="ldap_userfilter">${_("Userfilter")}:</label></td>
-                <td><input type="text" name="ldap_userfilter" class="required"  id="ldap_userfilter" size="35" maxlength="200"></td></tr>
-            <tr><td><label for="ldap_mapping">${_("Attribute mapping")}:</label></td>
-                <td><input type="text" name="ldap_mapping" class="required"  id="ldap_mapping" size="35" maxlength="200"></td></tr>
-            <tr><td><label for="ldap_uidtype" title="${_('The UID (unique identifier) for your LDAP objects - could be DN, GUID or entryUUID (LDAP) or objectGUID (Active Directory)')}">${_("UID Type")}:</label></td>
-                <td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20" maxlength="20"></td></tr>
+                <colgroup>
+                    <col span="1" class="label-column">
+                    <col span="1">
+                </colgroup>
+                <tr><td><label for="ldap_loginattr">${_("LoginName Attribute")}:</label></td>
+                    <td><input type="text" name="ldap_loginattr" class="required"  id="ldap_loginattr" size="35" maxlength="60"></td></tr>
+                <tr><td><label for="ldap_searchfilter">${_("Searchfilter")}:</label></td>
+                    <td><input type="text" name="ldap_searchfilter" class="required"  id="ldap_searchfilter" size="35" maxlength="200"></td></tr>
+                <tr><td><label for="ldap_userfilter">${_("Userfilter")}:</label></td>
+                    <td><input type="text" name="ldap_userfilter" class="required"  id="ldap_userfilter" size="35" maxlength="200"></td></tr>
+                <tr><td><label for="ldap_mapping">${_("Attribute mapping")}:</label></td>
+                    <td><input type="text" name="ldap_mapping" class="required"  id="ldap_mapping" size="35" maxlength="200"></td></tr>
+                <tr><td><label for="ldap_uidtype" title="${_('The UID (unique identifier) for your LDAP objects - could be DN, GUID or entryUUID (LDAP) or objectGUID (Active Directory)')}">${_("UID Type")}:</label></td>
+                    <td><input type="text" name="ldap_uidtype" id="ldap_uidtype" size="20" maxlength="20"></td></tr>
+                </table>
+                <table width="100%"><tr>
+                <td><button class="action-button" id="button_preset_ad">${_("Preset Active Directory")}</button></td>
+                <td><button class="action-button" id="button_preset_ldap">${_("Preset LDAP")}</button></td>
+                </tr>
             </table>
-            <table width="100%"><tr>
-            <td><button class="action-button" id="button_preset_ad">${_("Preset Active Directory")}</button></td>
-            <td><button class="action-button" id="button_preset_ldap">${_("Preset LDAP")}</button></td>
-            </tr></table>
         </fieldset>
     </form>
 </div>
@@ -1869,29 +1885,33 @@ syst></textarea></td>
         <fieldset>
             <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
             <table>
-            <tr><td><label for=http_resolvername>${_("Resolver name:")}</label></td>
-                <td><input type="text" name="Resolvername" class="required"
-                    id="http_resolvername" size="35" maxlength="20"></td></tr>
-            <tr><td><label for=http_uri>${_("Server-URI:")}</label></td>
-                <td><input type="text" name="Uri" class="required"
-                    id="http_uri" size="35" maxlength="200"></td></tr>
-            <tr id="http_resolver_certificate"><td>
-                <label for="http_certificate">${_("CA Certificate:")}</label></td>
-                <td><textarea name="Certificate" id="http_certificate" cols="34" rows="5"
-                    title='If you are using HTTP you can enter the CA certificate in PEM format here.'> </textarea></td>
+                <colgroup>
+                    <col span="1" class="label-column">
+                    <col span="1">
+                </colgroup>
+                <tr><td><label for=http_resolvername>${_("Resolver name:")}</label></td>
+                    <td><input type="text" name="Resolvername" class="required"
+                        id="http_resolvername" size="35" maxlength="20"></td></tr>
+                <tr><td><label for=http_uri>${_("Server-URI:")}</label></td>
+                    <td><input type="text" name="Uri" class="required"
+                        id="http_uri" size="35" maxlength="200"></td></tr>
+                <tr id="http_resolver_certificate"><td>
+                    <label for="http_certificate">${_("CA Certificate:")}</label></td>
+                    <td><textarea name="Certificate" id="http_certificate" cols="34" rows="5"
+                        title='If you are using HTTP you can enter the CA certificate in PEM format here.'> </textarea></td>
+                    </tr>
+                <tr><td><label for=http_authuser>${_("Auth User:")}</label></td>
+                    <td><input type="text" name="Authuser" id="http_authuser" size="35" maxlength="200"></td></tr>
+                <tr><td><label for=http_password>${_("Password")}</label>:</td>
+                    <td><input type="password" autocomplete="off" name="Password" id="http_password" size="35" maxlength="60"></td></tr>
+                <tr><td><label for=http_timeout>${_("Timeout")}</label>:</td>
+                    <td><input type="text" name="Timeout" class="required"  id="http_timeout" size="35" maxlength="5"></td></tr>
+                <tr><td> </td>
+                    <td>
+                    <button class="action-button" id="button_test_http">${_("Test HTTP Server connection")}</button>
+                    <div id="progress_test_http"><img src="/images/ajax-loader.gif" border="0" alt="">${_("Testing connection ... ")}</div>
+                    </td>
                 </tr>
-            <tr><td><label for=http_authuser>${_("Auth User:")}</label></td>
-                <td><input type="text" name="Authuser" id="http_authuser" size="35" maxlength="200"></td></tr>
-            <tr><td><label for=http_password>${_("Password")}</label>:</td>
-                <td><input type="password" autocomplete="off" name="Password" id="http_password" size="35" maxlength="60" data-msg-required='${_("It is required to enter the password to save the resolver")}'></td></tr>
-            <tr><td><label for=http_timeout>${_("Timeout")}</label>:</td>
-                <td><input type="text" name="Timeout" class="required"  id="http_timeout" size="35" maxlength="5"></td></tr>
-            <tr><td> </td>
-                <td>
-                <button class="action-button" id="button_test_http">${_("Test HTTP Server connection")}</button>
-                <div id="progress_test_http"><img src="/images/ajax-loader.gif" border="0" alt="">${_("Testing connection ... ")}</div>
-                </td>
-            </tr>
             </table>
 
         </fieldset>
@@ -1970,41 +1990,56 @@ syst></textarea></td>
 <form class="cmxform" id="form_sqlconfig" action="">
   <fieldset>
     <legend class='resolver_dialog_label'>${_("Server Configuration")}</legend>
-    <table>
-        <tr><td><label for=sql_resolvername>${_("Resolver name")}:</label></td>
-            <td><input type="text" name="sql_resolvername" class="required"  id="sql_resolvername" size="30" maxlength="20"></td></tr>
-        <tr><td><label for=sql_driver>${_("Driver")}:</label></td>
-            <td><input type="text" name="sql_driver" class="required"  id="sql_driver" size="30" maxlength="40"></td></tr>
-        <tr><td><label for=sql_server>${_("Server")}:</label></td>
-            <td><input type="text" name="sql_server"  id="sql_server" size="30" maxlength="80"></td></tr>
-        <tr><td><label for=sql_port>${_("Port")}:</label></td>
-            <td><input type="text" name="sql_port"  id="sql_port" size="30" maxlength="5"></td></tr>
-        <tr><td><label for=sql_database>${_("Database")}:</label></td>
-            <td><input type="text" name="sql_database"  id="sql_database" size="30" maxlength="60"></td></tr>
-        <tr><td><label for=sql_user>${_("User")}:</label></td>
-            <td><input type="text" name="sql_user"   id="sql_user" size="30" maxlength="60"></td></tr>
-        <tr><td><label for=sql_password>${_("Password")}:</label></td>
-            <td><input type="password" autocomplete="off" name="sql_password" id="sql_password" size="30" maxlength="60" data-msg-required='${_("It is required to enter the password to save the resolver")}'></td></tr>
-        <tr><td><label for=sql_table>${_("Database table")}:</label></td>
-            <td><input type="text" name="sql_table" class="required"  id="sql_table" size="30" maxlength="60"></td></tr>
-        <tr><td><label for=sql_limit>${_("Limit")}:</label></td>
-            <td><input type="text" name="sql_limit" class="required"  id="sql_limit" size="30" maxlength="5"></td></tr>
-        <tr><td><label for=sql_encoding>${_("Database encoding")}:</label></td>
-            <td><input type="text" name="sql_encoding" class="optional"  id="sql_encoding" size="30" maxlength="200"></td></tr>
-        <tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
-            <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30"></td></tr>
-    </table>
-    <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
-    <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
+        <table>
+            <colgroup>
+                <col span="1" class="label-column">
+                <col span="1">
+            </colgroup>
+            <tr><td><label for=sql_resolvername>${_("Resolver name")}:</label></td>
+                <td><input type="text" name="sql_resolvername" class="required"  id="sql_resolvername" size="30" maxlength="20"></td></tr>
+            <tr><td><label for=sql_driver>${_("Driver")}:</label></td>
+                <td><input type="text" name="sql_driver" class="required"  id="sql_driver" size="30" maxlength="40"></td></tr>
+            <tr><td><label for=sql_server>${_("Server")}:</label></td>
+                <td><input type="text" name="sql_server"  id="sql_server" size="30" maxlength="80"></td></tr>
+            <tr><td><label for=sql_port>${_("Port")}:</label></td>
+                <td><input type="text" name="sql_port"  id="sql_port" size="30" maxlength="5"></td></tr>
+            <tr><td><label for=sql_database>${_("Database")}:</label></td>
+                <td><input type="text" name="sql_database"  id="sql_database" size="30" maxlength="60"></td></tr>
+            <tr><td><label for=sql_user>${_("User")}:</label></td>
+                <td><input type="text" name="sql_user"   id="sql_user" size="30" maxlength="60"></td></tr>
+            <tr>
+                <td>
+                    <label for=sql_password>${_("Password")}</label>:
+                </td>
+                <td>
+                    <input type="password" autocomplete="off" name="sql_password" id="sql_password" size="30" maxlength="60">
+                    <div class="input_hint">${_("If security relevant information is changed, for example the URL, the password has to be provided to avoid unprivileged exposure of the password.")}</div>
+                </td>
+            </tr>
+            <tr><td><label for=sql_table>${_("Database table")}:</label></td>
+                <td><input type="text" name="sql_table" class="required"  id="sql_table" size="30" maxlength="60"></td></tr>
+            <tr><td><label for=sql_limit>${_("Limit")}:</label></td>
+                <td><input type="text" name="sql_limit" class="required"  id="sql_limit" size="30" maxlength="5"></td></tr>
+            <tr><td><label for=sql_encoding>${_("Database encoding")}:</label></td>
+                <td><input type="text" name="sql_encoding" class="optional"  id="sql_encoding" size="30" maxlength="200"></td></tr>
+            <tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
+                <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30"></td></tr>
+        </table>
+        <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
+        <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
     </fieldset>
 
     <fieldset>
       <legend class='resolver_dialog_label'>${_("Mapping Attributes")}</legend>
         <table>
-        <tr><td><label for=sql_mapping>${_("Attribute mapping")}:</label></td>
-            <td><input type="text" name="sql_mapping" class="required"  id="sql_mapping" size="35" maxlength="200"></td></tr>
-        <tr><td><label for=sql_where>${_("Where statement")}:</label></td>
-            <td><input type="text" name="sql_where" class="optional"  id="sql_where" size="35" maxlength="200"></td></tr>
+            <colgroup>
+                <col span="1" class="label-column">
+                <col span="1">
+            </colgroup>
+            <tr><td><label for=sql_mapping>${_("Attribute mapping")}:</label></td>
+                <td><input type="text" name="sql_mapping" class="required"  id="sql_mapping" size="35" maxlength="200"></td></tr>
+            <tr><td><label for=sql_where>${_("Where statement")}:</label></td>
+                <td><input type="text" name="sql_where" class="optional"  id="sql_where" size="35" maxlength="200"></td></tr>
         </table>
     </fieldset></form>
 </div>
@@ -2019,12 +2054,20 @@ syst></textarea></td>
 
 
 <div id="dialog_file_resolver">
-<form class="cmxform" id="form_fileconfig" action=""><fieldset><table>
-        <tr><td><label for=file_resolvername>${_("Resolver name")}:</label></td>
-            <td><input type="text" name="file_resolvername" class="required"  id="file_resolvername" size="35" maxlength="20"></td></tr>
-        <tr><td><label for=file_filename>${_("filename")}:</label></td>
-            <td><input type="text" name="file_filename" class="required"  id="file_filename" size="35" maxlength="200"></td></tr>
-        </table></fieldset></form>
+    <form class="cmxform" id="form_fileconfig" action="">
+        <fieldset>
+            <table>
+                <colgroup>
+                    <col span="1" class="label-column">
+                    <col span="1">
+                </colgroup>
+                <tr><td><label for=file_resolvername>${_("Resolver name")}:</label></td>
+                    <td><input type="text" name="file_resolvername" class="required"  id="file_resolvername" size="35" maxlength="20"></td></tr>
+                <tr><td><label for=file_filename>${_("filename")}:</label></td>
+                    <td><input type="text" name="file_filename" class="required"  id="file_filename" size="35" maxlength="200"></td></tr>
+            </table>
+        </fieldset>
+    </form>
 </div>
 <script type="text/javascript">
     function translate_dialog_sql_resolver() {
