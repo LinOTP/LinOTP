@@ -170,5 +170,9 @@ def make_map(global_conf, app_conf,):
             routeMap.connect('/%s/{action}' % cont, controller = cont)
             routeMap.connect('/%s/{action}/{id}' % cont, controller=cont)
 
+    # check if the maintenance controller is activated
+    maintenance = app_conf.get('service.maintenance', 'False') == 'True'
+    if maintenance:
+        routeMap.connect('/maintenance/{action}', controller='maintenance')
 
     return routeMap
