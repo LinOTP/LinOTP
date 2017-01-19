@@ -2911,7 +2911,10 @@ function save_ldap_config(){
     };
     var url = '/system/setResolver';
     var params = {}
+
     params['name']= resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
     for (var key in ldap_map) {
         var new_key = ldap_map[key];
@@ -2964,7 +2967,10 @@ function save_http_config(){
     var url = '/system/setResolver';
     var params = get_form_input('form_httpconfig')
     params["session"] = getsession();
+
     params['name'] = resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
 
     show_waiting();
@@ -3075,7 +3081,10 @@ function save_file_config(){
     var resolvertype = "passwdresolver";
     var fileName = $('#file_filename').val();
     var params = {};
+
     params['name'] = resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
     params['fileName'] = fileName;
     params['session'] = getsession();
@@ -3115,8 +3124,12 @@ function save_sql_config(){
     };
     var url = '/system/setResolver';
     var params = {};
+
     params['name'] = resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
+
     for (var key in map) {
         var value = $(key).val();
         var new_key = map[key];
