@@ -6411,11 +6411,13 @@ function resolver_ldap(name){
     var server_config = get_server_config(config_key);
     g.use_system_certificates = isDefinedKey(server_config, config_key) && server_config[config_key] == 'True';
 
+    var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
+
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
             var resp = xhdr.responseText;
-            var obj = jQuery.parseJSON(resp);
+            obj = jQuery.parseJSON(resp);
             $('#ldap_resolvername').val(name);
             if (obj.result.status) {
                 resolver_set_ldap(obj);
@@ -6427,11 +6429,28 @@ function resolver_ldap(name){
                            'is_escaped': true});
             }
         });
+
         $('#ldap_password').attr("placeholder", password_placeholder_not_changed);
+
+        critical_inputs.on('change keyup', function(e) {
+            var sth_changed = $('#ldap_uri').val()    != obj.result.value.data.LDAPURI
+                           || $('#ldap_basedn').val() != obj.result.value.data.LDAPBASE
+                           || $('#ldap_binddn').val() != obj.result.value.data.BINDDN;
+
+            $("#ldap_password").rules("add", {
+                required: sth_changed
+            });
+
+            $('#ldap_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
+
+            if(!sth_changed) $("#ldap_password").valid();
+        });
     }
     else {
         $('#ldap_resolvername').val("");
         $('#ldap_password').attr("placeholder", password_placeholder_required);
+
+        critical_inputs.off("change keyup");
 
         resolver_set_ldap(obj);
     }
@@ -6689,11 +6708,13 @@ function resolver_sql(name){
 
     $('#progress_test_sql').hide();
 
+    var critical_inputs = $('#sql_driver, #sql_server, #sql_port, #sql_database, #sql_user');
+
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
             var resp = xhdr.responseText;
-            var obj = jQuery.parseJSON(resp);
+            obj = jQuery.parseJSON(resp);
             //obj.result.value.data.BINDDN;
             $('#sql_resolvername').val(name);
             if (obj.result.status) {
@@ -6706,11 +6727,30 @@ function resolver_sql(name){
                            'is_escaped':true});
             }
         });
+
         $('#sql_password').attr("placeholder", password_placeholder_not_changed);
+
+        critical_inputs.on('change keyup', function(e) {
+            var sth_changed = $('#sql_driver').val()   != obj.result.value.data.Driver
+                           || $('#sql_server').val()   != obj.result.value.data.Server
+                           || $('#sql_port').val()     != obj.result.value.data.Port
+                           || $('#sql_database').val() != obj.result.value.data.Database
+                           || $('#sql_user').val()     != obj.result.value.data.User;
+
+            $("#sql_password").rules("add", {
+                required: sth_changed
+            });
+
+            $('#sql_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
+
+            if(!sth_changed) $("#sql_password").valid();
+        });
     }
     else {
         $('#sql_resolvername').val("");
         $('#sql_password').attr("placeholder", password_placeholder_required);
+
+        critical_inputs.off("change keyup");
 
         resolver_set_sql(obj);
     }
