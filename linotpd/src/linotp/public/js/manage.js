@@ -6139,6 +6139,7 @@ function delete_push_provider(provider){
  *  Resolver edit funtions
  */
 function resolver_file(name){
+    $("#form_fileconfig").validate().resetForm();
 
     var obj = {
         'result': {
@@ -6339,6 +6340,7 @@ function resolver_set_ldap(obj) {
 }
 
 function resolver_ldap(name){
+    $("#form_ldapconfig").validate().resetForm();
 
     var obj = {
         'result': {
@@ -6495,6 +6497,7 @@ function resolver_set_http(data) {
 }
 
 function resolver_http(name){
+    $("#form_httpconfig").validate().resetForm();
 
     var obj = {
         'result': {
@@ -6604,6 +6607,7 @@ function resolver_set_sql(obj) {
 }
 
 function resolver_sql(name){
+    $("#form_sqlconfig").validate().resetForm();
 
     var obj = {
         'result': {
