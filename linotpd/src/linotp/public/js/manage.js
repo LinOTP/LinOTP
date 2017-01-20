@@ -6385,11 +6385,13 @@ function resolver_ldap(name){
                            'param': escape(obj.result.error.message),
                            'is_escaped': true});
             }
-
-          });
+        });
+        $('#ldap_password').attr("placeholder", i18n.gettext('(not changed)'));
     } // end if
     else {
         $('#ldap_resolvername').val("");
+        $('#ldap_password').attr("placeholder", "");
+
         resolver_set_ldap(obj);
     }
     $('#ldap_noreferrals').prop('checked', ("True" == obj.result.value.data.NOREFERRALS));
@@ -6400,7 +6402,6 @@ function resolver_ldap(name){
 
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');
-
 
     $("#form_ldapconfig").validate({
         rules: {
@@ -6442,6 +6443,10 @@ function resolver_ldap(name){
         }
     });
 
+    // make password field required if it is a new resolver and therefor name is empty
+    $("#ldap_password").rules("add", {
+        required: !name
+    });
 }
 
 function set_form_input(form_name, data) {
@@ -6534,11 +6539,14 @@ function resolver_http(name){
                             'param': obj.result.error.message,
                             'is_escaped': true});
             }
+        });
 
-          });
+        $('#http_password').attr("placeholder", i18n.gettext('(not changed)'));
     } // end if
     else {
         $('#http_resolvername').val("");
+        $('#http_password').attr("placeholder", "");
+
         var data = obj.result.value.data;
         resolver_set_http(data);
     }
@@ -6587,6 +6595,11 @@ function resolver_http(name){
                 http_uidtype: true
             }
         }
+    });
+
+    // make password field required if it is a new resolver and therefor name is empty
+    $("#http_password").rules("add", {
+        required: !name
     });
 }
 
@@ -6637,23 +6650,26 @@ function resolver_sql(name){
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
-                var resp = xhdr.responseText;
-                var obj = jQuery.parseJSON(resp);
-                //obj.result.value.data.BINDDN;
-                $('#sql_resolvername').val(name);
-                if (obj.result.status) {
-                    resolver_set_sql(obj);
-                } else {
-                    // error reading resolver
-                    alert_box({'title': "",
-                               'text': "text_sql_load_error",
-                               'param': escape(obj.result.error.message),
-                               'is_escaped':true});
-                }
-            });
-        } // end if
+            var resp = xhdr.responseText;
+            var obj = jQuery.parseJSON(resp);
+            //obj.result.value.data.BINDDN;
+            $('#sql_resolvername').val(name);
+            if (obj.result.status) {
+                resolver_set_sql(obj);
+            } else {
+                // error reading resolver
+                alert_box({'title': "",
+                           'text': "text_sql_load_error",
+                           'param': escape(obj.result.error.message),
+                           'is_escaped':true});
+            }
+        });
+        $('#sql_password').attr("placeholder", i18n.gettext('(not changed)'));
+    }
     else {
         $('#sql_resolvername').val("");
+        $('#sql_password').attr("placeholder", "");
+
         resolver_set_sql(obj);
     }
 
@@ -6688,6 +6704,11 @@ function resolver_sql(name){
                 sql_mapping: true
             }
         }
+    });
+
+    // make password field required if it is a new resolver and therefor name is empty
+    $("#sql_password").rules("add", {
+        required: !name
     });
 }
 
