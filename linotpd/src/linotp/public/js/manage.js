@@ -2541,11 +2541,7 @@ function load_sms_providers(){
                 },
                 selected: function(event, ui) {
                     // Prevent the selection of multiple items
-                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
-                        function(key,value){
-                            $(value).find('*').removeClass("ui-selected");
-                        }
-                    );
+                    $(ui.selected).siblings().removeClass("ui-selected");
                 }
             });
         }
@@ -3215,25 +3211,39 @@ function resolvers_load(){
         var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
         var count = 0;
         for (var key in data.result.value) {
-            //resolvers += '<input type="radio" id="resolver" name="resolver" value="'+key+'">';
-            //resolvers += key+' ('+data.result.value[key].type+')<br>';
             var e_key = escape(key);
             var e_reolver_type = escape(data.result.value[key].type);
             resolvers += '<li class="ui-widget-content">' + e_key + ' [' + e_reolver_type + ']</li>';
             count = count +1 ;
         }
         resolvers += '</ol>';
+
+        g.resolver_to_edit = null;
+        $("#button_resolver_edit").button("disable");
+        $("#button_resolver_delete").button("disable");
+
         if (count > 0) {
             $('#resolvers_list').html(resolvers);
+
             $('#resolvers_select').selectable({
                 stop: function(){
-                    $(".ui-selected", this).each(function(){
-                        var index = $("#resolvers_select li").index(this);
-                        g.resolver_to_edit = escape($(this).html());
-                    }); // end of each
-                } // end of stop function
-            }); // end of selectable
-        } // end of count > 0
+                    if($("#resolvers_select .ui-selected").length > 0){
+                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected").html());
+                        $("#button_resolver_edit").button("enable");
+                        $("#button_resolver_delete").button("enable");
+                    }
+                    else{
+                        g.resolver_to_edit = null;
+                        $("#button_resolver_edit").button("disable");
+                        $("#button_resolver_delete").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).siblings().removeClass("ui-selected");
+                }
+            });
+        }
         else {
             $('#resolvers_list').html("");
             g.resolver_to_edit = "";
