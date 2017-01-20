@@ -312,12 +312,13 @@ docker-run-linotp-sqlite: docker-build-linotp
 .PHONY: get-dockerfy
 get-dockerfy: $(BUILDDIR)/dockerfy
 
+DOCKERFY_URL=https://github.com/SocialCodeInc/dockerfy/releases/download/1.1.0/dockerfy-linux-amd64-1.1.0.tar.gz
+
 # Obtain dockerfy binary
 # TODO: Build from source
 $(BUILDDIR)/dockerfy:
 	mkdir -pv $(BUILDDIR)/dockerfy-tmp
-	wget --no-verbose --directory-prefix=$(BUILDDIR)/dockerfy-tmp \
-		https://github.com/SocialCodeInc/dockerfy/releases/download/1.1.0/dockerfy-linux-amd64-1.1.0.tar.gz
+	wget --directory-prefix=$(BUILDDIR)/dockerfy-tmp $(DOCKERFY_URL)
 	tar -C $(BUILDDIR) -xvf $(BUILDDIR)/dockerfy-tmp/dockerfy-linux-amd64*.gz
 	rm -r $(BUILDDIR)/dockerfy-tmp
 
