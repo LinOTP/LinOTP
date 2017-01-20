@@ -29,6 +29,7 @@ import time
 
 from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.hotp_token import HotpToken
+from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.user_view import UserView
 
 import integration_data as data
@@ -51,8 +52,8 @@ class TestAuth(TestCase):
 
         # Enroll HOTP token
         # Seed and OTP values: https://tools.ietf.org/html/rfc4226#appendix-D
-        driver.get(self.base_url + "/manage")
-        time.sleep(2)
+        m = ManageUi(self)
+        m.open_manage()
         user_view = UserView(driver, self.base_url, self.realm_name)
         username = "susi"
         user_view.select_user(username)

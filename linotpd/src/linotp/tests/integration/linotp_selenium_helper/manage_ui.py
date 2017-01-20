@@ -26,9 +26,11 @@
 
 import helper
 
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+
 
 """
 This file contains classes for interacting with the manage page
@@ -61,6 +63,7 @@ class ManageUi(object):
         self.driver = testcase.driver
         self.base_url = testcase.base_url
 
+
     def _is_url_open(self):
         possible_urls = (self.URL, self.URL + '/', self.URL + '/#')
         return self.driver.current_url.endswith(possible_urls)
@@ -82,9 +85,27 @@ class ManageUi(object):
         self.check_url()
         return helper.find_by_id(self.driver, id_value)
 
+    def close_welcome_dialog(self):
+        """
+        The welcome dialog is shown on first page load. We need to
+        click the close button if it is shown. Disable implicit waits
+        to prevent a long wait in the case that the dialog is not shown.
+        """
+        self.testcase.disableImplicitWait()
+        try:
+            element = WebDriverWait(self.driver, 0).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, '#welcome_screen_close'))
+                )
+            element.click()
+        except TimeoutException:
+            pass
+        finally:
+            self.testcase.enableImplicitWait()
+
     def open_manage(self):
         driver = self.driver
         driver.get(self.base_url + self.URL)
+        self.close_welcome_dialog()
 
     def open_tab(self, position):
         if not self._is_url_open():

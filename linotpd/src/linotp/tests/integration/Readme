@@ -124,3 +124,12 @@ See the configuration file for the parameters that can be set.
 For example, to execute tests by connecting to a remotely running linotp instance:
 
  $ nosetests --tc-file=server_cfg.ini --tc=linotp.host:10.76.124.35
+
+An example to execute tests in a single file using the trace module to show the
+time at each step of the tests:
+
+ $ python -m trace -g --trace --ignore-module=os,sys,re --ignore-dir=/usr/lib \
+	/usr/bin/nosetests -s --tc-file=server_local.ini -v \
+	--logging-filter=-requests.packages.urllib3.connectionpool \
+	--debug=selenium.webdriver.remote.remote_connection \
+	test_manage.py
