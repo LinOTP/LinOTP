@@ -185,8 +185,8 @@ jQuery.validator.addMethod("ldap_userfilter", function(value, element, param){
 jQuery.validator.addMethod("ldap_mapping", function(value, element, param){
     return value.match(/{.+}/);
     },
-    i18n.gettext('Please enter a valid searchfilter like this: \
-    { "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" \
+    sprintf(i18n.gettext('Please enter a valid searchfilter like this: %s'),
+    '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" \
     : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }')
 );
 
@@ -205,9 +205,9 @@ jQuery.validator.addMethod("sql_driver", function(value, element, param){
 jQuery.validator.addMethod("sql_mapping", function(value, element, param){
     return value.match(/{.+}/);
     },
-    i18n.gettext('Please enter a valid searchfilter like this: \
-    { "username": "usercolumn", "password":"pw", "salt": "salt", "phone" : "telephoneNumber", "mobile" \
-    : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }')
+    sprintf(i18n.gettext('Please enter a valid searchfilter like this: %s'),
+    '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile",\
+    "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password" }')
 );
 
 
@@ -6671,7 +6671,7 @@ function resolver_sql(name){
                     'User': 'user',
                     'Password': 'secret',
                     'Table': 'usertable',
-                    'Map': '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password", "salt" : "salt" }',
+                    'Map': '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password" }',
                     'Where' : '',
                     'conParams' : '',
                     'Encoding' : ''
