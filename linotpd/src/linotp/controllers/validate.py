@@ -266,7 +266,7 @@ class ValidateController(BaseController):
         except Exception as exx:
             log.exception("[check] validate/check failed: %r" % exx)
             # If an internal error occurs or the SMS gateway did not send the SMS, we write this to the detail info.
-            c.audit['info'] = unicode(exx)
+            c.audit['info'] = "%r" % exx
             Session.rollback()
             return sendResult(response, False, 0)
 

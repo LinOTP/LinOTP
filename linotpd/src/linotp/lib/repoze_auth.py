@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 
 from linotp.lib.user import getRealmBox, getSplitAtSign
 from linotp.lib.realm import getDefaultRealm
+from linotp.lib.resolver import setupResolvers
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.util import str2unicode
 from linotp.lib.context import request_context
@@ -37,6 +38,7 @@ from linotp.lib.context import request_context_safety
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import getGlobalObject
 from linotp.lib.resolver import initResolvers
+from pylons import config
 
 import traceback
 
@@ -95,8 +97,17 @@ class UserModelPlugin(object):
             hsm = sep.getSecurityModule()
             request_context['hsm'] = hsm
 
+            # initialize the base context
+            # - copied for the dumb repoze middleware
+
+            cache_dir = config.get("app_conf", {}).get("cache_dir", None)
+            setupResolvers(config=linotp_config, cache_dir=cache_dir)
             resolver_context = initResolvers()
             request_context.update(resolver_context)
+
+            # prepare the request local user cache
+            if 'UserLookup' not in request_context:
+                request_context['UserLookup'] = {}
 
             user = get_authenticated_user(username, realm, password,
                                           realm_box=realm_mbox,
