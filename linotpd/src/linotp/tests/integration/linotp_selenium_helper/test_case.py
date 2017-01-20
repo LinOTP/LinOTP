@@ -131,7 +131,8 @@ class TestCase(unittest.TestCase):
                 )
         except TimeoutException:
             return []
-        self.enableImplicitWait()
+        finally:
+            self.enableImplicitWait()
 
         return elements  # Return elements without the parent
 

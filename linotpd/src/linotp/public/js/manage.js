@@ -2454,6 +2454,7 @@ function show_welcome_screen(title, text, button_text) {
         buttons: [
             {
                 text: button_text,
+                id: 'welcome_screen_close',
                 click: function() {
                     if($('#welcome_screen_option').is(':checked')) {
                         setSystemConfig({
@@ -2540,11 +2541,7 @@ function load_sms_providers(){
                 },
                 selected: function(event, ui) {
                     // Prevent the selection of multiple items
-                    $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected").each(
-                        function(key,value){
-                            $(value).find('*').removeClass("ui-selected");
-                        }
-                    );
+                    $(ui.selected).siblings().removeClass("ui-selected");
                 }
             });
         }
@@ -3214,25 +3211,39 @@ function resolvers_load(){
         var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
         var count = 0;
         for (var key in data.result.value) {
-            //resolvers += '<input type="radio" id="resolver" name="resolver" value="'+key+'">';
-            //resolvers += key+' ('+data.result.value[key].type+')<br>';
             var e_key = escape(key);
             var e_reolver_type = escape(data.result.value[key].type);
             resolvers += '<li class="ui-widget-content">' + e_key + ' [' + e_reolver_type + ']</li>';
             count = count +1 ;
         }
         resolvers += '</ol>';
+
+        g.resolver_to_edit = null;
+        $("#button_resolver_edit").button("disable");
+        $("#button_resolver_delete").button("disable");
+
         if (count > 0) {
             $('#resolvers_list').html(resolvers);
+
             $('#resolvers_select').selectable({
                 stop: function(){
-                    $(".ui-selected", this).each(function(){
-                        var index = $("#resolvers_select li").index(this);
-                        g.resolver_to_edit = escape($(this).html());
-                    }); // end of each
-                } // end of stop function
-            }); // end of selectable
-        } // end of count > 0
+                    if($("#resolvers_select .ui-selected").length > 0){
+                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected").html());
+                        $("#button_resolver_edit").button("enable");
+                        $("#button_resolver_delete").button("enable");
+                    }
+                    else{
+                        g.resolver_to_edit = null;
+                        $("#button_resolver_edit").button("disable");
+                        $("#button_resolver_delete").button("disable");
+                    }
+                },
+                selected: function(event, ui) {
+                    // Prevent the selection of multiple items
+                    $(ui.selected).siblings().removeClass("ui-selected");
+                }
+            });
+        }
         else {
             $('#resolvers_list').html("");
             g.resolver_to_edit = "";
@@ -4183,6 +4194,12 @@ $(document).ready(function(){
         open: function() {
             do_dialog_icons();
             ldap_resolver_ldaps();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
+
         }
     });
 
@@ -4318,6 +4335,11 @@ $(document).ready(function(){
         open: function() {
             do_dialog_icons();
             http_resolver_https();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
         }
     });
 
@@ -4392,7 +4414,14 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: do_dialog_icons
+        open: function() {
+            do_dialog_icons();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
+        }
     });
 
     $('#button_test_sql').click(function(event){
@@ -4473,7 +4502,14 @@ $(document).ready(function(){
                 text: "Save"
             }
         },
-        open: do_dialog_icons
+        open: function() {
+            do_dialog_icons();
+
+            // fix table after the browser balances the widths
+            $("table tr:first-child td", this).each(function() {
+                $(this).css("width", $(this).width());
+            });
+        }
     });
 
 
@@ -6128,6 +6164,7 @@ function delete_push_provider(provider){
  *  Resolver edit funtions
  */
 function resolver_file(name){
+    $("#form_fileconfig").validate().resetForm();
 
     var obj = {
         'result': {
@@ -6328,6 +6365,7 @@ function resolver_set_ldap(obj) {
 }
 
 function resolver_ldap(name){
+    $("#form_ldapconfig").validate().resetForm();
 
     var obj = {
         'result': {
@@ -6372,11 +6410,13 @@ function resolver_ldap(name){
                            'param': escape(obj.result.error.message),
                            'is_escaped': true});
             }
-
-          });
+        });
+        $('#ldap_password').attr("placeholder", i18n.gettext('(not changed)'));
     } // end if
     else {
         $('#ldap_resolvername').val("");
+        $('#ldap_password').attr("placeholder", "");
+
         resolver_set_ldap(obj);
     }
     $('#ldap_noreferrals').prop('checked', ("True" == obj.result.value.data.NOREFERRALS));
@@ -6387,7 +6427,6 @@ function resolver_ldap(name){
 
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');
-
 
     $("#form_ldapconfig").validate({
         rules: {
@@ -6429,6 +6468,10 @@ function resolver_ldap(name){
         }
     });
 
+    // make password field required if it is a new resolver and therefor name is empty
+    $("#ldap_password").rules("add", {
+        required: !name
+    });
 }
 
 function set_form_input(form_name, data) {
@@ -6484,6 +6527,7 @@ function resolver_set_http(data) {
 }
 
 function resolver_http(name){
+    $("#form_httpconfig").validate().resetForm();
 
     var obj = {
         'result': {
@@ -6520,11 +6564,14 @@ function resolver_http(name){
                             'param': obj.result.error.message,
                             'is_escaped': true});
             }
+        });
 
-          });
+        $('#http_password').attr("placeholder", i18n.gettext('(not changed)'));
     } // end if
     else {
         $('#http_resolvername').val("");
+        $('#http_password').attr("placeholder", "");
+
         var data = obj.result.value.data;
         resolver_set_http(data);
     }
@@ -6574,6 +6621,11 @@ function resolver_http(name){
             }
         }
     });
+
+    // make password field required if it is a new resolver and therefor name is empty
+    $("#http_password").rules("add", {
+        required: !name
+    });
 }
 
 function resolver_set_sql(obj) {
@@ -6593,6 +6645,7 @@ function resolver_set_sql(obj) {
 }
 
 function resolver_sql(name){
+    $("#form_sqlconfig").validate().resetForm();
 
     var obj = {
         'result': {
@@ -6622,23 +6675,26 @@ function resolver_sql(name){
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
-                var resp = xhdr.responseText;
-                var obj = jQuery.parseJSON(resp);
-                //obj.result.value.data.BINDDN;
-                $('#sql_resolvername').val(name);
-                if (obj.result.status) {
-                    resolver_set_sql(obj);
-                } else {
-                    // error reading resolver
-                    alert_box({'title': "",
-                               'text': "text_sql_load_error",
-                               'param': escape(obj.result.error.message),
-                               'is_escaped':true});
-                }
-            });
-        } // end if
+            var resp = xhdr.responseText;
+            var obj = jQuery.parseJSON(resp);
+            //obj.result.value.data.BINDDN;
+            $('#sql_resolvername').val(name);
+            if (obj.result.status) {
+                resolver_set_sql(obj);
+            } else {
+                // error reading resolver
+                alert_box({'title': "",
+                           'text': "text_sql_load_error",
+                           'param': escape(obj.result.error.message),
+                           'is_escaped':true});
+            }
+        });
+        $('#sql_password').attr("placeholder", i18n.gettext('(not changed)'));
+    }
     else {
         $('#sql_resolvername').val("");
+        $('#sql_password').attr("placeholder", "");
+
         resolver_set_sql(obj);
     }
 
@@ -6673,6 +6729,11 @@ function resolver_sql(name){
                 sql_mapping: true
             }
         }
+    });
+
+    // make password field required if it is a new resolver and therefor name is empty
+    $("#sql_password").rules("add", {
+        required: !name
     });
 }
 
