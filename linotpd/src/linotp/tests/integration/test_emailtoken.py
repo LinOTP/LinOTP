@@ -58,7 +58,11 @@ class TestEmailToken(TestCase):
 
     def set_email_config(self):
         self.email_provider_config = get_from_tconfig(['email_token', 'email_provider_config'])
-        self.email_recipient = get_from_tconfig(['email_token', 'recipient'], required=True)
+        self.email_recipient = get_from_tconfig(['email_token', 'recipient'])
+
+        if not self.email_recipient:
+            raise unittest.SkipTest("Email recipient not configured")
+
         self.email_token_pin = "1234"
 
         # Set SMTP e-mail config
