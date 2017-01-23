@@ -2129,7 +2129,7 @@ msgid "LinOTP Config"
 msgstr "LinOTP Konfiguration"
 
 msgid "UserIdResolvers"
-msgstr "UserIdResolvers"
+msgstr "UserIdResolver"
 
 msgid "Realms"
 msgstr "Realms"
@@ -2547,7 +2547,7 @@ msgid "Ok"
 msgstr "OK"
 
 msgid "LSE LinOTP Support and Subscription"
-msgstr "LSE LinOTP Support und Subskription "
+msgstr "LSE LinOTP Support und Subskription"
 
 msgid "Set Support and Subscription"
 msgstr "Support und Subskription registrieren"
@@ -3242,7 +3242,7 @@ msgid "Parameters:"
 msgstr "Parameter:"
 
 msgid "Result path:"
-msgstr "Zielpfad: "
+msgstr "Zielpfad:"
 
 msgid "Attribute mapping:"
 msgstr "Attributszuordnung"
@@ -3442,13 +3442,13 @@ msgstr "Fehler im regulären Ausdruck für"
 msgid "LDAP Server configuration seems to be OK! Number of users found"
 msgstr ""
 "LDAP Serverkonfiguration scheint OK!\n"
-"Anzahl der gefundenen Benutzer "
+"Anzahl der gefundenen Benutzer"
 
 msgid "Error loading LDAP resolver"
 msgstr "Fehler beim Laden des LDAP-Resolvers"
 
 msgid "HTTP Server configuration seems to be OK! Number of users found"
-msgstr "HTTP-Serverkonfiguration scheint OK! Anzahl der gefundenen Benutzer "
+msgstr "HTTP-Serverkonfiguration scheint OK! Anzahl der gefundenen Benutzer"
 
 msgid "Error loading HTTP resolver"
 msgstr "Fehler beim Laden des HTTP-Resolvers"

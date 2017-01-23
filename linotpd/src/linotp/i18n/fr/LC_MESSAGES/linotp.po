@@ -3179,7 +3179,7 @@ msgid "Mapping Attributes"
 msgstr "Mapping Attribute"
 
 msgid "LoginName Attribute"
-msgstr "Attribut nom de connexion "
+msgstr "Attribut nom de connexion"
 
 msgid "Searchfilter"
 msgstr "Filtre de recherche"
