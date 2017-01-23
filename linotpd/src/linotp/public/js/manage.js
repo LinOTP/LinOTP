@@ -6371,11 +6371,12 @@ function resolver_set_ldap(obj) {
     $('#ldap_mapping').val(data.USERINFO);
     $('#ldap_uidtype').val(data.UIDTYPE);
     $('#ldap_certificate').val(data.CACERTIFICATE);
-    $('#ldap_noreferrals').val(data.NOREFERRALS);
 
     // get the configuration value of the enforce TLS (if exists) and adjust the checkbox
     var checked = !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true";
     $('#ldap_enforce_tls').prop('checked', checked);
+
+    $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
 
     ldap_resolver_ldaps();
 }
@@ -6454,7 +6455,6 @@ function resolver_ldap(name){
 
         resolver_set_ldap(obj);
     }
-    $('#ldap_noreferrals').prop('checked', ("True" == obj.result.value.data.NOREFERRALS));
 
     // adjust the checkbox of enforce TLS according to the configuration value
     var checked = obj.result.value.data.EnforceTLS.toLowerCase() == "true";
