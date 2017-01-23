@@ -4177,7 +4177,7 @@ $(document).ready(function(){
     $dialog_ldap_resolver = $('#dialog_ldap_resolver').dialog({
         autoOpen: false,
         title: 'LDAP Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': { click: function(){
@@ -4304,7 +4304,7 @@ $(document).ready(function(){
     $dialog_http_resolver = $('#dialog_http_resolver').dialog({
         autoOpen: false,
         title: 'HTTP Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': { click: function(){
@@ -4400,7 +4400,7 @@ $(document).ready(function(){
     $dialog_sql_resolver = $('#dialog_sql_resolver').dialog({
         autoOpen: false,
         title: 'SQL Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': {click: function(){
@@ -4487,7 +4487,7 @@ $(document).ready(function(){
     $dialog_file_resolver = $('#dialog_file_resolver').dialog({
         autoOpen: false,
         title: 'File Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         maxHeight: 500,
         buttons: {
