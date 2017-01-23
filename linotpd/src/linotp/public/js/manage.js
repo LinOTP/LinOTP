@@ -6668,6 +6668,7 @@ function resolver_sql(name){
                     'Driver': 'mysql',
                     'Server': '127.0.0.1',
                     'Port': '3306',
+                    'Limit': '500',
                     'User': 'user',
                     'Password': 'secret',
                     'Table': 'usertable',
