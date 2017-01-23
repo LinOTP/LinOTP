@@ -90,6 +90,9 @@ encodings = [
     "utf_8_sig"
 ];
 
+var password_placeholder_required = "<" + i18n.gettext("password required") + ">";
+var password_placeholder_not_changed = "<" + i18n.gettext("not changed") + ">";
+
 
 function error_handling(message, file, line){
     Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line +
@@ -6424,11 +6427,11 @@ function resolver_ldap(name){
                            'is_escaped': true});
             }
         });
-        $('#ldap_password').attr("placeholder", i18n.gettext('(not changed)'));
-    } // end if
+        $('#ldap_password').attr("placeholder", password_placeholder_not_changed);
+    }
     else {
         $('#ldap_resolvername').val("");
-        $('#ldap_password').attr("placeholder", "");
+        $('#ldap_password').attr("placeholder", password_placeholder_required);
 
         resolver_set_ldap(obj);
     }
@@ -6579,11 +6582,11 @@ function resolver_http(name){
             }
         });
 
-        $('#http_password').attr("placeholder", i18n.gettext('(not changed)'));
+        $('#http_password').attr("placeholder", password_placeholder_not_changed);
     } // end if
     else {
         $('#http_resolvername').val("");
-        $('#http_password').attr("placeholder", "");
+        $('#http_password').attr("placeholder", password_placeholder_required);
 
         var data = obj.result.value.data;
         resolver_set_http(data);
@@ -6703,11 +6706,11 @@ function resolver_sql(name){
                            'is_escaped':true});
             }
         });
-        $('#sql_password').attr("placeholder", i18n.gettext('(not changed)'));
+        $('#sql_password').attr("placeholder", password_placeholder_not_changed);
     }
     else {
         $('#sql_resolvername').val("");
-        $('#sql_password').attr("placeholder", "");
+        $('#sql_password').attr("placeholder", password_placeholder_required);
 
         resolver_set_sql(obj);
     }
