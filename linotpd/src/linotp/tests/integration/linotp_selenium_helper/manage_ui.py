@@ -112,10 +112,8 @@ class ManageUi(object):
             self.open_manage()
 
         tab_css = 'div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span' % (position)
-        tabpane_css = 'div#tabs > div.ui-tabs-panel:nth-of-type(%s)' % (position)
 
         tab_button = self.find_by_css(tab_css)
-        tabpane_css = self.find_by_css(tabpane_css)
 
         tab_button.click()
 
