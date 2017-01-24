@@ -3154,7 +3154,7 @@ msgid "Mapping Attributes"
 msgstr "Atributos de correlación"
 
 msgid "LoginName Attribute"
-msgstr "Nombre de usuario del atributo "
+msgstr "Nombre de usuario del atributo"
 
 msgid "Searchfilter"
 msgstr "Filtro de búsqueda"

@@ -28,7 +28,7 @@ This file contains sample data for the integration tests
 """
 
 # LDAP resolvers
-ad_cert = \
+ldap_ca_cert = \
 """-----BEGIN CERTIFICATE-----
 MIIFgzCCA2ugAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJERTEq
 MCgGA1UECgwhTFNFIExlYWRpbmcgU2VjdXJpdHkgRXhwZXJ0cyBHbWJIMRQwEgYD
@@ -62,12 +62,37 @@ iDCfI7WTMiUSMthBqBysBkLTVODcoK3C0QmJMbGAczHglK65tVInkK504+SdRREz
 D73172agRToOg0Sid2C4iipj//OA3q4=
 -----END CERTIFICATE-----"""
 
+# CA for test AD server certificate
+ad_ca_cert= \
+"""-----BEGIN CERTIFICATE-----
+MIIDoTCCAomgAwIBAgIQEf6o60+xo6NJkdPwYpVFoTANBgkqhkiG9w0BAQsFADBj
+MRMwEQYKCZImiZPyLGQBGRYDbmV0MRcwFQYKCZImiZPyLGQBGRYHZXhhbXBsZTEV
+MBMGCgmSJomT8ixkARkWBWhvdGFkMRwwGgYDVQQDExNob3RhZC1IT1RUWUJPVFRZ
+LUNBMB4XDTE2MDMwOTE2MDc0NFoXDTIxMDMwOTE2MTc0NFowYzETMBEGCgmSJomT
+8ixkARkWA25ldDEXMBUGCgmSJomT8ixkARkWB2V4YW1wbGUxFTATBgoJkiaJk/Is
+ZAEZFgVob3RhZDEcMBoGA1UEAxMTaG90YWQtSE9UVFlCT1RUWS1DQTCCASIwDQYJ
+KoZIhvcNAQEBBQADggEPADCCAQoCggEBALxHY5XG5pTwKmrDKsHGdO2IPEhhuAW+
+cXYE27xocBq+fbgp+rD7KwR8TCv/LhjMzT+lAqHc9PMnr6VtAVHu+S2waNpWPm2y
+RTYtWOXXZQK/1gVi+q68+nKHQmCT3sOsrsaOpPH2v8NxrMRkKi5xwQRMqjojfmHr
+QMS72Pa63U73fS2cqSYhTIAfJlmu1UWQ0aHmI15PyrFWJGo4KVw3GfKu5oHGfuk6
+pt93Ab7TvCbJ3Syk+VVbSfaprdHYVHCTQjz8235r5Etl+hgvt9NRfAYskcC3DAKq
+cLoOb+G1wmfcA2isQVPhrho/glyjlkaZYEtafFybRl4Bxq4JU0lc6AcCAwEAAaNR
+ME8wCwYDVR0PBAQDAgGGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFL4WBBpt
+RAdjQDlfivTnhiUY9j+UMBAGCSsGAQQBgjcVAQQDAgEAMA0GCSqGSIb3DQEBCwUA
+A4IBAQCEe5MX+Yb6HjfNDmimBLr06dqc5hYSlOZ6lgWl2rIhI8/Bdc6OHlZTVdUV
+1RztceB1h6gsIBoUkVemLaToUewnZR7Zw38qNjHwD88qi1Io8r0jxQceLODuKhGp
+R0XCjjPozONBIf6kkXsZLp/6a6vkb9uycoDgGWzQw/+8ytEz+WXvb3x3/cpUQ2XY
+mpu3hbwIGWzjCoXa1zLrNhC6B2j1JZ3NmeUp2DsURWkUWUCCPtMPDAPjh4DGT8gx
+wksjsMcgvCrISnUOLAIH3IXD2x9C8NvVursf22x4T+JhIT6Ipkm3yzmhdjTOuOOB
+mOOzQ8LklhTOAHJva7wNJrcfEG0B
+-----END CERTIFICATE-----"""
+
 musicians_ldap_resolver = {
                 'name' : "SE_musicians",
                 'title' : "Musicians LDAP (Blackdog)",
                 'type': 'ldapresolver',
                 'uri' : "ldaps://blackdog",
-                'certificate' : ad_cert,
+                'certificate' : ldap_ca_cert,
                 'basedn' : "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
                 # You may also use cn="Wolfgang Amadeus Mozart"
                 'binddn' : u'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
@@ -83,7 +108,7 @@ physics_ldap_resolver = {
                 'title' : "Physics LDAP (Blackdog)",
                 'type': 'ldapresolver',
                 'uri' : "ldaps://hottybotty",
-                'certificate' : ad_cert,
+                'certificate' : ad_ca_cert,
                 'basedn' : 'dc=hotad,dc=example,dc=net',
                 'binddn' : u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
                 'password' : "Test123!",
