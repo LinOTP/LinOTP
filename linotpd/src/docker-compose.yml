@@ -1,0 +1,25 @@
+version: "2"
+services:
+  linotp:
+    image: linotp:latest
+    environment:
+      LINOTP_DB_TYPE: "mysql"
+      LINOTP_DB_HOST: "linotp-db"
+      LINOTP_DB_PORT: "3306"
+      LINOTP_DB_USER: "linotpuser"
+      LINOTP_DB_PASSWORD: "linotppass"
+      LINOTP_DB_NAME: "linotp_db"
+    depends_on:
+      - linotp-db
+    ports:
+      - "443:443"
+
+  linotp-db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: "Test123!"
+      MYSQL_DATABASE: "linotp_db"
+      MYSQL_USER: "linotpuser"
+      MYSQL_PASSWORD: "linotppass"
+    restart: always
+

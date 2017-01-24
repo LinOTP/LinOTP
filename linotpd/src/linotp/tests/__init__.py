@@ -768,23 +768,22 @@ class TestController(unittest2.TestCase):
             'myDefRes':
                 'useridresolver.PasswdIdResolver.IdResolver.myDefRes',
         }
-        params = resolver_params['myDefRes']
-        response = self.create_resolver(
-            name='myDefRes',
-            params=params,
-        )
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
 
-        params = resolver_params['myOtherRes']
-        response = self.create_resolver(
-            name='myOtherRes',
-            params=params,
-        )
-        content = TestController.get_json_body(response)
-        self.assertTrue(content['result']['status'])
-        self.assertTrue(content['result']['value'])
+        for resolver_name in ['myDefRes', 'myOtherRes']:
+
+            # skip definition if resolver is already defined
+            response = self.make_system_request('getResolvers')
+            if resolver_name in response:
+                continue
+
+            params = resolver_params[resolver_name]
+            response = self.create_resolver(
+                name=resolver_name,
+                params=params,
+            )
+            content = TestController.get_json_body(response)
+            self.assertTrue(content['result']['status'])
+            self.assertTrue(content['result']['value'])
 
     def create_resolver(self, name, params):
         param = copy.deepcopy(params)

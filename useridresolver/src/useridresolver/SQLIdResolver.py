@@ -332,16 +332,20 @@ def _check_hash_type(password, hash_type, hash_value, salt=None):
             bin_hashed_password = H.digest()
             res = (bin_hashed_password == bin_hash)
         except ValueError:
-            log.exception("[_check_hash_type] Unsupported Hash type: %r"
-                                                                % hash_type)
+            log.exception("[_check_hash_type] Unsupported Hash type: %r",
+                          hash_type)
 
     return res
+
 
 @resolver_registry.class_entry('useridresolver.SQLIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolveree.SQLIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolver.sqlresolver')
 @resolver_registry.class_entry('sqlresolver')
 class IdResolver (UserIdResolver):
+
+    critical_parameters = ['Driver', 'Server', 'Port', 'Database', 'User']
+    crypted_parameters = ['Password']
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
@@ -583,14 +587,16 @@ class IdResolver (UserIdResolver):
             conParams = self.getConfigEntry(config,
                     "linotp.sqlresolver.conParams", conf, False, default="")
 
-            ## there might be an already decrypted pass_
-            pass_ = self.getConfigEntry(config,
-                                'enclinotp.sqlresolver.Password', conf, False,
-                                default=None)
-            if pass_ is None:
+            # required argument Password
+            # - there might be an already decrypted pass_
+            try:
                 pass_ = self.getConfigEntry(config,
-                                    'linotp.sqlresolver.Password', conf,
-                                    False)
+                                            'enclinotp.sqlresolver.Password',
+                                            conf)
+            except Exception as exx:
+                pass_ = self.getConfigEntry(config,
+                                            'linotp.sqlresolver.Password',
+                                            conf)
 
             #        postgres://otpd:linotp2d@localhost:521/otpdb
 

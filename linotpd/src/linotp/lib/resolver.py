@@ -255,7 +255,7 @@ def defineResolver(params):
 
     resolver_definition.saveConfig()
     _flush_user_resolver_cache(resolver_spec)
-    return True
+    return resolver
 
 
 def similar_resolver_exists(config_identifier):
@@ -476,8 +476,40 @@ def deleteResolver(resolvername):
     return res
 
 
+def getResolverClass(resolver_type, resolver_conf=''):
+    """
+    get the resolver class for an resolver type
+
+    :param resolver_type: string like 'ldapresolver'
+    :return: class or None
+    """
+
+    resolver_clazz = None
+
+    for clazz_name, clazz_type in context.get('resolver_types').items():
+        if resolver_type.lower() in clazz_type.lower():
+            resolver_clazz = clazz_name
+
+    if not resolver_clazz:
+        raise Exception("no such resolver type '%r' defined!" % resolver_type)
+
+    resolver_spec = resolver_clazz + '.' + resolver_conf
+
+    cls_identifier, _config_identifier = parse_resolver_spec(resolver_spec)
+
+    if not cls_identifier :
+        log.error('Format error: resolver_spec must have the format '
+                  '<resolver_class_identifier>.<config_identifier>, but '
+                  'value was %s' % resolver_spec)
+        return None
+
+    resolver_cls = get_resolver_class(cls_identifier)
+
+    return resolver_cls
+
+
 # external in token.py user.py validate.py
-def getResolverObject(resolver_spec, config=None):
+def getResolverObject(resolver_spec, config=None, load_config=True):
 
     """
     get the resolver instance from a resolver specification.
@@ -531,21 +563,23 @@ def getResolverObject(resolver_spec, config=None):
 
         resolver = resolver_cls()
 
-        try:
-            resolver.loadConfig(config, config_identifier)
-        except:
-            # FIXME: Except clause is too general. resolver
-            # exceptions in the useridresolver modules should
-            # have their own type, so we can filter here
-            log.error('resolver config loading failed for resolver with '
-                      'specification %s' % resolver_spec)
-            return None
+        if load_config:
 
-        # in case of the replication there might by difference
-        # in the used resolver config and the config from the LinOTP config
-        _check_for_resolver_cache_flush(resolver_spec, config_identifier)
+            try:
+                resolver.loadConfig(config, config_identifier)
+            except Exception as exx:
+                # FIXME: Except clause is too general. resolver
+                # exceptions in the useridresolver modules should
+                # have their own type, so we can filter here
+                log.error('resolver config loading failed for resolver with '
+                          'specification %s: %r', resolver_spec, exx)
+                return None
 
-        resolvers_loaded[resolver_spec] = resolver
+            # in case of the replication there might by difference
+            # in the used resolver config and the config from the LinOTP config
+            _check_for_resolver_cache_flush(resolver_spec, config_identifier)
+
+            resolvers_loaded[resolver_spec] = resolver
 
         return resolver
 

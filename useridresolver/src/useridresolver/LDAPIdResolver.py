@@ -134,6 +134,9 @@ class IdResolver (UserIdResolver):
           "givenname": "text",
           "surname": "text"}
 
+    critical_parameters = ['LDAPBASE', 'BINDDN', 'LDAPURI']
+    crypted_parameters = ['BINDPW']
+
     CERTFILE = None
     CERTFILE_last_modified = None
     SYS_CERTFILE = None

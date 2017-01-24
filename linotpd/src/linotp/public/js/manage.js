@@ -90,6 +90,9 @@ encodings = [
     "utf_8_sig"
 ];
 
+var password_placeholder_required = "<" + i18n.gettext("password required") + ">";
+var password_placeholder_not_changed = "<" + i18n.gettext("not changed") + ">";
+
 
 function error_handling(message, file, line){
     Fehler = "We are sorry. An internal error occurred:\n" + message + "\nin file:" + file + "\nin line:" + line +
@@ -185,8 +188,8 @@ jQuery.validator.addMethod("ldap_userfilter", function(value, element, param){
 jQuery.validator.addMethod("ldap_mapping", function(value, element, param){
     return value.match(/{.+}/);
     },
-    i18n.gettext('Please enter a valid searchfilter like this: \
-    { "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" \
+    sprintf(i18n.gettext('Please enter a valid searchfilter like this: %s'),
+    '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" \
     : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }')
 );
 
@@ -205,9 +208,9 @@ jQuery.validator.addMethod("sql_driver", function(value, element, param){
 jQuery.validator.addMethod("sql_mapping", function(value, element, param){
     return value.match(/{.+}/);
     },
-    i18n.gettext('Please enter a valid searchfilter like this: \
-    { "username": "usercolumn", "password":"pw", "salt": "salt", "phone" : "telephoneNumber", "mobile" \
-    : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }')
+    sprintf(i18n.gettext('Please enter a valid searchfilter like this: %s'),
+    '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile",\
+    "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password" }')
 );
 
 
@@ -1787,8 +1790,11 @@ function do_dialog_icons(){
             primary: 'ui-icon-closethick'
         }
     });
-    //$('.ui-dialog-buttonpane').find('button:contains("Clear Default")').button({
-    //  icons: {primary: 'ui-icon-pin-s'}});
+    $('.ui-dialog-buttonpane').find('button:contains("Duplicate")').button({
+        icons: {
+            primary: 'ui-icon-extlink'
+        }
+    });
 }
 
 // #################################################
@@ -2911,7 +2917,10 @@ function save_ldap_config(){
     };
     var url = '/system/setResolver';
     var params = {}
+
     params['name']= resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
     for (var key in ldap_map) {
         var new_key = ldap_map[key];
@@ -2964,7 +2973,10 @@ function save_http_config(){
     var url = '/system/setResolver';
     var params = get_form_input('form_httpconfig')
     params["session"] = getsession();
+
     params['name'] = resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
 
     show_waiting();
@@ -3075,7 +3087,10 @@ function save_file_config(){
     var resolvertype = "passwdresolver";
     var fileName = $('#file_filename').val();
     var params = {};
+
     params['name'] = resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
     params['fileName'] = fileName;
     params['session'] = getsession();
@@ -3115,8 +3130,12 @@ function save_sql_config(){
     };
     var url = '/system/setResolver';
     var params = {};
+
     params['name'] = resolvername;
+    params['previous_name'] = g.current_resolver_name;
+
     params['type'] = resolvertype;
+
     for (var key in map) {
         var value = $(key).val();
         var new_key = map[key];
@@ -3220,6 +3239,7 @@ function resolvers_load(){
 
         g.resolver_to_edit = null;
         $("#button_resolver_edit").button("disable");
+        $("#button_resolver_duplicate").button("disable");
         $("#button_resolver_delete").button("disable");
 
         if (count > 0) {
@@ -3230,11 +3250,13 @@ function resolvers_load(){
                     if($("#resolvers_select .ui-selected").length > 0){
                         g.resolver_to_edit = escape($("#resolvers_select .ui-selected").html());
                         $("#button_resolver_edit").button("enable");
+                        $("#button_resolver_duplicate").button("enable");
                         $("#button_resolver_delete").button("enable");
                     }
                     else{
                         g.resolver_to_edit = null;
                         $("#button_resolver_edit").button("disable");
+                        $("#button_resolver_duplicate").button("disable");
                         $("#button_resolver_delete").button("disable");
                     }
                 },
@@ -3325,18 +3347,39 @@ function resolver_ask_delete(){
 function resolver_edit_type(){
     var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
     var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
+
     switch (type) {
         case "ldapresolver":
-            resolver_ldap(reso);
+            resolver_ldap(reso, false);
             break;
         case "httpresolver":
-            resolver_http(reso);
+            resolver_http(reso, false);
             break;
         case "sqlresolver":
-            resolver_sql(reso);
+            resolver_sql(reso, false);
             break;
         case "passwdresolver":
-            resolver_file(reso);
+            resolver_file(reso, false);
+            break;
+    }
+}
+
+function resolver_duplicate(){
+    var reso = g.resolver_to_edit.replace(/(\S+)\s+\S+/, "$1");
+    var type = g.resolver_to_edit.replace(/\S+\s+\[(\S+)\]/, "$1");
+
+    switch (type) {
+        case "ldapresolver":
+            resolver_ldap(reso, true);
+            break;
+        case "httpresolver":
+            resolver_http(reso, true);
+            break;
+        case "sqlresolver":
+            resolver_sql(reso, true);
+            break;
+        case "passwdresolver":
+            resolver_file(reso, true);
             break;
     }
 }
@@ -4090,7 +4133,7 @@ $(document).ready(function(){
             },
             'LDAP': { click: function(){
                         // calling with no parameter, creates a new resolver
-                        resolver_ldap("");
+                        resolver_ldap("", false);
                         $(this).dialog('close');
                     },
                     id: "button_new_resolver_type_ldap",
@@ -4099,7 +4142,7 @@ $(document).ready(function(){
             },
             'SQL': { click: function(){
                     // calling with no parameter, creates a new resolver
-                    resolver_sql("");
+                    resolver_sql("", false);
                     $(this).dialog('close');
                 },
                 id: "button_new_resolver_type_sql",
@@ -4107,7 +4150,7 @@ $(document).ready(function(){
             },
             'Flatfile': { click: function(){
                 // calling with no parameter, creates a new resolver
-                resolver_file("");
+                resolver_file("", false);
                 $(this).dialog('close');
             },
             id: "button_new_resolver_type_file",
@@ -4124,7 +4167,7 @@ $(document).ready(function(){
         dialog_resolver_create_config.buttons.HTTP = {
             click: function(){
                 // calling with no parameter, creates a new resolver
-                resolver_http("");
+                resolver_http("", false);
                 $(this).dialog('close');
             },
             id: "button_new_resolver_type_http",
@@ -4164,7 +4207,7 @@ $(document).ready(function(){
     $dialog_ldap_resolver = $('#dialog_ldap_resolver').dialog({
         autoOpen: false,
         title: 'LDAP Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': { click: function(){
@@ -4291,7 +4334,7 @@ $(document).ready(function(){
     $dialog_http_resolver = $('#dialog_http_resolver').dialog({
         autoOpen: false,
         title: 'HTTP Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': { click: function(){
@@ -4387,7 +4430,7 @@ $(document).ready(function(){
     $dialog_sql_resolver = $('#dialog_sql_resolver').dialog({
         autoOpen: false,
         title: 'SQL Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         buttons: {
             'Cancel': {click: function(){
@@ -4474,7 +4517,7 @@ $(document).ready(function(){
     $dialog_file_resolver = $('#dialog_file_resolver').dialog({
         autoOpen: false,
         title: 'File Resolver',
-        width: 600,
+        width: 700,
         modal: true,
         maxHeight: 500,
         buttons: {
@@ -4533,6 +4576,13 @@ $(document).ready(function(){
                             },
                         id:"button_resolver_edit",
                         text: "Edit"
+            },
+            'Duplicate': { click: function(){
+                            resolver_duplicate();
+                            resolvers_load();
+                            },
+                        id:"button_resolver_duplicate",
+                        text: "Duplicate"
             },
             'Delete': { click: function(){
                             resolver_ask_delete();
@@ -6163,7 +6213,13 @@ function delete_push_provider(provider){
  *
  *  Resolver edit funtions
  */
-function resolver_file(name){
+
+/**
+ * fetch current flat file resolver definition and open dialog to create, edit and duplicate flat file resolvers
+ * @param  {String}  name      name of resolver to edit/duplicate or empty string for a create dialog
+ * @param  {Boolean} duplicate whether a duplicate should be created or not
+ */
+function resolver_file(name, duplicate){
     $("#form_fileconfig").validate().resetForm();
 
     var obj = {
@@ -6176,21 +6232,18 @@ function resolver_file(name){
         }
     };
 
-    g.current_resolver_name = name;
+    g.current_resolver_name = (duplicate ? "" : name);
+     $('#file_resolvername').val(g.current_resolver_name);
 
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver',{'resolver' : name}, function(xhdr, textStatus) {
-
                 var resp = xhdr.responseText;
                 obj = jQuery.parseJSON(resp);
-                //obj.result.value.data.fileName;
 
-                $('#file_resolvername').val(name);
                 $('#file_filename').val(obj.result.value.data.fileName);
         });
     } else {
-        $('#file_resolvername').val("");
         $('#file_filename').val(obj.result.value.data.fileName);
     }
 
@@ -6355,16 +6408,23 @@ function resolver_set_ldap(obj) {
     $('#ldap_mapping').val(data.USERINFO);
     $('#ldap_uidtype').val(data.UIDTYPE);
     $('#ldap_certificate').val(data.CACERTIFICATE);
-    $('#ldap_noreferrals').val(data.NOREFERRALS);
 
     // get the configuration value of the enforce TLS (if exists) and adjust the checkbox
     var checked = !!data.EnforceTLS && data.EnforceTLS.toLowerCase() == "true";
     $('#ldap_enforce_tls').prop('checked', checked);
 
+    $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
+
     ldap_resolver_ldaps();
 }
 
-function resolver_ldap(name){
+
+/**
+ * fetch current ldap resolver definition and open dialog to create, edit and duplicate ldap resolvers
+ * @param  {String}  name      name of resolver to edit/duplicate or empty string for a create dialog
+ * @param  {Boolean} duplicate whether a duplicate should be created or not
+ */
+function resolver_ldap(name, duplicate){
     $("#form_ldapconfig").validate().resetForm();
 
     var obj = {
@@ -6389,18 +6449,21 @@ function resolver_ldap(name){
         }
     };
 
-    g.current_resolver_name = name;
+    g.current_resolver_name = (duplicate ? "" : name);
+     $('#ldap_resolvername').val(g.current_resolver_name);
 
     var config_key = 'certificates.use_system_certificates';
     var server_config = get_server_config(config_key);
+
     g.use_system_certificates = isDefinedKey(server_config, config_key) && server_config[config_key] == 'True';
+
+    var critical_inputs = $('#ldap_uri, #ldap_basedn, #ldap_binddn');
 
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
             var resp = xhdr.responseText;
-            var obj = jQuery.parseJSON(resp);
-            $('#ldap_resolvername').val(name);
+            obj = jQuery.parseJSON(resp);
             if (obj.result.status) {
                 resolver_set_ldap(obj);
             } else {
@@ -6411,15 +6474,32 @@ function resolver_ldap(name){
                            'is_escaped': true});
             }
         });
-        $('#ldap_password').attr("placeholder", i18n.gettext('(not changed)'));
-    } // end if
+    }
+
+    if(g.current_resolver_name) {
+        $('#ldap_password').attr("placeholder", password_placeholder_not_changed);
+
+        critical_inputs.on('change keyup', function(e) {
+            var sth_changed = $('#ldap_uri').val()    != obj.result.value.data.LDAPURI
+                           || $('#ldap_basedn').val() != obj.result.value.data.LDAPBASE
+                           || $('#ldap_binddn').val() != obj.result.value.data.BINDDN;
+
+            $("#ldap_password").rules("add", {
+                required: sth_changed
+            });
+
+            $('#ldap_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
+
+            if(!sth_changed) $("#ldap_password").valid();
+        });
+    }
     else {
-        $('#ldap_resolvername').val("");
-        $('#ldap_password').attr("placeholder", "");
+        $('#ldap_password').attr("placeholder", password_placeholder_required);
+
+        critical_inputs.off("change keyup");
 
         resolver_set_ldap(obj);
     }
-    $('#ldap_noreferrals').prop('checked', ("True" == obj.result.value.data.NOREFERRALS));
 
     // adjust the checkbox of enforce TLS according to the configuration value
     var checked = obj.result.value.data.EnforceTLS.toLowerCase() == "true";
@@ -6470,7 +6550,7 @@ function resolver_ldap(name){
 
     // make password field required if it is a new resolver and therefor name is empty
     $("#ldap_password").rules("add", {
-        required: !name
+        required: !g.current_resolver_name
     });
 }
 
@@ -6526,7 +6606,7 @@ function resolver_set_http(data) {
     http_resolver_https();
 }
 
-function resolver_http(name){
+function resolver_http(name, duplicate){
     $("#form_httpconfig").validate().resetForm();
 
     var obj = {
@@ -6566,11 +6646,11 @@ function resolver_http(name){
             }
         });
 
-        $('#http_password').attr("placeholder", i18n.gettext('(not changed)'));
+        $('#http_password').attr("placeholder", password_placeholder_not_changed);
     } // end if
     else {
         $('#http_resolvername').val("");
-        $('#http_password').attr("placeholder", "");
+        $('#http_password').attr("placeholder", password_placeholder_required);
 
         var data = obj.result.value.data;
         resolver_set_http(data);
@@ -6644,7 +6724,12 @@ function resolver_set_sql(obj) {
     $('#sql_encoding').val(obj.result.value.data.Encoding);
 }
 
-function resolver_sql(name){
+/**
+ * fetch current sql resolver definition and open dialog to create, edit and duplicate sql resolvers
+ * @param  {String}  name      name of resolver to edit/duplicate or empty string for a create dialog
+ * @param  {Boolean} duplicate whether a duplicate should be created or not
+ */
+function resolver_sql(name, duplicate){
     $("#form_sqlconfig").validate().resetForm();
 
     var obj = {
@@ -6655,10 +6740,11 @@ function resolver_sql(name){
                     'Driver': 'mysql',
                     'Server': '127.0.0.1',
                     'Port': '3306',
+                    'Limit': '500',
                     'User': 'user',
                     'Password': 'secret',
                     'Table': 'usertable',
-                    'Map': '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password", "salt" : "salt" }',
+                    'Map': '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password" }',
                     'Where' : '',
                     'conParams' : '',
                     'Encoding' : ''
@@ -6668,17 +6754,18 @@ function resolver_sql(name){
         }
     };
 
-    g.current_resolver_name = name;
+    g.current_resolver_name = (duplicate ? "" : name);
+    $('#sql_resolvername').val(g.current_resolver_name);
 
     $('#progress_test_sql').hide();
+
+    var critical_inputs = $('#sql_driver, #sql_server, #sql_port, #sql_database, #sql_user');
 
     if (name) {
         // load the config of the resolver "name".
         clientUrlFetch('/system/getResolver', {'resolver' : name}, function(xhdr, textStatus) {
             var resp = xhdr.responseText;
-            var obj = jQuery.parseJSON(resp);
-            //obj.result.value.data.BINDDN;
-            $('#sql_resolvername').val(name);
+            obj = jQuery.parseJSON(resp);
             if (obj.result.status) {
                 resolver_set_sql(obj);
             } else {
@@ -6689,11 +6776,30 @@ function resolver_sql(name){
                            'is_escaped':true});
             }
         });
-        $('#sql_password').attr("placeholder", i18n.gettext('(not changed)'));
+    }
+    if(g.current_resolver_name) {
+        $('#sql_password').attr("placeholder", password_placeholder_not_changed);
+
+        critical_inputs.on('change keyup', function(e) {
+            var sth_changed = $('#sql_driver').val()   != obj.result.value.data.Driver
+                           || $('#sql_server').val()   != obj.result.value.data.Server
+                           || $('#sql_port').val()     != obj.result.value.data.Port
+                           || $('#sql_database').val() != obj.result.value.data.Database
+                           || $('#sql_user').val()     != obj.result.value.data.User;
+
+            $("#sql_password").rules("add", {
+                required: sth_changed
+            });
+
+            $('#sql_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
+
+            if(!sth_changed) $("#sql_password").valid();
+        });
     }
     else {
-        $('#sql_resolvername').val("");
-        $('#sql_password').attr("placeholder", "");
+        $('#sql_password').attr("placeholder", password_placeholder_required);
+
+        critical_inputs.off("change keyup");
 
         resolver_set_sql(obj);
     }
@@ -6733,7 +6839,7 @@ function resolver_sql(name){
 
     // make password field required if it is a new resolver and therefor name is empty
     $("#sql_password").rules("add", {
-        required: !name
+        required: !g.current_resolver_name
     });
 }
 

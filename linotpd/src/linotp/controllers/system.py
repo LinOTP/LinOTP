@@ -58,6 +58,7 @@ from linotp.lib.resolver import defineResolver
 from linotp.lib.resolver import getResolverObject
 from linotp.lib.resolver import getResolverList
 from linotp.lib.resolver import getResolverInfo
+from linotp.lib.resolver import getResolverClass
 from linotp.lib.resolver import deleteResolver
 from linotp.lib.resolver import parse_resolver_spec
 
@@ -608,42 +609,127 @@ class SystemController(BaseController):
 
         param = {}
         resolver_loaded = False
+        msg = _("Unable to instantiate the resolver %r."
+                 "Please verify configuration or connection!")
 
         try:
             param.update(request.params)
 
-            log.info("[setResolver] saving configuration %r", param.keys())
-
             if 'name' not in param:
                 raise ParameterError('missing required parameter "name"')
+
             new_resolver_name = param['name']
+            previous_name = param.get('previous_name', '')
+
+            if not previous_name:
+                mode = 'create'
+            else:
+                if new_resolver_name == previous_name:
+                    mode = 'update'
+                else:
+                    mode = 'rename'
+
+            log.info("[setResolver] saving configuration %r", param.keys())
 
             #
             # before storing the new resolver, we check if already a
-            # resolver with same name and different type if it exists.
-            # If so, we delete the all entries of the old one
+            # resolver with same name exists.
+            #
+            if (mode in ["create", "rename"] and
+               new_resolver_name in getResolverList()):
+
+                raise Exception("Cound not %s resolver, resolver %r already"
+                                " exists!" % (mode, new_resolver_name))
+
+            #
+            # simple create, we don't have to check for critical attribute
+            # nor merge the existing definition
             #
 
-            if new_resolver_name in getResolverList():
+            if mode == "create":
 
-                old_resolver = getResolverInfo(new_resolver_name,
-                                               passwords=True)
+                resolver_loaded = defineResolver(param)
 
-                if old_resolver and old_resolver.get('type') != param['type']:
-                    log.warning("creating resolver <%s> removes previous "
-                                "resolver with same name", new_resolver_name)
-                    deleteResolver(new_resolver_name)
+                if resolver_loaded is False:
+                    raise ResolverLoadConfigError(msg % new_resolver_name)
 
-            resolver_loaded = defineResolver(param)
+            elif mode in ["update", "rename"]:
 
-            if not resolver_loaded:
-                msg = (_("Unable to instantiate the resolver %r."
-                         "Please verify configuration or connection!") %
-                       new_resolver_name)
-                raise ResolverLoadConfigError(msg)
+                merge_param = {}
+                critical_change = False
+
+                previous_resolver = getResolverInfo(previous_name)
+
+                #
+                # we merge the parameters only if the previous resolver
+                # is of the same type
+
+                if param['type'] == previous_resolver['type']:
+
+                    #
+                    # get the parameters of the previous resolver
+
+                    merge_param = previous_resolver['data']
+
+                    #
+                    # get the critical parameters for this resolver type
+                    # and check if these parameters have changed
+
+                    resolver_cls = getResolverClass(param['type'])
+                    critical_params = resolver_cls.critical_parameters
+                    crypted_params = resolver_cls.crypted_parameters
+
+                    for crit in critical_params:
+                        if param.get(crit, '') != merge_param.get(crit, ''):
+                            critical_change = True
+                            break
+
+                    #
+                    # if there are no critical changes, we can merge
+                    # the encrypted parameters from previous resolver
+                    #
+                    if not critical_change:
+
+                        # we transfer only the crypted parameters, which
+                        # in most cases is the password
+
+                        previous_resolver = getResolverInfo(previous_name,
+                                                            passwords=True)
+                        merge_param = previous_resolver['data']
+
+                        for crypt in crypted_params:
+                            if crypt in merge_param and crypt not in param:
+                                param[crypt] = merge_param[crypt]
+                    else:
+
+                        #
+                        # if there are critical changes, we require the
+                        # crypted args in the parameter list
+
+                        missing = False
+                        for crypt in crypted_params:
+                            if crypt not in param:
+                                missing = True
+                                break
+
+                        if missing:
+                            log.error("could not %s resolver %r: missing "
+                                      "crypted parameters",
+                                      mode, new_resolver_name)
+
+                            raise ResolverLoadConfigError(msg %
+                                                          new_resolver_name)
+
+                resolver_loaded = defineResolver(param)
+
+                if resolver_loaded is False:
+                    raise ResolverLoadConfigError(msg % new_resolver_name)
+
+                if mode == 'rename':
+                    deleteResolver(previous_name)
 
             Session.commit()
-            return sendResult(response, resolver_loaded, 1)
+            return sendResult(response, True, 1)
 
         except ResolverLoadConfigError as exx:
             log.exception("Failed to load resolver definition %r \n %r",
