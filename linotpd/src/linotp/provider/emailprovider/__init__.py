@@ -118,6 +118,7 @@ class SMTPEmailProvider(IEmailProvider):
 
         """
         self.smtp_server = configDict.get('SMTP_SERVER')
+        self.smtp_port = configDict.get('SMTP_PORT', 0)
         self.smtp_user = configDict.get('SMTP_USER')
         self.smtp_password = configDict.get('SMTP_PASSWORD')
         self.email_from = configDict.get('EMAIL_FROM')
@@ -162,7 +163,7 @@ class SMTPEmailProvider(IEmailProvider):
         msg['From'] = self.email_from
         msg['To'] = email_to
 
-        smtp_connection = smtplib.SMTP(self.smtp_server)
+        smtp_connection = smtplib.SMTP(self.smtp_server, self.smtp_port)
         if self.smtp_user:
             smtp_connection.login(self.smtp_user, self.smtp_password)
         try:
