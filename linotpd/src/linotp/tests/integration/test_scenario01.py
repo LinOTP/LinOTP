@@ -99,7 +99,7 @@ class TestScenario01(TestCase):
 
         self._announce_test("2. In Management Webinterface, check that all users are visible")
 
-        user_view = UserView(driver, self.base_url, realm_name1)
+        user_view = UserView(self, realm_name1)
         time.sleep(2)
         self.assertEqual(ldap_num_expected_users, user_view.get_num_users(),
                          "Not the expected number of users")
@@ -107,7 +107,7 @@ class TestScenario01(TestCase):
             self.assertTrue(user_view.user_exists(user), "User '" + user +
                             "' should exist.")
 
-        user_view = UserView(driver, self.base_url, realm_name2)
+        user_view = UserView(self, realm_name2)
         time.sleep(2)
         self.assertEqual(sql_num_expected_users, user_view.get_num_users(),
                          "Not the expected number of users")
@@ -183,14 +183,13 @@ class TestScenario01(TestCase):
 
         self._announce_test("5. eToken zuweisen")
 
-        user_view = UserView(driver, self.base_url, test1_realm)
+        user_view = UserView(self, test1_realm)
         user_view.select_user("bach")
         token_view = TokenView(self)
         token_view.assign_token(serial_token_bach, "1234")
 
         self._announce_test("6. Remote Token zuweisen")
 
-        user_view = UserView(driver, self.base_url, test1_realm)
         user_view.select_user("debussy")
         remote_token = RemoteToken(driver=self.driver,
                                    base_url=self.base_url,
@@ -204,7 +203,6 @@ class TestScenario01(TestCase):
 
         self._announce_test("7. Spass-Token zuweisen")
 
-        user_view = UserView(driver, self.base_url, test1_realm)
         user_view.select_user("beethoven")
         spass_token = SpassToken(
             driver=self.driver,

@@ -80,9 +80,7 @@ class TestEmailToken(TestCase):
     def enroll_email_token(self):
 
         # Enroll e-mail token
-        self.driver.get(self.base_url + "/manage")
-        time.sleep(2)
-        user_view = UserView(self.driver, self.base_url, self.realm_name)
+        user_view = UserView(self, self.realm_name)
         user_view.select_user(self.username)
         description = "Rolled out by Selenium"
         expected_email_address = self.email_recipient

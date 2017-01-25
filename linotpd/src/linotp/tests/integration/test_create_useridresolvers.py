@@ -67,8 +67,9 @@ class TestCreateUserIdResolvers(TestCase):
 
         realm_name = "SE_realm1"
         realmMgr.create(realm_name, created_resolvers)
+        realmMgr.close()
 
-        user_view = UserView(driver, self.base_url, realm_name)
+        user_view = UserView(self, realm_name)
         self.assertEqual(total_expected_users, user_view.get_num_users(),
                          "Not the expected number of users")
 

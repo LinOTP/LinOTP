@@ -112,10 +112,14 @@ class ManageUi(object):
             self.open_manage()
 
         tab_css = 'div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span' % (position)
+        tabpane_css = 'div#tabs > div.ui-tabs-panel:nth-of-type(%s)' % (position)
 
         tab_button = self.find_by_css(tab_css)
 
         tab_button.click()
+
+        # Wait for tab pane to show up and return element
+        return self.find_by_css(tabpane_css)
 
     def _activate_dialog(self, reload_page, toplevel_selector, menu_id, dialog_id):
         """

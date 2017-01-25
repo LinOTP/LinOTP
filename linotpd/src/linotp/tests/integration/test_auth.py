@@ -54,7 +54,7 @@ class TestAuth(TestCase):
         # Seed and OTP values: https://tools.ietf.org/html/rfc4226#appendix-D
         m = ManageUi(self)
         m.open_manage()
-        user_view = UserView(driver, self.base_url, self.realm_name)
+        user_view = UserView(self, self.realm_name)
         username = "susi"
         user_view.select_user(username)
         pin = "myauthpin"

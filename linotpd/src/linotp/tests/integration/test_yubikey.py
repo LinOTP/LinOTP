@@ -55,7 +55,7 @@ class TestYubikey(TestCase):
 
         self.reset_resolvers_and_realms(data.physics_ldap_resolver, self.realm_name)
 
-        user_view = UserView(self.driver, self.base_url, self.realm_name)
+        user_view = UserView(self, self.realm_name)
         self.assertTrue(user_view.user_exists(self.user_name), "User '" + self.user_name +
                                                                "' should exist.")
 
@@ -89,7 +89,7 @@ class TestYubikey(TestCase):
         driver = self.driver
         driver.get(self.base_url + "/manage")
 
-        user_view = UserView(driver, self.base_url, self.realm_name)
+        user_view = UserView(self, self.realm_name)
         user_view.select_user(self.user_name)
         token_view = TokenView(self)
         pin = "asdf1234"

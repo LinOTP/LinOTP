@@ -89,9 +89,7 @@ class TestSmsToken(TestCase):
             print "No sms_provider_config in testconfig file. Using LinOTP default."
 
         # Enroll sms token
-        driver.get(self.base_url + "/manage")
-        time.sleep(2)
-        user_view = UserView(driver, self.base_url, realm_name)
+        user_view = UserView(self, realm_name)
         username = "rollo"
         user_view.select_user(username)
         sms_token_pin = "1234"

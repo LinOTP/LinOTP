@@ -25,118 +25,102 @@
 #
 """Contains UserView class"""
 
-import time
 
 from user_id_resolver import UserIdResolver
+from manage_ui import ManageUi
 from helper import select
 
 class UserViewException(Exception):
     pass
 
-class UserView:
+class UserView(ManageUi):
     """Represents the 'User View' tab in the LinOTP WebUI"""
 
-    def __init__(self, driver, base_url, realm_name):
-        """"""
-        self.driver = driver
-        self.base_url = base_url
+    def __init__(self, testcase, realm_name):
+        super(UserView, self).__init__(testcase)
         self.realm_name = realm_name.lower()
 
-    def _select_realm(self):
+    def select_realm(self, realm_name=None):
         """We assume we are one the main page /manage and then select
            the realm from the <select> dropdown on the left
         """
+        if realm_name:
+            self.realm_name = realm_name.lower()
+
         realm_select = self.driver.find_element_by_id('realm')
         select(self.driver, realm_select, self.realm_name)
 
     def _open_tab_user_view(self):
         """
-        Select the 'User View' tab
-        Returns the #id of the "User View" tab.
+        Select the 'User View' tab and the realm
+
+        Returns the element containing the user view
         """
-        user_view_tab = self.driver.find_element_by_xpath(
-            u"//div[@id='tabs']/ul/li/a/span[text()='User View']"
-            )
-        tab_id = user_view_tab.find_element_by_xpath("../..").get_attribute("aria-controls")
-        user_view_tab.click()
-        time.sleep(1)
-        return tab_id
+        tab = self.open_tab(2)
+        self.select_realm()
+        self.wait_for_waiting_finished()
+        return tab
 
     def get_num_users(self):
         """Return the number of users in the current realm"""
-        self.driver.get(self.base_url + "/manage")
-        self._select_realm()
-        tab_id = self._open_tab_user_view()
-        time.sleep(2)
-        pPageStat = self.driver.find_element_by_css_selector("#%s > div.flexigrid "
-            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat" % tab_id).text
+        usertab = self._open_tab_user_view()
+
+        pPageStat = usertab.find_element_by_css_selector("div.flexigrid "
+            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat").text
         if pPageStat == "No items":
             return 0
         numbers = [int(s) for s in pPageStat.split() if s.isdigit()]
         if len(numbers) != 3:
             raise UserViewException("Could not determine number of users. "
-                                     "Missing: 'Displaying N1 to N2 of N3'")
+                                     "Missing: 'Displaying N1 to N2 of N3'. Found:<%s>" % pPageStat)
         return numbers[2]
 
-    def user_exists(self, username):
-        """Return True if users exists in the current realm"""
-        self.driver.get(self.base_url + "/manage")
-        self._select_realm()
-        tab_id = self._open_tab_user_view()
-        search_box = self.driver.find_element_by_css_selector("#%s > div.flexigrid "
-            "> div.sDiv > div.sDiv2 > input[name=\"q\"]" % tab_id)
+    def get_user_element(self, username):
+        """Return element for the user in question
+        """
+
+        usertab = self._open_tab_user_view()
+        usertab_id = usertab.get_attribute("id")
+
+        search_box = usertab.find_element_by_css_selector("div.flexigrid "
+            "> div.sDiv > div.sDiv2 > input[name=\"q\"]")
+        search_box.clear()
         search_box.send_keys(username)
 
-        select_type = self.driver.find_element_by_css_selector(
-                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "select[name=\"qtype\"]" % tab_id
+        select_type = usertab.find_element_by_css_selector(
+                    "div.flexigrid > div.sDiv > div.sDiv2 > "
+                    "select[name=\"qtype\"]"
                 )
         select(self.driver, select_type, "in username")
 
-        time.sleep(1)
-        submit_button = self.driver.find_element_by_css_selector(
-                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "input[name=\"search_button\"]" % tab_id
+        submit_button = usertab.find_element_by_css_selector(
+                    "div.flexigrid > div.sDiv > div.sDiv2 > "
+                    "input[name=\"search_button\"]"
                 )
         submit_button.click()
-        time.sleep(2)
 
-        usernames = self.driver.find_elements_by_css_selector("#user_table tr "
-                                                              "td:first-child div")
+        # Clicking on the button refreshes the screen, which invalidates usertab
+        # So use a CSS anchored on the usertab id
+        usernames = self.driver.find_elements_by_css_selector(
+            '#%s #user_table [abbr="username"] div' % usertab_id)
+
         for user in usernames:
             if user.text == username:
-                return True
-        return False
+                return user
+        return None
+
+    def user_exists(self, username):
+        """Return True if users exists in the current realm"""
+        user = self.get_user_element(username)
+
+        return user is not None
 
     def select_user(self, username):
         """Selects (clicks on) a user in the WebUI. This function does not reload
            the page (because otherwise the selection would be lost) neither before
            nor after the selection.
         """
-        self._select_realm()
-        tab_id = self._open_tab_user_view()
-        search_box = self.driver.find_element_by_css_selector("#%s > div.flexigrid "
-            "> div.sDiv > div.sDiv2 > input[name=\"q\"]" % tab_id)
-        search_box.clear()
-        search_box.send_keys(username)
+        user = self.get_user_element(username)
 
-        select_type = self.driver.find_element_by_css_selector(
-                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "select[name=\"qtype\"]" % tab_id
-                )
-        select(self.driver, select_type, "in username")
-
-        time.sleep(1)
-        submit_button = self.driver.find_element_by_css_selector(
-                    "#%s > div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "input[name=\"search_button\"]" % tab_id
-                )
-        submit_button.click()
-        time.sleep(2)
-
-        usernames = self.driver.find_elements_by_css_selector("#user_table tr "
-                                                              "td:first-child div")
-        for user in usernames:
-            if user.text == username:
-                user.click()
-
+        assert user
+        user.click()
