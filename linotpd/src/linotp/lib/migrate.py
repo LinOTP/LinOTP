@@ -27,20 +27,16 @@
 
 from Cryptodome.Protocol.KDF import PBKDF2
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+import hmac
 import binascii
 import random  # for test id genretator using random.choice
 import os
-import hashlib
-from hmac import HMAC
+from hashlib import sha256
+
 
 from Cryptodome.Cipher import AES
 
-from linotp.model.meta import Session
+
 from linotp.model import Token as model_token
 from linotp.model import Config as model_config
 
@@ -49,6 +45,9 @@ from linotp.lib.config import _storeConfigDB
 
 from linotp.lib.crypt import SecretObj
 from linotp.lib.context import request_context as context
+
+import linotp.model
+Session = linotp.model.Session
 
 
 class DecryptionError(Exception):
@@ -178,16 +177,18 @@ class MigrationHandler(object):
             if token.isPinEncrypted():
                 iv, enc_pin = token.get_encrypted_pin()
                 pin = SecretObj.decrypt_pin(enc_pin, hsm=self.hsm)
+                just_mac = serial + token.LinOtpPinHash
                 enc_value = self.crypter.encrypt(input_data=pin,
-                                        just_mac=serial + token.LinOtpPinHash)
+                                                 just_mac=just_mac)
                 token_data['TokenPin'] = enc_value
 
             # the userpin is used in motp and ocra/ocra2 token
             if token.LinOtpTokenPinUser:
                 key, iv = token.getUserPin()
                 user_pin = SecretObj.decrypt(key, iv, hsm=self.hsm)
+                just_mac = serial + token.LinOtpTokenPinUser
                 enc_value = self.crypter.encrypt(input_data=user_pin,
-                                    just_mac=serial + token.LinOtpTokenPinUser)
+                                                 just_mac=just_mac)
                 token_data['TokenUserPin'] = enc_value
 
             # then we retrieve as well the original value,
@@ -243,7 +244,7 @@ class Crypter(object):
 
     @staticmethod
     def hmac_sha256(secret, msg):
-        hmac = HMAC(secret, msg=msg, digestmod=hashlib.sha256)
+        hmac = hmac.new(secret, msg=msg, digestmod=sha256)
         val = hmac.digest()
         return val
 
@@ -273,8 +274,8 @@ class Crypter(object):
         master_key = PBKDF2(password=password, salt=salt, dkLen=32,
                             count=65432, prf=Crypter.hmac_sha256)
 
-        U1 = hashlib.sha256(master_key).digest()
-        U2 = hashlib.sha256(U1).digest()
+        U1 = sha256(master_key).digest()
+        U2 = sha256(U1).digest()
         self.enc_key = U1[:16]
         self.mac_key = U2[:16]
 

@@ -33,8 +33,13 @@ from base64 import b64decode
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Cipher import AES
-from Cryptodome.Hash import HMAC
-from Cryptodome.Hash import SHA256
+
+import hmac
+from hashlib import sha256
+
+
+from linotp.lib.crypt import SecretObj
+
 from linotp.lib.policy import get_partition
 from linotp.lib.policy import get_single_auth_policy
 from linotp.lib.challenges import Challenges
@@ -313,8 +318,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         user_public_key = b64decode(b64_user_public_key)
 
         ss = calc_dh(r, user_public_key)
-        U1 = SHA256.new(ss).digest()
-        U2 = SHA256.new(U1).digest()
+        U1 = sha256(ss).digest()
+        U2 = sha256(U1).digest()
         zerome(ss)
 
         skA = U1[0:16]
@@ -450,13 +455,15 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # response
 
         sig = ''
+        sec_obj = self._get_secret_object()
 
         if flags & CHALLENGE_HAS_SIGNATURE:
 
             hmac_message = nonce + pt_header + maybe_compressed_data_package
 
-            sig = HMAC.new(self.server_hmac_secret, hmac_message,
-                           digestmod=SHA256).digest()
+            sig = sec_obj.hmac_digest(data_input=hmac_message,
+                                      bkey=self.server_hmac_secret,
+                                      hash_algo=sha256)
 
             plaintext += sig
 
@@ -467,7 +474,10 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # ------------------------------------------------------------------- --
 
         user_message = nonce + pt_header + sig + data_package
-        user_sig = HMAC.new(skB, user_message, digestmod=SHA256).digest()
+
+        user_sig = sec_obj.hmac_digest(data_input=user_message,
+                                       bkey=skB,
+                                       hash_algo=sha256)
 
         # the user sig will be given as urlsafe base64 in the
         # challenge response. for this reasons (and because we
@@ -866,14 +876,14 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         """ the server hmac secret for this specific token """
 
         partition = self.getFromTokenInfo('partition')
-        server_secret_key = get_dh_secret_key(partition)
 
         # user public key is saved base64 encoded
 
         b64_user_public_key = self.getFromTokenInfo('user_public_key')
         user_public_key = b64decode(b64_user_public_key)
 
-        hmac_secret = calc_dh(server_secret_key, user_public_key)
-        zerome(server_secret_key)
+        sec_obj = self._get_secret_object()
+        hmac_secret = sec_obj.calc_dh(partition=partition,
+                                      data=user_public_key)
 
         return hmac_secret

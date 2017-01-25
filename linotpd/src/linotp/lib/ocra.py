@@ -202,22 +202,22 @@ Description of OCRA algorithm::
 
 """
 
-
+import sys
+import logging
 import binascii
 from datetime import datetime
-import hashlib
+
 import hmac
 import re
 from linotp.lib.crypt import urandom
+from linotp.lib.crypt import get_hashalgo_from_description
+
+
+log = logging.getLogger(__name__)
 
 # for the hmac algo, we have to check the python version
-import sys
 (ma, mi, _, _, _,) = sys.version_info
 pver = float(int(ma) + int(mi) * 0.1)
-
-
-import logging
-log = logging.getLogger(__name__)
 
 
 def is_int(v):
@@ -397,9 +397,7 @@ class OcraSuite():
         hash_type = description.lower()
 
         if hash_type in ['sha1', 'sha256', 'sha512']:
-            hash_func = getattr(hashlib, hash_type, None)
-            if callable(hash_func):
-                return hash_func
+            return get_hashalgo_from_description(hash_type)
 
         # any other case is an error
         raise ValueError('Unknown hash algorithm %r' % hash_type)
@@ -724,7 +722,7 @@ class OcraSuite():
         return ret
 
 
-def main():
+def test():
 
     import struct
 
@@ -755,10 +753,10 @@ def main():
 if __name__ == '__main__':
 
     '''
-     devel hook - to be removed later
+     devel hook
     '''
 
-    main()
+    test()
 
 
 #eof######################################

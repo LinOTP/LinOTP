@@ -48,11 +48,6 @@ from linotp.lib.security import SecurityModule
 import binascii
 import logging
 
-try:
-    import pyhsm  # pylint: disable=import-error
-except ImportError as imp_error:
-    raise imp_error
-
 from linotp.lib.security.provider import DEFAULT_KEY
 from linotp.lib.security.provider import CONFIG_KEY
 from linotp.lib.security.provider import TOKEN_KEY
@@ -64,13 +59,18 @@ import getpass
 
 log = logging.getLogger(__name__)
 
+try:
+    import pyhsm
+except ImportError as exx:
+    log.error("Failed to import pyhsm.")
+
 
 class YubiSecurityModule(SecurityModule):
     '''
     Class that handles all AES stuff
     '''
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, add_conf=None):
 
         log.debug("[__init__] Initializing the Yubi Security Module with "
                   "config %s", config)

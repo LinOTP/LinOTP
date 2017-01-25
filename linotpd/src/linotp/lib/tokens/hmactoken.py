@@ -29,6 +29,10 @@
 import time
 from datetime import datetime
 
+from Cryptodome.Hash import SHA1
+from Cryptodome.Hash import SHA256
+from Cryptodome.Hash import SHA512
+
 from linotp.lib.HMAC    import HmacOtp
 from linotp.lib.util    import getParam
 from linotp.lib.config  import getFromConfig
@@ -54,11 +58,10 @@ from linotp.lib.context import request_context as context
 import logging
 log = logging.getLogger(__name__)
 
-keylen = {'sha1' : 20,
-          'sha256' : 32,
-          'sha512' : 64
-          }
 
+keylen = {'sha1': SHA1.digest_size,
+          'sha256': SHA256.digest_size,
+          'sha512': SHA512.digest_size}
 class HmacTokenClass(TokenClass):
     '''
     hotp token class implementation
@@ -189,29 +192,30 @@ class HmacTokenClass(TokenClass):
         :return: nothing
         '''
 
-        log.debug("[update] begin. Process the initialization parameters: param %r" % (param))
+        log.debug("[update] begin. Process the initialization parameters:"
+                  " param %r", param)
 
-        ## Remark: the otpKey is handled in the parent class
+        # Remark: the otpKey is handled in the parent class
 
-        val = getParam(param, "hashlib", optional)
-        if val is not None:
-            self.hashlibStr = val
-        else:
-            self.hashlibStr = 'sha1'
+        self.hashlibStr = param.get("hashlib", 'sha1')
 
-        ## check if the key_size id provided
-        ## if not, we could derive it from the hashlib
-        key_size = getParam(param, 'key_size', optional)
-        if key_size is None:
-            param['key_size'] = keylen.get(self.hashlibStr)
+        # check if the key_size id provided
+        # if not, we could derive it from the hashlib
+        key_size = param.get('key_size')
+        if not key_size and self.hashlibStr in keylen:
+            key_size = keylen.get(self.hashlibStr)
 
+        param['key_size'] = key_size
         param['hashlib'] = self.hashlibStr
         self.addToTokenInfo("hashlib", self.hashlibStr)
 
         TokenClass.update(self, param, reset_failcount)
 
-        log.debug("[update] end. Processing the initialization parameters done.")
+        log.debug("[update] end. Processing the initialization "
+                  "parameters done.")
         return
+
+
 ### challenge interfaces starts here
     def is_challenge_request(self, passw, user, options=None):
         '''

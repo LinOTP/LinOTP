@@ -188,7 +188,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
     Class that handles all AES stuff
     '''
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, add_conf=None):
         output("debug", "[__init__] Initializing the Pkcs11 Security Module")
         self.hSession = None
         self.is_ready = False

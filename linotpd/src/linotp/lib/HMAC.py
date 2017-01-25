@@ -55,7 +55,8 @@ class HmacOtp():
 
         data_input = struct.pack(">Q", counter)
         if key is None:
-            dig = str(self.secretObj.hmac_digest(data_input, self.hashfunc))
+            dig = str(self.secretObj.hmac_digest(data_input,
+                                                 hash_algo=self.hashfunc))
         else:
             if pver > 2.6:
                 dig = hmac.new(key, data_input, self.hashfunc).digest()

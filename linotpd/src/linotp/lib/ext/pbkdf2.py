@@ -49,70 +49,83 @@
 #
 ###########################################################################
 
-__version__ = "1.3"
-__all__ = ['PBKDF2', 'crypt']
 
 from struct import pack
 import linotp.lib.crypt
 import string
 import sys
 
-try:
-    # Use PyCrypto (if available).
-    from Cryptodome.Hash import HMAC, SHA as SHA1
-except ImportError:
-    # PyCrypto not available.  Use the Python standard library.
-    import hmac as HMAC
-    try:
-        from hashlib import sha1 as SHA1
-    except ImportError:
-        # hashlib not available.  Use the old sha module.
-        import sha as SHA1
+import hmac
+from hashlib import sha1
 
 #
 # Python 2.1 thru 3.2 compatibility
 #
 
+__version__ = "1.3"
+__all__ = ['PBKDF2', 'crypt']
+
+
 if sys.version_info[0] == 2:
     _0xffffffffL = long(1) << 32
+
     def isunicode(s):
         return isinstance(s, unicode)
+
     def isbytes(s):
         return isinstance(s, str)
+
     def isinteger(n):
         return isinstance(n, (int, long))
+
     def b(s):
         return s
+
     def binxor(a, b):
         return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
+
     def b64encode(data, chars="+/"):
         tt = string.maketrans("+/", chars)
         return data.encode('base64').replace("\n", "").translate(tt)
     from binascii import b2a_hex
+
 else:
+
     _0xffffffffL = 0xffffffff
+
     def isunicode(s):
         return isinstance(s, str)
+
     def isbytes(s):
         return isinstance(s, bytes)
+
     def isinteger(n):
         return isinstance(n, int)
+
     def callable(obj):
         return hasattr(obj, '__call__')
+
     def b(s):
-       return s.encode("latin-1")
+        return s.encode("latin-1")
+
     def binxor(a, b):
         return bytes([x ^ y for (x, y) in zip(a, b)])
+
     from base64 import b64encode as _b64encode
+
     def b64encode(data, chars="+/"):
         if isunicode(chars):
             return _b64encode(data, chars.encode('utf-8')).decode('utf-8')
         else:
             return _b64encode(data, chars)
+
     from binascii import b2a_hex as _b2a_hex
+
     def b2a_hex(s):
         return _b2a_hex(s).decode('us-ascii')
+
     xrange = range
+
 
 class PBKDF2(object):
     """PBKDF2.py : PKCS#5 v2.0 Password-Based Key Derivation
@@ -135,7 +148,7 @@ class PBKDF2(object):
     """
 
     def __init__(self, passphrase, salt, iterations=1000,
-                 digestmodule=SHA1, macmodule=HMAC):
+                 digestmodule=sha1, macmodule=hmac):
         self.__macmodule = macmodule
         self.__digestmodule = digestmodule
         self._setup(passphrase, salt, iterations, self._pseudorandom)

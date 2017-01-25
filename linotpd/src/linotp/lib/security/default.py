@@ -31,11 +31,9 @@ import binascii
 import os
 
 from Cryptodome.Cipher import AES
-from Cryptodome.Hash import HMAC
-from Cryptodome.Hash import SHA as SHA1
-from Cryptodome.Hash import SHA256
 
-
+import hmac
+from hashlib import sha256
 
 from linotp.lib.crypt import zerome
 from linotp.lib.security import SecurityModule
@@ -51,8 +49,13 @@ log = logging.getLogger(__name__)
 
 
 class DefaultSecurityModule(SecurityModule):
+    """
+    the default security provider
+    - provides the default implementation to all semantic security
+      interface to all LinOTP operations
+    """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, add_conf=None):
         '''
         initialsation of the security module
 
@@ -74,7 +77,7 @@ class DefaultSecurityModule(SecurityModule):
                 self.crypted = True
                 self.is_ready = False
 
-        if not 'file' in config:
+        if 'file' not in config:
             log.error("[getSecret] no secret file defined. A parameter "
                       "linotpSecretFile is missing in your linotp.ini.")
             raise Exception("no secret file defined: linotpSecretFile!")
@@ -121,9 +124,9 @@ class DefaultSecurityModule(SecurityModule):
                 f.close()
                 if not secret:
                     # secret = setupKeyFile(secFile, id+1)
-                    raise Exception("No secret key defined for index: %s !\n"
-                                    "Please extend your %s"" !"
-                                     % (str(id), self.secFile))
+                    raise Exception("No secret key defined for index: %r !\n"
+                                    "Please extend your %s"" !",
+                                    id, self.secFile)
         except Exception as exx:
             raise Exception("Exception: %r" % exx)
 
@@ -145,7 +148,7 @@ class DefaultSecurityModule(SecurityModule):
         '''
         if self.crypted is False:
             return
-        if not 'password' in param:
+        if 'password' not in param:
             raise Exception("missing password")
 
         # if we have a crypted file and a password, we take all keys
@@ -175,7 +178,7 @@ class DefaultSecurityModule(SecurityModule):
         log.debug('random()')
         return os.urandom(len)
 
-    def encrypt(self, data, iv, id=0):
+    def encrypt(self, data, iv=None, id=0):
         '''
         security module methods: encrypt
 
@@ -212,7 +215,7 @@ class DefaultSecurityModule(SecurityModule):
             del key
         return res
 
-    def decrypt(self, input, iv, id=0):
+    def decrypt(self, input, iv=None, id=0):
         '''
         security module methods: decrypt
 
@@ -368,7 +371,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return password
 
-    def signMessage(self, message, method=None, slot_id=DEFAULT_KEY):
+    def signMessage(self, message, method=sha256, slot_id=DEFAULT_KEY):
         """
         create the hex mac for the message -
 
@@ -381,12 +384,9 @@ class DefaultSecurityModule(SecurityModule):
 
         sign_key = None
 
-        if method is None:
-            method = SHA256
-
         try:
             sign_key = self.getSecret(slot_id)
-            hex_mac = HMAC.new(sign_key, message, method).hexdigest()
+            hex_mac = hmac.new(sign_key, message, method).hexdigest()
         finally:
             if sign_key:
                 zerome(sign_key)
@@ -394,7 +394,7 @@ class DefaultSecurityModule(SecurityModule):
 
         return hex_mac
 
-    def verfiyMessageSignature(self, message, hex_mac, method=None,
+    def verfiyMessageSignature(self, message, hex_mac, method=sha256,
                                slot_id=DEFAULT_KEY):
         """
         verify the hex mac is same for the message -
@@ -410,17 +410,14 @@ class DefaultSecurityModule(SecurityModule):
         sign_key = None
         result = True
 
-        if method is None:
-            method = SHA256
-
         try:
             sign_key = self.getSecret(slot_id)
-            hmac = HMAC.new(sign_key, message, method)
-            sign_mac = HMAC.new(sign_key, message, method).hexdigest()
+            hmac_obj = hmac.new(sign_key, message, method)
+            sign_mac = hmac.new(sign_key, message, method).hexdigest()
 
             res = 0
             # as we compare on hex, we have to multiply by 2
-            digest_size = hmac.digest_size * 2
+            digest_size = hmac_obj.digest_size * 2
 
             for x, y in zip(hex_mac, sign_mac):
                 res |= ord(x) ^ ord(y)
@@ -432,10 +429,10 @@ class DefaultSecurityModule(SecurityModule):
                 result = False
 
         except ValueError as err:
-            log.error("Mac Comparison failed! %r", err)
+            log.exception("Mac Comparison failed! %r", err)
 
         except Exception as exx:
-            pass
+            log.exception("unknown exception happened %r", exx)
 
         finally:
             if sign_key:
@@ -443,6 +440,34 @@ class DefaultSecurityModule(SecurityModule):
                 del sign_key
 
         return result
+
+    def hmac_digest(self, bkey, data_input, hash_algo):
+        """
+        simple hmac with implicit digest
+
+        :param bkey: the private shared secret
+        :param data_input: the data
+        :param hash_algo: one of the hashing algorithms
+        """
+
+        digest = hmac.new(bkey, data_input, hash_algo).digest()
+
+        return digest
+
+    def hash_digest(self, val, seed, hash_algo=None):
+        """
+        simple hash with implicit digest
+        :param val: val - data part1
+        :param seed: seed - data part2
+        :param hash_algo: hashing function pointer
+        """
+        log.debug('hash_digest()')
+
+        hash_obj = hash_algo()
+        hash_obj.update(val)
+        hash_obj.update(seed)
+
+        return hash_obj.digest()
 
 
 class ErrSecurityModule(DefaultSecurityModule):

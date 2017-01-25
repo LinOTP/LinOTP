@@ -28,9 +28,17 @@ import logging
 log = logging.getLogger(__name__)
 
 
+class FatalHSMException(Exception):
+    pass
+
+
 class SecurityModule(object):
 
-    def __init__(self, config=None):
+    @classmethod
+    def getAdditionalClassConfig(cls):
+        return []
+
+    def __init__(self, config=None, add_conf=None):
         log.error("[__init__] This is the base class. You should implement this!")
         self.name = "SecurityModule"
 
@@ -56,14 +64,14 @@ class SecurityModule(object):
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
-    def encrypt(self, value, iv=None):
+    def encrypt(self, value, iv=None, id=0):
         fname = 'encrypt'
         log.error("[%s] This is the base class. You should implement "
                   "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
-    def decrypt(self, value, iv=None):
+    def decrypt(self, value, iv=None, id=0):
         fname = 'decrypt'
         log.error("[%s] This is the base class. You should implement "
                   "the method : %s " % (self.name, fname))

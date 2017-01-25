@@ -34,6 +34,8 @@ import logging
 
 from linotp.lib.crypt import zerome
 from linotp.lib.error import HSMException
+from linotp.lib.security import FatalHSMException
+
 
 DEFAULT_KEY = 0
 CONFIG_KEY = 1
@@ -42,6 +44,7 @@ VALUE_KEY = 3
 
 
 log = logging.getLogger(__name__)
+
 
 class SecurityProvider(object):
     '''
@@ -80,37 +83,54 @@ class SecurityProvider(object):
         :param config:
 
         '''
-        keyFile = '/home/work/project/pylons/linotp2/v2.4old/dev/linotpd/src/secKey'
-        if config.has_key('linotpSecretFile'):
-            keyFile = config.get('linotpSecretFile')
-        self.config['default'] = {'pinHandle'   : TOKEN_KEY,
-                                  'passHandle'  : CONFIG_KEY,
-                                  'valueHandle' : VALUE_KEY,
-                                  'defaultHandle' : DEFAULT_KEY,
-                                  'crypted'     : 'FALSE',
-                                  'file'        : keyFile,
-                                  'module'      : 'linotp.lib.security.default.DefaultSecurityModule',
-                                  'poolsize'    : 20,
-                                  }
+        provider_config = {}
 
-        self.config['err'] = {'pinHandle'   : TOKEN_KEY,
-                                  'passHandle'  : CONFIG_KEY,
-                                  'valueHandle' : VALUE_KEY,
-                                  'defaultHandle' : DEFAULT_KEY,
-                                  'crypted'     : 'FALSE',
-                                  'file'        : keyFile,
-                                  'module'      : 'linotp.lib.security.default.ErrSecurityModule',
-                                  'poolsize'    : 20,
-                                  }
+        keyFile = config['linotpSecretFile']
+        provider_config['default'] = {
+            'pinHandle': TOKEN_KEY,
+            'passHandle': CONFIG_KEY,
+            'valueHandle': VALUE_KEY,
+            'defaultHandle': DEFAULT_KEY,
+            'crypted': 'FALSE',
+            'file': keyFile,
+            'module': 'linotp.lib.security.default.DefaultSecurityModule',
+            'poolsize': 20, }
+
+        provider_config['err'] = {
+            'pinHandle': TOKEN_KEY,
+            'passHandle': CONFIG_KEY,
+            'valueHandle': VALUE_KEY,
+            'defaultHandle': DEFAULT_KEY,
+            'crypted': 'FALSE',
+            'file': keyFile,
+            'module': 'linotp.lib.security.default.ErrSecurityModule',
+            'poolsize': 20, }
+
+        for key, value in config.items():
+            for provider in provider_config.keys():
+                if key.startswith('linotpSecurity.%s' % provider):
+                    entry = key.split('.')[-1]
+                    provider_config[provider][entry] = value
+
+        return provider_config
 
     def load_config(self, config):
         '''
         load the security modules configuration
         '''
+        p_config = {}
+        p_config.update(config)
 
         try:
-            ## load backward compatible defaults
-            self. __createDefault__(config)
+            # load backward compatible defaults
+            default_config = self.__createDefault__(config)
+            self.config.update(default_config)
+
+            if 'linotpActiveSecurityModule' in config:
+                # look the active security module up
+                self.activeOne = config['linotpActiveSecurityModule']
+                log.debug("[SecurityProvider:load_config] setting active"
+                          " security module: %s", self.activeOne)
 
             for key in config:
 
@@ -129,7 +149,7 @@ class SecurityProvider(object):
                         log.exception(error)
                         raise HSMException(error, id=707)
 
-                    if self.config.has_key(id):
+                    if id in self.config:
                         id_config = self.config.get(id)
                         id_config[val] = config.get(key)
                     else:
@@ -169,11 +189,11 @@ class SecurityProvider(object):
 
         log.debug("[loadSecurityModule] Loading module %s" % id)
 
-        if self.config.has_key(id) is False:
+        if id not in self.config:
             return ret
 
         config = self.config.get(id)
-        if config.has_key('module') is False:
+        if 'module' not in config:
             return ret
 
         module = config.get('module')
@@ -186,6 +206,8 @@ class SecurityProvider(object):
 
         mod = __import__(packageName, globals(), locals(), [className])
         klass = getattr(mod, className)
+        config_name = klass.getAdditionalClassConfig()
+        additional_config = self.get_config_entries(config_name)
 
         for method in methods:
             if hasattr(klass, method) is False:
@@ -194,17 +216,32 @@ class SecurityProvider(object):
                 log.error(error)
                 raise NameError(error)
 
-        ret = klass(config)
+        ret = klass(config, add_conf=additional_config)
         self.security_modules[id] = ret
 
         log.debug("[loadSecurityModule] returning %r" % ret)
 
         return ret
 
+    def get_config_entries(self, config_name):
+        """
+        :param names: list of config entries by modulename
+        :return: dict
+        """
+        merged_config = {}
+
+        for provider, provider_config in self.config.items():
+
+            module = provider_config.get('module')
+            provider_class = module.split('.')[-1]
+            if provider_class in config_name:
+                merged_config = self.config[provider]
+
+        return merged_config
 
     def _getHsmPool_(self, hsm_id):
         ret = None
-        if self.hsmpool.has_key(hsm_id):
+        if hsm_id in self.hsmpool:
             ret = self.hsmpool.get(hsm_id)
         return ret
 
@@ -244,36 +281,47 @@ class SecurityProvider(object):
         pool = None
         ## amount has to be taken from the hsm-id config
         if hsm_id is None:
-            ids = self.config
+            provider_ids = self.config
         else:
-            if self.config.has_key(hsm_id):
-                ids = []
-                ids.append(hsm_id)
+            if hsm_id in self.config:
+                provider_ids = []
+                provider_ids.append(hsm_id)
             else:
-                error = "[createHSMPool] failed to find hsm_id: %s" % (unicode(hsm_id))
+                error = "[createHSMPool] failed to find hsm_id: %r" % hsm_id
                 log.error(error)
                 raise HSMException(error, id=707)
 
-        for id in ids:
-            pool = self._getHsmPool_(id)
+        for provider_id in provider_ids:
+            pool = self._getHsmPool_(provider_id)
             log.debug("[createHSMPool] already got this pool: %r" % pool)
             if pool is None:
                 ## get the number of entries from the hsd (id) config
-                conf = self.config.get(id)
-                amount = int(conf.get('poolsize', 10))
-                log.debug("[createHSMPool] creating pool for %r with size %r" % (id, amount))
+                conf = self.config.get(provider_id)
+                poolsize = int(conf.get('poolsize', 10))
+                log.debug("[createHSMPool] creating pool for %r with size %r",
+                          provider_id, poolsize)
+
                 pool = []
-                for i in range(0, amount):
+                for _i in range(0, poolsize):
                     error = ''
                     hsm = None
                     try:
-                        hsm = self.loadSecurityModule(id)
+                        hsm = self.loadSecurityModule(provider_id)
+                    except FatalHSMException as exx:
+                        log.exception("[createHSMPool] %r %r ",
+                                      provider_id, exx)
+                        if provider_id == self.activeOne:
+                            raise exx
+                        error = u"%r: %r" % (provider_id, exx)
+
                     except Exception as e:
                         error = u"%r" % e
                         log.exception("[createHSMPool] %r " % (e))
-                    pool.append({'obj': hsm , 'session': 0, 'error':error})
+                        error = u"%r: %r" % (provider_id, exx)
 
-                self.hsmpool[id] = pool
+                    pool.append({'obj': hsm, 'session': 0, 'error': error})
+
+                self.hsmpool[provider_id] = pool
         return pool
 
     def _findHSM4Session(self, pool, sessionId):
@@ -311,7 +359,7 @@ class SecurityProvider(object):
         if sessionId is None:
             sessionId = unicode(thread.get_ident())
 
-        if self.config.has_key(hsm_id) is False:
+        if hsm_id not in self.config:
             error = ('[SecurityProvider:dropSecurityModule] no config found '
                      'for hsm with id %s ' % (unicode(hsm_id)))
             log.error(error)
@@ -339,7 +387,7 @@ class SecurityProvider(object):
         if sessionId is None:
             sessionId = unicode(thread.get_ident())
 
-        if self.config.has_key(hsm_id) is False:
+        if hsm_id not in self.config:
             error = ('[SecurityProvider:getSecurityModule] no config found for '
                      'hsm with id %s ' % (unicode(hsm_id)))
             log.error(error)

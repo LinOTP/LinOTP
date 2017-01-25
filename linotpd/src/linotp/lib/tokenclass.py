@@ -41,7 +41,7 @@ on linotp.lib.ImportOTP.vasco
 
 import binascii
 import datetime
-import hashlib
+from hashlib import sha1
 import logging
 import time
 
@@ -57,6 +57,7 @@ from linotp.lib.crypt import encryptPin
 from linotp.lib.crypt import kdf2
 from linotp.lib.crypt import urandom
 from linotp.lib.crypt import SecretObj
+from linotp.lib.crypt import get_hashalgo_from_description
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
@@ -1246,25 +1247,9 @@ class TokenClass(object):
 
     def getHashlib(self, hLibStr):
 
-        if hLibStr is None:
-            return hashlib.sha1
+        return get_hashalgo_from_description(description=hLibStr,
+                                             fallback='sha1')
 
-        hashlibStr = hLibStr.lower()
-
-        if hashlibStr == "md5":
-            return hashlib.md5
-        elif hashlibStr == "sha1":
-            return hashlib.sha1
-        elif hashlibStr == "sha224":
-            return hashlib.sha224
-        elif hashlibStr == "sha256":
-            return hashlib.sha256
-        elif hashlibStr == "sha384":
-            return hashlib.sha384
-        elif hashlibStr == "sha512":
-            return hashlib.sha512
-        else:
-            return hashlib.sha1
 
     def getTokenInfo(self):
         info = {}
@@ -1344,33 +1329,33 @@ class TokenClass(object):
     def get_count_auth_success_max(self):
         ret = 0
         try:
-            ret = int(self.getFromTokenInfo("count_auth_success_max"))
-        except:
-            pass
+            ret = int(self.getFromTokenInfo("count_auth_success_max", 0))
+        except Exception as exx:
+            log.info('failed to load "count_auth_success_max" %r', exx)
         return ret
 
     def get_count_auth_success(self):
         ret = 0
         try:
-            ret = int(self.getFromTokenInfo("count_auth_success"))
-        except:
-            pass
+            ret = int(self.getFromTokenInfo("count_auth_success", 0))
+        except Exception as exx:
+            log.info('failed to load "count_auth_success" %r', exx)
         return ret
 
     def get_count_auth_max(self):
         ret = 0
         try:
-            ret = int(self.getFromTokenInfo("count_auth_max"))
-        except:
-            pass
+            ret = int(self.getFromTokenInfo("count_auth_max", 0))
+        except Exception as exx:
+            log.info('failed to load "count_auth_max" %r', exx)
         return ret
 
     def get_count_auth(self):
         ret = 0
         try:
-            ret = int(self.getFromTokenInfo("count_auth"))
-        except:
-            pass
+            ret = int(self.getFromTokenInfo("count_auth", 0))
+        except Exception as exx:
+            log.info('failed to load "count_auth" %r', exx)
         return ret
 
     def get_validity_period_end(self):
@@ -1379,9 +1364,9 @@ class TokenClass(object):
         '''
         ret = ""
         try:
-            ret = self.getFromTokenInfo("validity_period_end")
-        except:
-            pass
+            ret = self.getFromTokenInfo("validity_period_end", '')
+        except Exception as exx:
+            log.info('failed to load "validity_period_end" %r', exx)
         return ret
 
     def set_validity_period_end(self, end_date):

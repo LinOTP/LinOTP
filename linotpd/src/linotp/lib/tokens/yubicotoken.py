@@ -205,10 +205,13 @@ class YubicoTokenClass(TokenClass):
 
                 hash_input = '&'.join(sorted(hash_elements))
 
-                hashed_data = binascii.b2a_base64(hmac.new(
-                                                           binascii.a2b_base64(apiKey),
-                                                           hash_input,
-                                                           sha1).digest())[:-1]
+                sec_obj = self._get_secret_object()
+
+                h_digest = sec_obj.hmac_digest(data_input=hash_input,
+                                               bkey=binascii.a2b_base64(apiKey),
+                                               hash_algo=sha1)
+
+                hashed_data = binascii.b2a_base64(h_digest)[:-1]
 
                 if hashed_data != return_hash:
                     log.error("[checkOtp] The hash of the return from the Yubico Cloud server does not match the data!")

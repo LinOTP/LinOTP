@@ -68,7 +68,7 @@ from linotp.model.meta import Session
 from linotp.model.meta import MetaData
 
 from linotp.lib.crypt import geturandom
-from linotp.lib.crypt import hash
+from linotp.lib.crypt import hash_digest
 # from linotp.lib.crypt import encryptPin
 # from linotp.lib.crypt import decryptPin
 from linotp.lib.crypt import get_rand_digit_str
@@ -323,7 +323,7 @@ class Token(object):
         log.debug('setHashedPin()')
         seed = geturandom(16)
         self.LinOtpSeed = unicode(binascii.hexlify(seed))
-        self.LinOtpPinHash = unicode(binascii.hexlify(hash(pin, seed)))
+        self.LinOtpPinHash = unicode(binascii.hexlify(hash_digest(pin, seed)))
         return self.LinOtpPinHash
 
     def getHashedPin(self, pin):

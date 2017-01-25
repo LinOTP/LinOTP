@@ -27,31 +27,37 @@
 encapsulate security aspects
 '''
 
-
-import hmac
 import logging
 import struct
 
-from hashlib import sha256
 import base64
+import json
 
 import binascii
 import os
 import stat
+
+
+# for the hmac algo, we have to check the python version '''
+import sys
+
+import ctypes
+import linotp
+
+import hmac
+
+from hashlib import md5
+from hashlib import sha1
+from hashlib import sha224
+from hashlib import sha256
+from hashlib import sha384
+from hashlib import sha512
 
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
 from pysodium import sodium as c_libsodium
 from pysodium import __check as __libsodium_check
-
-''' for the hmac algo, we have to check the python version '''
-import sys
-(ma, mi, _, _, _,) = sys.version_info
-pver = float(int(ma) + int(mi) * 0.1)
-
-import ctypes
-import linotp
 
 from pylons.configuration import config as env
 from pylons import tmpl_context as c
@@ -72,18 +78,17 @@ from linotp.lib.error import ValidateError
 
 from pylons import config
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+(ma, mi, _, _, _,) = sys.version_info
+pver = float(int(ma) + int(mi) * 0.1)
 
-
-log = logging.getLogger(__name__)
 
 c_hash = {
          'sha1': SHA1,
          'sha256': SHA256,
          }
+
+log = logging.getLogger(__name__)
+
 
 try:
     from Cryptodome.Hash import SHA224
@@ -104,6 +109,9 @@ except:
     log.warning('Your system does not support Crypto SHA512 hash algorithm')
 
 
+Hashlib_map = {'md5': md5, 'sha1': sha1,
+               'sha224': sha224, 'sha256': sha256,
+               'sha384': sha384, 'sha512': sha512}
 
 # constant - later taken from the env?
 CONFIG_KEY = 1
@@ -124,6 +132,23 @@ class SecretObj(object):
                   '- verify the usage scope and zero + free ')
         return decrypt(self.val, self.iv, hsm=self.hsm)
 
+    def calc_dh(self, partition, data):
+        """
+        encapsulate the Diffi Helmann calculation
+
+        as the server secret key is a sensitive data, we try to encapsulate
+        it and care for the cleanup
+
+        :param partition: the id of the server secret key
+        :param :
+        """
+        server_secret_key = get_dh_secret_key(partition)
+        hmac_secret = calc_dh(server_secret_key, data)
+
+        zerome(server_secret_key)
+
+        return hmac_secret
+
     def getPin(self):
         return decrypt(self.val, self.iv, hsm=self.hsm)
 
@@ -133,15 +158,29 @@ class SecretObj(object):
         otpKeyEnc = binascii.hexlify(enc_otp_key)
         return (otpKeyEnc == self.val)
 
+    def hmac_digest(self, data_input, hash_algo=None, bkey=None):
 
-    def hmac_digest(self, data_input, hash_algo):
-        self._setupKey_()
+        b_key = bkey
+
+        if not bkey:
+            self._setupKey_()
+            b_key = self.bkey
+
         if pver > 2.6:
-            h = hmac.new(self.bkey, data_input, hash_algo).digest()
+            data = data_input
         else:
-            h = hmac.new(self.bkey, str(data_input), hash_algo).digest()
-        self._clearKey_(preserve=self.preserve)
-        return h
+            data = str(data_input)
+
+        if not hash_algo:
+            hash_algo = get_hashalgo_from_description('sha1')
+
+        h_digest = hmac_digest(bkey=b_key, data_input=data,
+                               hsm=self.hsm, hash_algo=hash_algo)
+
+        if not bkey:
+            self._clearKey_(preserve=self.preserve)
+
+        return h_digest
 
     def aes_decrypt(self, data_input):
         '''
@@ -172,7 +211,7 @@ class SecretObj(object):
     def hash_pin(pin, iv=None, hsm=None):
         if not iv:
             iv = geturandom(16)
-        hashed_pin = hash(pin, iv)
+        hashed_pin = hash_digest(pin, iv, hsm=hsm)
         return iv, hashed_pin
 
     @staticmethod
@@ -225,6 +264,26 @@ class SecretObj(object):
     def __exit__(self, type, value, traceback):
         self._clearKey_()
 
+
+def get_hashalgo_from_description(description, fallback='sha1'):
+    """
+    get the hashing function from a string value
+
+    :param description: the literal description of the hash
+    :param fallback: the fallback hash allgorithm
+    :return: hashing function pointer
+    """
+
+    try:
+        hash_func = Hashlib_map.get(description.lower(),
+                                    Hashlib_map[fallback.lower()])
+    except Exception as exx:
+        raise Exception("unsupported hash function %r:%r",
+                        description, exx)
+    if not callable(hash_func):
+        raise Exception("hash function not callable %r", hash_func)
+
+    return hash_func
 
 def getSecretDummy():
     log.debug('getSecretDummy()')
@@ -348,7 +407,7 @@ def createNonce(len=64):
 
 
 def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
-         digest='SHA256', macmodule=HMAC, checksum=True):
+         digest='SHA256', macmodule=hmac, checksum=True):
     '''
     key derivation function
 
@@ -364,7 +423,8 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
     :param activationcode:  base32 encoded value
 
     '''
-    digestmodule = c_hash.get(digest.lower(), None)
+    digestmodule = get_hashalgo_from_description(digest,
+                                                 fallback='SHA256')
 
     byte_len = 2
     salt_len = 8 * byte_len
@@ -400,12 +460,48 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
     return key
 
 
-def hash(val, seed, algo=None):
+def hash_digest(val, seed, algo=None, hsm=None):
     log.debug('hash()')
-    m = sha256()
-    m.update(val.encode('utf-8'))
-    m.update(seed)
-    return m.digest()
+
+    if hsm:
+        hsm_obj = hsm.get('obj')
+    else:
+        log.debug('hmac_digest()')
+        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
+            raise HSMException('no hsm defined in execution context!')
+        hsm_obj = c.hsm.get('obj')
+
+    if hsm_obj is None or hsm_obj.isReady() is False:
+        raise HSMException('hsm not ready!')
+
+    if algo is None:
+        algo = get_hashalgo_from_description('sha256')
+
+    h = hsm_obj.hash_digest(val.encode('utf-8'), seed, algo)
+
+    return h
+
+
+def hmac_digest(bkey, data_input, hsm=None, hash_algo=None):
+
+    log.debug('hmac_digest()')
+    if hsm:
+        hsm_obj = hsm.get('obj')
+    else:
+        log.debug('hmac_digest()')
+        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
+            raise HSMException('no hsm defined in execution context!')
+        hsm_obj = c.hsm.get('obj')
+
+    if hsm_obj is None or hsm_obj.isReady() is False:
+        raise HSMException('hsm not ready!')
+
+    if hash_algo is None:
+        hash_algo = get_hashalgo_from_description('sha1')
+
+    h = hsm_obj.hmac_digest(bkey, data_input, hash_algo)
+
+    return h
 
 
 def encryptPassword(password):
