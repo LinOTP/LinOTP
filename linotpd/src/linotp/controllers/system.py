@@ -38,7 +38,6 @@ from pylons import request, response, config, tmpl_context as c
 from useridresolver.UserIdResolver import ResolverLoadConfigError
 
 from linotp.lib.selftest import isSelfTest
-
 from linotp.lib.base import BaseController
 
 from linotp.lib.config import storeConfig
@@ -726,6 +725,31 @@ class SystemController(BaseController):
                     raise ResolverLoadConfigError(msg % new_resolver_name)
 
                 if mode == 'rename':
+                    # rename as well in realms
+
+                    #
+                    # lookup in which realm definition the resolvers is used
+
+                    change_realms = {}
+
+                    for realm_name, realm_description in getRealms().items():
+
+                        change_realms[realm_name] = []
+
+                        resolvers = realm_description.get('useridresolver')
+                        for resolver in resolvers:
+                            parts = resolver.split('.')
+                            if previous_name == parts[-1]:
+                                parts[-1] = new_resolver_name
+                                change_realms[realm_name].append('.'.join(parts))
+
+                    #
+                    # prepare the replaced resolver definition to do setRealm
+                    for realm_name, new_resolvers in change_realms.items():
+                        if new_resolvers:
+                            setRealm(realm_name, ','.join(new_resolvers))
+
+                    # finally delete the previous resolver definition
                     deleteResolver(previous_name)
 
             Session.commit()
