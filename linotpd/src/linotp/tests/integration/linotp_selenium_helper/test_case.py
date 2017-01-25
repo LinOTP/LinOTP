@@ -46,34 +46,46 @@ class TestCase(unittest.TestCase):
 
     implicit_wait_time = 5
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Initializes the base_url and sets the driver"""
-        self.http_username = get_from_tconfig(['linotp', 'username'], required=True)
-        self.http_password = get_from_tconfig(['linotp', 'password'], required=True)
-        self.http_host = get_from_tconfig(['linotp', 'host'], required=True)
-        self.http_protocol = get_from_tconfig(['linotp', 'protocol'], default="https")
-        self.http_port = get_from_tconfig(['linotp', 'port'])
-        self.base_url = self.http_protocol + "://" + self.http_username + \
-            ":" + self.http_password + "@" + self.http_host
-        if self.http_port:
-            self.base_url += ":" + self.http_port
+
+        cls.http_username = get_from_tconfig(['linotp', 'username'], required=True)
+        cls.http_password = get_from_tconfig(['linotp', 'password'], required=True)
+        cls.http_host = get_from_tconfig(['linotp', 'host'], required=True)
+        cls.http_protocol = get_from_tconfig(['linotp', 'protocol'], default="https")
+        cls.http_port = get_from_tconfig(['linotp', 'port'])
+        cls.base_url = cls.http_protocol + "://" + cls.http_username + \
+            ":" + cls.http_password + "@" + cls.http_host
+        if cls.http_port:
+            cls.base_url += ":" + cls.http_port
 
         remote_setting = get_from_tconfig(['selenium', 'remote'], default='False')
         remote_enable = remote_setting.lower() == 'true'
         remote_url = get_from_tconfig(['selenium', 'remote_url'])
 
-        self.driver = None
+        cls.driver = None
         selenium_driver = get_from_tconfig(['selenium', 'driver'],
                                            default="firefox").lower()
         selenium_driver_language = get_from_tconfig(['selenium', 'language'],
                                                     default="en_us").lower()
+        def _get_chrome_options():
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--lang=' + selenium_driver_language)
+            return chrome_options
+
+        def _get_firefox_profile():
+            fp = webdriver.FirefoxProfile()
+            fp.set_preference("intl.accept_languages", selenium_driver_language)
+            return fp
+
         if not remote_enable:
             if selenium_driver == 'chrome':
                 chrome_options = webdriver.ChromeOptions()
                 chrome_options.add_argument('--lang=' + selenium_driver_language)
 
                 try:
-                    self.driver = webdriver.Chrome(chrome_options=chrome_options)
+                    cls.driver = webdriver.Chrome(chrome_options=_get_chrome_options())
                 except WebDriverException, e:
                     logger.error("Error creating Chrome driver. Maybe you need to install"
                                   " 'chromedriver'. If you wish to use another browser please"
@@ -81,13 +93,11 @@ class TestCase(unittest.TestCase):
                     raise
 
             elif selenium_driver == 'firefox':
-                fp = webdriver.FirefoxProfile()
-                fp.set_preference("intl.accept_languages", selenium_driver_language)
+                cls.driver = webdriver.Firefox(firefox_profile=_get_firefox_profile())
 
-                self.driver = webdriver.Firefox(firefox_profile=fp)
-            else:
-                logger.error('Unknown Selenium driver: %s\nValid drivers: firefox, chrome', self.driver)
-                raise('Invalid driver:%s' % (self.driver))
+            if cls.driver is None:
+                warnings.warn("Falling back to Firefox driver.")
+                cls.driver = webdriver.Firefox(firefox_profile=_get_firefox_profile())
         else:
             # Remote driver. We need to build a desired capabilities
             # request for the remote instance
@@ -109,20 +119,24 @@ class TestCase(unittest.TestCase):
                 remote_url = 'http://127.0.0.1:4444/wd/hub'
 
             try:
-                self.driver = webdriver.Remote(command_executor=remote_url,
+                cls.driver = webdriver.Remote(command_executor=remote_url,
                                                desired_capabilities=desired_capabilities)
             except Exception as e:
                 logger.error("Could not start driver: %s", e)
                 raise
 
+    def setUp(self):
         self.enableImplicitWait()
         self.verification_errors = []
         self.accept_next_alert = True
 
     def tearDown(self):
         """Closes the driver and displays all errors"""
-        self.driver.quit()
         self.assertEqual([], self.verification_errors)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.driver.quit()
 
     def disableImplicitWait(self):
         self.driver.implicitly_wait(0)

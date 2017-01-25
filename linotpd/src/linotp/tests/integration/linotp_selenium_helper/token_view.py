@@ -213,4 +213,6 @@ class TokenView(ManageUi):
             else:
                 token_info[key] = value_element.text
         self.testcase.enableImplicitWait()
+
+        self.driver.find_element_by_id("button_ti_close").click()
         return token_info
