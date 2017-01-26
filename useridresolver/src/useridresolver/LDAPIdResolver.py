@@ -37,6 +37,7 @@ import binascii
 import logging
 import os
 import tempfile
+import traceback
 
 import sys
 
@@ -659,6 +660,22 @@ class IdResolver (UserIdResolver):
         if not resultList:
             log.info("[getUserId] : empty result ")
             return userid
+
+        #
+        # AD returns an result set where the first entry of the tuple is None
+        # so we check here if there is any relevant entry
+
+        relevant_entries = False
+        for entry in resultList:
+            if (isinstance(entry, tuple) and
+               len(entry) > 0 and
+               entry[0] is not None):
+                relevant_entries = True
+
+        if not relevant_entries:
+            log.info("[getUserId] : empty result ")
+            return userid
+
         log.debug("[getUserId] : resultList :%r: ", resultList)
         log.debug('[getUserId] : uidType: %r ', self.uidType)
 
@@ -716,7 +733,6 @@ class IdResolver (UserIdResolver):
         :rtype:  string
         '''
 
-        log.debug("[getUsername]")
 
         username = u''
 
