@@ -350,8 +350,8 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_system_settings() {
         $("#dialog_system_settings" ).dialog( "option", "title", '${_("System Config")}' );
-        $('#button_system_save .ui-button-text').html(escape('${_("Save Config")}'));
-        $('#button_system_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_system_save').button("option", "label", '${_("Save Config")}');
+        $('#button_system_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -363,10 +363,10 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_dialog_sms_providers() {
         $("#dialog_sms_providers" ).dialog( "option", "title", '${_("SMS Provider: create and edit")}');
-        $('#button_sms_provider_new .ui-button-text').html('${_("New")}');
-        $('#button_sms_provider_edit .ui-button-text').html('${_("Edit")}');
-        $('#button_sms_provider_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_sms_providers_close .ui-button-text').html('${_("Close")}');
+        $('#button_sms_provider_new').button("option", "label", '${_("New")}');
+        $('#button_sms_provider_edit ').button("option", "label", '${_("Edit")}');
+        $('#button_sms_provider_delete ').button("option", "label", '${_("Delete")}');
+        $('#button_sms_providers_close ').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -403,8 +403,8 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_dialog_sms_provider_edit() {
         $("#dialog_sms_provider_edit" ).dialog( "option", "title", '${_("SMS Provider")}' );
-        $('#button_sms_provider_cancel .ui-button-text').html('${_("Cancel")}');
-        $('#button_sms_provider_save .ui-button-text').html('${_("Save")}');
+        $('#button_sms_provider_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_sms_provider_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
@@ -415,8 +415,8 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_dialog_sms_provider_delete() {
         $("#dialog_sms_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedSMSProvider );
-        $('#button_sms_provider_delete_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_sms_provider_delete_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_sms_provider_delete_delete').button("option", "label", '${_("Delete")}');
+        $('#button_sms_provider_delete_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -428,10 +428,10 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_dialog_email_providers() {
         $("#dialog_email_providers" ).dialog( "option", "title", '${_("Email Provider: create and edit")}');
-        $('#button_email_provider_new .ui-button-text').html('${_("New")}');
-        $('#button_email_provider_edit .ui-button-text').html('${_("Edit")}');
-        $('#button_email_provider_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_email_providers_close .ui-button-text').html('${_("Close")}');
+        $('#button_email_provider_new').button("option", "label", '${_("New")}');
+        $('#button_email_provider_edit').button("option", "label", '${_("Edit")}');
+        $('#button_email_provider_delete').button("option", "label", '${_("Delete")}');
+        $('#button_email_providers_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -468,8 +468,8 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_dialog_email_provider_edit() {
         $("#dialog_email_provider_edit" ).dialog( "option", "title", '${_("Email Provider")}' );
-        $('#button_email_provider_cancel .ui-button-text').html('${_("Cancel")}');
-        $('#button_email_provider_save .ui-button-text').html('${_("Save")}');
+        $('#button_email_provider_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_email_provider_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
@@ -480,8 +480,8 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_dialog_email_provider_delete() {
         $("#dialog_email_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedEmailProvider );
-        $('#button_email_provider_delete_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_email_provider_delete_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_email_provider_delete_delete').button("option", "label", '${_("Delete")}');
+        $('#button_email_provider_delete_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -493,8 +493,8 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_email_provider_settings() {
         $("#dialog_email_provider_settings" ).dialog( "option", "title", '${_("Email Provider Configuration")}' );
-        $('#button_email_provider_save .ui-button-text').html('${_("Save Config")}');
-        $('#button_email_provider_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_email_provider_save').button("option", "label", '${_("Save Config")}');
+        $('#button_email_provider_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -506,10 +506,10 @@ if isinstance(lang, list):
 <script type="text/javascript">
     function translate_dialog_push_providers() {
         $("#dialog_push_providers" ).dialog( "option", "title", '${_("Push Provider: create and edit")}');
-        $('#button_push_provider_new .ui-button-text').html('${_("New")}');
-        $('#button_push_provider_edit .ui-button-text').html('${_("Edit")}');
-        $('#button_push_provider_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_push_providers_close .ui-button-text').html('${_("Close")}');
+        $('#button_push_provider_new').button("option", "label", '${_("New")}');
+        $('#button_push_provider_edit').button("option", "label", '${_("Edit")}');
+        $('#button_push_provider_delete').button("option", "label", '${_("Delete")}');
+        $('#button_push_providers_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -534,9 +534,9 @@ if isinstance(lang, list):
                 <td><textarea name="push_provider_config" class="required"
                               id="push_provider_config" cols='35' rows='6'
                               placeholder=
-'{ 
-"push_url": "pnp.keyidentiy.com", 
-"access_certificate": "secret certificate", 
+'{
+"push_url": "pnp.keyidentiy.com",
+"access_certificate": "secret certificate",
 "server_certificate":"server certificate"
 }'
 
@@ -553,8 +553,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_push_provider_edit() {
         $("#dialog_push_provider_edit" ).dialog( "option", "title", '${_("Push Provider")}' );
-        $('#button_push_provider_cancel .ui-button-text').html('${_("Cancel")}');
-        $('#button_push_provider_save .ui-button-text').html('${_("Save")}');
+        $('#button_push_provider_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_push_provider_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
@@ -565,8 +565,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_push_provider_delete() {
         $("#dialog_push_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedPushProvider );
-        $('#button_push_provider_delete_delete .ui-button-text').html('${_("Delete")}');
-        $('#button_push_provider_delete_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_push_provider_delete_delete').button("option", "label", '${_("Delete")}');
+        $('#button_push_provider_delete_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -578,8 +578,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_push_provider_settings() {
         $("#dialog_push_provider_settings" ).dialog( "option", "title", '${_("Push Provider Configuration")}' );
-        $('#button_push_provider_save .ui-button-text').html('${_("Save Config")}');
-        $('#button_push_provider_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_push_provider_save').button("option", "label", '${_("Save Config")}');
+        $('#button_push_provider_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -786,8 +786,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_token_settings() {
         $("#dialog_token_settings" ).dialog( "option", "title", '${_("Tokentype Configuration")}' );
-        $('#button_token_save .ui-button-text').html(escape('${_("Save Config")}'));
-        $('#button_token_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_token_save').button("option", "label", '${_("Save Config")}');
+        $('#button_token_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -797,7 +797,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_support_contact() {
         $("#dialog_support_view" ).dialog( "option", "title", '${_("Support Contact")}' );
-        $('#button_support_contact_close .ui-button-text').html(escape('${_("Ok")}'));
+        $('#button_support_contact_close').button("option", "label", '${_("Ok")}');
     }
 </script>
 
@@ -808,8 +808,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_support_view() {
         $("#dialog_support_view" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
-        $('#button_support_set .ui-button-text').html(escape('${_("Set Support and Subscription")}'));
-        $('#button_support_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
+        $('#button_support_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -828,8 +828,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_support_set() {
         $("#dialog_set_support" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
-        $('#button_support_set .ui-button-text').html(escape('${_("Set Support and Subscription")}'));
-        $('#button_support_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
+        $('#button_support_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -856,7 +856,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_about() {
         $("#dialog_about").dialog( "option", "title", '${_("About LSE LinOTP")}' );
-        $('#button_about_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -909,8 +909,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_set_pin() {
         $("#dialog_set_pin" ).dialog( "option", "title", '${_("Set PIN")}' );
-        $('#button_setpin_setpin .ui-button-text').html(escape('${_("Set PIN")}'));
-        $('#button_setpin_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_setpin_setpin').button("option", "label", '${_("Set PIN")}');
+        $('#button_setpin_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -976,7 +976,7 @@ syst></textarea></td>
                 <tr name="set_pin_rows" >
                     <td class="description"><label for="ocra_pin2" id="ocra_pin2_label">${_("confirm PIN")}:</label></td>
                     <td><input type="password" autocomplete="off" name="pin2" id="ocra_pin2"
-                            class="text ui-widget-content ui-corner-all"></td
+                            class="text ui-widget-content ui-corner-all"></td>
                 </tr>
                 </table>
             </div>
@@ -991,9 +991,9 @@ syst></textarea></td>
 
 <script type="text/javascript">
     function translate_token_enroll() {
-        $("#dialog_token_enroll" ).dialog( "option", "title", '${_("Enroll Token")}' );
-        $('#button_enroll_enroll .ui-button-text').html(escape('${_("Enroll")}'));
-        $('#button_enroll_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $("#dialog_token_enroll" ).dialog( "option", "title", '${_("Enroll Token")}');
+        $('#button_enroll_enroll').button("option", "label", '${_("Enroll")}');
+        $('#button_enroll_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1018,8 +1018,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_get_serial() {
         $("#dialog_get_serial" ).dialog( "option", "title", '${_("Get Serial by OTP value")}' );
-        $('#button_tools_getserial_ok .ui-button-text').html(escape('${_("Get Serial")}'));
-        $('#button_tools_getserial_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_tools_getserial_ok').button("option", "label", '${_("Get Serial")}');
+        $('#button_tools_getserial_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1057,8 +1057,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_check_policy() {
         $("#dialog_check_policy" ).dialog( "option", "title", '${_("Check Policy")}' );
-        $('#button_tools_checkpolicy_ok .ui-button-text').html(escape('${_("Check Policy")}'));
-        $('#button_tools_checkpolicy_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_tools_checkpolicy_ok').button("option", "label", '${_("Check Policy")}');
+        $('#button_tools_checkpolicy_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1076,7 +1076,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_export_token() {
         $("#dialog_export_token" ).dialog( "option", "title", '${_("Export Token Info")}' );
-        $('#button_export_token .ui-button-text').html(escape('${_("Export")}'));
+        $('#button_export_token').button("option", "label", '${_("Export")}');
     }
 </script>
 
@@ -1097,7 +1097,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_export_audit() {
         $("#dialog_export_audit" ).dialog( "option", "title", '${_("Export Audit Trail")}' );
-        $('#button_export_audit .ui-button-text').html(escape('${_("Export")}'));
+        $('#button_export_audit').button("option", "label", '${_("Export")}');
     }
 </script>
 
@@ -1113,8 +1113,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_copy_token() {
         $("#dialog_copy_token").dialog( "option", "title", '${_("Copy Token PIN")}' );
-        $('#button_tools_copytokenpin_ok .ui-button-text').html(escape('${_("Copy PIN")}'));
-        $('#button_tools_copytokenpin_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_tools_copytokenpin_ok').button("option", "label", '${_("Copy PIN")}');
+        $('#button_tools_copytokenpin_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1136,8 +1136,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_migrateresolver() {
         $("#dialog_migrate_resolver" ).dialog( "option", "title", '${_("Migrate Resolver")}' );
-        $('#button_tools_migrateresolver_ok .ui-button-text').html(escape('${_("Migrate tokens")}'));
-        $('#button_tools_migrateresolver_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_tools_migrateresolver_ok').button("option", "label", '${_("Migrate tokens")}');
+        $('#button_tools_migrateresolver_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1172,8 +1172,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_safenet() {
         $("#dialog_import_safenet" ).dialog( "option", "title", '${_("Aladdin XML Token File")}' );
-        $('#button_aladdin_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_aladdin_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_aladdin_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_aladdin_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1220,8 +1220,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_pskc() {
         $("#dialog_import_pskc" ).dialog( "option", "title", '${_("PSKC Key File")}' );
-        $('#button_pskc_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_pskc_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_pskc_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_pskc_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1259,8 +1259,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_oath() {
         $("#dialog_import_oath" ).dialog( "option", "title", '${_("OATH CSV Token File")}' );
-        $('#button_oathcsv_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_oathcsv_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_oathcsv_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_oathcsv_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1284,8 +1284,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_yubikey() {
         $("#dialog_import_yubikey" ).dialog( "option", "title", '${_("YubiKey CSV Token File")}' );
-        $('#button_yubikeycsv_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_yubikeycsv_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_yubikeycsv_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_yubikeycsv_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1310,8 +1310,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_dpw() {
         $("#dialog_import_dpw" ).dialog( "option", "title", '${_("Tagespasswort Token File")}' );
-        $('#button_dpw_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_dpw_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_dpw_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_dpw_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1339,8 +1339,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_dat() {
         $("#dialog_import_dat" ).dialog( "option", "title", '${_("eToken DAT File")}' );
-        $('#button_dat_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_dat_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_dat_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_dat_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1363,8 +1363,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_feitian() {
         $("#dialog_import_feitian" ).dialog( "option", "title", '${_("Feitian XML Token file")}' );
-        $('#button_feitian_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_feitian_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_feitian_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_feitian_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1399,8 +1399,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_vasco() {
         $("#dialog_import_vasco" ).dialog( "option", "title", '${_("Vasco DPX File")}' );
-        $('#button_vasco_load .ui-button-text').html(escape('${_("Load Token File")}'));
-        $('#button_vasco_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_vasco_load').button("option", "label", '${_("Load Token File")}');
+        $('#button_vasco_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1417,8 +1417,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_import_policy() {
         $("#dialog_import_policies" ).dialog( "option", "title", '${_("Import policies")}' );
-        $('#button_policy_load .ui-button-text').html(escape('${_("Import policy file")}'));
-        $('#button_policy_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_policy_load').button("option", "label", '${_("Import policy file")}');
+        $('#button_policy_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1432,12 +1432,12 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_realms() {
         $("#dialog_realms" ).dialog( "option", "title", '${_("Realms")}' );
-        $('#button_realms_new .ui-button-text').html(escape('${_("New")}'));
-        $('#button_realms_edit .ui-button-text').html(escape('${_("Edit")}'));
-        $('#button_realms_delete .ui-button-text').html(escape('${_("Delete")}'));
-        $('#button_realms_close .ui-button-text').html(escape('${_("Close")}'));
-        $('#button_realms_setdefault .ui-button-text').html(escape('${_("Set Default")}'));
-        $('#button_realms_cleardefault .ui-button-text').html(escape('${_("Clear Default")}'));
+        $('#button_realms_new').button("option", "label", '${_("New")}');
+        $('#button_realms_edit').button("option", "label", '${_("Edit")}');
+        $('#button_realms_delete').button("option", "label", '${_("Delete")}');
+        $('#button_realms_close').button("option", "label", '${_("Close")}');
+        $('#button_realms_setdefault').button("option", "label", '${_("Set Default")}');
+        $('#button_realms_cleardefault').button("option", "label", '${_("Clear Default")}');
     }
 </script>
 <!-- ######################### resolvers ############################## -->
@@ -1448,11 +1448,11 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_resolvers() {
         $("#dialog_resolvers" ).dialog( "option", "title", '${_("Resolver")}');
-        $('#button_resolver_new .ui-button-text').html(escape('${_("New")}'));
-        $('#button_resolver_edit .ui-button-text').html(escape('${_("Edit")}'));
-        $('#button_resolver_duplicate .ui-button-text').html(escape('${_("Duplicate")}'));
-        $('#button_resolver_delete .ui-button-text').html(escape('${_("Delete")}'));
-        $('#button_resolver_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_resolver_new').button("option", "label", '${_("New")}');
+        $('#button_resolver_edit').button("option", "label", '${_("Edit")}');
+        $('#button_resolver_duplicate').button("option", "label", '${_("Duplicate")}');
+        $('#button_resolver_delete').button("option", "label", '${_("Delete")}');
+        $('#button_resolver_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1463,11 +1463,11 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_resolver_create() {
         $("#dialog_resolver_create" ).dialog( "option", "title", '${_("Creating a new UserIdResolver")}' );
-        $('#button_new_resolver_type_ldap .ui-button-text').html('${_("LDAP")}');
-        $('#button_new_resolver_type_sql .ui-button-text').html('${_("SQL")}');
+        $('#button_new_resolver_type_ldap').button("option", "label", '${_("LDAP")}');
+        $('#button_new_resolver_type_sql').button("option", "label", '${_("SQL")}');
         $('#button_new_resolver_type_http .ui-button-text').html('HTTP');
-        $('#button_new_resolver_type_flatfile .ui-button-text').html('${_("Flatfile")}');
-        $('#button_new_resolver_type_cancel .ui-button-text').html('${_("Cancel")}');
+        $('#button_new_resolver_type_flatfile').button("option", "label", '${_("Flatfile")}');
+        $('#button_new_resolver_type_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1495,8 +1495,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_realm_edit() {
         $("#dialog_edit_realms" ).dialog( "option", "title", '${_("Edit Realm")}' );
-        $('#button_editrealms_cancel .ui-button-text').html(escape('${_("Cancel")}'));
-        $('#button_editrealms_save .ui-button-text').html(escape('${_("Save")}'));
+        $('#button_editrealms_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_editrealms_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
@@ -1509,8 +1509,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_delete_token() {
         $("#dialog_delete_token" ).dialog( "option", "title", '${_("Delete selected tokens?")}' );
-        $('#button_delete_delete .ui-button-text').html(escape('${_("Delete tokens")}'));
-        $('#button_delete_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_delete_delete').button("option", "label", '${_("Delete tokens")}');
+        $('#button_delete_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1526,7 +1526,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_show_enroll_url() {
         $("#dialog_show_enroll_url" ).dialog( "option", "title", '${_("token enrollment")}' );
-        $('#button_show_enroll_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_show_enroll_ok').button("option", "label", '${_("OK")}');
     }
 </script>
 <!--
@@ -1540,7 +1540,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_show_enroll_url() {
         $("#dialog_show_enroll_url" ).dialog( "option", "title", '${_("token enrollment")}' );
-        $('#button_show_enroll_ok .ui-button-text').html(escape('${_("OK")}'));
+        $('#button_show_enroll_ok').button("option", "label", '${_("OK")}');
     }
 </script>
 -->
@@ -1568,8 +1568,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_lost_token() {
         $("#dialog_lost_token" ).dialog( "option", "title", '${_("Lost Token")}' );
-        $('#button_losttoken_ok .ui-button-text').html(escape('${_("Get Temporary Token")}'));
-        $('#button_losttoken_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_losttoken_ok').button("option", "label", '${_("Get Temporary Token")}');
+        $('#button_losttoken_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1579,19 +1579,19 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_token_info() {
         $("#dialog_token_info" ).dialog( "option", "title", '${_("Token Info")}' );
-        $('#button_ti_hashlib .ui-button-text').html(escape('${_("Hashlib")}'));
-        $('#button_ti_close .ui-button-text').html(escape('${_("Close")}'));
-        $('#button_ti_otplength .ui-button-text').html(escape('${_("OTP Length")}'));
-        $('#button_ti_counterwindow .ui-button-text').html(escape('${_("Counter Window")}'));
-        $('#button_ti_failcount .ui-button-text').html(escape('${_("Max Fail Counter")}'));
-        $('#button_ti_countauthmax .ui-button-text').html(escape('${_("Max Auth Count")}'));
-        $('#button_ti_countauthsuccessmax .ui-button-text').html(escape('${_("Max Successful Auth Count")}'));
-        $('#button_ti_validityPeriodStart .ui-button-text').html(escape('${_("Validity start")}'));
-        $('#button_ti_validityPeriodEnd .ui-button-text').html(escape('${_("Validity end")}'));
-        $('#button_ti_syncwindow .ui-button-text').html(escape('${_("Sync Window")}'));
-        $('#button_ti_timewindow .ui-button-text').html(escape('${_("Time Window")}'));
-        $('#button_ti_timeshift .ui-button-text').html(escape('${_("Time Shift")}'));
-        $('#button_ti_timestep .ui-button-text').html(escape('${_("Time Step")}'));
+        $('#button_ti_hashlib').button("option", "label", '${_("Hashlib")}');
+        $('#button_ti_close').button("option", "label", '${_("Close")}');
+        $('#button_ti_otplength').button("option", "label", '${_("OTP Length")}');
+        $('#button_ti_counterwindow').button("option", "label", '${_("Counter Window")}');
+        $('#button_ti_failcount').button("option", "label", '${_("Max Fail Counter")}');
+        $('#button_ti_countauthmax').button("option", "label", '${_("Max Auth Count")}');
+        $('#button_ti_countauthsuccessmax').button("option", "label", '${_("Max Successful Auth Count")}');
+        $('#button_ti_validityPeriodStart').button("option", "label", '${_("Validity start")}');
+        $('#button_ti_validityPeriodEnd').button("option", "label", '${_("Validity end")}');
+        $('#button_ti_syncwindow').button("option", "label", '${_("Sync Window")}');
+        $('#button_ti_timewindow').button("option", "label", '${_("Time Window")}');
+        $('#button_ti_timeshift').button("option", "label", '${_("Time Shift")}');
+        $('#button_ti_timestep').button("option", "label", '${_("Time Step")}');
     }
 </script>
 
@@ -1602,73 +1602,73 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_ti_hashlib() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Hashlib")}');
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_otplength() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set OTP length")}');
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_counterwindow() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Counter Window")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_maxfailcount() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Failcount")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_countauthmax() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_countauthsuccessmax() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Max Successful Auth Count")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_validityPeriodStart() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity start")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_validityPeriodEnd() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Validity end")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_phone() {
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("Mobile phone number")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_syncwindow(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Sync Window")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_timewindow(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Time Window")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_timeshift(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Time Shift")}' );
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_timestep(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Time Step")}');
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
     function translate_dialog_ti_description(){
         $("#dialog_tokeninfo_set" ).dialog( "option", "title", '${_("set Description")}');
-        $('#button_tokeninfo_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_tokeninfo_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokeninfo_ok').button("option", "label", '${_("OK")}');
+        $('#button_tokeninfo_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1695,8 +1695,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_resync_token() {
         $("#dialog_resync_token" ).dialog( "option", "title", '${_("Resync Token")}' );
-        $('#button_resync_resync .ui-button-text').html(escape('${_("Resync")}'));
-        $('#button_resync_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_resync_resync').button("option", "label", '${_("Resync")}');
+        $('#button_resync_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1713,8 +1713,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_token_realm() {
         $("#dialog_edit_tokenrealm" ).dialog( "option", "title", '${_("Edit Realms of Token")}' );
-        $('#button_tokenrealm_save .ui-button-text').html(escape('${_("Set Realm")}'));
-        $('#button_tokenrealm_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_tokenrealm_save').button("option", "label", '${_("Set Realm")}');
+        $('#button_tokenrealm_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1728,8 +1728,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_getmulti() {
         $("#dialog_getmulti" ).dialog( "option", "title", '${_("Get OTP values")}' );
-        $('#button_getmulti_ok .ui-button-text').html(escape('${_("OK")}'));
-        $('#button_getmulti_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_getmulti_ok').button("option", "label", '${_("OK")}');
+        $('#button_getmulti_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1743,8 +1743,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_unassign() {
         $("#dialog_unassign_token" ).dialog( "option", "title", '${_("Unassign selected tokens?")}' );
-        $('#button_unassign_unassign .ui-button-text').html(escape('${_("Unassign")}'));
-        $('#button_unassign_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_unassign_unassign').button("option", "label", '${_("Unassign")}');
+        $('#button_unassign_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 <!-- #################### realm ask delete ###################### -->
@@ -1754,8 +1754,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_realm_ask_delete() {
         $("#dialog_realm_ask_delete" ).dialog( "option", "title", '${_("Deleting realm")}' );
-        $('#button_realm_ask_delete_delete .ui-button-text').html(escape('${_("Delete")}'));
-        $('#button_realm_ask_delete_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_realm_ask_delete_delete').button("option", "label", '${_("Delete")}');
+        $('#button_realm_ask_delete_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 <!-- ################## resolver ask delete ###################### -->
@@ -1769,8 +1769,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_resolver_ask_delete() {
         $("#dialog_resolver_ask_delete" ).dialog( "option", "title", '${_("Deleting resolver")}' );
-        $('#button_resolver_ask_delete_delete .ui-button-text').html(escape('${_("Delete")}'));
-        $('#button_resolver_ask_delete_cancel .ui-button-text').html(escape('${_("Cancel")}'));
+        $('#button_resolver_ask_delete_delete').button("option", "label", '${_("Delete")}');
+        $('#button_resolver_ask_delete_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
 
@@ -1788,7 +1788,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_view_temptoken() {
         $("#dialog_view_temporary_token" ).dialog( "option", "title", '${_("New Temporary Token")}' );
-        $('#button_view_temporary_token_close .ui-button-text').html(escape('${_("Close")}'));
+        $('#button_view_temporary_token_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1871,9 +1871,9 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_ldap_resolver() {
         $("#dialog_ldap_resolver" ).dialog( "option", "title", '${_("LDAP Resolver")}' );
-        $('#button_test_ldap .ui-button-text').html(escape('${_("Test LDAP connection")}'));
-        $('#button_preset_ad .ui-button-text').html(escape('${_("Preset AD")}'));
-        $('#button_preset_ldap .ui-button-text').html(escape('${_("Preset LDAP")}'));
+        $('#button_test_ldap').button("option", "label", '${_("Test LDAP connection")}');
+        $('#button_preset_ad').button("option", "label", '${_("Preset AD")}');
+        $('#button_preset_ldap').button("option", "label", '${_("Preset LDAP")}');
     }
 </script>
 
@@ -2047,7 +2047,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_sql_resolver() {
         $("#dialog_sql_resolver" ).dialog( "option", "title", '${_("SQL Resolver")}' );
-        $('#button_test_sql .ui-button-text').html(escape('${_("Test SQL connection")}'));
+        $('#button_test_sql').button("option", "label", '${_("Test SQL connection")}');
     }
 </script>
 
