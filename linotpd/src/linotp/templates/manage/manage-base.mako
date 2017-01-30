@@ -432,6 +432,7 @@ if isinstance(lang, list):
         $('#button_email_provider_edit').button("option", "label", '${_("Edit")}');
         $('#button_email_provider_delete').button("option", "label", '${_("Delete")}');
         $('#button_email_providers_close').button("option", "label", '${_("Close")}');
+        $('#button_email_provider_set_default').button("option", "label", '${_("Set as default")}');
     }
 </script>
 
@@ -1077,6 +1078,7 @@ syst></textarea></td>
     function translate_export_token() {
         $("#dialog_export_token" ).dialog( "option", "title", '${_("Export Token Info")}' );
         $('#button_export_token').button("option", "label", '${_("Export")}');
+        $('#button_export_token_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1098,6 +1100,7 @@ syst></textarea></td>
     function translate_export_audit() {
         $("#dialog_export_audit" ).dialog( "option", "title", '${_("Export Audit Trail")}' );
         $('#button_export_audit').button("option", "label", '${_("Export")}');
+        $('#button_export_audit_close').button("option", "label", '${_("Close")}');
     }
 </script>
 
@@ -1323,7 +1326,7 @@ syst></textarea></td>
         <input id='upload_etoken_dat' name="file" type="file"
                 size="30" accept="text/* data/*">
         <p>
-            <label for='startdate'>Timebased eToken can use a different start date:</label>
+            <label for='startdate'>${_("Timebased eToken can use a different start date")}:</label>
             <input id='startdate' name="startdate" type="datetime" value="1.1.2000 00:00:00">
         </p>
         <input name="type" type="hidden" value="dat">
@@ -1874,6 +1877,8 @@ syst></textarea></td>
         $('#button_test_ldap').button("option", "label", '${_("Test LDAP connection")}');
         $('#button_preset_ad').button("option", "label", '${_("Preset AD")}');
         $('#button_preset_ldap').button("option", "label", '${_("Preset LDAP")}');
+        $('#button_resolver_ldap_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_resolver_ldap_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
@@ -1980,6 +1985,8 @@ syst></textarea></td>
     function translate_dialog_http_resolver() {
         $("#dialog_http_resolver" ).dialog( "option", "title", 'HTTP Resolver');
         $('#button_test_http .ui-button-text').html('Test HTTP connection');
+        $('#button_resolver_http_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_resolver_http_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
@@ -2048,6 +2055,8 @@ syst></textarea></td>
     function translate_dialog_sql_resolver() {
         $("#dialog_sql_resolver" ).dialog( "option", "title", '${_("SQL Resolver")}' );
         $('#button_test_sql').button("option", "label", '${_("Test SQL connection")}');
+        $('#button_resolver_sql_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_resolver_sql_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
@@ -2073,6 +2082,8 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_dialog_sql_resolver() {
         $("#dialog_file_resolver" ).dialog( "option", "title", '${_("File Resolver")}' );
+        $('#button_resolver_file_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_resolver_file_save').button("option", "label", '${_("Save")}');
     }
 </script>
 
