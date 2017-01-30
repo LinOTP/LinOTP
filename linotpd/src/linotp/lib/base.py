@@ -596,6 +596,7 @@ class BaseController(WSGIController):
             log.error("Faild to decode request parameters %r" % exx)
 
         request_context['AuthUser'] = authUser
+        request_context['UserLookup'] = {}
 
         requestUser = None
         try:

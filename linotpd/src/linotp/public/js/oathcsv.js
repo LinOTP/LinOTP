@@ -53,6 +53,7 @@ function create_oathcsv_dialog() {
         open: function() {
             _fill_realms($('#oath_realm'),1);
             do_dialog_icons();
+            translate_import_oath();
         }
     });
     return $dialog_load_tokens_oathcsv ;
