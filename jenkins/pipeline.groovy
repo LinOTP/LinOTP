@@ -76,10 +76,10 @@ catch(MissingPropertyException) {
 
 try {
     println "GERRIT_BRANCH: ${GERRIT_BRANCH}"
-    println "GERRIT_CHANGE: ${GERRIT_CHANGE}"
+    println "GERRIT_CHANGE_NUMBER: ${GERRIT_CHANGE_NUMBER}"
     println "GERRIT_REFSPEC: ${GERRIT_REFSPEC}"
     gerrit_build = true
-    build_name = "${jobname}-${GERRIT_BRANCH}-${GERRIT_CHANGE}"
+    build_name = "${jobname}-${GERRIT_BRANCH}-${GERRIT_CHANGE_NUMBER}"
 }
 catch(MissingPropertyException e) {
     def ref = PARAM_GIT_REF.replaceFirst('heads/','')

@@ -432,7 +432,7 @@ class ValidationHandler(object):
                 (uid, _resolver, resolverClass) = getUserId(user,
                                                             check_existance=True)
                 user_exists = True
-            except:
+            except Exception as _exx:
                 pass_on = context.get('Config').get(
                     'linotp.PassOnUserNotFound', False)
                 if pass_on and 'true' == pass_on.lower():
