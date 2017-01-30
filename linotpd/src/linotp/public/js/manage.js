@@ -122,14 +122,12 @@ function Logout(logout_url) {
  * add the jquery validation methods
  */
 $.validator.addMethod('valid_json', function (value, element, param) {
-    var isValid = false;
-    try {
-        var obj = $.parseJSON(value);
-        isValid = true;
-    } catch(err) {
-        isValid = false;
-    }
-    return isValid;
+        try {
+            $.parseJSON(value);
+            return true;
+        } catch(err) {
+            return false;
+        }
     },
     i18n.gettext('Not a valid json string!')
 );
@@ -138,6 +136,16 @@ jQuery.validator.addMethod("realmname", function(value, element, param){
     return value.match(/^[a-zA-z0-9_\-\.]+$/i);
     },
     i18n.gettext("Please enter a valid realm name. It may contain characters, numbers and '_-.'.")
+);
+
+jQuery.validator.addMethod("unique_resolver_name", function(value, element, param){
+        if(g.current_resolver_name !== value) {
+            var resolvers = get_resolvers();
+            return $.inArray(value, resolvers) === -1
+        }
+        return true;
+    },
+    i18n.gettext("Resolver name is already in use")
 );
 
 jQuery.validator.addMethod("resolvername", function(value, element, param){
@@ -4215,24 +4223,17 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
-            'Cancel': { click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_ldap_resolver_cancel",
                 text: "Cancel"
-                },
-            'Save': { click: function(){
-                    // Save the LDAP configuration
+            },
+            'Save': {
+                click: function(){
                     if ($("#form_ldapconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_ldap_config();
-                        });
-
-                        var r_name = $('#ldap_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_ldap_config();
                     }
                 },
                 id: "button_ldap_resolver_save",
@@ -4342,24 +4343,17 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
-            'Cancel': { click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_http_resolver_cancel",
                 text: "Cancel"
-                },
-            'Save': { click: function(){
-                    // Save the HTTP configuration
+            },
+            'Save': {
+                click: function(){
                     if ($("#form_httpconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_http_config();
-                        });
-
-                        var r_name = $('#http_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_http_config();
                     }
                     else {
                         // get error list
@@ -4438,24 +4432,17 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
-            'Cancel': {click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_resolver_sql_cancel",
                 text: "Cancel"
             },
-            'Save': {click: function(){
-                    // Save the SQL configuration
+            'Save': {
+                click: function(){
                     if ($("#form_sqlconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_sql_config();
-                        });
-
-                        var r_name = $('#sql_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_sql_config();
                     }
                 },
                 id: "button_resolver_sql_save",
@@ -4526,24 +4513,17 @@ $(document).ready(function(){
         modal: true,
         maxHeight: 500,
         buttons: {
-            'Cancel': {click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_resolver_file_cancel",
                 text: "Cancel"
-                },
-            'Save': {click: function(){
-                    // Save the File configuration
+            },
+            'Save': {
+                click: function(){
                     if ($("#form_fileconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_file_config();
-                        });
-
-                        var r_name = $('#file_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_file_config();
                     }
                 },
                 id: "button_resolver_file_save",
@@ -6267,7 +6247,8 @@ function resolver_file(name, duplicate){
                 required: true,
                 minlength: 4,
                 number: false,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             }
         }
     });
@@ -6533,7 +6514,8 @@ function resolver_ldap(name, duplicate){
             ldap_resolvername: {
                 required: true,
                 minlength: 4,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             },
             ldap_searchfilter: {
                 required: true,
@@ -6689,7 +6671,8 @@ function resolver_http(name, duplicate){
             http_resolvername: {
                 required: true,
                 minlength: 4,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             },
             http_searchfilter: {
                 required: true,
@@ -6825,7 +6808,8 @@ function resolver_sql(name, duplicate){
             sql_resolvername: {
                 required: true,
                 minlength: 4,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             },
             sql_driver: {
                 required: true,
@@ -6854,51 +6838,6 @@ function resolver_sql(name, duplicate){
     $("#sql_password").rules("add", {
         required: !g.current_resolver_name
     });
-}
-
-function check_for_resolver_name_change(defer, new_resolver_name){
-    if(g.current_resolver_name !== new_resolver_name){
-        var resolvers = get_resolvers();
-
-        if($.inArray(new_resolver_name, resolvers) !== -1){
-            var text = '<div style="text-align: center"><br/>' +
-                i18n.gettext('A resolver with name') +
-                ' ' + new_resolver_name + ' ' +
-                i18n.gettext('already exists.') + '<br/><br/>' +
-                i18n.gettext('Do you want to overwrite the existing definition?') +
-                '</div>';
-
-            $(text).dialog({
-                title: i18n.gettext("Overwrite resolver definition"),
-                width: 500,
-                modal: true,
-                buttons: [
-                    {
-                        text: i18n.gettext("Cancel"),
-                        click: function() {
-                            defer.reject("false");
-                            $( this ).dialog( "close" );
-                        }
-                    },
-                    {
-                        text: i18n.gettext("Overwrite"),
-                        click: function() {
-                            defer.resolve("true");
-                            $( this ).dialog( "close" );
-                        }
-                    }
-                ]
-            });
-        }
-        else {
-            defer.resolve("true");
-        }
-    }
-    else{
-        defer.resolve("true");
-    }
-
-    return defer.promise();
 }
 
 function confirm_cancel_dialog(dialogname){
