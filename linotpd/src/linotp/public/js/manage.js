@@ -240,6 +240,11 @@ var $tokentypes;
 var $tokenConfigCallbacks = {};
 var $tokenConfigInbacks = {};
 
+var $form_validator_ldap;
+var $form_validator_sql;
+var $form_validator_http;
+var $form_validator_file;
+
 // FIXME: global variable should be worked out
 var g = {};
     g.enroll_display_qrcodes = false;
@@ -6220,7 +6225,9 @@ function delete_push_provider(provider){
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
 function resolver_file(name, duplicate){
-    $("#form_fileconfig").validate().resetForm();
+    if($form_validator_file) {
+        $form_validator_file.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6249,7 +6256,7 @@ function resolver_file(name, duplicate){
 
     $dialog_file_resolver.dialog('open');
 
-    $("#form_fileconfig").validate({
+    $form_validator_file = $("#form_fileconfig").validate({
         rules: {
             file_filename: {
                 required: true,
@@ -6425,7 +6432,9 @@ function resolver_set_ldap(obj) {
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
 function resolver_ldap(name, duplicate){
-    $("#form_ldapconfig").validate().resetForm();
+    if($form_validator_ldap) {
+        $form_validator_ldap.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6508,7 +6517,7 @@ function resolver_ldap(name, duplicate){
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');
 
-    $("#form_ldapconfig").validate({
+    $form_validator_ldap = $("#form_ldapconfig").validate({
         rules: {
             ldap_uri: {
                 required: true,
@@ -6607,7 +6616,9 @@ function resolver_set_http(data) {
 }
 
 function resolver_http(name, duplicate){
-    $("#form_httpconfig").validate().resetForm();
+    if($form_validator_http) {
+        $form_validator_http.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6661,7 +6672,7 @@ function resolver_http(name, duplicate){
     $dialog_http_resolver.dialog('open');
 
 
-    $("#form_httpconfig").validate({
+    $form_validator_http = $("#form_httpconfig").validate({
         ignore: "",
         rules: {
             http_uri: {
@@ -6730,7 +6741,9 @@ function resolver_set_sql(obj) {
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
 function resolver_sql(name, duplicate){
-    $("#form_sqlconfig").validate().resetForm();
+    if($form_validator_sql) {
+        $form_validator_sql.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6807,7 +6820,7 @@ function resolver_sql(name, duplicate){
     $dialog_sql_resolver.dialog('open');
 
 
-    $("#form_sqlconfig").validate({
+    $form_validator_sql = $("#form_sqlconfig").validate({
         rules: {
             sql_resolvername: {
                 required: true,
