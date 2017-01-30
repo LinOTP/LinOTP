@@ -20,12 +20,12 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 package LinotpLDAPProxy;
 ## This module is to be used with the LSE LinOTP authentication 
 ## solution.
-## See: http://lsexperts.de and http://linotp.org
+## See: https://keyidentity.com and https://linotp.org
 ## This module works as an LDAP proxy.
 ## It performs the bind with a One Time Password
 ## that is validated against the LinOTP server.

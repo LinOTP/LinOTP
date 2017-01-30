@@ -21,7 +21,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """ This Security module (hsm) is used to access hardware security modules
     via PKCS11 for encrypting and decrypting the data

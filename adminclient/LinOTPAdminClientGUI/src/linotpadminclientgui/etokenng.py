@@ -22,7 +22,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """ This is the module for providing the functions
                 to enroll the Aladdin eToken NG OTP

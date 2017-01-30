@@ -7,7 +7,7 @@ Packager:  linotp@lsexperts.de
 Group: Library/Security
 Requires: pkiclient 
 BuildRoot: /var/tmp/%{name}-buildroot
-URL: http://www.lsexperts.de
+URL: http://www.keyidentity.com
 Source: liblinotpetwrapper-0.1.tgz
 Vendor: KeyIdentity GmbH
 

@@ -21,7 +21,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 '''lib to handle mobileOTP - Implementation inspired by:
       https://github.com/neush/otpn900/blob/master/src/test_motp.c

@@ -19,7 +19,7 @@
 #
 #     E-mail: linotp@lsexperts.de
 #     Contact: www.linotp.org
-#     Support: www.lsexperts.de
+#     Support: www.keyidentity.com
 #
 #
 FREERADDIR=`find sandbox -maxdepth 1 -name freeradius\* -type d`
