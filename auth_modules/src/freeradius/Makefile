@@ -17,7 +17,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#     E-mail: linotp@lsexperts.de
+#     E-mail: linotp@keyidentity.com
 #     Contact: www.linotp.org
 #     Support: www.keyidentity.com
 #
@@ -71,7 +71,7 @@ deb:
 	#cat Changelog.linotp $(FREERADDIR)/debian/changelog >> $(FREERADDIR)/debian/changelog.new
 	#mv $(FREERADDIR)/debian/changelog.new $(FREERADDIR)/debian/changelog
 	head -n1 sandbox/freeradius-*/debian/changelog | cut -d' ' -f2 | sed  's/(\(.*\))/\1/' > freeradius-version.tmp
-	( export DEBEMAIL="linotp2@lsexperts.de"; export DEBFULLNAME="LSE LinOTP2 Packaging"; cd $(FREERADDIR); dch -v 1:`cat ../../freeradius-version.tmp`-linotp$(LINOTP_VERSION) $(COMMENT) )
+	( export DEBEMAIL="linotp@keyidentity.com"; export DEBFULLNAME="KeyIdentity LinOTP Packaging"; cd $(FREERADDIR); dch -v 1:`cat ../../freeradius-version.tmp`-linotp$(LINOTP_VERSION) $(COMMENT) )
 	( cd $(FREERADDIR) && dpkg-buildpackage -b )
 clean:
 	rm sandbox -fr

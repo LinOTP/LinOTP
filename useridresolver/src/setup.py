@@ -20,7 +20,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
@@ -58,7 +58,7 @@ setup(
     version=__version__,
     description='LinOTP2 modules for resolving usernames',
     author='KeyIdentity GmbH',
-    author_email='linotp@lsexperts.de',
+    author_email='linotp@keyidentity.com',
     keywords='OTP LinOTP2 Login UserId LDAP SQL',
     url='http://www.linotp.org',
     include_package_data=True,

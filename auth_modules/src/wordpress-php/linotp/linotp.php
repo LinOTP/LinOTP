@@ -26,7 +26,7 @@ License:
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *    E-mail: linotp@lsexperts.de
+ *    E-mail: linotp@keyidentity.com
  *    Contact: www.linotp.org
  *    Support: www.keyidentity.com
  *
@@ -124,7 +124,7 @@ function linotp_auth_check_login($username,$password) {
 		#$userarray['first_name'] = "test";
 		#$userarray['last_name'] = "user";        
 		#$userarray['user_url'] = "";
-		#$userarray['user_email'] = "cornelius.koelbel@lsexperts.de";
+		#$userarray['user_email'] = "linotp@keyidentity.com";
 		#$userarray['description'] = "";
 		#$userarray['aim'] = "";
 		#$userarray['yim'] = "";

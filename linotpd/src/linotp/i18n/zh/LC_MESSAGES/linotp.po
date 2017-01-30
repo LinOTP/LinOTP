@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
@@ -28,7 +28,7 @@ msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "PO-Revision-Date: 2016-08-01 20:38+0100\n"
-"Last-Translator: linotp@lsexperts.de\n"
+"Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: Chinese <>\n"
 "Language: zh\n"
 "MIME-Version: 1.0\n"

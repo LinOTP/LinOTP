@@ -3,7 +3,7 @@ Name: liblinotpetwrapper
 Version: 0.1
 Release: 1
 License: AGPLv3, (c) KeyIdentity GmbH
-Packager:  linotp@lsexperts.de
+Packager:  linotp@keyidentity.com
 Group: Library/Security
 Requires: pkiclient 
 BuildRoot: /var/tmp/%{name}-buildroot

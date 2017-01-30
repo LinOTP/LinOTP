@@ -18,7 +18,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *    E-mail: linotp@lsexperts.de
+ *    E-mail: linotp@keyidentity.com
  *    Contact: www.linotp.org
  *    Support: www.keyidentity.com
  *
@@ -2299,7 +2299,8 @@ function support_view(){
         if ($.isEmptyObject(support_info)) {
             var info = "";
             info += '<h2 class="contact_info">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
-            info += i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact <p class="contact_info"><a href="mailto:sales@lsexperts.de">KeyIdentity GmbH</a></p> for support agreement purchase.');
+            info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
+                        '<p class="contact_info"><a href="mailto:sales@keyidentity.com">KeyIdentity GmbH</a></p>');
             $("#dialog_support_view").html($.parseHTML(info));
 
         } else {
@@ -2318,7 +2319,7 @@ function support_view(){
             info += "<div class='subscription_info'><br>" +
                 i18n.gettext("For support and subscription please contact us at") +
                 " <a href='https://www.keyidentity.com/service-support.html' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
-                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
+                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
             $("#dialog_support_view").html($.parseHTML(info));
         }
     });
