@@ -215,7 +215,12 @@ class IdResolver (UserIdResolver):
 
         log.debug("Try to connect to %r", uri)
 
+        # uri's starting or ending with 'whitespace' are not supported
+        uri = uri.strip()
+
         # check that the uri is only a valid ldap uri
+        if ',' in uri:
+            log.warning("unsupported multiple urls in ldap uri %r", uri)
 
         if not uri.startswith('ldaps://') and not uri.startswith('ldap://'):
             log.error("unsuported protocol %r", uri)
@@ -265,7 +270,7 @@ class IdResolver (UserIdResolver):
 
                 l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
 
-        if uri.startswith('ldap:'):
+        if uri.startswith('ldap://'):
 
             # in case of ldap:// we always try to start a tls connection
             # Only in case the tls connection is a must, defined by
@@ -412,11 +417,34 @@ class IdResolver (UserIdResolver):
             if trace_level != 0:
                 ldap.set_option(ldap.OPT_DEBUG_LEVEL, 4095)
 
-            l_obj = IdResolver.connect(uri, caller, trace_level=trace_level)
+            for s_uri in uri.split(','):
 
-            dn_encode = params['BINDDN'].encode(ENCODING)
-            pw_encode = params['BINDPW'].encode(ENCODING)
-            l_obj.simple_bind_s(dn_encode, pw_encode)
+                log.info("testing connection with uri %r", s_uri)
+
+                try:
+                    failed = None
+
+                    l_obj = IdResolver.connect(s_uri, caller,
+                                               trace_level=trace_level)
+
+                    # try to authenticate to server:
+                    # this will establish the first connection
+
+                    dn_encode = params['BINDDN'].encode(ENCODING)
+                    pw_encode = params['BINDPW'].encode(ENCODING)
+                    l_obj.simple_bind_s(dn_encode, pw_encode)
+
+                    # simple_bind will raise an exception if the server
+                    # could not be reached or an error occurs - thus the
+                    # break is only reached, when everything is ok
+
+                    break
+
+                except Exception as exx:
+                    failed = exx
+
+            if failed is not None:
+                raise exx
 
             # get a userlist:
             searchFilter = "(&" + params['LDAPSEARCHFILTER'] + ")"
