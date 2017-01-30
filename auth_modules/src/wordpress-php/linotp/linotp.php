@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: LinOTP authentication
-Plugin URI: http://www.linotp.org
+Plugin URI: https://www.keyidentity.com
 Description: Used to externally authenticate WP users with one time passwords against LinOTP. Derived from "External DB authentication" by "Charlene Barina".
 Version: 0.1
-Author: Cornelius Kölbel
-Author URI: http://www.linotp.org
+Author: KeyIdentity GmbH
+Author URI: https://www.keyidentity.com
 License:
  *
  *   LinOTP - the open source solution for two factor authentication
