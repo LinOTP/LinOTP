@@ -61,8 +61,9 @@ from linotp.lib.resolver import getResolverClass
 from linotp.lib.resolver import deleteResolver
 from linotp.lib.resolver import parse_resolver_spec
 
-from linotp.lib.error import ParameterError
+from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
 
+from linotp.lib.error import ParameterError
 
 from linotp.lib.reply import sendResult
 from linotp.lib.reply import sendError
@@ -748,6 +749,21 @@ class SystemController(BaseController):
                     for realm_name, new_resolvers in change_realms.items():
                         if new_resolvers:
                             setRealm(realm_name, ','.join(new_resolvers))
+
+                    #
+                    # migrate the tokens to the new resolver -
+                    # we can re-use the resolver migration handler here :-)
+
+                    resolvers = getResolverList()
+                    src_resolver = resolvers.get(previous_name, None)
+                    target_resolver = resolvers.get(new_resolver_name, None)
+
+                    mg = MigrateResolverHandler()
+                    ret = mg.migrate_resolver(src=src_resolver,
+                                              target=target_resolver)
+
+                    log.info("Token migrated to the new resolver: %r",
+                             ret)
 
                     # finally delete the previous resolver definition
                     deleteResolver(previous_name)
