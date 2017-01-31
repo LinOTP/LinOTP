@@ -844,7 +844,7 @@ syst></textarea></td>
     <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
     <br>${_("or")}<br>
     <a href="https://www.keyidentity.com" rel="noreferrer" target="_blank">https://www.keyidentity.com</a></p>
-    <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}q</a></p>
+    <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
