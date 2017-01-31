@@ -1,7 +1,7 @@
 Source: linotp-adminclient-gui
 Section: net
 Priority: optional
-Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
+Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
 Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49),
  python-setuptools
 Standards-Version: 3.9.1

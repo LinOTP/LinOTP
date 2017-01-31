@@ -22,7 +22,7 @@
 #   Copyright 2002  Boian Jordanov <bjordanov@orbitel.bg>
 #   Copyright 2011  KeyIdentity GmbH
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 

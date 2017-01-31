@@ -20,7 +20,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
@@ -40,7 +40,7 @@ setup(
     version=__version__,
     description='LinOTP GUI client',
     author='LSE Leading Security Experts GmbH',
-    author_email='linotp@lsexperts.de',
+    author_email='linotp@keyidentity.com',
     url='http://www.linotp.org',
     packages=['linotpadminclientgui'],
     install_requires=[

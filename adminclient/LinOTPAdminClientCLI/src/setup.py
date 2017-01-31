@@ -20,7 +20,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
@@ -51,7 +51,7 @@ setup(
     version=__version__,
     description='LinOTP command-line client',
     author='KeyIdentity GmbH',
-    author_email='linotp-community@lsexperts.de',
+    author_email='linotp@keyidentity.com',
     url='http://www.linotp.org',
     packages=['linotpadminclientcli'],
     scripts=['bin/linotpadm.py'],

@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
@@ -67,7 +67,7 @@ setup(
     description='LinOTP Service',
     author='KeyIdentity GmbH',
     license='AGPL v3, (C) KeyIdentity GmbH',
-    author_email='linotp@lsexperts.de',
+    author_email='linotp@keyidentity.com',
     url='http://www.linotp.org',
     install_requires=[
         "Pylons>=0.9.7",
