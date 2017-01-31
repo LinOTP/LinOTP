@@ -111,7 +111,7 @@ class TestPushToken(TestController):
         # ------------------------------------------------------------------ --
 
         # make dummy provider config
-        p_config = {"push_url": "http://pushproxy.keyidentity.com",
+        p_config = {"push_url": "https://pushproxy.keyidentity.com",
                     "access_certificate": self.dummy_temp_cert.name,
                     "server_certificate": ""}
 

@@ -7,7 +7,7 @@ Packager:  linotp@keyidentity.com
 Group: Library/Security
 Requires: pkiclient 
 BuildRoot: /var/tmp/%{name}-buildroot
-URL: http://www.keyidentity.com
+URL: https://www.keyidentity.com
 Source: liblinotpetwrapper-0.1.tgz
 Vendor: KeyIdentity GmbH
 

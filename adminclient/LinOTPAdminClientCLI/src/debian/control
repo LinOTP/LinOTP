@@ -8,7 +8,7 @@ Standards-Version: 3.9.1
 
 Package: linotp-adminclient-cli
 Architecture: all
-Homepage: http://www.linotp.org/
+Homepage: https://www.linotp.org/
 Depends: ${misc:Depends}, ${python:Depends}, python-usb
 Replaces: linotpadminclientce (<< 2.5.2-1~), linotp-adminclient-ce (<< 2.7)
 Breaks: linotpadminclientce (<< 2.5.2-1~), linotp-adminclient-ce (<< 2.7)

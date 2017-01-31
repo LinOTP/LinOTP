@@ -14,7 +14,7 @@
     <property name="program_name">LinOTP 2 Management Client</property>
     <property name="version">0.3</property>
     <property name="copyright" translatable="yes" context="LinOTP2">(c) KeyIdentity GmbH</property>
-    <property name="website">http://www.linotp.org</property>
+    <property name="website">https://www.linotp.org</property>
     <property name="website_label" translatable="yes" context="LinOTP2">LinOTP</property>
     <property name="license" translatable="yes" context="LinOTP2">
                     GNU AFFERO GENERAL PUBLIC LICENSE

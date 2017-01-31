@@ -60,7 +60,7 @@ setup(
     author='KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
     keywords='OTP LinOTP2 Login UserId LDAP SQL',
-    url='http://www.linotp.org',
+    url='https://www.linotp.org',
     include_package_data=True,
     install_requires=[
          "python-ldap",

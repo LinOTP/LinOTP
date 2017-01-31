@@ -41,7 +41,7 @@ setup(
     description='LinOTP GUI client',
     author='LSE Leading Security Experts GmbH',
     author_email='linotp@keyidentity.com',
-    url='http://www.linotp.org',
+    url='https://www.linotp.org',
     packages=['linotpadminclientgui'],
     install_requires=[
         "configobj>=4.6.0"

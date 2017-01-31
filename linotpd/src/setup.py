@@ -68,7 +68,7 @@ setup(
     author='KeyIdentity GmbH',
     license='AGPL v3, (C) KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
-    url='http://www.linotp.org',
+    url='https://www.linotp.org',
     install_requires=[
         "Pylons>=0.9.7",
         "WebOb",
