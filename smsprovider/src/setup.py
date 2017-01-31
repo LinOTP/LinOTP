@@ -35,7 +35,7 @@ setup(
     author='KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
     keywords='OTP LinOTP2 SMS',
-    url='http://www.linotp.org',
+    url='https://www.linotp.org',
     packages=['smsprovider'],
     install_requires=[
         "httplib2"

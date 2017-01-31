@@ -42,7 +42,7 @@ setup(
     author='KeyIdentity GmbH',
     license='GPL v2, (C) KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
-    url='http://www.linotp.org',
+    url='https://www.linotp.org',
     packages=['pam_py_linotp'],
     include_package_data=True,
     install_requires=[

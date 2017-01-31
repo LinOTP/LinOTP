@@ -37,7 +37,7 @@
 =head1 NAME
 
 freeradius_perl - Perl module for use with FreeRADIUS rlm_perl, to authenticate against 
- LinOTP  http://www.linotp.org
+ LinOTP  https://www.linotp.org
 
 =head1 SYNOPSIS
 

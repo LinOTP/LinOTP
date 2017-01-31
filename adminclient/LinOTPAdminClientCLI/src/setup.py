@@ -52,7 +52,7 @@ setup(
     description='LinOTP command-line client',
     author='KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
-    url='http://www.linotp.org',
+    url='https://www.linotp.org',
     packages=['linotpadminclientcli'],
     scripts=['bin/linotpadm.py'],
      data_files=[('share/man/man1', ["doc/linotpadm.py.1"])],
