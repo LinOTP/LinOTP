@@ -22,7 +22,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """
 This is a SMS Provide class that can send OTP values via SMS using a phone

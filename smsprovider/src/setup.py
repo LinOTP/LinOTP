@@ -21,7 +21,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 
 from setuptools import setup, find_packages

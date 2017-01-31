@@ -21,7 +21,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """
 This is the cmd client admin to manage the tokens on the LinOTP 2 server

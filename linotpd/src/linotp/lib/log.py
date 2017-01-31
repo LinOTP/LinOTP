@@ -21,7 +21,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """ helper for the secure formatter objects"""
 

@@ -20,7 +20,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 #
 # IMPORTANT! This file is imported by setup.py, therefore do not (directly or

@@ -22,7 +22,7 @@
  *
  *    E-mail: linotp@lsexperts.de
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
 </%doc>
 <h2>${_("Provision your OATH soft token")}</h2>

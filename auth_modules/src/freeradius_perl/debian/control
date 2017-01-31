@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: root <linotp@lsexperts.de>
 Build-Depends: debhelper (>= 7)
 Standards-Version: 3.8.4
-Homepage: http://www.lsexperts.de
+Homepage: http://www.keyidentity.com
 
 Package: linotp-freeradius-perl
 Architecture: all

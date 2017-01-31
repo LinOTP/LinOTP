@@ -21,7 +21,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 
 " support redirecting requests to remote systems on base of policy defintion "

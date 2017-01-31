@@ -22,7 +22,7 @@
  *
  *    E-mail: linotp@lsexperts.de
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
  * contains the ocra2 token web interface
 </%doc>

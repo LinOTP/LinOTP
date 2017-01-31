@@ -19,7 +19,7 @@
 #
 #     E-mail: linotp@lsexperts.de
 #     Contact: www.linotp.org
-#     Support: www.lsexperts.de
+#     Support: www.keyidentity.com
 #
 # Require autoconf 2.52
 AC_PREREQ(2.52)

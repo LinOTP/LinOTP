@@ -19,7 +19,7 @@
 #
 #     E-mail: linotp@lsexperts.de
 #     Contact: www.linotp.org
-#     Support: www.lsexperts.de
+#     Support: www.keyidentity.com
 #
 # Process this file with automake to create Makefile.in
 

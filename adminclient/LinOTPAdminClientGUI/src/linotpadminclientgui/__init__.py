@@ -22,7 +22,7 @@
 #
 #    E-mail: linotp@lsexperts.de
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """
 gui client library to comunicate with LinOTP and token enrollment

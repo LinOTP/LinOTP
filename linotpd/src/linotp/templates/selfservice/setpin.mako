@@ -22,7 +22,7 @@
  *
  *    E-mail: linotp@lsexperts.de
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
 </%doc>
 <h1>${_("Reset OTP PIN")}</h1>

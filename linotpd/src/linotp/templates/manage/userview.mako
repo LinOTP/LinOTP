@@ -22,7 +22,7 @@
  *
  *    E-mail: linotp@lsexperts.de
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
 </%doc>
 <table id="user_table" class="flexme2" style="display:none"></table>

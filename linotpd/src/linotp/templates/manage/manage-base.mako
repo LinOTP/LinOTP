@@ -23,7 +23,7 @@
  *
  *    E-mail: linotp@lsexperts.de
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
 </%doc>
 <%!
@@ -843,7 +843,7 @@ syst></textarea></td>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
     <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
     <br>${_("or")}<br>
-    <a href="https://www.lsexperts.de" rel="noreferrer" target="_blank">https://www.lsexperts.de</a></p>
+    <a href="https://www.keyidentity.com" rel="noreferrer" target="_blank">https://www.keyidentity.com</a></p>
     <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}q</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,

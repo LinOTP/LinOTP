@@ -22,7 +22,7 @@
  *
  *    E-mail: linotp@lsexperts.de
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
 </%doc>
 <a id=policy_export>${_("Export policies")}</a>
