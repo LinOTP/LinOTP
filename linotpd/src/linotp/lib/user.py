@@ -1047,7 +1047,7 @@ def getSearchFields(user):
 
     log.debug("[getSearchFields] entering function getSearchFields")
 
-    for resolver_spec in getResolvers(User):
+    for resolver_spec in getResolvers(user):
         """  """
         _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
