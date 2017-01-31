@@ -551,6 +551,21 @@ html {
 	width: inherit;
 }
 
+.input-placeholder-warning::-webkit-input-placeholder {
+    color: red;
+}
+.input-placeholder-warning:-ms-input-placeholder {
+    color: red;
+}
+.input-placeholder-warning:-moz-placeholder {
+   color: red;
+   opacity: 1;
+}
+.input-placeholder-warning::-moz-placeholder {
+   color: red;
+   opacity: 1;
+}
+
 /*
  *  Styles for sms and email provider config
  */
