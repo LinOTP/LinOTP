@@ -39,7 +39,7 @@ setup(
     name='LinOTPAdminClientGUI',
     version=__version__,
     description='LinOTP GUI client',
-    author='LSE Leading Security Experts GmbH',
+    author='KeyIdentity GmbH',
     author_email='linotp@keyidentity.com',
     url='https://www.linotp.org',
     packages=['linotpadminclientgui'],

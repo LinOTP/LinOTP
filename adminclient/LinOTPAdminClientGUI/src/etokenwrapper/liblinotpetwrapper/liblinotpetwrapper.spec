@@ -12,7 +12,7 @@ Source: liblinotpetwrapper-0.1.tgz
 Vendor: KeyIdentity GmbH
 
 %description
-LSE LinOTP is a flexible OTP authentication solution.
+KeyIdentity LinOTP is a flexible OTP authentication solution.
 To enroll eToken NG OTP with the Management Clients of LinOTP, 
 you need the Aladdin/SafeNet PKIClient and this wrapper library.
 %prep
