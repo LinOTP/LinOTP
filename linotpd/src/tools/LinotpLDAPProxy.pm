@@ -23,7 +23,7 @@
 #    Support: www.keyidentity.com
 #
 package LinotpLDAPProxy;
-## This module is to be used with the LSE LinOTP authentication 
+## This module is to be used with the KeyIdentity LinOTP authentication 
 ## solution.
 ## See: https://keyidentity.com and https://linotp.org
 ## This module works as an LDAP proxy.

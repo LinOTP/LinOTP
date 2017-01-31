@@ -808,7 +808,7 @@ syst></textarea></td>
 
 <script type="text/javascript">
     function translate_support_view() {
-        $("#dialog_support_view" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
+        $("#dialog_support_view" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
         $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_close').button("option", "label", '${_("Close")}');
     }
@@ -828,7 +828,7 @@ syst></textarea></td>
 
 <script type="text/javascript">
     function translate_support_set() {
-        $("#dialog_set_support" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
+        $("#dialog_set_support" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
         $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_cancel').button("option", "label", '${_("Cancel")}');
     }
@@ -856,7 +856,7 @@ syst></textarea></td>
 </div>
 <script type="text/javascript">
     function translate_about() {
-        $("#dialog_about").dialog( "option", "title", '${_("About LSE LinOTP")}' );
+        $("#dialog_about").dialog( "option", "title", '${_("About KeyIdentity LinOTP")}' );
         $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>
