@@ -18,9 +18,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *    E-mail: linotp@lsexperts.de
+ *    E-mail: linotp@keyidentity.com
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
  */
 
@@ -549,6 +549,21 @@ html {
 .ui-dialog form.cmxform input[type="checkbox"],
 .ui-dialog form.cmxform input[type="radio"]{
 	width: inherit;
+}
+
+.input-placeholder-warning::-webkit-input-placeholder {
+    color: red;
+}
+.input-placeholder-warning:-ms-input-placeholder {
+    color: red;
+}
+.input-placeholder-warning:-moz-placeholder {
+   color: red;
+   opacity: 1;
+}
+.input-placeholder-warning::-moz-placeholder {
+   color: red;
+   opacity: 1;
 }
 
 /*

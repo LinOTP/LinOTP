@@ -18,9 +18,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *    E-mail: linotp@lsexperts.de
+ *    E-mail: linotp@keyidentity.com
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
  */
 window.onerror = error_handling;
@@ -122,14 +122,12 @@ function Logout(logout_url) {
  * add the jquery validation methods
  */
 $.validator.addMethod('valid_json', function (value, element, param) {
-    var isValid = false;
-    try {
-        var obj = $.parseJSON(value);
-        isValid = true;
-    } catch(err) {
-        isValid = false;
-    }
-    return isValid;
+        try {
+            $.parseJSON(value);
+            return true;
+        } catch(err) {
+            return false;
+        }
     },
     i18n.gettext('Not a valid json string!')
 );
@@ -138,6 +136,16 @@ jQuery.validator.addMethod("realmname", function(value, element, param){
     return value.match(/^[a-zA-z0-9_\-\.]+$/i);
     },
     i18n.gettext("Please enter a valid realm name. It may contain characters, numbers and '_-.'.")
+);
+
+jQuery.validator.addMethod("unique_resolver_name", function(value, element, param){
+        if(g.current_resolver_name !== value) {
+            var resolvers = get_resolvers();
+            return $.inArray(value, resolvers) === -1
+        }
+        return true;
+    },
+    i18n.gettext("Resolver name is already in use")
 );
 
 jQuery.validator.addMethod("resolvername", function(value, element, param){
@@ -239,6 +247,11 @@ var $tokentypes;
 
 var $tokenConfigCallbacks = {};
 var $tokenConfigInbacks = {};
+
+var $form_validator_ldap;
+var $form_validator_sql;
+var $form_validator_http;
+var $form_validator_file;
 
 // FIXME: global variable should be worked out
 var g = {};
@@ -2299,7 +2312,8 @@ function support_view(){
         if ($.isEmptyObject(support_info)) {
             var info = "";
             info += '<h2 class="contact_info">' + i18n.gettext('Professional LinOTP support and enterprise subscription') + '</h2>';
-            info += i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact <p class="contact_info"><a href="mailto:sales@lsexperts.de">KeyIdentity GmbH</a></p> for support agreement purchase.');
+            info += sprintf(i18n.gettext('For professional LinOTP support and enterprise subscription, feel free to contact %s for support agreement purchase.'),
+                        '<p class="contact_info"><a href="mailto:sales@keyidentity.com">KeyIdentity GmbH</a></p>');
             $("#dialog_support_view").html($.parseHTML(info));
 
         } else {
@@ -2317,8 +2331,8 @@ function support_view(){
             info += "</tbody></table>";
             info += "<div class='subscription_info'><br>" +
                 i18n.gettext("For support and subscription please contact us at") +
-                " <a href='https://www.lsexperts.de/service-support.html' rel='noreferrer' target='_blank'>https://www.lsexperts.de</a> <br>" +
-                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@lsexperts.de</div>";
+                " <a href='https://www.keyidentity.com/service-support.html' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
+                i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
             $("#dialog_support_view").html($.parseHTML(info));
         }
     });
@@ -4210,24 +4224,17 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
-            'Cancel': { click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_ldap_resolver_cancel",
                 text: "Cancel"
-                },
-            'Save': { click: function(){
-                    // Save the LDAP configuration
+            },
+            'Save': {
+                click: function(){
                     if ($("#form_ldapconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_ldap_config();
-                        });
-
-                        var r_name = $('#ldap_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_ldap_config();
                     }
                 },
                 id: "button_ldap_resolver_save",
@@ -4337,24 +4344,17 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
-            'Cancel': { click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_http_resolver_cancel",
                 text: "Cancel"
-                },
-            'Save': { click: function(){
-                    // Save the HTTP configuration
+            },
+            'Save': {
+                click: function(){
                     if ($("#form_httpconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_http_config();
-                        });
-
-                        var r_name = $('#http_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_http_config();
                     }
                     else {
                         // get error list
@@ -4433,24 +4433,17 @@ $(document).ready(function(){
         width: 700,
         modal: true,
         buttons: {
-            'Cancel': {click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_resolver_sql_cancel",
                 text: "Cancel"
             },
-            'Save': {click: function(){
-                    // Save the SQL configuration
+            'Save': {
+                click: function(){
                     if ($("#form_sqlconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_sql_config();
-                        });
-
-                        var r_name = $('#sql_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_sql_config();
                     }
                 },
                 id: "button_resolver_sql_save",
@@ -4521,24 +4514,17 @@ $(document).ready(function(){
         modal: true,
         maxHeight: 500,
         buttons: {
-            'Cancel': {click: function(){
-                $(this).dialog('close');
+            'Cancel': {
+                click: function(){
+                    $(this).dialog('close');
                 },
                 id: "button_resolver_file_cancel",
                 text: "Cancel"
-                },
-            'Save': {click: function(){
-                    // Save the File configuration
+            },
+            'Save': {
+                click: function(){
                     if ($("#form_fileconfig").valid()) {
-                        var defer = $.Deferred();
-
-                        // if it is save to save the provider, do it!
-                        defer.done(function(){
-                            save_file_config();
-                        });
-
-                        var r_name = $('#file_resolvername').val();
-                        check_for_resolver_name_change(defer, r_name);
+                        save_file_config();
                     }
                 },
                 id: "button_resolver_file_save",
@@ -6220,7 +6206,9 @@ function delete_push_provider(provider){
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
 function resolver_file(name, duplicate){
-    $("#form_fileconfig").validate().resetForm();
+    if($form_validator_file) {
+        $form_validator_file.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6249,7 +6237,7 @@ function resolver_file(name, duplicate){
 
     $dialog_file_resolver.dialog('open');
 
-    $("#form_fileconfig").validate({
+    $form_validator_file = $("#form_fileconfig").validate({
         rules: {
             file_filename: {
                 required: true,
@@ -6260,7 +6248,8 @@ function resolver_file(name, duplicate){
                 required: true,
                 minlength: 4,
                 number: false,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             }
         }
     });
@@ -6425,7 +6414,9 @@ function resolver_set_ldap(obj) {
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
 function resolver_ldap(name, duplicate){
-    $("#form_ldapconfig").validate().resetForm();
+    if($form_validator_ldap) {
+        $form_validator_ldap.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6490,7 +6481,13 @@ function resolver_ldap(name, duplicate){
 
             $('#ldap_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
 
-            if(!sth_changed) $("#ldap_password").valid();
+            if(!sth_changed) {
+                $("#ldap_password").valid();
+                $("#ldap_password").removeClass("input-placeholder-warning");
+            }
+            else {
+                $("#ldap_password").addClass("input-placeholder-warning");
+            }
         });
     }
     else {
@@ -6508,7 +6505,7 @@ function resolver_ldap(name, duplicate){
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');
 
-    $("#form_ldapconfig").validate({
+    $form_validator_ldap = $("#form_ldapconfig").validate({
         rules: {
             ldap_uri: {
                 required: true,
@@ -6524,7 +6521,8 @@ function resolver_ldap(name, duplicate){
             ldap_resolvername: {
                 required: true,
                 minlength: 4,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             },
             ldap_searchfilter: {
                 required: true,
@@ -6607,7 +6605,9 @@ function resolver_set_http(data) {
 }
 
 function resolver_http(name, duplicate){
-    $("#form_httpconfig").validate().resetForm();
+    if($form_validator_http) {
+        $form_validator_http.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6661,7 +6661,7 @@ function resolver_http(name, duplicate){
     $dialog_http_resolver.dialog('open');
 
 
-    $("#form_httpconfig").validate({
+    $form_validator_http = $("#form_httpconfig").validate({
         ignore: "",
         rules: {
             http_uri: {
@@ -6678,7 +6678,8 @@ function resolver_http(name, duplicate){
             http_resolvername: {
                 required: true,
                 minlength: 4,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             },
             http_searchfilter: {
                 required: true,
@@ -6730,7 +6731,9 @@ function resolver_set_sql(obj) {
  * @param  {Boolean} duplicate whether a duplicate should be created or not
  */
 function resolver_sql(name, duplicate){
-    $("#form_sqlconfig").validate().resetForm();
+    if($form_validator_sql) {
+        $form_validator_sql.resetForm();
+    }
 
     var obj = {
         'result': {
@@ -6793,7 +6796,13 @@ function resolver_sql(name, duplicate){
 
             $('#sql_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
 
-            if(!sth_changed) $("#sql_password").valid();
+            if(!sth_changed) {
+                $("#sql_password").valid();
+                $("#sql_password").removeClass("input-placeholder-warning");
+            }
+            else {
+                $("#sql_password").addClass("input-placeholder-warning");
+            }
         });
     }
     else {
@@ -6807,12 +6816,13 @@ function resolver_sql(name, duplicate){
     $dialog_sql_resolver.dialog('open');
 
 
-    $("#form_sqlconfig").validate({
+    $form_validator_sql = $("#form_sqlconfig").validate({
         rules: {
             sql_resolvername: {
                 required: true,
                 minlength: 4,
-                resolvername: true
+                resolvername: true,
+                unique_resolver_name: true
             },
             sql_driver: {
                 required: true,
@@ -6841,51 +6851,6 @@ function resolver_sql(name, duplicate){
     $("#sql_password").rules("add", {
         required: !g.current_resolver_name
     });
-}
-
-function check_for_resolver_name_change(defer, new_resolver_name){
-    if(g.current_resolver_name !== new_resolver_name){
-        var resolvers = get_resolvers();
-
-        if($.inArray(new_resolver_name, resolvers) !== -1){
-            var text = '<div style="text-align: center"><br/>' +
-                i18n.gettext('A resolver with name') +
-                ' ' + new_resolver_name + ' ' +
-                i18n.gettext('already exists.') + '<br/><br/>' +
-                i18n.gettext('Do you want to overwrite the existing definition?') +
-                '</div>';
-
-            $(text).dialog({
-                title: i18n.gettext("Overwrite resolver definition"),
-                width: 500,
-                modal: true,
-                buttons: [
-                    {
-                        text: i18n.gettext("Cancel"),
-                        click: function() {
-                            defer.reject("false");
-                            $( this ).dialog( "close" );
-                        }
-                    },
-                    {
-                        text: i18n.gettext("Overwrite"),
-                        click: function() {
-                            defer.resolve("true");
-                            $( this ).dialog( "close" );
-                        }
-                    }
-                ]
-            });
-        }
-        else {
-            defer.resolve("true");
-        }
-    }
-    else{
-        defer.resolve("true");
-    }
-
-    return defer.promise();
 }
 
 function confirm_cancel_dialog(dialogname){

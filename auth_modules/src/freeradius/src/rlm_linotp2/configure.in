@@ -17,9 +17,9 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
-dnl   E-mail: linotp@lsexperts.de
+dnl   E-mail: linotp@keyidentity.com
 dnl   Contact: www.linotp.org
-dnl   Support: www.lsexperts.de
+dnl   Support: www.keyidentity.com
 dnl
 
 AC_INIT(rlm_linotp2.c)

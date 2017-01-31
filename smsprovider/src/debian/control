@@ -1,13 +1,13 @@
 Source: linotp-smsprovider
 Section: net
 Priority: optional
-Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
+Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
 Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49), python-setuptools
 Standards-Version: 3.8.4
 
 Package: linotp-smsprovider
 Architecture: all
-Homepage: http://www.linotp.org/
+Homepage: https://www.linotp.org/
 Depends: ${misc:Depends}, ${python:Depends}, python-socksipy, linotp,
   python-httplib2
 Replaces: smsprovider (<< 2.5.2-1~)

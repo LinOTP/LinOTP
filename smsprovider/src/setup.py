@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 
 from setuptools import setup, find_packages
@@ -33,9 +33,9 @@ setup(
     version=__version__,
     description='LinOTP2 modules for submitting SMS messages',
     author='KeyIdentity GmbH',
-    author_email='linotp@lsexperts.de',
+    author_email='linotp@keyidentity.com',
     keywords='OTP LinOTP2 SMS',
-    url='http://www.linotp.org',
+    url='https://www.linotp.org',
     packages=['smsprovider'],
     install_requires=[
         "httplib2"

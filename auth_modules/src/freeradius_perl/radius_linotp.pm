@@ -22,9 +22,9 @@
 #   Copyright 2002  Boian Jordanov <bjordanov@orbitel.bg>
 #   Copyright 2011  KeyIdentity GmbH
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 
 
 
@@ -37,7 +37,7 @@
 =head1 NAME
 
 freeradius_perl - Perl module for use with FreeRADIUS rlm_perl, to authenticate against 
- LinOTP  http://www.linotp.org
+ LinOTP  https://www.linotp.org
 
 =head1 SYNOPSIS
 

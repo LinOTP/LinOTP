@@ -57,5 +57,5 @@ Therefor you should run LinOTP with the Apache webserver.
 A sample config file is available at **etc/apache2/sites-available/linotp2**.
 
 If you want to run LinOTP within the apache webserver and use SSL encryption and authentication take a look at
-http://linotp.org/index.php/howtos/5/38-install-linotp-using-pypi
+https://linotp.org/index.php/howtos/5/38-install-linotp-using-pypi
 

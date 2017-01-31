@@ -19,9 +19,9 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 #
 #
@@ -41,8 +41,8 @@ setup(
     description='LinOTP python PAM module',
     author='KeyIdentity GmbH',
     license='GPL v2, (C) KeyIdentity GmbH',
-    author_email='linotp-community@lsexperts.de',
-    url='http://www.linotp.org',
+    author_email='linotp@keyidentity.com',
+    url='https://www.linotp.org',
     packages=['pam_py_linotp'],
     include_package_data=True,
     install_requires=[
