@@ -1,7 +1,7 @@
 Source: linotp
 Section: net
 Priority: optional
-Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
+Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
 Build-Depends: cdbs,
                debhelper (>=9),
                lsb-release,

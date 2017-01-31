@@ -1,14 +1,14 @@
 Source: linotp-useridresolver
 Section: net
 Priority: optional
-Maintainer: KeyIdentity GmbH <linotp@lsexperts.de>
+Maintainer: KeyIdentity GmbH <linotp@keyidentity.com>
 Build-Depends: debhelper (>=7.4.0), python-support (>=0.6), cdbs (>=0.4.49),
   python (>=2.6), po-debconf, python-setuptools
 Standards-Version: 3.9.1
 
 Package: linotp-useridresolver
 Architecture: all
-Homepage: http://www.linotp.org/
+Homepage: https://www.linotp.org/
 Depends: ${misc:Depends}, ${python:Depends}
 Replaces: linotpuseridresolver (<< 2.5.2-1~), linotpuseridresolveree (<< 2.5.2-1~),
   linotp-useridresolver-ee (<< 2.7~)

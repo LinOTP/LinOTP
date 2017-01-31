@@ -21,9 +21,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *    E-mail: linotp@lsexperts.de
+ *    E-mail: linotp@keyidentity.com
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
 </%doc>
 <%!
@@ -808,7 +808,7 @@ syst></textarea></td>
 
 <script type="text/javascript">
     function translate_support_view() {
-        $("#dialog_support_view" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
+        $("#dialog_support_view" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
         $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_close').button("option", "label", '${_("Close")}');
     }
@@ -828,7 +828,7 @@ syst></textarea></td>
 
 <script type="text/javascript">
     function translate_support_set() {
-        $("#dialog_set_support" ).dialog( "option", "title", '${_("LSE LinOTP Support and Subscription")}' );
+        $("#dialog_set_support" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
         $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_cancel').button("option", "label", '${_("Cancel")}');
     }
@@ -843,8 +843,8 @@ syst></textarea></td>
     <p id='about_lse_id'>${_("For more information please visit:")}</p>
     <p><a href="https://www.linotp.org" rel="noreferrer" target="_blank">https://www.linotp.org</a>
     <br>${_("or")}<br>
-    <a href="https://www.lsexperts.de" rel="noreferrer" target="_blank">https://www.lsexperts.de</a></p>
-    <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}q</a></p>
+    <a href="https://www.keyidentity.com" rel="noreferrer" target="_blank">https://www.keyidentity.com</a></p>
+    <p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">${_("View latest changelog")}</a></p>
     <p>${_("Authors:")}
         <br>Cornelius Kölbel, Kay Winkler, Omar Kohl, Friedrich Weber,
         <br>Christian Pommranz, Reinhard Stampp, Rainer Endres,
@@ -856,7 +856,7 @@ syst></textarea></td>
 </div>
 <script type="text/javascript">
     function translate_about() {
-        $("#dialog_about").dialog( "option", "title", '${_("About LSE LinOTP")}' );
+        $("#dialog_about").dialog( "option", "title", '${_("About KeyIdentity LinOTP")}' );
         $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>

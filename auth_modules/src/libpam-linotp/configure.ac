@@ -17,15 +17,15 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#     E-mail: linotp@lsexperts.de
+#     E-mail: linotp@keyidentity.com
 #     Contact: www.linotp.org
-#     Support: www.lsexperts.de
+#     Support: www.keyidentity.com
 #
 # Require autoconf 2.52
 AC_PREREQ(2.52)
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT(pam_linotp,[2.2],[linotp-community@lsexperts.de])
+AC_INIT(pam_linotp,[2.2],[linotp@keyidentity.com])
 AC_CONFIG_SRCDIR([src/pam_linotp.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_TARGET([])

@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """ contains user - related functions """
 import logging
@@ -1047,7 +1047,7 @@ def getSearchFields(user):
 
     log.debug("[getSearchFields] entering function getSearchFields")
 
-    for resolver_spec in getResolvers(User):
+    for resolver_spec in getResolvers(user):
         """  """
         _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 

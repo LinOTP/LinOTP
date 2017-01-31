@@ -20,9 +20,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """
 client library to comunicate with LinOTP and token enrollment
@@ -36,5 +36,5 @@ client library to comunicate with LinOTP and token enrollment
 __copyright__ = "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
 __license__ = "Gnu AGPLv3"
 __contact__ = "www.linotp.org"
-__email__ = "linotp@lsexperts.de"
+__email__ = "linotp@keyidentity.com"
 __version__ = '2.9.1.dev0'

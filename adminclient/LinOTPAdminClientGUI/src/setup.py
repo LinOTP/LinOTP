@@ -20,9 +20,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 
 #from distutils.core import setup
@@ -39,9 +39,9 @@ setup(
     name='LinOTPAdminClientGUI',
     version=__version__,
     description='LinOTP GUI client',
-    author='LSE Leading Security Experts GmbH',
-    author_email='linotp@lsexperts.de',
-    url='http://www.linotp.org',
+    author='KeyIdentity GmbH',
+    author_email='linotp@keyidentity.com',
+    url='https://www.linotp.org',
     packages=['linotpadminclientgui'],
     install_requires=[
         "configobj>=4.6.0"

@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 """ contains the tokeniterator """
 
@@ -424,7 +424,7 @@ class TokenIterator(object):
         #   o LinOtp.TokenInfo: ""
         #   o LinOtp.TokenType: "spass"
         #   o LinOtp.TokenSerialnumber: "spass0000FBA3"
-        #   o User.description: "User Name,email@lsexperts.de,local,"
+        #   o User.description: "User Name,linotp@keyidentity.com,local,"
         #   o LinOtp.IdResClass: "useridresolver.PasswdIdResolver.IdResolver._default_Passwd_"
         #   o User.username: "user"
         #   o LinOtp.TokenDesc: "Always Authenticate"

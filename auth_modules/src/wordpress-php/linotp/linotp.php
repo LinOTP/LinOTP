@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: LinOTP authentication
-Plugin URI: http://www.linotp.org
+Plugin URI: https://www.keyidentity.com
 Description: Used to externally authenticate WP users with one time passwords against LinOTP. Derived from "External DB authentication" by "Charlene Barina".
 Version: 0.1
-Author: Cornelius Kölbel
-Author URI: http://www.linotp.org
+Author: KeyIdentity GmbH
+Author URI: https://www.keyidentity.com
 License:
  *
  *   LinOTP - the open source solution for two factor authentication
@@ -26,9 +26,9 @@ License:
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *    E-mail: linotp@lsexperts.de
+ *    E-mail: linotp@keyidentity.com
  *    Contact: www.linotp.org
- *    Support: www.lsexperts.de
+ *    Support: www.keyidentity.com
  *
 */
 
@@ -124,7 +124,7 @@ function linotp_auth_check_login($username,$password) {
 		#$userarray['first_name'] = "test";
 		#$userarray['last_name'] = "user";        
 		#$userarray['user_url'] = "";
-		#$userarray['user_email'] = "cornelius.koelbel@lsexperts.de";
+		#$userarray['user_email'] = "linotp@keyidentity.com";
 		#$userarray['description'] = "";
 		#$userarray['aim'] = "";
 		#$userarray['yim'] = "";

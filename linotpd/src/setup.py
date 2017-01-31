@@ -19,9 +19,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
 try:
     from setuptools import setup, find_packages
@@ -67,8 +67,8 @@ setup(
     description='LinOTP Service',
     author='KeyIdentity GmbH',
     license='AGPL v3, (C) KeyIdentity GmbH',
-    author_email='linotp@lsexperts.de',
-    url='http://www.linotp.org',
+    author_email='linotp@keyidentity.com',
+    url='https://www.linotp.org',
     install_requires=[
         "Pylons>=0.9.7",
         "WebOb",
