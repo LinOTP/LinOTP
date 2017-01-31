@@ -6481,7 +6481,13 @@ function resolver_ldap(name, duplicate){
 
             $('#ldap_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
 
-            if(!sth_changed) $("#ldap_password").valid();
+            if(!sth_changed) {
+                $("#ldap_password").valid();
+                $("#ldap_password").removeClass("input-placeholder-warning");
+            }
+            else {
+                $("#ldap_password").addClass("input-placeholder-warning");
+            }
         });
     }
     else {
@@ -6790,7 +6796,13 @@ function resolver_sql(name, duplicate){
 
             $('#sql_password').attr("placeholder", (sth_changed ? password_placeholder_required : password_placeholder_not_changed));
 
-            if(!sth_changed) $("#sql_password").valid();
+            if(!sth_changed) {
+                $("#sql_password").valid();
+                $("#sql_password").removeClass("input-placeholder-warning");
+            }
+            else {
+                $("#sql_password").addClass("input-placeholder-warning");
+            }
         });
     }
     else {
