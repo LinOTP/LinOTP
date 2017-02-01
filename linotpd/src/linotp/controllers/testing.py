@@ -27,15 +27,14 @@
 testing controller - for testing purposes
 """
 
-
-
 import logging
 
 from pylons import request, response
 from linotp.lib.base import BaseController
 
-from linotp.lib.util import  getParam
-from linotp.lib.user import  getUserFromParam
+from linotp.lib.error import ParameterError
+from linotp.lib.util import getParam
+from linotp.lib.user import getUserFromParam
 
 from linotp.lib.reply import sendResult, sendError
 
@@ -133,7 +132,9 @@ class TestingController(BaseController):
                 Session.rollback()
                 return sendError(response, "The testing controller can only be used in SelfTest mode!", 0)
 
-            user = getUserFromParam(param, required)
+            if "user" not in param:
+                raise ParameterError("Missing parameter: 'user'")
+
             ok = get_auth_AutoSMSPolicy()
 
             Session.commit()

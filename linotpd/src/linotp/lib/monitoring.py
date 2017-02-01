@@ -261,7 +261,7 @@ class MonitorHandler(object):
             __, config_identifier = parse_resolver_spec(resolver_spec)
             realmdict[config_identifier] = 0
 
-        user = getUserFromParam({'realm': realm}, optionalOrRequired=True)
+        user = getUserFromParam({'realm': realm})
         users = getUserList({'realm': realm, 'username': '*'}, user)
 
         for next_one in users:

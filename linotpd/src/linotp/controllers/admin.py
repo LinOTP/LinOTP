@@ -346,7 +346,7 @@ class AdminController(BaseController):
             if ufields:
                 user_fields = [u.strip() for u in ufields.split(",")]
 
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             filterRealm = []
             # check admin authorization
@@ -438,7 +438,7 @@ class AdminController(BaseController):
 
         try:
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             c.audit['user'] = user.login
 
@@ -512,7 +512,7 @@ class AdminController(BaseController):
         param = request.params
         try:
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             # check admin authorization
             checkPolicyPre('admin', 'enable', param, user=user)
@@ -665,7 +665,7 @@ class AdminController(BaseController):
         param = request.params
         try:
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
             auth_user = getUserFromRequest(request)
 
             # check admin authorization
@@ -865,7 +865,7 @@ class AdminController(BaseController):
 
             # fetch user from parameters.
 
-            user = getUserFromParam(params, optional)
+            user = getUserFromParam(params)
 
             # --------------------------------------------------------------- --
 
@@ -997,7 +997,7 @@ class AdminController(BaseController):
         try:
 
             serial = getParam(param, "serial", required)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             log.debug("[unassign] unassigning serial %r, user %r" % (serial, user))
             c.audit['source_realm'] = getTokenRealms(serial)
@@ -1072,7 +1072,7 @@ class AdminController(BaseController):
 
             upin = getParam(param, "pin", optional)
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             # check admin authorization
             checkPolicyPre('admin', 'assign', param)
@@ -1268,7 +1268,7 @@ class AdminController(BaseController):
             param = getLowerParams(request.params)
 
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             # check admin authorization
             checkPolicyPre('admin', 'set', param, user=user)
@@ -1561,7 +1561,7 @@ class AdminController(BaseController):
         param = request.params
         try:
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             otp1 = getParam(param, "otp1", required)
             otp2 = getParam(param, "otp2", required)
@@ -1642,7 +1642,7 @@ class AdminController(BaseController):
             checkPolicyPre('admin', 'userlist', param)
 
             up = 0
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             log.info("[userlist] displaying users with param: %s, ", param)
 
@@ -1785,7 +1785,7 @@ class AdminController(BaseController):
         param = request.params
 
         serial = getParam(param, "serial", optional)
-        user = getUserFromParam(param, optional)
+        user = getUserFromParam(param)
 
         try:
 
@@ -2516,7 +2516,7 @@ class AdminController(BaseController):
             checkPolicyPre('admin', "checkstatus")
 
             transid = param.get('transactionid', None) or param.get('state', None)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
             serial = getParam(param, 'serial', optional)
             all = param.get('open', 'False').lower() == 'true'
 
