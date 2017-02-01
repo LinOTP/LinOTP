@@ -1810,11 +1810,14 @@ syst></textarea></td>
                     <td><input type="text" name="ldap_resolvername" class="required"  id="ldap_resolvername" size="35" maxlength="20"></td></tr>
                 <tr><td><label for=ldap_uri>${_("Server-URI")}:</label></td>
                     <td><input type="text" name="ldap_uri" class="required"  id="ldap_uri" size="35" maxlength="200"
-                        onkeyup="ldap_resolver_ldaps();"></td></tr>
+                        onkeyup="handler_ldap_certificate_show();"></td></tr>
+                <tr><td> </td>
+                    <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls" onchange="handler_ldap_certificate_show();">
+                        <label for="ldap_enforce_tls">${_("Enforce STARTTLS")}</label></td></tr>
                 <tr id="ldap_resolver_certificate"><td>
                     <label for="ldap_certificate">${_("CA Certificate")}:</label></td>
                     <td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"
-                        title='${_("If you are using LDAPS you can enter the CA certificate in PEM format here.")}'> </textarea></td>
+                        title='${_("If you are using STARTTLS or LDAPS you can enter the CA certificate in PEM format here.")}'> </textarea></td>
                     </tr>
                 <tr><td><label for=ldap_basedn>${_("BaseDN")}:</label></td>
                     <td><input type="text" name="ldap_basedn" class="required"  id="ldap_basedn" size="35" maxlength="200"></td></tr>
@@ -1836,9 +1839,6 @@ syst></textarea></td>
                 <tr><td> </td>
                     <td><input type="checkbox" name="noreferrals" value="noreferralss" id="ldap_noreferrals">
                         <label for=ldap_noreferrals>${_("No anonymous referral chasing")}</label></td></tr>
-                <tr><td> </td>
-                    <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls">
-                        <label for="ldap_enforce_tls">${_("Enforce TLS")}</label></td></tr>
             </table>
 
             <button class="action-button" id="button_test_ldap">${_("Test LDAP Server connection")}</button>
