@@ -151,8 +151,9 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
 
         params = {}
         params.update(self._transform_(defintion))
-        params['type'] = 'ldap'
+        params['type'] = 'ldapresolver'
         params['name'] = resolver_name
+        params['previous_name'] = resolver_name
 
         #
         # don't provide a password with the request - the password is taken
@@ -161,32 +162,38 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         pw = params['ldap_password']
         del params['ldap_password']
 
-        _response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(PASSWORD == 'Test123!')
+        response = self.make_admin_request('testresolver', params=params)
+        self.assertTrue(PASSWORD == 'Test123!', PASSWORD)
 
-        #
-        # use different name - so that no passowrd will be added
+        # rename
+        # use different name - so that no password will be added
+
         params['name'] = resolver_name + "_dummy"
-        _response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(PASSWORD == '')
+        params['previous_name'] = resolver_name
+        response = self.make_admin_request('testresolver', params=params)
+        self.assertTrue(PASSWORD == 'Test123!', PASSWORD)
 
         #
         # use same resolver name but the URI is different => no password
+
         params['name'] = resolver_name
+        params['previous_name'] = resolver_name
         ldap_uri = params['ldap_uri']
         params['ldap_uri'] = 'ttt' + ldap_uri
 
-        _response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(PASSWORD == '')
+        response = self.make_admin_request('testresolver', params=params)
+        self.assertTrue(not PASSWORD, PASSWORD)
 
         #
         # use same resolver name but different URI and password => password
+
         params['name'] = resolver_name
+        params['previous_name'] = resolver_name
         params['ldap_password'] = pw
         params['ldap_uri'] = 'ttt' + ldap_uri
 
-        _response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(PASSWORD == 'Test123!')
+        response = self.make_admin_request('testresolver', params=params)
+        self.assertTrue(PASSWORD == 'Test123!', PASSWORD)
 
         return
 
@@ -207,7 +214,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         self.addSqlResolver(resolverName)
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
-        params = {'type': 'sql',
+        params = {'type': 'sqlresolver',
                   'name': resolverName,
                   'url': self.sqlconnect,
                   }
@@ -227,7 +234,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
             params[target_key] = self.sqlResolverDef.get(key, '')
 
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue('"rows": 12,' in response)
+        self.assertTrue('"rows": 12' in response)
 
         #
         # the connection test even works, if the password is missing
@@ -236,9 +243,9 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         #
 
         del params['sql_password']
-
+        params['previous_name'] = resolverName
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue('"rows": 12,' in response)
+        self.assertTrue('"rows": 12' in response)
 
         #
         # in case of an undefined resolver no password could be retrieved and
@@ -246,8 +253,9 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         #
 
         params['name'] = 'undefined'
+        del params['previous_name']
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue('"rows": -1,' in response)
+        self.assertTrue("Missing parameter: '['Password']'" in response)
 
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)

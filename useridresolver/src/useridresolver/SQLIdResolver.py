@@ -97,50 +97,7 @@ def check_php_password(password, stored_hash):
     return result
 
 
-def testconnection(params):
-    """
-    This is used to test if the given parameter set will do a successful
-    SQL connection and return the number of found users
-    params are:
 
-    - Driver
-    - Server
-    - Port
-    - Database
-    - User
-    - Password
-    - Table
-    """
-    log.debug('[testconnection] %s' % str(params))
-
-    num = -1
-    err_str = ""
-    dbObj = dbObject()
-
-    try:
-        connect_str = make_connect(params.get("Driver"),
-                                   params.get("User"),
-                                   params.get("Password"),
-                                   params.get("Server"),
-                                   params.get("Port"),
-                                   params.get("Database"),
-                                   conParams=params.get('ConnectionParams', "")
-                                   )
-
-        log.debug("[testconnection] testing connection with connect str: %r"
-                                                                % connect_str)
-        dbObj.connect(connect_str)
-        table = dbObj.getTable(params.get("Table"))
-        num = dbObj.count(table, params.get("Where", ""))
-
-    except Exception as e:
-        log.exception('[testconnection] Exception: %r' % e)
-        err_str = "%r" % e
-    finally:
-        dbObj.close()
-        log.debug('[testconnection] done')
-
-    return (num, err_str)
 
 
 def make_connect(driver, user, pass_, server, port, db, conParams=""):
@@ -338,14 +295,73 @@ def _check_hash_type(password, hash_type, hash_value, salt=None):
     return res
 
 
+def testconnection(params):
+    """
+    provide the old interface for backward compatibility
+    """
+    _status, desc = IdResolver.testconnection(params)
+
+    return desc.get('rows', ''), desc.get('err_str', '')
+
+
 @resolver_registry.class_entry('useridresolver.SQLIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolveree.SQLIdResolver.IdResolver')
 @resolver_registry.class_entry('useridresolver.sqlresolver')
 @resolver_registry.class_entry('sqlresolver')
-class IdResolver (UserIdResolver):
+class IdResolver(UserIdResolver):
 
-    critical_parameters = ['Driver', 'Server', 'Port', 'Database', 'User']
+    critical_parameters = ['Driver', 'Server', 'Port',
+                           'Database', 'User', 'Table']
+
     crypted_parameters = ['Password']
+
+    @classmethod
+    def testconnection(cls, params):
+        """
+        This is used to test if the given parameter set will do a successful
+        SQL connection and return the number of found users
+        params are:
+
+        - Driver
+        - Server
+        - Port
+        - Database
+        - User
+        - Password
+        - Table
+        """
+
+        log.debug('[testconnection] %r', params)
+
+        num = -1
+        dbObj = dbObject()
+
+        try:
+            connect_str = make_connect(
+                       params.get("Driver"),
+                       params.get("User"),
+                       params.get("Password"),
+                       params.get("Server"),
+                       params.get("Port"),
+                       params.get("Database"),
+                       conParams=params.get('ConnectionParams', ""))
+
+            log.debug("[testconnection] testing connection with "
+                      "connect str: %r", connect_str)
+
+            dbObj.connect(connect_str)
+            table = dbObj.getTable(params.get("Table"))
+            num = dbObj.count(table, params.get("Where", ""))
+
+        except Exception as exx:
+            log.exception('[testconnection] Exception: %r', exx)
+            return False, {'err_string': "%r" % exx, 'rows': num}
+
+        finally:
+            dbObj.close()
+            log.debug('[testconnection] done')
+
+        return True, {'rows': num, 'err_string': ""}
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
