@@ -206,27 +206,12 @@ custom_templates = %(here)s/custom-templates/
 ## Logger configuration
 ## - define which modules should be logged
 [loggers]
-keys = root, linotp, sqlalchemy
+keys = root
 
 ## root module logging definition:
 [logger_root]
 level = WARN
 handlers = file
-
-## linotp module logging definition:
-[logger_linotp]
-level = WARN
-handlers = file
-qualname = linotp
-
-[logger_sqlalchemy]
-level = ERROR
-handlers = file
-qualname = sqlalchemy.engine
-# "level = INFO" logs SQL queries.
-# "level = DEBUG" logs SQL queries and results.
-# "level = WARN" logs neither.  (Recommended for production systems.)
-
 
 [handlers]
 keys = file
