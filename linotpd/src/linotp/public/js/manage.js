@@ -5598,7 +5598,6 @@ $(document).ready(function(){
             },
             'Cancel': {
                 click: function(){
-                    $(this).effect('puff');
                     $(this).dialog('close');
                 },
                 id: "button_setpin_cancel",
