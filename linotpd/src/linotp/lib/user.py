@@ -194,16 +194,14 @@ class User(object):
 
         return False
 
-    def isEmpty(self):
-        # ignore if only conf is set! as it makes no sense
-        if len(self.login) + len(self.realm) == 0:
-            return True
-        else:
-            return False
+    @property
+    def is_empty(self):
+        return len(self.login) == 0 and \
+               len(self.realm) == 0
 
     def __str__(self):
 
-        if self.isEmpty():
+        if self.is_empty:
             return 'None'
 
         try:
@@ -352,7 +350,7 @@ def getUserResolverId(user, report=False):
 
     (uuserid, uidResolver, uidResolverClass) = (u'', u'', u'')
 
-    if (user is not None and user.isEmpty() is not True):
+    if (user is not None and not user.is_empty):
         try:
             (uuserid, uidResolver, uidResolverClass) = getUserId(user)
         except Exception as exx:

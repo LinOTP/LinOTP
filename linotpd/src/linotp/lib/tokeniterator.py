@@ -107,7 +107,7 @@ class TokenIterator(object):
         log.debug('[TokenIterator::init] start search for username: >%r<'
                   % (user))
 
-        if not user or user.isEmpty() or not user.login:
+        if not user or user.is_empty or not user.login:
             return ucondition
 
         loginUser = user.login.lower()

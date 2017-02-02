@@ -181,7 +181,7 @@ class OcraController(BaseController):
             serial = getParam(param, 'serial', optional)
             user = getUserFromParam(param)
 
-            if user.isEmpty() and serial is None:
+            if user.is_empty and serial is None:
                 ## raise exception
                 log.exception("[request] user or serial is required")
                 raise ParameterError("Usage: %s" % description, id=77)
@@ -444,7 +444,7 @@ class OcraController(BaseController):
             #user   = getParam(param, 'user'          ,optional)
             serial = getParam(param, 'serial'          , optional)
 
-            if transid is None and user.isEmpty() and serial is None:
+            if transid is None and user.is_empty and serial is None:
                 ## raise exception
                 log.exception("[ocra/checkstatus] : missing transactionid, user or serial number for token")
                 raise ParameterError("Usage: %s" % description, id=77)
@@ -472,7 +472,7 @@ class OcraController(BaseController):
                     tokens.extend(getTokens4UserOrSerial(serial=serial))
 
             ## if we have a user
-            if user.isEmpty() is False:
+            if not user.is_empty:
                 try:
                     tokens.extend(getTokens4UserOrSerial(user=user))
                 except:

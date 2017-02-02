@@ -261,7 +261,7 @@ class UserserviceController(BaseController):
                                          'userservice/load_form'
                                          ]:
 
-                if hasattr(self, 'authUser') and not self.authUser.isEmpty():
+                if hasattr(self, 'authUser') and not self.authUser.is_empty:
                     c.audit['user'] = self.authUser.login
                     c.audit['realm'] = self.authUser.realm
                 else:

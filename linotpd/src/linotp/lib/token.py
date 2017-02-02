@@ -478,7 +478,7 @@ class TokenHandler(object):
 
         log.debug("[isTokenOwner] entering function isTokenOwner")
 
-        if user is not None and (user.isEmpty() is False):
+        if user is not None and (not user.is_empty):
         # the upper layer will catch / at least should
             (userid, idResolver, idResolverClass) = getUserId(user)
 
@@ -879,7 +879,7 @@ class TokenHandler(object):
 
         :return: the number of deleted tokens
         """
-        if (user is None or user.isEmpty() is True) and (serial is None):
+        if (user is None or user.is_empty) and (serial is None):
             log.warning("[removeToken] Parameter user or serial required!")
             raise ParameterError("Parameter user or serial required!", id=1212)
 
@@ -1360,13 +1360,13 @@ def get_tokenserial_of_transaction(transId):
 
 def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
 
-    if (user is None or user.isEmpty()) and serial is None:
+    if (user is None or user.is_empty) and serial is None:
         return None
 
     serials = []
     tokens = []
 
-    if user is not None and user.isEmpty() is False and user.login:
+    if user is not None and not user.is_empty and user.login:
         resolverUid = user.resolverUid
         v = None
         k = None
@@ -1584,7 +1584,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         log.debug("[getTokens4UserOrSerial] getting token object 4 user: %r"
                   % user)
 
-        if not user.isEmpty() and user.login:
+        if not user.is_empty and user.login:
             for user_definition in user.get_uid_resolver():
                 uid, resolverClass = user_definition
                 # in the database could be tokens of ResolverClass:
