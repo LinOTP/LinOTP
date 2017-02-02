@@ -210,7 +210,7 @@ function push_clear_input_fields() {
 
 
 %if c.scope == 'selfservice.title.enroll':
-${_("Enroll your PushToken")}
+${_("Enroll Push Token")}
 %endif
 
 
@@ -269,7 +269,7 @@ $( document ).ready(function() {
 });
 
 </script>
-<h1>${_("Enroll your PushToken")}</h1>
+<h1>${_("Enroll Push Token")}</h1>
 <div id='enroll_pushtoken_form'>
 	<form class="cmxform" id="form_enroll_pushtoken" action="">
 	<fieldset>
@@ -308,7 +308,7 @@ $( document ).ready(function() {
 %endif
 
 %if c.scope == 'selfservice.title.activate':
-${_("Activate your PushToken")}
+${_("Activate Push Token")}
 %endif
 
 %if c.scope == 'selfservice.activate':
@@ -365,13 +365,13 @@ function self_pushtoken_activate_switch_phase(phase) {
 
 </script>
 
-<h1>${_("Activate your PushToken")}</h1>
+<h1>${_("Activate Push Token")}</h1>
 
 <div id="activate_pushtoken_phase_one" class="activate_pushtoken_phase">
     <form class="cmxform" action="">
         <table>
             <tr>
-                <td>${_("Select PushToken: ")}</td>
+                <td>${_("Select Push Token: ")}</td>
                 <td>
                     <input type="text" class="selectedToken ui-corner-all" disabled
                         id="activate_pushtoken_serial">
@@ -387,7 +387,7 @@ function self_pushtoken_activate_switch_phase(phase) {
             <tr>
                 <td>
                     <div id='qr2_activate'>
-                        <button class="action-button" id="button_activate_pushtoken_start">${_("activate token")}</button>
+                        <button class="action-button" id="button_activate_pushtoken_start">${_("Activate token")}</button>
                     </div>
                 </td>
             </tr>
@@ -395,7 +395,7 @@ function self_pushtoken_activate_switch_phase(phase) {
     </form>
 </div>
 <div id="activate_pushtoken_phase_two" class="activate_pushtoken_phase hidden">
-    <h2>${_('Challenge triggered successfully')}</h2>
+    <h2>${_('Challenge sent')}</h2>
     <p>${_('A push notification has been sent. Please check your mobile phone.')}</p>
 </div>
 % endif

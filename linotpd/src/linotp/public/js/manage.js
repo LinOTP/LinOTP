@@ -2397,18 +2397,18 @@ function check_for_welcome_screen() {
 
             var title = i18n.gettext("Changelog");
             var text = '<p>'
-                + sprintf(i18n.gettext("Your installation of LinOTP was updated to version %s. You can find the Changelog and other informations about this release at:"), currentMinorVersion)
+                + sprintf(i18n.gettext("Your installation of LinOTP was updated to version %s. You can find the changelog and further information about this release at:"), currentMinorVersion)
                 + '</p>'
                 + '<p><a href="https://www.linotp.org/resources/changelogs.html" target="_blank">https://www.linotp.org/resources/changelogs.html</a></p>'
-                + '<p>' + i18n.gettext("Our newsletter will inform you about:")
+                + '<p>' + i18n.gettext("Our newsletter covers:")
                 + '<ul>'
-                + '<li>' + i18n.gettext("updates of our products,") + '</li>'
+                + '<li>' + i18n.gettext("product updates,") + '</li>'
                 + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
                 + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
                 + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
                 + '</ul>'
                 + '</p>'
-                + '<p>' + i18n.gettext("We are happy to receive your feedback about LinOTP.") + '</p>'
+                + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
                 + '<div id="welcome-buttons">'
                 + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
@@ -2426,17 +2426,17 @@ function check_for_welcome_screen() {
             });
 
             var title = i18n.gettext("Thank you for using LinOTP");
-            var text = '<p>' + i18n.gettext("We are happy you are using LinOTP by KeyIdentity as your 2FA solution.") + '</p>'
-                + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity with LinOTP at its core, and want to be informed about:") 
+            var text = '<p>' + i18n.gettext("We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution.") + '</p>'
+                + '<p>' + i18n.gettext("If you are interested in the 2FA platform of KeyIdentity using LinOTP at its core, and would like further information about:") 
                 + '<ul>'
-                + '<li>' + i18n.gettext("updates of our products,") + '</li>'
+                + '<li>' + i18n.gettext("product updates,") + '</li>'
                 + '<li>' + i18n.gettext("upcoming hackathons,") + '</li>'
                 + '<li>' + i18n.gettext("user and developer conferences,") + '</li>'
                 + '<li>' + i18n.gettext("upcoming features in LinOTP") + '</li>'
                 + '</ul>'
                 + i18n.gettext("please consider subscribing to our quarterly newsletter.")
                 + '</p>'
-                + '<p>' + i18n.gettext("We are happy to receive your feedback about LinOTP.") + '</p>'
+                + '<p>' + i18n.gettext("We would be happy to receive your feedback about LinOTP.") + '</p>'
                 + '<br/>'
                 + '<div id="welcome-buttons">'
                 + '<a class="light-text-color newsletter-button" href="https://info.keyidentity.com/strategy-paper-request/" target="_blank">' + i18n.gettext("Subscribe") + '</a>'
@@ -2449,7 +2449,7 @@ function check_for_welcome_screen() {
             var optOutLabel =
                 '<div class="ui-dialog-buttonset welcome-screen-option-buttonset">'
                 + '<label><input type="checkbox" id="welcome_screen_option" name="welcome_screen_option">'
-                + i18n.gettext("Do not repeat this reminder")
+                + i18n.gettext("Do not show this reminder again")
                 + '</label>'
                 + '</div>';
             $(dialog)
@@ -5598,7 +5598,6 @@ $(document).ready(function(){
             },
             'Cancel': {
                 click: function(){
-                    $(this).effect('puff');
                     $(this).dialog('close');
                 },
                 id: "button_setpin_cancel",
