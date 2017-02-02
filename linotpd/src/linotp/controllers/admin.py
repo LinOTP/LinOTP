@@ -129,7 +129,8 @@ class AdminController(BaseController):
         '''
 
         try:
-            log.debug("[__before__::%r] %r" % (action, params))
+            log.debug("[__before__::%r]", action)
+            # log.debug("[__before__::%r] %r", action, params)
 
             c.audit = request_context['audit']
             c.audit['success'] = False
@@ -141,13 +142,13 @@ class AdminController(BaseController):
             return request
 
         except Exception as exx:
-            log.exception("[__before__::%r] exception %r" % (action, exx))
+            log.exception("[__before__::%r] exception %r", action, exx)
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
 
         finally:
-            log.debug("[__before__::%r] done" % (action))
+            log.debug("[__before__::%r] done", action)
 
     def __after__(self, action):
         '''
