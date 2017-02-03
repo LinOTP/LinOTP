@@ -501,7 +501,7 @@ class OpenidController(BaseController):
             ## getUserFromParam will return default realm if no realm is
             ## provided via @ append or extra parameter realm
             ## if the provided realm does not exist, the realm is left empty
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             ## if the requested user has a realm specified (via @realm append)
             ## and this is not the same as the user from getUserFromParam

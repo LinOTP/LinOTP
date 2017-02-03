@@ -434,7 +434,7 @@ class ManageController(BaseController):
             c.psize = getParam(param, "rp", optional)
             c.realm = getParam(param, "realm", optional)
 
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
             # check admin authorization
             # check if we got a realm or resolver, that is ok!
             checkPolicyPre('admin', 'userlist', { 'user': user.login,

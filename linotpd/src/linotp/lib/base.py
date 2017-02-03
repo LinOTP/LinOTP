@@ -600,7 +600,7 @@ class BaseController(WSGIController):
 
         requestUser = None
         try:
-            requestUser = getUserFromParam(request_params, True)
+            requestUser = getUserFromParam(request_params)
         except UnicodeDecodeError as exx:
             log.error("Faild to decode request parameters %r" % exx)
         request_context['RequestUser'] = requestUser

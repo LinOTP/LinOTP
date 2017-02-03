@@ -24,13 +24,13 @@
 #    Support: www.keyidentity.com
 #
 """ contains user - related functions """
+
 import logging
 import re
 import json
 
 from linotp.lib.error import UserError
 
-from linotp.lib.util import getParam
 from linotp.lib.context import request_context
 
 from linotp.lib.config import getFromConfig, storeConfig
@@ -39,11 +39,11 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.realm import setDefaultRealm
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
+from linotp.lib.realm import createDBRealm
 
 from linotp.lib.resolver import parse_resolver_spec
 from linotp.lib.resolver import getResolverObject
 
-from linotp.lib.realm import createDBRealm
 from linotp.lib.selftest import isSelfTest
 
 from linotp.lib.resolver import getResolverClassName
@@ -395,18 +395,16 @@ def splitUser(username):
     return (user, group)
 
 
-def getUserFromParam(param, optionalOrRequired, optional=False,
-                     required=False):
-    realm = ""
-
-    # TODO: merge result - could this be removed
-    if optional:
-        optionalOrRequired = True
-    if required:
-        optionalOrRequired = False
+def getUserFromParam(param):
+    """
+    establish an user object from the request parameters
+    """
 
     log.debug("[getUserFromParam] entering function")
-    user = getParam(param, "user", optionalOrRequired)
+
+    realm = ""
+    user = param.get("user")
+
     log.debug("[getUserFromParam] got user <<%r>>", user)
 
     if user is None:
@@ -505,7 +503,7 @@ def getUserFromRequest(request, config=None):
         if self_test:
             log.debug("[getUserFromRequest] Doing selftest!")
             param = request.params
-            login = getParam(param, "selftest_admin", True)
+            login = param.get("selftest_admin")
             if login:
                 d_auth['login'] = login
                 log.debug("[getUserFromRequest] Found selfservice user: %r in "

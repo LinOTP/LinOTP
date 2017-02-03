@@ -209,7 +209,7 @@ class GettokenController(BaseController):
         try:
 
             serial = getParam(param, "serial", optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
             curTime = getParam(param, "curTime", optional)
 
             c.audit['user'] = user.login

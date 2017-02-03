@@ -179,7 +179,7 @@ class OcraController(BaseController):
             checkPolicyPre('ocra', "request")
 
             serial = getParam(param, 'serial', optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
 
             if user.isEmpty() and serial is None:
                 ## raise exception
@@ -440,7 +440,7 @@ class OcraController(BaseController):
             checkPolicyPre('ocra', "status")
 
             transid = getParam(param, 'transactionid'   , optional)
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
             #user   = getParam(param, 'user'          ,optional)
             serial = getParam(param, 'serial'          , optional)
 

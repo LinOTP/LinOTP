@@ -138,7 +138,7 @@ class ValidateController(BaseController):
                 del options[para]
 
         passw = getParam(param, "pass", optional)
-        user = getUserFromParam(param, optional)
+        user = getUserFromParam(param)
 
         # support for ocra application challenge verification
         challenge = getParam(param, "challenge", optional)
@@ -278,24 +278,33 @@ class ValidateController(BaseController):
         """
         check the status of a transaction - for polling support
         """
-        param = {}
-        ok = False
-        opt = None
 
         try:
+
+            param = {}
             param.update(request.params)
+
+            #
+            # we require either state or transactionid as parameter
 
             transid = param.get('state', param.get('transactionid', None))
             if not transid:
                 raise ParameterError(_('Missing required parameter "state" or '
                                      '"transactionid"!'))
 
-            serial = param.get('serial', None)
-            user = getUserFromParam(param, False)
+            #
+            # serial is an optional parameter
 
-            if not user and not serial:
+            serial = param.get('serial', None)
+
+            #
+            # but user is an required parameter
+
+            if "user" not in param:
                 raise ParameterError(_('Missing required parameter "serial"'
                                      ' or "user"!'))
+
+            user = getUserFromParam(param)
 
             passw = param.get('pass', None)
             if not passw:
@@ -460,7 +469,7 @@ class ValidateController(BaseController):
                     log.warning("[samlcheck] Calling controller samlcheck. But allowSamlAttributes is False.")
                 if "True" == allowSAML:
                     ## Now we get the attributes of the user
-                    user = getUserFromParam(param, optional)
+                    user = getUserFromParam(param)
                     (uid, resId, resIdC) = getUserId(user)
                     userInfo = getUserInfo(uid, resId, resIdC)
                     #users   = getUserList({ 'username':user.getUser()} , user)
@@ -581,7 +590,7 @@ class ValidateController(BaseController):
             if serial is None:
                 user = getParam(param, 'user', optional)
                 if user is not None:
-                    user = getUserFromParam(param, optional)
+                    user = getUserFromParam(param)
                     toks = getTokens4UserOrSerial(user=user)
                     if len(toks) == 0:
                         raise Exception("No token found!")
@@ -738,7 +747,7 @@ class ValidateController(BaseController):
         message = 'No sms message defined!'
 
         try:
-            user = getUserFromParam(param, optional)
+            user = getUserFromParam(param)
             c.audit['user'] = user.login
             c.audit['realm'] = user.realm or getDefaultRealm()
             c.audit['success'] = 0
