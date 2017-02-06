@@ -1995,24 +1995,15 @@ function getSerialByOtp(otp, type, assigned, realm) {
 
 }
 
-function ldap_resolver_ldaps() {
-    /*
-     * This function checks if the LDAP URI is using SSL.
-     * If so, it displays the CA certificate entry field.
-     */
+/**
+ * the handler for the keyup event of the ldap uri and enforce tls flag, which checks
+ * whether the ldap certificate textarea should be shown
+ */
+function handler_ldap_certificate_show() {
+    var show_cert_textarea = !g.use_system_certificates &&
+            (!!$('#ldap_uri').val().toLowerCase().match(/^ldaps:/) || $('#ldap_enforce_tls').is(':checked'));
 
-    if (g.use_system_certificates){
-        $('#ldap_resolver_certificate').hide();
-        return false;
-    }
-
-    var ldap_uri = $('#ldap_uri').val();
-    if (ldap_uri.toLowerCase().match(/^ldaps:/)) {
-        $('#ldap_resolver_certificate').show();
-    } else {
-        $('#ldap_resolver_certificate').hide();
-    }
-    return false;
+    $('#ldap_resolver_certificate').toggle(show_cert_textarea);
 }
 
 function http_resolver_https() {
@@ -4243,7 +4234,6 @@ $(document).ready(function(){
         },
         open: function() {
             do_dialog_icons();
-            ldap_resolver_ldaps();
 
             // fix table after the browser balances the widths
             $("table tr:first-child td", this).each(function() {
@@ -6403,7 +6393,7 @@ function resolver_set_ldap(obj) {
 
     $('#ldap_noreferrals').prop('checked', data.NOREFERRALS == "True");
 
-    ldap_resolver_ldaps();
+    handler_ldap_certificate_show();
 }
 
 
@@ -6423,6 +6413,7 @@ function resolver_ldap(name, duplicate){
                 'data': {
                     'BINDDN': 'cn=administrator,dc=yourdomain,dc=tld',
                     'LDAPURI': 'ldap://linotpserver1, ldap://linotpserver2',
+                    'EnforceTLS' : 'False',
                     'LDAPBASE': 'dc=yourdomain,dc=tld',
                     'TIMEOUT': '5',
                     'SIZELIMIT' : '500',
@@ -6433,7 +6424,6 @@ function resolver_ldap(name, duplicate){
                     'UIDTYPE': 'objectGUID',
                     'CACERTIFICATE' : '',
                     'NOREFERRALS' : 'True',
-                    'EnforceTLS' : 'True',
                 }
             }
         }
@@ -6496,10 +6486,6 @@ function resolver_ldap(name, duplicate){
 
         resolver_set_ldap(obj);
     }
-
-    // adjust the checkbox of enforce TLS according to the configuration value
-    var checked = obj.result.value.data.EnforceTLS.toLowerCase() == "true";
-    $('#ldap_enforce_tls').prop('checked', checked);
 
     $('#progress_test_ldap').hide();
     $dialog_ldap_resolver.dialog('open');
