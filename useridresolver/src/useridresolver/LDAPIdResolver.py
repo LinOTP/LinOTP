@@ -277,6 +277,12 @@ class IdResolver (UserIdResolver):
             # enforce_tls, we terminate the connection attempt
 
             try:
+                if not caller.enforce_tls:
+                    l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
+                                     ldap.OPT_X_TLS_NEVER)
+                else:
+                    l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,
+                                     ldap.OPT_X_TLS_DEMAND)
 
                 log.debug("for %r connection try to start_tls", uri)
                 l_obj.start_tls_s()
@@ -287,8 +293,8 @@ class IdResolver (UserIdResolver):
                     log.error("failed to start_tls for %r: %r", uri, exx)
                     raise exx
 
-                log.info("failed to start_tls for %r: %r", uri, exx)
-                log.info("falling back to standard connection")
+                log.warning("failed to start_tls for %r: %r - "
+                            "falling back to plain ldap connection", uri, exx)
 
                 # if the start_tls failed, we have to re-initialize
                 # the ldap connection again

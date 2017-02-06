@@ -288,7 +288,7 @@ $( document ).ready(function() {
                     <label for="pushtoken_pin1">${_("Enter PIN")}:</label>
                 </td>
                 <td>
-                    <input type="password" autocomplete="off" onkeyup="checkpins('pushtoken_pin1','pushtoken_pin2');" name="pushtoken_pin1" id="pushtoken_pin1" class="text">
+                    <input type="password" autocomplete="off" onkeyup="checkpins('#pushtoken_pin1,#pushtoken_pin2');" name="pushtoken_pin1" id="pushtoken_pin1" class="text">
                 </td>
             </tr>
             <tr>
@@ -296,7 +296,7 @@ $( document ).ready(function() {
                     <label for="pushtoken_pin2">${_("Confirm PIN")}:</label>
                 </td>
                 <td>
-                    <input type="password" autocomplete="off" onkeyup="checkpins('pushtoken_pin1','pushtoken_pin2');" name="pushtoken_pin2" id="pushtoken_pin2" class="text">
+                    <input type="password" autocomplete="off" onkeyup="checkpins('#pushtoken_pin1,#pushtoken_pin2');" name="pushtoken_pin2" id="pushtoken_pin2" class="text">
                 </td>
             </tr>
         </table>
