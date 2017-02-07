@@ -28,7 +28,7 @@
 import requests
 from requests.auth import HTTPDigestAuth
 import logging
-from testconfig import config
+from testconfig import config, load_ini
 from urlparse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
@@ -123,6 +123,16 @@ def get_session(base_url, user=None, pwd=None):
         if not session:
             raise Exception('Could not get session %r' % exceptions)
     return session
+
+def load_tconfig_from_file(filename):
+    """
+    Load configuration from filename given. This is an alternative way
+    to load the configuration when not running tests via nose runner.
+    Another alternative is via the environment variable:
+
+      NOSE_TESTCONFIG_AUTOLOAD_INI=<filename>
+    """
+    load_ini(filename, encoding='utf-8')
 
 def get_from_tconfig(key_array, default=None, required=False):
     """Gets a value from the testconfig file.
