@@ -228,7 +228,11 @@ function self_pushtoken_get_param() {
 
 	urlparam['type'] = 'push';
 	urlparam['description'] = $('#pushtoken_desc').val();
-	urlparam['pin'] = $('#pushtoken_pin1').val();
+
+    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+       urlparam['pin'] = $('#pushtoken_pin1').val();
+    }
+
 	return urlparam;
 }
 
@@ -255,17 +259,20 @@ $( document ).ready(function() {
         }
     });
 
-    $("#form_enroll_pushtoken").validate({
-        rules: {
-            pushtoken_pin1: {
-                required: true,
-                minlength: 3
-            },
-            pushtoken_pin2: {
-                equalTo: "#pushtoken_pin1"
+    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+        $("#form_enroll_pushtoken").validate({
+            rules: {
+                pushtoken_pin1: {
+                    required: true,
+                    minlength: 3
+                },
+                pushtoken_pin2: {
+                    equalTo: "#pushtoken_pin1"
+                }
             }
-        }
-    });
+        });
+    }
+
 });
 
 </script>
@@ -278,6 +285,7 @@ $( document ).ready(function() {
                 <td><label id='pushtoken_desc_label2' for='pushtoken_desc'>${_("Token description")}</label></td>
                 <td><input id='pushtoken_desc' name='pushtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'></td>
             </tr>
+        %if c.pin_policy == -1 or c.pin_policy == 0:
             <tr>
                 <td colspan="2">
                     <b>${_("Token PIN:")}</b>
@@ -299,6 +307,7 @@ $( document ).ready(function() {
                     <input type="password" autocomplete="off" onkeyup="checkpins('#pushtoken_pin1,#pushtoken_pin2');" name="pushtoken_pin2" id="pushtoken_pin2" class="text">
                 </td>
             </tr>
+        %endif
         </table>
 	    <button class='action-button' id='button_enroll_pushtoken'>${_("enroll pushtoken")}</button>
     </fieldset>
@@ -328,16 +337,19 @@ $( document ).ready(function() {
 });
 
 function self_pushtoken_activate_get_challenge() {
+
     var serial = $('#activate_pushtoken_serial').val();
-    var pin = $('#activate_pushtoken_pin').val();
+    var credentials = $('#activate_pushtoken_credentials').val();
     var message = $('#activate_pushtoken_serial').val();
 
     var params = {};
+
+    params['user'] = '${c.user}';
     params['serial'] = serial;
-    params['pass'] = pin;
+    params['pass'] = credentials;
     params['data'] = message;
 
-    var url = '/validate/check_s';
+    var url = '/validate/check';
 
     try {
         var data = clientUrlFetchSync(url, params);
@@ -378,10 +390,10 @@ function self_pushtoken_activate_switch_phase(phase) {
                 </td>
             </tr>
             <tr>
-                <td>${_("Enter pin: ")}</td>
+                <td>${_("Enter activation credentials: ")}</td>
                 <td>
                     <input type="password" class="text ui-widget-content ui-corner-all"
-                        id="activate_pushtoken_pin">
+                        id="activate_pushtoken_credentials">
                 </td>
             </tr>
             <tr>
