@@ -28,6 +28,7 @@
 import logging
 import re
 import json
+from base64 import b64decode
 
 from linotp.lib.error import UserError
 
@@ -477,15 +478,18 @@ def getUserFromRequest(request, config=None):
             log.debug("[getUserFromRequest] BasicAuth: found the "
                       "REMOTE_USER: %r", d_auth)
 
-        # Do DigestAuth
+        # Find user name from HTTP_AUTHORIZATION (Basic or Digest auth)
         elif 'HTTP_AUTHORIZATION' in request.environ:
-            a_auth = request.environ['HTTP_AUTHORIZATION'].split(",")
+            hdr = request.environ['HTTP_AUTHORIZATION']
+            if hdr.startswith('Basic '):
+                a_auth = b64decode(hdr[5:].strip())
+                d_auth['login'], junk, junk = a.auth.partition(':')
+            else:
+                for field in hdr.split(","):
+                    (key, _delimiter, value) = field.partition("=")
+                    d_auth[key.lstrip(' ')] = value.strip('"')
 
-            for field in a_auth:
-                (key, _delimiter, value) = field.partition("=")
-                d_auth[key.lstrip(' ')] = value.strip('"')
-
-            d_auth['login'] = d_auth.get('Digest username', '') or ''
+                d_auth['login'] = d_auth.get('Digest username', '') or ''
 
             log.debug("[getUserFromRequest] DigestAuth: found "
                       "this HTTP_AUTHORIZATION: %r", d_auth)
