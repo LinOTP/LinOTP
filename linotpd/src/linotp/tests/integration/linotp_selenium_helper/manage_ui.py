@@ -30,6 +30,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
 
 
 """
@@ -51,6 +52,7 @@ class ManageUi(object):
     CSS_LINOTP_CONFIG = '#menu > li'
     CSS_TOOLS = 'link=Tools'
     CSS_IMPORT_TOKEN = 'link=Import Token File'
+    CSS_FLEXIGRID_RELOAD = "div.flexigrid div.pReload"
 
     def __init__(self, testcase):
         """
@@ -116,7 +118,8 @@ class ManageUi(object):
 
         tab_button = self.find_by_css(tab_css)
 
-        tab_button.click()
+        if tab_button.is_enabled():
+            tab_button.click()
 
         # Wait for tab pane to show up and return element
         return self.find_by_css(tabpane_css)
@@ -166,6 +169,22 @@ class ManageUi(object):
         """
         WebDriverWait(self.driver, 10).until_not(
                 EC.visibility_of_element_located((By.ID, "do_waiting")))
+
+    def wait_for_grid_loading(self):
+        """
+        The Flexigrid loads in the background when the filter button is clicked. This
+        funtion waits for the grid to finish loading and the refresh spinner to disappear,
+        which indicates that the data has been updated.
+        """
+        # While the flexigrid is relaoding the tokens, the reload button is set with class 'loading'.
+        # Wait for this to disappear
+        flexigrid_reloading_css = self.CSS_FLEXIGRID_RELOAD + ".loading"
+        self.testcase.disableImplicitWait()
+        WebDriverWait(self.driver, 10, ignored_exceptions=NoSuchElementException).until_not(
+                     EC.presence_of_element_located((By.CSS_SELECTOR, flexigrid_reloading_css))
+                )
+        self.testcase.enableImplicitWait()
+
 
 class ManageConfigList(ManageUi):
     """

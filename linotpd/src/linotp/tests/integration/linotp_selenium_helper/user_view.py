@@ -98,9 +98,8 @@ class UserView(ManageUi):
                     "input[name=\"search_button\"]"
                 )
         submit_button.click()
+        self.wait_for_grid_loading()
 
-        # Clicking on the button refreshes the screen, which invalidates usertab
-        # So use a CSS anchored on the usertab id
         usernames = self.driver.find_elements_by_css_selector(
             '#%s #user_table [abbr="username"] div' % usertab_id)
 
