@@ -25,13 +25,11 @@
 #
 """Contains TokenView class"""
 
-import time
 import logging
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
 
 from helper import fill_form_element, find_by_css, find_by_id
 from manage_ui import ManageUi
@@ -50,7 +48,6 @@ class TokenView(ManageUi):
     delete_button_id = 'button_delete'
     token_table_css = 'table#token_table'
     stat_css = token_tabpane_css + " > div.flexigrid span.pPageStat"  # Information text about number of tokens shown
-    flexigrid_reload_button_css = "div#tabs div.flexigrid div.pReload"
 
     def _is_tab_open(self):
 
@@ -61,35 +58,21 @@ class TokenView(ManageUi):
             self.testcase.disableImplicitWait()
             element = EC.visibility_of_element_located((By.CSS_SELECTOR, self.token_tabpane_css))(self.driver)
             self.testcase.enableImplicitWait()
-        except Exception, e:
+        except Exception:
             pass
             #return False
 
         return (element is not False) # Convert to true/false answer
 
-    def _wait_for_loading_complete(self):
-        # Wait for flexigrid to become available
-        WebDriverWait(self.driver, 4).until(
-                     EC.element_to_be_clickable((By.CSS_SELECTOR, self.flexigrid_reload_button_css))
-                )
-
-        # While the flexigrid is relaoding the tokens, the reload button is set with class 'loading'.
-        # Wait for this to disappear
-        flexigrid_reloading_css = self.flexigrid_reload_button_css + ".loading"
-        self.testcase.disableImplicitWait()
-        WebDriverWait(self.driver, 10, ignored_exceptions=NoSuchElementException).until_not(
-                     EC.presence_of_element_located((By.CSS_SELECTOR, flexigrid_reloading_css))
-                )
-        self.testcase.enableImplicitWait()
-
     def _open_tab_token_view(self):
         """Select the 'Token View' tab"""
         self.open_tab(1)
 
-        self._wait_for_loading_complete()
+        self.wait_for_grid_loading()
         self.driver.find_element_by_css_selector("option[value=\"100\"]").click()  # Show 100 tokens in view
 
-        self._wait_for_loading_complete()
+        self.wait_for_grid_loading()
+        self.wait_for_waiting_finished()
 
     def open(self):
         self._open_tab_token_view()
@@ -132,7 +115,7 @@ class TokenView(ManageUi):
         find_by_id(self.driver, "button_delete_delete").click()
 
         self.wait_for_waiting_finished()  # Wait for delete API call
-        self._wait_for_loading_complete()  # Wait for flexigrid to refresh
+        self.wait_for_grid_loading()  # Wait for flexigrid to refresh
 
         tokens_after = [t.text for t in self._get_token_list()]
 
@@ -146,17 +129,40 @@ class TokenView(ManageUi):
         self.select_all_tokens()
         self._delete_selected_tokens()
 
+    def get_selected_tokens(self):
+        """
+        Retrieve a list of currently selected token serials in the UI
+        """
+        selected_tokens = find_by_id(self.driver, "selected_tokens").text
 
-    def select_token(self, token_serial):
-        """Selects (clicks on) a token in the WebUI. This function does not reload
-           the page (because otherwise the selection would be lost) neither before
-           nor after the selection.
+        return selected_tokens.split(', ')
+
+    def token_click(self, token_serial):
+        """
+        Click on the given token. This toggles its selected state.
         """
         token_serials = self._get_token_list()
 
         for token in token_serials:
             if token.text == token_serial:
                 token.click()
+
+    def select_token(self, token_serial):
+        """Selects (clicks on) a token in the WebUI. This function does not reload
+           the page (because otherwise the selection would be lost) neither before
+           nor after the selection.
+
+           If the token is already selected, this does nothing
+        """
+        if token_serial not in self.get_selected_tokens():
+            self.token_click(token_serial)
+
+    def deselect_token(self, token_serial):
+        """
+        Deselect a token if it is already selected
+        """
+        if token_serial in self.get_selected_tokens():
+            self.token_click(token_serial)
 
     def delete_token(self, token_serial):
         self.select_token(token_serial)
