@@ -209,7 +209,11 @@ class ManageController(BaseController):
 
             c.tokentypes = _getTokenTypes()
 
-            http_host = request.environ.get("HTTP_HOST")
+            # Use HTTP_X_FORWARDED_HOST in preference to HTTP_HOST
+            # in case we're running behind a reverse proxy
+            http_host = request.environ.get("HTTP_X_FORWARDED_HOST", '')
+            if not http_host:
+                http_host = request.environ.get("HTTP_HOST")
             url_scheme = request.environ.get("wsgi.url_scheme")
             c.logout_url = "%s://log-me-out:fake@%s/manage/logout" % (url_scheme, http_host)
 
@@ -718,4 +722,3 @@ def _getTokenTypeConfig(section='config'):
     return res
 
 ############################################################
-
