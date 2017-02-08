@@ -54,6 +54,7 @@ from linotp.lib.token import getTokenType
 from linotp.lib.token import getTokens4UserOrSerial
 
 from linotp.lib.policy import getSelfserviceActions
+from linotp.lib.policy import _get_auth_PinPolicy
 
 from linotp.lib.util import getParam
 from linotp.lib.util import check_selfservice_session
@@ -227,6 +228,8 @@ class SelfserviceController(BaseController):
 
             c.otplen = -1
             c.totp_len = -1
+
+            c.pin_policy = _get_auth_PinPolicy(user=self.authUser)
 
             return response
 
