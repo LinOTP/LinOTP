@@ -129,7 +129,7 @@ def main():
         uid = sys.stdin.readline().strip()
 
     if not description:
-        description = ("%(full_name)s,%(location)s,%(telephone)s,%(mobile)s,%(email)s"
+        description = ("%(full_name)s,%(location)s,%(mobile)s,%(telephone)s,%(email)s"
                         % user_description)
     # we use crypt type sha512, which is a secure and standard according to:
     # http://security.stackexchange.com/questions/20541/insecure-versions-of-crypt-hashes
