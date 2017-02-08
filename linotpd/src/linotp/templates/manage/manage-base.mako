@@ -1813,7 +1813,7 @@ syst></textarea></td>
                         onkeyup="handler_ldap_certificate_show();"></td></tr>
                 <tr><td> </td>
                     <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls" onchange="handler_ldap_certificate_show();">
-                        <label for="ldap_enforce_tls">${_("Enforce STARTTLS")}</label></td></tr>
+                        <label id="ldap_enforce_tls_label" for="ldap_enforce_tls">${_("Enforce STARTTLS")}</label></td></tr>
                 <tr id="ldap_resolver_certificate"><td>
                     <label for="ldap_certificate">${_("CA Certificate")}:</label></td>
                     <td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"
