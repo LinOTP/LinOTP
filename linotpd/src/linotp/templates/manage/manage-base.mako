@@ -536,9 +536,9 @@ if isinstance(lang, list):
                               id="push_provider_config" cols='35' rows='6'
                               placeholder=
 '{
-"push_url": "pnp.keyidentiy.com",
-"access_certificate": "secret certificate",
-"server_certificate":"server certificate"
+"push_url": "https://push.keyidentity.com",
+"access_certificate": "/etc/linotp2/push-license.pem",
+"server_certificate": "/etc/linotp2/keyidentity-push-ca-bundle.crt"
 }'
 
 syst></textarea></td>
