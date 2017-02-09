@@ -4280,6 +4280,7 @@ $(document).ready(function(){
         var params = {};
         params['type']              = 'ldap';
         params['name']              = $('#ldap_resolvername').val();
+        params['previous_name']     = g.current_resolver_name;
 
         params['ldap_uri']          = $('#ldap_uri').val();
         params['ldap_basedn']       = $('#ldap_basedn').val();
@@ -4413,6 +4414,7 @@ $(document).ready(function(){
 
         var url = '/admin/testresolver';
         params['type']              = 'http';
+        params['previous_name']     = g.current_resolver_name;
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;
@@ -4486,6 +4488,7 @@ $(document).ready(function(){
         var params = {};
         params['type']              = 'sql';
         params['name']              = $('#sql_resolvername').val();
+        params['previous_name']     = g.current_resolver_name;
 
         params['sql_driver']        = $('#sql_driver').val();
         params['sql_user']          = $('#sql_user').val();
@@ -4503,7 +4506,7 @@ $(document).ready(function(){
                     var obj = jQuery.parseJSON(resp);
                     $('#progress_test_sql').hide();
                     if (obj.result.status == true) {
-                        rows = obj.result.value.rows;
+                        rows = obj.result.value.desc.rows;
                         if (rows > -1) {
                             // show number of found users
                             alert_box({'title': "SQL Test",
@@ -4511,7 +4514,7 @@ $(document).ready(function(){
                                        'param': escape(rows),
                                        'is_escaped': true});
                         } else {
-                            err_string = escape(obj.result.value.err_string);
+                            err_string = escape(obj.result.value.desc.err_string);
                             alert_box({'title': "SQL Test",
                                        'text': "text_sql_config_fail",
                                        'param': err_string,
