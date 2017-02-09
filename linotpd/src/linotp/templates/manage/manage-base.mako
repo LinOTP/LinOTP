@@ -59,8 +59,8 @@ if isinstance(lang, list):
 %endif
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 <link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css'>
-<link type="text/css" rel="stylesheet" href="/css/linotp.css">
-<link type="text/css" rel="stylesheet" href="/manage/style.css">
+<link type="text/css" rel="stylesheet" href="/css/linotp.css?ref=${c.version_ref}">
+<link type="text/css" rel="stylesheet" href="/manage/style.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/manage/custom-style.css">
 
 %if c.debug:
@@ -84,18 +84,18 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/js/flexigrid.js"></script>
 
 <script type="text/javascript" src="/js/qrcode.js"></script>
-<script type="text/javascript" src="/js/qrcode-helper.js"></script>
-<script type="text/javascript" src="/js/linotp_utils.js"></script>
+<script type="text/javascript" src="/js/qrcode-helper.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/linotp_utils.js?ref=${c.version_ref}"></script>
 
-<script type="text/javascript" src="/js/aladdin.js"></script>
-<script type="text/javascript" src="/js/oathcsv.js"></script>
-<script type="text/javascript" src="/js/yubikeycsv.js"></script>
-<script type="text/javascript" src="/js/feitian.js"></script>
-<script type="text/javascript" src="/js/dpw.js"></script>
-<script type="text/javascript" src="/js/dat.js"></script>
-<script type="text/javascript" src="/js/vasco.js"></script>
-<script type="text/javascript" src="/js/pskc.js"></script>
-<script type="text/javascript" src="/js/tools.js"></script>
+<script type="text/javascript" src="/js/aladdin.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/oathcsv.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/yubikeycsv.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/feitian.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/dpw.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/dat.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/vasco.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/pskc.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/tools.js?ref=${c.version_ref}"></script>
 
 <!-- load language settings befor manage.js -->
 <script type="text/javascript">
@@ -103,7 +103,7 @@ if isinstance(lang, list):
     window.ALL_CURRENT_LANGUAGE = "${allang}";
 </script>
 
-<script type="text/javascript" src="/js/manage.js"></script>
+<script type="text/javascript" src="/js/manage.js?ref=${c.version_ref}"></script>
 
 </head>
 <body>
