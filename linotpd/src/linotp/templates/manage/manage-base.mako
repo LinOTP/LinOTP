@@ -232,7 +232,7 @@ if isinstance(lang, list):
             <li><a href='#tab_content_system_caching'>${_("Caching")}</a></li>
             <li><a href='#tab_content_system_gui'>${_("GUI settings")}</a></li>
             <li><a href='#tab_content_system_client'>${_("Client Identification")}</a></li>
-            <li><a href='#tab_content_system_cert'>${_("Certificates")}</a></li>
+            <!-- <li><a href='#tab_content_system_cert'>${_("Certificates")}</a></li> -->
         </ul>
         <div id="tab_content_system_settings">
             <fieldset>
@@ -327,20 +327,28 @@ if isinstance(lang, list):
 
                     </table>
             </fieldset>
-        </div>  <!-- tab system settings client -->
+        </div>
+        <!-- tab system settings client -->
+<!--
         <div id='tab_content_system_cert'>
             <fieldset>
-                    <legend>${_("Certificates")}</legend>
+                <legend>${_("Certificates")}</legend>
                     <table>
-                        <tr><td><label for=sys_cert>${_("Use system certificate")}</label></td>
-                        <td><input type='checkbox' name='sys_cert' id='sys_cert' value='sys_cert'
-                            title='${_("If checked the linotp server will use system certificates")}'></td></tr>
-
-                        <!-- todo: button to display all used certificates, for migration -->
-
+                        <tr>
+                            <td>
+                                <label for=sys_cert>${_("Use system certificate")}</label>
+                            </td>
+                            <td>
+                                <input type='checkbox' name='sys_cert' id='sys_cert' value='sys_cert'
+                                       title='${_("If checked the linotp server will use system certificates")}'>
+                            </td>
+                        </tr>
+                        <!- - todo: button to display all used certificates, for migration - ->
                     </table>
             </fieldset>
-        </div>  <!-- tab system certificate settings -->
+        </div>
+-->
+        <!-- tab system certificate settings -->
 
 
     </div> <!-- tab container system settings -->
@@ -536,9 +544,9 @@ if isinstance(lang, list):
                               id="push_provider_config" cols='35' rows='6'
                               placeholder=
 '{
-"push_url": "pnp.keyidentiy.com",
-"access_certificate": "secret certificate",
-"server_certificate":"server certificate"
+"push_url": "https://push.keyidentity.com",
+"access_certificate": "/etc/linotp2/push-license.pem",
+"server_certificate": "/etc/linotp2/keyidentity-push-ca-bundle.crt"
 }'
 
 syst></textarea></td>
@@ -1813,7 +1821,7 @@ syst></textarea></td>
                         onkeyup="handler_ldap_certificate_show();"></td></tr>
                 <tr><td> </td>
                     <td><input type="checkbox" name="ldap_enforce_tls" id="ldap_enforce_tls" onchange="handler_ldap_certificate_show();">
-                        <label for="ldap_enforce_tls">${_("Enforce STARTTLS")}</label></td></tr>
+                        <label id="ldap_enforce_tls_label" for="ldap_enforce_tls">${_("Enforce STARTTLS")}</label></td></tr>
                 <tr id="ldap_resolver_certificate"><td>
                     <label for="ldap_certificate">${_("CA Certificate")}:</label></td>
                     <td><textarea name="ldap_certificate" id="ldap_certificate" cols="34" rows="5"

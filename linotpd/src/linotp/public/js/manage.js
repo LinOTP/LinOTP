@@ -1995,15 +1995,45 @@ function getSerialByOtp(otp, type, assigned, realm) {
 
 }
 
+
 /**
- * the handler for the keyup event of the ldap uri and enforce tls flag, which checks
- * whether the ldap certificate textarea should be shown
+ * the handler for the keyup event of the ldap uri and enforce tls flag,
+ * which checks whether the ldap certificate textarea should be shown
  */
+
 function handler_ldap_certificate_show() {
+
+    /*
+     * first toggle the cert input entry dependent on enforce_tl and ldaps://
+     */
+
     var show_cert_textarea = !g.use_system_certificates &&
             (!!$('#ldap_uri').val().toLowerCase().match(/^ldaps:/) || $('#ldap_enforce_tls').is(':checked'));
 
     $('#ldap_resolver_certificate').toggle(show_cert_textarea);
+
+
+    /*
+     * in combination with ldaps:// start_tls does not make sense - thus
+     * we disable the start_tls dialog
+     */
+
+    if ($('#ldap_uri').val().toLowerCase().match(/^ldaps:/)) {
+
+        /* in case of ldaps, we switch enforce_tls off and disable it */
+
+        $('#ldap_enforce_tls').prop("disabled", true);
+        $('#ldap_enforce_tls').prop('checked', false);
+        $('#ldap_enforce_tls_label').addClass('disabled');
+
+    } else {
+
+        /* in case of ldap://, we enable enforce_tls and the belonging label */
+
+        $('#ldap_enforce_tls').prop("disabled", false);
+        $('#ldap_enforce_tls_label').removeClass('disabled');
+
+    }
 }
 
 function http_resolver_https() {
@@ -2322,7 +2352,7 @@ function support_view(){
             info += "</tbody></table>";
             info += "<div class='subscription_info'><br>" +
                 i18n.gettext("For support and subscription please contact us at") +
-                " <a href='https://www.keyidentity.com/service-support.html' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
+                " <a href='https://www.keyidentity.com/' rel='noreferrer' target='_blank'>https://www.keyidentity.com</a> <br>" +
                 i18n.gettext("by phone") + " +49 6151 86086-115 " + i18n.gettext("or email") + " support@keyidentity.com</div>";
             $("#dialog_support_view").html($.parseHTML(info));
         }
@@ -2453,7 +2483,7 @@ function check_for_welcome_screen() {
 
 function show_welcome_screen(title, text, button_text) {
     var dialog_body =
-        '<div><br/>'
+        '<div id="welcome_screen"><br/>'
         + text
         + '<br/></div>';
 
@@ -4250,6 +4280,7 @@ $(document).ready(function(){
         var params = {};
         params['type']              = 'ldap';
         params['name']              = $('#ldap_resolvername').val();
+        params['previous_name']     = g.current_resolver_name;
 
         params['ldap_uri']          = $('#ldap_uri').val();
         params['ldap_basedn']       = $('#ldap_basedn').val();
@@ -4383,6 +4414,7 @@ $(document).ready(function(){
 
         var url = '/admin/testresolver';
         params['type']              = 'http';
+        params['previous_name']     = g.current_resolver_name;
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;
@@ -4456,6 +4488,7 @@ $(document).ready(function(){
         var params = {};
         params['type']              = 'sql';
         params['name']              = $('#sql_resolvername').val();
+        params['previous_name']     = g.current_resolver_name;
 
         params['sql_driver']        = $('#sql_driver').val();
         params['sql_user']          = $('#sql_user').val();
@@ -4473,7 +4506,7 @@ $(document).ready(function(){
                     var obj = jQuery.parseJSON(resp);
                     $('#progress_test_sql').hide();
                     if (obj.result.status == true) {
-                        rows = obj.result.value.rows;
+                        rows = obj.result.value.desc.rows;
                         if (rows > -1) {
                             // show number of found users
                             alert_box({'title': "SQL Test",
@@ -4481,7 +4514,7 @@ $(document).ready(function(){
                                        'param': escape(rows),
                                        'is_escaped': true});
                         } else {
-                            err_string = escape(obj.result.value.err_string);
+                            err_string = escape(obj.result.value.desc.err_string);
                             alert_box({'title': "SQL Test",
                                        'text': "text_sql_config_fail",
                                        'param': err_string,
@@ -6481,6 +6514,7 @@ function resolver_ldap(name, duplicate){
     }
     else {
         $('#ldap_password').attr("placeholder", password_placeholder_required);
+        $("#ldap_password").removeClass("input-placeholder-warning");
 
         critical_inputs.off("change keyup");
 
