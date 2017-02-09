@@ -2483,7 +2483,7 @@ function check_for_welcome_screen() {
 
 function show_welcome_screen(title, text, button_text) {
     var dialog_body =
-        '<div><br/>'
+        '<div id="welcome_screen"><br/>'
         + text
         + '<br/></div>';
 
