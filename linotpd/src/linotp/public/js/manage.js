@@ -6511,6 +6511,7 @@ function resolver_ldap(name, duplicate){
     }
     else {
         $('#ldap_password').attr("placeholder", password_placeholder_required);
+        $("#ldap_password").removeClass("input-placeholder-warning");
 
         critical_inputs.off("change keyup");
 
