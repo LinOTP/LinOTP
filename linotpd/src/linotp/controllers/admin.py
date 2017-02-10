@@ -27,10 +27,13 @@
 """
 admin controller - interfaces to administrate LinOTP
 """
-
+import os
 import logging
 
-from pylons import request, response, config, tmpl_context as c
+from pylons import request
+from pylons import response
+from pylons import config
+from pylons import tmpl_context as c
 
 from linotp.lib.base import BaseController
 from linotp.lib.tokeniterator import TokenIterator
@@ -42,49 +45,45 @@ from linotp.lib.token import setPinUser
 from linotp.lib.token import setPinSo
 
 from linotp.lib.token import setRealms, getTokenType
-from linotp.lib.token import (getTokens4UserOrSerial,
-                              )
+from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import newToken
 from linotp.lib.token import getTokenRealms
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
+
 from linotp.lib.util import getParam, getLowerParams
-from linotp.lib.util import check_session, SESSION_KEY_LENGTH, remove_session_from_param
+from linotp.lib.util import check_session
+from linotp.lib.util import SESSION_KEY_LENGTH
+
 from linotp.lib.util import get_client
-from linotp.lib.user import (getSearchFields,
-                             getUserList,
-                             getUserListIterators,
-                             User,
-                             getUserFromParam,
-                             getUserFromRequest
-                             )
+from linotp.lib.user import getSearchFields
+from linotp.lib.user import getUserListIterators
+from linotp.lib.user import User
+from linotp.lib.user import getUserFromParam
+from linotp.lib.user import getUserFromRequest
 
+from linotp.lib.realm import getDefaultRealm
+from linotp.lib.realm import getRealms
 
-from linotp.lib.realm import getDefaultRealm, getRealms
+from linotp.lib.reply import sendResult
+from linotp.lib.reply import sendError
+from linotp.lib.reply import sendXMLResult
+from linotp.lib.reply import sendXMLError
+from linotp.lib.reply import sendCSVResult
+from linotp.lib.reply import sendResultIterator
 
-from linotp.lib.reply import (sendResult,
-                              sendError,
-                              sendXMLResult,
-                              sendXMLError,
-                              sendCSVResult,
-                              sendResultIterator,
-                              )
 from linotp.lib.reply import sendQRImageResult
 
 from linotp.lib.challenges import Challenges
 
-# this is a hack for the static code analyser, which
-# would otherwise show session.close() as error
-import linotp.model
-Session = linotp.model.Session
-
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import checkPolicyPost
 from linotp.lib.policy import PolicyException
-from linotp.lib.policy import getAdminPolicies
 from linotp.lib.policy import getOTPPINEncrypt
+
 from linotp.lib.audit.base import logTokenNum
+
 # for loading XML file
 from linotp.lib.ImportOTP import parseSafeNetXML
 from linotp.lib.ImportOTP import parseOATHcsv
@@ -95,12 +94,17 @@ from linotp.lib.useriterator import iterate_users
 from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
 
-import os
-
 from linotp.lib.resolver import getResolverList
+from linotp.lib.resolver import getResolverInfo
+from linotp.lib.resolver import getResolverClass
 
 # For logout
 from webob.exc import HTTPUnauthorized
+
+# this is a hack for the static code analyser, which
+# would otherwise show session.close() as error
+import linotp.model
+Session = linotp.model.Session
 
 audit = config.get('audit')
 
@@ -2287,6 +2291,76 @@ class AdminController(BaseController):
             Session.close()
             log.debug('[loadtokens] done')
 
+    def _ldap_parameter_mapping(self, params):
+        """
+        translate the ui parameters into LDAPResolver format
+        """
+
+        # setup the ldap parameters including defaults
+
+        ldap_params = {
+            'NOREFERRALS': 'True',
+            'CACERTIFICATE': '',
+            'EnforceTLS': 'False',
+            }
+
+        mapping = {
+            "ldap_basedn": 'LDAPBASE',
+            "ldap_uri": 'LDAPURI',
+            "ldap_binddn": 'BINDDN',
+            "ldap_password": "BINDPW",
+            "ldap_timeout": 'TIMEOUT',
+            "ldap_basedn": 'LDAPBASE',
+            "ldap_loginattr": 'LOGINNAMEATTRIBUTE',
+            "ldap_searchfilter": 'LDAPSEARCHFILTER',
+            "ldap_userfilter": 'LDAPFILTER',
+            "ldap_mapping": 'USERINFO',
+            "ldap_uidtype": 'UIDTYPE',
+            "ldap_sizelimit": 'SIZELIMIT',
+            "noreferrals": 'NOREFERRALS',
+            "ldap_certificate": 'CACERTIFICATE',
+            "enforcetls": 'EnforceTLS',
+
+        }
+        for key, value in params.items():
+            if key.lower() in mapping:
+                ldap_params[mapping[key.lower()]] = value
+            else:
+                ldap_params[key] = value
+
+        return ldap_params
+
+    def _sql_parameter_mapping(self, params):
+        """
+        translate the ui parameters into SQLResolver format
+        """
+
+        # setup the sql parameters including defaults
+
+        sql_params = {
+            "Where": '',
+            "ConnectionParams": '',
+        }
+
+        mapping = {
+            "sql_driver": "Driver",
+            "sql_server": "Server",
+            "sql_port": "Port",
+            "sql_database": "Database",
+            "sql_user": "User",
+            "sql_table": "Table",
+            "sql_where": "Where",
+            "sql_conparams": "ConnectionParams",
+            "sql_password": 'Password',
+        }
+
+        for key, value in params.items():
+            if key.lower() in mapping:
+                sql_params[mapping[key.lower()]] = value
+            else:
+                sql_params[key] = value
+
+        return sql_params
 
     def testresolver(self):
         """
@@ -2332,145 +2406,163 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        res = {}
 
         try:
-            param = getLowerParams(request.params)
-            linotp_config = request_context['Config']
+            request_params = {}
+            request_params.update(request.params)
 
             try:
 
-                name = getParam(param, "name", required)
-                typ = param["type"]
+                typ = request_params["type"]
+
+                # adjust legacy key words, we require the resolver class type
+
+                if typ == 'ldap':
+                    typ = 'ldapresolver'
+
+                elif typ in "sql":
+                    typ = 'sqlresolver'
+
+                current_name = request_params["name"]
 
             except KeyError as exx:
                 raise ParameterError("Missing parameter: '%r'" % exx.message)
 
+            # ---------------------------------------------------------- --
+
+            # this code could be removed, when the webui is adjusted, to
+            # use the same parameters as the system/setResolver
+
+            param = request_params
+            if typ == 'ldapresolver':
+                param = self._ldap_parameter_mapping(request_params)
+            elif typ == 'sqlresolver':
+                param = self._sql_parameter_mapping(request_params)
+
+            previous_name = param.get('previous_name', '')
+
+            if not previous_name:
+                mode = 'create'
+            else:
+                if current_name == previous_name:
+                    mode = 'update'
+                else:
+                    mode = 'rename'
+
             log.debug("[testresolver] testing resolver of type %s" % typ)
 
-            if typ in ["ldap", 'ldapresolver']:
-                import useridresolver.LDAPIdResolver
+            resolver_cls = getResolverClass(param['type'])
+            critical_params = resolver_cls.critical_parameters
+            crypted_params = resolver_cls.crypted_parameters
 
-                # get the required parameters
-                try:
+            #
+            # TODO: here we can extend the resolvers to provide the list
+            # of required parameters, so that we can early raise an missing
+            # parameter exception
+            #
+            # required_params = resolver_cls.required_parameters
+            #
+            # missing = []
+            # for required_param in required_params:
+            #    if required_param not in param:
+            #        missing.append(required_param)
+            #
+            # if missing:
+            #     raise ParameterError("Missing parameter: '%r'" % missing)
+            #
 
-                    param['LDAPBASE'] = param["ldap_basedn"]
-                    param['LDAPURI'] = param["ldap_uri"]
-                    param['BINDDN'] = param["ldap_binddn"]
-                    param['TIMEOUT'] = param["ldap_timeout"]
-                    param['LDAPBASE'] = param["ldap_basedn"]
-                    param['LOGINNAMEATTRIBUTE'] = param["ldap_loginattr"]
-                    param['LDAPSEARCHFILTER'] = param["ldap_searchfilter"]
-                    param['LDAPFILTER'] = param["ldap_userfilter"]
-                    param['USERINFO'] = param["ldap_mapping"]
-                    param['SIZELIMIT'] = param["ldap_sizelimit"]
+            if mode == 'create':
 
-                except KeyError as exx:
+                # ---------------------------------------------------------- --
+
+                # handle the create of a new resolver
+
+                # we check if all crypted parameters are included
+
+                missing = []
+                for cypted_param in crypted_params:
+                    if not param.get(cypted_param):
+                        missing.append(cypted_param)
+
+                if missing:
                     raise ParameterError("Missing parameter: '%r'" %
-                                         exx.message)
+                                         missing)
 
-                #
-                # get the optional parameters
+                # now we can test the connection
 
-                param['NOREFERRALS'] = param.get("noreferrals", 'True')
-                param['CACERTIFICATE'] = param.get("ldap_certificate", '')
-                param['EnforceTLS'] = param.get("enforcetls", 'False')
+                (status, desc) = resolver_cls.testconnection(param)
 
-                #
-                # support to retrieve the password for the testconnection from
-                # an already defined resolver - which must be of the same
-                # ldap url and ldap base
-
-                BindPW = param.get("ldap_password", '')
-                if not BindPW and name in getResolverList():
-
-                    LDAPBASE = linotp_config.get('linotp.ldapresolver.'
-                                                 'LDAPBASE.%s' % name)
-
-                    LDAPURI = linotp_config.get('linotp.ldapresolver.'
-                                                'LDAPURI.%s' % name)
-
-                    if (LDAPURI == param['LDAPURI'] and
-                       LDAPBASE == param['LDAPBASE']):
-
-                        BindPW = linotp_config.get('enclinotp.ldapresolver.'
-                                                   'BINDPW.%s' % name, '')
-
-                param['BINDPW'] = BindPW
-
-                #
-                # check if we should use the system certificate handling,
-                # thus ignoring the cert_dir or cert_file setting
-
-                use_sys_cert = 'certificates.use_system_certificates'
-                param[use_sys_cert] = linotp_config.get(use_sys_cert, False)
-
-                (status, desc) = useridresolver.LDAPIdResolver.IdResolver.testconnection(param)
+                res = {}
                 res['result'] = status
                 res['desc'] = desc
 
-            elif typ == "http":
-                from useridresolver.HTTPIdResolver import (
-                                                IdResolver as HttpResolver
-                                                )
-                config_params = {}
-                config_params.update(param)
-                (status, desc) = HttpResolver.testconnection(config_params)
+                Session.commit()
+                return sendResult(response, res)
+
+            else:
+
+                # ---------------------------------------------------------- --
+
+                # handle 'rename' and 'update'
+
+                if mode == 'rename':
+                    previous_resolver = getResolverInfo(previous_name,
+                                                        passwords=True)
+
+                elif mode == 'update':
+                    previous_resolver = getResolverInfo(current_name,
+                                                        passwords=True)
+
+                #
+                # get the parameters of the previous resolver
+
+                previous_param = previous_resolver['data']
+
+                #
+                # get the critical parameters for this resolver type
+                # and check if these parameters have changed
+
+                critical_change = False
+                for crit in critical_params:
+                    if param.get(crit, '') != previous_param.get(crit, ''):
+                        critical_change = True
+                        break
+
+                #
+                # if there are no critical changes, we can transfer
+                # the encrypted parameters from previous resolver
+
+                if not critical_change:
+
+                    for crypt in crypted_params:
+                        if crypt in previous_param and not param.get(crypt):
+                            param[crypt] = previous_param[crypt]
+                else:
+
+                    #
+                    # if there are critical changes, we check for the required
+                    # crypted args in the parameter list
+
+                    missing = []
+                    for crypt in crypted_params:
+                        if not param.get(crypt):
+                            missing.append(crypt)
+
+                    if missing:
+                        log.error("could not %s resolver %r: "
+                                  "missing crypted parameters: %r",
+                                  mode, current_name, missing)
+
+                # now we can test the connection
+
+                (status, desc) = resolver_cls.testconnection(param)
+
+                res = {}
                 res['result'] = status
                 res['desc'] = desc
 
-            elif typ in ["sql", 'sqlresolver']:
-
-                import useridresolver.SQLIdResolver
-
-                try:
-
-                    param["Driver"] = param["sql_driver"]
-                    param["Server"] = param["sql_server"]
-                    param["Port"] = param["sql_port"]
-                    param["Database"] = param["sql_database"]
-                    param["User"] = param["sql_user"]
-                    param["Table"] = param["sql_table"]
-
-                except KeyError as exx:
-                    raise ParameterError("Missing parameter: '%r'" %
-                                         exx.message)
-
-                param["Where"] = param.get("sql_where", '')
-                param["ConnectionParams"] = param.get("sql_conparams", '')
-
-                #
-                # support to retrieve the password for the testconnection from
-                # an already defined resolver - which must be of the same
-                # ldap url and ldap base
-                #
-
-                sql_password = param.get("sql_password", '')
-                if not sql_password and name in getResolverList():
-
-                    matching = True
-
-                    for key in ['Driver', 'Server', 'User', 'Database', 'Table']:
-                        value = linotp_config.get('linotp.sqlresolver.%s.%s' %
-                                                  (key, name))
-                        if value != param[key]:
-                            matching = False
-
-                    if matching:
-                        sql_password = linotp_config.get('enclinotp.'
-                                                         'sqlresolver.'
-                                                         'Password.%s' % name,
-                                                         '')
-
-                param["Password"] = sql_password
-
-                (num, err_str) = useridresolver.SQLIdResolver.testconnection(param)
-                res['result'] = True
-                res['rows'] = num
-                res['err_string'] = err_str
-
-            Session.commit()
-            return sendResult(response, res)
+                Session.commit()
+                return sendResult(response, res)
 
         except Exception as e:
             log.exception("[testresolver] failed: %r" % e)
@@ -2480,7 +2572,6 @@ class AdminController(BaseController):
         finally:
             Session.close()
             log.debug('[testresolver] done')
-
 
     def checkstatus(self):
         """

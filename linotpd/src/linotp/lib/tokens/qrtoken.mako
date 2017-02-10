@@ -252,8 +252,12 @@ function self_qrtoken_get_param() {
 
 	urlparam['type'] = 'qr';
     urlparam['description'] = $('#qrtoken_desc').val();
-    urlparam['pin'] = $('#qrtoken_pin1').val();
-	return urlparam;
+
+    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+        urlparam['pin'] = $('#qrtoken_pin1').val();
+    }
+
+    return urlparam;
 }
 
 function self_qrtoken_clear() {
@@ -272,24 +276,26 @@ function self_qrtoken_enroll_details(data) {
 };
 
 $( document ).ready(function() {
+
     $('#button_enroll_qrtoken').click(function (e){
         e.preventDefault();
         if($("#form_enroll_qrtoken").valid()){
             self_qrtoken_submit();
         }
     });
-
-    $("#form_enroll_qrtoken").validate({
-        rules: {
-            qrtoken_pin1: {
-                required: true,
-                minlength: 3
-            },
-            qrtoken_pin2: {
-                equalTo: "#qrtoken_pin1"
+    if (${c.pin_policy} == -1 || ${c.pin_policy} == 0) {
+        $("#form_enroll_qrtoken").validate({
+            rules: {
+                qrtoken_pin1: {
+                    required: true,
+                    minlength: 3
+                },
+                qrtoken_pin2: {
+                    equalTo: "#qrtoken_pin1"
+                }
             }
-        }
-    });
+        });
+    }
 });
 
 </script>
@@ -302,6 +308,7 @@ $( document ).ready(function() {
                 <td><label id='qrtoken_desc_label2' for='qrtoken_desc'>${_("Token description")}</label></td>
                 <td><input id='qrtoken_desc' name='qrtoken_desc' class="ui-widget-content ui-corner-all" value='self enrolled'></td>
             </tr>
+      %if c.pin_policy == -1 or c.pin_policy == 0:
             <tr>
                 <td colspan="2">
                     <b>${_("Token PIN:")}</b>
@@ -323,6 +330,7 @@ $( document ).ready(function() {
                     <input type="password" autocomplete="off" onkeyup="checkpins('#qrtoken_pin1,#qrtoken_pin2');" name="pin2" id="qrtoken_pin2" class="text">
                 </td>
             </tr>
+       %endif
         </table>
 	    <button class='action-button' id='button_enroll_qrtoken'>${_("enroll qrtoken")}</button>
     </fieldset>
@@ -352,19 +360,22 @@ $( document ).ready(function() {
 });
 
 function self_qrtoken_activate_get_challenge() {
+
     var serial = $('#activate_qrtoken_serial').val();
-    var pin = $('#activate_qrtoken_pin').val();
+    var credentials = $('#activate_qrtoken_credentials').val();
     var message = $('#activate_qrtoken_serial').val();
 
     var targetselector = "#qrtoken_qr_code"
 
     var params = {};
+
+    params['user'] = '${c.user}';
     params['serial'] = serial;
-    params['pass'] = pin;
+    params['pass'] = credentials;
     params['data'] = message;
     params['qr'] = 'html';
 
-    var url = '/validate/check_s';
+    var url = '/validate/check';
 
     try {
         var data = clientUrlFetchSync(url, params);
@@ -445,10 +456,10 @@ function self_qrtoken_activate_switch_phase(phase) {
                 </td>
             </tr>
             <tr>
-                <td>${_("Enter pin: ")}</td>
+                <td>${_("Enter activation credentials: ")}</td>
                 <td>
                     <input type="password" class="text ui-widget-content ui-corner-all"
-                        id="activate_qrtoken_pin">
+                        id="activate_qrtoken_credentials">
                 </td>
             </tr>
             <tr>

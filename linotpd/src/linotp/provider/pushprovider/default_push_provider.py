@@ -248,8 +248,13 @@ class DefaultPushProvider(IPushProvider):
             if self.client_cert and os.path.isfile(self.client_cert):
                 http_session.cert = self.client_cert
 
-            if self.server_cert is not None:
-                http_session.verify = self.server_cert
+            server_cert = self.server_cert
+            if server_cert is not None:
+                # Session.post() doesn't like unicode values in Session.verify
+                if isinstance(server_cert, unicode):
+                    server_cert = server_cert.encode('utf-8')
+
+                http_session.verify = server_cert
 
             response = http_session.post(self.push_server_url,
                                          data=params,
