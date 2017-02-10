@@ -168,10 +168,8 @@ class TestResolver(TestController):
         # now try to define resolver LDA2 w.o. the required BINDPW
 
         response, params = self.define_ldap_resolver('LDA2')
-        msg1 = "Unable to instantiate the resolver u'LDA2'"
-        msg2 = "Please verify configuration or connection!"
-        self.assertIn(msg1, response, response)
-        self.assertIn(msg2, response, response)
+        msg = "Missing parameter: ['BINDPW']"
+        self.assertIn(msg, response, response)
 
         #
         # and check that it is not available

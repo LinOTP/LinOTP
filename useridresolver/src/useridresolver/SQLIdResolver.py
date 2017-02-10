@@ -316,6 +316,21 @@ class IdResolver(UserIdResolver):
     crypted_parameters = ['Password']
 
     @classmethod
+    def primary_key_changed(cls, new_params, previous_params):
+        """
+        check if during the  parameter update the primary key has changed
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+        new_uid = json.loads(new_params.get('Map', '{}')).get('userid', '')
+        prev_uid = json.loads(previous_params.get('Map', '{}')).get('userid', '')
+
+        return new_uid != prev_uid
+
+    @classmethod
     def testconnection(cls, params):
         """
         This is used to test if the given parameter set will do a successful
@@ -621,17 +636,28 @@ class IdResolver(UserIdResolver):
 
         self.sqlConnect = connect
 
-        log.debug("[loadConfig] We got the following connect string: %s"
-                                                            % self.sqlConnect)
+        log.debug("[loadConfig] We got the following connect string: %s",
+                  self.sqlConnect)
 
-        self.limit = int(self.getConfigEntry(config,
-                            "linotp.sqlresolver.Limit", conf, False, "1000"))
-        self.sqlTable = self.getConfigEntry(config,
-                                            "linotp.sqlresolver.Table", conf)
-        self.sqlWhere = self.getConfigEntry(config,
-                                    "linotp.sqlresolver.Where", conf, False)
-        self.sqlEncoding = self.getConfigEntry(config,
-         "linotp.sqlresolver.Encoding", conf, False, default=DEFAULT_ENCODING)
+        self.limit = int(self.getConfigEntry(
+                                    config,
+                                    "linotp.sqlresolver.Limit",
+                                    conf, False, "1000"))
+
+        self.sqlTable = self.getConfigEntry(
+                                    config,
+                                    "linotp.sqlresolver.Table",
+                                    conf)
+
+        self.sqlWhere = self.getConfigEntry(
+                                    config,
+                                    "linotp.sqlresolver.Where",
+                                    conf, False)
+
+        self.sqlEncoding = self.getConfigEntry(
+                                    config,
+                                    "linotp.sqlresolver.Encoding",
+                                    conf, False, default=DEFAULT_ENCODING)
 
         if self.sqlEncoding == "":
             self.sqlEncoding = DEFAULT_ENCODING
