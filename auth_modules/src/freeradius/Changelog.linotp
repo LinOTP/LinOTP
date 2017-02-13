@@ -1,9 +1,0 @@
-freeradius (1:2.1.8+dfsg-1ubuntu1) lucid; urgency=medium
-
-  * Added LinOTP2 module rlm_linotp2
-    Now with support for realms using the config file or either 
-    in the name seperated by @ sign.
-
- -- Cornelius Koelbel <cornelius.koelbel@lsexperts.de>  Sun, 19 May 2010 23:25:00 +0200
-
-
