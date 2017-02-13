@@ -1,8 +1,20 @@
-linotp (2.9.1~0dev0-1) jessie; urgency=low
+linotp (2.9.1~rc0-1) jessie; urgency=low
 
-  * Set new version 2.9.1~0dev0-1
+  Enhancements:
+  * Server: New token type: KeyIdentity PushToken
+  * Server: Add optional caching of resolver lookups
+  * WebUI: Show welcome and update screens
+  * WebUI: Add dialog for duplicating resolvers
+  * WebUI: Better password handling in resolver dialogs
+  * Reporting: Add paging and CSV output for reporting/show
+  * API: Use semicolon as CSV column separator by default
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 26 Aug 2016 17:26:58 +0200
+  Bug Fixes:
+  * Server: Fix remote token
+  * Server: Fix evaluating policies for non-existent realms
+  * API: Don't localize monitoring json output
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 09 Feb 2017 16:10:40 +0100
 
 linotp (2.9.0.5~rc0-1) jessie; urgency=low
 

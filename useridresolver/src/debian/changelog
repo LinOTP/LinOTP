@@ -1,8 +1,9 @@
-linotp-useridresolver (2.9.1~0dev0-1) jessie; urgency=low
+linotp-useridresolver (2.9.1~rc0-1) jessie; urgency=low
 
-  * Set new version 2.9.1~0dev0-1
+  Enhancements:
+  * LDAP: Add StartTLS support
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 26 Aug 2016 17:26:58 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 09 Feb 2017 16:10:40 +0100
 
 linotp-useridresolver (2.9.0.3-1) jessie; urgency=low
 
