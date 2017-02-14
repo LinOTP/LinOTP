@@ -199,11 +199,11 @@ node('docker') {
                 error("Cannot enable publish to Rancher without enabling pushing the image")
             }
             stage('Rancher') {
-                withCredentials([usernamePassword(credentialsId: '${PARAM_RANCHER_ACCESS_KEY}',
+                withCredentials([usernamePassword(credentialsId: "${PARAM_RANCHER_ACCESS_KEY}",
                                                     passwordVariable: 'RANCHER_SECRET_KEY',
                                                     usernameVariable: 'RANCHER_ACCESS_KEY')
                                 ]) {
-                    withEnv(['RANCHER_URL=${PARAM_RANCHER_URL}']) {
+                    withEnv(["RANCHER_URL=${PARAM_RANCHER_URL}"]) {
                         doMake('rancher-linotp-create', 2)
 
                         if(PARAM_START_JOB_IN_RANCHER) {
