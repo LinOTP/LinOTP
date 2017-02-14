@@ -219,7 +219,7 @@ node('docker') {
                 /*
                  * Run the Selenium unit tests in a docker compose environment
                  */
-                doMake('docker-run-selenium', 120)
+                doMake('docker-run-selenium', 60)
             }
         }
     }
