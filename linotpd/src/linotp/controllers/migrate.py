@@ -31,29 +31,30 @@ migration controller -
 """
 
 import os
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 import binascii
 import hashlib
+import logging
 
 from pylons import request, response
 
-from linotp.model.meta import Session
+import linotp.model.meta
 
 from linotp.lib.base import BaseController
 
-from linotp.lib.reply   import sendResult, sendError
+from linotp.lib.reply import sendResult
+from linotp.lib.reply import sendError
 
 from linotp.lib.policy import PolicyException
+
 from linotp.lib.migrate import MigrationHandler
 from linotp.lib.migrate import DecryptionError
 
-import logging
+
 log = logging.getLogger(__name__)
+
+Session = linotp.model.meta.Session
 
 
 class MigrateController(BaseController):
@@ -78,8 +79,6 @@ class MigrateController(BaseController):
 
         except Exception as exx:
             log.exception("[__before__::%r] exception %r" % (action, exx))
-            Session.rollback()
-            Session.close()
             return sendError(response, exx, context='before')
 
         finally:
@@ -97,11 +96,9 @@ class MigrateController(BaseController):
 
         except Exception as exx:
             log.exception("[__after__] exception %r" % (exx))
-            Session.rollback()
             return sendError(response, exx, context='after')
 
         finally:
-            Session.close()
             log.debug("[__after__] done")
 
     def backup(self):
@@ -168,15 +165,18 @@ class MigrateController(BaseController):
             return sendResult(response, result)
 
         except PolicyException as pe:
-            log.exception('[show] policy failed: %r' % pe)
+            Session.rollback()
+            log.exception('[backup] policy failed: %r' % pe)
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.exception('[show] failed: %r' % e)
+            Session.rollback()
+            log.exception('[backup] failed: %r' % e)
             return sendError(response, e)
 
         finally:
-            log.debug("[show] done")
+            Session.close()
+            log.debug("[backup] done")
 
     def restore(self):
         """
@@ -235,7 +235,7 @@ class MigrateController(BaseController):
 
                     restore_data = json.loads(data)
 
-                    if not mig and  "Salt" in restore_data:
+                    if not mig and "Salt" in restore_data:
                         salt = restore_data["Salt"]
                         mig = MigrationHandler()
                         mig.setup(passphrase=passphrase,
@@ -273,7 +273,8 @@ class MigrateController(BaseController):
 
                     else:
                         if not mig:
-                            raise Exception('MigrationHandler not initialized!')
+                            raise Exception('MigrationHandler not '
+                                            'initialized!')
                         else:
                             log.info("unknown entry")
 
@@ -281,10 +282,12 @@ class MigrateController(BaseController):
             if not counter_check_done:
                 raise Exception('incomplete migration file!')
 
+            Session.commit()
+            log.debug("[restore] success")
             return sendResult(response, counters)
 
         except PolicyException as pe:
-            log.exception('[show] policy failed: %r' % pe)
+            log.exception('[restore] policy failed: %r' % pe)
             return sendError(response, unicode(pe), 1)
 
         except DecryptionError as err:
@@ -299,10 +302,13 @@ class MigrateController(BaseController):
             return sendError(response, err)
 
         finally:
+
             if remove_backup_file and os.path.isfile(backup_file):
                 if not missing_param and not decryption_error:
                     os.remove(backup_file)
-            Session.close()
-            log.debug("[restore] done")
+                    log.debug("removed backup file %r", backup_file)
 
-#eof###########################################################################
+            Session.close()
+            log.debug("[restore] closed")
+
+# eof #########################################################################

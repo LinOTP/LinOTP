@@ -56,7 +56,7 @@ from linotp.lib.security.provider import CONFIG_KEY
 from linotp.lib.security.provider import TOKEN_KEY
 from linotp.lib.security.provider import VALUE_KEY
 
-from Cryptodome.Cipher import AES as    AESCipher
+from Cryptodome.Cipher import AES as AESCipher
 from getopt import getopt, GetoptError
 import sys
 import getpass
@@ -570,10 +570,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         template_len = c_ulong(size)
 
         rv = self.pkcs11.C_GenerateKey(self.hSession,
-                                         byref(mechanism),
-                                         template,
-                                         template_len,
-                                         byref(objHandle))
+                                       byref(mechanism),
+                                       template,
+                                       template_len,
+                                       byref(objHandle))
 
         if rv:
             output("error", "[createAES] Failed to C_GenerateKey (%s): %s"
@@ -837,8 +837,8 @@ def main():
     '''
     try:
         opts, args = getopt(sys.argv[1:], "hp:s:n:f:e:l:",
-                ["help", "password=", "slot=", "name=",
-                 "find=", "encrypt=", "label="])
+                            ["help", "password=", "slot=", "name=",
+                             "find=", "encrypt=", "label="])
 
     except GetoptError:
         print "There is an error in your parameter syntax:"
