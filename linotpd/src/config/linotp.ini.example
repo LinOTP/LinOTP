@@ -239,6 +239,19 @@ args = ('/var/log/linotp/linotp.log','a', 10000000, 4)
 level = WARN
 formatter = generic
 
+## Logging via logstash
+## This is an example using the python-logstash logging library.
+## If you wish to use this example, you also need to add
+## logstash to handlers.keys, and add the logstash handler to
+## the individual logger_* section
+#[handler_logstash]
+## Logging class to use
+#class = logstash.UDPLogstashHandler
+## Arguments as accepted by the logstash library. For more details
+## see the output of 'pydoc logstash.UDPLogstashHandler'
+##   ('hostname', port,  message_type, ('tag', 'tag', ...), fqdn, version)
+#args = ('logstashhost', 5000, 'linotp', ('example1'), False, 1)
+
 [formatters]
 keys = generic
 
