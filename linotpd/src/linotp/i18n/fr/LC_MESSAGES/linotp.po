@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2016-08-02 09:26+0200\n"
+"PO-Revision-Date: 2017-02-14 15:01+0100\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: French <>\n"
 "Language: fr\n"
@@ -35,14 +35,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 1.8.11\n"
 
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Unable to instantiate the resolver %r.Please verify configuration or "
 "connection!"
 msgstr ""
-"Impossible d'initier le résolveur %rVeuillez vérifier la configuration ou la "
+"Impossible d'initier le résolveur %r. Vérifiez la configuration ou la "
 "connexion !"
 
 msgid "The name of the policy must not be empty"
@@ -71,9 +71,6 @@ msgstr ""
 "Nous serons heureux de répondre à toutes vos questions sur nos produits ou "
 "votre évaluation. Nous souhaiterions également recevoir vos commentaires sur "
 "nos produits et votre évaluation."
-
-msgid "sales@lsexperts.de"
-msgstr "sales@lsexperts.de"
 
 msgid "Sales hotline: "
 msgstr " Assistance téléphonique commerciale"
@@ -653,18 +650,8 @@ msgstr "Erreur lors de la vérification de la directive - contrôleur inconnu %s
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "Plusieurs token trouvés - ne peut pas déterminer le type de token !"
 
-#, python-format
-msgid ""
-"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
-"can not assign any more tokens. Check the policies."
-msgstr ""
-"Le nombre maximum de token dans un domaine %s (%s) a été atteint. Vous ne "
-"pouvez plus déployer de token supplémentaires. Veuillez vérifier la "
-"directive."
-
-#, fuzzy
 msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
-msgstr "Le nom de la directive ne peut contenir que les caractères a-zA-Z0-9_"
+msgstr "Le nom de la directive ne peut contenir que les caractères a-zA-Z0-9_."
 
 msgid "E-mail token"
 msgstr "Token e-mail"
@@ -936,7 +923,7 @@ msgid "OCRA2 - challenge/response Token"
 msgstr "OCRA2 - Challenge / Response Token"
 
 msgid "Please enter or copy the OCRA2 key."
-msgstr "Veuillez entrer la clé OCRA2."
+msgstr "Entrez la clé OCRA2."
 
 msgid "OCRA2 key"
 msgstr "Clé OCRA2"
@@ -969,7 +956,7 @@ msgid "Your OCRA2 Token :"
 msgstr "Votre token OCRA2 :"
 
 msgid "1. Enter the activation code :"
-msgstr "1. Veuillez entrer le code d'activation :"
+msgstr "1. Entrez le code d'activation :"
 
 msgid "Failed to enroll token!"
 msgstr "Échec du déploiement du token !"
@@ -996,17 +983,71 @@ msgstr "OCRA Challenge Response Token - HMAC basé sur un événement"
 msgid "URL for OCRA2 token"
 msgstr "URL pour le token OCRA2"
 
-msgid "QRToken"
-msgstr "Token QR"
+msgid "PushToken"
+msgstr "PushToken"
 
-msgid "QRToken Settings"
-msgstr "Paramètres du token QR :"
+msgid "PushToken Settings"
+msgstr "Paramètres PushToken"
 
 msgid "Maximum concurrent challenges"
 msgstr "Nombre maximum de défis simultanés"
 
 msgid "Challenge Timeout"
-msgstr "Délai challenge"
+msgstr "Délai défi"
+
+msgid "Public key certificate"
+msgstr "Certificat de clé publique"
+
+msgid "certificate id"
+msgstr "Identifiant certificat"
+
+msgid "PushToken - challenge/response Token"
+msgstr "PushToken - token défi/réponse"
+
+msgid "web ui generated"
+msgstr "ui web générée"
+
+msgid "Enroll Push Token"
+msgstr "Inscrire PushToken"
+
+msgid "enroll pushtoken"
+msgstr "inscrire pushtoken"
+
+msgid "Activate Push Token"
+msgstr "Activer PushToken"
+
+msgid "Select Push Token: "
+msgstr "Sélectionner PushToken"
+
+msgid "Enter pin: "
+msgstr "Entrez votre PIN"
+
+msgid "Activate token"
+msgstr "Activez le token"
+
+msgid "Challenge sent"
+msgstr "Défi envoyé"
+
+msgid "A push notification has been sent. Please check your mobile phone."
+msgstr "Une notification de push a été envoyée. Vérifiez votre téléphone."
+
+msgid "activate your PushToken"
+msgstr "Activez votre PushToken"
+
+msgid "Policy pushtoken_challenge_callback_url must have a value"
+msgstr "La directive pushtoken_challenge_callback_url doit avoir une valeur"
+
+msgid "Policy pushtoken_pairing_callback_url must have a value"
+msgstr "La directive pushtoken_pairing_callback_url doit avoir une valeur"
+
+msgid "Pairing URL"
+msgstr "Appariement URL"
+
+msgid "QRToken"
+msgstr "Token QR"
+
+msgid "QRToken Settings"
+msgstr "Paramètres du token QR"
 
 msgid "OTP length"
 msgstr "Longueur OTP"
@@ -1020,35 +1061,23 @@ msgstr "8 chiffres"
 msgid "10 digits"
 msgstr "10 chiffres"
 
-msgid "Public key certificate"
-msgstr "Certificat de clé publique"
-
-msgid "certificate id"
-msgstr "Identifiant certificat"
-
 msgid "QRToken - challenge/response Token"
 msgstr "Token QR défi/réponse"
-
-msgid "web ui generated"
-msgstr "ui web générée"
 
 msgid "Enroll your QRToken"
 msgstr "Inscrivez votre token QR"
 
 msgid "enroll qrtoken"
-msgstr "Inscrivez le tokenqr"
+msgstr "inscrire le QRToken"
 
 msgid "Activate your QRToken"
-msgstr "Activez votre token QR"
+msgstr "Activez votre QRToken"
 
 msgid "Select QRToken: "
-msgstr "Sélectionnez le token QR"
-
-msgid "Enter pin: "
-msgstr "Entrez votre PIN"
+msgstr "Sélectionnez QRToken :"
 
 msgid "activate token"
-msgstr "Activez le token"
+msgstr "activer le token"
 
 msgid "Challenge triggered successfully"
 msgstr "Défi déclenché avec succès"
@@ -1057,8 +1086,8 @@ msgid ""
 "Please scan the qr code and submit your response or enter the otp value in "
 "the form below."
 msgstr ""
-"Veuillez scanner le code qr et soumettre votre réponse ou entrez la valeur "
-"OTP dans le formulaire ci-dessous."
+"Scannez le code qr et envoyez votre réponse ou entrez la valeur OTP dans le "
+"formulaire ci-dessous."
 
 msgid "OTP Value: "
 msgstr "Valeur OTP "
@@ -1123,7 +1152,7 @@ msgid "on RADIUS server"
 msgstr "sur le serveur RADIUS"
 
 msgid "locally"
-msgstr "local"
+msgstr "en local"
 
 msgid "RADIUS shared secret"
 msgstr "Secret RADIUS partagé"
@@ -1151,11 +1180,11 @@ msgid ""
 "Please enter a valid remote server specification. It needs to be of the form "
 "http://server or https://server"
 msgstr ""
-"Veuillez entrer une spécification de serveur distant valide, sous la forme "
-"http://server ou https://server."
+"Entrez une spécification de serveur distant valide, sous la forme http://"
+"serveur ou https://serveur."
 
 msgid "Remote token settings"
-msgstr "Paramètres du Remote Token"
+msgstr "Paramètres de token distant"
 
 msgid "You need to enter the remote LinOTP server like https://remotelinotp"
 msgstr ""
@@ -1163,13 +1192,13 @@ msgstr ""
 "remoteserver.local\"."
 
 msgid "Remote server"
-msgstr "Remote Server"
+msgstr "Serveur distant"
 
 msgid ""
 "The PIN can either be verified on this local LinOTP server or forwarded to "
 "the remote server"
 msgstr ""
-"Le code PIN peut être vérifié soit ici sur le serveur local LinOTP ou être "
+"Le code PIN peut être vérifié soit sur ce serveur local LinOTP ou être "
 "transmis au serveur RADIUS."
 
 msgid ""
@@ -1180,16 +1209,16 @@ msgstr ""
 "LinOTP distant."
 
 msgid "on remote server"
-msgstr " sur le Remote Server"
+msgstr " sur le serveur distant"
 
 msgid "Remote realm"
-msgstr "Remote Realm"
+msgstr "Domaine distant"
 
 msgid "Remote resolver"
-msgstr "Remote Resolver"
+msgstr "Résolveur distant"
 
 msgid "Remote token"
-msgstr "Remote Token"
+msgstr "Token distant"
 
 msgid ""
 "Please enter a valid URL for the LinOTP server. It needs to start with "
@@ -1253,7 +1282,7 @@ msgid "SMS OTP"
 msgstr "SMS OTP"
 
 msgid "Please enter the mobile phone number for the SMS token"
-msgstr "Veuillez entrer le numéro de téléphone mobile pour le SMS Token."
+msgstr "Entrez le numéro de téléphone mobile pour le SMS Token."
 
 msgid "Phone number"
 msgstr "Numéro de téléphone mobile"
@@ -1486,6 +1515,12 @@ msgstr ""
 msgid "Unknown provider! %r"
 msgstr "Opérateur inconnu ! %r"
 
+msgid "password required"
+msgstr "mot de passe exigé"
+
+msgid "not changed"
+msgstr "non modifié"
+
 msgid "Not a valid json string!"
 msgstr "Aucun texte JSON valide !"
 
@@ -1495,6 +1530,9 @@ msgid ""
 msgstr ""
 "Veuillez entrer un nom de domaine valide. Il ne peut être constitué que de "
 "lettres, de chiffres et de « _-. »."
+
+msgid "Resolver name is already in use"
+msgstr "Le nom du résolveur est déjà en utilisation"
 
 msgid ""
 "Please enter a valid resolver name. It may contain characters, numbers and "
@@ -1538,18 +1576,9 @@ msgstr ""
 "Veuillez entrer un filtre de recherche utilisateur LDAP valide, tel que : "
 "(&(sAMAccountName=%s)(objectClass=user))"
 
-msgid ""
-"Please enter a valid searchfilter like this: \n"
-"    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
-"\"mobile\" \n"
-"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
-"\" : \"givenName\" }"
-msgstr ""
-"Veuillez entrer un filtre de recherche LDAP valide, tel que :\n"
-" { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
-"\"mobile\" \n"
-"  : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname\" : "
-"\"givenName\" }"
+#, python-format
+msgid "Please enter a valid searchfilter like this: %s"
+msgstr "Entrez un filtre de recherche LDAP valide, tel que : %s"
 
 msgid ""
 "Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or "
@@ -1564,19 +1593,6 @@ msgid ""
 msgstr ""
 "Veuillez entrer un pilote valide : mysql, postgres, mssql, oracle, ibm_db_sa "
 "ou ibm_db_sa+pyodbc"
-
-msgid ""
-"Please enter a valid searchfilter like this: \n"
-"    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
-"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
-"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
-"\" : \"givenName\" }"
-msgstr ""
-"Veuillez entrer un filtre de recherche valide, tel que : \n"
-" { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
-"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
-"  : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname\" : "
-"\"givenName\" }"
 
 msgid "Issuer"
 msgstr "Émetteur"
@@ -1620,6 +1636,14 @@ msgstr "La sélection de plus d'un utilisateur ne sera pas supportée !"
 msgid "Please select only one user."
 msgstr "Veuillez ne sélectionner qu'un seul utilisateur."
 
+msgid "unknown token type"
+msgstr "type de token inconnu"
+
+msgid "Error during token type change processing for type \"\".<br><pre></pre>"
+msgstr ""
+"Erreur lors du traitement de la modification du type de token pour le type  "
+"\"\".<br><pre></pre>"
+
 msgid "Found the token: "
 msgstr "Token trouvé : "
 
@@ -1641,15 +1665,13 @@ msgstr "Licence non valide"
 msgid "Professional LinOTP support and enterprise subscription"
 msgstr "Support LinOTP professionnel et abonnement pour les entreprises"
 
+#, python-format
 msgid ""
 "For professional LinOTP support and enterprise subscription, feel free to "
-"contact <p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE "
-"Leading Security Experts GmbH</a></p> for support agreement purchase."
+"contact %s for support agreement purchase."
 msgstr ""
-"Pour acheter un support professionnel et un abonnement pour votre "
-"entreprise, veuillez nous contactez à : \n"
-"<p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE Leading "
-"Security Experts GmbH</a></p>"
+"Pour acheter une assistance professionnelle à LinOTP et un abonnement "
+"d'entreprise, contactez %s pour l'achat d'un contrat d'assistance."
 
 msgid "Your LinOTP support subscription"
 msgstr "Votre support et abonnement LinOTP"
@@ -1664,6 +1686,107 @@ msgstr "par téléphone "
 
 msgid "or email"
 msgstr "ou par e-mail"
+
+msgid "Welcome to LinOTP"
+msgstr "Bienvenue à LinOTP"
+
+msgid "Welcome to your fresh LinOTP installation."
+msgstr "Bienvenue à votre nouvelle installoation LinOTP."
+
+msgid ""
+"If you have questions about the setup or installation of LinOTP, please <a "
+"href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>."
+msgstr ""
+"Pour toute question sur la configuration ou l'installation de LinOTP, <a "
+"href='https://linotp.org/doc' target='_blank'consultez notre documentation</"
+"a>."
+
+msgid ""
+"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
+"enterprise 2FA solution."
+msgstr ""
+"<a href='https://keyidentity.com'>KeyIdentity</a> fournit LinOTP comme "
+"solution d'entreprise 2FA."
+
+msgid ""
+"If you are interested in the 2FA platform of KeyIdentity, and want to be "
+"informed about:"
+msgstr ""
+"Si vous êtes intéressé par la plate-forme 2FA de KeyIdentity, et que vous "
+"souhaitez des informations :"
+
+msgid "updates of our products,"
+msgstr "mises à jour de nos produits, "
+
+msgid "upcoming hackathons,"
+msgstr "hackathons à venir,"
+
+msgid "user and developer conferences,"
+msgstr "conférences utilisateurs et développeurs,"
+
+msgid "upcoming features in LinOTP"
+msgstr "fonctionnalités de LinOTP prévues"
+
+msgid "consider subscribing to our quarterly newsletter."
+msgstr "envisagez de vous abonner à notre lettre d'informations trimestrielle."
+
+msgid "Subscribe to newsletter"
+msgstr "Abonnez-vous à la lettre d'informations"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Changelog"
+msgstr "Journal de modifications"
+
+#, python-format
+msgid ""
+"Your installation of LinOTP was updated to version %s. You can find the "
+"changelog and further information about this release at:"
+msgstr ""
+"Votre installation de LinOTP à été mise à jour à la version %s. Vous pouvez "
+"trouver le journal des modifications et d'autres informations sur cette "
+"version à :"
+
+msgid "Our newsletter covers:"
+msgstr "Notre lettre d'informations présente :"
+
+msgid "product updates,"
+msgstr "les mises à jour de produits,"
+
+msgid "We would be happy to receive your feedback about LinOTP."
+msgstr "Nous serions heurues de recevoir votre avis sur LinOTP."
+
+msgid "Subscribe"
+msgstr "Abonnez-vous"
+
+msgid "Feedback"
+msgstr "Commentaire"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Thank you for using LinOTP"
+msgstr "Merci d'utiliser LinOTP"
+
+msgid ""
+"We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution."
+msgstr ""
+"Nous nous félicitons que vous utilisiez  LinOTP by KeyIdentitypour solution "
+"2FA."
+
+msgid ""
+"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
+"core, and would like further information about:"
+msgstr ""
+"Si vous êtes intéressé par la plate-forme de KeyIdentity basée sur LinOTP, "
+"et si vous voulez en savoir davantage :"
+
+msgid "please consider subscribing to our quarterly newsletter."
+msgstr "envisagez de vous abonner à notre lettre d'informations trimestrielle."
+
+msgid "Do not show this reminder again"
+msgstr "Ne plus afficher ce rappel"
 
 msgid "Get Temporary Token"
 msgstr "Générer un token temporaire"
@@ -1689,9 +1812,6 @@ msgstr "Aucun résolveur sélectionné"
 msgid "Please select at least one resolver from the resolver list."
 msgstr ""
 "Veuillez sélectionner au moins un résolveur dans la liste des résolveurs."
-
-msgid "Close"
-msgstr "Fermer"
 
 msgid ""
 "LDAP Server, especially Active Directory, implement a default serverside "
@@ -1729,6 +1849,15 @@ msgstr "Formulaire erreurs de saisie"
 
 msgid "Token Config"
 msgstr "Configuration token"
+
+msgid "Failed to enroll token"
+msgstr "Impossible d'inscrire le token  !"
+
+msgid "The entered PINs do not match!"
+msgstr "Les PIN entrés ne sont pas identiques !"
+
+msgid "Failed to set PIN"
+msgstr "Impossible de définir le PIN"
 
 msgid "Failed to save provider"
 msgstr "Impossible d'enregistrer le fournisseur"
@@ -1771,21 +1900,6 @@ msgstr "Impossible de définir le fournisseur par défaut% s"
 msgid "Error setting default provider"
 msgstr "Erreur lors de l'initialisation du fournisseur par défaut"
 
-msgid "A resolver with name"
-msgstr "Nom du résolveur "
-
-msgid "already exists."
-msgstr "existe déjà."
-
-msgid "Do you want to overwrite the existing definition?"
-msgstr "Voulez-vous remplacer la définition existante ?"
-
-msgid "Overwrite resolver definition"
-msgstr "Redéfinir la définition du résolveur"
-
-msgid "Overwrite"
-msgstr "Remplacer"
-
 #, python-format
 msgid "The %s dialog contains unsaved changes."
 msgstr "Le dialogue %s contient des modifications non enregistrées."
@@ -1825,9 +1939,6 @@ msgstr "Client"
 msgid "Time"
 msgstr "Heure"
 
-msgid "All other columns"
-msgstr "Toutes les autres colonnes"
-
 msgid "Serial Number"
 msgstr "Numéro de série"
 
@@ -1860,6 +1971,9 @@ msgstr "Résolveur"
 
 msgid "Login Name"
 msgstr "Nom de connexion"
+
+msgid "All other columns"
+msgstr "Toutes les autres colonnes"
 
 msgid "UserIdResolver"
 msgstr "UserIdResolver"
@@ -2034,13 +2148,13 @@ msgstr ""
 "Impossible de migrer le token !\n"
 "\n"
 
-msgid "Authentication"
-msgstr "Authentification"
-
 msgid "You need to enable Javascript to use the authentication forms."
 msgstr ""
 "Vous devez activer JavaScript pour pouvoir utiliser les formulaires "
 "d'authentification"
+
+msgid "Authentication"
+msgstr "Authentification"
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "Ici, vous pouvez vous authentifier avec votre token OCRA OTP."
@@ -2093,7 +2207,7 @@ msgid "OCRA2 Login"
 msgstr "Connexion OCRA2"
 
 msgid "OTP PIN"
-msgstr "OTP PIN"
+msgstr "PIN OTP"
 
 msgid "message / data"
 msgstr "message/donnée"
@@ -2137,6 +2251,11 @@ msgstr "Connexion"
 msgid "LinOTP 2 Management"
 msgstr "Gestion LinOTP"
 
+msgid "You need to enable Javascript to use the LinOTP Management Web UI."
+msgstr ""
+"Vous devez activer JavaScript afin de pouvoir utiliser l'interface Web de "
+"gestion LinOTP."
+
 msgid "LinOTP Config"
 msgstr "Configuration LinOTP"
 
@@ -2158,9 +2277,8 @@ msgstr "Configuration de l'opérateur SMS"
 msgid "Email Provider Config"
 msgstr "Configuration de l'opérateur d'email "
 
-#, fuzzy
 msgid "Push Provider Config"
-msgstr "Configuration du fournisseur d'accès"
+msgstr "Pousser la configuration du fournisseur"
 
 msgid "Policies"
 msgstr "Directives"
@@ -2216,11 +2334,6 @@ msgstr "Connecté en tant que"
 msgid "Logout"
 msgstr "Fermer la session"
 
-msgid "You need to enable Javascript to use the LinOTP Management Web UI."
-msgstr ""
-"Vous devez activer JavaScript afin de pouvoir utiliser l'interface Web de "
-"gestion LinOTP."
-
 msgid "Selected User"
 msgstr "Utilisateur sélectionné"
 
@@ -2266,18 +2379,20 @@ msgstr "Audit Trail"
 msgid "Settings"
 msgstr "Paramètres"
 
+msgid "Caching"
+msgstr "Mise en cache"
+
 msgid "GUI settings"
 msgstr "Paramètres GUI"
 
 msgid "Client Identification"
 msgstr "Identification du client"
 
-#, fuzzy
 msgid "Certificates"
-msgstr "Certificat CA"
+msgstr "Certificats"
 
 msgid "Split at @ sign (splitAtSign)"
-msgstr "Séparer au signe @"
+msgstr "Séparer au signe @ (splitAtSign)"
 
 msgid "This will use the part right of an @-sign as realm"
 msgstr "La partie à droite du signe @ sera utilisée."
@@ -2359,8 +2474,30 @@ msgstr ""
 "à envoyer une adresse IP différente de la leur pour les directives "
 "d'autorisation."
 
+msgid "Resolver Lookup Caching"
+msgstr "Mise en cache de la recherche du résolveur"
+
+msgid "Enable caching of the realm to user id resolver lookup"
+msgstr ""
+"Activer la mise en cache du domaine pour la recherche du résolveur de l'id "
+"utilisateur"
+
+msgid "The expiration of the resolver lookup caching in seconds"
+msgstr ""
+"L'expiration de la mise en cache de la recherche du résolveur en secondes"
+
+msgid "User Lookup Caching"
+msgstr "Mise en cache de la recherche utilisateur"
+
+msgid "Enable the caching of user lookup in a resolver"
+msgstr "Activer la mise en cache de la recherche utilisateur dans un résolveur"
+
+msgid "The expiration of the user lookup caching in seconds"
+msgstr ""
+"L'expiration de la mise en cache de la recherche utilisateur en secondes"
+
 msgid "Selfservice portal"
-msgstr "Portail d'auto-gestion"
+msgstr "Utilisez un certificat système"
 
 msgid "Display realm select box"
 msgstr "Afficher la liste de sélection des domaines"
@@ -2391,12 +2528,11 @@ msgid ""
 msgstr ""
 "L'adresse IP du proxy de transfert de confiance, qui fournit la REMOTE_ADDR."
 
-#, fuzzy
 msgid "Use system certificate"
-msgstr "Certificat de clé publique"
+msgstr "Utiliser un certificat système"
 
 msgid "If checked the linotp server will use system certificates"
-msgstr ""
+msgstr "Si coché, le serveur linotp utilisera des certificats système"
 
 msgid "Save Config"
 msgstr "Enregistrer la configuration"
@@ -2449,17 +2585,14 @@ msgstr "Souhaitez-vous supprimer le fournisseur ?"
 msgid "Email Provider Configuration"
 msgstr "Configuration fournisseur e-mail"
 
-#, fuzzy
 msgid "Push Provider: create and edit"
-msgstr "Configuration du fournisseur d'accès SMS "
+msgstr "Fournisseur push : créer et modifier"
 
-#, fuzzy
 msgid "Push Provider"
-msgstr "Fournisseur d'accès"
+msgstr "Fournisseur push"
 
-#, fuzzy
 msgid "Push Provider Configuration"
-msgstr "Configuration fournisseur e-mail"
+msgstr "Configuration fournisseur push"
 
 msgid "OCRA Token"
 msgstr "Token OCRA"
@@ -2471,7 +2604,7 @@ msgid "OCRA token settings"
 msgstr "Paramètres du token OCRA"
 
 msgid "Maximum concurrent OCRA challenges"
-msgstr "Nombre maximum de défis OCRA simultanés"
+msgstr "Nombre maximal de défis OCRA simultanés"
 
 msgid "This is the maximum concurrent challenges per OCRA Token."
 msgstr ""
@@ -2559,8 +2692,8 @@ msgstr "Contact support"
 msgid "Ok"
 msgstr "OK"
 
-msgid "LSE LinOTP Support and Subscription"
-msgstr "LSE LinOTP support et abonnement "
+msgid "KeyIdentity LinOTP Support and Subscription"
+msgstr "Assistance et abonnement KeyIdentity LinOTP"
 
 msgid "Set Support and Subscription"
 msgstr "Enregistrer le support et l'abonnement"
@@ -2584,11 +2717,14 @@ msgstr "Pour plus d'informations, consultez :"
 msgid "or"
 msgstr "ou"
 
+msgid "View latest changelog"
+msgstr "Afficher le dernier journal de modifications"
+
 msgid "Authors:"
 msgstr "Auteurs :"
 
-msgid "About LSE LinOTP"
-msgstr "À propos de LSE LinOTP"
+msgid "About KeyIdentity LinOTP"
+msgstr "À propos de KeyIdentity LinOTP"
 
 msgid "You may reset the PINs for the tokens"
 msgstr "Vous pouvez réinitialiser les codes PIN pour le token"
@@ -2859,6 +2995,9 @@ msgstr "Fichier token mot de passe quotidien"
 msgid "Upload the eToken data file:"
 msgstr "Charger le fichier eToken .dat :"
 
+msgid "Timebased eToken can use a different start date"
+msgstr "L'eToken basé sur un temps peut utiliser une date de début différente"
+
 msgid "eToken DAT File"
 msgstr "Fichier eToken .dat"
 
@@ -2902,6 +3041,9 @@ msgstr "Supprimer le standard"
 msgid "Create a new or select one available UserIdResolver"
 msgstr ""
 "Ici, vous pouvez créer un nouveau résolveur ou éditer un résolveur existant"
+
+msgid "Duplicate"
+msgstr "Doublon"
 
 msgid "Which type of resolver do you want to create?"
 msgstr "Quel type de UserIdResolver souhaitez-vous créer ?"
@@ -2960,9 +3102,6 @@ msgstr "a été déployé pour l'utilisateur"
 
 msgid "token enrollment"
 msgstr "Token déployé"
-
-msgid "OK"
-msgstr "OK"
 
 msgid "Token serial: "
 msgstr "Numéro de série : "
@@ -3159,6 +3298,14 @@ msgstr "Bind DN"
 msgid "Bind Password"
 msgstr "Bind mot de passe"
 
+msgid ""
+"If security relevant information is changed, for example the URL, the "
+"password has to be provided to avoid unprivileged exposure of the password."
+msgstr ""
+"Si une information de sécurité est modifiée, par exemple, l'URL, le mot de "
+"passe doit être fourni pour éviter l'exposition non protégée du mot de "
+"passe. "
+
 msgid "Sizelimit"
 msgstr "Limite de taille"
 
@@ -3166,7 +3313,7 @@ msgid "No anonymous referral chasing"
 msgstr "Pas de suivi anonyme des Referrals"
 
 msgid "Enforce TLS"
-msgstr ""
+msgstr "Appliquer TLS"
 
 msgid "Test LDAP Server connection"
 msgstr "Serveur LDAP tester la connexion"
@@ -3315,8 +3462,7 @@ msgstr ""
 "qu'un seul token."
 
 msgid "Error: unknown tokentype in function token_enroll()"
-msgstr ""
-"Erreur : type de jeton inconnu dans la fonction token_enroll()."
+msgstr "Erreur : type de token inconnu dans la fonction token_enroll()."
 
 msgid "Could not find a token for this OTP value."
 msgstr "Aucun token n'a pu être déterminé pour cette valeur OTP."
@@ -3328,7 +3474,7 @@ msgid "Failed to communicate to LinOTP server"
 msgstr "Impossible de communiquer avec le serveur LinOTP !"
 
 msgid "unknown token type to load!"
-msgstr "Type de jeton inconnu lors de l'import !"
+msgstr "Type de token inconnu lors de l'import !"
 
 msgid "You may only upload support subscription files ending with .pem"
 msgstr ""
@@ -3586,28 +3732,25 @@ msgid "hashlib"
 msgstr "Algorithme Hash"
 
 msgid "count auth max"
-msgstr "Compteur d'authentification maximum"
+msgstr "compteur d'authentifications maximum"
 
-#, fuzzy
 msgid "count auth success max"
-msgstr "Compteur d'authentification maximum"
+msgstr "compteur d'authentifications réussies maximum"
 
-#, fuzzy
 msgid "validity start"
-msgstr "Début de la période de validité"
+msgstr "début de la validité"
 
-#, fuzzy
 msgid "validity end"
-msgstr "Fin de la période de validité"
+msgstr "fin de validité"
 
 msgid "time window"
-msgstr "Fenêtre temporelle"
+msgstr "fenêtre temporelle"
 
 msgid "time shift"
-msgstr "Décalage temporel"
+msgstr "décalage temporel"
 
 msgid "mobile phone number"
-msgstr "Numéro de téléphone mobile"
+msgstr "numéro de téléphone mobile"
 
 msgid "Get OTP"
 msgstr "Demander les valeurs OTP"
@@ -3891,6 +4034,61 @@ msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr ""
 "Sinon, numérisez le code QR affiché ci-dessous avec votre iPhone pour "
 "importer le profil."
+
+#~ msgid "sales@lsexperts.de"
+#~ msgstr "sales@lsexperts.de"
+
+#~ msgid ""
+#~ "The maximum allowed number of tokens for the realm %s (%s) was reached. "
+#~ "You can not assign any more tokens. Check the policies."
+#~ msgstr ""
+#~ "Le nombre maximum de token dans un domaine %s (%s) a été atteint. Vous ne "
+#~ "pouvez plus déployer de token supplémentaires. Veuillez vérifier la "
+#~ "directive."
+
+#~ msgid ""
+#~ "Please enter a valid searchfilter like this: \n"
+#~ "    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+#~ "\"mobile\" \n"
+#~ "    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+#~ msgstr ""
+#~ "Veuillez entrer un filtre de recherche LDAP valide, tel que :\n"
+#~ " { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+#~ "\"mobile\" \n"
+#~ "  : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+
+#~ msgid ""
+#~ "Please enter a valid searchfilter like this: \n"
+#~ "    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt"
+#~ "\", \"phone\" : \"telephoneNumber\", \"mobile\" \n"
+#~ "    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+#~ msgstr ""
+#~ "Veuillez entrer un filtre de recherche valide, tel que : \n"
+#~ " { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
+#~ "\"phone\" : \"telephoneNumber\", \"mobile\" \n"
+#~ "  : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+
+#~ msgid "A resolver with name"
+#~ msgstr "Nom du résolveur "
+
+#~ msgid "already exists."
+#~ msgstr "existe déjà."
+
+#~ msgid "Do you want to overwrite the existing definition?"
+#~ msgstr "Voulez-vous remplacer la définition existante ?"
+
+#~ msgid "Overwrite resolver definition"
+#~ msgstr "Redéfinir la définition du résolveur"
+
+#~ msgid "Overwrite"
+#~ msgstr "Remplacer"
+
+#~ msgid "About LSE LinOTP"
+#~ msgstr "À propos de LSE LinOTP"
 
 #~ msgid "LDAP attributes"
 #~ msgstr "Attributs LDAP"

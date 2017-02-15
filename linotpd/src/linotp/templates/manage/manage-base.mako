@@ -544,7 +544,7 @@ if isinstance(lang, list):
                               id="push_provider_config" cols='35' rows='6'
                               placeholder=
 '{
-"push_url": "https://push.keyidentity.com",
+"push_url": "https://push.keyidentity.com/send",
 "access_certificate": "/etc/linotp2/push-license.pem",
 "server_certificate": "/etc/linotp2/keyidentity-push-ca-bundle.crt"
 }'

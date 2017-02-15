@@ -291,14 +291,10 @@ docker-build-selenium: docker-build-linotp
 	cd $(SELENIUM_TESTS_DIR) \
 		&& $(DOCKER_BUILD) \
 			-t selenium_tester .
-
-	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose build
-
 .PHONY: docker-run-selenium
 docker-run-selenium: docker-build-selenium
 	cd $(SELENIUM_TESTS_DIR) \
-		&& docker-compose up --no-build selenium_tester
+		&& docker-compose run --rm selenium_tester
 	cd $(SELENIUM_TESTS_DIR) \
 		&& docker-compose down
 
