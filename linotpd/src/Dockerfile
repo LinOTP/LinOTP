@@ -50,6 +50,18 @@ ARG LINOTP_MIRROR=www.linotp.org
 #  LINOTP_DB_USER=user
 #  LINOTP_DB_PASSWORD=password
 #  LINOTP_DB_NAME=database-name
+#
+#
+# To send LinOTP logs directly to
+# Logstash, set LOGSTASH_HOST and
+# LOGSTASH_PORT to point to your
+# Logstash collector. You can optionally
+# add additional tags with the
+# LOGSTASH_TAGS setting. This is a Python
+# list. For example:
+#   LOGSTASH_HOST=logstash1
+#   LOGSTASH_PORT=5000
+#   LOGSTASH_TAGS=('instance1', 'server1')
 
 ENV LINOTP_USER=linotp \
 	LINOTP_DB_TYPE=sqlite \
@@ -63,7 +75,10 @@ ENV LINOTP_USER=linotp \
 	LINOTP_APACHE_AUTH=true \
 	LINOTP_APACHE_SSL=true \
 	APACHE_PORT=443 \
-	APACHE_LOGLEVEL=info
+	APACHE_LOGLEVEL=info \
+	LOGSTASH_HOST= \
+	LOGSTASH_PORT= \
+	LOGSTASH_TAGS=()
 
 # Internal environment variables used by the docker images
 ENV LINOTP_INI_TEMPLATE=/etc/linotp/linotp-docker.ini.tmpl \
@@ -92,6 +107,7 @@ RUN \
     && extraPackages=' \
 	make \
 	python-psycopg2 \
+	python-pip \
     ' \
     && apt-get install \
 		$extraPackages \
@@ -101,7 +117,8 @@ RUN \
 		python-paste python-pastedeploy python-pastescript python-pygments python-pylons \
 		python-pyrad python-qrcode python-repoze.who python-routes python-simplejson \
 		python-sqlalchemy python-tempita python-weberror python-webhelpers python-webob \
-		apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests
+		apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests \
+    && pip install python-logstash
 
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
