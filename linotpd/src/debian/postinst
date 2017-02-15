@@ -23,7 +23,7 @@ RAND_DEVICE=/dev/urandom
 FAKE_PASSWORD=This_is_not_the_real_password_we_just_do_not_want_to_be_asked_again_in_case_of_updating_the_package
 LSB_RELEASE=`which lsb_release || true`
 
-NEW_VERSION=2.9.1~rc0-1
+NEW_VERSION=2.9.1-1
 
 DOING_NEW_INSTALLATION=false
 DOING_RE_INSTALLATION=false
