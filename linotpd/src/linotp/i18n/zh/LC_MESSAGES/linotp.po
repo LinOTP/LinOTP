@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"PO-Revision-Date: 2016-08-01 20:38+0100\n"
+"PO-Revision-Date: 2017-02-13 21:05+0800\n"
 "Last-Translator: linotp@keyidentity.com\n"
 "Language-Team: Chinese <>\n"
 "Language: zh\n"
@@ -35,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 1.6.9\n"
 
 #, fuzzy, python-format
 msgid ""
@@ -67,9 +67,6 @@ msgid ""
 msgstr ""
 "如果您对我们的产品或您的评估有任何疑问，我们乐意解答您的咨询。我们也想了解您"
 "对我们产品和您评估的反馈。"
-
-msgid "sales@lsexperts.de"
-msgstr "sales@lsexperts.de"
 
 msgid "Sales hotline: "
 msgstr "销售热线："
@@ -532,13 +529,6 @@ msgstr "无法进行getPolicyPost。未知控制器： %s"
 msgid "multiple tokens found - cannot determine tokentype!"
 msgstr "发现多个令牌，无法确定令牌类型！"
 
-#, python-format
-msgid ""
-"The maximum allowed number of tokens for the realm %s (%s) was reached. You "
-"can not assign any more tokens. Check the policies."
-msgstr ""
-"在域 %s (%s) 内已达到最大允许令牌数量。您无法注册更多的令牌。请检查策略。"
-
 #, fuzzy
 msgid "The name of the policy may only contain the characters  a-zA-Z0-9_."
 msgstr "策略名只能包含字符 a-zA-Z0-9_。"
@@ -850,17 +840,84 @@ msgstr "OCRA 挑战响应令牌，HMAC 基于事件的采样"
 msgid "URL for OCRA2 token"
 msgstr "OCRA2 令牌用链接"
 
-msgid "QRToken"
-msgstr "二维码令牌"
+#, fuzzy
+msgid "PushToken"
+msgstr "TOTP 令牌"
 
-msgid "QRToken Settings"
-msgstr "二维码令牌设置"
+#, fuzzy
+msgid "PushToken Settings"
+msgstr "令牌设置："
 
 msgid "Maximum concurrent challenges"
 msgstr "最大同时挑战数量"
 
 msgid "Challenge Timeout"
 msgstr "挑战超时"
+
+msgid "Public key certificate"
+msgstr "公钥证书"
+
+msgid "certificate id"
+msgstr "证书 ID"
+
+#, fuzzy
+msgid "PushToken - challenge/response Token"
+msgstr "二维码令牌，挑战/响应令牌"
+
+msgid "web ui generated"
+msgstr "生成的 Web 用户界面"
+
+#, fuzzy
+msgid "Enroll Push Token"
+msgstr "令牌注册"
+
+#, fuzzy
+msgid "enroll pushtoken"
+msgstr "注册二维码令牌"
+
+#, fuzzy
+msgid "Activate Push Token"
+msgstr "激活您的二维码令牌"
+
+#, fuzzy
+msgid "Select Push Token: "
+msgstr "选择二维码令牌："
+
+msgid "Enter pin: "
+msgstr "输入 PIN 码"
+
+#, fuzzy
+msgid "Activate token"
+msgstr "激活令牌"
+
+#, fuzzy
+msgid "Challenge sent"
+msgstr "挑战超时"
+
+msgid "A push notification has been sent. Please check your mobile phone."
+msgstr "推送通知已被发送。请检查您的手机。"
+
+#, fuzzy
+msgid "activate your PushToken"
+msgstr "激活您的二维码令牌"
+
+#, fuzzy
+msgid "Policy pushtoken_challenge_callback_url must have a value"
+msgstr "策略 %s 必须有一个值"
+
+#, fuzzy
+msgid "Policy pushtoken_pairing_callback_url must have a value"
+msgstr "策略 %s 必须有一个值"
+
+#, fuzzy
+msgid "Pairing URL"
+msgstr "二维码令牌配对Url"
+
+msgid "QRToken"
+msgstr "二维码令牌"
+
+msgid "QRToken Settings"
+msgstr "二维码令牌设置"
 
 msgid "OTP length"
 msgstr "OTP 长度"
@@ -874,17 +931,8 @@ msgstr "8 位"
 msgid "10 digits"
 msgstr "10 位"
 
-msgid "Public key certificate"
-msgstr "公钥证书"
-
-msgid "certificate id"
-msgstr "证书 ID"
-
 msgid "QRToken - challenge/response Token"
 msgstr "二维码令牌，挑战/响应令牌"
-
-msgid "web ui generated"
-msgstr "生成的 Web 用户界面"
 
 msgid "Enroll your QRToken"
 msgstr "注册您的二维码令牌"
@@ -897,9 +945,6 @@ msgstr "激活您的二维码令牌"
 
 msgid "Select QRToken: "
 msgstr "选择二维码令牌："
-
-msgid "Enter pin: "
-msgstr "输入 PIN 码"
 
 msgid "activate token"
 msgstr "激活令牌"
@@ -1286,6 +1331,14 @@ msgstr ""
 msgid "Unknown provider! %r"
 msgstr "未知供应商！%r"
 
+#, fuzzy
+msgid "password required"
+msgstr "口令加密"
+
+#, fuzzy
+msgid "not changed"
+msgstr "未分配"
+
 msgid "Not a valid json string!"
 msgstr "缺少有效的 JSON 文本！"
 
@@ -1293,6 +1346,9 @@ msgid ""
 "Please enter a valid realm name. It may contain characters, numbers and "
 "'_-.'."
 msgstr "请指定有效的域的名称。它可包含字母、数字和 '_-.' 组成。"
+
+msgid "Resolver name is already in use"
+msgstr "解析器名称已在使用中"
 
 msgid ""
 "Please enter a valid resolver name. It may contain characters, numbers and "
@@ -1329,18 +1385,10 @@ msgstr ""
 "请指定有效的 LDAP 用户搜索过滤器名，如 (&(sAMAccountName=%s)"
 "(objectClass=user))"
 
-msgid ""
-"Please enter a valid searchfilter like this: \n"
-"    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
-"\"mobile\" \n"
-"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
-"\" : \"givenName\" }"
+#, fuzzy, python-format
+msgid "Please enter a valid searchfilter like this: %s"
 msgstr ""
-"请指定有效的 LDAP 搜索过滤器名，如\n"
-"    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
-"\"mobile\" \n"
-"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
-"\" : \"givenName\" }"
+"请指定有效的 LDAP 搜索过滤器名，如 (sAMAccountName=*)(objectClass=user)"
 
 msgid ""
 "Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or "
@@ -1355,19 +1403,6 @@ msgid ""
 msgstr ""
 "请指定有效的驱动程序，如：mysql、postgres、mssql、oracle、ibm_db_sa 或 "
 "ibm_db_sa+pyodbc"
-
-msgid ""
-"Please enter a valid searchfilter like this: \n"
-"    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
-"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
-"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
-"\" : \"givenName\" }"
-msgstr ""
-"请指定有效的搜索过滤器，如 \n"
-"    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt\", "
-"\"phone\" : \"telephoneNumber\", \"mobile\" \n"
-"    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
-"\" : \"givenName\" }"
 
 msgid "Issuer"
 msgstr "发行方"
@@ -1411,6 +1446,13 @@ msgstr "不支持一个用户以上的选择！"
 msgid "Please select only one user."
 msgstr "请只选择一位用户。"
 
+#, fuzzy
+msgid "unknown token type"
+msgstr "导入未知的令牌类型！"
+
+msgid "Error during token type change processing for type \"\".<br><pre></pre>"
+msgstr "进行类型\"\"的令牌类型更改处理过程中发生错误。<br><pre></pre>"
+
 msgid "Found the token: "
 msgstr "找到的令牌："
 
@@ -1432,10 +1474,10 @@ msgstr "无效的许可证"
 msgid "Professional LinOTP support and enterprise subscription"
 msgstr "专业的 LinOTP 支持和企业级订阅"
 
+#, fuzzy, python-format
 msgid ""
 "For professional LinOTP support and enterprise subscription, feel free to "
-"contact <p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE "
-"Leading Security Experts GmbH</a></p> for support agreement purchase."
+"contact %s for support agreement purchase."
 msgstr ""
 "如需购买专业的支持和企业级订阅，请联系我们： \n"
 "<p class=\"contact_info\"><a href=\"mailto:sales@lsexperts.de\">LSE Leading "
@@ -1452,6 +1494,102 @@ msgstr "通过电话 "
 
 msgid "or email"
 msgstr "或电子邮件"
+
+#, fuzzy
+msgid "Welcome to LinOTP"
+msgstr "关于 LinOTP"
+
+msgid "Welcome to your fresh LinOTP installation."
+msgstr "欢迎来到您的全新LinOTP安装。"
+
+msgid ""
+"If you have questions about the setup or installation of LinOTP, please <a "
+"href='https://linotp.org/doc' target='_blank'>refer to our documentation</a>."
+msgstr ""
+"如果您有任何与设置或安装LinOTP相关的问题，请<a href='https://linotp.org/doc' "
+"target='_blank'>参考我们的文档</a>。"
+
+msgid ""
+"<a href='https://keyidentity.com'>KeyIdentity</a> provides LinOTP as an "
+"enterprise 2FA solution."
+msgstr ""
+"<a href='https://keyidentity.com'>KeyIdentity</a>提供LinOTP作为企业2FA解决方"
+"案。"
+
+msgid ""
+"If you are interested in the 2FA platform of KeyIdentity, and want to be "
+"informed about:"
+msgstr "如果您对KeyIdentity的2FA平台感兴趣，并想得到以下内容的通知："
+
+msgid "updates of our products,"
+msgstr "我们产品的更新，"
+
+msgid "upcoming hackathons,"
+msgstr "即将推出黑客松，"
+
+msgid "user and developer conferences,"
+msgstr "使用者和开发者大会，"
+
+msgid "upcoming features in LinOTP"
+msgstr "LinOTP中即将推出的功能"
+
+msgid "consider subscribing to our quarterly newsletter."
+msgstr "考虑订阅我们的季度新闻简报。"
+
+msgid "Subscribe to newsletter"
+msgstr "订阅新闻简报"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Changelog"
+msgstr "更改日志"
+
+#, python-format
+msgid ""
+"Your installation of LinOTP was updated to version %s. You can find the "
+"changelog and further information about this release at:"
+msgstr ""
+"您的LinOTP安装已更新到版本%s。您可以在下面找到有关此版的更改日志和更多信息："
+
+msgid "Our newsletter covers:"
+msgstr "我们的新闻简报涉及："
+
+msgid "product updates,"
+msgstr "产品更新，"
+
+msgid "We would be happy to receive your feedback about LinOTP."
+msgstr "我们将很高兴收到您有关LinOTP的反馈。"
+
+#, fuzzy
+msgid "Subscribe"
+msgstr "订阅"
+
+msgid "Feedback"
+msgstr "反馈"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Thank you for using LinOTP"
+msgstr "感谢您使用LinOTP"
+
+msgid ""
+"We are pleased that you are using LinOTP by KeyIdentity as your 2FA solution."
+msgstr " 我们很高兴您使用KeyIdentity的LinOTP作为您的2FA解决方案。"
+
+msgid ""
+"If you are interested in the 2FA platform of KeyIdentity using LinOTP at its "
+"core, and would like further information about:"
+msgstr ""
+"如果您对KeyIdentity在其核心使用LinOTP的2FA平台感兴趣，并希望了解有关以下内容"
+"的更多信息："
+
+msgid "please consider subscribing to our quarterly newsletter."
+msgstr "请考虑订阅我们的季度新闻简报。"
+
+msgid "Do not show this reminder again"
+msgstr "不要再显示此提醒"
 
 msgid "Get Temporary Token"
 msgstr "创建临时令牌"
@@ -1476,9 +1614,6 @@ msgstr "未选择解析器"
 
 msgid "Please select at least one resolver from the resolver list."
 msgstr "请从解析器列表中选择至少一个解析器。"
-
-msgid "Close"
-msgstr "关闭"
 
 msgid ""
 "LDAP Server, especially Active Directory, implement a default serverside "
@@ -1512,6 +1647,18 @@ msgstr "表单验证错误"
 
 msgid "Token Config"
 msgstr "令牌配置"
+
+#, fuzzy
+msgid "Failed to enroll token"
+msgstr "注册令牌失败！"
+
+#, fuzzy
+msgid "The entered PINs do not match!"
+msgstr "密码不相同！"
+
+#, fuzzy
+msgid "Failed to set PIN"
+msgstr "保存供应商失败"
 
 msgid "Failed to save provider"
 msgstr "保存供应商失败"
@@ -1554,21 +1701,6 @@ msgstr "设置默认供应商 %s 失败"
 msgid "Error setting default provider"
 msgstr "设置默认供应商时发生错误"
 
-msgid "A resolver with name"
-msgstr "有名称的解析器"
-
-msgid "already exists."
-msgstr "已存在。"
-
-msgid "Do you want to overwrite the existing definition?"
-msgstr "您是否想覆盖现有解析器？"
-
-msgid "Overwrite resolver definition"
-msgstr "覆盖解析器定义"
-
-msgid "Overwrite"
-msgstr "覆盖"
-
 #, python-format
 msgid "The %s dialog contains unsaved changes."
 msgstr "%s 对话框包含未保存的更改。"
@@ -1606,9 +1738,6 @@ msgstr "客户"
 msgid "Time"
 msgstr "时间"
 
-msgid "All other columns"
-msgstr "所有其他列"
-
 msgid "Serial Number"
 msgstr "序列号"
 
@@ -1641,6 +1770,9 @@ msgstr "解析器"
 
 msgid "Login Name"
 msgstr "登录名"
+
+msgid "All other columns"
+msgstr "所有其他列"
 
 msgid "UserIdResolver"
 msgstr "用户 ID 解析器"
@@ -1815,11 +1947,11 @@ msgstr ""
 "无法迁移令牌！\n"
 "\n"
 
-msgid "Authentication"
-msgstr "认证"
-
 msgid "You need to enable Javascript to use the authentication forms."
 msgstr "您必须启用 Javascript 才能使用认证表单"
+
+msgid "Authentication"
+msgstr "认证"
 
 msgid "Here you may try to authenticate using your OCRA OTP token."
 msgstr "在此，您可以使用 OCRA OTP 令牌进行认证。"
@@ -1914,6 +2046,9 @@ msgstr "登录"
 msgid "LinOTP 2 Management"
 msgstr "LinOTP 管理"
 
+msgid "You need to enable Javascript to use the LinOTP Management Web UI."
+msgstr "您必须启用 Javascript 才能使用 LinOTP Web 管理界面。"
+
 msgid "LinOTP Config"
 msgstr "LinOTP 配置"
 
@@ -1994,9 +2129,6 @@ msgstr "登录作为"
 msgid "Logout"
 msgstr "退出"
 
-msgid "You need to enable Javascript to use the LinOTP Management Web UI."
-msgstr "您必须启用 Javascript 才能使用 LinOTP Web 管理界面。"
-
 msgid "Selected User"
 msgstr "所选用户"
 
@@ -2041,6 +2173,9 @@ msgstr "审计跟踪"
 
 msgid "Settings"
 msgstr "设置"
+
+msgid "Caching"
+msgstr "缓存"
 
 msgid "GUI settings"
 msgstr "GUI 设置"
@@ -2123,6 +2258,24 @@ msgstr ""
 "这是一个用逗号分隔的 IP 地址列表，将自有的 IP 地址用其它地址覆盖，并和授权策"
 "略共同发送。"
 
+msgid "Resolver Lookup Caching"
+msgstr "解析器查找缓存"
+
+msgid "Enable caching of the realm to user id resolver lookup"
+msgstr "启用域到用户id解析器查询的缓存"
+
+msgid "The expiration of the resolver lookup caching in seconds"
+msgstr "解析器查找缓存的到期时间，秒"
+
+msgid "User Lookup Caching"
+msgstr "用户查找缓存"
+
+msgid "Enable the caching of user lookup in a resolver"
+msgstr "启用解析器中的用户查找缓存"
+
+msgid "The expiration of the user lookup caching in seconds"
+msgstr "用户查找缓存的到期时间，秒"
+
 msgid "Selfservice portal"
 msgstr "自助服务门户"
 
@@ -2156,7 +2309,7 @@ msgid "Use system certificate"
 msgstr "公钥证书"
 
 msgid "If checked the linotp server will use system certificates"
-msgstr ""
+msgstr "如果选中，linotp将使用系统证书"
 
 msgid "Save Config"
 msgstr "保存配置"
@@ -2305,7 +2458,8 @@ msgstr "支持联系方式"
 msgid "Ok"
 msgstr "确定"
 
-msgid "LSE LinOTP Support and Subscription"
+#, fuzzy
+msgid "KeyIdentity LinOTP Support and Subscription"
 msgstr "您的 LinOTP 支持和订阅 "
 
 msgid "Set Support and Subscription"
@@ -2317,7 +2471,8 @@ msgstr "请选择您的支持和订阅文件"
 msgid "LinOTP - the open source solution for two factor authentication."
 msgstr "LinOTP，双因素身份验证的开源解决方案。"
 
-msgid "Copyright (C) 2010 - 2017 LSE Leading Security Experts GmbH"
+#, fuzzy
+msgid "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
 msgstr "版权所有 (C) 2010 - 2017 LSE Leading Security Experts GmbH"
 
 msgid "Licensed under AGPLv3"
@@ -2329,11 +2484,15 @@ msgstr "想获得更多信息，请前往："
 msgid "or"
 msgstr "或者"
 
+msgid "View latest changelog"
+msgstr "查看最新的更改日志"
+
 msgid "Authors:"
 msgstr "作者："
 
-msgid "About LSE LinOTP"
-msgstr "关于LSE LinOTP"
+#, fuzzy
+msgid "About KeyIdentity LinOTP"
+msgstr "关于 LinOTP"
 
 msgid "You may reset the PINs for the tokens"
 msgstr "您可以重置令牌的 PIN 码"
@@ -2579,6 +2738,9 @@ msgstr "当日密码令牌文件"
 msgid "Upload the eToken data file:"
 msgstr "eToken .dat 文件上传："
 
+msgid "Timebased eToken can use a different start date"
+msgstr "基于时间的eToken "
+
 msgid "eToken DAT File"
 msgstr "eToken .dat 文件"
 
@@ -2620,6 +2782,9 @@ msgstr "删除标准"
 
 msgid "Create a new or select one available UserIdResolver"
 msgstr "创建一个新的解析器或编辑可使用的用户 ID 解析器"
+
+msgid "Duplicate"
+msgstr "重复"
 
 msgid "Which type of resolver do you want to create?"
 msgstr "您想要创建何种类型的用户 ID 解析器？"
@@ -2672,9 +2837,6 @@ msgstr "注册到用户"
 
 msgid "token enrollment"
 msgstr "注册令牌"
-
-msgid "OK"
-msgstr "确定"
 
 msgid "Token serial: "
 msgstr "序列号 "
@@ -2861,6 +3023,12 @@ msgstr "绑定 DN"
 msgid "Bind Password"
 msgstr "绑定密码"
 
+msgid ""
+"If security relevant information is changed, for example the URL, the "
+"password has to be provided to avoid unprivileged exposure of the password."
+msgstr ""
+"如果安全相关信息被更改，例如URL，则必须提供密码，以避免未授权的密码泄露。"
+
 msgid "Sizelimit"
 msgstr "长度限制"
 
@@ -2868,7 +3036,7 @@ msgid "No anonymous referral chasing"
 msgstr "没有介绍人匿名追踪"
 
 msgid "Enforce TLS"
-msgstr ""
+msgstr "强制TLS"
 
 msgid "Test LDAP Server connection"
 msgstr "测试 LDAP 服务器连接"
@@ -3546,6 +3714,59 @@ msgstr "安装配置文件"
 
 msgid "Or you can scan the QR code below your iPhone to import the secret."
 msgstr "或者您也可通过 iPhone 扫描下面的二维码，导入配置文件。"
+
+#~ msgid "sales@lsexperts.de"
+#~ msgstr "sales@lsexperts.de"
+
+#~ msgid ""
+#~ "The maximum allowed number of tokens for the realm %s (%s) was reached. "
+#~ "You can not assign any more tokens. Check the policies."
+#~ msgstr ""
+#~ "在域 %s (%s) 内已达到最大允许令牌数量。您无法注册更多的令牌。请检查策略。"
+
+#~ msgid ""
+#~ "Please enter a valid searchfilter like this: \n"
+#~ "    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+#~ "\"mobile\" \n"
+#~ "    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+#~ msgstr ""
+#~ "请指定有效的 LDAP 搜索过滤器名，如\n"
+#~ "    { \"username\": \"sAMAccountName\", \"phone\" : \"telephoneNumber\", "
+#~ "\"mobile\" \n"
+#~ "    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+
+#~ msgid ""
+#~ "Please enter a valid searchfilter like this: \n"
+#~ "    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt"
+#~ "\", \"phone\" : \"telephoneNumber\", \"mobile\" \n"
+#~ "    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+#~ msgstr ""
+#~ "请指定有效的搜索过滤器，如 \n"
+#~ "    { \"username\": \"usercolumn\", \"password\":\"pw\", \"salt\": \"salt"
+#~ "\", \"phone\" : \"telephoneNumber\", \"mobile\" \n"
+#~ "    : \"mobile\", \"email\" : \"mail\", \"surname\" : \"sn\", \"givenname"
+#~ "\" : \"givenName\" }"
+
+#~ msgid "A resolver with name"
+#~ msgstr "有名称的解析器"
+
+#~ msgid "already exists."
+#~ msgstr "已存在。"
+
+#~ msgid "Do you want to overwrite the existing definition?"
+#~ msgstr "您是否想覆盖现有解析器？"
+
+#~ msgid "Overwrite resolver definition"
+#~ msgstr "覆盖解析器定义"
+
+#~ msgid "Overwrite"
+#~ msgstr "覆盖"
+
+#~ msgid "About LSE LinOTP"
+#~ msgstr "关于LSE LinOTP"
 
 #~ msgid "LDAP attributes"
 #~ msgstr "LDAP 属性"
