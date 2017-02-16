@@ -108,13 +108,4 @@ To build packages that can be installed with pip do the following:
     make create
     # pip install ../build/LinOTPAdminClientCLI-<VERSION>.tar.gz
 
-    cd adminclient/LinOTPAdminClientGUI/src
-    make create
-    # pip install ../build/LinOTPAdminClientGUI-<VERSION>.tar.gz
-
-    cd auth_modules/src/pam_py_linotp
-    make create
-    # pip install ../build/pam_py_linotp-<VERSION>.tar.gz
-
-
 That's all folks - happy developing ;-)

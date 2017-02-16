@@ -13,7 +13,6 @@ per component, which are:
  * useridresolver - integrate your user information through LDAP or SQL [AGPL v3]
  * smsprovider    - module to support the submission of SMS through different channels [AGPL v3]
 
- * auth_modules   - authentication modules for Radius and PAM [GPL v2]
  * adminclient    - utilities to administrate LinOTP server and to enroll tokens [GPL v2]
 
 
