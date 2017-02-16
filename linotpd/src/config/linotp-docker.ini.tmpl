@@ -128,31 +128,47 @@ keys = root, linotp, sqlalchemy
 
 ## root module logging definition:
 [logger_root]
-level = WARN
-handlers = file
+level = INFO
+{{ if .Env.LOGSTASH_HOST }}
+handlers = console, logstash
+{{ else }}
+handlers = console
+{{ end }}
 
 ## linotp module logging definition:
 [logger_linotp]
-level = WARN
-handlers = file
+level = INFO
+handlers =
 qualname = linotp
 
 [logger_sqlalchemy]
 level = ERROR
-handlers = file
+handlers =
 qualname = sqlalchemy.engine
 # "level = INFO" logs SQL queries.
 # "level = DEBUG" logs SQL queries and results.
 # "level = WARN" logs neither.  (Recommended for production systems.)
 
 [handlers]
-keys = file
+{{ if .Env.LOGSTASH_HOST }}
+keys = console, logstash
+{{ else }}
+keys = console
+{{ end }}
 
-[handler_file]
+[handler_console]
 class = StreamHandler
 args = (sys.stdout,)
-level = WARN
+level = DEBUG
 formatter = generic
+
+{{ if .Env.LOGSTASH_HOST }}
+[handler_logstash]
+class = logstash.UDPLogstashHandler
+level = INFO
+args = ('{{ .Env.LOGSTASH_HOST }}', {{ .Env.LOGSTASH_PORT }}, 'linotp', {{ .Env.LOGSTASH_TAGS }}, False, 1)
+{{ end }}
+
 
 [formatters]
 keys = generic
