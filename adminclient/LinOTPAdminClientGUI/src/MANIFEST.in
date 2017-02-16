@@ -1,6 +1,0 @@
-include glinotpadm.glade
-include linotp_logo_200x68_72dpi.png
-include logo_main_lse.png
-recursive-include locale *
-include doc/glinotpadm.py.1
-include tools/linotp-etng-enrollment.1
