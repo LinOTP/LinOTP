@@ -1,3 +1,9 @@
+linotp (2.9.2~0dev0-1) jessie; urgency=low
+
+  * Set new version 2.9.2~0dev0-1
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 16 Feb 2017 09:56:07 +0100
+
 linotp (2.9.1-1) jessie; urgency=low
 
   Enhancements:
