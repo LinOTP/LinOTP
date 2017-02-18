@@ -804,7 +804,7 @@ def _retrieveAllConfigDB():
 def storeConfig(key, val, typ=None, desc=None):
 
     log_val = val
-    if type and typ == 'password':
+    if typ and typ == 'password':
         log_val = "XXXXXXX"
     log.debug('[storeConfig] %r:%r' % (key, log_val))
 

@@ -39,13 +39,15 @@ import re
 import logging
 
 from . import resolver_registry
-from UserIdResolver import (UserIdResolver,
-                            ResolverLoadConfigError
-                            )
 
+from UserIdResolver import UserIdResolver
+from UserIdResolver import ResolverLoadConfigError
 from UserIdResolver import getResolverClass
 
+from linotp.lib.type_utils import text
+
 log = logging.getLogger(__name__)
+
 
 def str2unicode(input_str):
     """
@@ -70,6 +72,7 @@ def str2unicode(input_str):
                 raise exx
 
     return output_str
+
 
 def tokenise(r):
     def _(s):
@@ -110,6 +113,10 @@ class IdResolver (UserIdResolver):
           "description": 4,
           "email": 4,
           }
+
+    resolver_parameters = {
+        "fileName": (True, None, text),
+    }
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
@@ -498,20 +505,6 @@ class IdResolver (UserIdResolver):
     def getResolverDescriptor(self):
         return IdResolver.getResolverClassDescriptor()
 
-    def getConfigEntry(self, config, key, conf, required=True):
-        ckey = key
-        cval = ""
-        if conf != "" or None:
-            ckey = ckey + "." + conf
-            if ckey in config:
-                cval = config[ckey]
-        if cval == "":
-            if key in config:
-                cval = config[key]
-        if cval == "" and required == True:
-            raise Exception("missing config entry: " + key)
-        return cval
-
     def loadConfig(self, config, conf):
         """ loadConfig(configDict)
             The UserIdResolver could be configured
@@ -519,9 +512,15 @@ class IdResolver (UserIdResolver):
             this could be the passwd file ,
             whether it is /etc/passwd or /etc/shadow
         """
-        fileName = self.getConfigEntry(config,
-                                        'linotp.passwdresolver.fileName', conf)
 
+        l_config, missing = self.filter_config(config, conf)
+
+        if missing:
+            log.error("missing config entries: %r", missing)
+            raise ResolverLoadConfigError(" missing config entries:"
+                                          " %r" % missing)
+
+        fileName = l_config["fileName"]
         fileName = os.path.realpath(fileName)
 
         if (not os.path.isfile(fileName) or not os.access(fileName, os.R_OK)):

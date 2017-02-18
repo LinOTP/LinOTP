@@ -29,14 +29,13 @@
 """
 
 
+import os
+import logging
 
 from useridresolver.UserIdResolver import getResolverClass
 
 from linotp.tests import TestController
 
-
-import os
-import logging
 log = logging.getLogger(__name__)
 
 
@@ -63,24 +62,23 @@ class TestPasswdController(TestController):
         Testing PasswdIdResolver
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-passwd') }, "")
+        y.loadConfig({'fileName':
+                      os.path.join(self.fixture_path, 'my-passwd')}, "")
 
-        userlist = y.getUserList({'username':'*', "userid":"= 1000"})
-        print userlist
-        assert userlist[0].get('username') == "heinz"
+        userlist = y.getUserList({'username': '*',
+                                  "userid": "= 1000"})
 
+        self.assertTrue(userlist[0].get('username') == "heinz", userlist)
 
         loginId = y.getUserId("heinz")
-        print loginId
-        assert loginId == '1000'
+        self.assertTrue(loginId == '1000', loginId)
 
         ret = y.getUserInfo(loginId)
-        print ret
-        assert ret.get('username') == "heinz"
+        self.assertTrue(ret.get('username') == "heinz", ret)
 
         username_exists = y.getUsername('1000')
-        print "Username exists: %r" % username_exists
-        assert username_exists
+        msg = "Username exists: %r" % username_exists
+        self.assertTrue(username_exists, msg)
 
     def test_no_file(self):
         '''
@@ -89,25 +87,23 @@ class TestPasswdController(TestController):
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
         y.loadFile()
 
-        userlist = y.getUserList({'username':'*', "userid":"= 0"})
-        print userlist
-        assert userlist[0].get('username') == "root"
-
+        userlist = y.getUserList({'username': '*',
+                                  "userid": "= 0"})
+        self.assertTrue(userlist[0].get('username') == "root", userlist)
 
         loginId = y.getUserId("root")
-        print loginId
-        assert loginId == '0'
+        self.assertTrue(loginId == '0', loginId)
 
         ret = y.getUserInfo(loginId)
-        print ret
-        assert ret.get('username') == "root"
+        self.assertTrue(ret.get('username') == "root", ret)
 
     def test_checkpass_shadow(self):
         '''
         Testing checkpass with PasswdIdResolver with a shadow passwd file
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-passwd') }, "")
+        y.loadConfig({'fileName':
+                      os.path.join(self.fixture_path, 'my-passwd')}, "")
 
         success = False
         try:
@@ -115,31 +111,31 @@ class TestPasswdController(TestController):
         except NotImplementedError:
             success = True
 
-        assert success
+        self.assertTrue(success)
 
     def test_checkpass(self):
         '''
         Testing checkpass
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-pass2') }, "")
+        y.loadConfig({'fileName':
+                      os.path.join(self.fixture_path, 'my-pass2')}, "")
 
         res = y.checkPass('2001', "geheim")
-        print "result %r" % res
-        assert res
+        msg = "result %r" % res
+        self.assertTrue(res, msg)
 
         res = y.checkPass('2001', "wrongPW")
-        print "result %r" % res
-        assert res is False
+        msg = "result %r" % res
+        self.assertTrue(res is False, msg)
 
     def test_searchfields(self):
         '''
         Testing getSearchfields
         '''
         y = getResolverClass("PasswdIdResolver", "IdResolver")()
-        y.loadConfig({ 'linotp.passwdresolver.fileName' : os.path.join(self.fixture_path, 'my-pass2') }, "")
+        y.loadConfig({'fileName':
+                      os.path.join(self.fixture_path, 'my-pass2')}, "")
 
         s = y.getSearchFields()
-        print s
-        assert s
-
+        self.assertTrue(s, s)

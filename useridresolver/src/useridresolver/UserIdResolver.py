@@ -41,6 +41,12 @@ Defines the rough interface for a UserId Resolver
 
 """
 
+from linotp.lib.type_utils import password
+import logging
+
+
+log = logging.getLogger(__name__)
+
 
 class ResolverLoadConfigError(Exception):
     pass
@@ -58,6 +64,7 @@ class UserIdResolver(object):
 
     critical_parameters = []
     crypted_parameters = []
+    resolver_parameters = {}
 
     def __init(self):
         """
@@ -161,6 +168,68 @@ class UserIdResolver(object):
         :return: the resolver identifier string - empty string if not exist
         """
         return self.name
+
+    @classmethod
+    def filter_config(cls, config, conf=''):
+        """
+        build a dict with the parameters of the resolver
+
+        the config could either be a linotp config object or a local dictionary
+        which is used to check if all required parameters are correctly set
+
+        - we have to support as well linotp global config entries, which are
+          indicated by startting with a 'linotp.' prefix. Example is the
+          linotp.use_system_certs, which is used in the ldap resolver
+
+        to support the variations of key, an list of search keys is build. for
+        each of these keys a lookup in the config is made.
+
+        :param config: the config which is provided during runtime of the
+                       resolver loading and while testconnection
+        :param conf: the resolver name and configuration identifier
+
+        :return: tuple with the dictionary with the filtered entries and the
+                 list of missing parameters
+        """
+
+        l_config = {}
+        missing = []
+
+        # ------------------------------------------------------------------ --
+
+        # filtering in the provided config for the resolver required parameters
+
+        for key, attr in cls.resolver_parameters.items():
+
+            required, default, typ = attr
+
+            search_keys = [key]
+
+            if 'linotp.' in key:
+                ext_key = '.'.join(key.split('.')[1:])
+                search_keys.append(ext_key)
+
+            else:
+                ext_key = 'linotp.%s.%s.%s' % (
+                          cls.getResolverClassType(), key, conf
+                          )
+
+                if typ == password:
+                    search_keys.append('enc' + ext_key)
+                search_keys.append(ext_key)
+
+            for search_key in search_keys:
+                if search_key in config:
+                    l_config[key] = typ(config.get(search_key))
+                    break
+
+            if key not in l_config:
+                if required:
+                    missing.append(key)
+                else:
+                    l_config[key] = typ(default)
+
+        return l_config, missing
 
     def loadConfig(self, config, conf):
         return self

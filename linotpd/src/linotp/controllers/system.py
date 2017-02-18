@@ -775,7 +775,7 @@ class SystemController(BaseController):
             log.exception("Failed to load resolver definition %r \n %r",
                           exx, param.keys())
             Session.rollback()
-            return sendError(response, exx)
+            return sendError(response, msg % new_resolver_name)
 
         except Exception as exx:
             log.exception("[setResolver] error saving config: %r", exx)
