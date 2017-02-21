@@ -182,7 +182,9 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         params['ldap_uri'] = 'ttt' + ldap_uri
 
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue(not PASSWORD, PASSWORD)
+
+        self.assertTrue("Missing parameter: ['BINDPW']" in response,
+                        response)
 
         #
         # use same resolver name but different URI and password => password
@@ -228,6 +230,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
                        "Table": "sql_table",
                        "Where": "sql_where",
                        "ConnectionParams": "sql_conparams",
+                       "Map": "sql_map",
                        }
 
         for key, target_key in definitions.items():
@@ -255,7 +258,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         params['name'] = 'undefined'
         del params['previous_name']
         response = self.make_admin_request('testresolver', params=params)
-        self.assertTrue("Missing parameter: '['Password']'" in response)
+        self.assertTrue("Missing parameter: ['Password']" in response)
 
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
