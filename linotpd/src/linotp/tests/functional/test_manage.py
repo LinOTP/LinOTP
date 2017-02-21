@@ -54,26 +54,27 @@ class TestManageController(TestController):
         TestController.setUp(self)
         self.set_config_selftest()
 
-        ## remove all other tokens
+        # remove all other tokens
         self.delete_all_token()
 
-        fixture_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'fixtures',
-            )
         # create resolvers
-        response = self.app.get(url(controller='system', action='setResolver'),
-                                params={'name': 'reso1',
-                                        'type': 'passwdresolver',
-                                        'fileName': os.path.join(fixture_path,
-                                                                 'my-passwd')})
+        response = self.app.get(
+                    url(controller='system', action='setResolver'),
+                    params={'name': 'reso1',
+                            'type': 'passwdresolver',
+                            'fileName': os.path.join(
+                                            self.fixture_path,
+                                            'my-passwd')})
+
         self.assertTrue('"value": true'in response, response)
 
-        response = self.app.get(url(controller='system', action='setResolver'),
-                                params={'name': 'reso2',
-                                        'type': 'passwdresolver',
-                                        'fileName': os.path.join(fixture_path,
-                                                                 'my-pass2')})
+        response = self.app.get(
+                    url(controller='system', action='setResolver'),
+                    params={'name': 'reso2',
+                            'type': 'passwdresolver',
+                            'fileName': os.path.join(
+                                            self.fixture_path,
+                                            'my-pass2')})
         self.assertTrue('"value": true'in response, response)
 
         # create realms

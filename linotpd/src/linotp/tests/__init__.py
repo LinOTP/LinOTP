@@ -107,6 +107,12 @@ class TestController(unittest2.TestCase):
         unittest2.TestCase.__init__(self, *args, **kwargs)
 
         self.appconf = config
+        self.here = self.appconf.get('here')
+
+        self.fixture_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), 'functional',
+            'fixtures',
+        )
 
         # ------------------------------------------------------------------ --
 
@@ -753,12 +759,12 @@ class TestController(unittest2.TestCase):
         resolver_params = {
             'myDefRes': {
                 'name': 'myDefRes',
-                'fileName': '%(here)s/../data/testdata/def-passwd',
+                'fileName': (os.path.join(self.fixture_path, 'def-passwd')),
                 'type': 'passwdresolver',
             },
             'myOtherRes': {
                 'name': 'myOtherRes',
-                'fileName': '%(here)s/../data/testdata/myDom-passwd',
+                'fileName': (os.path.join(self.fixture_path, 'myDom-passwd')),
                 'type': 'passwdresolver',
             }
         }

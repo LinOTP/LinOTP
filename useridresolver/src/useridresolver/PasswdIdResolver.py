@@ -116,6 +116,7 @@ class IdResolver (UserIdResolver):
 
     resolver_parameters = {
         "fileName": (True, None, text),
+        'linotp.root': (False, None, text)
     }
 
     @classmethod
@@ -521,6 +522,12 @@ class IdResolver (UserIdResolver):
                                           " %r" % missing)
 
         fileName = l_config["fileName"]
+
+        # support for relative file names
+
+        if "%(here)s" in fileName and "linotp.root" in l_config:
+            fileName = fileName.replace("%(here)s", l_config["linotp.root"])
+
         fileName = os.path.realpath(fileName)
 
         if (not os.path.isfile(fileName) or not os.access(fileName, os.R_OK)):

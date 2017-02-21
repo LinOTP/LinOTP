@@ -28,7 +28,7 @@
 """
 Test the support for resolver definitions in system or admin policy user entry
 """
-import base64
+import os
 
 import logging
 from linotp.tests import TestController, url
@@ -59,7 +59,7 @@ class TestSelfserviceAuthController(TestController):
         resolver_params = {
             'adminResolver': {
                 'name': 'adminResolver',
-                'fileName': '%(here)s/../data/testdata/admin-passwd',
+                'fileName': (os.path.join(self.fixture_path, 'admin-passwd')),
                 'type': 'passwdresolver',
                 },
             }
@@ -76,8 +76,7 @@ class TestSelfserviceAuthController(TestController):
                   'scope': 'selfservice',
                   'realm': 'myDefRealm',
                   'user': None,
-                  'action': 'history',
-                }
+                  'action': 'history', }
 
         # overwrite the default defintion
         if not param:
@@ -104,8 +103,8 @@ class TestSelfserviceAuthController(TestController):
         policy = {'name': 'T1',
                   'action': 'enrollHMAC',
                   'user': ' passthru.*.myDefRes:#mobile, ',
-                  'realm': '*'
-                 }
+                  'realm': '*'}
+
         self.createPolicy(policy)
 
         # for passthru_user1 do check if policy is defined
