@@ -3185,7 +3185,7 @@ class TestPolicies(TestController):
                                            params=params,
                                            auth_user=auth_user)
 
-        self.assertTrue('"value": "otpauth://hotp/max1?' in response,
+        self.assertTrue('"value": "otpauth://hotp/LinOTP:max1?' in response,
                         response)
 
         # enroll token for max2
@@ -3199,7 +3199,7 @@ class TestPolicies(TestController):
                                            params=params,
                                            auth_user=auth_user)
 
-        self.assertTrue('value": "otpauth://hotp/hmac2?' in response, response)
+        self.assertTrue('value": "otpauth://hotp/LinOTP:hmac2?' in response, response)
 
         # add tokenissuer policy
         params = {'name': 'tokenissuer_with_realm',
