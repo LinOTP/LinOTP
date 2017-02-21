@@ -55,6 +55,8 @@ from linotp.lib.openid import SQLStorage
 
 from linotp.lib.context import request_context
 from linotp.lib.context import request_context_safety
+from linotp.lib.logs import init_logging_config
+from linotp.lib.logs import log_request_timedelta
 
 # this is a hack for the static code analyser, which
 # would otherwise show session.close() as error
@@ -68,6 +70,8 @@ from linotp.model.migrate import run_data_model_migration
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies
 from linotp.lib.util import get_client
+from uuid import uuid4
+from datetime import datetime
 
 import logging
 log = logging.getLogger(__name__)
@@ -379,6 +383,8 @@ def setup_app(conf, conf_global=None, unitTest=False):
 
     Session.commit()
 
+    init_logging_config()
+
     log.info("Successfully set up.")
 
 
@@ -496,6 +502,12 @@ class BaseController(WSGIController):
 
         path = ""
 
+        # we add a unique request id to the request enviroment
+        # so we can trace individual requests in the logging
+
+        environ['REQUEST_ID'] = str(uuid4())
+        environ['REQUEST_START_TIMESTAMP'] = datetime.now()
+
         with request_context_safety():
 
             self.create_context(request, environ)
@@ -531,6 +543,7 @@ class BaseController(WSGIController):
                         data = getattr(c, data_obj)
                         del data
 
+                log_request_timedelta(log)
                 log.debug("request %r done!" % path)
 
             return ret

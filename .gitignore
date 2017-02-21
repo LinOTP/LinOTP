@@ -18,11 +18,6 @@ PKG-INFO
 *.swp
 linotp-build
 
-# Build artifacts
-auth_modules/src/freeradius_perl/debian/files
-auth_modules/src/freeradius_perl/debian/linotp-freeradius-perl.substvars
-auth_modules/src/freeradius_perl/debian/linotp-freeradius-perl/
-
 # adminclient
 adminclient/LinOTPAdminClientCLI/LinOTPAdminClientCLI_*.orig.tar.gz
 adminclient/LinOTPAdminClientCLI/linotp-adminclient-cli_*.dsc
@@ -34,57 +29,7 @@ adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.prerm.debhelp
 adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli.substvars
 adminclient/LinOTPAdminClientCLI/src/debian/linotp-adminclient-cli/
 adminclient/LinOTPAdminClientCLI/src/debian/python-module-stampdir/
-adminclient/LinOTPAdminClientGUI/LinOTPAdminClientGUI_*.orig.tar.gz
-adminclient/LinOTPAdminClientGUI/linotp-adminclient-gui_*.dsc
-adminclient/LinOTPAdminClientGUI/linotp-adminclient-gui_*.tar.gz
-adminclient/LinOTPAdminClientGUI/linotp-adminclient-gui_*_amd64.changes
-adminclient/LinOTPAdminClientGUI/src/debian/files
-adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.postinst.debhelper
-adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.postrm.debhelper
-adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.prerm.debhelper
-adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui.substvars
-adminclient/LinOTPAdminClientGUI/src/debian/linotp-adminclient-gui/
-adminclient/LinOTPAdminClientGUI/src/debian/python-module-stampdir/
 
-# libpam-linotp
-auth_modules/src/libpam-linotp_*.dsc
-auth_modules/src/libpam-linotp_*.tar.gz
-auth_modules/src/libpam-linotp_*.changes
-auth_modules/src/libpam-linotp_*.deb
-auth_modules/src/libpam-linotp/COPYING
-auth_modules/src/libpam-linotp/INSTALL
-auth_modules/src/libpam-linotp/Makefile
-auth_modules/src/libpam-linotp/Makefile.in
-auth_modules/src/libpam-linotp/aclocal.m4
-auth_modules/src/libpam-linotp/autom4te.cache/
-auth_modules/src/libpam-linotp/compile
-auth_modules/src/libpam-linotp/config.guess
-auth_modules/src/libpam-linotp/config.status
-auth_modules/src/libpam-linotp/config.sub
-auth_modules/src/libpam-linotp/configure
-auth_modules/src/libpam-linotp/debian/autoreconf.after
-auth_modules/src/libpam-linotp/debian/autoreconf.before
-auth_modules/src/libpam-linotp/debian/files
-auth_modules/src/libpam-linotp/debian/libpam-linotp.substvars
-auth_modules/src/libpam-linotp/debian/libpam-linotp/
-auth_modules/src/libpam-linotp/depcomp
-auth_modules/src/libpam-linotp/install-sh
-auth_modules/src/libpam-linotp/libtool
-auth_modules/src/libpam-linotp/ltmain.sh
-auth_modules/src/libpam-linotp/missing
-auth_modules/src/libpam-linotp/src/.libs/
-auth_modules/src/libpam-linotp/src/Makefile
-auth_modules/src/libpam-linotp/src/Makefile.in
-auth_modules/src/libpam-linotp/src/pam_linotp.la
-auth_modules/src/libpam-linotp/src/pam_linotp.lo
-auth_modules/src/libpam-linotp/src/pam_linotp.o
-
-auth_modules/src/LinOTPAuth.tar.gz
-auth_modules/src/linotp-freeradius-perl_*.dsc
-auth_modules/src/linotp-freeradius-perl_*.tar.gz
-auth_modules/src/linotp-freeradius-perl_*.changes
-auth_modules/src/linotp-freeradius-perl_*.deb
-#auth_modules/src/libpam-linotp/
 doc/API/LinOTP-API.zip
 doc/API/linotp-api/
 doc/API/linotputils/

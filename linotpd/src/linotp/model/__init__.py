@@ -1242,6 +1242,33 @@ orm.mapper(Reporting,
 
 #############################################################################
 
+# logging configuration
+
+logging_config_table =\
+    sa.Table('logging_config', meta.metadata,
+             sa.Column('name', sa.types.String(200),
+                       primary_key=True, nullable=False),
+             sa.Column('level', sa.types.Integer(), default=0),
+             implicit_returning=implicit_returning,)
+
+
+class LoggingConfig(object):
+
+    def __init__(self, name, level):
+        self.name = name
+        self.level = level
+
+logging_config_mapping = {}
+logging_config_mapping['name'] = logging_config_table.c.name
+logging_config_mapping['level'] = logging_config_table.c.level
+
+orm.mapper(LoggingConfig,
+           logging_config_table,
+           properties=logging_config_mapping,
+           )
+
+#############################################################################
+
 log.debug('calling ORM Mapper')
 
 # config_table.append_column( sa.Column('IV', sa.types.Unicode(2000), default=u''),)

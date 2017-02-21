@@ -190,6 +190,7 @@ def load_environment(global_conf, app_conf):
     config['help_url'] = url
 
     log.debug("[load_environment] done")
+
     return config
 
 #######################################

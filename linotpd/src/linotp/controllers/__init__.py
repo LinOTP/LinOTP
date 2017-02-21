@@ -40,6 +40,7 @@ selfservice	- the selfservice UI
 system		- to configure the system
 testing		- for testing purposes
 validate	- for authenticating/ OTP checking
+maintenance     - for internal maintenance purposes
 
 '''
 
