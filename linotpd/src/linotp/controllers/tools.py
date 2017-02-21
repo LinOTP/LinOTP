@@ -28,6 +28,8 @@
 tools controller
 """
 
+from cgi import FieldStorage
+
 from pylons import request, response
 from pylons import tmpl_context as c
 
@@ -38,8 +40,14 @@ from linotp.lib.reply import sendResult
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy import checkToolsAuthorisation
 from linotp.lib.util import check_session
-
 from linotp.lib.context import request_context
+
+from linotp.lib.tools.import_user import UserImport
+from linotp.lib.tools.import_user.SQLImportHandler import LinOTP_DatabaseContext
+from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
+from linotp.lib.tools.import_user import DefaultFormatReader
+from linotp.lib.tools.import_user import PasswdFormatReader
+
 
 import logging
 
@@ -139,5 +147,102 @@ class ToolsController(BaseController):
         finally:
             Session.close()
 
+    def import_users(self):
+        """
+        import users from a csv file into an dedicated sql resolver
+        """
+
+        try:
+
+            params = {}
+            params.update(request.POST)
+
+            # argument processing
+
+            user_column_map = {
+                    "userid": 2,
+                    "username": 0,
+                    "phone": 8,
+                    "mobile": 7,
+                    "email": 9,
+                    "surname": 5,
+                    "givenname": 4,
+                    "password": 1}
+
+            csv_file = request.POST['file']
+            csv_data = csv_file
+
+            # -- ----------------------------------------------------------- --
+            # In case of form post requests, it is a "instance" of FieldStorage
+            # i.e. the Filename is selected in the browser and the data is
+            # transferred in an iframe.
+            #     see: http://jquery.malsup.com/form/#sample4
+            # -- ----------------------------------------------------------- --
+
+            if isinstance(csv_file, FieldStorage):
+                csv_data = csv_file.value
+
+            groupid = params['groupid']
+            resolver_name = params['resolver']
+
+            column_mapping = params.get('column_mapping', user_column_map)
+            dryrun = str(params.get('dryrun', True)).lower() == "true"
+
+            file_format = params.get('format', "")
+            column_separator = params.get('column_separator', ",")
+            text_delimiter = params.get('text_delimiter', '"')
+
+            if file_format in ('password', 'passwd'):
+                format_reader = PasswdFormatReader()
+            else:
+                format_reader = DefaultFormatReader()
+                format_reader.seperator = column_separator
+                format_reader.delimiter = text_delimiter
+
+            # -------------------------------------------------------------- --
+
+            # feed the engine
+
+            db_context = LinOTP_DatabaseContext(
+                                        SqlSession=Session,
+                                        SqlEngine=linotp.model.meta.engine)
+
+            import_handler = SQLImportHandler(
+                                        groupid=groupid,
+                                        resolver_name=resolver_name,
+                                        database_context=db_context)
+
+            user_import = UserImport(import_handler)
+
+            user_import.set_mapping(column_mapping)
+
+            result = user_import.import_csv_users(
+                                        csv_data,
+                                        dryrun=dryrun,
+                                        format_reader=format_reader)
+
+            Session.commit()
+
+            return sendResult(response, result)
+
+        except PolicyException as pexx:
+
+            log.exception("Error during user import: %r" % pexx)
+
+            Session.rollback()
+
+            return sendError(response, "%r" % pexx, 1)
+
+        except Exception as exx:
+
+            log.exception("Error during user import: %r" % exx)
+
+            Session.rollback()
+
+            return sendError(response, "%r" % exx)
+
+        finally:
+            Session.close()
+            log.debug('done')
 
 # eof #########################################################################

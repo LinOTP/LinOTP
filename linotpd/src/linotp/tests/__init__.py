@@ -550,6 +550,22 @@ class TestController(unittest2.TestCase):
 
         return res
 
+    def make_tools_request(self, action, params=None, method=None,
+                           auth_user='admin', client=None, upload_files=None):
+        """
+        Makes an authenticated request to /tools/'action'
+        """
+        if not params:
+            params = {}
+        return self.make_authenticated_request(
+            'tools',
+            action,
+            method=method,
+            params=params,
+            auth_user=auth_user,
+            upload_files=upload_files,
+            client=client
+        )
     def make_validate_request(self, action, params=None, method=None,
                               client=None):
         """
