@@ -3,9 +3,9 @@ services:
   linotp:
     image: linotp:latest
     environment:
-      LINOTP_DB_TYPE: "mysql"
+      LINOTP_DB_TYPE: "postgres"
       LINOTP_DB_HOST: "linotp-db"
-      LINOTP_DB_PORT: "3306"
+      LINOTP_DB_PORT: "5432"
       LINOTP_DB_USER: "linotpuser"
       LINOTP_DB_PASSWORD: "linotppass"
       LINOTP_DB_NAME: "linotp_db"
@@ -15,11 +15,11 @@ services:
       - "443:443"
 
   linotp-db:
-    image: mysql:latest
+    image: postgres:latest
     environment:
-      MYSQL_ROOT_PASSWORD: "Test123!"
-      MYSQL_DATABASE: "linotp_db"
-      MYSQL_USER: "linotpuser"
-      MYSQL_PASSWORD: "linotppass"
-    restart: always
-
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: "linotp_db"
+      POSTGRES_PASSWORD: "linotppass"
+      POSTGRES_USER: "linotpuser"
+    volumes:
+    - /var/lib/postgresql/data/pgdata
