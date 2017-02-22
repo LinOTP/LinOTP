@@ -4,7 +4,6 @@
 
     Include /etc/linotp2/apache-servername.conf
 
-    Header always edit Set-Cookie ^(.*)$ $1;secure
     Header always set X-Frame-Options "DENY"
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Strict-Transport-Security "max-age=315360000; includeSubDomains"
@@ -70,6 +69,8 @@
     </Location>
 
 {{ if ne .Env.LINOTP_APACHE_SSL "false" }}
+    Header always edit Set-Cookie ^(.*)$ $1;secure
+
     #   SSL Engine Switch:
     #   Enable/Disable SSL for this virtual host.
     SSLEngine on
