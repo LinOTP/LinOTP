@@ -66,6 +66,7 @@ class UserIdResolver(object):
     crypted_parameters = []
     resolver_parameters = {}
 
+
     def __init(self):
         """
         init - usual bootstrap hook
@@ -77,6 +78,69 @@ class UserIdResolver(object):
         Hook to close down the resolver after one request
         """
         return
+
+    @classmethod
+    def is_change_critical(cls, new_params, previous_params):
+        """
+        check if the parameter update are 'critical' and require
+        a re-authentication
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+
+        for crit in cls.critical_parameters:
+            if new_params.get(crit, '') != previous_params.get(crit, ''):
+                return True
+
+        return False
+
+    @classmethod
+    def primary_key_changed(cls, new_params, previous_params):
+        """
+        check if the parameter update are 'critical' and require
+        a re-authentication
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+
+        return False
+
+
+    @classmethod
+    def merge_crypted_parameters(cls, new_params, previous_params):
+
+        params = {}
+
+        for crypt in cls.crypted_parameters:
+            if crypt in previous_params and not new_params.get(crypt):
+                params[crypt] = previous_params[crypt]
+
+        return params
+
+    @classmethod
+    def missing_crypted_parameters(cls, new_params):
+        """
+        detect, which crypted parameters are missing
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: list of missing parameters
+        """
+
+        missing = []
+
+        for crypt in cls.crypted_parameters:
+            if not new_params.get(crypt):
+                missing.append(crypt)
+
+        return missing
 
     @classmethod
     def getResolverClassType(cls):

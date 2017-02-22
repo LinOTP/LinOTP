@@ -142,6 +142,7 @@ class IdResolver (UserIdResolver):
     critical_parameters = ['LDAPBASE', 'BINDDN', 'LDAPURI']
 
     crypted_parameters = ['BINDPW']
+    primary_key = 'UIDTYPE'
 
     resolver_parameters = {
         "LDAPURI": (True, None, text),
@@ -172,6 +173,22 @@ class IdResolver (UserIdResolver):
     SYS_CERTDIR = None
 
     ca_certs_dict = {}
+
+    @classmethod
+    def primary_key_changed(cls, new_params, previous_params):
+        """
+        check if during the  parameter update the primary key has changed
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+
+        new_id = new_params.get(cls.primary_key, '')
+        prev_id = previous_params.get(cls.primary_key, '')
+
+        return new_id != prev_id
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):

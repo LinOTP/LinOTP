@@ -78,6 +78,7 @@ log = logging.getLogger(__name__)
 #     public interface
 ###############################################################################
 
+
 def initLinotpConfig():
     '''
     return the linotpConfig class, which is integrated
@@ -104,7 +105,7 @@ def getLinotpConfig():
 
     ret = {}
     try:
-        if False == hasattr(c, 'linotpConfig'):
+        if not hasattr(c, 'linotpConfig'):
             c.linotpConfig = LinOtpConfig()
 
         ty = type(c.linotpConfig).__name__
@@ -289,21 +290,34 @@ class LinOtpConfig(dict):
         if typ == 'password':
 
             # in case we have a password type, we have to put
-            # #- in the config only the encrypted pass and
-            # #- add the config enclinotp.* with the clear password
+            # - in the config only the encrypted pass and
+            # - add the config enclinotp.* with the clear password
 
-            res = self.parent.__setitem__(key, encryptPassword(val))
+            utf_val = val.encode('utf-8')
+
+            # store in request local config dict
+
+            res = self.parent.__setitem__(key, encryptPassword(utf_val))
             res = self.parent.__setitem__('enc' + key, val)
-            self.glo.setConfig({key: encryptPassword(val)})
+
+            # store in global config
+
+            self.glo.setConfig({key: encryptPassword(utf_val)})
             self.glo.setConfig({'enc' + key: val})
 
         else:
+
             # update this config and sync with global dict and db
+
             nVal = _expandHere(val)
             res = self.parent.__setitem__(key, nVal)
             self.glo.setConfig({key: nVal})
 
+        # ----------------------------------------------------------------- --
+
+        # finally store the entry in the database and
         # syncronize as well the global timestamp
+
         self.glo.setConfig({'linotp.Config': unicode(now)})
 
         _storeConfigDB(key, val, typ, des)
@@ -354,8 +368,9 @@ class LinOtpConfig(dict):
             :return: value or None
             :rtype:  any type
         '''
-        if (self.parent.has_key(key) is False
-                and key.startswith('linotp.') is False):
+        # has_key is required here, as we operate on the dict class
+
+        if not self.parent.has_key(key) and not key.startswith('linotp.'):
             key = 'linotp.' + key
 
         # return default only if key does not exist
@@ -388,6 +403,7 @@ class LinOtpConfig(dict):
         '''
         Key = key
         encKey = None
+
         if self.parent.has_key(key):
             Key = key
         elif self.parent.has_key('linotp.' + key):
@@ -537,7 +553,6 @@ def _getConfigFromEnv():
     return linotpConfig
 
 
-
 def _storeConfigDB(key, val, typ=None, desc=None):
     """
     insert or update the entry with  key, value, type and
@@ -547,21 +562,37 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     value = val
 
     log_value = val
+
     if typ == 'password':
-        log_value = "XXXXXXX"
+        log_value = "X" * len(val)
+
     log.debug('key %r : value %r', key, log_value)
 
     if (not key.startswith("linotp.")):
         key = "linotp." + key
 
+    # ---------------------------------------------------------------------- --
+
+    # passwords are encrypted from here
+
     if typ and typ == 'password':
-        value = encryptPassword(val)
-        en = decryptPassword(value)
+
+        value = encryptPassword(val.encode('utf-8'))
+
+        # we just check if the encryption went good
+
+        en = decryptPassword(value).decode('utf-8')
         if (en != val):
             raise Exception("Error during encoding password type!")
 
+    # ---------------------------------------------------------------------- --
+
+    # other types like datetime or int are simply stored
+
     if type(value) not in [str, unicode]:
         return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
+
+    # ---------------------------------------------------------------------- --
 
     # for strings or unicode, we support continued entries
     # check if we have to split the value
@@ -665,7 +696,8 @@ def _removeConfigDB(key):
         if not key.startswith('enclinotp.'):
             key = u"linotp." + key
 
-    confEntries = Session.query(Config).filter(Config.Key == unicode(key)).all()
+    confEntries = Session.query(Config).filter(
+                                        Config.Key == unicode(key)).all()
 
     if not confEntries:
         return 0
@@ -698,7 +730,7 @@ def _removeConfigDB(key):
 def _retrieveConfigDB(Key):
     log.debug('[retrieveConfigDB] key: %r' % Key)
 
-    # prepend "lonotp." if required
+    # prepend "linotp." if required
     key = Key
     if (not key.startswith("linotp.")):
         if (not key.startswith("enclinotp.")):
@@ -728,7 +760,8 @@ def _retrieveConfigDB(Key):
 
     for i in range(int(end)):
         search_key = "%s__[%d:%d]" % (key, i, int(end))
-        cont_entries = Session.query(Config).filter(Config.Key == search_key).all()
+        cont_entries = Session.query(Config).filter(
+                                            Config.Key == search_key).all()
         if cont_entries:
             value = value + cont_entries[0].Value
 
@@ -753,49 +786,95 @@ def _retrieveAllConfigDB():
     desc_dict = {}
     cont_dict = {}
 
-    # put all information in the dicts for later processing
+    # ---------------------------------------------------------------------- --
+
+    # first read all config db information into dicts for later processing
+
     for conf in Session.query(Config).all():
-        log.debug("[retrieveAllConfigDB] key %r:%r" % (conf.Key, conf.Value))
+
         conf_dict[conf.Key] = conf.Value
         type_dict[conf.Key] = conf.Type
         desc_dict[conf.Key] = conf.Description
 
-        # a continous entry is indicated by the type 'C' and the description
-        # starting with '0:'
+        # a continuous entry is indicated by the type 'C' and the description
+        # search for the entry which starts with '0:' as it will provide the
+        # number of continuous entries
+
         if conf.Type == 'C' and conf.Description[:len('0:')] == '0:':
             _start, num = conf.Description.split(':')
             cont_dict[conf.Key] = int(num)
 
-    # cleanup the config from contious entries
+    # ---------------------------------------------------------------------- --
+
+    # cleanup the config from continuous entries
+
     for key, number in cont_dict.items():
+
         value = conf_dict[key]
+
         for i in range(number + 1):
+
             search_key = "%s__[%d:%d]" % (key, i, number)
+
             if search_key in conf_dict:
                 value = value + conf_dict[search_key]
                 del conf_dict[search_key]
+
         conf_dict[key] = value
+
         search_key = "%s__[%d:%d]" % (key, number, number)
         type_dict[key] = type_dict[search_key]
         desc_dict[key] = desc_dict[search_key]
 
-    # normal processing as before continous here
+    # ---------------------------------------------------------------------- --
+
+    # finally put the entries into the to be returned config dictionary
+    # caring for the linotp. prefix and the exanding of config values
+
     for key, value in conf_dict.items():
+
         if key.startswith("linotp.") is False:
             key = "linotp." + key
+
         nVal = _expandHere(value)
         config[key] = nVal
 
+    # ---------------------------------------------------------------------- --
+
+    # special treatment of passwords, which are provided decrypted as
+    # 'enclinotp.' linotp-config entries
+    #
+    # TODO: here will be the hook for the replacement of decrpyted values
+    #       with a password object in the linotp_config
+
     for key, value in config.items():
+
         myTyp = type_dict.get(key)
-        if myTyp is not None:
-            if myTyp == 'password':
-                if hasattr(c, 'hsm') is True and isinstance(c.hsm, dict):
-                    hsm = c.hsm.get('obj')
-                    if hsm is not None and hsm.isReady() is True:
-                        config['enc' + key] = decryptPassword(value)
-                else:
-                    delay = True
+        if not myTyp or myTyp != 'password':
+            continue
+
+        # ------------------------------------------------------------------ --
+
+        # for password decryption we require an working hsm or we
+        # will delay the decoding of the config entries
+
+        if not hasattr(c, 'hsm') or not isinstance(c.hsm, dict):
+            delay = True
+            continue
+
+        hsm = c.hsm.get('obj')
+        if not hsm or not hsm.isReady():
+            delay = True
+            continue
+
+        #
+        # !!! dont try to utf-8 decode the passwords as they
+        #     are already "magically" correct:
+        # - when retrieved from DB, they are already in unicode format,
+        #   which is sufficient for further processing :)
+        #
+
+        config['enc' + key] = decryptPassword(value)
 
     return (config, delay)
 
@@ -804,8 +883,10 @@ def _retrieveAllConfigDB():
 def storeConfig(key, val, typ=None, desc=None):
 
     log_val = val
+
     if typ and typ == 'password':
-        log_val = "XXXXXXX"
+        log_val = "X" * len(val)
+
     log.debug('[storeConfig] %r:%r' % (key, log_val))
 
     conf = getLinotpConfig()

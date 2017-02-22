@@ -337,6 +337,21 @@ class IdResolver(UserIdResolver):
         }
 
     @classmethod
+    def primary_key_changed(cls, new_params, previous_params):
+        """
+        check if during the  parameter update the primary key has changed
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+        new_uid = json.loads(new_params.get('Map', '{}')).get('userid', '')
+        prev_uid = json.loads(previous_params.get('Map', '{}')).get('userid', '')
+
+        return new_uid != prev_uid
+
+    @classmethod
     def testconnection(cls, params):
         """
         This is used to test if the given parameter set will do a successful

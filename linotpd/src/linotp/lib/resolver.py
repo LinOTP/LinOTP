@@ -819,4 +819,64 @@ def parse_resolver_spec(resolver_spec):
     cls_identifier, _sep, config_identifier = resolver_spec.rpartition('.')
     return cls_identifier, config_identifier
 
+
+def prepare_resolver_parameter(new_resolver_name, param,
+                               previous_name=None):
+    """
+    prepare the create/update/rename of a resolver
+    used in system/setResolver and admin/testresolver
+
+    :param new_resolver_name: the name of the new/current resolver
+    :param param: the new set of parameters
+    :param previous_name: the previous name of the resolver
+
+    :return: tuple of set of potential extended parameters and
+             the list of the missing parameters
+    """
+    primary_key_changed = False
+
+    resolver_cls = getResolverClass(param['type'])
+
+    # for rename and update, we support the merge with previous parameters
+    if previous_name:
+
+        # get the parameters of the previous resolver
+        previous_resolver = getResolverInfo(previous_name,
+                                            passwords=True)
+
+        previous_param = previous_resolver['data']
+
+        # get the critical parameters for this resolver type
+        # and check if these parameters have changed
+
+        is_critical = resolver_cls.is_change_critical(
+                                    new_params=param,
+                                    previous_params=previous_param)
+
+        # if there are no critical changes, we can transfer
+        # the encrypted parameters from previous resolver
+
+        if not is_critical:
+
+            merged_params = resolver_cls.merge_crypted_parameters(
+                                    new_params=param,
+                                    previous_params=previous_param)
+
+            param.update(merged_params)
+
+        # check if the primary key changed - if so, we need
+        # to migrate the resolver
+
+        primary_key_changed = resolver_cls.primary_key_changed(
+                                    new_params=param,
+                                    previous_params=previous_param)
+
+    # ---------------------------------------------------------- --
+
+    # check if all crypted parameters are included
+
+    missing = resolver_cls.missing_crypted_parameters(param)
+
+    return param, missing, primary_key_changed
+
 # eof #########################################################################

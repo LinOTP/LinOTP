@@ -57,9 +57,9 @@ from linotp.lib.resolver import defineResolver
 from linotp.lib.resolver import getResolverObject
 from linotp.lib.resolver import getResolverList
 from linotp.lib.resolver import getResolverInfo
-from linotp.lib.resolver import getResolverClass
 from linotp.lib.resolver import deleteResolver
 from linotp.lib.resolver import parse_resolver_spec
+from linotp.lib.resolver import prepare_resolver_parameter
 
 from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
 
@@ -610,7 +610,7 @@ class SystemController(BaseController):
         param = {}
         resolver_loaded = False
         msg = _("Unable to instantiate the resolver %r."
-                 "Please verify configuration or connection!")
+                "Please verify configuration or connection!")
 
         try:
             param.update(request.params)
@@ -642,131 +642,83 @@ class SystemController(BaseController):
                                 " exists!" % (mode, new_resolver_name))
 
             #
-            # simple create, we don't have to check for critical attribute
-            # nor merge the existing definition
-            #
+            # we do not support changing the resolver type
+            # except via Tools -> Migrate Resolver
 
-            if mode == "create":
+            if previous_name:
+                previous_resolver = getResolverInfo(previous_name,
+                                                    passwords=True)
 
-                resolver_loaded = defineResolver(param)
+                if param['type'] != previous_resolver['type']:
+                    raise Exception('Modification of resolver type is not '
+                                    'supported!')
 
-                if resolver_loaded is False:
-                    raise ResolverLoadConfigError(msg % new_resolver_name)
+            (param, missing,
+             primary_key_changed) = prepare_resolver_parameter(
+                                        new_resolver_name=new_resolver_name,
+                                        param=param,
+                                        previous_name=previous_name)
 
-            elif mode in ["update", "rename"]:
+            if missing:
+                raise ParameterError(_("Missing parameter: %r") %
+                                     missing)
 
-                merge_param = {}
-                critical_change = False
+            # finally define the resolver
+            resolver_loaded = defineResolver(param)
 
-                previous_resolver = getResolverInfo(previous_name)
+            if resolver_loaded is False:
+                raise ResolverLoadConfigError(msg % new_resolver_name)
+
+            # -------------------------------------------------------------- --
+
+            # the rename of a resolver requires a cleanup:
+            # 1. rename the resolver in all realm definitions
+            # 2. migrate the resolver to the new userid resolver
+
+            if mode == 'rename':
+
+                # lookup in which realm definition the resolvers is used
+
+                change_realms = {}
+
+                for realm_name, realm_description in getRealms().items():
+
+                    change_realms[realm_name] = []
+
+                    resolvers = realm_description.get('useridresolver')
+                    for resolver in resolvers:
+                        parts = resolver.split('.')
+                        if previous_name == parts[-1]:
+                            parts[-1] = new_resolver_name
+                            change_realms[realm_name].append('.'.join(parts))
 
                 #
-                # we merge the parameters only if the previous resolver
-                # is of the same type
+                # prepare the replaced resolver definition to do setRealm
 
-                if param['type'] == previous_resolver['type']:
+                for realm_name, new_resolvers in change_realms.items():
+                    if new_resolvers:
+                        setRealm(realm_name, ','.join(new_resolvers))
 
-                    #
-                    # get the parameters of the previous resolver
+            #
+            # migrate the tokens to the new resolver -
+            # we can re-use the resolver migration handler here :-)
 
-                    merge_param = previous_resolver['data']
+            if mode == 'rename' or primary_key_changed:
 
-                    #
-                    # get the critical parameters for this resolver type
-                    # and check if these parameters have changed
+                resolvers = getResolverList()
+                src_resolver = resolvers.get(previous_name, None)
+                target_resolver = resolvers.get(new_resolver_name, None)
 
-                    resolver_cls = getResolverClass(param['type'])
-                    critical_params = resolver_cls.critical_parameters
-                    crypted_params = resolver_cls.crypted_parameters
+                mg = MigrateResolverHandler()
+                ret = mg.migrate_resolver(src=src_resolver,
+                                          target=target_resolver)
 
-                    for crit in critical_params:
-                        if param.get(crit, '') != merge_param.get(crit, ''):
-                            critical_change = True
-                            break
+                log.info("Token migrated to the new resolver: %r",
+                         ret)
 
-                    #
-                    # if there are no critical changes, we can merge
-                    # the encrypted parameters from previous resolver
-                    #
-                    if not critical_change:
-
-                        # we transfer only the crypted parameters, which
-                        # in most cases is the password
-
-                        previous_resolver = getResolverInfo(previous_name,
-                                                            passwords=True)
-                        merge_param = previous_resolver['data']
-
-                        for crypt in crypted_params:
-                            if crypt in merge_param and crypt not in param:
-                                param[crypt] = merge_param[crypt]
-                    else:
-
-                        #
-                        # if there are critical changes, we require the
-                        # crypted args in the parameter list
-
-                        missing = False
-                        for crypt in crypted_params:
-                            if crypt not in param:
-                                missing = True
-                                break
-
-                        if missing:
-                            log.error("could not %s resolver %r: missing "
-                                      "crypted parameters",
-                                      mode, new_resolver_name)
-
-                            raise ResolverLoadConfigError(msg %
-                                                          new_resolver_name)
-
-                resolver_loaded = defineResolver(param)
-
-                if resolver_loaded is False:
-                    raise ResolverLoadConfigError(msg % new_resolver_name)
-
-                if mode == 'rename':
-                    # rename as well in realms
-
-                    #
-                    # lookup in which realm definition the resolvers is used
-
-                    change_realms = {}
-
-                    for realm_name, realm_description in getRealms().items():
-
-                        change_realms[realm_name] = []
-
-                        resolvers = realm_description.get('useridresolver')
-                        for resolver in resolvers:
-                            parts = resolver.split('.')
-                            if previous_name == parts[-1]:
-                                parts[-1] = new_resolver_name
-                                change_realms[realm_name].append('.'.join(parts))
-
-                    #
-                    # prepare the replaced resolver definition to do setRealm
-                    for realm_name, new_resolvers in change_realms.items():
-                        if new_resolvers:
-                            setRealm(realm_name, ','.join(new_resolvers))
-
-                    #
-                    # migrate the tokens to the new resolver -
-                    # we can re-use the resolver migration handler here :-)
-
-                    resolvers = getResolverList()
-                    src_resolver = resolvers.get(previous_name, None)
-                    target_resolver = resolvers.get(new_resolver_name, None)
-
-                    mg = MigrateResolverHandler()
-                    ret = mg.migrate_resolver(src=src_resolver,
-                                              target=target_resolver)
-
-                    log.info("Token migrated to the new resolver: %r",
-                             ret)
-
-                    # finally delete the previous resolver definition
-                    deleteResolver(previous_name)
+            if mode == 'rename':
+                # finally delete the previous resolver definition
+                deleteResolver(previous_name)
 
             Session.commit()
             return sendResult(response, True, 1)
@@ -2255,6 +2207,7 @@ class SystemController(BaseController):
         finally:
             Session.close()
             log.debug('[setProvider] done')
+
 
 
 # eof #########################################################################
