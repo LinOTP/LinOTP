@@ -160,7 +160,7 @@ class TokenClass(object):
         # processing info, which could be retrieved in the controllers
         self.info = {}
         self.hKeyRequired = False
-        self.mode = ['auth', 'challenge']
+        self.mode = ['authenticate', 'challenge']
         # these lists will be returned as result of the token check
         self.challenge_token = []
         self.pin_matching_token = []
@@ -210,13 +210,13 @@ class TokenClass(object):
         :return: boolean
         """
 
-        if 'authenticate' in self.mode and 'challenge' in self.mode:
-            import linotp.lib.policy
-            support_challenge_response = \
-                linotp.lib.policy.get_auth_challenge_response(user, self.type)
-            return support_challenge_response
-        else:
+        if not ('authenticate' in self.mode and 'challenge' in self.mode):
             return False
+
+        import linotp.lib.policy
+        support_challenge_response = \
+            linotp.lib.policy.get_auth_challenge_response(user, self.type)
+        return support_challenge_response
 
     # #########################################################################
 
@@ -708,7 +708,6 @@ class TokenClass(object):
                 self.challenge_token.append(self)
             else:
                 self.invalid_token.append(self)
-
             return (False, None)
 
         # else: tokens, which support both: challenge response
