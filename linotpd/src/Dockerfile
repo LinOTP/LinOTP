@@ -107,7 +107,6 @@ RUN \
     && extraPackages=' \
 	make \
 	python-psycopg2 \
-	python-pip \
     ' \
     && apt-get install \
 		$extraPackages \
@@ -117,8 +116,7 @@ RUN \
 		python-paste python-pastedeploy python-pastescript python-pygments python-pylons \
 		python-pyrad python-qrcode python-repoze.who python-routes python-simplejson \
 		python-sqlalchemy python-tempita python-weberror python-webhelpers python-webob \
-		apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests \
-    && pip install python-logstash
+		apache2 libapache2-mod-wsgi python-pycryptodomex python-pysodium python-requests
 
 # Install linotp packages from local files.
 COPY apt /opt/linotp/apt
@@ -129,7 +127,7 @@ RUN echo "linotp linotp/apache/activate boolean true" > /opt/linotp/apt/debconf-
 	&& echo "deb [trusted=yes] file:/opt/linotp/apt ./" > /etc/apt/sources.list.d/linotp-local.list \
 	&& (echo "Package: *"; echo "Pin: origin \"\""; echo "Pin-Priority: 900") > /etc/apt/preferences.d/linotp \
 	&& apt-get update \
-	&& apt-get install linotp linotp-smsprovider linotp-useridresolver  \
+	&& apt-get install linotp linotp-smsprovider linotp-useridresolver python-logstash \
 	&& rm /etc/apt/sources.list.d/linotp-local.list \
 	&& rm -r /opt/linotp/apt /etc/apache2/sites-enabled/000-default.conf \
 	&& rm /etc/linotp2/linotp.ini /etc/linotp2/encKey /etc/linotp2/*.pem
