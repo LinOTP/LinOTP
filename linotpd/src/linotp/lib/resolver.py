@@ -27,7 +27,7 @@
 
 
 import logging
-import re
+
 import copy
 import json
 from functools import partial
@@ -39,151 +39,50 @@ from linotp.lib.config import getGlobalObject
 from linotp.lib.config import removeFromConfig
 from linotp.lib.config import getLinotpConfig
 
-from linotp.lib.util import getParam
-
 from linotp.lib.type_utils import get_duration
 
 from linotp.lib.crypt import decryptPassword
-
-required = True
-optional = False
 
 
 __all__ = ['defineResolver', 'parse_resolver_spec',
            'getResolverList', 'getResolverInfo', 'deleteResolver',
            'getResolverObject', 'initResolvers', 'closeResolvers',
-           'setupResolvers'
-          ]
+           'setupResolvers']
 
 log = logging.getLogger(__name__)
 
 
-class Resolver(object):
+def save_resolver_config(resolver, config, prefix, name):
     """
-    helper class to define a new resolver
+    save the processed config to the global linotp config and to the db
+
     """
-    def __init__(self, name=None):
-        self.name = name
-        self.type = None
-        self.data = {}
-        self.types = {}
-        self.desc = {}
 
-    def getDefinition(self, param):
-        self.name = getParam(param, 'resolver', required)
-        return getResolverInfo(self.name)
+    res = True
 
-    def setDefinition(self, param):
-        '''
-            handle name
-        '''
-        self.name = getParam(param, 'name', required)
+    for key, value in config.items():
 
-        # We should have no \. in resolver name
-        # This only leads to problems.
-        nameExp = "^[A-Za-z0-9_\-]+$"
-        if re.match(nameExp, self.name) is None:
-            exx = Exception("non conformant characters in resolver name: %s "
-                            " (not in %s)", self.name, nameExp)
-            raise exx
+        # if the config contains something starting with 'linotp.'
+        # it does not belong to the resolver rather then to linotp
 
-        # handle resolver types
-        self.type = getParam(param, 'type', required)
-        resolvertypes = get_resolver_types()
-        if self.type not in resolvertypes:
-            exx = Exception("resolver type : %s not in %s" %
-                            (self.type, unicode(resolvertypes)))
-            raise exx
+        if key.startswith('linotp.'):
+            continue
 
-        #
-        # retrieve the resolver typing info
+        # use a the fully qualified key name
+        l_key = '%s.%s.%s' % (prefix, key, name)
 
-        resolver_config = get_resolver_class_config(self.type)
-        if self.type in resolver_config:
-            res_config = resolver_config.get(self.type).get('config', {})
-        else:
-            res_config = resolver_config
+        # do some type naming
+        typ = 'unknown'
+        if key in resolver.resolver_parameters:
+            (_req, _def, data_typ) = resolver.resolver_parameters.get(key)
+            try:
+                typ = data_typ.__name__
+            except Exception as _exx:
+                log.error("unknown data type for %s", key)
 
-        #
-        # process the provided arguments
+        res = storeConfig(l_key, value, typ=typ)
 
-        for key, data_ in param.items():
-            type_ = None
-            desc_ = None
-
-            #
-            # skip not necessary parameter
-
-            if key in ['name', 'type', 'session']:
-                continue
-
-            #
-            # skip parameterized type and description entries
-            # - we integrate these information below
-
-            if key.startswith('desc.') or key.startswith('type.'):
-                continue
-            #
-            # get the 'type' information from the resolver
-
-            if key in res_config:
-                type_ = res_config[key]
-
-            #
-            # if provided use type information from the parameters and
-            # overwrite the resolver specific typing
-
-            if 'type.' + key in param:
-                type_ = param["type." + key]
-
-            #
-            # if provided, use description information from the parameters
-
-            if 'desc.' + key in param:
-                desc_ = param["desc." + key]
-
-            self.data[key] = (data_, type_, desc_)
-
-        return
-
-    def getConfig(self, linotp_prefix=''):
-        """
-        generator to access the resolver entries
-
-        :param linotp_prefix: the pre prefix for the key
-        :return: generator for the access of the next() element
-        """
-
-        if self.name is None:
-            raise Exception("no resolver name defined")
-
-        #
-        # prepare the fully qualified key name
-
-        prefix = "%s%s" % (linotp_prefix, self.type)
-        postfix = self.name
-
-        for entry_name, entry in self.data.items():
-
-            key = "%s.%s.%s" % (prefix, entry_name, postfix)
-            val, type_, desc = entry
-
-            yield key, val, type_, desc
-
-    def saveConfig(self):
-        """
-        save the processed config to the global linotp config and to the db
-
-        """
-        res = True
-
-        config = self.getConfig()
-
-        for entry in config:
-            key, val, type_, desc = entry
-            res = storeConfig(key, val, type_, desc)
-
-        return res
+    return res
 
 
 def defineResolver(params):
@@ -205,56 +104,57 @@ def defineResolver(params):
 
     typ = params['type']
     conf = params['name']
-    resolver_clazz = None
 
-    for clazz_name, clazz_type in context.get('resolver_types').items():
-        if typ.lower() in clazz_type.lower():
-            resolver_clazz = clazz_name
+    resolver_cls = getResolverClass(typ)
 
-    if not resolver_clazz:
+    if not resolver_cls:
         raise Exception("no such resolver type '%r' defined!" % typ)
 
-    resolver_spec = resolver_clazz + '.' + conf
+    # ---------------------------------------------------------------------- --
 
     #
-    # we have to add the system wide configurations like
-    # "linotp.certificates.use_system_certificates"
-
-    config = {}
-    lconf = context['Config']
-    config.update(lconf)
-
+    # for defining the resolver, we have to merge the linotp config,
+    # which contains:
     #
-    # get the adjusted resolver configuration from the parameters
-
-    rconf = {}
-    resolver_definition = Resolver()
-    resolver_definition.setDefinition(params)
-
-    resolver_config = resolver_definition.getConfig(linotp_prefix='linotp.')
-
-    for entry in resolver_config:
-        key, val, _type_, _desc = entry
-        rconf[key] = val
-
+    # * the previous entries for this definition and
+    # * the global config entries like linotp.use_system_certs
     #
-    # merge that config definition into the overall config, which is required
-    # for the loading of the resolvers - that will do the check if all
-    # required parameter are provided
+    # with the provided parameters.
+    #
 
-    config.update(rconf)
+    p_config, _missing = resolver_cls.filter_config(context['Config'])
 
-    resolver = getResolverObject(resolver_spec, config=config)
+    l_config, _missing = resolver_cls.filter_config(params)
+
+    p_config.update(l_config)
+
+    # ---------------------------------------------------------------------- --
+
+    # finally we test the loading of config, which will raise an exception
+    # if something is missing
+
+    resolver = resolver_cls()
+
+    resolver.loadConfig(p_config, conf)
 
     if resolver is None:
         return False
+
+    # ---------------------------------------------------------------------- --
 
     #
     # if all went fine we finally save the config and
     # in case of an update, flush the cache
 
-    resolver_definition.saveConfig()
+    save_resolver_config(resolver, p_config,
+                         prefix='linotp.' + typ, name=conf)
+
+    resolver_spec = "%s.%s.%s" % (resolver.__module__,
+                                  resolver.__class__.__name__,
+                                  conf)
+
     _flush_user_resolver_cache(resolver_spec)
+
     return resolver
 
 
@@ -303,6 +203,7 @@ def get_cls_identifier(config_identifier):
 
     return None
 
+
 # external system/getResolvers
 def getResolverList(filter_resolver_type=None):
     '''
@@ -333,7 +234,8 @@ def getResolverList(filter_resolver_type=None):
                 r["type"] = typ
 
                 if ((filter_resolver_type is None) or
-                        (filter_resolver_type and filter_resolver_type == typ)):
+                        (filter_resolver_type and
+                         filter_resolver_type == typ)):
                     Resolvers[resolver[3]] = r
                 # Dont check the other resolver types
                 break
@@ -353,72 +255,72 @@ def getResolverInfo(resolvername, passwords=False):
 
     result = {"type": None, "data": {}, "resolver": resolvername}
 
-    resolver_dict = {}
-    descr = {}
-
-    resolver_entries = {}
-    resolvertypes = get_resolver_types()
-
     linotp_config = context.get('Config')
+    resolver_types = context.get('resolver_types').values()
 
-    for typ in resolvertypes:
-        for config_entry in linotp_config:
-            if (config_entry.startswith("linotp." + typ) and
-               config_entry.endswith(resolvername)):
-                resolver_entries[config_entry] = linotp_config.get(config_entry)
+    # --------------------------------------------------------------------- --
 
-    if not resolver_entries:
-        return result
+    # lookup, which resolver type is associated with this resolver name
 
-    resolver_parts = resolver_entries.keys()[0].split('.')
+    for config_entry in linotp_config:
 
-    #
-    # TODO: remove legacy code: An old entry without resolver name
-    #
-    if len(resolver_parts) <= 3:
-        return result
+        if config_entry.endswith("." + resolvername):
 
-    #
-    # get the type descriptions for the resolver type
-    #
+            # check if this is a resolver definition, starting with linotp.
+            # and continuing with a resolver type
 
-    resolver_type = resolver_parts[1]
-    resolver_conf = get_resolver_class_config(resolver_type)
+            part = config_entry.split('.')
 
-    if resolver_type in resolver_conf:
-        resolver_descr = resolver_conf.get(resolver_type).get('config', {})
+            if (len(part) > 3 and part[0] == 'linotp' and
+                part[1] in resolver_types):
+
+                resolver_type = part[1]
+                break
+
     else:
-        resolver_descr = resolver_conf
+        return result
 
+    # now we can load the resolver config unsing the resolver class
+
+    resolver_cls = getResolverClass(resolver_type)
+    res_conf, _missing = resolver_cls.filter_config(linotp_config,
+                                                    resolvername)
+
+    # --------------------------------------------------------------------- --
+
+    # now prepare the resolver config output, which should contain
     #
-    # build up the resolver dictionary
-    #
+    # - no global entries, starting with 'linotp.'
+    # - adjusted passwords
+    # - all values as text
 
-    for key, value in resolver_entries.items():
-        resolver_key = key.split(".")[2]
+    for key in res_conf.keys():
 
-        if resolver_key in resolver_descr:
+        # suppress global config entries
 
-            if (resolver_descr.get(resolver_key) == 'password' and
-               passwords is True):
+        if key.startswith("linotp."):
+            del res_conf[key]
+            continue
 
-                # do we already have the decrypted pass?
-                if 'enc%s' % key in linotp_config:
-                    value = linotp_config.get('enc%s' % key)
-                else:
-                    # if no, we take the entry and try to de crypt it
-                    value = linotp_config.get(key)
+        # should passwords be displayed?
 
-                    try:
-                        value = decryptPassword(value)
-                    except Exception as exc:
-                        log.exception("Decryption of resolver entry "
-                                      "failed: %r", exc)
+        if passwords and key in resolver_cls.crypted_parameters:
+            try:
+                res_conf[key] = decryptPassword(res_conf[key])
+            except Exception as exc:
+                log.exception("Decryption of resolver entry "
+                              "failed: %r", exc)
 
-        resolver_dict[resolver_key] = value
+        # as we have in the resolver config typed values, this might
+        # lead to some trouble. so we prepare for output comparison
+        # the string representation
+
+        if (not isinstance(res_conf[key], str) and
+            not isinstance(res_conf[key], unicode)):
+            res_conf[key] = "%r" % res_conf[key]
 
     result["type"] = resolver_type
-    result["data"] = resolver_dict
+    result["data"] = res_conf
 
     return result
 
@@ -497,7 +399,7 @@ def getResolverClass(resolver_type, resolver_conf=''):
 
     cls_identifier, _config_identifier = parse_resolver_spec(resolver_spec)
 
-    if not cls_identifier :
+    if not cls_identifier:
         log.error('Format error: resolver_spec must have the format '
                   '<resolver_class_identifier>.<config_identifier>, but '
                   'value was %s' % resolver_spec)
@@ -573,6 +475,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
                 # have their own type, so we can filter here
                 log.error('resolver config loading failed for resolver with '
                           'specification %s: %r', resolver_spec, exx)
+
                 return None
 
             # in case of the replication there might by difference
@@ -711,9 +614,9 @@ def _lookup_resolver_config(resolver_spec, resolver_config=None):
     p_key = resolver_spec
 
     # retrieve config from the cache, accessed by the p_key
-    conf_hash = resolver_config_cache.get_value(key=p_key,
-                                        createfunc=p_lookup_resolver_config,
-                                                )
+    conf_hash = resolver_config_cache.get_value(
+                                        key=p_key,
+                                        createfunc=p_lookup_resolver_config,)
 
     return conf_hash
 
@@ -821,6 +724,7 @@ def initResolvers():
         log.exception("Failed to initialize resolver in context %r" % exx)
     return context
 
+
 # external lib/base.py
 def closeResolvers():
     """
@@ -833,6 +737,7 @@ def closeResolvers():
     except Exception as exx:
             log.exception("Failed to close resolver in context %r" % exx)
     return
+
 
 def getResolverClassName(resolver_type, resolver_name):
 
@@ -914,5 +819,64 @@ def parse_resolver_spec(resolver_spec):
     cls_identifier, _sep, config_identifier = resolver_spec.rpartition('.')
     return cls_identifier, config_identifier
 
-# eof #########################################################################
 
+def prepare_resolver_parameter(new_resolver_name, param,
+                               previous_name=None):
+    """
+    prepare the create/update/rename of a resolver
+    used in system/setResolver and admin/testresolver
+
+    :param new_resolver_name: the name of the new/current resolver
+    :param param: the new set of parameters
+    :param previous_name: the previous name of the resolver
+
+    :return: tuple of set of potential extended parameters and
+             the list of the missing parameters
+    """
+    primary_key_changed = False
+
+    resolver_cls = getResolverClass(param['type'])
+
+    # for rename and update, we support the merge with previous parameters
+    if previous_name:
+
+        # get the parameters of the previous resolver
+        previous_resolver = getResolverInfo(previous_name,
+                                            passwords=True)
+
+        previous_param = previous_resolver['data']
+
+        # get the critical parameters for this resolver type
+        # and check if these parameters have changed
+
+        is_critical = resolver_cls.is_change_critical(
+                                    new_params=param,
+                                    previous_params=previous_param)
+
+        # if there are no critical changes, we can transfer
+        # the encrypted parameters from previous resolver
+
+        if not is_critical:
+
+            merged_params = resolver_cls.merge_crypted_parameters(
+                                    new_params=param,
+                                    previous_params=previous_param)
+
+            param.update(merged_params)
+
+        # check if the primary key changed - if so, we need
+        # to migrate the resolver
+
+        primary_key_changed = resolver_cls.primary_key_changed(
+                                    new_params=param,
+                                    previous_params=previous_param)
+
+    # ---------------------------------------------------------- --
+
+    # check if all crypted parameters are included
+
+    missing = resolver_cls.missing_crypted_parameters(param)
+
+    return param, missing, primary_key_changed
+
+# eof #########################################################################

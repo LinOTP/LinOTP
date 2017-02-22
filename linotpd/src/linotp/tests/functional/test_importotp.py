@@ -27,7 +27,7 @@
 
 """
 """
-
+import json
 import logging
 from linotp.tests import TestController, url
 import linotp.lib.ImportOTP
@@ -650,4 +650,116 @@ sccSignature: MC4CFQDju23MCRqmkWC7Z9sVDB0y0TeEOwIVAOIibmqMFxhPiY7mLlkt5qmRT/xn  
         response = self.app.post(url(controller='admin', action='loadtokens'), params={'file':csv, 'type':'yubikeycsv'})
         print response
         assert '"imported": 5' in response
+        return
+
+    def create_policy(self, params):
+        name = params['name']
+        response = self.make_system_request('setPolicy', params=params)
+        self.assertTrue('setPolicy ' + name in response, response)
+        return response
+
+    def test_yubikey_challenge(self):
+        '''
+        a yubikey should be able to run in challenge response mode with policy
+        '''
+
+        self.create_common_resolvers()
+        self.create_common_realms()
+
+        csv = '''
+        LOGGING START,14.02.17 18:00
+        Yubico OTP,14.02.17 18:00,1,,,f50229a089487698887d4650b0a8bc4b,,,0,0,0,0,0,0,0,0,0,0
+        Yubico OTP,14.02.17 18:00,1,,,a0af9940aab3e66ad907ff9dbf330776,,,0,0,0,0,0,0,0,0,0,0
+        Yubico OTP,14.02.17 18:00,1,,,6948b0980f981bcd9e11b0614cf437d3,,,0,0,0,0,0,0,0,0,0,0
+        '''
+
+        params = {'file': csv,
+                  'type': 'yubikeycsv',
+                  'targetrealm': 'mymixedrealm'}
+
+        response = self.make_admin_request('loadtokens', params=params)
+
+        self.assertTrue('"imported": 3' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # define policy
+
+        params = {'scope': 'authentication',
+                  'action': 'challenge_response=*,',
+                  'realm': '*',
+                  'user': '*',
+                  'name': 'yubi_challenge'}
+
+        self.create_policy(params)
+
+        # ------------------------------------------------------------------ --
+
+        # get defined tokens and assign them to a user
+
+        response = self.make_admin_request('show', params={})
+
+        jresp = json.loads(response.body)
+
+        err_msg = "Error getting token list. Response %r" % (jresp)
+        self.assertTrue(jresp['result']['status'], err_msg)
+
+        # extract the token info
+
+        serials = set()
+
+        data = jresp['result']['value']['data']
+
+        for entry in data:
+
+            serial = entry['LinOtp.TokenSerialnumber']
+
+            serials.add(serial)
+
+            params = {'serial': serial,
+                      'user': 'passthru_user1'}
+
+            self.make_admin_request('assign', params=params)
+
+            params = {'serial': serial,
+                      'pin': '123!'}
+
+            self.make_admin_request('set', params=params)
+
+        # ------------------------------------------------------------------ --
+
+        # trigger challenge and check that all yubi token have been triggered
+
+        params = {'user': 'passthru_user1',
+                  'pass': '123!'}
+
+        response = self.make_validate_request('check', params=params)
+
+        for serial in serials:
+
+            self.assertTrue(serial in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # now we remove the policy and no challenge should be triggered
+
+        params = {'name': 'yubi_challenge'}
+
+        response = self.make_system_request('delPolicy', params=params)
+
+        self.assertTrue('"status": true' in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # trigger challenge and check that no yubi token have been triggered
+
+        params = {'user': 'passthru_user1',
+                  'pass': '123!'}
+
+        response = self.make_validate_request('check', params=params)
+
+        for serial in serials:
+
+            self.assertFalse(serial in response, response)
+
         return

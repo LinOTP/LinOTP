@@ -39,14 +39,18 @@ import os
 import tempfile
 import traceback
 
+import json
 import sys
 
 from datetime import datetime
 from hashlib import sha1
-from json import loads
 
 import ldap.filter
 from ldap.controls import SimplePagedResultsControl
+
+from linotp.lib.type_utils import password
+from linotp.lib.type_utils import text
+from linotp.lib.type_utils import boolean
 
 from useridresolver.UserIdResolver import ResolverLoadConfigError
 from useridresolver.UserIdResolver import UserIdResolver
@@ -136,7 +140,32 @@ class IdResolver (UserIdResolver):
           "surname": "text"}
 
     critical_parameters = ['LDAPBASE', 'BINDDN', 'LDAPURI']
+
     crypted_parameters = ['BINDPW']
+    primary_key = 'UIDTYPE'
+
+    resolver_parameters = {
+        "LDAPURI": (True, None, text),
+        "LDAPBASE": (True, None, text),
+        "BINDDN": (True, None, text),
+        "BINDPW": (True, None, password),
+
+        "LOGINNAMEATTRIBUTE": (True, None, text),
+        "LDAPFILTER": (True, None, text),
+        "LDAPSEARCHFILTER": (True, None, text),
+        "USERINFO": (True, True, text),
+        "UIDTYPE": (False, DEFAULT_UID_TYPE, text),
+
+        "EnforceTLS": (False, False, boolean),
+        "NOREFERRALS": (False, False, boolean),
+        "PROXY": (False, False, boolean),
+
+        "TIMEOUT": (False, TIMEOUT_NO_LIMIT, text),
+        "SIZELIMIT": (False, DEFAULT_SIZELIMIT, int),
+        "linotp.certificates.use_system_certificates": (False, False, boolean),
+        "CACERTIFICATE": (False, "", text),
+
+        }
 
     CERTFILE = None
     CERTFILE_last_modified = None
@@ -144,6 +173,22 @@ class IdResolver (UserIdResolver):
     SYS_CERTDIR = None
 
     ca_certs_dict = {}
+
+    @classmethod
+    def primary_key_changed(cls, new_params, previous_params):
+        """
+        check if during the  parameter update the primary key has changed
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+
+        new_id = new_params.get(cls.primary_key, '')
+        prev_id = previous_params.get(cls.primary_key, '')
+
+        return new_id != prev_id
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):
@@ -361,6 +406,8 @@ class IdResolver (UserIdResolver):
 
         caller = Caller()
 
+        l_config, missing = IdResolver.filter_config(params)
+
         caller.CERTFILE = None
         caller.noreferrals = True
 
@@ -369,18 +416,14 @@ class IdResolver (UserIdResolver):
                                                 True)).lower()
         caller.only_trusted_certs = param_selfsigned_certs == 'true'
 
-        param_sys_cert = params.get('certificates.use_system_certificates',
-                                    False)
-        use_sys_cert = str(param_sys_cert).lower() == "true"
-        caller.use_sys_cert = use_sys_cert
+        caller.use_sys_cert = l_config['linotp.certificates.'
+                                       'use_system_certificates']
 
-        param_enforce = params.get('enforcetls',
-                                   params.get('EnforceTLS', False))
-        caller.enforce_tls = str(param_enforce).lower() == 'true'
+        caller.enforce_tls = l_config['EnforceTLS']
 
         try:
             # do a bind
-            uri = params['LDAPURI']
+            uri = l_config['LDAPURI']
 
             if caller.use_sys_cert:
 
@@ -390,8 +433,7 @@ class IdResolver (UserIdResolver):
                          "certificate dir %r", sys_cert_file, sys_cert_dir)
 
             # if there is a cert given we create a temporary test cert file
-            cert = params.get('CACERTIFICATE', '').strip().replace('\r\n',
-                                                                   '\n')
+            cert = l_config['CACERTIFICATE'].strip().replace('\r\n', '\n')
             if cert:
                 # preserve the old cert
                 old_cert_file = ldap.get_option(ldap.OPT_X_TLS_CACERTFILE)
@@ -408,16 +450,11 @@ class IdResolver (UserIdResolver):
                 _add_cacertificates_to_file(tmp_certfile, test_certs)
                 caller.CERTFILE = tmp_certfile
 
-            caller.noreferrals = "True" == params.get('NOREFERRALS', "False")
+            caller.noreferrals = l_config['NOREFERRALS']
 
-            timeout = params['TIMEOUT']
-            if ";" in timeout:
-                network_timeout, response_timeout = timeout.split(';')
-                caller.network_timeout = float(network_timeout.strip())
-                caller.response_timeout = float(response_timeout.strip())
-            else:
-                caller.network_timeout = float(timeout.strip())
-                caller.response_timeout = TIMEOUT_NO_LIMIT
+            timeout = l_config['TIMEOUT']
+            (caller.network_timeout,
+             caller.response_timeout) = IdResolver.parse_timeout(timeout)
 
             trace_level = params.get('trace_level', 0)
             if trace_level != 0:
@@ -436,8 +473,8 @@ class IdResolver (UserIdResolver):
                     # try to authenticate to server:
                     # this will establish the first connection
 
-                    dn_encode = params['BINDDN'].encode(ENCODING)
-                    pw_encode = params['BINDPW'].encode(ENCODING)
+                    dn_encode = l_config['BINDDN'].encode(ENCODING)
+                    pw_encode = l_config['BINDPW'].encode(ENCODING)
                     l_obj.simple_bind_s(dn_encode, pw_encode)
 
                     # simple_bind will raise an exception if the server
@@ -453,15 +490,12 @@ class IdResolver (UserIdResolver):
                 raise exx
 
             # get a userlist:
-            searchFilter = "(&" + params['LDAPSEARCHFILTER'] + ")"
+            searchFilter = "(&" + l_config['LDAPSEARCHFILTER'] + ")"
             sizelimit = int(DEFAULT_SIZELIMIT)
 
-            try:
-                sizelimit = int(params.get("SIZELIMIT", DEFAULT_SIZELIMIT))
-            except ValueError:
-                sizelimit = int(DEFAULT_SIZELIMIT)
+            sizelimit = l_config["SIZELIMIT"]
 
-            ldap_result_id = l_obj.search_ext(params['LDAPBASE'],
+            ldap_result_id = l_obj.search_ext(l_config['LDAPBASE'],
                                               ldap.SCOPE_SUBTREE,
                                               filterstr=searchFilter,
                                               sizelimit=sizelimit)
@@ -497,7 +531,7 @@ class IdResolver (UserIdResolver):
 
         finally:
             # restore the old_cert_file if no system certificate handling
-            if (not use_sys_cert and old_cert_file and l_obj and
+            if (not caller.use_sys_cert and old_cert_file and l_obj and
                os.path.isfile(old_cert_file)):
                 l_obj.set_option(ldap.OPT_X_TLS_CACERTFILE, old_cert_file)
 
@@ -1041,66 +1075,8 @@ class IdResolver (UserIdResolver):
     def getResolverDescriptor(self):
         return IdResolver.getResolverClassDescriptor()
 
-    def loadConfig(self, config, conf=""):
-        '''
-        loadConfig - load the config for the resolver
-            The calling applications passes the LDAP configuration:
-            FILTER
-            LDAPURI
-            BASE
-            BINDDN
-            BINDPW
-
-        :param config: configuration for the sqlresolver
-        :type  config: dict
-        :param conf: configuration postfix
-        :type  conf: string
-        '''
-
-        log.debug("[loadConfig] Config:  %r", config)
-        log.debug("[loadConfig] Conf  :  %r", conf)
-
-        self.conf = conf
-
-        self.filter = self.getConfigEntry(config,
-                                          "linotp.ldapresolver.LDAPFILTER",
-                                          conf)
-
-        self.searchfilter = self.getConfigEntry(config,
-                                                "linotp.ldapresolver."
-                                                "LDAPSEARCHFILTER", conf)
-
-        self.ldapuri = self.getConfigEntry(config,
-                                           "linotp.ldapresolver.LDAPURI",
-                                           conf)
-
-        self.base = self.getConfigEntry(config,
-                                        "linotp.ldapresolver.LDAPBASE",
-                                        conf)
-
-        self.binddn = self.getConfigEntry(config,
-                                          "linotp.ldapresolver.BINDDN",
-                                          conf, required=False)
-
-        self.loginnameattribute = self.getConfigEntry(config,
-                                                      "linotp.ldapresolver."
-                                                      "LOGINNAMEATTRIBUTE",
-                                                      conf)
-        userinfo = self.getConfigEntry(config,
-                                       "linotp.ldapresolver.USERINFO",
-                                       conf)
-
-        try:
-            self.userinfo = loads(userinfo)
-        except ValueError as exx:
-            raise ResolverLoadConfigError("Invalid userinfo - no json "
-                                          "document: %s %r" % (userinfo, exx))
-
-        # support to setup both timeouts: network timeout and response timeout
-        #  separator ';' splits network from response timeout
-        timeout = self.getConfigEntry(config,
-                                      "linotp.ldapresolver.TIMEOUT",
-                                      conf)
+    @classmethod
+    def parse_timeout(cls, timeout):
         if ';' in timeout:
             network_timeout, response_timeout = timeout.split(';')
             network_timeout = float(network_timeout)
@@ -1109,104 +1085,119 @@ class IdResolver (UserIdResolver):
             network_timeout = float(timeout)
             response_timeout = TIMEOUT_NO_LIMIT
 
-        self.network_timeout = float(network_timeout)
-        self.timeout = float(response_timeout)
+        return float(network_timeout), float(response_timeout)
 
-        enforce_tls = self.getConfigEntry(config,
-                                          "linotp.ldapresolver.EnforceTLS",
-                                          conf, required=False,
-                                          default=DEFAULT_EnforceTLS)
+    def loadConfig(self, config, conf=""):
+        '''
+        loadConfig - load the config of the resolver
 
-        self.enforce_tls = True
-        if str(enforce_tls).lower() == "false":
-            self.enforce_tls = False
+        :param config: configuration dictionary, could be parameter or
+                       linotp config format
+        :param conf: configuration identifier
 
-        sizelimit = self.getConfigEntry(config,
-                                        "linotp.ldapresolver.SIZELIMIT",
-                                        conf, required=False,
-                                        default=DEFAULT_SIZELIMIT)
+        '''
 
-        self.uidType = self.getConfigEntry(config,
-                                           "linotp.ldapresolver.UIDTYPE",
-                                           conf, required=False,
-                                           default=DEFAULT_UID_TYPE)
+        self.conf = conf
 
-        if self.uidType is None or self.uidType.strip() == "":
-            self.uidType = DEFAULT_UID_TYPE
-        if type(self.uidType) in [unicode]:
-            log.info("[loadConfig] conversion of self.uidType: %r to str()",
-                     self.uidType)
-            self.uidType = str(self.uidType)
+        # ------------------------------------------------------------------ --
+
+        # parse the config entries, extract and type convert the entries
 
         try:
-            self.sizelimit = int(sizelimit)
-        except ValueError:
-            self.sizelimit = int(DEFAULT_SIZELIMIT)
-        except TypeError:
-            self.sizelimit = int(DEFAULT_SIZELIMIT)
-        log.debug("[loadConfig: the sizelimit is: %s, %i",
-                  sizelimit, self.sizelimit)
 
-        noreferrals = self.getConfigEntry(config,
-                                          "linotp.ldapresolver.NOREFERRALS",
-                                          conf,
-                                          required=False,
-                                          default="False")
+            l_config, missing = self.filter_config(config, conf)
 
-        self.noreferrals = ("True" == noreferrals)
-
-        proxy = self.getConfigEntry(config,
-                                    "linotp.ldapresolver.PROXY",
-                                    conf,
-                                    required=False,
-                                    default="False")
-
-        self.proxy = ("True" == proxy)
-
-        try:
-            self.bindpw = self.getConfigEntry(config,
-                                              "enclinotp.ldapresolver.BINDPW",
-                                              conf)
         except Exception as exx:
-            # if no enclinotp, the password obviously is not encrypted!
-            self.bindpw = self.getConfigEntry(config,
-                                              "linotp.ldapresolver.BINDPW",
-                                              conf)
+            log.error("failed to parse configuration: %r", exx)
+            raise ResolverLoadConfigError("failed to parse configuration:"
+                                          " %r" % exx)
 
-        use_sys_cert = self.getConfigEntry(config,
-                                           ("linotp.certificates."
-                                            "use_system_certificates"),
-                                           conf,
-                                           required=False, default=False)
+        if missing:
+            log.error("missing config entries: %r", missing)
+            raise ResolverLoadConfigError(" missing config entries:"
+                                          " %r" % missing)
 
-        self.use_sys_cert = use_sys_cert == 'True'
+        # ------------------------------------------------------------------ --
 
-        self.cacertificate = self.getConfigEntry(config,
-                                                 "linotp.ldapresolver."
-                                                 "CACERTIFICATE", conf,
-                                                 required=False, default=None)
+        # process and assign the config entries
 
-        # if we have a certificate, check if it is already registrated
-        # and if not regenerate the cert file
-        if not self.use_sys_cert and self.cacertificate:
-            cert_hash = sha1(self.cacertificate).hexdigest()
+        self.ldapuri = l_config["LDAPURI"]
+        self.base = l_config["LDAPBASE"]
+        self.binddn = l_config["BINDDN"]
+        self.bindpw = l_config["BINDPW"]
 
-            # get last modified of local cert file
-            try:
-                mtime = os.path.getmtime(self.CERTFILE)
-            except OSError:
-                mtime = 0
-            last_modified_date = datetime.fromtimestamp(mtime)
+        self.filter = l_config["LDAPFILTER"]
+        self.searchfilter = l_config["LDAPSEARCHFILTER"]
 
-            if (cert_hash not in IdResolver.ca_certs_dict or
-               last_modified_date > IdResolver.CERTFILE_last_modified):
+        self.loginnameattribute = l_config["LOGINNAMEATTRIBUTE"]
+        self.uidType = l_config["UIDTYPE"]
 
-                IdResolver.ca_certs_dict[cert_hash] = self.cacertificate
-                _add_cacertificates_to_file(self.CERTFILE,
-                                            IdResolver.ca_certs_dict.values())
-                IdResolver.CERTFILE_last_modified = last_modified_date
+        try:
+            self.userinfo = json.loads(l_config["USERINFO"])
+        except ValueError as exx:
+            raise ResolverLoadConfigError("Invalid userinfo - no json"
+                                          " document: %s %r" %
+                                          (l_config["USERINFO"], exx))
+
+        # ------------------------------------------------------------------ --
+
+        # certificate related parameters
+
+        self.enforce_tls = l_config["EnforceTLS"]
+
+        self.use_sys_cert = l_config["linotp.certificates."
+                                     "use_system_certificates"]
+
+        self.cacertificate = l_config["CACERTIFICATE"]
+        self.register_certificate(self.cacertificate)
+
+        # ------------------------------------------------------------------ --
+
+        # connection related parameters
+
+        # support to setup both timeouts: network timeout and response timeout
+        #  separator ';' splits network from response timeout
+        timeout = l_config["TIMEOUT"]
+        self.network_timeout, self.timeout = self.parse_timeout(timeout)
+
+        self.sizelimit = l_config["SIZELIMIT"]
+        self.noreferrals = l_config["NOREFERRALS"]
+        self.proxy = l_config["PROXY"]
 
         return self
+
+    @classmethod
+    def register_certificate(cls, cacertificate):
+        """
+        add a certificate to the certificate store (file)
+
+        if we have a certificate, check if it is already registered
+        and if not regenerate the cert file
+
+        """
+
+        if not cacertificate:
+            return
+
+        cert_hash = sha1(cacertificate).hexdigest()
+
+        # get last modified of local cert file
+        try:
+            mtime = os.path.getmtime(cls.CERTFILE)
+        except OSError:
+            mtime = 0
+
+        last_modified_date = datetime.fromtimestamp(mtime)
+
+        if (cert_hash not in cls.ca_certs_dict or
+           last_modified_date > cls.CERTFILE_last_modified):
+
+            IdResolver.ca_certs_dict[cert_hash] = cacertificate
+
+            _add_cacertificates_to_file(cls.CERTFILE,
+                                        IdResolver.ca_certs_dict.values())
+
+            IdResolver.CERTFILE_last_modified = last_modified_date
 
     def getSearchFields(self, searchDict=None):
         '''

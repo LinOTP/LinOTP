@@ -93,10 +93,10 @@ from linotp.lib.ImportOTP import parseYubicoCSV
 from linotp.lib.useriterator import iterate_users
 from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
+from pylons.i18n.translation import _
 
-from linotp.lib.resolver import getResolverList
-from linotp.lib.resolver import getResolverInfo
 from linotp.lib.resolver import getResolverClass
+from linotp.lib.resolver import prepare_resolver_parameter
 
 # For logout
 from webob.exc import HTTPUnauthorized
@@ -2352,6 +2352,7 @@ class AdminController(BaseController):
             "sql_where": "Where",
             "sql_conparams": "ConnectionParams",
             "sql_password": 'Password',
+            "sql_map": 'Map',
         }
 
         for key, value in params.items():
@@ -2423,10 +2424,11 @@ class AdminController(BaseController):
                 elif typ in "sql":
                     typ = 'sqlresolver'
 
-                current_name = request_params["name"]
+                new_resolver_name = request_params["name"]
 
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%r'" % exx.message)
+                raise ParameterError(_("Missing parameter: %r") %
+                                     exx.message)
 
             # ---------------------------------------------------------- --
 
@@ -2434,6 +2436,8 @@ class AdminController(BaseController):
             # use the same parameters as the system/setResolver
 
             param = request_params
+            param['type'] = typ
+
             if typ == 'ldapresolver':
                 param = self._ldap_parameter_mapping(request_params)
             elif typ == 'sqlresolver':
@@ -2441,128 +2445,30 @@ class AdminController(BaseController):
 
             previous_name = param.get('previous_name', '')
 
-            if not previous_name:
-                mode = 'create'
-            else:
-                if current_name == previous_name:
-                    mode = 'update'
-                else:
-                    mode = 'rename'
-
             log.debug("[testresolver] testing resolver of type %s" % typ)
 
+            (param, missing,
+             _primary_key_changed) = prepare_resolver_parameter(
+                                        new_resolver_name=new_resolver_name,
+                                        param=param,
+                                        previous_name=previous_name)
+
+            if missing:
+                raise ParameterError(_("Missing parameter: %r") %
+                                     missing)
+
+            # now we can test the connection
+
             resolver_cls = getResolverClass(param['type'])
-            critical_params = resolver_cls.critical_parameters
-            crypted_params = resolver_cls.crypted_parameters
+            (status, desc) = resolver_cls.testconnection(param)
 
-            #
-            # TODO: here we can extend the resolvers to provide the list
-            # of required parameters, so that we can early raise an missing
-            # parameter exception
-            #
-            # required_params = resolver_cls.required_parameters
-            #
-            # missing = []
-            # for required_param in required_params:
-            #    if required_param not in param:
-            #        missing.append(required_param)
-            #
-            # if missing:
-            #     raise ParameterError("Missing parameter: '%r'" % missing)
-            #
+            res = {
+                'result': status,
+                'desc': desc
+            }
 
-            if mode == 'create':
-
-                # ---------------------------------------------------------- --
-
-                # handle the create of a new resolver
-
-                # we check if all crypted parameters are included
-
-                missing = []
-                for cypted_param in crypted_params:
-                    if not param.get(cypted_param):
-                        missing.append(cypted_param)
-
-                if missing:
-                    raise ParameterError("Missing parameter: '%r'" %
-                                         missing)
-
-                # now we can test the connection
-
-                (status, desc) = resolver_cls.testconnection(param)
-
-                res = {}
-                res['result'] = status
-                res['desc'] = desc
-
-                Session.commit()
-                return sendResult(response, res)
-
-            else:
-
-                # ---------------------------------------------------------- --
-
-                # handle 'rename' and 'update'
-
-                if mode == 'rename':
-                    previous_resolver = getResolverInfo(previous_name,
-                                                        passwords=True)
-
-                elif mode == 'update':
-                    previous_resolver = getResolverInfo(current_name,
-                                                        passwords=True)
-
-                #
-                # get the parameters of the previous resolver
-
-                previous_param = previous_resolver['data']
-
-                #
-                # get the critical parameters for this resolver type
-                # and check if these parameters have changed
-
-                critical_change = False
-                for crit in critical_params:
-                    if param.get(crit, '') != previous_param.get(crit, ''):
-                        critical_change = True
-                        break
-
-                #
-                # if there are no critical changes, we can transfer
-                # the encrypted parameters from previous resolver
-
-                if not critical_change:
-
-                    for crypt in crypted_params:
-                        if crypt in previous_param and not param.get(crypt):
-                            param[crypt] = previous_param[crypt]
-                else:
-
-                    #
-                    # if there are critical changes, we check for the required
-                    # crypted args in the parameter list
-
-                    missing = []
-                    for crypt in crypted_params:
-                        if not param.get(crypt):
-                            missing.append(crypt)
-
-                    if missing:
-                        log.error("could not %s resolver %r: "
-                                  "missing crypted parameters: %r",
-                                  mode, current_name, missing)
-
-                # now we can test the connection
-
-                (status, desc) = resolver_cls.testconnection(param)
-
-                res = {}
-                res['result'] = status
-                res['desc'] = desc
-
-                Session.commit()
-                return sendResult(response, res)
+            Session.commit()
+            return sendResult(response, res)
 
         except Exception as e:
             log.exception("[testresolver] failed: %r" % e)

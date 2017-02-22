@@ -27,6 +27,7 @@
 
 
 import re
+import json
 from datetime import timedelta
 
 duration_regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?'
@@ -102,3 +103,43 @@ def is_integer(value):
         return False
 
     return True
+
+
+def text(value):
+    """
+    type converter for text config entries
+
+    if the value is unicode or str, leave it as is
+    otherwise take the string representation
+    """
+    if isinstance(value, unicode) or isinstance(value, str):
+        return value
+    return "%r" % value
+
+
+def password(value):
+    """
+    type converter for password config entries
+
+    currently only a dummy, useful for extended password lookup in the config
+    """
+
+    # TODO: use the new password class
+
+    return value
+
+
+def boolean(value):
+    """
+        type converter for boolean config entries
+    """
+    true_def = ("yes", "true")
+    false_def = ("no", "false")
+
+    if value in (True, False):
+        return value
+
+    if value.lower() not in true_def and value.lower() not in false_def:
+        raise Exception("unable to convert %r" % value)
+
+    return value in true_def

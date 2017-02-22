@@ -41,6 +41,12 @@ Defines the rough interface for a UserId Resolver
 
 """
 
+from linotp.lib.type_utils import password
+import logging
+
+
+log = logging.getLogger(__name__)
+
 
 class ResolverLoadConfigError(Exception):
     pass
@@ -58,6 +64,8 @@ class UserIdResolver(object):
 
     critical_parameters = []
     crypted_parameters = []
+    resolver_parameters = {}
+
 
     def __init(self):
         """
@@ -70,6 +78,69 @@ class UserIdResolver(object):
         Hook to close down the resolver after one request
         """
         return
+
+    @classmethod
+    def is_change_critical(cls, new_params, previous_params):
+        """
+        check if the parameter update are 'critical' and require
+        a re-authentication
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+
+        for crit in cls.critical_parameters:
+            if new_params.get(crit, '') != previous_params.get(crit, ''):
+                return True
+
+        return False
+
+    @classmethod
+    def primary_key_changed(cls, new_params, previous_params):
+        """
+        check if the parameter update are 'critical' and require
+        a re-authentication
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+
+        return False
+
+
+    @classmethod
+    def merge_crypted_parameters(cls, new_params, previous_params):
+
+        params = {}
+
+        for crypt in cls.crypted_parameters:
+            if crypt in previous_params and not new_params.get(crypt):
+                params[crypt] = previous_params[crypt]
+
+        return params
+
+    @classmethod
+    def missing_crypted_parameters(cls, new_params):
+        """
+        detect, which crypted parameters are missing
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: list of missing parameters
+        """
+
+        missing = []
+
+        for crypt in cls.crypted_parameters:
+            if not new_params.get(crypt):
+                missing.append(crypt)
+
+        return missing
 
     @classmethod
     def getResolverClassType(cls):
@@ -161,6 +232,68 @@ class UserIdResolver(object):
         :return: the resolver identifier string - empty string if not exist
         """
         return self.name
+
+    @classmethod
+    def filter_config(cls, config, conf=''):
+        """
+        build a dict with the parameters of the resolver
+
+        the config could either be a linotp config object or a local dictionary
+        which is used to check if all required parameters are correctly set
+
+        - we have to support as well linotp global config entries, which are
+          indicated by startting with a 'linotp.' prefix. Example is the
+          linotp.use_system_certs, which is used in the ldap resolver
+
+        to support the variations of key, an list of search keys is build. for
+        each of these keys a lookup in the config is made.
+
+        :param config: the config which is provided during runtime of the
+                       resolver loading and while testconnection
+        :param conf: the resolver name and configuration identifier
+
+        :return: tuple with the dictionary with the filtered entries and the
+                 list of missing parameters
+        """
+
+        l_config = {}
+        missing = []
+
+        # ------------------------------------------------------------------ --
+
+        # filtering in the provided config for the resolver required parameters
+
+        for key, attr in cls.resolver_parameters.items():
+
+            required, default, typ = attr
+
+            search_keys = [key]
+
+            if 'linotp.' in key:
+                ext_key = '.'.join(key.split('.')[1:])
+                search_keys.append(ext_key)
+
+            else:
+                ext_key = 'linotp.%s.%s.%s' % (
+                          cls.getResolverClassType(), key, conf
+                          )
+
+                if typ == password:
+                    search_keys.append('enc' + ext_key)
+                search_keys.append(ext_key)
+
+            for search_key in search_keys:
+                if search_key in config:
+                    l_config[key] = typ(config.get(search_key))
+                    break
+
+            if key not in l_config:
+                if required:
+                    missing.append(key)
+                else:
+                    l_config[key] = typ(default)
+
+        return l_config, missing
 
     def loadConfig(self, config, conf):
         return self

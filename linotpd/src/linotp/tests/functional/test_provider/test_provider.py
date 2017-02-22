@@ -212,6 +212,50 @@ class TestProviderController(TestController):
 
         return
 
+    def test_create_unicode_provider(self):
+        """
+        check if new provider is default after create
+        """
+        config = u'{"file": "/tmp/müßte_gèhn"}'
+
+        # ------------------------------------------------------------------ --
+
+        # verify the new provider interface
+
+        provider_params = {'config': config.encode('utf-8')}
+        response = self.define_new_provider(provider_params=provider_params)
+        self.assertTrue('"value": true' in response, response)
+
+        params = {'type': 'sms'}
+        response = self.make_system_request('getProvider', params=params)
+
+        jresp = json.loads(response.body)
+        provider = jresp["result"]["value"].get('newone', {})
+        self.assertTrue(provider.get('Default', False), response)
+
+        p_config = provider.get('Config', '')
+        self.assertTrue(config == p_config, jresp)
+
+        # ------------------------------------------------------------------ --
+
+        # verify the old provider interface done via setConfig
+
+        provider_params = {'SMSProviderConfig': config.encode('utf-8')}
+        response = self.define_legacy_provider(provider_params=provider_params)
+        self.assertTrue('/tmp/m' in response, response)
+
+        params = {'type': 'sms'}
+        response = self.make_system_request('getProvider', params=params)
+
+        jresp = json.loads(response.body)
+        provider = jresp["result"]["value"].get('imported_default', {})
+        self.assertFalse(provider.get('Default', False), response)
+
+        p_config = provider.get('Config', '')
+        self.assertTrue(config == p_config, jresp)
+
+        return
+
     @patch.object(smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
     def test_legacy_default_provider(self):

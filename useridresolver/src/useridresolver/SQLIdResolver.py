@@ -45,6 +45,11 @@ from useridresolver.UserIdResolver import (UserIdResolver,
                                            ResolverLoadConfigError
                                            )
 
+from linotp.lib.type_utils import boolean
+from linotp.lib.type_utils import password
+from linotp.lib.type_utils import text
+
+
 import re
 import base64
 import hashlib
@@ -315,6 +320,37 @@ class IdResolver(UserIdResolver):
 
     crypted_parameters = ['Password']
 
+    resolver_parameters = {
+        "Connect": (False, "", text),
+        "Driver": (False, None, text),
+        "Server": (False, "", text),
+        "Port": (False, "", text),
+        "Database": (False, "", text),
+        "User": (False, "", text),
+        "conParams": (False, "", text),
+        "Password": (True, "", password),
+        "Limit": (False, "1000", int),
+        "Table": (False, "", text),
+        "Where": (False, "", text),
+        "Map": (False, "", text),
+        "Encoding": (False, DEFAULT_ENCODING, text),
+        }
+
+    @classmethod
+    def primary_key_changed(cls, new_params, previous_params):
+        """
+        check if during the  parameter update the primary key has changed
+
+        :param new_params: the set of new parameters
+        :param previous_params: the set of previous parameters
+
+        :return: boolean
+        """
+        new_uid = json.loads(new_params.get('Map', '{}')).get('userid', '')
+        prev_uid = json.loads(previous_params.get('Map', '{}')).get('userid', '')
+
+        return new_uid != prev_uid
+
     @classmethod
     def testconnection(cls, params):
         """
@@ -493,39 +529,6 @@ class IdResolver(UserIdResolver):
             log.error("[checkPass] password is not defined in SQL mapping!")
             return False
 
-    def getConfigEntry(self, config, key, conf, required=True, default=""):
-        '''
-        getConfigEntry - retrieve an entry from the config
-
-        :param config: dict of all configs
-        :type  config: dict
-        :param key: key which is searched
-        :type key: string
-        :param conf: scope of the config eg. connect.sql
-        :type conf: string
-        :param required: if this value ist true and the key is not defined,
-                         an exception sill be raised
-        :type required:  boolean
-        :param default: fallback value if confg has no such entry
-        :type default: any
-
-        :return: the value of the specified key
-        :rtype:  value type - in most cases string ;-)
-
-        '''
-        ckey = key
-        cval = default
-        if conf != "" and conf != None:
-            ckey = ckey + "." + conf
-            if ckey in config:
-                cval = config[ckey]
-        if cval == "":
-            if key in config:
-                cval = config[key]
-        if cval == "" and required:
-            log.error("[getConfigEntry] missing config entry: %s" % key)
-            raise Exception("[getConfigEntry] missing config entry: %s" % key)
-        return cval
 
     @classmethod
     def getResolverClassType(cls):
@@ -583,69 +586,50 @@ class IdResolver(UserIdResolver):
         '''
         log.debug("[loadConfig]")
 
-        connect = self.getConfigEntry(config,
-                                      "linotp.sqlresolver.Connect.%s" % conf,
-                                      "", False)
         self.conf = conf
-        if connect == "":
 
-            driver = self.getConfigEntry(config,
-                                         'linotp.sqlresolver.Driver', conf)
-            self.driver = driver
-            server = self.getConfigEntry(config,
-                                'linotp.sqlresolver.Server', conf, False)
-            port = self.getConfigEntry(config,
-                                'linotp.sqlresolver.Port', conf, False)
-            db = self.getConfigEntry(config,
-                                'linotp.sqlresolver.Database', conf, False)
-            user = self.getConfigEntry(config,
-                                       'linotp.sqlresolver.User', conf, False)
-            conParams = self.getConfigEntry(config,
-                    "linotp.sqlresolver.conParams", conf, False, default="")
+        l_config, missing = self.filter_config(config, conf)
+        if missing:
+            log.error("missing config entries: %r", missing)
+            raise ResolverLoadConfigError(" missing config entries:"
+                                          " %r" % missing)
 
-            # required argument Password
-            # - there might be an already decrypted pass_
-            try:
-                pass_ = self.getConfigEntry(config,
-                                            'enclinotp.sqlresolver.Password',
-                                            conf)
-            except Exception as exx:
-                pass_ = self.getConfigEntry(config,
-                                            'linotp.sqlresolver.Password',
-                                            conf)
+        #  example for connect:
+        #      postgres://otpd:linotp2d@localhost:521/otpdb
 
-            #        postgres://otpd:linotp2d@localhost:521/otpdb
+        connect = l_config.get("Connect")
+        if not connect:
+
+            driver = l_config.get("Driver")
+            server = l_config.get("Server")
+            port = l_config.get("Port")
+            db = l_config.get("Database")
+            user = l_config.get("User")
+            conParams = l_config.get("conParams")
+            pass_ = l_config.get("Password")
 
             connect = make_connect(driver, user, pass_,
                                    server, port, db, conParams)
 
+        # ------------------------------------------------------------------ --
+
         self.sqlConnect = connect
 
-        log.debug("[loadConfig] We got the following connect string: %s"
-                                                            % self.sqlConnect)
+        self.limit = l_config["Limit"]
+        self.sqlTable = l_config["Table"]
+        self.sqlWhere = l_config["Where"]
+        self.sqlEncoding = l_config.get("Encoding") or DEFAULT_ENCODING
 
-        self.limit = int(self.getConfigEntry(config,
-                            "linotp.sqlresolver.Limit", conf, False, "1000"))
-        self.sqlTable = self.getConfigEntry(config,
-                                            "linotp.sqlresolver.Table", conf)
-        self.sqlWhere = self.getConfigEntry(config,
-                                    "linotp.sqlresolver.Where", conf, False)
-        self.sqlEncoding = self.getConfigEntry(config,
-         "linotp.sqlresolver.Encoding", conf, False, default=DEFAULT_ENCODING)
+        # ------------------------------------------------------------------ --
 
-        if self.sqlEncoding == "":
-            self.sqlEncoding = DEFAULT_ENCODING
-
-        userInfo = self.getConfigEntry(config, "linotp.sqlresolver.Map", conf)
-        userInfo = userInfo.strip("'")
-        userInfo = userInfo.strip('"')
+        userInfo = l_config["Map"].strip("'").strip('"')
         try:
             self.sqlUserInfo = json.loads(userInfo)
         except ValueError as exx:
             raise ResolverLoadConfigError("Invalid userinfo - no json "
                                           "document: %s %r" % (userInfo, exx))
-        except Exception as  e:
-            raise Exception("linotp.sqlresolver.Map: " + str(e))
+        except Exception as exx:
+            raise Exception("linotp.sqlresolver.Map: %r" % exx)
 
         self.checkMapping()
 
@@ -668,20 +652,25 @@ class IdResolver(UserIdResolver):
             invalid_columns = []
             for key, sqlCol in self.sqlUserInfo.iteritems():
                 column = table.c.get(sqlCol)
+
                 if column is None:
-                    log.error('Invalid mapping: %r => %r, column not found'
-                                                            % (key, sqlCol))
+
+                    log.error('Invalid mapping: %r => %r, column not found',
+                              key, sqlCol)
+
                     invalid_columns.append(sqlCol)
 
             if invalid_columns:
                 dbObj.close()
                 raise Exception("Invalid map with invalid columns: %r. "
                                 "Possible columns: %s" %
-                        (invalid_columns, [co.name for co in table.columns]))
+                                (invalid_columns,
+                                 [co.name for co in table.columns]))
             else:
-                log.info('Valid mapping: %r' % self.sqlUserInfo)
-        except Exception as e:
-            log.exception('[checkMapping] Exception: %s' % (str(e)))
+                log.info('Valid mapping: %r', self.sqlUserInfo)
+
+        except Exception as exx:
+            log.exception('[checkMapping] Exception: %r', exx)
 
         log.debug('[checkMapping] done')
         return
@@ -830,8 +819,8 @@ class IdResolver(UserIdResolver):
         '''
         log.debug("[getUserList] %s" % (str(searchDict)))
 
-        ## we use a dict, where the return users are inserted to where key
-        ## is userid to return only a distinct list of users
+        # we use a dict, where the return users are inserted to where key
+        # is userid to return only a distinct list of users
         users = {}
 
         dbObj = self.connect()
