@@ -51,6 +51,9 @@ ARG LINOTP_MIRROR=www.linotp.org
 #  LINOTP_DB_PASSWORD=password
 #  LINOTP_DB_NAME=database-name
 #
+# To allow unencrypted healthcheck by
+# checking /validate/ok, set
+#  HEALTHCHECK_PORT=<port>
 #
 # To send LinOTP logs directly to
 # Logstash, set LOGSTASH_HOST and
@@ -76,6 +79,7 @@ ENV LINOTP_USER=linotp \
 	LINOTP_APACHE_SSL=true \
 	APACHE_PORT=443 \
 	APACHE_LOGLEVEL=info \
+	HEALTHCHECK_PORT= \
 	LOGSTASH_HOST= \
 	LOGSTASH_PORT= \
 	LOGSTASH_TAGS=()

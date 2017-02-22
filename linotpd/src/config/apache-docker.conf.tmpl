@@ -26,6 +26,28 @@ WSGIDaemonProcess linotp processes=1 threads=15 display-name=%{GROUP} user=linot
 WSGIProcessGroup linotp
 WSGIPassAuthorization On
 
+{{ if ne .Env.HEALTHCHECK_PORT "" }}
+<VirtualHost _default_:{{ .Env.HEALTHCHECK_PORT }}>
+
+    <Directory /etc/linotp2>
+        <Files linotpapp.wsgi>
+            Require all granted
+        </Files>
+    </Directory>
+    WSGIScriptAlias /       /etc/linotp2/linotpapp.wsgi
+
+    # Do not serve unencrypted by default
+    <Location / >
+        Require all denied
+    </Location>
+
+    # Healthcheck - allow HTTP access to validate/ok
+    <Location /validate/ok >
+        Require all granted
+    </Location>
+
+</VirtualHost>
+{{ end }}
 
 <VirtualHost _default_:{{ .Env.APACHE_PORT }}>
 
