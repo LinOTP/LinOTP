@@ -641,6 +641,12 @@ class TestReplication(TestController):
         self.assertTrue("must be of type 'duration'" in error_message)
 
         with self.assertRaises(AssertionError) as ass_err:
+            self.set_cache_expiry(expiration='3w10')
+
+        error_message = ass_err.exception.message
+        self.assertTrue("must be of type 'duration'" in error_message)
+
+        with self.assertRaises(AssertionError) as ass_err:
             self.set_cache_expiry(expiration='3600 years')
 
         error_message = ass_err.exception.message
@@ -652,6 +658,7 @@ class TestReplication(TestController):
         self.set_cache_expiry(expiration='3600 s')
         self.set_cache_expiry(expiration='3 hours')
 
+        self.set_cache_expiry(expiration='3 weeks 5 days')
         self.set_cache_expiry(expiration='180 minutes')
 
         self.set_cache_expiry(expiration='1h 20 minutes 90 s')

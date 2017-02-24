@@ -1,40 +1,62 @@
-<VirtualHost _default_:{{ .Env.APACHE_PORT }}>
+ServerAdmin webmaster@localhost
 
-    ServerAdmin webmaster@localhost
+Include /etc/linotp2/apache-servername.conf
 
-    Include /etc/linotp2/apache-servername.conf
+Header always set X-Frame-Options "DENY"
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Strict-Transport-Security "max-age=315360000; includeSubDomains"
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Permitted-Cross-Domain-Policies "none"
 
-    Header always edit Set-Cookie ^(.*)$ $1;secure
-    Header always set X-Frame-Options "DENY"
-    Header always set X-XSS-Protection "1; mode=block"
-    Header always set Strict-Transport-Security "max-age=315360000; includeSubDomains"
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set X-Permitted-Cross-Domain-Policies "none"
+<Directory />
+    AllowOverride None
+    Require all denied
+</Directory>
 
-    <Directory />
-        AllowOverride None
-        Require all denied
-    </Directory>
+<Directory /usr/share/doc/linotpdoc/html>
+    Require all granted
+</Directory>
+
+Alias /doc/html         /usr/share/doc/linotpdoc/html
+
+#
+# The daemon is running as user 'linotp'
+# This user should have access to the encKey database encryption file
+WSGIDaemonProcess linotp processes=1 threads=15 display-name=%{GROUP} user=linotp
+WSGIProcessGroup linotp
+WSGIPassAuthorization On
+
+{{ if ne .Env.HEALTHCHECK_PORT "" }}
+<VirtualHost _default_:{{ .Env.HEALTHCHECK_PORT }}>
 
     <Directory /etc/linotp2>
         <Files linotpapp.wsgi>
             Require all granted
         </Files>
     </Directory>
-
-    <Directory /usr/share/doc/linotpdoc/html>
-        Require all granted
-    </Directory>
-
-    Alias /doc/html         /usr/share/doc/linotpdoc/html
-
     WSGIScriptAlias /       /etc/linotp2/linotpapp.wsgi
-    #
-    # The daemon is running as user 'linotp'
-    # This user should have access to the encKey database encryption file
-    WSGIDaemonProcess linotp processes=1 threads=15 display-name=%{GROUP} user=linotp
-    WSGIProcessGroup linotp
-    WSGIPassAuthorization On
+
+    # Do not serve unencrypted by default
+    <Location / >
+        Require all denied
+    </Location>
+
+    # Healthcheck - allow HTTP access to validate/ok
+    <Location /validate/ok >
+        Require all granted
+    </Location>
+
+</VirtualHost>
+{{ end }}
+
+<VirtualHost _default_:{{ .Env.APACHE_PORT }}>
+
+    <Directory /etc/linotp2>
+        <Files linotpapp.wsgi>
+            Require all granted
+        </Files>
+    </Directory>
+    WSGIScriptAlias /       /etc/linotp2/linotpapp.wsgi
 
     <LocationMatch /ocra/(request|checkstatus|getActivationCode|calculateOtp)>
         AuthType Digest
@@ -43,7 +65,6 @@
         AuthUserFile /etc/linotp2/admins
         Require valid-user
     </LocationMatch>
-
 
     <LocationMatch /(audit|manage|system|license|admin)>
         AuthType Digest
@@ -70,6 +91,8 @@
     </Location>
 
 {{ if ne .Env.LINOTP_APACHE_SSL "false" }}
+    Header always edit Set-Cookie ^(.*)$ $1;secure
+
     #   SSL Engine Switch:
     #   Enable/Disable SSL for this virtual host.
     SSLEngine on
@@ -80,9 +103,10 @@
     SSLCertificateKeyFile /etc/ssl/private/linotpserver.key
 {{ end }}
 
-    ErrorDocument 500 "<h1>Internal Server Error</h1> Possible reasons can be missing modules or bad access rights on LinOTP configuration files or log files. Please check the apache logfile <pre>/var/log/apache2/error.log</pre> for more details."
 
 </VirtualHost>
+
+ErrorDocument 500 "<h1>Internal Server Error</h1> Possible reasons can be missing modules or bad access rights on LinOTP configuration files or log files. Please check the apache logfile <pre>/var/log/apache2/error.log</pre> for more details."
 
 LogLevel {{ .Env.APACHE_LOGLEVEL }}
 

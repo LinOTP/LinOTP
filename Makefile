@@ -264,7 +264,6 @@ $(BUILDDIR)/apt/Packages:
 		linotp-builder \
 		sh -c "cp -ra /pkg/linotpsrc/* /pkg/linotp && \
 			make deb-install DESTDIR=/pkg/apt DEBUILD_OPTS=\"$(DEBUILD_OPTS)\" "
-	mkdir -p $(DESTDIR)/incoming
 	docker cp \
 		$(DOCKER_CONTAINER_NAME)-apt:/pkg/apt $(DESTDIR)
 	docker rm $(DOCKER_CONTAINER_NAME)-apt
@@ -307,6 +306,7 @@ docker-run-linotp-sqlite: docker-build-linotp
 			 -e LINOTP_DB_NAME=//tmp/sqlite \
 			 -e LINOTP_DB_HOST= \
 			 -e LINOTP_DB_PORT= \
+			 -e HEALTHCHECK_PORT=80 \
 			 -e APACHE_LOGLEVEL=DEBUG \
 			linotp
 
