@@ -285,7 +285,7 @@ if isinstance(lang, list):
                         title="${_('Enable caching of the realm to user id resolver lookup')}"></td></tr>
                 <tr><td><label for=sys_resolver_cache_enable>${_("Expiration")} </label></td>
                     <td><input type="text" name="sys_resolver_cache_expiration" id="sys_resolver_cache_expiration" size="35"
-                        title='${_("The expiration of the resolver lookup caching in seconds")}'></td></tr>
+                        title='${_("The expiration of the resolver lookup caching in seconds or as duration format for days, hours and minutes: >1d 3h 4m<")}'></td></tr>
                 </table>
             </fieldset><fieldset>
                 <legend>${_("User Lookup Caching")}</legend>
@@ -295,7 +295,7 @@ if isinstance(lang, list):
                         title="${_('Enable the caching of user lookup in a resolver')}"></td></tr>
                 <tr><td><label for=sys_user_cache_enable>${_("Expiration")} </label></td>
                     <td><input type="text" name="sys_user_cache_expiration" id="sys_user_cache_expiration" size="35"
-                        title='${_("The expiration of the user lookup caching in seconds")}'></td></tr>
+                        title='${_("The expiration of the user lookup caching in seconds or as duration format for days, hours and minutes: >1d 3h 4m<")}'></td></tr>
                 </table>
             </fieldset>
         </div> <!-- tab with settings -->

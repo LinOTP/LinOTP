@@ -30,8 +30,11 @@ import re
 import json
 from datetime import timedelta
 
-duration_regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?'
-                            '((?P<seconds>\d+?)s)?')
+duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
+                            '((?P<days>\d+?)(d|day|days))?'
+                            '((?P<hours>\d+?)(h|hour|hours))?'
+                            '((?P<minutes>\d+?)(m|minute|minutes))?'
+                            '((?P<seconds>\d+?)(s|second|seconds))?$')
 
 
 def parse_duration(duration_str):
