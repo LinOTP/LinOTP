@@ -426,7 +426,7 @@ class ValidationHandler(object):
         audit = context['audit']
         user_exists = False
 
-        if user is not None and (user.isEmpty() is False):
+        if user is not None and not user.is_empty:
             # the upper layer will catch / at least should
             try:
                 (uid, _resolver, resolverClass) = getUserId(user,

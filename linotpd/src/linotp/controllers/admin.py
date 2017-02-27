@@ -447,7 +447,7 @@ class AdminController(BaseController):
 
             c.audit['user'] = user.login
 
-            if user.isEmpty():
+            if user.is_empty:
                 c.audit['realm'] = getTokenRealms(serial)
             else:
                 c.audit['realm'] = user.realm
@@ -470,7 +470,7 @@ class AdminController(BaseController):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict['message'] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.isEmpty():
+            elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
             Session.commit()
@@ -531,7 +531,7 @@ class AdminController(BaseController):
             c.audit['user'] = user.login
             logTokenNum(c.audit)
 
-            if user.isEmpty():
+            if user.is_empty:
                 c.audit['realm'] = getTokenRealms(serial)
             else:
                 c.audit['realm'] = user.realm
@@ -544,7 +544,7 @@ class AdminController(BaseController):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict['message'] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.isEmpty():
+            elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
             Session.commit()
@@ -684,7 +684,7 @@ class AdminController(BaseController):
             c.audit['success'] = ret
             c.audit['user'] = user.login
 
-            if user.isEmpty():
+            if user.is_empty:
                 c.audit['realm'] = getTokenRealms(serial)
             else:
                 c.audit['realm'] = user.realm
@@ -697,7 +697,7 @@ class AdminController(BaseController):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict['message'] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.isEmpty():
+            elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
 
@@ -1024,7 +1024,7 @@ class AdminController(BaseController):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict['message'] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.isEmpty():
+            elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
             Session.commit()
@@ -1812,7 +1812,7 @@ class AdminController(BaseController):
             opt_result_dict = {}
             if ret == 0 and serial:
                 opt_result_dict['message'] = "No token with serial %s" % serial
-            elif ret == 0 and user and not user.isEmpty():
+            elif ret == 0 and user and not user.is_empty:
                 opt_result_dict['message'] = "No tokens for this user"
 
             Session.commit()
@@ -2521,7 +2521,7 @@ class AdminController(BaseController):
             if all:
                 only_open_challenges = False
 
-            if transid is None and user.isEmpty() and serial is None:
+            if transid is None and user.is_empty and serial is None:
                 # # raise exception
                 log.exception("[admin/checkstatus] : missing parameter: "
                              "transactionid, user or serial number for token")
@@ -2538,7 +2538,7 @@ class AdminController(BaseController):
                                                                filter_open=only_open_challenges))
 
             # # if we have a user
-            if user.isEmpty() is False:
+            if not user.is_empty:
                 tokens = getTokens4UserOrSerial(user=user)
                 for token in tokens:
                     serial = token.getSerial()
