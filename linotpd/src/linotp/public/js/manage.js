@@ -3161,7 +3161,8 @@ function save_sql_config(){
         '#sql_mapping': 'Map',
         '#sql_where': 'Where',
         '#sql_conparams': 'conParams',
-        '#sql_encoding' : 'Encoding'
+        '#sql_encoding' : 'Encoding',
+        '#sql_readonly': 'readonly',
     };
     var url = '/system/setResolver';
     var params = {};
@@ -4490,16 +4491,19 @@ $(document).ready(function(){
         params['name']              = $('#sql_resolvername').val();
         params['previous_name']     = g.current_resolver_name;
 
-        params['sql_driver']        = $('#sql_driver').val();
-        params['sql_user']          = $('#sql_user').val();
-        params['sql_password']      = $('#sql_password').val();
-        params['sql_server']        = $('#sql_server').val();
-        params['sql_port']          = $('#sql_port').val();
-        params['sql_database']      = $('#sql_database').val();
-        params['sql_table']         = $('#sql_table').val();
-        params['sql_where']         = $('#sql_where').val();
-        params['sql_conparams']     = $('#sql_conparams').val();
-        params['sql_encoding']      = $('#sql_encoding').val();
+        params['Driver']        = $('#sql_driver').val();
+        params['User']          = $('#sql_user').val();
+        params['Password']      = $('#sql_password').val();
+        params['Server']        = $('#sql_server').val();
+        params['Port']          = $('#sql_port').val();
+        params['Database']      = $('#sql_database').val();
+        params['Table']         = $('#sql_table').val();
+        params['Where']         = $('#sql_where').val();
+        params['Map']           = $('#sql_mapping').val();
+        params['ConnectionParams']     = $('#sql_conparams').val();
+        params['Encoding']      = $('#sql_encoding').val();
+        params['Limit']      	= $('#sql_limit').val();
+        params['readonly']      = $('#sql_readonly').val();
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;
@@ -6742,6 +6746,7 @@ function resolver_set_sql(obj) {
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);
     $('#sql_encoding').val(obj.result.value.data.Encoding);
+    $('#sql_readonly').val(obj.result.value.data.readonly);
 }
 
 /**

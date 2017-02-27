@@ -40,6 +40,7 @@ from linotp.lib.config import removeFromConfig
 from linotp.lib.config import getLinotpConfig
 
 from linotp.lib.type_utils import get_duration
+from linotp.lib.type_utils import boolean
 
 from linotp.lib.crypt import decryptPassword
 
@@ -140,6 +141,7 @@ def defineResolver(params):
     if resolver is None:
         return False
 
+
     # ---------------------------------------------------------------------- --
 
     #
@@ -226,12 +228,31 @@ def getResolverList(filter_resolver_type=None):
                 # so take all after the 3rd dot for realm
                 r = {}
                 resolver = entry.split(".", 3)
+
                 # An old entry without resolver name
                 if len(resolver) <= 3:
                     break
                 r["resolvername"] = resolver[3]
                 r["entry"] = entry
                 r["type"] = typ
+
+                readonly = '.'.join([resolver[0], resolver[1],
+                                    'readonly', resolver[3]])
+
+                if readonly in conf and boolean(conf[readonly]):
+                    r["readonly"] = boolean(conf[readonly])
+
+                #
+                # this is a patch for a hack:
+                #
+                # as entry, the first found resolver is shown
+                # as the PasswdResolver only has one entry, this always
+                # has been 'fileName', which now as could be 'readonly'
+                # thus we skip the readonly entry:
+
+                key = resolver[2]
+                if key == "readonly":
+                    continue
 
                 if ((filter_resolver_type is None) or
                         (filter_resolver_type and
@@ -318,6 +339,9 @@ def getResolverInfo(resolvername, passwords=False):
         if (not isinstance(res_conf[key], str) and
             not isinstance(res_conf[key], unicode)):
             res_conf[key] = "%r" % res_conf[key]
+
+    if 'readonly' in res_conf:
+        result["readonly"] = res_conf['readonly']
 
     result["type"] = resolver_type
     result["data"] = res_conf
@@ -847,6 +871,7 @@ def prepare_resolver_parameter(new_resolver_name, param,
                                             passwords=True)
 
         previous_param = previous_resolver['data']
+        previous_readonly = boolean(previous_resolver.get('readonly', False))
 
         # get the critical parameters for this resolver type
         # and check if these parameters have changed
@@ -865,6 +890,22 @@ def prepare_resolver_parameter(new_resolver_name, param,
                                     previous_params=previous_param)
 
             param.update(merged_params)
+
+        # in case of a readonly resolver, no changes beneath a rename
+        # is allowed
+
+        if previous_readonly:
+            for key, p_value in previous_param.items():
+
+                # we inherit the readonly parameter if it is
+                # not provided by the ui
+
+                if key == 'readonly':
+                    param['readonly'] = boolean(p_value)
+                    continue
+
+                if p_value != param.get(key, ''):
+                    raise Exception('Readonly Resolver Change not allowed!')
 
         # check if the primary key changed - if so, we need
         # to migrate the resolver

@@ -216,25 +216,12 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         self.addSqlResolver(resolverName)
         self.addSqlRealm(realmName, resolverName, defaultRealm=True)
 
-        params = {'type': 'sqlresolver',
-                  'name': resolverName,
-                  'url': self.sqlconnect,
-                  }
+        params = {}
+        params.update(self.sqlResolverDef)
 
-        definitions = {'Server': 'sql_server',
-                       "Driver": "sql_driver",
-                       "Port": "sql_port",
-                       "Database": "sql_database",
-                       "User": "sql_user",
-                       "Password": "sql_password",
-                       "Table": "sql_table",
-                       "Where": "sql_where",
-                       "ConnectionParams": "sql_conparams",
-                       "Map": "sql_map",
-                       }
-
-        for key, target_key in definitions.items():
-            params[target_key] = self.sqlResolverDef.get(key, '')
+        params['type'] = 'sqlresolver'
+        params['name'] = resolverName
+        params['url'] = self.sqlconnect
 
         response = self.make_admin_request('testresolver', params=params)
         self.assertTrue('"rows": 12' in response)
@@ -245,7 +232,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
         # retrieved from the stored configuration
         #
 
-        del params['sql_password']
+        del params['Password']
         params['previous_name'] = resolverName
         response = self.make_admin_request('testresolver', params=params)
         self.assertTrue('"rows": 12' in response)

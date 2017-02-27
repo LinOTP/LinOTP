@@ -237,7 +237,7 @@ class SQLImportHandler(ImportHandler):
         """
         self._create_table()
 
-        self.former_user_by_id = set()
+        former_user_by_id = set()
 
         session = self.db_context.get_session()
 
@@ -245,9 +245,9 @@ class SQLImportHandler(ImportHandler):
             self.User.groupid == self.groupid).all()
 
         for u_user in u_users:
-            self.former_user_by_id.add(u_user[0])
+            former_user_by_id.add(u_user[0])
 
-        return self.former_user_by_id
+        return former_user_by_id
 
     def commit(self):
         """
@@ -279,13 +279,10 @@ class SQLImportHandler(ImportHandler):
     def lookup(self, user):
         """
         the lookup is called during the user import, to look for an
-        already existing user - could be used to optimze the user lookup
+        already existing user
 
         :param user: the user with the new values
         """
-
-        if user.userid not in self.former_user_by_id:
-            return None
 
         session = self.db_context.get_session()
 

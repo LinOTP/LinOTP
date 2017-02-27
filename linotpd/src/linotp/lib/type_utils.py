@@ -145,4 +145,4 @@ def boolean(value):
     if value.lower() not in true_def and value.lower() not in false_def:
         raise Exception("unable to convert %r" % value)
 
-    return value in true_def
+    return value.lower() in true_def

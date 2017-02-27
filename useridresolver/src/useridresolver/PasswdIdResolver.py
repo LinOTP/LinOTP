@@ -118,6 +118,7 @@ class IdResolver (UserIdResolver):
         "fileName": (True, None, text),
         'linotp.root': (False, None, text)
     }
+    resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod
     def setup(cls, config=None, cache_dir=None):

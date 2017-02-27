@@ -42,6 +42,7 @@ Defines the rough interface for a UserId Resolver
 """
 
 from linotp.lib.type_utils import password
+from linotp.lib.type_utils import boolean
 import logging
 
 
@@ -64,8 +65,9 @@ class UserIdResolver(object):
 
     critical_parameters = []
     crypted_parameters = []
-    resolver_parameters = {}
-
+    resolver_parameters = {
+            'readonly': (False, False, boolean)
+            }
 
     def __init(self):
         """
@@ -292,6 +294,11 @@ class UserIdResolver(object):
                     missing.append(key)
                 else:
                     l_config[key] = typ(default)
+
+        # we show the readonly attribute only, if it is True
+
+        if 'readonly' in l_config and not l_config['readonly']:
+            del l_config['readonly']
 
         return l_config, missing
 
