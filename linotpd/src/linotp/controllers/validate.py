@@ -472,9 +472,8 @@ class ValidateController(BaseController):
                     user = getUserFromParam(param)
                     (uid, resId, resIdC) = getUserId(user)
                     userInfo = getUserInfo(uid, resId, resIdC)
-                    #users   = getUserList({ 'username':user.getUser()} , user)
                     log.debug("[samlcheck] getting attributes for: %s@%s"
-                              % (user.getUser(), user.getRealm()))
+                              % (user.login, user.realm))
 
                     res = userInfo
                     for key in ['username',

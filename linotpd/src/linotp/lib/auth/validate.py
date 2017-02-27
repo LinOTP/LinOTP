@@ -597,7 +597,7 @@ class ValidationHandler(object):
             # preselect: the token must be in the same realm as the user
             if user is not None:
                 t_realms = token.token.getRealmNames()
-                u_realm = user.getRealm()
+                u_realm = user.realm
                 if (len(t_realms) > 0 and len(u_realm) > 0 and
                         u_realm.lower() not in t_realms):
 

@@ -195,12 +195,6 @@ class User(object):
 
         return False
 
-    def getRealm(self):
-        return self.realm
-
-    def getUser(self):
-        return self.login
-
     def isEmpty(self):
         # ignore if only conf is set! as it makes no sense
         if len(self.login) + len(self.realm) == 0:
@@ -230,12 +224,6 @@ class User(object):
                                      self.resolver_config_identifier,
                                      self.resolverUid, self.resolverConf))
         return ret
-
-    def saveResolvers(self, resolvers):
-        """
-        save the resolver objects as list as part of the user
-        """
-        self.resolvers_list = resolvers
 
     @staticmethod
     def get_fq_resolver(res):
@@ -451,7 +439,7 @@ def getUserFromParam(param):
                     usr = User(ulogin, urealm)
                     res = getResolversOfUser(usr)
 
-            usr.saveResolvers(res)
+            usr.resolvers_list = res
 
     log.debug("[getUserFromParam] creating user object %r,%r,%r",
               user, realm, resolver_config_id)

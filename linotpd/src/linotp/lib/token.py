@@ -1615,14 +1615,14 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 for token in sqlQuery:
                     # we have to check that the token is in the same realm as the user
                     t_realms = token.getRealmNames()
-                    u_realm = user.getRealm()
+                    u_realm = user.realm
                     if u_realm != '*':
                         if len(t_realms) > 0 and len(u_realm) > 0:
                             if u_realm.lower() not in t_realms:
                                 log.debug("user realm and token realm missmatch %r::%r"
                                       % (u_realm, t_realms))
                                 continue
-    
+
                     log.debug("[getTokens4UserOrSerial] user serial (user): %r"
                               % token.LinOtpTokenSerialnumber)
                     tokenList.append(token)
