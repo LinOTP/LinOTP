@@ -74,8 +74,6 @@ class AccountController(BaseController):
 
     def __before__(self, action, **params):
 
-        log.debug("[__before__::%r] %r" % (action, params))
-
         try:
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
@@ -93,11 +91,8 @@ class AccountController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done" % (action))
-
     def login(self):
-        log.debug("[login] selfservice login screen")
+
         identity = request.environ.get('repoze.who.identity')
         if identity is not None:
             # After login We always redirect to the start page
@@ -109,19 +104,17 @@ class AccountController(BaseController):
             res = getRealms()
 
             c.realmArray = []
-            #log.debug("[login] %s" % str(res) )
             for (k, v) in res.items():
                 c.realmArray.append(k)
 
             c.realmbox = getRealmBox()
-            log.debug("[login] displaying realmbox: %i" % int(c.realmbox))
 
             Session.commit()
             response.status = '%i Logout from LinOTP selfservice' % LOGIN_CODE
             return render('/selfservice/login.mako')
 
         except Exception as e:
-            log.exception('[login] failed %r' % e)
+            log.exception('[login] failed. Exception was %r' % e)
             Session.rollback()
             return sendError(response, e)
 

@@ -81,8 +81,6 @@ class AuditController(BaseController):
     def __before__(self, action, **params):
 
 
-        log.debug("[__before__::%r] %r" % (action, params))
-
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
@@ -96,8 +94,6 @@ class AuditController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
     def __after__(self):
         c.audit['administrator'] = getUserFromRequest(request).get("login")
@@ -139,10 +135,7 @@ class AuditController(BaseController):
 
             log.debug("[search] params: %s" % param)
 
-
             checkPolicyPre('audit', 'view', {})
-
-            log.debug("[search] params %r" % param)
 
             # remove the param outform (and other parameters that should not
             # be used for search!
@@ -157,7 +150,6 @@ class AuditController(BaseController):
 
             audit_iterator = None
 
-            log.debug("[search] search params %r" % search_params)
             audit_query = AuditQuery(search_params, audit)
 
             if output_format == "csv":
@@ -187,7 +179,6 @@ class AuditController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[search] done')
 
 
 #eof###########################################################################

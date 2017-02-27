@@ -93,8 +93,6 @@ class ValidateController(BaseController):
 
     def __before__(self, action, **params):
 
-        log.debug("[__before__::%r] %r" % (action, params))
-
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
@@ -106,9 +104,6 @@ class ValidateController(BaseController):
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
-
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
 
     def __after__(self, action, **params):
@@ -272,7 +267,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[check] done')
 
     def check_status(self):
         """
@@ -322,7 +316,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[check] done')
 
 
     def check_yubikey(self):
@@ -383,7 +376,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[check_yubikey] done')
 
     def check_url(self):
         '''
@@ -424,7 +416,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[check_url] done")
 
 
     def samlcheck(self):
@@ -487,7 +478,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[samlcheck] done')
 
     def check_t(self):
 
@@ -544,7 +534,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[check_t] done')
 
 
     def check_s(self):
@@ -638,7 +627,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[check_s] done')
 
 
 
@@ -706,7 +694,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[simplecheck] done')
 
 
     def ok(self):
@@ -779,7 +766,6 @@ class ValidateController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[smspin] done")
 
     def pair(self):
         """

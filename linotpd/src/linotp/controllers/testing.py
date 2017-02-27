@@ -124,7 +124,6 @@ class TestingController(BaseController):
         returns:
             JSON response
         '''
-        log.debug('[autosms]')
 
         param = request.params
         try:
@@ -146,7 +145,6 @@ class TestingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[autosms] done')
 
 
     def http2sms(self):
@@ -183,7 +181,6 @@ class TestingController(BaseController):
             account = clickatel, username = <!legit>
                 -> Response Success: "FAILED" (Text)
         '''
-        log.debug('[http2sms]')
         param = {}
 
         try:
@@ -235,7 +232,6 @@ class TestingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[http2sms] done')
 
 
 #eof###########################################################################
