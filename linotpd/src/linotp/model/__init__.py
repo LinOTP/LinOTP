@@ -98,12 +98,10 @@ def init_model(engine):
 
     :param engine: the sql engine
     """
-    log.debug('model init: init_model')
 
     meta.engine = engine
     meta.Session.configure(bind=engine)
 
-    log.debug('model init: init_model')
     return
 
 token_table = sa.Table('Token', meta.metadata,
@@ -175,8 +173,6 @@ class Token(object):
 
     def __init__(self, serial):
 
-        log.debug(' __init__(%s)' % serial)
-
         # # self.LinOtpTokenId - will be generated DBType serial
         self.LinOtpTokenSerialnumber = u'' + serial
 
@@ -197,7 +193,6 @@ class Token(object):
 
         # will be assigned automaticaly
         # self.LinOtpTokenId      = 0
-        log.debug('Token init done')
 
     def __setattr__(self, name, value):
         """
@@ -266,7 +261,6 @@ class Token(object):
         :param iv: the initialization value / salt
         :param reset_failcount: reset the failcount on token update
         """
-        log.debug('set_seed()')
         self.LinOtpCount = 0
         if True == reset_failcount:
             self.LinOtpFailCount = 0
@@ -274,18 +268,15 @@ class Token(object):
         self.LinOtpKeyIV = unicode(binascii.hexlify(iv))
 
     def get_encrypted_seed(self):
-        log.debug('getHOtpKey()')
         key = binascii.unhexlify(self.LinOtpKeyEnc or '')
         iv = binascii.unhexlify(self.LinOtpKeyIV or '')
         return key, iv
 
     def setUserPin(self, enc_userPin, iv):
-        log.debug('setUserPin()')
         self.LinOtpTokenPinUser = unicode(binascii.hexlify(enc_userPin))
         self.LinOtpTokenPinUserIV = unicode(binascii.hexlify(iv))
 
     def getUserPin(self):
-        log.debug('getHOtpKey()')
         pu = self._fix_spaces(self.LinOtpTokenPinUser or '')
         puiv = self._fix_spaces(self.LinOtpTokenPinUserIV or '')
         key = binascii.unhexlify(pu)
@@ -320,7 +311,6 @@ class Token(object):
         return iv, pin
 
     def setHashedPin(self, pin):
-        log.debug('setHashedPin()')
         seed = geturandom(16)
         self.LinOtpSeed = unicode(binascii.hexlify(seed))
         self.LinOtpPinHash = unicode(binascii.hexlify(hash(pin, seed)))
@@ -328,7 +318,6 @@ class Token(object):
 
     def getHashedPin(self, pin):
         # TODO: we could log the PIN here.
-        log.debug('getHashedPin()')
 
         # # calculate a hash from a pin
         # Fix for working with MS SQL servers
@@ -342,25 +331,21 @@ class Token(object):
         return binascii.hexlify(hPin)
 
     def setDescription(self, desc):
-        log.debug('setDescription(%s)' % desc)
         if desc is None:
             desc = ""
         self.LinOtpTokenDesc = unicode(desc)
         return self.LinOtpTokenDesc
 
     def setOtpLen(self, otplen):
-        log.debug('setOtpLen %i' % int(otplen))
         self.LinOtpOtpLen = int(otplen)
 
     def deleteToken(self):
-        log.debug('deleteToken()')
         # # some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
         # # is deleteted via foreign key relation
         # # so we delete it explicitly
         Session.query(TokenRealm).filter(
             TokenRealm.token_id == self.LinOtpTokenId).delete()
         Session.delete(self)
-        log.debug('delete token success')
         return True
 
     def isPinEncrypted(self, pin=None):
@@ -372,7 +357,6 @@ class Token(object):
         return ret
 
     def setSoPin(self, enc_soPin, iv):
-        log.debug('setSoPin()')
         self.LinOtpTokenPinSO = unicode(binascii.hexlify(enc_soPin))
         self.LinOtpTokenPinSOIV = unicode(binascii.hexlify(iv))
 
@@ -404,7 +388,6 @@ class Token(object):
             return fallback
 
     def get_vars(self, save=False):
-        log.debug('get_vars()')
 
         ret = {}
         ret['LinOtp.TokenId'] = self.LinOtpTokenId or ''
@@ -477,11 +460,9 @@ class Token(object):
         if self.LinOtpIdResolver is None:
             self.LinOtpIdResolver = ''
 
-        log.debug('storeToken()')
         Session.add(self)
         Session.flush()
 
-        log.debug('store token success')
         return True
 
     def setType(self, typ):
@@ -545,15 +526,12 @@ config_table = sa.Table('Config', meta.metadata,
                         implicit_returning=implicit_returning,
                         )
 
-log.debug('config table append_column')
-
 CONFIG_ENCODE = ["Key", "Value", "Description"]
 
 
 class Config(object):
 
     def __init__(self, Key, Value, Type=u'', Description=u''):
-        log.debug('__init__')
 
         if (not Key.startswith("linotp.") and not Key.startswith("enclinotp.")):
             Key = "linotp." + Key
@@ -563,7 +541,6 @@ class Config(object):
         self.Type = unicode(Type)
         self.Description = unicode(Description)
 
-        log.debug('Config init')
 
     def __unicode__(self):
         return self.Description
@@ -622,7 +599,6 @@ tokenrealm_table = sa.Table('TokenRealm', meta.metadata,
 class TokenRealm(object):
 
     def __init__(self, realmid):
-        log.debug("setting realm_id to %i" % realmid)
         self.realm_id = realmid
         self.token_id = 0
 
@@ -678,7 +654,6 @@ class Realm(object):
         return value
 
     def __init__(self, realm):
-        log.debug("setting realm name to %s" % realm)
         self.name = realm
         if realm is not None:
             self.name = realm.lower()
@@ -688,21 +663,16 @@ class Realm(object):
         if self.name is None:
             self.name = ''
         self.name = self.name.lower()
-        log.debug('storeRealm()')
 
         Session.add(self)
         Session.flush()
 
-        log.debug('store realm success')
         return True
 
 
 ''' ''' '''
 ocra challenges are stored
 ''' ''' '''
-
-log.debug('creating ocra table')
-
 
 ocra_table = sa.Table('ocra', meta.metadata,
                       sa.Column('id', sa.types.Integer(), sa.Sequence(
@@ -734,7 +704,6 @@ class OcraChallenge(object):
     '''
 
     def __init__(self, transId, challenge, tokenserial, data, session=u''):
-        log.debug('OcraChallenge: __init__ ')
 
         self.transid = u'' + transId
         self.challenge = u'' + challenge
@@ -746,7 +715,6 @@ class OcraChallenge(object):
         self.received_tan = False
         self.valid_tan = False
 
-        log.debug('OcraChallenge: init done!')
 
     def __setattr__(self, name, value):
         """
@@ -813,12 +781,10 @@ class OcraChallenge(object):
         return self.transid
 
     def save(self):
-        log.debug('save ocra challenge')
 
         Session.add(self)
         Session.flush()
 
-        log.debug('save ocra challenge : success')
         return self.transid
 
     def __unicode__(self):
@@ -841,7 +807,6 @@ class OcraChallenge(object):
 challenges are stored
 ''' ''' '''
 
-log.debug('creating challenges table')
 
 challenges_table = sa.Table('challenges', meta.metadata,
                             sa.Column('id', sa.types.Integer(),
@@ -883,7 +848,6 @@ class Challenge(object):
     '''
 
     def __init__(self, transid, tokenserial, challenge=u'', data=u'', session=u''):
-        log.debug('Challenge: __init__ ')
 
         self.transid = u'' + transid
 
@@ -907,7 +871,6 @@ class Challenge(object):
         self.received_tan = False
         self.valid_tan = False
 
-        log.debug('Challenge: init done!')
 
     def __setattr__(self, name, value):
         """
@@ -1102,12 +1065,9 @@ class Challenge(object):
 
         :return: transaction id of the stored challenge
         '''
-        log.debug('[save] save challenge')
         try:
             Session.add(self)
             Session.flush()
-
-            log.debug('save challenge : success')
 
         except Exception as exce:
             log.exception('[save]Error during saving challenge: %r' % exce)
@@ -1205,10 +1165,7 @@ class Reporting(object):
         if timestamp:
             self.timestamp = timestamp
 
-        log.debug('__init__ reporting table done')
-
     def get_vars(self):
-        log.debug('get_vars()')
         ret = {}
 
         ret['timestamp'] = str(self.timestamp)
@@ -1268,8 +1225,6 @@ orm.mapper(LoggingConfig,
            )
 
 #############################################################################
-
-log.debug('calling ORM Mapper')
 
 # config_table.append_column( sa.Column('IV', sa.types.Unicode(2000), default=u''),)
 # see: http://www.sqlalchemy.org/docs/orm/relationships.html#sqlalchemy.orm.relationship
