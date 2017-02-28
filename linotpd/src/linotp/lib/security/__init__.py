@@ -31,42 +31,31 @@ log = logging.getLogger(__name__)
 class SecurityModule(object):
 
     def __init__(self, config=None):
-        log.error("[__init__] This is the base class. You should implement this!")
         self.name = "SecurityModule"
 
     def isReady(self):
         fname = 'isReady'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
     def setup_module(self, params):
         fname = 'setup_module'
-        log.error("[%r] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
     ''' base methods '''
     def random(self, len):
         fname = 'random'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
     def encrypt(self, value, iv=None):
         fname = 'encrypt'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
     def decrypt(self, value, iv=None):
         fname = 'decrypt'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
@@ -74,36 +63,26 @@ class SecurityModule(object):
     ''' higer level methods '''
     def encryptPassword(self, cryptPass):
         fname = 'decrypt'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
     def encryptPin(self, cryptPin, iv=None):
         fname = 'decrypt'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                    % fname)
 
     def decryptPassword(self, cryptPass):
         fname = 'decrypt'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
     def decryptPin(self, cryptPin):
         fname = 'decrypt'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
     def signMessage(self, message, method=None, slot_id=3):
         fname = 'signMessage'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 
@@ -111,8 +90,6 @@ class SecurityModule(object):
                                slot_id=3):
 
         fname = 'verfiyMessageSignature'
-        log.error("[%s] This is the base class. You should implement "
-                  "the method : %s " % (self.name, fname))
         raise NotImplementedError("Should have been implemented %s"
                                   % fname)
 

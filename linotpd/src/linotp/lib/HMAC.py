@@ -50,7 +50,6 @@ class HmacOtp():
         self.hashfunc = hashfunc
 
     def hmac(self, counter=None, key=None):
-        #log.error("hmacSecret()")
         counter = counter or self.counter
 
         data_input = struct.pack(">Q", counter)
@@ -80,7 +79,6 @@ class HmacOtp():
         otp = str(self.truncate(self.hmac(counter=counter, key=key)))
         """  fill in the leading zeros  """
         sotp = (self.digits - len(otp)) * "0" + otp
-        #log.debug("[generate] %s %s %s" % (str(counter), str(otp), str(sotp) ) )
         if inc_counter:
             self.counter = counter + 1
         return sotp
@@ -95,15 +93,10 @@ class HmacOtp():
             start = 0 if (start < 0) else start
             end = self.counter + (window)
 
-        log.debug("[checkOTP] OTP range counter: %r - %r" % (start, end))
         for c in range(start , end):
             otpval = self.generate(c)
-            log.debug("[checkOtp] calculating counter %r: %r %r"
-                      % (c, anOtpVal, otpval))
-            #log.error("otp[%d]: %s : %s",c,otpval,anOtpVal)
 
             if (unicode(otpval) == unicode(anOtpVal)):
-                # log.debug("Match Pin: %s : %d : %s",otpval,c,anOtpVal)
                 res = c
                 break
         #return -1 or the counter

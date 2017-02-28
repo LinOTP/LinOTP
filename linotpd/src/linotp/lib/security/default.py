@@ -106,7 +106,6 @@ class DefaultSecurityModule(SecurityModule):
         :rtype:  binary string
 
         '''
-        log.debug('getSecret()')
         id = int(id)
 
         if self.crypted:
@@ -172,7 +171,6 @@ class DefaultSecurityModule(SecurityModule):
         :rtype:  byte string
         '''
 
-        log.debug('random()')
         return os.urandom(len)
 
     def encrypt(self, data, iv, id=0):
@@ -192,7 +190,6 @@ class DefaultSecurityModule(SecurityModule):
         :rtype:  byte string
         '''
 
-        log.debug('encrypt()')
 
         if self.is_ready is False:
             raise Exception('setup of security module incomplete')
@@ -229,7 +226,6 @@ class DefaultSecurityModule(SecurityModule):
         :rtype:  byte string
         '''
 
-        log.debug('decrypt()')
 
         if self.is_ready is False:
             raise Exception('setup of security module incomplete')
@@ -432,10 +428,10 @@ class DefaultSecurityModule(SecurityModule):
                 result = False
 
         except ValueError as err:
-            log.error("Mac Comparison failed! %r", err)
+            log.exception("Signature check: Mac Comparison failed! %r", err)
 
         except Exception as exx:
-            pass
+            log.exception("Signature check: Unknown exception happened %r", exx)
 
         finally:
             if sign_key:

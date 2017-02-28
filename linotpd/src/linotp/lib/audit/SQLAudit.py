@@ -268,7 +268,6 @@ def add_column(engine, table, column):
 
     except Exception as exx:
         # Obviously we already migrated the database.
-        log.info("[__init__] Error during database migration: %r" % exx)
         result = False
 
     return result
@@ -354,14 +353,12 @@ class Audit(AuditBase):
         '''
         line = self._attr_to_dict(audit_line)
         s_audit = getAsString(line)
-        log.debug("[_sign] signing %s" % s_audit)
 
         key = EVP.load_key_string(self.private)
         key.reset_context(md='sha256')
         key.sign_init()
         key.sign_update(s_audit)
         signature = key.sign_final()
-        log.debug("[_sign] signature : %s" % hexlify(signature))
         return hexlify(signature)
 
 
@@ -375,7 +372,6 @@ class Audit(AuditBase):
             return res
 
         s_audit = getAsString(auditline)
-        log.debug("[_verify] verifying %s" % s_audit)
 
         self.VerifyEVP.verify_init()
         self.VerifyEVP.verify_update(s_audit)
@@ -388,7 +384,6 @@ class Audit(AuditBase):
         This method is used to log the data. It splits information of
         multiple tokens (e.g from import) in multiple audit log entries
         '''
-        log.debug("[log] writing audit log message")
 
         try:
             serial = param.get('serial', '') or ''
@@ -404,16 +399,10 @@ class Audit(AuditBase):
                     p['serial'] = serial
                     self.log_entry(p)
 
-            #self.session.commit()
-            log.debug("[log] writing log done!")
-
         except Exception as  exx:
             log.exception("[log] error writing log message: %r" % exx)
             self.session.rollback()
             raise exx
-
-        finally:
-            log.debug("[log] writing log done!")
 
         return
 
@@ -473,9 +462,6 @@ class Audit(AuditBase):
         if not AND:
             boolCheck = or_
 
-        log.debug("[_buildCondition] building condition for params %s with %s"
-                  % (param, AND))
-
         for k, v in param.items():
             if "" != v:
                 if "serial" == k:
@@ -509,7 +495,6 @@ class Audit(AuditBase):
         if conditions:
             all_conditions = boolCheck(*conditions)
 
-        log.debug("[_buildCondition] return %s" % all_conditions)
         return all_conditions
 
     def row2dict(self, audit_line):
@@ -532,7 +517,6 @@ class Audit(AuditBase):
 
         # Signature check
         # TODO: use instead the verify_init
-        log.debug("[search] old sig = %s" % audit_line.signature)
 
         res = self._verify(line, audit_line.signature)
         if res == 1:
@@ -562,13 +546,8 @@ class Audit(AuditBase):
             if "true" == param['or'].lower():
                 AND = False
 
-        log.debug("[search] got the params %s" % param)
-        log.debug("[search] got the rp_dict %s" % rp_dict)
-
         # build the condition / WHERE clause
         condition = self._buildCondition(param, AND)
-        log.debug("[search] the following condition was built from the "
-                  "parameters %s (%s): %s" % (param, AND, condition))
 
         order = AuditTable.id
         if rp_dict.get("sortname"):
@@ -654,13 +633,11 @@ class Audit(AuditBase):
         the audit store
         '''
         condition = self._buildCondition(param, AND)
-        log.debug("[getTotal] condition: %s" % condition)
         if type(condition).__name__ == 'NoneType':
             c = self.session.query(AuditTable).count()
         else:
             c = self.session.query(AuditTable).filter(condition).count()
 
-        log.debug("[getTotal] count=%s " % str(c))
         return c
 
 def getAsString(data):

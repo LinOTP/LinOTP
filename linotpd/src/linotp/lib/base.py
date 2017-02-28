@@ -318,14 +318,9 @@ def setup_app(conf, conf_global=None, unitTest=False):
 
     :return: - nothing -
     '''
-    if conf_global is not None:
-        if conf_global.has_key("sqlalchemy.url"):
-            log.info("sqlalchemy.url")
-    else:
-        conf.get("sqlalchemy.url", None)
 
     if unitTest is True:
-        log.info("Deleting previous tables...")
+        log.debug("Deleting previous tables...")
         meta.metadata.drop_all(bind=meta.engine)
 
     # Create the tables if they don't already exist
@@ -367,17 +362,16 @@ def setup_app(conf, conf_global=None, unitTest=False):
     if "linotpSecretFile" in conf:
         filename = conf.get("linotpSecretFile")
         try:
-            with open(filename):
-                pass
+            open(filename)
         except IOError:
-            log.warning("The Linotp Secret File could not be found " +
-                        "-creating a new one: %s" % filename)
+            log.warning("The Linotp Secret File could not be found. " +
+                        "Creating a new one at %s", filename)
             f_handle = open(filename, 'ab+')
             secret = os.urandom(32 * 5)
             f_handle.write(secret)
             f_handle.close()
             os.chmod(filename, 0400)
-        log.info("linotpSecretFile: %s" % filename)
+        log.debug("linotpSecretFile: %s", filename)
 
     set_defaults()
 
@@ -460,7 +454,7 @@ class BaseController(WSGIController):
                 config['resolver_setup_done'] = True
             except Exception as exx:
                 config['resolver_setup_done'] = False
-                log.error("Failed to setup resolver: %r" % exx)
+                log.error("Failed to setup resolver: %r", exx)
                 raise exx
 
         # TODO: verify merge dropped
@@ -475,10 +469,10 @@ class BaseController(WSGIController):
                     with open(filename) as f:
                         license_str = f.read()
                 except IOError:
-                    log.error("linotpLicenseFile: %s" % filename)
+                    log.error("could not open licence file: %s", filename)
 
                 if not license_str:
-                    log.error("empty license file: %s" % filename)
+                    log.error("empty license file: %s", filename)
                 else:
                     with request_context_safety():
                         request_context['translate'] = translate
@@ -486,8 +480,8 @@ class BaseController(WSGIController):
                         import linotp.lib.support
                         res, msg = linotp.lib.support.setSupportLicense(license_str)
                         if res is False:
-                            log.error("failed to load license: %s: %s"
-                                      % (license_str, msg))
+                            log.error("failed to load license: %s: %s",
+                                      license_str, msg)
 
                         else:
                             log.info("license successfully loaded")
@@ -500,8 +494,6 @@ class BaseController(WSGIController):
         # the request is routed to. This routing information is
         # available in environ['pylons.routes_dict']
 
-        path = ""
-
         # we add a unique request id to the request enviroment
         # so we can trace individual requests in the logging
 
@@ -513,8 +505,6 @@ class BaseController(WSGIController):
             self.create_context(request, environ)
 
             try:
-                if environ:
-                    path = environ.get("PATH_INFO", "") or ""
 
                 try:
                     user_desc = getUserFromRequest(request)
@@ -522,11 +512,10 @@ class BaseController(WSGIController):
                 except UnicodeDecodeError as exx:
                     # we supress Exception here as it will be handled in the
                     # controller which will return corresponding response
-                    log.info('Failed to identify user due to %r' % exx)
+                    log.warning('Failed to identify user due to %r' % exx)
 
-                log.debug("request %r" % path)
                 ret = WSGIController.__call__(self, environ, start_response)
-                log.debug("reply %r" % ret)
+                log.debug("Request reply: %r", ret)
 
             finally:
                 meta.Session.remove()
@@ -544,7 +533,6 @@ class BaseController(WSGIController):
                         del data
 
                 log_request_timedelta(log)
-                log.debug("request %r done!" % path)
 
             return ret
 
@@ -598,7 +586,7 @@ class BaseController(WSGIController):
         try:
             request_params.update(request.params)
         except UnicodeDecodeError as exx:
-            log.error("Faild to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r" % exx)
 
         request_context['Params'] = request_params
 
@@ -606,7 +594,7 @@ class BaseController(WSGIController):
         try:
             authUser = getUserFromRequest(request)
         except UnicodeDecodeError as exx:
-            log.error("Faild to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r" % exx)
 
         request_context['AuthUser'] = authUser
         request_context['UserLookup'] = {}
@@ -615,14 +603,14 @@ class BaseController(WSGIController):
         try:
             requestUser = getUserFromParam(request_params, True)
         except UnicodeDecodeError as exx:
-            log.error("Faild to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r" % exx)
         request_context['RequestUser'] = requestUser
 
         client = None
         try:
             client = get_client(request=request)
         except UnicodeDecodeError as exx:
-            log.error("Faild to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r" % exx)
 
         request_context['Client'] = client
 
@@ -633,7 +621,7 @@ class BaseController(WSGIController):
         try:
             defaultRealm = getDefaultRealm(linotp_config)
         except UnicodeDecodeError as exx:
-            log.error("Faild to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r" % exx)
 
         request_context['defaultRealm'] = defaultRealm
 
@@ -641,7 +629,7 @@ class BaseController(WSGIController):
         try:
             realms = getRealms()
         except UnicodeDecodeError as exx:
-            log.error("Faild to decode request parameters %r" % exx)
+            log.error("Failed to decode request parameters %r" % exx)
 
         request_context['Realms'] = realms
 
@@ -657,10 +645,7 @@ class BaseController(WSGIController):
 
         sysconfig = {}
         for key, default in syskeys.items():
-            try:
-                sysconfig[key] = config.get(key, default)
-            except:
-                log.info('no sytem config entry %s' % key)
+            sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig
 

@@ -80,7 +80,6 @@ def parse_dat_data(data, d_string=None):
 
     try:
         startdate = parse_datetime(d_string)
-        LOG.debug("START SET: %r" % startdate)
 
         ## collect all token info in an array
         lines = []
@@ -178,7 +177,6 @@ class DatToken(object):
             (line, _rest) = line.split('#', 2)
 
         ## the top level definition have a key value separator ':'
-        LOG.debug("line: %s" % (line))
         if ':' in line:
             index = line.index(':')
             key = line[:index]
@@ -282,7 +280,6 @@ class DatToken(object):
 
         ## calculate the time delta into counter ticks
         counter = self.startdate.strftime("%s")
-        LOG.debug("COUNTER %r " % counter)
         self.init_params['timeShift'] = self.odir * int(counter)
 
         ## the value e.g. 2011/05/03 02:46:54;, will be appended
@@ -373,7 +370,6 @@ def get_session(lino_url, user=None, pwd=None):
         http.add_credentials(user, pwd)
         resp, content = http.request(url, 'POST')
 
-        LOG.debug("response %r:\n Content:\n%s" % (resp, content))
         if resp['status'] != '200':
             LOG.error('Admin login failed: %r' % resp)
             sys.exit(1)
@@ -382,14 +378,14 @@ def get_session(lino_url, user=None, pwd=None):
             session = \
                Cookie.SimpleCookie(resp['set-cookie'])['admin_session'].value
         except Exception as exception:
-            LOG.error('Konnte keine Session holen: %r' % exception)
+            LOG.error('Could not retrieve session. Exception was: %r'
+                      % exception)
             raise exception
 
     ## add headers, as they transefer the cookies
     headers = {}
     if session is not None:
         headers['Cookie'] = resp['set-cookie']
-        LOG.debug('session: %r' % session)
 
     return (session, headers)
 
@@ -422,7 +418,6 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
             resp, content = http.request(url, headers=headers)
 
         except urllib2.HTTPError as http_error:
-            LOG.error("%r: %s" % (http_error, http_error.code))
             break
 
         LOG.debug("%s" % content)
@@ -436,7 +431,8 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
                 LOG.error("%s" % content)
         else:
             # Print response
-            LOG.error("Response:%r\nContent:\n%s" % (resp, content))
+            LOG.error("Error during token submission. Response was: %r, "
+                      "Content: %s", resp, content)
 
     return
 
@@ -528,7 +524,6 @@ def main():
         elif opt in ('-s', "--startdate"):
             d_string = arg
             startdate = parse_datetime(d_string)
-            LOG.debug("START SET: %r" % startdate)
 
 
     if filename is None:

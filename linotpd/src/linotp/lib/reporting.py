@@ -63,7 +63,8 @@ def token_reporting(event, tokenrealms):
             try:
                 Session.add(report)
             except Exception as exce:
-                log.exception('[save]Error during saving Report: %r' % exce)
+                log.exception('Error during saving report. Exception was: '
+                              '%r' % exce)
 
 
 def get_max(realm, status='active'):
@@ -105,7 +106,7 @@ def delete(realms, status, date=None):
 
     realm_cond = tuple()
     for realm in realms:
-       realm_cond += (or_(Reporting.realm == realm),)
+        realm_cond += (or_(Reporting.realm == realm),)
 
     status_cond = tuple()
     for stat in status:
@@ -205,8 +206,6 @@ class ReportingIterator(object):
         self.reports = Session.query(Reporting).filter(*conds).order_by(
             order).distinct()
         self.report_num = self.reports.count()
-        log.debug("[ReportingIterator::init] DB-Query returned # of objects:"
-                      " %d" % self.report_num)
         self.pagesize = self.report_num
 
         #  care for the result pageing
@@ -218,13 +217,15 @@ class ReportingIterator(object):
                 else:
                     pagesize = int(psize)
             except Exception as exce:
-                log.debug('problem with pagesize: %r' % exce)
+                log.debug('Reporting: Problem with pagesize detected. '
+                          'Exception was: %r' % exce)
                 pagesize = 20
 
             try:
                 the_page = int(page) - 1
             except Exception as exce:
-                log.debug('problem with page: %r' % exce)
+                log.debug('Reporting: Problem with page detected. '
+                          'Exception was %r' % exce)
                 the_page = 0
 
             if the_page < 0:
@@ -240,9 +241,6 @@ class ReportingIterator(object):
                 self.pages += 1
             self.pagesize = pagesize
             self.reports = self.reports.slice(start, stop)
-            log.debug('[ReportingIterator::init] paging done.')
-
-        log.debug('[ReportingIterator::init] end')
 
     def getResultSetInfo(self):
         res_set = {"pages": self.pages,
@@ -259,4 +257,5 @@ class ReportingIterator(object):
                 yield desc
 
         except Exception as exx:
-            log.exception("Problem during iteration reports: %r" % exx)
+            log.exception("Reporting: Problem during iteration. "
+                          "Exception was %r" % exx)

@@ -47,7 +47,6 @@ def getAuditClass(packageName, className):
             if not an error is thrown
 
 """
-    log.debug("[getAuditClass] package: %s, class: %s" % (packageName, className))
 
     if packageName is None:
         log.error("No suitable Audit Class found. Working with dummy AuditBase class. "
@@ -61,7 +60,6 @@ def getAuditClass(packageName, className):
 
     mod = __import__(packageName, globals(), locals(), [className])
     klass = getattr(mod, className)
-    log.debug("[getAuditClass] klass: %s" % klass)
     if not hasattr(klass, "log"):
         raise NameError("Audit AttributeError: " + packageName + "." + \
               className + " instance has no attribute 'log'")
@@ -205,20 +203,16 @@ def search(param, user=None, columns=None):
             # search patterns are delimitered with ;
             search_list = param['query'].split(";")
             for s in search_list:
-                log.debug(s)
                 key, _e, value = s.partition("=")
                 key = key.strip()
                 value = value.strip()
                 search_dict[key] = value
-            log.debug(search_dict)
 
         else:
             search_dict[param['qtype']] = param["query"]
     else:
         for k, v in param.items():
             search_dict[k] = v
-
-    log.debug("[search] search_dict: %s" % search_dict)
 
     rp_dict = {}
     page = 1
@@ -232,7 +226,7 @@ def search(param, user=None, columns=None):
         rp_dict['sortname'] = param.get('sortname')
     if 'sortorder' in param:
         rp_dict['sortorder'] = param.get('sortorder')
-    log.debug("[search] rp_dict: %s" % rp_dict)
+
     if user:
         search_dict['user'] = user.login
         search_dict['realm'] = user.realm

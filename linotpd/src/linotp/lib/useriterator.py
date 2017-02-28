@@ -45,7 +45,6 @@ def iterate_users(user_iterators):
     for itera in user_iterators:
         user_iterator = itera[0]
         reso = itera[1]
-        log.debug("iterating: %r" % reso)
 
         try:
             while True:

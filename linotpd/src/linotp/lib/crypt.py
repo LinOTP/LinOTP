@@ -120,8 +120,7 @@ class SecretObj(object):
         self.hsm = hsm
 
     def getKey(self):
-        log.debug('Warning: Requesting secret key '
-                  '- verify the usage scope and zero + free ')
+        log.debug('Warning: Requesting secret key as plaintext.')
         return decrypt(self.val, self.iv, hsm=self.hsm)
 
     def getPin(self):
@@ -227,22 +226,18 @@ class SecretObj(object):
 
 
 def getSecretDummy():
-    log.debug('getSecretDummy()')
     return "no secret file defined: linotpSecretFile!"
 
 
 def getSecret(id=0):
-    log.debug('getSecret()')
 
     if not env.has_key("linotpSecretFile"):
-        log.error("[getSecret] no secret file defined. A parameter linotpSecretFile is missing in your linotp.ini.")
-        raise Exception("no secret file defined: linotpSecretFile!")
+        log.error("No secret file defined. The parameter linotpSecretFile is "
+                  "missing in your linotp.ini")
+        raise Exception("No secret file defined")
 
     secFile = env["linotpSecretFile"]
 
-    # if True == isWorldAccessible(secFile):
-    #    log.error("file permission of the secret file :%s: are not secure!", secFile)
-    #    raise Exception("permissions of the secret file are not secure!")
     secret = ''
 
     try:
@@ -280,8 +275,6 @@ def setupKeyFile(secFile, maxId):
 
 
 def isWorldAccessible(filepath):
-    log.debug('isWorldAccessible()')
-
     st = os.stat(filepath)
     u_w = bool(st.st_mode & stat.S_IWUSR)
     g_r = bool(st.st_mode & stat.S_IRGRP)
@@ -381,7 +374,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
         bcode = base64.b32decode(acode)
 
     except Exception as exx:
-        error = "Error during decoding activationcode %r: %r" % (acode, exx)
+        error = "Error during decoding activation code %r: %r" % (acode, exx)
         log.error(error)
         raise Exception(error)
 
@@ -389,7 +382,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
         checkCode = str(activationcode[-2:])
         veriCode = str(check(bcode)[-2:])
         if checkCode != veriCode:
-            raise Exception('[crypt:kdf2] activation code checksum error!!'
+            raise Exception('[crypt:kdf2] activation code checksum error.'
                             ' [%s]%s:%s' % (acode, veriCode, checkCode))
 
     activ = binascii.hexlify(bcode)
@@ -401,7 +394,6 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
 
 
 def hash(val, seed, algo=None):
-    log.debug('hash()')
     m = sha256()
     m.update(val.encode('utf-8'))
     m.update(seed)
@@ -410,7 +402,6 @@ def hash(val, seed, algo=None):
 
 def encryptPassword(password):
 
-    log.debug('encryptPassword()')
     if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
         raise HSMException('no hsm defined in execution context!')
 
@@ -427,7 +418,6 @@ def encryptPin(cryptPin, iv=None, hsm=None):
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
-        log.debug('encryptPin()')
         if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
             raise HSMException('no hsm defined in execution context!')
         hsm_obj = c.hsm.get('obj')
@@ -441,7 +431,6 @@ def encryptPin(cryptPin, iv=None, hsm=None):
 
 def decryptPassword(cryptPass):
 
-    log.debug('decryptPassword()')
     if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
         raise HSMException('no hsm defined in execution context!')
 
@@ -455,7 +444,6 @@ def decryptPassword(cryptPass):
 
 def decryptPin(cryptPin, hsm=None):
 
-    log.debug('decryptPin()')
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
@@ -484,7 +472,6 @@ def encrypt(data, iv, id=0, hsm=None):
     :return:      encryted buffer
     """
 
-    log.debug('encrypt()')
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
@@ -512,7 +499,6 @@ def decrypt(input, iv, id=0, hsm=None):
     :return:      decryted buffer
     """
 
-    log.debug('decrypt()')
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
@@ -532,7 +518,7 @@ def uencode(value):
     unicode escape the value - required to support non-unicode
     databases
     :param value: string to be escaped
-    :return: \u encoded value
+    :return: unicode encoded value
     """
     ret = value
 
@@ -541,7 +527,8 @@ def uencode(value):
         try:
             ret = json.dumps(value)[1:-1]
         except Exception as exx:
-            log.exception("Failed to encode value %r : %r" % (value, exx))
+            log.exception("Failed to encode value %r. Exception was %r"
+                          % (value, exx))
 
     return ret
 
@@ -620,7 +607,8 @@ def udecode(value):
             # add surrounding "" for correct decoding
             ret = json.loads('"%s"' % value)
         except Exception as exx:
-            log.exception("Failed to decode value %r : %r" % (value, exx))
+            log.exception("Failed to decode value %r. Exception was %r"
+                          % (value, exx))
     return ret
 
 
@@ -634,7 +622,6 @@ def geturandom(len=20):
     :return: buffer of bytes
 
     '''
-    log.debug('geturandom()')
     if hasattr(c, 'hsm') is False:
         ret = os.urandom(len)
         return ret

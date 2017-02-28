@@ -110,7 +110,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :type aToken:  orm object
 
         '''
-        log.debug("[init]  begin. Create a token object with: a_token %r" % (aToken))
 
         TokenClass.__init__(self, aToken)
         self.setType(u"TOTP")
@@ -136,7 +135,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         '''
         self.hashlibStr = getFromConfig("totp.hashlib", u'sha1') or 'sha1'
 
-        log.debug("[init]  end. Token object created")
         return
     @classmethod
     def getClassType(cls):
@@ -169,8 +167,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :rtype: s.o.
 
         '''
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         res = {
                'type'           : 'totp',
@@ -217,7 +213,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
 
@@ -231,7 +226,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         :return: nothing
         '''
-        log.debug("[update] begin. Process the initialization parameters: param %r" % (param))
 
         ## check for the required parameters
         val = getParam(param, "hashlib", optional)
@@ -287,7 +281,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         if self.hashlibStr:
             self.addToTokenInfo("hashlib", self.hashlibStr)
 
-        log.debug("[update]  end. Processing the initialization parameters done.")
         return
 
     def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
@@ -307,8 +300,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         '''
 
-        log.debug("[check_otp_exist] begin. checks if the given OTP value exists: otp %r, window %r " %
-                  (otp, window))
         res = -1
 
         try:
@@ -348,8 +339,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: time as float
         :rtype: float
         '''
-        log.debug("[time2float] begin. Convert a datetime object: curTime %r" %
-                  (curTime))
 
         dt = datetime.datetime.now()
         if type(curTime) == datetime.datetime:
@@ -365,7 +354,6 @@ class TimeHmacTokenClass(HmacTokenClass):
                 log.exception('[time2float] Error during conversion of datetime: %r' % (ex))
                 raise Exception(ex)
         else:
-            log.error("[time2float] invalid curTime: %s. You need to specify a datetime.datetime" % type(curTime))
             raise Exception("[time2float] invalid curTime: %s. You need to specify a datetime.datetime" % type(curTime))
 
         td = (dt - datetime.datetime(1970, 1, 1))
@@ -373,8 +361,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         ## TODO: fix to float!!!!
         tCounter = ((td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6) * 1.0) / 10 ** 6
 
-        log.debug("[time2float] end. Datetime object converted: tCounter %r" %
-                  (tCounter))
         return tCounter
 
 
@@ -400,9 +386,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         '''
 
-        log.debug("[checkOtp] begin. Validate the token otp: anOtpVal: %r ,\
-                    counter: %r,window: %r, options: %r " %
-                    (anOtpVal, counter, window, options))
 
         try:
             otplen = int(self.token.LinOtpOtpLen)
@@ -432,24 +415,15 @@ class TimeHmacTokenClass(HmacTokenClass):
         if initTime != -1: T0 = int(initTime)
 
 
-        log.debug("[checkOTP] T0 : %i" % T0)
         counter = self._time2counter_(T0, timeStepping=timeStepping)
 
 
         otime = self._getTimeFromCounter(oCount, timeStepping=timeStepping)
         ttime = self._getTimeFromCounter(counter, timeStepping=timeStepping)
 
-        log.debug("[checkOTP] last log: %r :: %r" % (oCount, otime))
-        log.debug("[checkOTP] counter : %r :: %r <==> %r" %
-                  (counter, ttime, datetime.datetime.now()))
-
-
-        log.debug("[checkOTP] shift   : %r " % (shift))
-
         hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, int (window / timeStepping), symetric=True)
 
-        log.debug("[checkOTP] comparing the result %i to the old counter %i." % (res, oCount))
         if res != -1 and oCount != 0 and res <= oCount:
             if initTime == -1:
                 log.warning("[checkOTP] a previous OTP value was used again!\n former tokencounter: %i, presented counter %i" %
@@ -507,7 +481,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :rtype:  int
 
         '''
-        log.debug("[autosync] begin. Autosync the token, based on: hmac2Otp: %r, anOtpVal: %r" % (hmac2Otp, anOtpVal))
 
         res = -1
         autosync = False
@@ -533,8 +506,6 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         #check if the otpval is valid in the sync scope
         res = hmac2Otp.checkOtp(anOtpVal, syncWindow, symetric=True)
-        log.debug("[autosync] found otpval %r in syncwindow (%r): %r" %
-                  (anOtpVal, syncWindow, res))
 
         #if yes:
         if res != -1:
@@ -543,7 +514,6 @@ class TimeHmacTokenClass(HmacTokenClass):
                 #check if this is consecutive
                 otp1c = info.get("otp1c");
                 otp2c = res
-                log.debug("[autosync] otp1c: %r, otp2c: %r" % (otp1c, otp2c))
                 diff = math.fabs(otp2c - otp1c)
                 if (diff > self.resyncDiffLimit):
                     res = -1
@@ -562,16 +532,15 @@ class TimeHmacTokenClass(HmacTokenClass):
                 self.setTokenInfo(info)
 
             else:
-                log.debug("[autosync] setting otp1c: %s" % res)
                 info["otp1c"] = res
                 self.setTokenInfo(info)
                 res = -1
 
         if res == -1:
-            msg = "call was not successful"
+            msg = "autosync was not successful"
         else:
-            msg = "call was successful"
-        log.debug("[autosync] end. %r: res %r" % (msg, res))
+            msg = "autosync was successful"
+        log.debug(msg)
 
         return res
 
@@ -594,7 +563,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :rtype:  int
 
         '''
-        log.debug("[resync] .begin. Resync the token based on: %r, anOtpVal: %r, options: %r" % (otp1, otp2, options))
 
         ret = False
 
@@ -664,7 +632,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         else:
             msg = "resync was not successful"
 
-        log.debug("[resync] end. %s: ret: %r" % (msg, ret))
+        log.debug(msg)
         return ret
 
     def getSyncTimeOut(self):
@@ -686,7 +654,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return: next otp value
         :rtype: string
         '''
-        log.debug("[getOtp] begin. Get the next OTP value for: curTime: %r" % (curTime))
 
         res = (-1, 0, 0, 0)
 
@@ -712,9 +679,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         if getFromConfig("PrependPin") == "True":
             combined = "%s%s" % (pin, otpval)
 
-        log.debug("[getOtp]  end. Return opt is: (pin: %r, otpval: %r, combined: %r) " %
-                  (pin, otpval, combined))
-
         return (1, pin, otpval, combined)
 
     def get_multi_otp(self, count=0, epoch_start=0, epoch_end=0, curTime=None):
@@ -727,8 +691,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :return:     tuple of status: boolean, error: text and the OTP dictionary
 
         '''
-        log.debug("[get_multi_otp] begin. Get a dictionary of multiple future OTP values for: count: %r, epoch_start: %r, epoch_end: %r, curTime: %r" %
-                  (count, epoch_start, epoch_end, curTime))
 
         otp_dict = {"type" : "TOTP", "otp": {}}
         ret = False
@@ -766,7 +728,6 @@ class TimeHmacTokenClass(HmacTokenClass):
                     }
             ret = True
 
-        log.debug("[get_multi_otp] end. dictionary of multiple future OTP is: otp_dict: %r - status: %r - error %r" % (ret, error, otp_dict))
         return (ret, error, otp_dict)
 
 

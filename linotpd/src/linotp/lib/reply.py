@@ -390,8 +390,6 @@ def sendResultIterator(obj, id=1, opt=None, rp=None, page=None):
             sep = ','
             yield res
 
-    log.debug('Result iteration finished!')
-
     # we add the amount of queried objects
     total = '"queried" : %d' % counter
     postfix = ', %s %s' % (total, postfix)
@@ -541,7 +539,6 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
         html     - print qrcode wrapped by html or not
 
     '''
-    log.debug('[sendQRImageResult]')
 
     width = 0
     alt = None
@@ -579,7 +576,6 @@ def sendQRImageResult(response, data, param=None, id=1, typ='html'):
         response.content_type = 'text/html'
         ret = create_html(img_data, width, param)
 
-    log.debug('[sendQRImageResult]:')
     return ret
 
 

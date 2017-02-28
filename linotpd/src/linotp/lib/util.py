@@ -125,7 +125,6 @@ def getLowerParams(param):
         if "session" != lkey:
             lval = param[key]
             ret[lkey] = lval
-            log.debug("[getLowerParams] Parameter key:%s=%s", lkey, lval)
     return ret
 
 
@@ -205,9 +204,6 @@ def check_selfservice_session(cookies=None, params=None, url=None):
     '''
     cookie = cookies.get('linotp_selfservice', '').strip('"')
     session = params.get('session', '').strip('"')
-
-    log.debug("session: %r" % session)
-    log.debug("cookie:  %r" % cookie)
 
     if not session or not cookie:
         log.warning("failed to check selfservice session")
@@ -304,14 +300,12 @@ def get_client(request):
     '''
     may_overwrite = []
     over_client = getFromConfig("mayOverwriteClient", "")
-    log.debug("config entry mayOverwriteClient: %s" % over_client)
     try:
         may_overwrite = [c.strip() for c in over_client.split(',')]
     except Exception as e:
         log.warning("evaluating config entry 'mayOverwriteClient': %r" % e)
 
     client = _get_client_from_request(request)
-    log.debug("got the original client %s" % client)
 
     params = {}
     params.update(request.params)
@@ -321,7 +315,7 @@ def get_client(request):
             client = params["client"]
             log.debug("client overwritten to %s" % client)
 
-    log.debug("returning %s" % client)
+    log.debug("returning client %s" % client)
     return client
 
 
@@ -357,7 +351,7 @@ def is_valid_fqdn(hostname, split_port=False):
     if hostname[-1:] == ".":
         hostname = hostname[:-1]
 
-    
+
     return all(hostname_regex.match(x) for x in hostname.split("."))
 
 

@@ -194,7 +194,6 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
              an exception is raised
 
     '''
-    log.debug("getting qrtan callback url ")
     urls = []
 
     # Policies defintions with wildcard defintions '*'
@@ -225,7 +224,6 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
     if urls:
         url = urls[0]
 
-    log.debug("got callback url %s for realms %r" % (url, realms))
     return url
 
 
@@ -293,7 +291,6 @@ class Ocra2TokenClass(TokenClass):
         :return: 'ocra2'
         :rtype: string
         '''
-        log.debug('[getClassType] ocra2')
         return "ocra2"
 
     @classmethod
@@ -425,14 +422,12 @@ class Ocra2TokenClass(TokenClass):
         :return: info of the ocra token state
         :rtype: dict
         '''
-        log.debug('[__init__]')
 
         TokenClass.__init__(self, aToken)
         self.setType(u"ocra2")
         self.transId = 0
 
         self.mode = ['challenge']
-        log.debug('[__init__]:')
         return
 
     def getInfo(self):
@@ -442,14 +437,12 @@ class Ocra2TokenClass(TokenClass):
         :return: info of the ocra token state
         :rtype: dict
         '''
-        log.debug('[getInfo] %r ' % (self.info))
         return self.info
 
     def update(self, params, reset_failcount=True):
         '''
         update: add further definition for token from param in case of init
         '''
-        log.debug('[update] %r: %r: ' % (params, reset_failcount))
 
         if 'ocrasuite' in params:
             self.ocraSuite = params.get('ocrasuite')
@@ -488,7 +481,6 @@ class Ocra2TokenClass(TokenClass):
         self._rollout_1(params)
         self._rollout_2(params)
 
-        log.debug('[update]:')
         return
 
     def _rollout_1(self, params):
@@ -512,7 +504,6 @@ class Ocra2TokenClass(TokenClass):
             - token wird angelegt ist aber nicht aktiv!!! (counter == 0)
 
         '''
-        log.debug('[_rollout_1] %r ' % (params))
 
         sharedSecret = params.get('sharedsecret', None)
         if sharedSecret == '1':
@@ -552,7 +543,6 @@ class Ocra2TokenClass(TokenClass):
 
             self.token.LinOtpIsactive = False
 
-        log.debug('[_rollout_1]:')
         return
 
     def _prepare_callback_url(self, params, policy_lookup_funtion,
@@ -630,7 +620,6 @@ class Ocra2TokenClass(TokenClass):
         - challenge generiern - von urandom oder HSM
 
         '''
-        log.debug('[_rollout_2] %r ' % (params))
 
         activationcode = params.get('activationcode', None)
         if activationcode is not None:
@@ -704,7 +693,6 @@ class Ocra2TokenClass(TokenClass):
             self.addToTokenInfo('rollout', '2')
             self.enable(True)
 
-        log.debug('[_rollout_2]:')
         return
 
     def getOcraSuiteSuite(self):
@@ -714,13 +702,11 @@ class Ocra2TokenClass(TokenClass):
         :return: Ocrasuite of token
         :rtype: string
         '''
-        log.debug('[getOcraSuiteSuite]')
 
         defaultOcraSuite = getFromConfig("OcraDefaultSuite",
                                          'OCRA-1:HOTP-SHA256-8:C-QN08')
         self.ocraSuite = self.getFromTokenInfo('ocrasuite', defaultOcraSuite)
 
-        log.debug('[getOcraSuiteSuite] %r:' % (self.ocraSuite))
         return self.ocraSuite
 
     def getQROcraSuiteSuite(self):
@@ -730,13 +716,11 @@ class Ocra2TokenClass(TokenClass):
         :return: QROcrasuite of token
         :rtype: string
         '''
-        log.debug('[getQROcraSuiteSuite]')
 
         defaultOcraSuite = getFromConfig("QrOcraDefaultSuite",
                                          'OCRA-1:HOTP-SHA256-8:C-QA64')
         self.ocraSuite = self.getFromTokenInfo('ocrasuite', defaultOcraSuite)
 
-        log.debug('[getQROcraSuiteSuite] %r:' % (self.ocraSuite))
         return self.ocraSuite
 
     def signData(self, data):
@@ -748,13 +732,11 @@ class Ocra2TokenClass(TokenClass):
 
         :return: hexlified signature of the data
         '''
-        log.debug('[signData] %r:' % (data))
 
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
         signature = ocraSuite.signData(data)
 
-        log.debug('[signData]: %r:' % (signature))
         return signature
 
     def verify_challenge_is_valid(self, challenge, session):
@@ -837,8 +819,6 @@ class Ocra2TokenClass(TokenClass):
             challenge = ocraSuite.data2randomChallenge(input_data)
         elif typ == 'hash':
             challenge = ocraSuite.data2hashChallenge(input_data)
-
-        log.debug('[Ocra2TokenClass] challenge: %r ' % (challenge))
 
         store_data = {
                 'challenge': "%s" % (challenge),
@@ -943,7 +923,6 @@ class Ocra2TokenClass(TokenClass):
 
 
         '''
-        log.debug('[challenge] %r: %r: %r' % (data, session, challenge))
 
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
@@ -958,8 +937,6 @@ class Ocra2TokenClass(TokenClass):
                 challenge = ocraSuite.data2randomChallenge(data)
             elif typ == 'hash':
                 challenge = ocraSuite.data2hashChallenge(data)
-
-        log.debug('[Ocra2TokenClass] challenge: %r ' % (challenge))
 
         counter = self.getOtpCount()
 
@@ -1002,7 +979,6 @@ class Ocra2TokenClass(TokenClass):
         except Exception as ex:
             ##  this might happen if we have a db problem or
             ##   the uniqnes constrain does not fit
-            log.exception("[Ocra2TokenClass] %r" % ex)
             raise Exception('[Ocra2TokenClass] Failed to create '
                                                 'challenge object: %s' % (ex))
 
@@ -1013,7 +989,6 @@ class Ocra2TokenClass(TokenClass):
 
         url = qrtan_url(realms)
 
-        log.debug('[challenge]: %r: %r: %r' % (transid, challenge, url))
         return (transid, challenge, True, url)
 
 ### challenge interfaces starts here
@@ -1199,7 +1174,6 @@ class Ocra2TokenClass(TokenClass):
         :rtype:            int (-1)
 
         '''
-        log.debug('[checkOtp] %r: %r: %r' % (passw, counter, window))
         ret = -1
 
         challenges = []
@@ -1293,7 +1267,6 @@ class Ocra2TokenClass(TokenClass):
                                 ' in request: %r' % ch)
 
             ret = ocraSuite.checkOtp(passw, counter, window, challenge, pin=ocraPin , options=options, timeshift=timeShift)
-            log.debug('[checkOtp]: %r' % (ret))
 
             ## due to the assynchronous challenge verification of the checkOtp
             ## it might happen, that the found counter is lower than the given
@@ -1323,7 +1296,6 @@ class Ocra2TokenClass(TokenClass):
         :type  ocraSuite: ocra object
         :param  passw:
         '''
-        log.debug('[OcraToken::autosync] %r : %r' % (passw, challenge))
         res = -1
 
         autosync = False
@@ -1390,11 +1362,9 @@ class Ocra2TokenClass(TokenClass):
                 log.info('[OcraToken:autosync] initial sync - success: %r' % (count_0))
 
             res = -1
-            log.info('[OcraToken:autosync] initial sync done!')
 
         else:
             ## run checkOtp, with sync window for the current challenge
-            log.info('[OcraToken:autosync] sync')
             count_1 = -1
             try:
                 otp1 = passw
@@ -1422,8 +1392,6 @@ class Ocra2TokenClass(TokenClass):
                     ##  sync the timebased ocra token
                     if count_1 - count_0 < ocraSuite.T * 2 :
                         ## calc the new timeshift !
-                        log.debug("[autosync] the counter %r matches: %r" %
-                                  (count_1, datetime.datetime.fromtimestamp(count_1)))
 
                         currenttime = int(time.time())
                         new_shift = (count_1 - currenttime)
@@ -1436,9 +1404,6 @@ class Ocra2TokenClass(TokenClass):
                 del tinfo['lChallenge']
                 self.setTokenInfo(tinfo)
 
-            log.info('[OcraToken:autosync] sync done!')
-
-        log.debug('[autosync]: %r ' % (res))
         return res
 
     def statusValidationFail(self):
@@ -1450,7 +1415,6 @@ class Ocra2TokenClass(TokenClass):
         :return - nothing
 
         '''
-        log.debug('[statusValidationFail]')
         challenge = None
 
         if self.transId == 0:
@@ -1491,7 +1455,6 @@ class Ocra2TokenClass(TokenClass):
             if challenge is not None:
                 challenge.save()
 
-        log.debug('[statusValidationFail]')
         return
 
     def statusValidationSuccess(self):
@@ -1503,7 +1466,6 @@ class Ocra2TokenClass(TokenClass):
         :return: - nothing
 
         '''
-        log.debug('[statusValidationSuccess]')
 
         if self.transId == 0:
             return
@@ -1526,7 +1488,6 @@ class Ocra2TokenClass(TokenClass):
         elif rolloutState == '1':
             raise Exception('unable to complete the rollout ')
 
-        log.debug('[statusValidationSuccess]:')
         return
 
 
@@ -1536,7 +1497,6 @@ class Ocra2TokenClass(TokenClass):
         - for each challenge, we search forward the sync window length
 
         '''
-        log.debug('[resync] %r : %r' % (otp1, otp2))
 
         ret = False
         challenges = []
@@ -1575,7 +1535,6 @@ class Ocra2TokenClass(TokenClass):
 
         if len(challenge1) == 0 or len(challenge2) == 0:
             error = "No challeges found!"
-            log.error('[Ocra2TokenClass:resync] %s' % (error))
             raise Exception('[Ocra2TokenClass:resync] %s' % (error))
 
         secObj = self._get_secret_object()
@@ -1630,10 +1589,8 @@ class Ocra2TokenClass(TokenClass):
                             ret = True
 
         except Exception as ex:
-            log.exception('[Ocra2TokenClass:resync] unknown error: %r' % (ex))
             raise Exception('[Ocra2TokenClass:resync] unknown error: %s' % (ex))
 
-        log.debug('[resync]: %r ' % (ret))
         return ret
 
 
@@ -1655,8 +1612,6 @@ class Ocra2TokenClass(TokenClass):
         :rtype:       dict
         '''
 
-        log.debug('[getStatus] %r' % (transactionId))
-
         statusDict = {}
         challenge = Challenges.lookup_challenges(self.getSerial(),
                                                  transid=transactionId)
@@ -1671,7 +1626,6 @@ class Ocra2TokenClass(TokenClass):
             statusDict['active'] = unicode(self.isActive())
 
 
-        log.debug('[getStatus]: %r' % (statusDict))
         return statusDict
 
 

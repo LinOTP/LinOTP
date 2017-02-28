@@ -94,8 +94,6 @@ class PasswordTokenClass(HmacTokenClass):
         :rtype: s.o.
 
         '''
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         res = {
             'type': 'pw',
@@ -113,8 +111,6 @@ class PasswordTokenClass(HmacTokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug(
-            "[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
     def update(self, param):
@@ -132,7 +128,6 @@ class PasswordTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
         sp = PasswordTokenClass.__secretPassword__(secObj)
         pw_len = len(sp.getPassword())
-        log.debug("[setOtpLen] setting otplen to %d" % pw_len)
         TokenClass.setOtpLen(self, pw_len)
         return
 
@@ -140,7 +135,6 @@ class PasswordTokenClass(HmacTokenClass):
         '''
         This checks the static password
         '''
-        log.debug("checkOtp of PasswordToken")
 
         secObj = self._get_secret_object()
         sp = PasswordTokenClass.__secretPassword__(secObj)

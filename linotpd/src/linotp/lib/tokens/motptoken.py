@@ -124,7 +124,6 @@ class MotpTokenClass(TokenClass):
         :param a_token: instance of the orm db object
         :type a_token:  orm object
         '''
-        log.debug("[__init__] begin. entering constructor with param: a_token %r" % (a_token))
         TokenClass.__init__(self, a_token)
         self.setType(u"mOTP")
 
@@ -142,7 +141,6 @@ class MotpTokenClass(TokenClass):
         :return: nothing
 
         '''
-        log.debug("[update] begin. adjust the token class with: param %r" % (param))
 
         getParam(param, "otpkey", required)
 
@@ -152,7 +150,6 @@ class MotpTokenClass(TokenClass):
 
         TokenClass.update(self, param, reset_failcount)
 
-        log.debug("[update] all token parameters are set.")
         return
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
@@ -175,8 +172,6 @@ class MotpTokenClass(TokenClass):
         :rtype: int
 
         '''
-        log.debug("[checkOtp] begin. start the otp verification with: otpval %r, counter %r , window %r , options %r " %
-                   (anOtpVal, counter, window, options))
 
         otplen = self.token.LinOtpOtpLen
 
@@ -187,8 +182,6 @@ class MotpTokenClass(TokenClass):
         window = self.token.LinOtpCountWindow
         key, iv = self.token.getUserPin()
         secPinObj = SecretObj(key, iv, hsm=context.get('hsm'))
-
-        log.debug("[checkOtp] otime %s", otime)
 
         mtimeOtp = mTimeOtp(secObj, secPinObj, otime, otplen)
         res = mtimeOtp.checkOtp(anOtpVal, window, options=options)

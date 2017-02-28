@@ -363,10 +363,10 @@ def deleteResolver(resolvername):
         try:
             for entry in delEntries:
                 res = removeFromConfig(entry)
-                log.debug("[deleteResolver] removing key: %s" % entry)
                 res = True
         except Exception as e:
-            log.exception("deleteResolver: %r" % e)
+            log.exception("Deleting resolver %s failed. Exception was %r"
+                          % (resolvername, e))
             res = False
 
     if res:
@@ -460,7 +460,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
         resolver_cls = get_resolver_class(cls_identifier)
 
         if resolver_cls is None:
-            log.error('unknown resolver class: %s' % cls_identifier)
+            log.error('Unknown resolver class: %s' % cls_identifier)
             return None
 
         resolver = resolver_cls()
@@ -473,7 +473,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
                 # FIXME: Except clause is too general. resolver
                 # exceptions in the useridresolver modules should
                 # have their own type, so we can filter here
-                log.error('resolver config loading failed for resolver with '
+                log.error('Resolver config loading failed for resolver with '
                           'specification %s: %r', resolver_spec, exx)
 
                 return None
@@ -698,8 +698,8 @@ def setupResolvers(config=None, cache_dir="/tmp"):
             try:
                 resolver_cls.setup(config=config, cache_dir=cache_dir)
             except Exception as exx:
-                log.exception("failed to call setup of %r; %r",
-                              resolver_cls, exx)
+                log.exception("Resolver setup: Failed to call setup of %r. "
+                              "Exception was %r", resolver_cls, exx)
 
     return
 
@@ -721,7 +721,8 @@ def initResolvers():
         context['resolvers_loaded'] = {}
 
     except Exception as exx:
-        log.exception("Failed to initialize resolver in context %r" % exx)
+        log.exception("Failed to initialize resolver for context. "
+                      "Exception was  %r" % exx)
     return context
 
 
@@ -735,7 +736,8 @@ def closeResolvers():
             if hasattr(resolver, 'close'):
                 resolver.close()
     except Exception as exx:
-            log.exception("Failed to close resolver in context %r" % exx)
+            log.exception("Failed to close resolver in context. "
+                          "Exception was %r" % exx)
     return
 
 

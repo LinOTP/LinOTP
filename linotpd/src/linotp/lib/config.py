@@ -87,11 +87,7 @@ def initLinotpConfig():
     :return: thread local LinOtpConfig
     :rtype:  LinOtpConfig Class
     '''
-    log.debug("[getLinotpConfig]")
-
     ret = getLinotpConfig()
-
-    log.debug("[/getLinotpConfig]")
     return ret
 
 
@@ -112,9 +108,10 @@ def getLinotpConfig():
         if ty != 'LinOtpConfig':
             try:
                 c.linotpConfig = LinOtpConfig()
-            except Exception as e:
-                log.exception("Linotp Definition Error")
-                raise Exception(e)
+            except Exception as exx:
+                log.exception("Could not add LinOTP configuration to pylons "
+                              "tmpl_context. Exception was: %r", exx)
+                raise e
         ret = c.linotpConfig
 
         if ret.delay is True:
@@ -125,7 +122,8 @@ def getLinotpConfig():
                     c.linotpConfig = ret
 
     except Exception as e:
-        log.debug("Bad Hack: LinotpConfig called out of controller context")
+        log.debug("Bad Hack: Retrieving LinotpConfig without "
+                  "controller context")
         ret = LinOtpConfig()
 
         if ret.delay is True:
@@ -133,9 +131,6 @@ def getLinotpConfig():
                 hsm = c.hsm.get('obj')
                 if hsm is not None and hsm.isReady() is True:
                     ret = LinOtpConfig()
-
-    finally:
-        log.debug("[getLinotpConfig]")
 
     return ret
 
@@ -503,24 +498,19 @@ def getGlobalObject():
 def _getConfigReadLock():
     glo = getGlobalObject()
     rcount = glo.setConfigReadLock()
-    log.debug(" --------------------------------------- Read Lock %s" % rcount)
 
 
 def _getConfigWriteLock():
     glo = getGlobalObject()
     rcount = glo.setConfigWriteLock()
-    log.debug(" ------------------- ------------------ Write Lock %s" % rcount)
 
 
 def _releaseConfigLock():
     glo = getGlobalObject()
     rcount = glo.releaseConfigLock()
-    log.debug(" ------------------------------------ release Lock %s" % rcount)
 
 
 def _expandHere(value):
-    log.debug('[_expandHere] value: %r' % value)
-
     Value = unicode(value)
     if env.config.has_key("linotp.root"):
         root = env.config["linotp.root"]
@@ -529,7 +519,7 @@ def _expandHere(value):
 
 
 def _getConfigFromEnv():
-    log.debug('[getLinotpConfig]')
+
     linotpConfig = {}
 
     try:
@@ -548,7 +538,7 @@ def _getConfigFromEnv():
                 linotpConfig[entry] = env.config[entry]
         _releaseConfigLock()
     except Exception as e:
-        log.exception('Error while reading Config: %r' % e)
+        log.exception('Error while reading config: %r' % e)
         _releaseConfigLock()
     return linotpConfig
 
@@ -561,12 +551,9 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     """
     value = val
 
-    log_value = val
-
-    if typ == 'password':
-        log_value = "X" * len(val)
-
-    log.debug('key %r : value %r', key, log_value)
+    log_value = 'XXXXXX' if typ == 'password' else value
+    log.debug('Changing config entry %r in database: New value is %r',
+              key, log_value)
 
     if (not key.startswith("linotp.")):
         key = "linotp." + key
@@ -690,7 +677,7 @@ def _removeConfigDB(key):
     :param key: the name of the entry
     :return: number of deleted entries
     """
-    log.debug('removeConfigDB %r' % key)
+    log.debug('removing config entry %r from database table' % key)
 
     if (not key.startswith("linotp.")):
         if not key.startswith('enclinotp.'):
@@ -720,7 +707,6 @@ def _removeConfigDB(key):
             Session.delete(entry)
 
     except Exception as e:
-        log.exception('[removeConfigDB] failed')
         raise ConfigAdminError("remove Config failed for %r: %r"
                                % (key, e), id=1133)
 
@@ -728,7 +714,6 @@ def _removeConfigDB(key):
 
 
 def _retrieveConfigDB(Key):
-    log.debug('[retrieveConfigDB] key: %r' % Key)
 
     # prepend "linotp." if required
     key = Key
@@ -791,7 +776,6 @@ def _retrieveAllConfigDB():
     # first read all config db information into dicts for later processing
 
     for conf in Session.query(Config).all():
-
         conf_dict[conf.Key] = conf.Value
         type_dict[conf.Key] = conf.Type
         desc_dict[conf.Key] = conf.Description
@@ -883,15 +867,12 @@ def _retrieveAllConfigDB():
 def storeConfig(key, val, typ=None, desc=None):
 
     log_val = val
-
     if typ and typ == 'password':
         log_val = "X" * len(val)
-
-    log.debug('[storeConfig] %r:%r' % (key, log_val))
+    log.debug('Changing config entry %r: New value is %r', key, log_val)
 
     conf = getLinotpConfig()
     conf.addEntry(key, val, typ, desc)
-    log.debug('[/storeConfig]')
     return True
 
 
@@ -899,7 +880,6 @@ def updateConfig(confi):
     '''
     update the server config entries incl. syncing it to disc
     '''
-    log.debug('[updateConfig]')
     conf = getLinotpConfig()
 
     # remember all key, which should be processed
@@ -943,26 +923,23 @@ def updateConfig(confi):
 
         conf.update(conf_clean)
 
-    log.debug('[/updateConfig]')
     return True
 
 
 def getFromConfig(key, defVal=None):
-    log.debug('[getFromConfig] key:  %s' % key)
     conf = getLinotpConfig()
     value = conf.get(key, defVal)
     return value
 
 
 def refreshConfig():
-    log.debug('[refreshConfig]')
     conf = getLinotpConfig()
     conf.refreshConfig(do_reload=True)
     return
 
 
 def removeFromConfig(key, iCase=False):
-    log.debug('[removeFromConfig] key:  %r' % key)
+    log.debug('Removing config entry %r' % key)
     conf = getLinotpConfig()
 
     if iCase is False:
@@ -982,7 +959,6 @@ def removeFromConfig(key, iCase=False):
                 if k in conf or 'linotp.' + k in conf:
                     del conf[k]
 
-    log.debug('[/removeFromConfig]')
     return True
 
 

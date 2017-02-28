@@ -71,9 +71,6 @@ class TokenIterator(object):
         """
         scondition = None
 
-        log.debug('[TokenIterator::init] start search for serial: >%r<',
-                  (serial))
-
         if serial is None:
             return scondition
 
@@ -104,8 +101,6 @@ class TokenIterator(object):
     def _get_user_condition(self, user, valid_realms):
 
         ucondition = None
-        log.debug('[TokenIterator::init] start search for username: >%r<'
-                  % (user))
 
         if not user or user.isEmpty() or not user.login:
             return ucondition
@@ -129,12 +124,10 @@ class TokenIterator(object):
             searchType = "exact"
 
         if searchType == "blank":
-            log.debug('[TokenIterator::init] search for empty user: >%r<' % (user.login))
             ucondition = and_(or_(Token.LinOtpUserid == u'',
                                   Token.LinOtpUserid is None))
 
         if searchType == "exact":
-            log.debug('[TokenIterator::init] search for exact user: %r' % (user))
             serials = []
             users = []
 
@@ -170,7 +163,7 @@ class TokenIterator(object):
                             try:
                                 (_uid, _resolver, _resolverClass) = getUserId(usr)
                             except UserError as exx:
-                                log.info('user %r not found in realm%r',
+                                log.info('User %r not found in realm %r',
                                          usr, realm)
                                 continue
                             userlist.extend(usr.getUserPerConf())
@@ -198,7 +191,6 @@ class TokenIterator(object):
 
         ## handle case, when nothing found in former cases
         if searchType == "wildcard":
-            log.debug('[TokenIterator::init] wildcard search: %r' % (user))
             serials = []
             users = getAllTokenUsers()
             logRe = None
@@ -365,10 +357,6 @@ class TokenIterator(object):
         :return: - nothing / None
 
         '''
-        log.debug('[TokenIterator::init] begin. start creating TokenIterator \
-        class with parameters: user:%r, serial:%r, page=%r, psize:%r, \
-                    filter:%r, sort:%r, sortdir:%r, filterRealm:%r' %
-                (user, serial, page, psize, filter, sort, sortdir, filterRealm))
 
         if params is None:
             params = {}
@@ -502,9 +490,6 @@ class TokenIterator(object):
 
         self.it = iter(self.toks)
 
-        log.debug('[TokenIterator::init] end. Token iterator created: %r' % \
-                  (self.it))
-
         return
 
     def getResultSetInfo(self):
@@ -562,7 +547,6 @@ class TokenIterator(object):
         return (userInfo, uInfo)
 
     def next(self):
-        log.debug("[next] TokenIterator finds next token")
 
         tok = self.it.next()
         desc = tok.get_vars(save=True)
@@ -573,7 +557,6 @@ class TokenIterator(object):
         return desc
 
     def __iter__(self):
-        log.debug("[__iter__] TokenIterator")
         return self
 
 # eof #########################################################################
