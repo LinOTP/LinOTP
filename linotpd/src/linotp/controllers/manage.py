@@ -94,8 +94,6 @@ class ManageController(BaseController):
 
     def __before__(self, action, **params):
 
-        log.debug("[__before__::%r] %r" % (action, params))
-
         try:
             c.audit = request_context['audit']
             c.audit['success'] = False
@@ -233,7 +231,6 @@ class ManageController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[index] done')
 
 
     def tokentype(self):
@@ -417,7 +414,6 @@ class ManageController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[tokenview_flexi] done")
 
 
     def userview_flexi(self):
@@ -528,7 +524,6 @@ class ManageController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[userview_flexi] done')
 
     def tokeninfo(self):
         '''
@@ -588,7 +583,6 @@ class ManageController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[tokeninfo] done')
 
 
     def logout(self):
@@ -636,7 +630,6 @@ class ManageController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[help] done")
 
 
 

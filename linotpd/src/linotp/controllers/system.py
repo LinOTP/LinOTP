@@ -142,7 +142,6 @@ class SystemController(BaseController):
         :return: return response
         :rtype:  pylon response
         '''
-        log.debug("[__before__::%r] %r", action, params.keys())
         try:
 
             c.audit = request_context['audit']
@@ -180,8 +179,6 @@ class SystemController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done", action)
 
     def __after__(self):
         '''
@@ -202,8 +199,6 @@ class SystemController(BaseController):
             Session.close()
             return sendError(response, exx, context='after')
 
-        finally:
-            log.debug("[__after__] done")
 
 
 ########################################################
@@ -283,7 +278,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setDefault] done')
 
 
 ########################################################
@@ -372,7 +366,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[setConfig] done")
 
 ########################################################
 
@@ -411,7 +404,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[delConfig] done")
 
 
 ########################################################
@@ -501,7 +493,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getConfig] done")
 
 ########################################################
     def getRealms(self):
@@ -561,7 +552,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getRealms] done")
 
 
 ########################################################
@@ -736,7 +726,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setResolver] done')
 
 ########################################################
     def getResolvers(self):
@@ -759,7 +748,6 @@ class SystemController(BaseController):
         res = {}
 
         try:
-            log.debug("[getResolvers] calling functions getResolvers")
             res = getResolverList()
 
             c.audit['success'] = True
@@ -773,7 +761,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getResolvers] done")
 
 ########################################################
     def delResolver(self):
@@ -840,7 +827,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[delResolver] done")
 
 ########################################################
 
@@ -938,7 +924,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setDefaultRealm] done')
 
 ########################################################
     def getDefaultRealm(self):
@@ -978,7 +963,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getDefaultRealm] done")
 
 ########################################################
     def setRealm(self):
@@ -1051,7 +1035,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[setRealm] done")
 
 ########################################################
     def delRealm(self):
@@ -1128,7 +1111,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[delRealm] done")
 
 
 ########################################################
@@ -1241,7 +1223,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[setPolicy] done")
 
 ########################################################
     def policies_flexi(self):
@@ -1331,7 +1312,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[policies_flexi] done")
 
 ########################################################
     def getPolicyDef(self):
@@ -1381,7 +1361,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getPolicyDef] done")
 
 #########################################################
     def _add_dynamic_tokens(self, scope):
@@ -1397,7 +1376,6 @@ class SystemController(BaseController):
         '''
         pol = {}
 
-        log.debug("[_add_dynamic_tokens]")
 
         glo = config['pylons.app_globals']
         tokenclasses = glo.tokenclasses
@@ -1498,7 +1476,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[importPolicy] done")
 
 ############################################################
     def checkPolicy(self):
@@ -1595,7 +1572,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[checkPolicy] done")
 
 ##########################################################################
     def getPolicy(self):
@@ -1715,7 +1691,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getPolicy] done")
 
 ########################################################
     def delPolicy(self):
@@ -1771,7 +1746,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[delPolicy] done")
 
 ########################################################
 
@@ -1782,7 +1756,6 @@ class SystemController(BaseController):
         try:
             params = getLowerParams(request.params)
             log.debug("[setupSecurityModule] parameters: %r", params.keys())
-            log.debug("[setupSecurityModule] : start setup")
 
             hsm_id = params.get('hsm_id', None)
 
@@ -1843,7 +1816,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[setupSecurityModule] done")
 
 ########################################################
 
@@ -1870,7 +1842,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[getSupportInfo] done")
 
     def isSupportValid(self):
         """
@@ -1935,7 +1906,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[isSupportValid] done")
 
     def setSupport(self):
         """
@@ -1992,7 +1962,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.error("[setSupport] done")
 
     def setProvider(self):
         """
@@ -2040,7 +2009,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setProvider] done')
 
     def getProvider(self):
         """
@@ -2087,7 +2055,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setProvider] done')
 
     def delProvider(self):
         """
@@ -2131,7 +2098,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setProvider] done')
 
     def setDefaultProvider(self):
         """
@@ -2175,7 +2141,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setProvider] done')
 
     def getProviderDef(self):
         """
@@ -2217,7 +2182,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setProvider] done')
 
 
 

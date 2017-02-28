@@ -87,11 +87,8 @@ class OpenidController(BaseController):
 
     def __before__(self, action, **params):
 
-        log.debug("[__before__::%r]" % (action))
         valid_request = False
         try:
-            for key, value in params.items():
-                log.debug("[__before__::%r:%r]" % (key, value))
 
             c.audit = request_context[audit]
             c.audit['client'] = get_client(request)
@@ -128,7 +125,6 @@ class OpenidController(BaseController):
                 c.logged_in = True
 
             ## default return for the __before__ and __after__
-            log.debug("[__before__::%r]" % (response))
             valid_request = True
 
             return response
@@ -151,8 +147,6 @@ class OpenidController(BaseController):
                 self.storage.session.rollback()
                 self.storage.session.close()
 
-            log.debug("[__before__::%r] done" % (action))
-
 
     def __after__(self):
         try:
@@ -167,7 +161,6 @@ class OpenidController(BaseController):
             return sendError(response, exx, context='after')
 
         finally:
-            log.debug("[__after__] done")
             self.storage.session.close()
 
 
@@ -368,11 +361,9 @@ class OpenidController(BaseController):
         redirect(r_url)
 
     def check_authentication(self, params):
-        #log.debug("[check_authentication] entering function")
         res = check_authentication(**params)
         response.status = 200
         response.content_type = "text/plain"
-        #log.debug("[check_authentication] %s" % res)
         return res
 
 

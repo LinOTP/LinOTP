@@ -82,14 +82,10 @@ class U2FTokenClass(TokenClass):
         :type aToken:  orm object
 
         """
-        log.debug("Create a token object with: aToken %r", (aToken))
-
         TokenClass.__init__(self, aToken)
         self.setType(u"u2f")
         self.mode = ['challenge']  # This is a challenge response token
         self.supports_offline_mode = True
-
-        log.debug("Token object created")
 
     @classmethod
     def getClassType(cls):
@@ -121,8 +117,6 @@ class U2FTokenClass(TokenClass):
         :rtype: s.o.
 
         """
-        log.debug("Get class render info for section: key %r, ret %r ", key, ret)
-
         res = {
             'type': 'u2f',
             'title': 'U2F FIDO Token',
@@ -153,7 +147,6 @@ class U2FTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("Returned the configuration section: ret %r ", (ret))
         return ret
 
     def update(self, param, reset_failcount=False):
@@ -188,26 +181,19 @@ class U2FTokenClass(TokenClass):
             if pin is None:
                 pin = ''
             if check_pin(self, pin) is False:
-                log.error("Wrong token pin!")
                 raise ValueError("Wrong token pin!")
         # check for set phases which are not "registration1" or "registration2"
         elif requested_phase != "registration2" and requested_phase is not None:
-            log.error('Wrong phase parameter!')
             raise Exception('Wrong phase parameter!')
         # only allow empty phase parameters once the token is registered successfully
         elif current_phase != "authentication" and requested_phase is None:
-            log.error('Wrong phase parameter!')
             raise Exception('Wrong phase parameter!')
         # only allow "registration2" if the token already completed "registration1"
         elif current_phase != "registration" and requested_phase == "registration2":
-            log.error(
-                "Phase 'registration2' requested but we are not in the correct phase \
-                to process the request.")
             raise Exception(
                 "Phase 'registration2' requested but we are not in the correct phase \
                 to process the request.")
         else:
-            log.error('Unknown "phase" and "current_phase" parameter combination!')
             raise Exception('Unknown "phase" and "current_phase" parameter combination!')
 
     def splitPinPass(self, passw):
@@ -296,7 +282,6 @@ class U2FTokenClass(TokenClass):
         # U2F needs OpenSSL 1.0.0 or higher
         # The EC OpenSSL API calls made by M2Crypto don't work with OpenSSl 0.9.8!
         version_text = m2.OPENSSL_VERSION_TEXT
-        log.debug("OpenSSL version string: '%s'", version_text)
 
         match = re.match(r"OpenSSL (?P<version>\d\.\d\.\d)", version_text)
         if match is None:
@@ -358,7 +343,6 @@ class U2FTokenClass(TokenClass):
         # Get the appId from TokenInfo
         appId = self.getFromTokenInfo('appId', '')
         if appId == '':
-            log.error("appId could not be determined.")
             raise Exception("appId could not be determined.")
 
         return appId
@@ -382,8 +366,6 @@ class U2FTokenClass(TokenClass):
             error_code = client_response['errorCode']
             error_text = error_codes.get(error_code, '')
             error_msg = client_response.get('errorMessage', '')
-            log.info("U2F client error code received: %s (%d): %s", error_text,
-                     error_code, error_msg)
             raise Exception("U2F client error code: %s (%d): %s" % (error_text,
                                                                     error_code,
                                                                     error_msg))
@@ -405,7 +387,6 @@ class U2FTokenClass(TokenClass):
         try:
             clientData = json.loads(clientData)
         except ValueError as ex:
-            log.exception("Invalid client data JSON format - value error %r", (ex))
             raise Exception("Invalid client data JSON format")
 
         try:
@@ -414,22 +395,17 @@ class U2FTokenClass(TokenClass):
             cdOrigin = clientData['origin']
             # TODO: Check for optional cid_pubkey
         except KeyError as err:
-            log.exception("Wrong client data format %s: ", err)
             raise Exception('Wrong client data format!')
 
         # validate typ
         if clientDataType is 'registration':
             if cdType != 'navigator.id.finishEnrollment':
-                log.error('Incorrect "typ" field in the client data object')
                 raise Exception('Incorrect client data object received!')
         elif clientDataType is 'authentication':
             if cdType != 'navigator.id.getAssertion':
-                log.error('Incorrect "typ" field in the client data object')
                 raise Exception('Incorrect client data object received!')
         else:
             # Wrong function call
-            log.error('Wrong validClientData function call - clientDataType must be either \
-                       "registration" or "authentication".')
             raise Exception('Wrong validClientData function call.')
 
         # validate challenge
@@ -525,7 +501,6 @@ class U2FTokenClass(TokenClass):
                 # deactivate the token. This could also happen if you use the token
                 # A LOT with other applications and very seldom with LinOTP.
                 self.token.LinOtpIsactive = False
-                log.error("Counter not increased! Possible device cloning!")
                 raise ValueError("Counter not increased! Possible device cloning!")
 
         # save the new counter
@@ -570,9 +545,6 @@ class U2FTokenClass(TokenClass):
             # with a NULL pointer exception on these systems
             ECPubKey = EC.pub_key_from_der(publicKey)
         except ValueError as ex:
-            log.exception(
-                "Could not get ECPubKey. Possibly missing ECDSA support for the NIST P-256 "
-                "curve in OpenSSL? %r", ex)
             raise Exception(
                 "Could not get ECPubKey. Possibly missing ECDSA support for the NIST P-256 "
                 "curve in OpenSSL? %r" % ex)
@@ -661,14 +633,12 @@ class U2FTokenClass(TokenClass):
         :return:           verification counter or -1
         :rtype:            int (-1)
         """
-        log.debug('%r: %r: %r', passw, counter, window)
         ret = -1
 
         challenges = []
         serial = self.getSerial()
         transid = options.get('transactionid', None)
         if transid is None:
-            log.error("Could not checkOtp due to missing transaction id")
             raise Exception("Could not checkOtp due to missing transaction id")
 
         # get all challenges with a matching trasactionid
@@ -689,14 +659,12 @@ class U2FTokenClass(TokenClass):
 
         if len(challenges) == 0:
             err = 'No open transaction found for token %s and transactionid %s' % (serial, transid)
-            log.error(err)
             raise Exception(err)
 
         # decode the retrieved passw object
         try:
             authResponse = json.loads(passw)
         except ValueError as ex:
-            log.exception("Invalid JSON format - value error %r", (ex))
             raise Exception("Invalid JSON format")
 
         self._handle_client_errors(authResponse)
@@ -706,7 +674,6 @@ class U2FTokenClass(TokenClass):
             clientData = authResponse['clientData']
             keyHandle = authResponse['keyHandle']
         except AttributeError as ex:
-            log.exception("Couldn't find keyword in JSON object - attribute error %r ", (ex))
             raise Exception("Couldn't find keyword in JSON object")
 
         # Does the keyHandle match the saved keyHandle created on registration?
@@ -774,7 +741,6 @@ class U2FTokenClass(TokenClass):
             # U2F does not need an otp count
             ret = 0
 
-        log.debug('%r', (ret))
         return ret
 
     def _parseRegistrationData(self, registrationData):
@@ -861,20 +827,14 @@ class U2FTokenClass(TokenClass):
                                     challengeParameter +
                                     keyHandle +
                                     userPublicKey) != 1:
-            log.error("Error on verify_update.")
             raise Exception("Error on verify_update.")
 
         # Check for OpenSSL version 1.0.0 or higher
         if not self._is_supported_openssl_version():
-            log.error("This version of OpenSSL is not supported! OpenSSL version 1.0.0 or "
-                      "higher is required for the U2F token.")
             raise Exception("This version of OpenSSL is not supported! OpenSSL version 1.0.0 "
                             "or higher is required for the U2F token.")
 
         if certPubKey.verify_final(signature) != 1:
-            log.error("Signature verification failed! Maybe someone is doing something "
-                      "nasty! However, this error could possibly also be related to missing "
-                      "ECDSA support for the NIST P-256 curve in OpenSSL.")
             raise Exception("Signature verification failed! Maybe someone is doing "
                             "something nasty! However, this error could possibly also be "
                             "related to missing ECDSA support for the NIST P-256 curve in "
@@ -928,12 +888,10 @@ class U2FTokenClass(TokenClass):
                     # Check for appId conflicts
                     if appId and policy_value:
                         if appId != policy_value:
-                            log.error("Conflicting appId values in u2f policies.")
                             raise Exception("Conflicting appId values in u2f policies.")
                     appId = policy_value
 
             if not appId:
-                log.error("No appId defined.")
                 raise Exception("No appId defined.")
             self.addToTokenInfo('appId', appId)
 
@@ -959,7 +917,6 @@ class U2FTokenClass(TokenClass):
                 try:
                     registerResponse = json.loads(otpkey)
                 except ValueError as ex:
-                    log.exception("Invalid JSON format - value error %r", (ex))
                     raise Exception('Invalid JSON format')
 
                 self._handle_client_errors(registerResponse)
@@ -968,8 +925,6 @@ class U2FTokenClass(TokenClass):
                     registrationData = registerResponse['registrationData']
                     clientData = registerResponse['clientData']
                 except AttributeError as ex:
-                    log.exception(
-                        "Couldn't find keyword in JSON object - attribute error %r ", (ex))
                     raise Exception("Couldn't find keyword in JSON object")
 
                 # registrationData and clientData are urlsafe base64 encoded
@@ -1017,10 +972,8 @@ class U2FTokenClass(TokenClass):
                 # Activate the token
                 self.token.LinOtpIsactive = True
             else:
-                log.error("No otpkey set!")
                 raise ValueError("No otpkey set")
         else:
-            log.error("Unsupported phase: %s", requested_phase)
             raise Exception("Unsupported phase: %s", requested_phase)
 
         return response_detail

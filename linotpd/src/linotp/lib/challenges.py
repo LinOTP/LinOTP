@@ -51,11 +51,12 @@ class Challenges(object):
                             been verified before
         :return:         return a list of challenge dict
         """
-        log.debug('serial %r: transactionid %r', serial, transid)
+        log.debug('lookup_challenges: serial %r: transactionid %r',
+                  serial, transid)
 
         if transid is None and serial is None:
-            log.debug(
-                'Called without serial or transid! Returning all challenges')
+            log.debug('lookup_challenges was called without serial or '
+                      'transid! Returning all challenges')
 
         conditions = ()
 
@@ -79,7 +80,7 @@ class Challenges(object):
         challenges = Session.query(Challenge).\
             filter(condition).order_by(desc(Challenge.id)).all()
 
-        log.debug('%r', challenges)
+        log.debug('lookup_challenges: founnd challenges: %r', challenges)
 
         return challenges
 
@@ -147,15 +148,15 @@ class Challenges(object):
                     break
 
             except Exception as exce:
-                log.exception("Failed to create Challenge: %r", exce)
+                log.exception("Failed to create challenge: %r", exce)
                 reason = "%r" % exce
                 ReasonException = exce
 
             # prevent an unlimited loop
             retry_counter = retry_counter + 1
             if retry_counter > 100:
-                log.info(
-                    "Failed to create Challenge for %d times: %r -quiting!",
+                log.error(
+                    "Failed to create challenge for %d times: %r - quiting!",
                     retry_counter, reason)
                 raise Exception('Failed to create challenge %r' % reason)
 
@@ -198,7 +199,7 @@ class Challenges(object):
                     ReasonException = Exception(message)
 
         except Exception as exce:
-            log.exception("Failed to create Challenge: %r", exce)
+            log.exception("Failed to create challenge: %r", exce)
             reason = "%r" % exce
             ReasonException = exce
             res = False
@@ -206,21 +207,24 @@ class Challenges(object):
         # if something goes wrong with the challenge, remove it
         if res is False and challenge_obj is not None:
             try:
-                log.debug("deleting session")
+                log.debug("Deleting challenge from database session, because "
+                          "of earlier error")
                 Session.delete(challenge_obj)
                 Session.commit()
             except Exception as exx:
-                log.debug("deleting session failed: %r" % exx)
+                log.debug("Deleting challenge from database session failed. "
+                          "Retrying with expunge. Exception was: %r", exx)
                 try:
                     Session.expunge(challenge_obj)
                     Session.commit()
                 except Exception as exx:
-                    log.debug("expunge session failed: %r" % exx)
+                    log.debug("Expunging challenge from database session "
+                              "failed. Exception was: %r", exx)
 
         # in case that create challenge fails, we must raise this reason
         if reason is not None:
-            log.exception("Failed to create Challenge: %r", ReasonException)
-            log.error("Failed to create or init challenge %r ", reason)
+            log.error("Failed to create or init challenge. Reason was %r ",
+                      reason)
             raise ReasonException
 
         # prepare the response for the user
@@ -266,7 +270,7 @@ class Challenges(object):
                 challenge_ids.append(int(challenge_id))
             except ValueError:
                 # ignore
-                log.warning("failed to convert the challengeId %r to int()" %
+                log.warning("failed to convert the challenge id %r to integer",
                             challenge_id)
 
         res = 1

@@ -72,7 +72,6 @@ class MigrateController(BaseController):
         :return: return response
         :rtype:  pylon response
         '''
-        log.debug("[__before__::%r] %r" % (action, params))
         try:
 
             return response
@@ -81,8 +80,6 @@ class MigrateController(BaseController):
             log.exception("[__before__::%r] exception %r" % (action, exx))
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
     def __after__(self):
         '''
@@ -97,9 +94,6 @@ class MigrateController(BaseController):
         except Exception as exx:
             log.exception("[__after__] exception %r" % (exx))
             return sendError(response, exx, context='after')
-
-        finally:
-            log.debug("[__after__] done")
 
     def backup(self):
         """
@@ -173,10 +167,6 @@ class MigrateController(BaseController):
             Session.rollback()
             log.exception('[backup] failed: %r' % e)
             return sendError(response, e)
-
-        finally:
-            Session.close()
-            log.debug("[backup] done")
 
     def restore(self):
         """
@@ -309,6 +299,5 @@ class MigrateController(BaseController):
                     log.debug("removed backup file %r", backup_file)
 
             Session.close()
-            log.debug("[restore] closed")
 
 # eof #########################################################################

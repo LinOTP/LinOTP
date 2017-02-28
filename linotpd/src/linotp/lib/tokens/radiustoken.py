@@ -89,8 +89,6 @@ class RadiusTokenClass(RemoteTokenClass):
         :rtype: s.o.
 
         '''
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         res = {
             'type': 'radius',
@@ -118,8 +116,6 @@ class RadiusTokenClass(RemoteTokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug(
-            "[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
     def update(self, param):
@@ -164,7 +160,6 @@ class RadiusTokenClass(RemoteTokenClass):
             local_check = True
 
         self.local_pin_check = local_check
-        log.debug(" local checking pin? %r" % local_check)
 
         return local_check
 
@@ -179,7 +174,6 @@ class RadiusTokenClass(RemoteTokenClass):
         '''
         res = True
 
-        log.debug("[checkPin]")
 
         if self.check_pin_local():
             log.debug("[checkPin] [radiustoken] checking PIN locally")
@@ -196,8 +190,6 @@ class RadiusTokenClass(RemoteTokenClass):
         otpval = ""
 
         local_check = self.check_pin_local()
-        log.debug("[splitPinPass] [radiustoken] local checking pin? %r"
-                  % local_check)
 
         if self.check_pin_local():
             log.debug("[splitPinPass] [radiustoken] locally checked")
@@ -215,7 +207,6 @@ class RadiusTokenClass(RemoteTokenClass):
         '''
         Here we contact the Radius Server to verify the pass
         '''
-        log.debug("do_request")
 
         reply = {}
         res = False
@@ -261,18 +252,14 @@ class RadiusTokenClass(RemoteTokenClass):
                          secret=radiusSecret,
                          dict=Dictionary(r_dict))
 
-            #log.debug("[checkOTP [RadiusToken] building Request packet")
             req = srv.CreateAuthPacket(code=pyrad.packet.AccessRequest,
                                        User_Name=radiusUser.encode('ascii'),
                                        NAS_Identifier=nas_identifier.encode('ascii'))
 
-            #log.debug("[checkOTP [RadiusToken] adding password to request")
             req["User-Password"] = req.PwCrypt(anOtpVal)
             if transactionid is not None:
                 req["State"] = str(transactionid)
 
-            #log.debug("[checkOTP [RadiusToken] sending request")
-            # log.debug(req)
             response = srv.SendPacket(req)
 
             if response.code == pyrad.packet.AccessChallenge:

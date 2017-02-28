@@ -72,8 +72,6 @@ class MonitoringController(BaseController):
         """
         """
         try:
-            log.debug('[__before__::%r] %r', action, params)
-
 
             c.audit = request_context['audit']
             c.audit['success'] = False
@@ -94,8 +92,6 @@ class MonitoringController(BaseController):
             Session.close()
             return sendError(response, exception, context='before')
 
-        finally:
-            log.debug('[__before__::%r] done', action)
 
     def __after__(self, action):
         """
@@ -116,7 +112,6 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[__after__] done')
 
     def tokens(self):
         """
@@ -195,7 +190,6 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[tokens] done')
 
     def config(self):
         """
@@ -239,7 +233,6 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[config] done')
 
     def storageEncryption(self):
         """
@@ -271,7 +264,6 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[encryption] done')
 
     def license(self):
         """
@@ -320,7 +312,6 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[license] done')
 
     def userinfo(self):
         """
@@ -385,7 +376,6 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[resolvers] done')
 
     def activeUsers(self):
         """
@@ -446,7 +436,6 @@ class MonitoringController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[resolvers] done')
 
 
 

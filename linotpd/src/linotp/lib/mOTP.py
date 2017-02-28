@@ -81,8 +81,6 @@ class mTimeOtp(object):
         :return: -1 for fail else the identified counter/time
         '''
 
-        log.debug("[checkOtp] begin. checking the otpvalue %s window:%r, \
-                            options:%r" % (anOtpVal, window, options))
         res = -1
         window = window * 2
 
@@ -108,8 +106,6 @@ class mTimeOtp(object):
             otp = unicode(self.calcOtp(i, key, pin))
             if unicode(anOtpVal) == otp:
                 res = i
-                log.debug("[checkOtp] otpvalue %r found at: %r" %
-                            (anOtpVal, res))
                 break
 
         if self.secretObject is not None:
@@ -128,7 +124,6 @@ class mTimeOtp(object):
         else:
             msg = 'checking motp sucess'
 
-        log.debug("[checkOtp] end. %s : returning result: %r, " % (msg, res))
         return res
 
     def calcOtp(self, counter, key=None, pin=None):

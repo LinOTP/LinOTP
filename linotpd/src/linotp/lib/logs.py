@@ -36,6 +36,7 @@ class RequestContextFilter(logging.Filter):
 
         record.request_id = env.get('REQUEST_ID')
         record.remote_addr = env.get('REMOTE_ADDR')
+        record.request_path = env.get('PATH_INFO')
         as_datetime = env.get('REQUEST_START_TIMESTAMP')
 
         if as_datetime is not None:

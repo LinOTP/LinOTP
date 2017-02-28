@@ -111,8 +111,6 @@ class RemoteTokenClass(TokenClass):
         :rtype: s.o.
 
         """
-        log.debug("[getClassInfo] begin. Get class render info for section: "
-                  "key %r, ret %r " % (key, ret))
 
         res = {'type': 'remote',
                'title': 'Remote Token',
@@ -141,8 +139,6 @@ class RemoteTokenClass(TokenClass):
             if ret == 'all':
                 ret = res
 
-        log.debug("[getClassInfo] end. Returned the configuration section: "
-                  "ret %r " % (ret))
         return ret
 
     def update(self, param):
@@ -201,7 +197,6 @@ class RemoteTokenClass(TokenClass):
 
         # preserve this info for later uasge
         self.local_pin_check = local_check
-        log.debug(" local checking PIN? %r" % local_check)
 
         return local_check
 
@@ -219,7 +214,6 @@ class RemoteTokenClass(TokenClass):
         :return: tupple of (success, otp_count - 0 or -1, reply)
 
         """
-        log.debug("authenticate")
 
         res = False
         otp_counter = -1
@@ -306,9 +300,6 @@ class RemoteTokenClass(TokenClass):
         ssl_verify = str(ssl_verify_config).lower().strip() == 'true'
 
         # here we also need to check for remote.user and so on....
-        log.debug("[checkOtp] checking OTP len:%r remotely on server: %r,"
-                  " serial: %r, user: %r",
-                  len(otpval), remoteServer, remoteSerial, remoteUser)
         params = {}
 
         if autoassign:
@@ -377,9 +368,7 @@ class RemoteTokenClass(TokenClass):
                                            body=data,
                                            headers=headers)
             result = json.loads(content)
-            log.debug(result)
             status = result['result']['status']
-            log.debug(status)
 
             if status is True:
 

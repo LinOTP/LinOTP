@@ -48,8 +48,7 @@ from linotp.lib.user import get_authenticated_user
 class UserModelPlugin(object):
 
     def authenticate(self, environ, identity):
-        log.info("[authenticate] entering repoze authenticate function.")
-        # log.debug( identity )
+        log.debug("Authentication through repoze.")
         username = None
         realm = None
         options = {}
@@ -74,7 +73,7 @@ class UserModelPlugin(object):
             realmbox = options.get("realmbox", "False")
 
         except KeyError as e:
-            log.exception("[authenticate] Keyerror in identity: %r." % e)
+            log.exception("Keyerror in repoze identity: %r." % e)
             return None
 
         # convert string to boolean
@@ -121,22 +120,4 @@ class UserModelPlugin(object):
         return authUser
 
     def add_metadata(self, environ, identity):
-        # username = identity.get('repoze.who.userid')
-        # user = User.get(username)
-        # user = "clerk maxwell"
-        # log.info( "add_metadata: %s" % identity )
-
-        # pp = pprint.PrettyPrinter(indent=4)
-        # log.info("add_meta: environ %s" % pp.pformat(environ)
-        log.debug("[add_metadata] add some metatata")
-        # for k in environ.keys():
-        #    log.debug("add_metadata: environ[%s]: %s" % ( k, environ[k] ))
-
-        for k in identity.keys():
-            log.debug("[add_metadata] identity[%s]: %s" % (k, identity[k]))
-
-        # if identity.has_key('realm'):
-        #    identity.update( { 'realm' : identity['realm'] } )
-        #    log.info("add_metadata: added realm: %s" % identity['realm'] )
-
         return identity

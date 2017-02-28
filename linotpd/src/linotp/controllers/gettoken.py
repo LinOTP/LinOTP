@@ -86,8 +86,6 @@ class GettokenController(BaseController):
 
     def __before__(self, action):
 
-        log.debug("[__before__]")
-
         try:
             c.audit = request_context['audit']
             c.audit['client'] = get_client(request)
@@ -99,8 +97,6 @@ class GettokenController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
     def __after__(self):
         c.audit['administrator'] = getUserFromRequest(request).get("login")
@@ -141,10 +137,10 @@ class GettokenController(BaseController):
             view = getParam(param, "view", optional)
 
             r1 = checkPolicyPre('admin', 'getotp', param)
-            log.debug("[getmultiotp] admin-getotp returned %s" % r1)
+            log.debug("[getmultiotp] admin-getotp policy: %s" % r1)
 
             max_count = checkPolicyPre('gettoken', 'max_count', param)
-            log.debug("[getmultiotp] checkpolicypre returned %s" % max_count)
+            log.debug("[getmultiotp] maxcount policy: %s" % max_count)
             if count > max_count:
                 count = max_count
 
@@ -174,7 +170,6 @@ class GettokenController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getmultiotp] done")
 
 
     def getotp(self):
@@ -240,7 +235,7 @@ class GettokenController(BaseController):
             # if a serial was given or a unique serial could be received from the given user.
             if serial:
                 max_count = checkPolicyPre('gettoken', 'max_count', param)
-                log.debug("[getmultiotp] checkpolicypre returned %s" % max_count)
+                log.debug("[getmultiotp] max_count policy: %s" % max_count)
                 if max_count <= 0:
                     return sendError(response, "The policy forbids receiving OTP values for the token %s in this realm" % serial , 1)
 
@@ -282,7 +277,6 @@ class GettokenController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[getotp] done')
 
 
 #eof###########################################################################

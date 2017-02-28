@@ -145,11 +145,6 @@ def check_otp(token, otpval, options=None):
             the matching otpcounter or -1 if not valid
     """
 
-    log.debug('entering function check_otp()')
-    log.debug('token  : %r' % token)
-    # This is only the OTP value, not the OTP PIN
-    log.debug('OtpVal : %r' % otpval)
-
     counter = token.getOtpCount()
     window = token.getOtpCountWindow()
 
@@ -265,7 +260,6 @@ class ValidationHandler(object):
                     verify the user pin
         """
 
-        log.debug('checking for serial %r' % serial)
         tokenList = linotp.lib.token.getTokens4UserOrSerial(
             None, serial)
 
@@ -296,9 +290,6 @@ class ValidationHandler(object):
                                 'unable to create challenge for %s' % serial)
 
         else:
-            log.debug('checking len(pass)=%r for serial %r' %
-                      (len(passw), serial))
-
             (res, opt) = self.checkTokenList(
                 tokenList, passw, user=user, options=options)
 
@@ -415,8 +406,6 @@ class ValidationHandler(object):
         :return: tuple of True/False and optional information
         """
 
-        log.debug('entering function checkUserPass(%r)'
-                  % user.login)
         # the upper layer will catch / at least should ;-)
 
         opt = None
@@ -457,7 +446,6 @@ class ValidationHandler(object):
             audit['action_detail'] = 'User has no tokens assigned'
 
             # here we check if we should to autoassign and try to do it
-            log.debug('about to check auto_assigning')
 
             th = TokenHandler()
             auto_assign_return = th.auto_assignToken(passw, user)
@@ -507,7 +495,6 @@ class ValidationHandler(object):
 
         (res, opt) = self.checkTokenList(
             tokenList, passw, user, options=options)
-        log.debug('return of __checkTokenList: %r ' % (res,))
 
         return (res, opt)
 
@@ -523,7 +510,6 @@ class ValidationHandler(object):
 
         :return: tuple of boolean and optional response
         """
-        log.debug("[__checkTokenList] checking tokenlist: %r" % tokenList)
         reply = None
 
         tokenclasses = config['tokenclasses']
@@ -583,8 +569,6 @@ class ValidationHandler(object):
         validation_results = {}
 
         for token in tokenList:
-            log.debug('Found user with loginId %r: %r:\n',
-                      token.getUserId(), token.getSerial())
 
             # transaction id optimization - part 2:
             if transid:

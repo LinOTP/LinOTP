@@ -265,7 +265,6 @@ class EmailTokenClass(HmacTokenClass):
         secObj = self._get_secret_object()
         counter = self.token.getOtpCounter()
 
-        #log.debug("serial: %s",serialNum)
         hmac2otp = HmacOtp(secObj, counter, otplen)
         nextotp = hmac2otp.generate(counter + 1)
 

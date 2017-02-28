@@ -79,8 +79,6 @@ class YubikeyTokenClass(TokenClass):
         :rtype: s.o.
 
         """
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         res = {
             'type':          'yubikey',
@@ -97,7 +95,6 @@ class YubikeyTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
     def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
@@ -197,7 +194,6 @@ class YubikeyTokenClass(TokenClass):
         if 'public_uid' in param:
             self.addToTokenInfo('public_uid', param['public_uid'])
 
-        log.debug("[update] end. Processing the initialization parameters done.")
         return
 
     def resetTokenInfo(self):
@@ -248,8 +244,6 @@ class YubikeyTokenClass(TokenClass):
                     6 Implementation details
 
         """
-        log.debug("[checkOtp] begin. Validate the token otp: otpVal: %r, counter: %r,  options: %r "
-                  % (otpVal, counter, options))
         res = -1
 
         if len(otpVal) < self.getOtpLen():

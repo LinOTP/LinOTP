@@ -430,7 +430,6 @@ class OcraSuite():
             datainput += self._addSession(S)
         if self.T is not None:
             datainput += self._addTimeStr(T, T_precomputed)
-        #log.error('datainput: %s' % binascii.hexlify(datainput))
 
         return datainput
 
@@ -486,7 +485,6 @@ class OcraSuite():
             datainput = Q
             datainput += '\0' * (128 - len(Q))
 
-        #log.error("Q %s" % (binascii.hexlify(datainput)))
         return datainput
 
     def _addPin(self, P=None, P_digest=None):
@@ -504,7 +502,6 @@ class OcraSuite():
                 raise ValueError('Pin/Password missing')
             else:
                 datainput = self.P(P).digest()
-        #log.error("P %s" % (binascii.hexlify(datainput)))
         return datainput
 
     def _addSession(self, S):
@@ -515,7 +512,6 @@ class OcraSuite():
 
             datainput = S
             datainput += '\0' * (self.S - len(S))
-        log.error("S %s" % (binascii.hexlify(datainput)))
         return datainput
 
     def _addTimeStr(self, T=None, T_precomputed=None):
@@ -533,7 +529,6 @@ class OcraSuite():
             else:
                 raise ValueError('time format error %r' % self.T)
             datainput += data
-        #log.error("T %s" % (binascii.hexlify(datainput)))
         return datainput
 
     def data2hashChallenge(self, data):
@@ -676,8 +671,6 @@ class OcraSuite():
                     start = 0
             sdate = datetime.fromtimestamp(start)
             edate = datetime.fromtimestamp(end)
-            log.debug('[OcraSuite:checkOtp] lookup for timerange:  %r - %r '
-                       % (sdate, edate))
 
         # finally do the check of the otps
         session = ''

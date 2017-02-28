@@ -319,9 +319,6 @@ class SmsTokenClass(HmacTokenClass):
         '''
         _ = context['translate']
 
-        log.debug("[update] begin. adjust the token class with: param %r"
-                  % (param))
-
         # specific - phone
         phone = getParam(param, "phone", required)
 
@@ -346,7 +343,6 @@ class SmsTokenClass(HmacTokenClass):
 
         HmacTokenClass.update(self, param, reset_failcount)
 
-        log.debug("[update] end. all token parameters are set.")
         return
 
     def is_challenge_response(self, passw, user, options=None,
@@ -624,10 +620,6 @@ class SmsTokenClass(HmacTokenClass):
         :rtype: int
         '''
 
-        log.debug("[checkOtp] begin. start to verify the otp value: anOtpVal:"
-                  " %r, counter: %r, window: %r, options: %r "
-                  % (anOtpVal, counter, window, options))
-
         if not options:
             options = {}
 
@@ -664,7 +656,7 @@ class SmsTokenClass(HmacTokenClass):
             msg = "otp verification was successful!"
         else:
             msg = "otp verification failed!"
-        log.debug("[checkOtp] end. %s ret: %r" % (msg, ret))
+        log.debug(msg)
         return ret
 
     def getNextOtp(self):
@@ -674,24 +666,20 @@ class SmsTokenClass(HmacTokenClass):
         :return: otpval
         :rtype: string
         '''
-        log.debug("[getNextOtp] begin. starting to look for the next otp")
 
         try:
             # ## TODO - replace tokenLen
             otplen = int(self.token.LinOtpOtpLen)
         except ValueError as ex:
             log.exception("[getNextOtp] ValueError %r" % ex)
-            raise Exception(ex)
+            raise ex
 
         secObj = self._get_secret_object()
         counter = self.token.getOtpCounter()
 
-        # log.debug("serial: %s",serialNum)
         hmac2otp = HmacOtp(secObj, counter, otplen)
         nextotp = hmac2otp.generate(counter + 1)
 
-        log.debug("[getNextOtp] end. got the next otp value: nextOtp %r"
-                                                                    % nextotp)
         return nextotp
 
     # in the SMS token we use the generic TokenInfo
@@ -761,8 +749,6 @@ class SmsTokenClass(HmacTokenClass):
 
         :return: nothing
         '''
-        log.debug("[setSMSInfo] setting the sms token info (key: %s, value: %s)"
-                   % (key, value))
         self.addToTokenInfo(key, value)
         return
 
@@ -772,14 +758,11 @@ class SmsTokenClass(HmacTokenClass):
 
         :return: tuple of phone number and validity time in unix lifetime sec
         '''
-        log.debug("[getSMSInfo] begin. get the sms token info")
 
         info = self.getTokenInfo()
         phone = info.get("phone", '')
         until = info.get("until", 0)
 
-        log.debug("[getSMSInfo] end. got the following token info: (phone: "
-                  " %r, until: %r)" % (phone, until))
         return (phone, until)
 
     # we take the countWindow.column to store the time
@@ -791,14 +774,11 @@ class SmsTokenClass(HmacTokenClass):
 
         :return: nothing
         '''
-        log.debug("[setValidUntil] begin. set the due date")
         timeScope = self.loadLinOtpSMSValidTime()
         dueDate = int(time.time()) + timeScope
         self.setUntil(dueDate)
         # self.token.setCountWindow(dueDate)
 
-        log.debug("[setValidUntil] end. define the following due date:"
-                                                    " dueDate %r" % (dueDate))
         return dueDate
 
     def isValid(self):
@@ -808,8 +788,6 @@ class SmsTokenClass(HmacTokenClass):
         :return: True or False
         :rtype: boolean
         '''
-        log.debug("[isValid] begin. check if challenge timeframe "
-                                                              "is still valid")
         ret = False
         dueDate = self.getUntil()
         now = int(time.time())
@@ -819,7 +797,6 @@ class SmsTokenClass(HmacTokenClass):
             msg = "the sms challenge is still valid"
         else:
             msg = "the sms challenge is no more valid"
-        log.debug("[isValid] %s: ret: %r" % (msg, ret))
         return ret
 
     def sendSMS(self, message=None, transactionid=None):
@@ -834,8 +811,6 @@ class SmsTokenClass(HmacTokenClass):
         :rtype: string
 
         '''
-        log.debug("[sendSMS] begin. process the submitting of "
-                                              "the sms message %r" % (message))
 
         ret = None
 
@@ -874,7 +849,7 @@ class SmsTokenClass(HmacTokenClass):
         # we require the token owner to get the phone number and the provider
         owner = get_token_owner(self)
         if not owner or not owner.login:
-            log.warning("Missing required token owner")
+            log.warning("[sendSMS] Missing required token owner")
 
         sms_provider = loadProviderFromPolicy(provider_type='sms',
                                               realm=realm,
@@ -883,7 +858,6 @@ class SmsTokenClass(HmacTokenClass):
         if not sms_provider:
             raise Exception('unable to load provider')
 
-        log.debug("[sendSMS] submitMessage: %r, to phone %r", message, phone)
         ret = sms_provider.submitMessage(phone, message)
 
         if not ret:
@@ -894,8 +868,6 @@ class SmsTokenClass(HmacTokenClass):
         self.setValidUntil()
 
         # return OTP for selftest purposes
-        log.debug("[sendSMS] end. sms message submitted: message %r"
-                                                                % (message))
         return ret, message
 
     def loadLinOtpSMSValidTime(self):
@@ -905,7 +877,6 @@ class SmsTokenClass(HmacTokenClass):
         :return: the defined validation timeout in seconds
         :rtype:  int
         '''
-        log.debug('[loadLinOtpSMSValidTime] begin.')
         try:
             timeout = int(getFromConfig("SMSProviderTimeout", 5 * 60))
         except Exception as ex:
@@ -913,8 +884,6 @@ class SmsTokenClass(HmacTokenClass):
                                                                         % (ex))
             timeout = 5 * 60
 
-        log.debug('[loadLinOtpSMSValidTime] end. sms timeout value found: %r'
-                                                                   % (timeout))
         return timeout
 
     def getInitDetail(self, params, user=None):

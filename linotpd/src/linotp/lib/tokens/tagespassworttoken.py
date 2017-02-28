@@ -79,8 +79,6 @@ class TagespasswortTokenClass(TokenClass):
         :rtype: s.o.
 
         '''
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         res = {
                'type'           : 'dpw',
@@ -102,7 +100,6 @@ class TagespasswortTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
 
@@ -186,7 +183,6 @@ class TagespasswortTokenClass(TokenClass):
 
         secObj = self._get_secret_object()
         dpw = dpwOtp(secObj, otplen)
-        log.debug("[get_multi_otp] retrieving %i OTP values for token %s" % (count, dpw))
 
         if count > 0:
             now = datetime.datetime.now()
@@ -196,7 +192,6 @@ class TagespasswortTokenClass(TokenClass):
                 elif type(curTime) == unicode:
                     now = datetime.datetime.strptime(curTime, "%Y-%m-%d %H:%M:%S.%f")
                 else:
-                    log.error("[get_multi_otp] wrong curTime type: %s" % type(curTime))
                     raise TokenAdminError("[get_multi_otp] wrong curTime type: %s (%s)" % (type(curTime), curTime), id=2001)
             for i in range(count):
                 delta = datetime.timedelta(days=i)
@@ -205,5 +200,4 @@ class TagespasswortTokenClass(TokenClass):
                 otp_dict["otp"][ (now + delta).strftime("%y-%m-%d")] = otpval
             ret = True
 
-        log.debug("[get_multi_otp] %s" % otp_dict)
         return (ret, error, otp_dict)

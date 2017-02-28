@@ -83,7 +83,6 @@ class AuditQuery(object):
                 # search patterns are delimited with ;
                 search_list = param['query'].split(";")
                 for s in search_list:
-                    log.debug(s)
                     key, e, value = s.partition("=")
                     key = key.strip()
                     value = value.strip()
@@ -93,7 +92,6 @@ class AuditQuery(object):
                     ## entries in escaped format
                     value = linotp.lib.crypt.uencode(value)
                     self._search_dict[key] = value
-                log.debug(self._search_dict)
             else:
                 ## unicode escape search parameter to match
                 ## encoding in db, which stores audit
@@ -108,8 +106,6 @@ class AuditQuery(object):
                 ## entries in escaped format
                 value = linotp.lib.crypt.uencode(value)
                 self._search_dict[key] = value
-
-        log.debug("[search] search_dict: %s" % self._search_dict)
 
         if 'page' in param:
             try:
@@ -137,8 +133,6 @@ class AuditQuery(object):
         if sortorder not in ['desc', 'asc']:
             sortorder = 'asc'
         self._rp_dict['sortorder'] = sortorder
-
-        log.debug("[search] rp_dict: %s" % self._rp_dict)
 
         if user:
             self._search_dict['user'] = user.login
@@ -228,7 +222,6 @@ class JSONAuditIterator(object):
                 res = '%s ], "total": %d }' % (prefix, self.audit_query.get_total())
                 self.closed = True
             else:
-                log.info("returned %d entries" % self.i)
                 raise exx
 
         return res
@@ -289,7 +282,6 @@ class CSVAuditIterator(object):
                 res = "%s\n" % res
                 self.closed = True
             else:
-                log.info("returned %d entries" % self.i)
                 raise exx
 
         return res

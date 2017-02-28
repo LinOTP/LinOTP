@@ -137,9 +137,6 @@ class ForwardTokenClass(TokenClass):
 
         _ = context['translate']
 
-        log.debug("[getClassInfo] begin. Get class render info for section: "
-                  "key %r, ret %r " % (key, ret))
-
         res = {'type': 'forward',
                'title': 'Forward Token',
                'description': ('Forward token to forward the'
@@ -169,8 +166,6 @@ class ForwardTokenClass(TokenClass):
             if ret == 'all':
                 ret = res
 
-        log.debug("[getClassInfo] end. Returned the configuration section: "
-                  "returned %r ", ret)
         return ret
 
     def update(self, param):
@@ -205,7 +200,6 @@ class ForwardTokenClass(TokenClass):
         :return: tupple of (success, otp_count - 0 or -1, reply)
 
         """
-        log.debug("authenticate")
 
         otp_count = -1
         reply = None

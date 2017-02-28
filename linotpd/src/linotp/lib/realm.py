@@ -59,7 +59,6 @@ def createDBRealm(realm):
 
     ret = False
     if not getRealmObject(name=realm):
-        log.debug("[createDBRealm] No realm with name %s exist in database. Creating new" % realm)
         r = Realm(realm)
         r.storeRealm()
         ret = True
@@ -88,7 +87,6 @@ def realm2Objects(realmList):
         for r in list(realm_set):
             realmObj = getRealmObject(name=r)
             if realmObj is not None:
-                log.debug("[setRealms] added realm %s to realmObjList" % realmObj)
                 realmObjList.append(realmObj)
     return realmObjList
 
@@ -109,8 +107,7 @@ def getRealmObject(name=u"", id=0):
     :rtype  : the sql db object
     '''
 
-    log.debug("[getRealmObject] getting Realm object for name=%s, id=%i",
-               name, id)
+    log.debug("Getting realm object for name=%s, id=%i", name, id)
     realmObj = None
 
     name = u'' + str(name)
@@ -223,7 +220,7 @@ def _lookup_realm_config(realm_name, realm_defintion=None):
     :return: return the list of resolver strings or None
     """
 
-    def __lookup_realm_config(realm_name, realm_defintion=None):
+    def __lookup_realm_config(realm_name, realm_definition=None):
         """
         realm definition lookup function which retrieves the value
             only called on a cache miss
@@ -235,10 +232,10 @@ def _lookup_realm_config(realm_name, realm_defintion=None):
         :return: return the list of resolver strings or None
         """
 
-        if realm_defintion:
-            return json.dumps(realm_defintion)
+        if realm_definition:
+            return json.dumps(realm_definition)
 
-        log.info("cache miss %r", p_key)
+        log.debug("cache miss for realm with name %r", realm_name)
         return None
 
     realm_config_cache = _get_realm_config_cache()
@@ -292,8 +289,8 @@ def _get_realm_config_cache():
         expiration = get_duration(expiration_conf)
 
     except ValueError:
-        log.info("resolver caching is disabled due to a value error in "
-                 "resolver_lookup_cache.expiration config")
+        log.debug("resolver caching is disabled due to a value error in "
+                  "resolver_lookup_cache.expiration config")
         return None
 
     cache_manager = context['CacheManager']
@@ -464,7 +461,7 @@ def getDefaultRealm(config=None):
         defaultRealm = config.get(defaultRealmDef, "")
 
     if defaultRealm is None or defaultRealm == "":
-        log.info("Configuration issue: no Default Realm defined!")
+        log.info("Configuration issue: No default realm defined.")
         defaultRealm = ""
 
     return defaultRealm.lower()
@@ -478,7 +475,7 @@ def deleteRealm(realmname):
     :type  realmname: string
     '''
 
-    log.debug("[delete] delete Realm object with name=%s" % realmname)
+    log.debug("deleting realm object with name=%s" % realmname)
     r = getRealmObject(name=realmname)
     if r is None:
         ''' if no realm is found, we re-try the lowercase name for backward compatibility '''
@@ -488,12 +485,12 @@ def deleteRealm(realmname):
         realmId = r.id
 
         if realmId != 0:
-            log.debug("[deleteRealm] Now deleting all realations with realm_id=%i" % realmId)
+            log.debug("Deleting token relations for realm with id %i" % realmId)
             Session.query(TokenRealm).filter(TokenRealm.realm_id == realmId).delete()
         Session.delete(r)
 
     else:
-        log.warning("[deleteRealm] There is no realm object with the name %s to be deleted." % realmname)
+        log.warning("Realm with name %s was not found." % realmname)
         return False
     # now delete all relations, i.e. remove all Tokens from this realm.
 

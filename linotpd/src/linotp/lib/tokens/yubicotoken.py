@@ -88,8 +88,6 @@ class YubicoTokenClass(TokenClass):
         :rtype: s.o.
 
         '''
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         res = {
                'type'           : 'yubico',
@@ -125,7 +123,6 @@ class YubicoTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
 
@@ -133,7 +130,6 @@ class YubicoTokenClass(TokenClass):
 
         tokenid = getParam(param, "yubico.tokenid", required)
         if len(tokenid) < YUBICO_LEN_ID:
-            log.error("[update] The token ID needs to be %i characters long!" % YUBICO_LEN_ID)
             raise Exception("The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID)
 
         if len(tokenid) > YUBICO_LEN_ID:

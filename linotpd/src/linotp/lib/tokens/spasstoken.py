@@ -75,8 +75,6 @@ class SpassTokenClass(TokenClass):
         :rtype: s.o.
 
         '''
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         res = {
             'type': 'spass',
@@ -98,8 +96,6 @@ class SpassTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug(
-            "[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
     def update(self, param):

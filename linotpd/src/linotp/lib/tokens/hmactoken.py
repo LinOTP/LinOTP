@@ -97,8 +97,6 @@ class HmacTokenClass(TokenClass):
         :rtype: s.o.
 
         '''
-        log.debug("[getClassInfo] begin. Get class render info for section: key %r, ret %r " %
-                  (key, ret))
 
         _ = context['translate']
 
@@ -149,7 +147,6 @@ class HmacTokenClass(TokenClass):
         else:
             if ret == 'all':
                 ret = res
-        log.debug("[getClassInfo] end. Returned the configuration section: ret %r " % (ret))
         return ret
 
 
@@ -161,7 +158,6 @@ class HmacTokenClass(TokenClass):
         :type aToken:  orm object
 
         '''
-        log.debug("[init]  begin. Create a token object with: a_token %r" % (a_token))
 
         TokenClass.__init__(self, a_token)
         self.setType(u"HMAC")
@@ -178,10 +174,6 @@ class HmacTokenClass(TokenClass):
             log.exception('[init] Failed to get the hotp.hashlib (%r)' % (ex))
             raise Exception(ex)
 
-        log.debug("[init]  end. Token object created")
-
-
-
     def update(self, param, reset_failcount=True):
         '''
         update - process the initialization parameters
@@ -191,9 +183,6 @@ class HmacTokenClass(TokenClass):
 
         :return: nothing
         '''
-
-        log.debug("[update] begin. Process the initialization parameters:"
-                  " param %r", param)
 
         # Remark: the otpKey is handled in the parent class
 
@@ -211,8 +200,6 @@ class HmacTokenClass(TokenClass):
 
         TokenClass.update(self, param, reset_failcount)
 
-        log.debug("[update] end. Processing the initialization "
-                  "parameters done.")
         return
 
 
@@ -358,20 +345,19 @@ class HmacTokenClass(TokenClass):
         :rtype: int
 
         '''
-        log.debug("[checkOtp] begin. Validate the token otp: anOtpVal: %r ,counter: %r,window: %r, options: %r " % (anOtpVal, counter, window, options))
         res = -1
 
         try:
             otplen = int(self.getOtpLen())
         except ValueError as ex:
             log.exception('[checkOtp] failed to initialize otplen: ValueError %r %r' % (ex, self.token.LinOtpOtpLen))
-            raise Exception(ex)
+            raise ex
 
         try:
             self.hashlibStr = self.getFromTokenInfo("hashlib", 'sha1')
         except Exception as ex:
             log.exception('[checkOtp] failed to initialize hashlibStr: %r' % (ex))
-            raise Exception(ex)
+            raise ex
 
         secObj = self._get_secret_object()
 
@@ -382,7 +368,6 @@ class HmacTokenClass(TokenClass):
         if -1 == res:
             res = self.autosync(hmac2Otp, anOtpVal)
 
-        log.debug("[checkOtp] end. otp verification result was: res %r" % (res))
         return res
 
     def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
@@ -402,8 +387,6 @@ class HmacTokenClass(TokenClass):
 
         '''
 
-        log.debug("[check_otp_exist] begin. checks if the given OTP value exists: otp %r, window %r " %
-                  (otp, window))
         res = -1
 
         try:
@@ -430,7 +413,6 @@ class HmacTokenClass(TokenClass):
             msg = "otp counter %r was not found" % otp
         else:
             msg = "otp counter %r was found" % otp
-        log.debug("[check_otp_exist] end. %r: res %r" % (msg, res))
         return res
 
 
@@ -450,7 +432,6 @@ class HmacTokenClass(TokenClass):
         :rtype:  int
 
         '''
-        log.debug("[autosync] begin. Autosync the token, based on: hmac2Otp: %r, anOtpVal: %r" % (hmac2Otp, anOtpVal))
 
         res = -1
         autosync = False
@@ -516,7 +497,6 @@ class HmacTokenClass(TokenClass):
             msg = "call was not successful"
         else:
             msg = "call was successful"
-        log.debug("[autosync] end. %r: res %r" % (msg, res))
 
         return res
 
@@ -539,7 +519,6 @@ class HmacTokenClass(TokenClass):
         :rtype:  int
 
         '''
-        log.debug("[resync] .begin. Resync the token based on: %r, anOtpVal: %r, options: %r" % (otp1, otp2, options))
 
         ret = False
 
@@ -571,7 +550,7 @@ class HmacTokenClass(TokenClass):
         ret = True
         self.incOtpCounter(counter + 1, True)
 
-        log.debug("[resync] end. resync was successful: ret: %r" % (ret))
+        log.debug("Resync was successful")
         return ret
 
     def getSyncTimeOut(self):
@@ -596,7 +575,6 @@ class HmacTokenClass(TokenClass):
         :return: next otp value
         :rtype: string
         '''
-        log.debug("[getOtp] begin. Get the next OTP value for: curTime: %r" % (curTime))
 
         try:
             otplen = int(self.token.LinOtpOtpLen)
@@ -616,8 +594,6 @@ class HmacTokenClass(TokenClass):
         if getFromConfig("PrependPin") == "True" :
             combined = "%s%s" % (pin, otpval)
 
-        log.debug("[getOtp]  end. Return opt is: (pin: %r, otpval: %r, combined: %r) " %
-                  (pin, otpval, combined))
         return (1, pin, otpval, combined)
 
     def get_multi_otp(self, count=0, epoch_start=0, epoch_end=0, curTime=None):
@@ -630,8 +606,6 @@ class HmacTokenClass(TokenClass):
         :return:     tuple of status: boolean, error: text and the OTP dictionary
 
         '''
-        log.debug("[get_multi_otp] begin. Get a dictionary of multiple future OTP values for: count: %r, epoch_start: %r, epoch_end: %r, curTime: %r" %
-                  (count, epoch_start, epoch_end, curTime))
 
         otp_dict = {"type" : "HMAC", "otp": {}}
         ret = False
@@ -644,7 +618,6 @@ class HmacTokenClass(TokenClass):
         s_count = self.getOtpCount()
         secObj = self._get_secret_object()
         hmac2Otp = HmacOtp(secObj, s_count, otplen, self.getHashlib(self.hashlibStr))
-        log.debug("[get_multi_otp] retrieving %i OTP values for token %s" % (count, hmac2Otp))
 
         if count > 0:
             for i in range(count):
@@ -652,7 +625,6 @@ class HmacTokenClass(TokenClass):
                 otp_dict["otp"][s_count + i] = otpval
             ret = True
 
-        log.debug("[get_multi_otp] end. dictionary of multiple future OTP is: otp_dict: %r - status: %r - error %r" % (ret, error, otp_dict))
         return (ret, error, otp_dict)
 
     def getInitDetail(self, params , user=None):

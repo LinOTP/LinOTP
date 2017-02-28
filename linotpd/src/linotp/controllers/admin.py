@@ -133,8 +133,6 @@ class AdminController(BaseController):
         '''
 
         try:
-            log.debug("[__before__::%r]", action)
-            # log.debug("[__before__::%r] %r", action, params)
 
             c.audit = request_context['audit']
             c.audit['success'] = False
@@ -150,9 +148,6 @@ class AdminController(BaseController):
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
-
-        finally:
-            log.debug("[__before__::%r] done", action)
 
     def __after__(self, action):
         '''
@@ -194,7 +189,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[__after__] done")
 
     def logout(self):
         # see http://docs.pylonsproject.org/projects/pyramid/1.0/narr/webob.html
@@ -250,7 +244,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getsession] done")
 
     def dropsession(self):
         # request.cookies.pop( 'admin_session', None )
@@ -262,7 +255,6 @@ class AdminController(BaseController):
         """
         provide the userinfo of the token, which is specified as serial
         """
-        log.debug("get the owner as user info for a token")
 
         param = {}
         ret = {}
@@ -283,19 +275,17 @@ class AdminController(BaseController):
             return sendResult(response, ret)
 
         except PolicyException as pe:
-            log.exception("policy failed %r" % pe)
+            log.exception("Error getting token owner. Exception was %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
         except Exception as e:
-            log.exception("failed: %r" % e)
+            log.exception("Error getting token owner. Exception was %r" % e)
             Session.rollback()
-            log.error('error getting token owner')
             return sendError(response, e, 1)
 
         finally:
             Session.close()
-            log.debug('[enable] done')
 
     def show(self):
         """
@@ -365,15 +355,13 @@ class AdminController(BaseController):
 
             if realm:
             # If the admin wants to see only one realm, then do it:
-                log.debug("[show] checking to only see tokens in realm <%s>",
+                log.debug("Only tokens in realm %s will be shown",
                           realm)
                 if realm in filterRealm or '*' in filterRealm:
                     filterRealm = [realm]
 
             log.info("[show] admin >%s< may display the following realms: %r",
                      res['admin'], filterRealm)
-            log.info("[show] displaying tokens: serial: %s, page: %s, "
-                     "filter: %s, user: %s", serial, page, filter, user.login)
 
             toks = TokenIterator(user, serial, page, psize, filter, sort, dir,
                                  filterRealm, user_fields)
@@ -388,7 +376,6 @@ class AdminController(BaseController):
             lines = []
             for tok in toks:
                 # CKO:
-                log.debug("tokenline: %s" % tok)
                 lines.append(tok)
 
             result["data"] = lines
@@ -413,7 +400,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[show] done")
 
 
 ########################################################
@@ -437,7 +423,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[remove] calling remove ")
 
         param = request.params
 
@@ -488,7 +473,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[remove] done')
 
 
 ########################################################
@@ -512,7 +496,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[enable] calling enable to enable/disable a token")
 
         param = request.params
         try:
@@ -563,7 +546,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[enable] done')
 
 
 ########################################################
@@ -590,7 +572,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[getSerialByOtp] entering function")
 
         ret = {}
         param = request.params
@@ -641,7 +622,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[getSerialByOtp] done")
 
 
 ########################################################
@@ -665,7 +645,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("calling enable to enable/disable a token")
 
         param = request.params
         try:
@@ -716,7 +695,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[disable] done')
 
 
 #######################################################
@@ -740,7 +718,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         '''
-        log.debug("calling check_serial")
 
         param = request.params
         try:
@@ -775,7 +752,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[check_serial] done")
 
 
 ########################################################
@@ -830,7 +806,7 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[init] calling the init controller function")
+
         ret = False
         response_detail = {}
 
@@ -969,7 +945,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[init] done')
 
 
 ########################################################
@@ -995,7 +970,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[unassign] entering function unassign")
 
         param = request.params
 
@@ -1004,7 +978,6 @@ class AdminController(BaseController):
             serial = getParam(param, "serial", required)
             user = getUserFromParam(param)
 
-            log.debug("[unassign] unassigning serial %r, user %r" % (serial, user))
             c.audit['source_realm'] = getTokenRealms(serial)
 
             # check admin authorization
@@ -1042,7 +1015,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[unassign] done')
 
 
 ########################################################
@@ -1069,7 +1041,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[assign] entering function assign")
 
         param = request.params
 
@@ -1110,7 +1081,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setPin] done')
 
 
 ########################################################
@@ -1146,7 +1116,6 @@ class AdminController(BaseController):
         userpin\
         sopin\
         "
-        log.debug('[setPin]')
         try:
             param = getLowerParams(request.params)
 
@@ -1201,7 +1170,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[setPin] done')
 
 
 
@@ -1245,7 +1213,6 @@ class AdminController(BaseController):
         """
         res = {}
         count = 0
-        log.debug("[set]")
 
         description = "set: parameters are\
         pin\
@@ -1266,7 +1233,6 @@ class AdminController(BaseController):
         description\
         phone\
         "
-        log.debug('[set]')
         msg = ""
 
         try:
@@ -1534,7 +1500,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[set] done')
 
 
 ########################################################
@@ -1561,7 +1526,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[resync]")
 
         param = request.params
         try:
@@ -1609,7 +1573,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[resync] done')
 
 
 ########################################################
@@ -1711,7 +1674,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[userlist] done")
 
 
 ########################################################
@@ -1727,7 +1689,6 @@ class AdminController(BaseController):
             * serial    - required -  serialnumber of the token
             * realms    - required -  comma seperated list of realms
         '''
-        log.debug("[tokenrealm] calling tokenrealm")
 
         param = request.params
         try:
@@ -1761,7 +1722,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[tokenrealm] done")
 
 
 ########################################################
@@ -1785,7 +1745,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[reset]")
 
         param = request.params
 
@@ -1830,7 +1789,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[reset] done")
 
 
 ########################################################
@@ -1855,7 +1813,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[copyTokenPin]")
         ret = 0
         err_string = ""
         param = request.params
@@ -1927,7 +1884,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[copyTokenUser]")
         ret = 0
         err_string = ""
         param = request.params
@@ -1967,7 +1923,7 @@ class AdminController(BaseController):
                 return sendError(response, "copying token user failed: %s" % err_string)
 
         except PolicyException as pe:
-            log.exception("[losttoken] Error doing losttoken %r" % pe)
+            log.exception("[copyTokenUser] Policy Exception %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
@@ -1978,7 +1934,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[copyTokenUser] done')
 
 ########################################################
 
@@ -2005,7 +1960,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[losttoken]")
 
         ret = 0
         res = {}
@@ -2030,7 +1984,7 @@ class AdminController(BaseController):
             return sendResult(response, res)
 
         except PolicyException as pe:
-            log.exception("[losttoken] Error doing losttoken %r" % pe)
+            log.exception("[losttoken] Policy Exception: %r" % pe)
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
@@ -2041,7 +1995,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[losttoken] done')
 
 
 ########################################################
@@ -2067,7 +2020,6 @@ class AdminController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-        log.debug("[loadtokens]")
         res = "Loading token file failed!"
         known_types = ['aladdin-xml', 'oathcsv', 'yubikeycsv']
         TOKENS = {}
@@ -2180,7 +2132,6 @@ class AdminController(BaseController):
                     TOKENS = parsePSKCdata(fileString, preshared_key_hex=pskc_preshared, do_checkserial=pskc_checkserial)
                 elif "password" == pskc_type:
                     TOKENS = parsePSKCdata(fileString, password=pskc_password, do_checkserial=pskc_checkserial)
-                    # log.debug(TOKENS)
                 elif "plain" == pskc_type:
                     TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
             elif typeString == "vasco":
@@ -2289,7 +2240,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[loadtokens] done')
 
     def _ldap_parameter_mapping(self, params):
         """
@@ -2477,7 +2427,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[testresolver] done')
 
     def checkstatus(self):
         """
@@ -2589,7 +2538,6 @@ class AdminController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[ocra/checkstatus] done')
 
 
 # eof ########################################################################

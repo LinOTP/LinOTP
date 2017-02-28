@@ -60,7 +60,6 @@ class ToolsController(BaseController):
         """
 
         try:
-            log.debug("[__before__::%r] %r" % (action, params))
 
             # Session handling
             check_session(request)
@@ -81,8 +80,6 @@ class ToolsController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
     def __after__(self, action):
         """
@@ -104,7 +101,6 @@ class ToolsController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[__after__] done")
 
     def migrate_resolver(self):
 
@@ -138,12 +134,10 @@ class ToolsController(BaseController):
         except Exception as e:
             log.exception("failed: %r" % e)
             Session.rollback()
-            log.error('error getting token owner')
             return sendError(response, e, 1)
 
         finally:
             Session.close()
-            log.debug('[enable] done')
 
 
 # eof #########################################################################

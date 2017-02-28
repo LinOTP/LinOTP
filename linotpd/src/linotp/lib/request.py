@@ -132,7 +132,6 @@ class HttpRequest(RemoteRequest):
 
         :return: Tuple of (success, and reply=remote response)
         """
-        log.debug("do_request")
 
         params = {}
         params['pass'] = password.encode("utf-8")
@@ -187,7 +186,6 @@ class HttpRequest(RemoteRequest):
 
             result = json.loads(content)
             status = result.get('result', {}).get('status', False)
-            log.debug("Status: %r", status)
 
             if status is True:
                 if result.get('result', {}).get('value', False) is True:
@@ -223,7 +221,6 @@ class RadiusRequest(RemoteRequest):
 
         :return: Tuple of (success, and reply=remote response)
         """
-        log.debug("do_request")
 
         reply = {}
         res = False
@@ -238,8 +235,8 @@ class RadiusRequest(RemoteRequest):
         radiusSecret = secret
 
         # here we also need to check for radius.user
-        log.debug(" checking OTP len:%s on radius server: %s,"
-                  "  user: %s", len(password), radiusServer, radiusUser)
+        log.debug("Checking OTP with length %s on radius server %s"
+                  "(user: %s)", len(password), radiusServer, radiusUser)
 
         try:
             # pyrad does not allow to set timeout and retries.
@@ -255,11 +252,12 @@ class RadiusRequest(RemoteRequest):
             nas_identifier = self.env.get("radius.nas_identifier", "LinOTP")
             r_dict = self.env.get("radius.dictfile", "/etc/linotp2/dictionary")
 
-            log.debug("NAS Identifier: %r, Dictionary: %r",
+            log.debug("Radius: NAS Identifier: %r, Dictionary: %r",
                       nas_identifier, r_dict)
 
-            log.debug("constructing client object with server: %r, port: %r,"
-                      " secret: %r", r_server, r_authport, radiusSecret)
+            log.debug("Radius: constructing client object with server: %r, "
+                      "port: %r, secret: %r", r_server, r_authport,
+                      radiusSecret)
 
             srv = Client(server=r_server,
                          authport=r_authport,
@@ -282,7 +280,7 @@ class RadiusRequest(RemoteRequest):
                 for attr in response.keys():
                     opt[attr] = response[attr]
                 res = False
-                log.debug("challenge returned %r ", opt)
+                log.debug("Radius: challenge returned %r ", opt)
                 # now we map this to a linotp challenge
                 if "State" in opt:
                     reply["transactionid"] = opt["State"][0]
@@ -291,11 +289,11 @@ class RadiusRequest(RemoteRequest):
                     reply["message"] = opt["Reply-Message"][0]
 
             elif response.code == pyrad.packet.AccessAccept:
-                log.info("Radiusserver %s granted "
+                log.info("Radius: Server %s granted "
                          "access to user %s.", r_server, radiusUser)
                 res = True
             else:
-                log.warning("Radiusserver %s"
+                log.warning("Radius: Server %s"
                             "rejected access to user %s.",
                             r_server, radiusUser)
                 res = False

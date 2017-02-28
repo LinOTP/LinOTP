@@ -127,7 +127,6 @@ class MigrateResolverHandler(ToolsHandler):
         ret['value'] = True
         ret['message'] = (_("%d tokens of %d migrated")
                             % (num_migration, len(tokens)))
-        log.info(ret['message'])
         audit['info'] = "[%s] %s" % (stime, ret['message'])
         audit['serial'] = ",".join(list(serials))
         audit['success'] = True

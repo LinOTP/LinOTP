@@ -276,7 +276,7 @@ class SQLStorage(object):
         self.engine = None
 
         if connect_string is None:
-            log.info("[__init__] Missing linotpOpenID.sql.url parameter in "
+            log.info("Missing linotpOpenID.sql.url parameter in "
                      "config file! Using the sqlalchemy.url")
             # raise Exception("Missing linotpOpenID.sql.url parameter in "
             # "config file!")
@@ -360,7 +360,6 @@ class SQLStorage(object):
             log.error("Error storing association!")
 
     def get_association(self, handler):
-        log.debug("[get_association] handler=%r" % handler)
         assoc = self.session.query(HandlesTable).\
                     filter(HandlesTable.handler == handler)
         secret_b64 = ""
@@ -373,7 +372,6 @@ class SQLStorage(object):
         return secret_b64, assoc_type, private
 
     def del_association(self, handler):
-        log.debug("[del_association] handler=%r" % handler)
         try:
             self.session.query(HandlesTable).\
                     filter(HandlesTable.handler == handler).\
@@ -385,8 +383,6 @@ class SQLStorage(object):
             log.error("Error deleting association")
 
     def add_site(self, site, handle):
-        log.debug("[add_site] handle=%r, site=%r" % (handle, site))
-        #if not self.check_auth( handle, site):
         si = SitesTable(site=site,
                     handle=handle)
         try:
@@ -398,17 +394,14 @@ class SQLStorage(object):
             log.error("Error storing site")
 
     def get_sites(self, handle):
-        log.debug("[get_site] handle=%r" % handle)
         site_list = []
         sites = self.session.query(SitesTable).\
                     filter(SitesTable.handle == handle)
         for site in sites:
             site_list.append(site.site)
-        log.debug("[get_site] sites=%r" % site_list)
         return site_list
 
     def add_trusted_root(self, user, site):
-        log.debug("[add_trusted_root] user=%r, site=%r" % (user, site))
         tr = TrustedRootTable(user=user, site=site)
         try:
             self.session.add(tr)
@@ -419,24 +412,19 @@ class SQLStorage(object):
             log.error("Error storing trusted root")
 
     def get_trusted_roots(self, user):
-        log.debug("[get_trusted_roots] getting trusted roots for user %r"
-                  % user)
         root_list = []
         roots = self.session.query(TrustedRootTable).\
                     filter(TrustedRootTable.user == user)
 
         for root in roots:
             root_list.append(root.site)
-        log.debug("[get_trusted_roots] trusted roots: %r" % root_list)
         return root_list
 
     def check_auth(self, handle, site):
-        log.debug("[check_auth] handle=%r, site=%r" % (handle, site))
         sites = self.session.query(SitesTable).\
                     filter(and_(SitesTable.site == site,
                                 SitesTable.handle == handle)).count()
 
-        log.debug("[check_auth] sites = %r" % sites)
         return sites == 1
 
 
@@ -470,8 +458,6 @@ class SQLStorage(object):
             self.session.rollback()
             log.error("Error deleting user")
 
-        log.debug("[set_expire_token] setting token expiration for user "
-                  "%r: %r" % (user, expire))
         us = UserTable(user=user,
                         token=token,
                         expire=int(time.time()) + int(expire))
@@ -505,12 +491,10 @@ class SQLStorage(object):
         return token
 
     def get_user_by_token(self, token):
-        log.debug("[get_user_by_token] token: %r" % token)
         user = ""
         qu_user = self.session.query(UserTable).\
                         filter(UserTable.token == token)
         for u in qu_user:
-            log.debug("[get_user_by_token] user = %r" % user)
             user = u.user
         return user
 
@@ -563,7 +547,6 @@ class IdResMessage(dict):
     def _dump(self):
         me_string = ""
         for key in self:
-            log.debug("[IdResMessage._dump] %r" % key)
             me_string += "%s:%s," % (key, self[key])
         return me_string
 
@@ -599,7 +582,6 @@ class IdResMessage(dict):
                 continue
             self[key] = value[0]
         parsed[4] = urllib.urlencode(self)
-        log.debug("[IdResMessage._get_url]" % self)
         return urlparse.urlunparse(parsed)
 
     def store_site(self):
@@ -706,7 +688,6 @@ class IdResMessage(dict):
         fields = []
         for field in sorted_sign:
             value = self['openid.' + field]
-            log.debug("[IdResMessage.sign] %r:%r" % (field, value))
             fields.append(u'%s:%s\n' % (field, value))
         fields = unicode(''.join(fields))
 
@@ -722,7 +703,6 @@ class IdResMessage(dict):
         # signing the message
         hash = hmac.new(b64decode(mac_key), fields, crypt)
         self['openid.sig'] = b64encode(hash.digest())
-        log.debug("[IdResMessage.sign] %r" % self)
 
     def _get_association(self):
         """
@@ -740,7 +720,6 @@ class IdResMessage(dict):
             handle = self['openid.assoc_handle'] = self._create_handle()
             mac_key, assoc_type, __ = self.storage.get_association(handle)
 
-        log.debug("[IdResMessage._get_association] %r" % self)
         return mac_key, assoc_type
 
 
@@ -749,33 +728,26 @@ def check_authentication(**params):
     """
     storage = config.get('openid_sql')
     site = params.get('openid.trust_root')
-    log.debug("[check_authentication] trust_root: %r" % site)
 
     if site is None:
         site = params.get('openid.return_to')
     site = site.split('?')[0]  # XXX
-    log.debug("[check_authentication] site: %r" % site)
     handle = params.get('openid.assoc_handle')
-    log.debug("[check_authentication] handle: %r" % handle)
     result = ['openid_mode:id_res\n']
 
     ret = storage.check_auth(handle, site)
-    log.debug("[check_authentication] checking if site is in handle: %r" % ret)
 
-    #result.append('is_valid:true\n')
     if ret:
         result.append('is_valid:true\n')
         storage.del_association(handle)
     else:
         result.append('is_valid:false\n')
-    log.debug("[check_authentication] RESULT: %r" % result)
     return ''.join(result)
 
 
 def create_association(storage, expires_in=3600, **params):
     """
     """
-    log.debug("[create_association]")
     assoc_type = params['openid.assoc_type']
     session_type = params['openid.session_type']
 

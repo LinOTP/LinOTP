@@ -78,8 +78,6 @@ class OcraController(BaseController):
         Here we see, what action is to be called and check the authorization
         '''
 
-        log.debug("[__before__::%r] %r" % (action, params))
-
         try:
 
             c.audit = request_context['audit']
@@ -104,8 +102,6 @@ class OcraController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
     def __after__(self):
         c.audit['administrator'] = getUserFromRequest(request).get("login")
@@ -196,13 +192,11 @@ class OcraController(BaseController):
             if len(tokens) > 1 :
                 error = ('More than one token found: unable to create challenge '
                         'for (u:%r,s:%r)!' % (user, serial))
-                log.error(error)
                 raise Exception(error)
 
             if len(tokens) == 0:
                 error = ('No token found: unable to create challenge for'
                           ' (u:%r,s:%r)!' % (user, serial))
-                log.error(error)
                 raise Exception(error)
 
             ocra = tokens[0]
@@ -251,7 +245,6 @@ class OcraController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[request] done")
 
 
 
@@ -362,7 +355,6 @@ class OcraController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[check_t] done")
 
 
     '''
@@ -510,7 +502,6 @@ class OcraController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[ocra/checkstatus] done')
 
 
     def getActivationCode(self):
@@ -558,7 +549,6 @@ class OcraController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[getActivationCode] done')
 
 
     def calculateOtp(self):
@@ -702,7 +692,6 @@ class OcraController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[ocra/calculateOtp] done')
 
 
 #eof###########################################################################
