@@ -27,7 +27,7 @@
 """
 manage controller - In provides the web gui management interface
 """
-
+import base64
 import os
 
 try:
@@ -73,8 +73,6 @@ from linotp.lib.policy.definitions import getPolicyDefinitions
 
 from linotp.lib.context import request_context
 
-
-
 from pylons.i18n.translation import _
 
 audit = config.get('audit')
@@ -104,6 +102,8 @@ class ManageController(BaseController):
             c.audit['client'] = get_client(request)
 
             c.version = get_version()
+            c.version_ref = base64.encodestring(c.version)[:6]
+
             c.licenseinfo = get_copyright_info()
             c.polDefs = getPolicyDefinitions()
 
