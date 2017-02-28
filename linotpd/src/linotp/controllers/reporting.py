@@ -70,7 +70,6 @@ class ReportingController(BaseController):
         """
         """
         try:
-            log.debug('[__before__::%r] %r', action, params)
 
             c.audit = request_context['audit']
             c.audit['success'] = False
@@ -91,8 +90,6 @@ class ReportingController(BaseController):
             Session.close()
             return sendError(response, exception, context='before')
 
-        finally:
-            log.debug('[__before__::%r] done', action)
 
     def __after__(self, action):
         """
@@ -113,7 +110,6 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[__after__] done')
 
     def maximum(self):
         """
@@ -180,7 +176,6 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[maximum] done')
 
     def delete_all(self):
         """
@@ -244,7 +239,6 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[delete_all] done')
 
     def delete_before(self):
         """
@@ -318,7 +312,6 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[tokens] done')
 
     def show(self):
         """
@@ -418,4 +411,3 @@ class ReportingController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')

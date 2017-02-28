@@ -54,8 +54,6 @@ class AuthController(BaseController):
 
     def __before__(self, action,):
 
-        log.debug("[__before__]")
-
         try:
 
             c.version = get_version()
@@ -66,9 +64,6 @@ class AuthController(BaseController):
             Session.rollback()
             Session.close()
             return sendError(response, exx, context='before')
-
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
     def index(self):
         '''

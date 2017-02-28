@@ -71,7 +71,6 @@ class MigrateController(BaseController):
         :return: return response
         :rtype:  pylon response
         '''
-        log.debug("[__before__::%r] %r" % (action, params))
         try:
 
             return response
@@ -82,8 +81,6 @@ class MigrateController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-        finally:
-            log.debug("[__before__::%r] done" % (action))
 
     def __after__(self):
         '''
@@ -102,7 +99,6 @@ class MigrateController(BaseController):
 
         finally:
             Session.close()
-            log.debug("[__after__] done")
 
     def backup(self):
         """
@@ -176,7 +172,7 @@ class MigrateController(BaseController):
             return sendError(response, e)
 
         finally:
-            log.debug("[show] done")
+            Session.close()
 
     def restore(self):
         """
@@ -303,6 +299,5 @@ class MigrateController(BaseController):
                 if not missing_param and not decryption_error:
                     os.remove(backup_file)
             Session.close()
-            log.debug("[restore] done")
 
 #eof###########################################################################

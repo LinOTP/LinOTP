@@ -297,9 +297,6 @@ class UserserviceController(BaseController):
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             raise acc
 
-        finally:
-            log.debug("%s done" % action)
-
 ###############################################################################
 # authentication hooks
 
@@ -432,7 +429,6 @@ class UserserviceController(BaseController):
                                                                       user)
                     if auto_enroll_return is False:
                         error = ("autoenroll: %r" % reply.get('error', ''))
-                        log.error(error)
                         raise Exception(error)
                     # we always have to return a false, as we have
                     # a challenge tiggered
@@ -473,7 +469,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
 ###############################################################################
 # context setup functionsa
@@ -498,7 +493,6 @@ class UserserviceController(BaseController):
             return sendError(response, e)
 
         finally:
-            log.debug('done')
             Session.close()
 
     def context(self):
@@ -535,7 +529,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[context] done')
 
     def load_form(self):
         '''
@@ -601,7 +594,7 @@ class UserserviceController(BaseController):
                                                                 (tok, scope))
             log.exception("[load_form] %r" % exx)
             Session.rollback()
-            raise Exception(exx)
+            raise exx
 
         except Exception as exx:
             Session.rollback()
@@ -611,7 +604,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[load_form] done')
 
 # action hooks for the js methods #############################################
     def enable(self):
@@ -667,7 +659,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[enable] done')
 
 ########################################################
     def disable(self):
@@ -723,7 +714,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
     def delete(self):
         '''
@@ -771,7 +761,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[userdelete] done')
 
     def reset(self):
         '''
@@ -815,7 +804,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
     def unassign(self):
         '''
@@ -865,7 +853,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
     def setpin(self):
         '''
@@ -927,7 +914,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
     def setmpin(self):
         '''
@@ -972,7 +958,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
     def resync(self):
         '''
@@ -1022,7 +1007,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
     def assign(self):
         '''
@@ -1081,7 +1065,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[userassign] done')
 
     def getSerialByOtp(self):
         '''
@@ -1145,7 +1128,6 @@ class UserserviceController(BaseController):
             return sendError(response, exx, 1)
 
         finally:
-            log.debug('done')
             Session.close()
 
     def enroll(self):
@@ -1235,7 +1217,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[userinit] done')
 
     def webprovision(self):
         '''
@@ -1403,7 +1384,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[userwebprovision] done')
 
     def getmultiotp(self):
         '''
@@ -1420,7 +1400,6 @@ class UserserviceController(BaseController):
         returns:
             JSON response
         '''
-        log.debug("[usergetmultiotp] calling function")
 
         getotp_active = config.get("linotpGetotp.active")
         if "True" != getotp_active:
@@ -1480,7 +1459,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[usergetmultiotp] done')
 
     def history(self):
         '''
@@ -1546,7 +1524,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.error("[search] done")
 
     def activateocratoken(self):
         '''
@@ -1569,7 +1546,6 @@ class UserserviceController(BaseController):
                         'serial' :  serial,
                     }  }
         '''
-        log.debug("calling function activateocratoken")
         param = {}
         ret = {}
 
@@ -1649,7 +1625,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
     def finshocratoken(self):
         '''
@@ -1669,7 +1644,6 @@ class UserserviceController(BaseController):
 
         '''
 
-        log.debug("calling function finshocratoken")
         param = request.params
 
         try:
@@ -1691,21 +1665,18 @@ class UserserviceController(BaseController):
             if ocraChallenge is None:
                 error = ('[userfinshocratoken] No challenge for transaction'
                             ' %s found' % unicode(transid))
-                log.error(error)
                 raise Exception(error)
 
             serial = ocraChallenge.tokenserial
             if serial != p_serial:
                 error = ('[userfinshocratoken] token mismatch for token '
                       'serial: %s - %s' % (unicode(serial), unicode(p_serial)))
-                log.error(error)
                 raise Exception(error)
 
             tokens = getTokens4UserOrSerial(serial=serial)
             if len(tokens) == 0 or len(tokens) > 1:
                 error = ('[userfinshocratoken] no token found for '
                          'serial: %s' % (unicode(serial)))
-                log.error(error)
                 raise Exception(error)
 
             theToken = tokens[0]
@@ -1752,7 +1723,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('done')
 
 # #--
     def finshocra2token(self):
@@ -1773,7 +1743,6 @@ class UserserviceController(BaseController):
 
         '''
 
-        log.debug("calling function finshocra2token")
         param = {}
         param.update(request.params)
         if 'session' in param:
@@ -1826,7 +1795,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[userfinshocra2token] done')
 
     def token_call(self):
         '''
@@ -1916,7 +1884,6 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[token_call] done')
 
 
 #eof##########################################################################

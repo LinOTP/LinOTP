@@ -109,7 +109,6 @@ def getTokenForUser(user):
     """
     tokenArray = []
 
-    log.debug("[getTokenForUser] iterating tokens for user...")
     log.debug("[getTokenForUser] ...user %s in realm %s." %
               (user.login, user.realm))
     tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False)
@@ -236,7 +235,6 @@ class SelfserviceController(BaseController):
         except webob.exc.HTTPUnauthorized as acc:
             # the exception, when an abort() is called if forwarded
             log.info("[__before__::%r] webob.exception %r" % (action, acc))
-            log.info("[__before__] %s" % traceback.format_exc())
             Session.rollback()
             Session.close()
             raise acc
@@ -246,9 +244,6 @@ class SelfserviceController(BaseController):
             Session.rollback()
             Session.close()
             return sendError(response, e, context='before')
-
-        finally:
-            log.debug('[__after__] done')
 
     def __after__(self, action,):
         '''
@@ -302,8 +297,6 @@ class SelfserviceController(BaseController):
             Session.close()
             return sendError(response, e, context='after')
 
-        finally:
-            log.debug('[__after__] done')
 
     def index(self):
         '''
@@ -361,11 +354,10 @@ class SelfserviceController(BaseController):
             return res
 
         except CompileException as exx:
-            log.exception("[load_form] compile error while processing %r.%r:" %
-                          (tok, scope))
-            log.error("[load_form] %r" % exx)
+            log.exception("[load_form] compile error while processing %r.%r:"
+                          "Exeption was %r" % (tok, scope, exx))
             Session.rollback()
-            raise Exception(exx)
+            raise exx
 
         except Exception as exx:
             Session.rollback()
@@ -376,7 +368,6 @@ class SelfserviceController(BaseController):
 
         finally:
             Session.close()
-            log.debug('[load_form] done')
 
     def custom_style(self):
         '''
@@ -486,9 +477,6 @@ class SelfserviceController(BaseController):
             log.exception(
                 "[webprovisiongoogletoken] failed with error: %r" % exx)
             return sendError(response, exx)
-
-        finally:
-            log.debug('[webprovisiongoogletoken] done')
 
     def usertokenlist(self):
         '''
