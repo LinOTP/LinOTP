@@ -270,6 +270,147 @@ function create_tools_exportaudit_dialog() {
     return $dialog;
 }
 
+function create_tools_importusers_dialog() {
+    return $('#dialog_import_users').dialog({
+        autoOpen: true,
+        title: i18n.gettext("Import Users"),
+        width: 750,
+        modal: true,
+        buttons: {
+            'close': {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_import_users_close",
+                text:i18n.gettext("Cancel")
+            },
+            'import': {
+                click:  function(){
+                    if($('#form_import_users').valid()) {
+                        $('#form_import_users').ajaxSubmit({
+                            success: tools_dryrun_callback,
+                            error: tools_dryrun_callback
+                        });
+                    }
+
+                },
+                id: "button_import_users",
+                text: i18n.gettext("Import")
+            }
+        },
+        create: function(){
+            do_dialog_icons();
+            $('#import_users_create_resolver').click(function() {
+                $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='res_name' placeholder='"+i18n.gettext("Resolver name")+"' type='text' autofocus></form></div>").dialog({
+                    modal: true,
+                    title: i18n.gettext("Create a new resolver"),
+                    buttons: [
+                        {
+                            text: i18n.gettext("Cancel"),
+                            click: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        },
+                        {
+                            text: i18n.gettext("Create"),
+                            click: function() {
+                                if($("form", this).valid()) {
+                                    var name = $("input", this).val();
+                                    $("#import_users_resolver").append('<option val="' + name + '">' + name + '</option>');
+                                    $("#import_users_resolver").val(name);
+                                    $( this ).dialog( "close" );
+                                }
+                            }
+                        }
+                    ],
+                    create: function() {
+                        if($('#import_users_file').val()) {
+                            var resolver = $('#import_users_file').val().split('\\').pop().split(".")[0];
+                            $("input", this).val(resolver);
+                        }
+                        g.current_resolver_name = "";
+                        $("form", this).validate({
+                            debug: true,
+                            rules: {
+                                "res_name": {
+                                    required: true,
+                                    minlength: 4,
+                                    resolvername: true,
+                                    unique_resolver_name: true
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            $('#import_users_create_realm').click(function() {
+                $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='realm_name' placeholder='"+i18n.gettext("Realm name")+"' type='text' autofocus></form></div>").dialog({
+                    modal: true,
+                    title: i18n.gettext("Create a new realm"),
+                    buttons: [
+                        {
+                            text: i18n.gettext("Cancel"),
+                            click: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        },
+                        {
+                            text: i18n.gettext("Create"),
+                            click: function() {
+                                if($("form", this).valid()) {
+                                    var name = $("input", this).val();
+                                    $("#import_users_targetrealm").append('<option val="' + name + '">' + name + '</option>');
+                                    $("#import_users_targetrealm").val(name);
+                                    $( this ).dialog( "close" );
+                                }
+                            }
+                        }
+                    ],
+                    create: function() {
+                        if($('#import_users_file').val()) {
+                            var realm = $('#import_users_file').val().split('\\').pop().split(".")[0];
+                            $("input", this).val(realm);
+                        }
+                        $("form", this).validate({
+                            debug: true,
+                            rules: {
+                                "realm_name": {
+                                    required: true,
+                                    minlength: 4,
+                                    realmname: true,
+                                    unique_realm_name: true
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        },
+        open: function() {
+            show_waiting();
+            $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
+                var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
+                for(var res in data.result.value) {
+                    resolvers += '<option value="' + res + '">' + res + '</option>';
+                }
+                $('#import_users_resolver').html(resolvers);
+
+                $.post('/system/getRealms', {'session':getsession()}, function(data, status, XMLHttpRequest){
+                    var realms = '<option value="" disabled selected>[' + i18n.gettext("Select realm") + ']</option>';
+                    for(var realm in data.result.value) {
+                        realms += '<option value="' + realm + '">' + realm + '</option>';
+                    }
+                    $('#import_users_targetrealm').html(realms);
+                    hide_waiting();
+                });
+            });
+        }
+    });
+}
+
+function tools_dryrun_callback(response, status) {
+}
+
 function add_user_data() {
     /*
      * This function returns an object with the user data as needed by the /admin/init controller

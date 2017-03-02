@@ -141,11 +141,18 @@ jQuery.validator.addMethod("realmname", function(value, element, param){
 jQuery.validator.addMethod("unique_resolver_name", function(value, element, param){
         if(g.current_resolver_name !== value) {
             var resolvers = get_resolvers();
-            return $.inArray(value, resolvers) === -1
+            return $.inArray(value, resolvers) === -1;
         }
         return true;
     },
     i18n.gettext("Resolver name is already in use")
+);
+
+jQuery.validator.addMethod("unique_realm_name", function(value, element, param){
+    var realms = get_realms();
+    return $.inArray(value, realms) === -1;
+    },
+    i18n.gettext("Realm name is already in use")
 );
 
 jQuery.validator.addMethod("resolvername", function(value, element, param){
@@ -1806,6 +1813,11 @@ function do_dialog_icons(){
     $('.ui-dialog-buttonpane').find('button:contains("Duplicate")').button({
         icons: {
             primary: 'ui-icon-extlink'
+        }
+    });
+    $('.ui-dialog-buttonpane').find('button:contains("Import")').button({
+        icons: {
+            primary: 'ui-icon-play'
         }
     });
 }
@@ -4651,17 +4663,22 @@ $(document).ready(function(){
         $('#cp_policy').html("");
     });
 
-    $dialog_tools_exporttoken = create_tools_exporttoken_dialog();
+    var $dialog_tools_exporttoken = create_tools_exporttoken_dialog();
     $('#menu_tools_exporttoken').click(function(){
         $dialog_tools_exporttoken.dialog('open');
     });
 
-    $dialog_tools_exportaudit = create_tools_exportaudit_dialog();
+    var $dialog_tools_exportaudit = create_tools_exportaudit_dialog();
     $('#menu_tools_exportaudit').click(function(){
         $dialog_tools_exportaudit.dialog('open');
     });
 
-    $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
+    var $dialog_tools_importusers = create_tools_importusers_dialog();
+    $('#menu_tools_importusers').click(function(){
+        $dialog_tools_importusers.dialog('open');
+    });
+
+    var $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
     $('#menu_tools_migrateresolver').click(function(){
         //_fill_realms($('#tools_getserial_realm'),1)
         _fill_resolvers($('#copy_to_resolver'))
