@@ -36,6 +36,7 @@ from pylons import tmpl_context as c
 from linotp.lib.base import BaseController
 from linotp.lib.reply import sendError
 from linotp.lib.reply import sendResult
+from linotp.lib.error import ParameterError
 
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy import checkToolsAuthorisation
@@ -158,9 +159,21 @@ class ToolsController(BaseController):
             params = {}
             params.update(request.POST)
 
-            # argument processing
+            # -------------------------------------------------------------- --
+            # processing required arguments
+            try:
 
-            data_file = request.POST['file']
+                data_file = request.POST['file']
+                groupid = params['groupid']
+                resolver_name = params['resolver']
+
+            except KeyError as exx:
+
+                log.exception("Missing parameter: %r", exx)
+                raise ParameterError("Missing parameter: %r" % exx)
+
+            # process file upload data
+
             data = data_file
 
             # -- ----------------------------------------------------------- --
@@ -173,10 +186,11 @@ class ToolsController(BaseController):
             if isinstance(data_file, FieldStorage):
                 data = data_file.value
 
-            groupid = params['groupid']
-            resolver_name = params['resolver']
+            # -------------------------------------------------------------- --
 
-            dryrun = str(params.get('dryrun', True)).lower() == "true"
+            # process the other arguments
+
+            dryrun = boolean(params.get('dryrun', False))
 
             file_format = params.get('format', "csv")
 
@@ -195,6 +209,10 @@ class ToolsController(BaseController):
                 format_reader = PasswdFormatReader()
 
             elif file_format in ('csv'):
+
+                skip_header = boolean(params.get('skip_header', False))
+                if skip_header:
+                    data = '\n'.join(data.split('\n')[1:])
 
                 column_mapping = {
                         "username": 0,
@@ -216,6 +234,7 @@ class ToolsController(BaseController):
                 column_mapping = params.get('column_mapping', column_mapping)
 
             else:
+
                 raise Exception('unspecified file foramt')
 
             # we have to convert the column_mapping back into an dict
@@ -224,26 +243,30 @@ class ToolsController(BaseController):
                 isinstance(column_mapping, unicode)):
                 column_mapping = json.loads(column_mapping)
 
-            skip_header = boolean(params.get('skip_header', False))
-            if skip_header:
-                data = '\n'.join(data.split('\n')[1:])
-
             # -------------------------------------------------------------- --
 
-            # feed the engine
+            # feed the engine :)
+
+            # use a LinOTP Database context for Sessions and Engine
 
             db_context = LinOTP_DatabaseContext(
                                         SqlSession=Session,
                                         SqlEngine=linotp.model.meta.engine)
+
+            # define the import into an SQL database + resolver
 
             import_handler = SQLImportHandler(
                                         groupid=groupid,
                                         resolver_name=resolver_name,
                                         database_context=db_context)
 
+            # create the UserImporter with the required mapping
+
             user_import = UserImport(import_handler)
 
             user_import.set_mapping(column_mapping)
+
+            # and run the data processing
 
             result = user_import.import_csv_users(
                                         data,
@@ -256,7 +279,7 @@ class ToolsController(BaseController):
 
         except PolicyException as pexx:
 
-            log.exception("Error during user import: %r" % pexx)
+            log.exception("Error during user import: %r", pexx)
 
             Session.rollback()
 

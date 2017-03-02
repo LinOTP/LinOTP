@@ -60,6 +60,13 @@ from sqlalchemy.exc import ProgrammingError
 
 from linotp.tests import TestController
 
+# for drop Table we require some sql
+
+from sqlalchemy.engine import create_engine
+from sqlalchemy import sql
+from sqlalchemy.exc import ProgrammingError
+
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
@@ -70,8 +77,11 @@ class TestImportUser(TestController):
     resolver_name = "user_import"
 
     def setUp(self):
+
+        self.delete_all_policies()
         self.deleteResolver(self.resolver_name)
         self.dropTable()
+
         TestController.setUp(self)
 
     def dropTable(self):
@@ -103,7 +113,7 @@ class TestImportUser(TestController):
 
         params = {"resolver": resolver_name}
         resp = self.make_system_request('delResolver', params)
-        assert('"status": true' in resp)
+        self.assertTrue('"status": true' in resp)
 
     def delete_users(self, groupid):
         """
@@ -338,6 +348,51 @@ class TestImportUser(TestController):
         img = jresp.get('detail', {}).get('googleurl', {}).get('img', '')
 
         self.assertTrue("data:image" in img, response)
+
+        return
+
+    def test_import_user_policy(self):
+        """
+        check that import users is policy protected
+        """
+
+        policy = {'name': 'user_import',
+                  'action': 'import_users',
+                  'user': 'hans',
+                  'realm': 'IMPO',
+                  'scope': 'tools', }
+
+        response = self.make_system_request('setPolicy', params=policy)
+
+        self.assertTrue('"status": true' in response)
+
+        content = ""
+        upload_files = [("file", "user_list", content)]
+        params = {'groupid': self.group_id,
+                  'resolver': 'user_import',
+                  'dryrun': False,
+                  'format': 'password',
+                  'delimiter': ',',
+                  'quotechar': '"',
+                  }
+
+        msg = ("You do not have the administrative right to manage tools."
+               " You are missing a policy scope=tools, action=import_users")
+
+        response = self.make_tools_request(action='import_users',
+                                           params=params,
+                                           upload_files=upload_files,)
+
+        self.assertTrue(msg in response, response)
+
+        response = self.make_tools_request(action='import_users',
+                                           params=params,
+                                           upload_files=upload_files,
+                                           auth_user='hans')
+
+        self.assertFalse(msg in response, response)
+        self.assertTrue('"updated": 0' in response, response)
+        self.assertTrue('"created": 0' in response, response)
 
         return
 
