@@ -133,7 +133,7 @@ $.validator.addMethod('valid_json', function (value, element, param) {
 );
 
 jQuery.validator.addMethod("realmname", function(value, element, param){
-    return value.match(/^[a-zA-z0-9_\-\.]+$/i);
+    return value.match(/^[a-zA-Z0-9_\-\.]+$/i);
     },
     i18n.gettext("Please enter a valid realm name. It may contain characters, numbers and '_-.'.")
 );
@@ -156,13 +156,13 @@ jQuery.validator.addMethod("unique_realm_name", function(value, element, param){
 );
 
 jQuery.validator.addMethod("resolvername", function(value, element, param){
-    return value.match(/^[a-zA-z0-9_\-]+$/i);
+    return value.match(/^[a-zA-Z0-9_\-]+$/i);
     },
     i18n.gettext("Please enter a valid resolver name. It may contain characters, numbers and '_-'.")
 );
 
 jQuery.validator.addMethod("providername", function(value, element, param){
-    return value.match(/^[a-zA-z0-9_\-]+$/i);
+    return value.match(/^[a-zA-Z0-9_\-]+$/i);
     },
     i18n.gettext("Please enter a valid provider name. It may contain characters, numbers and '_-'.")
 );
