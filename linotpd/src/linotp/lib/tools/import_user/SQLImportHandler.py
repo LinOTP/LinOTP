@@ -170,7 +170,7 @@ class SQLImportHandler(ImportHandler):
         for entry in SQLImportHandler.User.user_entries:
             mapping[entry] = entry
 
-        where = '"%s"."groupid" = \'%s\'' % (self.table_name, self.groupid)
+        where = "groupid = '%s'" % self.groupid
 
         resolver_parameters = {
             "Driver": url.drivername,
@@ -373,6 +373,10 @@ class SQLImportHandler(ImportHandler):
 
         givenname = schema.Column(types.Unicode(100),
                                   default=u'')
+
+        password = schema.Column(types.Unicode(255),
+                                 default=u'',
+                                 index=True)
 
         user_entries = [
             "userid", "username", "phone", "mobile", "email", "surname",

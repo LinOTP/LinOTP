@@ -42,7 +42,7 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.type_utils import get_duration
 from linotp.lib.type_utils import boolean
 
-from linotp.lib.crypt import decryptPassword
+from linotp.lib.crypt import encryptPassword
 
 
 __all__ = ['defineResolver', 'parse_resolver_spec',
@@ -324,13 +324,9 @@ def getResolverInfo(resolvername, passwords=False):
             continue
 
         # should passwords be displayed?
-
-        if passwords and key in resolver_cls.crypted_parameters:
-            try:
-                res_conf[key] = decryptPassword(res_conf[key])
-            except Exception as exc:
-                log.exception("Decryption of resolver entry "
-                              "failed: %r", exc)
+        if key in resolver_cls.crypted_parameters:
+            if not passwords:
+                res_conf[key] = encryptPassword(res_conf[key])
 
         # as we have in the resolver config typed values, this might
         # lead to some trouble. so we prepare for output comparison

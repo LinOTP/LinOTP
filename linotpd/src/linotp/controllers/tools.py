@@ -27,7 +27,7 @@
 """
 tools controller
 """
-
+import json
 from cgi import FieldStorage
 
 from pylons import request, response
@@ -48,6 +48,7 @@ from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
 from linotp.lib.tools.import_user import DefaultFormatReader
 from linotp.lib.tools.import_user import PasswdFormatReader
 
+from linotp.lib.type_utils import boolean
 
 import logging
 
@@ -159,18 +160,8 @@ class ToolsController(BaseController):
 
             # argument processing
 
-            user_column_map = {
-                    "userid": 2,
-                    "username": 0,
-                    "phone": 8,
-                    "mobile": 7,
-                    "email": 9,
-                    "surname": 5,
-                    "givenname": 4,
-                    "password": 1}
-
-            csv_file = request.POST['file']
-            csv_data = csv_file
+            data_file = request.POST['file']
+            data = data_file
 
             # -- ----------------------------------------------------------- --
             # In case of form post requests, it is a "instance" of FieldStorage
@@ -179,25 +170,63 @@ class ToolsController(BaseController):
             #     see: http://jquery.malsup.com/form/#sample4
             # -- ----------------------------------------------------------- --
 
-            if isinstance(csv_file, FieldStorage):
-                csv_data = csv_file.value
+            if isinstance(data_file, FieldStorage):
+                data = data_file.value
 
             groupid = params['groupid']
             resolver_name = params['resolver']
 
-            column_mapping = params.get('column_mapping', user_column_map)
             dryrun = str(params.get('dryrun', True)).lower() == "true"
 
-            file_format = params.get('format', "")
-            column_separator = params.get('column_separator', ",")
-            text_delimiter = params.get('text_delimiter', '"')
+            file_format = params.get('format', "csv")
 
             if file_format in ('password', 'passwd'):
+
+                column_mapping = {
+                        "userid": 2,
+                        "username": 0,
+                        "phone": 8,
+                        "mobile": 7,
+                        "email": 9,
+                        "surname": 5,
+                        "givenname": 4,
+                        "password": 1}
+
                 format_reader = PasswdFormatReader()
-            else:
+
+            elif file_format in ('csv'):
+
+                column_mapping = {
+                        "username": 0,
+                        "userid": 1,
+                        "surname": 2,
+                        "givenname": 3,
+                        "email": 4,
+                        "phone": 5,
+                        "mobile": 6,
+                        "password": 7}
+
+                delimiter = str(params.get('delimiter', ","))
+                quotechar = str(params.get('quotechar', '"'))
+
                 format_reader = DefaultFormatReader()
-                format_reader.seperator = column_separator
-                format_reader.delimiter = text_delimiter
+                format_reader.delimiter = delimiter
+                format_reader.quotechar = quotechar
+
+                column_mapping = params.get('column_mapping', column_mapping)
+
+            else:
+                raise Exception('unspecified file foramt')
+
+            # we have to convert the column_mapping back into an dict
+
+            if (isinstance(column_mapping, str) or
+                isinstance(column_mapping, unicode)):
+                column_mapping = json.loads(column_mapping)
+
+            skip_header = boolean(params.get('skip_header', False))
+            if skip_header:
+                data = '\n'.join(data.split('\n')[1:])
 
             # -------------------------------------------------------------- --
 
@@ -217,7 +246,7 @@ class ToolsController(BaseController):
             user_import.set_mapping(column_mapping)
 
             result = user_import.import_csv_users(
-                                        csv_data,
+                                        data,
                                         dryrun=dryrun,
                                         format_reader=format_reader)
 

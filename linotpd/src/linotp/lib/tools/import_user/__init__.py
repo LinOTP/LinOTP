@@ -48,7 +48,7 @@ class FormatReader(object):
 class DefaultFormatReader(FormatReader):
 
     delimiter = ','
-    seperator = '"'
+    quotechar = '"'
 
     @classmethod
     def prepare_row(cls, row):
@@ -58,7 +58,7 @@ class DefaultFormatReader(FormatReader):
 class PasswdFormatReader(FormatReader):
 
     delimiter = ':'
-    seperator = '"'
+    quotechar = '"'
 
     @classmethod
     def prepare_row(cls, row):
@@ -115,7 +115,8 @@ class UserImport(object):
         """
 
         reader = csv.reader(csv_data.split('\n'),
-                            delimiter=format_reader.delimiter)
+                            delimiter=format_reader.delimiter,
+                            quotechar=format_reader.quotechar)
 
         for row in reader:
 
