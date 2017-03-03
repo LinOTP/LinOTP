@@ -478,6 +478,9 @@ function import_users_callback(response, status) {
             'is_escaped': false});
         return;
     }
+
+    fill_realms();
+
     alert_box({'title': i18n.gettext('Import successful'),
         'text': i18n.gettext('The resolver ' + $('#import_users_resolver').val() + ' was successfully updated.'),
         'is_escaped': false});
