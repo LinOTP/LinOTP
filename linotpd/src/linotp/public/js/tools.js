@@ -424,6 +424,9 @@ function create_tools_importusers_dialog() {
         open: function() {
             show_waiting();
             $('#import_users_dryrun').val("true");
+            $('#import_users_file').val("");
+            $('#import_users_resolver').val("");
+            $('#import_users_targetrealm').val("");
 
             //prefill resolver and realm selects
             $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
