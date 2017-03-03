@@ -151,6 +151,7 @@ h2 {
 table.data-table {
   border-collapse: collapse!important;
   margin: 0 auto!important;
+  width: 100%;
 }
 
 table.data-table, table.data-table th, table.data-table td {
@@ -159,4 +160,12 @@ table.data-table, table.data-table th, table.data-table td {
 
 table.data-table td {
   padding: 5px!important;
+}
+
+table.data-table tr:nth-child(even) {
+  background: whitesmoke;
+}
+
+table.data-table tr:nth-child(odd) {
+  background: white;
 }

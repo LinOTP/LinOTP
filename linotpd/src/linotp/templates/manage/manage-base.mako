@@ -1225,13 +1225,34 @@ syst></textarea></td>
     <p>${_("The user import from the selected file would result in the \
     following changes. If results are as expected, you have to complete \
     the import by confirming the changes.")}</p>
-    <div id="import_user_dryrun_result_details">
+    <div id="import_user_dryrun_results">
         <h3>${_("Summary")}</h3>
         <div>
             <ul class="summary"></ul>
         </div>
         <h3>${_("Details")}</h3>
-        <div></div>
+        <div id="import_user_dryrun_result_details">
+            <div class="detail-tabs">
+                <ul>
+                    <li><a href="#import_user_dryrun_result_d_new">New</a></li>
+                    <li><a href="#import_user_dryrun_result_d_mod">Modified</a></li>
+                    <li><a href="#import_user_dryrun_result_d_del">Deleted</a></li>
+                    <li><a href="#import_user_dryrun_result_d_unchanged">Unchanged</a></li>
+                </ul>
+                <div id="import_user_dryrun_result_d_new">
+                    <table class="data-table"></table>
+                </div>
+                <div id="import_user_dryrun_result_d_mod">
+                    <table class="data-table"></table>
+                </div>
+                <div id="import_user_dryrun_result_d_del">
+                    <table class="data-table"></table>
+                </div>
+                <div id="import_user_dryrun_result_d_unchanged">
+                    <table class="data-table"></table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

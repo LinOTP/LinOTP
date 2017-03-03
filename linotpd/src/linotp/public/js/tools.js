@@ -301,9 +301,12 @@ function create_tools_importusers_dialog() {
             do_dialog_icons();
         },
         open: function() {
-            $('#import_user_dryrun_result_details').accordion({
+            $('#import_user_dryrun_results').accordion({
                 active:0,
                 heightStyle: "fill"
+            });
+            $( "#import_user_dryrun_result_details .detail-tabs" ).tabs({
+              active: 0
             });
         }
     });
@@ -516,11 +519,52 @@ function import_users_dryrun_callback(response, status) {
             + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>"+modified.length+"</b>") + "</li>"
             + "<li>" + sprintf(i18n.gettext('%s users no longer present and will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
             + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>";
-    $('#import_user_dryrun_result_details .summary').html(summary)
+    $('#import_user_dryrun_results .summary').html(summary)
     $('#dialog_import_users_confirm').dialog('open');
 
+    if(created.length > 0) {
+        var tablecontent = "";
+        for(i in created) {
+            tablecontent += "<tr><td>" + created[i] + "</td><td>" + result.created[created[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_new .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_new .data-table').html("<td>" + i18n.gettext("No users will be created!") + "</td>");
+    }
 
-    console.log(response.result.value);
+    if(modified.length > 0) {
+        var tablecontent = "";
+        for(i in modified) {
+            tablecontent += "<tr><td>" + modified[i] + "</td><td>" + result.modified[modified[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_mod .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_mod .data-table').html("<td>" + i18n.gettext("No existing users will be modified!") + "</td>");
+    }
+
+    if(deleted.length > 0) {
+        var tablecontent = "";
+        for(i in deleted) {
+            tablecontent += "<tr><td>" + deleted[i] + "</td><td>" + result.deleted[deleted[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_del .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_del .data-table').html("<td>" + i18n.gettext("No users will be deleted!") + "</td>");
+    }
+
+    if(unchanged.length > 0) {
+        var tablecontent = "";
+        for(i in unchanged) {
+            tablecontent += "<tr><td>" + unchanged[i] + "</td><td>" + result.updated[unchanged[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_unchanged .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_unchanged .data-table').html("<td>" + i18n.gettext("No user stays unchanged!") + "</td>");
+    }
 }
 
 function add_user_data() {

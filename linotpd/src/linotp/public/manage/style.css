@@ -701,3 +701,11 @@ form .input_hint {
 span.managed-tag {
     color: grey;
 }
+
+#import_user_dryrun_result_details {
+	padding: 0;
+}
+
+#import_user_dryrun_result_details .detail-tabs {
+	border-radius: 0;
+}
