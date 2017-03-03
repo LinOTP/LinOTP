@@ -432,7 +432,9 @@ function create_tools_importusers_dialog() {
             $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
                 var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
                 for(var res in data.result.value) {
-                    resolvers += '<option value="' + res + '">' + res + '</option>';
+                    if(data.result.value[res].readonly === true) {
+                        resolvers += '<option value="' + res + '">' + res + '</option>';
+                    }
                 }
                 $('#import_users_resolver').html(resolvers);
 
