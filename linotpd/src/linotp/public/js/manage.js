@@ -3280,7 +3280,11 @@ function resolvers_load(){
         for (var key in data.result.value) {
             var e_key = escape(key);
             var e_reolver_type = escape(data.result.value[key].type);
-            resolvers += '<li class="ui-widget-content">' + e_key + ' [' + e_reolver_type + ']</li>';
+            var managed = escape(data.result.value[key].readonly);
+            resolvers += '<li class="ui-widget-content' + (managed? " managed" : "") + '">' + e_key
+                    + ' [' + e_reolver_type + ']'
+                    + (managed ? '<span class="managed-tag"> '+i18n.gettext("managed")+'</span>' : '')
+                    + '</li>';
             count = count +1 ;
         }
         resolvers += '</ol>';
@@ -3295,16 +3299,23 @@ function resolvers_load(){
 
             $('#resolvers_select').selectable({
                 stop: function(){
-                    if($("#resolvers_select .ui-selected").length > 0){
-                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected").html());
+                    if($("#resolvers_select .ui-selected:not(.managed)").length > 0){
                         $("#button_resolver_edit").button("enable");
                         $("#button_resolver_duplicate").button("enable");
                         $("#button_resolver_delete").button("enable");
                     }
                     else{
-                        g.resolver_to_edit = null;
                         $("#button_resolver_edit").button("disable");
                         $("#button_resolver_duplicate").button("disable");
+                        $("#button_resolver_delete").button("disable");
+                    }
+
+                    if($("#resolvers_select .ui-selected").length > 0){
+                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected").clone().children().remove().end().text());
+                        $("#button_resolver_delete").button("enable");
+                    }
+                    else{
+                        g.resolver_to_edit = null;
                         $("#button_resolver_delete").button("disable");
                     }
                 },

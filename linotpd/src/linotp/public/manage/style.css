@@ -697,3 +697,7 @@ form .input_hint {
 .label-column {
 	width: 180px;
 }
+
+span.managed-tag {
+    color: grey;
+}
