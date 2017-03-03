@@ -193,7 +193,6 @@ class ToolsController(BaseController):
             # -------------------------------------------------------------- --
 
             # process the other arguments
-
             dryrun = boolean(params.get('dryrun', False))
 
             passwords_in_plaintext = boolean(params.get(

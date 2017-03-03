@@ -1217,8 +1217,22 @@ syst></textarea></td>
                 </td>
             </tr>
         </table>
-        <input type="hidden" name="dryrun" value="True">
+        <input type="hidden" id="import_users_dryrun" name="dryrun" value="true">
     </form>
+</div>
+
+<div id="dialog_import_users_confirm">
+    <p>${_("The user import from the selected file would result in the \
+    following changes. If results are as expected, you have to complete \
+    the import by confirming the changes.")}</p>
+    <div id="import_user_dryrun_result_details">
+        <h3>${_("Summary")}</h3>
+        <div>
+            <ul class="summary"></ul>
+        </div>
+        <h3>${_("Details")}</h3>
+        <div></div>
+    </div>
 </div>
 
 <!-- ###################### copy token ####################### -->

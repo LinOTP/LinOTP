@@ -271,33 +271,68 @@ function create_tools_exportaudit_dialog() {
 }
 
 function create_tools_importusers_dialog() {
+    $('#dialog_import_users_confirm').dialog({
+        autoOpen: false,
+        title: i18n.gettext("Confirm changes"),
+        width: 750,
+        height: $(window).height() * .9,
+        modal: true,
+        buttons: [
+            {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_import_users_confirm_cancel",
+                text: i18n.gettext("Cancel")
+            },
+            {
+                click:  function(){
+                    $('#import_users_dryrun').val("false");
+                    $('#form_import_users').ajaxSubmit({
+                        success: import_users_callback,
+                        error: import_users_callback
+                    });
+                },
+                id: "button_import_users_confirm_confirm",
+                text: i18n.gettext("Confirm")
+            }
+        ],
+        create: function(){
+            do_dialog_icons();
+        },
+        open: function() {
+            $('#import_user_dryrun_result_details').accordion({
+                active:0,
+                heightStyle: "fill"
+            });
+        }
+    });
     return $('#dialog_import_users').dialog({
-        autoOpen: true,
+        autoOpen: false,
         title: i18n.gettext("Import Users"),
         width: 750,
         modal: true,
-        buttons: {
-            'close': {
+        buttons: [
+            {
                 click: function(){
                     $(this).dialog('close');
                 },
                 id: "button_import_users_close",
-                text:i18n.gettext("Cancel")
+                text: i18n.gettext("Cancel")
             },
-            'import': {
+            {
                 click:  function(){
                     if($('#form_import_users').valid()) {
                         $('#form_import_users').ajaxSubmit({
-                            success: tools_dryrun_callback,
-                            error: tools_dryrun_callback
+                            success: import_users_dryrun_callback,
+                            error: import_users_dryrun_callback
                         });
                     }
-
                 },
                 id: "button_import_users",
                 text: i18n.gettext("Import")
             }
-        },
+        ],
         create: function(){
             do_dialog_icons();
             $('#import_users_create_resolver').click(function() {
@@ -388,6 +423,9 @@ function create_tools_importusers_dialog() {
         },
         open: function() {
             show_waiting();
+            $('#import_users_dryrun').val("true");
+
+            //prefill resolver and realm selects
             $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
                 var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
                 for(var res in data.result.value) {
@@ -408,7 +446,76 @@ function create_tools_importusers_dialog() {
     });
 }
 
-function tools_dryrun_callback(response, status) {
+function import_users_callback(response, status) {
+    $('#dialog_import_users_confirm').dialog('close');
+    if(!response.result) {
+        alert_box({'title': i18n.gettext('Connection error'),
+            'text': i18n.gettext('Error during import users request.'),
+            'is_escaped': true});
+        return;
+    }
+
+    if(response.result.status !== true) {
+        alert_box({'title': i18n.gettext('LinOTP error ' + response.result.error.code),
+            'text': i18n.gettext('Error during import users request: ' + response.result.error.message),
+            'is_escaped': false});
+        return;
+    }
+    alert_box({'title': i18n.gettext('Import successful'),
+        'text': i18n.gettext('The resolver ' + $('#import_users_resolver').val() + ' was successfully updated.'),
+        'is_escaped': false});
+}
+
+function import_users_dryrun_callback(response, status) {
+    if(!response.result) {
+        alert_box({'title': i18n.gettext('Connection error'),
+            'text': i18n.gettext('Error during import users request.'),
+            'is_escaped': true});
+        return;
+    }
+
+    if(response.result.status !== true) {
+        alert_box({'title': i18n.gettext('LinOTP error ' + response.result.error.code),
+            'text': i18n.gettext('Error during import users request: ' + response.result.error.message),
+            'is_escaped': false});
+        return;
+    }
+
+    $('#dialog_import_users').dialog('close');
+
+    var result = response.result.value;
+    var created = [], modified = [], deleted = [], unchanged = [], k, countTotal;
+
+    for (k in result.created) {
+        if (Object.prototype.hasOwnProperty.call(result.created, k)) {
+            created.push(k);
+        }
+    }
+    for (k in result.modified) {
+        if (Object.prototype.hasOwnProperty.call(result.modified, k)) {
+            modified.push(k);
+        }
+    }
+    for (k in result.deleted) {
+        if (Object.prototype.hasOwnProperty.call(result.deleted, k)) {
+            deleted.push(k);
+        }
+    }
+    for (k in result.updated) {
+        if (Object.prototype.hasOwnProperty.call(result.updated, k)) {
+            unchanged.push(k);
+        }
+    }
+
+    var summary = "<li>" + sprintf(i18n.gettext('%s new users'), "<b>"+created.length+"</b>") + "</li>"
+            + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>"+modified.length+"</b>") + "</li>"
+            + "<li>" + sprintf(i18n.gettext('%s users no longer present and will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
+            + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>";
+    $('#import_user_dryrun_result_details .summary').html(summary)
+    $('#dialog_import_users_confirm').dialog('open');
+
+
+    console.log(response.result.value);
 }
 
 function add_user_data() {
