@@ -287,6 +287,7 @@ function create_tools_importusers_dialog() {
             },
             {
                 click:  function(){
+                    show_waiting();
                     $('#import_users_dryrun').val("false");
                     $('#form_import_users').ajaxSubmit({
                         success: import_users_callback,
@@ -326,6 +327,7 @@ function create_tools_importusers_dialog() {
             {
                 click:  function(){
                     if($('#form_import_users').valid()) {
+                        show_waiting();
                         $('#form_import_users').ajaxSubmit({
                             success: import_users_dryrun_callback,
                             error: import_users_dryrun_callback
@@ -455,6 +457,7 @@ function create_tools_importusers_dialog() {
 }
 
 function import_users_callback(response, status) {
+    hide_waiting();
     $('#dialog_import_users_confirm').dialog('close');
     if(!response.result) {
         alert_box({'title': i18n.gettext('Connection error'),
@@ -475,6 +478,7 @@ function import_users_callback(response, status) {
 }
 
 function import_users_dryrun_callback(response, status) {
+    hide_waiting();
     if(!response.result) {
         alert_box({'title': i18n.gettext('Connection error'),
             'text': i18n.gettext('Error during import users request.'),
@@ -517,7 +521,7 @@ function import_users_dryrun_callback(response, status) {
 
     var summary = "<li>" + sprintf(i18n.gettext('%s new users'), "<b>"+created.length+"</b>") + "</li>"
             + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>"+modified.length+"</b>") + "</li>"
-            + "<li>" + sprintf(i18n.gettext('%s users no longer present and will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
+            + "<li>" + sprintf(i18n.gettext('%s users will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
             + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>";
     $('#import_user_dryrun_results .summary').html(summary)
     $('#dialog_import_users_confirm').dialog('open');
