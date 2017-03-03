@@ -1218,6 +1218,7 @@ syst></textarea></td>
             </tr>
         </table>
         <input type="hidden" id="import_users_dryrun" name="dryrun" value="true">
+        <input type="hidden" id="import_users_session" name="session" value="">
     </form>
 </div>
 

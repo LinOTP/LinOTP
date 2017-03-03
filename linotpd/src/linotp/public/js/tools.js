@@ -288,7 +288,10 @@ function create_tools_importusers_dialog() {
             {
                 click:  function(){
                     show_waiting();
+
                     $('#import_users_dryrun').val("false");
+                    $('#import_users_session').val(getsession());
+
                     $('#form_import_users').ajaxSubmit({
                         success: import_users_callback,
                         error: import_users_callback
@@ -328,6 +331,9 @@ function create_tools_importusers_dialog() {
                 click:  function(){
                     if($('#form_import_users').valid()) {
                         show_waiting();
+
+                        $('#import_users_session').val(getsession());
+
                         $('#form_import_users').ajaxSubmit({
                             success: import_users_dryrun_callback,
                             error: import_users_dryrun_callback
