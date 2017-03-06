@@ -42,12 +42,11 @@ class TestAuth(TestCase):
     def setUp(self):
         TestCase.setUp(self)
         self.realm_name = "se_test_auth"
+        self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
 
     def test_user_filter(self):
-        driver = self.driver
-
         m = ManageUi(self)
         m.open_manage()
-        user_view = UserView(self, self.realm_name)
+        user_view = UserView(m, self.realm_name)
         username = "susi"
         user_view.select_user(username)

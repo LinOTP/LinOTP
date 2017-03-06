@@ -55,13 +55,14 @@ class TestEmailToken(TestCase):
 
         self.email_token_pin = "1234"
 
-        self.token_view = TokenView(self)
+        self.token_view = self.manage_ui.token_view
         self.token_view.delete_all_tokens()
 
     def enroll_email_token(self):
 
         # Enroll e-mail token
-        user_view = UserView(self, self.realm_name)
+        user_view = self.manage_ui.user_view
+        user_view.select_realm(self.realm_name)
         user_view.select_user(self.username)
         description = "Rolled out by Selenium"
         expected_email_address = self.email_recipient

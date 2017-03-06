@@ -25,15 +25,11 @@
 #
 
 
-import time
-
 import requests
 from requests.auth import HTTPDigestAuth
 
 from linotpadminclientcli.clientutils import linotpclient
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.user_view import UserView
-from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.validate import Validate
 
 import integration_data as data
@@ -55,9 +51,11 @@ class TestYubikey(TestCase):
 
         self.reset_resolvers_and_realms(data.physics_ldap_resolver, self.realm_name)
 
-        user_view = UserView(self, self.realm_name)
+        user_view = self.manage_ui.user_view
+        user_view.select_realm(self.realm_name)
         self.assertTrue(user_view.user_exists(self.user_name), "User '" + self.user_name +
                                                                "' should exist.")
+        self.user_view = user_view
 
     def test_yubico_mode(self):
         """
@@ -86,14 +84,9 @@ class TestYubikey(TestCase):
         self.assertTrue(r1['result']['status'], "Error enrolling Yubikey")
         self.assertTrue(r1['result']['value'], "Error enrolling Yubikey")
 
-        driver = self.driver
-        driver.get(self.base_url + "/manage")
-
-        user_view = UserView(self, self.realm_name)
-        user_view.select_user(self.user_name)
-        token_view = TokenView(self)
+        self.user_view.select_user(self.user_name)
         pin = "asdf1234"
-        token_view.assign_token(serial, pin)
+        self.manage_ui.token_view.assign_token(serial, pin)
 
         validate = Validate(self.http_protocol, self.http_host, self.http_port,
                             self.http_username, self.http_password)

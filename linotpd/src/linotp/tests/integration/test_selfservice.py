@@ -43,22 +43,19 @@ class TestSelfservice(TestCase):
 
     def test_selfservice(self):
         """Creates User-Id-Resolvers"""
-        driver = self.driver
-        Policy(driver, self.base_url, "SE_policy_selfservice",
+        self.manage_ui.policy_view.clear_policies()
+        Policy(self.manage_ui, "SE_policy_selfservice",
                "selfservice", "setOTPPIN, ", self.realm_name.lower())
 
         login_user = u"郎"
         login_password = "Test123!"
 
+        driver = self.driver
         driver.get(self.base_url + "/account/login")
         driver.find_element_by_id("login").clear()
         driver.find_element_by_id("login").send_keys(login_user + "@" + self.realm_name.lower())
         driver.find_element_by_id("password").clear()
         driver.find_element_by_id("password").send_keys(login_password)
         driver.find_element_by_css_selector("input[type=\"submit\"]").click()
-        try:
-            self.assertRegexpMatches(driver.find_element_by_css_selector("BODY").text,
-                                     r"^[\s\S]*set PIN[\s\S]*$")
-        except AssertionError as assertion_error:
-            self.verification_errors.append(str(assertion_error))
-
+        self.assertRegexpMatches(driver.find_element_by_css_selector("BODY").text,
+                                 r"^[\s\S]*set PIN[\s\S]*$")

@@ -32,8 +32,10 @@ from linotp_selenium_helper.auth_ui import AuthUi
 from linotp_selenium_helper.hotp_token import HotpToken
 from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.user_view import UserView
+from linotp_selenium_helper.token_view import TokenView
 
 import integration_data as data
+
 
 class TestAuth(TestCase):
     """
@@ -44,22 +46,21 @@ class TestAuth(TestCase):
         TestCase.setUp(self)
         self.realm_name = "se_test_auth"
         self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
+        self.manage = ManageUi(self)
+        self.manage.token_view.delete_all_tokens()
 
     def test_auth_index(self):
         """
         Test /auth/index form by authenticating susi with a HMAC/HOTP Token
         """
-        driver = self.driver
 
         # Enroll HOTP token
         # Seed and OTP values: https://tools.ietf.org/html/rfc4226#appendix-D
-        m = ManageUi(self)
-        m.open_manage()
-        user_view = UserView(self, self.realm_name)
+        user_view = UserView(self.manage, self.realm_name)
         username = "susi"
         user_view.select_user(username)
         pin = "myauthpin"
-        HotpToken(driver,
+        HotpToken(self.driver,
                   self.base_url,
                   pin=pin,
                   hmac_key="3132333435363738393031323334353637383930")

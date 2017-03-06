@@ -43,9 +43,9 @@ class TestSmsToken(TestCase):
     def setUp(self):
         TestCase.setUp(self)
         self.realm_name = "SE_smstoken"
-        self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
-        token_view = TokenView(self)
-        token_view.delete_all_tokens()
+        self.reset_resolvers_and_realms(
+            data.sepasswd_resolver, self.realm_name)
+        self.manage_ui.token_view.delete_all_tokens()
 
     def test_enroll(self):
         """
@@ -64,19 +64,22 @@ class TestSmsToken(TestCase):
 
 
         # Enroll sms token
-        user_view = UserView(self, realm_name)
         username = "rollo"
-        user_view.select_user(username)
         sms_token_pin = "1234"
         phone_number = "+49(0)1234-24"
         description = "Rolled out by Selenium"
+
+        user_view = self.manage_ui.user_view
+        user_view.select_realm(realm_name)
+        user_view.select_user(username)
+
         sms_token = SmsToken(driver=self.driver,
                              base_url=self.base_url,
                              pin=sms_token_pin,
                              phone=phone_number,
                              description=description)
 
-        token_view = TokenView(self)
+        token_view = self.manage_ui.token_view
         token_info = token_view.get_token_info(sms_token.serial)
         self.assertEqual(phone_number, token_info['LinOtp.TokenInfo']['phone'],
                          "Wrong phone number was set for sms token.")
