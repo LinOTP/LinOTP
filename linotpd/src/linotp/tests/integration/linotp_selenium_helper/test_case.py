@@ -45,7 +45,11 @@ class TestCase(unittest.TestCase):
     """Basic LinOTP TestCase class"""
 
     implicit_wait_time = 5
-    driver = None # Selenium driver
+
+    driver = None
+    "Selenium driver"
+
+    _linotp_version = None  # LinOTP server version
     _manage = None  # Manage UI
 
     @classmethod
@@ -205,6 +209,24 @@ class TestCase(unittest.TestCase):
     @property
     def useridresolver_manager(self):
         return self.manage_ui.useridresolver_manager
+
+    @property
+    def linotp_version(self):
+        "LinOTP server version"
+        if self._linotp_version is None:
+            self._linotp_version = self.validate.version()
+        return self._linotp_version
+
+    def need_linotp_version(self, version):
+        """
+        Raise a unittest skip exception if the server version is too old
+
+        @param version: Minimum version. Example: '2.9.1'
+        @raises unittest.SkipTest if the version is too old
+        """
+        if self.linotp_version.split('.') < version.split('.'):
+            raise SkipTest(
+                'LinOTP version %s <  %s' % (self.linotp_version, version))
 
     def reset_resolvers_and_realms(self, resolver=None, realm=None):
         """
