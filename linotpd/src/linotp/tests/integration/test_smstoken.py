@@ -38,6 +38,7 @@ import integration_data as data
 
 """LinOTP Selenium Test for sms token"""
 
+
 class TestSmsToken(TestCase):
 
     def setUp(self):
@@ -58,10 +59,10 @@ class TestSmsToken(TestCase):
         radius_server = get_from_tconfig(
             ['radius', 'server'],
             default=self.http_host.split(':')[0],
-            )
+        )
         radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
-        disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
-
+        disable_radius = get_from_tconfig(
+            ['radius', 'disable'], default='False')
 
         # Enroll sms token
         username = "rollo"
@@ -118,20 +119,20 @@ class TestSmsToken(TestCase):
 
         with SMSProviderServer(self, 10) as smtpsvc:
             access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
-                                                password=sms_token_pin)
+                                                              password=sms_token_pin)
             self.assertFalse(access_granted,
                              "Should return false because this request only triggers the challenge.")
             try:
                 message = validate_resp['detail']['message']
             except KeyError:
-                self.fail("detail.message should be present %r" % validate_resp)
+                self.fail("detail.message should be present %r" %
+                          validate_resp)
             self.assertEqual(message,
                              "sms submitted",
                              "Wrong validate response %r" % validate_resp)
             otp = smtpsvc.get_otp()
 
         access_granted, validate_resp = validate.validate(user=username + "@" + realm_name,
-                                            password=sms_token_pin + otp)
+                                                          password=sms_token_pin + otp)
         self.assertTrue(access_granted,
                         "Could not authenticate user %s %r" % (username, validate_resp))
-

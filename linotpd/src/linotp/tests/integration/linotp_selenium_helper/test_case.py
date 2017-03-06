@@ -41,6 +41,7 @@ from unittest.case import SkipTest
 
 logger = logging.getLogger(__name__)
 
+
 class TestCase(unittest.TestCase):
     """Basic LinOTP TestCase class"""
 
@@ -63,24 +64,29 @@ class TestCase(unittest.TestCase):
         if configfile:
             load_tconfig_from_file(configfile)
 
-        cls.http_username = get_from_tconfig(['linotp', 'username'], required=True)
-        cls.http_password = get_from_tconfig(['linotp', 'password'], required=True)
+        cls.http_username = get_from_tconfig(
+            ['linotp', 'username'], required=True)
+        cls.http_password = get_from_tconfig(
+            ['linotp', 'password'], required=True)
         cls.http_host = get_from_tconfig(['linotp', 'host'], required=True)
-        cls.http_protocol = get_from_tconfig(['linotp', 'protocol'], default="https")
+        cls.http_protocol = get_from_tconfig(
+            ['linotp', 'protocol'], default="https")
         cls.http_port = get_from_tconfig(['linotp', 'port'])
         cls.base_url = cls.http_protocol + "://" + cls.http_username + \
             ":" + cls.http_password + "@" + cls.http_host
         if cls.http_port:
             cls.base_url += ":" + cls.http_port
 
-        remote_setting = get_from_tconfig(['selenium', 'remote'], default='False')
+        remote_setting = get_from_tconfig(
+            ['selenium', 'remote'], default='False')
         cls.remote_enable = remote_setting.lower() == 'true'
         cls.remote_url = get_from_tconfig(['selenium', 'remote_url'])
 
         cls.selenium_driver_name = get_from_tconfig(['selenium', 'driver'],
-                                           default="firefox").lower()
+                                                    default="firefox").lower()
         cls.selenium_driver_language = get_from_tconfig(['selenium', 'language'],
-                                                    default="en_us").lower()
+                                                        default="en_us").lower()
+
     @classmethod
     def startDriver(cls):
         """
@@ -88,31 +94,36 @@ class TestCase(unittest.TestCase):
         """
         def _get_chrome_options():
             chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_argument('--lang=' + cls.selenium_driver_language)
+            chrome_options.add_argument(
+                '--lang=' + cls.selenium_driver_language)
             return chrome_options
 
         def _get_firefox_profile():
             fp = webdriver.FirefoxProfile()
-            fp.set_preference("intl.accept_languages", cls.selenium_driver_language)
+            fp.set_preference(
+                "intl.accept_languages", cls.selenium_driver_language)
             return fp
 
         selenium_driver = cls.selenium_driver_name
         if not cls.remote_enable:
             if selenium_driver == 'chrome':
                 try:
-                    driver = webdriver.Chrome(chrome_options=_get_chrome_options())
+                    driver = webdriver.Chrome(
+                        chrome_options=_get_chrome_options())
                 except WebDriverException, e:
                     logger.error("Error creating Chrome driver. Maybe you need to install"
-                                  " 'chromedriver'. If you wish to use another browser please"
-                                  " adapt your configuratiion file. Error message: %s" % str(e))
+                                 " 'chromedriver'. If you wish to use another browser please"
+                                 " adapt your configuratiion file. Error message: %s" % str(e))
                     raise
 
             elif selenium_driver == 'firefox':
-                driver = webdriver.Firefox(firefox_profile=_get_firefox_profile())
+                driver = webdriver.Firefox(
+                    firefox_profile=_get_firefox_profile())
 
             if driver is None:
                 logger.warn("Falling back to Firefox driver.")
-                driver = webdriver.Firefox(firefox_profile=_get_firefox_profile())
+                driver = webdriver.Firefox(
+                    firefox_profile=_get_firefox_profile())
         else:
             # Remote driver. We need to build a desired capabilities
             # request for the remote instance
@@ -124,9 +135,11 @@ class TestCase(unittest.TestCase):
             selenium_driver = selenium_driver.upper()
 
             try:
-                desired_capabilities = getattr(DesiredCapabilities, selenium_driver).copy()
+                desired_capabilities = getattr(
+                    DesiredCapabilities, selenium_driver).copy()
             except AttributeError:
-                logger.warning("Could not find capabilities for the given remote driver %s", selenium_driver)
+                logger.warning(
+                    "Could not find capabilities for the given remote driver %s", selenium_driver)
                 desired_capabilities = {'browserName': selenium_driver}
 
             # Remote driver
@@ -136,7 +149,7 @@ class TestCase(unittest.TestCase):
 
             try:
                 driver = webdriver.Remote(command_executor=url,
-                                               desired_capabilities=desired_capabilities)
+                                          desired_capabilities=desired_capabilities)
             except Exception as e:
                 logger.error("Could not start driver: %s", e)
                 raise
@@ -171,14 +184,15 @@ class TestCase(unittest.TestCase):
         # Retrieve all elements including parent. This bypasses the timeout
         # that would other wise occur
         WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.ID, parent_id))
-            )
+            EC.presence_of_element_located((By.ID, parent_id))
+        )
 
         self.disableImplicitWait()
         try:
             elements = WebDriverWait(self.driver, 0).until(
-                    EC.presence_of_all_elements_located((By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
-                )
+                EC.presence_of_all_elements_located(
+                    (By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
+            )
         except TimeoutException:
             return []
         finally:
@@ -256,4 +270,5 @@ class TestCase(unittest.TestCase):
             else:
                 alert.dismiss()
             return alert_text
-        finally: self.accept_next_alert = True
+        finally:
+            self.accept_next_alert = True

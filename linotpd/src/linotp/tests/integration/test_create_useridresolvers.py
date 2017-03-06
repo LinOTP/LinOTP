@@ -29,8 +29,10 @@ from linotp_selenium_helper import TestCase
 
 import integration_data as data
 
+
 class TestCreateUserIdResolvers(TestCase):
     """TestCase class that creates 4 UserIdResolvers"""
+
     def setUp(self):
         TestCase.setUp(self)
 
@@ -95,5 +97,5 @@ class TestCreateUserIdResolvers(TestCase):
 
     def test_11_multiple_resolvers(self):
         testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
-                         data.sql_resolver, data.sepasswd_resolver)
+                    data.sql_resolver, data.sepasswd_resolver)
         return self.create_resolvers_and_realm(testdata)

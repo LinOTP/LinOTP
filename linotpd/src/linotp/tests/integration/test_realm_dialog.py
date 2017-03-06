@@ -29,8 +29,10 @@ from linotp_selenium_helper import TestCase
 
 import integration_data as data
 
+
 class TestCreateRealmDialog(TestCase):
     """TestCase class that checks basic realm functionality"""
+
     def setUp(self):
         TestCase.setUp(self)
 

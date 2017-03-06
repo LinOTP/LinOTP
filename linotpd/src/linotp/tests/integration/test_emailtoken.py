@@ -42,6 +42,7 @@ import integration_data as data
 
 logger = logging.getLogger(__name__)
 
+
 class TestEmailToken(TestCase):
 
     def setUp(self):
@@ -51,7 +52,8 @@ class TestEmailToken(TestCase):
         self.username = "hans"
 
         self.email_recipient = "hans@example.local"
-        self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
+        self.reset_resolvers_and_realms(
+            data.sepasswd_resolver, self.realm_name)
 
         self.email_token_pin = "1234"
 
@@ -73,6 +75,7 @@ class TestEmailToken(TestCase):
                                  description=description)
         return email_token
 
+
 class TestEmailTokenEnroll(TestEmailToken):
 
     def test_enroll_token(self):
@@ -93,7 +96,9 @@ class TestEmailTokenEnroll(TestEmailToken):
         self.assertEqual(expected_description, token_info['LinOtp.TokenDesc'],
                          "Token description doesn't match")
 
+
 class TestEmailTokenAuth(TestEmailToken):
+
     def setUp(self):
         TestEmailToken.setUp(self)
         self.enroll_email_token()
@@ -115,18 +120,18 @@ class TestEmailTokenAuth(TestEmailToken):
             except CalledProcessError, e:
                 assert e.returncode == 0, \
                     "radius auth process exit code %s. Command:%s Ouptut:%s" % \
-                        (e.returncode, ' '.join(e.cmd), e.output)
-
+                    (e.returncode, ' '.join(e.cmd), e.output)
 
         radius_server = get_from_tconfig(
             ['radius', 'server'],
             default=self.http_host.split(':')[0],
-            )
+        )
         radius_secret = get_from_tconfig(['radius', 'secret'], required=True)
 
         with EmailProviderServer(self, 20) as smtpsvc:
             # Authenticate with RADIUS
-            rad1 = radius_auth(self.username, self.realm_name, self.email_token_pin, radius_secret, radius_server)
+            rad1 = radius_auth(
+                self.username, self.realm_name, self.email_token_pin, radius_secret, radius_server)
             m = re.search(r"State:\['(\d+)'\]", rad1)
             self.assertTrue(m is not None,
                             "'State' not found in linotp-auth-radius output. %r" % rad1)
@@ -135,7 +140,8 @@ class TestEmailTokenAuth(TestEmailToken):
 
             otp = smtpsvc.get_otp()
 
-        rad2 = radius_auth(self.username, self.realm_name, otp, radius_secret, radius_server, state)
+        rad2 = radius_auth(
+            self.username, self.realm_name, otp, radius_secret, radius_server, state)
         self.assertTrue("Access granted to user " + self.username in rad2,
                         "Access not granted to user. %r" % rad2)
 
@@ -147,19 +153,20 @@ class TestEmailTokenAuth(TestEmailToken):
             validate = Validate(self.http_protocol, self.http_host, self.http_port, self.http_username,
                                 self.http_password)
             access_granted, validate_resp = validate.validate(user=self.username + "@" + self.realm_name,
-                                                               password=self.email_token_pin)
+                                                              password=self.email_token_pin)
             self.assertFalse(access_granted,
                              "Should return false because this request only triggers the challenge.")
             try:
                 message = validate_resp['detail']['message']
             except KeyError:
-                self.fail("detail.message should be present %r" % validate_resp)
+                self.fail("detail.message should be present %r" %
+                          validate_resp)
             self.assertEqual(message,
                              "e-mail sent successfully",
                              "Wrong validate response %r" % validate_resp)
             otp = smtpsvc.get_otp()
 
         access_granted, validate_resp = validate.validate(user=self.username + "@" + self.realm_name,
-                                                           password=self.email_token_pin + otp)
+                                                          password=self.email_token_pin + otp)
         self.assertTrue(access_granted,
                         "Could not authenticate user %s %r" % (self.username, validate_resp))

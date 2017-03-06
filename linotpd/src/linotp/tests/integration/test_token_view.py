@@ -29,9 +29,11 @@ from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.spass_token import SpassToken
 
+
 def _create_test_token(driver, base_url):
     s = SpassToken(driver, base_url, pin="1234")
     return s
+
 
 class TestTokenView(TestCase):
 
@@ -65,7 +67,8 @@ class TestTokenViewOperations(TestCase):
         super(TestTokenViewOperations, self).setUp()
         self.token_view = self.manage_ui.token_view
         self.token_view.delete_all_tokens()
-        self.token_serial = _create_test_token(self.driver, self.base_url).serial
+        self.token_serial = _create_test_token(
+            self.driver, self.base_url).serial
 
     def test_01_select(self):
         self.token_view.select_token(self.token_serial)
@@ -75,4 +78,5 @@ class TestTokenViewOperations(TestCase):
 
     def test_03_info(self):
         info = self.token_view.get_token_info(self.token_serial)
-        self.assertEqual(info['LinOtp.TokenSerialnumber'], self.token_serial, "Displayed token serial should be same as created serial number")
+        self.assertEqual(info['LinOtp.TokenSerialnumber'], self.token_serial,
+                         "Displayed token serial should be same as created serial number")

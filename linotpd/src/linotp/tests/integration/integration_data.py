@@ -29,7 +29,7 @@ This file contains sample data for the integration tests
 
 # LDAP resolvers
 ldap_ca_cert = \
-"""-----BEGIN CERTIFICATE-----
+    """-----BEGIN CERTIFICATE-----
 MIIFgzCCA2ugAwIBAgIBADANBgkqhkiG9w0BAQ0FADBPMQswCQYDVQQGEwJERTEq
 MCgGA1UECgwhTFNFIExlYWRpbmcgU2VjdXJpdHkgRXhwZXJ0cyBHbWJIMRQwEgYD
 VQQDDAtMU0UgQ0EgMjAxNTAiGA8yMDE1MDQwMTAwMDAwMFoYDzIwMjcwNDAxMDAw
@@ -63,8 +63,8 @@ D73172agRToOg0Sid2C4iipj//OA3q4=
 -----END CERTIFICATE-----"""
 
 # CA for test AD server certificate
-ad_ca_cert= \
-"""-----BEGIN CERTIFICATE-----
+ad_ca_cert = \
+    """-----BEGIN CERTIFICATE-----
 MIIDoTCCAomgAwIBAgIQEf6o60+xo6NJkdPwYpVFoTANBgkqhkiG9w0BAQsFADBj
 MRMwEQYKCZImiZPyLGQBGRYDbmV0MRcwFQYKCZImiZPyLGQBGRYHZXhhbXBsZTEV
 MBMGCgmSJomT8ixkARkWBWhvdGFkMRwwGgYDVQQDExNob3RhZC1IT1RUWUJPVFRZ
@@ -88,46 +88,46 @@ mOOzQ8LklhTOAHJva7wNJrcfEG0B
 -----END CERTIFICATE-----"""
 
 musicians_ldap_resolver = {
-                'name' : "SE_musicians",
-                'title' : "Musicians LDAP (Blackdog)",
-                'type': 'ldapresolver',
-                'uri' : "ldaps://blackdog",
-                'certificate' : ldap_ca_cert,
-                'basedn' : "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
-                # You may also use cn="Wolfgang Amadeus Mozart"
-                'binddn' : u'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
-                'password' : "Test123!",
-                'preset_ldap' : True,
-                'expected_users' : 10,
-                'users': ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', u'dvořák',
-                                'haydn', 'mozart', u'حافظ', u'郎']
+    'name': "SE_musicians",
+    'title': "Musicians LDAP (Blackdog)",
+    'type': 'ldapresolver',
+    'uri': "ldaps://blackdog",
+    'certificate': ldap_ca_cert,
+    'basedn': "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
+    # You may also use cn="Wolfgang Amadeus Mozart"
+    'binddn': u'cn="عبد الحليم حافظ",ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de',
+    'password': "Test123!",
+    'preset_ldap': True,
+    'expected_users': 10,
+    'users': ['bach', 'beethoven', 'berlioz', 'brahms', 'debussy', u'dvořák',
+              'haydn', 'mozart', u'حافظ', u'郎']
 }
 
 physics_ldap_resolver = {
-                'name' : "SE_physics",
-                'title' : "Physics LDAP (Blackdog)",
-                'type': 'ldapresolver',
-                'uri' : "ldaps://hottybotty",
-                'certificate' : ad_ca_cert,
-                'basedn' : 'dc=hotad,dc=example,dc=net',
-                'binddn' : u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
-                'password' : "Test123!",
-                'preset_ldap' : False,
-                'expected_users' : 12,
+    'name': "SE_physics",
+    'title': "Physics LDAP (Blackdog)",
+    'type': 'ldapresolver',
+    'uri': "ldaps://hottybotty",
+    'certificate': ad_ca_cert,
+    'basedn': 'dc=hotad,dc=example,dc=net',
+    'binddn': u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
+    'password': "Test123!",
+    'preset_ldap': False,
+    'expected_users': 12,
 }
 
 sql_resolver = {
-                'name' : "SE_mySql",
-                'type' : 'sqlresolver',
-                'server' : 'blackdog',
-                'database' : 'userdb',
-                'user' : 'resolver_user',
-                'password' : 'Test123!',
-                'table' : 'user',
-                'limit' : 500,
-                'encoding' : 'latin1',
-                'expected_users' : 5,
-                'users': ['corny', 'kay', 'eric', u'knöt', 'bianca']
+    'name': "SE_mySql",
+    'type': 'sqlresolver',
+    'server': 'blackdog',
+    'database': 'userdb',
+    'user': 'resolver_user',
+    'password': 'Test123!',
+    'table': 'user',
+    'limit': 500,
+    'encoding': 'latin1',
+    'expected_users': 5,
+    'users': ['corny', 'kay', 'eric', u'knöt', 'bianca']
 }
 
 # Expected content of /etc/se_mypasswd is:
@@ -136,8 +136,8 @@ sql_resolver = {
 # susi:x:1336:0:Susanne Bauer,Room 23,+49(0)1234-24,+49(0)5678-23,susanne@example.com:x:x
 # rollo:x:21:0:Rollobert Fischer,Room 24,+49(0)1234-24,+49(0)5678-24,rollo@example.com:x:x
 sepasswd_resolver = {
-                'name' : 'SE_myPasswd',
-                'type' : 'passwdresolver',
-                'filename' : '/etc/se_mypasswd',
-                'expected_users' : 3,
+    'name': 'SE_myPasswd',
+    'type': 'passwdresolver',
+    'filename': '/etc/se_mypasswd',
+    'expected_users': 3,
 }

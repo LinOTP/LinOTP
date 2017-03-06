@@ -29,6 +29,7 @@ from linotp_selenium_helper import TestCase, Policy
 
 import integration_data as data
 
+
 class TestSelfservice(TestCase):
     """TestCase class that tests the selfservice by first creating a policy
        that allows users to access the selfservice and change their OTP Pin
@@ -39,7 +40,8 @@ class TestSelfservice(TestCase):
         TestCase.setUp(self)
 
         self.realm_name = "SE_realm_selfservice"
-        self.reset_resolvers_and_realms(data.musicians_ldap_resolver, self.realm_name)
+        self.reset_resolvers_and_realms(
+            data.musicians_ldap_resolver, self.realm_name)
 
     def test_selfservice(self):
         """Creates User-Id-Resolvers"""
@@ -53,7 +55,8 @@ class TestSelfservice(TestCase):
         driver = self.driver
         driver.get(self.base_url + "/account/login")
         driver.find_element_by_id("login").clear()
-        driver.find_element_by_id("login").send_keys(login_user + "@" + self.realm_name.lower())
+        driver.find_element_by_id("login").send_keys(
+            login_user + "@" + self.realm_name.lower())
         driver.find_element_by_id("password").clear()
         driver.find_element_by_id("password").send_keys(login_password)
         driver.find_element_by_css_selector("input[type=\"submit\"]").click()
