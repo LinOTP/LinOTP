@@ -66,13 +66,14 @@ log = logging.getLogger(__name__)
 
 class TestImportUser(TestController):
 
-    group_id = 'import_user'
-    resolver_name = "user_import"
+    resolver_name = "myresolv"
+    target_realm = "myrealm"
 
     def setUp(self):
 
+        self.delete_all_realms()
         self.delete_all_policies()
-        self.deleteResolver(self.resolver_name)
+        self.delete_all_resolvers()
         self.dropTable()
 
         TestController.setUp(self)
@@ -102,43 +103,15 @@ class TestImportUser(TestController):
 
             log.info("Drop Table failed %r", exx)
 
-    def deleteResolver(self, resolver_name):
-
-        params = {"resolver": resolver_name}
-        resp = self.make_system_request('delResolver', params)
-        self.assertTrue('"status": true' in resp)
-
-    def delete_users(self, groupid):
-        """
-        delete of the users could only be done by an update of the user
-        with an empty file
-        """
-
-        content = ""
-        upload_files = [("file", "user_list", content)]
-        params = {'groupid': groupid,
-                  'resolver': 'user_import',
-                  'dryrun': False,
-                  'format': 'password',
-                  'delimiter': ',',
-                  'quotechar': '"',
-                  }
-
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
-
-        return response
-
-    def test_0000_import_user(self):
+    def test_import_user(self):
         """
         check that import users will create. update and delete users
         """
 
         content = ""
         upload_files = [("file", "user_list", content)]
-        params = {'groupid': self.group_id,
-                  'resolver': 'user_import',
+        params = {'target_realm': self.target_realm,
+                  'resolver': self.resolver_name,
                   'dryrun': False,
                   'format': 'password',
                   'delimiter': ',',
@@ -158,8 +131,8 @@ class TestImportUser(TestController):
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
-        params = {'groupid': self.group_id,
-                  'resolver': 'user_import',
+        params = {'target_realm': self.target_realm,
+                  'resolver': self.resolver_name,
                   'dryrun': False,
                   'format': 'password',
                   'delimiter': ',',
@@ -205,8 +178,8 @@ class TestImportUser(TestController):
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
-        params = {'groupid': self.group_id,
-                  'resolver': 'user_import',
+        params = {'target_realm': self.target_realm,
+                  'resolver': self.resolver_name,
                   'dryrun': True,
                   'format': 'password',
                   'delimiter': ',',
@@ -224,8 +197,8 @@ class TestImportUser(TestController):
         self.assertTrue(len(created) == 24, response)
 
         upload_files = [("file", "user_list", content)]
-        params = {'groupid': self.group_id,
-                  'resolver': 'user_import',
+        params = {'target_realm': self.target_realm,
+                  'resolver': self.resolver_name,
                   'dryrun': True,
                   'format': 'password',
                   'delimiter': ',',
@@ -241,6 +214,18 @@ class TestImportUser(TestController):
         jresp = json.loads(response.body)
         created = jresp.get('result', {}).get('value', {}).get('created', {})
         self.assertTrue(len(created) == 24, response)
+
+        # make sure that no resolver has been created on dryrun
+
+        params = {'resolver': self.resolver_name}
+        response = self.make_system_request('getResolver', params=params)
+        self.assertTrue('"data": {}' in response, response)
+
+        # make sure that no realm has been created on dryrun
+
+        params = {}
+        response = self.make_system_request('getRealms', params=params)
+        self.assertTrue('"value": {}' in response, response)
 
     def test_list_imported_users(self):
         """
@@ -269,8 +254,8 @@ class TestImportUser(TestController):
                 "password": 7}
 
         params = {
-                'groupid': self.group_id,
-                'resolver': 'csv_user_import',
+                'target_realm': self.target_realm,
+                'resolver': self.resolver_name,
                 'dryrun': False,
                 'format': 'csv',
                 'delimiter': ',',
@@ -291,7 +276,7 @@ class TestImportUser(TestController):
 
         # run a testresolver, if the users are really there
 
-        params = {'resolver': 'csv_user_import'}
+        params = {'resolver': self.resolver_name}
         response = self.make_system_request('getResolver', params=params)
         jresp = json.loads(response.body)
 
@@ -302,8 +287,8 @@ class TestImportUser(TestController):
 
         resolver_params['Password'] = ''
         resolver_params['type'] = 'sqlresolver'
-        resolver_params['name'] = 'csv_user_import'
-        resolver_params['previous_name'] = 'csv_user_import'
+        resolver_params['name'] = self.resolver_name
+        resolver_params['previous_name'] = self.resolver_name
         response = self.make_admin_request('testresolver',
                                            params=resolver_params)
 
@@ -322,12 +307,9 @@ class TestImportUser(TestController):
 
         reasolver_spec = ('useridresolver.'
                           'SQLIdResolver.'
-                          'IdResolver.' + 'csv_user_import')
+                          'IdResolver.' + self.resolver_name)
 
-        response = self.create_realm('IMPO', [reasolver_spec])
-        self.assertTrue('"status": true' in response, response)
-
-        params = {'realm': 'IMPO', 'username': '*'}
+        params = {'realm': self.target_realm, 'username': '*'}
         response = self.make_admin_request(action='userlist', params=params)
 
         jresp = json.loads(response.body)
@@ -341,13 +323,13 @@ class TestImportUser(TestController):
         policy = {'name': 'T1',
                   'action': 'enrollHMAC',
                   'user': '*',
-                  'realm': 'IMPO',
+                  'realm': self.target_realm,
                   'scope': 'selfservice', }
 
         response = self.make_system_request('setPolicy', params=policy)
 
         # for passthru_user1 do check if policy is defined
-        auth_user = ('passthru_user1@IMPO', 'geheim1')
+        auth_user = ('passthru_user1@' + self.target_realm, 'geheim1')
 
         params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
         response = self.make_userservice_request('enroll',
@@ -368,7 +350,7 @@ class TestImportUser(TestController):
         policy = {'name': 'user_import',
                   'action': 'import_users',
                   'user': 'hans',
-                  'realm': 'IMPO',
+                  'realm': self.target_realm,
                   'scope': 'tools', }
 
         response = self.make_system_request('setPolicy', params=policy)
@@ -377,8 +359,8 @@ class TestImportUser(TestController):
 
         content = ""
         upload_files = [("file", "user_list", content)]
-        params = {'groupid': self.group_id,
-                  'resolver': 'user_import',
+        params = {'target_realm': self.target_realm,
+                  'resolver': self.resolver_name,
                   'dryrun': False,
                   'format': 'password',
                   'delimiter': ',',
@@ -433,7 +415,8 @@ class TestImportUser(TestController):
                 "password": 7}
 
         params = {
-                'resolver': self.group_id,
+                'target_realm': self.target_realm,
+                'resolver': self.resolver_name,
                 'passwords_in_plaintext': True,
                 'dryrun': False,
                 'format': 'csv',
@@ -463,21 +446,12 @@ class TestImportUser(TestController):
         updated = jresp.get('result', {}).get('value', {}).get('updated', {})
         self.assertTrue(len(updated) == 24, response)
 
-        # create a realm for this resolver and do a userlist
-
-        reasolver_spec = ('useridresolver.'
-                          'SQLIdResolver.'
-                          'IdResolver.' + self.group_id)
-
-        response = self.create_realm('IMPO', [reasolver_spec])
-        self.assertTrue('"status": true' in response, response)
-
         # login to the selfservice to check the password
 
         policy = {'name': 'T1',
                   'action': 'enrollHMAC',
                   'user': '*',
-                  'realm': 'IMPO',
+                  'realm': self.target_realm,
                   'scope': 'selfservice', }
 
         response = self.make_system_request('setPolicy', params=policy)

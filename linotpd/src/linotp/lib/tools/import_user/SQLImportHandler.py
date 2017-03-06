@@ -52,7 +52,6 @@ log = logging.getLogger(__name__)
 Base = declarative_base()
 
 
-
 class DatabaseContext(object):
     """
     with the database context ist is possible to drive the "user import"
@@ -199,6 +198,12 @@ class SQLImportHandler(ImportHandler):
                             missing)
 
         return resolver_parameters
+
+    def get_resolver_spec(self):
+        """
+        :return: return resolver spec for insert in a realm
+        """
+        return "useridresolver.SQLIdResolver.IdResolver." + self.resolver_name
 
     def _create_table(self):
         """
@@ -430,7 +435,7 @@ class SQLImportHandler(ImportHandler):
                 if attr == "groupid":
                     continue
 
-                if attr == 'password' and user._pw_gen is True:
+                if attr == "password" and user._pw_gen:
                     continue
 
                 if not (hasattr(self, attr) and hasattr(user, attr)):

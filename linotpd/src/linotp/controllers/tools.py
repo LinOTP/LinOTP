@@ -49,13 +49,15 @@ from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
 from linotp.lib.tools.import_user import DefaultFormatReader
 from linotp.lib.tools.import_user import PasswdFormatReader
 
+from linotp.lib.realm import getRealms
+from linotp.lib.user import setRealm
+from linotp.lib.resolver import getResolverList
+
 from linotp.lib.type_utils import boolean
 
 import logging
-
-# this is a hack for the static code analyser, which
-# would otherwise show session.close() as error
 import linotp.model
+
 Session = linotp.model.Session
 
 log = logging.getLogger(__name__)
@@ -165,13 +167,12 @@ class ToolsController(BaseController):
 
                 data_file = request.POST['file']
                 resolver_name = params['resolver']
+                target_realm = params['target_realm']
 
             except KeyError as exx:
 
                 log.exception("Missing parameter: %r", exx)
                 raise ParameterError("Missing parameter: %r" % exx)
-
-
 
             groupid = resolver_name
 
@@ -250,6 +251,13 @@ class ToolsController(BaseController):
                 isinstance(column_mapping, unicode)):
                 column_mapping = json.loads(column_mapping)
 
+            # prevent overwrite of existing unmanaged resolver
+
+            resolvers = getResolverList()
+            if resolver_name in resolvers:
+                if not resolvers[resolver_name].get('readonly', False):
+                    raise Exception("Unmanged resolver with same name: %r"
+                                    " already exists!" % resolver_name)
             # -------------------------------------------------------------- --
 
             # feed the engine :)
@@ -281,6 +289,36 @@ class ToolsController(BaseController):
                                 format_reader=format_reader,
                                 passwords_in_plaintext=passwords_in_plaintext
                                 )
+
+            if dryrun:
+
+                return sendResult(response, result)
+
+            # -------------------------------------------------------------- --
+
+            # create / extend target realm for the resolver
+
+            resolver_spec = import_handler.get_resolver_spec()
+
+            realms = getRealms()
+            if target_realm not in realms:
+
+                resolvers = resolver_spec
+                setRealm(target_realm, resolver_spec)
+
+            else:
+
+                # extend the list of current existing resolvers of this realm
+
+                target_realm_spec = realms.get(target_realm)
+                resolvers = target_realm_spec.get('useridresolver')
+
+                resolver_set = set()
+                resolver_set.update(resolvers)
+                resolver_set.add(resolver_spec)
+                resolvers = ",".join(list(resolver_set))
+
+            setRealm(target_realm, resolvers)
 
             Session.commit()
 

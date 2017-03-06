@@ -171,7 +171,7 @@ class UserImport(object):
         """
         users_deleted = {}
         users_created = {}
-        users_updated = {}
+        users_not_modified = {}
         users_modified = {}
 
         processed_users = {}
@@ -191,16 +191,13 @@ class UserImport(object):
                              passwords_in_plaintext=passwords_in_plaintext):
 
                 # only store valid users that have a userid and a username
-                if user.username == 'kölbel':
-                    pass
-
                 if not user.userid or not user.username:
                     continue
 
                 # prevent processing user multiple times
                 if (user.userid in processed_users.keys() or
                     user.username in processed_users.values()):
-                    raise Exception("Violation of unique constrain - "
+                    raise Exception("Violation of unique constraint - "
                                     "duplicate user in data: %r" % user)
                 else:
                     processed_users[user.userid] = user.username
@@ -222,7 +219,7 @@ class UserImport(object):
                         del former_user_by_id[former_user.userid]
 
                     if former_user == user:
-                        users_updated[user.userid] = user.username
+                        users_not_modified[user.userid] = user.username
                     else:
                         users_modified[user.userid] = user.username
                         if not dryrun:
@@ -239,12 +236,13 @@ class UserImport(object):
 
             result = {
                 'created': users_created,
-                'updated': users_updated,
+                'updated': users_not_modified,
                 'modified': users_modified,
                 'deleted': users_deleted,
                 }
 
-            self.import_handler.commit()
+            if not dryrun:
+                self.import_handler.commit()
 
             return result
 
