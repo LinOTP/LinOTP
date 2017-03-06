@@ -45,10 +45,12 @@ from useridresolver.SQLIdResolver import IdResolver as sql_resolver
 from linotp.lib.resolver import defineResolver
 
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
+from linotp.lib.tools.import_user.ImportHandler import encrypt_password
 
 log = logging.getLogger(__name__)
 
 Base = declarative_base()
+
 
 
 class DatabaseContext(object):
@@ -237,15 +239,16 @@ class SQLImportHandler(ImportHandler):
         """
         self._create_table()
 
-        former_user_by_id = set()
+        former_user_by_id = {}
 
         session = self.db_context.get_session()
 
-        u_users = session.query(self.User.userid).filter(
+        u_users = session.query(self.User.userid, self.User.username).filter(
             self.User.groupid == self.groupid).all()
 
         for u_user in u_users:
-            former_user_by_id.add(u_user[0])
+            userid, username = u_user
+            former_user_by_id[userid] = username
 
         return former_user_by_id
 
@@ -382,13 +385,15 @@ class SQLImportHandler(ImportHandler):
             "userid", "username", "phone", "mobile", "email", "surname",
             "givenname", "password", "groupid"]
 
+        def __init__(self):
+            self._pw_gen = False
+
         def update(self, user):
             """
             update all attributes of the user from the other user
 
             :param user: the other / previous user
             """
-
             for attr in self.user_entries:
                 setattr(self, attr, getattr(user, attr))
 
@@ -403,5 +408,46 @@ class SQLImportHandler(ImportHandler):
             if entry in self.user_entries:
                 setattr(self, entry, value)
 
+        def creat_password_hash(self, plain_password):
+            """
+            create a password hash entry from a given plaintext password
+            """
+            self.password = encrypt_password(plain_password)
+            self._pw_gen = True
+
+        def __eq__(self, user):
+            """
+            compare two users
+
+            :param user: the other user
+            :return: bool
+            """
+
+            for attr in self.user_entries:
+
+                # special handling for goupe_id, which might not be set at
+                # comparing time
+                if attr == "groupid":
+                    continue
+
+                if attr == 'password' and user._pw_gen is True:
+                    continue
+
+                if not (hasattr(self, attr) and hasattr(user, attr)):
+                    return False
+
+                if getattr(self, attr) != getattr(user, attr):
+                    return False
+
+            return True
+
+        def __ne__(self, user):
+            """
+            compare two users
+
+            :param user: the other user
+            :return: bool
+            """
+            return not(self == user)
 
 # eof #

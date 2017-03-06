@@ -130,7 +130,7 @@ class TestImportUser(TestController):
 
         return response
 
-    def test_import_user(self):
+    def test_0000_import_user(self):
         """
         check that import users will create. update and delete users
         """
@@ -149,8 +149,8 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": 0' in response, response)
-        self.assertTrue('"created": 0' in response, response)
+        self.assertTrue('"updated": {}' in response, response)
+        self.assertTrue('"created": {}' in response, response)
 
         def_passwd_file = os.path.join(self.fixture_path, 'def-passwd')
 
@@ -170,8 +170,10 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": 0' in response, response)
-        self.assertTrue('"created": 24' in response, response)
+        self.assertTrue('"updated": {}' in response, response)
+        jresp = json.loads(response.body)
+        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        self.assertTrue(len(created) == 24, response)
 
         csv_data = content.split('\n')[4:]
         content = '\n'.join(csv_data)
@@ -181,9 +183,14 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": 20' in response, response)
-        self.assertTrue('"created": 0' in response, response)
-        self.assertTrue('"deleted": 4' in response, response)
+        jresp = json.loads(response.body)
+        deleted = jresp.get('result', {}).get('value', {}).get('deleted', {})
+        self.assertTrue(len(deleted) == 4, response)
+
+        updated = jresp.get('result', {}).get('value', {}).get('updated', {})
+        self.assertTrue(len(updated) == 20, response)
+
+        self.assertTrue('"created": {}' in response, response)
 
         return
 
@@ -210,8 +217,11 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": 0' in response, response)
-        self.assertTrue('"created": 24' in response, response)
+        self.assertTrue('"updated": {}' in response, response)
+
+        jresp = json.loads(response.body)
+        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        self.assertTrue(len(created) == 24, response)
 
         upload_files = [("file", "user_list", content)]
         params = {'groupid': self.group_id,
@@ -226,8 +236,11 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": 0' in response, response)
-        self.assertTrue('"created": 24' in response, response)
+        self.assertTrue('"updated": {}' in response, response)
+
+        jresp = json.loads(response.body)
+        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        self.assertTrue(len(created) == 24, response)
 
     def test_list_imported_users(self):
         """
@@ -268,8 +281,11 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": 0' in response, response)
-        self.assertTrue('"created": 24' in response, response)
+        self.assertTrue('"updated": {}' in response, response)
+
+        jresp = json.loads(response.body)
+        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        self.assertTrue(len(created) == 24, response)
 
         # ------------------------------------------------------------------ --
 
@@ -384,8 +400,8 @@ class TestImportUser(TestController):
                                            auth_user='hans')
 
         self.assertFalse(msg in response, response)
-        self.assertTrue('"updated": 0' in response, response)
-        self.assertTrue('"created": 0' in response, response)
+        self.assertTrue('"updated": {}' in response, response)
+        self.assertTrue('"created": {}' in response, response)
 
         return
 
@@ -429,8 +445,23 @@ class TestImportUser(TestController):
                                            params=params,
                                            upload_files=upload_files)
 
-        self.assertTrue('"updated": 0' in response, response)
-        self.assertTrue('"created": 24' in response, response)
+        self.assertTrue('"updated": {}' in response, response)
+
+        jresp = json.loads(response.body)
+        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        self.assertTrue(len(created) == 24, response)
+
+        # upload one more times to check for update and not modified
+
+        response = self.make_tools_request(action='import_users',
+                                           params=params,
+                                           upload_files=upload_files)
+
+        self.assertTrue('"modified": {}' in response, response)
+
+        jresp = json.loads(response.body)
+        updated = jresp.get('result', {}).get('value', {}).get('updated', {})
+        self.assertTrue(len(updated) == 24, response)
 
         # create a realm for this resolver and do a userlist
 

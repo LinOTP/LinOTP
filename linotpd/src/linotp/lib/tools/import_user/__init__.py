@@ -37,16 +37,18 @@ Engine = meta.engine
 """
 import csv
 import json
-import hashlib
-import crypt
 
-from os import urandom
-import base64
-
+import logging
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 
 
+log = logging.getLogger(__name__)
+
+
 class FormatReader(object):
+    """
+    support for special csv formats
+    """
     pass
 
 
@@ -105,37 +107,10 @@ class UserImport(object):
 
         self.user_column_mapping = {}
         self.import_handler = ImportHandler
+        self.encoding = 'UTF-8'
 
     def set_mapping(self, mapping):
         self.user_column_mapping = mapping
-
-    def _encrypt_password(self, password):
-        """
-        we use crypt type sha512, which is a secure and standard according to:
-        http://security.stackexchange.com/questions/20541/\
-                         insecure-versions-of-crypt-hashes
-
-        :param password: the plain text password
-        :return: the encrypted password
-        """
-
-        ctype = '6'
-        salt_len = 20
-
-        b_salt = urandom(3 * ((salt_len + 3) // 4))
-
-        # we use base64 charset for salt chars as it is nearly the same
-        # charset, if '+' is changed to '.' and the fillchars '=' are
-        # striped off
-
-        salt = base64.b64encode(b_salt).strip("=").replace('+', '.')
-
-        # now define the password format by the salt definition
-
-        insalt = '$%s$%s$' % (ctype, salt[0:salt_len])
-        encryptedPW = crypt.crypt(password, insalt)
-
-        return encryptedPW
 
     def get_users_from_data(self, csv_data, format_reader,
                             passwords_in_plaintext=False):
@@ -166,13 +141,18 @@ class UserImport(object):
                 value = ""
                 column_id = self.user_column_mapping.get(entry, -1)
 
-                if column_id != -1 and column_id < len(row):
-                    value = row[column_id]
+                if column_id == -1 or column_id >= len(row):
+                    continue
 
-                if entry == 'password' and passwords_in_plaintext:
-                    value = self._encrypt_password(value)
+                # as the csv converter does not support unicode
+                # we have to decode the data
+
+                value = row[column_id].decode(self.encoding)
 
                 user.set(entry, value)
+
+                if entry == 'password' and passwords_in_plaintext:
+                    user.creat_password_hash(row[column_id])
 
             yield user
 
@@ -189,9 +169,12 @@ class UserImport(object):
         2. all former entries, which have not been update, will be removed
 
         """
-        users_deleted = 0
-        users_created = 0
-        users_updated = 0
+        users_deleted = {}
+        users_created = {}
+        users_updated = {}
+        users_modified = {}
+
+        processed_users = {}
 
         former_user_by_id = self.import_handler.prepare()
 
@@ -208,41 +191,58 @@ class UserImport(object):
                              passwords_in_plaintext=passwords_in_plaintext):
 
                 # only store valid users that have a userid and a username
+                if user.username == 'kölbel':
+                    pass
 
                 if not user.userid or not user.username:
                     continue
 
+                # prevent processing user multiple times
+                if (user.userid in processed_users.keys() or
+                    user.username in processed_users.values()):
+                    raise Exception("Violation of unique constrain - "
+                                    "duplicate user in data: %r" % user)
+                else:
+                    processed_users[user.userid] = user.username
+
                 # search for the user
+
                 former_user = self.import_handler.lookup(user)
 
                 # if it does not exist we create a new one
+
                 if not former_user:
-                    users_created += 1
+                    users_created[user.userid] = user.username
                     if not dryrun:
                         self.import_handler.add(user)
 
                 else:
-                    users_updated += 1
 
                     if former_user.userid in former_user_by_id:
-                        former_user_by_id.remove(former_user.userid)
+                        del former_user_by_id[former_user.userid]
 
-                    if not dryrun:
-                        self.import_handler.update(former_user, user)
+                    if former_user == user:
+                        users_updated[user.userid] = user.username
+                    else:
+                        users_modified[user.userid] = user.username
+                        if not dryrun:
+                            self.import_handler.update(former_user, user)
 
             # -------------------------------------------------------------- --
 
             # finally remove all former, not updated users
 
-            for del_userid in former_user_by_id:
-                users_deleted += 1
+            for del_userid, del_user_name in former_user_by_id.items():
+                users_deleted[del_userid] = del_user_name
                 if not dryrun:
                     self.import_handler.delete_by_id(del_userid)
 
             result = {
                 'created': users_created,
                 'updated': users_updated,
-                'deleted': users_deleted}
+                'modified': users_modified,
+                'deleted': users_deleted,
+                }
 
             self.import_handler.commit()
 
@@ -251,7 +251,7 @@ class UserImport(object):
         except Exception as exx:
 
             self.import_handler.rollback()
-
+            log.exception(exx)
             raise exx
 
         finally:
