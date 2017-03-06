@@ -271,50 +271,7 @@ function create_tools_exportaudit_dialog() {
 }
 
 function create_tools_importusers_dialog() {
-    $('#dialog_import_users_confirm').dialog({
-        autoOpen: false,
-        title: i18n.gettext("Confirm changes"),
-        width: 750,
-        height: $(window).height() * .9,
-        modal: true,
-        buttons: [
-            {
-                click: function(){
-                    $(this).dialog('close');
-                },
-                id: "button_import_users_confirm_cancel",
-                text: i18n.gettext("Cancel")
-            },
-            {
-                click:  function(){
-                    show_waiting();
-
-                    $('#import_users_dryrun').val("false");
-                    $('#import_users_session').val(getsession());
-
-                    $('#form_import_users').ajaxSubmit({
-                        success: import_users_callback,
-                        error: import_users_callback
-                    });
-                },
-                id: "button_import_users_confirm_confirm",
-                text: i18n.gettext("Confirm")
-            }
-        ],
-        create: function(){
-            do_dialog_icons();
-        },
-        open: function() {
-            $('#import_user_dryrun_results').accordion({
-                active:0,
-                heightStyle: "fill"
-            });
-            $( "#import_user_dryrun_result_details .detail-tabs" ).tabs({
-              active: 0
-            });
-        }
-    });
-    return $('#dialog_import_users').dialog({
+    var import_users_dialog = $('#dialog_import_users').dialog({
         autoOpen: false,
         title: i18n.gettext("Import Users"),
         width: 750,
@@ -434,10 +391,13 @@ function create_tools_importusers_dialog() {
         },
         open: function() {
             show_waiting();
-            $('#import_users_dryrun').val("true");
-            $('#import_users_file').val("");
-            $('#import_users_resolver').val("");
-            $('#import_users_targetrealm').val("");
+
+            if(import_users_dialog.data("caller") != "confirm") {
+                $('#import_users_dryrun').val("true");
+                $('#import_users_file').val("");
+                $('#import_users_resolver').val("");
+                $('#import_users_targetrealm').val("");
+            }
 
             //prefill resolver and realm selects
             $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
@@ -458,8 +418,55 @@ function create_tools_importusers_dialog() {
                     hide_waiting();
                 });
             });
+
+            import_users_dialog.data("caller", "");
         }
     });
+    var import_users_confirm_dialog = $('#dialog_import_users_confirm').dialog({
+        autoOpen: false,
+        title: i18n.gettext("Confirm changes"),
+        width: 750,
+        height: $(window).height() * .9,
+        modal: true,
+        buttons: [
+            {
+                click: function(){
+                    $(this).dialog('close');
+                    import_users_dialog.data("caller", "confirm").dialog('open');
+                },
+                id: "button_import_users_confirm_cancel",
+                text: i18n.gettext("Cancel")
+            },
+            {
+                click:  function(){
+                    show_waiting();
+
+                    $('#import_users_dryrun').val("false");
+                    $('#import_users_session').val(getsession());
+
+                    $('#form_import_users').ajaxSubmit({
+                        success: import_users_callback,
+                        error: import_users_callback
+                    });
+                },
+                id: "button_import_users_confirm_confirm",
+                text: i18n.gettext("Confirm")
+            }
+        ],
+        create: function(){
+            do_dialog_icons();
+        },
+        open: function() {
+            $('#import_user_dryrun_results').accordion({
+                active:0,
+                heightStyle: "fill"
+            });
+            $( "#import_user_dryrun_result_details .detail-tabs" ).tabs({
+              active: 0
+            });
+        }
+    });
+    return import_users_dialog;
 }
 
 function import_users_callback(response, status) {
@@ -533,7 +540,6 @@ function import_users_dryrun_callback(response, status) {
             + "<li>" + sprintf(i18n.gettext('%s users will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
             + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>";
     $('#import_user_dryrun_results .summary').html(summary)
-    $('#dialog_import_users_confirm').dialog('open');
 
     if(created.length > 0) {
         var tablecontent = "";
@@ -578,6 +584,8 @@ function import_users_dryrun_callback(response, status) {
     else {
         $('#import_user_dryrun_result_d_unchanged .data-table').html("<td>" + i18n.gettext("No user stays unchanged!") + "</td>");
     }
+
+    $('#dialog_import_users_confirm').dialog('open');
 }
 
 function add_user_data() {
