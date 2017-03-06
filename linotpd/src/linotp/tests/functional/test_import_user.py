@@ -52,13 +52,6 @@ TODO:
 import os
 import json
 import logging
-# for drop Table we require some sql
-
-from sqlalchemy.engine import create_engine
-from sqlalchemy import sql
-from sqlalchemy.exc import ProgrammingError
-
-from linotp.tests import TestController
 
 # for drop Table we require some sql
 
@@ -395,5 +388,82 @@ class TestImportUser(TestController):
         self.assertTrue('"created": 0' in response, response)
 
         return
+
+    def test_imported_with_plain_passwords(self):
+        """
+        list the csv imported users with plain passwords
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # open the csv data and import the users
+
+        def_passwd_file = os.path.join(self.fixture_path,
+                                       'def-passwd-plain.csv')
+
+        with open(def_passwd_file, "r") as f:
+            content = f.read()
+
+        upload_files = [("file", "user_list", content)]
+
+        column_mapping = {
+                "username": 0,
+                "userid": 1,
+                "surname": 2,
+                "givenname": 3,
+                "email": 4,
+                "phone": 5,
+                "mobile": 6,
+                "password": 7}
+
+        params = {
+                'resolver': self.group_id,
+                'passwords_in_plaintext': True,
+                'dryrun': False,
+                'format': 'csv',
+                'delimiter': ',',
+                'quotechar': '"',
+                'column_mapping': json.dumps(column_mapping), }
+
+        response = self.make_tools_request(action='import_users',
+                                           params=params,
+                                           upload_files=upload_files)
+
+        self.assertTrue('"updated": 0' in response, response)
+        self.assertTrue('"created": 24' in response, response)
+
+        # create a realm for this resolver and do a userlist
+
+        reasolver_spec = ('useridresolver.'
+                          'SQLIdResolver.'
+                          'IdResolver.' + self.group_id)
+
+        response = self.create_realm('IMPO', [reasolver_spec])
+        self.assertTrue('"status": true' in response, response)
+
+        # login to the selfservice to check the password
+
+        policy = {'name': 'T1',
+                  'action': 'enrollHMAC',
+                  'user': '*',
+                  'realm': 'IMPO',
+                  'scope': 'selfservice', }
+
+        response = self.make_system_request('setPolicy', params=policy)
+
+        # for passthru_user1 do check if policy is defined
+        auth_user = ('root', 'root')
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
+        response = self.make_userservice_request('enroll',
+                                                 params=params,
+                                                 auth_user=auth_user)
+        jresp = json.loads(response.body)
+        img = jresp.get('detail', {}).get('googleurl', {}).get('img', '')
+
+        self.assertTrue("data:image" in img, response)
+
+        return
+
 
 # eof ########################################################################

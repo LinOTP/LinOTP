@@ -30,6 +30,8 @@ import logging
 
 import copy
 import json
+import re
+
 from functools import partial
 
 from linotp.lib.context import request_context as context
@@ -44,11 +46,19 @@ from linotp.lib.type_utils import boolean
 
 from linotp.lib.crypt import encryptPassword
 
+# -------------------------------------------------------------------------- --
 
 __all__ = ['defineResolver', 'parse_resolver_spec',
            'getResolverList', 'getResolverInfo', 'deleteResolver',
            'getResolverObject', 'initResolvers', 'closeResolvers',
            'setupResolvers']
+
+# -------------------------------------------------------------------------- --
+
+# for the the resolver name check we use a reqular expression
+
+resolver_name_pattern = re.compile('^[a-zA-Z0-9_-]*$')
+
 
 log = logging.getLogger(__name__)
 
@@ -105,6 +115,10 @@ def defineResolver(params):
 
     typ = params['type']
     conf = params['name']
+
+    if not resolver_name_pattern.match(conf):
+        raise Exception("Resolver name is invalid. It may contain characters, "
+                        "numbers, underscore (_), hyphen (-)!")
 
     resolver_cls = getResolverClass(typ)
 

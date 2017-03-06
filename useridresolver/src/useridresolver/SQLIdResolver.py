@@ -492,47 +492,77 @@ class IdResolver(UserIdResolver):
 
         # get the crypted password and the salt from the database
         # for doing crypt.crypt( "password", "salt" )
-        if "password" in userInfo:
-            # check if we have something like SHA or salted SHA
-            m = re.match("^\{(.*)\}(.*)", userInfo["password"])
-            # check if we have the PHP Password Framework like it is
-            # used in Wordpress
-            m_php = re.match("^\$P\$(.*)", userInfo["password"])
-            if m:
-                # The password field contains something like
-                # {SHA256}abcdfef123456
-                hash_type = m.group(1)
-                hash_value = m.group(2)
 
-                # Check for salt field in case the db splits salt from hash:
-                salt = None
-                if 'salt' in userInfo:
-                    salt = userInfo['salt']
-                return _check_hash_type(password, hash_type, hash_value, salt=salt)
-            elif m_php:
-                # The Password field contains something like
-                # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
-                return check_php_password(password, userInfo["password"])
-            else:
-                # get the crypted password and the salt from the database
-                # for doing crypt.crypt( "password", "salt" )
-                salt = userInfo["password"][0:2]
-                if "salt" in userInfo:
-                    salt = userInfo["salt"]
-                npw = crypt.crypt(password, salt)
-                # check if the new crypted password matches the original one
-                if npw == userInfo["password"]:
-                    log.info("[checkPass] user %s authenticated successfully."
-                                                                        % uid)
-                    return True
-                else:
-                    log.warning("[checkPass] user %s failed to authenticate."
-                                                                        % uid)
-                    return False
-
-        else:
+        if "password" not in userInfo:
             log.error("[checkPass] password is not defined in SQL mapping!")
             return False
+
+        # check if we have something like SHA or salted SHA
+
+        m = re.match("^\{(.*)\}(.*)", userInfo["password"])
+
+        # check if we have the PHP Password Framework like it is
+        # used in Wordpress
+
+        m_php = re.match("^\$P\$(.*)", userInfo["password"])
+
+        if m:
+            # The password field contains something like
+            # {SHA256}abcdfef123456
+            hash_type = m.group(1)
+            hash_value = m.group(2)
+
+            # Check for salt field in case the db splits salt from hash:
+            salt = None
+            if 'salt' in userInfo:
+                salt = userInfo['salt']
+            return _check_hash_type(password, hash_type, hash_value, salt=salt)
+
+        elif m_php:
+            # The Password field contains something like
+            # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
+            return check_php_password(password, userInfo["password"])
+
+        # ------------------------------------------------------------------ --
+
+        # check the Modular Crypt Format (MCF):
+        #
+        #  $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+        #
+        # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
+
+        elif userInfo["password"][0] == '$':
+
+            if crypt.crypt(password, userInfo["password"]) == userInfo["password"]:
+
+                log.info("[checkPass] successfully authenticated "
+                         "user uid %s", uid)
+                return True
+            else:
+                log.warning("[checkPass] user %s failed to authenticate.", uid)
+                return False
+
+        else:
+            # ------------------------------------------------------------- --
+
+            # old style with dedicated salt from the database for doing
+            #       crypt.crypt( "password", "salt" )
+
+            salt = userInfo["password"][0:2]
+            if "salt" in userInfo:
+                salt = userInfo["salt"]
+
+            npw = crypt.crypt(password, salt)
+            if npw == userInfo["password"]:
+                log.info("[checkPass] user %s authenticated successfully.",
+                         uid)
+                return True
+
+            log.warning("[checkPass] user %s failed to authenticate.",
+                        uid)
+
+            return False
+
 
 
     @classmethod

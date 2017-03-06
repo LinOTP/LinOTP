@@ -37,6 +37,11 @@ Engine = meta.engine
 """
 import csv
 import json
+import hashlib
+import crypt
+
+from os import urandom
+import base64
 
 from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 
@@ -104,7 +109,36 @@ class UserImport(object):
     def set_mapping(self, mapping):
         self.user_column_mapping = mapping
 
-    def get_users_from_data(self, csv_data, format_reader):
+    def _encrypt_password(self, password):
+        """
+        we use crypt type sha512, which is a secure and standard according to:
+        http://security.stackexchange.com/questions/20541/\
+                         insecure-versions-of-crypt-hashes
+
+        :param password: the plain text password
+        :return: the encrypted password
+        """
+
+        ctype = '6'
+        salt_len = 20
+
+        b_salt = urandom(3 * ((salt_len + 3) // 4))
+
+        # we use base64 charset for salt chars as it is nearly the same
+        # charset, if '+' is changed to '.' and the fillchars '=' are
+        # striped off
+
+        salt = base64.b64encode(b_salt).strip("=").replace('+', '.')
+
+        # now define the password format by the salt definition
+
+        insalt = '$%s$%s$' % (ctype, salt[0:salt_len])
+        encryptedPW = crypt.crypt(password, insalt)
+
+        return encryptedPW
+
+    def get_users_from_data(self, csv_data, format_reader,
+                            passwords_in_plaintext=False):
         """
         for each row
         - iterate over all available database columns and
@@ -135,12 +169,16 @@ class UserImport(object):
                 if column_id != -1 and column_id < len(row):
                     value = row[column_id]
 
+                if entry == 'password' and passwords_in_plaintext:
+                    value = self._encrypt_password(value)
+
                 user.set(entry, value)
 
             yield user
 
     def import_csv_users(self, csv_data, dryrun=False,
-                         format_reader=DefaultFormatReader):
+                         format_reader=DefaultFormatReader,
+                         passwords_in_plaintext=False):
         """
         insert and update users
 
@@ -164,7 +202,10 @@ class UserImport(object):
             # finally remove all former, not updated users
             # update or insert all user from the csv data
 
-            for user in self.get_users_from_data(csv_data, format_reader):
+            for user in self.get_users_from_data(
+                             csv_data,
+                             format_reader,
+                             passwords_in_plaintext=passwords_in_plaintext):
 
                 # only store valid users that have a userid and a username
 

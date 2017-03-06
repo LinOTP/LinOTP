@@ -164,13 +164,16 @@ class ToolsController(BaseController):
             try:
 
                 data_file = request.POST['file']
-                groupid = params['groupid']
                 resolver_name = params['resolver']
 
             except KeyError as exx:
 
                 log.exception("Missing parameter: %r", exx)
                 raise ParameterError("Missing parameter: %r" % exx)
+
+
+
+            groupid = resolver_name
 
             # process file upload data
 
@@ -191,6 +194,10 @@ class ToolsController(BaseController):
             # process the other arguments
 
             dryrun = boolean(params.get('dryrun', False))
+
+            passwords_in_plaintext = boolean(params.get(
+                                                'passwords_in_plaintext',
+                                                False))
 
             file_format = params.get('format', "csv")
 
@@ -269,9 +276,11 @@ class ToolsController(BaseController):
             # and run the data processing
 
             result = user_import.import_csv_users(
-                                        data,
-                                        dryrun=dryrun,
-                                        format_reader=format_reader)
+                                data,
+                                dryrun=dryrun,
+                                format_reader=format_reader,
+                                passwords_in_plaintext=passwords_in_plaintext
+                                )
 
             Session.commit()
 
