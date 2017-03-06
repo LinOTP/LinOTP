@@ -91,7 +91,7 @@ musicians_ldap_resolver = {
     'name': "SE_musicians",
     'title': "Musicians LDAP (Blackdog)",
     'type': 'ldapresolver',
-    'uri': "ldaps://blackdog",
+    'uri': "ldaps://blackdog.corp.lsexperts.de",
     'certificate': ldap_ca_cert,
     'basedn': "ou=people,dc=blackdog,dc=corp,dc=lsexperts,dc=de",
     # You may also use cn="Wolfgang Amadeus Mozart"
@@ -107,7 +107,7 @@ physics_ldap_resolver = {
     'name': "SE_physics",
     'title': "Physics LDAP (Blackdog)",
     'type': 'ldapresolver',
-    'uri': "ldaps://hottybotty",
+    'uri': "ldaps://hottybotty.corp.lsexperts.de",
     'certificate': ad_ca_cert,
     'basedn': 'dc=hotad,dc=example,dc=net',
     'binddn': u'cn="Clark Maxwell",ou=corp,dc=hotad,dc=example,dc=net',
@@ -119,7 +119,7 @@ physics_ldap_resolver = {
 sql_resolver = {
     'name': "SE_mySql",
     'type': 'sqlresolver',
-    'server': 'blackdog',
+    'server': 'blackdog.corp.lsexperts.de',
     'database': 'userdb',
     'user': 'resolver_user',
     'password': 'Test123!',
