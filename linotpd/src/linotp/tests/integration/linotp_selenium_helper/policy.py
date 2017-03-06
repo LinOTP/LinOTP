@@ -25,58 +25,62 @@
 #
 """Contains Policy class"""
 
-from selenium.webdriver.common.keys import Keys
-from helper import select
-import time
+from manage_elements import ManageTab
+from helper import select, fill_form_element
 
-class PolicyManager(object):
-    policies_tab_css_selector = "#tabs > ul > li:nth-child(3) > a"
+
+class PolicyManager(ManageTab):
     policy_entries_css_selector = "table#policy_table > tbody > tr"
     policy_delete_button_id = "button_policy_delete"
 
-    def __init__(self, driver, base_url):
-        self.driver = driver
-        self.url = base_url + "/manage"
+    TAB_INDEX = 3
 
     def clear_policies(self):
-        self.driver.get(self.url)
-        self.driver.find_element_by_css_selector(self.policies_tab_css_selector).click()
+        self.open_tab()
 
         while True:
-            time.sleep(1)
-            policies = self.driver.find_elements_by_css_selector(self.policy_entries_css_selector)
-            print policies
-            print "\n\n"
+            policies = self.driver.find_elements_by_css_selector(
+                self.policy_entries_css_selector)
             if not policies:
                 break
             self.delete_policy(policies[0])
 
     def delete_policy(self, p):
         p.click()
-        self.driver.find_element_by_id(self.policy_delete_button_id).click()
+        self.find_by_id(self.policy_delete_button_id).click()
+        self.wait_for_grid_loading()
+
+    def set_new_policy(self, policy):
+        """
+        Create a policy using the UI elements
+        """
+        self.open_tab()
+        driver = self.driver
+
+        policy_active_cb = self.find_by_id("policy_active")
+        if not policy_active_cb.is_selected():
+            policy_active_cb.click()
+
+        fill_form_element(driver, "policy_name", policy.name)
+
+        scope_select = self.find_by_id('policy_scope_combo')
+        select(driver, scope_select, policy.scope)
+
+        fill_form_element(driver, "policy_action", policy.action)
+        fill_form_element(driver, "policy_realm", policy.realm)
+        fill_form_element(driver, "policy_name", policy.name)
+        self.find_by_id("button_policy_add").click()
+        self.wait_for_waiting_finished()
+
 
 class Policy(object):
     """Creates a LinOTP Policy"""
 
-    def __init__(self, driver, base_url, name, scope, action, realm):
+    def __init__(self, manage_ui, name, scope, action, realm):
         """Opens the LinOTP manage interface and creates a Policy"""
         self.name = name
         self.scope = scope
         self.action = action
         self.realm = realm
 
-        driver.get(base_url + "/manage")
-        driver.find_element_by_xpath("//div[@id='tabs']/ul/li[3]/a").click()
-        policy_active_cb = driver.find_element_by_id("policy_active")
-        if not policy_active_cb.is_selected():
-            policy_active_cb.click()
-        driver.find_element_by_id("policy_name").clear()
-        driver.find_element_by_id("policy_name").send_keys(self.name)
-        scope_select = driver.find_element_by_id('policy_scope_combo')
-        select(driver, scope_select, self.scope)
-        driver.find_element_by_id("policy_action").clear()
-        driver.find_element_by_id("policy_action").send_keys(self.action)
-        driver.find_element_by_id("policy_realm").clear()
-        driver.find_element_by_id("policy_realm").send_keys(self.realm)
-        driver.find_element_by_id("button_policy_add").click()
-
+        manage_ui.policy_view.set_new_policy(self)

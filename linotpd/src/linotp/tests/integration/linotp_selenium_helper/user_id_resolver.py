@@ -26,26 +26,39 @@
 """Contains UserIdResolver class"""
 
 import re
+import logging
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from helper import find_by_css, find_by_id, fill_element_from_dict
-from manage_ui import ManageConfigList
+from manage_elements import ManageDialog
 
-class UserIdResolverManager(ManageConfigList):
+
+class NewResolverDialog(ManageDialog):
+    "New resolver dialog"
+
+    def __init__(self, manage_ui):
+        super(NewResolverDialog, self).__init__(
+            manage_ui, 'dialog_resolver_create')
+
+
+class UserIdResolverManager(ManageDialog):
     """
     Management dialog for userIdResolvers
     """
-    menu_id = 'menu_edit_resolvers'
-    dialog_id = 'dialog_resolvers'
     new_button_id = 'button_resolver_new'
     close_button_id = 'button_resolver_close'
+    menu_item_id = 'menu_edit_resolvers'
 
-    def __init__(self, testcase):
-        ManageConfigList.__init__(self, testcase)
+    def __init__(self, manage_ui):
+        ManageDialog.__init__(self, manage_ui, 'dialog_resolvers')
         self.resolvers = None
+
+        self.new_resolvers_dialog = NewResolverDialog(manage_ui)
+        self.no_realms_defined_dialog = ManageDialog(
+            manage_ui, 'text_no_realm')
 
     @staticmethod
     def get_resolver_for_type(resolver_type):
@@ -61,8 +74,10 @@ class UserIdResolverManager(ManageConfigList):
 
     @staticmethod
     def parse_resolver_element(testcase, parent_id):
-        # Given an element, retrieve child elements and parse out resolver names
+        # Given an element, retrieve child elements and parse out resolver
+        # names
         class ResolverElement:
+
             def __init__(self, name, resolverType, element=None):
                 self.name = name
                 self.resolverType = resolverType
@@ -85,22 +100,23 @@ class UserIdResolverManager(ManageConfigList):
             m = resolver_name_re.match(resolver_element.text)
             assert m, 'Error in resolver regexp for "%s"' % (resolver_element,)
 
-            assert(resolver_element.get_attribute("class") in \
+            assert(resolver_element.get_attribute("class") in
                    ('ui-widget-content ui-selectee', 'ui-widget-content ui-selectee ui-selected')), \
-                           "Resolver element class unknown"
+                "Resolver element class unknown"
 
-            parsed_resolvers.append(ResolverElement(m.group(1), m.group(2), resolver_element))  # Form a list of (resolver_name, type) tuples
+            # Form a list of (resolver_name, type) tuples
+            parsed_resolvers.append(
+                ResolverElement(m.group(1), m.group(2), resolver_element))
 
         return parsed_resolvers
 
-    def _parse_config_list(self):
+    def parse_contents(self):
         """
         Parse the resolver dialog list and build a list of resolvers
         """
-        self.check_dialog_is_open()
-
         # Find resolvers list
-        self.resolvers = self.parse_resolver_element(self.testcase, "resolvers_list")
+        self.resolvers = self.parse_resolver_element(
+            self.testcase, "resolvers_list")
 
     def _get_resolver_by_name(self, name):
         """
@@ -111,7 +127,8 @@ class UserIdResolverManager(ManageConfigList):
          name in dialog
         """
         r = [r for r in self.resolvers if r.name == name]
-        assert len(r) == 1, "Resolver name %s not found in current resolver list" % (name,)
+        assert len(
+            r) == 1, "Resolver name %s not found in current resolver list" % (name,)
         resolver = r[0]
         return resolver
 
@@ -119,42 +136,65 @@ class UserIdResolverManager(ManageConfigList):
         """
         Return a list of currently defined resolver names
         """
-        self.check_dialog_is_open()
+        self.raise_if_closed()
         return [r.name for r in self.resolvers]
 
     def create_resolver(self, data):
-        driver = self.driver
         resolver_type = data['type']
 
         self.open()
         oldlist = self.get_defined_resolvers()
-        oldcount = len(self.get_defined_resolvers())
+
+        assert data[
+            'name'] not in oldlist, 'Trying to define a resolver which already exists'
+
+        oldcount = len(oldlist)
         self.find_by_id(self.new_button_id).click()
-        create_text = "Which type of resolver do you want to create?"
-        assert driver.find_element_by_id("dialog_resolver_create").text == create_text
+        self.new_resolvers_dialog.check_text(
+            'Which type of resolver do you want to create?')
 
         resolverClass = self.get_resolver_for_type(resolver_type)
         resolver = resolverClass(self)
 
-        assert resolver.savebutton_id, "Resolver save button id is not defined"
-        assert resolver.resolver_type_button_id, "Resolver type button id is not defined"
+        assert resolver.newbutton_id, "Resolver new button id is not defined"
+        self.new_resolvers_dialog.click_button(
+            resolver.newbutton_id)
 
-        self.find_by_id(resolver.resolver_type_button_id).click()
+        # Fill in new resolver form
         resolver.fill_form(data)
 
         self.find_by_id(resolver.savebutton_id).click()
 
         # We should be back to the resolver list
-        self.check_dialog_is_open()
+        self.raise_if_closed()
+        self.reparse()
 
-        self.open()  # Reload resolvers
         newlist = self.get_defined_resolvers()
-        newcount = len(self.get_defined_resolvers())
+        newcount = len(newlist)
         if newcount != oldcount + 1:
-            print "Could not create resolver!"
+            logging.error("Could not create resolver! %s", data)
             assert newcount == oldcount + 1
 
         return data['name']
+
+    def close(self):
+        super(UserIdResolverManager, self).close()
+        if self.no_realms_defined_dialog.is_open():
+            self._handle_first_resolver_dialogs()
+
+    def _handle_first_resolver_dialogs(self):
+        self.no_realms_defined_dialog.raise_if_closed()
+        self.no_realms_defined_dialog.close()
+
+        # The realms dialog now opens - close it
+        realms = self.manage.realm_manager
+        realms.raise_if_closed()
+        realms.close()
+
+    def reload(self):
+        # Close and reopen
+        self.close_if_open()
+        self.open()
 
     def select_resolver(self, name):
         resolver = self._get_resolver_by_name(name)
@@ -165,7 +205,7 @@ class UserIdResolverManager(ManageConfigList):
         """
         return resolver, given open dialog
         """
-        self.check_dialog_is_open()
+        self.raise_if_closed()
         resolver = self.select_resolver(name)
         self.find_by_id("button_resolver_edit").click()
         return resolver
@@ -178,7 +218,8 @@ class UserIdResolverManager(ManageConfigList):
 
         self.select_resolver(name)
         self.find_by_id("button_resolver_delete").click()
-        self.testcase.assertEquals("Deleting resolver", self.find_by_id("ui-id-3").text)
+        self.testcase.assertEquals(
+            "Deleting resolver", self.find_by_id("ui-id-3").text)
 
         t = find_by_css(driver, "#dialog_resolver_ask_delete > p").text
         self.testcase.assertEqual(t, r"Do you want to delete the resolver?")
@@ -186,14 +227,16 @@ class UserIdResolverManager(ManageConfigList):
         self.find_by_id("button_resolver_ask_delete_delete").click()
 
         # We should be back to the resolver list
-        self.check_dialog_is_open()
+        self.raise_if_closed()
+        self.manage.wait_for_waiting_finished()
 
         # Reload resolvers
-        self.open()
+        self.parse_contents()
+
         assert (len(self.resolvers) == resolver_count - 1), (
-                 'The number of resolvers shown should decrease after deletion. Before: %s, after:%s'
-                 % (resolver_count, len(self.resolvers))
-              )
+            'The number of resolvers shown should decrease after deletion. Before: %s, after:%s'
+            % (resolver_count, len(self.resolvers))
+        )
 
     def clear_resolvers(self):
         """Clear all existing resolvers"""
@@ -204,6 +247,8 @@ class UserIdResolverManager(ManageConfigList):
             if not resolvers:
                 break
             self.delete_resolver(resolvers[0].name)
+
+        self.close()
 
     def test_connection(self, name, expected_users=None):
         """Test the connection with the corresponding button in the UI.
@@ -219,32 +264,36 @@ class UserIdResolverManager(ManageConfigList):
 
         if not testbutton_id:
             # This resolver type does not have a test button (passwd)
-            return -1
+            num_found = -1
+        else:
+            self.find_by_id(testbutton_id).click()
 
-        self.find_by_id(testbutton_id).click()
-
-        # Wait for alert box to be shown
-        alert_id = "alert_box_text"
-        WebDriverWait(self.driver, 10).until(
+            # Wait for alert box to be shown
+            alert_id = "alert_box_text"
+            WebDriverWait(self.driver, 10).until(
                 EC.text_to_be_present_in_element((By.ID, alert_id), "Number of users found"))
-        alert_box = self.find_by_id(alert_id)
-        alert_box_text = alert_box.text
+            alert_box = self.find_by_id(alert_id)
+            alert_box_text = alert_box.text
 
-        m = re.search("Number of users found: (?P<nusers>\d+)", alert_box_text)
-        if m is None:
-            raise Exception("test_connection for %s failed: %s" % (name, alert_box_text))
-        num_found = int(m.group('nusers'))
+            m = re.search(
+                "Number of users found: (?P<nusers>\d+)", alert_box_text)
+            if m is None:
+                raise Exception(
+                    "test_connection for %s failed: %s" % (name, alert_box_text))
+            num_found = int(m.group('nusers'))
 
-        if expected_users:
-            assert num_found == expected_users, "Expected number of users:%s, found:%s" % (expected_users, num_found)
+            if expected_users:
+                assert num_found == expected_users, "Expected number of users:%s, found:%s" % (
+                    expected_users, num_found)
 
-        # Close the popup
-        alert_box.find_element_by_xpath('../..//button').click()
+            # Close the popup
+            alert_box.find_element_by_xpath('../..//button').click()
 
         # Close the resolver edit box
         self.find_by_id(cancelbutton_id).click()
 
         return num_found
+
 
 class UserIdResolver:
     """
@@ -252,7 +301,8 @@ class UserIdResolver:
     """
 
     # Ids of various buttons in the UI - will be set during object init
-    resolver_type_button_id = None  # The button to click to select the correct resolver type
+    # The button to click to select the correct resolver type
+    newbutton_id = None
     savebutton_id = None  # Save button on creation form
     testbutton_id = None  # Test button on edit form, if available
     editcancel_button_id = None  # Cancel button on edit form
@@ -260,16 +310,15 @@ class UserIdResolver:
     def __init__(self, manage_ui):
         self.manage_ui = manage_ui
 
-        resolver_type = self.resolvertype
-        self.resolver_type_button_id = 'button_new_resolver_type_' + resolver_type
-        self.savebutton_id = 'button_' + resolver_type + '_resolver_save'
-        self.testbutton_id = 'button_test_' + resolver_type
-        self.editcancel_button_id = 'button_' + resolver_type + '_resolver_cancel'
 
 class LdapUserIdResolver(UserIdResolver):
     """Creates a LDAP User-Id-Resolver in the LinOTP WebUI"""
 
     resolvertype = 'ldap'
+    newbutton_id = 'button_new_resolver_type_ldap'
+    savebutton_id = 'button_ldap_resolver_save'
+    testbutton_id = 'button_test_ldap'
+    editcancel_button_id = 'button_ldap_resolver_cancel'
 
     def fill_form(self, data):
         driver = self.manage_ui.driver
@@ -283,21 +332,26 @@ class LdapUserIdResolver(UserIdResolver):
         fill_element_from_dict(driver, 'ldap_resolvername', 'name', data)
         fill_element_from_dict(driver, 'ldap_uri', 'uri', data)
         if data['uri'].startswith("ldaps:"):
-            fill_element_from_dict(driver, 'ldap_certificate', 'certificate', data)
+            fill_element_from_dict(
+                driver, 'ldap_certificate', 'certificate', data)
         fill_element_from_dict(driver, 'ldap_basedn', 'basedn', data)
         fill_element_from_dict(driver, 'ldap_binddn', 'binddn', data)
         fill_element_from_dict(driver, 'ldap_password', 'password', data)
+
 
 class SqlUserIdResolver(UserIdResolver):
     """Creates a Sql User-Id-Resolver in the LinOTP WebUI"""
 
     resolvertype = 'sql'
+    newbutton_id = 'button_new_resolver_type_sql'
+    savebutton_id = 'button_resolver_sql_save'
+    testbutton_id = 'button_test_sql'
+    editcancel_button_id = 'button_resolver_sql_cancel'
 
     def __init__(self, manage_ui):
         UserIdResolver.__init__(self, manage_ui)
         self.savebutton_id = 'button_resolver_sql_save'
         self.editcancel_button_id = 'button_resolver_sql_cancel'
-
 
     def fill_form(self, data):
         driver = self.manage_ui.driver
@@ -313,6 +367,10 @@ class PasswdUserIdResolver(UserIdResolver):
     """Creates a file(Passwd) User-Id-Resolver in the LinOTP WebUI"""
 
     resolvertype = 'passwd'
+    newbutton_id = 'button_new_resolver_type_file'
+    savebutton_id = 'button_resolver_file_save'
+    editcancel_button_id = 'button_resolver_file_cancel'
+    testbutton_id = None
 
     def __init__(self, manage_ui):
         UserIdResolver.__init__(self, manage_ui)

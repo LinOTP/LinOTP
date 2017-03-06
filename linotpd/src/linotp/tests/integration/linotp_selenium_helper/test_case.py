@@ -35,9 +35,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 
 from helper import get_from_tconfig, load_tconfig_from_file
-from realm import RealmManager
-from policy import PolicyManager
-from user_id_resolver import UserIdResolverManager
+from manage_ui import ManageUi
+from validate import Validate
+from unittest.case import SkipTest
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,7 @@ class TestCase(unittest.TestCase):
 
     implicit_wait_time = 5
     driver = None # Selenium driver
+    _manage = None  # Manage UI
 
     @classmethod
     def setUpClass(cls):
@@ -181,19 +182,41 @@ class TestCase(unittest.TestCase):
 
         return elements  # Return elements without the parent
 
+    @property
+    def manage_ui(self):
+        """
+        Return page manager
+        """
+        if self._manage is None:
+            self._manage = ManageUi(self)
+        return self._manage
+
+    @property
+    def validate(self):
+        """
+        Return validate helper
+        """
+        return Validate(self.http_protocol, self.http_host, self.http_port, self.http_username, self.http_password)
+
+    @property
+    def realm_manager(self):
+        return self.manage_ui.realm_manager
+
+    @property
+    def useridresolver_manager(self):
+        return self.manage_ui.useridresolver_manager
+
     def reset_resolvers_and_realms(self, resolver=None, realm=None):
         """
         Clear resolvers and realms. Then optionally create a userIdResolver with
         given data and add it to a realm of given name.
         """
-        self.realm_manager = RealmManager(self)
         self.realm_manager.clear_realms()
-
-        self.useridresolver_manager = UserIdResolverManager(self)
         self.useridresolver_manager.clear_resolvers()
 
         if resolver:
             self.useridresolver_manager.create_resolver(resolver)
+            self.useridresolver_manager.close()
 
             if realm:
                 self.realm_manager.open()
@@ -201,14 +224,6 @@ class TestCase(unittest.TestCase):
                 self.realm_manager.close()
         else:
             assert not realm, "Can't create a realm without a resolver"
-
-
-    def reset_policies(self):
-        """
-        Remove all policies
-        """
-        self.policy_manager = PolicyManager(self.driver, self.base_url)
-        self.policy_manager.clear_policies()
 
     def close_alert_and_get_its_text(self):
         try:

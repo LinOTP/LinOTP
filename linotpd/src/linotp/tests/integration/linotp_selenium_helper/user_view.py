@@ -26,54 +26,98 @@
 """Contains UserView class"""
 
 
-from user_id_resolver import UserIdResolver
-from manage_ui import ManageUi
+from manage_elements import ManageTab
 from helper import select
+
 
 class UserViewException(Exception):
     pass
 
-class UserView(ManageUi):
+
+class UserView(ManageTab):
     """Represents the 'User View' tab in the LinOTP WebUI"""
 
-    def __init__(self, testcase, realm_name):
-        super(UserView, self).__init__(testcase)
-        self.realm_name = realm_name.lower()
+    TAB_INDEX = 2
+
+    def __init__(self, manage_ui, realm_name=None):
+        super(UserView, self).__init__(manage_ui)
+        if realm_name:
+            # This realm will be autoselected when the view is opened
+            self.realm_name = realm_name.lower()
+        else:
+            self.realm_name = None
 
     def select_realm(self, realm_name=None):
         """We assume we are one the main page /manage and then select
            the realm from the <select> dropdown on the left
         """
-        if realm_name:
-            self.realm_name = realm_name.lower()
+        if not realm_name:
+            realm_name = self.realm_name
+        else:
+            realm_name = realm_name.lower()
 
         realm_select = self.driver.find_element_by_id('realm')
-        select(self.driver, realm_select, self.realm_name)
+        select(self.driver, realm_select, realm_name)
+        self.wait_for_grid_loading()
 
-    def _open_tab_user_view(self):
+    def _get_tab(self):
+        "Return content element of the tab"
+        tab = self.open_tab()
+        return tab
+
+    def _open_tab_user_view(self, realm_name=None):
         """
         Select the 'User View' tab and the realm
 
         Returns the element containing the user view
         """
-        tab = self.open_tab(2)
-        self.select_realm()
-        self.wait_for_waiting_finished()
+        tab = self._get_tab()
+        self.select_realm(realm_name)
         return tab
 
-    def get_num_users(self):
-        """Return the number of users in the current realm"""
-        usertab = self._open_tab_user_view()
+    def get_num_users(self, realm_name=None):
+        """
+        Return the number of users in the realm
 
+        @param realm_name If given, switch to this realm first
+        """
+        usertab = self._open_tab_user_view(realm_name)
+        assert usertab, "User tab could not be opened for realm %s" % realm_name
+
+        self.clear_filters()
         pPageStat = usertab.find_element_by_css_selector("div.flexigrid "
-            "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat").text
+                                                         "> div.pDiv > div.pDiv2 > div.pGroup > span.pPageStat").text
         if pPageStat == "No items":
             return 0
         numbers = [int(s) for s in pPageStat.split() if s.isdigit()]
         if len(numbers) != 3:
             raise UserViewException("Could not determine number of users. "
-                                     "Missing: 'Displaying N1 to N2 of N3'. Found:<%s>" % pPageStat)
+                                    "Missing: 'Displaying N1 to N2 of N3'. Found:<%s>" % pPageStat)
         return numbers[2]
+
+    def _get_searchbox_element(self):
+        """
+        Return element containing user search box
+        """
+        usertab = self.open_tab()
+        search_box = usertab.find_element_by_css_selector("div.flexigrid "
+                                                          "> div.sDiv > div.sDiv2 > input[name=\"q\"]")
+        return search_box
+
+    def clear_filters(self):
+        # Clear filter settings and reload
+        e = self._get_searchbox_element()
+        e.clear()
+        self._submit_search()
+        self.wait_for_grid_loading()
+
+    def _submit_search(self):
+        usertab = self._open_tab_user_view()
+        submit_button = usertab.find_element_by_css_selector(
+            "div.flexigrid > div.sDiv > div.sDiv2 > "
+            "input[name=\"search_button\"]"
+        )
+        submit_button.click()
 
     def get_user_element(self, username):
         """Return element for the user in question
@@ -82,22 +126,17 @@ class UserView(ManageUi):
         usertab = self._open_tab_user_view()
         usertab_id = usertab.get_attribute("id")
 
-        search_box = usertab.find_element_by_css_selector("div.flexigrid "
-            "> div.sDiv > div.sDiv2 > input[name=\"q\"]")
+        search_box = self._get_searchbox_element()
         search_box.clear()
         search_box.send_keys(username)
 
         select_type = usertab.find_element_by_css_selector(
-                    "div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "select[name=\"qtype\"]"
-                )
+            "div.flexigrid > div.sDiv > div.sDiv2 > "
+            "select[name=\"qtype\"]"
+        )
         select(self.driver, select_type, "in username")
 
-        submit_button = usertab.find_element_by_css_selector(
-                    "div.flexigrid > div.sDiv > div.sDiv2 > "
-                    "input[name=\"search_button\"]"
-                )
-        submit_button.click()
+        self._submit_search()
         self.wait_for_grid_loading()
 
         usernames = self.driver.find_elements_by_css_selector(
