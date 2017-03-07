@@ -103,6 +103,8 @@ from linotp.provider import setProvider
 from linotp.provider import delProvider
 from linotp.provider import setDefaultProvider
 
+from linotp.lib.type_utils import boolean
+
 from paste.fileapp import FileApp
 from cgi import escape
 from pylons.i18n.translation import _
@@ -610,6 +612,23 @@ class SystemController(BaseController):
 
             new_resolver_name = param['name']
             previous_name = param.get('previous_name', '')
+
+
+            if 'readonly' in param:
+
+                # the default for the readonly attribute is - to not exist :)
+                # if it does, the conversion will fail and we raise an exception
+                if not param['readonly']:
+                    # remove empty 'readonly' attribute
+                    del param['readonly']
+                else:
+                    try:
+                        boolean(param['readonly'])
+                    except Exception as exx:
+                        msg = ("Failed to convert attribute 'readonly' to"
+                               " a boolean value! %r")
+                        log.error(msg, param['readonly'])
+                        raise Exception(msg % param['readonly'])
 
             if not previous_name:
                 mode = 'create'
