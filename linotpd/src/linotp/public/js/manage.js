@@ -3173,8 +3173,7 @@ function save_sql_config(){
         '#sql_mapping': 'Map',
         '#sql_where': 'Where',
         '#sql_conparams': 'conParams',
-        '#sql_encoding' : 'Encoding',
-        '#sql_readonly': 'readonly',
+        '#sql_encoding' : 'Encoding'
     };
     var url = '/system/setResolver';
     var params = {};
@@ -4526,7 +4525,6 @@ $(document).ready(function(){
         params['ConnectionParams']     = $('#sql_conparams').val();
         params['Encoding']      = $('#sql_encoding').val();
         params['Limit']      	= $('#sql_limit').val();
-        params['readonly']      = $('#sql_readonly').val();
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;
@@ -6761,7 +6759,6 @@ function resolver_http(name, duplicate){
 }
 
 function resolver_set_sql(obj) {
-
     $('#sql_driver').val(obj.result.value.data.Driver);
     $('#sql_server').val(obj.result.value.data.Server);
     $('#sql_port').val(obj.result.value.data.Port);
@@ -6774,7 +6771,6 @@ function resolver_set_sql(obj) {
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);
     $('#sql_encoding').val(obj.result.value.data.Encoding);
-    $('#sql_readonly').val(obj.result.value.data.readonly);
 }
 
 /**
