@@ -175,11 +175,11 @@ class SQLImportHandler(ImportHandler):
 
         resolver_parameters = {
             "Driver": url.drivername,
-            "Server": url.host,
+            "Server": url.host or "",
             "Port": str(url.port or ""),
             "Database": url.database,
-            "User": url.username,
-            "Password": url.password,
+            "User": url.username or "",
+            "Password": url.password or "",
             "Table": self.table_name,
             "Where": where,
             "Map": json.dumps(mapping),
