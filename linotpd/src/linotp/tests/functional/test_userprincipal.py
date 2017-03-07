@@ -30,51 +30,25 @@ Verify LinOTP for UserPrincipal (user@domain) authentication
 the test will create a static-password token, and
 will try to verify the user in different situations.
 """
-
-
-import __builtin__
-__builtin__.use_standalone_advanced_controller = True
-from linotp.tests.advanced_controller import TestAdvancedController
-from linotp.tests.tools.json_utils    import JsonUtils
-
-
 import logging
+import json
+
+from linotp.tests import TestController
+
 log = logging.getLogger(__name__)
 
 
-class TestUserPrincipalController(TestAdvancedController):
-    def __init__(self, *args, **kwargs):
-        super(TestUserPrincipalController, self).__init__(*args, **kwargs)
+class TestUserPrincipalController(TestController):
 
     def setUp(self):
-        super(TestUserPrincipalController, self).setUp()
-
-        self.setAuthorization(self.getDefaultAuthorization())
-        
-        # Delete previous configuration...
-        self.deleteAllTokens()
-        self.deleteAllRealms()
-        self.deleteAllResolvers()
-        # Create basic test environment...
-        self.createDefaultResolvers()
-        self.createDefaultRealms()
-
-        self.splitVal = self.getConfiguration(key='splitAtSign')
-        self.setConfiguration('splitAtSign', False)
-        self.setAuthorization(None)
+        self.tokens = {}
+        TestController.setUp(self)
+        self.set_config_selftest()
+        self.create_common_resolvers()
+        self.create_common_realms()
 
     def tearDown(self):
-        self.setAuthorization(self.getDefaultAuthorization())
-
-        # The new setConfiguration will remove setting if Value is "None" or "Empty"
-        self.setConfiguration('splitAtSign', self.splitVal)
-
-        self.deleteAllTokens()
-        self.deleteAllRealms()
-        self.deleteAllResolvers()
-
-        self.setAuthorization(None)
-        super(TestUserPrincipalController, self).tearDown()
+        return TestController.tearDown(self)
 
     def test_userprincipal(self):
         """
@@ -84,32 +58,76 @@ class TestUserPrincipalController(TestAdvancedController):
         will try to verify the user in different situations.
 
         """
-        user = "pass@user"
-        pin = "1234"
-        realm = 'myDefRealm'
+        params = {
+            "key": 'splitAtSign'
+            }
+        response = self.make_system_request('getConfig', params=params)
+        jresp = json.loads(response.body)
+        splitAtSign = jresp.get('result', {}).get(
+                                'value').get(
+                                'getConfig splitAtSign', '')
+        try:
 
-        # Initialize authorization (we need authorization in
-        # token creation/deletion)...
-        self.setAuthorization(self.getDefaultAuthorization())
-        # Create test token...
-        res = self.createToken(user=user,
-                               realm=realm,
-                               serial="F722362",
-                               pin=pin,
-                               otpkey="AD8EABE235FC57C815B26CEF37090755",
-                               type='spass')
-        serial = JsonUtils.getJson(res, ['serial'])
+            params = {
+                'splitAtSign': False
+                }
+            response = self.make_system_request('setConfig', params=params)
 
-        # although not needed, we assign token...
-        self.assignToken(serial=serial, user=user, realm=realm)
-        self.enableToken(serial=serial)
+            user = "pass@user"
+            pin = "1234"
+            realm = 'myDefRealm'
+            serial = "F722362"
+            # Initialize authorization (we need authorization in
+            # token creation/deletion)...
 
-        # Revoke authorization...
-        self.setAuthorization(None)
+            params = {
+                   "realm": realm,
+                   "serial": serial,
+                   'pin': pin,
+                   "otpkey": "AD8EABE235FC57C815B26CEF37090755",
+                   "type": 'spass'
+                    }
 
-        # test user-principal authentication
-        self.validateCheck(user=user, password=pin, realm=realm)
+            # Create test token...
+            response = self.make_admin_request('init', params=params)
+            self.assertTrue(serial in response, response)
 
-        # Reactivate authentication
-        self.setAuthorization(self.getDefaultAuthorization())
-        self.removeTokenBySerial(serial)
+            # although not needed, we assign token...
+            params = {
+                'serial': serial,
+                'user': user,
+                'realm': realm
+                }
+            response = self.make_admin_request('assign', params=params)
+            self.assertTrue('"status": true' in response, response)
+
+            params = {
+                'serial': serial,
+                }
+
+            response = self.make_admin_request('enable', params=params)
+            self.assertTrue('"status": true' in response, response)
+
+            # test user-principal authentication
+            params = {
+                'user': user,
+                'pass': pin,
+                'realm': realm
+                }
+
+            response = self.make_validate_request('check', params=params)
+
+            params = {
+                'serial': serial,
+                }
+
+            response = self.make_admin_request('remove', params=params)
+
+        finally:
+
+            # restore original state
+
+            params = {
+                'splitAtSign': splitAtSign
+                }
+            response = self.make_system_request('setConfig', params=params)

@@ -1,0 +1,24 @@
+root,0,,root-def-passwd,,,,yn0Zck2KDip6U
+localuser,10,,localuser,,,,oYfMdAcwVs2DQ
+horst,11,,horst,,,,yn0Zck2KDip6U
+remoteuser,20,,remoteuser,,,,x
+def,1004,User,def,,,,yn0Zck2KDip6U
+virtualbox,1005,,Work,WorkPhone,TelPriv,,x
+b1822,1008,,1822,,,,yn0Zck2KDip6U
+postgres,116,administrator,PostgreSQL,,,,yn0Zck2KDip6U
+kölbel,345,User,Umlaut,,,,x
+7654321,346,User,Umlaut,,,,x
+user1,347,User,Umlaut,,,,JT7bTACk0ud6U
+user2,348,User,Umlaut,,,,e7yT2qttrNrlk
+passthru_user1,1100,True,Pascal,+49(0)1234-24,+49(0)5678-23,pass.true@example.com,JT7bTACk0ud6U
+passthru_user2,1101,True,Pascal,+49(0)1234-24,+49(0)5678-23,pass.true@example.com,e7yT2qttrNrlk
+detail_user,2101,,,,,,e7yT2qttrNrlk
+hans,42,Müller,Hans,+49(0)1234-22,+49(0)5678-22,hans@example.com,e7yT2qttrNrlk
+susi,1336,Bauer,Susanne,+49(0)1234-24,+49(0)5678-23,susanne@example.com,e7yT2qttrNrlk
+rollo,21,Fischer,Rollobert,+49(0)1234-24,+49(0)5678-24,rollo@example.com,e7yT2qttrNrlk
+pass@user,1111,True,Pascal,+49(0)1234-24,+49(0)5678-23,pass.true@example.com,JT7bTACk0ud6U
+molière,8860,Poquelin,Jean-Baptiste,+49 0 123456,+49 0 55667788,moliere@example.com,$6$ilflOPv9uX4L35R0$bOniMzyz3XRU3b3MuSiclnAjlZbVIzlgbJEAK6CnZNOKHY1xzz0cVAq2pOWl6ed0a4jtxdG21IH36YxV4pygp0
+shakespeare,8861,Shakespeare,William,+49 0 123457,+49 0 55667789,shakespeare@example.com,$6$QempxPrcLppmUING$w33iUzQHnQM9kCg9oW7PY2OpWQvHAG4I3GRgEaYbQrWSwuMuMG3bkn1bST7h8RjKwmEa19sZzQFrMnAfBEb9c1
+lorca,8862,García Lorca,Federico,+49 0 123458,+49 0 55667790,lorca@example.com,$6$MlG3hFoLDBVJAMDz$ZPDGAJGY4QSaJYl4hCA11O1bWlYuciJuh2L5ta6gFsUQD25EXPUHdFXlxb1NTa8qTxA4eWdYyseOwahZdMWB4/
+aἰσχύλος,8863,,Αἰσχύλος,+49 0 123459,+49 0 55667791,aischylos@example.com,$6$UcLcRasNJYGYCxMY$KQ93rXcEKMXS7ZBYwz..CtzYWdSqn9/zvCINXSrKZXIKhNnJfUHn3tAP39V49hL2RI3gYi.xEsGg0cTEZDiRk1
+beckett,8864,Beckett,Samuel,+49 0 123460,+49 0 55667792,beckett@example.com,$6$cSVhdG4ulVxnK/HH$nTVHIt4NnLoA4VcIfPb5EVrxeoXW8sahz3eCYe6DCHn5XK7zeV4LFdruw221MJ0pKhY2nfUJjUuGJPTSvEjvJ.

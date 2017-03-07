@@ -29,6 +29,7 @@
 Test the support for resolver definitions in system or admin policy user entry
 """
 
+import os
 import base64
 import logging
 from linotp.tests import TestController
@@ -60,12 +61,11 @@ class TestAdminAuthController(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-
     def create_extra_resolver(self):
         resolver_params = {
             'adminResolver': {
                 'name': 'adminResolver',
-                'fileName': '%(here)s/../data/testdata/admin-passwd',
+                'fileName': os.path.join(self.fixture_path, 'admin-passwd'),
                 'type': 'passwdresolver',
                 },
             }
@@ -135,7 +135,6 @@ class TestAdminAuthController(TestController):
         response = self.make_admin_request('show', params=parameters,
                                            auth_user='toor@adomain')
         self.assertTrue('"status": false' in response, response)
-
         return
 
     def test_admin_resolver_and_domain(self):

@@ -327,14 +327,10 @@ class TestSystemController(TestController):
         '''
         Testing the deleting of a resolver
         '''
-        fixture_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'fixtures',
-        )
 
         params = {'name': 'reso1',
                   'type': 'passwdresolver',
-                  'fileName': os.path.join(fixture_path, 'my-pass2')}
+                  'fileName': os.path.join(self.fixture_path, 'my-pass2')}
 
         response = self.make_system_request(action='setResolver',
                                             params=params)
@@ -343,7 +339,7 @@ class TestSystemController(TestController):
 
         params = {'name': 'reso2',
                   'type': 'passwdresolver',
-                  'fileName': os.path.join(fixture_path, 'my-pass2')}
+                  'fileName': os.path.join(self.fixture_path, 'my-pass2')}
 
         response = self.make_system_request(action='setResolver',
                                             params=params)
@@ -351,7 +347,7 @@ class TestSystemController(TestController):
         self.assertTrue('"value": true' in response, response)
         params = {'name': 'reso3',
                   'type': 'passwdresolver',
-                  'fileName': os.path.join(fixture_path, 'my-pass2')}
+                  'fileName': os.path.join(self.fixture_path, 'my-pass2')}
 
         response = self.make_system_request(action='setResolver',
                                             params=params)

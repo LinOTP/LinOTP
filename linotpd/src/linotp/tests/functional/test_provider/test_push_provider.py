@@ -76,27 +76,12 @@ class TestPushProviderController(TestController):
     R_AUTH_STATUS = 200
     R_AUTH_DETAIL = VALID_REQUEST
 
-
     def setUp(self):
         return
 
     def tearDown(self):
         self.delete_all_resolvers()
         super(TestPushProviderController, self).tearDown()
-
-    def _fixture_file(self, file_name):
-        """
-        return the fully qualified file name of a file in the fixture directory
-
-        :param file_name: the file in the fixture dir
-        :return: the absolute filename of the
-        """
-        this_dir = os.path.dirname(os.path.realpath(__file__))
-
-        fixture_dir = os.path.realpath(os.path.join(this_dir,
-                                                    '..', 'fixtures'))
-        abs_file_name = os.path.join(fixture_dir, file_name)
-        return abs_file_name
 
     def test_read_config(self):
         """
@@ -111,7 +96,9 @@ class TestPushProviderController(TestController):
         #
 
         configDict['Timeout'] = '30'
-        configDict['access_certificate'] = self._fixture_file('cert.pem')
+        configDict['access_certificate'] = os.path.join(self.fixture_path,
+                                                        'cert.pem')
+
         configDict['push_url'] = "https://Notification.keyidentity.com/send"
 
         push_prov.loadConfig(configDict)
@@ -174,7 +161,7 @@ class TestPushProviderController(TestController):
         #
 
         with self.assertRaises(IOError):
-            cert_file_name = self._fixture_file('non_exist.pem')
+            cert_file_name = os.path.join(self.fixture_path, 'non_exist.pem')
             configDict['access_certificate'] = cert_file_name
             push_prov.loadConfig(configDict)
 
@@ -187,7 +174,7 @@ class TestPushProviderController(TestController):
             push_prov.loadConfig(configDict)
 
         # restore access certificate parameter
-        cert_file_name = self._fixture_file('cert.pem')
+        cert_file_name = os.path.join(self.fixture_path, 'cert.pem')
         configDict['access_certificate'] = cert_file_name
 
         # check if missing push_url is as well detected
@@ -203,7 +190,7 @@ class TestPushProviderController(TestController):
         # file is made
         #
 
-        server_cert_file_name = self._fixture_file('cert.pem')
+        server_cert_file_name = os.path.join(self.fixture_path, 'cert.pem')
         configDict['server_certificate'] = server_cert_file_name
         push_prov.loadConfig(configDict)
 
@@ -222,7 +209,8 @@ class TestPushProviderController(TestController):
 
         configDict = {}
         configDict['Timeout'] = '30'
-        configDict['access_certificate'] = self._fixture_file('cert.pem')
+        configDict['access_certificate'] = os.path.join(self.fixture_path,
+                                                        'cert.pem')
         configDict['push_url'] = "https://notification.keyidentity.com/send"
 
         push_prov = DefaultPushProvider()

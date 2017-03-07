@@ -139,6 +139,7 @@ if isinstance(lang, list):
                 <li><a href='#' id='menu_tools_checkpolicy'>${_("Check Policy")}</a></li>
                 <li><a href='#' id='menu_tools_exporttoken'>${_("Export Token Info")}</a></li>
                 <li><a href='#' id='menu_tools_exportaudit'>${_("Export Audit Trail")}</a></li>
+                <li><a href='#' id='menu_tools_importusers'>${_("Import Users")}</a></li>
                 <li><a href='#' id='menu_tools_migrateresolver'>${_("Migrate Resolver")}</a></li>
             </ul>
         </li>
@@ -1112,6 +1113,149 @@ syst></textarea></td>
     }
 </script>
 
+<!-- ###################### import users ####################### -->
+
+<div id="dialog_import_users">
+    <form class="cmxform" id="form_import_users" action="/tools/import_users" method="post" enctype="multipart/form-data">
+        <p>${_("With this dialog you can import users to create an internally managed user resolver.")}</p>
+        <br>
+        <p>${_("You can upload csv files with the following column order:")}</p>
+        <table class="data-table">
+            <tr>
+                <td>username</td>
+                <td>userid</td>
+                <td>surname</td>
+                <td>givenname</td>
+                <td>email</td>
+                <td>phone</td>
+                <td>mobile</td>
+                <td>password</td>
+            </tr>
+        </table>
+        <br>
+        <p>
+            <input name="file" id="import_users_file" type="file" size="30" accept="text/*"
+                    title='${_("Please choose the csv file containing the users to import")}' required>
+        </p>
+        <br>
+        <fieldset>
+            <legend class='resolver_dialog_label'>${_("CSV Configuration")}</legend>
+            <table>
+                <tr>
+                    <td>${_("Field delimiter:")}</td>
+                    <td>
+                        <select name="delimiter" required>
+                            <option value="," selected>,</option>
+                            <option value=";">;</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>${_("Text delimiter:")}</td>
+                    <td>
+                        <select name="quotechar" required>
+                            <option value="&#34;" selected>"</option>
+                            <option value="&#39;">'</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>${_("Password format:")}</td>
+                    <td>
+                        <label>
+                            <input type="radio" name="passwords_in_plaintext" value="True" checked>
+                            ${_("plaintext (will be hashed during import)")}
+                        </label>
+                        <br>
+                        <label title='${_("Permitted formats are bcrypt, SHA256crypt and SHA512crypt")}'>
+                            <input type="radio" name="passwords_in_plaintext" value="False">
+                            ${_("secure hash")}
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <label title="Check this if the first row contains header information an should get skipped">
+                            <input type="checkbox" name="skip_header" value="True">
+                            ${_("Skip first line (header information)")}
+                        </label>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+        <br>
+        <p>${_("The users of the csv file will update an existing or populate a new managed resolver which needs to be added to a realm to view them in the user view.")}</p>
+        <table>
+            <tr>
+                <td>${_("Resolver:")}</td>
+                <td>
+                    <table>
+                        <tr>
+                            <td style="width: 100%">
+                                <select name="resolver" id="import_users_resolver" required></select>
+                            </td>
+                            <td style="white-space: nowrap">
+                                &nbsp;or <a href="#" id="import_users_create_resolver">${_("create new...")}</a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>${_("Target realm:")}</td>
+                <td>
+                    <table>
+                        <tr>
+                            <td style="width: 100%">
+                                <select name="target_realm" id="import_users_targetrealm" required></select>
+                            </td>
+                            <td style="white-space: nowrap">
+                                &nbsp;or <a href="#" id="import_users_create_realm">${_("create new...")}</a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <input type="hidden" id="import_users_dryrun" name="dryrun" value="true">
+        <input type="hidden" id="import_users_session" name="session" value="">
+    </form>
+</div>
+
+<div id="dialog_import_users_confirm">
+    <p>${_("The user import from the selected file would result in the \
+    following changes. If results are as expected, you have to complete \
+    the import by confirming the changes.")}</p>
+    <div id="import_user_dryrun_results">
+        <h3>${_("Summary")}</h3>
+        <div>
+            <ul class="summary"></ul>
+        </div>
+        <h3>${_("Details")}</h3>
+        <div id="import_user_dryrun_result_details">
+            <div class="detail-tabs">
+                <ul>
+                    <li><a href="#import_user_dryrun_result_d_new">New</a></li>
+                    <li><a href="#import_user_dryrun_result_d_mod">Modified</a></li>
+                    <li><a href="#import_user_dryrun_result_d_del">Deleted</a></li>
+                    <li><a href="#import_user_dryrun_result_d_unchanged">Unchanged</a></li>
+                </ul>
+                <div id="import_user_dryrun_result_d_new">
+                    <table class="data-table"></table>
+                </div>
+                <div id="import_user_dryrun_result_d_mod">
+                    <table class="data-table"></table>
+                </div>
+                <div id="import_user_dryrun_result_d_del">
+                    <table class="data-table"></table>
+                </div>
+                <div id="import_user_dryrun_result_d_unchanged">
+                    <table class="data-table"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- ###################### copy token ####################### -->
 <div id='dialog_copy_token'>
@@ -2040,7 +2184,9 @@ syst></textarea></td>
                 <td><input type="text" name="sql_encoding" class="optional"  id="sql_encoding" size="30" maxlength="200"></td></tr>
             <tr><td><label for=sql_conparams>${_("Additional connection parameters")}:</label></td>
                 <td><input type="text" name="sql_conparams" class="optional"  id="sql_conparams" size="30"></td></tr>
+                
         </table>
+        <input id="sql_readonly" name="sql_readonly" type="hidden" >
         <button class="action-button" id="button_test_sql">${_("Test SQL connection")}</button>
         <div id="progress_test_sql"><img src="/images/ajax-loader.gif" border="0" alt=""> ${_("Testing connections...")} </div>
     </fieldset>

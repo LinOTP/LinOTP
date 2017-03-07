@@ -270,6 +270,324 @@ function create_tools_exportaudit_dialog() {
     return $dialog;
 }
 
+function create_tools_importusers_dialog() {
+    var import_users_dialog = $('#dialog_import_users').dialog({
+        autoOpen: false,
+        title: i18n.gettext("Import Users"),
+        width: 750,
+        modal: true,
+        buttons: [
+            {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_import_users_close",
+                text: i18n.gettext("Cancel")
+            },
+            {
+                click:  function(){
+                    if($('#form_import_users').valid()) {
+                        show_waiting();
+
+                        $('#import_users_session').val(getsession());
+
+                        $('#form_import_users').ajaxSubmit({
+                            success: import_users_dryrun_callback,
+                            error: import_users_dryrun_callback
+                        });
+                    }
+                },
+                id: "button_import_users",
+                text: i18n.gettext("Import")
+            }
+        ],
+        create: function(){
+            do_dialog_icons();
+            $('#import_users_create_resolver').click(function() {
+                $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='res_name' placeholder='"+i18n.gettext("Resolver name")+"' type='text' autofocus></form></div>").dialog({
+                    modal: true,
+                    title: i18n.gettext("Create a new resolver"),
+                    buttons: [
+                        {
+                            text: i18n.gettext("Cancel"),
+                            click: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        },
+                        {
+                            text: i18n.gettext("Create"),
+                            click: function() {
+                                if($("form", this).valid()) {
+                                    var name = $("input", this).val();
+                                    $("#import_users_resolver").append('<option val="' + name + '">' + name + '</option>');
+                                    $("#import_users_resolver").val(name);
+                                    $( this ).dialog( "close" );
+                                }
+                            }
+                        }
+                    ],
+                    create: function() {
+                        if($('#import_users_file').val()) {
+                            var resolver = $('#import_users_file').val().split('\\').pop().split(".")[0];
+                            $("input", this).val(resolver);
+                        }
+                        g.current_resolver_name = "";
+                        $("form", this).validate({
+                            debug: true,
+                            rules: {
+                                "res_name": {
+                                    required: true,
+                                    minlength: 4,
+                                    resolvername: true,
+                                    unique_resolver_name: true
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            $('#import_users_create_realm').click(function() {
+                $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='realm_name' placeholder='"+i18n.gettext("Realm name")+"' type='text' autofocus></form></div>").dialog({
+                    modal: true,
+                    title: i18n.gettext("Create a new realm"),
+                    buttons: [
+                        {
+                            text: i18n.gettext("Cancel"),
+                            click: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        },
+                        {
+                            text: i18n.gettext("Create"),
+                            click: function() {
+                                if($("form", this).valid()) {
+                                    var name = $("input", this).val();
+                                    $("#import_users_targetrealm").append('<option val="' + name + '">' + name + '</option>');
+                                    $("#import_users_targetrealm").val(name);
+                                    $( this ).dialog( "close" );
+                                }
+                            }
+                        }
+                    ],
+                    create: function() {
+                        if($('#import_users_file').val()) {
+                            var realm = $('#import_users_file').val().split('\\').pop().split(".")[0];
+                            $("input", this).val(realm);
+                        }
+                        $("form", this).validate({
+                            debug: true,
+                            rules: {
+                                "realm_name": {
+                                    required: true,
+                                    minlength: 4,
+                                    realmname: true,
+                                    unique_realm_name: true
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        },
+        open: function() {
+            show_waiting();
+
+            if(import_users_dialog.data("caller") != "confirm") {
+                $('#import_users_dryrun').val("true");
+                $('#import_users_file').val("");
+                $('#import_users_resolver').val("");
+                $('#import_users_targetrealm').val("");
+            }
+
+            //prefill resolver and realm selects
+            $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
+                var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
+                for(var res in data.result.value) {
+                    if(data.result.value[res].readonly === true) {
+                        resolvers += '<option value="' + res + '">' + res + '</option>';
+                    }
+                }
+                $('#import_users_resolver').html(resolvers);
+
+                $.post('/system/getRealms', {'session':getsession()}, function(data, status, XMLHttpRequest){
+                    var realms = '<option value="" disabled selected>[' + i18n.gettext("Select realm") + ']</option>';
+                    for(var realm in data.result.value) {
+                        realms += '<option value="' + realm + '">' + realm + '</option>';
+                    }
+                    $('#import_users_targetrealm').html(realms);
+                    hide_waiting();
+                });
+            });
+
+            import_users_dialog.data("caller", "");
+        }
+    });
+    var import_users_confirm_dialog = $('#dialog_import_users_confirm').dialog({
+        autoOpen: false,
+        title: i18n.gettext("Confirm changes"),
+        width: 750,
+        height: $(window).height() * .9,
+        modal: true,
+        buttons: [
+            {
+                click: function(){
+                    $(this).dialog('close');
+                    import_users_dialog.data("caller", "confirm").dialog('open');
+                },
+                id: "button_import_users_confirm_cancel",
+                text: i18n.gettext("Cancel")
+            },
+            {
+                click:  function(){
+                    show_waiting();
+
+                    $('#import_users_dryrun').val("false");
+                    $('#import_users_session').val(getsession());
+
+                    $('#form_import_users').ajaxSubmit({
+                        success: import_users_callback,
+                        error: import_users_callback
+                    });
+                },
+                id: "button_import_users_confirm_confirm",
+                text: i18n.gettext("Confirm")
+            }
+        ],
+        create: function(){
+            do_dialog_icons();
+        },
+        open: function() {
+            $('#import_user_dryrun_results').accordion({
+                active:0,
+                heightStyle: "fill"
+            });
+            $( "#import_user_dryrun_result_details .detail-tabs" ).tabs({
+              active: 0
+            });
+        }
+    });
+    return import_users_dialog;
+}
+
+function import_users_callback(response, status) {
+    hide_waiting();
+    $('#dialog_import_users_confirm').dialog('close');
+    if(!response.result) {
+        alert_box({'title': i18n.gettext('Connection error'),
+            'text': i18n.gettext('Error during import users request.'),
+            'is_escaped': true});
+        return;
+    }
+
+    if(response.result.status !== true) {
+        alert_box({'title': i18n.gettext('LinOTP error ' + response.result.error.code),
+            'text': i18n.gettext('Error during import users request: ' + response.result.error.message),
+            'is_escaped': false});
+        return;
+    }
+
+    fill_realms();
+
+    alert_box({'title': i18n.gettext('Import successful'),
+        'text': i18n.gettext('The resolver ' + $('#import_users_resolver').val() + ' was successfully updated.'),
+        'is_escaped': false});
+}
+
+function import_users_dryrun_callback(response, status) {
+    hide_waiting();
+    if(!response.result) {
+        alert_box({'title': i18n.gettext('Connection error'),
+            'text': i18n.gettext('Error during import users request.'),
+            'is_escaped': true});
+        return;
+    }
+
+    if(response.result.status !== true) {
+        alert_box({'title': i18n.gettext('LinOTP error ' + response.result.error.code),
+            'text': i18n.gettext('Error during import users request: ' + response.result.error.message),
+            'is_escaped': false});
+        return;
+    }
+
+    $('#dialog_import_users').dialog('close');
+
+    var result = response.result.value;
+    var created = [], modified = [], deleted = [], unchanged = [], k, countTotal;
+
+    for (k in result.created) {
+        if (Object.prototype.hasOwnProperty.call(result.created, k)) {
+            created.push(k);
+        }
+    }
+    for (k in result.modified) {
+        if (Object.prototype.hasOwnProperty.call(result.modified, k)) {
+            modified.push(k);
+        }
+    }
+    for (k in result.deleted) {
+        if (Object.prototype.hasOwnProperty.call(result.deleted, k)) {
+            deleted.push(k);
+        }
+    }
+    for (k in result.updated) {
+        if (Object.prototype.hasOwnProperty.call(result.updated, k)) {
+            unchanged.push(k);
+        }
+    }
+
+    var summary = "<li>" + sprintf(i18n.gettext('%s new users'), "<b>"+created.length+"</b>") + "</li>"
+            + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>"+modified.length+"</b>") + "</li>"
+            + "<li>" + sprintf(i18n.gettext('%s users will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
+            + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>";
+    $('#import_user_dryrun_results .summary').html(summary)
+
+    if(created.length > 0) {
+        var tablecontent = "";
+        for(i in created) {
+            tablecontent += "<tr><td>" + created[i] + "</td><td>" + result.created[created[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_new .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_new .data-table').html("<td>" + i18n.gettext("No users will be created!") + "</td>");
+    }
+
+    if(modified.length > 0) {
+        var tablecontent = "";
+        for(i in modified) {
+            tablecontent += "<tr><td>" + modified[i] + "</td><td>" + result.modified[modified[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_mod .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_mod .data-table').html("<td>" + i18n.gettext("No existing users will be modified!") + "</td>");
+    }
+
+    if(deleted.length > 0) {
+        var tablecontent = "";
+        for(i in deleted) {
+            tablecontent += "<tr><td>" + deleted[i] + "</td><td>" + result.deleted[deleted[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_del .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_del .data-table').html("<td>" + i18n.gettext("No users will be deleted!") + "</td>");
+    }
+
+    if(unchanged.length > 0) {
+        var tablecontent = "";
+        for(i in unchanged) {
+            tablecontent += "<tr><td>" + unchanged[i] + "</td><td>" + result.updated[unchanged[i]] + "</td></tr>";
+        }
+        $('#import_user_dryrun_result_d_unchanged .data-table').html(tablecontent);
+    }
+    else {
+        $('#import_user_dryrun_result_d_unchanged .data-table').html("<td>" + i18n.gettext("No user stays unchanged!") + "</td>");
+    }
+
+    $('#dialog_import_users_confirm').dialog('open');
+}
+
 function add_user_data() {
     /*
      * This function returns an object with the user data as needed by the /admin/init controller

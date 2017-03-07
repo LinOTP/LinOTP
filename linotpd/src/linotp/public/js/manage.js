@@ -133,7 +133,7 @@ $.validator.addMethod('valid_json', function (value, element, param) {
 );
 
 jQuery.validator.addMethod("realmname", function(value, element, param){
-    return value.match(/^[a-zA-z0-9_\-\.]+$/i);
+    return value.match(/^[a-zA-Z0-9_\-\.]+$/i);
     },
     i18n.gettext("Please enter a valid realm name. It may contain characters, numbers and '_-.'.")
 );
@@ -141,21 +141,28 @@ jQuery.validator.addMethod("realmname", function(value, element, param){
 jQuery.validator.addMethod("unique_resolver_name", function(value, element, param){
         if(g.current_resolver_name !== value) {
             var resolvers = get_resolvers();
-            return $.inArray(value, resolvers) === -1
+            return $.inArray(value, resolvers) === -1;
         }
         return true;
     },
     i18n.gettext("Resolver name is already in use")
 );
 
+jQuery.validator.addMethod("unique_realm_name", function(value, element, param){
+    var realms = get_realms();
+    return $.inArray(value, realms) === -1;
+    },
+    i18n.gettext("Realm name is already in use")
+);
+
 jQuery.validator.addMethod("resolvername", function(value, element, param){
-    return value.match(/^[a-zA-z0-9_\-]+$/i);
+    return value.match(/^[a-zA-Z0-9_\-]+$/i);
     },
     i18n.gettext("Please enter a valid resolver name. It may contain characters, numbers and '_-'.")
 );
 
 jQuery.validator.addMethod("providername", function(value, element, param){
-    return value.match(/^[a-zA-z0-9_\-]+$/i);
+    return value.match(/^[a-zA-Z0-9_\-]+$/i);
     },
     i18n.gettext("Please enter a valid provider name. It may contain characters, numbers and '_-'.")
 );
@@ -1808,6 +1815,11 @@ function do_dialog_icons(){
             primary: 'ui-icon-extlink'
         }
     });
+    $('.ui-dialog-buttonpane').find('button:contains("Import")').button({
+        icons: {
+            primary: 'ui-icon-play'
+        }
+    });
 }
 
 // #################################################
@@ -3161,7 +3173,8 @@ function save_sql_config(){
         '#sql_mapping': 'Map',
         '#sql_where': 'Where',
         '#sql_conparams': 'conParams',
-        '#sql_encoding' : 'Encoding'
+        '#sql_encoding' : 'Encoding',
+        '#sql_readonly': 'readonly',
     };
     var url = '/system/setResolver';
     var params = {};
@@ -3267,7 +3280,11 @@ function resolvers_load(){
         for (var key in data.result.value) {
             var e_key = escape(key);
             var e_reolver_type = escape(data.result.value[key].type);
-            resolvers += '<li class="ui-widget-content">' + e_key + ' [' + e_reolver_type + ']</li>';
+            var managed = escape(data.result.value[key].readonly);
+            resolvers += '<li class="ui-widget-content' + (managed? " managed" : "") + '">' + e_key
+                    + ' [' + e_reolver_type + ']'
+                    + (managed ? '<span class="managed-tag"> '+i18n.gettext("managed")+'</span>' : '')
+                    + '</li>';
             count = count +1 ;
         }
         resolvers += '</ol>';
@@ -3282,16 +3299,23 @@ function resolvers_load(){
 
             $('#resolvers_select').selectable({
                 stop: function(){
-                    if($("#resolvers_select .ui-selected").length > 0){
-                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected").html());
+                    if($("#resolvers_select .ui-selected:not(.managed)").length > 0){
                         $("#button_resolver_edit").button("enable");
                         $("#button_resolver_duplicate").button("enable");
                         $("#button_resolver_delete").button("enable");
                     }
                     else{
-                        g.resolver_to_edit = null;
                         $("#button_resolver_edit").button("disable");
                         $("#button_resolver_duplicate").button("disable");
+                        $("#button_resolver_delete").button("disable");
+                    }
+
+                    if($("#resolvers_select .ui-selected").length > 0){
+                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected").clone().children().remove().end().text());
+                        $("#button_resolver_delete").button("enable");
+                    }
+                    else{
+                        g.resolver_to_edit = null;
                         $("#button_resolver_delete").button("disable");
                     }
                 },
@@ -4490,16 +4514,19 @@ $(document).ready(function(){
         params['name']              = $('#sql_resolvername').val();
         params['previous_name']     = g.current_resolver_name;
 
-        params['sql_driver']        = $('#sql_driver').val();
-        params['sql_user']          = $('#sql_user').val();
-        params['sql_password']      = $('#sql_password').val();
-        params['sql_server']        = $('#sql_server').val();
-        params['sql_port']          = $('#sql_port').val();
-        params['sql_database']      = $('#sql_database').val();
-        params['sql_table']         = $('#sql_table').val();
-        params['sql_where']         = $('#sql_where').val();
-        params['sql_conparams']     = $('#sql_conparams').val();
-        params['sql_encoding']      = $('#sql_encoding').val();
+        params['Driver']        = $('#sql_driver').val();
+        params['User']          = $('#sql_user').val();
+        params['Password']      = $('#sql_password').val();
+        params['Server']        = $('#sql_server').val();
+        params['Port']          = $('#sql_port').val();
+        params['Database']      = $('#sql_database').val();
+        params['Table']         = $('#sql_table').val();
+        params['Where']         = $('#sql_where').val();
+        params['Map']           = $('#sql_mapping').val();
+        params['ConnectionParams']     = $('#sql_conparams').val();
+        params['Encoding']      = $('#sql_encoding').val();
+        params['Limit']      	= $('#sql_limit').val();
+        params['readonly']      = $('#sql_readonly').val();
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;
@@ -4647,17 +4674,22 @@ $(document).ready(function(){
         $('#cp_policy').html("");
     });
 
-    $dialog_tools_exporttoken = create_tools_exporttoken_dialog();
+    var $dialog_tools_exporttoken = create_tools_exporttoken_dialog();
     $('#menu_tools_exporttoken').click(function(){
         $dialog_tools_exporttoken.dialog('open');
     });
 
-    $dialog_tools_exportaudit = create_tools_exportaudit_dialog();
+    var $dialog_tools_exportaudit = create_tools_exportaudit_dialog();
     $('#menu_tools_exportaudit').click(function(){
         $dialog_tools_exportaudit.dialog('open');
     });
 
-    $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
+    var $dialog_tools_importusers = create_tools_importusers_dialog();
+    $('#menu_tools_importusers').click(function(){
+        $dialog_tools_importusers.dialog('open');
+    });
+
+    var $dialog_tools_migrateresolver = create_tools_migrateresolver_dialog();
     $('#menu_tools_migrateresolver').click(function(){
         //_fill_realms($('#tools_getserial_realm'),1)
         _fill_resolvers($('#copy_to_resolver'))
@@ -6742,6 +6774,7 @@ function resolver_set_sql(obj) {
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);
     $('#sql_encoding').val(obj.result.value.data.Encoding);
+    $('#sql_readonly').val(obj.result.value.data.readonly);
 }
 
 /**

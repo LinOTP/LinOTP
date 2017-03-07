@@ -2280,39 +2280,6 @@ class AdminController(BaseController):
 
         return ldap_params
 
-    def _sql_parameter_mapping(self, params):
-        """
-        translate the ui parameters into SQLResolver format
-        """
-
-        # setup the sql parameters including defaults
-
-        sql_params = {
-            "Where": '',
-            "ConnectionParams": '',
-        }
-
-        mapping = {
-            "sql_driver": "Driver",
-            "sql_server": "Server",
-            "sql_port": "Port",
-            "sql_database": "Database",
-            "sql_user": "User",
-            "sql_table": "Table",
-            "sql_where": "Where",
-            "sql_conparams": "ConnectionParams",
-            "sql_password": 'Password',
-            "sql_map": 'Map',
-        }
-
-        for key, value in params.items():
-            if key.lower() in mapping:
-                sql_params[mapping[key.lower()]] = value
-            else:
-                sql_params[key] = value
-
-        return sql_params
-
     def testresolver(self):
         """
         method:
@@ -2390,8 +2357,6 @@ class AdminController(BaseController):
 
             if typ == 'ldapresolver':
                 param = self._ldap_parameter_mapping(request_params)
-            elif typ == 'sqlresolver':
-                param = self._sql_parameter_mapping(request_params)
 
             previous_name = param.get('previous_name', '')
 

@@ -167,6 +167,8 @@ class IdResolver (UserIdResolver):
 
         }
 
+    resolver_parameters.update(UserIdResolver.resolver_parameters)
+
     CERTFILE = None
     CERTFILE_last_modified = None
     SYS_CERTFILE = None

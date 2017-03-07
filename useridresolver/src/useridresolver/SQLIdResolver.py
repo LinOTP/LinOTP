@@ -102,9 +102,6 @@ def check_php_password(password, stored_hash):
     return result
 
 
-
-
-
 def make_connect(driver, user, pass_, server, port, db, conParams=""):
     '''
     create a connect string from decicated parts
@@ -136,8 +133,15 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
         param_str = conParams
         settings = {}
         settings["{PORT}"] = port
-        settings["{DBUSER}"] = user.strip()
-        settings["{SERVER}"] = server.strip()
+
+        if user:
+            user = user.strip()
+        settings["{DBUSER}"] = user
+
+        if server:
+            server = server.strip()
+
+        settings["{SERVER}"] = server
         settings["{PASSWORT}"] = pass_
         settings["{DATABASE}"] = db
         for key, value in settings.items():
@@ -147,15 +151,15 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
         connect = "%s%s" % (driver, url_quote)
     else:
         connect = driver + "://"
-        if len(user.strip()) > 0:
+        if user and len(user.strip()) > 0:
             connect = connect + user
-        if len(pass_.strip()) > 0:
+        if pass_ and len(pass_.strip()) > 0:
             connect = connect + ":" + pass_
-        if len(server.strip()) > 0:
-            if len(user.strip()) > 0:
+        if server and len(server.strip()) > 0:
+            if user and len(user.strip()) > 0:
                 connect = connect + "@"
             connect = connect + server
-        if len(port.strip()) > 0:
+        if port and len(port.strip()) > 0:
             connect = connect + ":" + str(port)
         # required db
         if db != "":
@@ -163,7 +167,6 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
 
         if conParams != "":
             connect = connect + "?" + conParams
-
 
     return connect
 
@@ -335,6 +338,7 @@ class IdResolver(UserIdResolver):
         "Map": (False, "", text),
         "Encoding": (False, DEFAULT_ENCODING, text),
         }
+    resolver_parameters.update(UserIdResolver.resolver_parameters)
 
     @classmethod
     def primary_key_changed(cls, new_params, previous_params):
@@ -373,13 +377,14 @@ class IdResolver(UserIdResolver):
         dbObj = dbObject()
 
         try:
+
             connect_str = make_connect(
-                       params.get("Driver"),
-                       params.get("User"),
-                       params.get("Password"),
-                       params.get("Server"),
-                       params.get("Port"),
-                       params.get("Database"),
+                       driver=params.get("Driver"),
+                       user=params.get("User"),
+                       pass_=params.get("Password"),
+                       server=params.get("Server"),
+                       port=params.get("Port"),
+                       db=params.get("Database"),
                        conParams=params.get('ConnectionParams', ""))
 
             log.debug("[testconnection] testing connection with "
@@ -487,47 +492,77 @@ class IdResolver(UserIdResolver):
 
         # get the crypted password and the salt from the database
         # for doing crypt.crypt( "password", "salt" )
-        if "password" in userInfo:
-            # check if we have something like SHA or salted SHA
-            m = re.match("^\{(.*)\}(.*)", userInfo["password"])
-            # check if we have the PHP Password Framework like it is
-            # used in Wordpress
-            m_php = re.match("^\$P\$(.*)", userInfo["password"])
-            if m:
-                # The password field contains something like
-                # {SHA256}abcdfef123456
-                hash_type = m.group(1)
-                hash_value = m.group(2)
 
-                # Check for salt field in case the db splits salt from hash:
-                salt = None
-                if 'salt' in userInfo:
-                    salt = userInfo['salt']
-                return _check_hash_type(password, hash_type, hash_value, salt=salt)
-            elif m_php:
-                # The Password field contains something like
-                # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
-                return check_php_password(password, userInfo["password"])
-            else:
-                # get the crypted password and the salt from the database
-                # for doing crypt.crypt( "password", "salt" )
-                salt = userInfo["password"][0:2]
-                if "salt" in userInfo:
-                    salt = userInfo["salt"]
-                npw = crypt.crypt(password, salt)
-                # check if the new crypted password matches the original one
-                if npw == userInfo["password"]:
-                    log.info("[checkPass] user %s authenticated successfully."
-                                                                        % uid)
-                    return True
-                else:
-                    log.warning("[checkPass] user %s failed to authenticate."
-                                                                        % uid)
-                    return False
-
-        else:
+        if "password" not in userInfo:
             log.error("[checkPass] password is not defined in SQL mapping!")
             return False
+
+        # check if we have something like SHA or salted SHA
+
+        m = re.match("^\{(.*)\}(.*)", userInfo["password"])
+
+        # check if we have the PHP Password Framework like it is
+        # used in Wordpress
+
+        m_php = re.match("^\$P\$(.*)", userInfo["password"])
+
+        if m:
+            # The password field contains something like
+            # {SHA256}abcdfef123456
+            hash_type = m.group(1)
+            hash_value = m.group(2)
+
+            # Check for salt field in case the db splits salt from hash:
+            salt = None
+            if 'salt' in userInfo:
+                salt = userInfo['salt']
+            return _check_hash_type(password, hash_type, hash_value, salt=salt)
+
+        elif m_php:
+            # The Password field contains something like
+            # '$P$BPC00gOTHbTWl6RH6ZyfYVGWkX3Wec.'
+            return check_php_password(password, userInfo["password"])
+
+        # ------------------------------------------------------------------ --
+
+        # check the Modular Crypt Format (MCF):
+        #
+        #  $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+        #
+        # s. https://en.wikipedia.org/wiki/Crypt_%28C%29
+
+        elif userInfo["password"][0] == '$':
+
+            if crypt.crypt(password, userInfo["password"]) == userInfo["password"]:
+
+                log.info("[checkPass] successfully authenticated "
+                         "user uid %s", uid)
+                return True
+            else:
+                log.warning("[checkPass] user %s failed to authenticate.", uid)
+                return False
+
+        else:
+            # ------------------------------------------------------------- --
+
+            # old style with dedicated salt from the database for doing
+            #       crypt.crypt( "password", "salt" )
+
+            salt = userInfo["password"][0:2]
+            if "salt" in userInfo:
+                salt = userInfo["salt"]
+
+            npw = crypt.crypt(password, salt)
+            if npw == userInfo["password"]:
+                log.info("[checkPass] user %s authenticated successfully.",
+                         uid)
+                return True
+
+            log.warning("[checkPass] user %s failed to authenticate.",
+                        uid)
+
+            return False
+
 
 
     @classmethod

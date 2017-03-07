@@ -47,10 +47,6 @@ class TestPasswdController(TestController):
         self.create_common_resolvers()
         self.create_common_realms()
         self.serials = []
-        self.fixture_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'fixtures',
-            )
 
     def tearDown(self):
         self.delete_all_realms()

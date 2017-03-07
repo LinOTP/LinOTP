@@ -292,7 +292,11 @@ def getPolicyDefinitions(scope=""):
                 'type': 'bool',
                 'desc': 'Support the migration of assigned tokens to '
                         'a new resolver '
-            }
+            },
+            'import_users': {
+                'type': 'bool',
+                'desc': 'Import users from a file into a new resolver '
+            },
         },
         'ocra': {
             'request': {
