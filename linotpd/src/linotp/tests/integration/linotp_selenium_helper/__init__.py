@@ -28,9 +28,8 @@
 from test_case import TestCase
 from policy import Policy
 from user_id_resolver import UserIdResolverManager, UserIdResolver, SqlUserIdResolver, PasswdUserIdResolver, LdapUserIdResolver
+from self_service import SelfService
 import helper
 
 __all__ = ["TestCase", "UserIdResolverManager", "UserIdResolver",
-            "Policy", "helper"]
-
-
+           "Policy", "SelfService", "helper"]
