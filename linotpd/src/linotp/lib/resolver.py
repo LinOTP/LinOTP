@@ -57,7 +57,7 @@ __all__ = ['defineResolver', 'parse_resolver_spec',
 
 # for the the resolver name check we use a reqular expression
 
-resolver_name_pattern = re.compile('^[a-zA-Z0-9_-]*$')
+resolver_name_pattern = re.compile('^[a-zA-Z0-9_\-]{4,}$')
 
 
 log = logging.getLogger(__name__)
@@ -118,7 +118,7 @@ def defineResolver(params):
 
     if not resolver_name_pattern.match(conf):
         raise Exception("Resolver name is invalid. It may contain characters, "
-                        "numbers, underscore (_), hyphen (-)!")
+                        "numbers, underscore (_), hyphen (-)! %r", conf)
 
     resolver_cls = getResolverClass(typ)
 
