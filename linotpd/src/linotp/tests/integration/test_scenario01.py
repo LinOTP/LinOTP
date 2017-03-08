@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from linotp_selenium_helper.self_service import SelfService
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
 
 import time
@@ -72,6 +73,9 @@ class TestScenario01(TestCase):
         driver = self.driver
 
         token_view = self.manage_ui.token_view
+        user_view = self.manage_ui.user_view
+
+        selfservice = SelfService(self.driver, self.base_url)
 
         # reset all views
         self.reset_resolvers_and_realms()
@@ -95,8 +99,6 @@ class TestScenario01(TestCase):
 
         self._announce_test(
             "2. In Management Webinterface, check that all users are visible")
-
-        user_view = self.manage_ui.user_view
 
         def check_users(realm, data):
             expected_users = data['expected_users']
@@ -200,7 +202,6 @@ class TestScenario01(TestCase):
                                    remote_otp_length=6,
                                    )
         serial_token_debussy = remote_token.serial
-        remote_token_otp = "666666"
 
         self._announce_test("7. Spass-Token zuweisen")
 
@@ -217,12 +218,7 @@ class TestScenario01(TestCase):
 
         motp_key = "1234123412341234"
         motp_pin = "1234"
-        driver.get(self.base_url + "/account/login")
-        driver.find_element_by_id("login").clear()
-        driver.find_element_by_id("login").send_keys("mozart@" + test1_realm)
-        driver.find_element_by_id("password").clear()
-        driver.find_element_by_id("password").send_keys("Test123!")
-        driver.find_element_by_id("password").submit()  # Submits the form
+        selfservice.login("mozart", "Test123!", test1_realm)
         driver.find_element_by_id("motp_secret").clear()
         driver.find_element_by_id("motp_secret").send_keys(motp_key)
         driver.find_element_by_id("motp_s_pin1").clear()
@@ -264,28 +260,10 @@ class TestScenario01(TestCase):
             "mozart": serial_token_mozart,
             "beethoven": serial_token_beethoven
         }
-        for user in user_token_dict:
-            driver.get(self.base_url + "/account/login")
-            driver.find_element_by_id("login").clear()
-            driver.find_element_by_id("login").send_keys(
-                "%s@%s" % (user, test1_realm))
-            driver.find_element_by_id("password").clear()
-            driver.find_element_by_id("password").send_keys("Test123!")
-            driver.find_element_by_id("password").submit()
-            driver.find_element_by_xpath(
-                "//div[@id='tabs']/ul/li/a/span[text()='set PIN']").click()
-            time.sleep(1)
-            driver.find_element_by_id('tokenDiv').find_element_by_partial_link_text(
-                user_token_dict[user]).click()
-            driver.find_element_by_id("pin1").clear()
-            driver.find_element_by_id("pin1").send_keys(user + "newpin")
-            driver.find_element_by_id("pin2").clear()
-            driver.find_element_by_id("pin2").send_keys(user + "newpin")
-            driver.find_element_by_id("button_setpin").click()
-            time.sleep(1)
-            self.assertEqual(
-                "PIN set successfully", self.close_alert_and_get_its_text())
-            driver.find_element_by_link_text("Logout").click()
+        for user, token in user_token_dict.iteritems():
+            selfservice.login(user, "Test123!", test1_realm)
+            selfservice.set_pin(token, user + "newpin")
+            selfservice.logout()
 
         self._announce_test("10. Authentisierung der 4 Benutzer ###")
         validate = Validate(self.http_protocol,
@@ -313,6 +291,7 @@ class TestScenario01(TestCase):
         # deactivated remote token test while no remote linotp integration
         # server is available
         '''
+        remote_token_otp = "666666"
         access_granted, _ = validate.validate(user="debussy@" + test1_realm,
                                             password="debussynewpin" + remote_token_otp)
         self.assertTrue(access_granted, "OTP: " + remote_token_otp + " for user " +
@@ -354,28 +333,11 @@ class TestScenario01(TestCase):
 
         self._announce_test("11. mOTP Pin im selfservice ändern")
 
-        driver.get(self.base_url + "/account/login")
-        driver.find_element_by_id("login").clear()
-        driver.find_element_by_id("login").send_keys(
-            "%s@%s" % ("mozart", test1_realm))
-        driver.find_element_by_id("password").clear()
-        driver.find_element_by_id("password").send_keys("Test123!")
-        driver.find_element_by_id("password").submit()
-        driver.find_element_by_xpath(
-            "//div[@id='tabs']/ul/li/a/span[text()='set mOTP PIN']").click()
-        time.sleep(1)
-        driver.find_element_by_id('tokenDiv').find_element_by_partial_link_text(
-            serial_token_mozart).click()
-        time.sleep(1)
-        driver.find_element_by_id("mpin1").clear()
         new_motp_pin = "5588"
-        driver.find_element_by_id("mpin1").send_keys(new_motp_pin)
-        driver.find_element_by_id("mpin2").clear()
-        driver.find_element_by_id("mpin2").send_keys(new_motp_pin)
-        driver.find_element_by_id("button_setmpin").click()
-        self.assertEqual(
-            "mOTP PIN set successfully", self.close_alert_and_get_its_text())
-        driver.find_element_by_link_text("Logout").click()
+
+        selfservice.login("mozart", "Test123!", test1_realm)
+        selfservice.set_motp_pin(token, new_motp_pin)
+        selfservice.logout()
 
         time.sleep(10)  # otherwise next mOTP value might not be valid
 
@@ -402,28 +364,13 @@ class TestScenario01(TestCase):
         self.assertFalse(
             access_granted, "OTP: %s should be False for user bach" % otp)
 
-        driver.get(self.base_url + "/account/login")
-        driver.find_element_by_id("login").clear()
-        driver.find_element_by_id("login").send_keys(
-            "%s@%s" % ("bach", test1_realm))
-        driver.find_element_by_id("password").clear()
-        driver.find_element_by_id("password").send_keys("Test123!")
-        driver.find_element_by_id("password").submit()
-        driver.find_element_by_xpath(
-            "//div[@id='tabs']/ul/li/a/span[text()='Resync Token']").click()
-        time.sleep(1)
-        driver.find_element_by_id('tokenDiv').find_element_by_partial_link_text(
-            serial_token_bach).click()
+        selfservice.login("bach", "Test123!", test1_realm)
+
         otp1 = hotp.generate(counter=counter + 1, key=seed_oath137332_bin)
         otp2 = hotp.generate(counter=counter + 2, key=seed_oath137332_bin)
-        driver.find_element_by_id("otp1").clear()
-        driver.find_element_by_id("otp1").send_keys(otp1)
-        driver.find_element_by_id("otp2").clear()
-        driver.find_element_by_id("otp2").send_keys(otp2)
-        driver.find_element_by_id("button_resync").click()
-        self.assertEqual(
-            "Token resynced successfully", self.close_alert_and_get_its_text())
-        driver.find_element_by_link_text("Logout").click()
+
+        selfservice.resync_token(serial_token_bach, otp1, otp2)
+        selfservice.logout()
 
         # Should be able to authenticate again
         otp = "bachnewpin" + \
@@ -436,22 +383,9 @@ class TestScenario01(TestCase):
         self._announce_test(
             "13. Benutzer beethoven deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden.")
 
-        driver.get(self.base_url + "/account/login")
-        driver.find_element_by_id("login").clear()
-        driver.find_element_by_id("login").send_keys(
-            "%s@%s" % ("beethoven", test1_realm))
-        driver.find_element_by_id("password").clear()
-        driver.find_element_by_id("password").send_keys("Test123!")
-        driver.find_element_by_id("password").submit()
-        driver.find_element_by_xpath(
-            "//div[@id='tabs']/ul/li/a/span[text()='Disable Token']").click()
-        time.sleep(1)
-        driver.find_element_by_id('tokenDiv').find_element_by_partial_link_text(
-            serial_token_beethoven).click()
-        driver.find_element_by_id("button_disable").click()
-        self.assertEqual(
-            "Token disabled successfully", self.close_alert_and_get_its_text())
-        driver.find_element_by_link_text("Logout").click()
+        selfservice.login("beethoven", "Test123!", test1_realm)
+        selfservice.resync_token(serial_token_beethoven)
+        selfservice.logout()
 
         # beethoven should be unable to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
