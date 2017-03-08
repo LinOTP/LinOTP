@@ -55,6 +55,10 @@ __all__ = ['defineResolver', 'parse_resolver_spec',
            'setupResolvers'
           ]
 
+# for the the resolver name check we use a reqular expression
+
+resolver_name_pattern = re.compile('^[a-zA-Z0-9_\-]{4,}$')
+
 log = logging.getLogger(__name__)
 
 
@@ -206,6 +210,10 @@ def defineResolver(params):
     typ = params['type']
     conf = params['name']
     resolver_clazz = None
+
+    if not resolver_name_pattern.match(conf):
+        raise Exception("Resolver name is invalid. It may contain characters, "
+                        "numbers, underscore (_), hyphen (-)! %r", conf)
 
     for clazz_name, clazz_type in context.get('resolver_types').items():
         if typ.lower() in clazz_type.lower():

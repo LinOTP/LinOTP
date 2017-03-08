@@ -152,17 +152,17 @@ class TestResolver(TestController):
         """
 
         #
-        # define resolver LDA w. the required BINDPW
+        # define resolver LDA1 w. the required BINDPW
 
         params = {'BINDPW': 'Test123!'}
-        response, params = self.define_ldap_resolver('LDA', params=params)
+        response, params = self.define_ldap_resolver('LDA1', params=params)
         self.assertTrue('"status": true,' in response, response)
 
         #
         # and check if its available
 
         response = self.make_system_request('getResolvers', params=params)
-        self.assertTrue("LDA" in response, response)
+        self.assertTrue("LDA1" in response, response)
 
         #
         # now try to define resolver LDA2 w.o. the required BINDPW
@@ -220,23 +220,23 @@ class TestResolver(TestController):
         """
 
         #
-        # define resolver LDA w. the required BINDPW
+        # define resolver LDA1 w. the required BINDPW
 
         params = {'BINDPW': 'Test123!'}
-        response, params = self.define_ldap_resolver('LDX', params=params)
+        response, params = self.define_ldap_resolver('LdapX', params=params)
         self.assertTrue('"status": true,' in response, response)
 
         #
-        # rename resolver LDX to LDZ w.o. password
+        # rename resolver LdapX to LdapZ w.o. password
         # as no critical changes are made
 
-        params = {'previous_name': 'LDX'}
-        response, params = self.define_ldap_resolver('LDZ', params=params)
+        params = {'previous_name': 'LdapX'}
+        response, params = self.define_ldap_resolver('LdapZ', params=params)
         self.assertTrue('"status": true,' in response, response)
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('LDX', response, response)
-        self.assertIn('LDZ', response, response)
+        self.assertNotIn('LdapX', response, response)
+        self.assertIn('LdapZ', response, response)
 
     def test_update_critical_data_ldap(self):
         """
@@ -244,41 +244,41 @@ class TestResolver(TestController):
         """
 
         #
-        # define resolver LDA w. the required BINDPW
+        # define resolver LDA1 w. the required BINDPW
 
         params = {'BINDPW': 'Test123!'}
-        response, params = self.define_ldap_resolver('LDX', params=params)
+        response, params = self.define_ldap_resolver('LdapX', params=params)
         self.assertTrue('"status": true,' in response, response)
 
         #
-        # rename resolver LDA to LDB with critical changes
+        # rename resolver LDA1 to LDB with critical changes
         # w.o. password will fail
 
-        params = {'previous_name': 'LDX',
+        params = {'previous_name': 'LdapX',
                   'BINDDN': 'ou=roundabout, '
                             'cn=administrator,dc=yourdomain,dc=tld', }
-        response, params = self.define_ldap_resolver('LDZ', params=params)
+        response, params = self.define_ldap_resolver('LdapZ', params=params)
         self.assertTrue('"status": false,' in response, response)
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('LDZ', response, response)
-        self.assertIn('LDX', response, response)
+        self.assertNotIn('LdapZ', response, response)
+        self.assertIn('LdapX', response, response)
 
         #
-        # rename resolver LDA to LDB with critical changes
+        # rename resolver LDA1 to LDB with critical changes
         # w. password will have success
 
-        params = {'previous_name': 'LDX',
+        params = {'previous_name': 'LdapX',
                   'BINDPW': 'Test123!',
                   'BINDDN': 'ou=roundabout, '
                             'cn=administrator,dc=yourdomain,dc=tld', }
 
-        response, params = self.define_ldap_resolver('LDZ', params=params)
+        response, params = self.define_ldap_resolver('LdapZ', params=params)
         self.assertTrue('"status": true,' in response, response)
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('LDX', response, response)
-        self.assertIn('LDZ', response, response)
+        self.assertNotIn('LdapX', response, response)
+        self.assertIn('LdapZ', response, response)
 
     def test_update_critical_data_sql(self):
         """
@@ -286,39 +286,39 @@ class TestResolver(TestController):
         """
 
         #
-        # define resolver SQX w. the required Password
+        # define resolver SqlX w. the required Password
 
         params = {"Password": "Test123!", }
-        response, params = self.define_sql_resolver('SQX', params=params)
+        response, params = self.define_sql_resolver('SqlX', params=params)
         self.assertTrue('"status": true,' in response, response)
 
         #
-        # rename resolver SQX to SQZ with critical changes
+        # rename resolver SqlX to SqlZ with critical changes
         # w.o. password will fail
 
-        params = {'previous_name': 'SQX',
+        params = {'previous_name': 'SqlX',
                   'User': 'dummy_user', }
 
-        response, params = self.define_sql_resolver('SQZ', params=params)
+        response, params = self.define_sql_resolver('SqlZ', params=params)
         self.assertTrue('"status": false,' in response, response)
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('SQZ', response, response)
-        self.assertIn('SQX', response, response)
+        self.assertNotIn('SqlZ', response, response)
+        self.assertIn('SqlX', response, response)
 
         #
-        # rename resolver SQX to SQZ with critical changes
+        # rename resolver SqlX to SqlZ with critical changes
         # w. password will have success
 
-        params = {'previous_name': 'SQX',
+        params = {'previous_name': 'SqlX',
                   'User': 'dummy_user',
                   'Password': 'Test123!'}
 
-        response, params = self.define_sql_resolver('SQZ', params=params)
+        response, params = self.define_sql_resolver('SqlZ', params=params)
         self.assertTrue('"status": true,' in response, response)
 
         response = self.make_system_request('getResolvers')
-        self.assertNotIn('SQX', response, response)
-        self.assertIn('SQZ', response, response)
+        self.assertNotIn('SqlX', response, response)
+        self.assertIn('SqlZ', response, response)
 
-# eof #########################################################################
+# eof ########################################################################
