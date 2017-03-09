@@ -295,7 +295,7 @@ class SQLImportHandler(ImportHandler):
         session = self.db_context.get_session()
 
         u_user_list = session.query(self.User).filter(
-                self.User.userid == user.userid and
+                self.User.userid == user.userid).filter(
                 self.User.groupid == self.groupid).all()
 
         if u_user_list:
