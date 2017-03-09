@@ -2009,43 +2009,19 @@ function getSerialByOtp(otp, type, assigned, realm) {
 
 
 /**
- * the handler for the keyup event of the ldap uri and enforce tls flag,
- * which checks whether the ldap certificate textarea should be shown
+ * handler for the ldap resolver form keyup event of the ldap uri and enforce tls flag,
+ * which checks whether the certificate textarea should be shown
  */
-
 function handler_ldap_certificate_show() {
+    var isLdaps = $('#ldap_uri').val().toLowerCase().match(/^ldaps:/)!==null;
+    var show_cert_textarea = !g.use_system_certificates && (isLdaps || $('#ldap_enforce_tls').is(':checked'));
 
-    /*
-     * first toggle the cert input entry dependent on enforce_tl and ldaps://
-     */
-
-    var show_cert_textarea = !g.use_system_certificates &&
-            (!!$('#ldap_uri').val().toLowerCase().match(/^ldaps:/) || $('#ldap_enforce_tls').is(':checked'));
-
+    // show or hide the certificate input dependent on enforce_tls and ldaps:// url
     $('#ldap_resolver_certificate').toggle(show_cert_textarea);
 
-
-    /*
-     * in combination with ldaps:// start_tls does not make sense - thus
-     * we disable the start_tls dialog
-     */
-
-    if ($('#ldap_uri').val().toLowerCase().match(/^ldaps:/)) {
-
-        /* in case of ldaps, we switch enforce_tls off and disable it */
-
-        $('#ldap_enforce_tls').prop("disabled", true);
-        $('#ldap_enforce_tls').prop('checked', false);
-        $('#ldap_enforce_tls_label').addClass('disabled');
-
-    } else {
-
-        /* in case of ldap://, we enable enforce_tls and the belonging label */
-
-        $('#ldap_enforce_tls').prop("disabled", false);
-        $('#ldap_enforce_tls_label').removeClass('disabled');
-
-    }
+    // disable start_tls option in combination with ldaps:// url
+    $('#ldap_enforce_tls').prop("disabled", isLdaps).prop('checked', !isLdaps);
+    $('#ldap_enforce_tls_label').toggleClass('disabled', isLdaps);
 }
 
 function http_resolver_https() {
