@@ -199,7 +199,7 @@ a.close_all {
 
 .select_list li {
 	margin: 3px;
-	padding: 0.4em;
+	padding: 0.4em 1em;
 }
 
 .select_list li:hover {
@@ -708,4 +708,8 @@ span.managed-tag {
 
 #import_user_dryrun_result_details .detail-tabs {
 	border-radius: 0;
+}
+
+#resolvers_select .managed-tag {
+	float: right;
 }
