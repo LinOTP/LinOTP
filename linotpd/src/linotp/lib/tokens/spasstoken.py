@@ -106,7 +106,7 @@ class SpassTokenClass(TokenClass):
 
         # mark this spass token as usable exactly once
         if param.has_key('onetime'):
-            TokenClass.set_count_auth_success_max(self, 1)
+            self.count_auth_success_max = 1
 
         TokenClass.update(self, param)
 

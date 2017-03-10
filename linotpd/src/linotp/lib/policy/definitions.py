@@ -163,6 +163,14 @@ def getPolicyDefinitions(scope=""):
                         'token (in days).'},
             },
         'authentication': {
+            "delete_on_authentication_exceed": {
+                'type': 'bool',
+                'desc': ('should the token be deleted if maximum '
+                         'authentication count was reached')},
+            "disable_on_authentication_exceed": {
+                'type': 'bool',
+                'desc': ('should the token be disabled if maximum '
+                         'authentication count was reached')},
             "push_provider": {
                 'type': 'str',
                 'desc': 'The push provider that should be used to '

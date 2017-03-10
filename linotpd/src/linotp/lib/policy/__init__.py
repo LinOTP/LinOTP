@@ -2716,6 +2716,57 @@ def get_auth_passOnNoToken(user):
     return ret
 
 
+def disable_on_authentication_exceed(user, realms=None):
+    '''
+    returns True if the token should be disable, if max auth count is reached
+    '''
+    ret = False
+    client = _get_client()
+
+    if user.login:
+        pol = get_client_policy(client, scope="authentication",
+                                action="disable_on_authentication_exceed",
+                                realm=user.realm,
+                                user=user.login, userObj=user)
+        if len(pol) > 0:
+            return True
+    else:
+        for realm in realms:
+            pol = get_client_policy(client, scope="authentication",
+                                    action="disable_on_authentication_exceed",
+                                    realm=realm)
+            if len(pol) > 0:
+                return True
+
+    return False
+
+
+def delete_on_authentication_exceed(user, realms=None):
+    '''
+    returns True if the token should be disable, if max auth count is reached
+    '''
+
+    client = _get_client()
+
+    if user.login:
+        pol = get_client_policy(client, scope="authentication",
+                                action="delete_on_authentication_exceed",
+                                realm=user.realm,
+                                user=user.login, userObj=user)
+        if len(pol) > 0:
+            return True
+
+    else:
+        for realm in realms:
+            pol = get_client_policy(client, scope="authentication",
+                                    action="delete_on_authentication_exceed",
+                                    realm=realm)
+            if len(pol) > 0:
+                return True
+
+    return False
+
+
 def trigger_sms(realms=None):
     """
     returns true, if a check_s should be allowed to trigger an sms
