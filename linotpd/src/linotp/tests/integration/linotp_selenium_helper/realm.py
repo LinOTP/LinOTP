@@ -37,18 +37,88 @@ from user_id_resolver import UserIdResolverManager
 LOGGER = logging.getLogger(__name__)
 
 
+class EditRealmDialog(ManageDialog):
+    "Realm create / edit dialog"
+
+    edit_save_button_id = 'button_editrealms_save'
+
+    def __init__(self, manage):
+        super(EditRealmDialog, self).__init__(
+            manage, 'dialog_edit_realms')
+
+    @property
+    def realm_dialog(self):
+        return self.manage.realm_manager
+
+    def fill_and_save(self, realm_name, resolvers):
+        """
+        Fill in realm name, resolvers and save dialog
+        """
+        self.set_realm_name(realm_name)
+        self.set_resolvers(resolvers)
+        self.save()
+
+    def set_realm_name(self, name):
+        fill_form_element(self.driver, "realm_name", name)
+
+    def get_resolvers(self):
+        """
+        Parse resolvers section of dialog
+
+        @return: A list of UserIdResolverManager.ResolverElement
+        """
+        resolvers = []
+
+        # The resolvers list could be empty, so disable implicit wait for the
+        # list
+        with self.implicit_wait_disabled():
+            elements = self.get_body_element().find_elements_by_css_selector(
+                #'#resolvers_list, #resolvers_list > ol > li')
+                '#realm_edit_resolver_list, #realm_edit_resolver_list ol > li')
+
+            for element in elements:
+                # Skip dialog element - we just asked for this to workaround
+                # the delay if the list is empty
+                if element.get_attribute('id') == 'realm_edit_resolver_list':
+                    continue
+
+                resolvers.append(
+                    UserIdResolverManager.parse_resolver_element(element))
+
+        return resolvers
+
+    def set_resolvers(self, linked_resolvers):
+        self.raise_if_closed()
+
+        if not linked_resolvers:
+            return
+
+        resolvers = self.get_resolvers()
+
+        resolver_elements = [
+            r.element for r in resolvers if r.name in linked_resolvers]
+
+        ActionChains(self.driver).key_down(Keys.CONTROL).perform()
+        for element in resolver_elements:
+            element.click()
+        ActionChains(self.driver).key_up(Keys.CONTROL).perform()
+
+    def save(self):
+        self.find_by_id(self.edit_save_button_id).click()
+
+
 class RealmManager(ManageDialog):
     menu_item_id = 'menu_edit_realms'
     body_id = 'dialog_realms'
     new_button_id = 'button_realms_new'
     close_button_id = 'button_realms_close'
     delete_button_id = 'button_realms_delete'
-    edit_save_button_id = 'button_editrealms_save'
 
     list_css = "#realm_list > ol"
 
     def __init__(self, manage_ui):
         ManageDialog.__init__(self, manage_ui, 'dialog_realms')
+        self.edit_realm_dialog = EditRealmDialog(manage_ui)
 
     def parse_contents(self):
         """
@@ -137,54 +207,21 @@ class RealmManager(ManageDialog):
         if check_for_no_resolver_alert:
             self.check_alert("Create UserIdResolver first", click_accept=True)
 
+        return self.edit_realm_dialog
+
     def create(self, name, resolvers=None):
         """Create a new realm linked to the given resolver names"""
 
         self.open()
         old_realms = self.get_realms_list()
 
-        self.click_new_realm()
-        realm = Realm(self)
-        realm.create(name, resolvers)
-        self.find_by_id(self.edit_save_button_id).click()
+        dialog = self.click_new_realm()
+        dialog.fill_and_save(name, resolvers)
         self.reparse()
+
         new_realms = self.get_realms_list()
 
         if (len(old_realms) != len(new_realms) - 1):
             LOGGER.warn("Realm was not sucessfully created. Previous realms:%s, New realms:%s" % (
                 [r.name for r in old_realms], [r.name for r in new_realms]))
             assert False, "Realm was not sucessfully created"
-
-        return realm
-
-
-class Realm(object):
-    """Manages a LinOTP Realm"""
-
-    def __init__(self, realm_manager):
-        """"""
-        self.realm_manager = realm_manager
-        self.driver = realm_manager.driver
-
-    def delete(self):
-        pass
-
-    def create(self, name, linked_resolvers=None):
-        """
-        Given a new realm, fill it
-        """
-        driver = self.driver
-
-        fill_form_element(driver, "realm_name", name)
-
-        if linked_resolvers:
-            # Find resolvers list
-            resolvers = UserIdResolverManager.parse_resolver_element(
-                self.realm_manager.testcase, "realm_edit_resolver_list")
-
-            resolver_elements = [
-                r.element for r in resolvers if r.name in linked_resolvers]
-            ActionChains(driver).key_down(Keys.CONTROL).perform()
-            for element in resolver_elements:
-                element.click()
-            ActionChains(driver).key_up(Keys.CONTROL).perform()

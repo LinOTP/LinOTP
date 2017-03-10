@@ -23,6 +23,7 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+from selenium.common.exceptions import NoSuchElementException
 """Contains UserIdResolver class"""
 
 import re
@@ -73,9 +74,9 @@ class UserIdResolverManager(ManageDialog):
             raise Exception("Unknown UserIdResolver type:%s" % (resolver_type))
 
     @staticmethod
-    def parse_resolver_element(testcase, parent_id):
-        # Given an element, retrieve child elements and parse out resolver
-        # names
+    def parse_resolver_element(line):
+        # Given an element, parse out resolver info
+
         class ResolverElement:
 
             def __init__(self, name, resolverType, element=None):
@@ -84,39 +85,44 @@ class UserIdResolverManager(ManageDialog):
                 self.element = element
                 self.name_in_dialog = "%s [%s]" % (name, resolverType)
 
-        # Retrieve all elements below
-        elements = testcase.find_children_by_id(parent_id, "li")
-        # If there are resolvers present, there will be an ol element here, otherwise
-        # it is empty
-        if not len(elements):
-            # No resolvers in the list
-            return []
+        try:
+            name_element = line.find_element_by_css_selector('.name')
+            # New style line (2.9.2) with managed flag
+            resolver_element = name_element
+        except NoSuchElementException:
+            # Pre 2.9.2 without managed flag
+            resolver_element = line
 
-        parsed_resolvers = []
+        resolver_name_re = r'([\w\-]+) \[([\w\-]+)\]$'
 
-        resolver_name_re = re.compile(r'([\w\-]+) \[([\w\-]+)\]$')
+        m = re.match(resolver_name_re, resolver_element.text)
+        assert m, 'Error in resolver regexp for "%s"' % (resolver_element,)
 
-        for resolver_element in elements:
-            m = resolver_name_re.match(resolver_element.text)
-            assert m, 'Error in resolver regexp for "%s"' % (resolver_element,)
+        assert(line.get_attribute("class") in
+               ('ui-widget-content ui-selectee', 'ui-widget-content ui-selectee ui-selected')), \
+            "Resolver dialog line class unknown"
 
-            assert(resolver_element.get_attribute("class") in
-                   ('ui-widget-content ui-selectee', 'ui-widget-content ui-selectee ui-selected')), \
-                "Resolver element class unknown"
-
-            # Form a list of (resolver_name, type) tuples
-            parsed_resolvers.append(
-                ResolverElement(m.group(1), m.group(2), resolver_element))
-
-        return parsed_resolvers
+        return ResolverElement(m.group(1), m.group(2), line)
 
     def parse_contents(self):
         """
         Parse the resolver dialog list and build a list of resolvers
         """
-        # Find resolvers list
-        self.resolvers = self.parse_resolver_element(
-            self.testcase, "resolvers_list")
+        # Ensure server communication is finished
+        self.wait_for_waiting_finished()
+
+        # Ensure resolvers list element is visible
+        resolvers_list = self.find_by_id("dialog_resolvers")
+
+        self.resolvers = []
+
+        # The dialog could be empty, so disable implicit wait for the list
+        with self.implicit_wait_disabled():
+            lines = resolvers_list.find_elements_by_css_selector(
+                '#resolvers_list > ol > li')
+
+            for line in lines:
+                self.resolvers.append(self.parse_resolver_element(line))
 
     def _get_resolver_by_name(self, name):
         """

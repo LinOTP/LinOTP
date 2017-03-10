@@ -82,6 +82,9 @@ class ManageElement(object):
         """
         return self.manage.wait_for_waiting_finished()
 
+    def implicit_wait_disabled(self):
+        return self.testcase.implicit_wait_disabled()
+
 
 class ManageTab(ManageElement):
     """
@@ -264,6 +267,13 @@ class ManageDialog(ManageElement):
         """
         if self.is_open():
             self.close()
+
+    def get_body_element(self):
+        """
+        Get dialog body WebElement
+        """
+        self.raise_if_closed()
+        return self.find_by_id(self.body_id)
 
     def get_text(self):
         """

@@ -25,6 +25,7 @@
 #
 import unittest
 import logging
+from contextlib import contextmanager
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -175,6 +176,13 @@ class TestCase(unittest.TestCase):
 
     def enableImplicitWait(self):
         self.driver.implicitly_wait(self.implicit_wait_time)
+
+    @contextmanager
+    def implicit_wait_disabled(self):
+        "Disable implicit wait for the statements in the context manager"
+        self.disableImplicitWait()
+        yield
+        self.enableImplicitWait()
 
     def find_children_by_id(self, parent_id, element_type='*'):
         """
