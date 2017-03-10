@@ -183,6 +183,7 @@ node('docker') {
          * Build the linotp debs in the builder image
          */
         makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-debs', 5)
+        archiveArtifacts 'build/apt/*'
     }
 
     stage('Linotp image') {
