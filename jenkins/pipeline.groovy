@@ -145,8 +145,10 @@ node('master') {
 def doMake(target, timeout_minutes) {
     def make_cmd = "make ${target} ${docker_make_args} DOCKER_TAGS='latest ${docker_image_tag}' LINOTP_IMAGE_TAG=${docker_image_tag} RANCHER_STACK_ID=${docker_image_tag}"
 
-    timeout(time:timeout_minutes, unit:'MINUTES') {
-        sh make_cmd
+    ansiColor('xterm') {
+        timeout(time:timeout_minutes, unit:'MINUTES') {
+            sh make_cmd
+        }
     }
 }
 
