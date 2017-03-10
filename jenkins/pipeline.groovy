@@ -151,76 +151,75 @@ def doMake(target, timeout_minutes) {
 }
 
 node('docker') {
-    docker.withRegistry(PARAM_DOCKER_REGISTRY_URL, PARAM_DOCKER_REGISTRY_CREDENTIALS) {
+    deleteDir()
+    unstash 'linotpd'
 
-        deleteDir()
-        unstash 'linotpd'
-
-        if(PARAM_BUILD_DOCKER_IMAGES) {
-            stage('Linotp builder') {
-                /*
-                 * Build the linotp builder docker image
-                 */
-                doMake('docker-build-linotp-builder', 5)
-            }
-
-            stage('debs') {
-                /*
-                 * Build the linotp debs in the builder image
-                 */
-                doMake('docker-build-debs', 5)
-            }
-
-            stage('Linotp image') {
-                /*
-                 * Build the linotp docker image from the debs
-                 */
-                doMake('docker-build-linotp', 5)
-            }
+    if(PARAM_BUILD_DOCKER_IMAGES) {
+        stage('Linotp builder') {
+            /*
+             * Build the linotp builder docker image
+             */
+            doMake('docker-build-linotp-builder', 5)
         }
 
-        if(PARAM_RUN_TESTS_INTEGRATION) {
-            stage('Build test env') {
-                doMake('docker-build-selenium', 5)
-            }
+        stage('debs') {
+            /*
+             * Build the linotp debs in the builder image
+             */
+            doMake('docker-build-debs', 5)
         }
 
-        if(PARAM_PUBLISH_DOCKER_IMAGES) {
-            if (!PARAM_BUILD_DOCKER_IMAGES) {
-                error("Cannot enable publish docker images without building first (PARAM_BUILD_DOCKER_IMAGES must be set)")
-            }
-            stage('Push images') {
+        stage('Linotp image') {
+            /*
+             * Build the linotp docker image from the debs
+             */
+            doMake('docker-build-linotp', 5)
+        }
+    }
+
+    if(PARAM_RUN_TESTS_INTEGRATION) {
+        stage('Build test env') {
+            doMake('docker-build-selenium', 5)
+        }
+    }
+
+    if(PARAM_PUBLISH_DOCKER_IMAGES) {
+        if (!PARAM_BUILD_DOCKER_IMAGES) {
+            error("Cannot enable publish docker images without building first (PARAM_BUILD_DOCKER_IMAGES must be set)")
+        }
+        stage('Push images') {
+            docker.withRegistry(PARAM_DOCKER_REGISTRY_URL, PARAM_DOCKER_REGISTRY_CREDENTIALS) {
                 docker.image("linotp:${docker_image_tag}").push()
             }
         }
+    }
 
-        if(PARAM_PUBLISH_JOB_IN_RANCHER) {
-            if (!PARAM_PUBLISH_DOCKER_IMAGES) {
-                error("Cannot enable publish to Rancher without enabling pushing the image")
-            }
-            stage('Rancher') {
-                withCredentials([usernamePassword(credentialsId: "${PARAM_RANCHER_ACCESS_KEY}",
-                                                    passwordVariable: 'RANCHER_SECRET_KEY',
-                                                    usernameVariable: 'RANCHER_ACCESS_KEY')
-                                ]) {
-                    withEnv(["RANCHER_URL=${PARAM_RANCHER_URL}"]) {
-                        doMake('rancher-linotp-create', 2)
+    if(PARAM_PUBLISH_JOB_IN_RANCHER) {
+        if (!PARAM_PUBLISH_DOCKER_IMAGES) {
+            error("Cannot enable publish to Rancher without enabling pushing the image")
+        }
+        stage('Rancher') {
+            withCredentials([usernamePassword(credentialsId: "${PARAM_RANCHER_ACCESS_KEY}",
+                                                passwordVariable: 'RANCHER_SECRET_KEY',
+                                                usernameVariable: 'RANCHER_ACCESS_KEY')
+                            ]) {
+                withEnv(["RANCHER_URL=${PARAM_RANCHER_URL}"]) {
+                    doMake('rancher-linotp-create', 2)
 
-                        if(PARAM_START_JOB_IN_RANCHER) {
-                            doMake('rancher-linotp-up', 2)
-                        }
+                    if(PARAM_START_JOB_IN_RANCHER) {
+                        doMake('rancher-linotp-up', 2)
                     }
                 }
             }
         }
+    }
 
-        if(PARAM_RUN_TESTS_INTEGRATION) {
-            stage('Selenium tests') {
-                /*
-                 * Run the Selenium unit tests in a docker compose environment
-                 */
-                doMake('docker-run-selenium', 60)
-            }
+    if(PARAM_RUN_TESTS_INTEGRATION) {
+        stage('Selenium tests') {
+            /*
+             * Run the Selenium unit tests in a docker compose environment
+             */
+            doMake('docker-run-selenium', 60)
         }
     }
 }
