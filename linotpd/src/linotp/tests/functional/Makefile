@@ -41,8 +41,8 @@ TCFILE=$(LINOTPDIR)/functional_tc.ini
 # Nosetests arguments
 NOSETESTS_ARGS=-v --with-pylons=$(LINOTPDIR)/test.ini
 
-# Additional test arguments can be specified in FUNTIONALTESTS_ARGS
-FUNTIONALTESTS_ARGS=
+# Additional test arguments can be specified in FUNCTIONALTESTS_ARGS
+FUNCTIONALTESTS_ARGS=
 
 # The default log filter does not show debug messages from urllib connections.
 # Override this to include them.
