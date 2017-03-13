@@ -28,7 +28,7 @@
 import requests
 from requests.auth import HTTPDigestAuth
 import logging
-from testconfig import config
+from testconfig import config, load_ini
 from urlparse import urlparse
 
 from selenium.webdriver.common.action_chains import ActionChains
@@ -46,7 +46,8 @@ def _find_and_wait(driver, by, value):
     """
     return WebDriverWait(driver, 10).until(
         EC.visibility_of_element_located((by, value))
-        )
+    )
+
 
 def find_by_css(driver, selector):
     """
@@ -55,6 +56,7 @@ def find_by_css(driver, selector):
     """
     return _find_and_wait(driver, By.CSS_SELECTOR, selector)
 
+
 def find_by_id(driver, id_value):
     """
     Returns the element defined by the HTML id, waiting up to 10 seconds for it
@@ -62,11 +64,13 @@ def find_by_id(driver, id_value):
     """
     return _find_and_wait(driver, By.ID, id_value)
 
+
 def fill_form_element(driver, element_id, data):
     """ Clear element and fill with values """
     e = find_by_id(driver, element_id)
     e.clear()
     e.send_keys(data)
+
 
 def fill_element_from_dict(driver, element_id, name, data_dict):
     """
@@ -82,11 +86,13 @@ def hover(driver, element):
     hov = ActionChains(driver).move_to_element(element)
     hov.perform()
 
+
 def select(driver, select_element, option_text):
     """Select an option from a HTML <select> (dropdown)"""
     for option in select_element.find_elements_by_tag_name('option'):
         if option.text == option_text:
             option.click()
+
 
 def get_session(base_url, user=None, pwd=None):
     '''
@@ -124,6 +130,18 @@ def get_session(base_url, user=None, pwd=None):
             raise Exception('Could not get session %r' % exceptions)
     return session
 
+
+def load_tconfig_from_file(filename):
+    """
+    Load configuration from filename given. This is an alternative way
+    to load the configuration when not running tests via nose runner.
+    Another alternative is via the environment variable:
+
+      NOSE_TESTCONFIG_AUTOLOAD_INI=<filename>
+    """
+    load_ini(filename, encoding='utf-8')
+
+
 def get_from_tconfig(key_array, default=None, required=False):
     """Gets a value from the testconfig file.
 
@@ -138,7 +156,8 @@ def get_from_tconfig(key_array, default=None, required=False):
     current_config = config
 
     if not len(current_config):
-        raise Exception("Testconfig is empty. See Readme for details (--tc-file)")
+        raise Exception(
+            "Testconfig is empty. See Readme for details (--tc-file)")
 
     try:
         for key in key_array:
@@ -148,10 +167,30 @@ def get_from_tconfig(key_array, default=None, required=False):
         if not required:
             return default
         else:
-            raise Exception("Testconfig entry %s is required" % '.'.join(key_array))
+            raise Exception("Testconfig entry %s is required" %
+                            '.'.join(key_array))
 
 # Helper for skipping tests if there is no radius server
+
+
 def is_radius_disabled():
     disable_radius = get_from_tconfig(['radius', 'disable'], default='False')
     return disable_radius.lower() == 'true'
 
+
+def close_alert_and_get_its_text(driver, accept=True):
+    """
+    Close alert box and get the text contents
+
+    @param driver: Selenium driver
+    @param accept: Accept alert? Defaults to accept, cancel=False
+
+    @return: Alert box text
+    """
+    alert = driver.switch_to_alert()
+    alert_text = alert.text
+    if accept:
+        alert.accept()
+    else:
+        alert.dismiss()
+    return alert_text

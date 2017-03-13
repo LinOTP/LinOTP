@@ -25,18 +25,15 @@
 #
 
 
-import time
-
 import requests
 from requests.auth import HTTPDigestAuth
 
 from linotpadminclientcli.clientutils import linotpclient
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.user_view import UserView
-from linotp_selenium_helper.token_view import TokenView
 from linotp_selenium_helper.validate import Validate
 
 import integration_data as data
+
 
 class TestYubikey(TestCase):
     """
@@ -53,11 +50,14 @@ class TestYubikey(TestCase):
         self.realm_name = "se_yubikey_realm"
         self.user_name = "maxwell"
 
-        self.reset_resolvers_and_realms(data.physics_ldap_resolver, self.realm_name)
+        self.reset_resolvers_and_realms(
+            data.physics_ldap_resolver, self.realm_name)
 
-        user_view = UserView(self.driver, self.base_url, self.realm_name)
+        user_view = self.manage_ui.user_view
+        user_view.select_realm(self.realm_name)
         self.assertTrue(user_view.user_exists(self.user_name), "User '" + self.user_name +
                                                                "' should exist.")
+        self.user_view = user_view
 
     def test_yubico_mode(self):
         """
@@ -86,14 +86,9 @@ class TestYubikey(TestCase):
         self.assertTrue(r1['result']['status'], "Error enrolling Yubikey")
         self.assertTrue(r1['result']['value'], "Error enrolling Yubikey")
 
-        driver = self.driver
-        driver.get(self.base_url + "/manage")
-
-        user_view = UserView(driver, self.base_url, self.realm_name)
-        user_view.select_user(self.user_name)
-        token_view = TokenView(self)
+        self.user_view.select_user(self.user_name)
         pin = "asdf1234"
-        token_view.assign_token(serial, pin)
+        self.manage_ui.token_view.assign_token(serial, pin)
 
         validate = Validate(self.http_protocol, self.http_host, self.http_port,
                             self.http_username, self.http_password)
@@ -115,19 +110,21 @@ class TestYubikey(TestCase):
 
         for otp in valid_otps:
             access_granted, _ = validate.validate(user=self.user_name + "@" +
-                                                self.realm_name, password=pin + otp)
+                                                  self.realm_name, password=pin + otp)
             self.assertTrue(access_granted, "OTP: " + pin + otp + " for user " +
-                                         self.user_name + "@" + self.realm_name + " returned False")
+                            self.user_name + "@" + self.realm_name + " returned False")
 
         # validate/check_yubikey
         password = pin + public_uid + "eihtnehtetluntirtirrvblfkttbjuih"
         cy_auth = HTTPDigestAuth(self.http_username, self.http_password)
-        cy_validate_url = self.http_protocol + "://" + url + "/validate/check_yubikey?"
+        cy_validate_url = self.http_protocol + \
+            "://" + url + "/validate/check_yubikey?"
         response = requests.get(cy_validate_url,
                                 params={'pass': password},
                                 auth=cy_auth,
                                 verify=False)
-        self.assertEqual(response.status_code, 200, "Invalid response %r" % response)
+        self.assertEqual(
+            response.status_code, 200, "Invalid response %r" % response)
         return_json = response.json()
         self.assertTrue(return_json['result']['status'],
                         "Invalid return value: %r" % return_json)
@@ -143,18 +140,20 @@ class TestYubikey(TestCase):
         # Repeat an old (therefore invalid) OTP value
         invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
         access_granted, _ = validate.validate(user=self.user_name + "@" +
-                                            self.realm_name, password=pin + invalid_otp)
+                                              self.realm_name, password=pin + invalid_otp)
         self.assertFalse(access_granted,
                          "OTP: " + pin + invalid_otp + " for user " + self.user_name + "@" +
-                             self.realm_name + " should be rejected.")
+                         self.realm_name + " should be rejected.")
 
-        # Repeat an old (therefore invalid) OTP value with validate/check_yubikey
+        # Repeat an old (therefore invalid) OTP value with
+        # validate/check_yubikey
         invalid_otp = pin + public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
         response = requests.get(cy_validate_url,
                                 params={'pass': password},
                                 auth=cy_auth,
                                 verify=False)
-        self.assertEqual(response.status_code, 200, "Invalid response %r" % response)
+        self.assertEqual(
+            response.status_code, 200, "Invalid response %r" % response)
         return_json = response.json()
         self.assertTrue(return_json['result']['status'],
                         "Invalid return value: %r" % return_json)
@@ -162,12 +161,13 @@ class TestYubikey(TestCase):
                          "Invalid return value: %r" % return_json)
         try:
             return_json['detail']['user']
-            self.fail("Response should not contain detail.user %r" % return_json)
+            self.fail("Response should not contain detail.user %r" %
+                      return_json)
         except KeyError:
             pass
         try:
             return_json['detail']['realm']
-            self.fail("Response should not contain detail.realm %r" % return_json)
+            self.fail("Response should not contain detail.realm %r" %
+                      return_json)
         except KeyError:
             pass
-

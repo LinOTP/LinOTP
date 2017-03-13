@@ -26,62 +26,60 @@
 """LinOTP Selenium Test that creates UserIdResolvers in the WebUI"""
 
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.user_view import UserView
-from linotp_selenium_helper.realm import RealmManager
-from linotp_selenium_helper.manage_ui import ManageUi
-from linotp_selenium_helper.user_id_resolver import UserIdResolverManager
 
 import integration_data as data
 
+
 class TestCreateUserIdResolvers(TestCase):
     """TestCase class that creates 4 UserIdResolvers"""
+
     def setUp(self):
         TestCase.setUp(self)
 
     def clear_realms(self):
         # Need to clear realms so that useridresolvers can be deleted
-        realmMgr = RealmManager(self)
-        realmMgr.clear_realms()
+        self.manage_ui.realm_manager.clear_realms()
 
     def create_resolvers_and_realm(self, resolver_data):
         """Test the connection with the corresponding button in the UI.
         Return the number of found users.
         """
-        driver = self.driver
         created_resolvers = []
         total_expected_users = 0
+        realm_manager = self.manage_ui.realm_manager
 
-        realmMgr = RealmManager(self)
-        realmMgr.clear_realms()
-
-        m = UserIdResolverManager(self)
+        self.clear_realms()
+        m = self.manage_ui.useridresolver_manager
         m.clear_resolvers()
 
         for d in resolver_data:
             expected_users = d['expected_users']
-            m.open()
             r = m.create_resolver(d)
             m.test_connection(d['name'], expected_users)
             created_resolvers.append(r)
             total_expected_users += expected_users
 
-        realm_name = "SE_realm1"
-        realmMgr.create(realm_name, created_resolvers)
+        m.close()
 
-        user_view = UserView(driver, self.base_url, realm_name)
-        self.assertEqual(total_expected_users, user_view.get_num_users(),
+        realm_name = "SE_realm1"
+        realm_manager.create(realm_name, created_resolvers)
+        realm_manager.close()
+
+        user_view = self.manage_ui.user_view
+        self.assertEqual(total_expected_users, user_view.get_num_users(realm_name),
                          "Not the expected number of users")
 
     def create_resolver(self, testdata):
-        m = UserIdResolverManager(self)
+        m = self.manage_ui.useridresolver_manager
         name = testdata['name']
         m.open()
         if name in m.get_defined_resolvers():
+            m.close()
             self.clear_realms()
             m.open()
             m.delete_resolver(name)
-            m.open()
         m.create_resolver(testdata)
+        m.close()
 
     def test_01_ldap_resolver(self):
         self.create_resolver(data.musicians_ldap_resolver)
@@ -99,5 +97,5 @@ class TestCreateUserIdResolvers(TestCase):
 
     def test_11_multiple_resolvers(self):
         testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
-                         data.sql_resolver, data.sepasswd_resolver)
+                    data.sql_resolver, data.sepasswd_resolver)
         return self.create_resolvers_and_realm(testdata)

@@ -25,6 +25,7 @@
 #
 import unittest
 import logging
+from contextlib import contextmanager
 
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -34,60 +35,96 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 
-from helper import get_from_tconfig
-from realm import RealmManager
-from policy import PolicyManager
-from user_id_resolver import UserIdResolverManager
+from helper import get_from_tconfig, load_tconfig_from_file
+from manage_ui import ManageUi
+from validate import Validate
+from unittest.case import SkipTest
 
 logger = logging.getLogger(__name__)
+
 
 class TestCase(unittest.TestCase):
     """Basic LinOTP TestCase class"""
 
     implicit_wait_time = 5
 
-    def setUp(self):
-        """Initializes the base_url and sets the driver"""
-        self.http_username = get_from_tconfig(['linotp', 'username'], required=True)
-        self.http_password = get_from_tconfig(['linotp', 'password'], required=True)
-        self.http_host = get_from_tconfig(['linotp', 'host'], required=True)
-        self.http_protocol = get_from_tconfig(['linotp', 'protocol'], default="https")
-        self.http_port = get_from_tconfig(['linotp', 'port'])
-        self.base_url = self.http_protocol + "://" + self.http_username + \
-            ":" + self.http_password + "@" + self.http_host
-        if self.http_port:
-            self.base_url += ":" + self.http_port
+    driver = None
+    "Selenium driver"
 
-        remote_setting = get_from_tconfig(['selenium', 'remote'], default='False')
-        remote_enable = remote_setting.lower() == 'true'
-        remote_url = get_from_tconfig(['selenium', 'remote_url'])
+    _linotp_version = None  # LinOTP server version
+    _manage = None  # Manage UI
 
-        self.driver = None
-        selenium_driver = get_from_tconfig(['selenium', 'driver'],
-                                           default="firefox").lower()
-        selenium_driver_language = get_from_tconfig(['selenium', 'language'],
-                                                    default="en_us").lower()
-        if not remote_enable:
+    @classmethod
+    def setUpClass(cls):
+        """Initializes the base_url and sets the driver - called from unit tests"""
+        cls.loadClsConfig()
+        cls.driver = cls.startDriver()
+
+    @classmethod
+    def loadClsConfig(cls, configfile=None):
+        if configfile:
+            load_tconfig_from_file(configfile)
+
+        cls.http_username = get_from_tconfig(
+            ['linotp', 'username'], required=True)
+        cls.http_password = get_from_tconfig(
+            ['linotp', 'password'], required=True)
+        cls.http_host = get_from_tconfig(['linotp', 'host'], required=True)
+        cls.http_protocol = get_from_tconfig(
+            ['linotp', 'protocol'], default="https")
+        cls.http_port = get_from_tconfig(['linotp', 'port'])
+        cls.base_url = cls.http_protocol + "://" + cls.http_username + \
+            ":" + cls.http_password + "@" + cls.http_host
+        if cls.http_port:
+            cls.base_url += ":" + cls.http_port
+
+        remote_setting = get_from_tconfig(
+            ['selenium', 'remote'], default='False')
+        cls.remote_enable = remote_setting.lower() == 'true'
+        cls.remote_url = get_from_tconfig(['selenium', 'remote_url'])
+
+        cls.selenium_driver_name = get_from_tconfig(['selenium', 'driver'],
+                                                    default="firefox").lower()
+        cls.selenium_driver_language = get_from_tconfig(['selenium', 'language'],
+                                                        default="en_us").lower()
+
+    @classmethod
+    def startDriver(cls):
+        """
+        Start the Selenium driver ourselves. Used by the integration tests.
+        """
+        def _get_chrome_options():
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument(
+                '--lang=' + cls.selenium_driver_language)
+            return chrome_options
+
+        def _get_firefox_profile():
+            fp = webdriver.FirefoxProfile()
+            fp.set_preference(
+                "intl.accept_languages", cls.selenium_driver_language)
+            return fp
+
+        selenium_driver = cls.selenium_driver_name
+        if not cls.remote_enable:
             if selenium_driver == 'chrome':
-                chrome_options = webdriver.ChromeOptions()
-                chrome_options.add_argument('--lang=' + selenium_driver_language)
-
                 try:
-                    self.driver = webdriver.Chrome(chrome_options=chrome_options)
+                    driver = webdriver.Chrome(
+                        chrome_options=_get_chrome_options())
                 except WebDriverException, e:
                     logger.error("Error creating Chrome driver. Maybe you need to install"
-                                  " 'chromedriver'. If you wish to use another browser please"
-                                  " adapt your configuratiion file. Error message: %s" % str(e))
+                                 " 'chromedriver'. If you wish to use another browser please"
+                                 " adapt your configuratiion file. Error message: %s" % str(e))
                     raise
 
             elif selenium_driver == 'firefox':
-                fp = webdriver.FirefoxProfile()
-                fp.set_preference("intl.accept_languages", selenium_driver_language)
+                driver = webdriver.Firefox(
+                    firefox_profile=_get_firefox_profile())
 
-                self.driver = webdriver.Firefox(firefox_profile=fp)
-            else:
-                logger.error('Unknown Selenium driver: %s\nValid drivers: firefox, chrome', self.driver)
-                raise('Invalid driver:%s' % (self.driver))
+            if driver is None:
+                logger.warn("Falling back to Firefox driver.")
+                driver = webdriver.Firefox(
+                    firefox_profile=_get_firefox_profile())
         else:
             # Remote driver. We need to build a desired capabilities
             # request for the remote instance
@@ -99,29 +136,39 @@ class TestCase(unittest.TestCase):
             selenium_driver = selenium_driver.upper()
 
             try:
-                desired_capabilities = getattr(DesiredCapabilities, selenium_driver).copy()
+                desired_capabilities = getattr(
+                    DesiredCapabilities, selenium_driver).copy()
             except AttributeError:
-                logger.warning("Could not find capabilities for the given remote driver %s", selenium_driver)
+                logger.warning(
+                    "Could not find capabilities for the given remote driver %s", selenium_driver)
                 desired_capabilities = {'browserName': selenium_driver}
 
             # Remote driver
-            if not remote_url:
-                remote_url = 'http://127.0.0.1:4444/wd/hub'
+            url = cls.remote_url
+            if not url:
+                url = 'http://127.0.0.1:4444/wd/hub'
 
             try:
-                self.driver = webdriver.Remote(command_executor=remote_url,
-                                               desired_capabilities=desired_capabilities)
+                driver = webdriver.Remote(command_executor=url,
+                                          desired_capabilities=desired_capabilities)
             except Exception as e:
                 logger.error("Could not start driver: %s", e)
                 raise
 
+        return driver
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.driver:
+            cls.driver.quit()
+
+    def setUp(self):
         self.enableImplicitWait()
         self.verification_errors = []
         self.accept_next_alert = True
 
     def tearDown(self):
         """Closes the driver and displays all errors"""
-        self.driver.quit()
         self.assertEqual([], self.verification_errors)
 
     def disableImplicitWait(self):
@@ -129,6 +176,13 @@ class TestCase(unittest.TestCase):
 
     def enableImplicitWait(self):
         self.driver.implicitly_wait(self.implicit_wait_time)
+
+    @contextmanager
+    def implicit_wait_disabled(self):
+        "Disable implicit wait for the statements in the context manager"
+        self.disableImplicitWait()
+        yield
+        self.enableImplicitWait()
 
     def find_children_by_id(self, parent_id, element_type='*'):
         """
@@ -138,14 +192,15 @@ class TestCase(unittest.TestCase):
         # Retrieve all elements including parent. This bypasses the timeout
         # that would other wise occur
         WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.ID, parent_id))
-            )
+            EC.presence_of_element_located((By.ID, parent_id))
+        )
 
         self.disableImplicitWait()
         try:
             elements = WebDriverWait(self.driver, 0).until(
-                    EC.presence_of_all_elements_located((By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
-                )
+                EC.presence_of_all_elements_located(
+                    (By.XPATH, 'id("%s")//%s' % (parent_id, element_type)))
+            )
         except TimeoutException:
             return []
         finally:
@@ -153,19 +208,59 @@ class TestCase(unittest.TestCase):
 
         return elements  # Return elements without the parent
 
+    @property
+    def manage_ui(self):
+        """
+        Return page manager
+        """
+        if self._manage is None:
+            self._manage = ManageUi(self)
+        return self._manage
+
+    @property
+    def validate(self):
+        """
+        Return validate helper
+        """
+        return Validate(self.http_protocol, self.http_host, self.http_port, self.http_username, self.http_password)
+
+    @property
+    def realm_manager(self):
+        return self.manage_ui.realm_manager
+
+    @property
+    def useridresolver_manager(self):
+        return self.manage_ui.useridresolver_manager
+
+    @property
+    def linotp_version(self):
+        "LinOTP server version"
+        if self._linotp_version is None:
+            self._linotp_version = self.validate.version()
+        return self._linotp_version
+
+    def need_linotp_version(self, version):
+        """
+        Raise a unittest skip exception if the server version is too old
+
+        @param version: Minimum version. Example: '2.9.1'
+        @raises unittest.SkipTest if the version is too old
+        """
+        if self.linotp_version.split('.') < version.split('.'):
+            raise SkipTest(
+                'LinOTP version %s <  %s' % (self.linotp_version, version))
+
     def reset_resolvers_and_realms(self, resolver=None, realm=None):
         """
         Clear resolvers and realms. Then optionally create a userIdResolver with
         given data and add it to a realm of given name.
         """
-        self.realm_manager = RealmManager(self)
         self.realm_manager.clear_realms()
-
-        self.useridresolver_manager = UserIdResolverManager(self)
         self.useridresolver_manager.clear_resolvers()
 
         if resolver:
             self.useridresolver_manager.create_resolver(resolver)
+            self.useridresolver_manager.close()
 
             if realm:
                 self.realm_manager.open()
@@ -173,14 +268,6 @@ class TestCase(unittest.TestCase):
                 self.realm_manager.close()
         else:
             assert not realm, "Can't create a realm without a resolver"
-
-
-    def reset_policies(self):
-        """
-        Remove all policies
-        """
-        self.policy_manager = PolicyManager(self.driver, self.base_url)
-        self.policy_manager.clear_policies()
 
     def close_alert_and_get_its_text(self):
         try:
@@ -191,4 +278,5 @@ class TestCase(unittest.TestCase):
             else:
                 alert.dismiss()
             return alert_text
-        finally: self.accept_next_alert = True
+        finally:
+            self.accept_next_alert = True

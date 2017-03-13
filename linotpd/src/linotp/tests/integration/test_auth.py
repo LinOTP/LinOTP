@@ -28,11 +28,14 @@
 import time
 
 from linotp_selenium_helper import TestCase
+from linotp_selenium_helper.auth_ui import AuthUi
 from linotp_selenium_helper.hotp_token import HotpToken
 from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.user_view import UserView
+from linotp_selenium_helper.token_view import TokenView
 
 import integration_data as data
+
 
 class TestAuth(TestCase):
     """
@@ -42,27 +45,26 @@ class TestAuth(TestCase):
     def setUp(self):
         TestCase.setUp(self)
         self.realm_name = "se_test_auth"
-        self.reset_resolvers_and_realms(data.sepasswd_resolver, self.realm_name)
+        self.reset_resolvers_and_realms(
+            data.sepasswd_resolver, self.realm_name)
+        self.manage = ManageUi(self)
+        self.manage.token_view.delete_all_tokens()
 
     def test_auth_index(self):
         """
         Test /auth/index form by authenticating susi with a HMAC/HOTP Token
         """
-        driver = self.driver
 
         # Enroll HOTP token
         # Seed and OTP values: https://tools.ietf.org/html/rfc4226#appendix-D
-        m = ManageUi(self)
-        m.open_manage()
-        user_view = UserView(driver, self.base_url, self.realm_name)
+        user_view = UserView(self.manage, self.realm_name)
         username = "susi"
         user_view.select_user(username)
         pin = "myauthpin"
-        HotpToken(driver,
+        HotpToken(self.driver,
                   self.base_url,
                   pin=pin,
                   hmac_key="3132333435363738393031323334353637383930")
-        time.sleep(1)
 
         otp_list = ["755224",
                     "287082",
@@ -71,28 +73,14 @@ class TestAuth(TestCase):
                     "338314",
                     "254676"]
 
-        driver.get(self.base_url + "/auth/index")
+        auth = AuthUi(self)
+        user = username + '@' + self.realm_name
+
         for otp in otp_list:
-            driver.find_element_by_id("user").clear()
-            driver.find_element_by_id("user").send_keys("susi@se_test_auth")
-            driver.find_element_by_id("pass").clear()
-            driver.find_element_by_id("pass").send_keys(pin + otp)
-            driver.find_element_by_css_selector("input[type=\"submit\"]").click()
-            alert = self.driver.switch_to_alert()
-            alert_text = alert.text
-            alert.accept()
-            self.assertEqual("User successfully authenticated!", alert_text)
+            assert auth.auth_using_index(user, pin, otp) == auth.AUTH_SUCCESS
 
         # wrong otp
-        driver.find_element_by_id("user").clear()
-        driver.find_element_by_id("user").send_keys("susi@se_test_auth")
-        driver.find_element_by_id("pass").clear()
-        driver.find_element_by_id("pass").send_keys("bla!")
-        driver.find_element_by_css_selector("input[type=\"submit\"]").click()
-        alert = self.driver.switch_to_alert()
-        alert_text = alert.text
-        alert.accept()
-        self.assertEqual("User failed to authenticate!", alert_text)
+        assert auth.auth_using_index(user, 'bla!') == auth.AUTH_FAIL
 
         # test auth/index3
         otp_list = ["287922",
@@ -100,30 +88,9 @@ class TestAuth(TestCase):
                     "399871",
                     "520489"]
 
-        driver.get(self.base_url + "/auth/index3")
         for otp in otp_list:
-            driver.find_element_by_id("user3").clear()
-            driver.find_element_by_id("user3").send_keys("susi@se_test_auth")
-            driver.find_element_by_id("pass3").clear()
-            driver.find_element_by_id("pass3").send_keys(pin)
-            driver.find_element_by_id("otp3").clear()
-            driver.find_element_by_id("otp3").send_keys(otp)
-            driver.find_element_by_css_selector("input[type=\"submit\"]").click()
-            alert = self.driver.switch_to_alert()
-            alert_text = alert.text
-            alert.accept()
-            self.assertEqual("User successfully authenticated!", alert_text)
+            assert auth.auth_using_index3(user, pin, otp) == auth.AUTH_SUCCESS
 
         # wrong otp
-        driver.find_element_by_id("user3").clear()
-        driver.find_element_by_id("user3").send_keys("susi@se_test_auth")
-        driver.find_element_by_id("pass3").clear()
-        driver.find_element_by_id("pass3").send_keys(pin)
-        driver.find_element_by_id("otp3").clear()
-        driver.find_element_by_id("otp3").send_keys("some invalid otp")
-        driver.find_element_by_css_selector("input[type=\"submit\"]").click()
-        alert = self.driver.switch_to_alert()
-        alert_text = alert.text
-        alert.accept()
-        self.assertEqual("User failed to authenticate!", alert_text)
-
+        assert auth.auth_using_index(
+            user, pin, 'some invalid otp') == auth.AUTH_FAIL

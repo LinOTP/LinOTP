@@ -25,84 +25,61 @@
 #
 """Contains TokenView class"""
 
-import time
 import logging
 
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
-
+from manage_elements import ManageTab, ManageDialog
 from helper import fill_form_element, find_by_css, find_by_id
-from manage_ui import ManageUi
 
 logger = logging.getLogger(__name__)
+
 
 class TokenViewException(Exception):
     pass
 
 
-class TokenView(ManageUi):
+class TokenView(ManageTab):
     """Represents the 'Token View' tab in the LinOTP WebUI"""
 
-    token_tabpane_css = 'div#tabs > div.ui-tabs-panel:nth-of-type(1)'
+    TAB_INDEX = 1
+
     token_lines_css = "#token_table tr td:first-child div"
     delete_button_id = 'button_delete'
     token_table_css = 'table#token_table'
-    stat_css = token_tabpane_css + " > div.flexigrid span.pPageStat"  # Information text about number of tokens shown
-    flexigrid_reload_button_css = "div#tabs div.flexigrid div.pReload"
 
-    def _is_tab_open(self):
+    alert_dialog = None
+    "Access to the alert dialog"
 
-        if not self._is_url_open():
-            return False
+    delete_confirm_dialog = None
+    "Dialog box shown when tokens are deleted"
 
-        try:
-            self.testcase.disableImplicitWait()
-            element = EC.visibility_of_element_located((By.CSS_SELECTOR, self.token_tabpane_css))(self.driver)
-            self.testcase.enableImplicitWait()
-        except Exception, e:
-            pass
-            #return False
-
-        return (element is not False) # Convert to true/false answer
-
-    def _wait_for_loading_complete(self):
-        # Wait for flexigrid to become available
-        WebDriverWait(self.driver, 4).until(
-                     EC.element_to_be_clickable((By.CSS_SELECTOR, self.flexigrid_reload_button_css))
-                )
-
-        # While the flexigrid is relaoding the tokens, the reload button is set with class 'loading'.
-        # Wait for this to disappear
-        flexigrid_reloading_css = self.flexigrid_reload_button_css + ".loading"
-        self.testcase.disableImplicitWait()
-        WebDriverWait(self.driver, 10, ignored_exceptions=NoSuchElementException).until_not(
-                     EC.presence_of_element_located((By.CSS_SELECTOR, flexigrid_reloading_css))
-                )
-        self.testcase.enableImplicitWait()
-
-    def _open_tab_token_view(self):
-        """Select the 'Token View' tab"""
-        self.open_tab(1)
-
-        self._wait_for_loading_complete()
-        self.driver.find_element_by_css_selector("option[value=\"100\"]").click()  # Show 100 tokens in view
-
-        self._wait_for_loading_complete()
+    def __init__(self, manage_ui):
+        super(TokenView, self).__init__(manage_ui)
+        self.alert_dialog = ManageDialog(manage_ui, 'alert_box_text')
+        self.delete_confirm_dialog = ManageDialog(
+            manage_ui, 'dialog_delete_token')
 
     def open(self):
-        self._open_tab_token_view()
+        """Select the 'Token View' tab"""
+        self.open_tab()
+
+        self.driver.find_element_by_css_selector(
+            "option[value=\"100\"]").click()  # Show 100 tokens in view
+
+        self.wait_for_grid_loading()
+        # self.manage.wait_for_waiting_finished()
 
     def _get_status_text(self):
-        e = self.find_by_css(self.stat_css)
+        # Information text about number of tokens shown
+        stat_css = self.flexigrid_css + " span.pPageStat"
+        e = self.find_by_css(stat_css)
         return e.text
 
     def _get_token_list(self):
         "Open list and return all tokens shown in the view"
-        self._open_tab_token_view()
+        self.open()
 
-        # In order to avoid long timeouts if the token list is empty, check how many are shown
+        # In order to avoid long timeouts if the token list is empty, check how
+        # many are shown
         text = self._get_status_text()
 
         if text == "No items":
@@ -114,8 +91,11 @@ class TokenView(ManageUi):
     def select_all_tokens(self):
         tokens = self._get_token_list()
 
+        selected_tokens = self.get_selected_tokens()
+
         for t in tokens:
-            t.click()
+            if t.text not in selected_tokens:
+                t.click()
 
     def _delete_selected_tokens(self):
         tokens_before = [t.text for t in self._get_token_list()]
@@ -123,16 +103,20 @@ class TokenView(ManageUi):
             return
 
         find_by_id(self.driver, self.delete_button_id).click()
-        deletetok_confirm_dialog_css = "div[aria-describedby='dialog_delete_token'] span.ui-dialog-title"
-        self.testcase.assertEquals("Delete selected tokens?", self.find_by_css(deletetok_confirm_dialog_css).text)
 
-        t = find_by_css(self.driver, "#dialog_delete_token").text
-        assert t.startswith(r"The following tokens will be permanently deleted")
+        delete_dialog = self.delete_confirm_dialog
 
-        find_by_id(self.driver, "button_delete_delete").click()
+        # The delete confirm dialog will open now
+        delete_dialog.check_title("Delete selected tokens?")
 
-        self.wait_for_waiting_finished()  # Wait for delete API call
-        self._wait_for_loading_complete()  # Wait for flexigrid to refresh
+        t = delete_dialog.get_text()
+        assert t.startswith(
+            r"The following tokens will be permanently deleted")
+
+        delete_dialog.click_button('button_delete_delete')
+
+        self.manage.wait_for_waiting_finished()  # Wait for delete API call
+        self.wait_for_grid_loading()  # Wait for flexigrid to refresh
 
         tokens_after = [t.text for t in self._get_token_list()]
 
@@ -140,23 +124,49 @@ class TokenView(ManageUi):
             logging.warn("Number of tokens did not reduce as expected. from=%s to=%s",
                          tokens_before, tokens_after)
             assert len(tokens_before) > len(tokens_after), \
-                    "The token list should be shorter. Before:%s After:%s" % (len(tokens_before), len(tokens_after))
+                "The token list should be shorter. Before:%s After:%s" % (
+                    len(tokens_before), len(tokens_after))
 
     def delete_all_tokens(self):
+        self.open()
         self.select_all_tokens()
         self._delete_selected_tokens()
 
+    def get_selected_tokens(self):
+        """
+        Retrieve a list of currently selected token serials in the UI
+        """
+        selected_tokens = find_by_id(self.driver, "selected_tokens").text
 
-    def select_token(self, token_serial):
-        """Selects (clicks on) a token in the WebUI. This function does not reload
-           the page (because otherwise the selection would be lost) neither before
-           nor after the selection.
+        return selected_tokens.split(', ')
+
+    def token_click(self, token_serial):
+        """
+        Click on the given token. This toggles its selected state.
         """
         token_serials = self._get_token_list()
 
         for token in token_serials:
             if token.text == token_serial:
                 token.click()
+                return
+
+    def select_token(self, token_serial):
+        """Selects (clicks on) a token in the WebUI. This function does not reload
+           the page (because otherwise the selection would be lost) neither before
+           nor after the selection.
+
+           If the token is already selected, this does nothing
+        """
+        if token_serial not in self.get_selected_tokens():
+            self.token_click(token_serial)
+
+    def deselect_token(self, token_serial):
+        """
+        Deselect a token if it is already selected
+        """
+        if token_serial in self.get_selected_tokens():
+            self.token_click(token_serial)
 
     def delete_token(self, token_serial):
         self.select_token(token_serial)
@@ -168,9 +178,9 @@ class TokenView(ManageUi):
         self.select_token(token_serial)
 
         assign_id = "button_assign"
-        WebDriverWait(self.driver, 4).until(
-                     EC.element_to_be_clickable((By.ID, assign_id))
-                )
+        # WebDriverWait(self.driver, 4).until(
+        #             EC.element_to_be_clickable((By.ID, assign_id))
+        #        )
         driver.find_element_by_id(assign_id).click()
 
         self.wait_for_waiting_finished()
@@ -187,22 +197,26 @@ class TokenView(ManageUi):
         self.select_token(token_serial)
         self.driver.find_element_by_id("button_tokeninfo").click()
         token_info = {}
-        rows = self.driver.find_elements_by_css_selector("#dialog_token_info > table >tbody > tr")
+        rows = self.driver.find_elements_by_css_selector(
+            "#dialog_token_info > table >tbody > tr")
 
-        self.testcase.disableImplicitWait() # Some rows do not contain all elements
+        # Some rows do not contain all elements
+        self.testcase.disableImplicitWait()
 
         for row in rows:
             tds = row.find_elements_by_css_selector("td.tokeninfoOuterTable")
             key = tds[0].text
             value_element = tds[1]
             if key in keys_with_subtable:
-                inner_rows = value_element.find_elements_by_css_selector('table.tokeninfoInnerTable tr')
+                inner_rows = value_element.find_elements_by_css_selector(
+                    'table.tokeninfoInnerTable tr')
                 if key == 'LinOtp.RealmNames':
                     token_info[key] = []
                 else:
                     token_info[key] = {}
                 for inner_row in inner_rows:
-                    inner_tds = inner_row.find_elements_by_css_selector("td.tokeninfoInnerTable")
+                    inner_tds = inner_row.find_elements_by_css_selector(
+                        "td.tokeninfoInnerTable")
                     if key == 'LinOtp.RealmNames':
                         inner_value = inner_tds[0].text
                         token_info[key].append(inner_value)
@@ -213,4 +227,6 @@ class TokenView(ManageUi):
             else:
                 token_info[key] = value_element.text
         self.testcase.enableImplicitWait()
+
+        self.driver.find_element_by_id("button_ti_close").click()
         return token_info
