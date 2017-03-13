@@ -145,82 +145,92 @@ node('master') {
 def doMake(target, timeout_minutes) {
     def make_cmd = "make ${target} ${docker_make_args} DOCKER_TAGS='latest ${docker_image_tag}' LINOTP_IMAGE_TAG=${docker_image_tag} RANCHER_STACK_ID=${docker_image_tag}"
 
-    timeout(time:timeout_minutes, unit:'MINUTES') {
-        sh make_cmd
+    ansiColor('xterm') {
+        timeout(time:timeout_minutes, unit:'MINUTES') {
+            sh make_cmd
+        }
+    }
+}
+
+def makeIfParam(condition_name, target, timeout_minutes) {
+    /* Run the given make target provided that the parameter is true.
+     * We pass the parameter name as a string so that we can log it
+     */
+
+    // Get the parameter value from the variable bindings
+    def condition_value = params[condition_name]
+
+    if(condition_value) {
+        doMake(target, timeout_minutes)
+    } else {
+        println "${condition_name}=${condition_value} --> skip target ${target}"
     }
 }
 
 node('docker') {
-    docker.withRegistry(PARAM_DOCKER_REGISTRY_URL, PARAM_DOCKER_REGISTRY_CREDENTIALS) {
+    deleteDir()
+    unstash 'linotpd'
 
-        deleteDir()
-        unstash 'linotpd'
+    stage('Linotp builder') {
+        /*
+         * Build the linotp builder docker image
+         */
+        makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp-builder', 5)
+    }
 
-        if(PARAM_BUILD_DOCKER_IMAGES) {
-            stage('Linotp builder') {
-                /*
-                 * Build the linotp builder docker image
-                 */
-                doMake('docker-build-linotp-builder', 5)
-            }
+    stage('debs') {
+        /*
+         * Build the linotp debs in the builder image
+         */
+        makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-debs', 5)
+        archiveArtifacts 'build/apt/*'
+    }
 
-            stage('debs') {
-                /*
-                 * Build the linotp debs in the builder image
-                 */
-                doMake('docker-build-debs', 5)
-            }
+    stage('Linotp image') {
+        /*
+         * Build the linotp docker image from the debs
+         */
+        makeIfParam('PARAM_BUILD_DOCKER_IMAGES', 'docker-build-linotp', 5)
+    }
 
-            stage('Linotp image') {
-                /*
-                 * Build the linotp docker image from the debs
-                 */
-                doMake('docker-build-linotp', 5)
-            }
-        }
+    stage('Build test env') {
+        makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-build-selenium', 5)
+    }
 
-        if(PARAM_RUN_TESTS_INTEGRATION) {
-            stage('Build test env') {
-                doMake('docker-build-selenium', 5)
-            }
-        }
-
+    stage('Push images') {
         if(PARAM_PUBLISH_DOCKER_IMAGES) {
             if (!PARAM_BUILD_DOCKER_IMAGES) {
                 error("Cannot enable publish docker images without building first (PARAM_BUILD_DOCKER_IMAGES must be set)")
             }
-            stage('Push images') {
+
+            docker.withRegistry(PARAM_DOCKER_REGISTRY_URL, PARAM_DOCKER_REGISTRY_CREDENTIALS) {
                 docker.image("linotp:${docker_image_tag}").push()
             }
         }
+    }
 
+    stage('Rancher') {
         if(PARAM_PUBLISH_JOB_IN_RANCHER) {
             if (!PARAM_PUBLISH_DOCKER_IMAGES) {
                 error("Cannot enable publish to Rancher without enabling pushing the image")
             }
-            stage('Rancher') {
-                withCredentials([usernamePassword(credentialsId: "${PARAM_RANCHER_ACCESS_KEY}",
-                                                    passwordVariable: 'RANCHER_SECRET_KEY',
-                                                    usernameVariable: 'RANCHER_ACCESS_KEY')
-                                ]) {
-                    withEnv(["RANCHER_URL=${PARAM_RANCHER_URL}"]) {
-                        doMake('rancher-linotp-create', 2)
+            withCredentials([usernamePassword(credentialsId: "${PARAM_RANCHER_ACCESS_KEY}",
+                                                passwordVariable: 'RANCHER_SECRET_KEY',
+                                                usernameVariable: 'RANCHER_ACCESS_KEY')
+                            ]) {
+                withEnv(["RANCHER_URL=${PARAM_RANCHER_URL}"]) {
+                    doMake('rancher-linotp-create', 2)
 
-                        if(PARAM_START_JOB_IN_RANCHER) {
-                            doMake('rancher-linotp-up', 2)
-                        }
-                    }
+                    makeIfParam('PARAM_START_JOB_IN_RANCHER', 'rancher-linotp-up', 2)
                 }
             }
         }
+    }
 
-        if(PARAM_RUN_TESTS_INTEGRATION) {
-            stage('Selenium tests') {
-                /*
-                 * Run the Selenium unit tests in a docker compose environment
-                 */
-                doMake('docker-run-selenium', 60)
-            }
-        }
+    stage('Selenium tests') {
+        /*
+         * Run the Selenium unit tests in a docker compose environment
+         */
+        makeIfParam('PARAM_RUN_TESTS_INTEGRATION', 'docker-run-selenium', 60)
     }
 }
