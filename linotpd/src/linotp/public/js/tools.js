@@ -512,80 +512,67 @@ function import_users_dryrun_callback(response, status) {
     $('#dialog_import_users').dialog('close');
 
     var result = response.result.value;
-    var created = [], modified = [], deleted = [], unchanged = [], k, countTotal;
 
-    for (k in result.created) {
-        if (Object.prototype.hasOwnProperty.call(result.created, k)) {
-            created.push(k);
-        }
-    }
-    for (k in result.modified) {
-        if (Object.prototype.hasOwnProperty.call(result.modified, k)) {
-            modified.push(k);
-        }
-    }
-    for (k in result.deleted) {
-        if (Object.prototype.hasOwnProperty.call(result.deleted, k)) {
-            deleted.push(k);
-        }
-    }
-    for (k in result.updated) {
-        if (Object.prototype.hasOwnProperty.call(result.updated, k)) {
-            unchanged.push(k);
-        }
-    }
+    var created = import_users_callback_process_group(
+        result.created,
+        $('#import_user_dryrun_result_d_new .data-table'),
+        i18n.gettext("No users will be created!")
+    );
 
-    var summary = "<li>" + sprintf(i18n.gettext('%s new users'), "<b>"+created.length+"</b>") + "</li>"
-            + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>"+modified.length+"</b>") + "</li>"
-            + "<li>" + sprintf(i18n.gettext('%s users will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
-            + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>";
-    $('#import_user_dryrun_results .summary').html(summary)
+    var modified = import_users_callback_process_group(
+        result.modified,
+        $('#import_user_dryrun_result_d_mod .data-table'),
+        i18n.gettext("No existing users will be modified!")
+    );
 
-    if(created.length > 0) {
-        var tablecontent = "";
-        for(i in created) {
-            tablecontent += "<tr><td>" + created[i] + "</td><td>" + result.created[created[i]] + "</td></tr>";
-        }
-        $('#import_user_dryrun_result_d_new .data-table').html(tablecontent);
-    }
-    else {
-        $('#import_user_dryrun_result_d_new .data-table').html("<td>" + i18n.gettext("No users will be created!") + "</td>");
-    }
+    var deleted = import_users_callback_process_group(
+        result.deleted,
+        $('#import_user_dryrun_result_d_del .data-table'),
+        i18n.gettext("No users will be deleted!")
+    );
 
-    if(modified.length > 0) {
-        var tablecontent = "";
-        for(i in modified) {
-            tablecontent += "<tr><td>" + modified[i] + "</td><td>" + result.modified[modified[i]] + "</td></tr>";
-        }
-        $('#import_user_dryrun_result_d_mod .data-table').html(tablecontent);
-    }
-    else {
-        $('#import_user_dryrun_result_d_mod .data-table').html("<td>" + i18n.gettext("No existing users will be modified!") + "</td>");
-    }
+    var unchanged = import_users_callback_process_group(
+        result.updated,
+        $('#import_user_dryrun_result_d_unchanged .data-table'),
+        i18n.gettext("No user stays unchanged!")
+    );
 
-    if(deleted.length > 0) {
-        var tablecontent = "";
-        for(i in deleted) {
-            tablecontent += "<tr><td>" + deleted[i] + "</td><td>" + result.deleted[deleted[i]] + "</td></tr>";
-        }
-        $('#import_user_dryrun_result_d_del .data-table').html(tablecontent);
-    }
-    else {
-        $('#import_user_dryrun_result_d_del .data-table').html("<td>" + i18n.gettext("No users will be deleted!") + "</td>");
-    }
-
-    if(unchanged.length > 0) {
-        var tablecontent = "";
-        for(i in unchanged) {
-            tablecontent += "<tr><td>" + unchanged[i] + "</td><td>" + result.updated[unchanged[i]] + "</td></tr>";
-        }
-        $('#import_user_dryrun_result_d_unchanged .data-table').html(tablecontent);
-    }
-    else {
-        $('#import_user_dryrun_result_d_unchanged .data-table').html("<td>" + i18n.gettext("No user stays unchanged!") + "</td>");
-    }
+    $('#import_user_dryrun_results .summary').html(
+        "<li>" + sprintf(i18n.gettext('%s new users'), "<b>"+created.length+"</b>") + "</li>"
+        + "<li>" + sprintf(i18n.gettext('%s modified users'), "<b>"+modified.length+"</b>") + "</li>"
+        + "<li>" + sprintf(i18n.gettext('%s users will be deleted'), "<b>"+deleted.length+"</b>") + "</li>"
+        + "<li>" + sprintf(i18n.gettext('%s users are identical and therefor unchanged'), "<b>"+unchanged.length+"</b>") + "</li>"
+    );
 
     $('#dialog_import_users_confirm').dialog('open');
+}
+
+/**
+ * processes a group of users of the import dialog result to list them for review
+ * @param  {Object} group         Object of userid -> username
+ * @param  {JQuery} target_table  The JQuery object selecting the table
+ * @param  {String} fallback_text Text to display in the table if no users are in the group
+ * @return {Array}                containing the user ids of the group
+ */
+function import_users_callback_process_group(group, target_table, fallback_text) {
+    var users = [];
+    for (k in group) {
+        if (Object.prototype.hasOwnProperty.call(group, k)) {
+            users.push(k);
+        }
+    }
+
+    if(users.length > 0) {
+        var tablecontent = "";
+        for(i in users) {
+            tablecontent += "<tr><td>" + users[i] + "</td><td>" + group[users[i]] + "</td></tr>";
+        }
+        target_table.html(tablecontent);
+    }
+    else {
+        target_table.html("<td>" + fallback_text + "</td>");
+    }
+    return users
 }
 
 function add_user_data() {

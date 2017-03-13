@@ -2521,8 +2521,6 @@ function load_sms_providers(){
                   };
     $.get('/system/getProvider', params,
       function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-
         smsProviders = data.result.value;
 
         // Set selected provider globally
@@ -2577,6 +2575,7 @@ function load_sms_providers(){
         else {
             $('#sms_providers_list').html("");
         };
+        hide_waiting();
     });
 }
 
@@ -2586,8 +2585,6 @@ function load_email_providers(){
     var params = { 'type': 'email', 'session':getsession()};
     $.post('/system/getProvider', params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-
         emailProviders = data.result.value;
 
         // Set selected provider globally
@@ -2646,6 +2643,7 @@ function load_email_providers(){
         else {
             $('#email_providers_list').html("");
         };
+        hide_waiting();
     });
 }
 
@@ -2655,8 +2653,6 @@ function load_push_providers(){
     var params = { 'type': 'push', 'session': getsession()};
     $.post('/system/getProvider', params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-
         pushProviders = data.result.value;
 
         // Set selected provider globally
@@ -2715,6 +2711,7 @@ function load_push_providers(){
         else {
             $('#email_providers_list').html("");
         };
+        hide_waiting();
     });
 }
 
@@ -2727,7 +2724,6 @@ function load_system_config(){
     $.post('/system/getConfig', params,
      function(data, textStatus, XMLHttpRequest){
         // checkboxes this way:
-        hide_waiting();
         checkBoxes = new Array();
         if (data.result.value.splitAtSign == "True") {
             checkBoxes.push("sys_splitAtSign");
@@ -2798,7 +2794,7 @@ function load_system_config(){
         }
         var exp = data.result.value['user_lookup_cache.expiration'];
         $('#sys_user_cache_expiration').val(exp || 123600);
-
+        hide_waiting();
     });
 }
 
@@ -2905,7 +2901,6 @@ function setSystemConfig(values) {
     values["session"] = getsession();
     $.post('/system/setConfig', values,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         if (data.result.status == false) {
             var message = "Error saving system configuration. Please check your configuration and your server.";
             // if a more specific server error is available use this one
@@ -2916,6 +2911,7 @@ function setSystemConfig(values) {
                              'type': ERROR,
                              'is_escaped': true});
         }
+        hide_waiting();
     });
 }
 
@@ -2973,7 +2969,6 @@ function save_ldap_config(){
 
     $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         if (data.result.status == false) {
             alert_info_text({'text': "text_error_ldap",
                              'param': escape(data.result.error.message),
@@ -2983,6 +2978,7 @@ function save_ldap_config(){
             resolvers_load();
             $dialog_ldap_resolver.dialog('close');
         }
+        hide_waiting();
     });
     return false;
 }
@@ -3006,7 +3002,6 @@ function save_http_config(){
 
     clientUrlFetch(url, params,
          function(xhdr, textStatus, XMLHttpRequest){
-            hide_waiting();
             var resp = xhdr.responseText;
             var data = jQuery.parseJSON(resp);
             if (data.result.status == false) {
@@ -3015,6 +3010,7 @@ function save_http_config(){
                 resolvers_load();
                 $dialog_http_resolver.dialog('close');
             }
+            hide_waiting();
         }
     );
     return false;
@@ -3056,7 +3052,6 @@ function save_realm_config(){
 
     $.post('/system/setRealm', params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         if (data.result.status == false) {
             alert_info_text({'text': "text_error_realm",
                              'param': escape(data.result.error.message),
@@ -3069,6 +3064,7 @@ function save_realm_config(){
                              'param': escape(realm),
                              'is_escaped': true});
         }
+        hide_waiting();
     });
 }
 
@@ -3087,7 +3083,6 @@ function save_tokenrealm_config(){
 
         $.post('/admin/tokenrealm', params,
          function(data, textStatus, XMLHttpRequest){
-            hide_waiting();
             if (data.result.status == false) {
                 alert_info_text({'text': "text_error_set_realm",
                                  'param': escape(data.result.error.message),
@@ -3098,6 +3093,7 @@ function save_tokenrealm_config(){
                 $('#token_table').flexReload();
                 $('#selected_tokens').html('');
             }
+            hide_waiting();
          });
     }
 }
@@ -3120,7 +3116,6 @@ function save_file_config(){
     show_waiting();
     $.post('/system/setResolver', params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         if (data.result.status == false) {
             alert_info_text({'text': "text_error_save_file",
                              'param': escape(data.result.error.message),
@@ -3130,6 +3125,7 @@ function save_file_config(){
             resolvers_load();
             $dialog_file_resolver.dialog('close');
         }
+        hide_waiting();
     });
 }
 
@@ -3149,8 +3145,7 @@ function save_sql_config(){
         '#sql_mapping': 'Map',
         '#sql_where': 'Where',
         '#sql_conparams': 'conParams',
-        '#sql_encoding' : 'Encoding',
-        '#sql_readonly': 'readonly',
+        '#sql_encoding' : 'Encoding'
     };
     var url = '/system/setResolver';
     var params = {};
@@ -3175,7 +3170,6 @@ function save_sql_config(){
 
     $.post(url, params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         if (data.result.status == false) {
             alert_info_text({'text': "text_error_save_sql",
                              'param': escape(data.result.error.message),
@@ -3185,6 +3179,7 @@ function save_sql_config(){
             resolvers_load();
             $dialog_sql_resolver.dialog('close');
         }
+        hide_waiting();
     });
     return false;
 }
@@ -3199,7 +3194,6 @@ function realms_load(){
     var params = { 'session': getsession() };
     $.post('/system/getRealms', params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         var realms = '<ol id="realms_select" class="select_list" class="ui-selectable">';
         for (var key in data.result.value) {
             var default_realm = "";
@@ -3228,6 +3222,7 @@ function realms_load(){
                 }); // end of each
             } // end of stop function
         }); // end of selectable
+        hide_waiting();
     }); // end of $.post
 }
 
@@ -3250,16 +3245,15 @@ function resolvers_load(){
     var params = {'session':getsession()};
     $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         var resolvers = '<ol id="resolvers_select" class="select_list" class="ui-selectable">';
         var count = 0;
         for (var key in data.result.value) {
             var e_key = escape(key);
             var e_reolver_type = escape(data.result.value[key].type);
             var managed = escape(data.result.value[key].readonly);
-            resolvers += '<li class="ui-widget-content' + (managed? " managed" : "") + '">' + e_key
-                    + ' [' + e_reolver_type + ']'
-                    + (managed ? '<span class="managed-tag"> '+i18n.gettext("managed")+'</span>' : '')
+            resolvers += '<li class="ui-widget-content' + (managed? " managed" : "") + '">'
+                    + '<span class="name">' + e_key + ' [' + e_reolver_type + ']</span>'
+                    + (managed ? ' <span class="managed-tag">'+i18n.gettext("managed")+'</span>' : '')
                     + '</li>';
             count = count +1 ;
         }
@@ -3287,7 +3281,7 @@ function resolvers_load(){
                     }
 
                     if($("#resolvers_select .ui-selected").length > 0){
-                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected").clone().children().remove().end().text());
+                        g.resolver_to_edit = escape($("#resolvers_select .ui-selected .name").text());
                         $("#button_resolver_delete").button("enable");
                     }
                     else{
@@ -3305,6 +3299,7 @@ function resolvers_load(){
             $('#resolvers_list').html("");
             g.resolver_to_edit = "";
         };
+        hide_waiting();
     }); // end of $.post
 }
 
@@ -3316,7 +3311,6 @@ function resolver_delete(){
     show_waiting();
     $.post('/system/delResolver', params,
      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         if (data.result.status == true) {
             resolvers_load();
             if (data.result.value == true)
@@ -3335,6 +3329,7 @@ function resolver_delete(){
                              'type': ERROR,
                              'is_escape': true});
         }
+        hide_waiting();
     });
 }
 
@@ -4502,7 +4497,6 @@ $(document).ready(function(){
         params['ConnectionParams']     = $('#sql_conparams').val();
         params['Encoding']      = $('#sql_encoding').val();
         params['Limit']      	= $('#sql_limit').val();
-        params['readonly']      = $('#sql_readonly').val();
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;
@@ -5897,7 +5891,6 @@ function save_sms_provider_config(){
 
     $.post('/system/setProvider', params,
       function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         load_sms_providers();
         if (data.result.status == true && data.result.value == true) {
             $dialog_sms_provider_edit.dialog('close');
@@ -5918,86 +5911,81 @@ function save_sms_provider_config(){
                        'type': ERROR,
                        'is_escaped': true});
         }
+        hide_waiting();
     });
 }
 
 function delete_sms_provider(provider){
     show_waiting();
-    var params = {'name': provider,
-                  'type': 'sms',
-                  'session': getsession()
-                  };
+    var params = {
+        'name': provider,
+        'type': 'sms',
+        'session': getsession()
+    };
     $.post('/system/delProvider', params,
-      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-        load_sms_providers();
-        if (data.result.status == true && data.result.value == true) {
-
-            var message = sprintf(i18n.gettext('Provider %s deleted'),
-                                  escape(provider));
-
-            alert_info_text({'text': message,
-                             'is_escaped': true});
-
-        } else if (data.result.value == false) {
-            var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
-            alert_box({'title': i18n.gettext('Failed to delete provider'),
-                       'text': reason_text,
-                       'type': ERROR,
-                       'is_escaped': true});
-
-            var message = sprintf(i18n.gettext('Failed to delete provider %s'),
-                                  escape(provider));
-            alert_info_text({'text': message,
-                             'type': ERROR,
-                             'is_escaped': true});
-        } else {
-            alert_box({'title': i18n.gettext('Error deleting provider'),
-                       'text': escape(data.result.error.message),
-                       'type': ERROR,
-                       'is_escaped': true});
+        function(data, textStatus, XMLHttpRequest){
+            load_sms_providers();
+            if (data.result.status == true && data.result.value == true) {
+                var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                      escape(provider));
+                alert_info_text({'text': message,
+                                 'is_escaped': true});
+            } else if (data.result.value == false) {
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                alert_box({'title': i18n.gettext('Failed to delete provider'),
+                           'text': reason_text,
+                           'type': ERROR,
+                           'is_escaped': true});
+                var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                      escape(provider));
+                alert_info_text({'text': message,
+                                 'type': ERROR,
+                                 'is_escaped': true});
+            } else {
+                alert_box({'title': i18n.gettext('Error deleting provider'),
+                           'text': escape(data.result.error.message),
+                           'type': ERROR,
+                           'is_escaped': true});
+            }
+            hide_waiting();
         }
-    });
+    );
 }
 
 function set_default_provider(type, provider){
     show_waiting();
-            var params = {'name': provider,
-                          'type': type,
-                          'session': getsession()
-                         };
-            $.post('/system/setDefaultProvider', params,
-              function(data, textStatus, XMLHttpRequest){
-                hide_waiting();
-
-                window['load_'+type+'_providers']();
-
-                if (data.result.status == true && data.result.value == true) {
-
-                    var message = sprintf(i18n.gettext('Provider %s set as default'),
-                                          escape(provider));
-
-                    alert_info_text({'text': message,
-                                     'is_escaped': true});
-
-                } else if (data.result.value == false) {
-                    alert_box({'title': i18n.gettext('Failed to set default provider'),
-                               'text': escape(data.detail.message),
-                               'type': ERROR,
-                               'is_escaped': true});
-
-                    var message = sprintf(i18n.gettext('Failed to set default provider %s'),
-                                          escape(provider));
-                    alert_info_text({'text': message,
-                                     'type': ERROR,
-                                     'is_escaped': true});
-                } else {
-                    alert_box({'title': i18n.gettext('Error setting default provider'),
-                               'text': escape(data.result.error.message),
-                               'type': ERROR,
-                               'is_escaped': true});
-                }
-            });
+    var params = {
+        'name': provider,
+        'type': type,
+        'session': getsession()
+    };
+    $.post('/system/setDefaultProvider', params,
+        function(data, textStatus, XMLHttpRequest){
+            window['load_'+type+'_providers']();
+            if (data.result.status == true && data.result.value == true) {
+                var message = sprintf(i18n.gettext('Provider %s set as default'),
+                                      escape(provider));
+                alert_info_text({'text': message,
+                                 'is_escaped': true});
+            } else if (data.result.value == false) {
+                alert_box({'title': i18n.gettext('Failed to set default provider'),
+                           'text': escape(data.detail.message),
+                           'type': ERROR,
+                           'is_escaped': true});
+                var message = sprintf(i18n.gettext('Failed to set default provider %s'),
+                                      escape(provider));
+                alert_info_text({'text': message,
+                                 'type': ERROR,
+                                 'is_escaped': true});
+            } else {
+                alert_box({'title': i18n.gettext('Error setting default provider'),
+                           'text': escape(data.result.error.message),
+                           'type': ERROR,
+                           'is_escaped': true});
+            }
+            hide_waiting();
+        }
+    );
 }
 
 /************************************************************************
@@ -6052,7 +6040,6 @@ function save_email_provider_config(){
 
     $.post('/system/setProvider', params,
     function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
         if (data.result.status == true && data.result.value == true) {
             $dialog_email_provider_edit.dialog('close');
         } else if (data.result.value == false) {
@@ -6072,44 +6059,45 @@ function save_email_provider_config(){
                        'type': ERROR,
                        'is_escaped': true});
         }
+        hide_waiting();
     });
 }
 
 function delete_email_provider(provider){
     show_waiting();
-    var params =  {'name': provider,
-                   'type': 'email',
-                   'session': getsession()};
+    var params =  {
+        'name': provider,
+        'type': 'email',
+        'session': getsession()
+    };
     $.post('/system/delProvider', params,
-      function(data, textStatus, XMLHttpRequest){
-        hide_waiting();
-        load_email_providers();
-        if (data.result.status == true && data.result.value == true) {
-            var message = sprintf(i18n.gettext('Provider %s deleted'),
-                                  escape(provider));
-
-            alert_info_text({'text': message,
-                             'is_escaped': true});
-
-        } else if (data.result.value == false) {
-            var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
-            alert_box({'title': i18n.gettext('Failed to delete provider'),
-                       'text': reason_text,
-                       'type': ERROR,
-                       'is_escaped': true});
-
-            var message = sprintf(i18n.gettext('Failed to delete provider %s'),
-                                  escape(provider));
-            alert_info_text({'text': message,
-                             'type': ERROR,
-                             'is_escaped': true});
-        } else {
-            alert_box({'title': i18n.gettext('Error deleting provider'),
-                       'text': escape(data.result.error.message),
-                       'type': ERROR,
-                       'is_escaped': true});
+        function(data, textStatus, XMLHttpRequest){
+            load_email_providers();
+            if (data.result.status == true && data.result.value == true) {
+                var message = sprintf(i18n.gettext('Provider %s deleted'),
+                                      escape(provider));
+                alert_info_text({'text': message,
+                                 'is_escaped': true});
+            } else if (data.result.value == false) {
+                var reason_text = ("detail" in data && "message" in data.detail ? escape(data.detail.message) : i18n.gettext('Unknown server error occured'));
+                alert_box({'title': i18n.gettext('Failed to delete provider'),
+                           'text': reason_text,
+                           'type': ERROR,
+                           'is_escaped': true});
+                var message = sprintf(i18n.gettext('Failed to delete provider %s'),
+                                      escape(provider));
+                alert_info_text({'text': message,
+                                 'type': ERROR,
+                                 'is_escaped': true});
+            } else {
+                alert_box({'title': i18n.gettext('Error deleting provider'),
+                           'text': escape(data.result.error.message),
+                           'type': ERROR,
+                           'is_escaped': true});
+            }
+            hide_waiting();
         }
-    });
+    );
 }
 
 /************************************************************************
@@ -6164,7 +6152,6 @@ function save_push_provider_config(){
 
    $.post('/system/setProvider', params,
    function(data, textStatus, XMLHttpRequest){
-       hide_waiting();
        if (data.result.status == true && data.result.value == true) {
            $dialog_push_provider_edit.dialog('close');
        } else if (data.result.value == false) {
@@ -6184,6 +6171,7 @@ function save_push_provider_config(){
                       'type': ERROR,
                       'is_escaped': true});
        }
+       hide_waiting();
    });
 }
 
@@ -6194,7 +6182,6 @@ function delete_push_provider(provider){
                   'session': getsession()};
    $.post('/system/delProvider', params,
      function(data, textStatus, XMLHttpRequest){
-       hide_waiting();
        load_push_providers();
        if (data.result.status == true && data.result.value == true) {
            var message = sprintf(i18n.gettext('Provider %s deleted'),
@@ -6221,6 +6208,7 @@ function delete_push_provider(provider){
                       'type': ERROR,
                       'is_escaped': true});
        }
+       hide_waiting();
    });
 }
 
@@ -6737,7 +6725,6 @@ function resolver_http(name, duplicate){
 }
 
 function resolver_set_sql(obj) {
-
     $('#sql_driver').val(obj.result.value.data.Driver);
     $('#sql_server').val(obj.result.value.data.Server);
     $('#sql_port').val(obj.result.value.data.Port);
@@ -6750,7 +6737,6 @@ function resolver_set_sql(obj) {
     $('#sql_where').val(obj.result.value.data.Where);
     $('#sql_conparams').val(obj.result.value.data.conParams);
     $('#sql_encoding').val(obj.result.value.data.Encoding);
-    $('#sql_readonly').val(obj.result.value.data.readonly);
 }
 
 /**

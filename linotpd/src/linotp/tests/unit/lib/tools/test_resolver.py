@@ -23,13 +23,16 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-"""Helper classes for LinOTP Selenium Tests"""
 
-from test_case import TestCase
-from policy import Policy
-from user_id_resolver import UserIdResolverManager, UserIdResolver, SqlUserIdResolver, PasswdUserIdResolver, LdapUserIdResolver
-from self_service import SelfService
-import helper
+import unittest
 
-__all__ = ["TestCase", "UserIdResolverManager", "UserIdResolver",
-           "Policy", "SelfService", "helper"]
+from linotp.lib import resolver
+
+class TestResolverConfig(unittest.TestCase):
+
+    def test_resolver_name_too_short(self):
+        self.assertRaisesRegexp(
+            Exception, 'Resolver name is invalid.',
+            resolver.defineResolver,
+            {'type': 'test', 'name': 'abc'}
+        )

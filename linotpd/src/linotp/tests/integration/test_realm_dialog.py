@@ -26,39 +26,36 @@
 """LinOTP Selenium Test that creates UserIdResolvers in the WebUI"""
 
 from linotp_selenium_helper import TestCase
-from linotp_selenium_helper.realm import RealmManager
-from linotp_selenium_helper.user_id_resolver import UserIdResolverManager
 
 import integration_data as data
 
+
 class TestCreateRealmDialog(TestCase):
     """TestCase class that checks basic realm functionality"""
+
     def setUp(self):
         TestCase.setUp(self)
 
-    def test_realm_open(self):            
-        r = RealmManager(self)
+    def test_realm_open(self):
+        r = self.manage_ui.realm_manager
         r.open()
 
     def test_clear_realms(self):
-        r = RealmManager(self)
+        r = self.manage_ui.realm_manager
         r.clear_realms()
-        r.close()
 
-        m = UserIdResolverManager(self)
+        m = self.manage_ui.useridresolver_manager
         m.clear_resolvers()
 
         resolver_data = data.musicians_ldap_resolver
         m.create_resolver(resolver_data)
-        
+
         r.create("test_clear_realm", resolver_data['name'])
-        
-        realms =  r.get_realms_list()
+
+        realms = r.get_realms_list()
         self.assertEqual(len(realms), 1, "Realm count should be 1")
-        
+
         r.clear_realms()
 
-        realms =  r.get_realms_list()
+        realms = r.get_realms_list()
         self.assertEqual(len(realms), 0, "Realm count should be 0")
-
-        

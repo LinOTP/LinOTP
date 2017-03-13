@@ -57,7 +57,7 @@ __all__ = ['defineResolver', 'parse_resolver_spec',
 
 # for the the resolver name check we use a reqular expression
 
-resolver_name_pattern = re.compile('^[a-zA-Z0-9_-]*$')
+resolver_name_pattern = re.compile('^[a-zA-Z0-9_\-]{4,}$')
 
 
 log = logging.getLogger(__name__)
@@ -118,7 +118,7 @@ def defineResolver(params):
 
     if not resolver_name_pattern.match(conf):
         raise Exception("Resolver name is invalid. It may contain characters, "
-                        "numbers, underscore (_), hyphen (-)!")
+                        "numbers, underscore (_), hyphen (-)! %r", conf)
 
     resolver_cls = getResolverClass(typ)
 
@@ -250,12 +250,20 @@ def getResolverList(filter_resolver_type=None):
                 r["entry"] = entry
                 r["type"] = typ
 
-                readonly = '.'.join([resolver[0], resolver[1],
-                                    'readonly', resolver[3]])
+                readonly_entry = '.'.join([resolver[0], resolver[1],
+                                           'readonly', resolver[3]])
 
-                if readonly in conf and boolean(conf[readonly]):
-                    r["readonly"] = boolean(conf[readonly])
+                if readonly_entry in conf:
+                    readonly = False
+                    try:
+                        readonly = boolean(conf[readonly_entry])
+                    except Exception as _exx:
+                        log.info("Failed to convert 'readonly' attribute"
+                                 " %r:%r",
+                                 readonly_entry, conf[readonly_entry])
 
+                    if readonly:
+                        r["readonly"] = True
                 #
                 # this is a patch for a hack:
                 #
@@ -351,7 +359,15 @@ def getResolverInfo(resolvername, passwords=False):
             res_conf[key] = "%r" % res_conf[key]
 
     if 'readonly' in res_conf:
-        result["readonly"] = res_conf['readonly']
+        readonly = False
+        try:
+            readonly = boolean(res_conf['readonly'])
+        except Exception:
+            log.info("Failed to convert 'readonly' attribute %r:%r",
+                     resolvername, res_conf['readonly'])
+
+        if readonly:
+            result["readonly"] = True
 
     result["type"] = resolver_type
     result["data"] = res_conf

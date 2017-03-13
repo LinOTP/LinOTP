@@ -25,9 +25,10 @@
 #
 """LinOTP Selenium Test that tests the selfservice in the WebUI"""
 
-from linotp_selenium_helper import TestCase, Policy
+from linotp_selenium_helper import TestCase, Policy, SelfService
 
 import integration_data as data
+
 
 class TestSelfservice(TestCase):
     """TestCase class that tests the selfservice by first creating a policy
@@ -39,26 +40,20 @@ class TestSelfservice(TestCase):
         TestCase.setUp(self)
 
         self.realm_name = "SE_realm_selfservice"
-        self.reset_resolvers_and_realms(data.musicians_ldap_resolver, self.realm_name)
+        self.reset_resolvers_and_realms(
+            data.musicians_ldap_resolver, self.realm_name)
+        self.selfservice = SelfService(self.driver, self.base_url)
 
     def test_selfservice(self):
         """Creates User-Id-Resolvers"""
-        driver = self.driver
-        Policy(driver, self.base_url, "SE_policy_selfservice",
+        self.manage_ui.policy_view.clear_policies()
+        Policy(self.manage_ui, "SE_policy_selfservice",
                "selfservice", "setOTPPIN, ", self.realm_name.lower())
 
         login_user = u"郎"
         login_password = "Test123!"
 
-        driver.get(self.base_url + "/account/login")
-        driver.find_element_by_id("login").clear()
-        driver.find_element_by_id("login").send_keys(login_user + "@" + self.realm_name.lower())
-        driver.find_element_by_id("password").clear()
-        driver.find_element_by_id("password").send_keys(login_password)
-        driver.find_element_by_css_selector("input[type=\"submit\"]").click()
-        try:
-            self.assertRegexpMatches(driver.find_element_by_css_selector("BODY").text,
-                                     r"^[\s\S]*set PIN[\s\S]*$")
-        except AssertionError as assertion_error:
-            self.verification_errors.append(str(assertion_error))
+        self.selfservice.login(
+            login_user, login_password, self.realm_name.lower())
 
+        self.selfservice.select_tab(self.selfservice.tab_set_pin)

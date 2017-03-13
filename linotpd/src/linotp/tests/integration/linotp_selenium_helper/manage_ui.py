@@ -24,33 +24,61 @@
 #    Support: www.keyidentity.com
 #
 
+import logging
 import helper
 
-from selenium.common.exceptions import TimeoutException
+from operator import methodcaller
+
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-
+from manage_elements import ManageDialog
+from realm import RealmManager
+from policy import PolicyManager
+from user_id_resolver import UserIdResolverManager
+from user_view import UserView
+from token_view import TokenView
 
 """
-This file contains classes for interacting with the manage page
-in the Selenium tests
+This file contains the main manage page class
 """
+
+
 class ManageUi(object):
-    """Base for managing parts of the manage page """
+    """Object for representing the manage page itself. There should be
+       a single ManageUi object to represent the browser page
+    """
 
     URL = "/manage"
 
     testcase = None
-    """The UnitTest class that is running the tests"""
+    "The UnitTest class that is running the tests"
 
-    driver = None
-    """The Selenium driver"""
+    welcome_screen = None
+    "Welcome screen dialog"
+
+    useridresolver_manager = None
+    "UserIdResolver manager dialog"
+
+    realm_manager = None
+    "Realm manager dialog"
+    token_view = None
+    "Tokens tab"
+
+    user_view = None
+    "Users tab"
+
+    policy_view = None
+    "Policy tab"
 
     # CSS selectors
-    CSS_LINOTP_CONFIG = '#menu > li'
     CSS_TOOLS = 'link=Tools'
     CSS_IMPORT_TOKEN = 'link=Import Token File'
+
+    # Menu entries
+    MENU_LINOTP_CONFIG_CSS = '#menu > li'
+    "CSS of the LinOTP Config menu"
 
     def __init__(self, testcase):
         """
@@ -60,19 +88,35 @@ class ManageUi(object):
         :param testcase: The test case that is controlling the UI
         """
         self.testcase = testcase
-        self.driver = testcase.driver
-        self.base_url = testcase.base_url
 
+        self.welcome_screen = ManageDialog(
+            self, 'welcome_screen', 'welcome_screen_close')
+
+        self.useridresolver_manager = UserIdResolverManager(self)
+        self.realm_manager = RealmManager(self)
+        self.token_view = TokenView(self)
+        self.user_view = UserView(self)
+        self.policy_view = PolicyManager(self)
 
     def _is_url_open(self):
         possible_urls = (self.URL, self.URL + '/', self.URL + '/#')
         return self.driver.current_url.endswith(possible_urls)
 
+    @property
+    def manage_url(self):
+        "The URL of the page"
+        return self.testcase.base_url + self.URL
+
+    @property
+    def driver(self):
+        "Return a reference to the selenium driver"
+        return self.testcase.driver
+
     def check_url(self):
         """Check we are on the right page"""
         assert self._is_url_open(), \
-                'URL %s should end with %s - page not loaded?' % \
-                    (self.driver.current_url, self.URL)
+            'URL %s should end with %s - page not loaded?' % \
+            (self.driver.current_url, self.URL)
         self.testcase.assertEquals(self.driver.title, 'LinOTP 2 Management')
 
     def find_by_css(self, css_value):
@@ -80,65 +124,73 @@ class ManageUi(object):
         self.check_url()
         return helper.find_by_css(self.driver, css_value)
 
+    def find_all_by_css(self, css_value):
+        """Return a list of elements indicated by CSS selector"""
+        self.check_url()
+        return self.driver.find_elements_by_css_selector(css_value)
+
     def find_by_id(self, id_value):
         """Return the element by ID"""
         self.check_url()
         return helper.find_by_id(self.driver, id_value)
 
-    def close_welcome_dialog(self):
-        """
-        The welcome dialog is shown on first page load. We need to
-        click the close button if it is shown. Disable implicit waits
-        to prevent a long wait in the case that the dialog is not shown.
-        """
-        self.testcase.disableImplicitWait()
-        try:
-            element = WebDriverWait(self.driver, 0).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, '#welcome_screen_close'))
-                )
-            element.click()
-        except TimeoutException:
-            pass
-        finally:
-            self.testcase.enableImplicitWait()
-
     def open_manage(self):
-        driver = self.driver
-        driver.get(self.base_url + self.URL)
-        self.close_welcome_dialog()
-
-    def open_tab(self, position):
         if not self._is_url_open():
-            self.open_manage()
+            self.driver.get(self.manage_url)
 
-        tab_css = 'div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span' % (position)
+            self.welcome_screen.close_if_open()
 
-        tab_button = self.find_by_css(tab_css)
-
-        tab_button.click()
-
-    def _activate_dialog(self, reload_page, toplevel_selector, menu_id, dialog_id):
+    def activate_menu_item(self, menu_css, menu_item_id):
         """
-        Activate the given menu item and check the dialog id.
+        Open the manage UI and select the given menu item.
 
-        :param toplevel_selector: The CSS selector of the first menu.
-        :param menu_id: The ID of the menu element
-        :param dialog_id: The ID of the dialog that pops up
+        If there are open dialogs in the UI, these will be
+        closed first.
+
+        Throws an assertion if this dialog does not have an associated menu entry
         """
-        if reload_page or not self._is_url_open():
-            self.open_manage()
-        menu_element = self.find_by_css(toplevel_selector)
-        helper.hover(self.driver, menu_element)
-        self.find_by_id(menu_id).click()
+        assert menu_item_id, "Open dialog requested but no menu id specified (menu_item_id"
+        assert menu_css, "Open dialog requested but no toplevel menu specified (menu_css)"
 
-        assert self.driver.find_element_by_id(dialog_id), 'Dialog id needs to be present: %s' % (dialog_id,)
+        self.open_manage()
 
-    def activate_linotp_config_dialog(self, menu_id, dialog_id, reload_page=False):
-        return self._activate_dialog(reload_page, self.CSS_LINOTP_CONFIG, menu_id, dialog_id)
+        menu_element = self.find_by_css(menu_css)
+        #helper.hover(self.driver, menu_element)
 
-    def _activate_tab(self, tab_id, reload_page=False):
-        if reload_page or not self._is_url_open():
-            self.open_manage()
+        self.close_dialogs_and_click(menu_element)
+
+        self.find_by_id(menu_item_id).click()
+
+    def close_dialogs_and_click(self, element):
+        """
+        Click the given element. If it fails, close
+        all dialogs and then retry
+        """
+        try:
+            element.click()
+        except WebDriverException:
+            self.close_all_dialogs()
+            # Retry
+            element.click()
+
+    def close_all_dialogs(self):
+        """
+        Close all active dialogs down
+        """
+
+        # Find all open dialogs
+        dialogs = self.find_all_by_css('.ui-dialog[style*="display: block"]')
+
+        # Sort by depth (the z-index attribute in reverse order)
+        dialogs.sort(
+            key=methodcaller('get_attribute', 'z-index'), reverse=True)
+
+        # Close them
+        for dialog in dialogs:
+            logging.debug('Closing dialog %s' %
+                          dialog.get_attribute('aria-describedby'))
+            dialog.find_element_by_css_selector(
+                ManageDialog.CLOSEBUTTON_CSS).click()
 
     def check_alert(self, expected_text=None, click_accept=False, click_dismiss=False):
 
@@ -153,7 +205,8 @@ class ManageUi(object):
             alert.dismiss()
 
         if expected_text:
-            assert alert_text == expected_text, "Expecting alert text:%s found:%s" % (expected_text, alert_text)
+            assert alert_text == expected_text, "Expecting alert text:%s found:%s" % (
+                expected_text, alert_text)
 
     def wait_for_waiting_finished(self):
         """
@@ -161,53 +214,22 @@ class ManageUi(object):
         During this period, the do_waiting is displayed. Wait for this to disappear
         """
         WebDriverWait(self.driver, 10).until_not(
-                EC.visibility_of_element_located((By.ID, "do_waiting")))
+            EC.visibility_of_element_located((By.ID, "do_waiting")))
 
-class ManageConfigList(ManageUi):
-    """
-    Base class for dialogs based on manage ui and a list
-
-    ie UserIdResolver, Realms dialog
-    """
-
-    menu_id = None
-    dialog_id = None
-    new_button_id = None
-    close_button_id = None
-
-    def open(self, reload_page=False):
-
-        if reload_page or not self._is_url_open() or not self._is_dialog_open():
-            activate = True
-        else:
-            # Dialog is already open and reload_page was not requested
-            activate = False
-
-        if activate:
-            self.activate_linotp_config_dialog(self.menu_id, self.dialog_id, reload_page=True)
-
-        self._parse_config_list()
-
-    def _is_dialog_open(self):
-
-        visibility = False
+    def is_element_visible(self, css):
+        """
+        Check whether a given element is visible without waiting
+        """
+        if not self._is_url_open():
+            return False
 
         try:
             self.testcase.disableImplicitWait()
-            visibility = EC.visibility_of_element_located((By.ID, self.dialog_id))(self.driver)
+            element = EC.visibility_of_element_located(
+                (By.CSS_SELECTOR, css))(self.driver)
             self.testcase.enableImplicitWait()
         except Exception:
-            pass
+            return False
 
-        return (visibility is not False)  # Convert to true/false answer
-
-
-    def check_dialog_is_open(self):
-        for i in self.dialog_id, self.close_button_id:
-            assert self.find_by_id(i), "Checking for dialog element (id=%s)" % (i,)
-        self.wait_for_waiting_finished()
-
-
-    def close(self):
-        self.find_by_id(self.close_button_id).click()
-
+        is_visible = (element is not False)
+        return is_visible

@@ -23,13 +23,3 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
-"""Helper classes for LinOTP Selenium Tests"""
-
-from test_case import TestCase
-from policy import Policy
-from user_id_resolver import UserIdResolverManager, UserIdResolver, SqlUserIdResolver, PasswdUserIdResolver, LdapUserIdResolver
-from self_service import SelfService
-import helper
-
-__all__ = ["TestCase", "UserIdResolverManager", "UserIdResolver",
-           "Policy", "SelfService", "helper"]

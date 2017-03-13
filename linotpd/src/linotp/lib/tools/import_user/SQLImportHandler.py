@@ -175,11 +175,11 @@ class SQLImportHandler(ImportHandler):
 
         resolver_parameters = {
             "Driver": url.drivername,
-            "Server": url.host,
+            "Server": url.host or "",
             "Port": str(url.port or ""),
             "Database": url.database,
-            "User": url.username,
-            "Password": url.password,
+            "User": url.username or "",
+            "Password": url.password or "",
             "Table": self.table_name,
             "Where": where,
             "Map": json.dumps(mapping),
@@ -295,7 +295,7 @@ class SQLImportHandler(ImportHandler):
         session = self.db_context.get_session()
 
         u_user_list = session.query(self.User).filter(
-                self.User.userid == user.userid and
+                self.User.userid == user.userid).filter(
                 self.User.groupid == self.groupid).all()
 
         if u_user_list:

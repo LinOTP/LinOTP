@@ -36,9 +36,8 @@ during the user import it is checked, if the
 - if it is updated or,
 - in case of a former existing user, the user will be deleted
 
-the check could be made by a dryrun
+the check is made by a dryrun
 
-TODO:
 - test simple csv import
 - create realm, containing the resolver with
   - testconnection
@@ -470,5 +469,79 @@ class TestImportUser(TestController):
 
         return
 
+    def test_multiple_imported_users(self):
+        """
+        list the csv imported users with plain passwords
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # open the csv data and import the users
+
+        def_passwd_file = os.path.join(self.fixture_path,
+                                       'def-passwd.csv')
+
+        with open(def_passwd_file, "r") as f:
+            content = f.read()
+
+        upload_files = [("file", "user_list", content)]
+
+        column_mapping = {
+                "username": 0,
+                "userid": 1,
+                "surname": 2,
+                "givenname": 3,
+                "email": 4,
+                "phone": 5,
+                "mobile": 6,
+                "password": 7}
+
+        params = {
+                'target_realm': self.target_realm,
+                'resolver': self.resolver_name,
+                'passwords_in_plaintext': False,
+                'dryrun': False,
+                'format': 'csv',
+                'delimiter': ',',
+                'quotechar': '"',
+                'column_mapping': json.dumps(column_mapping), }
+
+        params["resolver"] = "plain22"
+
+        response = self.make_tools_request(action='import_users',
+                                           params=params,
+                                           upload_files=upload_files)
+
+        self.assertTrue('"updated": {}' in response, response)
+
+        jresp = json.loads(response.body)
+        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        self.assertTrue(len(created) == 24, response)
+
+        params["resolver"] = "plain33"
+
+        response = self.make_tools_request(action='import_users',
+                                           params=params,
+                                           upload_files=upload_files)
+
+        self.assertTrue('"updated": {}' in response, response)
+
+        jresp = json.loads(response.body)
+        created = jresp.get('result', {}).get('value', {}).get('created', {})
+        self.assertTrue(len(created) == 24, response)
+
+        # ------------------------------------------------------------------ --
+
+        # finally we lookup if both users are there
+
+        params = {'realm': self.target_realm, 'username': 'moli*'}
+        response = self.make_admin_request(action='userlist', params=params)
+
+        self.assertTrue('plain22' in response, response)
+        self.assertTrue('plain33' in response, response)
+
+        jresp = json.loads(response.body)
+        users = jresp.get('result', {}).get('value', [])
+        self.assertTrue(len(users) == 2, users)
 
 # eof ########################################################################
