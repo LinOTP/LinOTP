@@ -72,6 +72,9 @@ class ManageUi(object):
     policy_view = None
     "Policy tab"
 
+    alert_dialog = None
+    "Access to the alert box dialog element"
+
     # CSS selectors
     CSS_TOOLS = 'link=Tools'
     CSS_IMPORT_TOKEN = 'link=Import Token File'
@@ -97,6 +100,8 @@ class ManageUi(object):
         self.token_view = TokenView(self)
         self.user_view = UserView(self)
         self.policy_view = PolicyManager(self)
+
+        self.alert_dialog = ManageDialog(self, 'alert_box')
 
     def _is_url_open(self):
         possible_urls = (self.URL, self.URL + '/', self.URL + '/#')
@@ -193,6 +198,15 @@ class ManageUi(object):
                 ManageDialog.CLOSEBUTTON_CSS).click()
 
     def check_alert(self, expected_text=None, click_accept=False, click_dismiss=False):
+        """
+        Process popup window:
+        * check the text contents
+        * close or dismiss the box
+
+        @param expected_text: Text contents expected. An exception will be raised if not found
+        @param click_accept: If set, will click the accept button
+        @param click_dismiss: If set, will close the dialog
+        """
 
         assert not click_accept or not click_dismiss, "check_alert cannot click both accept and dismiss"
 

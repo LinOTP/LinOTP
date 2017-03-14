@@ -227,6 +227,17 @@ class ManageDialog(ManageElement):
 
         self.reparse()
 
+    def wait_for_dialog(self, timeout=10):
+        """
+        Wait for the dialog to open
+
+        @param timeout: Maximum time to wait in seconds
+        """
+        WebDriverWait(self.driver, 10, ignored_exceptions=NoSuchElementException).until(
+            EC.presence_of_element_located(
+                (By.ID, self.body_id))
+        )
+
     def reparse(self):
         """
         Wait for loading to finish, then parse contents of dialog
