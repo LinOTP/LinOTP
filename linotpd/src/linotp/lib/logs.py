@@ -32,7 +32,11 @@ class RequestContextFilter(logging.Filter):
             # logging is also done, when there is no request object present
             # (for example on server start). in this case an access to
             # the request thread local would raise a TypeError.
-            return True
+            # we set env to an empty dictionary so the values get
+            # set to None. (we need them to be present, so we can
+            # use request_id in the format strings without provoking
+            # an error)
+            env = {}
 
         record.request_id = env.get('REQUEST_ID')
         record.remote_addr = env.get('REMOTE_ADDR')
@@ -94,12 +98,6 @@ def init_logging_config():
     for handler in root_logger.handlers:
         filter_ = RequestContextFilter()
         handler.addFilter(filter_)
-
-    stderr_handler = logging.StreamHandler()
-    formatter = ColorFormatter('%(asctime)s %(levelname)s - %(message)s')
-    stderr_handler.setFormatter(formatter)
-
-    root_logger.addHandler(stderr_handler)
 
     config_entries = Session.query(LoggingConfig).all()
 
