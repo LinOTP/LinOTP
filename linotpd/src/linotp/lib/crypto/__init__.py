@@ -31,32 +31,28 @@ encapsulate security aspects
 import hmac
 import logging
 import struct
-
-from hashlib import sha256
 import base64
-
 import binascii
 import os
 import stat
+import json
+import sys
+import ctypes
+import linotp
+
+from crypt import crypt as libcrypt
+
+from hashlib import sha256
+
+from pylons import config
+from pylons.configuration import config as env
+from pylons import tmpl_context as c
 
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from pysodium import crypto_sign_keypair as gen_dsa_keypair
 from pysodium import sodium as c_libsodium
 from pysodium import __check as __libsodium_check
-
-''' for the hmac algo, we have to check the python version '''
-import sys
-(ma, mi, _, _, _,) = sys.version_info
-pver = float(int(ma) + int(mi) * 0.1)
-
-import ctypes
-import linotp
-
-from pylons.configuration import config as env
-from pylons import tmpl_context as c
-from linotp.lib.error import HSMException
-from linotp.lib.error import ConfigAdminError
 
 import Cryptodome.Hash as CryptoHash
 from Cryptodome.Hash import HMAC
@@ -65,17 +61,17 @@ from Cryptodome.Hash import SHA256
 from Cryptodome.Hash import SHA512
 from Cryptodome.Cipher import AES
 
+# for the hmac algo, we have to check the python version
+
+from linotp.lib.error import HSMException
+from linotp.lib.error import ConfigAdminError
 
 from linotp.lib.ext.pbkdf2  import PBKDF2
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ValidateError
 
-from pylons import config
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+(ma, mi, _, _, _,) = sys.version_info
+pver = float(int(ma) + int(mi) * 0.1)
 
 
 log = logging.getLogger(__name__)
@@ -104,7 +100,6 @@ except:
     log.warning('Your system does not support Crypto SHA512 hash algorithm')
 
 
-
 # constant - later taken from the env?
 CONFIG_KEY = 1
 TOKEN_KEY = 2
@@ -131,7 +126,6 @@ class SecretObj(object):
         enc_otp_key = encrypt(bhOtpKey, self.iv, hsm=self.hsm)
         otpKeyEnc = binascii.hexlify(enc_otp_key)
         return (otpKeyEnc == self.val)
-
 
     def hmac_digest(self, data_input, hash_algo):
         self._setupKey_()
@@ -223,6 +217,45 @@ class SecretObj(object):
 
     def __exit__(self, type, value, traceback):
         self._clearKey_()
+
+
+def libcrypt_password(password, crypted_password=None):
+    """
+    we use crypt type sha512, which is a secure and standard according to:
+    http://security.stackexchange.com/questions/20541/\
+                     insecure-versions-of-crypt-hashes
+
+    :param password: the plain text password
+    :param crypted_password: optional - the encrypted password
+
+                    if the encrypted password is provided the salt and
+                    the hash algo is taken from it, so that same password
+                    will result in same output - which is used for password
+                    comparison
+
+    :return: the encrypted password
+    """
+
+    if crypted_password:
+        return libcrypt(password, crypted_password)
+
+    ctype = '6'
+    salt_len = 20
+
+    b_salt = os.urandom(3 * ((salt_len + 3) // 4))
+
+    # we use base64 charset for salt chars as it is nearly the same
+    # charset, if '+' is changed to '.' and the fillchars '=' are
+    # striped off
+
+    salt = base64.b64encode(b_salt).strip("=").replace('+', '.')
+
+    # now define the password format by the salt definition
+
+    insalt = '$%s$%s$' % (ctype, salt[0:salt_len])
+    encryptedPW = libcrypt(password, insalt)
+
+    return encryptedPW
 
 
 def getSecretDummy():

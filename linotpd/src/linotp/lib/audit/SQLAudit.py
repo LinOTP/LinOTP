@@ -198,7 +198,7 @@ class AuditTable(object):
         """
         if type(value) in [str, unicode]:
             field_len = self._get_field_len(name)
-            encoded_value = linotp.lib.crypt.uencode(value)
+            encoded_value = linotp.lib.crypto.uencode(value)
             if field_len != -1 and len(encoded_value) > field_len:
                 log.warning("truncating audit data: [audit.%s] %s",
                             name, value)
@@ -214,7 +214,7 @@ class AuditTable(object):
         if name in AUDIT_ENCODE:
             ## encode data
             if value:
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
         super(AuditTable, self).__setattr__(name, value)
 
     def __getattribute__(self, name):
@@ -230,7 +230,7 @@ class AuditTable(object):
         value = object.__getattribute__(self, name)
         if name in AUDIT_ENCODE:
             if value:
-                value = linotp.lib.crypt.udecode(value)
+                value = linotp.lib.crypto.udecode(value)
             else:
                 value = ""
 
@@ -510,7 +510,7 @@ class Audit(AuditBase):
         ## if we have an \uencoded data, we extract the unicode back
         for key, value in line.items():
             if value and type(value) in [str, unicode]:
-                value = linotp.lib.crypt.udecode(value)
+                value = linotp.lib.crypto.udecode(value)
                 line[key] = value
             elif value is None:
                 line[key] = ''

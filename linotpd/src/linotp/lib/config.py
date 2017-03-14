@@ -30,8 +30,8 @@
 import copy
 from datetime import datetime
 from linotp.config import environment as env
-from linotp.lib.crypt import decryptPassword
-from linotp.lib.crypt import encryptPassword
+from linotp.lib.crypto import decryptPassword
+from linotp.lib.crypto import encryptPassword
 from linotp.lib.error import ConfigAdminError
 from linotp.model import Config
 from linotp.model.meta import Session

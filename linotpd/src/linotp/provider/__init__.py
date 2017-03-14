@@ -201,6 +201,12 @@ def get_all_new_providers(provider_type):
                 defintion[entry] = value
 
         defintion['Default'] = False
+
+        # in case of a managed provider, the configuration is not displayed
+        if prefix + 'Managed' in config:
+            defintion['Managed'] = config.get(prefix + 'Managed')
+            del defintion['Config']
+
         name = provider.split('.')[2]
         providers[name] = defintion
 
@@ -428,6 +434,10 @@ def save_new_provider(provider_type, provider_name, params):
     except AttributeError as exx:
         log.debug("provider %r does not support ConfigMapping: %r",
                   provider_name, exx)
+
+    # add the extra parameter for each resolver that it could be a managed one
+
+    config_mapping['managed'] = ('Managed', None)
 
     for config_entry in config_mapping.keys():
 

@@ -37,7 +37,7 @@ from Cryptodome.Hash import SHA256
 
 
 
-from linotp.lib.crypt import zerome
+from linotp.lib.crypto import zerome
 from linotp.lib.security import SecurityModule
 
 

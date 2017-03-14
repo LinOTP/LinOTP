@@ -27,7 +27,7 @@
               - http://motp.sourceforge.net/ -
 """
 
-from linotp.lib.crypt import SecretObj
+from linotp.lib.crypto import SecretObj
 from linotp.lib.util        import getParam
 from linotp.lib.util        import required
 

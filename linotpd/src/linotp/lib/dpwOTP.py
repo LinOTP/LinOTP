@@ -32,7 +32,7 @@ from hashlib import md5
 from datetime import datetime
 from binascii import hexlify
 
-from linotp.lib.crypt import zerome
+from linotp.lib.crypto import zerome
 
 import logging
 log = logging.getLogger(__name__)

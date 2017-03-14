@@ -124,7 +124,7 @@ class HmacOtp():
 
         # log.debug("[hmac] key: %s", akey)
 
-        # # and convert it to binary    from linotp.lib.crypt import SecretObj
+        # # and convert it to binary    from linotp.lib.crypto import SecretObj
         key = binascii.unhexlify(akey)
         msg = struct.pack(">Q", counter)
         dige = hmac.new(key, msg, self.hashfunc)

@@ -51,12 +51,12 @@ import linotp
 
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
-from linotp.lib.crypt import createNonce
-from linotp.lib.crypt import decryptPin
-from linotp.lib.crypt import encryptPin
-from linotp.lib.crypt import kdf2
-from linotp.lib.crypt import urandom
-from linotp.lib.crypt import SecretObj
+from linotp.lib.crypto import createNonce
+from linotp.lib.crypto import decryptPin
+from linotp.lib.crypto import encryptPin
+from linotp.lib.crypto import kdf2
+from linotp.lib.crypto import urandom
+from linotp.lib.crypto import SecretObj
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
