@@ -27,8 +27,10 @@ from linotp.lib.challenges import Challenges
 from linotp.lib.context import request_context as context
 from linotp.lib.error import UserError
 from linotp.lib.policy import supports_offline
-import logging
 
+from linotp.lib.policy import get_pin_policies
+
+import logging
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +72,7 @@ class FinishTokens(object):
         """
 
         # do we have any valid tokens?
+
         if self.valid_tokens:
             (ret, reply, detail) = self.finish_valid_tokens()
             self.reset_failcounter(self.valid_tokens +
@@ -82,17 +85,24 @@ class FinishTokens(object):
 
         # next handle the challenges
         if self.challenge_tokens:
+
             (ret, reply, detail) = self.finish_challenge_token()
+
             # do we have to increment the counter to prevent a replay???
             # self.increment_counters(self.challenge_tokens)
+
             self.create_audit_entry(detail, self.challenge_tokens)
+
             return ret, reply
 
         # if there is no token left, we end up here
         if not (self.pin_matching_tokens + self.invalid_tokens):
+
             self.create_audit_entry(action_detail="no token found!",
                                     tokens=[])
+
             log.info("no valid token found: %r" % self.audit_entry)
+
             return False, None
 
         if self.user:
@@ -104,14 +114,17 @@ class FinishTokens(object):
                            self.invalid_tokens)[0].getSerial())
 
         if self.pin_matching_tokens:
+
             (ret, reply, detail) = self.finish_pin_matching_tokens()
             self.increment_failcounters(self.pin_matching_tokens)
 
             self.create_audit_entry(action_detail=detail,
                                     tokens=self.pin_matching_tokens)
+
             return ret, reply
 
         if self.invalid_tokens:
+
             (ret, reply, detail) = self.finish_invalid_tokens()
             self.increment_failcounters(self.invalid_tokens)
 
@@ -141,15 +154,19 @@ class FinishTokens(object):
 
             # there could be a match in the window ahead,
             # so we need the last valid counter here
+
             (counter, _reply) = validation_results[token.getSerial()]
             token.setOtpCount(counter + 1)
             token.statusValidationSuccess()
+
             # finish as well related open challenges
             Challenges.finish_challenges(token, success=True)
 
-            if token.getFromTokenInfo('count_auth_success_max', default=None):
-                auth_count = token.get_count_auth_success()
-                token.set_count_auth_success(auth_count + 1)
+            if token.count_auth_success_max > 0:
+                token.inc_count_auth_success()
+
+            if token.count_auth_max > 0:
+                token.inc_count_auth()
 
             detail = None
             auth_info = self.options.get('auth_info', 'False')
@@ -189,23 +206,34 @@ class FinishTokens(object):
         else:
             # we have to set the matching counter to prevent replay one one
             # single token
+
             for token in valid_tokens:
+
                 (res, _reply) = validation_results[token.getSerial()]
+
                 token.setOtpCount(res)
+
+                # in case of multiple matches the tokens were accessed
+                # so we count them as well
+                if token.count_auth_max > 0:
+                    token.inc_count_auth()
 
             context['audit']['action_detail'] = "Multiple valid tokens found!"
             if user:
-                log.error("[__checkTokenList] multiple token match error: "
+                log.error("multiple token match error: "
                           "Several Tokens matching with the same OTP PIN "
                           "and OTP for user %r. Not sure how to auth",
                           user.login)
+
             raise UserError("multiple token match error", id=-33)
 
     def finish_challenge_token(self):
         """
         processing of the challenge tokens
         """
+
         challenge_tokens = self.challenge_tokens
+
         options = self.options
         if not options:
             options = {}
@@ -253,6 +281,7 @@ class FinishTokens(object):
             # finally add the root challenge response with top transaction id
             # and message, that indicates that 'multiple challenges have been
             # submitted
+
             all_reply['transactionid'] = transactionid
             all_reply['message'] = "Multiple challenges submitted."
 
@@ -284,11 +313,16 @@ class FinishTokens(object):
         user = self.user
 
         for tok in invalid_tokens:
+
+            # count all token accesses
+            if tok.count_auth_max > 0:
+                tok.inc_count_auth()
+
             tok.statusValidationFail()
+
             Challenges.finish_challenges(tok, success=False)
 
-        import linotp.lib.policy
-        pin_policies = linotp.lib.policy.get_pin_policies(user) or []
+        pin_policies = get_pin_policies(user) or []
 
         if 1 in pin_policies:
             action_detail = "wrong user password -1"
@@ -333,19 +367,25 @@ class FinishTokens(object):
         if not tokens:
             audit['serial'] = ''
             audit['token_type'] = ''
-        else:
-            if len(tokens) == 1:
-                audit['serial'] = tokens[0].getSerial()
-                audit['token_type'] = tokens[0].getType()
-            else:
-                # no or multiple tokens
-                serials = []
-                types = []
-                for token in tokens:
-                    serials.append(token.getSerial())
-                    types.append(token.getType())
-                audit['serial'] = ' '.join(serials)[:29]
-                audit['token_type'] = ' '.join(types)[:39]
+            return
+
+        if len(tokens) == 1:
+            audit['serial'] = tokens[0].getSerial()
+            audit['token_type'] = tokens[0].getType()
+            return
+
+        # for multiple tokens we concat the serials / types of all token
+        serials = set()
+        types = set()
+
+        for token in tokens:
+            serials.add(token.getSerial())
+            types.add(token.getType())
+
+        # TODO: move the limit of serials and types into the audit module
+        audit['serial'] = ' '.join(list(serials))[:29]
+        audit['token_type'] = ' '.join(list(types))[:39]
 
         return
+
 # eof###########################################################################

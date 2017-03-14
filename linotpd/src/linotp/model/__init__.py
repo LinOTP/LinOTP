@@ -340,11 +340,15 @@ class Token(object):
         self.LinOtpOtpLen = int(otplen)
 
     def deleteToken(self):
-        # # some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
-        # # is deleteted via foreign key relation
-        # # so we delete it explicitly
-        Session.query(TokenRealm).filter(
-            TokenRealm.token_id == self.LinOtpTokenId).delete()
+        # some dbs (eg. DB2) runs in deadlock, if the TokenRealm entry
+        # is deleteted via foreign key relation
+        # so we delete it explicitly
+        token_realm_entries = Session.query(TokenRealm).filter(
+                            TokenRealm.token_id == self.LinOtpTokenId).all()
+
+        for token_realm_entry in token_realm_entries:
+            Session.delete(token_realm_entry)
+
         Session.delete(self)
         return True
 

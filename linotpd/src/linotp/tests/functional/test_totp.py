@@ -290,7 +290,9 @@ class TestTotpController(TestController):
         if typ is None:
             typ = 'totp'
 
-        param = { 'user': user, 'pin':pin, 'serial': serial, 'type':typ, 'timeStep':timeStep, 'otplen' : otplen, 'hashlib':hashlib}
+        param = {'user': user, 'pin':pin, 'serial': serial,
+                 'type':typ, 'timeStep':timeStep,
+                 'otplen' : otplen, 'hashlib':hashlib}
 
         if key is not None:
             param['otpkey'] = key
@@ -475,7 +477,8 @@ class TestTotpController(TestController):
             key = t1.getKey().encode('hex')
             step = t1.getTimeStep()
 
-            tserial = self.addToken(user=user, otplen=t1.digits, typ='totp', key=key, timeStep=step)
+            tserial = self.addToken(user=user, otplen=t1.digits,
+                                    typ='totp', key=key, timeStep=step)
 
             self.serials.append(tserial)
 

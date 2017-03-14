@@ -443,7 +443,7 @@ class TokenHandler(object):
                         strftime("%d/%m/%y")
 
             end_date = "%s 23:59" % end_date
-            tokenObj.set_validity_period_end(end_date)
+            tokenObj.validity_period_end = end_date
 
             # fill results
             res['valid_to'] = "xxxx"
@@ -463,7 +463,6 @@ class TokenHandler(object):
             res['disable'] = self.enableToken(False, User('', '', ''), serial)
 
         return res
-
 
     def isTokenOwner(self, serial, user):
         ret = False
@@ -1652,6 +1651,7 @@ def getTokenType(serial):
     log.debug("The token type of serial %s is %r" % (serial, typ))
 
     return typ
+
 
 def add_last_accessed_info(list_of_tokenlist):
     """

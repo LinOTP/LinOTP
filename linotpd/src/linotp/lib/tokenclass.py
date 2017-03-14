@@ -79,6 +79,9 @@ from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import split_pin_otp
 
+from linotp.lib.tokenclass_validity_mixin import TokenValidityMixin
+from linotp.lib.tokenclass_tokeninfo_mixin import TokenInfoMixin
+
 from sqlalchemy import asc, desc
 
 from linotp.lib.context import request_context as context
@@ -87,10 +90,7 @@ from linotp.lib.error import TokenStateError
 # needed for ocra token
 import urllib
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 
 optional = True
@@ -152,7 +152,7 @@ class StatefulTokenMixin(object):
         self.addToTokenInfo('state', state_id)
 
 
-class TokenClass(object):
+class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
     def __init__(self, token):
         self.type = ''
@@ -1245,213 +1245,6 @@ class TokenClass(object):
         return get_hashalgo_from_description(description=hLibStr,
                                              fallback='sha1')
 
-
-    def getTokenInfo(self):
-        info = {}
-
-        tokeninfo = self.token.getInfo()
-        if tokeninfo is not None and len(tokeninfo.strip()) > 0:
-            try:
-                info = json.loads(tokeninfo)
-            except Exception as e:
-                log.exception('JSON loading error in token info: %r' % (e))
-
-        return info
-
-    def setTokenInfo(self, info):
-
-        if info is not None:
-            tokeninfo = u'' + json.dumps(info, indent=0)
-            self.token.setInfo(tokeninfo)
-
-    def addToTokenInfo(self, key, value):
-        info = {}
-        tokeninfo = self.token.getInfo()
-
-        if tokeninfo:
-            info = json.loads(tokeninfo)
-
-        info[key] = value
-
-        self.setTokenInfo(info)
-
-    def getFromTokenInfo(self, key, default=None):
-        ret = default
-
-        info = self.getTokenInfo()
-
-        if key in info:
-            ret = info.get(key)
-        return ret
-
-    def removeFromTokenInfo(self, key):
-        info = self.getTokenInfo()
-        if key in info:
-            del info[key]
-            self.setTokenInfo(info)
-
-    # FIXME: we could store the
-    #   count_auth_success_max
-    #   count_auth_success
-    # and
-    #   count_auth_max
-    #   count_auth
-    # in dedicated columns!
-    def set_count_auth_success_max(self, count):
-        '''
-        Sets the counter for the maximum allowed successful logins
-        '''
-        self.addToTokenInfo("count_auth_success_max", int(count))
-
-    def set_count_auth_success(self, count):
-        '''
-        Sets the counter for the occurred successful logins
-        '''
-        self.addToTokenInfo("count_auth_success", int(count))
-
-    def set_count_auth_max(self, count):
-        '''
-        Sets the counter for the maximum allowed login attemps
-        '''
-        self.addToTokenInfo("count_auth_max", int(count))
-
-    def set_count_auth(self, count):
-        '''
-        Sets the counter for the occurred login attepms
-        '''
-        self.addToTokenInfo("count_auth", int(count))
-
-    def get_count_auth_success_max(self):
-        ret = 0
-        try:
-            ret = int(self.getFromTokenInfo("count_auth_success_max", 0))
-        except Exception as exx:
-            log.info('failed to load "count_auth_success_max" %r', exx)
-        return ret
-
-    def get_count_auth_success(self):
-        ret = 0
-        try:
-            ret = int(self.getFromTokenInfo("count_auth_success", 0))
-        except Exception as exx:
-            log.info('failed to load "count_auth_success" %r', exx)
-        return ret
-
-    def get_count_auth_max(self):
-        ret = 0
-        try:
-            ret = int(self.getFromTokenInfo("count_auth_max", 0))
-        except Exception as exx:
-            log.info('failed to load "count_auth_max" %r', exx)
-        return ret
-
-    def get_count_auth(self):
-        ret = 0
-        try:
-            ret = int(self.getFromTokenInfo("count_auth", 0))
-        except Exception as exx:
-            log.info('failed to load "count_auth" %r', exx)
-        return ret
-
-    def get_validity_period_end(self):
-        '''
-        returns the end of validity period (if set)
-        '''
-        ret = ""
-        try:
-            ret = self.getFromTokenInfo("validity_period_end", '')
-        except Exception as exx:
-            log.info('failed to load "validity_period_end" %r', exx)
-        return ret
-
-    def set_validity_period_end(self, end_date):
-        '''
-        sets the end date of the validity period for a token
-        '''
-        # upper layer will catch. we just try to verify the date format
-        datetime.datetime.strptime(end_date, "%d/%m/%y %H:%M")
-
-        self.addToTokenInfo("validity_period_end", end_date)
-
-    def get_validity_period_start(self):
-        '''
-        returns the start of validity period (if set)
-        '''
-        ret = ""
-        try:
-            ret = self.getFromTokenInfo("validity_period_start")
-        except:
-            pass
-        return ret
-
-    def set_validity_period_start(self, start_date):
-        '''
-        sets the start date of the validity period for a token
-        '''
-        #  upper layer will catch. we just try to verify the date format
-        datetime.datetime.strptime(start_date, "%d/%m/%y %H:%M")
-        self.addToTokenInfo("validity_period_start", start_date)
-
-    def inc_count_auth_success(self):
-        count = self.get_count_auth_success()
-        count += 1
-        self.set_count_auth_success(count)
-        return count
-
-    def inc_count_auth(self):
-        count = self.get_count_auth()
-        count += 1
-        self.set_count_auth(count)
-        return count
-
-    def check_auth_counter(self):
-        '''
-        This function checks the count_auth and the count_auth_success
-        '''
-        if 0 != self.get_count_auth_max():
-            if self.get_count_auth() >= self.get_count_auth_max():
-                return False
-
-        if 0 != self.get_count_auth_success_max():
-            if (self.get_count_auth_success() >=
-                    self.get_count_auth_success_max()):
-                return False
-
-        return True
-
-    def check_validity_period(self):
-        '''
-        This checks if the datetime.datetime.now() is within the
-        validity period of the token.
-
-        Returns either True/False
-        '''
-        start = self.get_validity_period_start()
-        end = self.get_validity_period_end()
-
-        check_start = False
-        check_end = False
-        try:
-            dt_start = datetime.datetime.strptime(start, "%d/%m/%y %H:%M")
-            check_start = True
-        except:
-            pass
-
-        try:
-            dt_end = datetime.datetime.strptime(end, "%d/%m/%y %H:%M")
-            check_end = True
-        except:
-            pass
-
-        if check_end:
-            if dt_end < datetime.datetime.now():
-                return False
-
-        if check_start:
-            if dt_start > datetime.datetime.now():
-                return False
-
-        return True
 
     def incOtpCounter(self, counter=None, reset=True):
         '''

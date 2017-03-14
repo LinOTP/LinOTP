@@ -26,15 +26,12 @@
 """ validation processing logic"""
 
 from hashlib import sha256
+from datetime import datetime
 
 from pylons import config
 from pylons.configuration import config as env
 
-import linotp
-
 from linotp.lib.auth.finishtokens import FinishTokens
-from linotp.lib.auth.request import HttpRequest
-from linotp.lib.auth.request import RadiusRequest
 
 from linotp.lib.challenges import Challenges
 
@@ -49,13 +46,22 @@ from linotp.lib.resolver import getResolverObject
 from linotp.lib.token import TokenHandler
 from linotp.lib.token import get_token_owner
 from linotp.lib.token import getTokens4UserOrSerial
+from linotp.lib.token import add_last_accessed_info
 
 from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.lib.util import modhex_decode
 
 from linotp.lib.policy import supports_offline
 from linotp.lib.policy import get_auth_forward
+
+from linotp.lib.policy import disable_on_authentication_exceed
+from linotp.lib.policy import delete_on_authentication_exceed
+from linotp.lib.policy import get_pin_policies
+from linotp.lib.policy import get_auth_passthru
+from linotp.lib.policy import get_auth_passOnNoToken
+
 from linotp.lib.policy.forward import ForwardServerPolicy
+
 
 import logging
 
@@ -75,7 +81,7 @@ def check_pin(token, passw, user=None, options=None):
     :return: boolean, if pin matched True
     '''
     res = False
-    pin_policies = linotp.lib.policy.get_pin_policies(user)
+    pin_policies = get_pin_policies(user)
 
     if 1 in pin_policies:
         # We check the Users Password as PIN
@@ -163,7 +169,7 @@ def split_pin_otp(token, passw, user=None, options=None):
                     token.splitPinPass
     :return: tuple of (split status, pin and otpval)
     """
-    pin_policies = linotp.lib.policy.get_pin_policies(user)
+    pin_policies = get_pin_policies(user)
 
     policy = 0
 
@@ -236,7 +242,7 @@ class ValidationHandler(object):
 
             # there could be only one
             token = tokens[0]
-            owner = linotp.lib.token.get_token_owner(token)
+            owner = get_token_owner(token)
 
             (ok, opt) = self.checkTokenList(tokens, passw, user=owner,
                                             options=options)
@@ -260,8 +266,7 @@ class ValidationHandler(object):
                     verify the user pin
         """
 
-        tokenList = linotp.lib.token.getTokens4UserOrSerial(
-            None, serial)
+        tokenList = getTokens4UserOrSerial(None, serial)
 
         if passw is None:
             # other than zero or one token should not happen, as serial is
@@ -326,7 +331,7 @@ class ValidationHandler(object):
         # if not multiple challenges, where transaction id is the parent one
         reply = {}
 
-        pin_policies = linotp.lib.policy.get_pin_policies(user)
+        pin_policies = get_pin_policies(user)
         if 1 in pin_policies:
             pin_match = check_pin(None, password, user=user, options=None)
             if not pin_match:
@@ -440,7 +445,7 @@ class ValidationHandler(object):
                                                           user, passw, options)
                 return res, opt
 
-        tokenList = linotp.lib.token.getTokens4UserOrSerial(user, serial)
+        tokenList = getTokens4UserOrSerial(user, serial)
 
         if len(tokenList) == 0:
             audit['action_detail'] = 'User has no tokens assigned'
@@ -468,8 +473,6 @@ class ValidationHandler(object):
                 return (True, opt)
 
             # Check if there is an authentication policy passthru
-            from linotp.lib.policy import get_auth_passthru
-            from linotp.lib.policy import get_auth_passOnNoToken
 
             if get_auth_passthru(user):
                 log.debug('user %r has no token. Checking for '
@@ -608,15 +611,62 @@ class ValidationHandler(object):
                 token.incOtpFailCounter()
                 continue
 
-            if not token.check_auth_counter():
-                audit_entry[
-                    'action_detail'] = "Authentication counter exceeded"
-                token.set_count_auth(token.get_count_auth() + 1)
+            # -------------------------------------------------------------- --
+
+            # token validity handling
+
+            now = datetime.now()
+
+            if (token.validity_period_start and
+                now < token.validity_period_start):
+
+                audit_entry['action_detail'] = ("Authentication validity "
+                                                "period mismatch!")
+
+                token.incOtpFailCounter()
+
                 continue
 
-            if not token.check_validity_period():
-                audit_entry['action_detail'] = "validity period mismatch"
+            token_success_excceed = (
+                token.count_auth_success_max > 0 and
+                token.count_auth_success >= token.count_auth_success_max)
+
+            token_access_exceed = (
+                token.count_auth_max > 0 and
+                token.count_auth >= token.count_auth_max)
+
+            token_expiry = (
+                token.validity_period_end and
+                now >= token.validity_period_end)
+
+            if token_success_excceed or token_access_exceed or token_expiry:
+
+                if token_access_exceed:
+                    msg = "Authentication counter exceeded"
+
+                if token_success_excceed:
+                    msg = "Authentication sucess counter exceeded"
+
+                if token_expiry:
+                    msg = "Authentication validity period exceeded!"
+
+                audit_entry['action_detail'] = msg
+
                 token.incOtpFailCounter()
+
+                # what should happen with exceeding tokens
+
+                t_realms = None
+
+                if not user.login and not user.realm:
+                    t_realms = token.token.getRealmNames()
+
+                if disable_on_authentication_exceed(user, realms=t_realms):
+                    token.enable(False)
+
+                if delete_on_authentication_exceed(user, realms=t_realms):
+                    token.deleteToken()
+
                 continue
 
             # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -674,7 +724,7 @@ class ValidationHandler(object):
         (res, reply) = fh.finish_checked_tokens()
 
         # add to all tokens the last accessd time stamp
-        linotp.lib.token.add_last_accessed_info(
+        add_last_accessed_info(
             [valid_tokens, pin_matching_tokens, challenge_tokens, valid_tokens])
 
         # now we care for all involved tokens and their challenges
@@ -722,7 +772,7 @@ class ValidationHandler(object):
             serials.append("%s_%s" % (serialnum, i))
 
         for serial in serials:
-            tokens = linotp.lib.token.getTokens4UserOrSerial(serial=serial)
+            tokens = getTokens4UserOrSerial(serial=serial)
             tokenList.extend(tokens)
 
         if len(tokenList) == 0:
