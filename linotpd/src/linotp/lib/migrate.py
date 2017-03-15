@@ -199,7 +199,7 @@ class MigrationHandler(object):
             secObj = SecretObj(key, iv, hsm=self.hsm)
             seed = secObj.getKey()
             enc_value = self.crypter.encrypt(input_data=seed,
-                                            just_mac=serial + encKey)
+                                             just_mac=serial + encKey)
             token_data['TokenSeed'] = enc_value
             # next we look for tokens, where the pin is encrypted
             yield token_data
@@ -212,9 +212,12 @@ class MigrationHandler(object):
         token = tokens[0]
 
         if 'TokenPin' in token_data:
+
             enc_pin = token_data['TokenPin']
-            token_pin = self.crypter.decrypt(enc_pin,
-                                just_mac=serial + token.LinOtpPinHash)
+
+            token_pin = self.crypter.decrypt(
+                                    enc_pin,
+                                    just_mac=serial + token.LinOtpPinHash)
             # prove, we can write
             enc_pin = SecretObj.encrypt_pin(token_pin)
             iv = enc_pin.split(':')[0]
@@ -222,8 +225,11 @@ class MigrationHandler(object):
 
         if 'TokenUserPin' in token_data:
             token_enc_user_pin = token_data['TokenUserPin']
-            user_pin = self.crypter.decrypt(token_enc_user_pin,
-                               just_mac=serial + token.LinOtpTokenPinUser)
+
+            user_pin = self.crypter.decrypt(
+                                token_enc_user_pin,
+                                just_mac=serial + token.LinOtpTokenPinUser)
+
             # prove, we can write
             iv, enc_user_pin = SecretObj.encrypt(user_pin, hsm=self.hsm)
             token.setUserPin(enc_user_pin, iv)
@@ -237,15 +243,18 @@ class MigrationHandler(object):
 
         # the encryption of the token seed is not part of the model anymore
         iv, enc_token_seed = SecretObj.encrypt(token_seed)
-        token.set_encrypted_seed(enc_token_seed, iv, reset_failcount=False)
+
+        token.set_encrypted_seed(enc_token_seed, iv,
+                                 reset_failcount=False,
+                                 reset_counter=False)
 
 
 class Crypter(object):
 
     @staticmethod
     def hmac_sha256(secret, msg):
-        hmac = hmac.new(secret, msg=msg, digestmod=sha256)
-        val = hmac.digest()
+        hmac_obj = hmac.new(secret, msg=msg, digestmod=sha256)
+        val = hmac_obj.digest()
         return val
 
     def mac(self, *messages):
@@ -344,37 +353,5 @@ class Crypter(object):
         padLength = AES.block_size - (len(input_data) % AES.block_size)
         return input_data + chr(padLength) * padLength
 
-########################################################
-    @staticmethod
-    def crypto_test(passphrase):
-        if passphrase is None:
-            raise "missing Parameter 'pass'"
-        test_data = {}
 
-        salt = os.urandom(AES.block_size)
-        crypter = Crypter(passphrase, salt)
-        # test the encrypt, decrypt
-        # for _i in range(1, 30):
-        for i in range(1, 150):
-            # create a random string
-            data = id_generator(i)
-            enc_data = crypter.encrypt(data)
-            ndata = crypter.decrypt(enc_data)
-            if ndata != data:
-                pass
-            test_data["%d_%d" % (i, i)] = "%s %s" % (data, enc_data)
-
-
-def id_generator(size=6, chars=None):
-    """
-    generate random string
-    """
-
-    ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    digits = '0123456789'
-
-    if not chars:
-        chars = ascii_uppercase + digits
-    return ''.join(random.choice(chars) for _ in range(size))
-
-#eof###########################################################################
+# eof #

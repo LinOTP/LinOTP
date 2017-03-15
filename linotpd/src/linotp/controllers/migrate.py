@@ -27,7 +27,7 @@
 """
 migration controller -
     support the migration of encrypted data towards
-    new encryption key or mew hsm
+    new encryption key or new hsm
 """
 
 import os
