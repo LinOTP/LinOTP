@@ -29,40 +29,39 @@ manage controller - In provides the web gui management interface
 """
 
 import os
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import logging
+import json
 
 from pylons import request, response, config, tmpl_context as c
-from linotp.lib.base import BaseController
 from pylons.templating import render_mako as render
-from mako.exceptions import CompileException
-
+from pylons.i18n.translation import _
 from paste.deploy.converters import asbool
 
+from mako.exceptions import CompileException
+
+from linotp.lib.base import BaseController
+
 # Our Token stuff
-from linotp.lib.tokeniterator   import TokenIterator
-from linotp.lib.token   import getTokenType
-from linotp.lib.token   import newToken
+from linotp.lib.tokeniterator import TokenIterator
+from linotp.lib.token import getTokenType
+from linotp.lib.token import newToken
 
 
-from linotp.lib.user    import getUserFromParam, getUserFromRequest
-from linotp.lib.user    import getUserList, User
+from linotp.lib.user import getUserFromParam, getUserFromRequest
+from linotp.lib.user import getUserList, User
 
-from linotp.lib.util    import getParam
-from linotp.lib.util    import check_session
-from linotp.lib.util    import get_version
-from linotp.lib.util    import get_copyright_info
-from linotp.lib.reply   import sendError
+from linotp.lib.util import getParam
+from linotp.lib.util import check_session
+from linotp.lib.util import get_version
+from linotp.lib.util import get_copyright_info
+from linotp.lib.type_utils import boolean
+
+from linotp.lib.reply import sendError
 from linotp.lib.reply import sendResult
 
-from linotp.lib.util    import remove_empty_lines
+from linotp.lib.util import remove_empty_lines
 from linotp.lib.util import get_client
 from linotp.lib.util import unicode_compare
-from linotp.model.meta import Session
-
 from linotp.lib.config import getLinotpConfig
 
 from linotp.lib.policy import getPolicies
@@ -73,24 +72,22 @@ from linotp.lib.policy.definitions import getPolicyDefinitions
 
 from linotp.lib.context import request_context
 
+from linotp.lib.ImportOTP import getKnownTypes, getImportText
+import linotp.model.meta
 
-
-from pylons.i18n.translation import _
+Session = linotp.model.meta.Session
 
 audit = config.get('audit')
-
-import logging
-
 log = logging.getLogger(__name__)
 
-from linotp.lib.ImportOTP import getKnownTypes, getImportText
 KNOWN_TYPES = getKnownTypes()
 IMPORT_TEXT = getImportText()
-log.info("importing linotp.lib. Known import types: %s" % IMPORT_TEXT)
 
+log.info("importing linotp.lib. Known import types: %s" % IMPORT_TEXT)
 
 optional = True
 required = False
+
 
 class ManageController(BaseController):
 
@@ -104,6 +101,16 @@ class ManageController(BaseController):
             c.version = get_version()
             c.licenseinfo = get_copyright_info()
             c.polDefs = getPolicyDefinitions()
+
+            # ------------------------------------------------------------- --
+
+            # in some cases the providers are preconfigured and the
+            # customer should not be able to change the settings
+            # so we disable the provider section in the manage ui
+
+            c.display_provider = boolean(config.get('display_provider', True))
+
+            # ------------------------------------------------------------- --
 
             # Session handling for the functions, that show data:
             # Also exclude custom-style.css, since the CSRF check
