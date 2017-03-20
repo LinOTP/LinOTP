@@ -206,27 +206,12 @@ custom_templates = %(here)s/custom-templates/
 ## Logger configuration
 ## - define which modules should be logged
 [loggers]
-keys = root, linotp, sqlalchemy
+keys = root
 
 ## root module logging definition:
 [logger_root]
 level = WARN
 handlers = file
-
-## linotp module logging definition:
-[logger_linotp]
-level = WARN
-handlers = file
-qualname = linotp
-
-[logger_sqlalchemy]
-level = ERROR
-handlers = file
-qualname = sqlalchemy.engine
-# "level = INFO" logs SQL queries.
-# "level = DEBUG" logs SQL queries and results.
-# "level = WARN" logs neither.  (Recommended for production systems.)
-
 
 [handlers]
 keys = file
@@ -263,7 +248,7 @@ keys = generic
 ## Caution: The SecureFormatter will only work with python >= 2.7
 ##
 #class = linotp.lib.log.SecureFormatter
-format = %(asctime)s %(levelname)-5.5s {%(thread)d} [%(name)s][%(funcName)s #%(lineno)d] %(message)s
+format = %(asctime)s %(levelname)-5.5s {%(request_id)d} [%(name)s][%(funcName)s #%(lineno)d] %(message)s
 datefmt = %Y/%m/%d - %H:%M:%S
 
 

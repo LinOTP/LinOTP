@@ -121,6 +121,8 @@ if isinstance(lang, list):
                 <li><a href='#' id='menu_edit_resolvers'>${_("UserIdResolvers")}</a></li>
                 <li><a href='#' id='menu_edit_realms'>${_("Realms")}</a></li>
                 <li><a href='#' id='menu_system_config'>${_("System Config")}</a></li>
+
+                %if c.display_provider:
                 <li><a href='#'>${_("Provider Config")}</a>
                     <ul>
                         <li><a href='#' id='menu_sms_provider_config'>${_("SMS Provider Config")}</a>
@@ -128,6 +130,8 @@ if isinstance(lang, list):
                         <li><a href='#' id='menu_push_provider_config'>${_("Push Provider Config")}</a>
                     </ul>
                  </li>
+                % endif
+
                 <li><a href='#' id='menu_token_config'>${_("Token Config")}</a></li>
                 <li><a href='#' id='menu_policies'>${_("Policies")}</a></li>
             </ul>

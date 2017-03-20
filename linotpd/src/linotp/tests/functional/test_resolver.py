@@ -321,4 +321,4 @@ class TestResolver(TestController):
         self.assertNotIn('SqlX', response, response)
         self.assertIn('SqlZ', response, response)
 
-# eof #########################################################################
+# eof ########################################################################
