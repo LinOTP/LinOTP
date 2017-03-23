@@ -67,11 +67,11 @@ from linotp.model import meta
 from linotp.model.meta import Session
 from linotp.model.meta import MetaData
 
-from linotp.lib.crypt import geturandom
-from linotp.lib.crypt import hash
-# from linotp.lib.crypt import encryptPin
-# from linotp.lib.crypt import decryptPin
-from linotp.lib.crypt import get_rand_digit_str
+from linotp.lib.crypto import geturandom
+from linotp.lib.crypto import hash
+# from linotp.lib.crypto import encryptPin
+# from linotp.lib.crypto import decryptPin
+from linotp.lib.crypto import get_rand_digit_str
 
 
 from pylons import config
@@ -207,7 +207,7 @@ class Token(object):
         if name in TOKEN_ENCODE:
             # # encode data
             if value:
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
         super(Token, self).__setattr__(name, value)
 
     def __getattribute__(self, name):
@@ -223,7 +223,7 @@ class Token(object):
         value = object.__getattribute__(self, name)
         if name in TOKEN_ENCODE:
             if value:
-                value = linotp.lib.crypt.udecode(value)
+                value = linotp.lib.crypto.udecode(value)
             else:
                 value = ""
         # port of the 2.6. resolver to 2.7
@@ -558,7 +558,7 @@ class Config(object):
         if name in CONFIG_ENCODE:
             # # encode data
             if value:
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
         super(Config, self).__setattr__(name, value)
 
     def __getattribute__(self, name):
@@ -574,7 +574,7 @@ class Config(object):
         value = object.__getattribute__(self, name)
         if name in CONFIG_ENCODE:
             if value:
-                value = linotp.lib.crypt.udecode(value)
+                value = linotp.lib.crypto.udecode(value)
             else:
                 value = ""
 
@@ -631,7 +631,7 @@ class Realm(object):
         if name in REALM_ENCODE:
             # # encode data
             if value:
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
         super(Realm, self).__setattr__(name, value)
 
     def __getattribute__(self, name):
@@ -647,7 +647,7 @@ class Realm(object):
         value = object.__getattribute__(self, name)
         if name in REALM_ENCODE:
             if value:
-                value = linotp.lib.crypt.udecode(value)
+                value = linotp.lib.crypto.udecode(value)
             else:
                 value = ""
 
@@ -729,7 +729,7 @@ class OcraChallenge(object):
         if name in OCRA_ENCODE:
             # # encode data
             if value:
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
         super(OcraChallenge, self).__setattr__(name, value)
 
     def __getattribute__(self, name):
@@ -745,7 +745,7 @@ class OcraChallenge(object):
         value = object.__getattribute__(self, name)
         if name in OCRA_ENCODE:
             if value:
-                value = linotp.lib.crypt.udecode(value)
+                value = linotp.lib.crypto.udecode(value)
             else:
                 value = ""
 
@@ -885,7 +885,7 @@ class Challenge(object):
         if name in CHALLENGE_ENCODE:
             # # encode data
             if value:
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
         super(Challenge, self).__setattr__(name, value)
 
     def __getattribute__(self, name):
@@ -901,7 +901,7 @@ class Challenge(object):
         value = object.__getattribute__(self, name)
         if name in CHALLENGE_ENCODE:
             if value:
-                value = linotp.lib.crypt.udecode(value)
+                value = linotp.lib.crypto.udecode(value)
             else:
                 value = ""
 

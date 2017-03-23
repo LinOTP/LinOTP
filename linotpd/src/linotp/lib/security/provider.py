@@ -32,7 +32,7 @@ import thread
 import time
 import logging
 
-from linotp.lib.crypt import zerome
+from linotp.lib.crypto import zerome
 from linotp.lib.error import HSMException
 
 DEFAULT_KEY = 0

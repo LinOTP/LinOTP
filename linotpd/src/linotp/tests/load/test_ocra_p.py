@@ -40,11 +40,11 @@ from Cryptodome.Hash import SHA as SHA1
 from Cryptodome.Hash import SHA256 as SHA256
 
 from linotp.lib.ocra import OcraSuite
-from linotp.lib.crypt import kdf2, createActivationCode, check
-from linotp.lib.crypt import geturandom
-from linotp.lib.crypt import encrypt, decrypt
+from linotp.lib.crypto import kdf2, createActivationCode, check
+from linotp.lib.crypto import geturandom
+from linotp.lib.crypto import encrypt, decrypt
 
-from linotp.lib.crypt import check
+from linotp.lib.crypto import check
 
 from paste.registry import RegistryManager, StackedObjectProxy
 myglobal = StackedObjectProxy()

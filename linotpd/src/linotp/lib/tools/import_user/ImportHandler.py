@@ -28,41 +28,6 @@
 Interface for import handling
 """
 
-import crypt
-import base64
-
-from os import urandom
-
-
-def encrypt_password(password):
-    """
-    we use crypt type sha512, which is a secure and standard according to:
-    http://security.stackexchange.com/questions/20541/\
-                     insecure-versions-of-crypt-hashes
-
-    :param password: the plain text password
-    :return: the encrypted password
-    """
-
-    ctype = '6'
-    salt_len = 20
-
-    b_salt = urandom(3 * ((salt_len + 3) // 4))
-
-    # we use base64 charset for salt chars as it is nearly the same
-    # charset, if '+' is changed to '.' and the fillchars '=' are
-    # striped off
-
-    salt = base64.b64encode(b_salt).strip("=").replace('+', '.')
-
-    # now define the password format by the salt definition
-
-    insalt = '$%s$%s$' % (ctype, salt[0:salt_len])
-    encryptedPW = crypt.crypt(password, insalt)
-
-    return encryptedPW
-
-
 
 class ImportHandler(object):
     """

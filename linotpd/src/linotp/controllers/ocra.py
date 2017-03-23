@@ -519,7 +519,7 @@ class OcraController(BaseController):
             JSON with     "activationcode": "JZXW4ZI=2A"
         '''
 
-        from linotp.lib.crypt import createActivationCode
+        from linotp.lib.crypto import createActivationCode
 
         res = {}
         #description = 'ocra/getActivationCode'
@@ -555,7 +555,7 @@ class OcraController(BaseController):
         '''
 
         '''
-        from linotp.lib.crypt import kdf2
+        from linotp.lib.crypto import kdf2
         from linotp.lib.ocra import OcraSuite
         from datetime import datetime
 

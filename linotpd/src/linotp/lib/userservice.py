@@ -66,7 +66,7 @@ from linotp.lib.token import (getTokens4UserOrSerial,
                               )
 
 
-from linotp.lib.crypt import (aes_decrypt_data,
+from linotp.lib.crypto import (aes_decrypt_data,
                               aes_encrypt_data
                               )
 

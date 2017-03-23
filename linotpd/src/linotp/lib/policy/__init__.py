@@ -46,7 +46,7 @@ from linotp.lib.error import ParameterError
 from linotp.lib.context import request_context as context
 
 # for generating random passwords
-from linotp.lib.crypt import urandom
+from linotp.lib.crypto import urandom
 from linotp.lib.util import uniquify
 
 from linotp.lib.policy.filter import AttributeCompare

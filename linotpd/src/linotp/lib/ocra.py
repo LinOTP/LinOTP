@@ -208,7 +208,7 @@ from datetime import datetime
 import hashlib
 import hmac
 import re
-from linotp.lib.crypt import urandom
+from linotp.lib.crypto import urandom
 
 # for the hmac algo, we have to check the python version
 import sys
@@ -358,7 +358,7 @@ class OcraSuite():
 
         # call the secret object to get the object
         #    convert it to binary
-        #                        from linotp.lib.crypt import SecretObj
+        #                        from linotp.lib.crypto import SecretObj
         h = None
 
         if pver <= 2.6:
