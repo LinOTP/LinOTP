@@ -44,7 +44,7 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.type_utils import get_duration
 from linotp.lib.type_utils import boolean
 
-from linotp.lib.crypt import encryptPassword
+from linotp.lib.crypto import encryptPassword
 
 # -------------------------------------------------------------------------- --
 

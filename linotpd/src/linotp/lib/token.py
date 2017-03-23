@@ -860,7 +860,7 @@ class TokenHandler(object):
             #  we cleanup the challenges
             challenges = set()
             for serial in serials:
-                serial = linotp.lib.crypt.uencode(serial)
+                serial = linotp.lib.crypto.uencode(serial)
                 challenges.update(Challenges.lookup_challenges(serial=serial))
 
             for chall in challenges:
@@ -1491,7 +1491,7 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
 
     if (serial is not None):
         #  SAWarning of non unicode type
-        serial = linotp.lib.crypt.uencode(serial)
+        serial = linotp.lib.crypto.uencode(serial)
         sconditions = ()
         if token_type:
             sconditions += (and_(func.lower(Token.LinOtpTokenType) ==

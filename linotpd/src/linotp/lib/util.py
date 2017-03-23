@@ -35,7 +35,7 @@ import logging
 from pylons import config
 from pylons.controllers.util import abort
 
-from linotp.lib.crypt import (urandom,
+from linotp.lib.crypto import (urandom,
                               geturandom
                               )
 

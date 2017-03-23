@@ -38,7 +38,7 @@ import hmac
 from hashlib import sha256
 
 
-from linotp.lib.crypt import SecretObj
+from linotp.lib.crypto import SecretObj
 
 from linotp.lib.policy import get_partition
 from linotp.lib.policy import get_single_auth_policy
@@ -49,14 +49,14 @@ from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokenclass import StatefulTokenMixin
 from linotp.lib.token import get_token_owner
 
-from linotp.lib.crypt import zerome
-from linotp.lib.crypt import extract_tan
-from linotp.lib.crypt import encode_base64_urlsafe
-from linotp.lib.crypt import decode_base64_urlsafe
+from linotp.lib.crypto import zerome
+from linotp.lib.crypto import extract_tan
+from linotp.lib.crypto import encode_base64_urlsafe
+from linotp.lib.crypto import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
-from linotp.lib.crypt import get_dh_secret_key
+from linotp.lib.crypto import get_dh_secret_key
 from linotp.lib.pairing import generate_pairing_url
 
 # --------------------------------------------------------------------------- --

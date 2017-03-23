@@ -209,8 +209,8 @@ from datetime import datetime
 
 import hmac
 import re
-from linotp.lib.crypt import urandom
-from linotp.lib.crypt import get_hashalgo_from_description
+from linotp.lib.crypto import urandom
+from linotp.lib.crypto import get_hashalgo_from_description
 
 
 log = logging.getLogger(__name__)
@@ -358,7 +358,7 @@ class OcraSuite():
 
         # call the secret object to get the object
         #    convert it to binary
-        #                        from linotp.lib.crypt import SecretObj
+        #                        from linotp.lib.crypto import SecretObj
         h = None
 
         if pver <= 2.6:

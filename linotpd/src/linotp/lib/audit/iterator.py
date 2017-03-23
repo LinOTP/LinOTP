@@ -33,7 +33,7 @@ except ImportError: # pragma: no cover
     import simplejson as json
 
 
-import linotp.lib.crypt
+import linotp.lib.crypto
 import logging
 log = logging.getLogger(__name__)
 
@@ -90,21 +90,21 @@ class AuditQuery(object):
                     ## unicode escape search parameter to match
                     ## encoding in db, which stores audit
                     ## entries in escaped format
-                    value = linotp.lib.crypt.uencode(value)
+                    value = linotp.lib.crypto.uencode(value)
                     self._search_dict[key] = value
             else:
                 ## unicode escape search parameter to match
                 ## encoding in db, which stores audit
                 ## entries in escaped format
                 value = param["query"]
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
                 self._search_dict[param['qtype']] = value
         else:
             for key, value in param.items():
                 ## unicode escape search parameter to match
                 ## encoding in db, which stores audit
                 ## entries in escaped format
-                value = linotp.lib.crypt.uencode(value)
+                value = linotp.lib.crypto.uencode(value)
                 self._search_dict[key] = value
 
         if 'page' in param:

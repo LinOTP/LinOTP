@@ -27,7 +27,7 @@
 """ This file containes PasswordTokenClass """
 
 import logging
-from linotp.lib.crypt import zerome
+from linotp.lib.crypto import zerome
 from linotp.lib.util import getParam
 
 

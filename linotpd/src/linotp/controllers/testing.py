@@ -43,7 +43,7 @@ from linotp.lib.selftest import isSelfTest
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 
 import traceback
-from linotp.lib.crypt import urandom
+from linotp.lib.crypto import urandom
 
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.policy import getPolicies

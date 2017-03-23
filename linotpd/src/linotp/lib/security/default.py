@@ -35,7 +35,7 @@ from Cryptodome.Cipher import AES
 import hmac
 from hashlib import sha256
 
-from linotp.lib.crypt import zerome
+from linotp.lib.crypto import zerome
 from linotp.lib.security import SecurityModule
 
 

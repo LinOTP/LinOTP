@@ -39,7 +39,7 @@ import traceback
 
 from freezegun import freeze_time
 
-from linotp.lib.crypt import geturandom
+from linotp.lib.crypto import geturandom
 from linotp.tests import TestController, url
 
 try:

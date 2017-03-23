@@ -47,7 +47,7 @@ from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
 from linotp.lib.config import getGlobalObject
-from linotp.lib.crypt import init_key_partition
+from linotp.lib.crypto import init_key_partition
 
 
 from linotp.model import meta

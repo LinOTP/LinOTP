@@ -27,24 +27,19 @@
 encapsulate security aspects
 '''
 
+import hmac
 import logging
 import struct
-
 import base64
-import json
-
 import binascii
 import os
 import stat
-
-
-# for the hmac algo, we have to check the python version '''
+import json
 import sys
-
 import ctypes
 import linotp
 
-import hmac
+from crypt import crypt as libcrypt
 
 from hashlib import md5
 from hashlib import sha1
@@ -61,8 +56,6 @@ from pysodium import __check as __libsodium_check
 
 from pylons.configuration import config as env
 from pylons import tmpl_context as c
-from linotp.lib.error import HSMException
-from linotp.lib.error import ConfigAdminError
 
 import Cryptodome.Hash as CryptoHash
 from Cryptodome.Hash import HMAC
@@ -71,12 +64,14 @@ from Cryptodome.Hash import SHA256
 from Cryptodome.Hash import SHA512
 from Cryptodome.Cipher import AES
 
+# for the hmac algo, we have to check the python version
+
+from linotp.lib.error import HSMException
+from linotp.lib.error import ConfigAdminError
 
 from linotp.lib.ext.pbkdf2  import PBKDF2
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ValidateError
-
-from pylons import config
 
 (ma, mi, _, _, _,) = sys.version_info
 pver = float(int(ma) + int(mi) * 0.1)
@@ -264,6 +259,44 @@ class SecretObj(object):
         self._clearKey_()
 
 
+def libcrypt_password(password, crypted_password=None):
+    """
+    we use crypt type sha512, which is a secure and standard according to:
+    http://security.stackexchange.com/questions/20541/\
+                     insecure-versions-of-crypt-hashes
+
+    :param password: the plain text password
+    :param crypted_password: optional - the encrypted password
+
+                    if the encrypted password is provided the salt and
+                    the hash algo is taken from it, so that same password
+                    will result in same output - which is used for password
+                    comparison
+
+    :return: the encrypted password
+    """
+
+    if crypted_password:
+        return libcrypt(password, crypted_password)
+
+    ctype = '6'
+    salt_len = 20
+
+    b_salt = os.urandom(3 * ((salt_len + 3) // 4))
+
+    # we use base64 charset for salt chars as it is nearly the same
+    # charset, if '+' is changed to '.' and the fillchars '=' are
+    # striped off
+
+    salt = base64.b64encode(b_salt).strip("=").replace('+', '.')
+
+    # now define the password format by the salt definition
+
+    insalt = '$%s$%s$' % (ctype, salt[0:salt_len])
+    encryptedPW = libcrypt(password, insalt)
+
+    return encryptedPW
+
 def get_hashalgo_from_description(description, fallback='sha1'):
     """
     get the hashing function from a string value
@@ -283,6 +316,8 @@ def get_hashalgo_from_description(description, fallback='sha1'):
         raise Exception("hash function not callable %r", hash_func)
 
     return hash_func
+
+
 
 def getSecretDummy():
     return "no secret file defined: linotpSecretFile!"

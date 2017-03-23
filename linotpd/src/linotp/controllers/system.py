@@ -26,7 +26,9 @@
 """
 system controller - to configure the system
 """
+import base64
 
+from os import urandom
 
 import json
 import webob
@@ -105,6 +107,8 @@ from linotp.provider import setDefaultProvider
 
 from linotp.lib.type_utils import boolean
 
+from linotp.lib.crypto import libcrypt_password
+
 from paste.fileapp import FileApp
 from cgi import escape
 from pylons.i18n.translation import _
@@ -118,7 +122,6 @@ Session = linotp.model.meta.Session
 
 audit = config.get('audit')
 log = logging.getLogger(__name__)
-
 
 
 class SystemController(BaseController):
@@ -2006,17 +2009,50 @@ class SystemController(BaseController):
         try:
             params.update(request.params)
             try:
-                _name = params['name']
-                _provider_type = params['type']
+                name = params['name']
+                p_type = params['type']
                 _provider_class = params['class']
                 _timeout = params['timeout']
             except KeyError as exx:
                 raise ParameterError('missing key %r' % exx)
 
+            # -------------------------------------------------------------- --
+
+            # check if the provider is already defined as a managed one
+
+            provider_def = getProvider(p_type, name)
+
+            if not provider_def and 'managed' in params:
+
+                # hash the provided password
+
+                password = params['managed']
+
+                params['managed'] = libcrypt_password(password)
+
+            if provider_def and 'Managed' in provider_def[name]:
+
+                if 'managed' not in params:
+                    raise Exception('Not allowed to overwrite the '
+                                    'configuration of a managed provider')
+
+                password = params['managed']
+                crypt_password = provider_def[name]['Managed']
+
+                if libcrypt_password(
+                        password, crypt_password) != crypt_password:
+
+                    raise Exception('Not allowed to overwrite the '
+                                    'configuration of a managed provider')
+
+                params['managed'] = crypt_password
+
+            # -------------------------------------------------------------- --
+
             res, reply = setProvider(params)
 
             c.audit['success'] = res
-            c.audit['info'] = _name
+            c.audit['info'] = name
 
             Session.commit()
             return sendResult(response, res, 1, opt=reply)
@@ -2059,6 +2095,10 @@ class SystemController(BaseController):
             provider_name = param.get('name')
 
             res = getProvider(provider_type, provider_name)
+            if res:
+                for provider_name, desc in res.items():
+                    if 'Managed' in desc:
+                        res[provider_name]['Managed'] = True
 
             c.audit['success'] = len(res) > 0
             if provider_name:
@@ -2101,6 +2141,24 @@ class SystemController(BaseController):
                 provider_type = params['type']
             except KeyError as exx:
                 raise ParameterError('missing key %r' % exx)
+
+            provider_def = getProvider(provider_type, provider_name)
+
+            if (provider_def and provider_name in provider_def and
+                'Managed' in provider_def[provider_name]):
+
+                if 'managed' not in params:
+                    raise Exception('Not allowed to delete the '
+                                    'managed provider')
+
+                password = params['managed']
+                crypt_password = provider_def[provider_name]['Managed']
+
+                if libcrypt_password(
+                        password, crypt_password) != crypt_password:
+
+                    raise Exception('Not allowed to delete the '
+                                    'managed provider')
 
             res, reply = delProvider(provider_type, provider_name)
 
@@ -2201,7 +2259,6 @@ class SystemController(BaseController):
 
         finally:
             Session.close()
-
 
 
 # eof #########################################################################

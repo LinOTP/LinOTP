@@ -60,7 +60,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
     """
     def setUp(self):
         from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
-        import linotp.lib.crypt
+        import linotp.lib.crypto
         # Without this logging in the tested class fails
         logging.basicConfig()
 
@@ -74,7 +74,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         self.public_uid = "ecebeeejedecebeg"
 
         # Initialize mock objects
-        secret_obj = MagicMock(spec=linotp.lib.crypt.SecretObj)
+        secret_obj = MagicMock(spec=linotp.lib.crypto.SecretObj)
         secret_obj.aes_decrypt = _aes_decrypt_constructor(aes_key)
 
         # mock the linotp.model.Token

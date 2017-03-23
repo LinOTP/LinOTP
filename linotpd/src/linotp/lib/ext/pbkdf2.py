@@ -51,7 +51,7 @@
 
 
 from struct import pack
-import linotp.lib.crypt
+import linotp.lib.crypto
 import string
 import sys
 
@@ -304,7 +304,7 @@ def _makesalt():
 
     This function is not suitable for generating cryptographic secrets.
     """
-    binarysalt = b("").join([pack("@H", linotp.lib.crypt.urandom.randint(0, 0xffff)) for i in range(3)])
+    binarysalt = b("").join([pack("@H", linotp.lib.crypto.urandom.randint(0, 0xffff)) for i in range(3)])
     return b64encode(binarysalt, "./")
 
 # vim:set ts=4 sw=4 sts=4 expandtab:

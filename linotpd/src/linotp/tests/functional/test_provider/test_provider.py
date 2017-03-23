@@ -421,4 +421,41 @@ class TestProviderController(TestController):
 
         return
 
+    def test_managed_provider(self):
+        """
+        check that a managed provider does not return the configuration
+        """
+
+        response = self.define_new_provider()
+        self.assertTrue('"value": true' in response, response)
+
+        response = self.define_new_provider({'managed': 'mypass',
+                                             'name': 'managed_one'})
+        self.assertTrue('"value": true' in response, response)
+
+        params = {'type': 'sms'}
+        response = self.make_system_request('getProvider', params=params)
+
+        jresp = json.loads(response.body)
+        provider = jresp["result"]["value"].get('managed_one', {})
+        self.assertFalse(provider.get('Default', True), response)
+
+        response = self.define_new_provider({'managed': 'wrongpass',
+                                             'name': 'managed_one'})
+        msg = "Not allowed to overwrite "
+        self.assertTrue(msg in response, response)
+
+        response = self.define_new_provider({'managed': 'mypass',
+                                             'name': 'managed_one'})
+        self.assertTrue('"value": true' in response, response)
+
+        params = {'managed': 'mypass',
+                  'name': 'managed_one',
+                  'type': 'sms'}
+        self.make_system_request('delProvider', params)
+        self.assertTrue('"value": true' in response, response)
+
+        return
+
+
 # eof #####################################################################
