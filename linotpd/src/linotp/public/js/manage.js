@@ -121,6 +121,19 @@ function Logout(logout_url) {
 /*
  * add the jquery validation methods
  */
+jQuery.validator.addMethod("password-strength", function(value, element, param){
+        var required_char_types = param;
+        required_char_types -= !!value.match(/[a-z]/);
+        required_char_types -= !!value.match(/[A-Z]/);
+        required_char_types -= !!value.match(/[0-9]/);
+        required_char_types -= !!value.match(/[^a-zA-Z0-9]/);
+        required_char_types -= value.length > 12;
+
+        return required_char_types<=0;
+    },
+    jQuery.validator.format(i18n.gettext("The password must contain {0} of the following: lowercase, uppercase, special characters, numbers, length of 12"))
+);
+
 $.validator.addMethod('valid_json', function (value, element, param) {
         try {
             $.parseJSON(value);
@@ -5859,7 +5872,7 @@ $(document).ready(function(){
     $('#login-status-password, #menu_tools_changepassword').click(function(){
         $('#dialog_change_password').dialog({
             title: i18n.gettext("Change password"),
-            width: 500,
+            width: 650,
             modal: true,
             open: function() {
                 // resset password inputs on dialog open
@@ -5878,7 +5891,9 @@ $(document).ready(function(){
                             required: true
                         },
                         password_new: {
-                            required: true
+                            required: true,
+                            minlength: 6,
+                            "password-strength": 3
                         },
                         password_confirm: {
                             equalTo: "#password_new",
