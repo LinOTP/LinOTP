@@ -145,6 +145,9 @@ if isinstance(lang, list):
                 <li><a href='#' id='menu_tools_exportaudit'>${_("Export Audit Trail")}</a></li>
                 <li><a href='#' id='menu_tools_importusers'>${_("Import Users")}</a></li>
                 <li><a href='#' id='menu_tools_migrateresolver'>${_("Migrate Resolver")}</a></li>
+                % if c.admin_can_change_password:
+                <li><a href='#' id='menu_tools_changepassword'>${_("Change password")}</a></li>
+                % endif
             </ul>
         </li>
         <li><a href='#'>${_("Import Token File")}</a>
@@ -170,7 +173,21 @@ if isinstance(lang, list):
     <div id="logo"></div>
 </div> <!-- header -->
 <div class="clearfix">
-    <div id="login-status">${_("Logged in as")}: ${c.admin} | <a href="#" onclick='Logout("${c.logout_url}");return false;' >${_("Logout")}</a>
+        % if c.admin:
+        <div id="login-status" class="dropdown-container">
+        <div class="dropdown-label">
+            ${c.admin}<span class="dropdown-icon">&#x25BC;</span>
+        </div>
+        <div class="dropdown">
+            % if c.admin_can_change_password:
+            <a href="#" id="login-status-password">${_("Change password")}</a>
+            % endif
+            <a href="#" id="login-status-logout" data-logout-url="${c.logout_url}">${_("Logout")}</a>
+        </div>
+        % else:
+        <div id="login-status">
+        &nbsp;
+        % endif
     </div>
 </div>
 <div class="clearfix">
@@ -846,6 +863,42 @@ syst></textarea></td>
         $('#button_support_cancel').button("option", "label", '${_("Cancel")}');
     }
 </script>
+
+<!-- ################# change password ################ -->
+
+<div id='dialog_change_password'>
+    <p id='about_id'>${_("If LinOTP is setup to manage its administration users, you can change your LinOTP management password now.")}</p>
+    <p>${_("User:")}&nbsp;${c.admin}
+    <form class="cmxform" action="">
+        <table>
+            <tr>
+                <td>
+                    <label for="password_old">${_("Old password")}</label>
+                </td>
+                <td>
+                    <input type="password" name="password_old" id="password_old">
+                </td>
+            </tr>
+            <tr><td colspan="2"></td></tr>
+            <tr>
+                <td>
+                    <label for="password_new">${_("New password")}</label>
+                </td>
+                <td>
+                    <input type="password" name="password_new" id="password_new">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="password_confirm">${_("Confirm new password")}</label>
+                </td>
+                <td>
+                    <input type="password" name="password_confirm" id="password_confirm">
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
 
 <!-- ################# about LinOTP ################ -->
 
