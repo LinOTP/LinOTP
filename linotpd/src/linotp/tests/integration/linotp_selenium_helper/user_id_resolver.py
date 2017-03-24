@@ -274,12 +274,10 @@ class UserIdResolverManager(ManageDialog):
         else:
             self.find_by_id(testbutton_id).click()
 
-            # Wait for alert box to be shown
-            alert_id = "alert_box_text"
-            WebDriverWait(self.driver, 10).until(
-                EC.text_to_be_present_in_element((By.ID, alert_id), "Number of users found"))
-            alert_box = self.find_by_id(alert_id)
-            alert_box_text = alert_box.text
+            # Wait for alert box to be shown and then get contents
+            alert_box = self.manage.alert_dialog
+            alert_box.wait_for_dialog()
+            alert_box_text = alert_box.get_text()
 
             m = re.search(
                 "Number of users found: (?P<nusers>\d+)", alert_box_text)
@@ -293,7 +291,7 @@ class UserIdResolverManager(ManageDialog):
                     expected_users, num_found)
 
             # Close the popup
-            alert_box.find_element_by_xpath('../..//button').click()
+            alert_box.close()
 
         # Close the resolver edit box
         self.find_by_id(cancelbutton_id).click()

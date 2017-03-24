@@ -90,6 +90,9 @@ class TestCreateUserIdResolvers(TestCase):
     def test_03_sql_resolver_creation(self):
         self.create_resolver(data.sql_resolver)
 
+    def test_04_ad_resolver_creation(self):
+        self.create_resolver(data.physics_ldap_resolver)
+
     def test_10_resolver_workflow(self):
         # Quick test complete workflow
         testdata = (data.sepasswd_resolver,)

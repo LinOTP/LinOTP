@@ -46,15 +46,11 @@ class TokenView(ManageTab):
     delete_button_id = 'button_delete'
     token_table_css = 'table#token_table'
 
-    alert_dialog = None
-    "Access to the alert dialog"
-
     delete_confirm_dialog = None
     "Dialog box shown when tokens are deleted"
 
     def __init__(self, manage_ui):
         super(TokenView, self).__init__(manage_ui)
-        self.alert_dialog = ManageDialog(manage_ui, 'alert_box_text')
         self.delete_confirm_dialog = ManageDialog(
             manage_ui, 'dialog_delete_token')
 
