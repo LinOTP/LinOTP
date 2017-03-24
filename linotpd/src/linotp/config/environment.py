@@ -207,6 +207,7 @@ def get_token_list():
     # append our derfault list so this will overwrite in
     # the loaded classes finally
     module_list.append("linotp.lib.tokenclass")
+    module_list.append("linotp.lib.ocra.ocratoken")
 
     fallback_tokens = get_default_tokens()
 
