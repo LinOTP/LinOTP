@@ -227,9 +227,12 @@ class ValidationHandler(object):
         reply['value'] = False
         reply['token_type'] = ''
 
+        token_type = options.get('token_type', None)
+
         for serial in serials:
 
-            tokens = getTokens4UserOrSerial(serial=serial)
+            tokens = getTokens4UserOrSerial(serial=serial,
+                                            token_type=token_type)
             if not tokens:
                 raise Exception('tokenmismatch for token serial: %s'
                                 % (unicode(serial)))
@@ -260,8 +263,10 @@ class ValidationHandler(object):
                     verify the user pin
         """
 
+        token_type = options.get('token_type', None)
+
         tokenList = linotp.lib.token.getTokens4UserOrSerial(
-            None, serial)
+            None, serial, token_type=token_type)
 
         if passw is None:
             # other than zero or one token should not happen, as serial is
@@ -440,7 +445,12 @@ class ValidationHandler(object):
                                                           user, passw, options)
                 return res, opt
 
-        tokenList = linotp.lib.token.getTokens4UserOrSerial(user, serial)
+        token_type = options.get('token_type', None)
+
+        tokenList = linotp.lib.token.getTokens4UserOrSerial(
+                                                user,
+                                                serial,
+                                                token_type=token_type)
 
         if len(tokenList) == 0:
             audit['action_detail'] = 'User has no tokens assigned'

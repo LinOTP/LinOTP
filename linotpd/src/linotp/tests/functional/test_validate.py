@@ -330,6 +330,22 @@ class TestValidateController(TestController):
                                 params=parameters)
         self.assertTrue('"value": true' in response, response)
 
+    def createHMACToken(self, serial="F722362", user='root', pin="pin"):
+
+        parameters = {
+            "serial": serial,
+            "otpkey": "AD8EABE235FC57C815B26CEF3709075580B44738",
+            "user": user,
+            "pin": pin,
+            "description": "TestToken1",
+        }
+
+        response = self.app.get(url(controller='admin', action='init'),
+                                params=parameters)
+        return response
+
+
+
     def createToken(self):
         serials = set()
         parameters = {
@@ -786,6 +802,21 @@ class TestValidateController(TestController):
         #    otp[8]: 478893 :
         #    otp[9]: 517407 :
         #
+    def setPolicy(self, name, scope, action,
+                  realm='*', user='*', active=True):
+        params = {
+            'name': name,
+            'user': user,
+            'action': action,
+            'scope': scope,
+            'realm': realm,
+            'time': '',
+            'client': '',
+            'active': active,
+            'session': self.session,
+        }
+        response = self.make_system_request('setPolicy', params)
+        return response
 
     def test_autousercheck(self):
         '''
@@ -844,6 +875,88 @@ class TestValidateController(TestController):
                         response)
 
         self.delete_token("F722362")
+
+    def test_check_with_tokentype(self):
+        """
+        filter the possible tokens by tokentype parameter
+
+        check if token_type parameter will filter the tokens
+
+        * enroll two challenge response token: hmac and pw
+
+        * 1. filter for hmac - no pw token in result
+        * 2. filter for pw - no hmac token in result
+        * 3. no filter - hmac and pw token in result
+
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # prepare that both hmac and pw token are running
+        # as challenge response tokens and enroll the tokens
+
+        self.setPolicy(name="ch_resp",
+                       scope="authentication",
+                       action='challenge_response=hmac pw ')
+
+        self.createHMACToken("MyHamc007", "root", "123")
+        self.createPWToken('MyPW007', 'root', '123')
+
+        # ------------------------------------------------------------------ --
+
+        # run request with token_type filter for hmac token
+
+        parameters = {"user": "root",
+                      "pass": "123",
+                      "token_type": "HMAC"}
+
+        response = self.make_validate_request('check',
+                                              params=parameters)
+
+        msg = '"linotp_tokentype": "HMAC"'
+        self.assertTrue(msg in response, response)
+        msg = '"linotp_tokentype": "pw"'
+        self.assertFalse(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # run request with token_type filter for pw token
+
+        parameters = {"user": "root",
+                      "pass": "123",
+                      "token_type": "pw"}
+
+        response = self.make_validate_request('check',
+                                              params=parameters)
+
+        msg = '"linotp_tokentype": "HMAC"'
+        self.assertFalse(msg in response, response)
+        msg = '"linotp_tokentype": "pw"'
+        self.assertTrue(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # run request without token_type filter
+
+        parameters = {"user": "root",
+                      "pass": "123"}
+
+        response = self.make_validate_request('check',
+                                              params=parameters)
+
+        msg = '"linotp_tokentype": "HMAC"'
+        self.assertTrue(msg in response, response)
+        msg = '"linotp_tokentype": "pw"'
+        self.assertTrue(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # make the dishes
+
+        self.delete_all_policies()
+        self.delete_all_token()
+
+        return
 
     def test_check(self):
         '''
