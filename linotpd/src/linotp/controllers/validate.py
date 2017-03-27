@@ -503,8 +503,8 @@ class ValidateController(BaseController):
 
             vh = ValidationHandler()
             (ok, opt) = vh.check_by_transactionid(transid=transid,
-                                                    passw=passw,
-                                                    options=param)
+                                                  passw=passw,
+                                                  options=param)
 
             value['value'] = ok
             value['failcount'] = int(opt.get('failcount', 0))

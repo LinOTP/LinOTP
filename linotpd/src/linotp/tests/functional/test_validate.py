@@ -876,6 +876,181 @@ class TestValidateController(TestController):
 
         self.delete_token("F722362")
 
+    def test_check_transaction_with_tokentype(self):
+        """
+        filter the possible tokens by tokentype parameter
+
+        check by transactionid if token_type parameter will filter the tokens
+
+        * enroll two challenge response token: hmac and pw
+
+        * 0. trigger transaction w.o. filter - hmac and pw token in result
+        * 1. filter for hmac - no pw token in result
+        * 2. filter for pw - no hmac token in result
+
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # prepare that both hmac and pw token are running
+        # as challenge response tokens and enroll the tokens
+
+        self.setPolicy(name="ch_resp",
+                       scope="authentication",
+                       action='challenge_response=hmac pw ')
+
+        self.createHMACToken("MyHamc007", "root", "123")
+        self.createPWToken('MyPW007', 'root', '123')
+
+        # ------------------------------------------------------------------ --
+
+        # run request without token_type filter
+
+        parameters = {"serial": "My*007",
+                      "pass": "123"}
+
+        response = self.make_validate_request('check_s',
+                                              params=parameters)
+
+        msg = '"linotp_tokentype": "HMAC"'
+        self.assertTrue(msg in response, response)
+        msg = '"linotp_tokentype": "pw"'
+        self.assertTrue(msg in response, response)
+
+        jresp = json.loads(response.body)
+        transactionid = jresp.get('detail', {}).get('transactionid', {})
+
+        # ------------------------------------------------------------------ --
+
+        # run request with HMAC token_type filter
+
+        parameters = {"transactionid": transactionid,
+                      "pass": "123",
+                      'token_type': 'HMAC'}
+
+        response = self.make_validate_request('check_t',
+                                              params=parameters)
+
+        msg = '"token_type": "HMAC"'
+        self.assertTrue(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # run request with pw token_type filter
+
+        parameters = {"transactionid": transactionid,
+                      "pass": "123",
+                      'token_type': 'pw'}
+
+        response = self.make_validate_request('check_t',
+                                              params=parameters)
+
+        msg = '"token_type": "pw"'
+        self.assertTrue(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # run request with token_type filter ocra2 that is not involved
+
+        parameters = {"transactionid": transactionid,
+                      "pass": "123",
+                      'token_type': 'ocra2'}
+
+        response = self.make_validate_request('check_t',
+                                              params=parameters)
+
+        msg = '"token_type": ""'
+        self.assertTrue(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # make the dishes
+
+        self.delete_all_policies()
+        self.delete_all_token()
+
+        return
+
+    def test_check_serial_with_tokentype(self):
+        """
+        filter the possible tokens by tokentype parameter
+
+        check by serial if token_type parameter will filter the tokens
+
+        * enroll two challenge response token: hmac and pw
+
+        * 0. no filter - hmac and pw token in result
+        * 1. filter for hmac - no pw token in result
+        * 2. filter for pw - no hmac token in result
+
+        """
+
+        # ------------------------------------------------------------------ --
+
+        # prepare that both hmac and pw token are running
+        # as challenge response tokens and enroll the tokens
+
+        self.setPolicy(name="ch_resp",
+                       scope="authentication",
+                       action='challenge_response=hmac pw ')
+
+        self.createHMACToken("MyHamc007", "root", "123")
+        self.createPWToken('MyPW007', 'root', '123')
+
+        # ------------------------------------------------------------------ --
+
+        # run request without token_type filter
+
+        parameters = {"serial": "My*007",
+                      "pass": "123"}
+
+        response = self.make_validate_request('check_s',
+                                              params=parameters)
+
+        msg = '"linotp_tokentype": "HMAC"'
+        self.assertTrue(msg in response, response)
+        msg = '"linotp_tokentype": "pw"'
+        self.assertTrue(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # run request with token_type filter for hmac token
+
+        parameters = {"serial": "My*007",
+                      "pass": "123",
+                      "token_type": 'HMAC'}
+
+        response = self.make_validate_request('check_s',
+                                              params=parameters)
+
+        msg = '"linotp_tokentype": "HMAC"'
+        self.assertTrue(msg in response, response)
+        msg = '"linotp_tokentype": "pw"'
+        self.assertFalse(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # run request with token_type filter for pw token
+
+        parameters = {"serial": "My*007",
+                      "pass": "123",
+                      "token_type": 'pw'}
+
+        response = self.make_validate_request('check_s',
+                                              params=parameters)
+
+        msg = '"linotp_tokentype": "HMAC"'
+        self.assertFalse(msg in response, response)
+        msg = '"linotp_tokentype": "pw"'
+        self.assertTrue(msg in response, response)
+
+        # ------------------------------------------------------------------ --
+
+        # make the dishes
+
+        self.delete_all_policies()
+        self.delete_all_token()
+
     def test_check_with_tokentype(self):
         """
         filter the possible tokens by tokentype parameter
