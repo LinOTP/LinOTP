@@ -213,7 +213,6 @@ class ValidationHandler(object):
 
         :return: tuple of boolean and detail dict
         """
-
         reply = {}
 
         serials = []
@@ -229,14 +228,22 @@ class ValidationHandler(object):
 
             return False, reply
 
+        ok = False
         reply['failcount'] = 0
         reply['value'] = False
         reply['token_type'] = ''
 
+        token_type = options.get('token_type', None)
+
         for serial in serials:
 
-            tokens = getTokens4UserOrSerial(serial=serial)
-            if not tokens:
+            tokens = getTokens4UserOrSerial(serial=serial,
+                                            token_type=token_type)
+
+            if not tokens and token_type:
+                continue
+
+            if not tokens and not token_type:
                 raise Exception('tokenmismatch for token serial: %s'
                                 % (unicode(serial)))
 
@@ -266,7 +273,9 @@ class ValidationHandler(object):
                     verify the user pin
         """
 
-        tokenList = getTokens4UserOrSerial(None, serial)
+        token_type = options.get('token_type', None)
+
+        tokenList = getTokens4UserOrSerial(None, serial, token_type=token_type)
 
         if passw is None:
             # other than zero or one token should not happen, as serial is
@@ -445,7 +454,12 @@ class ValidationHandler(object):
                                                           user, passw, options)
                 return res, opt
 
-        tokenList = getTokens4UserOrSerial(user, serial)
+        token_type = options.get('token_type', None)
+
+        tokenList = getTokens4UserOrSerial(
+                               user,
+                               serial,
+                               token_type=token_type)
 
         if len(tokenList) == 0:
             audit['action_detail'] = 'User has no tokens assigned'
