@@ -685,9 +685,16 @@ class IdResolver (UserIdResolver):
         if not l_obj:
             return userid
 
+        # ----------------------------------------------------------------- --
+
+        # prepare the list of attributes that we wish to recieve
+        # Remark: the elememnts each must be of type string utf-8
+
         attrlist = []
         if self.uidType.lower() != "dn":
-            attrlist.append(self.uidType)
+            attrlist.append(self.uidType.encode(ENCODING))
+
+        # ----------------------------------------------------------------- --
 
         resultList = None
         try:
@@ -1494,11 +1501,19 @@ class IdResolver (UserIdResolver):
                 log.debug("[getUserList] type of searchfilter: %r",
                           type(searchFilter))
 
+                # ---------------------------------------------------------- --
+
+                # prepare the list of attributes that we wish to recieve
+                # Remark: the elememnts each must be of type string utf-8
+
                 attrlist = []
                 for ukey, uval in self.userinfo.iteritems():
-                    attrlist.append(str(uval))
+                    attrlist.append(uval.encode(ENCODING))
+
                 if self.uidType.lower() != "dn":
-                    attrlist.append(self.uidType)
+                    attrlist.append(self.uidType.encode(ENCODING))
+
+                # ---------------------------------------------------------- --
 
                 searchFilterStr = searchFilter.encode(ENCODING)
                 ldap_result_id = l_obj.search_ext(self.base,
@@ -1722,13 +1737,21 @@ class IdResolver (UserIdResolver):
         log.debug("[getUserListIterator] doing search with filter %r",
                   searchFilter)
 
+        # ------------------------------------------------------------------ --
+
+        # prepare the list of attributes that we wish to recieve
+        # Remark: the elememnts each must be of type string utf-8
+
         attrlist = []
         for _ukey, uval in self.userinfo.iteritems():
-            attrlist.append(str(uval))
+            attrlist.append(uval.encode(ENCODING))
 
         # add the requested unique identifier if it is not the dn
+
         if self.uidType.lower() != "dn":
-            attrlist.append(self.uidType)
+            attrlist.append(self.uidType.encode(ENCODING))
+
+        # ------------------------------------------------------------------ --
 
         # replace the method pointer to the right place
         api_ver = self._api_version()
