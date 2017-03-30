@@ -1185,12 +1185,25 @@ class UserserviceController(BaseController):
             initDetail = tokenObj.getInitDetail(param, self.authUser)
             response_detail.update(initDetail)
 
+            # -------------------------------------------------------------- --
+
+            c.audit['serial'] = response_detail.get('serial', '')
             c.audit['success'] = ret
             c.audit['user'] = self.authUser.login
             c.audit['realm'] = self.authUser.realm
 
             logTokenNum(c.audit)
             c.audit['success'] = ret
+
+            # -------------------------------------------------------------- --
+
+            # in the checkPolicyPost for selfservice, the serial is used
+
+            if 'serial' not in param:
+                param['serial'] = response_detail.get('serial', '')
+
+            # -------------------------------------------------------------- --
+
             checkPolicyPost('selfservice', 'enroll', param, user=self.authUser)
 
             Session.commit()
