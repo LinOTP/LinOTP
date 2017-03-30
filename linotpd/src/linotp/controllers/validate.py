@@ -292,7 +292,7 @@ class ValidateController(BaseController):
                                      ' or "user"!'))
 
             passw = param.get('pass', None)
-            if not passw:
+            if passw is None:
                 raise ParameterError(_('Missing required parameter "pass"!'))
 
             use_offline = param.get('use_offline', False)
