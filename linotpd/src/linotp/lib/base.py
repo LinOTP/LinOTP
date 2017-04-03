@@ -521,7 +521,11 @@ class BaseController(WSGIController):
 
                         else:
                             log.info("license successfully loaded")
+            if 'provider.config_file' in config:
+                from linotp.provider import load_provider_ini
 
+                load_provider_ini(config['provider.config_file'])
+            
         return
 
     def __call__(self, environ, start_response):

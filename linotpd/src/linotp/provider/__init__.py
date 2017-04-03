@@ -30,16 +30,11 @@ provider handling
 import json
 import logging
 from functools import partial
-from os import path
-from os import listdir
-from os import walk
 
 from pylons.i18n.translation import _
 
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.config import getFromConfig
-from linotp.lib.config import updateConfig
 from linotp.lib.config import removeFromConfig
 from linotp.lib.config.parsing import ConfigTree
 from linotp.lib.config.parsing import ConfigNotRecognized
@@ -308,7 +303,7 @@ def get_legacy_provider(provider_type):
     return legacy_provider
 
 
-def get_all_new_providers(provider_type):
+def get_all_new_providers(provider_type, show_managed_config=False):
     """
     get all providers of the new format
     :param provider_type: the type of the provider
@@ -353,8 +348,11 @@ def get_all_new_providers(provider_type):
 
         # in case of a managed provider, the configuration is not displayed
         if prefix + 'Managed' in config:
+
             defintion['Managed'] = config.get(prefix + 'Managed')
-            del defintion['Config']
+
+            if not show_managed_config:
+                del defintion['Config']
 
         name = provider.split('.')[2]
         providers[name] = defintion
@@ -523,6 +521,10 @@ def setProvider(params):
         if params['default'] is True or params['default'].lower() == 'true':
             storeConfig(key=default_provider_key, val=provider_name)
 
+    # uncomment this if you want to get provider config as ini file:
+    # from linotp.provider.create_provider_ini import create_provider_config
+    # create_provider_config()
+
     return True, {}
 
 
@@ -604,9 +606,13 @@ def save_new_provider(provider_type, provider_name, params):
         mapping_entry = config_mapping[config_entry]
         config_key, config_type = mapping_entry
 
+        value = params[config_entry]
+        if isinstance(params[config_entry], str):
+            value = params[config_entry].decode('utf-8')
+
         # store the config entry
         storeConfig(key=provider_prefix + '.' + config_key,
-                    val=params[config_entry],
+                    val=value,
                     typ=config_type)
 
     return True, {}
@@ -701,6 +707,30 @@ def _lookup_provider_policies(provider_type):
         provider_policies[provider_name].append(policy)
 
     return provider_policies
+
+
+def load_provider_ini(ini_file):
+    """
+    load the provider from a ini config file format
+    """
+
+    from ConfigParser import SafeConfigParser
+
+    parser = SafeConfigParser()
+    parser.read(ini_file)
+
+    for section_name in parser.sections():
+
+        provider_type, provider_name = section_name.split(':')
+        provider_config = {}
+        for name, value in parser.items(section_name):
+            provider_config[name] = value
+
+        provider_config['type'] = provider_type
+        provider_config['name'] = provider_name
+        setProvider(provider_config)
+
+    return
 
 
 def loadProvider(provider_type, provider_name=None):
