@@ -46,6 +46,8 @@ from linotp.lib.user import getUserFromParam
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.realm import getRealms
 
+from linotp.lib.type_utils import boolean
+
 from linotp.lib.config import getGlobalObject
 from linotp.lib.crypto import init_key_partition
 
@@ -327,6 +329,31 @@ def setup_app(conf, conf_global=None, unitTest=False):
     log.info("Creating tables...")
     meta.metadata.create_all(bind=meta.engine)
 
+    # ---------------------------------------------------------------------- --
+
+    # for the cloud mode we require the admin_user table to
+    # manage the admin users to allow password setting
+
+    if 'linotpadmin.username' in conf and 'linotpadmin.password' in conf:
+
+        from linotp.lib.tools.set_password import SetPasswordHandler
+        from linotp.lib.tools.set_password import DataBaseContext
+
+        db_context = DataBaseContext(sql_url=meta.engine.url)
+
+        SetPasswordHandler.create_table(db_context)
+
+        # create the initial admin
+        admin_user = conf.get('linotpadmin.username', '')
+        admin_pw = conf.get('linotpadmin.password', '')
+
+        if admin_user and admin_pw:
+            SetPasswordHandler.create_admin_user(db_context,
+                                                 username=admin_user,
+                                                 crypted_password=admin_pw)
+
+    # ---------------------------------------------------------------------- --
+
     #
     # hook for schema upgrade -
     # - called by paster setup-app or on the first request to linotp
@@ -348,7 +375,6 @@ def setup_app(conf, conf_global=None, unitTest=False):
         current_data_model_version = sql_data_model_version
         set_config('sql_data_model_version',
                    sql_data_model_version, typ='text')
-
 
     if current_data_model_version != sql_data_model_version:
         run_data_model_migration(meta, target_version=sql_data_model_version)

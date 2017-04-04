@@ -121,6 +121,19 @@ function Logout(logout_url) {
 /*
  * add the jquery validation methods
  */
+jQuery.validator.addMethod("password-strength", function(value, element, param){
+        var required_char_types = param;
+        required_char_types -= !!value.match(/[a-z]/);
+        required_char_types -= !!value.match(/[A-Z]/);
+        required_char_types -= !!value.match(/[0-9]/);
+        required_char_types -= !!value.match(/[^a-zA-Z0-9]/);
+        required_char_types -= value.length > 12;
+
+        return required_char_types<=0;
+    },
+    jQuery.validator.format(i18n.gettext("The password must contain {0} of the following: lowercase, uppercase, special characters, numbers, length of 12"))
+);
+
 $.validator.addMethod('valid_json', function (value, element, param) {
         try {
             $.parseJSON(value);
@@ -5852,6 +5865,63 @@ $(document).ready(function(){
         fillSpace: true
     });
 
+    $('#login-status-logout').click(function(){
+        Logout($('#login-status-logout').attr("data-logout-url"));
+    });
+
+    $('#login-status-password, #menu_tools_changepassword').click(function(){
+        $('#dialog_change_password').dialog({
+            title: i18n.gettext("Change password"),
+            width: 650,
+            modal: true,
+            open: function() {
+                // resset password inputs on dialog open
+                $("input", this).val("");
+
+                // fix table after the browser balances the widths
+                $("table tr:first-child td", this).each(function() {
+                    $(this).css("width", $(this).width());
+                });
+            },
+            create: function() {
+                do_dialog_icons();
+                $("form", this).validate({
+                    rules: {
+                        password_old: {
+                            required: true
+                        },
+                        password_new: {
+                            required: true,
+                            minlength: 6,
+                            "password-strength": 3
+                        },
+                        password_confirm: {
+                            equalTo: "#password_new",
+                            required: true
+                        }
+                    }
+                });
+            },
+            buttons: [
+                {
+                    text: i18n.gettext("Cancel"),
+                    click: function() {
+                        $(this).dialog("close");
+                    }
+                },
+                {
+                    text: i18n.gettext("Save"),
+                    click: function() {
+                        if($("form", this).valid()) {
+                            changePassword();
+                            $(this).dialog("close");
+                        }
+                    }
+                }
+            ]
+        });
+    });
+
     // display welcome screen if required
     check_for_welcome_screen();
 
@@ -5859,6 +5929,40 @@ $(document).ready(function(){
 });
 //--------------------------------------------------------------------------------------
 // End of document ready
+
+/**
+ * submits the change password form to the linotp backend
+ */
+function changePassword() {
+    var params = {
+        'old_password': $('#password_old').val(),
+        'new_password': $('#password_new').val(),
+        'session': getsession()
+    };
+
+    show_waiting();
+
+    $.post('/tools/setPassword', params).always(function(data, textStatus, XMLHttpRequest){
+        if(data.result && data.result.status == true && data.result.value == true) {
+            alert_info_text({
+                'text': i18n.gettext('Password was successfully changed'),
+                'is_escaped': true
+            });
+        }
+        else {
+            var message = i18n.gettext("An error occurred during password change.");
+            message += (isDefinedKey(data, ["result", "error", "message"]) ? "<br><br>" + escape(data.result.error.message) : "");
+
+            alert_box({
+                'title': i18n.gettext('Error changing password'),
+                'text': message,
+                'type': ERROR,
+                'is_escaped': true
+            });
+        }
+        hide_waiting();
+    });
+}
 
 
 /************************************************************************
@@ -5894,8 +5998,7 @@ function sms_provider_form_dialog(name){
                 number: false,
                 providername: true
             }
-        },
-        debug: true
+        }
     });
 }
 
