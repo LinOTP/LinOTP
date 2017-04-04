@@ -64,8 +64,6 @@ if isinstance(lang, list):
 
 <script type="text/javascript" src="/js/jed.js"></script>
 
-<script type="text/javascript" src="/js/qrcode.js"></script>
-<script type="text/javascript" src="/js/qrcode-helper.js"></script>
 <script type="text/javascript" src="/js/linotp_utils.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
 

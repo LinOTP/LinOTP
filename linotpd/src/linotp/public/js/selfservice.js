@@ -614,7 +614,6 @@ function provisionGoogle() {
     if (data.result.status == true) {
         if (data.result.value.init == true) {
             // The token was successfully initialized and we will display the url
-            //var qr_code = generate_qrcode(10, data.result.value.oathtoken.url);
             showTokenlist();
             var url = data.result.value.oathtoken.url;
             var img = data.result.value.oathtoken.img;
