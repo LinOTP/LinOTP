@@ -6873,7 +6873,6 @@ function view_policy() {
             preProcess: pre_flexi,
             onError: error_flexi,
             onSubmit: on_submit_flexi,
-            addTitleToCell: true,
             dblClickResize: true
     });
 
@@ -7018,7 +7017,6 @@ function view_token() {
             onError: error_flexi,
             onSubmit: on_submit_flexi,
             onSuccess: show_selected_status,
-            addTitleToCell: true,
             dblClickResize: true,
             searchbutton: true
     });
@@ -7066,7 +7064,6 @@ function view_user() {
             onError: error_flexi,
             onSubmit: on_submit_flexi,
             onSuccess: show_selected_status,
-            addTitleToCell: true,
             dblClickResize: true,
             searchbutton: true
     });
@@ -7127,7 +7124,6 @@ function view_audit() {
             preProcess: pre_flexi,
             onError: error_flexi,
             onSubmit: on_submit_flexi,
-            addTitleToCell: true,
             searchbutton: true
     });
 }
