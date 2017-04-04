@@ -40,12 +40,11 @@ function error_handling(message, file, line){
     return true;
 }
 
-function Logout(logout_url) {
 /* clear the admin cookie and
    * for IE try to clean the ClearAuthenticationCache and reload same page
    * for Firefox/Chrome redirect to a location, with new basic auth in url
 */
-
+function Logout(logout_url) {
     var done = false;
     done = document.execCommand("ClearAuthenticationCache", false);
     $.cookie("admin_session", "invalid", {expires: 0,  path: '/'});
@@ -132,7 +131,7 @@ jQuery.validator.addMethod("http_uri", function(value, element, param){
 
 //LDAPTIMEOUT: "(float or number) | (float or number; float or number)"
 jQuery.validator.addMethod("ldap_timeout", function(value, element, param){
-	var float_tuple = /(^[+]?[0-9]+(\.[0-9]+){0,1}$)|((^[+]?[0-9]+(\.[0-9]+){0,1})\s*;\s*([+]?[0-9]+(\.[0-9]+){0,1}$))/;
+    var float_tuple = /(^[+]?[0-9]+(\.[0-9]+){0,1}$)|((^[+]?[0-9]+(\.[0-9]+){0,1})\s*;\s*([+]?[0-9]+(\.[0-9]+){0,1}$))/;
     return value.match(float_tuple);
     },
     i18n.gettext("Please enter a timeout like: 5.0; 5.0 ")
@@ -213,16 +212,17 @@ var $form_validator_http;
 var $form_validator_file;
 
 // FIXME: global variable should be worked out
-var g = {};
-    g.enroll_display_qrcodes = false;
-    g.running_requests = 0;
-    g.resolver_to_edit = "";
-    g.realm_to_edit = "";
-    g.resolvers_in_realm_to_edit = "";
-    g.realms_of_token = new Array();
-    g.current_resolver_name = "";
+var g = {
+    enroll_display_qrcodes: false,
+    running_requests: 0,
+    resolver_to_edit: "",
+    realm_to_edit: "",
+    resolvers_in_realm_to_edit: "",
+    realms_of_token: [],
+    current_resolver_name: ""
+};
 
-ERROR = "error";
+var ERROR = "error";
 
 var support_license_dict = {
     'comment' : i18n.gettext('Description'),
@@ -263,10 +263,10 @@ function pre_flexi(data){
     return data;
 }
 
-function on_submit_flexi(){
 /*
  * callback, to add in parameters to the flexi grid
  */
+function on_submit_flexi(){
     var active_realm = $('#realm').val();
     var session = getsession();
 
@@ -287,7 +287,6 @@ function on_submit_flexi(){
     return true;
 }
 
-function alert_info_text(params) {
 /*
  * write tnto the report line
  * :param params: dicttionary with
@@ -296,6 +295,7 @@ function alert_info_text(params) {
  * param - replace parameter
  * display_type: report or ERROR
  */
+function alert_info_text(params) {
 
     var s = params['text'] || '';
     var text_container = params['param'] || '';
@@ -349,12 +349,12 @@ function alert_info_text(params) {
     $('#info_box').show();
 }
 
+/*
+ * This function counts the number of visible info boxes and error boxes and
+ * if more than 1 are displayed it shows the "Close all" link. Otherwise it
+ * hides the link.
+ */
 function toggle_close_all_link() {
-    /*
-     * This function counts the number of visible info boxes and error boxes and
-     * if more than 1 are displayed it shows the "Close all" link. Otherwise it
-     * hides the link.
-     */
     visible_boxes = $("#info_box > div").filter(":visible");
     close_all = $("a.close_all");
     if (visible_boxes.length > 1) {
@@ -371,14 +371,13 @@ function toggle_close_all_link() {
     }
 }
 
-function alert_box(params) {
 /*
  * pop up an alert box
  * :param params: dicttionary
  * s - If the parameter is the ID of an element, we pass the text
  *     of this very element
  */
-
+function alert_box(params) {
     var escaped = params['is_escaped'] || false;
     var title = params['title'] || '';
     var s = params['text'] || '';
@@ -440,13 +439,13 @@ function get_selected_tokens(){
     return selectedTokenItems;
 }
 
+/*
+ * This function returns the list of selected users.
+ * Each list element is an object with
+ *  - login
+ *  - resolver
+ */
 function get_selected_user(){
-    /*
-     * This function returns the list of selected users.
-     * Each list element is an object with
-     *  - login
-     *  - resolver
-     */
     var selectedUserItems = new Array();
     var tt = $("#user_table");
     var selected = $('.trSelected', tt);
@@ -491,10 +490,10 @@ function get_selected_policy(){
     return selectedPolicy;
 }
 
+/*
+ * This function returns the allowed actions within a scope
+ */
 function get_scope_actions(scope) {
-    /*
-     * This function returns the allowed actions within a scope
-     */
     var actions = Array();
     var resp = clientUrlFetchSync("/system/getPolicyDef",
                                   {"scope" : scope},
@@ -526,11 +525,11 @@ function get_scope_actions(scope) {
     return actions.sort();
 }
 
+/*
+ * This function returns the policies which conform to the
+ * set of definitions: scope, action, user, realm
+ */
 function get_policy(definition) {
-    /*
-     * This function returns the policies which conform to the
-     * set of definitions: scope, action, user, realm
-     */
     var policies = Array();
     var resp = clientUrlFetchSync("/system/getPolicy",
                                   definition,
@@ -657,7 +656,7 @@ function get_selected(){
     if ($('#tabs').tabs('option', 'active') == 2) {
         policy = get_selected_policy().join(',');
         if (policy) {
-        	var params = {'name' : policy,
+            var params = {'name' : policy,
                                         'display_inactive': '1',
                     'session':getsession()};
             $.post('/system/getPolicy', params,
@@ -701,11 +700,11 @@ function disable_all_buttons(){
     $("#button_losttoken").button("disable");
 }
 
-function init_$tokentypes(){
 /*
  * initalize the list of all avaliable token types
  * - required to show and hide the dynamic enrollment section
  */
+function init_$tokentypes(){
     var options = $('#tokentype > option');
     if ($tokentypes == undefined) {$tokentypes = {};};
     options.each(
@@ -717,9 +716,6 @@ function init_$tokentypes(){
     );
 }
 
-
-
-function get_server_config(search_key) {
 /*
  * retrieve the linotp server config
  *
@@ -727,7 +723,7 @@ function get_server_config(search_key) {
  * or raise an exception
  *
  */
-
+function get_server_config(search_key) {
     if ((search_key === undefined) === false) {
         var params = {'key': search_key};
     } else {
@@ -915,13 +911,13 @@ function reset_waiting() {
 // The myURL needs to end with ? if it has no parameters!
 
 
+/*
+ * clientUrlFetch - to submit a asyncronous http request
+ *
+ * @remark: introduced the params (:dict:) so we could switch to
+ *          a POST request, which will allow more and secure data
+ */
 function clientUrlFetch(myUrl, params, callback, parameter){
-    /*
-     * clientUrlFetch - to submit a asyncronous http request
-     *
-     * @remark: introduced the params (:dict:) so we could switch to
-     *          a POST request, which will allow more and secure data
-     */
     if (!('session' in params)) {
         params['session'] = getsession();
     }
@@ -949,14 +945,13 @@ function clientUrlFetch(myUrl, params, callback, parameter){
     return promise
 }
 
+/*
+ * clientUrlFetchSync - to submit a syncronous  http request
+ *
+ * @remark: introduced the params (:dict:) so we could switch to
+ *          a POST request, which will allow more and secure data
+ */
 function clientUrlFetchSync(myUrl,params){
-    /*
-     * clientUrlFetchSync - to submit a syncronous  http request
-     *
-     * @remark: introduced the params (:dict:) so we could switch to
-     *          a POST request, which will allow more and secure data
-     */
-
     var session = getsession();
     //myUrl     = myUrl + "&session=" + session;
     params['session'] = session;
@@ -989,8 +984,8 @@ function get_tokennum(){
     return obj.result.value.resultset.tokens;
 }
 
+/* call the server license check*/
 function check_license(){
-    /* call the server license check*/
     var resp = clientUrlFetchSync('/system/isSupportValid',{});
     var obj = jQuery.parseJSON(resp);
     if (obj.result.value === false) {
@@ -1007,7 +1002,6 @@ function check_license(){
     }
     return;
 }
-// correctly closed bracket?? yes!
 
 /**
  * checks the license status for enterprise subscription
@@ -1042,11 +1036,11 @@ function assign_callback(xhdr, textStatus, serial) {
     reset_buttons();
 }
 
+/*
+ * Evaluates a list of responses, displays a list of all the errors found
+ * and finally reloads the page.
+ */
 function token_operations_callback(responses) {
-    /*
-     * Evaluates a list of responses, displays a list of all the errors found
-     * and finally reloads the page.
-     */
     var error_messages = [];
     $.each(responses, function(index, responseData){
         // "responseData" will contain an array of response information for each specific request
@@ -1072,15 +1066,15 @@ function token_operations_callback(responses) {
     reset_buttons();
 }
 
+/*
+ * Performs an operation on a list of tokens
+ *
+ * tokens is a list of tokens (serial numbers)
+ * url is the operation to perform. For example "/admin/remove"
+ * params are any parameters required for the requests. You DON'T need to
+ * pass in the session. Token serial is set inside this function as well.
+ */
 function token_operation(tokens, url, params) {
-    /*
-     * Performs an operation on a list of tokens
-     *
-     * tokens is a list of tokens (serial numbers)
-     * url is the operation to perform. For example "/admin/remove"
-     * params are any parameters required for the requests. You DON'T need to
-     * pass in the session. Token serial is set inside this function as well.
-     */
     if (!('session' in params)) {
         // To make the operation a tiny bit more efficient we fetch the session
         // once instead of in every request (as clientUrlFetch would do).
@@ -1207,10 +1201,10 @@ function losttoken_callback(xhdr, textStatus){
     disable_all_buttons();
 }
 
+/*
+ * token_losttoken - request enrollment of losttoken
+ */
 function token_losttoken(token_type) {
-    /*
-     * token_losttoken - request enrollment of losttoken
-     */
     var tokens = get_selected_tokens();
     var count = tokens.length;
 
@@ -1284,27 +1278,27 @@ function token_setpin(){
     return true;
 }
 
+/*
+ * This function encapsulates the set pin dialog and is
+ * called by the button "set pin" and can be called
+ * after enrolling or assigning tokesn.
+ *
+ * Parameter: array of serial numbers
+ */
 function view_setpin_dialog(tokens) {
-    /*
-     * This function encapsulates the set pin dialog and is
-     * called by the button "set pin" and can be called
-     * after enrolling or assigning tokesn.
-     *
-     * Parameter: array of serial numbers
-     */
     var token_string = tokens.join(", ");
     $('#dialog_set_pin_token_string').html(escape(token_string));
     $('#setpin_tokens').val(tokens);
     $dialog_setpin_token.dialog('open');
 }
 
+/*
+ * depending on the policies
+ * - random pin
+ * we can display or not display it.
+ * TODO: should this be disabled on otppin != 0 as well?
+ */
 function view_setpin_after_assigning(tokens) {
-    /*
-     * depending on the policies
-     * - random pin
-     * we can display or not display it.
-     * TODO: should this be disabled on otppin != 0 as well?
-     */
     var display_setPin = true;
 
     var selected_users = get_selected_user();
@@ -1445,8 +1439,8 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             var dia_tabs = {};
             var dia_tabs_content = {};
 
-			// here we compose the HMAC reply dialog with multiple tabs
-			// while the content is defined in mako files
+            // here we compose the HMAC reply dialog with multiple tabs
+            // while the content is defined in mako files
             for (var k in obj.detail) {
                 var theDetail = obj.detail[k];
                 if (theDetail != null && theDetail.hasOwnProperty('description') ){
@@ -1458,7 +1452,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
                     }
                     var description = escape(theDetail.description);
                     if ( $("#description_" +k ).length !== 0) {
-                    	// we only require the text value of the description
+                        // we only require the text value of the description
                         description = $("#description_" +k ).text();
                     }
                     dia_tabs[order] = '<li><a href="#url_content_'+k+'">'+ description + '</a></li>';
@@ -1491,7 +1485,7 @@ function enroll_callback(xhdr, textStatus, p_serial) {
             // end of qr_url_tabs
             dia_text += '</div>';
 
-			// the output fragments of dia_text ae already escaped
+            // the output fragments of dia_text ae already escaped
             $('#enroll_url').html($.parseHTML(dia_text));
             $('#qr_url_tabs').tabs();
             $dialog_show_enroll_url.dialog("open");
@@ -1514,7 +1508,7 @@ function _extract_tab_content(theDetail, k) {
     if($('#annotation_' + k).length !== 0) {
         annotation = $('#annotation_' + k).html();
     }
-	annotation = escape(annotation);
+    annotation = escape(annotation);
 
     var dia_text ='';
     dia_text += '<div id="url_content_'+k+'">';
@@ -1771,7 +1765,7 @@ function do_dialog_icons(){
 // realms and resolver functions
 //
 function _fill_resolvers(widget){
-	var params = {'session':getsession()};
+    var params = {'session':getsession()};
     $.post('/system/getResolvers', params,
      function(data, textStatus, XMLHttpRequest){
         var resolversOptions = "";
@@ -1813,7 +1807,7 @@ function _fill_realms(widget, also_none_realm){
         }
         var defaultRealm;
         for (var i in value) {
-			var realm_val = escape(i);
+            var realm_val = escape(i);
             if (value[i]['default']) {
                 realms += "<option selected>";
                 defaultRealm = realm_val;
@@ -1875,10 +1869,10 @@ function get_realms(){
     return realms;
 }
 
+/*
+ * return the list of the resolver names
+ */
 function get_resolvers(){
-    /*
-     * return the list of the resolver names
-     */
     var resolvers = new Array();
     var resp = $.ajax({
             url: '/system/getResolvers',
@@ -1934,7 +1928,10 @@ function get_serial_by_otp_callback(xhdr, textStatus) {
                          'is_escaped': true});
     }
 }
-// get Serial by OTP
+
+/*
+ * get Serial by OTP
+ */
 function getSerialByOtp(otp, type, assigned, realm) {
     var param = {};
     param["otp"] = otp;
@@ -1950,7 +1947,6 @@ function getSerialByOtp(otp, type, assigned, realm) {
     clientUrlFetch('/admin/getSerialByOtp', param, get_serial_by_otp_callback);
 
 }
-
 
 /**
  * handler for the ldap resolver form keyup event of the ldap uri and enforce tls flag,
@@ -1968,11 +1964,11 @@ function handler_ldap_certificate_show() {
     $('#ldap_enforce_tls_label').toggleClass('disabled', isLdaps);
 }
 
+/*
+ * This function checks if the HTTP URI is using SSL.
+ * If so, it displays the CA certificate entry field.
+ */
 function http_resolver_https() {
-    /*
-     * This function checks if the HTTP URI is using SSL.
-     * If so, it displays the CA certificate entry field.
-     */
     var http_uri = $('#http_uri').val();
     if (http_uri.toLowerCase().match(/^https:/)) {
         $('#http_resolver_certificate').show();
@@ -2960,13 +2956,12 @@ function save_http_config(){
     return false;
 }
 
-
-function set_default_realm(realm) {
 /*
  * set the default realm
  *
  * @param realm - as string
  */
+function set_default_realm(realm) {
     var params = {
         'realm' : realm,
         'session':getsession()
@@ -2979,12 +2974,12 @@ function set_default_realm(realm) {
       });
 }
 
-function save_realm_config(){
 /*
  * save the realm config from the realm edit dialog
  *
  * @param - #realm_name is extracted from form entry
  */
+function save_realm_config(){
     check_license();
     var realm = $('#realm_name').val();
     show_waiting();
@@ -3042,10 +3037,10 @@ function save_tokenrealm_config(){
     }
 }
 
+/*
+* save the passwd resolver config
+*/
 function save_file_config(){
-   /*
-    * save the passwd resolver config
-    */
     var resolvername = $('#file_resolvername').val();
     var resolvertype = "passwdresolver";
     var fileName = $('#file_filename').val();
@@ -3151,9 +3146,9 @@ function realms_load(){
             if (data.result.value[key]['default']) {
                 default_realm = " (Default) ";
             }
-			var e_key = escape(key);
-			var e_default_realm = escape(default_realm);
-			var e_resolvers = escape(resolvers)
+            var e_key = escape(key);
+            var e_default_realm = escape(default_realm);
+            var e_resolvers = escape(resolvers)
             realms += '<li class="ui-widget-content">' + e_key + e_default_realm + ' [' + e_resolvers + ']</li>';
         }
         realms += '</ol>';
@@ -3363,12 +3358,12 @@ function resolver_new_type(){
     $dialog_ask_new_resolvertype.dialog('open');
 }
 
-function set_tokeninfo_buttons(){
 /*
  * enables the tokeninfo buttons.
  * As tokeninfo HTML is read from the server via /manage/tokeninfo
  * jqeuery needs to activate the buttons after each call.
  */
+function set_tokeninfo_buttons(){
     $('#ti_button_desc').button({
         icons: { primary: 'ui-icon-pencil' },
         text: false
@@ -3522,8 +3517,6 @@ function set_tokeninfo_buttons(){
         $dialog_tokeninfo_set.dialog('open');
     });
 
-
-
     /*
      * time buttons
      */
@@ -3570,11 +3563,12 @@ function set_tokeninfo_buttons(){
 
 }
 
+/*
+ * enables the tokeninfo buttons.
+ * As tokeninfo HTML is read from the server via /manage/tokeninfo
+ * jqeuery needs to activate the buttons after each call.
+ */
 function tokenbuttons(){
-    /*
-     * This is the function to call handle the buttons, that will only work
-     * with tokens and not with users.
-     */
     $('#button_tokenrealm').button({
         icons: {
             primary: 'ui-icon-home'
@@ -3601,7 +3595,7 @@ function tokenbuttons(){
         }
     });
 
-	disable_all_buttons();
+    disable_all_buttons();
 
     var $dialog_losttoken = $('#dialog_lost_token').dialog({
         autoOpen: false,
@@ -4440,7 +4434,7 @@ $(document).ready(function(){
         params['Map']           = $('#sql_mapping').val();
         params['ConnectionParams']     = $('#sql_conparams').val();
         params['Encoding']      = $('#sql_encoding').val();
-        params['Limit']      	= $('#sql_limit').val();
+        params['Limit']         = $('#sql_limit').val();
 
         clientUrlFetch(url, params, function(xhdr, textStatus) {
                     var resp = xhdr.responseText;
@@ -6158,7 +6152,7 @@ function push_provider_form_dialog(name){
 
    $("#form_pushprovider").validate({
        rules: {
-    	   push_provider_config: {
+           push_provider_config: {
                valid_json: true
            },
            push_provider_name: {
@@ -6601,7 +6595,6 @@ function resolver_ldap(name, duplicate){
     });
 }
 
-function set_form_input(form_name, data) {
 /*
  * for all input fields of the form, set the corresponding
  * values from the obj
@@ -6609,6 +6602,7 @@ function set_form_input(form_name, data) {
  * Assumption:
  *   the input form names are the same as the config entries
  */
+function set_form_input(form_name, data) {
     var items = {};
     $('#'+form_name).find(':input').each(
         function (id, el) {
@@ -6630,7 +6624,6 @@ function set_form_input(form_name, data) {
 
 }
 
-function get_form_input(form_name) {
 /*
  * for all input fields of the form, set the corresponding
  * values from the obj
@@ -6638,6 +6631,7 @@ function get_form_input(form_name) {
  * Assumption:
  *   the input form names are the same as the config entries
  */
+function get_form_input(form_name) {
     var items = {};
     $('#'+form_name).find(':input').each(
         function (id, el) {
@@ -6941,19 +6935,19 @@ function extractLast( term ) {
         return split( term ).pop();
 }
 
+/*
+ * This function needs to be called, whenever the scope is changed or loaded.
+ */
 function renew_policy_actions(){
-    /*
-     * This function needs to be called, whenever the scope is changed or loaded.
-     */
     var scope=$('#policy_scope_combo').val();
     var actions=get_scope_actions(scope);
     define_policy_action_autocomplete( actions );
 }
 
+/*
+ * This sets the allowed actions in the policy action input
+ */
 function define_policy_action_autocomplete(availableActions) {
-    /*
-     * This sets the allowed actions in the policy action input
-     */
     $( "#policy_action" )
         .autocomplete({
             minLength: 0,
@@ -6981,7 +6975,6 @@ function define_policy_action_autocomplete(availableActions) {
 }
 
 function view_policy() {
-
     $("#policy_table").flexigrid({
             url : '/system/policies_flexi',
             method: 'POST',
@@ -7266,7 +7259,6 @@ function view_audit() {
             searchbutton: true
     });
 }
-
 
 /*
  * window.CURRENT_LANGUAGE is set in the template from the mako lib.
