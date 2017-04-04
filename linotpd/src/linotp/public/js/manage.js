@@ -23,11 +23,8 @@
  *    Support: www.keyidentity.com
  *
  */
-window.onerror = error_handling;
 
-/* Use Jed for i18n. The correct JSON file is dynamically loaded later. */
-var i18n = new Jed({});
-var sprintf = Jed.sprintf;
+window.onerror = error_handling;
 
 var password_placeholder_required = "<" + i18n.gettext("password required") + ">";
 var password_placeholder_not_changed = "<" + i18n.gettext("not changed") + ">";
@@ -56,132 +53,7 @@ function Logout(logout_url) {
     }
 }
 
-/*
- * add the jquery validation methods
- */
-jQuery.validator.addMethod("password-strength", function(value, element, param){
-        var required_char_types = param;
-        required_char_types -= !!value.match(/[a-z]/);
-        required_char_types -= !!value.match(/[A-Z]/);
-        required_char_types -= !!value.match(/[0-9]/);
-        required_char_types -= !!value.match(/[^a-zA-Z0-9]/);
-        required_char_types -= value.length > 12;
-
-        return required_char_types<=0;
-    },
-    jQuery.validator.format(i18n.gettext("The password must contain {0} of the following: lowercase, uppercase, special characters, numbers, length of 12"))
-);
-
-$.validator.addMethod('valid_json', function (value, element, param) {
-        try {
-            $.parseJSON(value);
-            return true;
-        } catch(err) {
-            return false;
-        }
-    },
-    i18n.gettext('Not a valid json string!')
-);
-
-jQuery.validator.addMethod("realmname", function(value, element, param){
-    return value.match(/^[a-zA-Z0-9_\-\.]+$/i);
-    },
-    i18n.gettext("Please enter a valid realm name. It may contain characters, numbers and '_-.'.")
-);
-
-jQuery.validator.addMethod("unique_resolver_name", function(value, element, param){
-        if(g.current_resolver_name !== value) {
-            var resolvers = get_resolvers();
-            return $.inArray(value, resolvers) === -1;
-        }
-        return true;
-    },
-    i18n.gettext("Resolver name is already in use")
-);
-
-jQuery.validator.addMethod("unique_realm_name", function(value, element, param){
-    var realms = get_realms();
-    return $.inArray(value, realms) === -1;
-    },
-    i18n.gettext("Realm name is already in use")
-);
-
-jQuery.validator.addMethod("resolvername", function(value, element, param){
-    return value.match(/^[a-zA-Z0-9_\-]+$/i);
-    },
-    i18n.gettext("Please enter a valid resolver name. It may contain characters, numbers and '_-'.")
-);
-
-jQuery.validator.addMethod("providername", function(value, element, param){
-    return value.match(/^[a-zA-Z0-9_\-]+$/i);
-    },
-    i18n.gettext("Please enter a valid provider name. It may contain characters, numbers and '_-'.")
-);
-
-jQuery.validator.addMethod("ldap_uri", function(value, element, param){
-    return value.match(param);
-    },
-    i18n.gettext("Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://")
-);
-jQuery.validator.addMethod("http_uri", function(value, element, param){
-    return value.match(param);
-    },
-    i18n.gettext("Please enter a valid http uri. It needs to start with http:// or https://")
-);
-
-//LDAPTIMEOUT: "(float or number) | (float or number; float or number)"
-jQuery.validator.addMethod("ldap_timeout", function(value, element, param){
-    var float_tuple = /(^[+]?[0-9]+(\.[0-9]+){0,1}$)|((^[+]?[0-9]+(\.[0-9]+){0,1})\s*;\s*([+]?[0-9]+(\.[0-9]+){0,1}$))/;
-    return value.match(float_tuple);
-    },
-    i18n.gettext("Please enter a timeout like: 5.0; 5.0 ")
-);
-
-// LDAPSEARCHFILTER: "(sAMAccountName=*)(objectClass=user)"
-jQuery.validator.addMethod("ldap_searchfilter", function(value, element, param){
-    return value.match(/(\(\S+=(\S+).*\))+/);
-    },
-    i18n.gettext("Please enter a valid searchfilter like this: (sAMAccountName=*)(objectClass=user)")
-);
-
-// LDAPFILTER: "(&(sAMAccountName=%s)(objectClass=user))"
-jQuery.validator.addMethod("ldap_userfilter", function(value, element, param){
-    return value.match(/\(\&(\(\S+=(\S+).*\))+\)/);
-    },
-    i18n.gettext("Please enter a valid user searchfilter like this: (&(sAMAccountName=%s)(objectClass=user))")
-);
-
-jQuery.validator.addMethod("ldap_mapping", function(value, element, param){
-    return value.match(/{.+}/);
-    },
-    sprintf(i18n.gettext('Please enter a valid searchfilter like this: %s'),
-    '{ "username": "sAMAccountName", "phone" : "telephoneNumber", "mobile" \
-    : "mobile", "email" : "mail", "surname" : "sn", "givenname" : "givenName" }')
-);
-
-jQuery.validator.addMethod("ldap_uidtype", function(value,element,param){
-    return value.match(/.*/);
-    },
-    i18n.gettext('Please enter the UID of your LDAP server like DN, entryUUID, objectGUID or GUID')
-);
-
-jQuery.validator.addMethod("sql_driver", function(value, element, param){
-    return value.match(/(mysql)|(postgres)|(mssql)|(oracle)|(ibm_db_sa\+pyodbc)|(ibm_db_sa)/);
-    },
-    i18n.gettext("Please enter a valid driver specification like: mysql, postgres, mssql, oracle, ibm_db_sa or ibm_db_sa+pyodbc")
-);
-
-jQuery.validator.addMethod("sql_mapping", function(value, element, param){
-    return value.match(/{.+}/);
-    },
-    sprintf(i18n.gettext('Please enter a valid searchfilter like this: %s'),
-    '{ "userid" : "id", "username": "user", "phone" : "telephoneNumber", "mobile" : "mobile",\
-    "email" : "mail", "surname" : "sn", "givenname" : "givenName" ,"password" : "password" }')
-);
-
-
 // We need this dialogs globally, so that we do not create more than one instance!
-
 var $dialog_ldap_resolver;
 var $dialog_http_resolver;
 var $dialog_file_resolver;
