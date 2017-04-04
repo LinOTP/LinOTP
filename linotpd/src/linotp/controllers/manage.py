@@ -104,15 +104,19 @@ class ManageController(BaseController):
             c.licenseinfo = get_copyright_info()
             c.polDefs = getPolicyDefinitions()
 
-            # ------------------------------------------------------------- --
+            c.display_provider = boolean(
+                    request_context['Config'].get('display_provider', True))
 
-            # in some cases the providers are preconfigured and the
-            # customer should not be able to change the settings
-            # so we disable the provider section in the manage ui
+            # -------------------------------------------------------------- --
 
-            c.display_provider = boolean(config.get('display_provider', True))
+            # check for support of setting admin password
 
-            # ------------------------------------------------------------- --
+            c.admin_can_change_password = False
+            if ('linotpadmin.user' in config and
+                'linotpadmin.password' in config):
+                c.admin_can_change_password = True
+
+            # -------------------------------------------------------------- --
 
             # Session handling for the functions, that show data:
             # Also exclude custom-style.css, since the CSRF check
@@ -160,6 +164,7 @@ class ManageController(BaseController):
             c.debug = asbool(config.get('debug', False))
             c.title = "LinOTP Management"
             admin_user = getUserFromRequest(request)
+
             if admin_user.has_key('login'):
                 c.admin = admin_user['login']
 
@@ -167,7 +172,18 @@ class ManageController(BaseController):
             c.importers = IMPORT_TEXT
             c.help_url = config.get('help_url')
 
-            ## add render info for token type config
+            # -------------------------------------------------------------- --
+
+            # check for support of setting admin password
+
+            c.admin_can_change_password = False
+            if ('linotpadmin.user' in config and
+                'linotpadmin.password' in config):
+                c.admin_can_change_password = True
+
+            # -------------------------------------------------------------- --
+
+            # add render info for token type config
             confs = _getTokenTypeConfig('config')
             token_config_tab = {}
             token_config_div = {}

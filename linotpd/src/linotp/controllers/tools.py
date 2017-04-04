@@ -49,6 +49,9 @@ from linotp.lib.tools.import_user.SQLImportHandler import SQLImportHandler
 from linotp.lib.tools.import_user import DefaultFormatReader
 from linotp.lib.tools.import_user import PasswdFormatReader
 
+from linotp.lib.tools.set_password import SetPasswordHandler
+from linotp.lib.tools.set_password import DataBaseContext
+
 from linotp.lib.realm import getRealms
 from linotp.lib.user import setRealm
 from linotp.lib.resolver import getResolverList
@@ -92,7 +95,6 @@ class ToolsController(BaseController):
             Session.close()
             return sendError(response, exx, context='before')
 
-
     def __after__(self, action):
         """
         """
@@ -110,6 +112,57 @@ class ToolsController(BaseController):
             log.exception(exx)
             Session.rollback()
             return sendError(response, exx, context='after')
+
+        finally:
+            Session.close()
+
+    def setPassword(self):
+        """
+        abilty to set password in managed / admin_user resolver
+        """
+        params = {}
+        try:
+            params.update(request.params)
+
+            old_pw = params['old_password']
+            new_pw = params['new_password']
+
+            username = request_context['AuthUser'].get('login', '')
+
+            if not username:
+                raise Exception("Missing authenticated user!")
+
+            sql_url = linotp.model.meta.engine.url
+
+            # -------------------------------------------------------------- --
+
+            # the set password handling:
+            # any error will raise an excecption which will be displayed
+            # to the user
+
+            c.audit['administrator'] = username
+            c.audit['info'] = 'setPassword'
+
+            set_pw_handler = SetPasswordHandler(DataBaseContext(sql_url))
+
+            set_pw_handler.set_password(username,
+                                        old_password=old_pw,
+                                        new_password=new_pw)
+
+            c.audit['success'] = True
+
+            return sendResult(response, obj=True,
+                              opt={'detail':
+                                   ('password updated for %r' % username)
+                                   })
+
+        except Exception as exx:
+
+            c.audit['success'] = False
+
+            log.exception(exx)
+            Session.rollback()
+            return sendError(response, exx)
 
         finally:
             Session.close()
