@@ -1539,93 +1539,93 @@ function tokentype_changed(){
     }
 }
 
+/**
+ * adds icons to the given dialogs buttons
+ */
+$.fn.dialog_icons = function(){
+    var buttons = this.parent().find('.ui-dialog-buttonpane');
 
-
-// ##################################################
-// Icon functions for the dialogs
-
-function do_dialog_icons(){
-    $('.ui-dialog-buttonpane').find('button:contains("Cancel")').button({
+    buttons.find('button:contains("Cancel")').button({
         icons: {
             primary: 'ui-icon-cancel'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("New")').button({
+    buttons.find('button:contains("New")').button({
         icons: {
             primary: 'ui-icon-plusthick'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Delete")').button({
+    buttons.find('button:contains("Delete")').button({
         icons: {
             primary: 'ui-icon-trash'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Save")').button({
+    buttons.find('button:contains("Save")').button({
         icons: {
             primary: 'ui-icon-disk'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Set PIN")').button({
+    buttons.find('button:contains("Set PIN")').button({
         icons: {
             primary: 'ui-icon-pin-s'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Edit")').button({
+    buttons.find('button:contains("Edit")').button({
         icons: {
             primary: 'ui-icon-pencil'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("load tokenfile")').button({
+    buttons.find('button:contains("load tokenfile")').button({
         icons: {
             primary: 'ui-icon-folder-open'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("load token file")').button({
+    buttons.find('button:contains("load token file"), button:contains("Load Token File")').button({
         icons: {
             primary: 'ui-icon-folder-open'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Set subscription")').button({
+    buttons.find('button:contains("Set subscription"), button:contains("Setup support")').button({
         icons: {
             primary: 'ui-icon-document-b'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Set Default"), button:contains("Set as default")').button({
+    buttons.find('button:contains("Set Default"), button:contains("Set as default")').button({
         icons: {
             primary: 'ui-icon-flag'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Enroll")').button({
+    buttons.find('button:contains("Enroll")').button({
         icons: {
             primary: 'ui-icon-plusthick'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Resync")').button({
+    buttons.find('button:contains("Resync")').button({
         icons: {
             primary: 'ui-icon-refresh'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("unassign token")').button({
+    buttons.find('button:contains("unassign token")').button({
         icons: {
             primary: 'ui-icon-pin-arrowthick-1-w'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("delete token")').button({
+    buttons.find('button:contains("delete token")').button({
         icons: {
             primary: 'ui-icon-pin-trash'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Close")').button({
+    buttons.find('button:contains("Close")').button({
         icons: {
             primary: 'ui-icon-closethick'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Duplicate")').button({
+    buttons.find('button:contains("Duplicate"), button:contains("Copy"), button:contains("Export"), button:contains("Migrate")').button({
         icons: {
-            primary: 'ui-icon-extlink'
+            primary: 'ui-icon-arrowreturnthick-1-e'
         }
     });
-    $('.ui-dialog-buttonpane').find('button:contains("Import")').button({
+    buttons.find('button:contains("Import")').button({
         icons: {
             primary: 'ui-icon-play'
         }
@@ -3527,8 +3527,9 @@ function tokenbuttons(){
                 $("#dialog_lost_token select option[value=select_token]").
                     attr('selected',true);
                 $('#lost_token_serial').html(escape(token_string));
+
+                $(this).dialog_icons();
                 translate_dialog_lost_token();
-                do_dialog_icons();
             } else {
                 $(this).dialog('close');
             }
@@ -3568,8 +3569,9 @@ function tokenbuttons(){
             $("#otp1").val("");
             $("#otp2").val("");
             $('#tokenid_resync').html(escape(token_string));
+
+            $(this).dialog_icons();
             translate_dialog_resync_token();
-            do_dialog_icons();
         }
     });
     $('#button_resync').click(function(){
@@ -3623,7 +3625,7 @@ function tokenbuttons(){
             }
         },
         open: function() {
-            do_dialog_icons();
+            $(this).dialog_icons();
             translate_dialog_token_realm();
         }
     });
@@ -3653,9 +3655,10 @@ function tokenbuttons(){
                 }
         },
         open: function() {
-            do_dialog_icons();
             token_string = get_selected_tokens()[0];
             $('#tokenid_getmulti').html(escape(token_string));
+
+            $(this).dialog_icons();
             translate_dialog_getmulti();
         }
     });
@@ -3891,8 +3894,8 @@ $(document).ready(function(){
             }
         },
         open: function() {
+            $(this).dialog_icons();
             translate_dialog_realm_edit();
-            do_dialog_icons();
         }
     });
 
@@ -3953,7 +3956,7 @@ $(document).ready(function(){
                 }
             },
             open: function() {
-                do_dialog_icons();
+                $(this).dialog_icons();
                 translate_dialog_resolver_ask_delete();
             }
         });
@@ -3998,8 +4001,8 @@ $(document).ready(function(){
             }
         },
         open: function() {
+            $(this).dialog_icons();
             translate_dialog_resolver_create();
-            do_dialog_icons();
         }
     };
 
@@ -4038,8 +4041,8 @@ $(document).ready(function(){
                 }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_import_policy();
-            do_dialog_icons();
         }
     });
 
@@ -4068,13 +4071,12 @@ $(document).ready(function(){
             }
         },
         open: function() {
-            do_dialog_icons();
-
             // fix table after the browser balances the widths
             $("table tr:first-child td", this).each(function() {
                 $(this).css("width", $(this).width());
             });
 
+            $(this).dialog_icons();
         }
     });
 
@@ -4202,13 +4204,14 @@ $(document).ready(function(){
             }
         },
         open: function() {
-            do_dialog_icons();
             http_resolver_https();
 
             // fix table after the browser balances the widths
             $("table tr:first-child td", this).each(function() {
                 $(this).css("width", $(this).width());
             });
+
+            $(this).dialog_icons();
         }
     });
 
@@ -4278,12 +4281,12 @@ $(document).ready(function(){
             }
         },
         open: function() {
-            do_dialog_icons();
-
             // fix table after the browser balances the widths
             $("table tr:first-child td", this).each(function() {
                 $(this).css("width", $(this).width());
             });
+
+            $(this).dialog_icons();
         }
     });
 
@@ -4362,12 +4365,12 @@ $(document).ready(function(){
             }
         },
         open: function() {
-            do_dialog_icons();
-
             // fix table after the browser balances the widths
             $("table tr:first-child td", this).each(function() {
                 $(this).css("width", $(this).width());
             });
+
+            $(this).dialog_icons();
         }
     });
 
@@ -4421,8 +4424,8 @@ $(document).ready(function(){
             }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_dialog_resolvers();
-            do_dialog_icons();
         }
     });
     $('#menu_edit_resolvers').click(function(){
@@ -4526,7 +4529,7 @@ $(document).ready(function(){
             }
         },
         open: function() {
-            do_dialog_icons();
+            $(this).dialog_icons();
             translate_dialog_realm_ask_delete();
         }
     });
@@ -4597,8 +4600,8 @@ $(document).ready(function(){
                 }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_dialog_realms();
-            do_dialog_icons();
         }
     });
     $('#menu_edit_realms').click(function(){
@@ -4684,7 +4687,7 @@ $(document).ready(function(){
             /* sort token config tabs */
             sortChildsOfElement("#token_tab_index");
 
-            do_dialog_icons();
+            $(this).dialog_icons();
             translate_token_settings();
         },
         beforeClose: function(event, ui) {
@@ -4779,9 +4782,10 @@ $(document).ready(function(){
             }
         },
         open: function(event, ui) {
+            $('.ui-dialog :button', this).blur();
+
+            $(this).dialog_icons();
             translate_dialog_sms_providers();
-            do_dialog_icons();
-            $('.ui-dialog :button').blur();
         }
     });
 
@@ -4807,8 +4811,8 @@ $(document).ready(function(){
             }
         },
         open: function(event, ui) {
+            $(this).dialog_icons();
             translate_dialog_sms_provider_edit();
-            do_dialog_icons();
         },
         close: function(event, ui) {
             load_sms_providers();
@@ -4838,7 +4842,7 @@ $(document).ready(function(){
             }
         },
         open: function() {
-            do_dialog_icons();
+            $(this).dialog_icons();
             translate_dialog_sms_provider_delete();
         },
         close: function(event, ui) {
@@ -4896,9 +4900,10 @@ $(document).ready(function(){
             }
         },
         open: function(event, ui) {
+            $('.ui-dialog :button', this).blur();
+
+            $(this).dialog_icons();
             translate_dialog_email_providers();
-            do_dialog_icons();
-            $('.ui-dialog :button').blur();
         }
     });
 
@@ -4926,8 +4931,8 @@ $(document).ready(function(){
             }
         },
         open: function(event, ui) {
+            $(this).dialog_icons();
             translate_dialog_email_provider_edit();
-            do_dialog_icons();
         },
         close: function(event, ui) {
             load_email_providers();
@@ -4957,7 +4962,7 @@ $(document).ready(function(){
                 }
             },
             open: function() {
-                do_dialog_icons();
+                $(this).dialog_icons();
                 translate_dialog_email_provider_delete();
             },
             close: function(event, ui) {
@@ -5014,9 +5019,10 @@ $(document).ready(function(){
             }
         },
         open: function(event, ui) {
+            $('.ui-dialog :button', this).blur();
+
+            $(this).dialog_icons();
             translate_dialog_push_providers();
-            do_dialog_icons();
-            $('.ui-dialog :button').blur();
         }
     });
 
@@ -5044,8 +5050,8 @@ $(document).ready(function(){
             }
         },
         open: function(event, ui) {
+            $(this).dialog_icons();
             translate_dialog_push_provider_edit();
-            do_dialog_icons();
         },
         close: function(event, ui) {
             load_push_providers();
@@ -5075,7 +5081,7 @@ $(document).ready(function(){
                 }
             },
             open: function() {
-                do_dialog_icons();
+                $(this).dialog_icons();
                 translate_dialog_push_provider_delete();
             },
             close: function(event, ui) {
@@ -5121,7 +5127,7 @@ $(document).ready(function(){
                 }
         },
         open: function(event, ui) {
-            do_dialog_icons();
+            $(this).dialog_icons();
             translate_system_settings();
         }
     });
@@ -5200,7 +5206,7 @@ $(document).ready(function(){
                     $(this).dialog('close');
                     $dialog_set_support.dialog('open');
                 },
-                id: "button_support_set",
+                id: "button_support_setup",
                 text:"Setup support subscription"
             },
             'Close': {
@@ -5212,13 +5218,12 @@ $(document).ready(function(){
             }
         },
         open: function(event, ui) {
-            do_dialog_icons();
-            translate_system_settings();
+            $(this).dialog_icons();
+            translate_support_view();
         }
 
     });
     $('#menu_view_support').click(function(){
-        translate_support_view();
         support_view();
         $dialog_view_support.dialog('open');
     });
@@ -5245,10 +5250,12 @@ $(document).ready(function(){
                 text: "Cancel"
             }
         },
-        open: do_dialog_icons
+        open: function() {
+            $(this).dialog_icons();
+            translate_support_set();
+        }
     });
     $('#menu_set_support').click(function(){
-        translate_support_set();
         support_set();
         $dialog_set_support.dialog('open');
     });
@@ -5265,11 +5272,12 @@ $(document).ready(function(){
                     text: "Close"
                 }
         },
-        open: do_dialog_icons
+        open: function() {
+            $(this).dialog_icons();
+            translate_about();
+        }
     });
     $('#menu_about').click(function(){
-        translate_about();
-        //about_view();
         $dialog_about.dialog('open');
     });
 
@@ -5386,7 +5394,9 @@ $(document).ready(function(){
                 text: "Cancel"
             }
         },
-        open: do_dialog_icons
+        open: function() {
+            $(this).dialog_icons();
+        }
     });
 
     $('#button_enroll').click(button_enroll);
@@ -5440,8 +5450,8 @@ $(document).ready(function(){
             }
         },
         open: function() {
+            $(this).dialog_icons();
             translate_set_pin();
-            do_dialog_icons();
         },
         close: function() {
             $('#pin1').val('');
@@ -5477,11 +5487,12 @@ $(document).ready(function(){
                 }
         },
         open: function() {
-            do_dialog_icons();
-            translate_dialog_unassign();
             tokens = get_selected_tokens();
             token_string = tokens.join(", ");
             $('#tokenid_unassign').html(escape(token_string));
+
+            $(this).dialog_icons();
+            translate_dialog_unassign();
         }
     });
     $('#button_unassign').click(function(){
@@ -5514,8 +5525,9 @@ $(document).ready(function(){
         open: function(){
             tokens = get_selected_tokens();
             $('#delete_info').html(escape(tokens.join(", ")));
+
+            $(this).dialog_icons();
             translate_dialog_delete_token();
-            do_dialog_icons();
         }
     });
     $('#button_delete').click(function(){
@@ -5626,8 +5638,8 @@ $(document).ready(function(){
         width: 720,
         modal: true,
         open: function(){
+            $(this).dialog_icons();
             translate_dialog_token_info();
-            do_dialog_icons();
         }
     });
 
@@ -5648,16 +5660,6 @@ $(document).ready(function(){
             width: 650,
             modal: true,
             open: function() {
-                // resset password inputs on dialog open
-                $("input", this).val("");
-
-                // fix table after the browser balances the widths
-                $("table tr:first-child td", this).each(function() {
-                    $(this).css("width", $(this).width());
-                });
-            },
-            create: function() {
-                do_dialog_icons();
                 $("form", this).validate({
                     rules: {
                         password_old: {
@@ -5674,16 +5676,29 @@ $(document).ready(function(){
                         }
                     }
                 });
+                // resset password inputs on dialog open
+                $("input", this).val("");
+
+                // fix table after the browser balances the widths
+                $("table tr:first-child td", this).each(function() {
+                    $(this).css("width", $(this).width());
+                });
             },
             buttons: [
                 {
                     text: i18n.gettext("Cancel"),
+                    icons: {
+                        primary: 'ui-icon-cancel'
+                    },
                     click: function() {
                         $(this).dialog("close");
                     }
                 },
                 {
                     text: i18n.gettext("Save"),
+                    icons: {
+                        primary: 'ui-icon-disk'
+                    },
                     click: function() {
                         if($("form", this).valid()) {
                             changePassword();

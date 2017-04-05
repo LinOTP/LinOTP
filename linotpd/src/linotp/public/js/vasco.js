@@ -37,19 +37,25 @@ function create_vasco_dialog() {
                 $(this).dialog('close');
                 },
                 id: "button_vasco_load",
-                text: "Load DPX File"
+                text: "Load DPX File",
+                icons: {
+                    primary: 'ui-icon-folder-open'
+                }
                 },
             Cancel: {click: function(){
                 $(this).dialog('close');
                 },
                 id: "button_vasco_cancel",
-                text: "Cancel"
+                text: "Cancel",
+                icons: {
+                    primary: 'ui-icon-cancel'
+                }
                 }
         },
         open: function(){
-            translate_import_vasco();
             _fill_realms($('#vasco_realm'),1);
-            do_dialog_icons();
+
+            translate_import_vasco();
         }
        });
        return $dialog;
