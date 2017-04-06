@@ -1630,6 +1630,8 @@ $.fn.dialog_icons = function(){
             primary: 'ui-icon-play'
         }
     });
+
+    return this;
 }
 
 // #################################################
