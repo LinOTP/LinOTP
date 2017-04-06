@@ -369,7 +369,7 @@ function self_qrtoken_activate_get_challenge() {
 
     var params = {};
 
-    params['user'] = '${c.user}';
+    params['user'] = '${c.user}@${c.realm}';
     params['serial'] = serial;
     params['pass'] = credentials;
     params['data'] = message;
