@@ -26,17 +26,14 @@
 #    Support: www.keyidentity.com
 #
 
-import sys
 import os
-
 import json
-import unittest
+
 from unittest import TestCase
+from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
-from useridresolver.UserIdResolver import getResolverClass
 
-
-class TestResolve(TestCase):
+class TestSQLResolver(TestCase):
 
     y = None
     z = None
@@ -46,31 +43,65 @@ class TestResolve(TestCase):
         '''
         This is run before each test. Read configuration from the given JSON file.
         '''
-        with open(sys.argv[1], 'r') as f:
-            cfgdata = json.load(f)
+        current_directory = os.path.dirname(os.path.abspath(__file__))
 
-        config = cfgdata['config']
+        sql_config = {
+            "config": {
+                "Driver": "sqlite",
+                "Port": "",
+                "Database": "%s/data/linotp-users.sql" % current_directory,
+                "Server": "",
+                "User": "",
+                "Password": "",
+                "Table": "linotp_users",
+                "Map":  json.dumps({
+                        "username": "username",
+                        "userid": "id",
+                        "password": "password",
+                        "salt": "salt",
+                        "givenname": "givenname",
+                        "surname": "surname",
+                        "email": "email"})
+            },
+            "config2_map": json.dumps({
+                            "username": "username",
+                            "userid": "username",
+                            "password": "password",
+                            "givenname": "givenname",
+                            "surname": "surname",
+                            "email": "email"}),
+
+            "config3_where": "(1 = 0 OR linotp_users.id > 2 ) AND 1 = 1"
+        }
+
+        config = sql_config['config']
         config2 = config.copy()
-        # A config with a differing Map (mapping string user IDs, not numerical user IDs)
-        config2['linotp.sqlresolver.Map'] = cfgdata['config2_map']
-        # Another config with a where clause (otherwise equals `config`)
-        config3 = config.copy()
-        config3['linotp.sqlresolver.Where'] = cfgdata['config3_where']
 
-        self.y = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
+        # A config with a differing Map (mapping string user IDs,
+        # not numerical user IDs)
+
+        config2['Map'] = sql_config['config2_map']
+
+        # Another config with a where clause (otherwise equals `config`)
+
+        config3 = config.copy()
+        config3['Where'] = sql_config['config3_where']
+
+        self.y = SQLResolver()
         self.y.loadConfig(config, "")
-        self.z = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
+        self.z = SQLResolver()
         self.z.loadConfig(config2, "")
-        self.w = getResolverClass("useridresolver.SQLIdResolver", "IdResolver")()
+        self.w = SQLResolver()
         self.w.loadConfig(config3, "")
 
     def getUserList(self, obj, arg):
         '''
-            call obj.getUserList(), but check that we have no errors before returning.
+            call obj.getUserList(), but check that we have no errors
+            before returning.
         '''
         res = obj.getUserList(arg)
         for item in res:
-            for key, val in item.iteritems():
+            for _key, val in item.iteritems():
                 self.assertNotIn('-ERR', str(val))
         return res
 
@@ -80,33 +111,36 @@ class TestResolve(TestCase):
         '''
         res = self.y.getUserId("user1")
         print "uid (user1): ", res
-        assert res == 1
+        self.assertTrue(res == 1)
 
-        assert self.y.getUserInfo(res).get("surname") == "Eins"
+        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Eins")
 
         res = self.y.getUserId("user2")
         print "uid (user2): ", res
-        assert res == 2
+        self.assertTrue(res == 2)
 
-        assert self.y.getUserInfo(res).get("surname") == "Zwo"
+        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Zwo")
 
         res = self.z.getUserId("user2")
-        print "uid (user2): ", res
-        assert res == "user2"
+        self.assertTrue(res == 'user2')
 
     def test_sql_checkpass(self):
         '''
         SQL: Check the password of user1 and user 2
         '''
-        assert self.y.checkPass(self.y.getUserId("user1"), "password")
-        assert self.y.checkPass(self.y.getUserId("user2"), "password")
+        self.assertTrue(self.y.checkPass(self.y.getUserId("user1"),
+                                         "password"))
+        self.assertTrue(self.y.checkPass(self.y.getUserId("user2"),
+                                         "password"))
 
     def test_sql_checkpass_wo_salt(self):
         '''
         SQL: Check the password of user1 and user 2 without column SALT
         '''
-        assert self.z.checkPass(self.z.getUserId("user1"), "password")
-        assert self.z.checkPass(self.z.getUserId("user2"), "password")
+        self.assertTrue(self.z.checkPass(self.z.getUserId("user1"),
+                                         "password"))
+        self.assertTrue(self.z.checkPass(self.z.getUserId("user2"),
+                                         "password"))
 
     def test_get_search_fields(self):
         '''
@@ -114,8 +148,8 @@ class TestResolve(TestCase):
         '''
         search_fields = self.y.getSearchFields()
         self.assertEqual(set(search_fields.keys()),
-                         set(['username', 'userid', 'password', 'salt', 'givenname',
-                              'surname', 'email']))
+                         set(['username', 'userid', 'password', 'salt',
+                              'givenname', 'surname', 'email']))
         self.assertEqual(set(search_fields.values()), set(['numeric', 'text']))
 
     def test_sql_search_escapes(self):
@@ -132,7 +166,8 @@ class TestResolve(TestCase):
 
         res3 = self.getUserList(self.y, {'username': 'user.3'})
         self.assertEqual(len(res3), 2)
-        self.assertEqual(set(s['username'] for s in res3), set([u'user_3', u'userx3']))
+        self.assertEqual(set(s['username'] for s in res3),
+                         set([u'user_3', u'userx3']))
 
         res4 = self.getUserList(self.y, {'username': 'user*'})
         self.assertEqual(len(res4), 4)
@@ -160,7 +195,8 @@ class TestResolve(TestCase):
         users with IDs > 2.
         '''
         res1 = self.getUserList(self.w, {})
-        self.assertEqual(set(s['username'] for s in res1), set(('user_3', 'userx3')))
+        self.assertEqual(set(s['username'] for s in res1),
+                         set(('user_3', 'userx3')))
         self.assertEqual(self.w.getUsername(1), "")
         self.assertEqual(self.w.getUsername(2), "")
         self.assertEqual(self.w.getUsername(3), "user_3")
@@ -168,42 +204,33 @@ class TestResolve(TestCase):
         self.assertEqual(self.w.getUsername(5), "")
 
         self.assertTrue(self.w.checkPass(self.w.getUserId('user_3'), 'test'))
-        self.assertFalse(self.w.checkPass(self.w.getUserId('user_3'), 'falsch'))
+        self.assertFalse(self.w.checkPass(self.w.getUserId('user_3'),
+                                          'falsch'))
 
     def test_sql_getUserList(self):
         '''
         SQL: testing the userlist
         '''
         # all users are two users
-        list = self.getUserList(self.y, {})
-        assert len(list) == 4
+        user_list = self.getUserList(self.y, {})
+        self.assertTrue(len(user_list) == 4)
 
         # there is only one user that ends with '1'
-        list = self.getUserList(self.y, {"username" : "*1"})
-        print list
-        assert len(list) == 1
+        user_list = self.getUserList(self.y, {"username": "*1"})
+        self.assertTrue(len(user_list) == 1)
 
     def test_sql_getUsername(self):
         '''
         SQL: testing getting the username
         '''
-        assert self.y.getUsername(1) == "user1"
-        assert self.y.getUsername(2) == "user2"
-        assert self.y.getUsername(5) == ""
+        self.assertTrue(self.y.getUsername(1) == "user1")
+        self.assertTrue(self.y.getUsername(2) == "user2")
+        self.assertTrue(self.y.getUsername(5) == "")
+
         # also test in the resolver with id as strings
-        assert self.z.getUsername("user1") == "user1"
-        assert self.z.getUsername("user2") == "user2"
-        assert self.z.getUsername("user5") == ""
 
+        self.assertTrue(self.z.getUsername("user1") == "user1")
+        self.assertTrue(self.z.getUsername("user2") == "user2")
+        self.assertTrue(self.z.getUsername("user5") == "")
 
-def main():
-    if len(sys.argv) < 2:
-        print 'Usage: `python test_resolve.py JSON-CONFIG-FILE`'
-        sys.exit(1)
-    elif not os.path.isfile(sys.argv[1]):
-        print '%r is not a file.' % sys.argv[1]
-        sys.exit(1)
-    unittest.main(argv=[sys.argv[0]])
-
-if __name__ == '__main__':
-    main()
+# eof #

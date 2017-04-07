@@ -31,7 +31,7 @@ The LinOTP server imports this module to use SQL databases as a userstore.
 Dependencies: UserIdResolver
 """
 
-#from sqlalchemy.event import listen
+# from sqlalchemy.event import listen
 
 from sqlalchemy import create_engine
 from sqlalchemy import types
@@ -41,9 +41,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoSuchColumnError
 
 from . import resolver_registry
-from useridresolver.UserIdResolver import (UserIdResolver,
-                                           ResolverLoadConfigError
-                                           )
+from linotp.useridresolver.UserIdResolver import UserIdResolver
+from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
 from linotp.lib.type_utils import boolean
 from linotp.lib.type_utils import password
@@ -852,7 +851,9 @@ class IdResolver(UserIdResolver):
         :type  searchDict: dict
         :return: list of user descriptions (as dict)
         '''
-        log.debug("[getUserList] %s" % (str(searchDict)))
+        if not searchDict:
+            searchDict = {'username': '*'}
+        log.debug("[getUserList] %r" % searchDict)
 
         # we use a dict, where the return users are inserted to where key
         # is userid to return only a distinct list of users
@@ -867,13 +868,14 @@ class IdResolver(UserIdResolver):
             table = dbObj.getTable(self.sqlTable)
             log.debug("[getUserList] getting SQL users from table %s" % table)
 
-            ## as most of the SQL dialects dont support unicode, unicode chars
-            ## are replaced in the __createSearchString as wildcards.
-            ## To make the search more precise, we do postprocessing by
-            ## a backward compare with the original search dict values,
-            ## either regexp or exact compare.
-            ## We build up here the regex dict in case of a wildcard,
-            ## For all others we do the exact compare
+            # as most of the SQL dialects dont support unicode, unicode chars
+            # are replaced in the __createSearchString as wildcards.
+            # To make the search more precise, we do postprocessing by
+            # a backward compare with the original search dict values,
+            # either regexp or exact compare.
+            # We build up here the regex dict in case of a wildcard,
+            # For all others we do the exact compare
+
             for key, value in searchDict.items():
                 if "*" in value or "." in value:
                     regex_dict[key] = re.compile(value.replace("*", ".*"))
@@ -894,6 +896,14 @@ class IdResolver(UserIdResolver):
                     if s in regex_dict:
                         if regex_dict[s].match(ui[s]):
                             users[userid] = ui
+
+                    # handle the comparisons
+                    elif (">" in searchDict[s] or
+                          "<" in searchDict[s] or
+                          "=" in searchDict[s]):
+
+                        users[userid] = ui
+
                     else:  # excat search
                         if ui[s] == searchDict[s]:
                             users[userid] = ui

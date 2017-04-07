@@ -20,7 +20,6 @@ Package: linotp
 Architecture: all
 Depends: apache2,
          libapache2-mod-wsgi | httpd-wsgi,
-         linotp-useridresolver (>=2.7~),
          python-pycryptodomex,
          python-pysodium,
          python-requests,

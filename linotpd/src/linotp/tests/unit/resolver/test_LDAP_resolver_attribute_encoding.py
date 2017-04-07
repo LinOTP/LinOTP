@@ -30,7 +30,7 @@ LDAP Resolver unit test
 
 import unittest
 from mock import patch
-from useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
+from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 
 
 class TestLDAPResolverAttributes(unittest.TestCase):
@@ -39,8 +39,8 @@ class TestLDAPResolverAttributes(unittest.TestCase):
     as utf-8 while unicode is not allowed and will raise an exception
     """
 
-    @patch('useridresolver.LDAPIdResolver.IdResolver.unbind')
-    @patch('useridresolver.LDAPIdResolver.IdResolver.bind')
+    @patch('linotp.useridresolver.LDAPIdResolver.IdResolver.unbind')
+    @patch('linotp.useridresolver.LDAPIdResolver.IdResolver.bind')
     def test_getUserId(self, mock_bind, mock_unbind):
         """
         test for absence of non-utf-8 encoded strings

@@ -40,7 +40,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from useridresolver.SQLIdResolver import IdResolver as sql_resolver
+from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
 
 from linotp.lib.resolver import defineResolver
 

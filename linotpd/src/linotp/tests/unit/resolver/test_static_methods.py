@@ -35,8 +35,8 @@ import json
 
 try:
 
-    from useridresolver.LDAPIdResolver import IdResolver as ldap_resolver
-    from useridresolver.SQLIdResolver import IdResolver as sql_resolver
+    from linotp.useridresolver.LDAPIdResolver import IdResolver as ldap_resolver
+    from linotp.useridresolver.SQLIdResolver import IdResolver as sql_resolver
     NO_LDAP_AVAILABLE = ''
 
 except ImportError as exx:

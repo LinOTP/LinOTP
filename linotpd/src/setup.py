@@ -78,13 +78,13 @@ setup(
         "pycryptodomex>=3.4",
         "repoze.who<=1.1",
         "pyrad>=1.1",
-        "LinOtpUserIdResolver>=2.7",
         "netaddr",
         "qrcode>=2.4",
         "configobj>=4.6.0",
         "httplib2",
         "requests",
         "pysodium>=0.6.8",
+        "python-ldap",
         # We also need M2Crypto. But this package is so problematic on many
         # distributions, that we do not require it here!
     ],

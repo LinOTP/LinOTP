@@ -26,90 +26,85 @@
 #    Support: www.keyidentity.com
 #
 
-import unittest
 from unittest import TestCase
 
-import useridresolver
-from useridresolver import UserIdResolver
+from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
+from linotp.useridresolver.PasswdIdResolver import IdResolver as PasswdResolver
 
 
-class TestResolve(TestCase):
+class TestPasswdResolver(TestCase):
 
     y = None
 
     def setUp(self):
         '''
-        you can add testusers like this
-            python tools/create-pwidresolver-user.py -u user1 -i 10  -p pwU1
+        initalize the config into a shared memory file
         '''
-        file = "/dev/shm/test_users.txt"
+
+        pw_file = "/dev/shm/test_users.txt"
         content = '''user1:0DM4AJtW/rTYY:10:10:User Eins:Irgendwas:Nochmal
 user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal
 '''
-        f = open(file, 'w')
+        f = open(pw_file, 'w')
         f.write(content)
         f.close()
 
-        self.y = UserIdResolver.getResolverClass("PasswdIdResolver", "IdResolver")()
-        self.y.loadConfig({ 'linotp.passwdresolver.fileName' : file }, "")
+        pw_config = {'linotp.passwdresolver.fileName.my': pw_file}
+        self.y = PasswdResolver()
+        self.y.loadConfig(pw_config, 'my')
 
     def test_resolver_fail(self):
         '''
         Test to use a file, that does not exist
         '''
-        with self.assertRaisesRegexp(IOError, "No such file or directory: '/dev/shm/this_file_does_not_exist'"):
-            self.y = UserIdResolver.getResolverClass("PasswdIdResolver", "IdResolver")()
-            self.y.loadConfig({ 'linotp.passwdresolver.fileName' : '/dev/shm/this_file_does_not_exist' }, "")
+        pw_config = {'linotp.passwdresolver.fileName.my':
+                     '/dev/shm/this_file_does_not_exist'}
 
+        msg = ("File '/dev/shm/this_file_does_not_exist' does not "
+               "exist or is not accesible")
+
+        with self.assertRaisesRegexp(ResolverLoadConfigError, msg):
+
+            self.y = PasswdResolver()
+            self.y.loadConfig(pw_config, "my")
 
     def test_getUserId(self):
         '''test the existance of the user1 and user2'''
         res = self.y.getUserId("user1")
-        print "uid (user1): ", res
-        assert res == "10"
+        self.assertTrue(res == "10")
 
-        assert self.y.getUserInfo(res).get("surname") == "Eins"
+        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Eins")
 
         res = self.y.getUserId("user2")
-        print "uid (user2): ", res
-        assert res == "11"
+        self.assertTrue(res == "11")
 
-        assert self.y.getUserInfo(res).get("surname") == "Zwei"
+        self.assertTrue(self.y.getUserInfo(res).get("surname") == "Zwei")
 
     def test_checkpass(self):
         '''
         Check the password of user1 and user 2
         '''
-        assert self.y.checkPass(self.y.getUserId("user1"), "pwU1")
-        assert self.y.checkPass(self.y.getUserId("user2"), "pwU2")
+        self.assertTrue(self.y.checkPass(self.y.getUserId("user1"), "pwU1"))
+        self.assertTrue(self.y.checkPass(self.y.getUserId("user2"), "pwU2"))
 
     def test_getUserList(self):
         '''
         testing the userlist
         '''
         # all users are two users
-        list = self.y.getUserList({})
-        print list
-        assert len(list) == 2
+        user_list = self.y.getUserList({})
+        self.assertTrue(len(user_list) == 2)
 
         # there is only one user that ends with '1'
-        list = self.y.getUserList({"username" : "*1"})
-        print list
-        assert len(list) == 1
+        user_list = self.y.getUserList({"username": "*1"})
+        self.assertTrue(len(user_list) == 1)
 
     def test_getUsername(self):
         '''
         testing getting the username
         '''
-        assert self.y.getUsername("10")
-        assert self.y.getUsername("11")
-        assert not self.y.getUsername("9")
+        self.assertTrue(self.y.getUsername("10"))
+        self.assertTrue(self.y.getUsername("11"))
+        self.assertFalse(self.y.getUsername("9"))
 
-
-
-
-def main():
-    unittest.main()
-
-if __name__ == '__main__':
-    main()
+# eof #

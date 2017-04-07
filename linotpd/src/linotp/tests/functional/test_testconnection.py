@@ -33,7 +33,6 @@ is already known in LinOTP
 """
 import json
 from mock import patch
-import useridresolver.LDAPIdResolver
 import logging
 
 from linotp.tests.functional.test_orphaned import OrphandTestHelpers
@@ -127,7 +126,7 @@ class TestTestresolverAPI(TestController, OrphandTestHelpers):
 
         return transform
 
-    @patch('useridresolver.LDAPIdResolver.IdResolver.testconnection',
+    @patch('linotp.useridresolver.LDAPIdResolver.IdResolver.testconnection',
            MockedResolver.testconnection)
     def test_testresolver_for_ldap(self):
         '''

@@ -37,7 +37,7 @@ from configobj import ConfigObj
 
 from pylons import request, response, config, tmpl_context as c
 
-from useridresolver.UserIdResolver import ResolverLoadConfigError
+from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.base import BaseController

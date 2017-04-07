@@ -52,10 +52,10 @@ from linotp.lib.type_utils import password
 from linotp.lib.type_utils import text
 from linotp.lib.type_utils import boolean
 
-from useridresolver.UserIdResolver import ResolverLoadConfigError
-from useridresolver.UserIdResolver import UserIdResolver
+from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
+from linotp.useridresolver.UserIdResolver import UserIdResolver
 
-from useridresolver import resolver_registry
+from linotp.useridresolver import resolver_registry
 
 log = logging.getLogger(__name__)
 

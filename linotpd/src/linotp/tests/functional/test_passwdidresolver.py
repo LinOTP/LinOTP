@@ -32,7 +32,7 @@
 import os
 import logging
 
-from useridresolver.UserIdResolver import getResolverClass
+from linotp.useridresolver.UserIdResolver import getResolverClass
 
 from linotp.tests import TestController
 

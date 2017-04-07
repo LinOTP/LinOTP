@@ -37,15 +37,14 @@ from sqlalchemy import engine_from_config
 import linotp.lib.app_globals as app_globals
 import linotp.lib.helpers
 
-from useridresolver import resolver_registry
-from useridresolver import UserIdResolver
+from linotp.useridresolver import resolver_registry
+from linotp.useridresolver import UserIdResolver
 from linotp.config.routing import make_map
 from linotp.lib.error import TokenTypeNotSupportedError
 
 
 import sys
 import inspect
-import urllib2
 import pkg_resources
 
 import warnings
@@ -354,10 +353,10 @@ def get_activated_resolver_modules():
 
     module_list = set()
 
-    module_list.add('useridresolver.PasswdIdResolver')
-    module_list.add('useridresolver.LDAPIdResolver')
-    module_list.add('useridresolver.HTTPIdResolver')
-    module_list.add('useridresolver.SQLIdResolver')
+    module_list.add('linotp.useridresolver.PasswdIdResolver')
+    module_list.add('linotp.useridresolver.LDAPIdResolver')
+    module_list.add('linotp.useridresolver.HTTPIdResolver')
+    module_list.add('linotp.useridresolver.SQLIdResolver')
 
     config_modules = config.get('linotpResolverModules', '')
     log.debug('[get_activated_resolver_modules] Parsing config value %s ' %
@@ -384,12 +383,12 @@ def get_resolver_class_list():
     resolver classes being a dict of the following format:
 
     { 'class_identifier': <class resolver> }, e.g.
-    { 'useridresolver.PasswdIdResolver.IdResolver : <class PasswdIdResolver> }
+    { 'linotp.useridresolver.PasswdIdResolver.IdResolver : <class PasswdIdResolver> }
 
     and the resolver_types having the format:
 
     { 'fully_qualified_import_path': 'class_type_identifier' }, e.g.
-    { 'useridresolver.PasswdIdResolver.IdResolver : 'passwdresolver' }
+    { 'linotp.useridresolver.PasswdIdResolver.IdResolver : 'passwdresolver' }
 
     Both dictionaries are used as a type mapping of strings to
     classes.
