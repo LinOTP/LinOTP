@@ -354,6 +354,53 @@ class TestConfigController(TestController):
 
         return
 
+    def test_wrapping_large_utf8_password_config(self):
+        '''
+        test long config entries with utf8 chars on split boundary
+
+        config entry max length is 2000 -
+        so we check the correct wrapping from 1980 to 2020
+        '''
+
+        alphabeth = create_unicode_alphabet()
+
+        for i in xrange(1, 40):
+
+            length = 1980 + i
+
+            config_entry = 'longUtf8ConfigEntry%d' % i
+            config_data = create_long_unicode(alphabeth, length)
+            u8_config_data = config_data.encode('utf-8')
+
+            # set as type password
+            param = {
+                config_entry: u8_config_data,
+                config_entry + '.type': 'password'}
+
+            response = self.make_system_request('setConfig', params=param)
+            self.assertTrue('"status": true' in response, response)
+
+            # on the second setConfig an update is made, which is the read
+            # of the broken utf-8 string and will fail
+            param = {
+                config_entry: u8_config_data,
+                config_entry + '.type': 'password'}
+
+            response = self.make_system_request('setConfig', params=param)
+            self.assertTrue('"status": true' in response, response)
+
+            param = {'key': config_entry}
+            response = self.make_system_request('getConfig', params=param)
+            jresp = json.loads(response.body)
+
+            entry_name = "getConfig %s" % config_entry
+            data = jresp.get('result', {}).get('value', {}).get(entry_name)
+
+            # we can't compare the result, as it is the encrypted data
+            self.assertNotEqual(data, config_data, response)
+
+        return
+
     def test_wrapping_large_hexlify_config(self):
         '''
         test long config entries with hexlified chars on split boundary
