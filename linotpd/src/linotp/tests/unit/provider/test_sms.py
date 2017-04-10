@@ -27,13 +27,11 @@
 import unittest
 from unittest import TestCase
 
-#import SMSProvider
-#from SMSProvider import ISMSProvider
-from smsprovider.SMSProvider import getSMSProviderClass
-
-
 import smtpd
 import asyncore
+
+from linotp.provider.smsprovider import getSMSProviderClass
+
 
 class CustomSMTPServer(smtpd.SMTPServer):
 
@@ -51,7 +49,7 @@ class TestSMS(TestCase):
     def test_sms(self):
         print " SMSProvider - class test "
 
-        y = smsprovider.SMSProvider.getProviderClass("SMSProvider", "ISMSProvider")()
+        y = linotp.provider.smsprovider.SMSProvider.getProviderClass("SMSProvider", "ISMSProvider")()
 
         res = y.loadConfig({'nothing':'inside'})
 
@@ -70,37 +68,39 @@ class TestSMS(TestCase):
         '''
         phone = "1234567890"
         message = "123456"
-        smtp_config = { 'mailserver' : 'xxx.yyy.zz',
-                        'mailsender' : "user@example.com",
-                        #'mailuser' : "useraccount",
-                        #'mailpassword' : "somesecret",
-                        'mailto' : 'user@example.com',
-                        'subject' : '<phone>',
-                        'body' : 'This is the otp value: <otp>' }
-
+        smtp_config = {'mailserver': 'xxx.yyy.zz',
+                       'mailsender': "user@example.com",
+                       # 'mailuser' : "useraccount",
+                       # 'mailpassword' : "somesecret",
+                       'mailto': 'user@example.com',
+                       'subject': '<phone>',
+                       'body': 'This is the otp value: <otp>',
+                       'raise_exception': True}
 
         sms = getSMSProviderClass("SmtpSMSProvider", "SmtpSMSProvider")()
         sms.loadConfig(smtp_config)
 
         with self.assertRaisesRegexp(Exception, "Name or service not known"):
-            sms.submitMessage(phone, message, True)
+            sms.submitMessage(phone, message)
 
-        smtp_config = { 'mailserver' : 'localhost:1025',
-                        'mailsender' : "user@example.com",
-                        #'mailuser' : "useraccount",
-                        #'mailpassword' : "somesecret",
-                        'mailto' : 'user@example.com',
-                        'subject' : '<phone>',
-                        'body' : 'This is the otp value: <otp>' }
+        smtp_config = {'mailserver': 'localhost:1025',
+                       'mailsender': "user@example.com",
+                       # 'mailuser' : "useraccount",
+                       # 'mailpassword' : "somesecret",
+                       'mailto': 'user@example.com',
+                       'subject': '<phone>',
+                       'body': 'This is the otp value: <otp>',
+                       'raise_exception': False}
 
         sms.loadConfig(smtp_config)
-        ret = sms.submitMessage(phone, message, exception=False)
-        print ret
-        assert ret == False
+        ret = sms.submitMessage(phone, message)
+        self.assertTrue(ret is False, ret)
+
+        smtp_config['raise_exception'] = True
+        sms.loadConfig(smtp_config)
 
         with self.assertRaisesRegexp(Exception, "Connection refused"):
-            sms.submitMessage(phone, message, True)
-
+            sms.submitMessage(phone, message)
 
     def test_02_http(self):
         '''
@@ -137,15 +137,20 @@ class TestSMS(TestCase):
               }
 
         sms = getSMSProviderClass("HttpSMSProvider", "HttpSMSProvider")()
-        with self.assertRaisesRegexp(Exception, "Failed to send SMS. We received a none success reply from the SMS Gateway."):
+        msg = ("Failed to send SMS. We received a none success reply from"
+               " the SMS Gateway.")
+
+        with self.assertRaisesRegexp(Exception, msg):
             sms.loadConfig(clickatell_config)
             ret = sms.submitMessage(phone, message)
-        assert ret == False
+        self.assertFalse(ret)
 
-        with self.assertRaisesRegexp(Exception, "HTTP Error 401: Authorization Required"):
+        msg = "Connection refused"
+        with self.assertRaisesRegexp(Exception, msg):
             sms.loadConfig(config)
             ret = sms.submitMessage(phone, message)
-        assert ret == False
+
+        self.assertFalse(ret)
 
 
 def main():

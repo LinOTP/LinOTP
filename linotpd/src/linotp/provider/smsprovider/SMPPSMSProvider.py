@@ -26,10 +26,15 @@
 
 
 """ the SMS Provider Interface """
-from smsprovider.SMSProvider import ISMSProvider
+from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
 
-import smpplib
+try:
+    import smpplib
+    SMPP_SUPPORT = True
+except ImportError as exx:
+    SMPP_SUPPORT = False
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -42,6 +47,9 @@ log = logging.getLogger(__name__)
 class SMPPSMSProvider(ISMSProvider):
 
     def __init__(self):
+        if not SMPP_SUPPORT:
+            raise RuntimeError("SMPP Error: no smpp library installed")
+
         self.config = {}
 
         # limit provider to only support iso latin 1 encoding

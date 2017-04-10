@@ -48,8 +48,8 @@ from mock import patch
 from linotp.lib.util import str2unicode
 from linotp.tests.functional_special import TestSpecialController
 
-import smsprovider.FileSMSProvider
-import smsprovider.HttpSMSProvider
+import linotp.provider.smsprovider.FileSMSProvider
+import linotp.provider.smsprovider.HttpSMSProvider
 
 
 # mocking hook is startting here

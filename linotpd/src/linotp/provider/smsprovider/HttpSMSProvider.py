@@ -25,7 +25,7 @@
 #
 """This is the SMSClass to send SMS via HTTP Gateways"""
 
-from smsprovider.SMSProvider import ISMSProvider
+from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
 
 import base64

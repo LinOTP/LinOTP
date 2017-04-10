@@ -53,7 +53,7 @@ from linotp.tests.functional_special import TestSpecialController
 from linotp.tests import url
 
 from linotp.lib.HMAC import HmacOtp
-import smsprovider.HttpSMSProvider
+import linotp.provider.smsprovider.HttpSMSProvider
 
 log = logging.getLogger(__name__)
 

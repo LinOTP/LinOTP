@@ -83,6 +83,7 @@ setup(
         "configobj>=4.6.0",
         "httplib2",
         "requests",
+	"smpplib",
         "pysodium>=0.6.8",
         "python-ldap",
         # We also need M2Crypto. But this package is so problematic on many

@@ -137,7 +137,7 @@ import logging
 log = logging.getLogger(__name__)
 
 try:
-    from smsprovider.SMSProvider import getSMSProviderClass
+    from linotp.provider.smsprovider import getSMSProviderClass
     SMSPROVIDER_IMPORTED = True
 except ImportError as exx:
     log.warning("Failed to import SMSProvider %s" % exx)

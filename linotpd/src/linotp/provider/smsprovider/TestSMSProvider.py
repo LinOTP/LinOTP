@@ -23,25 +23,38 @@
 #    Contact: www.linotp.org
 #    Support: www.keyidentity.com
 #
+""" This is the SMSClass to send SMS via HTTP Gateways
+                This is a dummy class for testing
+"""
 
 
-'''
-LinOTP is an open solution for strong two-factor authentication
-       with One Time Passwords.
+from linotp.provider.smsprovider import ISMSProvider
+from linotp.provider import provider_registry
 
-SMSProvider is the iterface to the final sms submitting service
-LinOTP provides  3 types of implementation: HTTPSMS, SMTP and Device
-sms submitt.
-
-'''
+import logging
+log = logging.getLogger(__name__)
 
 
-# IMPORTANT! This file is imported by setup.py, therefore do not (directly or
-# indirectly) import any module that might not yet be installed when installing
-# SMSProvider.
+@provider_registry.class_entry('TestSMSProvider')
+@provider_registry.class_entry('linotp.provider.smsprovider.TestSMSProvider')
+@provider_registry.class_entry('smsprovider.SmtpSMSProvider.TestSMSProvider')
+@provider_registry.class_entry('smsprovider.SmtpSMSProvider')
+class TestSMSProvider(ISMSProvider):
 
-__copyright__ = "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
-__license__ = "Gnu AGPLv3"
-__contact__ = "www.linotp.org"
-__email__ = "linotp@keyidentity.com"
-__version__ = '2.9.3.dev0'
+    def __init__(self):
+        self.config = {}
+
+    '''
+      submitMessage()
+      - send out a message to a phone
+
+    '''
+
+    def _submitMessage(self, phone, message):
+        return 'true' in message.lower()
+
+    def getParameters(self, message, phone):
+        return
+
+    def loadConfig(self, configDict):
+        self.config = configDict

@@ -43,7 +43,7 @@ import urlparse
 from linotp.tests import url
 
 from linotp.lib.HMAC import HmacOtp
-import smsprovider.HttpSMSProvider
+import linotp.provider.smsprovider.HttpSMSProvider
 
 from . import TestChallengeResponseController
 from . import calcOTP

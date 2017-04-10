@@ -24,7 +24,28 @@
 #    Support: www.keyidentity.com
 #
 
-""" the SMS Provider Interface """
+
+'''
+LinOTP is an open solution for strong two-factor authentication
+       with One Time Passwords.
+
+SMSProvider is the iterface to the final sms submitting service
+LinOTP provides  3 types of implementation: HTTPSMS, SMTP and Device
+sms submitt.
+
+'''
+
+
+# IMPORTANT! This file is imported by setup.py, therefore do not (directly or
+# indirectly) import any module that might not yet be installed when installing
+# SMSProvider.
+
+__copyright__ = "Copyright (C) 2010 - 2017 KeyIdentity GmbH"
+__license__ = "Gnu AGPLv3"
+__contact__ = "www.linotp.org"
+__email__ = "linotp@keyidentity.com"
+__version__ = '2.9.3.dev0'
+
 
 
 class ISMSProvider(object):
@@ -156,4 +177,4 @@ def getSMSProviderClass(packageName, className):
     else:
         return klass
 
-## eof ########################################################################
+# eof #

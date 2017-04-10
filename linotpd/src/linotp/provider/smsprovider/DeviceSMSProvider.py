@@ -38,9 +38,9 @@ connection = serial
 
 """
 
-import SMSProvider
-from SMSProvider import getSMSProviderClass
-from SMSProvider import ISMSProvider
+
+from linotp.provider.smsprovider import getSMSProviderClass
+from linotp.provider.smsprovider import ISMSProvider
 from linotp.provider import provider_registry
 
 import subprocess

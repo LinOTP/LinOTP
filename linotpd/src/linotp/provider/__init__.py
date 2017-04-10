@@ -71,17 +71,10 @@ def load_provider_classes():
         import_submodules(__name__)
         import_submodules("%s.%s" % (__name__, "pushprovider"))
         import_submodules("%s.%s" % (__name__, "emailprovider"))
+        import_submodules("%s.%s" % (__name__, "smsprovider"))
     except ImportError as exx:
         log.error('unable to load provider module : %s (%r)', __name__, exx)
         raise Exception(exx)
-
-    # the sms providers are optional, so we just log the error in case of an
-    # import error
-    try:
-        import smsprovider
-        import_submodules('smsprovider')
-    except ImportError as exx:
-        log.error('unable to load provider module : smsprovider (%r)', exx)
 
 
 load_provider_classes()

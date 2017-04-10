@@ -46,14 +46,13 @@ import time
 import json
 import logging
 
-import smsprovider.HttpSMSProvider
+import linotp.provider.smsprovider.HttpSMSProvider
 import linotp.provider.emailprovider
 
 from linotp.tests.functional_special import TestSpecialController
 # from linotp.tests import url
 
 from linotp.lib.HMAC import HmacOtp
-import smsprovider.HttpSMSProvider
 
 log = logging.getLogger(__name__)
 
@@ -628,7 +627,7 @@ class TestChallengeResponseController(TestSpecialController):
         self.delete_policy(name="ch_resp")
         return
 
-    @patch.object(smsprovider.HttpSMSProvider.HttpSMSProvider,
+    @patch.object(linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
                   'submitMessage', mocked_submitMessage_request)
     def test_12_sms_otppin(self):
         '''
@@ -727,7 +726,7 @@ class TestChallengeResponseController(TestSpecialController):
 
         return
 
-    @patch.object(smsprovider.HttpSMSProvider.HttpSMSProvider,
+    @patch.object(linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
                   'submitMessage', mocked_submitMessage_request)
     def test_14_sms_with_check_s(self):
         '''
@@ -1047,7 +1046,7 @@ class TestChallengeResponseController(TestSpecialController):
 
         return
 
-    @patch.object(smsprovider.HttpSMSProvider.HttpSMSProvider,
+    @patch.object(linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
                   'submitMessage', mocked_submitMessage_request)
     def test_51_sms_auth(self):
         '''

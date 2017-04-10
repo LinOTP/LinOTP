@@ -37,7 +37,7 @@ from mock import patch
 import logging
 import json
 
-import smsprovider.FileSMSProvider
+import linotp.provider.smsprovider.FileSMSProvider
 
 from linotp.tests import TestController
 
@@ -256,7 +256,7 @@ class TestProviderController(TestController):
 
         return
 
-    @patch.object(smsprovider.FileSMSProvider.FileSMSProvider,
+    @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
     def test_legacy_default_provider(self):
         """
@@ -285,7 +285,7 @@ class TestProviderController(TestController):
 
         return
 
-    @patch.object(smsprovider.FileSMSProvider.FileSMSProvider,
+    @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
     def test_new_provider(self):
         """
@@ -314,7 +314,7 @@ class TestProviderController(TestController):
 
         return
 
-    @patch.object(smsprovider.FileSMSProvider.FileSMSProvider,
+    @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
     def test_provider_via_policy(self):
         """
@@ -361,7 +361,7 @@ class TestProviderController(TestController):
 
         return
 
-    @patch.object(smsprovider.FileSMSProvider.FileSMSProvider,
+    @patch.object(linotp.provider.smsprovider.FileSMSProvider.FileSMSProvider,
                   'submitMessage', mocked_submitMessage)
     def test_default_provider_via_policy(self):
         """

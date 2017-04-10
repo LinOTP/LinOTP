@@ -26,16 +26,17 @@
 
 """  This is the SMSClass to send SMS via HTTP Gateways """
 
-import SMSProvider
-from SMSProvider import getSMSProviderClass
-from SMSProvider import ISMSProvider
-from linotp.provider import provider_registry
 from hashlib import sha256
 
 import string
 import smtplib
 
 import logging
+
+from linotp.provider.smsprovider import ISMSProvider
+from linotp.provider import provider_registry
+from linotp.lib.type_utils import boolean
+
 log = logging.getLogger(__name__)
 
 PHONE_TAG = "<phone>"
@@ -124,16 +125,11 @@ class SmtpSMSProvider(ISMSProvider):
 
         return {}
 
-    def _submitMessage(self, phone, message, exception=True):
+    def _submitMessage(self, phone, message):
         '''
         Submits the message for phone to the email gateway.
 
         Returns true in case of success
-
-        Remarks:
-        the exception parameter is not in the official interface and
-        the std handling is to pass the exception up to the upper levels.
-
         '''
         ret = False
         if ('mailserver' not in self.config or
@@ -231,7 +227,7 @@ class SmtpSMSProvider(ISMSProvider):
 
         except Exception as exx:
             log.exception("[submitMessage] %s", exx)
-            if exception:
+            if boolean(self.config.get('raise_exception', False)):
                 raise Exception(exx)
             ret = False
 

@@ -23,6 +23,8 @@ Depends: apache2,
          python-pycryptodomex,
          python-pysodium,
          python-requests,
+         python-socksipy,
+         python-httplib2,
          ${misc:Depends},
          ${python:Depends}
 Pre-Depends: adduser,
