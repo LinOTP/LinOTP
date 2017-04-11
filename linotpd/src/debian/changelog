@@ -1,14 +1,13 @@
 linotp (2.9.1.1~rc0-1) jessie; urgency=low
 
-  * Set new version 2.9.1.1~rc0-1
+  Bug Fixes:
+  * Server: Fix LDAP configuration issue with long certificates
+  * Server: Fix empty user list returned by LDAP backend
+  * Server: Allow unicode characters in provider configuration
+  * Packaging: Fix openssl installation issue caused by Pre-Depends
+    relationship
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Apr 2017 18:32:33 +0200
-
-linotp (2.9.1.1~0dev0-1) jessie; urgency=low
-
-  * Set new version 2.9.1.1~0dev0-1
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 06 Apr 2017 23:10:25 +0200
 
 linotp (2.9.1-1) jessie; urgency=low
 
