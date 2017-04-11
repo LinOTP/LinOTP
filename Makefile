@@ -46,7 +46,7 @@ BUILDDIR:=$(PWD)/build
 
 # Targets to operate on LinOTPd and its dependent projects shipped
 # in this repository
-LINOTPD_PROJS := smsprovider useridresolver linotpd adminclient/LinOTPAdminClientCLI
+LINOTPD_PROJS := linotpd adminclient/LinOTPAdminClientCLI
 
 ###################
 # Recursive targets
