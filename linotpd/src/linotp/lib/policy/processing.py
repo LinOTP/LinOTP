@@ -47,8 +47,14 @@ def _getAuthorization(scope, action):
     migration stub for the new policy engine
     """
 
-    new_pols = new_getAuthorization(scope, action)
     retro = legacy_getAuthorization(scope, action)
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() != 'true':
+        return retro
+
+    new_pols = new_getAuthorization(scope, action)
 
     the_same = are_the_same(retro, new_pols)
 
@@ -75,12 +81,20 @@ def _getAuthorization(scope, action):
 
 def has_client_policy(client, scope=None, action=None, realm=None, user=None,
                       find_resolver=True, userObj=None):
+    """
+    migration stub for the new policy engine
+    """
 
     pols_old = legacy_get_client_policy(client, scope=scope,
                                         action=action,
                                         realm=realm, user=user,
                                         find_resolver=find_resolver,
                                         userObj=userObj)
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() != 'true':
+        return pols_old
 
     pols_new = new_has_client_policy(client, scope=scope,
                                      action=action,
@@ -123,12 +137,20 @@ def has_client_policy(client, scope=None, action=None, realm=None, user=None,
 
 def get_client_policy(client, scope=None, action=None, realm=None, user=None,
                       find_resolver=True, userObj=None):
+    """
+    migration stub for the new policy engine
+    """
 
     pols_old = legacy_get_client_policy(client, scope=scope,
                                         action=action,
                                         realm=realm, user=user,
                                         find_resolver=find_resolver,
                                         userObj=userObj)
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() != 'true':
+        return pols_old
 
     pols_new = new_get_client_policy(client, scope=scope,
                                      action=action,
@@ -176,6 +198,12 @@ def getPolicy(param, display_inactive=False):
 
     pols_old = legacy_getPolicy(param,
                                 display_inactive=display_inactive)
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() != 'true':
+        return pols_old
+
     pols_new = new_getPolicy(param,
                              display_inactive=display_inactive)
 
@@ -205,9 +233,17 @@ def getPolicy(param, display_inactive=False):
 
 
 def search_policy(param, display_inactive=False):
+    """
+    migration stub for the new policy engine
+    """
 
     pols_old = legacy_getPolicy(param,
                                 display_inactive=display_inactive)
+
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+
+    if use_new_one.lower() != 'true':
+        return pols_old
 
     pols_new = new_search_policy(param,
                                  display_inactive=display_inactive)
