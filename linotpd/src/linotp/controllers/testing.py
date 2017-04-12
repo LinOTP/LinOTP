@@ -46,7 +46,6 @@ import traceback
 from linotp.lib.crypto import urandom
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
 
 optional = True
 required = False

@@ -25,8 +25,35 @@
 #
 """ static policy definitions """
 
-import linotp
+
 from linotp.lib.context import request_context
+
+SYSTEM_ACTIONS = {
+    'setDefault': 'write',
+    'setConfig': 'write',
+    'delConfig': 'write',
+    'getConfig': 'read',
+    'getRealms': 'read',
+    'delResolver': 'write',
+    'getResolver': 'read',
+    'setResolver': 'write',
+    'getResolvers': 'read',
+    'setDefaultRealm': 'write',
+    'getDefaultRealm': 'read',
+    'setRealm': 'write',
+    'delRealm': 'write',
+    'setPolicy': 'write',
+    'importPolicy': 'write',
+    'policies_flexi': 'read',
+    'getPolicy': 'read',
+    'getPolicyDef': 'read',
+    'checkPolicy': "read",
+    'delPolicy': 'write',
+    'setSupport': 'write',
+    'setProvider': 'write',
+    'setDefaultProvider': 'write',
+    'delProvider': 'write',
+    'getProvider': 'read', }
 
 
 def getPolicyDefinitions(scope=""):

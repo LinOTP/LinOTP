@@ -53,7 +53,7 @@ class LinotpError(Exception):
         if type(self.message) in [str, unicode]:
             pstr = "ERR%d: %s"
 
-        ### if we have here unicode, we might fail with conversion error
+        # if we have here unicode, we might fail with conversion error
         try:
             res = pstr % (self.id, self.message)
         except Exception as exx:

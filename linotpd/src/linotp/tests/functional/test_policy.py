@@ -34,7 +34,7 @@ import copy
 import logging
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
+from linotp.lib.policy.util import parse_policies
 from linotp.lib.policy import get_qrtan_url
 
 
@@ -3686,7 +3686,7 @@ class TestPolicies(TestController):
 
         with request_context_safety():
             context['Config'] = getLinotpConfig()
-            context['Policies'] = getPolicies()
+            context['Policies'] = parse_policies(context['Config'])
 
             u = get_qrtan_url(["testrealm"])
 
@@ -3712,7 +3712,7 @@ class TestPolicies(TestController):
         with request_context_safety():
 
             context['Config'] = getLinotpConfig()
-            context['Policies'] = getPolicies()
+            context['Policies'] = parse_policies(context['Config'])
 
             u = get_qrtan_url(["testrealm"])
 
@@ -3737,7 +3737,7 @@ class TestPolicies(TestController):
 
         with request_context_safety():
             context['Config'] = getLinotpConfig()
-            context['Policies'] = getPolicies()
+            context['Policies'] = parse_policies(context['Config'])
 
             u = get_qrtan_url(["testrealm"])
 

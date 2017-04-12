@@ -35,7 +35,6 @@ from linotp.lib.realm import getDefaultRealm
 from linotp.lib.policy import getPolicy, getPolicyActionValue
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
 
 optional = True
 required = False

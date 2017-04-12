@@ -87,6 +87,8 @@ from linotp.lib.policy import checkPolicyPost
 from linotp.lib.policy import PolicyException
 
 from linotp.lib.policy import getPolicy
+from linotp.lib.policy import search_policy
+
 from linotp.lib.policy.manage import setPolicy
 from linotp.lib.policy.manage import deletePolicy
 from linotp.lib.policy.manage import import_policies
@@ -1663,17 +1665,18 @@ class SystemController(BaseController):
                                     'scope': scope}
                     if action:
                         search_param['action'] = action
-                    poli = getPolicy(search_param,
-                                     display_inactive=display_inactive)
+                    poli = search_policy(search_param,
+                                         display_inactive=display_inactive)
                     pol.update(poli)
             else:
+
                 search_param = {'name': name,
                                 'realm': realm,
                                 'scope': scope}
                 if action:
                     search_param['action'] = action
-                pol = getPolicy(search_param,
-                                display_inactive=display_inactive)
+                pol = search_policy(search_param,
+                                    display_inactive=display_inactive)
 
             #
             # due to bug in getPolicy we have to post check

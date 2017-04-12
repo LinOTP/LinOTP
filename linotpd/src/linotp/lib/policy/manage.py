@@ -34,7 +34,8 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import removeFromConfig
 from linotp.lib.config import storeConfig
 
-from linotp.lib.policy import getPolicies
+from linotp.lib.policy.util import get_policies
+from linotp.lib.policy.util import get_copy_of_policies
 
 from linotp.lib.error import ServerError
 from linotp.lib.context import request_context as context
@@ -159,10 +160,10 @@ def deletePolicy(name, enforce=False):
     else:
         Config = getLinotpConfig()
 
-    if context and 'Policies' in context:
-        policies = context['Policies']
-    else:
-        policies = getPolicies()
+    #
+    # we need the policies for a name lookup only
+
+    policies = get_policies()
 
     # check if due to delete of the policy a lockout could happen
     param = policies.get(name)
@@ -211,10 +212,10 @@ def _check_policy_impact(scope='', action='', active='True',
            'time': time
            }
 
-    if context and 'Policies' in context:
-        policies = context['Policies']
-    else:
-        policies = getPolicies()
+    #
+    # we need a copy of the policies as we want to modify them
+
+    policies = get_copy_of_policies()
 
     # in case of a policy change exclude this one from comparison
     if name in policies:

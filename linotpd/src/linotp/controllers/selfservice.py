@@ -77,7 +77,6 @@ from linotp.lib.selfservice import get_imprint
 from linotp.lib.user import User
 
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.policy import getPolicies
 
 import traceback
 # import datetime, random
