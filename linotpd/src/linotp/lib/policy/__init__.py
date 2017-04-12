@@ -45,12 +45,35 @@ from linotp.lib.error import ParameterError
 
 from linotp.lib.context import request_context as context
 
+from linotp.lib.policy.definitions import SYSTEM_ACTIONS
+
+from linotp.lib.policy.util import get_realm_from_policies
+from linotp.lib.policy.util import get_resolvers_for_realms
+
+from linotp.lib.policy.evaluate import PolicyEvaluater
+
+from linotp.lib.policy.legacy import legacy_getAuthorization
+from linotp.lib.policy.legacy import legacy_getPolicy
+
+from linotp.lib.policy.processing import new_getAuthorization
+from linotp.lib.policy.processing import new_getPolicy
+
+
 # for generating random passwords
 from linotp.lib.crypto import urandom
 from linotp.lib.util import uniquify
 
 from linotp.lib.policy.filter import AttributeCompare
 from linotp.lib.policy.filter import UserDomainCompare
+
+from linotp.lib.policy.util import _getPolicies
+from linotp.lib.policy.util import _getAuthenticatedUser
+from linotp.lib.policy.util import _get_client
+from linotp.lib.policy.util import _get_pin_values
+from linotp.lib.policy.util import _getDefaultRealm
+from linotp.lib.policy.util import _getLinotpConfig
+from linotp.lib.policy.util import _getRealms
+from linotp.lib.policy.util import _getUserFromParam
 
 log = logging.getLogger(__name__)
 
@@ -72,57 +95,10 @@ class AuthorizeException(LinotpError):
         LinotpError.__init__(self, description=description, id=id)
 
 
-def _get_pin_values(config):
-    REG_POLICY_C = config.get("linotpPolicy.pin_c", "[a-zA-Z]")
-    REG_POLICY_N = config.get("linotpPolicy.pin_n", "[0-9]")
-    REG_POLICY_S = config.get("linotpPolicy.pin_s",
-                              "[.:,;-_<>+*!/()=?$§%&#~\^]")
-
-    return REG_POLICY_C, REG_POLICY_N, REG_POLICY_S
-
-
-def _getAuthenticatedUser():
-    """
-    replace the 'getUserFromRequest
-    """
-    auth_user = context['AuthUser']
-    return auth_user
-
-
-def _getLinotpConfig(config=None):
-
-    lConfig = config
-    return lConfig
-
-
-def _getPolicies():
-
-    lPolicies = deepcopy(context['Policies'])
-    return lPolicies
-
-
-def _get_client():
-    client = context['Client']
-    return client
-
-
-def _getUserFromParam():
-    user = context['RequestUser']
-    return user
-
-
-def _getDefaultRealm():
-    return context['defaultRealm']
-
-
-def _getRealms():
-    return context['Realms']
-
-
 def _getUserRealms(user):
-    return getUserRealms(user, allRealms=context['Realms'],
-                  defaultRealm=context['defaultRealm'])
-
+    return getUserRealms(user,
+                         allRealms=context['Realms'],
+                         defaultRealm=context['defaultRealm'])
 
 def getPolicies():
     # First we load ALL policies from the Config
@@ -152,259 +128,26 @@ def getPolicies():
 
 
 def getPolicy(param, display_inactive=False):
-    '''
-    Function to retrieve the list of policies.
-
-    attributes:
-
-    - name:   (optional) will only return the policy with the name
-    - user:   (optional) will only return the policies for this user
-    - realm:  (optional) will only return the policies of this realm
-    - scope:  (optional) will only return the policies within this scope
-    - action: (optional) will only return the policies with this action
-         The action can also be something like "otppin" and will
-         return policies containing "otppin = 2"
-
-    :return: a dictionary with the policies. The name of the policy being
-             the key
-    '''
-    Policies = {}
-
-    # First we load ALL policies from the Config
-    lPolicies = _getPolicies()
-
-    if param.get('name', None):
-        # If a named policy was requested, we add
-        # the policy if the name does match case insensitiv
-        p_name = param['name'].lower()
-        for pol_name in lPolicies:
-            if pol_name.lower() == p_name:
-                Policies[pol_name] = lPolicies[pol_name]
-    else:
-        Policies = lPolicies
-
-    # Now we need to clean up policies, that are inactive
-    if not display_inactive:
-        pol2delete = []
-        for polname, policy in Policies.items():
-            pol_active = policy.get("active", "True")
-            if pol_active == "False":
-                pol2delete.append(polname)
-        for polname in pol2delete:
-            del Policies[polname]
-
-    # Now we need to clean up realms, that were not requested
-    pol2delete = []
-    if param.get('realm', None) is not None:
-        for polname, policy in Policies.items():
-            delete_it = True
-            if policy.get("realm") is not None:
-                pol_realms = [p.strip()
-                              for p in policy['realm'].lower().split(',')]
-                for r in pol_realms:
-                    if r == param['realm'].lower() or r == '*':
-                        delete_it = False
-            if delete_it:
-                pol2delete.append(polname)
-        for polname in pol2delete:
-            del Policies[polname]
-
-    pol2delete = []
-    if param.get('scope', None) is not None:
-        for polname, policy in Policies.items():
-            if policy['scope'].lower() != param['scope'].lower():
-                pol2delete.append(polname)
-        for polname in pol2delete:
-            del Policies[polname]
-
-    pol2delete = []
-    if param.get('action', None) is not None:
-        param_action = param['action'].strip().lower()
-        for polname, policy in Policies.items():
-            delete_it = True
-            if policy.get("action") is not None:
-                pol_actions = [p.strip()
-                               for p in policy.get('action', "").
-                               lower().split(',')]
-                for policy_action in pol_actions:
-                    if policy_action == '*' or policy_action == param_action:
-                        # If any action (*) or the exact action we are looking
-                        # for matches, then keep the policy
-                        # e.g. otppin=1 matches when we search for 'otppin=1'
-                        delete_it = False
-                    elif policy_action.split('=')[0].strip() == param_action:
-                        # If the first part of the action matches then keep the
-                        # policy
-                        # e.g. otppin=1 matches when we search for 'otppin'
-                        delete_it = False
-                    else:
-                        # No match, delete_it = True
-                        pass
-            if delete_it:
-                pol2delete.append(polname)
-        for polname in pol2delete:
-            del Policies[polname]
-
-    pol2delete = []
-    wildcard_match = {}
-    exact_user_match = {}
-    wildcard_user_match = {}
-    if param.get('user', None) is not None:
-        for polname, policy in Policies.items():
-            if policy.get('user'):
-                pol_users = [p.strip()
-                             for p in policy.get('user').lower().split(',')]
-            else:
-                raise Exception("Empty userlist in policy '%s' not supported!"
-                                % polname)
-
-            delete_it = True
-
-            # first check of wildcard in users
-            if '*' in pol_users:
-                wildcard_match[polname] = policy
-                delete_it = False
-
-            # then check for direct name match
-            if delete_it:
-                if (param['user'].lower() in pol_users or
-                     param['user'] in pol_users):
-                    exact_user_match[polname] = policy
-                    delete_it = False
-
-            if delete_it:
-                # we support the verification of the user,
-                # to be in a resolver for the admin and system scope
-                local_scope = param.get('scope', '').lower()
-                if local_scope in ['admin', 'system', 'monitoring',
-                                   'authentication',
-                                   'reporting.access']:
-
-                    policy_users = policy.get('user', '').split(',')
-                    userObj = User(login=param['user'])
-
-                    if 'realm' in param:
-                        userObj.realm = param['realm']
-                    else:
-                        import linotp.lib.realm
-                        userObj.realm = linotp.lib.realm.getDefaultRealm()
-
-                    # we do the extended user defintion comparison
-                    res = _filter_admin_user(policy_users, userObj)
-                    if res is True:
-                        wildcard_user_match[polname] = policy
-                        delete_it = False
-
-            if delete_it:
-                pol2delete.append(polname)
-        for polname in pol2delete:
-            del Policies[polname]
-
-    # if we got policies and a user is defined on request
-    if len(Policies) > 0:
-        if exact_user_match:
-            Policies = exact_user_match
-
-        elif wildcard_user_match:
-            Policies = wildcard_user_match
-
-        elif wildcard_match:
-            Policies = wildcard_match
-
-    # only do the realm filtering if action was filtered before
-    if 'action' in param:
-        Policies = _post_realm_filter(Policies, param)
-
-    return Policies
-
-
-def _post_realm_filter(policies, param):
     """
-    best realm match - more precise policies should be prefered
-
-    algorithm:
-        if the param realm contains no wildcard
-        check if there are policies with exact match of
-        that realm
-
+    migration method for the getPolicy old and new
     """
-    if 'realm' not in param or not param['realm'] or '*' == param['realm']:
-        return policies
 
-    exact_matching = {}
+    retro = legacy_getPolicy(param, display_inactive=display_inactive)
+    new_pols = new_getPolicy(param, display_inactive=display_inactive)
 
-    param_realm = param['realm'].lower()
-    for pol_name, pol in policies.items():
-        if pol['realm'].lower() == param_realm:
-            exact_matching[pol_name] = pol
+    not_the_same = (retro == new_pols)
 
-    if exact_matching:
-        return exact_matching
+    if not_the_same:
+        log.error('PolicyEvaluation is not the same for params %r', param)
+        log.error('old: new %r <> %r', retro, new_pols)
 
-    return policies
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
 
+    if use_new_one.lower() == 'true':
+        return new_pols
 
-def _filter_admin_user(policy_users, userObj):
-    """
-    filter the policies, where the logged in user matches one of the
-    extended policy user filters.
+    return retro
 
-    Remark: currently without user attribute comparison, as the definition
-            and the testing here is not completed
-
-    :param policy_users: list of policy user definitions
-    :param userObj: the logged in user as object
-
-    :return: boolean, true if user matched policy user definition
-    """
-    res = False
-
-    for policy_user in policy_users:
-        user_def = policy_user.strip()
-        res = None
-
-        # check if there is an attribute filter in defintion
-        # !! currently unspecified and untested - so commented out!!
-        # if '#' in  user_def:
-        #    attr_comp = AttributeCompare()
-        #    domUserObj = userObj
-        #    u_d, _sep, av = user_def.rpartition('#')
-
-        #    # if we have a domain match, we try the compare
-        #    # literal, but the attrbute requires the existance!
-        #    if '@' in u_d:
-        #        if '@' in param['user']:
-        #            login, _sep, realm = param['user'].rpartition('@')
-        #            domUserObj = User(login=login, realm=realm)
-
-        #    res = attr_comp.compare(userObj, user_def)
-
-        # if no attribute filter -try domain match
-        if "@" in user_def:
-            domUserObj = userObj
-
-            # in case of domain match, we do string compare
-            # to use the same comparator, we have to establish the realm
-            # as last part of the login (if there)
-            if '@' in userObj.login:
-                login, _sep, realm = userObj.login.rpartition('@')
-                domUserObj = User(login=login, realm=realm)
-            domain_comp = UserDomainCompare()
-            res = domain_comp.compare(domUserObj, user_def)
-
-        # or try resolver filter, BUT with existance check
-        elif ':' in user_def:
-            domain_comp = UserDomainCompare()
-            res = domain_comp.exists(userObj, user_def)
-
-        # any other filter is returned as ignored
-        else:
-            continue
-
-        if res is True:
-            break
-
-    return res
 
 def parse_action_value(action_value):
     """
@@ -492,14 +235,12 @@ def getPolicyActionValue(policies, action, max=True, is_string=False, subkey=Non
     return ret
 
 
-def getAdminPolicies(action, lowerRealms=False, scope='admin'):
+def getAdminPolicies(action, scope='admin'):
     """
     This internal function returns the policies (default: of scope=admin)
     for the currently authenticated administrativ user.__builtins__
 
     :param action: this is the action (like enable, disable, init...)
-    :param lowerRealms: if set to True, the list of realms returned will
-                      be lower case.
     :param scope: scope of the policies,
                     might be admin, monitoring, reporting.access
 
@@ -512,37 +253,33 @@ def getAdminPolicies(action, lowerRealms=False, scope='admin'):
         - admin (the name of the authenticated admin user)
     """
     active = True
-    # check if we got admin policies at all
-    p_at_all = getPolicy({'scope': scope})
-    if len(p_at_all) == 0:
-        log.info("No policies in scope admin found."
-                 " Admin authorization will be disabled.")
-        active = False
 
     # We may change this later to other authentication schemes
     admin_user = _getAuthenticatedUser()
-    pol_request = {'user': admin_user['login'], 'scope': scope}
-    if '' != action:
-        pol_request['action'] = action
-    policies = getPolicy(pol_request)
-    # get all the realms from the policies:
-    realms = []
-    for _pol, val in policies.items():
-        # # the val.get('realm') could return None
-        pol_realm = val.get('realm', '') or ''
-        pol_realm = pol_realm.split(',')
-        for r in pol_realm:
-            if lowerRealms:
-                realms.append(r.strip(" ").lower())
-            else:
-                realms.append(r.strip(" "))
-    # get resolvers from realms
-    resolvers = []
-    all_realms = _getRealms()
-    for realm, realm_conf in all_realms.items():
-        if realm in realms:
-            for r in realm_conf['useridresolver']:
-                resolvers.append(r.strip(" "))
+    log.info("Evaluating policies for the user: %s" % admin_user['login'])
+
+    # check if we got admin policies at all
+    p_at_all = getPolicy({'scope': scope})
+
+    if not p_at_all:
+        log.info("No policies in scope admin found."
+                 " Admin authorization will be disabled.")
+        active = False
+        realms = []
+        resolvers = []
+
+    else:
+        pol_request = {'user': admin_user['login'], 'scope': scope}
+        if action:
+            pol_request['action'] = action
+
+        policies = getPolicy(pol_request)
+        log.debug("Found the following policies: %r", policies)
+
+        realms = get_realm_from_policies(policies)
+        resolvers = get_resolvers_for_realms(realms)
+
+    log.debug("Found the following resolvers in the policy: %r", resolvers)
     return {'active': active,
             'realms': realms,
             'resolvers': resolvers,
@@ -551,44 +288,24 @@ def getAdminPolicies(action, lowerRealms=False, scope='admin'):
 
 def _getAuthorization(scope, action):
     """
-    This internal function returns the Authrorizaition within some
-    the scope=system(or audit, monitoring, tools ). for the currently authenticated
-    administrativ user. This does not take into account the REALMS!
-
-    arguments:
-        action  - this is the action
-                    scope = system/audit/monitoring/tools
-                        read
-                        write
-
-    returns:
-        a dictionary with the following keys:
-        active     (if policies are used)
-        admin      (the name of the authenticated admin user)
-        auth       (True if admin is authorized for this action)
+    migration stub for the new policy engine
     """
-    active = True
-    auth = False
 
-    p_at_all = getPolicy({'scope': scope})
-    if len(p_at_all) == 0:
-        log.info("No policies in scope %s found. Checking "
-                 "of scope %s be disabled." % (scope, scope))
-        active = False
-        auth = True
 
-    # TODO: We may change this later to other authentication schemes
+    new_pols = new_getAuthorization(scope, action)
+    retro = legacy_getAuthorization(scope, action)
 
-    admin_user = _getAuthenticatedUser()
+    not_the_same = retro == new_pols
+    if not_the_same:
+        log.error('PolicyEvaluation is not the same for params %r,%r',
+                  scope, action)
+        log.error('old: new %r <> %r', retro, new_pols)
 
-    policies = getPolicy({'user': admin_user['login'],
-                          'scope': scope,
-                          'action': action})
+    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+    if use_new_one.lower() == 'true':
+        return new_pols
 
-    if len(policies.keys()) > 0:
-        auth = True
-
-    return {'active': active, 'auth': auth, 'admin': admin_user['login']}
+    return retro
 
 
 def checkAdminAuthorization(policies, serial, user, fitAllRealms=False):
@@ -2049,47 +1766,20 @@ def _checkSystemPolicyPre(method, param={}, authUser=None, user=None):
     ret = {}
     _ = context['translate']
 
-    actions = {
-        'setDefault': 'write',
-        'setConfig': 'write',
-        'delConfig': 'write',
-        'getConfig': 'read',
-        'getRealms': 'read',
-        'delResolver': 'write',
-        'getResolver': 'read',
-        'setResolver': 'write',
-        'getResolvers': 'read',
-        'setDefaultRealm': 'write',
-        'getDefaultRealm': 'read',
-        'setRealm': 'write',
-        'delRealm': 'write',
-        'setPolicy': 'write',
-        'importPolicy': 'write',
-        'policies_flexi': 'read',
-        'getPolicy': 'read',
-        'getPolicyDef': 'read',
-        'checkPolicy': "read",
-        'delPolicy': 'write',
-        'setSupport': 'write',
-        'setProvider': 'write',
-        'setDefaultProvider': 'write',
-        'delProvider': 'write',
-        'getProvider': 'read',
-        }
-
-    if method not in actions:
+    if method not in SYSTEM_ACTIONS:
+        log.error("an unknown method was passed in system: %s" % method)
         raise PolicyException(_("Failed to run checkPolicyPre. "
                               "Unknown method: %s") % method)
 
-    auth = _getAuthorization('system', actions[method])
+    auth = _getAuthorization(scope='system', action=SYSTEM_ACTIONS[method])
 
     if auth['active'] and not auth['auth']:
         log.warning("admin >%s< is not authorited to %s."
                     " Missing policy scope=system, action=%s"
-                    % (auth['admin'], method, actions[method]))
+                    % (auth['admin'], method, SYSTEM_ACTIONS[method]))
 
         raise PolicyException(_("Policy check failed. You are not allowed "
-                              "to %s system config.") % actions[method])
+                              "to %s system config.") % SYSTEM_ACTIONS[method])
 
     return ret
 
@@ -2983,13 +2673,13 @@ def check_auth_tokentype(serial, exception=False, user=None):
     elif len(toks) == 1:
         tokentype = toks[0].getType().lower()
 
-        if (tokentype in tokentypes or '*' in tokentypes
-                or len(tokentypes) == 0):
+        if (tokentype in tokentypes or '*' in tokentypes or
+           len(tokentypes) == 0):
             res = True
     elif len(toks) == 0:
-        # # TODO if the user does not exist or does have no token
-        ## ---- WHAT DO WE DO? ---
-        # # At the moment we pass through: This is the old behaviour...
+        # TODO if the user does not exist or does have no token
+        # ---- WHAT DO WE DO? ---
+        #  At the moment we pass through: This is the old behaviour...
         res = True
 
     if res is False and exception:
