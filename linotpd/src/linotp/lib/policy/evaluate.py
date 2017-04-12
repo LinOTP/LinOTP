@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -19,10 +19,11 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
+
 """ policy evaluation """
 
 from datetime import datetime
@@ -36,7 +37,7 @@ from linotp.lib.user import User
 from linotp.lib.realm import getRealms
 
 
-class PolicyEvaluater(object):
+class PolicyEvaluator(object):
     """
     policy evaluation engine
 
@@ -131,7 +132,7 @@ class PolicyEvaluater(object):
 
         :param policy_set: optional, base policies against which all filter
                            are evaluated
-        :param multiple: define if the plolicies should be post processed to
+        :param multiple: define if the policies should be post processed to
                          return the best matching ones. Default is to do no
                          post proessing
         :return: the set of matching policies
@@ -166,19 +167,16 @@ class PolicyEvaluater(object):
             # evaluate each filter against the policy. if one filter fails
             # we can skip the evaluation the given policy
 
-            match_info = {}
             for (f_key, f_value, f_compare) in self.filters:
 
                 policy_condition = p_dict.get(f_key)
                 matching = f_compare(policy_condition, f_value)
-                match_info[f_key] = {matching: (policy_condition, f_value)}
 
                 if not matching:
                     break
 
             if matching:
                 matching_policies[p_name] = p_dict
-            matching_details[p_name] = match_info
 
         # if we have multiple policies and post processing should be made:
         if not multiple and len(matching_policies):
@@ -563,7 +561,10 @@ def user_list_compare(policy_conditions, login):
 
         its_a_not_condition = False
 
-        # in case of a match of the non condition, we must return immediatly
+        # we preserve the kind of match:
+        # in case of a 'non condition' match, we must return immeaditly
+        # and return a False to break out of the loop of conditions
+
         if condition[0] in ['-', '!']:
             condition = condition[1:]
             its_a_not_condition = True
@@ -648,6 +649,10 @@ def _compare_cron_value(value, target):
      (c) code copied from pycron
 
         https://github.com/kipe/pycron
+
+    with MIT Licence
+
+        https://github.com/kipe/pycron/blob/master/LICENSE
 
     :param value: one cron entry
     :param target: the matching value
