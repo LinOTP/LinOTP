@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2010 - 2016 KeyIdentity GmbH
+#    Copyright (C) 2010 - 2017 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
@@ -19,12 +19,23 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-#    E-mail: linotp@lsexperts.de
+#    E-mail: linotp@keyidentity.com
 #    Contact: www.linotp.org
-#    Support: www.lsexperts.de
+#    Support: www.keyidentity.com
 #
+""" policy processing functions
 
-""" policy processing functions """
+    currently the external interfaces
+    - has_client_policy
+    - get_client_policy
+    - search_policy
+
+    are migration wrappers, which trigger both, the legacy policy and the
+    new policy processing to support the direct comparison of the results.
+
+    When the evaluation of the new policy engine is completed the methods
+    starting with new_ could be moved in place
+"""
 
 import logging
 
@@ -32,7 +43,7 @@ from linotp.lib.policy.util import _getAuthenticatedUser
 from linotp.lib.policy.util import get_policies
 from linotp.lib.policy.util import are_the_same
 
-from linotp.lib.policy.evaluate import PolicyEvaluater
+from linotp.lib.policy.evaluate import PolicyEvaluator
 from linotp.lib.policy.legacy import legacy_get_client_policy
 from linotp.lib.policy.legacy import legacy_getPolicy
 from linotp.lib.policy.legacy import legacy_getAuthorization
@@ -83,6 +94,10 @@ def has_client_policy(client, scope=None, action=None, realm=None, user=None,
                       find_resolver=True, userObj=None):
     """
     migration stub for the new policy engine
+
+    Remark:
+    has_client_policy is different to the method get_client_policy
+    as the filters for the has_client_policy are reseted after usage
     """
 
     pols_old = legacy_get_client_policy(client, scope=scope,
@@ -107,18 +122,6 @@ def has_client_policy(client, scope=None, action=None, realm=None, user=None,
     if not the_same:
         LOG.error('PolicyEvaluation is not the same for params %r', client)
         LOG.error('old: new %r <> %r', pols_old, pols_new)
-
-        pols_old = legacy_get_client_policy(client, scope=scope,
-                                            action=action,
-                                            realm=realm, user=user,
-                                            find_resolver=find_resolver,
-                                            userObj=userObj)
-
-        pols_new = new_has_client_policy(client, scope=scope,
-                                         action=action,
-                                         realm=realm, user=user,
-                                         find_resolver=find_resolver,
-                                         userObj=userObj)
 
         raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
                                           'True')
@@ -164,18 +167,6 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
         LOG.error('PolicyEvaluation is not the same for params %r', client)
         LOG.error('old: new %r <> %r', pols_old, pols_new)
 
-        pols_old = legacy_get_client_policy(client, scope=scope,
-                                            action=action,
-                                            realm=realm, user=user,
-                                            find_resolver=find_resolver,
-                                            userObj=userObj)
-
-        pols_new = new_get_client_policy(client, scope=scope,
-                                         action=action,
-                                         realm=realm, user=user,
-                                         find_resolver=find_resolver,
-                                         userObj=userObj)
-
         raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
                                           'True')
 
@@ -215,11 +206,6 @@ def getPolicy(param, display_inactive=False):
 
         raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
                                           'True')
-        pols_old = legacy_getPolicy(param,
-                                    display_inactive=display_inactive)
-        pols_new = new_getPolicy(param,
-                                 display_inactive=display_inactive)
-
         if raise_exx.lower() == 'true':
             raise Exception('Policy Engine missmatch: %r:%r' %
                             (pols_old, pols_new))
@@ -256,11 +242,6 @@ def search_policy(param, display_inactive=False):
 
         raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
                                           'True')
-        pols_old = legacy_getPolicy(param,
-                                    display_inactive=display_inactive)
-        pols_new = new_getPolicy(param,
-                                 display_inactive=display_inactive)
-
         if raise_exx.lower() == 'true':
             raise Exception('Policy Engine missmatch: %r:%r' %
                             (pols_old, pols_new))
@@ -294,7 +275,7 @@ def new_search_policy(param, display_inactive=False):
     #
     # filter the policies with the new engine
 
-    policy_elve = PolicyEvaluater(get_policies())
+    policy_elve = PolicyEvaluator(get_policies())
 
     #
     # install the filters
@@ -335,7 +316,7 @@ def new_getPolicy(param, display_inactive=False):
     #
     # filter the policies with the new engine
 
-    policy_elve = PolicyEvaluater(get_policies())
+    policy_elve = PolicyEvaluator(get_policies())
 
     #
     # install the filters
@@ -378,7 +359,7 @@ def new_getAuthorization(scope, action):
     active = True
     auth = False
 
-    policy_elve = PolicyEvaluater(get_policies())
+    policy_elve = PolicyEvaluator(get_policies())
 
     p_at_all = policy_elve.has_policy({'scope': scope})
 
@@ -429,7 +410,7 @@ def new_get_client_policy(client, scope=None, action=None, realm=None,
 
     '''
 
-    policy_eval = PolicyEvaluater(get_policies())
+    policy_eval = PolicyEvaluator(get_policies())
 
     if realm:
         policy_eval.filter_for_realm(realm)
@@ -470,9 +451,12 @@ def new_has_client_policy(client, scope=None, action=None, realm=None,
 
     4. if nothing matched so far, we try the extended policy check
 
+    The difference to the get_policy is, that it restores the already installed
+    filters for an existance check
+
     '''
 
-    policy_eval = PolicyEvaluater(get_policies())
+    policy_eval = PolicyEvaluator(get_policies())
 
     param = {}
 
