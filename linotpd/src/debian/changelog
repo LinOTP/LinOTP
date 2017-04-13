@@ -1,4 +1,4 @@
-linotp (2.9.1.1~rc0-1) jessie; urgency=low
+linotp (2.9.1.1-1) jessie; urgency=low
 
   Bug Fixes:
   * Server: Fix LDAP configuration issue with long certificates
@@ -7,7 +7,7 @@ linotp (2.9.1.1~rc0-1) jessie; urgency=low
   * Packaging: Fix openssl installation issue caused by Pre-Depends
     relationship
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 07 Apr 2017 18:32:33 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 13 Apr 2017 14:51:47 +0200
 
 linotp (2.9.1-1) jessie; urgency=low
 
