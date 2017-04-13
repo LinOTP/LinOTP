@@ -64,7 +64,7 @@ from linotp.lib.error import TokenAdminError
 from linotp.lib.policy import get_qrtan_url
 from linotp.lib.user import getUserResolverId
 from linotp.lib.util import generate_otpkey
-from linotp.lib.util import getParam
+
 # TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
 from linotp.lib.util import normalize_activation_code
@@ -787,7 +787,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         if len(realms) == 1:
             user = linotp.lib.user.User(login='', realm=realms[0])
         elif len(realms) == 0:
-            realm = linotp.lib.token.getDefaultRealm()
+            realm = linotp.lib.realm.getDefaultRealm()
             user = linotp.lib.user.User(login='', realm=realm)
             log.info('No token realm found - using default realm.')
         else:
@@ -925,13 +925,13 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
     def update(self, param, reset_failcount=True):
 
-        tdesc = getParam(param, "description", optional)
+        tdesc = param.get("description")
         if tdesc is not None:
             self.token.setDescription(tdesc)
 
         # key_size as parameter overrules a prevoiusly set
         # value e.g. in hashlib in the upper classes
-        key_size = getParam(param, "keysize", optional)
+        key_size = param.get("keysize")
         if key_size is None:
             key_size = 20
 
@@ -943,8 +943,8 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         #   if required and otpkey is None:
         #      raise param Exception, that we require an otpkey
         ##
-        otpKey = getParam(param, "otpkey", optional)
-        genkey = int(getParam(param, "genkey", optional) or 0)
+        otpKey = param.get("otpkey")
+        genkey = int(param.get("genkey", 0))
 
         if genkey not in [0, 1]:
             raise Exception("TokenClass supports only genkey in "
@@ -963,13 +963,16 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         # otpKey still None?? - raise the exception
         if otpKey is None:
             if self.hKeyRequired is True:
-                otpKey = getParam(param, "otpkey", required)
+                try:
+                    otpKey = param["otpkey"]
+                except KeyError:
+                    ParameterError("Missing parameter: 'otpkey'")
 
         if otpKey is not None:
             self.addToInfo('otpkey', otpKey)
             self.setOtpKey(otpKey)
 
-        pin = getParam(param, "pin", optional)
+        pin = param.get("pin")
         if pin is not None:
             self.setPin(pin, param=param)
 

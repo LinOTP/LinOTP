@@ -28,26 +28,22 @@
 
 import logging
 
-import traceback
 import binascii
 
-from linotp.lib.util import getParam
-
-optional = True
-required = False
 
 # for update, we require the TokenClass
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokens.remotetoken import RemoteTokenClass
-
-
-log = logging.getLogger(__name__)
+from linotp.lib.error import ParameterError
 
 # we need this for the radius token
 import pyrad.packet
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
 from pylons.configuration import config as env
+
+
+log = logging.getLogger(__name__)
 
 
 VOID_RADIUS_SECRET = "voidRadiusSecret"
@@ -120,22 +116,28 @@ class RadiusTokenClass(RemoteTokenClass):
 
     def update(self, param):
 
-        self.radiusServer = getParam(param, "radius.server", required)
+        try:
+            self.radiusServer = param["radius.server"]
+        except KeyError:
+            ParameterError("Missing parameter: 'radius.server'")
+
         # if another OTP length would be specified in /admin/init this would
         # be overwritten by the parent class, which is ok.
         self.setOtpLen(6)
 
-        val = getParam(param, "radius.local_checkpin", optional)
+        val = param.get("radius.local_checkpin")
         if val is not None:
             self.radiusLocal_checkpin = val
 
-        val = getParam(param, "radius.user", required)
-        if val is not None:
-            self.radiusUser = val
+        try:
+            self.radiusUser = param["radius.user"]
+        except KeyError:
+            ParameterError("Missing parameter: 'radius.user'")
 
-        val = getParam(param, "radius.secret", required)
-        if val is not None:
-            self.radiusSecret = val
+        try:
+            self.radiusSecret = param["radius.secret"]
+        except KeyError:
+            ParameterError("Missing parameter: 'radius.secret'")
 
         if self.radiusSecret == VOID_RADIUS_SECRET:
             log.warning("Usage of default radius secret is not recomended!!")
@@ -174,7 +176,6 @@ class RadiusTokenClass(RemoteTokenClass):
         '''
         res = True
 
-
         if self.check_pin_local():
             log.debug("[checkPin] [radiustoken] checking PIN locally")
             res = RemoteTokenClass.checkPin(self, pin)
@@ -199,8 +200,8 @@ class RadiusTokenClass(RemoteTokenClass):
             pin = ""
             otpval = passw
 
-        log.debug("[splitPinPass] [radiustoken] returning (len:%s) (len:%s)" % (
-            len(pin), len(otpval)))
+        log.debug("[splitPinPass] [radiustoken] returning (len:%s) (len:%s)",
+                  len(pin), len(otpval))
         return pin, otpval
 
     def do_request(self, anOtpVal, transactionid=None, user=None):
@@ -291,7 +292,7 @@ class RadiusTokenClass(RemoteTokenClass):
                 res = False
 
         except Exception as ex:
-            log.exception(
-                "[do_request] [RadiusToken] Error contacting radius Server: %r" % (ex))
+            log.exception("[do_request] [RadiusToken] Error contacting radius"
+                          " Server: %r", ex)
 
         return (res, otp_count, reply)

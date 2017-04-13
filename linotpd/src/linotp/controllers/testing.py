@@ -33,26 +33,21 @@ from pylons import request, response
 from linotp.lib.base import BaseController
 
 from linotp.lib.error import ParameterError
-from linotp.lib.util import getParam
-from linotp.lib.user import getUserFromParam
 
 from linotp.lib.reply import sendResult, sendError
 
-from linotp.model.meta import Session
 from linotp.lib.selftest import isSelfTest
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 
-import traceback
 from linotp.lib.crypto import urandom
 
-from linotp.lib.config import getLinotpConfig
+import linotp.model
 
-optional = True
-required = False
+Session = linotp.model.Session
 
 log = logging.getLogger(__name__)
 
-#from paste.debug.profile import profile_decorator
+# from paste.debug.profile import profile_decorator
 
 # some twilio like test data
 twilio_ok = """<?xml version='1.0' encoding='UTF-8'?>\
@@ -128,7 +123,8 @@ class TestingController(BaseController):
 
             if isSelfTest() is False:
                 Session.rollback()
-                return sendError(response, "The testing controller can only be used in SelfTest mode!", 0)
+                return sendError(response, "The testing controller can only"
+                                 " be used in SelfTest mode!", 0)
 
             if "user" not in param:
                 raise ParameterError("Missing parameter: 'user'")
@@ -138,14 +134,13 @@ class TestingController(BaseController):
             Session.commit()
             return sendResult(response, ok, 0)
 
-        except Exception as e:
-            log.exception("[autosms] validate/check failed: %r", e)
+        except Exception as exx:
+            log.exception("[autosms] validate/check failed: %r", exx)
             Session.rollback()
-            return sendError(response, "validate/check failed:" + unicode(e), 0)
+            return sendError(response, ("validate/check failed: %r", exx), 0)
 
         finally:
             Session.close()
-
 
     def http2sms(self):
         '''
@@ -167,7 +162,8 @@ class TestingController(BaseController):
 
 
         returns:
-           As this is a test controller, the response depends on the input values.
+           As this is a test controller, the response depends on
+           the input values.
 
             account = 5vor12, sender = legit
                 -> Response Success: "200" (Text)
@@ -186,17 +182,19 @@ class TestingController(BaseController):
         try:
             param.update(request.params)
 
-            account = getParam(param, "account", optional=False)
-            sender = getParam(param, "sender", optional=True)
-            username = getParam(param, "username", optional=True)
+            try:
+                account = param["account"]
+            except KeyError:
+                ParameterError("Missing parameter: 'account'")
 
-            destination = getParam(param, "destination")
+            sender = param.get("sender")
+            username = param.get("username")
+
+            destination = param.get("destination")
             if not destination:
-                destination = getParam(param, "ziel")
+                destination = param.get("ziel")
 
-            text = getParam(param, "text")
-            if not text:
-                text = getParam(param, "text")
+            text = param.get("text")
 
             if not destination:
                 raise Exception("Missing <destination>")
@@ -234,5 +232,4 @@ class TestingController(BaseController):
             Session.close()
 
 
-#eof###########################################################################
-
+# eof #

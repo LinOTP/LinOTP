@@ -28,13 +28,11 @@
 """
 
 from linotp.lib.crypto import SecretObj
-from linotp.lib.util        import getParam
-from linotp.lib.util        import required
 
-from linotp.lib.mOTP        import mTimeOtp
-from linotp.lib.tokenclass  import TokenClass
+from linotp.lib.mOTP import mTimeOtp
+from linotp.lib.tokenclass import TokenClass
 from linotp.lib.context import request_context as context
-
+from linotp.lib.error import ParameterError
 
 import logging
 log = logging.getLogger(__name__)
@@ -107,15 +105,13 @@ class MotpTokenClass(TokenClass):
 
                }
 
-
-        if key is not None and res.has_key(key):
+        if key and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':
                 ret = res
 
         return ret
-
 
     def __init__(self, a_token):
         '''
@@ -129,8 +125,6 @@ class MotpTokenClass(TokenClass):
 
         return
 
-
-
     def update(self, param, reset_failcount=True):
         '''
         update - process initialization parameters
@@ -142,10 +136,15 @@ class MotpTokenClass(TokenClass):
 
         '''
 
-        getParam(param, "otpkey", required)
+        if 'otpkey' not in param:
+            ParameterError("Missing parameter: 'otpkey'")
 
-        ## motp token specific
-        otpPin = getParam(param, "otppin", required)
+        # motp token specific
+        try:
+            otpPin = param['otppin']
+        except KeyError:
+            ParameterError("Missing parameter: 'otppin'")
+
         self.setUserPin(otpPin)
 
         TokenClass.update(self, param, reset_failcount)

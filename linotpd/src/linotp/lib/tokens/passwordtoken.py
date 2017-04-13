@@ -28,11 +28,6 @@
 
 import logging
 from linotp.lib.crypto import zerome
-from linotp.lib.util import getParam
-
-
-optional = True
-required = False
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokens.hmactoken import HmacTokenClass
@@ -61,7 +56,6 @@ class PasswordTokenClass(HmacTokenClass):
             res = -1
 
             key = self.secretObject.getKey()
-
             if key == anOtpVal:
                 res = 0
 
@@ -98,7 +92,9 @@ class PasswordTokenClass(HmacTokenClass):
         res = {
             'type': 'pw',
             'title': 'Password Token',
-            'description': ('A token with a fixed password. Can be combined with the OTP PIN. Is used for the lost token scenario.'),
+            'description': ('A token with a fixed password. '
+                            'Can be combined with the OTP PIN. Is used for'
+                            ' the lost token scenario.'),
             'init': {},
             'config': {},
             'selfservice':  {},
@@ -106,7 +102,7 @@ class PasswordTokenClass(HmacTokenClass):
         }
         # I don't think we need to define the lost token policies here...
 
-        if key is not None and res.has_key(key):
+        if key and key in res:
             ret = res.get(key)
         else:
             if ret == 'all':

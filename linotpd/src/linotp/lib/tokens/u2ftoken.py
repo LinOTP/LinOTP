@@ -38,10 +38,11 @@ from linotp.lib.auth.validate import check_pin
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.challenges import Challenges
-from linotp.lib.util import getParam
-from linotp.lib.policy import getPolicy, getPolicyActionValue
-from linotp.lib.error import TokenTypeNotSupportedError
 
+from linotp.lib.policy import getPolicy, getPolicyActionValue
+
+from linotp.lib.error import TokenTypeNotSupportedError
+from linotp.lib.error import ParameterError
 """
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance
 """
@@ -154,13 +155,13 @@ class U2FTokenClass(TokenClass):
         self.setOtpLen(32)
         self.setCounterWindow(0)
 
-        tdesc = getParam(param, "description", optional)
+        tdesc = param.get("description")
         if tdesc is not None:
             self.token.setDescription(tdesc)
 
         # requested_phase must be either "registration1" or "registration2"
         # current_phase is either "registration" or "authentication"
-        requested_phase = getParam(param, "phase", optional)
+        requested_phase = param.get("phase")
         current_phase = self.getFromTokenInfo('phase', None)
 
         if requested_phase == "registration1" and current_phase is None:
@@ -168,7 +169,7 @@ class U2FTokenClass(TokenClass):
             # which is sent to the FIDO U2F compatible client device
 
             # Set the optional token pin in this first phase
-            pin = getParam(param, "pin", optional)
+            pin = param.get("pin")
             if pin is not None:
                 TokenClass.setPin(self, pin)
 
@@ -177,7 +178,7 @@ class U2FTokenClass(TokenClass):
             self.token.LinOtpIsactive = False
         elif requested_phase == "registration2" and current_phase == "registration":
             # Check the token pin
-            pin = getParam(param, "pin", optional)
+            pin = param.get("pin")
             if pin is None:
                 pin = ''
             if check_pin(self, pin) is False:
@@ -852,7 +853,10 @@ class U2FTokenClass(TokenClass):
         response_detail['serial'] = self.getSerial()
 
         # get requested phase
-        requested_phase = getParam(params, "phase", optional=False)
+        try:
+            requested_phase = params["phase"]
+        except KeyError:
+            ParameterError("Missing parameter: 'phase'")
 
         if requested_phase == "registration1":
             # We are in registration phase 1

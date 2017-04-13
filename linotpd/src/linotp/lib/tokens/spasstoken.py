@@ -32,10 +32,7 @@ import logging
 from linotp.lib.tokenclass import TokenClass
 
 from linotp.lib.auth.validate import check_pin
-from linotp.lib.util import getParam
 
-optional = True
-required = False
 
 log = logging.getLogger(__name__)
 
@@ -99,13 +96,12 @@ class SpassTokenClass(TokenClass):
         return ret
 
     def update(self, param):
-        # cko: changed for backward compat
-        getParam(param, "pin", optional)
-        if not param.has_key('otpkey'):
+
+        if 'otpkey' not in param:
             param['genkey'] = 1
 
         # mark this spass token as usable exactly once
-        if param.has_key('onetime'):
+        if 'onetime' in param:
             self.count_auth_success_max = 1
 
         TokenClass.update(self, param)
@@ -129,4 +125,4 @@ class SpassTokenClass(TokenClass):
             self.auth_info = {'auth_info': [('pin_length', len(passw))]}
         return (pin_match, otp_count, None)
 
-## eof ########################################################################
+# eof #

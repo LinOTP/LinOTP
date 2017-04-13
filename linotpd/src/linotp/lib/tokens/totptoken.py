@@ -30,32 +30,24 @@ import time
 import math
 import datetime
 
-import traceback
 
+from linotp.lib.HMAC import HmacOtp
+from linotp.lib.util import generate_otpkey
+from linotp.lib.config import getFromConfig
+from linotp.lib.error import ParameterError
 
-from linotp.lib.HMAC    import HmacOtp
-from linotp.lib.util    import getParam
-from linotp.lib.util    import generate_otpkey
-from linotp.lib.config  import getFromConfig
-
-
-optional = True
-required = False
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.tokens.hmactoken import HmacTokenClass
 
-keylen = {'sha1' : 20,
-          'sha256' : 32,
-          'sha512' : 64
+keylen = {'sha1': 20,
+          'sha256': 32,
+          'sha512': 64
           }
 
 log = logging.getLogger(__name__)
 
 
-
-###############################################
-###############################################
 """
 TOTP Algorithm
 
@@ -228,7 +220,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         '''
 
         ## check for the required parameters
-        val = getParam(param, "hashlib", optional)
+        val = param.get("hashlib")
         if val is not None:
             self.hashlibStr = val
         else:
@@ -237,7 +229,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         otpKey = ''
 
         if (self.hKeyRequired is True):
-            genkey = int(getParam(param, "genkey", optional) or 0)
+            genkey = int(param.get("genkey", 0))
             if 1 == genkey:
                 # if hashlibStr not in keylen dict, this will raise an Exception
                 otpKey = generate_otpkey(keylen.get(self.hashlibStr))
@@ -245,30 +237,33 @@ class TimeHmacTokenClass(HmacTokenClass):
             else:
                 # genkey not set: check otpkey is given
                 # this will raise an exception if otpkey is not present
-                otpKey = getParam(param, "otpkey", required)
+                try:
+                    otpKey = param['otpkey']
+                except KeyError:
+                    ParameterError("Missing parameter: 'serial'")
 
         # finally set the values for the update
+
         param['otpkey'] = otpKey
         param['hashlib'] = self.hashlibStr
 
-        val = getParam(param, "otplen", optional)
+        val = param.get("otplen")
         if val is not None:
             self.setOtpLen(int(val))
         else:
             self.setOtpLen(getFromConfig("DefaultOtpLen"))
 
-        val = getParam(param, "timeStep", optional)
+        val = param.get("timeStep")
         if val is not None:
             self.timeStep = val
 
-        val = getParam(param, "timeWindow", optional)
+        val = param.get("timeWindow")
         if val is not None:
             self.timeWindow = val
 
-        val = getParam(param, "timeShift", optional)
+        val = param.get("timeShift")
         if val is not None:
             self.timeShift = val
-
 
         HmacTokenClass.update(self, param)
 
@@ -692,7 +687,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         '''
 
-        otp_dict = {"type" : "TOTP", "otp": {}}
+        otp_dict = {"type": "TOTP", "otp": {}}
         ret = False
         error = "No count specified"
         try:

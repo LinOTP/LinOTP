@@ -102,10 +102,7 @@
 import time
 import datetime
 
-from linotp.lib.HMAC    import HmacOtp
-
-from linotp.lib.util    import getParam
-from linotp.lib.util    import required
+from linotp.lib.HMAC import HmacOtp
 
 from linotp.lib.user import getUserDetail
 
@@ -123,13 +120,7 @@ from linotp.lib.policy import trigger_sms
 
 from linotp.lib.context import request_context as context
 from linotp.provider import loadProviderFromPolicy
-
-
-import sys
-if sys.version_info[0:2] >= (2, 6):
-    from json import loads, dumps
-else:
-    from simplejson import loads, dumps
+from linotp.lib.error import ParameterError
 
 from linotp.lib.tokens.hmactoken import HmacTokenClass
 
@@ -243,7 +234,6 @@ class SmsTokenClass(HmacTokenClass):
 
         return validity
 
-
     @classmethod
     def getClassInfo(cls, key=None, ret='all'):
         '''
@@ -320,7 +310,10 @@ class SmsTokenClass(HmacTokenClass):
         _ = context['translate']
 
         # specific - phone
-        phone = getParam(param, "phone", required)
+        try:
+            phone = param['phone']
+        except KeyError:
+            ParameterError("Missing parameter: 'phone'")
 
         # in scope selfservice - check if edit_sms is allowed
         # if not allowed to edit, check if the phone is the same
@@ -408,7 +401,7 @@ class SmsTokenClass(HmacTokenClass):
         return request_is_valid
 
     #
-    #!!! this function is to be called in the sms controller !!!
+    # !!! this function is to be called in the sms controller !!!
     #
     def submitChallenge(self, options=None):
         '''
@@ -462,7 +455,7 @@ class SmsTokenClass(HmacTokenClass):
 
                 transactionid = options.get('transactionid', None)
                 res, result = self.sendSMS(message=message,
-                                              transactionid=transactionid)
+                                           transactionid=transactionid)
 
                 self.info['info'] = "SMS sent: %r" % res
                 log.debug('SMS sent: %s', result)
@@ -880,8 +873,8 @@ class SmsTokenClass(HmacTokenClass):
         try:
             timeout = int(getFromConfig("SMSProviderTimeout", 5 * 60))
         except Exception as ex:
-            log.warning("SMSProviderTimeout: value error %r - reset to 5*60"
-                                                                        % (ex))
+            log.warning("SMSProviderTimeout: value error %r - reset "
+                        "to 5*60", ex)
             timeout = 5 * 60
 
         return timeout
@@ -897,4 +890,4 @@ class SmsTokenClass(HmacTokenClass):
 
         return response_detail
 
-###eof#########################################################################
+# eof #

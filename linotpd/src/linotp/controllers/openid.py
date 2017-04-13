@@ -29,6 +29,9 @@ openid controller - This is the controller for the openid service
 
 import logging
 import webob
+from urllib import urlencode
+
+import linotp.model
 
 from linotp.lib.base import BaseController
 from linotp.lib.auth.validate import ValidationHandler
@@ -39,7 +42,8 @@ from pylons.controllers.util import redirect
 from pylons import config
 from pylons import url as url
 
-from linotp.lib.util import getParam
+from linotp.lib.error import ParameterError
+
 from linotp.lib.util import get_client
 from linotp.lib.util import is_valid_fqdn
 from linotp.lib.user import getUserFromParam
@@ -52,7 +56,6 @@ from pylons.templating import render_mako as render
 from webob.exc import HTTPBadRequest
 
 from linotp.lib.reply import sendError
-from linotp.model.meta import Session
 
 from linotp.lib.openid import IdResMessage
 from linotp.lib.openid import create_association, check_authentication
@@ -62,17 +65,15 @@ from linotp.lib.openid import OPENID_1_0_TYPE
 
 from linotp.lib.context import request_context
 
-from urllib import urlencode
+Session = linotp.model.Session
 
 ASSOC_EXPIRES_IN = 3600
 COOKIE_NAME = "linotp_openid"
 
 audit = config.get('audit')
 
-optional = True
-required = False
-
 log = logging.getLogger(__name__)
+
 
 class OpenidController(BaseController):
 
@@ -108,7 +109,8 @@ class OpenidController(BaseController):
             c.licenseinfo = get_copyright_info()
 
             http_host = request.environ.get("HTTP_HOST")
-            log.debug("[__before__] Doing openid request from host %s" % http_host)
+            log.debug("[__before__] Doing openid request from host %s",
+                       http_host)
             if not is_valid_fqdn(http_host, split_port=True):
                 err = "Bad hostname: %s" % http_host
                 audit.log(c.audit)
@@ -124,7 +126,7 @@ class OpenidController(BaseController):
             if login:
                 c.logged_in = True
 
-            ## default return for the __before__ and __after__
+            # default return for the __before__ and __after__
             valid_request = True
 
             return response
@@ -339,8 +341,12 @@ class OpenidController(BaseController):
         '''
         param = request.params
         log.debug("[checkid_submit] params: %s" % param)
-        redirect_token = getParam(param, "redirect_token", required)
-        verify_always = getParam(param, "verify_always", optional)
+        try:
+            redirect_token = param["redirect_token"]
+        except KeyError:
+            ParameterError("Missing parameter: 'redirect_token'", id=905)
+            
+        verify_always = param.get("verify_always")
         r_url, site, handle = self.storage.get_redirect(redirect_token)
         self.storage.add_site(site, handle)
 
@@ -487,7 +493,7 @@ class OpenidController(BaseController):
             param.update(request.params)
 
             same_user = True
-            passw = getParam(param, "pass", optional)
+            passw = param.get("pass")
 
             ## getUserFromParam will return default realm if no realm is
             ## provided via @ append or extra parameter realm
@@ -530,7 +536,7 @@ class OpenidController(BaseController):
             # status page
 
             p = {}
-            redirect_to = getParam(param, "redirect_to", optional)
+            redirect_to = param.get("redirect_to")
             if redirect_to and ok:
                 p = {}
                 for k in  [ 'openid.return_to', "openid.realm", "openid.ns", "openid.claimed_id", "openid.mode",
@@ -565,7 +571,6 @@ class OpenidController(BaseController):
         log.debug("[compare_users] %s == %s?" % (u1, u2))
         return u1 == u2
 
-
     def _split_cookie(self):
         login = ""
         token = ""
@@ -574,4 +579,4 @@ class OpenidController(BaseController):
             login, token = cookie.split(":")
         return login, token
 
-#eof###########################################################################
+# eof #

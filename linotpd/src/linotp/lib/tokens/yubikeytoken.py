@@ -31,9 +31,6 @@ from Cryptodome.Cipher import AES
 import binascii
 import logging
 
-optional = True
-required = False
-
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.auth.validate import check_pin
 

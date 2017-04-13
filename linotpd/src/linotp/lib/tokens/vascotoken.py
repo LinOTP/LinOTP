@@ -29,11 +29,11 @@
 
 import logging
 
-from linotp.lib.util import getParam
 
 from linotp.lib.tokenclass import TokenClass
 from linotp.lib.ImportOTP.vasco import vasco_otp_check
 from linotp.lib.context import request_context as context
+from linotp.lib.error import ParameterError
 
 log = logging.getLogger(__name__)
 
@@ -100,12 +100,13 @@ class VascoTokenClass(TokenClass):
 
         # check for the required parameters
         if self.hKeyRequired is True:
-            getParam(param, "otpkey", optional=False)
+            if "otpkey" not in param:
+                raise ParameterError("Missing parameter: 'otpkey'")
 
         TokenClass.update(self, param, reset_failcount=False)
 
         for key in ["vasco_appl", "vasco_type", "vasco_auth"]:
-            val = getParam(param, key, optional=True)
+            val = param.get(key)
             if val is not None:
                 self.addToTokenInfo(key, val)
 

@@ -40,6 +40,7 @@ from paste.deploy.converters import asbool
 from mako.exceptions import CompileException
 
 from linotp.lib.base import BaseController
+from linotp.lib.error import ParameterError
 
 # Our Token stuff
 from linotp.lib.tokeniterator import TokenIterator
@@ -50,7 +51,6 @@ from linotp.lib.token import newToken
 from linotp.lib.user import getUserFromParam, getUserFromRequest
 from linotp.lib.user import getUserList, User
 
-from linotp.lib.util import getParam
 from linotp.lib.util import check_session
 from linotp.lib.util import get_version
 from linotp.lib.util import get_copyright_info
@@ -62,7 +62,6 @@ from linotp.lib.reply import sendResult
 from linotp.lib.util import remove_empty_lines
 from linotp.lib.util import get_client
 from linotp.lib.util import unicode_compare
-from linotp.lib.config import getLinotpConfig
 
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import PolicyException
@@ -83,9 +82,6 @@ KNOWN_TYPES = getKnownTypes()
 IMPORT_TEXT = getImportText()
 
 log.info("importing linotp.lib. Known import types: %s" % IMPORT_TEXT)
-
-optional = True
-required = False
 
 
 class ManageController(BaseController):
@@ -144,15 +140,14 @@ class ManageController(BaseController):
 
     def __after__(self):
 
-        if c.audit['action'] in [ 'manage/tokenview_flexi',
-                                'manage/userview_flexi' ]:
+        if c.audit['action'] in ['manage/tokenview_flexi',
+                                 'manage/userview_flexi' ]:
             c.audit['administrator'] = getUserFromRequest(request).get("login")
             if request.params.has_key('serial'):
                     c.audit['serial'] = request.params['serial']
                     c.audit['token_type'] = getTokenType(request.params['serial'])
 
             audit.log(c.audit)
-
 
     def index(self):
         '''
@@ -190,12 +185,12 @@ class ManageController(BaseController):
                 tab = ''
                 div = ''
                 try:
-                    #loc = conf +'_token_settings'
+                    # loc = conf +'_token_settings'
                     tab = confs.get(conf).get('title')
-                    #tab = '<li ><a href=#'+loc+'>'+tab+'</a></li>'
+                    # tab = '<li ><a href=#'+loc+'>'+tab+'</a></li>'
 
                     div = confs.get(conf).get('html')
-                    #div = +div+'</div>'
+                    # div = +div+'</div>'
                 except Exception as e:
                     log.debug('[index] no config info for token type %s  (%r)' % (conf, e))
 
@@ -206,9 +201,9 @@ class ManageController(BaseController):
             c.token_config_tab = token_config_tab
             c.token_config_div = token_config_div
 
-            ##  add the enrollment fragments from the token definition
-            ##  tab: <option value="ocra">${_("OCRA - challenge/response Token")}</option>
-            ##  div: "<div id='"+ tt + "'>"+enroll+"</div>"
+            #  add the enrollment fragments from the token definition
+            #  tab: <option value="ocra">${_("OCRA - challenge/response Token")}</option>
+            #  div: "<div id='"+ tt + "'>"+enroll+"</div>"
             enrolls = _getTokenTypeConfig('init')
 
             token_enroll_tab = {}
@@ -340,13 +335,12 @@ class ManageController(BaseController):
         param = request.params
 
         try:
-            #serial  = getParam(param,"serial",optional)
-            c.page = getParam(param, "page", optional)
-            c.filter = getParam(param, "query", optional)
-            c.qtype = getParam(param, "qtype", optional)
-            c.sort = getParam(param, "sortname", optional)
-            c.dir = getParam(param, "sortorder", optional)
-            c.psize = getParam(param, "rp", optional)
+            c.page = param.get("page")
+            c.filter = param.get("query")
+            c.qtype = param.get("qtype")
+            c.sort = param.get("sortname")
+            c.dir = param.get("sortorder")
+            c.psize = param.get("rp")
 
             filter_all = None
             filter_realm = None
@@ -439,7 +433,6 @@ class ManageController(BaseController):
         finally:
             Session.close()
 
-
     def userview_flexi(self):
         '''
         This function is used to fill the flexigrid.
@@ -449,20 +442,20 @@ class ManageController(BaseController):
         param = request.params
 
         try:
-            #serial  = getParam(param,"serial",optional)
-            c.page = getParam(param, "page", optional)
-            c.filter = getParam(param, "query", optional)
-            qtype = getParam(param, "qtype", optional)
-            c.sort = getParam(param, "sortname", optional)
-            c.dir = getParam(param, "sortorder", optional)
-            c.psize = getParam(param, "rp", optional)
-            c.realm = getParam(param, "realm", optional)
+
+            c.page = param.get("page")
+            c.filter = param.get("query")
+            qtype = param.get("qtype")
+            c.sort = param.get("sortname")
+            c.dir = param.get("sortorder")
+            c.psize = param.get("rp")
+            c.realm = param.get("realm")
 
             user = getUserFromParam(param)
             # check admin authorization
             # check if we got a realm or resolver, that is ok!
-            checkPolicyPre('admin', 'userlist', { 'user': user.login,
-                                                 'realm' : c.realm })
+            checkPolicyPre('admin', 'userlist', {'user': user.login,
+                                                 'realm': c.realm})
 
             if c.filter == "":
                 c.filter = "*"
@@ -556,7 +549,10 @@ class ManageController(BaseController):
         param = request.params
 
         try:
-            serial = getParam(param, 'serial', required)
+            try:
+                serial = param['serial']
+            except KeyError:
+                ParameterError("Missing parameter: 'serial'")
 
             filterRealm = ""
             # check admin authorization

@@ -26,8 +26,6 @@
 """
 ocra controller - Interface for the Challenge Response Token (OCRA)
 """
-
-import traceback
 import logging
 from urllib import urlencode
 
@@ -55,17 +53,17 @@ from linotp.lib.user import getUserFromRequest
 from linotp.lib.user import getUserInfo
 
 from linotp.lib.util import check_session
-from linotp.lib.util import getParam, getLowerParams
+from linotp.lib.util import getLowerParams
 from linotp.lib.util import get_client
 
 from linotp.lib.context import request_context
+import linotp.model
+
+Session = linotp.model.Session
 
 audit = config.get('audit')
 
 log = logging.getLogger(__name__)
-
-optional = True
-required = False
 
 
 class OcraController(BaseController):
@@ -174,7 +172,7 @@ class OcraController(BaseController):
 
             checkPolicyPre('ocra', "request")
 
-            serial = getParam(param, 'serial', optional)
+            serial = param.get('serial')
             user = getUserFromParam(param)
 
             if user.is_empty and serial is None:
@@ -182,7 +180,7 @@ class OcraController(BaseController):
                 log.exception("[request] user or serial is required")
                 raise ParameterError("Usage: %s" % description, id=77)
 
-            message = getParam(param, 'data'  , optional)
+            message = param.get('data')
             if message is None:
                 message = ''
 
@@ -226,7 +224,7 @@ class OcraController(BaseController):
             #c.audit['info'] += "%s=%s, " % (k, value)
 
             Session.commit()
-            qr = getParam(param, 'qr', optional)
+            qr = param.get('qr')
             if qr is not None:
                 param['alt'] = detail
                 return sendQRImageResult(response, dataobj, param)
@@ -293,19 +291,19 @@ class OcraController(BaseController):
 
             #checkPolicyPre('ocra', "check_t")
 
-            passw = getParam(param, 'pass'  , optional)
+            passw = param.get('pass')
             if passw is None:
-                ## raise exception'''
+                # raise exception'''
                 log.exception("[check_t] missing pass ")
                 raise ParameterError("Usage: %s Missing parameter 'pass'." % description, id=77)
 
-            transid = getParam(param, 'transactionid', optional)
+            transid = param.get('transactionid')
             if transid is None:
-                ## raise exception'''
+                # raise exception
                 log.exception("[check_t] missing transactionid, user or serial number of token")
                 raise ParameterError("Usage: %s Missing parameter 'transactionid'." % description, id=77)
 
-            ## if we have a transaction, get serial from this challenge
+            # if we have a transaction, get serial from this challenge
             value = {}
             ocraChallenge = OcraTokenClass.getTransaction(transid)
             if ocraChallenge is not None:
@@ -431,13 +429,12 @@ class OcraController(BaseController):
 
             checkPolicyPre('ocra', "status")
 
-            transid = getParam(param, 'transactionid'   , optional)
+            transid = param.get('transactionid')
             user = getUserFromParam(param)
-            #user   = getParam(param, 'user'          ,optional)
-            serial = getParam(param, 'serial'          , optional)
+            serial = param.get('serial')
 
             if transid is None and user.is_empty and serial is None:
-                ## raise exception
+                # raise exception
                 log.exception("[ocra/checkstatus] : missing transactionid, user or serial number for token")
                 raise ParameterError("Usage: %s" % description, id=77)
 

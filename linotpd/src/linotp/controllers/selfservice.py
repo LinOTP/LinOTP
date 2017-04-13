@@ -33,22 +33,24 @@ selfservice controller - This is the controller for the self service interface,
 
 """
 import os
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+import json
 import webob
-import base64
+import copy
 
-from pylons import request, response, config, tmpl_context as c
+from pylons import request
+from pylons import response
+from pylons import config
+from pylons import tmpl_context as c
+
 from pylons.controllers.util import abort
-from mako.exceptions import CompileException
-
-from linotp.lib.base import BaseController
 from pylons.templating import render_mako as render
 
+from mako.exceptions import CompileException
+
+import linotp.model
+from linotp.lib.base import BaseController
+from linotp.lib.error import ParameterError
+from linotp.lib.reply import sendError
 
 from linotp.lib.token import getTokenType
 from linotp.lib.token import getTokens4UserOrSerial
@@ -56,48 +58,29 @@ from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.policy import getSelfserviceActions
 from linotp.lib.policy import _get_auth_PinPolicy
 
-from linotp.lib.util import getParam
 from linotp.lib.util import check_selfservice_session
 from linotp.lib.util import remove_empty_lines
-
-from linotp.lib.reply import sendError
-
 from linotp.lib.util import get_version
 from linotp.lib.util import get_copyright_info
 from linotp.lib.util import get_client
 
-from linotp.model.meta import Session
-
-
-from linotp.lib.userservice import (add_dynamic_selfservice_enrollment,
-                                    add_dynamic_selfservice_policies
-                                    )
+from linotp.lib.userservice import add_dynamic_selfservice_enrollment
+from linotp.lib.userservice import add_dynamic_selfservice_policies
 
 from linotp.lib.selfservice import get_imprint
 from linotp.lib.user import User
-
-from linotp.lib.config import getLinotpConfig
-
-import traceback
-# import datetime, random
-import copy
 
 from linotp.lib.selftest import isSelfTest
 from linotp.controllers.userservice import get_auth_user
 
 from linotp.lib.token import newToken
-
-from pylons.i18n.translation import _
-
 from linotp.lib.context import request_context
 
 import logging
 
+Session = linotp.model.Session
+
 ENCODING = "utf-8"
-
-optional = True
-required = False
-
 log = logging.getLogger(__name__)
 audit = config.get('audit')
 
@@ -178,9 +161,10 @@ class SelfserviceController(BaseController):
                 # checking the session only for not_form_access actions
                 if action not in self.form_access_methods:
                     call_url = "selfservice/%s" % action
-                    valid_session = check_selfservice_session(url=call_url,
-                                                              cookies=request.cookies,
-                                                              params=request.params)
+                    valid_session = check_selfservice_session(
+                                                    url=call_url,
+                                                    cookies=request.cookies,
+                                                    params=request.params)
                     if not valid_session:
                         c.audit['action'] = request.path[1:]
                         c.audit['info'] = "session expired"
@@ -254,12 +238,10 @@ class SelfserviceController(BaseController):
             if c.audit['action'] in ['selfservice/index']:
                 if isSelfTest():
                     log.debug("[__after__] Doing selftest!")
-                    suser = getParam(param, "selftest_user", True)
-                    if suser is not None:
-                        (c.user, _foo, c.realm) = getParam(param,
-                                                           "selftest_user",
-                                                           True)\
-                            .rpartition('@')
+
+                    if "selftest_user" in param:
+                        (c.user, _foo, c.realm) = param[
+                            "selftest_user"].rpartition('@')
                     else:
                         c.realm = ""
                         c.user = "--ua--"
@@ -296,7 +278,6 @@ class SelfserviceController(BaseController):
             Session.close()
             return sendError(response, e, context='after')
 
-
     def index(self):
         '''
         This is the redirect to the first template
@@ -323,7 +304,11 @@ class SelfserviceController(BaseController):
 
             param.update(request.params)
 
-            act = getParam(param, "type", required)
+            try:
+                act = param["type"]
+            except KeyError:
+                raise ParameterError("Missing parameter: 'type'", id=905)
+
             try:
                 (tok, section, scope) = act.split('.')
             except Exception:
@@ -486,4 +471,4 @@ class SelfserviceController(BaseController):
         return res
 
 
-#eof##########################################################################
+# eof #

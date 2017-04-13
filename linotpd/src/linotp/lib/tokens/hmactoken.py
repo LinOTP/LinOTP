@@ -33,35 +33,32 @@ from Cryptodome.Hash import SHA1
 from Cryptodome.Hash import SHA256
 from Cryptodome.Hash import SHA512
 
-from linotp.lib.HMAC    import HmacOtp
-from linotp.lib.util    import getParam
-from linotp.lib.config  import getFromConfig
+from linotp.lib.HMAC import HmacOtp
+
+from linotp.lib.config import getFromConfig
 from linotp.lib.tokenclass import TokenClass
 
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.challenges import Challenges
 
-from linotp.lib.reply   import create_img
-from linotp.lib.apps    import create_google_authenticator
-from linotp.lib.apps    import NoOtpAuthTokenException
-from linotp.lib.apps    import create_oathtoken_url
-
-
-optional = True
-required = False
+from linotp.lib.reply import create_img
+from linotp.lib.apps import create_google_authenticator
+from linotp.lib.apps import NoOtpAuthTokenException
+from linotp.lib.apps import create_oathtoken_url
 
 from linotp.lib.context import request_context as context
 
-
-
 import logging
+
 log = logging.getLogger(__name__)
 
 
 keylen = {'sha1': SHA1.digest_size,
           'sha256': SHA256.digest_size,
           'sha512': SHA512.digest_size}
+
+
 class HmacTokenClass(TokenClass):
     '''
     hotp token class implementation
@@ -149,7 +146,6 @@ class HmacTokenClass(TokenClass):
                 ret = res
         return ret
 
-
     def __init__(self, a_token):
         '''
         constructor - create a token object
@@ -202,8 +198,8 @@ class HmacTokenClass(TokenClass):
 
         return
 
+# challenge interfaces starts here
 
-### challenge interfaces starts here
     def is_challenge_request(self, passw, user, options=None):
         '''
         check, if the request would start a challenge
@@ -304,7 +300,6 @@ class HmacTokenClass(TokenClass):
 
         return (otp_counter, matching_challenges)
 
-
     def createChallenge(self, state, options=None):
         '''
         create a challenge, which is submitted to the user
@@ -323,7 +318,6 @@ class HmacTokenClass(TokenClass):
                 }
 
         return (True, message, data, None)
-
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         '''
@@ -415,7 +409,6 @@ class HmacTokenClass(TokenClass):
             msg = "otp counter %r was found" % otp
         return res
 
-
     def autosync(self, hmac2Otp, anOtpVal):
         '''
         auto - sync the token based on two otp values
@@ -499,7 +492,6 @@ class HmacTokenClass(TokenClass):
             msg = "call was successful"
 
         return res
-
 
     def resync(self, otp1, otp2, options=None):
         '''

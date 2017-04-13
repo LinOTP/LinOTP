@@ -27,19 +27,15 @@
 audit controller - to search the audit trail
 """
 
-
-
-
 import logging
-
 
 from pylons import tmpl_context as c
 from pylons import request, response, config
 from linotp.lib.base import BaseController
 
 
-from linotp.lib.util import  check_session
-from linotp.lib.user import  getUserFromRequest
+from linotp.lib.util import check_session
+from linotp.lib.user import getUserFromRequest
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import PolicyException
 
@@ -48,17 +44,12 @@ from linotp.lib.audit.iterator import AuditQuery
 from linotp.lib.audit.iterator import CSVAuditIterator
 from linotp.lib.audit.iterator import JSONAuditIterator
 
-from linotp.lib.util import getParam
 from linotp.lib.util import get_client
-
-from linotp.model.meta import Session
-
-from linotp.lib.config import getLinotpConfig
 
 from linotp.lib.context import request_context
 
-import traceback
-
+import linotp.model
+Session = linotp.model.Session
 
 audit = config.get('audit')
 

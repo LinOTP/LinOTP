@@ -27,16 +27,15 @@
 
 import logging
 
-import traceback
-
-from linotp.lib.util    import getParam
 from linotp.lib.config import getFromConfig
 from hashlib import sha1
-import hmac
 import urllib, urllib2
 import re
 import os
 import binascii
+
+from linotp.lib.tokenclass import TokenClass
+from linotp.lib.error import ParameterError
 
 YUBICO_LEN_ID = 12
 YUBICO_LEN_OTP = 44
@@ -44,15 +43,10 @@ YUBICO_URL = "http://api.yubico.com/wsapi/2.0/verify"
 DEFAULT_CLIENT_ID = 11759
 DEFAULT_API_KEY = "P1QVTgnToQWQm0b6LREEhDIAbHU="
 
-optional = True
-required = False
-
-from linotp.lib.tokenclass import TokenClass
-
 
 log = logging.getLogger(__name__)
 
-###############################################
+
 class YubicoTokenClass(TokenClass):
     """
     The Yubico Cloud token forwards an authentication request to the Yubico Cloud service.
@@ -125,10 +119,13 @@ class YubicoTokenClass(TokenClass):
                 ret = res
         return ret
 
-
     def update(self, param):
 
-        tokenid = getParam(param, "yubico.tokenid", required)
+        try:
+            tokenid = param['yubico.tokenid']
+        except KeyError:
+            ParameterError("Missing parameter: 'yubico.tokenid'")
+
         if len(tokenid) < YUBICO_LEN_ID:
             raise Exception("The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID)
 

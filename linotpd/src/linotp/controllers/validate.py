@@ -60,20 +60,20 @@ from linotp.lib.user import User
 from linotp.lib.user import getUserFromParam
 from linotp.lib.user import getUserId
 from linotp.lib.user import getUserInfo
-from linotp.lib.util import getParam
 from linotp.lib.util import get_client
 
-from linotp.model.meta import Session
 from linotp.lib.context import request_context
 from linotp.lib.error import ValidateError
 from linotp.lib.pairing import decrypt_pairing_response
 
+import linotp.model
+
+
+Session = linotp.model.Session
+
 CONTENT_TYPE_PAIRING = 1
 
 audit = config.get('audit')
-
-optional = True
-required = False
 
 log = logging.getLogger(__name__)
 
@@ -132,11 +132,11 @@ class ValidateController(BaseController):
             if options.has_key(para):
                 del options[para]
 
-        passw = getParam(param, "pass", optional)
+        passw = param.get("pass")
         user = getUserFromParam(param)
 
         # support for ocra application challenge verification
-        challenge = getParam(param, "challenge", optional)
+        challenge = param.get("challenge")
         if challenge is not None:
             options = {}
             options['challenge'] = challenge
@@ -152,7 +152,7 @@ class ValidateController(BaseController):
         check_user_authorization(user.login, user.realm, exception=True)
 
         if isSelfTest() is True:
-            initTime = getParam(param, "init", optional)
+            initTime = param.get("init")
             if initTime is not None:
                 if options is None:
                     options = {}
@@ -358,8 +358,13 @@ class ValidateController(BaseController):
         '''
 
         param = request.params
-        passw = getParam(param, "pass", required)
+
         try:
+
+            try:
+                passw = param['pass']
+            except KeyError:
+                ParameterError("Missing parameter: 'pass'")
 
             ok = False
             try:
@@ -496,10 +501,13 @@ class ValidateController(BaseController):
 
         try:
             param.update(request.params)
-            passw = getParam(param, "pass", required)
+            try:
+                passw = param['pass']
+            except KeyError:
+                ParameterError("Missing parameter: 'pass'")
 
             transid = param.get('state', None)
-            if transid is not  None:
+            if transid is not None:
                 param['transactionid'] = transid
                 del param['state']
 
@@ -573,10 +581,10 @@ class ValidateController(BaseController):
                 options['initTime'] = param.get('init')
 
         try:
-            passw = getParam(param, "pass", optional)
-            serial = getParam(param, 'serial', optional)
+            passw = param.get("pass")
+            serial = param.get('serial')
             if serial is None:
-                user = getParam(param, 'user', optional)
+                user = param.get('user')
                 if user is not None:
                     user = getUserFromParam(param)
                     toks = getTokens4UserOrSerial(user=user)
@@ -593,15 +601,18 @@ class ValidateController(BaseController):
                         elif len(realms) > 0:
                             realm = realms[0]
 
-                        userInfo = getUserInfo(tok.LinOtpUserid, tok.LinOtpIdResolver, tok.LinOtpIdResClass)
-                        user = User(login=userInfo.get('username'), realm=realm)
+                        userInfo = getUserInfo(tok.LinOtpUserid,
+                                               tok.LinOtpIdResolver,
+                                               tok.LinOtpIdResClass)
+                        user = User(login=userInfo.get('username'),
+                                    realm=realm)
 
                         serial = tok.getSerial()
 
             c.audit['serial'] = serial
 
             if isSelfTest() is True:
-                initTime = getParam(param, "init", optional)
+                initTime = param.get("init")
                 if initTime is not None:
                     if options is None:
                         options = {}

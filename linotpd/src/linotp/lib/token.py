@@ -25,8 +25,7 @@
 #
 """ contains several token api functions"""
 
-import binascii
-import string
+
 import datetime
 import logging
 import string
@@ -59,11 +58,11 @@ from linotp.lib.user import getUserId, getUserInfo
 from linotp.lib.user import User, getUserRealms
 from linotp.lib.user import get_authenticated_user
 
-from linotp.lib.util import getParam
 from linotp.lib.util import generate_password
 
 from linotp.lib.realm import realm2Objects
 from linotp.lib.realm import getRealms
+from linotp.lib.realm import getDefaultRealm
 
 import linotp
 import linotp.lib.policy
@@ -76,16 +75,14 @@ from linotp.model import Challenge
 from linotp.lib.config import getFromConfig
 
 from linotp.lib.realm import createDBRealm, getRealmObject
-# getDefaultRealm wird in tokenclass gebraucht:
-from linotp.lib.realm import getDefaultRealm
-
-import linotp.model.meta
-Session = linotp.model.meta.Session
 
 from linotp.lib.context import request_context as context
-
 from linotp.lib.policy import get_auth_forward
 from linotp.lib.policy.forward import ForwardServerPolicy
+
+import linotp.model.meta
+
+Session = linotp.model.meta.Session
 
 log = logging.getLogger(__name__)
 
@@ -126,11 +123,10 @@ class TokenHandler(object):
             # # and append our parameter realm
             tokenrealm.append(param.get('realm'))
 
-        typ = getParam(param, "type", optional)
+        typ = param.get("type")
         if typ is None:
             typ = "hmac"
 
-        # serial = getParam(param, "serial", required)
         serial = param.get('serial', None)
         if serial is None:
             prefix = param.get('prefix', None)
@@ -1325,13 +1321,17 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
         user_resolver = user_resolver.replace('useridresolver.', 'useridresolver%.')
 
         ''' coout tokens: 0 1 or more '''
-        tokens = Session.query(Token).filter(Token.LinOtpTokenType == unicode(tok_type))\
-                                       .filter(Token.LinOtpIdResClass.like(unicode(user_resolver)))\
-                                       .filter(Token.LinOtpUserid == unicode(user_id))
+        tokens = Session.query(
+            Token).filter(
+                Token.LinOtpTokenType == unicode(tok_type)).filter(
+                    Token.LinOtpIdResClass.like(
+                        unicode(user_resolver))).filter(
+                            Token.LinOtpUserid == unicode(user_id))
 
     elif serial is not None:
-        tokens = Session.query(Token).filter(Token.LinOtpTokenType == unicode(tok_type))\
-                                       .filter(Token.LinOtpTokenSerialnumber == unicode(serial))
+        tokens = Session.query(Token).filter(
+            Token.LinOtpTokenType == unicode(tok_type)).filter(
+                Token.LinOtpTokenSerialnumber == unicode(serial))
 
     for token in tokens:
         info = token.LinOtpTokenInfo
@@ -1341,7 +1341,6 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
             if rollout is not None:
                 serials.append(token.LinOtpTokenSerialnumber)
 
-
     if len(serials) > 1:
         raise Exception('multiple tokens found in rollout state: %s'
                         % unicode(serials))
@@ -1350,6 +1349,7 @@ def getRolloutToken4User(user=None, serial=None, tok_type=u'ocra'):
         serial = serials[0]
 
     return serial
+
 
 def setRealms(serial, realmList):
     # set the tokenlist of DB tokens
@@ -1378,6 +1378,7 @@ def getTokenRealms(serial):
     token = tokenList[0]
 
     return token.getRealmNames()
+
 
 def getRealmsOfTokenOrUser(token):
     '''
@@ -1417,6 +1418,7 @@ def getTokenInRealm(realm, active=True):
                             TokenRealm.realm_id == Realm.id,
                             func.lower(Realm.name) == realm.lower())).count()
     return sqlQuery
+
 
 def getTokenNumResolver(resolver=None, active=True):
     '''

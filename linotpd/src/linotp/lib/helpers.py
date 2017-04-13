@@ -27,24 +27,16 @@
 
 Consists of functions to typically be used within templates, but also
 available to Controllers. This module is available to templates as 'h'.
-"""
-# Import helpers as desired, or define your own, ie:
-#from webhelpers.html.tags import checkbox, password
 
+
+Import helpers as desired, or define your own, ie:
+   from webhelpers.html.tags import checkbox, password
+
+depending on the version there are two different possible locations...
+see:
+http://stackoverflow.com/questions/2219316/pylons-webhelpers-missing-secure-form-module
+
+"""
 import logging
 
-
-#CKO: depending on the version there are two different possible locations...
-# see http://stackoverflow.com/questions/2219316/pylons-webhelpers-missing-secure-form-module
-from linotp.lib.error import ParameterError
-
-
 log = logging.getLogger(__name__)
-
-def getParam(param, which, optional):
-    if param.has_key(which):
-        return  param[which]
-    else:
-        if (optional is False):
-            raise ParameterError("Missing parameter: %r" % which, id=905)
-    return

@@ -52,7 +52,7 @@ from linotp.lib.token import getTokenRealms
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
 
-from linotp.lib.util import getParam, getLowerParams
+from linotp.lib.util import getLowerParams
 from linotp.lib.util import check_session
 from linotp.lib.util import SESSION_KEY_LENGTH
 
@@ -111,16 +111,14 @@ audit = config.get('audit')
 
 log = logging.getLogger(__name__)
 
-optional = True
-required = False
-
 
 class AdminController(BaseController):
 
     '''
-    The linotp.controllers are the implementation of the web-API to talk to the LinOTP server.
-    The AdminController is used for administrative tasks like adding tokens to LinOTP,
-    assigning tokens or revoking tokens.
+    The linotp.controllers are the implementation of the web-API to talk to
+    the LinOTP server.
+    The AdminController is used for administrative tasks like adding tokens
+    to LinOTP, assigning tokens or revoking tokens.
     The functions of the AdminController are invoked like this
 
         https://server/admin/<functionname>
@@ -327,15 +325,15 @@ class AdminController(BaseController):
 
         param = request.params
         try:
-            serial = getParam(param, "serial", optional)
-            page = getParam(param, "page", optional)
-            filter = getParam(param, "filter", optional)
-            sort = getParam(param, "sortby", optional)
-            dir = getParam(param, "sortdir", optional)
-            psize = getParam(param, "pagesize", optional)
+            serial = param.get("serial")
+            page = param.get("page")
+            filter = param.get("filter")
+            sort = param.get("sortby")
+            dir = param.get("sortdir")
+            psize = param.get("pagesize")
             realm = param.get("viewrealm", param.get("realm", ''))
-            ufields = getParam(param, "user_fields", optional)
-            output_format = getParam(param, "outform", optional)
+            ufields = param.get("user_fields")
+            output_format = param.get("outform")
 
             user_fields = []
             if ufields:
@@ -427,7 +425,7 @@ class AdminController(BaseController):
         param = request.params
 
         try:
-            serial = getParam(param, "serial", optional)
+            serial = param.get("serial")
             user = getUserFromParam(param)
 
             c.audit['user'] = user.login
@@ -499,7 +497,7 @@ class AdminController(BaseController):
 
         param = request.params
         try:
-            serial = getParam(param, "serial", optional)
+            serial = param.get("serial")
             user = getUserFromParam(param)
 
             # check admin authorization
@@ -577,10 +575,14 @@ class AdminController(BaseController):
         param = request.params
 
         try:
-            otp = getParam(param, "otp", required)
-            typ = getParam(param, "type", optional)
-            realm = getParam(param, "realm", optional)
-            assigned = getParam(param, "assigned", optional)
+            try:
+                otp = param["otp"]
+            except KeyError:
+                ParameterError("Missing parameter: 'otp'")
+
+            typ = param.get("type")
+            realm = param.get("realm")
+            assigned = param.get("assigned")
 
             serial = ""
             username = ""
@@ -648,7 +650,7 @@ class AdminController(BaseController):
 
         param = request.params
         try:
-            serial = getParam(param, "serial", optional)
+            serial = param.get("serial")
             user = getUserFromParam(param)
             auth_user = getUserFromRequest(request)
 
@@ -721,7 +723,10 @@ class AdminController(BaseController):
 
         param = request.params
         try:
-            serial = getParam(param, "serial", required)
+            try:
+                serial = param["serial"]
+            except KeyError:
+                ParameterError("Missing parameter: 'serial'")
 
             # check admin authorization
             # try:
@@ -819,7 +824,7 @@ class AdminController(BaseController):
 
             # determine token class
 
-            token_cls_alias = getParam(params, "type", optional) or 'hmac'
+            token_cls_alias = params.get("type") or 'hmac'
 
             g = config['pylons.app_globals']
             tokenclasses = g.tokenclasses
@@ -974,8 +979,11 @@ class AdminController(BaseController):
         param = request.params
 
         try:
+            try:
+                serial = param["serial"]
+            except KeyError:
+                ParameterError("Missing parameter: 'serial'")
 
-            serial = getParam(param, "serial", required)
             user = getUserFromParam(param)
 
             c.audit['source_realm'] = getTokenRealms(serial)
@@ -1046,8 +1054,8 @@ class AdminController(BaseController):
 
         try:
 
-            upin = getParam(param, "pin", optional)
-            serial = getParam(param, "serial", optional)
+            upin = param.get("pin")
+            serial = param.get("serial")
             user = getUserFromParam(param)
 
             # check admin authorization
@@ -1055,7 +1063,8 @@ class AdminController(BaseController):
 
             th = TokenHandler()
             c.audit['source_realm'] = getTokenRealms(serial)
-            log.info("[assign] assigning token with serial %s to user %s@%s" % (serial, user.login, user.realm))
+            log.info("[assign] assigning token with serial %s to user %s@%s",
+                     serial, user.login, user.realm)
             res = th.assignToken(serial, user, upin, param)
 
             checkPolicyPost('admin', 'assign', param, user)
@@ -1120,24 +1129,39 @@ class AdminController(BaseController):
             param = getLowerParams(request.params)
 
             # # if there is a pin
-            if param.has_key("userpin"):
+            if "userpin" in param:
                 msg = "setting userPin failed"
-                userPin = getParam(param, "userpin", required)
-                serial = getParam(param, "serial", required)
+                try:
+                    userPin = param["userpin"]
+                except KeyError:
+                    ParameterError("Missing parameter: 'userpin'")
+
+                try:
+                    serial = param["serial"]
+                except KeyError:
+                    ParameterError("Missing parameter: 'serial'")
 
                 # check admin authorization
                 checkPolicyPre('admin', 'setPin', param)
 
-                log.info("[setPin] setting userPin for token with serial %s" % serial)
+                log.info("[setPin] setting userPin for token with serial %s",
+                         serial)
                 ret = setPinUser(userPin, serial)
                 res["set userpin"] = ret
                 count = count + 1
                 c.audit['action_detail'] += "userpin, "
 
-            if param.has_key("sopin"):
+            if "sopin" in param:
                 msg = "setting soPin failed"
-                soPin = getParam(param, "sopin", required)
-                serial = getParam(param, "serial", required)
+                try:
+                    soPin = param["sopin"]
+                except KeyError:
+                    ParameterError("Missing parameter: 'userpin'")
+
+                try:
+                    serial = param["serial"]
+                except KeyError:
+                    ParameterError("Missing parameter: 'serial'")
 
                 # check admin authorization
                 checkPolicyPre('admin', 'setPin', param)
@@ -1238,7 +1262,7 @@ class AdminController(BaseController):
         try:
             param = getLowerParams(request.params)
 
-            serial = getParam(param, "serial", optional)
+            serial = param.get("serial")
             user = getUserFromParam(param)
 
             # check admin authorization
@@ -1248,7 +1272,7 @@ class AdminController(BaseController):
             # # if there is a pin
             if 'pin' in param:
                 msg = "[set] setting pin failed"
-                upin = getParam(param, "pin", required)
+                upin = param["pin"]
                 log.info("[set] setting pin for token with serial %r" % serial)
                 if 1 == getOTPPINEncrypt(serial=serial, user=user):
                     param['encryptpin'] = "True"
@@ -1259,7 +1283,7 @@ class AdminController(BaseController):
 
             if "MaxFailCount".lower() in param:
                 msg = "[set] setting MaxFailCount failed"
-                maxFail = int(getParam(param, "MaxFailCount".lower(), required))
+                maxFail = int(param["MaxFailCount".lower()])
                 log.info("[set] setting maxFailCount (%r) for token with "
                          "serial %r" % (maxFail, serial))
                 ret = th.setMaxFailCount(maxFail, user, serial)
@@ -1269,11 +1293,9 @@ class AdminController(BaseController):
 
             if "SyncWindow".lower() in param:
                 msg = "[set] setting SyncWindow failed"
-                syncWindow = int(
-                    getParam(param, "SyncWindow".lower(), required))
-                log.info(
-                    "[set] setting syncWindow (%r) for token with serial %r" % (
-                    syncWindow, serial))
+                syncWindow = int(param["SyncWindow".lower()])
+                log.info("[set] setting syncWindow (%r) for token with "
+                         "serial %r", syncWindow, serial)
                 ret = th.setSyncWindow(syncWindow, user, serial)
                 res["set SyncWindow"] = ret
                 count = count + 1
@@ -1281,7 +1303,7 @@ class AdminController(BaseController):
 
             if "description".lower() in param:
                 msg = "[set] setting description failed"
-                description = getParam(param, "description".lower(), required)
+                description = param["description".lower()]
                 log.info("[set] setting description (%r) for token with serial"
                          " %r" % (description, serial))
                 ret = th.setDescription(description, user, serial)
@@ -1289,10 +1311,9 @@ class AdminController(BaseController):
                 count = count + 1
                 c.audit['action_detail'] += "description=%r, " % description
 
-            if param.has_key("CounterWindow".lower()):
+            if "CounterWindow".lower() in param:
                 msg = "[set] setting CounterWindow failed"
-                counterWindow = int(
-                    getParam(param, "CounterWindow".lower(), required))
+                counterWindow = int(param["CounterWindow".lower()])
                 log.info(
                     "[set] setting counterWindow (%r) for token with serial %r"
                     % (counterWindow, serial))
@@ -1303,7 +1324,7 @@ class AdminController(BaseController):
 
             if "OtpLen".lower() in param:
                 msg = "[set] setting OtpLen failed"
-                otpLen = int(getParam(param, "OtpLen".lower(), required))
+                otpLen = int(param["OtpLen".lower()])
                 log.info(
                     "[set] setting OtpLen (%r) for token with serial %r" % (
                     otpLen, serial))
@@ -1314,10 +1335,9 @@ class AdminController(BaseController):
 
             if "hashlib".lower() in param:
                 msg = "[set] setting hashlib failed"
-                hashlib = getParam(param, "hashlib".lower(), required)
-                log.info(
-                    "[set] setting hashlib (%r) for token with serial %r" % (
-                    hashlib, serial))
+                hashlib = param["hashlib".lower()]
+                log.info("[set] setting hashlib (%r) for token with serial"
+                         " %r", hashlib, serial)
                 th = TokenHandler()
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
@@ -1326,8 +1346,7 @@ class AdminController(BaseController):
 
             if "timeWindow".lower() in param:
                 msg = "[set] setting timeWindow failed"
-                timeWindow = int(
-                    getParam(param, "timeWindow".lower(), required))
+                timeWindow = int(param["timeWindow".lower()])
                 log.info("[set] setting timeWindow (%r) for token with serial"
                          " %r" % (timeWindow, serial))
                 ret = th.addTokenInfo("timeWindow", timeWindow, user, serial)
@@ -1335,9 +1354,9 @@ class AdminController(BaseController):
                 count = count + 1
                 c.audit['action_detail'] += "timeWindow=%d, " % timeWindow
 
-            if param.has_key("timeStep".lower()):
+            if "timeStep".lower() in param:
                 msg = "[set] setting timeStep failed"
-                timeStep = int(getParam(param, "timeStep".lower(), required))
+                timeStep = int(param["timeStep".lower()])
                 log.info(
                     "[set] setting timeStep (%r) for token with serial %r" % (
                     timeStep, serial))
@@ -1348,7 +1367,7 @@ class AdminController(BaseController):
 
             if "timeShift".lower() in param:
                 msg = "[set] setting timeShift failed"
-                timeShift = int(getParam(param, "timeShift".lower(), required))
+                timeShift = int(param["timeShift".lower()])
                 log.info("[set] setting timeShift (%r) for token with serial"
                          " %r" % (timeShift, serial))
                 ret = th.addTokenInfo("timeShift", timeShift, user, serial)
@@ -1358,7 +1377,7 @@ class AdminController(BaseController):
 
             if "countAuth".lower() in param:
                 msg = "[set] setting countAuth failed"
-                ca = int(getParam(param, "countAuth".lower(), required))
+                ca = int(param["countAuth".lower()])
                 log.info(
                     "[set] setting count_auth (%r) for token with serial %r" % (
                     ca, serial))
@@ -1373,7 +1392,7 @@ class AdminController(BaseController):
 
             if "countAuthMax".lower() in param:
                 msg = "[set] setting countAuthMax failed"
-                ca = int(getParam(param, "countAuthMax".lower(), required))
+                ca = int(param["countAuthMax".lower()])
                 log.info(
                     "[set] setting count_auth_max (%r) for token with serial %r"
                     % (ca, serial))
@@ -1388,7 +1407,7 @@ class AdminController(BaseController):
 
             if "countAuthSuccess".lower() in param:
                 msg = "[set] setting countAuthSuccess failed"
-                ca = int(getParam(param, "countAuthSuccess".lower(), required))
+                ca = int(param["countAuthSuccess".lower()])
                 log.info(
                     "[set] setting count_auth_success (%r) for token with"
                     "serial %r" % (ca, serial))
@@ -1403,8 +1422,7 @@ class AdminController(BaseController):
 
             if "countAuthSuccessMax".lower() in param:
                 msg = "[set] setting countAuthSuccessMax failed"
-                ca = int(
-                    getParam(param, "countAuthSuccessMax".lower(), required))
+                ca = int(param["countAuthSuccessMax".lower()])
                 log.info(
                     "[set] setting count_auth_success_max (%r) for token with"
                     "serial %r" % (ca, serial))
@@ -1419,7 +1437,7 @@ class AdminController(BaseController):
 
             if "validityPeriodStart".lower() in param:
                 msg = "[set] setting validityPeriodStart failed"
-                ca = getParam(param, "validityPeriodStart".lower(), required)
+                ca = param["validityPeriodStart".lower()]
                 log.info(
                     "[set] setting validity_period_start (%r) for token with"
                     "serial %r" % (ca, serial))
@@ -1436,7 +1454,7 @@ class AdminController(BaseController):
 
             if "validityPeriodEnd".lower() in param:
                 msg = "[set] setting validityPeriodEnd failed"
-                ca = getParam(param, "validityPeriodEnd".lower(), required)
+                ca = param["validityPeriodEnd".lower()]
                 log.info(
                     "[set] setting validity_period_end (%r) for token with"
                     "serial %r" % (ca, serial))
@@ -1452,7 +1470,7 @@ class AdminController(BaseController):
 
             if "phone" in param:
                 msg = "[set] setting phone failed"
-                ca = getParam(param, "phone".lower(), required)
+                ca = param["phone".lower()]
                 log.info("[set] setting phone (%r) for token with serial %r" % (
                 ca, serial))
                 tokens = getTokens4UserOrSerial(user, serial)
@@ -1529,21 +1547,28 @@ class AdminController(BaseController):
 
         param = request.params
         try:
-            serial = getParam(param, "serial", optional)
+            serial = param.get("serial")
             user = getUserFromParam(param)
 
-            otp1 = getParam(param, "otp1", required)
-            otp2 = getParam(param, "otp2", required)
+            try:
+                otp1 = param["otp1"]
+            except KeyError:
+                ParameterError("Missing parameter: 'otp1'")
 
-            ''' to support the challenge based resync, we have to pass the challenges
-                down to the token implementation
-            '''
-            chall1 = getParam(param, "challenge1", optional)
-            chall2 = getParam(param, "challenge2", optional)
+            try:
+                otp2 = param["otp2"]
+            except KeyError:
+                ParameterError("Missing parameter: 'otp2'")
+
+            # to support the challenge based resync, we have to pass the challenges
+            #    down to the token implementation
+
+            chall1 = param.get("challenge1")
+            chall2 = param.get("challenge2")
 
             options = None
             if chall1 is not None and chall2 is not None:
-                options = {'challenge1' : chall1, 'challenge2':chall2 }
+                options = {'challenge1': chall1, 'challenge2': chall2}
 
             # check admin authorization
             checkPolicyPre('admin', 'resync', param)
@@ -1606,7 +1631,7 @@ class AdminController(BaseController):
         # check if we got a realm or resolver, that is ok!
         try:
             param.update(request.params)
-            realm = getParam(param, "realm", optional)
+            realm = param.get("realm")
             checkPolicyPre('admin', 'userlist', param)
 
             up = 0
@@ -1692,14 +1717,22 @@ class AdminController(BaseController):
 
         param = request.params
         try:
-            serial = getParam(param, "serial", required)
-            realms = getParam(param, "realms", required)
+            try:
+                serial = param["serial"]
+            except KeyError:
+                ParameterError("Missing parameter: 'serial'")
+
+            try:
+                realms = param["realms"]
+            except KeyError:
+                ParameterError("Missing parameter: 'realms'")
 
             # check admin authorization
             checkPolicyPre('admin', 'tokenrealm', param)
 
             c.audit['source_realm'] = getTokenRealms(serial)
-            log.info("[tokenrealm] setting realms for token %s to %s" % (serial, realms))
+            log.info("[tokenrealm] setting realms for token %s to %s",
+                     serial, realms)
             realmList = realms.split(',')
             ret = setRealms(serial, realmList)
 
@@ -1748,7 +1781,7 @@ class AdminController(BaseController):
 
         param = request.params
 
-        serial = getParam(param, "serial", optional)
+        serial = param.get("serial")
         user = getUserFromParam(param)
 
         try:
@@ -1818,14 +1851,23 @@ class AdminController(BaseController):
         param = request.params
 
         try:
-            serial_from = getParam(param, "from", required)
-            serial_to = getParam(param, "to", required)
+
+            try:
+                serial_from = param['from']
+            except KeyError:
+                ParameterError("Missing parameter: 'from'")
+
+            try:
+                serial_to = param['to']
+            except KeyError:
+                ParameterError("Missing parameter: 'to'")
 
             # check admin authorization
             checkPolicyPre('admin', 'copytokenpin', param)
 
             th = TokenHandler()
-            log.info("[copyTokenPin] copying Pin from token %s to token %s" % (serial_from, serial_to))
+            log.info("[copyTokenPin] copying Pin from token %s to token %s",
+                     serial_from, serial_to)
             ret = th.copyTokenPin(serial_from, serial_to)
 
             c.audit['success'] = ret
@@ -1890,14 +1932,22 @@ class AdminController(BaseController):
 
         try:
 
-            serial_from = getParam(param, "from", required)
-            serial_to = getParam(param, "to", required)
+            try:
+                serial_from = param['from']
+            except KeyError:
+                ParameterError("Missing parameter: 'from'")
+
+            try:
+                serial_to = param['to']
+            except KeyError:
+                ParameterError("Missing parameter: 'to'")
 
             # check admin authorization
             checkPolicyPre('admin', 'copytokenuser', param)
 
             th = TokenHandler()
-            log.info("[copyTokenUser] copying User from token %s to token %s" % (serial_from, serial_to))
+            log.info("[copyTokenUser] copying User from token %s to token %s",
+                     serial_from, serial_to)
             ret = th.copyTokenUser(serial_from, serial_to)
 
             c.audit['success'] = ret
@@ -2429,7 +2479,7 @@ class AdminController(BaseController):
 
             transid = param.get('transactionid', None) or param.get('state', None)
             user = getUserFromParam(param)
-            serial = getParam(param, 'serial', optional)
+            serial = param.get('serial')
             all = param.get('open', 'False').lower() == 'true'
 
             if all:

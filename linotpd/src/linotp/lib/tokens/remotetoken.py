@@ -36,12 +36,9 @@ from linotp.lib.tokenclass import TokenClass
 from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.config import getFromConfig
-from linotp.lib.util import getParam
+from linotp.lib.error import ParameterError
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 optional = True
 required = False
@@ -149,28 +146,32 @@ class RemoteTokenClass(TokenClass):
         :return: - nothing -
         """
 
-        self.remoteServer = getParam(param, "remote.server", required)
+        try:
+            self.remoteServer = param["remote.server"]
+        except KeyError:
+            ParameterError("Missing parameter: 'remote.server'")
+
         # if another OTP length would be specified in /admin/init this would
         # be overwritten by the parent class, which is ok.
         self.setOtpLen(6)
 
-        val = getParam(param, "remote.local_checkpin", optional)
+        val = param.get("remote.local_checkpin", optional)
         if val is not None:
             self.remoteLocalCheckpin = val
 
-        val = getParam(param, "remote.serial", optional)
+        val = param.get("remote.serial")
         if val is not None:
             self.remoteSerial = val
 
-        val = getParam(param, "remote.user", optional)
+        val = param.get("remote.user")
         if val is not None:
             self.remoteUser = val
 
-        val = getParam(param, "remote.realm", optional)
+        val = param.get("remote.realm")
         if val is not None:
             self.remoteRealm = val
 
-        val = getParam(param, "remote.resConf", optional)
+        val = param.get("remote.resConf")
         if val is not None:
             self.remoteResConf = val
 
