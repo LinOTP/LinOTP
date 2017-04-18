@@ -37,7 +37,7 @@ from pylons import tmpl_context as c
 from pylons import config
 from pylons import request
 
-from linotp.lib.config import initLinotpConfig
+from linotp.lib.config import getLinotpConfig
 from linotp.lib.resolver import initResolvers
 from linotp.lib.resolver import setupResolvers
 from linotp.lib.resolver import closeResolvers
@@ -465,7 +465,7 @@ class BaseController(WSGIController):
             log.exception('failed to assign hsm device: %r' % exx)
             raise exx
 
-        l_config = initLinotpConfig()
+        l_config = getLinotpConfig()
 
         # initialize the elliptic curve secret + public key for the qrtoken
         secret_key = l_config.get('SecretKey.Partition.0', False)
