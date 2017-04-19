@@ -39,6 +39,8 @@ from linotp.lib.user import getResolversOfUser
 from linotp.lib.error import LinotpError
 from linotp.lib.error import ParameterError
 
+from linotp.lib.config.parsing import ConfigTree
+from linotp.lib.config.parsing import ConfigNotRecognized
 from linotp.lib.context import request_context as context
 
 from linotp.lib.policy.definitions import SYSTEM_ACTIONS
@@ -85,6 +87,33 @@ class PolicyException(LinotpError):
 class AuthorizeException(LinotpError):
     def __init__(self, description="unspecified error!"):
         LinotpError.__init__(self, description=description, id=510)
+
+
+# ---------------------------------------------------------------------------- -
+
+# on module load integrate the policy config parser into the
+# ConfigTree class
+
+def parse_policy(composite_key, value):
+
+    """ Parses policy data from a config entry """
+
+    if not composite_key.startswith('linotp.Policy'):
+        raise ConfigNotRecognized(composite_key)
+
+    parts = composite_key.split('.')
+
+    if len(parts) != 4:
+        raise ConfigNotRecognized(composite_key)
+
+    object_id = parts[2]
+    attr_name = parts[3]
+
+    return object_id, {attr_name: value}
+
+ConfigTree.add_parser('policies', parse_policy)
+
+# ---------------------------------------------------------------------------- -
 
 
 def checkAuthorisation(scope, method):

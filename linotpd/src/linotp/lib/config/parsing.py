@@ -6,12 +6,6 @@ a structured ConfigTree
 import json
 
 from collections import defaultdict
-from functools import partial
-from linotp.lib.resolver import get_resolver_types
-from linotp.provider import Provider_types
-from linotp.provider import Legacy_Provider
-from linotp.provider import Default_Provider_Key
-
 
 # ------------------------------------------------------------------------------
 
@@ -36,6 +30,41 @@ class ConfigNotRecognized(Exception):
 
 # ------------------------------------------------------------------------------
 
+def parse_system_config(composite_key, value):
+
+    """
+    Parses system config entries
+
+    ::warning: does a very generic match. should be added last to the
+        internal config tree parser list
+    """
+
+    if not composite_key.startswith('linotp.'):
+        raise ConfigNotRecognized(composite_key)
+
+    return 'system_config', {composite_key: value}
+
+# ------------------------------------------------------------------------------
+
+
+def parse_deprecated_enc(composite_key, value):
+
+    """
+    Parses soon to be deprecated 'enclinotp' config entries
+
+    ::warning: does a very generic match. should be added last to the
+        internal config tree parser list
+    """
+
+    # XXX LEGACY DEPRECATED
+
+    if not composite_key.startswith('enclinotp.'):
+        raise ConfigNotRecognized(composite_key)
+
+    return 'deprecated_enc', {composite_key: value}
+
+# ------------------------------------------------------------------------------
+
 
 class ConfigTree(dict):
 
@@ -51,10 +80,22 @@ class ConfigTree(dict):
     >>>     tree.consume_entry(key, value)
     """
 
-    def __init__(self):
-        self.parsers = []
+    # the list of parsers get initialized on startup
+    # by the add_parser method.
 
-    def add_parser(self, target, func):
+    _parsers = [('globals', parse_system_config),
+                ('deprecated', parse_deprecated_enc)]
+
+    def __init__(self):
+
+        # initialize config tree subspaces according to
+        # parser definitions
+
+        for target, __ in self._parsers:
+            self[target] = defaultdict(dict)
+
+    @classmethod
+    def add_parser(cls, target, func):
 
         """
         Adds a parser function for the config tree.
@@ -73,11 +114,39 @@ class ConfigTree(dict):
             an attribute name and each value its value.
 
         .. warning:: The order in which the parsers are added
-            is relevant. Earlier parsers have a higher priority
+            is relevant. Later parsers have a higher priority
         """
 
-        self[target] = defaultdict(dict)
-        self.parsers.append((target, func))
+        # the following is a hack.
+
+        # we are facing the problem, that we need information
+        # from different modules (such as the list of available
+        # resolver types) in order to define the parsing function
+        # for the module. we can't simply import this data in here
+        # because it produces circular dependencies (most of the
+        # modules use functions from the config module).
+
+        # because of this, with this commit, we change this method
+        # into a class method and delegate the calls to add_parser
+        # to the different modules. add_parser will now be called
+        # in the respective modules with the parser function defined
+        # there as well.
+
+        # however, we have 2 basic config types ('globals' and 'deprecated'),
+        # that have no distinction criteria to the other config entries and
+        # rely on the other parsers being processed first
+
+        # because we cannot possibly control import order (at least not
+        # at our current stage of insanity) we need to make sure that
+        # the parsers for 'globals' and 'deprecated' always come last.
+
+        # this problem is 'solved' by adding both 'globals' and
+        # 'deprecated' parsers at the class level (see above) and
+        # by PREPENDING every other parser that gets added from
+        # outside, effectively reversing the order of priority.
+        # (from later ^= lower_prio to later ^= higher prio)
+
+        cls._parsers.insert(0, (target, func))
 
     def consume_entry(self, composite_key, value):
 
@@ -94,7 +163,7 @@ class ConfigTree(dict):
             parsers recognized the config pair
         """
 
-        for target, parser_func in self.parsers:
+        for target, parser_func in self._parsers:
 
             try:
 
@@ -119,267 +188,6 @@ class ConfigTree(dict):
 # ------------------------------------------------------------------------------
 
 
-def parse_policy(composite_key, value):
-
-    """ Parses policy data from a config entry """
-
-    if not composite_key.startswith('linotp.Policy'):
-        raise ConfigNotRecognized(composite_key)
-
-    parts = composite_key.split('.')
-
-    if len(parts) != 4:
-        raise ConfigNotRecognized(composite_key)
-
-    object_id = parts[2]
-    attr_name = parts[3]
-
-    return object_id, {attr_name: value}
-
-# ------------------------------------------------------------------------------
-
-
-def parse_resolver(composite_key, value):
-
-    """ Parses resolver data from a config entry """
-
-    attr_updates = {}
-
-    # ------------------------------------------------------------------------ -
-
-    # due to ambiguity of the second part in the config dot notation
-    # we must check if the second part is a primary class identifier
-    # of a resolver.
-
-    cls_identifiers = get_resolver_types()  # ldapresolver, passwdresolver, etc
-
-    for cls_identifier in cls_identifiers:
-        if composite_key.startswith('linotp.%s.' % cls_identifier):
-            break
-    else:
-        raise ConfigNotRecognized(composite_key)
-
-    attr_updates['cls_identifier'] = cls_identifier
-
-    # ------------------------------------------------------------------------ -
-
-    parts = composite_key.split('.', 3)
-
-    if len(parts) < 3:
-        raise ConfigNotRecognized(composite_key, 'This legacy resolver '
-                                  'description is not supported anymore.')
-    # ------------------------------------------------------------------------ -
-
-    attr_name = parts[2]
-    attr_updates[attr_name] = value
-
-    object_id = parts[3]  # the resolver name
-
-    # ------------------------------------------------------------------------ -
-
-    return object_id, attr_updates
-
-
-# ------------------------------------------------------------------------------
-
-
-def parse_realm(composite_key, value):
-
-    """ Parses realm data from a config entry """
-
-    if not composite_key.startswith('linotp.useridresolver.group.'):
-        raise ConfigNotRecognized(composite_key)
-
-    object_id = composite_key[len('linotp.useridresolver.group.'):]
-
-    return object_id, {'resolvers': value}
-
-# ------------------------------------------------------------------------------
-
-
-def parse_default_realm(composite_key, value):
-
-    """
-    Sets the attribute pair {default: True} to the default realm
-    in the tree.
-    """
-
-    if composite_key != 'linotp.DefaultRealm':
-        raise ConfigNotRecognized(composite_key)
-
-    # ------------------------------------------------------------------------ -
-
-    return value, {'default': True}
-
-
-# ------------------------------------------------------------------------------
-
-
-def parse_provider(provider_type, composite_key, value):
-
-    """
-    Parses provider data from a config entry
-
-    :param provider_prefix: A short provider prefix (such as 'SMSProvider',
-        'PushProvider' - all without the leading 'linotp.')
-    """
-
-    attr_updates = {}
-
-    # ------------------------------------------------------------------------ -
-
-    long_prefix = Provider_types[provider_type]['prefix']
-    provider_prefix = long_prefix[len('linotp.'):-1]
-
-    # ------------------------------------------------------------------------ -
-
-    # due to ambiguity of the second part in the config dot notation
-    # we must check if the second part is the provider type
-
-    if not composite_key.startswith('linotp.%s.' % provider_prefix):
-        raise ConfigNotRecognized(composite_key)
-
-    # ------------------------------------------------------------------------ -
-
-    parts = composite_key.split('.')
-
-    if len(parts) == 3:
-
-        object_id = parts[2]
-        attr_updates['class'] = value
-
-    elif len(parts) == 4:
-
-        object_id = parts[2]
-        attr_name = parts[3]
-        attr_updates[attr_name] = value
-
-    else:
-
-        raise ConfigNotRecognized(composite_key)
-
-    # ------------------------------------------------------------------------ -
-
-    return object_id, attr_updates
-
-
-# ------------------------------------------------------------------------------
-
-def parse_legacy_provider(provider_type, composite_key, value):
-
-    """
-    Parses legacy provider data from a config entry
-
-    :param provider_prefix: A short provider prefix (such as 'SMSProvider',
-        'PushProvider' - all without the leading 'linotp.')
-    """
-
-    # XXX LEGACY: providers had no names and composite attribute
-    # names (such as EmailProviderConfig - note: without a dot)
-    # the name in this case is set to 'imported_default'
-
-    attr_updates = {}
-
-    # ------------------------------------------------------------------------ -
-
-    long_prefix = Provider_types[provider_type]['prefix']
-    provider_prefix = long_prefix[len('linotp.'):-1]
-
-    # ------------------------------------------------------------------------ -
-
-    # due to ambiguity of the second part in the config dot notation
-    # we must check if the second part is the provider type
-
-    if not composite_key.startswith('linotp.%s' % provider_prefix):
-        raise ConfigNotRecognized(composite_key)
-
-    # ------------------------------------------------------------------------ -
-
-    parts = composite_key.split('.')
-
-    if len(parts) != 2:
-        raise ConfigNotRecognized(composite_key)
-
-    object_id = 'imported_default'
-    composite_attr_name = parts[1]
-
-    # ------------------------------------------------------------------------ -
-
-    prefix_len = len(provider_prefix)
-    attr_name = composite_attr_name[prefix_len:]
-
-    if not attr_name:
-        attr_name = 'class'
-
-    attr_updates[attr_name] = value
-
-    # ------------------------------------------------------------------------ -
-
-    return object_id, attr_updates
-
-
-# ------------------------------------------------------------------------------
-
-
-def parse_default_provider(provider_type, composite_key, value):
-
-    """
-    Sets the attribute pair {default: True} to the default provider
-    in the tree.
-
-    :param provider_type: A string identifier (such as 'sms', 'email', etc)
-    """
-
-    # ------------------------------------------------------------------------ -
-
-    default_key = Default_Provider_Key[provider_type]
-
-    if composite_key != default_key:
-        raise ConfigNotRecognized(composite_key)
-
-    # ------------------------------------------------------------------------ -
-
-    return value, {'default': True}
-
-# ------------------------------------------------------------------------------
-
-
-def parse_system_config(composite_key, value):
-
-    """
-    Parses system config entries
-
-    ::warning: does a very generic match. should be added last to the
-        config tree parser list
-    """
-
-    if not composite_key.startswith('linotp.'):
-        raise ConfigNotRecognized(composite_key)
-
-    return 'system_config', {composite_key: value}
-
-# ------------------------------------------------------------------------------
-
-
-def parse_deprecated_enc(composite_key, value):
-
-    """
-    Parses soon to be deprecated 'enclinotp' config entries
-
-    ::warning: does a very generic match. should be added last to the
-        config tree parser list
-    """
-
-    # XXX LEGACY DEPRECATED
-
-    if not composite_key.startswith('enclinotp.'):
-        raise ConfigNotRecognized(composite_key)
-
-    return 'deprecated_enc', {composite_key: value}
-
-# ------------------------------------------------------------------------------
-
-
 def parse_config(config_dict):
 
     """
@@ -392,33 +200,6 @@ def parse_config(config_dict):
     """
 
     tree = ConfigTree()
-    tree.add_parser('policies', parse_policy)
-    tree.add_parser('resolvers', parse_resolver)
-    tree.add_parser('realms', parse_realm)
-    tree.add_parser('realms', parse_default_realm)
-
-    # --------------------------------------------------------------------------
-
-    for provider_type in Provider_types:
-
-        parser_target = '%s_providers' % provider_type
-
-        func = partial(parse_provider, provider_type)
-        tree.add_parser(parser_target, func)
-
-        default_func = partial(parse_default_provider, provider_type)
-        tree.add_parser(parser_target, default_func)
-
-        # XXX LEGACY
-
-        if provider_type in Legacy_Provider:
-            func = partial(parse_legacy_provider, provider_type)
-            tree.add_parser(parser_target, func)
-
-    # --------------------------------------------------------------------------
-
-    tree.add_parser('globals', parse_system_config)
-    tree.add_parser('deprecated', parse_deprecated_enc)
 
     # --------------------------------------------------------------------------
 

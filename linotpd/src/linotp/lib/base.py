@@ -48,7 +48,9 @@ from linotp.lib.realm import getRealms
 
 from linotp.lib.type_utils import boolean
 
+from linotp.lib.config import _retrieveAllConfigDB
 from linotp.lib.config import getGlobalObject
+from linotp.lib.config.parsing import parse_config
 from linotp.lib.crypto import init_key_partition
 
 
@@ -675,5 +677,11 @@ class BaseController(WSGIController):
             sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig
+
+        config_dict, delay = _retrieveAllConfigDB()
+        # FIXME: hsm delay
+        config_tree = parse_config(config_dict)
+
+        request_context['ConfigTree'] = config_tree
 
 # eof ########################################################################
