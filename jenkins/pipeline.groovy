@@ -218,11 +218,13 @@ node('docker') {
                                                 passwordVariable: 'RANCHER_SECRET_KEY',
                                                 usernameVariable: 'RANCHER_ACCESS_KEY')
                             ]) {
-                withEnv(["RANCHER_URL=${PARAM_RANCHER_URL}"]) {
-                    doMake('rancher-linotp-create', 2)
 
-                    makeIfParam('PARAM_START_JOB_IN_RANCHER', 'rancher-linotp-up', 2)
-                }
+               withEnv(["DOCKER_REGISTRY_URL=${PARAM_DOCKER_REGISTRY_URL}"]) {
+                  withEnv(["RANCHER_URL=${PARAM_RANCHER_URL}"]) {
+                        doMake('rancher-linotp-create', 2)
+                        makeIfParam('PARAM_START_JOB_IN_RANCHER', 'rancher-linotp-up', 2)
+                  }
+               }
             }
         }
     }
