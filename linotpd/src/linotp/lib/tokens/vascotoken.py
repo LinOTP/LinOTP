@@ -143,11 +143,12 @@ class VascoTokenClass(TokenClass):
         database again.
         '''
 
-        secObject = self.token.getHOtpKey()
+        secObject = self._get_secret_object()
         otpkey = secObject.getKey()
 
         # let vasco handle the OTP checking
         (res, otpkey) = vasco_otp_check(otpkey, anOtpVal)
+
         # update the vasco data blob
         self.update({"otpkey": otpkey})
 
