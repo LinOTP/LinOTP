@@ -1699,7 +1699,8 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
     toks = getTokens4UserOrSerial(None, serial)
 
     if len(toks) > 1:
-        raise TokenAdminError("multiple tokens found - cannot get OTP!", id=1201)
+        raise TokenAdminError("multiple tokens found - cannot get OTP!",
+                              id=1201)
 
     if len(toks) == 0:
         log.warning("No token with serial %r found" % serial)
@@ -1707,9 +1708,17 @@ def get_multi_otp(serial, count=0, epoch_start=0, epoch_end=0, curTime=None):
 
     if len(toks) == 1:
         token = toks[0]
-        log.debug("[get_multi_otp] getting multiple otp values for token %r. curTime=%r" % (token, curTime))
-        # if the token does not support getting the OTP value, res==False is returned
-        (res, error, otp_dict) = token.get_multi_otp(count=count, epoch_start=epoch_start, epoch_end=epoch_end, curTime=curTime)
+        log.debug("[get_multi_otp] getting multiple otp values for token %r. "
+                  "curTime=%r", token, curTime)
+
+        # if the token does not support getting the OTP
+        # value, res==False is returned
+
+        (res, error, otp_dict) = token.get_multi_otp(
+                                            count=count,
+                                            epoch_start=epoch_start,
+                                            epoch_end=epoch_end,
+                                            curTime=curTime)
 
         if res is True:
             ret = otp_dict
