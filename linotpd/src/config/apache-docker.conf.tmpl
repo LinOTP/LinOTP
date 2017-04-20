@@ -4,9 +4,11 @@ Include /etc/linotp2/apache-servername.conf
 
 Header always set X-Frame-Options "DENY"
 Header always set X-XSS-Protection "1; mode=block"
-Header always set Strict-Transport-Security "max-age=315360000; includeSubDomains"
 Header always set X-Content-Type-Options "nosniff"
 Header always set X-Permitted-Cross-Domain-Policies "none"
+{{ if ne .Env.LINOTP_APACHE_HSTS "false" }}
+Header always set Strict-Transport-Security "max-age=315360000; includeSubDomains"
+{{ end }}
 
 <Directory />
     AllowOverride None
@@ -26,8 +28,8 @@ WSGIDaemonProcess linotp processes=1 threads=15 display-name=%{GROUP} user=linot
 WSGIProcessGroup linotp
 WSGIPassAuthorization On
 
-{{ if ne .Env.HEALTHCHECK_PORT "" }}
-<VirtualHost _default_:{{ .Env.HEALTHCHECK_PORT }}>
+Listen 81
+<VirtualHost _default_:81>
 
     <Directory /etc/linotp2>
         <Files linotpapp.wsgi>
@@ -47,10 +49,10 @@ WSGIPassAuthorization On
     </Location>
 
 </VirtualHost>
-{{ end }}
 
-<VirtualHost _default_:{{ .Env.APACHE_PORT }}>
+<VirtualHost _default_:80>
 
+{{define "Server"}}
     <Directory /etc/linotp2>
         <Files linotpapp.wsgi>
             Require all granted
@@ -89,8 +91,15 @@ WSGIPassAuthorization On
     <Location /validate>
         # No Authentication
     </Location>
+{{end}}
+{{template "Server"}}
+</VirtualHost>
 
 {{ if ne .Env.LINOTP_APACHE_SSL "false" }}
+<VirtualHost _default_:443>
+
+{{template "Server"}}
+
     Header always edit Set-Cookie ^(.*)$ $1;secure
 
     #   SSL Engine Switch:
@@ -101,10 +110,9 @@ WSGIPassAuthorization On
     #   SSLCertificateFile directive is needed.
     SSLCertificateFile    /etc/ssl/certs/linotpserver.pem
     SSLCertificateKeyFile /etc/ssl/private/linotpserver.key
-{{ end }}
-
 
 </VirtualHost>
+{{ end }}
 
 ErrorDocument 500 "<h1>Internal Server Error</h1> Possible reasons can be missing modules or bad access rights on LinOTP configuration files or log files. Please check the apache logfile <pre>/var/log/apache2/error.log</pre> for more details."
 

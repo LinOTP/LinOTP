@@ -38,10 +38,6 @@ ARG LINOTP_MIRROR=www.linotp.org
 # To disable HTTP authentication for the manage UI,
 # set LINOTP_APACHE_AUTH=false.
 #
-# To serve via HTTP instead of HTTPS:
-#  LINOTP_APACHE_SSL=false
-#  APACHE_PORT=80
-#
 # To use a MySQL database:
 #  LINOTP_DB_TYPE=mysql
 # and also substitute suitable values:
@@ -51,9 +47,8 @@ ARG LINOTP_MIRROR=www.linotp.org
 #  LINOTP_DB_PASSWORD=password
 #  LINOTP_DB_NAME=database-name
 #
-# To allow unencrypted healthcheck by
-# checking /validate/ok, set
-#  HEALTHCHECK_PORT=<port>
+# Unencrypted healthchecks can be performed by
+# checking http://HOSTNAME:81/validate/ok
 #
 # To send LinOTP logs directly to
 # Logstash, set LOGSTASH_HOST and
@@ -77,9 +72,8 @@ ENV LINOTP_USER=linotp \
 	LINOTP_ADMIN_PASSWORD=admin \
 	LINOTP_APACHE_AUTH=true \
 	LINOTP_APACHE_SSL=true \
-	APACHE_PORT=443 \
+	LINOTP_APACHE_HSTS=true \
 	APACHE_LOGLEVEL=info \
-	HEALTHCHECK_PORT= \
 	LOGSTASH_HOST= \
 	LOGSTASH_PORT= \
 	LOGSTASH_TAGS=()
@@ -165,4 +159,4 @@ CMD [ \
 	]
 
 # Listen on apache port (https 443 by default - see LINOTP_APACHE_SSL and APACHE_PORT)
-EXPOSE $APACHE_PORT
+EXPOSE 80 81 443
