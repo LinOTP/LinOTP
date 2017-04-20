@@ -552,7 +552,7 @@ class ManageController(BaseController):
             try:
                 serial = param['serial']
             except KeyError:
-                ParameterError("Missing parameter: 'serial'")
+                raise ParameterError("Missing parameter: 'serial'")
 
             filterRealm = ""
             # check admin authorization

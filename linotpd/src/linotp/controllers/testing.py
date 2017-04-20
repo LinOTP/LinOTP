@@ -185,7 +185,7 @@ class TestingController(BaseController):
             try:
                 account = param["account"]
             except KeyError:
-                ParameterError("Missing parameter: 'account'")
+                raise ParameterError("Missing parameter: 'account'")
 
             sender = param.get("sender")
             username = param.get("username")

@@ -344,7 +344,7 @@ class OpenidController(BaseController):
         try:
             redirect_token = param["redirect_token"]
         except KeyError:
-            ParameterError("Missing parameter: 'redirect_token'", id=905)
+            raise ParameterError("Missing parameter: 'redirect_token'", id=905)
             
         verify_always = param.get("verify_always")
         r_url, site, handle = self.storage.get_redirect(redirect_token)

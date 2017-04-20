@@ -364,7 +364,7 @@ class ValidateController(BaseController):
             try:
                 passw = param['pass']
             except KeyError:
-                ParameterError("Missing parameter: 'pass'")
+                raise ParameterError("Missing parameter: 'pass'")
 
             ok = False
             try:
@@ -504,7 +504,7 @@ class ValidateController(BaseController):
             try:
                 passw = param['pass']
             except KeyError:
-                ParameterError("Missing parameter: 'pass'")
+                raise ParameterError("Missing parameter: 'pass'")
 
             transid = param.get('state', None)
             if transid is not None:

@@ -578,7 +578,7 @@ class AdminController(BaseController):
             try:
                 otp = param["otp"]
             except KeyError:
-                ParameterError("Missing parameter: 'otp'")
+                raise ParameterError("Missing parameter: 'otp'")
 
             typ = param.get("type")
             realm = param.get("realm")
@@ -726,7 +726,7 @@ class AdminController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError:
-                ParameterError("Missing parameter: 'serial'")
+                raise ParameterError("Missing parameter: 'serial'")
 
             # check admin authorization
             # try:
@@ -982,7 +982,7 @@ class AdminController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError:
-                ParameterError("Missing parameter: 'serial'")
+                raise ParameterError("Missing parameter: 'serial'")
 
             user = getUserFromParam(param)
 
@@ -1134,12 +1134,12 @@ class AdminController(BaseController):
                 try:
                     userPin = param["userpin"]
                 except KeyError:
-                    ParameterError("Missing parameter: 'userpin'")
+                    raise ParameterError("Missing parameter: 'userpin'")
 
                 try:
                     serial = param["serial"]
                 except KeyError:
-                    ParameterError("Missing parameter: 'serial'")
+                    raise ParameterError("Missing parameter: 'serial'")
 
                 # check admin authorization
                 checkPolicyPre('admin', 'setPin', param)
@@ -1156,12 +1156,12 @@ class AdminController(BaseController):
                 try:
                     soPin = param["sopin"]
                 except KeyError:
-                    ParameterError("Missing parameter: 'userpin'")
+                    raise ParameterError("Missing parameter: 'userpin'")
 
                 try:
                     serial = param["serial"]
                 except KeyError:
-                    ParameterError("Missing parameter: 'serial'")
+                    raise ParameterError("Missing parameter: 'serial'")
 
                 # check admin authorization
                 checkPolicyPre('admin', 'setPin', param)
@@ -1553,12 +1553,12 @@ class AdminController(BaseController):
             try:
                 otp1 = param["otp1"]
             except KeyError:
-                ParameterError("Missing parameter: 'otp1'")
+                raise ParameterError("Missing parameter: 'otp1'")
 
             try:
                 otp2 = param["otp2"]
             except KeyError:
-                ParameterError("Missing parameter: 'otp2'")
+                raise ParameterError("Missing parameter: 'otp2'")
 
             # to support the challenge based resync, we have to pass the challenges
             #    down to the token implementation
@@ -1720,12 +1720,12 @@ class AdminController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError:
-                ParameterError("Missing parameter: 'serial'")
+                raise ParameterError("Missing parameter: 'serial'")
 
             try:
                 realms = param["realms"]
             except KeyError:
-                ParameterError("Missing parameter: 'realms'")
+                raise ParameterError("Missing parameter: 'realms'")
 
             # check admin authorization
             checkPolicyPre('admin', 'tokenrealm', param)
@@ -1855,12 +1855,12 @@ class AdminController(BaseController):
             try:
                 serial_from = param['from']
             except KeyError:
-                ParameterError("Missing parameter: 'from'")
+                raise ParameterError("Missing parameter: 'from'")
 
             try:
                 serial_to = param['to']
             except KeyError:
-                ParameterError("Missing parameter: 'to'")
+                raise ParameterError("Missing parameter: 'to'")
 
             # check admin authorization
             checkPolicyPre('admin', 'copytokenpin', param)
@@ -1935,12 +1935,12 @@ class AdminController(BaseController):
             try:
                 serial_from = param['from']
             except KeyError:
-                ParameterError("Missing parameter: 'from'")
+                raise ParameterError("Missing parameter: 'from'")
 
             try:
                 serial_to = param['to']
             except KeyError:
-                ParameterError("Missing parameter: 'to'")
+                raise ParameterError("Missing parameter: 'to'")
 
             # check admin authorization
             checkPolicyPre('admin', 'copytokenuser', param)

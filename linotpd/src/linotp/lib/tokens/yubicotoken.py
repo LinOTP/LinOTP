@@ -124,7 +124,7 @@ class YubicoTokenClass(TokenClass):
         try:
             tokenid = param['yubico.tokenid']
         except KeyError:
-            ParameterError("Missing parameter: 'yubico.tokenid'")
+            raise ParameterError("Missing parameter: 'yubico.tokenid'")
 
         if len(tokenid) < YUBICO_LEN_ID:
             raise Exception("The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID)

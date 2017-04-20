@@ -856,7 +856,7 @@ class U2FTokenClass(TokenClass):
         try:
             requested_phase = params["phase"]
         except KeyError:
-            ParameterError("Missing parameter: 'phase'")
+            raise ParameterError("Missing parameter: 'phase'")
 
         if requested_phase == "registration1":
             # We are in registration phase 1

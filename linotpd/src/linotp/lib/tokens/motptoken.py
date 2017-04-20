@@ -137,13 +137,13 @@ class MotpTokenClass(TokenClass):
         '''
 
         if 'otpkey' not in param:
-            ParameterError("Missing parameter: 'otpkey'")
+            raise ParameterError("Missing parameter: 'otpkey'")
 
         # motp token specific
         try:
             otpPin = param['otppin']
         except KeyError:
-            ParameterError("Missing parameter: 'otppin'")
+            raise ParameterError("Missing parameter: 'otppin'")
 
         self.setUserPin(otpPin)
 

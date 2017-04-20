@@ -240,7 +240,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                 try:
                     otpKey = param['otpkey']
                 except KeyError:
-                    ParameterError("Missing parameter: 'serial'")
+                    raise ParameterError("Missing parameter: 'serial'")
 
         # finally set the values for the update
 

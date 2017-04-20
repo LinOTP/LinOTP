@@ -966,7 +966,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
                 try:
                     otpKey = param["otpkey"]
                 except KeyError:
-                    ParameterError("Missing parameter: 'otpkey'")
+                    raise ParameterError("Missing parameter: 'otpkey'")
 
         if otpKey is not None:
             self.addToInfo('otpkey', otpKey)

@@ -313,7 +313,7 @@ class SmsTokenClass(HmacTokenClass):
         try:
             phone = param['phone']
         except KeyError:
-            ParameterError("Missing parameter: 'phone'")
+            raise ParameterError("Missing parameter: 'phone'")
 
         # in scope selfservice - check if edit_sms is allowed
         # if not allowed to edit, check if the phone is the same
