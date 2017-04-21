@@ -154,14 +154,23 @@ TestConfigEntries = {}
 def storeConfigEntryDB(key, val, typ=None, desc=None):
 
     TestConfigEntries[key] = {'type': typ,
-                          'value': val,
-                          'desc': desc}
+                              'value': val,
+                              'desc': desc}
 
 
 class ContEntries(object):
+    """
+    mock class for db config entries
+    """
 
     def delete(self, synchronize_session=False):
         return None
+
+    def count(self):
+        return 0
+
+    def __iter__(self):
+        return iter([])
 
 
 class TestChunkConfigCase(unittest.TestCase):

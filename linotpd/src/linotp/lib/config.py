@@ -649,7 +649,8 @@ def _delete_continous_entry_db(key):
     continous_entries = Session.query(Config).filter(
                                       Config.Key.like(search_key))
 
-    continous_entries.delete(synchronize_session=False)
+    for continous_entry in continous_entries:
+        Session.delete(continous_entry)
 
 
 def _store_continous_entry_db(chunks, key, val, typ, desc):
