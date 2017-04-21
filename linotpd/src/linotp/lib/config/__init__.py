@@ -79,18 +79,6 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-def initLinotpConfig():
-    '''
-    return the linotpConfig class, which is integrated
-    in the local thread context
-
-    :return: thread local LinOtpConfig
-    :rtype:  LinOtpConfig Class
-    '''
-    ret = getLinotpConfig()
-    return ret
-
-
 def getLinotpConfig():
     '''
     return the thread local dict with all entries
