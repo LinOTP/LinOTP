@@ -50,6 +50,7 @@ class TestResolver(TestController):
 
     def tearDown(self):
         TestController.tearDown(self)
+        self.delete_all_realms()
         self.delete_all_resolvers()
         return
 
@@ -322,5 +323,50 @@ class TestResolver(TestController):
         response = self.make_system_request('getResolvers')
         self.assertNotIn('SQX', response, response)
         self.assertIn('SQZ', response, response)
+
+    def test_rename_resolver_in_realms(self):
+
+        resolver_param = {
+                'fileName': '%(here)s/../data/testdata/def-passwd',
+                'type': 'passwdresolver',
+            }
+
+        for name in ['AAAA', 'BBBB', 'CCCC', 'DDDD']:
+            response = self.create_resolver(name, resolver_param)
+            self.assertTrue('"value": true' in response.body)
+
+        resolver_list = []
+        resolver_base = 'useridresolver.PasswdIdResolver.IdResolver.'
+        for name in ['AAAA', 'BBBB', 'CCCC', 'DDDD']:
+            resolver_list.append(resolver_base + name)
+
+        response = self.create_realm('eins', resolver_list)
+        self.assertTrue('"value": true' in response.body)
+
+        response = self.create_realm('zwei', resolver_list)
+        self.assertTrue('"value": true' in response.body)
+
+        # now we change the resolver name BBBB to ZZZZ
+
+        zzzz_resolver_param = {}
+        zzzz_resolver_param.update(resolver_param)
+        zzzz_resolver_param['previous_name'] = 'BBBB'
+        response = self.create_resolver('ZZZZ', zzzz_resolver_param)
+        self.assertTrue('"value": true' in response.body)
+
+        # finally we have to check the realm definition
+
+        response = self.make_system_request('getRealms', {})
+        jresp = json.loads(response.body)
+        eins = jresp['result']['value']['eins']['useridresolver']
+        zwei = jresp['result']['value']['zwei']['useridresolver']
+
+        new_resolver_list = ['AAAA', 'CCCC', 'DDDD', 'ZZZZ']
+        expected_resolvers = [resolver_base +
+                              name for name in new_resolver_list]
+        self.assertItemsEqual(eins, expected_resolvers)
+        self.assertItemsEqual(zwei, expected_resolvers)
+
+        return
 
 # eof #########################################################################

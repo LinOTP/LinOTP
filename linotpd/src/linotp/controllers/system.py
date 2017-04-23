@@ -735,20 +735,23 @@ class SystemController(BaseController):
 
                     for realm_name, realm_description in getRealms().items():
 
-                        change_realms[realm_name] = []
-
                         resolvers = realm_description.get('useridresolver')
-                        for resolver in resolvers:
-                            parts = resolver.split('.')
-                            if previous_name == parts[-1]:
-                                parts[-1] = new_resolver_name
-                                change_realms[realm_name].append('.'.join(parts))
 
-                    #
-                    # prepare the replaced resolver definition to do setRealm
-                    for realm_name, new_resolvers in change_realms.items():
-                        if new_resolvers:
-                            setRealm(realm_name, ','.join(new_resolvers))
+                        for current_resolver in resolvers:
+                            if previous_name == current_resolver.split('.')[-1]:
+                                # Resolver has changed - reconfigure this realm
+                                new_resolvers = []
+
+                                for resolver in resolvers:
+                                    parts = resolver.split('.')
+                                    if previous_name == parts[-1]:
+                                        parts[-1] = new_resolver_name
+                                        new_resolvers.append('.'.join(parts))
+                                    else:
+                                        new_resolvers.append(resolver)
+
+                                setRealm(realm_name, ','.join(new_resolvers))
+                                break
 
                     #
                     # migrate the tokens to the new resolver -
