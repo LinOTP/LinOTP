@@ -354,9 +354,9 @@ class TestConfigController(TestController):
 
         return
 
-    def test_0000_wrapping_large_utf8_password_config(self):
+    def test_wrapping_large_utf8_password_config(self):
         '''
-        test long config entries with utf8 chars on split boundary
+        test long crypted config entries with utf8 chars on split boundary
 
         config entry max length is 2000 -
         so we check the correct wrapping from 1980 to 2020
