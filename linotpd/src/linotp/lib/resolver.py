@@ -40,11 +40,60 @@ from linotp.lib.config import storeConfig
 from linotp.lib.config import getGlobalObject
 from linotp.lib.config import removeFromConfig
 from linotp.lib.config import getLinotpConfig
+from linotp.lib.config.parsing import ConfigTree
+from linotp.lib.config.parsing import ConfigNotRecognized
 
 from linotp.lib.type_utils import get_duration
 from linotp.lib.type_utils import boolean
 
 from linotp.lib.crypto import encryptPassword
+
+# ------------------------------------------------------------------------------
+
+# on module load integrate the parser function for resolver config
+# into the ConfigTree class
+
+
+def parse_resolver(composite_key, value):
+
+    """ Parses resolver data from a config entry """
+
+    attr_updates = {}
+
+    # due to ambiguity of the second part in the config dot notation
+    # we must check if the second part is a primary class identifier
+    # of a resolver.
+
+    cls_identifiers = get_resolver_types()  # ldapresolver, passwdresolver, etc
+
+    for cls_identifier in cls_identifiers:
+        if composite_key.startswith('linotp.%s.' % cls_identifier):
+            break
+    else:
+        raise ConfigNotRecognized(composite_key)
+
+    attr_updates['cls_identifier'] = cls_identifier
+
+    # ------------------------------------------------------------------------ -
+
+    parts = composite_key.split('.', 3)
+
+    if len(parts) < 3:
+        raise ConfigNotRecognized(composite_key, 'This legacy resolver '
+                                  'description is not supported anymore.')
+    # ------------------------------------------------------------------------ -
+
+    attr_name = parts[2]
+    attr_updates[attr_name] = value
+
+    object_id = parts[3]  # the resolver name
+
+    # ------------------------------------------------------------------------ -
+
+    return object_id, attr_updates
+
+
+ConfigTree.add_parser('resolvers', parse_resolver)
 
 # -------------------------------------------------------------------------- --
 

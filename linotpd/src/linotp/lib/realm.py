@@ -34,6 +34,8 @@ from linotp.model.meta import Session
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import storeConfig
 from linotp.lib.config import getFromConfig
+from linotp.lib.config.parsing import ConfigTree
+from linotp.lib.config.parsing import ConfigNotRecognized
 from linotp.lib.context import request_context as context
 
 from linotp.lib.type_utils import get_duration
@@ -43,6 +45,41 @@ from sqlalchemy import func
 
 import logging
 log = logging.getLogger(__name__)
+
+# ------------------------------------------------------------------------------
+
+# on module load integrate the parser functions for realm config
+# into the ConfigTree class
+
+
+def parse_realm(composite_key, value):
+
+    """ Parses realm data from a config entry """
+
+    if not composite_key.startswith('linotp.useridresolver.group.'):
+        raise ConfigNotRecognized(composite_key)
+
+    object_id = composite_key[len('linotp.useridresolver.group.'):]
+
+    return object_id, {'resolvers': value}
+
+
+def parse_default_realm(composite_key, value):
+
+    """
+    Sets the attribute pair {default: True} to the default realm
+    in the tree.
+    """
+
+    if composite_key != 'linotp.DefaultRealm':
+        raise ConfigNotRecognized(composite_key)
+
+    return value, {'default': True}
+
+ConfigTree.add_parser('realms', parse_realm)
+ConfigTree.add_parser('realms', parse_default_realm)
+
+# ------------------------------------------------------------------------------
 
 
 def createDBRealm(realm):

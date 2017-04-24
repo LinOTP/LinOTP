@@ -29,6 +29,7 @@ provider handling
 
 import json
 import logging
+from functools import partial
 from os import path
 from os import listdir
 from os import walk
@@ -40,6 +41,8 @@ from linotp.lib.config import getLinotpConfig
 from linotp.lib.config import getFromConfig
 from linotp.lib.config import updateConfig
 from linotp.lib.config import removeFromConfig
+from linotp.lib.config.parsing import ConfigTree
+from linotp.lib.config.parsing import ConfigNotRecognized
 
 from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy import getPolicyActionValue
@@ -122,6 +125,159 @@ ProviderClass_lookup = {
     'linotp.lib.emailprovider.SMTPEmailProvider':
         'linotp.provider.emailprovider.SMTPEmailProvider',
     }
+
+
+# ------------------------------------------------------------------------------
+
+# parsing functions for linotp config
+
+def parse_provider(provider_type, composite_key, value):
+
+    """
+    Parses provider data from a config entry
+
+    :param provider_prefix: A short provider prefix (such as 'SMSProvider',
+        'PushProvider' - all without the leading 'linotp.')
+    """
+
+    attr_updates = {}
+
+    # ------------------------------------------------------------------------ -
+
+    long_prefix = Provider_types[provider_type]['prefix']
+    provider_prefix = long_prefix[len('linotp.'):-1]
+
+    # ------------------------------------------------------------------------ -
+
+    # due to ambiguity of the second part in the config dot notation
+    # we must check if the second part is the provider type
+
+    if not composite_key.startswith('linotp.%s.' % provider_prefix):
+        raise ConfigNotRecognized(composite_key)
+
+    # ------------------------------------------------------------------------ -
+
+    parts = composite_key.split('.')
+
+    if len(parts) == 3:
+
+        object_id = parts[2]
+        attr_updates['class'] = value
+
+    elif len(parts) == 4:
+
+        object_id = parts[2]
+        attr_name = parts[3]
+        attr_updates[attr_name] = value
+
+    else:
+
+        raise ConfigNotRecognized(composite_key)
+
+    # ------------------------------------------------------------------------ -
+
+    return object_id, attr_updates
+
+
+# ------------------------------------------------------------------------------
+
+def parse_legacy_provider(provider_type, composite_key, value):
+
+    """
+    Parses legacy provider data from a config entry
+
+    :param provider_prefix: A short provider prefix (such as 'SMSProvider',
+        'PushProvider' - all without the leading 'linotp.')
+    """
+
+    # XXX LEGACY: providers had no names and composite attribute
+    # names (such as EmailProviderConfig - note: without a dot)
+    # the name in this case is set to 'imported_default'
+
+    attr_updates = {}
+
+    # ------------------------------------------------------------------------ -
+
+    long_prefix = Provider_types[provider_type]['prefix']
+    provider_prefix = long_prefix[len('linotp.'):-1]
+
+    # ------------------------------------------------------------------------ -
+
+    # due to ambiguity of the second part in the config dot notation
+    # we must check if the second part is the provider type
+
+    if not composite_key.startswith('linotp.%s' % provider_prefix):
+        raise ConfigNotRecognized(composite_key)
+
+    # ------------------------------------------------------------------------ -
+
+    parts = composite_key.split('.')
+
+    if len(parts) != 2:
+        raise ConfigNotRecognized(composite_key)
+
+    object_id = 'imported_default'
+    composite_attr_name = parts[1]
+
+    # ------------------------------------------------------------------------ -
+
+    prefix_len = len(provider_prefix)
+    attr_name = composite_attr_name[prefix_len:]
+
+    if not attr_name:
+        attr_name = 'class'
+
+    attr_updates[attr_name] = value
+
+    # ------------------------------------------------------------------------ -
+
+    return object_id, attr_updates
+
+
+# ------------------------------------------------------------------------------
+
+
+def parse_default_provider(provider_type, composite_key, value):
+
+    """
+    Sets the attribute pair {default: True} to the default provider
+    in the tree.
+
+    :param provider_type: A string identifier (such as 'sms', 'email', etc)
+    """
+
+    # ------------------------------------------------------------------------ -
+
+    default_key = Default_Provider_Key[provider_type]
+
+    if composite_key != default_key:
+        raise ConfigNotRecognized(composite_key)
+
+    # ------------------------------------------------------------------------ -
+
+    return value, {'default': True}
+
+# ---------------------------------------------------------------------------- -
+
+# integrate the provider config parser into the config tree class
+
+for provider_type in Provider_types:
+
+    parser_target = '%s_providers' % provider_type
+
+    func = partial(parse_provider, provider_type)
+    ConfigTree.add_parser(parser_target, func)
+
+    default_func = partial(parse_default_provider, provider_type)
+    ConfigTree.add_parser(parser_target, default_func)
+
+    # XXX LEGACY
+
+    if provider_type in Legacy_Provider:
+        func = partial(parse_legacy_provider, provider_type)
+        ConfigTree.add_parser(parser_target, func)
+
+# ---------------------------------------------------------------------------- -
 
 
 def get_legacy_provider(provider_type):
