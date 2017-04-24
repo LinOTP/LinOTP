@@ -46,9 +46,10 @@ function create_aladdin_dialog() {
 				}
         },
         open: function() {
-            translate_import_safenet();
             _fill_realms($('#safenet_realm'),1);
-            do_dialog_icons();
+
+            $(this).dialog_icons();
+            translate_import_safenet();
         }
     });
 	return $dialog_load_tokens_aladdin ;

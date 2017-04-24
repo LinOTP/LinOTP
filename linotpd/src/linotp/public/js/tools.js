@@ -39,7 +39,10 @@ function create_tools_getserial_dialog() {
                             );
                         },
                     id: "button_tools_getserial_ok",
-                    text: "Get Serial"
+                    text: "Get Serial",
+                    icons: {
+                        primary: "ui-icon-copy"
+                    }
             },
             'Close': { click: function(){
                             $(this).dialog('close');
@@ -49,8 +52,8 @@ function create_tools_getserial_dialog() {
             }
         },
         open: function() {
+            $(this).dialog_icons();
             translate_get_serial();
-            do_dialog_icons();
         }
     });
     return $dialog;
@@ -96,8 +99,8 @@ function create_tools_copytokenpin_dialog() {
             }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_copy_token();
-            do_dialog_icons();
         }
     });
     return $dialog;
@@ -155,8 +158,8 @@ function create_tools_checkpolicy_dialog() {
             }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_check_policy();
-            do_dialog_icons();
         }
     });
     $("#form_check_policy").validate({
@@ -208,8 +211,8 @@ function create_tools_exporttoken_dialog() {
             }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_export_token();
-            do_dialog_icons();
         }
     });
 
@@ -258,8 +261,8 @@ function create_tools_exportaudit_dialog() {
             }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_export_audit();
-            do_dialog_icons();
         }
     });
 
@@ -278,7 +281,10 @@ function create_tools_importusers_dialog() {
                     $(this).dialog('close');
                 },
                 id: "button_import_users_close",
-                text: i18n.gettext("Cancel")
+                text: i18n.gettext("Cancel"),
+                icons: {
+                    primary: 'ui-icon-cancel'
+                }
             },
             {
                 click:  function(){
@@ -294,11 +300,13 @@ function create_tools_importusers_dialog() {
                     }
                 },
                 id: "button_import_users",
-                text: i18n.gettext("Import")
+                text: i18n.gettext("Import"),
+                icons: {
+                    primary: 'ui-icon-play'
+                }
             }
         ],
         create: function(){
-            do_dialog_icons();
             $('#import_users_create_resolver').click(function() {
                 $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='res_name' placeholder='"+i18n.gettext("Resolver name")+"' type='text' autofocus></form></div>").dialog({
                     modal: true,
@@ -449,9 +457,6 @@ function create_tools_importusers_dialog() {
                 text: i18n.gettext("Confirm")
             }
         ],
-        create: function(){
-            do_dialog_icons();
-        },
         open: function() {
             $('#import_user_dryrun_results').accordion({
                 active:0,
@@ -460,6 +465,7 @@ function create_tools_importusers_dialog() {
             $( "#import_user_dryrun_result_details .detail-tabs" ).tabs({
               active: 0
             });
+            $(this).dialog_icons();
         }
     });
     return import_users_dialog;
@@ -638,8 +644,8 @@ function create_tools_migrateresolver_dialog() {
             }
         },
         open: function(){
+            $(this).dialog_icons();
             translate_migrateresolver();
-            do_dialog_icons();
         }
     });
     return $dialog;

@@ -46,9 +46,10 @@ function create_dat_dialog() {
 				}
         },
         open: function(){
-            translate_import_dat();
             _fill_realms($('#dat_realm'),1);
-            do_dialog_icons();
+
+            $(this).dialog_icons();
+            translate_import_dat();
         }
     });
     return $dialog_load_tokens_dat;

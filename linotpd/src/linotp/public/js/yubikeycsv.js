@@ -47,7 +47,8 @@ function create_yubikeycsv_dialog() {
         },
         open: function() {
             _fill_realms($('#yubi_realm'),1);
-            do_dialog_icons();
+
+            $(this).dialog_icons();
             translate_import_yubikey();
         }
     });

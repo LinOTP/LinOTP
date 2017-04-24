@@ -838,7 +838,7 @@ syst></textarea></td>
 <script type="text/javascript">
     function translate_support_view() {
         $("#dialog_support_view" ).dialog( "option", "title", '${_("KeyIdentity LinOTP Support and Subscription")}' );
-        $('#button_support_set').button("option", "label", '${_("Set Support and Subscription")}');
+        $('#button_support_setup').button("option", "label", '${_("Set Support and Subscription")}');
         $('#button_support_close').button("option", "label", '${_("Close")}');
     }
 </script>
@@ -1466,14 +1466,6 @@ syst></textarea></td>
 
     </form>
 </div>
-
-<script type="text/javascript">
-    function translate_import_oath() {
-        $("#dialog_import_oath" ).dialog( "option", "title", '${_("OATH CSV Token File")}' );
-        $('#button_oathcsv_load').button("option", "label", '${_("Load Token File")}');
-        $('#button_oathcsv_cancel').button("option", "label", '${_("Cancel")}');
-    }
-</script>
 
 <!-- ###################### import YubiKey CSV ####################### -->
 <div id='dialog_import_yubikey'>
