@@ -24,10 +24,6 @@
  *
  */
 
- /* Use Jed for i18n. The correct JSON file is dynamically loaded later. */
-var i18n = new Jed({});
-var sprintf = Jed.sprintf;
-
 function create_oathcsv_dialog() {
  var $dialog_load_tokens_oathcsv = $('#dialog_import_oath').dialog({
         autoOpen: false,

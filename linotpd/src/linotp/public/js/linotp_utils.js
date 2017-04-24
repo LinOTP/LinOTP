@@ -24,6 +24,10 @@
  *
  */
 
+// Use Jed for i18n. The correct JSON file is dynamically loaded later.
+var i18n = new Jed({});
+var sprintf = Jed.sprintf;
+
  /**
   * checkpins compares the values of the inputs given via
   * the jquery selector or object and visualizes the result

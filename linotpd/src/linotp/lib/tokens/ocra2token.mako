@@ -443,12 +443,12 @@ function finishOcra2() {
 				alert(escape(ocra_finish_fail));
 			} else {
 				showTokenlist();
-				alert(escape(String.sprintf(ocra_finish_ok, serial)));
+				alert(escape(sprintf(ocra_finish_ok, serial)));
 				$('#qr2_completed').show();
 				$('#qr2_finish').hide();
 				//$('#ocra_check').attr("disabled","disabled");
 				$('#ocra2_qr_code').html('<div/>');
-				$('#qr2_completed').html(escape(String.sprintf(ocra_finish_ok, serial)));
+				$('#qr2_completed').html(escape(sprintf(ocra_finish_ok, serial)));
 			}
 		} else {
 			alert("Failed to enroll token!\n" + escape(data.result.error.message));

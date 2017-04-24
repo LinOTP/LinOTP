@@ -24,10 +24,6 @@
  *
  */
 
-var i18n = new Jed({});
-var sprintf = Jed.sprintf;
-
-
 function create_tools_getserial_dialog() {
      var $dialog = $('#dialog_get_serial').dialog({
         autoOpen: false,

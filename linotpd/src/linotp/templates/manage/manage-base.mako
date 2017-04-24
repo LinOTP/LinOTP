@@ -83,9 +83,8 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/js/jed.js"></script>
 <script type="text/javascript" src="/js/flexigrid.js"></script>
 
-<script type="text/javascript" src="/js/qrcode.js"></script>
-<script type="text/javascript" src="/js/qrcode-helper.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/js/linotp_utils.js?ref=${c.version_ref}"></script>
+<script type="text/javascript" src="/js/jquery.validate.linotp.js?ref=${c.version_ref}"></script>
 
 <script type="text/javascript" src="/js/aladdin.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/js/oathcsv.js?ref=${c.version_ref}"></script>

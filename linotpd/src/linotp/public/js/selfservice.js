@@ -24,7 +24,6 @@
  *
  */
 
-
 /* For compatibility with <=IE8 */
 if (!Object.keys) Object.keys = function(o) {
 	if (o !== Object(o))
@@ -35,14 +34,6 @@ if (!Object.keys) Object.keys = function(o) {
 };
 
 window.onerror = error_handling;
-
-/* Use Jed for i18n. The correct JSON file is dynamically loaded later. */
-var i18n = new Jed({});
-var sprintf = Jed.sprintf;
-
-if (!String.sprintf) {
-    String.sprintf = Jed.sprintf;
-}
 
 /* The HTTP status code, that determines that
  * the Login to the selfservice portal is required.
@@ -599,12 +590,12 @@ function finishOcra() {
             alert(ocra_finish_fail);
         } else {
             showTokenlist();
-            alert(String.sprintf(ocra_finish_ok, serial));
+            alert(sprintf(ocra_finish_ok, serial));
             $('#qr_completed').show();
             $('#qr_finish').hide();
             //$('#ocra_check').attr("disabled","disabled");
             $('#ocra_qr_code').html('<div/>');
-            $('#qr_completed').html(escape(String.sprintf(ocra_finish_ok, serial)));
+            $('#qr_completed').html(escape(sprintf(ocra_finish_ok, serial)));
         }
     } else {
         alert(i18n.gettext("Failed to enroll token!\n") + escape(data.result.error.message));
@@ -623,7 +614,6 @@ function provisionGoogle() {
     if (data.result.status == true) {
         if (data.result.value.init == true) {
             // The token was successfully initialized and we will display the url
-            //var qr_code = generate_qrcode(10, data.result.value.oathtoken.url);
             showTokenlist();
             var url = data.result.value.oathtoken.url;
             var img = data.result.value.oathtoken.img;
