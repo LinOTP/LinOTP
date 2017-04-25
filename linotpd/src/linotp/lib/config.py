@@ -111,7 +111,7 @@ def getLinotpConfig():
             except Exception as exx:
                 log.exception("Could not add LinOTP configuration to pylons "
                               "tmpl_context. Exception was: %r", exx)
-                raise e
+                raise exx
         ret = c.linotpConfig
 
         if ret.delay is True:
