@@ -37,7 +37,7 @@ from functools import partial
 from linotp.lib.context import request_context as context
 
 from linotp.lib.config import storeConfig
-from linotp.lib.config import getGlobalObject
+from linotp.lib.config.global_api import getGlobalObject
 from linotp.lib.config import removeFromConfig
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config.parsing import ConfigTree
@@ -48,7 +48,7 @@ from linotp.lib.type_utils import boolean
 
 from linotp.lib.crypto import encryptPassword
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 # on module load integrate the parser function for resolver config
 # into the ConfigTree class
@@ -203,7 +203,6 @@ def defineResolver(params):
 
     if resolver is None:
         return False
-
 
     # ---------------------------------------------------------------------- --
 

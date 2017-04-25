@@ -26,7 +26,6 @@
 """ user authentication with repoze module """
 
 import logging
-log = logging.getLogger(__name__)
 
 from linotp.lib.user import getRealmBox, getSplitAtSign
 from linotp.lib.realm import getDefaultRealm
@@ -36,13 +35,13 @@ from linotp.lib.util import str2unicode
 from linotp.lib.context import request_context
 from linotp.lib.context import request_context_safety
 from linotp.lib.config import getLinotpConfig
-from linotp.lib.config import getGlobalObject
+from linotp.lib.config.global_api import getGlobalObject
 from linotp.lib.resolver import initResolvers
 from pylons import config
 
-import traceback
-
 from linotp.lib.user import get_authenticated_user
+
+log = logging.getLogger(__name__)
 
 
 class UserModelPlugin(object):

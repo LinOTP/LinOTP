@@ -48,8 +48,8 @@ from linotp.lib.realm import getRealms
 
 from linotp.lib.type_utils import boolean
 
-from linotp.lib.config import _retrieveAllConfigDB
-from linotp.lib.config import getGlobalObject
+from linotp.lib.config.db_api import _retrieveAllConfigDB
+from linotp.lib.config.global_api import getGlobalObject
 from linotp.lib.config.parsing import parse_config
 from linotp.lib.crypto import init_key_partition
 

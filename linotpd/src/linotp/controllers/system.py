@@ -1784,7 +1784,7 @@ class SystemController(BaseController):
 
             hsm_id = params.get('hsm_id', None)
 
-            from linotp.lib.config import getGlobalObject
+            from linotp.lib.config.global_api import getGlobalObject
             glo = getGlobalObject()
             sep = glo.security_provider
 

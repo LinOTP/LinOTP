@@ -41,7 +41,7 @@ from linotp.model import Token as model_token
 from linotp.model import Config as model_config
 
 from linotp.lib.config import getFromConfig
-from linotp.lib.config import _storeConfigDB
+from linotp.lib.config.db_api import _storeConfigDB
 
 from linotp.lib.crypto import SecretObj
 from linotp.lib.context import request_context as context
