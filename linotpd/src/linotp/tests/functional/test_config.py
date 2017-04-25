@@ -354,7 +354,7 @@ class TestConfigController(TestController):
 
         return
 
-    def test_0000_wrapping_large_utf8_password_config(self):
+    def test_wrapping_large_utf8_password_config(self):
         '''
         test long config entries with utf8 chars on split boundary
 
