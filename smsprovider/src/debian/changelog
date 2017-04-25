@@ -1,3 +1,9 @@
+linotp-smsprovider (2.9.1.4~0dev0-1) jessie; urgency=low
+
+  * Set new version 2.9.1.4~0dev0-1
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Tue, 25 Apr 2017 17:36:47 +0200
+
 linotp-smsprovider (2.9.1-1) jessie; urgency=low
 
   Bug Fixes:
