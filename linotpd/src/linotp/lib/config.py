@@ -734,10 +734,8 @@ def _storeConfigEntryDB(key, value, typ=None, desc=None):
     if confEntries.count() == 1:
         theConf = confEntries[0]
         theConf.Value = unicode(value)
-        if (typ is not None):
-            theConf.Type = unicode(typ)
-        if (desc is not None):
-            theConf.Description = unicode(desc)
+        theConf.Type = typ
+        theConf.Description = desc
 
     # insert
     elif confEntries.count() == 0:
