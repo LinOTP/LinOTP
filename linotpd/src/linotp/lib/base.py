@@ -553,7 +553,7 @@ class BaseController(WSGIController):
                 closeResolvers()
 
                 # hint for the garbage collector to make the dishes
-                data_objects = ["resolvers_loaded", "resolver_types",
+                data_objects = ["resolvers_loaded",
                                 "resolver_clazzes", "linotpConfig", "audit", "hsm"]
                 for data_obj in data_objects:
                     if hasattr(c, data_obj):

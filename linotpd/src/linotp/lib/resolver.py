@@ -28,7 +28,6 @@
 
 import logging
 
-import copy
 import json
 import re
 
@@ -37,7 +36,6 @@ from functools import partial
 from linotp.lib.context import request_context as context
 
 from linotp.lib.config import storeConfig
-from linotp.lib.config.global_api import getGlobalObject
 from linotp.lib.config import removeFromConfig
 from linotp.lib.config import getLinotpConfig
 from linotp.lib.config.parsing import ConfigTree
@@ -234,7 +232,7 @@ def similar_resolver_exists(config_identifier):
     """
 
     config = context.get('Config')
-    cls_identifiers = context.get('resolver_classes').keys()
+    cls_identifiers = resolver_registry.keys()
 
     for config_entry in config:
         for cls_identifier in cls_identifiers:
@@ -255,7 +253,7 @@ def get_cls_identifier(config_identifier):
     """
 
     config = context.get('Config')
-    cls_identifiers = context.get('resolver_classes').keys()
+    cls_identifiers = resolver_registry.keys()
 
     for config_entry in config:
 
@@ -348,7 +346,7 @@ def getResolverInfo(resolvername, passwords=False):
     result = {"type": None, "data": {}, "resolver": resolvername}
 
     linotp_config = context.get('Config')
-    resolver_types = context.get('resolver_types').values()
+    resolver_types = get_resolver_types()
 
     # --------------------------------------------------------------------- --
 
@@ -482,29 +480,15 @@ def getResolverClass(resolver_type, resolver_conf=''):
     get the resolver class for an resolver type
 
     :param resolver_type: string like 'ldapresolver'
-    :return: class or None
+
+    :raises Exception: If no class for this resolver type was found
+    :return: class
     """
 
-    resolver_clazz = None
+    resolver_cls = resolver_registry.get(resolver_type)
 
-    for clazz_name, clazz_type in context.get('resolver_types').items():
-        if resolver_type.lower() in clazz_type.lower():
-            resolver_clazz = clazz_name
-
-    if not resolver_clazz:
+    if resolver_cls is None:
         raise Exception("no such resolver type '%r' defined!" % resolver_type)
-
-    resolver_spec = resolver_clazz + '.' + resolver_conf
-
-    cls_identifier, _config_identifier = parse_resolver_spec(resolver_spec)
-
-    if not cls_identifier:
-        log.error('Format error: resolver_spec must have the format '
-                  '<resolver_class_identifier>.<config_identifier>, but '
-                  'value was %s' % resolver_spec)
-        return None
-
-    resolver_cls = get_resolver_class(cls_identifier)
 
     return resolver_cls
 
@@ -654,7 +638,7 @@ def _get_resolver_config(resolver_config_identifier):
     # identify the fully qualified resolver spec by all possible resolver
     # prefixes, which are taken from the resolver_classes list
     lookup_keys = []
-    config_keys = context['resolver_classes'].keys()
+    config_keys = resolver_registry.keys()
     for entry in config_keys:
         lookup_keys.append('linotp.' + entry)
 
@@ -785,14 +769,14 @@ def setupResolvers(config=None, cache_dir="/tmp"):
     :return: -nothing-
     """
 
-    glo = getGlobalObject()
-    resolver_classes = copy.deepcopy(glo.getResolverClasses())
+    resolver_classes = resolver_registry.values()
 
-    # resolver classes is a dict with aliases as key and the resolver classes
-    # as values - as we require only unique classes we put them in a set.
-    # On server startup  we call the setup once for each resolver class.
+    # resolver classes can have multiple aliases, so
+    # resolver_classes can contain duplicates.
 
-    for resolver_cls in set(resolver_classes.values()):
+    unique_resolver_classes = set(resolver_classes)
+
+    for resolver_cls in unique_resolver_classes:
         if hasattr(resolver_cls, 'setup'):
             try:
                 resolver_cls.setup(config=config, cache_dir=cache_dir)
@@ -800,22 +784,12 @@ def setupResolvers(config=None, cache_dir="/tmp"):
                 log.exception("Resolver setup: Failed to call setup of %r. "
                               "Exception was %r", resolver_cls, exx)
 
-    return
-
-
 def initResolvers():
     """
     hook for the request start -
         create  a deep copy of the dict with the global resolver classes
     """
     try:
-        glo = getGlobalObject()
-
-        resolver_classes = copy.deepcopy(glo.getResolverClasses())
-        resolver_types = copy.deepcopy(glo.getResolverTypes())
-
-        context['resolver_classes'] = resolver_classes
-        context['resolver_types'] = resolver_types
         # dict of all resolvers, which are instatiated during the request
         context['resolvers_loaded'] = {}
 
@@ -842,13 +816,12 @@ def closeResolvers():
 
 def getResolverClassName(resolver_type, resolver_name):
 
-    res = ""
-    for clazz_name, clazz_type in context.get('resolver_types', {}).items():
-        if clazz_type == resolver_type:
-            res = "%s.%s" % (clazz_name, resolver_name)
-            break
+    resolver_cls = get_resolver_class(resolver_type)
 
-    return res
+    if resolver_cls is None:
+        return ''
+
+    return 'useridresolver.%s.%s' % (resolver_type, resolver_name)
 
 
 # internal functions
@@ -860,20 +833,7 @@ def get_resolver_class(cls_identifier):
     :return: resolver object class
     '''
 
-    # ## this patch is a bit hacky:
-    # the normal request has a request context, where it retrieves
-    # the resolver info from and preserves the loaded resolvers for reusage
-    # But in case of a authentication request (by a redirect from a 401)
-    # the caller is no std request and the context object is missing :-(
-    # The solution is, to deal with local references, either to the
-    # global context or to local data
-
-    resolver_classes = context.get('resolver_classes')
-    if resolver_classes is None:
-        glo = getGlobalObject()
-        resolver_classes = copy.deepcopy(glo.getResolverClasses())
-
-    return resolver_classes.get(cls_identifier)
+    return resolver_registry.get(cls_identifier)
 
 
 def get_resolver_types():
