@@ -28,23 +28,32 @@
 '''
 
 import logging
-import os
-import time
 import copy
-from datetime import datetime
 
 from pylons import tmpl_context as c
 
-from linotp.config import environment as env
-from linotp.lib.crypto import decryptPassword
-from linotp.lib.crypto import encryptPassword
-from linotp.lib.error import ConfigAdminError
-
+from linotp.lib.config.parsing import parse_config
 from linotp.lib.config.config_class import LinOtpConfig
 from linotp.lib.config.util import expand_here
+from linotp.lib.config.db_api import _retrieveAllConfigDB
 
 
 log = logging.getLogger(__name__)
+
+linotp_config = None
+linotp_config_tree = None
+
+
+def refresh_config():
+
+    """
+    retrieves all config entries from the database and rewrites the
+    global linotp_config object
+    """
+
+    global linotp_config
+    linotp_config, delay = _retrieveAllConfigDB()
+
 
 ###############################################################################
 #     public interface
@@ -52,12 +61,24 @@ log = logging.getLogger(__name__)
 
 
 def getLinotpConfig():
+
     '''
     return the thread local dict with all entries
 
     :return: local config dict
     :rtype: dict
     '''
+
+    global linotp_config
+    global linotp_config_tree
+
+    # TODO: replication
+
+    if linotp_config is None:
+        refresh_config()
+
+    if linotp_config_tree is None:
+        linotp_config_tree = parse_config(linotp_config)
 
     ret = {}
     try:

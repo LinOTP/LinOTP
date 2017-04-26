@@ -45,6 +45,7 @@ from linotp.lib.config.parsing import ConfigNotRecognized
 
 from linotp.lib.type_utils import get_duration
 from linotp.lib.type_utils import boolean
+from linotp.useridresolver import resolver_registry
 
 from linotp.lib.crypto import encryptPassword
 
@@ -881,7 +882,11 @@ def get_resolver_types():
 
     :return: array of resolvertypes like 'passwdresolver'
     """
-    return context.get('resolver_types').values()
+    types = []
+    for resolver_cls in resolver_registry.values():
+        type_ = resolver_cls.getResolverClassType()
+        types.append(type_)
+    return types
 
 
 def get_resolver_class_config(claszzesType):
