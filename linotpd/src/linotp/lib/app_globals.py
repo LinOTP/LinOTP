@@ -47,9 +47,7 @@ class Globals(object):
         'app_globals' variable
 
         """
-        self.rwl = RWLock()
         self.rwl2 = RWLock()
-        self.resolverLock = RWLock()
         self.rcount = 0
 
         self.config = {}
@@ -61,30 +59,7 @@ class Globals(object):
         self.tokenclasses = {}
         self.security_provider = SecurityProvider(secLock)
 
-        self.resolver_clazzes = {}
-        self.resolver_types = {}
         self.cache_manager = None
-
-    def setResolverClasses(self, resolver_clazzes=None):
-        '''
-        setter to hold the reference to all resolver class objects
-        '''
-        if resolver_clazzes is not None:
-            self.resolver_clazzes = resolver_clazzes
-
-    def getResolverClasses(self):
-        return self.resolver_clazzes
-
-    def setResolverTypes(self, resolver_types=None):
-        """
-        setter to hold the reference to all resolver class names
-        """
-        if resolver_types is not None:
-            self.resolver_types = resolver_types
-
-    def getResolverTypes(self):
-        return self.resolver_types
-
 
     def getConfig(self):
         '''
@@ -175,10 +150,6 @@ class Globals(object):
         finally:
             self.configLock.release()
         return
-
-
-    def getLock(self):
-        return self.rwl
 
     def setConfigReadLock(self):
         self.rcount = self.rcount + 1

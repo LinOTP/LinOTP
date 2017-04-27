@@ -162,7 +162,7 @@ def getSMSProviderClass(packageName, className):
     else an error is thrown
 
     example:
-        getResolverClass("SkypeSMSProvider", "SMSProvider")()
+        getSMSProviderClass("SkypeSMSProvider", "SMSProvider")()
 
     :return: the SMS provider object
 

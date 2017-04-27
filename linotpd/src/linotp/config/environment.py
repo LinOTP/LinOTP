@@ -167,19 +167,6 @@ def load_environment(global_conf, app_conf):
         log.exception("Failed to load token class list: %r" % e)
         raise e
 
-    # load the list of resolvers
-    try:
-        log.debug('[load_environment] loading resolver list definition')
-        (rclass, rname) = get_resolver_class_list()
-
-        # make this globaly avaliable
-        g.setResolverClasses(rclass)
-        g.setResolverTypes(rname)
-
-    except Exception as exx:
-        log.exception("Faild to load the list of resolvers: %r" % exx)
-        raise exx
-
     # get the help url
     url = config.get("linotpHelp.url", None)
     if url is None:
@@ -329,107 +316,5 @@ def get_token_class_list():
 
     return (tokenclass_dict, tokenprefix_dict)
 
-###############################################################################
-
-
-def get_activated_resolver_modules():
-
-    """
-    returns a list of strings representing the active resolver
-    modules according to the 'linotpResolverModules' variable in
-    config.ini
-
-    Format: ['useridresolver.PasswdIdResolver', ...]
-
-    The following modules are harcoded and will always be returned:
-
-    *  'useridresolver.PasswdIdResolver'
-    *  'useridresolver.LDAPIdResolver'
-    *  'useridresolver.HTTPIdResolver'
-    *  'useridresolver.SQLIdResolver'
-
-    :return module name list
-    """
-
-    module_list = set()
-
-    module_list.add('linotp.useridresolver.PasswdIdResolver')
-    module_list.add('linotp.useridresolver.LDAPIdResolver')
-    module_list.add('linotp.useridresolver.HTTPIdResolver')
-    module_list.add('linotp.useridresolver.SQLIdResolver')
-
-    config_modules = config.get('linotpResolverModules', '')
-    log.debug('[get_activated_resolver_modules] Parsing config value %s ' %
-              config_modules)
-
-    if config_modules:
-        # in the config *.ini files we have some line continuation slashes,
-        # which will result in ugly module names, but as they are followed by
-        # \n they could be separated as single entries by the following two
-        # lines
-        lines = config_modules.splitlines()
-        coco = ','.join(lines)
-        for module in coco.split(','):
-            if module.strip() != '\\':
-                module_list.add(module.strip())
-
-    return module_list
-
-
-def get_resolver_class_list():
-
-    """
-    Returns a tuple (resolver_classes, resolver_types) with
-    resolver classes being a dict of the following format:
-
-    { 'class_identifier': <class resolver> }, e.g.
-    { 'linotp.useridresolver.PasswdIdResolver.IdResolver : <class PasswdIdResolver> }
-
-    and the resolver_types having the format:
-
-    { 'fully_qualified_import_path': 'class_type_identifier' }, e.g.
-    { 'linotp.useridresolver.PasswdIdResolver.IdResolver : 'passwdresolver' }
-
-    Both dictionaries are used as a type mapping of strings to
-    classes.
-    """
-
-    # the difference between resolver_types and resolver_classes
-    # is for legacy support of lib.resolvers - Technically we
-    # only need resolver_classes
-
-    resolver_types = {}
-
-    filtered_resolver_classes = {}
-    activated_modules = get_activated_resolver_modules()
-
-    for cls_key, cls_ in resolver_registry.iteritems():
-        if cls_.__module__ in activated_modules:
-            filtered_resolver_classes[cls_key] = cls_
-
-    for cls_key, cls_ in filtered_resolver_classes.iteritems():
-
-        # FIXME: Hack to skip aliases when populating the resolver_types
-        # dict. Otherwise lib.resolvers fails on getResolverClassName.
-        # should be removed once the code working on top of resolver_types
-        # is refactored
-
-        if not cls_key.startswith('useridresolver.') or \
-           not cls_key.endswith('.IdResolver'):
-            continue
-
-        if hasattr(cls_, 'getResolverClassType'):
-            type_identifier = cls_.getResolverClassType()
-        else:
-            type_identifier = cls_.__module__.split('.')[-1]
-        resolver_types[cls_key] = type_identifier
-
-    log.debug("[get_resolver_class_list] the resolver_classes dict: %r"
-              % filtered_resolver_classes)
-
-    log.debug("[get_resolver_class_list] the resolver_types dict: %r"
-              % resolver_types)
-
-    return filtered_resolver_classes, resolver_types
 
 ###eof#########################################################################

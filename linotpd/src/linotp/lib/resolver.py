@@ -168,7 +168,7 @@ def defineResolver(params):
         raise Exception("Resolver name is invalid. It may contain characters, "
                         "numbers, underscore (_), hyphen (-)! %r", conf)
 
-    resolver_cls = getResolverClass(typ)
+    resolver_cls = get_resolver_class(typ)
 
     if not resolver_cls:
         raise Exception("no such resolver type '%r' defined!" % typ)
@@ -372,7 +372,12 @@ def getResolverInfo(resolvername, passwords=False):
 
     # now we can load the resolver config unsing the resolver class
 
-    resolver_cls = getResolverClass(resolver_type)
+    resolver_cls = get_resolver_class(resolver_type)
+
+    if resolver_cls is None:
+        raise Exception("no such resolver type '%r' defined!" %
+                        resolver_type)
+
     res_conf, _missing = resolver_cls.filter_config(linotp_config,
                                                     resolvername)
 
@@ -473,24 +478,6 @@ def deleteResolver(resolvername):
             _delete_from_resolver_config_cache(resolver_spec)
 
     return res
-
-
-def getResolverClass(resolver_type, resolver_conf=''):
-    """
-    get the resolver class for an resolver type
-
-    :param resolver_type: string like 'ldapresolver'
-
-    :raises Exception: If no class for this resolver type was found
-    :return: class
-    """
-
-    resolver_cls = resolver_registry.get(resolver_type)
-
-    if resolver_cls is None:
-        raise Exception("no such resolver type '%r' defined!" % resolver_type)
-
-    return resolver_cls
 
 
 # external in token.py user.py validate.py
@@ -900,7 +887,11 @@ def prepare_resolver_parameter(new_resolver_name, param,
     """
     primary_key_changed = False
 
-    resolver_cls = getResolverClass(param['type'])
+    resolver_cls = get_resolver_class(param['type'])
+
+    if resolver_cls is None:
+        raise Exception("no such resolver type '%r' defined!" %
+                        param['type'])
 
     # for rename and update, we support the merge with previous parameters
     if previous_name:

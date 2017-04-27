@@ -95,7 +95,7 @@ from linotp.lib.context import request_context
 from linotp.lib.reporting import token_reporting
 from pylons.i18n.translation import _
 
-from linotp.lib.resolver import getResolverClass
+from linotp.lib.resolver import get_resolver_class
 from linotp.lib.resolver import prepare_resolver_parameter
 
 # For logout
@@ -2424,7 +2424,12 @@ class AdminController(BaseController):
 
             # now we can test the connection
 
-            resolver_cls = getResolverClass(param['type'])
+            resolver_cls = get_resolver_class(param['type'])
+
+            if resolver_cls is None:
+                raise Exception("no such resolver type '%r' defined!" %
+                                param['type'])
+
             (status, desc) = resolver_cls.testconnection(param)
 
             res = {
