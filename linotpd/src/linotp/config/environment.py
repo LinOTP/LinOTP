@@ -176,6 +176,7 @@ def get_activated_token_modules():
     if not 'linotpTokenModules' in config:
         return None
 
+    module_list = []
     module_config_str = config.get('linotpTokenModules')
 
     # in the config *.ini files we have some line continuation slashes,
