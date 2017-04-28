@@ -32,8 +32,9 @@ import binascii
 
 
 # for update, we require the TokenClass
-from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.base import TokenClass
 from linotp.lib.tokens.remotetoken import RemoteTokenClass
+from linotp.lib.tokens import tokenclass_registry
 from linotp.lib.error import ParameterError
 
 # we need this for the radius token
@@ -50,7 +51,8 @@ VOID_RADIUS_SECRET = "voidRadiusSecret"
 
 ###############################################
 
-
+@tokenclass_registry.class_entry('radius')
+@tokenclass_registry.class_entry('linotp.lib.tokens.radiustoken.RadiusTokenClass')
 class RadiusTokenClass(RemoteTokenClass):
 
     def __init__(self, aToken):

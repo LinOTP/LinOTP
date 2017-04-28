@@ -31,7 +31,8 @@ from Cryptodome.Cipher import AES
 import binascii
 import logging
 
-from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.base import TokenClass
+from linotp.lib.tokens import tokenclass_registry
 from linotp.lib.auth.validate import check_pin
 
 from linotp.lib.util import modhex_decode
@@ -41,6 +42,8 @@ log = logging.getLogger(__name__)
 
 
 ###############################################
+@tokenclass_registry.class_entry('yubikey')
+@tokenclass_registry.class_entry('linotp.lib.tokens.yubikeytoken.YubikeyTokenClass')
 class YubikeyTokenClass(TokenClass):
     """
     The YubiKey Token in the Yubico AES mode

@@ -35,7 +35,6 @@ selfservice controller - This is the controller for the self service interface,
 import os
 import json
 import webob
-import copy
 
 from pylons import request
 from pylons import response
@@ -73,7 +72,7 @@ from linotp.lib.user import User
 from linotp.lib.selftest import isSelfTest
 from linotp.controllers.userservice import get_auth_user
 
-from linotp.lib.token import newToken
+from linotp.lib.tokens import tokenclass_registry
 from linotp.lib.context import request_context
 
 import logging
@@ -317,12 +316,8 @@ class SelfserviceController(BaseController):
             if section != 'selfservice':
                 return res
 
-            g = config['pylons.app_globals']
-            tokenclasses = copy.deepcopy(g.tokenclasses)
-
-            if tok in tokenclasses:
-                tclass = tokenclasses.get(tok)
-                tclt = newToken(tclass)
+            if tok in tokenclass_registry:
+                tclt = tokenclass_registry.get(tok)
                 if hasattr(tclt, 'getClassInfo'):
                     sections = tclt.getClassInfo(section, {})
                     if scope in sections.keys():

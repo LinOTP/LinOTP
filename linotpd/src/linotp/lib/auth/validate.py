@@ -28,7 +28,6 @@
 from hashlib import sha256
 from datetime import datetime
 
-from pylons import config
 from pylons.configuration import config as env
 
 from linotp.lib.auth.finishtokens import FinishTokens
@@ -47,6 +46,7 @@ from linotp.lib.token import TokenHandler
 from linotp.lib.token import get_token_owner
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import add_last_accessed_info
+from linotp.lib.tokens import tokenclass_registry
 
 from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.lib.util import modhex_decode
@@ -529,8 +529,6 @@ class ValidationHandler(object):
         """
         reply = None
 
-        tokenclasses = config['tokenclasses']
-
         #  add the user to the options, so that every token could see the user
         if not options:
             options = {}
@@ -610,9 +608,9 @@ class ValidationHandler(object):
             # check if the token is the list of supported tokens
             # if not skip to the next token in list
             typ = token.getType()
-            if typ.lower() not in tokenclasses:
+            if typ.lower() not in tokenclass_registry:
                 log.error('token typ %r not found in tokenclasses: %r' %
-                          (typ, tokenclasses))
+                          (typ, tokenclass_registry.keys()))
                 audit_entry['action_detail'] = "Unknown Token type"
                 continue
 

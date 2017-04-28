@@ -45,7 +45,7 @@ from linotp.lib.reply import sendQRImageResult
 from linotp.lib.reply import sendResult, sendError
 
 from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.tokenclass import OcraTokenClass
+from linotp.lib.tokens.base import OcraTokenClass
 
 from linotp.lib.user import User
 from linotp.lib.user import getUserFromParam

@@ -46,8 +46,8 @@ from linotp.lib.token import setPinSo
 
 from linotp.lib.token import setRealms, getTokenType
 from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.token import newToken
 from linotp.lib.token import getTokenRealms
+from linotp.lib.tokens import tokenclass_registry
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError
@@ -825,19 +825,13 @@ class AdminController(BaseController):
             # determine token class
 
             token_cls_alias = params.get("type") or 'hmac'
-
-            g = config['pylons.app_globals']
-            tokenclasses = g.tokenclasses
-
-            token_cls_aliases = tokenclasses.keys()
             lower_alias = token_cls_alias.lower()
 
-            if lower_alias not in token_cls_aliases:
+            if lower_alias not in tokenclass_registry:
                 raise TokenAdminError('admin/init failed: unknown token '
                                       'type %r' % token_cls_alias, id=1610)
 
-            token_cls_identifier = tokenclasses.get(lower_alias)
-            token_cls = newToken(token_cls_identifier)
+            token_cls = tokenclass_registry.get(lower_alias)
 
             # --------------------------------------------------------------- --
 

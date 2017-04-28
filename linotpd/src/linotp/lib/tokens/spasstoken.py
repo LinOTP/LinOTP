@@ -29,7 +29,8 @@
 
 import logging
 
-from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.base import TokenClass
+from linotp.lib.tokens import tokenclass_registry
 
 from linotp.lib.auth.validate import check_pin
 
@@ -37,6 +38,8 @@ from linotp.lib.auth.validate import check_pin
 log = logging.getLogger(__name__)
 
 
+@tokenclass_registry.class_entry('spass')
+@tokenclass_registry.class_entry('linotp.lib.tokens.spasstoken.SpassTokenClass')
 class SpassTokenClass(TokenClass):
     '''
     This is a simple pass token.

@@ -45,7 +45,7 @@ from linotp.lib.error import ParameterError
 # Our Token stuff
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.token import getTokenType
-from linotp.lib.token import newToken
+from linotp.lib.tokens import tokenclass_registry
 
 
 from linotp.lib.user import getUserFromParam, getUserFromRequest
@@ -256,13 +256,10 @@ class ManageController(BaseController):
         '''
         '''
         c.title = 'TokenTypeInfo'
-        g = config['pylons.app_globals']
-        tokens = g.tokenclasses
         ttinfo = []
-        ttinfo.extend(tokens.keys())
-        for tok in tokens:
-            tclass = tokens.get(tok)
-            tclass_object = newToken(tclass)
+        ttinfo.extend(tokenclass_registry.keys())
+        for tok in tokenclass_registry:
+            tclass_object = tokenclass_registry.get(tok)
             if hasattr(tclass_object, 'getClassType'):
                 ii = tclass_object.getClassType()
                 ttinfo.append(ii)
@@ -663,17 +660,14 @@ def _getTokenTypes():
         :rtype:  dict
     '''
 
-    glo = config['pylons.app_globals']
-    tokenclasses = glo.tokenclasses
 
     tokens = []
-    tokens.extend(tokenclasses.keys())
+    tokens.extend(tokenclass_registry.keys())
 
     tinfo = {}
     for tok in tokens:
-        if tok in tokenclasses.keys():
-            tclass = tokenclasses.get(tok)
-            tclass_object = newToken(tclass)
+        if tok in tokenclass_registry.keys():
+            tclass_object = tokenclass_registry.get(tok)
             if hasattr(tclass_object, 'getClassInfo'):
                 ii = tclass_object.getClassInfo('title') or tok
                 tinfo[tok] = _(ii)
@@ -694,12 +688,9 @@ def _getTokenTypeConfig(section='config'):
     '''
 
     res = {}
-    g = config['pylons.app_globals']
-    tokenclasses = g.tokenclasses
 
-    for tok in tokenclasses.keys():
-        tclass = tokenclasses.get(tok)
-        tclass_object = newToken(tclass)
+    for tok in tokenclass_registry:
+        tclass_object = tokenclass_registry.get(tok)
         if hasattr(tclass_object, 'getClassInfo'):
 
             conf = tclass_object.getClassInfo(section, ret={})

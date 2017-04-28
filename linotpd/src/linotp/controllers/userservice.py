@@ -102,14 +102,15 @@ from linotp.lib.token import (resetToken,
                               getTokenRealms,
                               get_multi_otp,
                               getTokenType,
-                              newToken,
                               get_tokenserial_of_transaction,
                               getTokens4UserOrSerial,
                               )
 
+from linotp.lib.tokens import tokenclass_registry
+
 from linotp.lib.token import TokenHandler
 
-from linotp.lib.tokenclass import OcraTokenClass
+from linotp.lib.tokens.base import OcraTokenClass
 
 from linotp.lib.apps import (create_google_authenticator,
                              create_oathtoken_url
@@ -568,12 +569,8 @@ class UserserviceController(BaseController):
             for k, v in context.items():
                 setattr(c, k, v)
 
-            g = config['pylons.app_globals']
-            tokenclasses = copy.deepcopy(g.tokenclasses)
-
-            if tok in tokenclasses:
-                tclass = tokenclasses.get(tok)
-                tclt = newToken(tclass)
+            if tok in tokenclass_registry:
+                tclt = tokenclass_registry.get(tok)
                 if hasattr(tclt, 'getClassInfo'):
                     sections = tclt.getClassInfo(section, {})
                     if scope in sections.keys():
@@ -1837,11 +1834,8 @@ class UserserviceController(BaseController):
                 raise PolicyException('user %r not authorized to call %s'
                                       % (self.authUser, method))
 
-            glo = config['pylons.app_globals']
-            tokenclasses = glo.tokenclasses
-
-            if typ in tokenclasses.keys():
-                tclass = tokenclasses.get(typ)
+            if typ in tokenclass_registry:
+                token_cls = tokenclass_registry.get(typ)
                 tclt = None
                 if serial is not None:
                     toks = getTokens4UserOrSerial(None, serial, _class=False)
@@ -1849,11 +1843,11 @@ class UserserviceController(BaseController):
                     if tokenNum == 1:
                         token = toks[0]
                         # object method call
-                        tclt = newToken(tclass)(token)
+                        tclt = token_cls(token)
 
                 # static method call
                 if tclt is None:
-                    tclt = newToken(tclass)
+                    tclt = token_cls
                 method = '' + method.strip()
                 if hasattr(tclt, method):
                     # TODO: check that method name is a function / method

@@ -45,9 +45,10 @@ from linotp.lib.policy import get_single_auth_policy
 from linotp.lib.challenges import Challenges
 from linotp.lib.challenges import transaction_id_to_u64
 from linotp.lib.reply import create_img
-from linotp.lib.tokenclass import TokenClass
-from linotp.lib.tokenclass import StatefulTokenMixin
+from linotp.lib.tokens.base import TokenClass
+from linotp.lib.tokens.base import StatefulTokenMixin
 from linotp.lib.token import get_token_owner
+from linotp.lib.tokens import tokenclass_registry
 
 from linotp.lib.crypto import zerome
 from linotp.lib.crypto import extract_tan
@@ -105,6 +106,8 @@ CONTENT_TYPE_AUTH = 2
 QRTOKEN_VERSION = 1
 
 
+@tokenclass_registry.class_entry('qr')
+@tokenclass_registry.class_entry('linotp.lib.tokens.qrtoken.QrTokenClass')
 class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     """

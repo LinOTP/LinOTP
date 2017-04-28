@@ -34,6 +34,7 @@ import sys
 from linotp.provider import loadProviderFromPolicy
 
 from linotp.lib.token import get_token_owner
+from linotp.lib.tokens import tokenclass_registry
 
 from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.auth.validate import check_pin
@@ -80,7 +81,8 @@ def is_email_editable(user=""):
 
     return ret
 
-
+@tokenclass_registry.class_entry('email')
+@tokenclass_registry.class_entry('linotp.lib.tokens.emailtoken.EmailTokenClass')
 class EmailTokenClass(HmacTokenClass):
     """
     E-mail token (similar to SMS token)

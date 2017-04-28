@@ -108,11 +108,10 @@ def load_environment(global_conf, app_conf):
 
     directories = paths['templates']
 
-    # add a template path for every token
-    modules = get_token_module_list()
-    for module in modules:
-        mpath = os.path.dirname(module.__file__)
-        directories.append(mpath)
+    import linotp.lib.tokens as token_package
+
+    token_package_path = os.path.dirname(token_package.__file__)
+    directories.append(token_package_path)
 
     # add a template path for every resolver
     resolver_module_path = UserIdResolver.__file__
@@ -152,21 +151,6 @@ def load_environment(global_conf, app_conf):
         log.exception("Failed to load security provider definition: %r" % e)
         raise e
 
-    # load the list of tokenclasses
-    try:
-        log.debug('[load_environment] loading token list definition')
-        (tcl, tpl) = get_token_class_list()
-
-        config['tokenclasses'] = tcl
-        g.setTokenclasses(tcl)
-
-        config['tokenprefixes'] = tpl
-        g.setTokenprefixes(tpl)
-
-    except Exception as e:
-        log.exception("Failed to load token class list: %r" % e)
-        raise e
-
     # get the help url
     url = config.get("linotpHelp.url", None)
     if url is None:
@@ -181,140 +165,36 @@ def load_environment(global_conf, app_conf):
 
 #######################################
 
+def get_activated_token_modules():
 
-def get_token_list():
-    '''
-    returns the list of the modules
-
-    :return: list of token module names from the config file
-    '''
-    module_list = []
-
-    # append our derfault list so this will overwrite in
-    # the loaded classes finally
-    module_list.append("linotp.lib.tokenclass")
-
-    fallback_tokens = get_default_tokens()
-
-    config_modules = config.get("linotpTokenModules", ",".join(fallback_tokens))
-    log.debug("[get_module_list] %s " % config_modules)
-    if config_modules:
-        # in the config *.ini files we have some line continuation slashes,
-        # which will result in ugly module names, but as they are followed by
-        # \n they could be separated as single entries by the following two
-        # lines
-        lines = config_modules.splitlines()
-        coco = ",".join(lines)
-        for module in coco.split(','):
-            if module.strip() != '\\':
-                module_list.append(module.strip())
-
-    return module_list
-
-
-def get_default_tokens():
     """
-    get the list of the linotp default tokens from linotp.lib.tokens
-
-    :return: array of all token module names like
-             ["linotp.lib.tokens.smstoken", ..]
+    checks in the ini file for the linotpTokenModules key and returns
+    the list of modules defined there as a list. if the key is not
+    present this will return None.
     """
-    token_modules = []
 
-    import linotp.lib.tokens
-    module_loaction = linotp.lib.tokens.__file__
-    idx = module_loaction.rfind(os.sep)
-    base_dir = module_loaction[:idx]
+    if not 'linotpTokenModules' in config:
+        return None
 
-    for file_name in listdir(base_dir):
-        if file_name[-3:] == '.py' and file_name != '__init__.py':
-            token_modules.append("linotp.lib.tokens.%s" % file_name[:-3])
+    module_config_str = config.get('linotpTokenModules')
 
-    return token_modules
+    # in the config *.ini files we have some line continuation slashes,
+    # which will result in ugly module names, but as they are followed by
+    # \n they could be separated as single entries by the following two
+    # lines
+    lines = module_config_str.splitlines()
+    coco = ",".join(lines)
+    for module in coco.split(','):
 
-def get_token_module_list():
-    '''
-    return the list of the available token classes like hmac, spass, totp
-
-    :return: list of token modules
-    '''
-
-    # def load_token_modules
-    module_list = get_token_list()
-    log.debug("[get_token_class_list] using the module list: %s" % module_list)
-
-    modules = []
-    for mod_name in module_list:
-        if mod_name == '\\' or len(mod_name.strip()) == 0:
+        if module.strip() == '\\':
             continue
 
-        # load all token modules if not already loaded
-        if mod_name not in sys.modules:
-            try:
-                log.debug("import module: %s" % mod_name)
-                __import__(mod_name)
-            except TokenTypeNotSupportedError as exx:
-                module = None
-                log.warning('Token type not supported on this setup: %s', mod_name)
-                continue
-            except Exception as exx:
-                module = None
-                log.debug('unable to load token module : %r (%r)'
-                          % (mod_name, exx))
-                raise Exception('unable to load token module : %r (%r)'
-                                % (mod_name, exx))
+        if module.strip() == '':
+            continue
 
-        module = sys.modules[mod_name]
-        if module is not None:
-            modules.append(module)
-            log.debug('module %s loaded' % (mod_name))
-        else:
-            log.error('module %s failed to load!' % (mod_name))
+        module_list.append(module.strip())
 
-    return modules
-
-
-def get_token_class_list():
-    '''
-    provide a dict of token types and their classes
-
-    :return: tupple of two dict
-             -tokenclass_dict  {token type : token class}
-             -tokenprefix_dict {token type : token prefix}
-    '''
-    modules = get_token_module_list()
-
-    # load_token_classes
-    tokenclass_dict = {}
-    tokenprefix_dict = {}
-
-    for module in modules:
-        log.debug("[get_token_class_list] module: %s" % module)
-        for name in dir(module):
-            obj = getattr(module, name)
-            if inspect.isclass(obj):
-                try:
-                    # check if this is a TOKEN class
-                    if issubclass(obj, linotp.lib.tokenclass.TokenClass):
-                        typ = obj.getClassType()
-                        class_name = "%s.%s" % (module.__name__, obj.__name__)
-
-                        if typ is not None:
-                            tokenclass_dict[typ] = class_name
-
-                            prefix = 'LSUN'
-                            if hasattr(obj, 'getClassPrefix'):
-                                prefix = obj.getClassPrefix().upper()
-                            tokenprefix_dict[typ.lower()] = prefix
-
-                except Exception as e:
-                    log.info("[get_token_class_list] error constructing" +
-                             " tokenclass_list: %r" % e)
-
-    log.debug("[get_token_class_list] the tokenclass list: %r"
-              % tokenclass_dict)
-
-    return (tokenclass_dict, tokenprefix_dict)
+    return module_list
 
 
 ###eof#########################################################################

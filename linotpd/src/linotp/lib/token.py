@@ -29,9 +29,7 @@
 import datetime
 import logging
 import string
-import sys
 
-import re
 import binascii
 
 
@@ -42,12 +40,11 @@ try:
 except ImportError:
     import simplejson as json
 
-from sqlalchemy import or_, and_, not_
+from sqlalchemy import or_, and_
 from sqlalchemy import func
 
 
 from pylons import config
-from pylons.configuration import config as env
 
 from linotp.lib.challenges import Challenges
 
@@ -61,8 +58,6 @@ from linotp.lib.user import get_authenticated_user
 from linotp.lib.util import generate_password
 
 from linotp.lib.realm import realm2Objects
-from linotp.lib.realm import getRealms
-from linotp.lib.realm import getDefaultRealm
 
 import linotp
 import linotp.lib.policy
@@ -70,15 +65,12 @@ import linotp.lib.policy
 from linotp import model
 from linotp.model import Token, createToken, Realm, TokenRealm
 
-from linotp.model import Challenge
-
 from linotp.lib.config import getFromConfig
 
 from linotp.lib.realm import createDBRealm, getRealmObject
 
 from linotp.lib.context import request_context as context
-from linotp.lib.policy import get_auth_forward
-from linotp.lib.policy.forward import ForwardServerPolicy
+from linotp.lib.tokens import tokenclass_registry
 
 import linotp.model.meta
 
@@ -142,13 +134,11 @@ class TokenHandler(object):
         toks = getTokens4UserOrSerial(None, serial, _class=False)
         tokenNum = len(toks)
 
-        tokenclasses = config['tokenclasses']
-
         if tokenNum == 0:  # create new a one token
             #  check if this token is in the list of available tokens
-            if typ.lower() not in tokenclasses:
+            if typ.lower() not in tokenclass_registry:
                 log.error('Token type %r not found. Available types are: %r' %
-                          (typ, tokenclasses))
+                          (typ, tokenclass_registry.keys()))
                 raise TokenAdminError("[initToken] failed: unknown token "
                                       "type %r" % typ, id=1610)
             token = createToken(serial)
@@ -166,9 +156,9 @@ class TokenHandler(object):
                 raise TokenAdminError("initToken failed: %s" % msg)
 
             #  prevent update of an unsupported token type
-            if typ.lower() not in tokenclasses:
+            if typ.lower() not in tokenclass_registry:
                 log.error('Token type %r not found. Available types are: %r' %
-                          (typ, tokenclasses))
+                          (typ, tokenclass_registry.keys()))
                 raise TokenAdminError("[initToken] failed: unknown token"
                                       " type %r" % typ, id=1610)
 
@@ -1010,8 +1000,8 @@ class TokenHandler(object):
         if len(tokens_to) != 1:
             log.error("[copyTokenPin] not a unique token to copy to found")
             return -2
-        import linotp.lib.tokenclass
-        linotp.lib.tokenclass.TokenClass.copy_pin(tokens_from[0], tokens_to[0])
+        import linotp.lib.tokens.base
+        linotp.lib.tokens.base.TokenClass.copy_pin(tokens_from[0], tokens_to[0])
         return 1
 
     def copyTokenUser(self, serial_from, serial_to):
@@ -1096,12 +1086,11 @@ class TokenHandler(object):
         if tokenType is None:
             tokenType = 'LSUN'
 
-        tokenprefixes = config['tokenprefixes']
-
         if prefix is None:
             prefix = tokenType.upper()
-            if tokenType.lower() in tokenprefixes:
-                prefix = tokenprefixes.get(tokenType.lower())
+            if tokenType.lower() in tokenclass_registry:
+                token_cls = tokenclass_registry.get(tokenType.lower())
+                prefix = token_cls.getClassPrefix().upper()
 
         #  now search the number of ttypes in the token database
         tokennum = Session.query(Token).filter(
@@ -1153,11 +1142,10 @@ def createTokenClassObject(token, typ=None):
     tok = None
 
     # search which tokenclass should be created and create it!
-    tokenclasses = config['tokenclasses']
-    if tokenclasses.has_key(typ.lower()):
+    if typ.lower() in tokenclass_registry:
         try:
-            token_class = tokenclasses.get(typ)
-            tok = newToken(token_class)(token)
+            token_cls = tokenclass_registry.get(typ)
+            tok = token_cls(token)
 
         except Exception as exx:
             raise TokenAdminError("createTokenClassObject failed:  %r"
@@ -1171,51 +1159,12 @@ def createTokenClassObject(token, typ=None):
 
         log.error('Token type %r not found. Available types are: %r.'
                   'Using default token class as fallback ' %
-                  (typ, tokenclasses))
+                  (typ, tokenclass_registry.keys()))
 
-        from linotp.lib.tokenclass import TokenClass
+        from linotp.lib.tokens.base import TokenClass
         tok = TokenClass(token)
 
     return tok
-
-def newToken(token_class):
-    '''
-    newTokenClass - return a token class, which could be used as a constructor
-
-    :param token_class: string representation of the token class name
-    :type   token_class: string
-    :return: token class
-    :rtype:  token class
-
-    '''
-
-    ret = ""
-    attribute = ""
-
-    #  prepare the lookup
-    parts = token_class.split('.')
-    package_name = '.'.join(parts[:-1])
-    class_name = parts[-1]
-
-    if sys.modules.has_key(package_name):
-        mod = sys.modules.get(package_name)
-    else:
-        mod = __import__(package_name, globals(), locals(), [class_name])
-    try:
-        klass = getattr(mod, class_name)
-
-        attrs = ["getType", "checkOtp"]
-        for att in attrs:
-            attribute = att
-            getattr(klass, att)
-
-        ret = klass
-    except:
-        raise NameError(
-            "IdResolver AttributeError: " + package_name + "." + class_name
-             + " instance has no attribute '" + attribute + "'")
-    return ret
-
 
 def get_token_type_list():
     '''
@@ -1225,14 +1174,7 @@ def get_token_type_list():
     :rtype : list
     '''
 
-    try:
-        tokenclasses = config['tokenclasses']
-
-    except Exception as exx:
-        raise TokenAdminError('get_token_type_list failed:  %r' % exx, id=1611)
-
-    token_type_list = tokenclasses.keys()
-    return token_type_list
+    return tokenclass_registry.keys()
 
 
 
@@ -1867,12 +1809,11 @@ def genSerial(tokenType=None, prefix=None):
     if tokenType is None:
         tokenType = 'LSUN'
 
-    tokenprefixes = config['tokenprefixes']
-
     if prefix is None:
         prefix = tokenType.upper()
-        if tokenType.lower() in tokenprefixes:
-            prefix = tokenprefixes.get(tokenType.lower())
+        if tokenType.lower() in tokenclass_registry:
+            token_cls = tokenclass_registry.get(tokenType.lower())
+            prefix = token_cls.getClassPrefix().upper()
 
     #  now search the number of ttypes in the token database
     tokennum = Session.query(Token).filter(
@@ -1893,6 +1834,7 @@ def genSerial(tokenType=None, prefix=None):
 
     return serial
 
+
 def getTokenConfig(tok, section=None):
     '''
     getTokenConfig - return the config definition
@@ -1907,14 +1849,11 @@ def getTokenConfig(tok, section=None):
     :return: dict - if nothing found an empty dict
     :rtype:  dict
     '''
+
     res = {}
 
-    g = config['pylons.app_globals']
-    tokenclasses = g.tokenclasses
-
-    if tok in tokenclasses.keys():
-        tclass = tokenclasses.get(tok)
-        tclt = newToken(tclass)
+    if tok in tokenclass_registry:
+        tclt = tokenclass_registry.get(tok)
         # check if we have a policy in the token definition
         if hasattr(tclt, 'getClassInfo'):
             res = tclt.getClassInfo(section, ret={})

@@ -31,7 +31,8 @@ import copy
 import httplib2
 import urllib
 
-from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.base import TokenClass
+from linotp.lib.tokens import tokenclass_registry
 
 from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.auth.validate import check_pin
@@ -47,7 +48,8 @@ log = logging.getLogger(__name__)
 
 ###############################################
 
-
+@tokenclass_registry.class_entry('remote')
+@tokenclass_registry.class_entry('linotp.lib.tokens.remotetoken.RemoteTokenClass')
 class RemoteTokenClass(TokenClass):
     """
     The Remote token forwards an authentication request to another LinOTP
@@ -425,7 +427,7 @@ class RemoteTokenClass(TokenClass):
 
         In case of success the otp_counter needs to be >= 0.
         The matching_challenges is passed to the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.challenge_janitor`
+        :py:meth:`~linotp.lib.tokens.base.TokenClass.challenge_janitor`
         to clean up challenges.
 
         :param user: the requesting user

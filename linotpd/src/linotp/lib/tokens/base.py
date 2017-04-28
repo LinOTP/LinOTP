@@ -81,6 +81,7 @@ from linotp.lib.auth.validate import split_pin_otp
 
 from linotp.lib.tokenclass_validity_mixin import TokenValidityMixin
 from linotp.lib.tokenclass_tokeninfo_mixin import TokenInfoMixin
+from linotp.lib.tokens import tokenclass_registry
 
 from sqlalchemy import asc, desc
 
@@ -150,7 +151,6 @@ class StatefulTokenMixin(object):
         """
 
         self.addToTokenInfo('state', state_id)
-
 
 class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
@@ -494,9 +494,9 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
         **Please note**: This method does not check the response for the
         challenge itself. This is done by the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.checkResponse4Challenge`.
+        :py:meth:`~linotp.lib.tokens.base.TokenClass.checkResponse4Challenge`.
         E.g. this very method ``is_challenge_valid`` is used by the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.challenge_janitor`
+        :py:meth:`~linotp.lib.tokens.base.TokenClass.challenge_janitor`
         to clean up old challenges.
 
         :param challenge: The challenge to be checked
@@ -520,7 +520,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         This method initializes the challenge.
 
         This is a hook that is called before the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.createChallenge`, which
+        :py:meth:`~linotp.lib.tokens.base.TokenClass.createChallenge`, which
         will only be called if this method returns success==true.
 
         Thus this method can be used, to verify if there is an outstanding
@@ -559,7 +559,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
 
         In case of success the otp_counter needs to be > 0.
         The matching_challenges is passed to the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.challenge_janitor`
+        :py:meth:`~linotp.lib.tokens.base.TokenClass.challenge_janitor`
         to clean up challenges.
 
         :param user: the requesting user
@@ -637,7 +637,7 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         database.
 
         This method is called *after* the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.initChallenge`.
+        :py:meth:`~linotp.lib.tokens.base.TokenClass.initChallenge`.
 
         :param transactionid: the id of this challenge
         :param options: the request context parameters / data
@@ -1458,6 +1458,9 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
 ### OcraTokenClass #####################################
 
 
+# identifier is set to old path for compatibility
+@tokenclass_registry.class_entry('ocra')
+@tokenclass_registry.class_entry('linotp.lib.tokenclass.OcraTokenClass')
 class OcraTokenClass(TokenClass):
     """
     OcraTokenClass  implement an ocra compliant token

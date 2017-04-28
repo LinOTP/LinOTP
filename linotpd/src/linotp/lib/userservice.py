@@ -61,9 +61,8 @@ from linotp.lib.user import (
                              )
 
 
-from linotp.lib.token import (getTokens4UserOrSerial,
-                              newToken,
-                              )
+from linotp.lib.token import getTokens4UserOrSerial
+from linotp.lib.tokens import tokenclass_registry
 
 
 from linotp.lib.crypto import (aes_decrypt_data,
@@ -380,12 +379,9 @@ def add_dynamic_selfservice_enrollment(config, actions):
     '''
 
     dynanmic_actions = {}
-    g = config['pylons.app_globals']
-    tokenclasses = g.tokenclasses
 
-    for tok in tokenclasses.keys():
-        tclass = tokenclasses.get(tok)
-        tclass_object = newToken(tclass)
+    for tok in tokenclass_registry:
+        tclass_object = tokenclass_registry.get(tok)
         if hasattr(tclass_object, 'getClassInfo'):
 
             try:
@@ -440,15 +436,11 @@ def add_dynamic_selfservice_policies(config, actions):
     '''
 
     dynamic_policies = []
-    g = config['pylons.app_globals']
-    tokenclasses = g.tokenclasses
-
 
     defined_policies = []
 
-    for tok in tokenclasses.keys():
-        tclass = tokenclasses.get(tok)
-        tclt = newToken(tclass)
+    for tok in tokenclass_registry:
+        tclt = tokenclass_registry.get(tok)
         if hasattr(tclt, 'getClassInfo'):
             # # check if we have a policy in the token definition
             try:

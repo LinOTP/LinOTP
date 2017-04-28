@@ -34,9 +34,10 @@ from linotp.lib.policy import getPolicy
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import split_pin_otp
 
-from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.base import TokenClass
 from linotp.lib.token import getTokenRealms
 from linotp.lib.token import get_token_owner
+from linotp.lib.tokens import tokenclass_registry
 
 
 log = logging.getLogger(__name__)
@@ -86,6 +87,8 @@ def do_forward_failcounter(token):
     return boolean
 
 
+@tokenclass_registry.class_entry('forward')
+@tokenclass_registry.class_entry('linotp.lib.tokens.forwardtoken.ForwardTokenClass')
 class ForwardTokenClass(TokenClass):
     """
     The Forward token forwards an authentication request to another token.
@@ -289,7 +292,7 @@ class ForwardTokenClass(TokenClass):
 
         In case of success the otp_counter needs to be >= 0.
         The matching_challenges is passed to the method
-        :py:meth:`~linotp.lib.tokenclass.TokenClass.challenge_janitor`
+        :py:meth:`~linotp.lib.tokens.base.TokenClass.challenge_janitor`
         to clean up challenges.
 
         :param user: the requesting user

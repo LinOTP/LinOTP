@@ -29,14 +29,17 @@
 import logging
 from linotp.lib.crypto import zerome
 
-from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.base import TokenClass
 from linotp.lib.tokens.hmactoken import HmacTokenClass
+from linotp.lib.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
 ###############################################
 
 
+@tokenclass_registry.class_entry('pw')
+@tokenclass_registry.class_entry('linotp.lib.tokens.passwordtoken.PasswordTokenClass')
 class PasswordTokenClass(HmacTokenClass):
     '''
     This Token does use a fixed Password as the OTP value.

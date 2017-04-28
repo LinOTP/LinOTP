@@ -80,7 +80,7 @@ from linotp.lib.realm import deleteRealm
 from linotp.lib.user import setRealm
 from linotp.lib.user import getUserFromRequest
 
-from linotp.lib.token import newToken
+from linotp.lib.tokens import tokenclass_registry
 
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import checkPolicyPost
@@ -1400,14 +1400,9 @@ class SystemController(BaseController):
         '''
         pol = {}
 
+        for tok in tokenclass_registry:
 
-        glo = config['pylons.app_globals']
-        tokenclasses = glo.tokenclasses
-
-        for tok in tokenclasses.keys():
-
-            tclass = tokenclasses.get(tok)
-            tclass_object = newToken(tclass)
+            tclass_object = tokenclass_registry.get(tok)
 
             if hasattr(tclass_object, 'getClassInfo'):
 

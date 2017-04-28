@@ -37,8 +37,9 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
 
 
-from linotp.lib.tokenclass import TokenClass
+from linotp.lib.tokens.base import TokenClass
 from linotp.lib.tokens.hmactoken import HmacTokenClass
+from linotp.lib.tokens import tokenclass_registry
 
 keylen = {'sha1': 20,
           'sha256': 32,
@@ -90,6 +91,9 @@ Internet-Draft                HOTPTimeBased               September 2010
 """
 
 ###############################################
+
+@tokenclass_registry.class_entry('totp')
+@tokenclass_registry.class_entry('linotp.lib.tokens.totptoken.TimeHmacTokenClass')
 class TimeHmacTokenClass(HmacTokenClass):
 
     resyncDiffLimit = 3

@@ -55,8 +55,6 @@ class Globals(object):
         self.configLock = RWLock()
         secLock = RWLock()
 
-        self.tokenprefixes = {}
-        self.tokenclasses = {}
         self.security_provider = SecurityProvider(secLock)
 
         self.cache_manager = None
@@ -71,21 +69,6 @@ class Globals(object):
         finally:
             self.configLock.release()
         return config
-
-    def setTokenclasses(self, tcl):
-        self.tokenclasses = tcl
-        return
-
-    def getTokenclasses(self):
-        return self.tokenclasses
-
-    def setTokenprefixes(self, tpl):
-        self.tokenprefixes = tpl
-        return
-
-    def getTokenprefixes(self):
-        return self.tokenprefixes
-
 
     def setConfig(self, config, replace=False):
         '''

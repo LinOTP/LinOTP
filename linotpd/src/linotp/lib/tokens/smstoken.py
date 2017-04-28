@@ -123,6 +123,7 @@ from linotp.provider import loadProviderFromPolicy
 from linotp.lib.error import ParameterError
 
 from linotp.lib.tokens.hmactoken import HmacTokenClass
+from linotp.lib.tokens import tokenclass_registry
 
 import logging
 log = logging.getLogger(__name__)
@@ -186,6 +187,8 @@ def is_phone_editable(user=""):
     return ret
 
 
+@tokenclass_registry.class_entry('sms')
+@tokenclass_registry.class_entry('linotp.lib.tokens.smstoken.SmsTokenClass')
 class SmsTokenClass(HmacTokenClass):
     '''
     implementation of the sms token class

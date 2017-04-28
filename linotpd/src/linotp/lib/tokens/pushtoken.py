@@ -28,8 +28,8 @@ import struct
 import time
 
 from os import urandom
-from linotp.lib.tokenclass import TokenClass
-from linotp.lib.tokenclass import StatefulTokenMixin
+from linotp.lib.tokens.base import TokenClass
+from linotp.lib.tokens.base import StatefulTokenMixin
 from linotp.lib.challenges import transaction_id_to_u64
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import InvalidFunctionParameter
@@ -41,6 +41,7 @@ from linotp.lib.crypto import decode_base64_urlsafe
 from linotp.lib.crypto import dsa_to_dh_public
 from linotp.lib.util import int_from_bytes
 from linotp.lib.token import get_token_owner
+from linotp.lib.tokens import tokenclass_registry
 from linotp.lib.context import request_context as context
 from linotp.lib.reply import create_img
 from linotp.lib.pairing import generate_pairing_url
@@ -68,6 +69,8 @@ CONTENT_TYPE_PAIRING = 1
 CONTENT_TYPE_LOGIN = 2
 
 
+@tokenclass_registry.class_entry('push')
+@tokenclass_registry.class_entry('linotp.lib.tokens.pushtoken.PushTokenClass')
 class PushTokenClass(TokenClass, StatefulTokenMixin):
 
     """
