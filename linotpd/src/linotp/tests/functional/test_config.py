@@ -37,6 +37,8 @@ import os
 import json
 import logging
 from linotp.tests import TestController
+from linotp.tests import url
+import threading
 
 #
 # helper method to create random data
@@ -107,6 +109,68 @@ def create_long_entries(length):
 log = logging.getLogger(__name__)
 
 
+class DoRequest(threading.Thread):
+    ''' the request thread'''
+
+    def __init__(self, utest, rid=1, uri=None, params=None):
+        '''
+        initialize all settings of the request thread
+
+        :param utest: method/function to be called
+        :param rid: the request id
+        :param uri: the request url object
+        :param params: additional parmeters
+        '''
+        threading.Thread.__init__(self)
+
+        self.utest = utest
+        self.rid = rid
+        self.uri = uri
+        self.params = params
+
+        self.response = None
+
+    def run(self):
+        '''
+        run the request
+
+        run the request until we recieve an valid response -
+        background is, that we are making an authenticated request,
+        which does a login and a redirect. The redirect though is sometimes
+        ignored within the testing.
+        The inidcation for a redirect is in our test setup, that we dont get
+        a json resonse. In this case we do a retry until we have a valid
+        response
+        '''
+
+        ok = False
+        while not ok:
+            response = self.utest.app.get(self.uri, params=self.params)
+            self.response = response.body
+            try:
+                json.loads(self.response)
+                ok = True
+            except ValueError:
+                ok = False
+
+        return
+
+    def status(self):
+        '''
+        retrieve the request result
+
+        :return: the thread request result
+        '''
+        res = '"status": true,' in self.response
+        return res
+
+    def stat(self):
+        '''
+        retrieve the complete response
+        '''
+        return (self.rid, self.response)
+
+
 class TestConfigController(TestController):
     """
     test for large Config entries
@@ -115,10 +179,12 @@ class TestConfigController(TestController):
     alphabeth = None
 
     def setUp(self):
+        self.set_config_selftest()
         TestController.setUp(self)
         return
 
     def tearDown(self):
+        self.set_config_selftest(unset=True)
         TestController.tearDown(self)
 
 
@@ -495,6 +561,76 @@ class TestConfigController(TestController):
                                   data[len(config_data):]))
 
             self.assertEqual(config_data, data, 'error while comparing data')
+
+        return
+
+    def test_delete_of_previous_continous(self):
+        """
+        store concurrently multiple different config entries at once
+
+        to deal correctly with multiple joined config entries on every store
+        request all potential continous config entries are deleted upfront, as
+        the updated entry might be shorter than the previous one.
+        So we query the database for such entries and mark them for delete.
+        This algorithm works fine for standard sql databases.
+
+        But there is a bug within the mysql query processing, which does not
+        check upfront, if there is a to be deleted entry at all. If there is
+        no entry thus the mysql query processor creates a lock for the table
+        and when there is no entry, forgets to remove the lock, which results
+        in a deadlock in case of two concurrent requests
+
+        """
+
+        multiple_entries = [{
+            'PassOnUserNoToken': 'False',
+            'client.FORWARDED': 'False',
+            'AutoResync': 'False',
+            'splitAtSign': 'False',
+            }, {
+            'certificates.use_system_certificates': 'False',
+            'user_lookup_cache.enabled': 'True',
+            'selfservice.realmbox': 'False',
+            'resolver_lookup_cache.enabled': 'True',
+            }, {
+            'allowSamlAttributes': 'False',
+            'FailCounterIncOnFalsePin': 'True',
+            'PassOnUserNotFound': 'False',
+            }, {
+            'PrependPin': 'True',
+            'client.X_FORWARDED_FOR': 'False'}]
+
+        check_results = []
+        numthreads = len(multiple_entries)
+
+        params = {}
+        for tid in range(numthreads):
+            params[tid] = multiple_entries[tid]
+
+        uri = url(controller='system', action='setConfig')
+
+        for tid in range(numthreads):
+            param = params.get(tid)
+            current = DoRequest(self, rid=tid, uri=uri, params=param)
+            check_results.append(current)
+            current.start()
+
+        # wait till all threads are completed
+        for req in check_results:
+            req.join()
+
+        # now check in the config if all keys are there
+        msg = "Deadlock found when trying to get lock"
+        for check_result in check_results:
+            try:
+                jresp = json.loads(check_result.response)
+                error_message = jresp.get('result', {}).get(
+                                          'error', {}).get(
+                                          'message', '')
+                self.assertNotIn(msg, error_message, check_result.response)
+
+            except (ValueError, TypeError) as _exx:
+                log.info("Failed to set Config %r", check_result.response)
 
         return
 

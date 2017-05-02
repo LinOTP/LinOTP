@@ -20,6 +20,7 @@ Package: linotp
 Architecture: all
 Depends: apache2,
          libapache2-mod-wsgi | httpd-wsgi,
+	 openssl,
          python-pycryptodomex,
          python-pysodium,
          python-requests,
@@ -29,7 +30,6 @@ Depends: apache2,
          ${python:Depends}
 Pre-Depends: adduser,
              debconf,
-             openssl,
              pwgen,
              python-beaker,
              python-configobj,
