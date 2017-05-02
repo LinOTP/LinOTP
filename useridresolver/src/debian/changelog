@@ -1,3 +1,10 @@
+linotp-useridresolver (2.9.1.1-1) jessie; urgency=low
+
+  Bug Fixes
+  * LDAP: Fix requests so they will be sent in utf-8
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 13 Apr 2017 16:29:15 +0200
+
 linotp-useridresolver (2.9.3~0dev0-1) jessie; urgency=low
 
   * Set new version 2.9.3~0dev0-1

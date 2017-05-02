@@ -111,7 +111,7 @@ def getLinotpConfig():
             except Exception as exx:
                 log.exception("Could not add LinOTP configuration to pylons "
                               "tmpl_context. Exception was: %r", exx)
-                raise e
+                raise exx
         ret = c.linotpConfig
 
         if ret.delay is True:
@@ -548,55 +548,56 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     insert or update the entry with  key, value, type and
     description in the config DB
 
+    :param key: the config entry key, should start with 'linotp.'
+    :param val: the value
+    :param typ: the linotp typ, which could be text, int or password
+    :param desc: the description which comes along with the key
     """
-    value = val
 
+    value = val
+    if (not key.startswith("linotp.")):
+        key = "linotp." + key
     log_value = 'XXXXXX' if typ == 'password' else value
     log.debug('Changing config entry %r in database: New value is %r',
               key, log_value)
 
-    if (not key.startswith("linotp.")):
-        key = "linotp." + key
+    # ---------------------------------------------------------------------- --
+
+    # in case of an encrypted entry where the typ is 'password', we store
+    # only the encrypted value
 
     # ---------------------------------------------------------------------- --
 
     # passwords are encrypted from here
 
     if typ and typ == 'password':
-
         value = encryptPassword(val.encode('utf-8'))
-
-        # we just check if the encryption went good
-
-        en = decryptPassword(value).decode('utf-8')
-        if (en != val):
-            raise Exception("Error during encoding password type!")
 
     # ---------------------------------------------------------------------- --
 
-    # other types like datetime or int are simply stored
+    # for types other than string such int, float or datetime, we do a simple
+    # storeing
 
-    if type(value) not in [str, unicode]:
+    if not (isinstance(value, str) or isinstance(value, unicode)):
         return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
 
     # ---------------------------------------------------------------------- --
 
-    # for strings or unicode, we support continued entries
-    # check if we have to split the value
+    # if there are chunked entries for this key we delete them to prevent
+    # dangling, not updated entries
 
-    # the continuous type is a split over multiple entries:
-    # * every entry will have an enumerated key but the first one which has the
-    #   original one.
-    # * For all the type is 'C', but the last one which contains the original
-    #   type.
-    # * For description all entries contains the enumeration, but the last the
-    #   original description
+    _delete_continous_entry_db(key)
 
-    #
-    # we check the split algorithm depending on the value data -
+    # ---------------------------------------------------------------------- --
+
+    # the split algorithm depends on the value data -
     # in case of only ascii, we can use the much faster simple algorithm
     # in case of unicode characters we have to take the much slower one
-    #
+
+    # for 'utf8_slice' the number of chunks is oriented toward the max length
+    # defined by utf8 in bytes + the clipping of 6 bytes each. But as this
+    # could vary, we could not calculate the number of chunks and thus use
+    # an iterator to split the value into chunks
 
     chunks = []
     if len(value) < len(value.encode('utf-8')):
@@ -604,31 +605,98 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     else:
         text_slice = simple_slice
 
-    # the number of chunks is oriented toward the max length defined
-    # by utf8 in bytes + the clipping of 6 bytes each. But as this could
-    # vary, we could not calculate the number of chunks and thus benefit
-    # from the iterator
-
     for cont_value in text_slice(value, MAX_VALUE_LEN):
         chunks.append(cont_value)
 
-    number_of_chunks = len(chunks)
+    # ---------------------------------------------------------------------- --
 
-    # special simple case: either empty value or single entry
-    if number_of_chunks == 1:
+    # finally store either single entry or multiple chunks
+
+    if len(chunks) == 1:
         return _storeConfigEntryDB(key, value, typ=typ, desc=desc)
+
+    return _store_continous_entry_db(chunks, key, val, typ, desc)
+
+
+def _delete_continous_entry_db(key):
+    """
+    delete all chunk entries of a key
+
+    in case of an update of an continous entry, the new set of entries might
+    be smaller than the old one. So if we try to store the continous entry, we
+    first have to remove all chunks
+
+    :param key: the key prefix of the chunks
+    """
+
+    search_key = "%s__[%%:%%]" % (key)
+    continous_entries = Session.query(Config).filter(
+                                      Config.Key.like(search_key))
+
+    for continous_entry in continous_entries:
+        Session.delete(continous_entry)
+
+
+def _store_continous_entry_db(chunks, key, val, typ, desc):
+    """
+    store continous entries -
+    for strings or unicode, we support continued entries
+
+    the continuous type is a split over multiple entries:
+
+    normal Config Entry:
+    +-----------------+---------------------------+-------+-------------+
+    | key             | value                     |  type | description |
+    +-----------------+---------------------------+-------+-------------+
+    | small_val       | <small chunk of data>     | 'text' | 'my cert'  |
+    +-----------------+---------------------------+-------+-------------+
+
+    continous Config Entry:
+    +-------------------+---------------------------+--------+-------------+
+    | key               | value                     |  type  | description |
+    +-------------------+---------------------------+--------+-------------+
+    | long_value        | <big chunk > part 0       | 'C'    | '0:3'       |
+    +-------------------+---------------------------+--------+-------------+
+    | long_value__[1:3] | <big chunk > part 1       | 'C'    | '1:3'       |
+    +----------------..-+---------------------------+--------+-------------+
+    | long_value__[2:3] | <big chunk > part 2       | 'C'    | '2:3'       |
+    +-------------------+---------------------------+--------+-------------+
+    | long_value__[3:3] | <big chunk > part 3       | 'text' | 'my cert'   |
+    +-------------------+---------------------------+--------+-------------+
+
+    handling of key, type and description in chunked entries:
+
+    key: every entry will have an enumerated key but the first one which
+         has the original one.
+
+    type: for all the entries the type is 'C', but the last one which
+          contains the original type.
+
+    descr: for all entries the description contains the enumeration like 0:3,
+           which to be read as 'this is part 0 of 3 chunks'. the last entry
+           contains the the original description
+
+    :params key: the key
+    :params val: the value
+    :params val: the value
+    :params desc: the desctiption
+    :params chunks: the array of the split up entries
+    """
+
+    number_of_chunks = len(chunks)
 
     for i, cont_value in enumerate(chunks):
 
         cont_typ = "C"
-        cont_desc = "%d:%d" % (i, number_of_chunks)
-        cont_key = "%s__[%d:%d]" % (key, i, number_of_chunks)
+        cont_desc = "%d:%d" % (i, number_of_chunks - 1)
+        cont_key = "%s__[%d:%d]" % (key, i, number_of_chunks - 1)
 
+        # first one will contain the correct key with type 'C' continuous
         if i == 0:
-            # first one will contain the correct key, but type is continuous
             cont_key = key
-        elif i == number_of_chunks:
-            # the last one will contain the type and the description
+
+        # the last one will contain the correct type and description
+        elif i == number_of_chunks - 1:
             cont_typ = typ
             cont_desc = desc
 
@@ -651,10 +719,8 @@ def _storeConfigEntryDB(key, value, typ=None, desc=None):
     if confEntries.count() == 1:
         theConf = confEntries[0]
         theConf.Value = unicode(value)
-        if (typ is not None):
-            theConf.Type = unicode(typ)
-        if (desc is not None):
-            theConf.Description = unicode(desc)
+        theConf.Type = typ
+        theConf.Description = desc
 
     # insert
     elif confEntries.count() == 0:
@@ -698,7 +764,8 @@ def _removeConfigDB(key):
     if theConf.Type == 'C' and theConf.Description[:len('0:')] == '0:':
         _start, end = theConf.Description.split(':')
         search_key = "%s__[%%:%s]" % (key, end)
-        cont_entries = Session.query(Config).filter(Config.Key.like(search_key)).all()
+        cont_entries = Session.query(Config).filter(
+                                     Config.Key.like(search_key)).all()
         to_be_deleted.extend(cont_entries)
 
     try:
@@ -771,11 +838,13 @@ def _retrieveAllConfigDB():
     desc_dict = {}
     cont_dict = {}
 
-    # ---------------------------------------------------------------------- --
+    db_config = Session.query(Config).all()
 
-    # first read all config db information into dicts for later processing
+    # put all information in the dicts for later processing
 
-    for conf in Session.query(Config).all():
+    for conf in db_config:
+        log.debug("[retrieveAllConfigDB] key %r:%r" % (conf.Key, conf.Value))
+
         conf_dict[conf.Key] = conf.Value
         type_dict[conf.Key] = conf.Type
         desc_dict[conf.Key] = conf.Description
@@ -788,9 +857,7 @@ def _retrieveAllConfigDB():
             _start, num = conf.Description.split(':')
             cont_dict[conf.Key] = int(num)
 
-    # ---------------------------------------------------------------------- --
-
-    # cleanup the config from continuous entries
+    # cleanup the config from continous entries
 
     for key, number in cont_dict.items():
 
@@ -807,13 +874,13 @@ def _retrieveAllConfigDB():
         conf_dict[key] = value
 
         search_key = "%s__[%d:%d]" % (key, number, number)
-        type_dict[key] = type_dict[search_key]
-        desc_dict[key] = desc_dict[search_key]
 
-    # ---------------------------------------------------------------------- --
+        # allow the reading of none existing entries
 
-    # finally put the entries into the to be returned config dictionary
-    # caring for the linotp. prefix and the exanding of config values
+        type_dict[key] = type_dict.get(search_key)
+        desc_dict[key] = desc_dict.get(search_key)
+
+    # normal processing as before continous here
 
     for key, value in conf_dict.items():
 
