@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010 - 2017 KeyIdentity GmbH
@@ -28,14 +29,15 @@ Tests the chunked data handling in the config
 
 
 import unittest
-import linotp
 
-from mock import MagicMock
 from mock import patch
-import mock
 
-from linotp.lib.config import _store_continous_entry_db
-from linotp.lib.config import _storeConfigDB
+from linotp.lib.config import _store_continous_entry_db, _storeConfigDB,\
+    _retrieveConfigDB
+from linotp.model import init_model
+from linotp.model.meta import metadata, Session
+from linotp.model import Config
+from sqlalchemy.engine import create_engine
 
 big_value = """-----BEGIN CERTIFICATE-----
 MIIGlTCCBH2gAwIBAgIED////zANBgkqhkiG9w0BAQsFADBaMQswCQYDVQQGEwJO
@@ -152,14 +154,23 @@ TestConfigEntries = {}
 def storeConfigEntryDB(key, val, typ=None, desc=None):
 
     TestConfigEntries[key] = {'type': typ,
-                          'value': val,
-                          'desc': desc}
+                              'value': val,
+                              'desc': desc}
 
 
 class ContEntries(object):
+    """
+    mock class for db config entries
+    """
 
     def delete(self, synchronize_session=False):
         return None
+
+    def count(self):
+        return 0
+
+    def __iter__(self):
+        return iter([])
 
 
 class TestChunkConfigCase(unittest.TestCase):
@@ -343,5 +354,77 @@ class TestChunkConfigCase(unittest.TestCase):
             del TestConfigEntries[key]
 
         return
+
+
+class TestConfigStoreCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Use an in memory empty Sqlite database
+        super(TestConfigStoreCase, cls).setUpClass()
+        cls.engine = create_engine('sqlite:///:memory:')
+        metadata.create_all(cls.engine)
+        init_model(cls.engine)
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+
+        # Clear all config entries before starting each test
+        Session.query(Config).delete(synchronize_session='fetch')
+
+    def test_storeConfigDB_encoding(self):
+        # Test round trip of _storeConfigDB with entries that require
+        # encodinfg of special characters
+        conf = {
+            'Key': u'linotp.TËST',
+            'Value': u'VALUEÄ',
+            'Type': u'TYPEß',
+            'Description': u'DESCRIPTIÖN',
+        }
+
+        _storeConfigDB(conf['Key'], conf['Value'],
+                       conf['Type'], conf['Description'])
+
+        # Check value is correctly returned
+        stored_value = _retrieveConfigDB(conf['Key'])
+        self.assertEqual(conf['Value'], stored_value)
+
+        # Check type, description in database
+        entries = Session.query(Config).all()
+
+        assert(len(entries) == 1)
+        stored_conf = entries[0]
+
+        for key in conf.keys():
+            self.assertEqual(conf[key], getattr(stored_conf, key),
+                             "Key should match key:%s - expected %r, recevied %r" % (key, conf[key], getattr(stored_conf, key)))
+
+    def test_updateExisting(self):
+        # Test the following conditions:
+        # - An entry is created with chunklength > 1
+        # - The type and description are not set
+        # - The entry is reduced to one chunk
+        # Verify that the resulting config entry has
+        # correctly set the type and description
+
+        key = 'linotp.testupdate'
+        longvalue = '*' * 2000
+        value = 'value'
+        typ = None
+        description = None
+
+        _storeConfigDB(key, longvalue, typ, description)
+        self.assertEqual(Session.query(Config).count(), 2)
+        oldentries = Session.query(Config).all()
+        self.assertEqual(len(oldentries), 2)
+
+        _storeConfigDB(key, value, typ, description)
+        entries = Session.query(Config).all()
+        self.assertEqual(len(entries), 1)
+
+        entry = entries[0]
+        self.assertEqual(entry.Key, key)
+        self.assertEqual(entry.Value, value)
+        self.assertEqual(entry.Description, '')  # None is converted to ''
+        self.assertEqual(entry.Type, typ)
 
 # eof #

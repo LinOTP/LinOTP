@@ -645,7 +645,8 @@ def _delete_continous_entry_db(key):
     continous_entries = Session.query(Config).filter(
                                       Config.Key.like(search_key))
 
-    continous_entries.delete(synchronize_session=False)
+    for continous_entry in continous_entries:
+        Session.delete(continous_entry)
 
 
 def _store_continous_entry_db(chunks, key, val, typ, desc):
@@ -730,10 +731,8 @@ def _storeConfigEntryDB(key, value, typ=None, desc=None):
     if confEntries.count() == 1:
         theConf = confEntries[0]
         theConf.Value = unicode(value)
-        if (typ is not None):
-            theConf.Type = unicode(typ)
-        if (desc is not None):
-            theConf.Description = unicode(desc)
+        theConf.Type = typ
+        theConf.Description = desc
 
     # insert
     elif confEntries.count() == 0:
