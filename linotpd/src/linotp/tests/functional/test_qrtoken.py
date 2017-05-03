@@ -124,6 +124,48 @@ class TestQRToken(TestController):
 
 # --------------------------------------------------------------------------- --
 
+    def setUnassignPolicy(self):
+
+        # just a dummy policy that is set to active, because if
+        # no active policy is present in admin scope, everything
+        # is possible. used in unpairing tests
+
+        params = {
+            'name': 'dummy_unassign',
+            'user': '*',
+            'action': 'unassign',
+            'scope': 'admin',
+            'realm': '*',
+            'time': '',
+            'client': '',
+            'active': True,
+            'session': self.session,
+        }
+
+        response = self.make_system_request("setPolicy", params=params)
+        self.assertTrue('"status": true' in response, response)
+
+# --------------------------------------------------------------------------- --
+
+    def setUnpairPolicy(self, active=True):
+
+        params = {
+            'name': 'dummy_unpairing',
+            'user': '*',
+            'action': 'unpair',
+            'scope': 'admin',
+            'realm': '*',
+            'time': '',
+            'client': '',
+            'active': active,
+            'session': self.session,
+        }
+
+        response = self.make_system_request("setPolicy", params=params)
+        self.assertTrue('"status": true' in response, response)
+
+# --------------------------------------------------------------------------- --
+
     def create_dummy_cb_policies(self):
         """ sets some dummy callback policies. callback policies get ignored
         by the tests, but are nonetheless necessary for the backend """
@@ -480,8 +522,6 @@ class TestQRToken(TestController):
         response = self.make_validate_request('check_s', params)
         response_dict = json.loads(response.body)
 
-        print response_dict
-
         # ------------------------------------------------------------------- --
 
         # check if challenge was triggered
@@ -530,6 +570,12 @@ class TestQRToken(TestController):
         # check request response
 
         # ------------------------------------------------------------------- --
+
+        return self.verify_pairing(challenge_url, use_tan=use_tan)
+
+    # ----------------------------------------------------------------------- --
+
+    def verify_pairing(self, challenge_url, use_tan=False):
 
         # parse, descrypt and verify the challenge url
 
@@ -2084,4 +2130,122 @@ class TestQRToken(TestController):
         public_key = offline_info.get('public_key')
         self.assertEqual(public_key, b64encode(self.public_key))
 
+    # ----------------------------------------------------------------------- --
+
+    def test_unpairing(self):
+
+        """ QRTOKEN: Test if unpairing works with serial + policy check """
+
+        pairing_url, pin = self.enroll_qrtoken()
+
+        # execute the first step of the pairing
+
+        challenge_url = self.pair_until_challenge(pairing_url, pin)
+
+        # execute the second step
+
+        user_token_id = self.verify_pairing(challenge_url)
+
+        # -------------------------------------------------------------------- -
+
+        # unpair the token with serial without setting unpair policy
+
+        serial = self.tokens[user_token_id]['serial']
+
+        params = {'serial': serial}
+
+        response = self.make_admin_request('unpair', params)
+        response_dict = json.loads(response.body)
+
+        # call should succeed, because with no policy anything goes
+
+        self.assertTrue(response_dict.get('result', {}).get('value', False))
+
+        # -------------------------------------------------------------------- -
+
+        # unpair again now with deactivated policy
+
+        self.setUnassignPolicy()  # just a dummy to activate the
+                                  # policy engine altogether
+
+        response = self.make_admin_request('unpair', params)
+        response_dict = json.loads(response.body)
+
+        # call should fail, because policy engine is activated (unassign
+        # dummy policy is active), but admin-unpair is not activated
+
+        self.assertFalse(response_dict.get('result', {}).get('value', True))
+
+        # -------------------------------------------------------------------- -
+
+        # activate policy
+
+        self.setUnpairPolicy(active=True)
+
+        response = self.make_admin_request('unpair', params)
+        response_dict = json.loads(response.body)
+
+        # call should succeed now
+
+        self.assertTrue(response_dict.get('result', {}).get('value', True))
+
+        # -------------------------------------------------------------------- -
+
+        # do a second pairing
+        # execute the first step of the pairing
+
+        challenge_url = self.pair_until_challenge(pairing_url, pin)
+
+        # execute the second step
+
+        self.verify_pairing(challenge_url)
+
 # --------------------------------------------------------------------------- --
+
+    def test_unpairing_with_user(self):
+
+        """ QRTOKEN: Test if unpairing works with user """
+
+        pairing_url, pin = self.enroll_qrtoken()
+
+        # execute the first step of the pairing
+
+        challenge_url = self.pair_until_challenge(pairing_url, pin)
+
+        # execute the second step
+
+        user_token_id = self.verify_pairing(challenge_url)
+
+        # -------------------------------------------------------------------- -
+
+        # assign token to user
+
+        serial = self.tokens[user_token_id]['serial']
+
+        self.assign_token_to_user(serial=serial, user_login='molière')
+
+        # -------------------------------------------------------------------- -
+
+        # unpair the token with user
+
+        params = {'user': 'molière'}
+
+        response = self.make_admin_request('unpair', params)
+        response_dict = json.loads(response.body)
+
+        # call should succeed
+
+        self.assertTrue(response_dict.get('result', {}).get('value', False))
+
+        # -------------------------------------------------------------------- -
+
+        # unpair the token with nonexistant user
+
+        params = {'user': 'iprobablydontexist'}
+
+        response = self.make_admin_request('unpair', params)
+        response_dict = json.loads(response.body)
+
+        # call should fail, because user is not found
+
+        self.assertFalse(response_dict.get('result', {}).get('value', True))
