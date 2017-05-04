@@ -36,7 +36,9 @@ from linotp.lib.config.parsing import parse_config
 from linotp.lib.config.config_class import LinOtpConfig
 from linotp.lib.config.util import expand_here
 from linotp.lib.config.db_api import _retrieveAllConfigDB
+from linotp.lib.crypto.encrypted_data import EncryptedData
 
+from linotp.lib.config.type_definition import type_definitions
 
 log = logging.getLogger(__name__)
 
@@ -120,14 +122,32 @@ def getLinotpConfig():
 
 
 def storeConfig(key, val, typ=None, desc=None):
+    """
+    storing the config entry into the db and in the global config
 
-    log_val = val
-    if typ and typ == 'password':
-        log_val = "X" * len(val)
-    log.debug('Changing config entry %r: New value is %r', key, log_val)
+    - external interface for storing config entries, which implies
+      the conversion of the encrypted data to an encrypted data object
 
+    :param key: name of the entry
+    :param val: the value
+    :param typ: -optional- the type
+    :param desc: -optional- the description
+
+    """
+    if not typ and key in type_definitions:
+        typ, converter = type_definitions[key]
+        val = converter(val)
+
+    if typ and typ.lower() in ['password', 'encrypted_data']:
+        typ = 'encrypted_data'
+        if not isinstance(val, EncryptedData):
+            val = EncryptedData.from_unencrypted(val)
+
+    log.debug('Changing config entry %r: New value is %r', key, val)
     conf = getLinotpConfig()
+
     conf.addEntry(key, val, typ, desc)
+
     return True
 
 
@@ -135,49 +155,39 @@ def updateConfig(confi):
     '''
     update the server config entries incl. syncing it to disc
     '''
-    conf = getLinotpConfig()
+    entries = {}
+    update_entries = {}
 
-    # remember all key, which should be processed
-    p_keys = copy.deepcopy(confi)
+    for entry in confi.keys():
 
-    typing = False
+        if entry.endswith('.type') or entry.endswith('.desc'):
+            key = entry[:-len('.type')]
+        else:
+            key = entry
 
-    for entry in confi:
-        typ = confi.get(entry + ".type", None)
-        des = confi.get(entry + ".desc", None)
+        if key in entries:
+            continue
 
-        # check if we have a descriptive entry
-        if typ is not None or des is not None:
-            typing = True
-            if typ is not None:
-                del p_keys[entry + ".type"]
-            if des is not None:
-                del p_keys[entry + ".desc"]
+        if (key not in type_definitions and
+            not confi.get(key + '.type') and not confi.get(key + '.desc')):
+            update_entries[key] = confi.get(key)
 
-    if typing is True:
-        # tupple dict containing the additional info
-        t_dict = {}
-        for entry in p_keys:
-            val = confi.get(entry)
-            typ = confi.get(entry + ".type", None)
-            des = confi.get(entry + ".desc", None)
-            t_dict[entry] = (val, typ or "string", des)
+        else:
+            entries[key] = (confi.get(key),
+                            confi.get(key + '.type'),
+                            confi.get(key + '.desc'))
 
-        for key in t_dict:
-            (val, typ, desc) = t_dict.get(key)
-            if val in [str, unicode] and "%(here)s" in val:
-                val = expand_here(val)
-            conf.addEntry(key, val, typ, desc)
+    for key, data_tuple in entries.items():
 
-    else:
-        conf_clean = {}
-        for key, val in confi.iteritems():
-            if "%(here)s" in val:
-                val = expand_here(val)
-            conf_clean[key] = val
+        val, typ, desc = data_tuple
 
-        conf.update(conf_clean)
+        storeConfig(key, val, typ, desc)
 
+    if update_entries:
+
+        conf = getLinotpConfig()
+
+        conf.update(update_entries)
     return True
 
 

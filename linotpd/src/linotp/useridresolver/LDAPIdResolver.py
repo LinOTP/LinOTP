@@ -48,7 +48,7 @@ from hashlib import sha1
 import ldap.filter
 from ldap.controls import SimplePagedResultsControl
 
-from linotp.lib.type_utils import password
+from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 from linotp.lib.type_utils import boolean
 
@@ -148,7 +148,7 @@ class IdResolver (UserIdResolver):
         "LDAPURI": (True, None, text),
         "LDAPBASE": (True, None, text),
         "BINDDN": (True, None, text),
-        "BINDPW": (True, None, password),
+        "BINDPW": (True, None, encrypted_data),
 
         "LOGINNAMEATTRIBUTE": (True, None, text),
         "LDAPFILTER": (True, None, text),
@@ -476,7 +476,10 @@ class IdResolver (UserIdResolver):
                     # this will establish the first connection
 
                     dn_encode = l_config['BINDDN'].encode(ENCODING)
-                    pw_encode = l_config['BINDPW'].encode(ENCODING)
+
+                    passwd = l_config['BINDPW'].get_unencrypted()
+                    pw_encode = passwd.encode(ENCODING)
+
                     l_obj.simple_bind_s(dn_encode, pw_encode)
 
                     # simple_bind will raise an exception if the server
@@ -528,6 +531,7 @@ class IdResolver (UserIdResolver):
             return (status, str(err))
 
         except Exception as err:
+            status = 'error'
             log.exception("[testconnection] Error: %r", err)
             return (status, str(err))
 
@@ -631,7 +635,10 @@ class IdResolver (UserIdResolver):
                 l_obj = IdResolver.connect(uri, caller=self)
 
                 dn_encode = self.binddn.encode(ENCODING)
-                pw_encode = self.bindpw.encode(ENCODING)
+
+                passwd = self.bindpw.get_unencrypted()
+                pw_encode = passwd.encode(ENCODING)
+
                 l_obj.simple_bind_s(dn_encode, pw_encode)
                 if i > 0:
                     urilist[i] = urilist[0]

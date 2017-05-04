@@ -35,7 +35,6 @@ import time
 from datetime import datetime
 
 from linotp.config import environment as env
-from linotp.lib.crypto import encryptPassword
 from linotp.lib.config.util import expand_here
 
 from linotp.lib.config.db_api import _removeConfigDB
@@ -172,16 +171,10 @@ class LinOtpConfig(dict):
         :param des: literal, which describes the data
         :type  des: string
         '''
-        if key.startswith('linotp.') is False:
+        if not key.startswith('linotp.'):
             key = 'linotp.' + key
 
-        if type(val) in [str, unicode] and "%(here)s" in val:
-            val = expand_here(val)
-
-        self._check_type(key, val)
-
-        res = self.__setitem__(key, val, typ, des)
-        return res
+        return self.__setitem__(key, val, typ, des)
 
     def __setitem__(self, key, val, typ=None, des=None):
         '''
@@ -197,40 +190,22 @@ class LinOtpConfig(dict):
         :type  des: string
         '''
 
-        now = datetime.now()
-
+        # do some simple typing for known config entries
         self._check_type(key, val)
 
-        if typ == 'password':
+        nVal = expand_here(val)
 
-            # in case we have a password type, we have to put
-            # - in the config only the encrypted pass and
-            # - add the config enclinotp.* with the clear password
+        # update this config and sync with global dict and db
 
-            utf_val = val.encode('utf-8')
-
-            # store in request local config dict
-
-            res = self.parent.__setitem__(key, encryptPassword(utf_val))
-            res = self.parent.__setitem__('enc' + key, val)
-
-            # store in global config
-
-            self.glo.setConfig({key: encryptPassword(utf_val)})
-            self.glo.setConfig({'enc' + key: val})
-
-        else:
-
-            # update this config and sync with global dict and db
-
-            nVal = expand_here(val)
-            res = self.parent.__setitem__(key, nVal)
-            self.glo.setConfig({key: nVal})
+        res = self.parent.__setitem__(key, nVal)
+        self.glo.setConfig({key: nVal})
 
         # ----------------------------------------------------------------- --
 
         # finally store the entry in the database and
         # syncronize as well the global timestamp
+
+        now = datetime.now()
 
         self.glo.setConfig({'linotp.Config': unicode(now)})
 
@@ -316,27 +291,18 @@ class LinOtpConfig(dict):
         :rtype  : any value a dict update will return
         '''
         Key = key
-        encKey = None
 
         if self.parent.has_key(key):
             Key = key
+
         elif self.parent.has_key('linotp.' + key):
             Key = 'linotp.' + key
 
-        if self.parent.has_key('enclinotp.' + key):
-            encKey = 'enclinotp.' + key
-        elif self.parent.has_key('enc' + key):
-            encKey = 'enc' + key
-
         res = self.parent.__delitem__(Key)
-        # sync with global dict
-        self.glo.delConfig(Key)
 
-        # do we have an decrypted in local or global dict??
-        if encKey is not None:
-            res = self.parent.__delitem__(encKey)
-            # sync with global dict
-            self.glo.delConfig(encKey)
+        # sync with global dict
+
+        self.glo.delConfig(Key)
 
         # sync with db
         if key.startswith('linotp.'):
@@ -346,6 +312,7 @@ class LinOtpConfig(dict):
 
         _removeConfigDB(Key)
         _storeConfigDB('linotp.Config', datetime.now())
+
         return res
 
     def __contains__(self, key):

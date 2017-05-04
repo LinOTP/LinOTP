@@ -930,26 +930,28 @@ def init_key_partition(config, partition, key_type='ed25519'):
 
     linotp.lib.config.storeConfig(key='SecretKey.Partition.%d' % partition,
                                   val=secret_key_entry,
-                                  typ='password')
+                                  typ='encrypted_data')
 
     public_key_entry = base64.b64encode(public_key)
 
     linotp.lib.config.storeConfig(key='PublicKey.Partition.%d' % partition,
                                   val=public_key_entry,
-                                  typ='password')
+                                  typ='encrypted_data')
 
 
 def get_secret_key(partition):
 
     """
-    reads the config entry 'enclinotp.SecretKey.Partition.<partition>',
+    reads the password config entry 'linotp.SecretKey.Partition.<partition>',
     extracts and decodes the secret key and returns it as a 32 bytes.
     """
 
     import linotp.lib.config
 
-    secret_key_b64 = linotp.lib.config.getFromConfig(
-                        'enclinotp.SecretKey.Partition.%d' % partition)
+    key = 'linotp.SecretKey.Partition.%d' % partition
+
+    # FIXME: unencryption should not happen at this early stage
+    secret_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not secret_key_b64:
         raise ConfigAdminError('No secret key found for %d' % partition)
@@ -968,14 +970,16 @@ def get_secret_key(partition):
 def get_public_key(partition):
 
     """
-    reads the config entry 'enclinotp.PublicKey.Partition.<partition>',
+    reads the password config entry 'linotp.PublicKey.Partition.<partition>',
     extracts and decodes the public key and returns it as a 32 bytes.
     """
 
     import linotp.lib.config
 
-    public_key_b64 = linotp.lib.config.getFromConfig(
-                        'enclinotp.PublicKey.Partition.%d' % partition)
+    key = 'linotp.PublicKey.Partition.%d' % partition
+
+    # FIXME: unencryption should not happen at this early stage
+    public_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not public_key_b64:
         raise ConfigAdminError('No public key found for %d' % partition)
