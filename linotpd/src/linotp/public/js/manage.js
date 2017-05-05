@@ -2033,8 +2033,12 @@ function handler_ldap_certificate_show() {
     $('#ldap_resolver_certificate').toggle(show_cert_textarea);
 
     // disable start_tls option in combination with ldaps:// url
-    $('#ldap_enforce_tls').prop("disabled", isLdaps).prop('checked', !isLdaps);
+    $('#ldap_enforce_tls').prop("disabled", isLdaps);
     $('#ldap_enforce_tls_label').toggleClass('disabled', isLdaps);
+
+    if(isLdaps) {
+        $('#ldap_enforce_tls').prop('checked', false);
+    }
 }
 
 function http_resolver_https() {
