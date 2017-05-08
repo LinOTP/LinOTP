@@ -4112,41 +4112,7 @@ $(document).ready(function(){
             params["EnforceTLS"] = "True";
         }
 
-        clientUrlFetch(url, params, function(xhdr, textStatus) {
-                    var resp = xhdr.responseText;
-                    var obj = jQuery.parseJSON(resp);
-                    $('#progress_test_ldap').hide();
-                    if (obj.result.status == true) {
-                        result = obj.result.value.result;
-                        if (result.lastIndexOf("success", 0) === 0 ) {
-                            var limit = "";
-                            if (result === "success SIZELIMIT_EXCEEDED") {
-                                limit = i18n.gettext("LDAP Server, especially Active Directory, implement a default serverside maximum size limit of 1000 objects.") +
-                                        i18n.gettext("This is independed of the local sizelimit and does not hinder the functionality of LinOTP.");
-                            }
-                            // show number of found users
-                            var userarray = obj.result.value.desc;
-                            var usr_msg = sprintf(i18n.gettext("Number of users found: %d"),userarray.length);
-                            var msg = i18n.gettext("Connection Test: successful") +
-                                      "<p>" + escape(usr_msg) + "</p><p class='hint'>" + escape(limit) + "</p>";
-
-                            alert_box({'title': i18n.gettext("LDAP Connection Test"),
-                                       'text': msg,
-                                       'is_escaped': true});
-                        }
-                        else {
-                            alert_box({'title': "LDAP Test",
-                                       'text': escape(obj.result.value.desc),
-                                       'is_escaped': true});
-                        }
-                    }
-                    else {
-                        alert_box({'title': "LDAP Test",
-                                   'text': escape(obj.result.error.message),
-                                   'is_escaped': true});
-                    }
-                    return false;
-                 });
+        clientUrlFetch(url, params, processLDAPTestResponse);
         return false;
     });
     $('#button_preset_ad').click(function(event){
