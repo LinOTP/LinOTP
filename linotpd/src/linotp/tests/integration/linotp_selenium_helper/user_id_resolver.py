@@ -98,9 +98,8 @@ class UserIdResolverManager(ManageDialog):
         m = re.match(resolver_name_re, resolver_element.text)
         assert m, 'Error in resolver regexp for "%s"' % (resolver_element,)
 
-        assert(line.get_attribute("class") in
-               ('ui-widget-content ui-selectee', 'ui-widget-content ui-selectee ui-selected')), \
-            "Resolver dialog line class unknown"
+        assert('ui-selectee' in line.get_attribute("class").split(" ")), \
+            "Resolver dialog line not selectable"
 
         return ResolverElement(m.group(1), m.group(2), line)
 

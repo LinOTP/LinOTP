@@ -233,7 +233,7 @@ class ManageDialog(ManageElement):
 
         @param timeout: Maximum time to wait in seconds
         """
-        WebDriverWait(self.driver, 10, ignored_exceptions=NoSuchElementException).until(
+        WebDriverWait(self.driver, timeout, ignored_exceptions=NoSuchElementException).until(
             EC.presence_of_element_located(
                 (By.ID, self.body_id))
         )
