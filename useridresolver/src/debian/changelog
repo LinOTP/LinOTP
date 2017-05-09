@@ -1,15 +1,15 @@
+linotp-useridresolver (2.9.2~0dev0-1) jessie; urgency=low
+
+  * Set new version 2.9.2~0dev0-1
+
+ -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 16 Feb 2017 09:56:07 +0100
+
 linotp-useridresolver (2.9.1.1-1) jessie; urgency=low
 
   Bug Fixes
   * LDAP: Fix requests so they will be sent in utf-8
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 13 Apr 2017 16:29:15 +0200
-
-linotp-useridresolver (2.9.2~0dev0-1) jessie; urgency=low
-
-  * Set new version 2.9.2~0dev0-1
-
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 16 Feb 2017 09:56:07 +0100
 
 linotp-useridresolver (2.9.1-1) jessie; urgency=low
 
@@ -18,18 +18,18 @@ linotp-useridresolver (2.9.1-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 15 Feb 2017 13:17:04 +0100
 
+linotp-useridresolver (2.9-1) jessie; urgency=low
+
+  * Add class registry and class aliases
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 11 Aug 2016 13:18:26 +0200
+
 linotp-useridresolver (2.9.0.3-1) jessie; urgency=low
 
   Bug Fixes:
   * LDAP: Fix result filtering for recent AD versions
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 26 Oct 2016 08:28:19 +0200
-
-linotp-useridresolver (2.9-1) jessie; urgency=low
-
-  * Add class registry and class aliases
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 11 Aug 2016 13:18:26 +0200
 
 linotp-useridresolver (2.8.1.2-1) jessie; urgency=low
 
