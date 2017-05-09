@@ -213,7 +213,7 @@ class ManageDialog(ManageElement):
 
     def is_open(self):
         "Return boolean value - whether dialog is open"
-        return self.manage.is_element_visible('#' + self.body_id)
+        return self.manage.is_element_visible(self.dialog_css)
 
     def open(self):
         """
@@ -234,8 +234,8 @@ class ManageDialog(ManageElement):
         @param timeout: Maximum time to wait in seconds
         """
         WebDriverWait(self.driver, timeout, ignored_exceptions=NoSuchElementException).until(
-            EC.presence_of_element_located(
-                (By.ID, self.body_id))
+            EC.visibility_of_element_located(
+                (By.CSS_SELECTOR, self.dialog_css))
         )
 
     def reparse(self):
