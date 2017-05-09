@@ -66,8 +66,10 @@ class TestCreateUserIdResolvers(TestCase):
         realm_manager.close()
 
         user_view = self.manage_ui.user_view
-        self.assertEqual(total_expected_users, user_view.get_num_users(realm_name),
-                         "Not the expected number of users")
+        self.assertEqual(
+            total_expected_users, user_view.get_num_users(realm_name),
+            "Expected %i users, got %i" %
+            (total_expected_users, user_view.get_num_users(realm_name)))
 
     def create_resolver(self, testdata):
         m = self.manage_ui.useridresolver_manager
