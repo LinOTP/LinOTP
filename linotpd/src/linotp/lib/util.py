@@ -43,6 +43,7 @@ from linotp.lib.selftest import isSelfTest
 from linotp.lib.error import ParameterError
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.config import getFromConfig
+from linotp.lib.type_utils import boolean
 
 from linotp import (__version__ as linotp_version,
                     __copyright__ as linotp_copyright,
@@ -238,22 +239,35 @@ def _get_client_from_request(request=None):
     This is the very HTTP client, that contacts the LinOTP server.
     '''
 
-    client = request.environ.get('REMOTE_ADDR',
-                                 request.environ.get('HTTP_REMOTE_ADDR', None))
+    client = request.environ.get(
+                    'REMOTE_ADDR', request.environ.get(
+                        'HTTP_REMOTE_ADDR', None))
 
-    x_forwarded_for = config.get('client.X_FORWARDED_FOR', '')
-    if x_forwarded_for.lower().strip() == 'true':
+    x_forwarded_for = boolean(config.get(
+                        'client.X_FORWARDED_FOR',  getFromConfig(
+                            'client.X_FORWARDED_FOR', 'False')))
+
+    if x_forwarded_for:
         # check, if the request passed by a qualified proxy
-        remote_addr = request.environ.get('REMOTE_ADDR', None)
-        x_forwarded_proxy = config.get('client.FORWARDED_PROXY', None)
-        if x_forwarded_proxy and x_forwarded_proxy == remote_addr:
-            ref_clients = request.environ.get('HTTP_X_FORWARDED_FOR', '')
-            for ref_client in ref_clients.split(','):
-                # the first ip in the list is the originator
-                client = ref_client.strip()
-                break
 
-    #"Forwarded" Header
+        remote_addr = client
+        x_forwarded_proxies = config.get(
+                    'client.FORWARDED_PROXY', getFromConfig(
+                        'client.FORWARDED_PROXY', '')).split(',')
+
+        for x_forwarded_proxy in x_forwarded_proxies:
+            if (x_forwarded_proxy.strip() and
+               netaddr.IPAddress(remote_addr) in
+               netaddr.IPNetwork(x_forwarded_proxy.strip())):
+
+                ref_clients = request.environ.get('HTTP_X_FORWARDED_FOR', '')
+                for ref_client in ref_clients.split(','):
+
+                    # the first ip in the list is the originator
+                    client = ref_client.strip()
+                    break
+
+    # "Forwarded" Header
     #
     # In 2014 RFC 7239 standardized a new Forwarded header with similar purpose
     # but more features compared to XFF.[28] An example of a Forwarded header
@@ -261,26 +275,47 @@ def _get_client_from_request(request=None):
     #
     # Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
 
-    forwarded = config.get('client.FORWARDED', '')
-    if forwarded.lower().strip() == 'true':
+    forwarded = boolean(config.get(
+                    'client.FORWARDED', getFromConfig(
+                        'client.FORWARDED', 'false')))
+
+    if forwarded:
         # check, if the request passed by a qaulified proxy
-        remote_addr = request.environ.get('REMOTE_ADDR', None)
-        forwarded_proxy = config.get('client.FORWARDED_PROXY', None)
-        if forwarded_proxy and forwarded_proxy == remote_addr:
-            # example is:
-            # "Forwarded: for=192.0.2.43, for=198.51.100.17"
-            entries = request.environ.get('HTTP_FORWARDED', '')
-            forwarded_dict = {}
-            entries = entries.replace("Forwarded:", "")
-            for entry in entries.split(';'):
-                key, value = entry.split('=', 1)
-                forwarded_dict[key.strip().lower()] = value.strip()
-            if 'for' in forwarded_dict:
-                client = forwarded_dict.get('for')
-                # support for multiple 'for' format
-                # but we only take the first client
-                if 'for' in client and ',' in client:
-                    client = client.split(',', 1)[0]
+
+        remote_addr = client
+        forwarded_proxies = config.get(
+                    'client.FORWARDED_PROXY', getFromConfig(
+                            'client.FORWARDED_PROXY', '').split(','))
+
+        for forwarded_proxy in forwarded_proxies:
+            if (forwarded_proxy.strip() and
+               netaddr.IPAddress(remote_addr) in
+               netaddr.IPNetwork(forwarded_proxy)):
+
+                # example is:
+                # "Forwarded: for=192.0.2.43, for=198.51.100.17"
+
+                entries = request.environ.get(
+                    'HTTP_FORWARDED', request.environ.get(
+                        'Forwarded', ''))
+
+                forwarded_set = []
+                entries = entries.replace("Forwarded:", "")
+                for entry in entries.split(','):
+                    if entry.lower().startswith('for'):
+                        value = entry.split('=')[1]
+                        value = value.split(';')[0].strip()
+                        if ']' in value:
+                            ipvalue = value.split(']')[0].split('[')[1]
+                        elif ':' in value:
+                            ipvalue = value.split(':')[0]
+                        else:
+                            ipvalue = value
+                        forwarded_set.append(ipvalue.strip('"'))
+
+                for originator in forwarded_set:
+                    client = originator
+                    break
 
     log.debug("got the client %s" % client)
     return client
