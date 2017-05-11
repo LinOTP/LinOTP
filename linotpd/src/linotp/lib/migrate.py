@@ -36,7 +36,7 @@ import binascii
 import random  # for test id genretator using random.choice
 import os
 import hashlib
-from hmac import HMAC
+import hmac
 
 from Cryptodome.Cipher import AES
 
@@ -236,15 +236,17 @@ class MigrationHandler(object):
 
         # the encryption of the token seed is not part of the model anymore
         iv, enc_token_seed = SecretObj.encrypt(token_seed)
-        token.set_encrypted_seed(enc_token_seed, iv, reset_failcount=False)
+        token.set_encrypted_seed(enc_token_seed, iv,
+                                 reset_failcount=False,
+                                 reset_counter=False)
 
 
 class Crypter(object):
 
     @staticmethod
     def hmac_sha256(secret, msg):
-        hmac = HMAC(secret, msg=msg, digestmod=hashlib.sha256)
-        val = hmac.digest()
+        hmac_obj = hmac.new(secret, msg=msg, digestmod=hashlib.sha256)
+        val = hmac_obj.digest()
         return val
 
     def mac(self, *messages):
