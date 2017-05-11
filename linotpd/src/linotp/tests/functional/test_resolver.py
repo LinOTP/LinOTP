@@ -31,6 +31,7 @@ import logging
 from pylons import config
 
 import json
+import os
 
 from sqlalchemy.engine import create_engine
 from sqlalchemy import engine_from_config
