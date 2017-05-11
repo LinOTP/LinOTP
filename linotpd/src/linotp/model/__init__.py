@@ -253,17 +253,23 @@ class Token(object):
     def getSerial(self):
         return self.LinOtpTokenSerialnumber
 
-    def set_encrypted_seed(self, encrypted_seed, iv, reset_failcount=True):
+    def set_encrypted_seed(self, encrypted_seed, iv, reset_failcount=True,
+                           reset_counter=True):
         """
         set_encrypted_seed - save the encrypted token seed / secret
 
         :param encrypted_seed: the encrypted seed / secret
         :param iv: the initialization value / salt
         :param reset_failcount: reset the failcount on token update
+        :param reset_counter: reset the otp counter on token update
         """
-        self.LinOtpCount = 0
-        if True == reset_failcount:
+
+        if reset_counter:
+            self.LinOtpCount = 0
+
+        if reset_failcount:
             self.LinOtpFailCount = 0
+
         self.LinOtpKeyEnc = unicode(binascii.hexlify(encrypted_seed))
         self.LinOtpKeyIV = unicode(binascii.hexlify(iv))
 
