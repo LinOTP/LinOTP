@@ -297,8 +297,8 @@ class ValidateController(BaseController):
                 raise ParameterError(_('Missing required parameter "serial"'
                                      ' or "user"!'))
 
-            passw = param.get('pass', None)
-            if not passw:
+            passw = param.get('pass')
+            if passw is None:
                 raise ParameterError(_('Missing required parameter "pass"!'))
 
             use_offline = param.get('use_offline', False)

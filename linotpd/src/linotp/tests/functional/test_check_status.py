@@ -57,7 +57,7 @@ class TestCheckStatus(TestController):
         TestController.tearDown(self)
         self.delete_all_realms()
         self.delete_all_resolvers()
-
+        self.delete_all_policies()
 
     def create_hmac_token(self, user='root', pin='pin', serial='F722362',
                           otpkey="AD8EABE235FC57C815B26CEF3709075580B44738"):
@@ -330,5 +330,121 @@ class TestCheckStatus(TestController):
         self.delete_policy('hmac_challenge_response')
 
         return
+
+    def test_otppin_2(self):
+
+        """
+        check, if empty pass on otp pin policy 2 validates correctly
+        """
+
+        policy = {'name': 'hmac_challenge_response',
+                  'scope': 'authentication',
+                  'action': 'challenge_response=hmac',
+                  'realm': '*',
+                  'user': '*',
+                  }
+
+        # define challenge response for hmac token
+        response = self.make_system_request('setPolicy', params=policy)
+        self.assertTrue('"status": true' in response, response)
+
+        policy = {'name': 'otppin_policy',
+                  'scope': 'authentication',
+                  'action': 'otppin=2',
+                  'realm': '*',
+                  'user': '*',
+                  }
+
+        # define challenge response for hmac token
+        response = self.make_system_request('setPolicy', params=policy)
+        self.assertTrue('"status": true' in response, response)
+
+        param = {'DefaultChallengeValidityTime': '120'}
+        response = self.make_system_request('setConfig', params=param)
+        self.assertTrue('"status": true' in response, response)
+
+        serial, otps = self.create_hmac_token(user='passthru_user1',
+                                              pin='ignored')
+
+        # trigger challenge
+        params = {'user': 'passthru_user1', 'pass': ''}
+        response = self.make_validate_request('check', params)
+        self.assertTrue('"value": false' in response, response)
+
+        # and extract the transaction id
+        jresp = json.loads(response.body)
+        transid = jresp.get('detail', {}).get('transactionid', None)
+        self.assertTrue(transid is not None, response)
+
+        # ----------------------------------------------------------------------
+
+        # now check for the status with missing pass param
+        params = {'user': 'passthru_user1',
+                  'transactionid': transid}
+
+        response = self.make_validate_request('check_status', params)
+        self.assertFalse('"received_tan": false' in response, response)
+        self.assertFalse('"valid_tan": false' in response, response)
+        self.assertFalse('"received_count": 0' in response, response)
+
+        # ----------------------------------------------------------------------
+
+        # now check for the status with empty pass param
+        params = {'user': 'passthru_user1',
+                  'pass': '',
+                  'transactionid': transid}
+
+        response = self.make_validate_request('check_status', params)
+        self.assertTrue('"received_tan": false' in response, response)
+        self.assertTrue('"valid_tan": false' in response, response)
+        self.assertTrue('"received_count": 0' in response, response)
+
+        # ----------------------------------------------------------------------
+
+        # make invalid request
+
+        params = {'user': 'passthru_user1',
+                  'pass': '112233',
+                  'transactionid': transid}
+        response = self.make_validate_request('check', params)
+        self.assertTrue('"value": false' in response, response)
+
+        # now check for the status with empty pass param
+        params = {'user': 'passthru_user1',
+                  'pass': '',
+                  'transactionid': transid}
+
+        response = self.make_validate_request('check_status', params)
+        self.assertTrue('"received_tan": true' in response, response)
+        self.assertTrue('"valid_tan": false' in response, response)
+        self.assertTrue('"received_count": 1' in response, response)
+
+        # ----------------------------------------------------------------------
+
+        # make valid request
+        params = {'user': 'passthru_user1',
+                  'pass': otps[0],
+                  'transactionid': transid}
+        response = self.make_validate_request('check', params)
+        self.assertTrue('"value": true' in response, response)
+
+        # now check for the status with empty pass param
+        params = {'user': 'passthru_user1',
+                  'pass': '',
+                  'transactionid': transid}
+
+        response = self.make_validate_request('check_status', params)
+
+        self.assertTrue('"received_tan": true' in response, response)
+        self.assertTrue('"valid_tan": true' in response, response)
+        self.assertTrue('"received_count": 2' in response, response)
+
+        # ----------------------------------------------------------------------
+
+        self.delete_policy('hmac_challenge_response')
+        self.delete_policy('otppin_policy')
+
+        return
+
 
 # eof #########################################################################
