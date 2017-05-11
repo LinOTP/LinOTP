@@ -325,7 +325,7 @@ class TestResolver(TestController):
     def test_rename_resolver_in_realms(self):
 
         resolver_param = {
-                'fileName': '%(here)s/../data/testdata/def-passwd',
+                'fileName': (os.path.join(self.fixture_path, 'def-passwd')),
                 'type': 'passwdresolver',
             }
 
