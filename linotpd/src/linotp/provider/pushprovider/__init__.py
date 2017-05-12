@@ -57,7 +57,7 @@ class IPushProvider(object):
         """
         config_mapping = {
                 'timeout': ('Timeout', None),
-                'config': ('Config', 'password')}
+                'config': ('Config', 'encrypted_data')}
 
         return config_mapping
 

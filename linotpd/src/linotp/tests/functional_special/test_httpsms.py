@@ -236,10 +236,23 @@ class TestHttpSmsController(TestSpecialController):
 
         self.assertTrue('"status": true' in response, response)
 
-        # check the saved configuration
+        # check the saved configuration:
+        # getConfig will return only the crypted string
+
         response = self.make_system_request(action='getConfig',
                                             params={
                                                 'key': 'SMSProviderConfig'},
+                                            auth_user='superadmin')
+
+        self.assertNotIn(self.sms_url, response, response)
+
+        # check the saved configuration:
+        # getProvider will show the decrypted configuration
+
+        response = self.make_system_request(action='getProvider',
+                                            params={'name': 'imported_default',
+                                                    'type': 'sms'
+                                                    },
                                             auth_user='superadmin')
 
         self.assertIn(self.sms_url, response, response)

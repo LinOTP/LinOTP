@@ -31,9 +31,19 @@
 
 
 from linotp.lib.type_utils import is_duration
+from linotp.lib.type_utils import encrypted_data
 
 Config_Types = {
     'linotp.user_lookup_cache.expiration': ('duration', is_duration),
     'linotp.resolver_lookup_cache.expiration': ('duration', is_duration),
     }
 
+
+type_definitions = {
+
+    # legacy provider defintion require an extra conversion step
+    'linotp.EmailProviderConfig': ('encrypted_data', encrypted_data),
+    'linotp.SMSProviderConfig': ('encrypted_data', encrypted_data),
+    }
+
+# EOF #

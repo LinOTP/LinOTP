@@ -55,7 +55,9 @@ class MockedResolver():
         global PASSWORD
 
         param = argparams[1]
-        PASSWORD = param.get('BINDPW')
+        passwd = param.get('BINDPW')
+
+        PASSWORD = passwd.get_unencrypted()
 
         desc = {'desc': "Can't contact LDAP server"}
         status = 'error'

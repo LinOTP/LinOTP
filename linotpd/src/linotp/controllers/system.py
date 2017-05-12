@@ -341,8 +341,10 @@ class SystemController(BaseController):
                 # we gather all key value pairs in the conf dict
                 conf = {}
                 for key in param:
+
                     if key == 'session':
                         continue
+
                     val = param.get(key, '') or ''
 
                     Key = key
@@ -2095,7 +2097,7 @@ class SystemController(BaseController):
             # optional parameters
             provider_name = param.get('name')
 
-            res = getProvider(provider_type, provider_name)
+            res = getProvider(provider_type, provider_name, decrypted=True)
             if res:
                 for provider_name, desc in res.items():
                     if 'Managed' in desc:

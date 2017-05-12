@@ -41,6 +41,8 @@ from linotp.lib.text_utils import UTF8_MAX_BYTES
 from linotp.lib.text_utils import simple_slice
 from linotp.lib.text_utils import utf8_slice
 
+from linotp.lib.crypto.encrypted_data import EncryptedData
+
 from linotp.lib.config.util import expand_here
 
 import linotp.model.meta
@@ -70,23 +72,18 @@ def _storeConfigDB(key, val, typ=None, desc=None):
 
     """
     value = val
-    if (not key.startswith("linotp.")):
+
+    if not key.startswith("linotp."):
         key = "linotp." + key
-    log_value = 'XXXXXX' if typ == 'password' else value
+
     log.debug('Changing config entry %r in database: New value is %r',
-              key, log_value)
-    
-    # ---------------------------------------------------------------------- --
-    # in case of an encrypted entry where the typ is 'password', we store
-    # only the encrypted value
-    # ---------------------------------------------------------------------- --
-
-    # passwords are encrypted from here
-
-    if typ and typ == 'password':
-        value = encryptPassword(val.encode('utf-8'))
+              key, val)
 
     # ---------------------------------------------------------------------- --
+
+    # in case of an encrypted entry where the typ is 'encrypted_data', we store
+    # the encrypted value which is retreived by the str value of the
+    # EncrypteData object
 
     # other types like datetime or int are simply stored
 
@@ -97,7 +94,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
 
     # if there are chunked entries for this key we delete them to prevent
     # dangling, not updated entries
-    
+
     _delete_continous_entry_db(key)
 
     # ---------------------------------------------------------------------- --
@@ -352,12 +349,12 @@ def _retrieveAllConfigDB():
     cont_dict = {}
 
     db_config = Session.query(Config).all()
-    
+
     # put all information in the dicts for later processing
 
     for conf in db_config:
         log.debug("[retrieveAllConfigDB] key %r:%r" % (conf.Key, conf.Value))
-        
+
         conf_dict[conf.Key] = conf.Value
         type_dict[conf.Key] = conf.Type
         desc_dict[conf.Key] = conf.Description
@@ -407,41 +404,20 @@ def _retrieveAllConfigDB():
 
     # ---------------------------------------------------------------------- --
 
-    # special treatment of passwords, which are provided decrypted as
-    # 'enclinotp.' linotp-config entries
+    # special treatment of encrypted_data / password:
+    # instead of decrypting the data during the loading of the config, the
+    # encrypted data is provided EncryptedData object, which allows to only
+    # decrypt the data when needed.
+    # This allows to drop the delayed loading handling
     #
-    # TODO: here will be the hook for the replacement of decrpyted values
-    #       with a password object in the linotp_config
 
     for key, value in config.items():
 
         myTyp = type_dict.get(key)
-        if not myTyp or myTyp != 'password':
-            continue
 
-        # ------------------------------------------------------------------ --
+        if myTyp and myTyp in ['password', 'encrypted_data']:
+            config[key] = EncryptedData(value)
 
-        # for password decryption we require an working hsm or we
-        # will delay the decoding of the config entries
-
-        if not hasattr(c, 'hsm') or not isinstance(c.hsm, dict):
-            delay = True
-            continue
-
-        hsm = c.hsm.get('obj')
-        if not hsm or not hsm.isReady():
-            delay = True
-            continue
-
-        #
-        # !!! dont try to utf-8 decode the passwords as they
-        #     are already "magically" correct:
-        # - when retrieved from DB, they are already in unicode format,
-        #   which is sufficient for further processing :)
-        #
-
-        config['enc' + key] = decryptPassword(value)
-
-    return (config, delay)
+    return config, False
 
 # eof #

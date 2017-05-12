@@ -29,6 +29,8 @@
 import re
 import json
 from datetime import timedelta
+from linotp.lib.crypto.encrypted_data import EncryptedData
+
 
 duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
                             '((?P<days>\d+?)(d|day|days))?'
@@ -120,16 +122,29 @@ def text(value):
     return "%r" % value
 
 
-def password(value):
+def encrypted_data(value):
     """
-    type converter for password config entries
+    type converter for config entries -
 
-    currently only a dummy, useful for extended password lookup in the config
+    similar to int(bla) it will try to conveert the given value into
+    an object of EncryptedData
+
+    :return: EncyptedData object
     """
 
-    # TODO: use the new password class
+    # anything other than string will raise an error
 
-    return value
+    if not isinstance(value, str) and not isinstance(value, unicode):
+
+        raise Exception('Unable to encode non textual data')
+
+    # if value is already encrypted we can just return
+
+    if isinstance(value, EncryptedData):
+
+        return value
+
+    return EncryptedData.from_unencrypted(value)
 
 
 def boolean(value):

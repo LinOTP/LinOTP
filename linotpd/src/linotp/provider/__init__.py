@@ -127,7 +127,7 @@ ProviderClass_lookup = {
     }
 
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 # parsing functions for linotp config
 
@@ -179,7 +179,7 @@ def parse_provider(provider_type, composite_key, value):
     return object_id, attr_updates
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------- --
 
 def parse_legacy_provider(provider_type, composite_key, value):
 
@@ -229,12 +229,12 @@ def parse_legacy_provider(provider_type, composite_key, value):
 
     attr_updates[attr_name] = value
 
-    # ------------------------------------------------------------------------ -
+    # ---------------------------------------------------------------------- --
 
     return object_id, attr_updates
 
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------- --
 
 
 def parse_default_provider(provider_type, composite_key, value):
@@ -246,18 +246,18 @@ def parse_default_provider(provider_type, composite_key, value):
     :param provider_type: A string identifier (such as 'sms', 'email', etc)
     """
 
-    # ------------------------------------------------------------------------ -
+    # ---------------------------------------------------------------------- --
 
     default_key = Default_Provider_Key[provider_type]
 
     if composite_key != default_key:
         raise ConfigNotRecognized(composite_key)
 
-    # ------------------------------------------------------------------------ -
+    # ---------------------------------------------------------------------- --
 
     return value, {'default': True}
 
-# ---------------------------------------------------------------------------- -
+# -------------------------------------------------------------------------- --
 
 # integrate the provider config parser into the config tree class
 
@@ -298,8 +298,6 @@ def get_legacy_provider(provider_type):
     for key, translation in defintion.items():
         if key in config:
             provider[translation] = config[key]
-        if 'enc' + key in config:
-            provider[translation] = config['enc' + key]
 
     # prepare for return
     legacy_provider = {}
@@ -344,8 +342,10 @@ def get_all_new_providers(provider_type):
 
         for key, value in config.items():
             if key[:len(prefix)] == prefix:
+
                 if 'enc' + key in config:
                     value = config.get('enc' + key)
+
                 entry = key.replace(prefix, '')
                 defintion[entry] = value
 
@@ -377,7 +377,7 @@ def get_default_provider(provider_type):
     return default_provider
 
 
-def getProvider(provider_type, provider_name=None):
+def getProvider(provider_type, provider_name=None, decrypted=False):
     """
     return a dict with  providers, each with it's description as dict
 
@@ -409,6 +409,12 @@ def getProvider(provider_type, provider_name=None):
         provider['Default'] = True
         default_provider_key = Default_Provider_Key[provider_type]
         storeConfig(default_provider_key, firstone)
+
+    if decrypted:
+        for provider_def in providers.values():
+            if 'Config' in provider_def:
+                provider_def['Config'] = provider_def.get(
+                                            'Config').get_unencrypted()
 
     if provider_name:
         if provider_name in providers:
@@ -538,7 +544,8 @@ def save_legacy_provider(provider_type, params):
         if spec == 'Class' and 'class' in params:
             storeConfig(key=config_name, val=params['class'])
         if spec == 'Config' and 'config' in params:
-            storeConfig(key=config_name, val=params['config'], typ='password')
+            storeConfig(key=config_name, val=params['config'],
+                        typ='encrypted_data')
         if spec == 'Timeout' and 'timeout' in params:
             storeConfig(key=config_name, val=params['timeout'])
 
@@ -552,7 +559,7 @@ def save_new_provider(provider_type, provider_name, params):
     remarks:
         alternative to storing the whole config in encrypted way, we
         might look if it's a json and store the next Config.  level
-        and look for the reserved additional appended type: password
+        and look for the reserved additional appended type: encrypted_data
 
     :param provider_type: push, sms or email provider
     :param provider_name: the name of the provider
@@ -571,7 +578,7 @@ def save_new_provider(provider_type, provider_name, params):
 
     config_mapping = {
         'timeout': ('Timeout', None),
-        'config': ('Config', 'password')}
+        'config': ('Config', 'encrypted_data')}
 
     #
     # alternative config entries are supported by the the adjustable config
@@ -760,9 +767,7 @@ def _build_provider_config(provider_info):
     """
 
     provider_config = {}
-
-    line_config = provider_info['Config']
-    line_config = _fix_config_contiuation(line_config)
+    line_config = provider_info.get('Config').get_unencrypted()
 
     try:
         provider_config = json.loads(line_config)
@@ -789,6 +794,8 @@ def _fix_config_contiuation(line_config):
     :param line_config: configuration as a string value
     :return: config as string value
     """
+    return line_config
+
     lconfig = []
     lines = line_config.splitlines()
     for line in lines:
@@ -797,7 +804,6 @@ def _fix_config_contiuation(line_config):
             lconfig.append(line)
 
     return " ".join(lconfig)
-
 
 
 def _load_provider_class(provider_slass_spec):

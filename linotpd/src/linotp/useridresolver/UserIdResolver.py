@@ -41,8 +41,8 @@ Defines the rough interface for a UserId Resolver
 
 """
 
-from linotp.lib.type_utils import password
 from linotp.lib.type_utils import boolean
+
 import logging
 
 
@@ -113,7 +113,6 @@ class UserIdResolver(object):
 
         return False
 
-
     @classmethod
     def merge_crypted_parameters(cls, new_params, previous_params):
 
@@ -139,6 +138,7 @@ class UserIdResolver(object):
         missing = []
 
         for crypt in cls.crypted_parameters:
+
             if not new_params.get(crypt):
                 missing.append(crypt)
 
@@ -280,8 +280,6 @@ class UserIdResolver(object):
                           cls.getResolverClassType(), key, conf
                           )
 
-                if typ == password:
-                    search_keys.append('enc' + ext_key)
                 search_keys.append(ext_key)
 
             for search_key in search_keys:

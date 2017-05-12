@@ -29,6 +29,7 @@
 """
 
 from linotp.config import environment as env
+from linotp.lib.crypto.encrypted_data import EncryptedData
 
 linotp_root = env.config.get("linotp.root")
 
@@ -45,6 +46,9 @@ def expand_here(value):
         return value
 
     if not (isinstance(value, unicode) or isinstance(value, str)):
+        return value
+
+    if isinstance(value, EncryptedData):
         return value
 
     if "%(here)s" in value:

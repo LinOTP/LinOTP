@@ -31,6 +31,24 @@ The LinOTP server imports this module to use SQL databases as a userstore.
 Dependencies: UserIdResolver
 """
 
+import re
+import base64
+import hashlib
+import urllib
+
+import crypt
+try:
+    import bcrypt
+    _bcrypt_hashpw = bcrypt.hashpw
+except ImportError:
+    _bcrypt_hashpw = None
+
+import json
+
+import traceback
+import logging
+
+
 # from sqlalchemy.event import listen
 
 from sqlalchemy import create_engine
@@ -44,32 +62,10 @@ from . import resolver_registry
 from linotp.useridresolver.UserIdResolver import UserIdResolver
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
 
-from linotp.lib.type_utils import boolean
-from linotp.lib.type_utils import password
+from linotp.lib.type_utils import encrypted_data
 from linotp.lib.type_utils import text
 
 
-import re
-import base64
-import hashlib
-
-import urllib
-
-
-import crypt
-try:
-    import bcrypt
-    _bcrypt_hashpw = bcrypt.hashpw
-except ImportError:
-    _bcrypt_hashpw = None
-
-try:
-    import json
-except:
-    import simplejson as json
-
-import traceback
-import logging
 log = logging.getLogger(__name__)
 
 DEFAULT_ENCODING = "utf-8"
@@ -83,7 +79,7 @@ def check_php_password(password, stored_hash):
     :param stored_hash: the previously used password in a hashed form
     :return: boolean
     """
-    result = False 
+    result = False
 
     if stored_hash.startswith('$2a$'):
         # bcrypt
@@ -196,9 +192,8 @@ class dbObject():
 
         self.engine = create_engine(sqlConnect, **args)
 
-        #listen(self.engine, 'connect', call_on_connect)
         self.meta = MetaData()
-        # Session = sessionmaker(bind=self.engine)
+
         Session = sessionmaker(bind=self.engine, autoflush=True,
                                autocommit=True, expire_on_commit=True)
         self.sess = Session()
@@ -208,7 +203,7 @@ class dbObject():
     def getTable(self, tableName):
         log.debug('[dbObject::getTable] %s' % tableName)
         return Table(tableName, self.meta, autoload=True,
-                                            autoload_with=self.engine)
+                     autoload_with=self.engine)
 
     def count(self, table, where=""):
         log.debug('[dbObject::count] %s:%s' % (table, where))
@@ -222,7 +217,6 @@ class dbObject():
     def query(self, select):
         log.debug('[dbObject::query] %s' % (select))
         return self.sess.execute(select)
-        #return self.sess.query(select)
 
     def close(self):
         log.debug('[dbObject::close]')
@@ -231,7 +225,7 @@ class dbObject():
         return
 
 
-## connect callback
+# connect callback
 def call_on_connect(dbapi_con, connection_record):
     log.debug("[call_on_connect] new DBAPI connection: %s " % (str(dbapi_con)))
     return
@@ -265,8 +259,8 @@ def _check_hash_type(password, hash_type, hash_value, salt=None):
             hashed_password = base64.b64encode(H.digest())
             res = (hashed_password == hash_value)
         except ValueError:
-            log.exception("[_check_hash_type] Unsupported Hash type: %r"
-                                                                % hash_type)
+            log.exception("[_check_hash_type] Unsupported Hash type: %r",
+                          hash_type)
 
     elif (hash_type.lower()[0:4] == "ssha"):
         log.debug("[_check_hash_type] found a salted hash.")
@@ -330,7 +324,7 @@ class IdResolver(UserIdResolver):
         "Database": (False, "", text),
         "User": (False, "", text),
         "conParams": (False, "", text),
-        "Password": (True, "", password),
+        "Password": (True, "", encrypted_data),
         "Limit": (False, "1000", int),
         "Table": (False, "", text),
         "Where": (False, "", text),
@@ -355,7 +349,7 @@ class IdResolver(UserIdResolver):
         return new_uid != prev_uid
 
     @classmethod
-    def testconnection(cls, params):
+    def testconnection(cls, parameters):
         """
         This is used to test if the given parameter set will do a successful
         SQL connection and return the number of found users
@@ -370,17 +364,21 @@ class IdResolver(UserIdResolver):
         - Table
         """
 
-        log.debug('[testconnection] %r', params)
+        log.debug('[testconnection] %r', parameters)
 
         num = -1
         dbObj = dbObject()
 
         try:
 
+            params, _missing = IdResolver.filter_config(parameters)
+
+            passwd = params.get("Password").get_unencrypted()
+
             connect_str = make_connect(
                        driver=params.get("Driver"),
                        user=params.get("User"),
-                       pass_=params.get("Password"),
+                       pass_=passwd,
                        server=params.get("Server"),
                        port=params.get("Port"),
                        db=params.get("Database"),
@@ -563,7 +561,6 @@ class IdResolver(UserIdResolver):
             return False
 
 
-
     @classmethod
     def getResolverClassType(cls):
         return 'sqlresolver'
@@ -640,9 +637,14 @@ class IdResolver(UserIdResolver):
             db = l_config.get("Database")
             user = l_config.get("User")
             conParams = l_config.get("conParams")
-            pass_ = l_config.get("Password")
 
-            connect = make_connect(driver, user, pass_,
+            # ------------------------------------------------------------- --
+
+            # retriev password from Crypted Data object
+
+            passwd = l_config.get("Password").get_unencrypted()
+
+            connect = make_connect(driver, user, passwd,
                                    server, port, db, conParams)
 
         # ------------------------------------------------------------------ --
