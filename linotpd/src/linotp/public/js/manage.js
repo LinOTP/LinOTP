@@ -6889,15 +6889,15 @@ function confirm_cancel_dialog(dialogname){
             {
                 text: i18n.gettext("Cancel"),
                 click: function() {
-                    defer.reject("false");
                     $( this ).dialog( "close" );
+                    defer.reject("false");
                 }
             },
             {
                 text: i18n.gettext("Discard"),
                 click: function() {
-                    defer.resolve("true");
                     $( this ).dialog( "close" );
+                    defer.resolve("true");
                 }
             }
         ]
