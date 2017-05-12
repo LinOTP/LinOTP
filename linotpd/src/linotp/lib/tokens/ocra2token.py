@@ -115,17 +115,17 @@ from linotp.lib.crypto import decryptPin, encryptPin
 from linotp.lib.crypto import kdf2
 from linotp.lib.crypto import SecretObj
 
-from linotp.lib.policy  import getPolicy
-from linotp.lib.policy  import getPolicyActionValue
+from linotp.lib.policy import getPolicy
+from linotp.lib.policy import getPolicyActionValue
 
 from linotp.lib.auth.validate import check_pin
 
-### TODO: move this as ocra specific methods
+# TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
 from linotp.lib.tokens import tokenclass_registry
 from linotp.lib.util import normalize_activation_code
 
-from linotp.lib.ocra import OcraSuite
+from ocra import OcraSuite
 
 from linotp.lib.challenges import Challenges
 from linotp.lib.reply import create_img

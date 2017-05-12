@@ -29,7 +29,7 @@ import time
 
 from os import urandom
 from linotp.lib.tokens.base import TokenClass
-from linotp.lib.tokens.base import StatefulTokenMixin
+from linotp.lib.tokens.base.stateful_mixin import StatefulTokenMixin
 from linotp.lib.challenges import transaction_id_to_u64
 from linotp.lib.challenges import Challenges
 from linotp.lib.error import InvalidFunctionParameter

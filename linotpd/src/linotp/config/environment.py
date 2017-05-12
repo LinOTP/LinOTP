@@ -26,8 +26,6 @@
 """  Pylons environment configuration """
 
 import os
-from os import listdir
-
 
 from mako.lookup import TemplateLookup
 from pylons import config
@@ -113,6 +111,9 @@ def load_environment(global_conf, app_conf):
     token_package_path = os.path.dirname(token_package.__file__)
     directories.append(token_package_path)
 
+    for token_package_sub_path, _subdir, _files in os.walk(token_package_path):
+        directories.append(token_package_sub_path)
+
     # add a template path for every resolver
     resolver_module_path = UserIdResolver.__file__
     directories.append(resolver_module_path)
@@ -165,6 +166,7 @@ def load_environment(global_conf, app_conf):
 
 #######################################
 
+
 def get_activated_token_modules():
 
     """
@@ -173,7 +175,7 @@ def get_activated_token_modules():
     present this will return None.
     """
 
-    if not 'linotpTokenModules' in config:
+    if 'linotpTokenModules' not in config:
         return None
 
     module_list = []

@@ -319,6 +319,8 @@ class User(object):
                 if y:
                     log.debug("checking in module %r" % y)
                     uid = y.getUserId(self.login)
+                    if not uid:
+                        continue
                     found.append((self.login, realm_name, uid, realm_resolver))
                     log.debug("type of uid: %s", type(uid))
                     log.debug("type of realm_resolver: %s",

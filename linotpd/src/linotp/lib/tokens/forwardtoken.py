@@ -88,7 +88,8 @@ def do_forward_failcounter(token):
 
 
 @tokenclass_registry.class_entry('forward')
-@tokenclass_registry.class_entry('linotp.lib.tokens.forwardtoken.ForwardTokenClass')
+@tokenclass_registry.class_entry(
+    'linotp.lib.tokens.forwardtoken.ForwardTokenClass')
 class ForwardTokenClass(TokenClass):
     """
     The Forward token forwards an authentication request to another token.

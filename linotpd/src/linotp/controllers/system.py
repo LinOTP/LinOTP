@@ -1403,9 +1403,9 @@ class SystemController(BaseController):
         '''
         pol = {}
 
-        for tok in tokenclass_registry:
+        for tclass_object in set(tokenclass_registry.values()):
 
-            tclass_object = tokenclass_registry.get(tok)
+            tok = tclass_object.getClassType()
 
             if hasattr(tclass_object, 'getClassInfo'):
 

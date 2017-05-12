@@ -838,7 +838,8 @@ challenges_table = sa.Table('challenges', meta.metadata,
                             sa.Column(session_column,
                                       sa.types.Unicode(512), default=u''),
                             sa.Column('tokenserial',
-                                      sa.types.Unicode(64), default=u''),
+                                      sa.types.Unicode(64), default=u'',
+                                      index=True),
                             sa.Column(timestamp_column, sa.types.DateTime,
                                       default=datetime.now()),
                             sa.Column('received_count',
@@ -1010,9 +1011,10 @@ class Challenge(object):
     def setChallenge(self, challenge):
         self.challenge = unicode(challenge)
 
-    def setTanStatus(self, received=False, valid=False):
+    def setTanStatus(self, received=False, valid=False, increment=True):
         self.received_tan = received
-        self.received_count += 1
+        if increment:
+            self.received_count += 1
         self.valid_tan = valid
 
     def getTanStatus(self):

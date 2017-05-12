@@ -27,7 +27,7 @@
 from linotp.lib.registry import ClassRegistry
 from linotp.lib.error import TokenTypeNotSupportedError
 from linotp.config.environment import get_activated_token_modules
-from os import path, listdir
+from os import path, listdir, walk
 import logging
 
 log = logging.getLogger(__name__)
@@ -40,41 +40,78 @@ tokenclass_registry = ClassRegistry()
 
 
 def reload_classes():
+    """
 
-    """ iterates through the modules in this package
-    and import every single one of them """
+    iterates through the modules in this package
+    and import every single one of them
+
+    """
+
+    # ---------------------------------------------------------------------- --
+
+    # if there is a list of predefined tokens in the linotp.ini
 
     activated_modules = get_activated_token_modules()
 
-    # Find out the path this file resides in
+    if activated_modules:
+
+        for activated_module in activated_modules:
+
+            load_module(activated_module)
+
+        return
+
+    # ---------------------------------------------------------------------- --
+
+    # if no activated tokens specified, we import the local tokens
+
+    import_base = "linotp.lib.tokens."
+
     abs_file = path.abspath(__file__)
-    abs_dir = path.dirname(abs_file)
+    base_dir = path.dirname(abs_file)
 
-    # list files
-    files_in_ext_path = listdir(abs_dir)
+    # remove the filesystem base
 
-    for fn in files_in_ext_path:
+    for root, _subdirs, sfiles in walk(base_dir):
 
-        # filter python files
+        # remove the filesystem base
 
-        if fn.endswith('.py') and not fn == '__init__.py':
+        rel = root.replace(base_dir, '').replace(path.sep, '.').strip('.')
 
-            # translate them into module syntax
-            # and import
+        if rel:
+            rel = rel + '.'
 
-            mod_rel = fn[0:-3]
+        for sfile in sfiles:
 
-            if activated_modules is not None and \
-               mod_rel not in activated_modules:
-                continue
+            if sfile.endswith('.py') and not sfile.startswith('__'):
 
-            try:
-                __import__(mod_rel, globals=globals())
-            except TokenTypeNotSupportedError:
-                log.warning('Token type not supported on this setup: %s',
-                            mod_rel)
-            except Exception as exx:
-                log.warning('unable to load resolver module : %r (%r)'
-                            % (mod_rel, exx))
+                token_module = import_base + rel + sfile[:-3]
+
+                load_module(token_module)
+
+    return
+
+
+def load_module(mod_rel):
+    """
+    load a token module from a relative token module name
+
+    :param mod_rel:
+
+    :raises: TokenTypeNotSupportedError or genric Exception
+    """
+
+    try:
+
+        __import__(mod_rel, globals=globals())
+        return True
+
+    except TokenTypeNotSupportedError:
+        log.warning('Token type not supported on this setup: %s', mod_rel)
+
+    except Exception as exx:
+        log.warning('unable to load token module : %r (%r)', mod_rel, exx)
+
+    return False
 
 reload_classes()

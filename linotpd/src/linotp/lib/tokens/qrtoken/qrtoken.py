@@ -46,7 +46,7 @@ from linotp.lib.challenges import Challenges
 from linotp.lib.challenges import transaction_id_to_u64
 from linotp.lib.reply import create_img
 from linotp.lib.tokens.base import TokenClass
-from linotp.lib.tokens.base import StatefulTokenMixin
+from linotp.lib.tokens.base.stateful_mixin import StatefulTokenMixin
 from linotp.lib.token import get_token_owner
 from linotp.lib.tokens import tokenclass_registry
 

@@ -29,7 +29,7 @@
 
 from linotp.lib.crypto import SecretObj
 
-from linotp.lib.mOTP import mTimeOtp
+from linotp.lib.tokens.motp import mTimeOtp
 from linotp.lib.tokens.base import TokenClass
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError
