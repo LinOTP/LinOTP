@@ -49,6 +49,7 @@ from linotp.lib.policy.legacy import legacy_getPolicy
 from linotp.lib.policy.legacy import legacy_getAuthorization
 
 from linotp.lib.context import request_context as context
+from linotp.lib.type_utils import boolean
 
 LOG = logging.getLogger(__name__)
 
@@ -58,36 +59,32 @@ def _getAuthorization(scope, action):
     migration stub for the new policy engine
     """
 
-    retro = legacy_getAuthorization(scope, action)
+    use_new_one = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation', False))
+    compare = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation.compare', False))
 
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
-
-    if use_new_one.lower() != 'true':
-        return retro
-
-    new_pols = new_getAuthorization(scope, action)
-
-    the_same = are_the_same(retro, new_pols)
-
-    if not the_same:
-        LOG.error('PolicyEvaluation is not the same for params %r,%r',
-                  scope, action)
-        LOG.error('old: new %r <> %r', retro, new_pols)
-
-        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
-                                          'True')
-
+    if use_new_one or compare:
         new_pols = new_getAuthorization(scope, action)
 
-        if raise_exx.lower() == 'true':
-            raise Exception('Policy Engine missmatch: %r:%r' %
-                            (retro, new_pols))
+    if not use_new_one or compare:
+        old_pols = legacy_getAuthorization(scope, action)
 
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
-    if use_new_one.lower() == 'true':
-        return new_pols
+    if use_new_one:
+        return_policies = new_pols
+    else:
+        return_policies = old_pols
 
-    return retro
+    if not compare:
+        return return_policies
+
+    if not are_the_same(old_pols, new_pols):
+
+        LOG.error('PolicyEvaluation is not the same for params %r,%r',
+                  scope, action)
+        LOG.error('old: new %r <> %r', old_pols, new_pols)
+
+    return return_policies
 
 
 def has_client_policy(client, scope=None, action=None, realm=None, user=None,
@@ -100,42 +97,39 @@ def has_client_policy(client, scope=None, action=None, realm=None, user=None,
     as the filters for the has_client_policy are reseted after usage
     """
 
-    pols_old = legacy_get_client_policy(client, scope=scope,
-                                        action=action,
-                                        realm=realm, user=user,
-                                        find_resolver=find_resolver,
-                                        userObj=userObj)
+    use_new_one = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation', False))
+    compare = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation.compare', False))
 
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+    if use_new_one or compare:
+        new_pols = new_has_client_policy(client, scope=scope,
+                                         action=action,
+                                         realm=realm, user=user,
+                                         find_resolver=find_resolver,
+                                         userObj=userObj)
 
-    if use_new_one.lower() != 'true':
-        return pols_old
+    if not use_new_one or compare:
+        old_pols = legacy_get_client_policy(client, scope=scope,
+                                            action=action,
+                                            realm=realm, user=user,
+                                            find_resolver=find_resolver,
+                                            userObj=userObj)
 
-    pols_new = new_has_client_policy(client, scope=scope,
-                                     action=action,
-                                     realm=realm, user=user,
-                                     find_resolver=find_resolver,
-                                     userObj=userObj)
+    if use_new_one:
+        return_policies = new_pols
+    else:
+        return_policies = old_pols
 
-    the_same = are_the_same(pols_old, pols_new)
+    if not compare:
+        return return_policies
 
-    if not the_same:
+    if not are_the_same(old_pols, new_pols):
+
         LOG.error('PolicyEvaluation is not the same for params %r', client)
-        LOG.error('old: new %r <> %r', pols_old, pols_new)
+        LOG.error('old: new %r <> %r', old_pols, new_pols)
 
-        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
-                                          'True')
-
-        if raise_exx.lower() == 'true':
-            raise Exception('Policy Engine missmatch: %r:%r' %
-                            (pols_old, pols_new))
-
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
-
-    if use_new_one.lower() == 'true':
-        return pols_new
-
-    return pols_old
+    return return_policies
 
 
 def get_client_policy(client, scope=None, action=None, realm=None, user=None,
@@ -143,43 +137,39 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
     """
     migration stub for the new policy engine
     """
+    use_new_one = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation', False))
+    compare = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation.compare', False))
 
-    pols_old = legacy_get_client_policy(client, scope=scope,
-                                        action=action,
-                                        realm=realm, user=user,
-                                        find_resolver=find_resolver,
-                                        userObj=userObj)
+    if use_new_one or compare:
+        pols_new = new_get_client_policy(client, scope=scope,
+                                         action=action,
+                                         realm=realm, user=user,
+                                         find_resolver=find_resolver,
+                                         userObj=userObj)
 
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+    if not use_new_one or compare:
+        pols_old = legacy_get_client_policy(client, scope=scope,
+                                            action=action,
+                                            realm=realm, user=user,
+                                            find_resolver=find_resolver,
+                                            userObj=userObj)
 
-    if use_new_one.lower() != 'true':
-        return pols_old
+    if use_new_one:
+        return_policies = pols_new
+    else:
+        return_policies = pols_old
 
-    pols_new = new_get_client_policy(client, scope=scope,
-                                     action=action,
-                                     realm=realm, user=user,
-                                     find_resolver=find_resolver,
-                                     userObj=userObj)
+    if not compare:
+        return return_policies
 
-    the_same = are_the_same(pols_old, pols_new)
+    if not are_the_same(pols_old, pols_new):
 
-    if not the_same:
         LOG.error('PolicyEvaluation is not the same for params %r', client)
         LOG.error('old: new %r <> %r', pols_old, pols_new)
 
-        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
-                                          'True')
-
-        if raise_exx.lower() == 'true':
-            raise Exception('Policy Engine missmatch: %r:%r' %
-                            (pols_old, pols_new))
-
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
-
-    if use_new_one.lower() == 'true':
-        return pols_new
-
-    return pols_old
+    return return_policies
 
 
 def getPolicy(param, display_inactive=False):
@@ -187,35 +177,38 @@ def getPolicy(param, display_inactive=False):
     migration method for the getPolicy old and new
     """
 
-    pols_old = legacy_getPolicy(param,
-                                display_inactive=display_inactive)
+    use_new_one = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation', False))
+    compare = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation.compare', False))
 
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+    if use_new_one or compare:
 
-    if use_new_one.lower() != 'true':
-        return pols_old
+        pols_new = new_getPolicy(param,
+                                 display_inactive=display_inactive)
 
-    pols_new = new_getPolicy(param,
-                             display_inactive=display_inactive)
+    if not use_new_one or compare:
 
-    the_same = are_the_same(pols_old, pols_new)
+        pols_old = legacy_getPolicy(param,
+                                    display_inactive=display_inactive)
 
-    if not the_same:
+    if use_new_one:
+        return_policies = pols_new
+    else:
+        return_policies = pols_old
+
+    if return_policies:
+        pass
+
+    if not compare:
+        return return_policies
+
+    if not are_the_same(pols_old, pols_new):
+
         LOG.error('PolicyEvaluation is not the same for params %r', param)
         LOG.error('old: new %r <> %r', pols_old, pols_new)
 
-        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
-                                          'True')
-        if raise_exx.lower() == 'true':
-            raise Exception('Policy Engine missmatch: %r:%r' %
-                            (pols_old, pols_new))
-
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
-
-    if use_new_one.lower() == 'true':
-        return pols_new
-
-    return pols_old
+    return return_policies
 
 
 def search_policy(param, display_inactive=False):
@@ -223,35 +216,37 @@ def search_policy(param, display_inactive=False):
     migration stub for the new policy engine
     """
 
-    pols_old = legacy_getPolicy(param,
-                                display_inactive=display_inactive)
+    use_new_one = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation', False))
+    compare = boolean(context['Config'].get(
+                                    'NewPolicyEvaluation.compare', False))
 
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+    if use_new_one or compare:
+        pols_new = new_search_policy(param,
+                                     display_inactive=display_inactive)
 
-    if use_new_one.lower() != 'true':
-        return pols_old
+    if not use_new_one or compare:
+        pols_old = legacy_getPolicy(param,
+                                    display_inactive=display_inactive)
 
-    pols_new = new_search_policy(param,
-                                 display_inactive=display_inactive)
+    if use_new_one:
+        return_policies = pols_new
+    else:
+        return_policies = pols_old
 
-    the_same = are_the_same(pols_old, pols_new)
+    if not compare:
+        return return_policies
 
-    if not the_same:
+    if not are_the_same(pols_old, pols_new):
+
         LOG.error('PolicyEvaluation is not the same for params %r', param)
         LOG.error('old: new %r <> %r', pols_old, pols_new)
 
-        raise_exx = context['Config'].get('NewPolicyEvaluation.exception',
-                                          'True')
-        if raise_exx.lower() == 'true':
-            raise Exception('Policy Engine missmatch: %r:%r' %
-                            (pols_old, pols_new))
+    return return_policies
 
-    use_new_one = context['Config'].get('NewPolicyEvaluation', 'False')
+# -------------------------------------------------------------------------- --
 
-    if use_new_one.lower() == 'true':
-        return pols_new
-
-    return pols_old
+# interfaces to the new policy engine
 
 
 def new_search_policy(param, display_inactive=False):
