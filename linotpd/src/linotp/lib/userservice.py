@@ -380,8 +380,8 @@ def add_dynamic_selfservice_enrollment(config, actions):
 
     dynanmic_actions = {}
 
-    for tok in tokenclass_registry:
-        tclass_object = tokenclass_registry.get(tok)
+    for tclass_object in set(tokenclass_registry.values()):
+        tok = tclass_object.getClassType()
         if hasattr(tclass_object, 'getClassInfo'):
 
             try:

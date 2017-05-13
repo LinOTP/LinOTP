@@ -29,7 +29,6 @@ This file contains the e-mail token implementation:
 """
 import datetime
 import logging
-import sys
 
 from linotp.provider import loadProviderFromPolicy
 
@@ -49,10 +48,6 @@ from linotp.lib.tokens.hmactoken import HmacTokenClass
 from linotp.lib.user import getUserDetail
 from linotp.lib.context import request_context as context
 
-if sys.version_info[0:2] >= (2, 6):
-    from json import loads
-else:
-    from simplejson import loads
 
 optional = True
 required = False
@@ -72,8 +67,8 @@ def is_email_editable(user=""):
     policies = getPolicy({'scope': 'selfservice',
                           'realm': realm,
                           "action": "edit_email",
-                          "user": login},
-                          )
+                          "user": login},)
+
     if policies:
         edit_email = getPolicyActionValue(policies, "edit_email")
         if edit_email == 0:
@@ -81,8 +76,10 @@ def is_email_editable(user=""):
 
     return ret
 
+
 @tokenclass_registry.class_entry('email')
-@tokenclass_registry.class_entry('linotp.lib.tokens.emailtoken.EmailTokenClass')
+@tokenclass_registry.class_entry(
+    'linotp.lib.tokens.emailtoken.EmailTokenClass')
 class EmailTokenClass(HmacTokenClass):
     """
     E-mail token (similar to SMS token)
@@ -239,9 +236,9 @@ class EmailTokenClass(HmacTokenClass):
                     raise Exception(_('User is not allowed to set '
                                       'email address'))
 
-        ## in case of the e-mail token, only the server must know the otpkey
-        ## thus if none is provided, we let create one (in the TokenClass)
-        if not 'genkey' in param and not 'otpkey' in param:
+        # in case of the e-mail token, only the server must know the otpkey
+        # thus if none is provided, we let create one (in the TokenClass)
+        if 'genkey' not in param and 'otpkey' not in param:
             param['genkey'] = 1
 
         HmacTokenClass.update(self, param, reset_failcount)

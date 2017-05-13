@@ -648,10 +648,8 @@ class ManageController(BaseController):
         finally:
             Session.close()
 
+# ###########################################################
 
-
-
-############################################################
 def _getTokenTypes():
     '''
         _getTokenTypes - retrieve the list of dynamic tokens and their title section
@@ -660,17 +658,12 @@ def _getTokenTypes():
         :rtype:  dict
     '''
 
-
-    tokens = []
-    tokens.extend(tokenclass_registry.keys())
-
     tinfo = {}
-    for tok in tokens:
-        if tok in tokenclass_registry.keys():
-            tclass_object = tokenclass_registry.get(tok)
-            if hasattr(tclass_object, 'getClassInfo'):
-                ii = tclass_object.getClassInfo('title') or tok
-                tinfo[tok] = _(ii)
+
+    for tclass_object in set(tokenclass_registry.values()):
+        tok = tclass_object.getClassType()
+        if hasattr(tclass_object, 'getClassInfo'):
+            tinfo[tok] = _(tclass_object.getClassInfo('title') or tok)
 
     return tinfo
 
@@ -689,14 +682,15 @@ def _getTokenTypeConfig(section='config'):
 
     res = {}
 
-    for tok in tokenclass_registry:
-        tclass_object = tokenclass_registry.get(tok)
+    for tclass_object in set(tokenclass_registry.values()):
+        tok = tclass_object.getClassType()
+
         if hasattr(tclass_object, 'getClassInfo'):
 
             conf = tclass_object.getClassInfo(section, ret={})
 
-            ## set globale render scope, so that the mako
-            ## renderer will return only a subsection from the template
+            # set globale render scope, so that the mako
+            # renderer will return only a subsection from the template
             p_html = ''
             t_html = ''
             try:
@@ -705,14 +699,14 @@ def _getTokenTypeConfig(section='config'):
                 p_html = render(os.path.sep + page.get('html'))
                 p_html = remove_empty_lines(p_html)
 
-
                 tab = conf.get('title')
                 c.scope = tab.get('scope')
                 t_html = render(os.path.sep + tab.get('html'))
                 t_html = remove_empty_lines(t_html)
 
             except CompileException as ex:
-                log.exception("[_getTokenTypeConfig] compile error while processing %r.%r:" % (tok, section))
+                log.exception("[_getTokenTypeConfig] compile error while "
+                              "processing %r.%r:" % (tok, section))
                 log.error("[_getTokenTypeConfig] %r" % ex)
                 raise Exception(ex)
 

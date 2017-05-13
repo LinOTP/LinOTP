@@ -1166,16 +1166,20 @@ def createTokenClassObject(token, typ=None):
 
     return tok
 
+
 def get_token_type_list():
     '''
-    get_token_type_list - returns the list of the available tokentypes like hmac, spass, totp...
+    get_token_type_list - returns the list of the available tokentypes
+    like hmac, spass, totp...
 
     :return: list of token types
-    :rtype : list
     '''
+    token_types = []
 
-    return tokenclass_registry.keys()
+    for token_class_obj in set(tokenclass_registry.values()):
+        token_types.append(token_class_obj.getClassType())
 
+    return token_types
 
 
 def getRealms4Token(user, tokenrealm=None):

@@ -30,7 +30,7 @@
 """
 
 from unittest import TestCase
-from linotp.lib.pbkdf2 import pbkdf2
+from linotp.lib.crypto.pbkdf2 import pbkdf2
 from linotp.lib.utils import config_get
 from linotp.lib.ImportOTP.PSKC import parsePSKCdata
 from linotp.lib.ImportOTP.DPWplain import parseDPWdata

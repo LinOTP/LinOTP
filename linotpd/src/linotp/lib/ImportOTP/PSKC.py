@@ -39,7 +39,7 @@ sha256 = hashlib.sha256
 import logging
 log = logging.getLogger(__name__)
 
-import linotp.lib.pbkdf2 as pbkdf2
+import linotp.lib.crypto.pbkdf2 as pbkdf2
 
 from linotp.lib.ImportOTP  import getTagName, ImportException
 
