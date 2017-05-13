@@ -47,7 +47,7 @@ from linotp.lib.token import setPinSo
 from linotp.lib.token import setRealms, getTokenType
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import getTokenRealms
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 from linotp.lib.error import ParameterError
 from linotp.lib.error import TokenAdminError

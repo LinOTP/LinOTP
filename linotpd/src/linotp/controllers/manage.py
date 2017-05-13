@@ -45,7 +45,7 @@ from linotp.lib.error import ParameterError
 # Our Token stuff
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.token import getTokenType
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 
 from linotp.lib.user import getUserFromParam, getUserFromRequest

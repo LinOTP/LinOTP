@@ -36,8 +36,8 @@ from Cryptodome.Hash import SHA512
 from linotp.lib.HMAC import HmacOtp
 
 from linotp.lib.config import getFromConfig
-from linotp.lib.tokens.base import TokenClass
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
+from linotp.tokens import tokenclass_registry
 
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.auth.validate import check_otp
@@ -61,7 +61,7 @@ keylen = {'sha1': SHA1.digest_size,
 
 
 @tokenclass_registry.class_entry('hmac')
-@tokenclass_registry.class_entry('linotp.lib.tokens.hmactoken.HmacTokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.hmactoken.HmacTokenClass')
 class HmacTokenClass(TokenClass):
     '''
     hotp token class implementation

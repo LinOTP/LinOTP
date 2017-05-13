@@ -29,11 +29,11 @@
 
 from linotp.lib.crypto import SecretObj
 
-from linotp.lib.tokens.motp import mTimeOtp
-from linotp.lib.tokens.base import TokenClass
+from linotp.tokens.motp import mTimeOtp
+from linotp.tokens.base import TokenClass
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 import logging
 log = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ log = logging.getLogger(__name__)
 
 ###############################################
 @tokenclass_registry.class_entry('motp')
-@tokenclass_registry.class_entry('linotp.lib.tokens.motptoken.MotpTokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.motptoken.MotpTokenClass')
 class MotpTokenClass(TokenClass):
     '''
     implementation of the mOTP token class

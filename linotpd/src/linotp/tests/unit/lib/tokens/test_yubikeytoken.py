@@ -59,7 +59,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
     requiring an installed server.
     """
     def setUp(self):
-        from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
+        from linotp.tokens.yubikeytoken import YubikeyTokenClass
         import linotp.lib.crypto
         # Without this logging in the tested class fails
         logging.basicConfig()
@@ -160,7 +160,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         otp = self.public_uid + "fcniufvgvjturjgvinhebbvvvvvvvvvv"
         counter_expected = -3
         # We want to suppress the warning generated because of the wrong CRC
-        logger = logging.getLogger("linotp.lib.tokens.yubikeytoken")
+        logger = logging.getLogger("linotp.tokens.yubikeytoken")
         logger.disabled = True
         counter_actual = self.yubikey_token.checkOtp(otp)
         logger.disabled = False
@@ -189,7 +189,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
         counter_expected = -2
         # We want to suppress the warning generated because of the wrong CRC
-        logger = logging.getLogger("linotp.lib.tokens.yubikeytoken")
+        logger = logging.getLogger("linotp.tokens.yubikeytoken")
         logger.disabled = True
         counter_actual = self.yubikey_token.checkOtp(otp)
         logger.disabled = False
@@ -200,7 +200,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Verify the simple classmethods getClassType and getClassPrefix
         """
-        from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
+        from linotp.tokens.yubikeytoken import YubikeyTokenClass
         self.assertEqual(YubikeyTokenClass.getClassType(), "yubikey")
         self.assertEqual(YubikeyTokenClass.getClassPrefix(), "UBAM")
 
@@ -208,7 +208,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Test the classmethod getClassInfo
         """
-        from linotp.lib.tokens.yubikeytoken import YubikeyTokenClass
+        from linotp.tokens.yubikeytoken import YubikeyTokenClass
         full_class_info = {
             'selfservice': {},
             'description': 'Yubico token to run the AES OTP mode.',
@@ -259,7 +259,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Test is_challenge_request() method
         """
-        patcher = patch('linotp.lib.tokens.yubikeytoken.check_pin', spec=True)
+        patcher = patch('linotp.tokens.yubikeytoken.check_pin', spec=True)
         check_pin_mock = patcher.start()
         check_pin_mock.return_value = True
         self.assertTrue(

@@ -46,7 +46,7 @@ from Cryptodome.Hash import SHA256 as SHA256
 from linotp.lib.ext.pbkdf2 import PBKDF2
 from linotp.lib.reply import create_img
 
-from linotp.lib.tokens.ocra import OcraSuite
+from linotp.tokens.ocra import OcraSuite
 from linotp.lib.crypto import kdf2
 from linotp.lib.crypto import createActivationCode
 from linotp.lib.crypto import check

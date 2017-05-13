@@ -46,7 +46,7 @@ from linotp.lib.token import TokenHandler
 from linotp.lib.token import get_token_owner
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.lib.token import add_last_accessed_info
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.lib.util import modhex_decode

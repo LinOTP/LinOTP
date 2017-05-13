@@ -45,7 +45,7 @@ from linotp.lib.reply import sendQRImageResult
 from linotp.lib.reply import sendResult, sendError
 
 from linotp.lib.token import getTokens4UserOrSerial
-from linotp.lib.tokens.ocra.ocratoken import OcraTokenClass
+from linotp.tokens.ocra.ocratoken import OcraTokenClass
 
 from linotp.lib.user import User
 from linotp.lib.user import getUserFromParam
@@ -596,7 +596,7 @@ class OcraController(BaseController):
 
         '''
         from linotp.lib.crypto import kdf2
-        from linotp.lib.tokens.ocra import OcraSuite
+        from linotp.tokens.ocra import OcraSuite
         from datetime import datetime
 
         from urlparse import urlparse

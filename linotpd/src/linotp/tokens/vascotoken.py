@@ -30,18 +30,18 @@
 import logging
 
 
-from linotp.lib.tokens.base import TokenClass
+from linotp.tokens.base import TokenClass
 from linotp.lib.ImportOTP.vasco import vasco_otp_check
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
 
 ###############################################
 @tokenclass_registry.class_entry('vasco')
-@tokenclass_registry.class_entry('linotp.lib.tokens.vascotoken.VascoTokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.vascotoken.VascoTokenClass')
 class VascoTokenClass(TokenClass):
     """
     Vasco Token Class - binding against the vasco dll

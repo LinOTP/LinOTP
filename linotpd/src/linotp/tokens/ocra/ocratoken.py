@@ -73,8 +73,8 @@ from linotp.model import Challenge as OcraChallenge
 from linotp.lib.reply import create_img
 
 from linotp.lib.context import request_context as context
-from linotp.lib.tokens import tokenclass_registry
-from linotp.lib.tokens.base import TokenClass
+from linotp.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
 
 import linotp.model.meta
 
@@ -93,7 +93,7 @@ log = logging.getLogger(__name__)
 @tokenclass_registry.class_entry('ocra')
 @tokenclass_registry.class_entry('linotp.lib.tokenclass.OcraTokenClass')
 @tokenclass_registry.class_entry(
-    'linotp.lib.tokens.ocra.ocratoken.OcraTokenClass')
+    'linotp.tokens.ocra.ocratoken.OcraTokenClass')
 class OcraTokenClass(TokenClass):
     """
     OcraTokenClass  implement an ocra compliant token

@@ -122,7 +122,7 @@ from linotp.lib.auth.validate import check_pin
 
 # TODO: move this as ocra specific methods
 from linotp.lib.token import getRolloutToken4User
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 from linotp.lib.util import normalize_activation_code
 
 from ocra import OcraSuite
@@ -130,7 +130,7 @@ from ocra import OcraSuite
 from linotp.lib.challenges import Challenges
 from linotp.lib.reply import create_img
 
-from linotp.lib.tokens.base import TokenClass
+from linotp.tokens.base import TokenClass
 from linotp.lib.context import request_context as context
 
 # needed for ocra token
@@ -231,7 +231,7 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
 #### Ocra2TokenClass #####################################
 
 @tokenclass_registry.class_entry('ocra2')
-@tokenclass_registry.class_entry('linotp.lib.tokens.ocra2token.Ocra2TokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.ocra2token.Ocra2TokenClass')
 class Ocra2TokenClass(TokenClass):
     '''
     Ocra2TokenClass  implement an ocra compliant token

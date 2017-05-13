@@ -106,7 +106,7 @@ def load_environment(global_conf, app_conf):
 
     directories = paths['templates']
 
-    import linotp.lib.tokens as token_package
+    import linotp.tokens as token_package
 
     token_package_path = os.path.dirname(token_package.__file__)
     directories.append(token_package_path)

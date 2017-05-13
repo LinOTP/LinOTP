@@ -26,7 +26,7 @@
 
 
 """
-  Test linotp.lib.tokens.emailtoken
+  Test linotp.tokens.emailtoken
 """
 
 from mock import patch

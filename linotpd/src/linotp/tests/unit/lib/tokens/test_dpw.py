@@ -26,7 +26,7 @@
 
 import unittest
 
-from linotp.lib.tokens.tagespassworttoken import dpwOtp
+from linotp.tokens.tagespassworttoken import dpwOtp
 
 
 class TestDPWToken(unittest.TestCase):

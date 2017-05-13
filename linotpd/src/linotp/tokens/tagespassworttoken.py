@@ -34,13 +34,13 @@ from datetime import timedelta
 from binascii import hexlify
 
 from linotp.lib.crypto import zerome
-from linotp.lib.tokens.base import TokenClass
+from linotp.tokens.base import TokenClass
 from linotp.lib.context import request_context
 
 from linotp.lib.error import TokenAdminError
 from linotp.lib.error import ParameterError
 
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ class dpwOtp:
 # -------------------------------------------------------------------------- --
 
 @tokenclass_registry.class_entry('dpw')
-@tokenclass_registry.class_entry('linotp.lib.tokens.tagespassworttoken.TagespasswortTokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.tagespassworttoken.TagespasswortTokenClass')
 class TagespasswortTokenClass(TokenClass):
     '''
     The Tagespasswort is a one time password that is calculated based on

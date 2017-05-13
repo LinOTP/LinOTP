@@ -68,7 +68,7 @@ FLAG_QR_SRVSIG = 8
 
 def u64_to_transaction_id(u64_int):
     # HACK! counterpart to transaction_id_to_u64 in
-    # lib.tokens.qrtokenclass
+    # tokens.qrtokenclass
     rest = u64_int % 100
     if rest == 0:
         return str(u64_int / 100)

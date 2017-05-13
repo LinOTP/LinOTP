@@ -39,8 +39,8 @@ from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from linotp.lib.crypto import zerome
-from linotp.lib.tokens.qrtoken import parse_qrtoken_pairing_data
-from linotp.lib.tokens.pushtoken import parse_and_verify_pushtoken_pairing_data
+from linotp.tokens.qrtoken import parse_qrtoken_pairing_data
+from linotp.tokens.pushtoken import parse_and_verify_pushtoken_pairing_data
 
 """
 This module provides functions and constants for the generation of

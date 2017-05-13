@@ -36,14 +36,14 @@ from string import rfind
 from linotp.lib.auth.validate import check_otp
 from linotp.lib.auth.validate import check_pin
 
-from linotp.lib.tokens.base import TokenClass
+from linotp.tokens.base import TokenClass
 from linotp.lib.challenges import Challenges
 
 from linotp.lib.policy import getPolicy, getPolicyActionValue
 
 from linotp.lib.error import TokenTypeNotSupportedError
 from linotp.lib.error import ParameterError
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 """
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance
 """
@@ -63,7 +63,7 @@ except (ImportError, AttributeError) as exx:
                                      "can't be used.")
 
 @tokenclass_registry.class_entry('u2f')
-@tokenclass_registry.class_entry('linotp.lib.tokens.u2ftoken.U2FTokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.u2ftoken.U2FTokenClass')
 class U2FTokenClass(TokenClass):
 
     """
@@ -572,7 +572,7 @@ class U2FTokenClass(TokenClass):
 
         In case of success the otp_counter needs to be > 0.
         The matching_challenges is passed to the method
-        :py:meth:`~linotp.lib.tokens.base.TokenClass.challenge_janitor`
+        :py:meth:`~linotp.tokens.base.TokenClass.challenge_janitor`
         to clean up challenges.
 
         :param user: the requesting user

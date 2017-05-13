@@ -31,7 +31,7 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 
-from linotp.lib.tokens.base.validity_mixin import TokenValidityMixin
+from linotp.tokens.base.validity_mixin import TokenValidityMixin
 
 
 class FakeTokenInfoMixin(object):

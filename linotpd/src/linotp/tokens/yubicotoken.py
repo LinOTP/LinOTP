@@ -34,8 +34,8 @@ import re
 import os
 import binascii
 
-from linotp.lib.tokens.base import TokenClass
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens.base import TokenClass
+from linotp.tokens import tokenclass_registry
 from linotp.lib.error import ParameterError
 
 YUBICO_LEN_ID = 12
@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
 
 
 @tokenclass_registry.class_entry('yubico')
-@tokenclass_registry.class_entry('linotp.lib.tokens.yubicotoken.YubicoTokenClass')
+@tokenclass_registry.class_entry('linotp.tokens.yubicotoken.YubicoTokenClass')
 class YubicoTokenClass(TokenClass):
     """
     The Yubico Cloud token forwards an authentication request to the Yubico Cloud service.

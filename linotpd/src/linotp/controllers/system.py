@@ -80,7 +80,7 @@ from linotp.lib.realm import deleteRealm
 from linotp.lib.user import setRealm
 from linotp.lib.user import getUserFromRequest
 
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 from linotp.lib.policy import checkPolicyPre
 from linotp.lib.policy import checkPolicyPost

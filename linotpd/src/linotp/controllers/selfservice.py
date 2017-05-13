@@ -72,7 +72,7 @@ from linotp.lib.user import User
 from linotp.lib.selftest import isSelfTest
 from linotp.controllers.userservice import get_auth_user
 
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 from linotp.lib.context import request_context
 
 import logging

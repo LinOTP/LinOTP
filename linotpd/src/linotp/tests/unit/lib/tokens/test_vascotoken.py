@@ -27,12 +27,12 @@
 import unittest
 from mock import patch
 
-from linotp.lib.tokens.vascotoken import VascoTokenClass
+from linotp.tokens.vascotoken import VascoTokenClass
 
 class VascoTokenClassTestCase(unittest.TestCase):
 
-    @patch('linotp.lib.tokens.vascotoken.VascoTokenClass._get_secret_object')
-    @patch('linotp.lib.tokens.vascotoken.vasco_otp_check')
+    @patch('linotp.tokens.vascotoken.VascoTokenClass._get_secret_object')
+    @patch('linotp.tokens.vascotoken.vasco_otp_check')
     def do_check_otp(self, vasco_retvalue, expected_retvalue, mock_vasco_otpcheck, mock_secobj):
         class testToken(object):
             def setType(self, toktype):

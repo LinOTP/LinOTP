@@ -40,7 +40,7 @@ is achieved by its new, totally modular architecture.
 Tokenclasses
 ------------
 
-    LinOTP already comes with several tokenclasses defined in linotp.lib.tokens
+    LinOTP already comes with several tokenclasses defined in linotp.tokens
     But you can simply define your own tokenclass object. Take a look at
     the base class in tokenclass.py
 

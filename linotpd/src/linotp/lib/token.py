@@ -70,7 +70,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.realm import createDBRealm, getRealmObject
 
 from linotp.lib.context import request_context as context
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 import linotp.model.meta
 
@@ -1000,8 +1000,8 @@ class TokenHandler(object):
         if len(tokens_to) != 1:
             log.error("[copyTokenPin] not a unique token to copy to found")
             return -2
-        import linotp.lib.tokens.base
-        linotp.lib.tokens.base.TokenClass.copy_pin(tokens_from[0], tokens_to[0])
+        import linotp.tokens.base
+        linotp.tokens.base.TokenClass.copy_pin(tokens_from[0], tokens_to[0])
         return 1
 
     def copyTokenUser(self, serial_from, serial_to):
@@ -1161,7 +1161,7 @@ def createTokenClassObject(token, typ=None):
                   'Using default token class as fallback ' %
                   (typ, tokenclass_registry.keys()))
 
-        from linotp.lib.tokens.base import TokenClass
+        from linotp.tokens.base import TokenClass
         tok = TokenClass(token)
 
     return tok

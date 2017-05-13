@@ -106,11 +106,11 @@ from linotp.lib.token import (resetToken,
                               getTokens4UserOrSerial,
                               )
 
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 from linotp.lib.token import TokenHandler
 
-from linotp.lib.tokens.ocra.ocratoken import OcraTokenClass
+from linotp.tokens.ocra.ocratoken import OcraTokenClass
 
 from linotp.lib.apps import (create_google_authenticator,
                              create_oathtoken_url

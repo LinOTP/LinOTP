@@ -33,7 +33,7 @@ import logging
 from linotp.provider import loadProviderFromPolicy
 
 from linotp.lib.token import get_token_owner
-from linotp.lib.tokens import tokenclass_registry
+from linotp.tokens import tokenclass_registry
 
 from linotp.lib.auth.validate import split_pin_otp
 from linotp.lib.auth.validate import check_pin
@@ -44,7 +44,7 @@ from linotp.lib.config import getFromConfig
 from linotp.lib.policy import getPolicy, get_client_policy
 from linotp.lib.policy import getPolicyActionValue
 
-from linotp.lib.tokens.hmactoken import HmacTokenClass
+from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.lib.user import getUserDetail
 from linotp.lib.context import request_context as context
 
@@ -79,7 +79,7 @@ def is_email_editable(user=""):
 
 @tokenclass_registry.class_entry('email')
 @tokenclass_registry.class_entry(
-    'linotp.lib.tokens.emailtoken.EmailTokenClass')
+    'linotp.tokens.emailtoken.EmailTokenClass')
 class EmailTokenClass(HmacTokenClass):
     """
     E-mail token (similar to SMS token)

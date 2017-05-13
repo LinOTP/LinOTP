@@ -65,7 +65,7 @@ def reload_classes():
 
     # if no activated tokens specified, we import the local tokens
 
-    import_base = "linotp.lib.tokens."
+    import_base = "linotp.tokens."
 
     abs_file = path.abspath(__file__)
     base_dir = path.dirname(abs_file)
