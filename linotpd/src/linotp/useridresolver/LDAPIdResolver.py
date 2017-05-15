@@ -931,7 +931,7 @@ class IdResolver (UserIdResolver):
                         resultList[key] = rval
 
             except ldap.LDAPError as error:
-                log.exception("[getUserLDAPInfo] LDAP error: %R", error)
+                log.exception("[getUserLDAPInfo] LDAP error: %r", error)
 
             finally:
                 if l_obj is not None:
