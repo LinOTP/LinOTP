@@ -300,7 +300,7 @@ class ValidateController(BaseController):
 
             user = getUserFromParam(param)
 
-            passw = param.get('pass', None)
+            passw = param.get('pass')
             if passw is None:
                 raise ParameterError(_('Missing required parameter "pass"!'))
 
