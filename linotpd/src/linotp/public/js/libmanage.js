@@ -37,6 +37,8 @@ function processLDAPTestResponse (xhdr, textStatus) {
         });
     }
 
+    $('#progress_test_ldap').hide();
+
     if(textStatus !== "success") {
         displayResult(false, i18n.gettext("Connection to LinOTP failed"));
         return;
@@ -44,8 +46,6 @@ function processLDAPTestResponse (xhdr, textStatus) {
 
     var resp = xhdr.responseText;
     var obj = $.parseJSON(resp);
-
-    $('#progress_test_ldap').hide();
 
     if (obj.result.status == false) {
         displayResult(false, escape(obj.result.error.message));

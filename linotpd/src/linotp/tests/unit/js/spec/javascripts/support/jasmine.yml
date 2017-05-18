@@ -14,6 +14,7 @@
 src_files:
   - "jquery-1.12.4.js"
   - "linotp_utils.js"
+  - "libmanage.js"
 
 # stylesheets
 #
@@ -39,6 +40,7 @@ stylesheets:
 #   - helpers/**/*.js
 #
 helpers:
+  - "support/jasmine2-custom-message-0.8.2.js"
 
 # spec_files
 #
