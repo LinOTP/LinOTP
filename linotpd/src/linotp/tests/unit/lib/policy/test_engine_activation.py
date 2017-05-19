@@ -497,7 +497,7 @@ class TestEngineActivation(unittest.TestCase):
 
         largs = {'scope': 'admin'}
 
-        kwargs = {'display_inactive': False}
+        kwargs = {'only_active': False}
 
         ret_policy = {'ManagedAll':
                       {'realm': '*',
@@ -632,7 +632,7 @@ class TestEngineActivation(unittest.TestCase):
 
         largs = {'scope': 'admin'}
 
-        kwargs = {'display_inactive': False}
+        kwargs = {'only_active': False}
 
         ret_policy = {'ManagedAll':
                       {'realm': '*',

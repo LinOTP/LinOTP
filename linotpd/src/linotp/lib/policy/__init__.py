@@ -934,9 +934,9 @@ def _checkGetTokenPolicyPre(method, param=None, authUser=None, user=None):
 
         policies = {}
         for realm in trealms:
-            pol = getPolicy({'scope': 'gettoken', 'realm': realm,
-                             'user': admin_user['login'],
-                             'action': pol_action})
+            pol = search_policy({'scope': 'gettoken', 'realm': realm,
+                                 'user': admin_user['login'],
+                                 'action': pol_action})
 
             log.error("got a policy: %r", policies)
 
@@ -1002,10 +1002,10 @@ def _checkOcraPolicyPre(method, param=None, authUser=None, user=None):
 
     admin_user = _getAuthenticatedUser()
 
-    policies = getPolicy({'user': admin_user.get('login'),
-                          'scope': 'ocra',
-                          'action': method,
-                          'client': client})
+    policies = search_policy({'user': admin_user.get('login'),
+                              'scope': 'ocra',
+                              'action': method,
+                              'client': client})
 
     if len(policies) == 0:
 
@@ -1354,7 +1354,7 @@ def getAdminPolicies(action, scope='admin'):
     log.info("Evaluating policies for the user: %s", admin_user['login'])
 
     # check if we got admin policies at all
-    p_at_all = getPolicy({'scope': scope})
+    p_at_all = search_policy({'scope': scope})
 
     if not p_at_all:
         log.info("No policies in scope admin found."
@@ -1368,6 +1368,7 @@ def getAdminPolicies(action, scope='admin'):
         if action:
             pol_request['action'] = action
 
+        # policies = search_policy(pol_request)
         policies = getPolicy(pol_request)
         log.debug("Found the following policies: %r", policies)
 
@@ -2212,7 +2213,8 @@ def check_user_authorization(login, realm, exception=False):
 
     # if there is absolutely NO policy in scope authorization,
     # we return immediately
-    if len(getPolicy({"scope": "authorization", "action": "authorize"})) == 0:
+    if (len(search_policy(
+            {"scope": "authorization", "action": "authorize"})) == 0):
         log.debug("absolutely no authorization policy.")
         return True
 

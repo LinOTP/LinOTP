@@ -363,7 +363,7 @@ def legacy_getAuthorization(scope, action):
     return {'active': active, 'auth': auth, 'admin': admin_user['login']}
 
 
-def legacy_getPolicy(param, display_inactive=False):
+def legacy_getPolicy(param, only_active=False):
     '''
     Function to retrieve the list of policies.
 
@@ -397,7 +397,7 @@ def legacy_getPolicy(param, display_inactive=False):
         Policies = lPolicies
 
     # Now we need to clean up policies, that are inactive
-    if not display_inactive:
+    if not only_active:
         pol2delete = []
         for polname, policy in Policies.items():
             pol_active = policy.get("active", "True")

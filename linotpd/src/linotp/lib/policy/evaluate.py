@@ -269,17 +269,6 @@ class PolicyEvaluator(object):
         """
         self.filters.append((key, value, value_compare))
 
-    def filter_for_inactive(self, state=False):
-        """
-        usability wrapper for adding state filter for filtering
-        inactive policies
-
-        :param state: policy state - boolean
-        :return: - nothing -
-        """
-        if state is not None:
-            self.add_filter('active', not state, bool_compare)
-
     def filter_for_active(self, state=True):
         """
         usability wrapper for adding state filter for filtering active policies
@@ -776,6 +765,11 @@ def time_list_compare(policy_conditions, now):
 
         if not condition:
             continue
+
+        # if in the conditions one is with wildcard we grant access
+
+        if condition == '*':
+            return True
 
         #
         # support excluding conditions which start with [-,!]

@@ -1280,8 +1280,8 @@ class SystemController(BaseController):
                       " %s, scope: %s, sort:%s by %s", name, realm, scope,
                       sortorder, sortname)
 
-            pols = getPolicy({'name': name, 'realm': realm, 'scope': scope},
-                             display_inactive=True)
+            pols = search_policy({'name': name, 'realm': realm, 'scope': scope},
+                                 only_active=False)
 
             lines = []
             for pol in pols:
@@ -1553,14 +1553,14 @@ class SystemController(BaseController):
 
             pol = {}
             if scope in ["admin", "system"]:
-                pol = getPolicy({"scope": scope})
+                pol = search_policy({"scope": scope})
                 if len(pol) > 0:
                     # Policy active for this scope!
-                    pol = getPolicy({"user": user,
-                                     "realm": realm,
-                                     "scope": scope,
-                                     "action": action,
-                                     "client": client})
+                    pol = search_policy({"user": user,
+                                         "realm": realm,
+                                         "scope": scope,
+                                         "action": action,
+                                         "client": client})
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
@@ -1648,9 +1648,10 @@ class SystemController(BaseController):
             if 'user' in param:
                 user = param.get('user') or None
 
-            display_inactive = param.get("display_inactive")
+            only_active = True
+            display_inactive = param.get("display_inactive", False)
             if display_inactive:
-                display_inactive = True
+                only_active = False
 
             route_dict = request.environ.get('pylons.routes_dict')
             export = route_dict.get('id')
@@ -1666,7 +1667,8 @@ class SystemController(BaseController):
                     if action:
                         search_param['action'] = action
                     poli = search_policy(search_param,
-                                         display_inactive=display_inactive)
+                                         only_active=only_active)
+
                     pol.update(poli)
             else:
 
@@ -1676,7 +1678,7 @@ class SystemController(BaseController):
                 if action:
                     search_param['action'] = action
                 pol = search_policy(search_param,
-                                    display_inactive=display_inactive)
+                                    only_active=only_active)
 
             #
             # due to bug in getPolicy we have to post check

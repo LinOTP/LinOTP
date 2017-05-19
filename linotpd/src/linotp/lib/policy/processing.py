@@ -172,7 +172,7 @@ def get_client_policy(client, scope=None, action=None, realm=None, user=None,
     return return_policies
 
 
-def getPolicy(param, display_inactive=False):
+def getPolicy(param, only_active=False):
     """
     migration method for the getPolicy old and new
     """
@@ -185,12 +185,12 @@ def getPolicy(param, display_inactive=False):
     if use_new_one or compare:
 
         pols_new = new_getPolicy(param,
-                                 display_inactive=display_inactive)
+                                 only_active=only_active)
 
     if not use_new_one or compare:
 
         pols_old = legacy_getPolicy(param,
-                                    display_inactive=display_inactive)
+                                    only_active=only_active)
 
     if use_new_one:
         return_policies = pols_new
@@ -211,7 +211,7 @@ def getPolicy(param, display_inactive=False):
     return return_policies
 
 
-def search_policy(param, display_inactive=False):
+def search_policy(param, only_active=False):
     """
     migration stub for the new policy engine
     """
@@ -223,11 +223,11 @@ def search_policy(param, display_inactive=False):
 
     if use_new_one or compare:
         pols_new = new_search_policy(param,
-                                     display_inactive=display_inactive)
+                                     only_active=only_active)
 
     if not use_new_one or compare:
         pols_old = legacy_getPolicy(param,
-                                    display_inactive=display_inactive)
+                                    only_active=only_active)
 
     if use_new_one:
         return_policies = pols_new
@@ -249,7 +249,7 @@ def search_policy(param, display_inactive=False):
 # interfaces to the new policy engine
 
 
-def new_search_policy(param, display_inactive=False):
+def new_search_policy(param, only_active=False):
     '''
     Function to retrieve the list of policies.
 
@@ -280,7 +280,8 @@ def new_search_policy(param, display_inactive=False):
     #
     # add the special filter for activ or inactive policies
 
-    policy_elve.filter_for_inactive(state=display_inactive)
+    if only_active:
+        policy_elve.filter_for_active(state=True)
 
     #
     # finally we apply the filter
@@ -290,7 +291,7 @@ def new_search_policy(param, display_inactive=False):
     return new_pols
 
 
-def new_getPolicy(param, display_inactive=False):
+def new_getPolicy(param, only_active=False):
     '''
     Function to retrieve the list of policies.
 
@@ -321,7 +322,12 @@ def new_getPolicy(param, display_inactive=False):
     #
     # add the special filter for activ or inactive policies
 
-    policy_elve.filter_for_inactive(state=display_inactive)
+    if only_active:
+        policy_elve.filter_for_active(state=True)
+
+    if (('user' in param and param['user'] is not None) or
+       ('action' in param and param['action'] is not None)):
+        policy_elve.filter_for_time()
 
     #
     # finally we apply the filter
@@ -418,6 +424,8 @@ def new_get_client_policy(client, scope=None, action=None, realm=None,
 
     if client:
         policy_eval.filter_for_client(client)
+
+    policy_eval.filter_for_time()
 
     if userObj:
         policy_eval.filter_for_user(userObj)

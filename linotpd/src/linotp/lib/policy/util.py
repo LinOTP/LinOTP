@@ -307,16 +307,27 @@ def parse_policies(lConfig):
     # by replacing these empty values by '*'
 
     for name, policy in Policies.items():
+
+        # time has not been used before, so we can define the empty as wildcard
+
+        if 'time' in policy and policy['time'] == '':
+            policy['time'] = '* * * * * *;'
+
+        if 'active' not in policy:
+            policy['active'] = True
+
+        if 'active' in policy and policy['active'] == '':
+            policy['active'] = True
+
         if 'scope' in policy and policy['scope'] in ['selfservice',
                                                      'admin',
                                                      'enrollment',
                                                      'authorization',
-                                                     'authentication']:
+                                                     'authentication',
+                                                     ]:
             if 'user' in policy and policy['user'] == '':
                 policy['user'] = '*'
             if 'client' in policy and policy['client'] == '':
                 policy['client'] = '*'
-            if 'time' in policy and policy['time'] == '':
-                policy['time'] = '*'
 
     return Policies
