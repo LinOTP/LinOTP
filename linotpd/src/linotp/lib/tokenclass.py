@@ -182,6 +182,10 @@ class TokenClass(TokenInfoMixin, TokenValidityMixin):
         raise NotImplementedError('token type %s doesn\'t support pairing '
                                   % self.getType())
 
+    def unpair(self):
+        raise NotImplementedError('token type %s doesn\'t support unpairing '
+                                  % self.getType())
+
     def is_auth_only_token(self, user):
         """
         check if token is in the authenticate only mode
