@@ -127,8 +127,6 @@ def get_config(key):
 
     return None
 
-
-
 def set_defaults():
     '''
     add linotp default config settings
@@ -139,7 +137,7 @@ def set_defaults():
     is_upgrade = 0 != Session.query(linotp.model.Config).filter(
                           linotp.model.Config.Key == "linotp.Config").count()
 
-    if(is_upgrade):
+    if is_upgrade:
         # if it is an upgrade and no welcome screen was shown before,
         # make sure an upgrade screen is shown
         set_config(key="welcome_screen.version",
@@ -310,6 +308,16 @@ def set_defaults():
     set_config(key='resolver_lookup_cache.expiration',
                value="64800", typ="int",
                description="expiration of resolver caching entries")
+
+    if not is_upgrade:
+        set_config(key='NewPolicyEvaluation',
+                   value="True", typ="boolean",
+                   description="use the new policy engine")
+
+        set_config(key='NewPolicyEvaluation.compare',
+                   value="False", typ="boolean",
+                   description=("compare the new policy engine with "
+                                "the old one"))
 
     return
 
