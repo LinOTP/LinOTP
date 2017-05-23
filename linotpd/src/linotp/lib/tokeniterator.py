@@ -117,7 +117,7 @@ class TokenIterator(object):
             searchType = "blank"
         elif loginUser == "/:no user info:/":
             searchType = "wildcard"
-        elif "*" in loginUser or "." in loginUser:
+        elif "*" in loginUser:
             searchType = "wildcard"
         else:
             ## no blank and no wildcard search

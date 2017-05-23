@@ -528,6 +528,7 @@ class IdResolver (UserIdResolver):
             return (status, str(err))
 
         except Exception as err:
+            status = "error"
             log.exception("[testconnection] Error: %r", err)
             return (status, str(err))
 
