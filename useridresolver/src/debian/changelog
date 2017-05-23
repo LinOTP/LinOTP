@@ -1,8 +1,9 @@
-linotp-useridresolver (2.9.1.4~0dev0-1) jessie; urgency=low
+linotp-useridresolver (2.9.1.4~rc0-1) jessie; urgency=low
 
-  * Set new version 2.9.1.4~0dev0-1
+  Bug Fixes
+  * LDAP: fix error handling during connection test
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 18 May 2017 13:35:14 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 23 May 2017 11:37:08 +0200
 
 linotp-useridresolver (2.9.1.1-1) jessie; urgency=low
 
