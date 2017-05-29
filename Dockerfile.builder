@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
-#    Copyright (C) 2017 KeyIdentity GmbH
+#    Copyright (C) 2016 - 2017 KeyIdentity GmbH
 #
 #    This file is part of LinOTP server.
 #
