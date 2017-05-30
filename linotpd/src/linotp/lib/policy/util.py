@@ -205,8 +205,6 @@ def parse_action_value(action_value):
     return params
 
 
-
-
 def split_value(policy, attribute="client", marks=False):
     """
     This function returns the parameter "client" or "user" in
@@ -225,6 +223,7 @@ def split_value(policy, attribute="client", marks=False):
         attrs_array = [co.strip()
                        for co in attrs.split(',')
                        if len(co.strip()) and co.strip()[-1] != ":"]
+
     # if for some reason the first element is empty, delete it.
     if len(attrs_array) and attrs_array[0] == "":
         del attrs_array[0]
