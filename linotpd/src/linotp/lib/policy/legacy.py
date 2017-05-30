@@ -148,8 +148,16 @@ def _user_filter(Policies, userObj, scope, find_resolver=True):
         log.debug("search user %s in users %s of policy %s",
                   user, policy_users, polname)
 
-        if not policy_users:
+        # fix for resolver selector:
+        marks_policy_users = split_value(pol, attribute="user",marks=True)
+
+        if not policy_users and not marks_policy_users:
             log.debug("adding %s to default_policies", polname)
+            default_policies[polname] = pol
+            continue
+
+        if marks_policy_users:
+            find_resolver = True
             default_policies[polname] = pol
             continue
 
