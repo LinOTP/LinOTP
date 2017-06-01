@@ -1,11 +1,11 @@
-linotp (2.9.1.4~rc0-1) jessie; urgency=low
+linotp (2.9.1.4-1) jessie; urgency=low
 
   Bug Fixes:
   * Fix Vasco token import from file
   * Fix web ui error if token configuation dialog is cancelled
   * Remove broken wildcard search using '.' in UserIdResolver searches
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 23 May 2017 11:37:08 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 01 Jun 2017 15:35:52 +0200
 
 linotp (2.9.1.3-1) jessie; urgency=low
 

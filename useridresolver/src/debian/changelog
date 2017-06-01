@@ -1,9 +1,9 @@
-linotp-useridresolver (2.9.1.4~rc0-1) jessie; urgency=low
+linotp-useridresolver (2.9.1.4-1) jessie; urgency=low
 
   Bug Fixes
   * LDAP: fix error handling during connection test
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 23 May 2017 11:37:08 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 01 Jun 2017 15:35:52 +0200
 
 linotp-useridresolver (2.9.1.1-1) jessie; urgency=low
 
