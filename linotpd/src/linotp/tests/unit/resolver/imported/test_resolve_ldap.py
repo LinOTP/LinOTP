@@ -90,6 +90,11 @@ class LDAPResolverTest(unittest.TestCase):
 
         return res
 
+class LDAPConnectTests(LDAPResolverTest):
+    def test_ldap_testconnection_invalid_parameter(self):
+        self.ldap_test_param['linotp.ldapresolver.TIMEOUT'] = 'qwerty'
+        (status, desc) = LDAPResolver.IdResolver.testconnection(self.ldap_test_param)
+        self.assertEqual(status, "error")
 
 class LDAPInProcessTests(LDAPResolverTest):
 

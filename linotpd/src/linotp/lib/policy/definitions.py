@@ -93,6 +93,7 @@ def getPolicyDefinitions(scope=""):
                         'OTP values for tokens.'
                 },
             'show': {'type': 'bool'},
+            'unpair': {'type': 'bool'},
         },
         'gettoken': {
             'max_count_dpw': {'type': 'int'},

@@ -179,7 +179,7 @@ class TestChallengeResponseController(TestSpecialController):
 
     @classmethod
     def setup_class(cls):
-        cls.radius_process = cls.start_radius_server(cls.radius_authport,
+        cls.radius_proc = cls.start_radius_server(cls.radius_authport,
                                                      cls.radius_acctport)
         TestSpecialController.setup_class()
 

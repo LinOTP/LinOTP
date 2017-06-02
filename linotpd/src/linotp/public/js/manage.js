@@ -1834,8 +1834,12 @@ function handler_ldap_certificate_show() {
     $('#ldap_resolver_certificate').toggle(show_cert_textarea);
 
     // disable start_tls option in combination with ldaps:// url
-    $('#ldap_enforce_tls').prop("disabled", isLdaps).prop('checked', !isLdaps);
+    $('#ldap_enforce_tls').prop("disabled", isLdaps);
     $('#ldap_enforce_tls_label').toggleClass('disabled', isLdaps);
+
+    if(isLdaps) {
+        $('#ldap_enforce_tls').prop('checked', false);
+    }
 }
 
 /*
@@ -6801,15 +6805,15 @@ function confirm_cancel_dialog(dialogname){
             {
                 text: i18n.gettext("Cancel"),
                 click: function() {
-                    defer.reject("false");
                     $( this ).dialog( "close" );
+                    defer.reject("false");
                 }
             },
             {
                 text: i18n.gettext("Discard"),
                 click: function() {
-                    defer.resolve("true");
                     $( this ).dialog( "close" );
+                    defer.resolve("true");
                 }
             }
         ]

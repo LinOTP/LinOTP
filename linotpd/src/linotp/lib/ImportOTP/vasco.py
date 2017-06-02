@@ -371,7 +371,13 @@ def parseVASCOdata(fileString=None, arg_otplen=6, transportkey=None):
                 # TODO: Each token could have another OTP-length.
                 # At the moment we take this as parameter
                 otplen = arg_otplen
-                idx = serial.index('APPL')
+                if 'APPL' in serial:
+                    idx = serial.index('APPL')
+                elif 'DEFAULT' in serial:
+                    idx = serial.index('DEFAULT')
+                else:
+                    idx = len(serial)
+
                 lin_serial = serial[:idx]
 
                 if auth[:2] in ["RO"]:
