@@ -43,10 +43,10 @@ class LDAPResolverTest(unittest.TestCase):
 
         self.ldap_y = getResolverClass("useridresolver.LDAPIdResolver", "IdResolver")()
 
-        self.ldap_y.loadConfig({ 'linotp.ldapresolver.LDAPFILTER' : '(&(cn=%s))',
-                                  'linotp.ldapresolver.LDAPSEARCHFILTER' : '(cn=*)',
-                                  'linotp.ldapresolver.LOGINNAMEATTRIBUTE' : 'cn',
-                                  'linotp.ldapresolver.USERINFO' : '{"username":"cn", "description":"", \
+        self.ldap_test_param = {'linotp.ldapresolver.LDAPFILTER': '(&(cn=%s))',
+                                'linotp.ldapresolver.LDAPSEARCHFILTER': '(cn=*)',
+                                'linotp.ldapresolver.LOGINNAMEATTRIBUTE': 'cn',
+                                'linotp.ldapresolver.USERINFO': '{"username":"cn", "description":"", \
                                                 "phone" : "telephoneNumber",\
                                                 "groups" : "o",\
                                                 "mobile" : "mobile", \
@@ -54,14 +54,15 @@ class LDAPResolverTest(unittest.TestCase):
                                                 "surname" : "sn",\
                                                 "givenname" : "givenName",\
                                                 "gender" : "" } ',
-                                    'linotp.ldapresolver.LDAPURI' : 'ldap://localhost:1389',
-                                    'linotp.ldapresolver.LDAPBASE'    : 'o=linotp,c=org',
-                                    'linotp.ldapresolver.BINDDN'  : '',
-                                    'linotp.ldapresolver.BINDPW'  : '',
-                                    'linotp.ldapresolver.TIMEOUT' : '5',
-                                    'linotp.ldapresolver.SIZELIMIT' : '10',
-                                    'linotp.certificates.use_system_certificates' : False,
-                                    })
+                                'linotp.ldapresolver.LDAPURI': 'ldap://localhost:1389',
+                                'linotp.ldapresolver.LDAPBASE': 'o=linotp,c=org',
+                                'linotp.ldapresolver.BINDDN': '',
+                                'linotp.ldapresolver.BINDPW': '',
+                                'linotp.ldapresolver.TIMEOUT': '5',
+                                'linotp.ldapresolver.SIZELIMIT': '10',
+                                'linotp.certificates.use_system_certificates': False,
+                                }
+        self.ldap_y.loadConfig(self.ldap_test_param)
 
     def getUserList(self, obj, arg):
         '''
@@ -87,6 +88,12 @@ class LDAPResolverTest(unittest.TestCase):
         res = self.ldap_y.getUserId(user)
 
         return res
+
+class LDAPConnectTests(LDAPResolverTest):
+    def test_ldap_testconnection_invalid_parameter(self):
+        self.ldap_test_param['linotp.ldapresolver.TIMEOUT'] = 'qwerty'
+        (status, desc) = LDAPIdResolver.IdResolver.testconnection(self.ldap_test_param)
+        self.assertEqual(status, "error")
 
 class LDAPInProcessTests(LDAPResolverTest):
     def test_ldap_getuserid_ad(self):
