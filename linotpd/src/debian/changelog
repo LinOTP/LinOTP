@@ -1,9 +1,12 @@
 linotp (2.9.1.4-1) jessie; urgency=low
 
   Bug Fixes:
-  * Fix Vasco token import from file
-  * Fix web ui error if token configuation dialog is cancelled
-  * Remove broken wildcard search using '.' in UserIdResolver searches
+  * Vasco: Fix token import from file
+  * Vasco: Fix authentication
+  * Web UI: Fix error if token configuation dialog is cancelled
+  * Manage: Remove broken wildcard search using '.' in UserIdResolver searches
+  * Migration: Fix migration handling routine
+  * Authentication: Fix behaviour of check_status with empty pass and otppin=2
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 01 Jun 2017 15:35:52 +0200
 
