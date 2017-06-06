@@ -41,10 +41,8 @@ RUN apt-get update && apt-get \
 # We copy in just the control files at this point in order to make maximum use of
 # docker's caching
 COPY linotpd/src/debian/control packaging/deps/linotp/debian/
-COPY useridresolver/src/debian/control packaging/deps/useridresolver/debian/
-COPY smsprovider/src/debian/control packaging/deps/smsprovider/debian/
 
-RUN for D in linotp useridresolver smsprovider ;\
+RUN for D in linotp ;\
 	  do \
 		echo $D ;\
 		cd /packaging/deps/$D ;\

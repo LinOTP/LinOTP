@@ -75,7 +75,7 @@ $(MAKEFILE_TARGETS):
 
 # Subdirectory make that should invoke target in all subproject directories
 .PHONY: %.subdirmake
-%.subdirmake : smsprovider.% useridresolver.% linotpd.% ;
+%.subdirmake : linotpd.% ;
 
 # Add dependencies for main targets
 # build -> build.subdirmake
@@ -156,7 +156,7 @@ integrationtests:
 # builddeb: Generate .debs
 # deb-install: Build .debs and install to DESTDIR
 
-DEBPKG_PROJS := linotpd useridresolver smsprovider adminclient/LinOTPAdminClientCLI
+DEBPKG_PROJS := linotpd adminclient/LinOTPAdminClientCLI
 BUILDARCH = $(shell dpkg-architecture -q DEB_BUILD_ARCH)
 CHANGELOG = "$(shell cd linotpd/src ; dpkg-parsechangelog)"
 
