@@ -334,9 +334,17 @@ class LdapUserIdResolver(UserIdResolver):
 
         fill_element_from_dict(driver, 'ldap_resolvername', 'name', data)
         fill_element_from_dict(driver, 'ldap_uri', 'uri', data)
-        if data['uri'].startswith("ldaps:"):
+
+        enforce_tls = data.get('enforce_tls')
+
+        if enforce_tls:
+            assert(data['uri'].startswith('ldap:'))
+            find_by_id(driver, 'ldap_enforce_tls').click()
+
+        if data['uri'].startswith('ldaps:') or enforce_tls:
             fill_element_from_dict(
                 driver, 'ldap_certificate', 'certificate', data)
+
         fill_element_from_dict(driver, 'ldap_basedn', 'basedn', data)
         fill_element_from_dict(driver, 'ldap_binddn', 'binddn', data)
         fill_element_from_dict(driver, 'ldap_password', 'password', data)

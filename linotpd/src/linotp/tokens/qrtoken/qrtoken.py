@@ -34,11 +34,7 @@ from pysodium import crypto_scalarmult_curve25519 as calc_dh
 from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from Cryptodome.Cipher import AES
 
-import hmac
 from hashlib import sha256
-
-
-from linotp.lib.crypto import SecretObj
 
 from linotp.lib.policy import get_partition
 from linotp.lib.policy import get_single_auth_policy
@@ -57,7 +53,6 @@ from linotp.lib.crypto import decode_base64_urlsafe
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import InvalidFunctionParameter
 from linotp.lib.error import ParameterError
-from linotp.lib.crypto import get_dh_secret_key
 from linotp.lib.pairing import generate_pairing_url
 
 # --------------------------------------------------------------------------- --
@@ -244,6 +239,19 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
 # --------------------------------------------------------------------------- --
 
+    def unpair(self):
+
+        """
+        resets the stage to 'pairing_url_sent' so the token can be
+        paired again.
+        """
+
+        self.removeFromTokenInfo('user_token_id')
+        self.removeFromTokenInfo('user_public_key')
+        self.change_state('pairing_url_sent')
+
+# --------------------------------------------------------------------------- --
+
     def splitPinPass(self, passw):
 
         # we split differently here, because we support pins, but no otp
@@ -360,7 +368,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             flags |= CHALLENGE_SHOULD_RESET_URL
             flags |= CHALLENGE_HAS_SIGNATURE
 
-        #------------------------------------------------------------------- --
+        # ------------------------------------------------------------------- --
 
         # generate plaintext header
 
@@ -374,7 +382,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         pt_header = struct.pack('<bbQ', content_type, flags, transaction_id)
         plaintext = pt_header
 
-        #------------------------------------------------------------------- --
+        # ------------------------------------------------------------------- --
 
         # create data package
 
@@ -548,7 +556,6 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                                         user=owner, realms=realms)
         cb_sms = get_single_auth_policy(pairing_policies[1],
                                         user=owner, realms=realms)
-
 
         if not cb_url and not cb_sms:
             raise Exception(_('Policy %s must have a value') %

@@ -901,6 +901,20 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "in realm %s is exceeded. Check policy "
                                     "tokencount!") % tokenrealm)
 
+    elif method == 'unpair':
+
+        policies = getAdminPolicies("unpair")
+        if (policies['active'] and not
+           checkAdminAuthorization(policies, serial, user)):
+
+            log.warning("the admin >%s< is not allowed to unpair token %s "
+                        "for user %s@%s",
+                        policies['admin'], serial, user.login, user.realm)
+
+            raise PolicyException(_("You do not have the administrative "
+                                    "right to unpair token %s. Check the "
+                                    "policies.") % serial)
+
     else:
         # unknown method
         log.error("an unknown method <<%s>> was passed.", method)

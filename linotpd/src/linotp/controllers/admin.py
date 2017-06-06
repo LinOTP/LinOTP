@@ -474,7 +474,7 @@ class AdminController(BaseController):
 
 
 ########################################################
-    def enable (self):
+    def enable(self):
         """
         method:
             admin/enable
@@ -547,7 +547,7 @@ class AdminController(BaseController):
 
 
 ########################################################
-    def getSerialByOtp (self):
+    def getSerialByOtp(self):
         """
         method:
             admin/getSerialByOtp
@@ -627,7 +627,7 @@ class AdminController(BaseController):
 
 
 ########################################################
-    def disable (self):
+    def disable(self):
         """
         method:
             admin/disable
@@ -1077,7 +1077,7 @@ class AdminController(BaseController):
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
-        except Exception as e :
+        except Exception as e:
             log.exception('[assign] token assignment failed! %r' % e)
             Session.rollback()
             return sendError(response, e, 0)
@@ -1166,7 +1166,7 @@ class AdminController(BaseController):
                 count = count + 1
                 c.audit['action_detail'] += "sopin, "
 
-            if count == 0 :
+            if count == 0:
                 Session.rollback()
                 return sendError(response, ParameterError("Usage: %s" % description, id=77))
 
@@ -1180,8 +1180,7 @@ class AdminController(BaseController):
             Session.rollback()
             return sendError(response, unicode(pe), 1)
 
-
-        except Exception as e :
+        except Exception as e:
             log.exception('[setPin] %s :%r' % (msg, e))
             Session.rollback()
             return sendError(response, unicode(e), 0)
@@ -2549,6 +2548,70 @@ class AdminController(BaseController):
             log.exception("[checkstatus] failed: %r" % exx)
             Session.rollback()
             return sendResult(response, unicode(exx), 0)
+
+        finally:
+            Session.close()
+
+    # ------------------------------------------------------------------------ -
+
+    def unpair(self):
+
+        """ admin/unpair - resets a token to its unpaired state """
+
+        try:
+
+            params = dict(**request.params)
+
+            serial = params.get("serial")
+            user = getUserFromParam(params)
+
+            # ---------------------------------------------------------------- -
+
+            # check admin authorization
+
+            checkPolicyPre('admin', 'unpair', params, user=user)
+
+            # ---------------------------------------------------------------- -
+
+            tokens = getTokens4UserOrSerial(user, serial)
+
+            if not tokens:
+                raise Exception('No token found. Unpairing not possible')
+
+            if len(tokens) > 1:
+                raise Exception('Multiple tokens found. Unpairing not possible')
+
+            token = tokens[0]
+
+            # ---------------------------------------------------------------- -
+
+            # prepare some audit entries
+            t_owner = token.getUser()
+
+            realms = token.getRealms()
+            realm = ''
+            if realms:
+                realm = realms[0]
+
+            c.audit['user'] = t_owner or ''
+            c.audit['realm'] = realm
+
+            # ---------------------------------------------------------------- -
+
+            token.unpair()
+            Session.commit()
+
+            # ---------------------------------------------------------------- -
+
+            return sendResult(response, True)
+
+        # -------------------------------------------------------------------- -
+
+        except Exception as exx:
+            log.exception("admin/unpair failed: %r" % exx)
+            c.audit['info'] = unicode(exx)
+            Session.rollback()
+            return sendResult(response, False, 0, status=False)
 
         finally:
             Session.close()

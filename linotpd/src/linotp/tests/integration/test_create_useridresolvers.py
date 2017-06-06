@@ -95,6 +95,13 @@ class TestCreateUserIdResolvers(TestCase):
     def test_04_ad_resolver_creation(self):
         self.create_resolver(data.physics_ldap_resolver)
 
+    def test_05_ldap_enforce_starttls(self):
+        ldap_data = data.musicians_ldap_resolver.copy()
+        ldap_data['enforce_tls'] = True
+        ldap_data['uri'] = ldap_data['uri'].replace('ldaps:', 'ldap:')
+
+        self.create_resolver(ldap_data)
+
     def test_10_resolver_workflow(self):
         # Quick test complete workflow
         testdata = (data.sepasswd_resolver,)
@@ -104,3 +111,4 @@ class TestCreateUserIdResolvers(TestCase):
         testdata = (data.musicians_ldap_resolver, data.physics_ldap_resolver,
                     data.sql_resolver, data.sepasswd_resolver)
         return self.create_resolvers_and_realm(testdata)
+
