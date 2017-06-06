@@ -96,7 +96,8 @@ if isinstance(lang, list):
 <script type="text/javascript" src="/js/pskc.js?ref=${c.version_ref}"></script>
 <script type="text/javascript" src="/js/tools.js?ref=${c.version_ref}"></script>
 
-<!-- load language settings befor manage.js -->
+<!-- load libmanage and language settings before manage.js -->
+<script type="text/javascript" src="/js/libmanage.js?ref=${c.version_ref}"></script>
 <script type="text/javascript">
     window.CURRENT_LANGUAGE = "${lang}";
     window.ALL_CURRENT_LANGUAGE = "${allang}";
