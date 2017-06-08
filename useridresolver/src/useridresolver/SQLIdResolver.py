@@ -482,7 +482,7 @@ class IdResolver(UserIdResolver):
         '''
 
         log.info("[checkPass] checking password for user %s" % uid)
-        userInfo = self.getUserInfo(uid)
+        userInfo = self.getUserInfo(uid, suppress_password=False)
 
         # adapt the encoding of the password to the encoding of the database
         if len(self.sqlEncoding) > 0:
@@ -781,7 +781,7 @@ class IdResolver(UserIdResolver):
 
         return userName
 
-    def getUserInfo(self, userId):
+    def getUserInfo(self, userId, suppress_password=True):
         '''
             return all user related information
 
@@ -801,7 +801,9 @@ class IdResolver(UserIdResolver):
             select = table.select(self.__getUserNameFilter(table, userId))
 
             for row in dbObj.query(select):
-                userInfo = self.__getUserInfo(dbObj, row)
+                userInfo = self.__getUserInfo(
+                                    dbObj, row,
+                                    suppress_password=suppress_password)
 
         except Exception as e:
             log.exception('[getUserInfo] Exception: %s' % (str(e)))
@@ -932,7 +934,7 @@ class IdResolver(UserIdResolver):
 
         return retString
 
-    def __getUserInfo(self, dbObj, row):
+    def __getUserInfo(self, dbObj, row, suppress_password=True):
         """
         internal helper to build up the user info dict
 
@@ -943,6 +945,9 @@ class IdResolver(UserIdResolver):
         userInfo = {}
 
         for key in self.sqlUserInfo:
+            if key == 'password' and suppress_password:
+                continue
+
             colName = self.sqlUserInfo.get(key)
 
             try:
