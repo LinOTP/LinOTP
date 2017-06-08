@@ -844,12 +844,9 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     :return: login, uid
 
     """
-    if not user_info:
-        log.info("lookup the user %r or uid %r for resolver %r",
-                 login, user_id, resolver_spec)
-    else:
-        log.info("filling cache for user %r in resolver %r",
-                 user_info, resolver_spec)
+
+    log.info("lookup the user %r or uid %r for resolver %r",
+             login, user_id, resolver_spec)
 
     def _lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
@@ -920,21 +917,22 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
     # if both, the login and the uid is available
 
     if result:
-        _login, _user_id, resolver_spec = result
+        r_login, r_user_id, _user_info = result
 
-        if _login and _user_id:
-            key = {'login': _login,
+        if r_login and r_user_id:
+            key = {'login': r_login,
                    'user_id': None,
                    'resolver_spec': resolver_spec}
-            p_key = json.dumps(key)
+            login_key = json.dumps(key)
 
-            request_context['UserLookup'][p_key] = result
+            request_context['UserLookup'][login_key] = result
 
             key = {'login': None,
-                   'user_id': _user_id,
+                   'user_id': r_user_id,
                    'resolver_spec': resolver_spec}
-            p_key = json.dumps(key)
-            request_context['UserLookup'][p_key] = result
+            id_key = json.dumps(key)
+
+            request_context['UserLookup'][id_key] = result
 
     log.info("lookup done %r", p_key)
 
