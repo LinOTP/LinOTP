@@ -957,8 +957,10 @@ def _get_user_lookup_cache(resolver_spec):
         return None
 
     try:
-        expiration = int(config.get('linotp.user_lookup_cache.expiration',
-                                36 * 3600))
+        expiration_conf = config.get('linotp.user_lookup_cache.expiration',
+                                     36 * 3600)
+        expiration = get_duration(expiration_conf)
+
     except ValueError:
         log.info("user caching is disabled due to a value error in user_lookup_cache.expiration config")
         return None
