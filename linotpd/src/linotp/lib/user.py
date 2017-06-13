@@ -451,57 +451,101 @@ def getUserFromParam(param):
 def getUserFromRequest(request, config=None):
     '''
     This function first tries to get the user from
-     * a DigestAuth and otherwise from
-     * basic auth and otherwise from
-     * the client certificate
+     * already authenticated systems (REMOTE_USER)
+     * a Basic / DigestAuth and
+     *  otherwise from the client certificate
+    :param request: the pylons request
+    :param config: the LinOTP configuration
+
+    :return: the authentication dict
+
+    :remark: the function catches all exceptions which are only logged
+    :remark: the selfservice authentication should be removed!!
     '''
+
     d_auth = {'login': ''}
 
     param = request.params
 
     try:
-        # Do BasicAuth
+
+        # ------------------------------------------------------------------ --
+
+        # accept remote authenticated users
+
         if 'REMOTE_USER' in request.environ:
+
             d_auth['login'] = request.environ['REMOTE_USER']
+
             log.debug("[getUserFromRequest] BasicAuth: found the "
                       "REMOTE_USER: %r", d_auth)
 
+        # ------------------------------------------------------------------ --
+
         # Find user name from HTTP_AUTHORIZATION (Basic or Digest auth)
+
         elif 'HTTP_AUTHORIZATION' in request.environ:
+
             hdr = request.environ['HTTP_AUTHORIZATION']
+
+            # -------------------------------------------------------------- --
+
+            # Basic Authentication
+
             if hdr.startswith('Basic '):
+
                 a_auth = b64decode(hdr[5:].strip())
-                d_auth['login'], junk, junk = a.auth.partition(':')
+
+                d_auth['login'], _junk, _junk = a_auth.partition(':')
+
+                log.debug("[getUserFromRequest] BasicAuth: found "
+                          "this HTTP_AUTHORIZATION: %r", d_auth)
+
+            # -------------------------------------------------------------- --
+
+            # Digest authentication
+
             else:
+
                 for field in hdr.split(","):
                     (key, _delimiter, value) = field.partition("=")
                     d_auth[key.lstrip(' ')] = value.strip('"')
 
                 d_auth['login'] = d_auth.get('Digest username', '') or ''
 
-            log.debug("[getUserFromRequest] DigestAuth: found "
-                      "this HTTP_AUTHORIZATION: %r", d_auth)
+                log.debug("[getUserFromRequest] DigestAuth: found "
+                          "this HTTP_AUTHORIZATION: %r", d_auth)
+
+        # ------------------------------------------------------------------ --
 
         # Do SSL Client Cert
+
         elif 'SSL_CLIENT_S_DN_CN' in request.environ:
+
             d_auth['login'] = request.environ.get('SSL_CLIENT_S_DN_CN', '')
+
             log.debug("[getUserFromRequest] SSLClientCert Auth: found "
                       "this SSL_CLIENT_S_DN_CN: %r", d_auth)
 
-        # In case of selftest
-        self_test = isSelfTest(config=config)
-        log.debug("[getUserFromRequest] Doing selftest!: %r", self_test)
+        # ------------------------------------------------------------------ --
 
-        if self_test:
+        # In case of selftest
+
+        if isSelfTest(config=config):
+
             log.debug("[getUserFromRequest] Doing selftest!")
-            param = request.params
+
             login = param.get("selftest_admin")
+
             if login:
                 d_auth['login'] = login
                 log.debug("[getUserFromRequest] Found selfservice user: %r in "
                           "the request.", d_auth)
 
+        # ------------------------------------------------------------------ --
+
     except Exception as exx:
+
         log.exception("[getUserFromRequest] An error occurred when trying"
                       " to fetch the user from the request: %r", exx)
 
