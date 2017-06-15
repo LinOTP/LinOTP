@@ -54,7 +54,8 @@ function yubico_get_config_val(){
 	var id_map = {};
 
     id_map['yubico.id'] 		= 'sys_yubico_id';
-    id_map['yubico.secret'] = 'sys_yubico_secret';
+    id_map['yubico.secret']		= 'sys_yubico_secret';
+    id_map['yubico.url']		= 'sys_yubico_url';
 
 	return id_map;
 
@@ -82,7 +83,7 @@ function yubico_get_config_params(){
 <fieldset>
 	<legend>${_("Yubico settings")}</legend>
 	<p>
-		${_("You get your own API key from the yubico website ")}
+		${_("If you are using YubiCloud you get your own API key from the yubico website ")}
 		<a href="https://upgrade.yubico.com/getapikey/" target="yubico">upgrade.yubico.com</a>.
 	</p>
 	<p>
@@ -101,6 +102,13 @@ function yubico_get_config_params(){
 		${_("Yubico API key")}</label></td>
 	<td><input type="text" name="sys_yubico_secret" id="sys_yubico_secret"
 		class="required text ui-widget-content ui-corner-all"></td>
+	</tr>
+
+	<tr>
+	<td><label for="sys_yubico_url" title='${_("You may optionally enter the endpoint address of your own YubiCloud implementation")}'>
+		${_("Yubico private cloud endpoint")}</label></td>
+	<td><input type="text" name="sys_yubico_url" id="sys_yubico_url"
+		class="text ui-widget-content ui-corner-all"></td>
 	</tr>
 
 	</table>
