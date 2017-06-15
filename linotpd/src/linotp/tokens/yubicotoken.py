@@ -40,7 +40,7 @@ from linotp.lib.error import ParameterError
 
 YUBICO_LEN_ID = 12
 YUBICO_LEN_OTP = 44
-YUBICO_URL = "http://api.yubico.com/wsapi/2.0/verify"
+DEFAULT_YUBICO_URL = "http://api.yubico.com/wsapi/2.0/verify"
 DEFAULT_CLIENT_ID = 11759
 DEFAULT_API_KEY = "P1QVTgnToQWQm0b6LREEhDIAbHU="
 
@@ -158,7 +158,7 @@ class YubicoTokenClass(TokenClass):
 
         apiId = getFromConfig("yubico.id", DEFAULT_CLIENT_ID)
         apiKey = getFromConfig("yubico.secret", DEFAULT_API_KEY)
-        yubikeyEndpoint = getFromConfig("yubico.url", YUBICO_URL)
+        yubikeyEndpoint = getFromConfig("yubico.url", DEFAULT_YUBICO_URL)
 
         if apiKey == DEFAULT_API_KEY or apiId == DEFAULT_CLIENT_ID:
             log.warning("Usage of default apiKey or apiId not recomended!!")
