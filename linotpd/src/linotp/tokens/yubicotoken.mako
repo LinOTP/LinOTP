@@ -72,7 +72,8 @@ function yubico_get_config_params(){
 	var url_params ={};
 
     url_params['yubico.id'] 	= $('#sys_yubico_id').val();
-    url_params['yubico.secret'] 	= $('#sys_yubico_secret').val();
+    url_params['yubico.secret'] = $('#sys_yubico_secret').val();
+    url_params['yubico.url'] 	= $('#sys_yubico_url').val();
 
 	return url_params;
 }
