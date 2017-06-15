@@ -158,6 +158,7 @@ class YubicoTokenClass(TokenClass):
 
         apiId = getFromConfig("yubico.id", DEFAULT_CLIENT_ID)
         apiKey = getFromConfig("yubico.secret", DEFAULT_API_KEY)
+        yubikeyEndpoint = getFromConfig("yubico.url", YUBICO_URL)
 
         if apiKey == DEFAULT_API_KEY or apiId == DEFAULT_CLIENT_ID:
             log.warning("Usage of default apiKey or apiId not recomended!!")
@@ -178,7 +179,7 @@ class YubicoTokenClass(TokenClass):
             p = urllib.urlencode({'nonce': nonce,
                                     'otp':anOtpVal,
                                     'id':apiId})
-            URL = "%s?%s" % (YUBICO_URL, p)
+            URL = "%s?%s" % (yubikeyEndpoint, p)
             try:
                 f = urllib2.urlopen(urllib2.Request(URL))
                 rv = f.read()
