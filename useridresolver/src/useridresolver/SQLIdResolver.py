@@ -150,25 +150,86 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
         url_quote = urllib.quote_plus(param_str)
         connect = "%s%s" % (driver, url_quote)
     else:
-        connect = driver + "://"
-        if user and len(user.strip()) > 0:
-            connect = connect + user
-        if pass_ and len(pass_.strip()) > 0:
-            connect = connect + ":" + pass_
-        if server and len(server.strip()) > 0:
-            if user and len(user.strip()) > 0:
-                connect = connect + "@"
-            connect = connect + server
-        if port and len(port.strip()) > 0:
-            connect = connect + ":" + str(port)
-        # required db
-        if db != "":
-            connect = connect + "/" + db
-
-        if conParams != "":
-            connect = connect + "?" + conParams
+        connect = build_simple_connect(driver, user, pass_,
+                                       server, port, db, conParams)
 
     return connect
+
+
+def build_simple_connect(driver, user=None, pass_=None,
+                         server=None, port=None, db=None,
+                         conParams=None):
+    """
+    build from the parameters the sql connect url
+
+    :param driver: the url protocoll / prefix
+    :param user: the database accessing user
+    :param pass_: the password of database accessing user
+    :param server: the hostname for the server could be empty
+    :param port: the port on th server host, could be empty
+    :param db: the database on the server
+    :param conParams: additional and otpional database parameter
+
+    return the connection string
+    """
+
+    connect = []
+
+    # ------------------------------------------------------------------ --
+
+    # add driver scope as protocoll
+
+    connect.append('%s://' % driver)
+
+    # ------------------------------------------------------------------ --
+
+    # add the user and if avail the password
+
+    if user and user.strip():
+        user = user.strip()
+
+        if pass_ and pass_.strip():
+            connect.append('%s:%s' % (user, pass_))
+        else:
+            connect.append('%s' % user)
+
+    # ------------------------------------------------------------------ --
+
+    # add server and if available, the port -
+    # - if no server, we have to add the '@' or the interpretation will
+    #  fail with parding the password to be a port number
+
+    if server and server.strip():
+        server = server.strip()
+
+        if port and port.strip():
+            port = port.strip()
+            connect.append('@%s:%d' % (server, int(port)))
+        else:
+            connect.append('@%s' % server)
+    else:
+
+        # in case of no server and a user, we have to append the empty @ sign
+        # as otherwise the parser will interpret the :password as port which
+        # will fail as it is not of type int
+
+        if user and user.strip():
+            connect.append('@')
+
+    # ------------------------------------------------------------------ --
+
+    # add database
+    if db and db.strip():
+        connect.append('/%s' % db.strip())
+
+    # ------------------------------------------------------------------ --
+
+    # add additional parameters
+
+    if conParams:
+        connect.append('?%s' % conParams)
+
+    return ''.join(connect)
 
 
 class dbObject():
