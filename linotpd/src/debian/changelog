@@ -1,14 +1,66 @@
-linotp (2.9.3~0dev0-1) jessie; urgency=low
+linotp (2.9.3~rc0-1) jessie; urgency=low
 
-  * Set new version 2.9.3~0dev0-1
+  Enhancements:
+  * Server: Add support for QR Token unpairing via API (LINOTP-372)
+  * Server: Support for deleting / disabling token if usage exceeded
+            (LINOTP-290)
+  * Server: Logging enhancements including unique request IDs and timestamps
+  * Server: Logging message cleanup to remove unecessary messages
+  * Server: Support Ocra token with current LinOTP (LINOTP-291)
+  * Server: Prefer HTTP_X_FORWARDED_HOST to HTTP_HOST for logout_url
+  * Server: Use HTTP_AUTHORIZATION to determine login name for Basic auth
+  * Server: Support rfc7239 HTTP_X_FORWARDED_FOR to determine client IP
+            (LINOTP-355)
+  * Server: Add token issuer to 'otpauth' URLs (LINOTP-66)
+  * Server: Add FIPS security provider to comply with some operations
+            (LINOTP-39)
+  * Server: Add experimental new policy engine implementation (off by default)
+            (LINOTP-340)
+  * Server: Refactor lib.user:
+            - changed isEmpty into a property
+            - removed methods getRealm, getUser
+            - getUserFromParam signature
+  * Server: Refactor resolvers:
+            - setResolver and testresolver
+            - configuration handling (LINOTP-265)
+  * Server: Email provider added support for SMTP port configuration
+  * Server: Add support for read only (managed) provider configurations
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 16 Feb 2017 09:57:44 +0100
+  * Web UI: Version static resources to bust browser caching (LINOTP-275)
+  * Web UI: Add support for importing users via flat CSV file (LINOTP-197)
+  * Web UI: Add limited support for setting the admin password via the UI
+            (LINOTP-287)
+  * Web UI: Improvements to LDAP edit dialog
 
-linotp (2.9.2~0dev0-1) jessie; urgency=low
+  * API: Support dynamic logging via new maintainence controller
+  * API: Add server healthcheck: maintainence/ok (LINOTP-325)
+  * API: Support filtering by token type using token_type parameter
+            (LINOTP-318)
 
-  * Set new version 2.9.2~0dev0-1
+  * Tools: Add CI Jenkins build pipeline
+  * Tools: Add central makefile with targets for Docker, packages, tests
+  * Tools: Add Docker image build infrastructure
+  * Packaging: Soften hard dependency on libapache2-mod-wsgi
+  * Packaging: Split auth modules into separate repositories on Github
+  * Packaging: Move LinOTP client GUI into separate repository on Github
+  * Config examples: Add example Logstash configuration
+  * Config examples: Modify logging configuration to prevent duplicate lines
 
- -- KeyIdentity LinOTP Packaging <linotp@keyidentity.com>  Thu, 16 Feb 2017 09:56:07 +0100
+  Bug Fixes:
+  * Server: Fix challenge response authentication (Yubikey) (LINOTP-261)
+  * Server: Fix enroll of QR Token when username in multiple realms (LINOTP-314)
+  * Server: Allow utf-8 filenames in FileSMSProvider configuration (LINOTP-284)
+  * Server: fix for HSM migration problems (LINOTP-203)
+
+  * Web UI: Allow more than 80 characters in user field (LINOTP-61)
+  * Web UI: Fix filtering in policies tab (LINOTP-97)
+  * Web UI: Fix parsing of duration configuration fields (LINOTP-227)
+  * Web UI: Fix link to https://keyidentity.com
+
+  * API: Add validation of resolver name in defineResolver (LINOTP-285)
+  * Tools: create-pwidresolver-user: Fix phone fields (LINOTP-251)
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 06 Jun 2017 12:02:30 +0200
 
 linotp (2.9.1.4-1) jessie; urgency=low
 
