@@ -223,6 +223,17 @@ class TestEmailtokenController(TestController):
         self.assertTrue(response['result']['status'])
         self.assertFalse(response['result']['value'], "Challenge should have timed out")
 
+    def test_otp_not_reused(self):
+
+        """
+        check if otp isn't reused
+        """
+
+        __, otp1 = self._trigger_challenge()
+        __, otp2 = self._trigger_challenge()
+
+        self.assertNotEqual(otp1, otp2, "OTP counter not working properly")
+
     def test_blocking(self):
         """
         Test that no new e-mails are sent out during EmailBlockingTimeout
