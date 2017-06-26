@@ -329,10 +329,16 @@ class EmailTokenClass(HmacTokenClass):
         :rtype: bool, string, dict, dict
         """
         attributes = {}
-        data = {'counter_value': "%s" % self.getOtpCount()}
-        success, status_message = self._sendEmail()
-        if success:
-            attributes = {'state': transactionid}
+        counter = self.getOtpCount()
+        data = {'counter_value': "%s" % counter}
+
+        try:
+            success, status_message = self._sendEmail()
+            if success:
+                attributes = {'state': transactionid}
+        finally:
+            self.incOtpCounter(counter, reset=False)
+
         return success, status_message, data, attributes
 
     def _getEmailMessage(self, user=""):
