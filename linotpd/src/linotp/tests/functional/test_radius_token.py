@@ -131,7 +131,7 @@ class TestRadiusToken(TestController):
         Start the dummy radius server
         '''
         '''
-        We need to start the radius server for every test, since every test instatiates a new TestClass and thus the
+        We need to start the radius server for every test, since every test instantiates a new TestClass and thus the
         radius server process will not be accessable outside of a test anymore
         '''
         import subprocess

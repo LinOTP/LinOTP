@@ -516,7 +516,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
     if resolver_spec in resolvers_loaded:
         return resolvers_loaded.get(resolver_spec)
 
-    # no resolver - so instatiate one
+    # no resolver - so instantiate one
     else:
 
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
@@ -777,7 +777,7 @@ def initResolvers():
         create  a deep copy of the dict with the global resolver classes
     """
     try:
-        # dict of all resolvers, which are instatiated during the request
+        # dict of all resolvers, which are instantiated during the request
         context['resolvers_loaded'] = {}
 
     except Exception as exx:
