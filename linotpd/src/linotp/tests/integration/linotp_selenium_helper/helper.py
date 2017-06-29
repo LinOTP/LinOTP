@@ -35,6 +35,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.select import Select
+
 
 LOG = logging.getLogger(__name__)
 
@@ -65,6 +67,22 @@ def find_by_id(driver, id_value):
     return _find_and_wait(driver, By.ID, id_value)
 
 
+def find_by_class(driver, class_name):
+    """
+    Returns the element defined by the HTML class, waiting up to 10 seconds for it
+    to appear.
+    """
+    return _find_and_wait(driver, By.CLASS_NAME, class_name)
+
+
+def find_by_xpath(driver, xpath):
+    """
+    Returns the element defined by the xpath, waiting up to 10 seconds for it
+    to appear.
+    """
+    return _find_and_wait(driver, By.XPATH, xpath)
+
+
 def fill_form_element(driver, element_id, data):
     """ Clear element and fill with values """
     e = find_by_id(driver, element_id)
@@ -89,9 +107,10 @@ def hover(driver, element):
 
 def select(driver, select_element, option_text):
     """Select an option from a HTML <select> (dropdown)"""
-    for option in select_element.find_elements_by_tag_name('option'):
-        if option.text == option_text:
-            option.click()
+
+    selections = Select(select_element)
+    if(selections.first_selected_option.text.strip() != option_text):
+        selections.select_by_visible_text(option_text)
 
 
 def get_session(base_url, user=None, pwd=None):

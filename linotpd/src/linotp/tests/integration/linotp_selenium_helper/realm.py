@@ -26,6 +26,7 @@
 """Contains Realm class"""
 
 import logging
+import time
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -217,6 +218,8 @@ class RealmManager(ManageDialog):
 
         dialog = self.click_new_realm()
         dialog.fill_and_save(name, resolvers)
+        time.sleep(1)
+
         self.reparse()
 
         new_realms = self.get_realms_list()
