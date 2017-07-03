@@ -35,9 +35,6 @@
 	<meta http-equiv="content-style-type" content="text/css">
 	<meta http-equiv="expires" content="0">
 
-	<meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
-
-
 	<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
 	<link type="text/css" rel="stylesheet" href="/selfservice/auth.css">
 	<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
