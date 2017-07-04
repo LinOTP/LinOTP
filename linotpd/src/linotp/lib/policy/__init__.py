@@ -165,6 +165,17 @@ def _checkAdminPolicyPost(method, param=None, user=None):
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
 
+        # ------------------------------------------------------------------ --
+
+        # maxtoken policy restricts the tokennumber for the user in a realm
+
+        if method in ['init', 'assign', 'active']:
+
+            log.debug("checking tokens of user")
+            _checkTokenAssigned(user)
+
+        # ------------------------------------------------------------------ --
+
         if method == 'assign':
             if not _checkTokenNum(realm=user.realm, post_check=True):
                 admin = context['AuthUser']
@@ -276,6 +287,17 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
             log.debug("[init] pin set")
             # TODO: This random PIN could be processed and
             # printed in a PIN letter
+
+    # ------------------------------------------------------------------ --
+
+    # maxtoken policy restricts the tokennumber for the user in a realm
+
+    if method in ['enroll', 'userassign', 'userwebprovision', 'userinit']:
+
+        log.debug("checking tokens of user")
+        _checkTokenAssigned(user)
+
+    # ------------------------------------------------------------------ --
 
     return ret
 
@@ -572,12 +594,12 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                             "tokens for the realm %s",
                             policies['admin'], _realm)
 
-                raise PolicyException(_("The maximum allowed number of "
-                                        "tokens for the realm %s was "
-                                        "reached. You can not init any more "
-                                        "tokens. Check the policies "
-                                        "scope=enrollment, "
-                                        "action=tokencount.") % _realm)
+                raise PolicyException(description=_("The maximum allowed number"
+                                      " of tokens for the realm %s was "
+                                      "reached. You can not init any more "
+                                      "tokens. Check the policies "
+                                      "scope=enrollment, "
+                                      "action=tokencount.") % _realm)
 
         log.debug("checking tokens in realm for user %s", user)
         if not _checkTokenNum(user=user):
@@ -592,17 +614,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                                     "policies scope=enrollment, "
                                     "action=tokencount.") % user.realm)
 
-        log.debug("checking tokens of user")
-        # if a policy restricts the tokennumber for the user in a realm
-        if not _checkTokenAssigned(user):
-
-            log.warning("the maximum number of allowed tokens per user is "
-                        "exceeded. Check the policies")
-
-            raise PolicyException(_("The maximum number of allowed tokens "
-                                    "per user is exceeded. Check the "
-                                    "policies scope=enrollment, "
-                                    "action=maxtoken"))
         # ==== End of policy check 'init' ======
         ret['realms'] = policies['realms']
 
@@ -646,15 +657,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(_("You do not have the administrative "
                                     "right to assign token %s. Check the "
                                     "policies.") % serial)
-
-        # check the number of assigned tokens
-        if not _checkTokenAssigned(user):
-
-            log.warning("the maximum number of allowed tokens is exceeded. "
-                        "Check the policies")
-
-            raise PolicyException(_("the maximum number of allowed tokens "
-                                    "is exceeded. Check the policies"))
 
     elif method == 'setPin':
 
@@ -1178,14 +1180,6 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(_("You may not enroll any more tokens. "
                                     "Your maximum token number is reached!"))
 
-        if not _checkTokenAssigned(authUser):
-
-            log.warning("the maximum number of allowed tokens is"
-                        " exceeded. Check the policies")
-
-            raise PolicyException(_("The maximum number of allowed tokens "
-                                  "is exceeded. Check the policies"))
-
     elif method == 'usergetserialbyotp':
 
         if 'getserial' not in getSelfserviceActions(authUser):
@@ -1260,14 +1254,6 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
                                   "Your maximum token number "
                                   "is reached!"))
 
-        if not _checkTokenAssigned(authUser):
-
-            log.warning("the maximum number of allowed tokens is exceeded. "
-                        "Check the policies")
-
-            raise PolicyException(_("The maximum number of allowed tokens "
-                                  "is exceeded. Check the policies"))
-
     elif method == 'userhistory':
         if 'history' not in getSelfserviceActions(authUser):
 
@@ -1299,14 +1285,6 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(_("You may not enroll any more tokens. "
                                     "Your maximum token number "
                                     "is reached!"))
-
-        if not _checkTokenAssigned(authUser):
-
-            log.warning("the maximum number of allowed tokens is exceeded. "
-                        "Check the policies")
-
-            raise PolicyException(_("The maximum number of allowed tokens "
-                                    "is exceeded. Check the policies"))
 
     else:
         log.error("Unknown method in selfservice: %s", method)
@@ -1593,48 +1571,98 @@ def _checkTokenAssigned(user):
 
         "scope = enrollment", action = "maxtoken = <number>"
 
-    :return: False, if the user has to many tokens assigned True, if more
-        tokens may be assigned to the user
-    :rtype: bool
+    :raises PolicyException: If token assignment is not allowed
     '''
-    if user is None:
-        return True
-    if user.login == "":
-        return True
 
+    if user is None or user.login == '':
+        return
+
+    # ----------------------------------------------------------------------- --
+
+    # get the tokens of the user and build a dict of types and numbers
+
+    tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
+
+    if len(tokens) == 0:
+        return
+
+    token_counts = {}
+
+    for token in tokens:
+        token_type = token.type.lower()
+        token_counts[token_type] = token_counts.get(token_type, 0) + 1
+
+    # ----------------------------------------------------------------------- --
+
+    _ = context['translate']
     client = _get_client()
-    Realms = _getUserRealms(user)
+    user_realms = _getUserRealms(user)
 
-    log.debug("checking the already assigned tokens for user %s, realms %s",
-              user.login, Realms)
+    log.debug("checking the already assigned tokens for user %s, realms %s"
+              % (user.login, user_realms))
 
-    for R in Realms:
-        pol = has_client_policy(client, scope='enrollment', realm=R,
-                                user=user.login, userObj=user)
+    for user_realm in user_realms:
 
-        log.debug("found policies %s", pol)
+        policies = get_client_policy(client,
+                                     scope='enrollment',
+                                     realm=user_realm,
+                                     user=user.login,
+                                     userObj=user)
 
-        if len(pol) == 0:
-            log.debug("there is no scope=enrollment policy for Realm %s", R)
-            return True
+        log.debug("found policies %s" % policies)
+        if len(policies) == 0:
+            log.debug("there is no scope=enrollment policy for Realm %s",
+                      user_realm)
+            continue
 
-        maxTokenAssigned = getPolicyActionValue(pol, "maxtoken")
+        # ------------------------------------------------------------------ --
 
-        # get the tokens of the user
-        tokens = linotp.lib.token.getTokens4UserOrSerial(user, "")
+        # get the policy action value of the maxtoken policy
 
-        # If there is a policy, where the tokennumber exceeds the tokens in
-        # the corresponding realm..
+        total_maxtoken = getPolicyActionValue(policies, "maxtoken")
 
-        log.debug("the user %r has %r tokens assigned. The policy says a "
-                  "maximum of %r tokens.",
-                  user.login, len(tokens), maxTokenAssigned)
+        if total_maxtoken != -1 and not isinstance(total_maxtoken, bool):
 
-        if (int(maxTokenAssigned) > int(len(tokens)) or
-                maxTokenAssigned == -1):
-            return True
+            if len(tokens) > total_maxtoken:
 
-    return False
+                log.warning("the maximum number of allowed tokens per user is "
+                            "exceeded. Check the policies")
+
+                error_msg = _("The maximum number of allowed tokens "
+                              "per user is exceeded. Check the "
+                              "policies scope=enrollment, "
+                              "action=maxtoken")
+
+                raise PolicyException(error_msg)
+
+        # ------------------------------------------------------------------ --
+
+        # compare the tokens of the user with the max numbers of the policy
+
+        for token_type, token_count in token_counts.items():
+
+            max_token_count = getPolicyActionValue(
+                                        policies,
+                                        "maxtoken%s" % token_type.upper())
+
+            if max_token_count == -1:
+                continue
+
+            if isinstance(max_token_count, bool):
+                continue
+
+            if token_count <= max_token_count:
+                continue
+
+            log.warning("the maximum number of allowed tokens of type %s per "
+                        "user is exceeded. Check the policies" % token_type)
+
+            error_msg = _("The maximum number of allowed tokens of type %s "
+                          "per user is exceeded. Check the policies "
+                          "scope=enrollment, action=maxtoken%s"
+                          % (token_type, token_type.upper()))
+
+            raise PolicyException(error_msg)
 
 
 def get_tokenissuer(user="", realm="", serial=""):

@@ -1047,6 +1047,8 @@ class UserserviceController(BaseController):
                 raise Exception(_("The token is already assigned "
                                              "to another user."))
 
+            checkPolicyPost('selfservice', 'userassign', param, self.authUser)
+
             Session.commit()
             return sendResult(response, res, 1)
 
@@ -1716,6 +1718,9 @@ class UserserviceController(BaseController):
             c.audit['token_type'] = typ
 
             c.audit['success'] = value.get('result')
+
+            checkPolicyPost('selfservice', 'userwebprovision',
+                            param, self.authUser)
 
             Session.commit()
             return sendResult(response, value, opt)

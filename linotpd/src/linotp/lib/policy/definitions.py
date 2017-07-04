@@ -403,6 +403,9 @@ def getPolicyDefinitions(scope=""):
     token_type_list = linotp.lib.token.get_token_type_list()
 
     for ttype in token_type_list:
+
+        pol['enrollment']["maxtoken%s" % ttype.upper()] = {'type': 'int'}
+
         pol['admin']["init%s" % ttype.upper()] = {'type': 'bool'}
 
         # TODO: action=initETNG
