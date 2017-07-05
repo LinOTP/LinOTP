@@ -103,6 +103,9 @@ class TestController(unittest2.TestCase):
         self.session = 'justatest'
         self.resolvers = {}  # Set up of resolvers in create_common_resolvers
 
+        # dict of all autheticated users cookies
+        self.user_service = {}
+
         url._push_object(URLGenerator(config['routes.map'], environ))
         unittest2.TestCase.__init__(self, *args, **kwargs)
 
@@ -912,23 +915,29 @@ class TestController(unittest2.TestCase):
         self.assertIn('default', realms['mydefrealm'])
         self.assertTrue(realms['mydefrealm']['default'])
 
-    def _user_service_init(self, auth_user, password):
+    def _user_service_init(self, auth_user, password, otp=None):
 
-        passw = ':' + base64.b32encode(password)
+        if otp:
+            passw = base64.b32encode(otp) + ':' + base64.b32encode(password)
+        else:
+            passw = ':' + base64.b32encode(password)
+
         params = {'login': auth_user, 'password': passw}
         response = self.app.get(url(controller='userservice',
                                     action='auth'), params=params)
 
         cookies = TestController.get_cookies(response)
         auth_cookie = cookies.get('userauthcookie')
-        self.assertIsNotNone(auth_cookie, "%r::%r" % (cookies, response.body))
+
+        if not auth_cookie:
+            return response, None
 
         self.user_service[auth_user] = auth_cookie
 
-        return auth_cookie
+        return response, auth_cookie
 
     def make_userservice_request(self, action, params=None,
-                                 auth_user=None):
+                                 auth_user=None, new_auth_cookie=False):
 
         if not params:
             params = {}
@@ -936,9 +945,24 @@ class TestController(unittest2.TestCase):
         if not hasattr(self, 'user_service'):
             setattr(self, 'user_service', {})
 
-        user, password = auth_user
-        auth_cookie = self.user_service.get(user,
-                                            self._user_service_init(user, password))
+        otp = None
+        if len(auth_user) == 3:
+            user, password, otp = auth_user
+        else:
+            user, password = auth_user
+
+        if new_auth_cookie and user in self.user_service:
+            del self.user_service[user]
+
+        auth_cookie = self.user_service.get(user, None)
+
+        if not auth_cookie:
+            response, auth_cookie = self._user_service_init(user,
+                                                            password, otp)
+
+            if not auth_cookie:
+                return response
+
         TestController.set_cookie(self.app, 'userauthcookie', auth_cookie)
 
         params['session'] = auth_cookie
