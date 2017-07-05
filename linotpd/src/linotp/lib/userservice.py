@@ -109,7 +109,7 @@ def get_userinfo(login):
 
     return uinfo
 
-def getTokenForUser(user):
+def getTokenForUser(user, active=None):
     """
     should be moved to token.py
     """
@@ -117,7 +117,8 @@ def getTokenForUser(user):
 
     log.debug("[getTokenForUser] iterating tokens for user...")
     log.debug("[getTokenForUser] ...user %s in realm %s." % (user.login, user.realm))
-    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False)
+    tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False,
+                                    active=active)
 
     for token in tokens:
         tok = token.get_vars()

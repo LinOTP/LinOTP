@@ -1496,7 +1496,7 @@ def getAllTokenUsers():
 
 
 def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
-                           _class=True):
+                           _class=True, active=None):
     tokenList = []
     tokenCList = []
     tok = None
@@ -1505,13 +1505,20 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
         log.warning("[getTokens4UserOrSerial] missing user or serial")
         return tokenList
 
-    if (serial is not None):
+    sconditions = ()
+
+    if active in [True, False]:
+        sconditions += (and_(Token.LinOtpIsactive == active),)
+
+    if token_type:
+        sconditions += (and_(func.lower(Token.LinOtpTokenType) ==
+                             token_type.lower()),)
+
+    if serial:
+        log.debug("[getTokens4UserOrSerial] getting"
+                  " token object with serial: %r" % serial)
         #  SAWarning of non unicode type
         serial = linotp.lib.crypto.uencode(serial)
-        sconditions = ()
-        if token_type:
-            sconditions += (and_(func.lower(Token.LinOtpTokenType) ==
-                                 token_type.lower()),)
 
         if '*' in serial:
             serial = serial.replace('*', '%')
@@ -1539,21 +1546,15 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                 # Remark: when the token is loaded the response to the
                 # resolver class is adjusted
 
-                uconditions = ()
-
                 resolverClass = resolverClass.replace('useridresolveree.',
                                                       'useridresolver.')
                 resolverClass = resolverClass.replace('useridresolver.',
                                                       'useridresolver%.')
 
-                uconditions += (and_(model.Token.LinOtpUserid == uid),)
-                uconditions += (and_(model.Token.LinOtpIdResClass.like(resolverClass)),)
+                sconditions += (and_(model.Token.LinOtpUserid == uid),)
+                sconditions += (and_(model.Token.LinOtpIdResClass.like(resolverClass)),)
 
-                if token_type:
-                    uconditions += (and_(func.lower(Token.LinOtpTokenType) ==
-                                         token_type.lower()),)
-
-                condition = and_(*uconditions)
+                condition = and_(*sconditions)
                 sqlQuery = Session.query(Token).filter(condition)
 
                 for token in sqlQuery:
@@ -1566,8 +1567,10 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                                 log.debug("user realm and token realm missmatch %r::%r"
                                       % (u_realm, t_realms))
                                 continue
-                    tokenList.append(token)
 
+                    log.debug("[getTokens4UserOrSerial] user serial (user): %r"
+                              % token.LinOtpTokenSerialnumber)
+                    tokenList.append(token)
 
     if _class is True:
         for tok in tokenList:
@@ -1837,6 +1840,7 @@ def setPinSo(soPin, serial):
         token.setSoPin(soPin)
 
     return len(tokenList)
+
 
 def resetToken(user=None, serial=None):
 
