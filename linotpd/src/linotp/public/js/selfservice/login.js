@@ -75,6 +75,23 @@ function ssLoginChallengesCallback(data, status) {
         $('#login-box').replaceWith(template);
         $('#login-box input:visible, #login-box a:visible').first().focus();
 
+        $(document).keydown(function(e) {
+            if (e.keyCode == 40) {
+                var entry = $("#login-box .tokenlist-entry:focus");
+                if(!entry.length)
+                    entry = $("#login-box .tokenlist-entry:first").focus();
+                else
+                   entry.next().focus();
+            }
+            if (e.keyCode == 38) {
+                var entry = $("#login-box .tokenlist-entry:focus");
+                if(!entry.length)
+                    entry = $("#login-box .tokenlist-entry:last").focus();
+                else
+                   entry.prev().focus();
+            }
+        });
+
         $('.tokenlist-entry').click(ssLoginSelectTokenClickHandler);
     }
     else {
@@ -83,6 +100,7 @@ function ssLoginChallengesCallback(data, status) {
 }
 
 function ssLoginSelectTokenClickHandler() {
+    $(document).unbind('keydown');
     ssLoginSelectToken(tokens[$(this).attr("data-token-number")]);
 }
 
