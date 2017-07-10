@@ -311,7 +311,8 @@ div#login-box {
 	background: white;
 	box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
 	width: 550px;
-	padding: 16px;
+	padding: 16px 16px 16px;
+	position: relative;
 }
 
 div#login-box table {
@@ -381,7 +382,17 @@ div#login-box .polling img {
 
 div#login-box .method .qr,
 div#login-box .method .push,
-div#login-box .method .polling ,
+div#login-box .method .polling,
 div#login-box .timeout {
 	text-align: center;
+}
+
+div#login-box a.cancel-otp {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+div#login-box .ui-button {
+    background: whitesmoke;
 }

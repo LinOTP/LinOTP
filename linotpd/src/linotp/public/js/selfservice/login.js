@@ -163,7 +163,7 @@ function ssLoginChallengeCallback(data, status, token) {
         }
 
         $('#login-box').replaceWith(template);
-        $('#login-box input:visible, #login-box a:visible').first().focus();
+        $('#login-box .method input:visible, #login-box .method a:visible').first().focus();
     }
     else {
         alert(i18n.gettext("Error during login"));
@@ -208,10 +208,11 @@ function ssLoginPolling() {
 
 function ssLoginAbortPolling(intervalID) {
     window.clearInterval(intervalID);
+
     var template = $('<div/>', {id: "login-box"});
     $( "#template-timeout" ).clone().removeAttr("id").appendTo(template);
-    $( "a", template).button();
     $('#login-box').replaceWith(template);
+
     setTimeout(function() {
         location.reload();
     }, 10000);

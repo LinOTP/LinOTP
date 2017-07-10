@@ -131,6 +131,10 @@ if isinstance(lang, list):
     <a id="template-cancel-entry" href="/selfservice/login" class="tokenlist-entry cancel-auth">${_("Cancel")}</a>
 
     <div id="template-otp">
+      <a href="/selfservice/login" class="ui-button ui-widget ui-corner-all ui-button-icon-only cancel-otp" title='${_("Cancel")}'>
+        <span class="ui-icon ui-icon-closethick"></span>
+        &nbsp;
+      </a>
       <h1>${_("Authentication")}</h1>
       <div class="method"></div>
     </div>
@@ -139,7 +143,7 @@ if isinstance(lang, list):
       <form action="" method="post">
         <label for="otp">${_("Enter the otp value")}:</label>
         <input type="text" name="otp">
-        <input type="submit" value="Submit">
+        <input type="submit" class="ui-button" value="Submit">
       </form>
     </div>
 
@@ -158,7 +162,7 @@ if isinstance(lang, list):
 
     <div id="template-timeout" class="timeout">
       <p>${_("Login timed out. Please try again.")}</p>
-      <a href="/selfservice/login">${_("Login")}</a>
+      <a href="/selfservice/login" class="ui-button ui-widget ui-corner-all">${_("Login")}</a>
     </div>
 
   </div>
