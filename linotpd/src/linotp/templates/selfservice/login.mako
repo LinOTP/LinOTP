@@ -60,58 +60,59 @@ if isinstance(lang, list):
         <div id="logo" class="float_right"> </div>
     </div>
 
-    <div id="sidebar">
-      <P>${_("This is the LinOTP self service portal. You may login here with your username and realm.")}</P>
-      <P>${_("Within the self service portal you may reset the PINs of your tokens, assign new tokens or resync your tokens.")}</p>
-      <p>${_("If you lost a token, you may also disable this token.")}</p>
-    </div> <!-- sidebar -->
+    <div id="content">
+      <div id="sidebar">
+        <p>${_("This is the LinOTP self service portal. You may login here with your username and realm.")}</p>
+        <p>${_("Within the self service portal you may reset the PINs of your tokens, assign new tokens or resync your tokens.")}</p>
+        <p>${_("If you lost a token, you may also disable this token.")}</p>
+      </div> <!-- sidebar -->
 
-    <div id="main">
-      <h1>${_("Login to LinOTP self service")}</h1>
-      <div id="template-area">
-        <form id="loginForm" action="" method="post">
-          <table>
-            <tr>
-              <td><label for=username>${_("Username")}:</label></td>
-              <td><input type="text" id="login" name="login" value="" autofocus></td>
-            </tr>
-            %if c.realmbox:
-            <tr>
-              <td>${_("Realm")}:</td>
-              <td>
-                <select name="realm">
-                  %for realm in c.realmArray:
-                  <option value="${realm}"
-                      %if c.defaultRealm == realm:
-                      selected
-                      %endif
-                      >
-                    ${realm}
-                  </option>
-                  %endfor
-                </select>
-              </td>
-            </tr>
-            %endif
-            <tr>
-              <td><label for=password>${_("Password")}:</label></td>
-              <td><input autocomplete="off" type="password" id="password" name="password"></td>
-            </tr>
-            %if c.mfa_3_fields:
-            <tr>
-              <td><label for=otp>${_("OTP")}:</label></td>
-              <td><input autocomplete="off" type="password" id="otp" name="otp"></td>
-            </tr>
-            %endif
-            <tr>
-              <td></td>
-              <td><input type="submit" value="Login"></td>
-            </tr>
-          </table>
-        </form>
-      </div>  <!-- template-area-->
-    </div>  <!-- main-->
-
+      <div id="main">
+        <div id="login-box">
+          <h1>${_("Login to LinOTP self service")}</h1>
+          <form id="loginForm" action="" method="post">
+            <table>
+              <tr>
+                <td><label for=username>${_("Username")}:</label></td>
+                <td><input type="text" id="login" name="login" value="" autofocus></td>
+              </tr>
+              %if c.realmbox:
+              <tr>
+                <td>${_("Realm")}:</td>
+                <td>
+                  <select name="realm">
+                    %for realm in c.realmArray:
+                    <option value="${realm}"
+                        %if c.defaultRealm == realm:
+                        selected
+                        %endif
+                        >
+                      ${realm}
+                    </option>
+                    %endfor
+                  </select>
+                </td>
+              </tr>
+              %endif
+              <tr>
+                <td><label for=password>${_("Password")}:</label></td>
+                <td><input autocomplete="off" type="password" id="password" name="password"></td>
+              </tr>
+              %if c.mfa_3_fields:
+              <tr>
+                <td><label for=otp>${_("OTP")}:</label></td>
+                <td><input autocomplete="off" type="password" id="otp" name="otp"></td>
+              </tr>
+              %endif
+              <tr>
+                <td></td>
+                <td><input type="submit" value="Login"></td>
+              </tr>
+            </table>
+          </form>
+        </div>  <!-- template-area-->
+      </div>  <!-- main-->
+    </div>
     <div id="footer">
       ${c.version} --- &copy; ${c.licenseinfo}
     </div> <!-- footer -->
@@ -124,15 +125,17 @@ if isinstance(lang, list):
       <p>${_("Choose your preferred method to authenticate")}</p>
       <div class="list"></div>
     </div>
-    <button id="template-tokenlist-entry" class="tokenlist-entry"></button>
-    <a id="template-cancel-entry" href="/selfservice/logout" class="cancel-auth">Cancel</a>
 
-    <div id="template-otp" class="widget">
+    <a id="template-tokenlist-entry" href="#" class="tokenlist-entry"><span class="action"></span><br><span class="description"></span></a>
+
+    <a id="template-cancel-entry" href="/selfservice/logout" class="tokenlist-entry cancel-auth">${_("Cancel")}</a>
+
+    <div id="template-otp">
       <h1>${_("Authentication")}</h1>
       <div class="method"></div>
     </div>
 
-    <div id="template-otp-input" class="widget otp-login">
+    <div id="template-otp-input" class="otp-login">
       <form action="" method="post">
         <label for="otp">${_("Enter the otp value")}:</label>
         <input type="text" name="otp">
@@ -140,13 +143,17 @@ if isinstance(lang, list):
       </form>
     </div>
 
-    <div id="template-otp-push" class="widget">
+    <div id="template-otp-push" class="push">
       <p>${_("Check your mobile and confirm the login")}</p>
     </div>
 
-    <div id="template-otp-qr" class="widget">
+    <div id="template-otp-qr" class="qr">
       <p>${_("Scan the QR code and comfirm on your mobile or submit below")}</p>
       <img class="qr" width="300"></img>
+    </div>
+
+    <div id="template-otp-polling" class="polling">
+      <p><img src="/images/ajax-loader.gif" alt="loading">&nbsp;${_("Waiting for confirmation...")}</p>
     </div>
 
   </div>

@@ -87,14 +87,7 @@ if isinstance(lang, list):
     <span class="portalname float_left">${_("Selfservice Portal")}</span>
     <div id="logo" class="float_right"> </div>
 </div>
-<div class="logout">
-    <p>${_("Logged in as")}:${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/selfservice/logout");return false;'>${_("Logout")}</a> </p>
-</div>
-
-<div id="do_waiting">
-    <img src="/images/ajax-loader.gif" border="0" alt=""><span>${_("Communicating with LinOTP server...")}</span>
-</div>
-
+<div id="content">
 <div id="sidebar">
 
     <div>${_("Tokens for user:")} ${c.user} ${_("in realm")} ${c.realm}</div>
@@ -110,6 +103,14 @@ if isinstance(lang, list):
 </div> <!-- sidebar -->
 
 <div id="main">
+
+<div class="logout">
+    <p>${_("Logged in as")}:${c.user}@${c.realm} | <a href=# onclick='SelfLogout("/selfservice/logout");return false;'>${_("Logout")}</a> </p>
+</div>
+
+<div id="do_waiting">
+    <img src="/images/ajax-loader.gif" border="0" alt=""><span>${_("Communicating with LinOTP server...")}</span>
+</div>
 
 <div id="tabs">
     <ul>
@@ -168,7 +169,7 @@ if isinstance(lang, list):
 <div id='successDiv'> </div>
 
 </div>  <!-- end of main-->
-
+</div>
 <div id="footer">
 ${c.version} --- &copy; ${c.licenseinfo}
 </div>

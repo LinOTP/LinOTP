@@ -8,6 +8,8 @@ $(function() {
         error: ssLoginErrorCallback
     });
 
+    $('#login-box input:visible, #login-box a:visible').first().focus();
+
     loadTranslations();
 });
 
@@ -39,7 +41,7 @@ function ssLoginGetChallenges() {
 
 function ssLoginChallengesCallback(data, status) {
     if(data.result && data.result.status === true) {
-        var template = $('<div/>', {id: "main"});
+        var template = $('<div/>', {id: "login-box"});
         $( "#template-tokenlist" ).clone().removeAttr("id").appendTo(template);
 
         var list = $('.list', template);
@@ -51,21 +53,24 @@ function ssLoginChallengesCallback(data, status) {
         }
         $.each(tokens, function(key, value) {
             var token = $( "#template-tokenlist-entry" ).clone().removeAttr("id");
+
             var type = value['LinOtp.TokenType'];
+            var description = value['LinOtp.TokenDesc'];
             var serial = value['LinOtp.TokenSerialnumber'];
-            token.text(getTokenDescription(type) + " ("+serial+")");
+
+            $(".action", token).text(getTokenAction(type));
+            $(".description", token).text(description + " ("+serial+")");
             token.attr("data-token-number", key);
+
             list.append(token);
         });
 
         list.append($( "#template-cancel-entry" ).clone().removeAttr("id"));
 
-        $('#main').replaceWith(template);
+        $('#login-box').replaceWith(template);
+        $('#login-box input:visible, #login-box a:visible').first().focus();
 
         $('.tokenlist-entry').click(ssLoginSelectTokenClickHandler);
-        list.controlgroup({
-            "direction": "vertical"
-        });
     }
     else {
         alert(i18n.gettext("Error during login"));
@@ -96,7 +101,7 @@ function ssLoginChallengeCallback(data, status, token) {
     if(data.result && data.result.status === true) {
         var type = token['LinOtp.TokenType'].toLowerCase();
 
-        var template = $('<div/>', {id: "main"});
+        var template = $('<div/>', {id: "login-box"});
         $( "#template-otp" ).clone().removeAttr("id").appendTo(template);
 
         if(type == "qr") {
@@ -104,6 +109,19 @@ function ssLoginChallengeCallback(data, status, token) {
             $('.qr', qr).attr("src", data.detail.img_src);
             $('.qr', qr).attr("alt", data.detail.message);
             $('.method', template).append(qr);
+        }
+
+
+        if (type == "push"){
+            var push = $( "#template-otp-push" ).clone().removeAttr("id")
+            $('.method', template).append(push);
+        }
+
+
+        if (["push", "qr"].indexOf(type) != -1){
+            var polling = $( "#template-otp-polling" ).clone().removeAttr("id")
+            $('.method', template).append(polling);
+            ssLoginPolling();
         }
 
         if(type != "push") {
@@ -120,11 +138,9 @@ function ssLoginChallengeCallback(data, status, token) {
 
             $('input[name="otp"]', input).attr("id", "otp");
         }
-        else {
-            var push = $( "#template-otp-push" ).clone().removeAttr("id")
-            $('.method', template).append(push);
-        }
-        $('#main').replaceWith(template);
+
+        $('#login-box').replaceWith(template);
+        $('#login-box input:visible, #login-box a:visible').first().focus();
     }
     else {
         alert(i18n.gettext("Error during login"));
@@ -140,11 +156,30 @@ function ssLoginOTPCallback(data, status) {
     }
 }
 
+function ssLoginPolling() {
+    $.ajax({
+        url: '/userservice/login',
+        type: 'post',
+        data: {
+            session: getcookie("user_selfservice"),
+        },
+        success: function(data) {
+            if(data.result && data.result.value === true) {
+                location.reload();
+            }
+            else {
+                setTimeout(ssLoginPolling, 1000);
+            }
+        },
+        error: ssLoginErrorCallback
+    });
+}
+
 function ssLoginErrorCallback() {
     alert(i18n.gettext("Connection Error during login"));
 }
 
-function getTokenDescription(type) {
+function getTokenAction(type) {
     switch (type.toLowerCase()) {
         case "push":
             return i18n.gettext("Confirm using mobile");
@@ -153,7 +188,7 @@ function getTokenDescription(type) {
         case "hmac":
             return i18n.gettext("Enter OTP");
         case "totp":
-            return i18n.gettext("Enter tOTP");
+            return i18n.gettext("Enter TOTP");
         case "motp":
             return i18n.gettext("Use mOTP token");
         case "email":
