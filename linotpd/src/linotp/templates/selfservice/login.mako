@@ -128,7 +128,7 @@ if isinstance(lang, list):
 
     <a id="template-tokenlist-entry" href="#" class="tokenlist-entry"><span class="action"></span><br><span class="description"></span></a>
 
-    <a id="template-cancel-entry" href="/selfservice/logout" class="tokenlist-entry cancel-auth">${_("Cancel")}</a>
+    <a id="template-cancel-entry" href="/selfservice/login" class="tokenlist-entry cancel-auth">${_("Cancel")}</a>
 
     <div id="template-otp">
       <h1>${_("Authentication")}</h1>
@@ -154,6 +154,11 @@ if isinstance(lang, list):
 
     <div id="template-otp-polling" class="polling">
       <p><img src="/images/ajax-loader.gif" alt="loading">&nbsp;${_("Waiting for confirmation...")}</p>
+    </div>
+
+    <div id="template-timeout" class="timeout">
+      <p>${_("Login timed out. Please try again.")}</p>
+      <a href="/selfservice/login">${_("Login")}</a>
     </div>
 
   </div>

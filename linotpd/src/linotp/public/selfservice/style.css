@@ -381,6 +381,7 @@ div#login-box .polling img {
 
 div#login-box .method .qr,
 div#login-box .method .push,
-div#login-box .method .polling {
+div#login-box .method .polling ,
+div#login-box .timeout {
 	text-align: center;
 }

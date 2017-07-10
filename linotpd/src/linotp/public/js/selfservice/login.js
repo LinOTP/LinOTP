@@ -157,22 +157,41 @@ function ssLoginOTPCallback(data, status) {
 }
 
 function ssLoginPolling() {
-    $.ajax({
-        url: '/userservice/login',
-        type: 'post',
-        data: {
-            session: getcookie("user_selfservice"),
-        },
-        success: function(data) {
-            if(data.result && data.result.value === true) {
-                location.reload();
+    var duration = 180; // in seconds
+    var interval = 3; // in seconds
+
+    var intervalID = window.setInterval(function() {
+        $.ajax({
+            url: '/userservice/login',
+            type: 'post',
+            data: {
+                session: getcookie("user_selfservice"),
+            },
+            success: function(data) {
+                if(data.result && data.result.value === true) {
+                    location.reload();
+                }
+                if((duration -= interval) <= 0) {
+                    ssLoginAbortPolling(intervalID);
+                }
+            },
+            error: function() {
+                ssLoginAbortPolling(intervalID);
+                ssLoginErrorCallback();
             }
-            else {
-                setTimeout(ssLoginPolling, 1000);
-            }
-        },
-        error: ssLoginErrorCallback
-    });
+        });
+    }, interval * 1000);
+}
+
+function ssLoginAbortPolling(intervalID) {
+    window.clearInterval(intervalID);
+    var template = $('<div/>', {id: "login-box"});
+    $( "#template-timeout" ).clone().removeAttr("id").appendTo(template);
+    $( "a", template).button();
+    $('#login-box').replaceWith(template);
+    setTimeout(function() {
+        location.reload();
+    }, 10000);
 }
 
 function ssLoginErrorCallback() {
