@@ -14,6 +14,7 @@ $(function() {
 });
 
 function ssLoginSuccessCallback(data, status) {
+    var secondStepMessage = "credential verified - additional authentication parameter required";
     if(data.result && data.result.value === true) {
         window.location.href = "/selfservice/";
     }
@@ -21,8 +22,12 @@ function ssLoginSuccessCallback(data, status) {
         alert(i18n.gettext("Login failed")
             + (data.result.error.message ? ": \n" + data.result.error.message : ""));
     }
-    else {
+    else if(data.detail &&
+            data.detail.message == secondStepMessage){
         ssLoginGetChallenges();
+    }
+    else {
+        alert(i18n.gettext("Login failed"));
     }
 }
 
