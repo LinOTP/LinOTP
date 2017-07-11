@@ -120,6 +120,13 @@ if isinstance(lang, list):
   </div> <!-- wrap -->
   <div id="templates" style="display:none;">
 
+    <div id="template-no-token-warning" class="widget">
+      <h1>${_("No active token found")}</h1>
+      <p>${_("If there is a problem with your current token please contact the help desk.")}</p>
+      <p><a href="/selfservice/login" class="ui-button">${_("Cancel")}</a></p>
+      <div class="list"></div>
+    </div>
+
     <div id="template-tokenlist" class="widget">
       <h1>${_("Authentication")}</h1>
       <p>${_("Choose your preferred method to authenticate")}</p>

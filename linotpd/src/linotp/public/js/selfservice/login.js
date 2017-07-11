@@ -47,50 +47,55 @@ function ssLoginGetChallenges() {
 function ssLoginChallengesCallback(data, status) {
     if(data.result && data.result.status === true) {
         var template = $('<div/>', {id: "login-box"});
-        $( "#template-tokenlist" ).clone().removeAttr("id").appendTo(template);
-
-        var list = $('.list', template);
 
         window.tokens = data.result.value;
-        if(tokens.length === 1) {
+
+        if(tokens.length === 0) {
+            $( "#template-no-token-warning" ).clone().removeAttr("id").appendTo(template);
+        }
+        else if(tokens.length === 1) {
             ssLoginSelectToken(tokens[0]);
             return;
         }
-        $.each(tokens, function(key, value) {
-            var token = $( "#template-tokenlist-entry" ).clone().removeAttr("id");
+        else {
+            $( "#template-tokenlist" ).clone().removeAttr("id").appendTo(template);
+            var list = $('.list', template);
 
-            var type = value['LinOtp.TokenType'];
-            var description = value['LinOtp.TokenDesc'];
-            var serial = value['LinOtp.TokenSerialnumber'];
+            $.each(tokens, function(key, value) {
+                var token = $( "#template-tokenlist-entry" ).clone().removeAttr("id");
 
-            $(".action", token).text(getTokenAction(type));
-            $(".description", token).text(description + " ("+serial+")");
-            token.attr("data-token-number", key);
+                var type = value['LinOtp.TokenType'];
+                var description = value['LinOtp.TokenDesc'];
+                var serial = value['LinOtp.TokenSerialnumber'];
 
-            list.append(token);
-        });
+                $(".action", token).text(getTokenAction(type));
+                $(".description", token).text(description + " ("+serial+")");
+                token.attr("data-token-number", key);
 
-        list.append($( "#template-cancel-entry" ).clone().removeAttr("id"));
+                list.append(token);
+            });
 
+            $(document).keydown(function(e) {
+                if (e.keyCode == 40) {
+                    var entry = $("#login-box .tokenlist-entry:focus");
+                    if(!entry.length)
+                        entry = $("#login-box .tokenlist-entry:first").focus();
+                    else
+                       entry.next().focus();
+                }
+                if (e.keyCode == 38) {
+                    var entry = $("#login-box .tokenlist-entry:focus");
+                    if(!entry.length)
+                        entry = $("#login-box .tokenlist-entry:last").focus();
+                    else
+                       entry.prev().focus();
+                }
+            });
+
+            list.append($( "#template-cancel-entry" ).clone().removeAttr("id"));
+        }
         $('#login-box').replaceWith(template);
         $('#login-box input:visible, #login-box a:visible').first().focus();
-
-        $(document).keydown(function(e) {
-            if (e.keyCode == 40) {
-                var entry = $("#login-box .tokenlist-entry:focus");
-                if(!entry.length)
-                    entry = $("#login-box .tokenlist-entry:first").focus();
-                else
-                   entry.next().focus();
-            }
-            if (e.keyCode == 38) {
-                var entry = $("#login-box .tokenlist-entry:focus");
-                if(!entry.length)
-                    entry = $("#login-box .tokenlist-entry:last").focus();
-                else
-                   entry.prev().focus();
-            }
-        });
 
         $('.tokenlist-entry').click(ssLoginSelectTokenClickHandler);
     }
