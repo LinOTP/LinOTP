@@ -372,3 +372,23 @@ class TestAdminAuthController(TestController):
 
         return
 
+    def test_admin_show_w_basic_authentication(self):
+        '''
+        Admin Authorization: The admin is verified using Baisc Authentication
+        '''
+        parameters = {'name': 'admin_auth_show',
+                      'scope': 'admin',
+                      'realm': 'myOtherRealm',
+                      'action': 'userlist, show',
+                      'user': 'admin, adminResolver:, *@virtRealm',
+                      }
+        response = self.make_system_request('setPolicy', params=parameters,
+                                            auth_type='Basic')
+
+        self.assertTrue('"status": true' in response, response)
+
+        parameters = {}
+        response = self.make_admin_request('show', params=parameters,
+                                           auth_user='root@adomain',
+                                           auth_type='Basic')
+        self.assertTrue('"status": true' in response, response)

@@ -331,6 +331,28 @@ class TestController(unittest2.TestCase):
                 headers=headers,
                 **pparams
             )
+    @staticmethod
+    def get_http_basic_header(username='admin', method='GET'):
+        """
+        Returns a string to be used as 'Authorization' in the headers
+        dictionary.
+
+        See for full example:
+            http://en.wikipedia.org/wiki/Digest_access_authentication
+        """
+        if method is None:
+            method = TestController.DEFAULT_WEB_METHOD
+
+        assert username
+
+        if isinstance(username, tuple):
+            login, pw = username
+        else:
+            login = username
+            pw = "randompwd"
+
+        # Authorization: Basic d2lraTpwZWRpYQ==
+        return "Basic %s" % base64.b64encode(login + ':' + pw)
 
     @staticmethod
     def get_http_digest_header(username='admin', method='GET'):
@@ -395,7 +417,8 @@ class TestController(unittest2.TestCase):
             cookies=None,
             auth_user='admin',
             upload_files=None,
-            client=None
+            client=None,
+            auth_type='Digest'
     ):
         """
         Makes an authenticated request (setting HTTP Digest header, cookie and
@@ -409,9 +432,13 @@ class TestController(unittest2.TestCase):
         if 'admin_session' not in cookies:
             cookies['admin_session'] = self.session
         if 'Authorization' not in headers:
-            headers['Authorization'] = TestController.get_http_digest_header(
-                username=auth_user
-            )
+            if auth_type == 'Basic':
+                headers['Authorization'] = \
+                    TestController.get_http_basic_header(username=auth_user)
+            else:
+                headers['Authorization'] = \
+                    TestController.get_http_digest_header(username=auth_user)
+
         return self.make_request(
             controller,
             action,
@@ -424,7 +451,8 @@ class TestController(unittest2.TestCase):
         )
 
     def make_admin_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None, upload_files=None):
+                           auth_user='admin', client=None, upload_files=None,
+                           auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -437,11 +465,13 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
 
     def make_audit_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None,):
+                           auth_user='admin', client=None,
+                           auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -454,10 +484,12 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             client=client,
+            auth_type=auth_type
         )
 
     def make_manage_request(self, action, params=None, method=None,
-                            auth_user='admin', client=None, upload_files=None):
+                            auth_user='admin', client=None, upload_files=None,
+                            auth_type='Digest'):
         """
         Makes an authenticated request to /manage/'action'
         """
@@ -471,10 +503,12 @@ class TestController(unittest2.TestCase):
             auth_user=auth_user,
             upload_files=upload_files,
             client=client,
+            auth_type=auth_type
         )
 
     def make_system_request(self, action, params=None, method=None,
-                            auth_user='admin', client=None, upload_files=None):
+                            auth_user='admin', client=None, upload_files=None,
+                            auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -487,7 +521,8 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
 
     def make_ocra_request(self, action, params=None, method=None,
@@ -509,7 +544,8 @@ class TestController(unittest2.TestCase):
 
     def make_gettoken_request(self, action, params=None, method=None,
                               auth_user='admin', client=None,
-                              upload_files=None):
+                              upload_files=None,
+                              auth_type='Digest'):
         """
         Makes an authenticated request to /admin/'action'
         """
@@ -522,7 +558,8 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
 
     # due to noestests search pattern for test, we have to mangle the name here :(
@@ -551,7 +588,8 @@ class TestController(unittest2.TestCase):
         return res
 
     def make_tools_request(self, action, params=None, method=None,
-                           auth_user='admin', client=None, upload_files=None):
+                           auth_user='admin', client=None, upload_files=None,
+                           auth_type='Digest'):
         """
         Makes an authenticated request to /tools/'action'
         """
@@ -564,7 +602,8 @@ class TestController(unittest2.TestCase):
             params=params,
             auth_user=auth_user,
             upload_files=upload_files,
-            client=client
+            client=client,
+            auth_type=auth_type
         )
     def make_validate_request(self, action, params=None, method=None,
                               client=None):
