@@ -96,12 +96,12 @@ if isinstance(lang, list):
               %endif
               <tr>
                 <td><label for=password>${_("Password")}:</label></td>
-                <td><input autocomplete="off" type="password" id="password" name="password"></td>
+                <td><input type="password" id="password" name="password"></td>
               </tr>
               %if c.mfa_3_fields:
               <tr>
                 <td><label for=otp>${_("OTP")}:</label></td>
-                <td><input autocomplete="off" type="password" id="otp" name="otp"></td>
+                <td><input type="text" id="otp" name="otp" spellcheck="false" autocomplete="off"></td>
               </tr>
               %endif
               <tr>
@@ -142,7 +142,7 @@ if isinstance(lang, list):
     <div id="template-otp-input" class="otp-login">
       <form action="" method="post">
         <label for="otp">${_("Enter the otp value")}:</label>
-        <input type="text" name="otp">
+        <input type="text" name="otp" spellcheck="false" autocomplete="off">
         <input type="submit" class="ui-button" value="Submit">
       </form>
     </div>
