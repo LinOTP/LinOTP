@@ -62,11 +62,9 @@ div#main {
 	box-sizing: border-box;
 	float:right;
     display: flex;
-    align-items: center;
-    justify-content: center;
     width: 80%;
     flex-direction: column;
-    padding: 0 20px;
+    padding: 20px 20px 0;
 }
 
 div#sidebar {
@@ -121,15 +119,11 @@ div#header {
 	background:#dddddd;
 }
 
-#logout {
-	float:right;
-}
 .logout {
-	float:right;
 	text-align: right;
 	font-size: 0.7em;
     align-self: flex-end;
-    margin: 0;
+    margin: -20px 0 0;
 }
 
 #footer {
@@ -313,6 +307,7 @@ div#login-box {
 	width: 550px;
 	padding: 16px 16px 16px;
 	position: relative;
+	margin: auto;
 }
 
 div#login-box table {

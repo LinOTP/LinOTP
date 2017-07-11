@@ -66,7 +66,9 @@
 	    <div id="logo" class="float_right"> </div>
 	</div>
 
-	${self.body()}
+	<div id="content">
+		${self.body()}
+	</div>
 
 	<div id="footer">${c.version} --- &copy; ${c.licenseinfo}</div>
 	</div>
