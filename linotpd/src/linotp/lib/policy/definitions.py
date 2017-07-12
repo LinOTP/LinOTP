@@ -203,9 +203,11 @@ def getPolicyDefinitions(scope=""):
                 'desc': 'The contents of the temporary password, '
                         'described by the characters C, c, n, s.'},
             'lostTokenValid': {
-                'type': 'int',
+                'type': 'set',
+                'value': ['int', 'duration'],
                 'desc': 'The length of the validity for the temporary '
-                        'token (in days).'},
+                        'token as days or duration with "d"-days, "h"-hours,'
+                        ' "m"-minutes, "s"-seconds.'},
             },
         'authentication': {
             "delete_on_authentication_exceed": {

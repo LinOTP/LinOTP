@@ -25,13 +25,10 @@
 #
 """ contains several token api functions"""
 
-
+import binascii
 import datetime
 import logging
 import string
-
-import binascii
-
 
 import os
 
@@ -42,9 +39,6 @@ except ImportError:
 
 from sqlalchemy import or_, and_
 from sqlalchemy import func
-
-
-from pylons import config
 
 from linotp.lib.challenges import Challenges
 
@@ -68,6 +62,8 @@ from linotp.model import Token, createToken, Realm, TokenRealm
 from linotp.lib.config import getFromConfig
 
 from linotp.lib.realm import createDBRealm, getRealmObject
+
+from linotp.lib.type_utils import parse_duration
 
 from linotp.lib.context import request_context as context
 from linotp.tokens import tokenclass_registry
@@ -303,15 +299,13 @@ class TokenHandler(object):
 
         return (True, reply)
 
-    def losttoken(self, serial, new_serial=None, password=None,
-                  default_validity=0, param=None):
+    def losttoken(self, serial, new_serial=None, password=None, param=None):
         """
         This is the workflow to handle a lost token
 
         :param serial: Token serial number
         :param new_serial: new serial number
         :param password: new password
-        :param default_validity: set the token to be valid
         :param param: additional arguments for the password, email or sms token
             as dict
 
@@ -337,17 +331,6 @@ class TokenHandler(object):
         pol = linotp.lib.policy.get_client_policy(client,
                                         scope="enrollment", realm=owner.realm,
                                         user=owner.login, userObj=owner)
-
-        validity = linotp.lib.policy.getPolicyActionValue(pol,
-                                                          "lostTokenValid",
-                                                          max=False)
-
-        if validity == -1:
-            validity = 10
-        if 0 != default_validity:
-            validity = default_validity
-
-        log.debug("losttoken: validity: %r" % (validity))
 
         if not new_serial:
             new_serial = "lost%s" % serial
@@ -417,7 +400,7 @@ class TokenHandler(object):
                                          user=User('', '', ''))
 
         res['init'] = ret
-        if True == ret:
+        if ret is True:
             # copy the assigned user
             res['user'] = self.copyTokenUser(serial, new_serial)
 
@@ -426,13 +409,18 @@ class TokenHandler(object):
             if getTokenType(serial) not in ["spass"]:
                 res['pin'] = self.copyTokenPin(serial, new_serial)
 
-            # set validity period
-            end_date = (datetime.date.today()
-                        + datetime.timedelta(days=validity)).\
-                        strftime("%d/%m/%y")
+            # ------------------------------------------------------------- --
 
-            end_date = "%s 23:59" % end_date
+            # set the validity of the temporary token
+
+            validity = linotp.lib.policy.getPolicyActionValue(
+                                    pol, "lostTokenValid", max=False)
+
+            end_date = _calculate_validity_end(validity)
+
             tokenObj.validity_period_end = end_date
+
+            # ------------------------------------------------------------- --
 
             # fill results
             res['valid_to'] = "xxxx"
@@ -1935,5 +1923,40 @@ def getTokenConfig(tok, section=None):
             res = tclt.getClassInfo(section, ret={})
 
     return res
+
+
+def _calculate_validity_end(validity):
+    """
+    helper function to calculate the validity end for a token
+
+    :param validity: the validity as days (int) or as duration expression
+    :return: the end date as string
+    """
+
+    if validity == -1:
+        validity = 10
+
+    try:
+
+        int(validity)
+
+        # in case of only <int> days are given, for compatibility
+        # the day ends at 23:59 minutes. So we adjust the duration
+        # expression with remaining hours and minutes
+
+        end_date = (datetime.date.today()
+                    + datetime.timedelta(days=validity)
+                    ).strftime("%d/%m/%y")
+
+        end_date = "%s 23:59" % end_date
+
+    except ValueError:
+
+        end_date = (datetime.datetime.now() + parse_duration(validity)
+                    ).strftime("%d/%m/%y %H:%M")
+
+    log.debug("losttoken: validity: %r" % (validity))
+
+    return end_date
 
 # eof #########################################################################

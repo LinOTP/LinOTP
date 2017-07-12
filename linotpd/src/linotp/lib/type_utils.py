@@ -27,10 +27,8 @@
 
 
 import re
-import json
 from datetime import timedelta
 from linotp.lib.crypto.encrypted_data import EncryptedData
-
 
 duration_regex = re.compile(r'((?P<weeks>\d+?)(w|week|weeks))?'
                             '((?P<days>\d+?)(d|day|days))?'
