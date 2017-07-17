@@ -73,7 +73,7 @@ if isinstance(lang, list):
           <form id="loginForm" action="" method="post">
             <table>
               <tr>
-                <td><label for=username>${_("Username")}:</label></td>
+                <td><label for=login>${_("Username")}:</label></td>
                 <td><input type="text" id="login" name="login" value="" autofocus></td>
               </tr>
               %if c.realmbox:
@@ -164,7 +164,12 @@ if isinstance(lang, list):
     </div>
 
     <div id="template-otp-polling" class="polling">
+      <br>
+      <p>${_("Transaction-ID")}: <b class="transactionid"></b></p>
+      <p><small>${_("Compare this value to the transaction id shown on your mobile.")}</small></p>
+      <br>
       <p><img src="/images/ajax-loader.gif" alt="loading">&nbsp;${_("Waiting for confirmation...")}</p>
+      <br>
     </div>
 
     <div id="template-timeout" class="timeout">

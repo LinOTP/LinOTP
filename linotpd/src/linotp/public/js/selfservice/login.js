@@ -133,6 +133,11 @@ function ssLoginChallengeCallback(data, status, token) {
         $( "#template-otp" ).clone().removeAttr("id").appendTo(template);
 
         if(type == "qr") {
+            if(!data.detail || !data.detail.img_src) {
+                alert(i18n.gettext("Error during login"));
+                return;
+            }
+
             var qr = $( "#template-otp-qr" ).clone().removeAttr("id");
             $('.qr', qr).attr("src", data.detail.img_src);
             $('.qr', qr).attr("alt", data.detail.message);
@@ -147,7 +152,15 @@ function ssLoginChallengeCallback(data, status, token) {
 
 
         if (["push", "qr"].indexOf(type) != -1){
+            if(!data.detail || !data.detail.transactionid) {
+                alert(i18n.gettext("Error during login"));
+                return;
+            }
+
             var polling = $( "#template-otp-polling" ).clone().removeAttr("id")
+
+            $('.transactionid', polling).text(data.detail.transactionid.slice(0,6))
+
             $('.method', template).append(polling);
             ssLoginPolling();
         }
