@@ -1,5 +1,7 @@
 var i18n = new Jed({});
 
+var username;
+
 $(function() {
     $('#loginForm').ajaxForm({
         url: '/userservice/login',
@@ -24,6 +26,7 @@ function ssLoginSuccessCallback(data, status) {
     }
     else if(data.detail &&
             data.detail.message == secondStepMessage){
+        username = $('#login').val();
         ssLoginGetChallenges();
     }
     else {
@@ -110,13 +113,17 @@ function ssLoginSelectTokenClickHandler() {
 }
 
 function ssLoginSelectToken(token) {
+    transactiondata = i18n.gettext('Selfservice Login Request')
+        +"\n"+i18n.gettext('User')+": " + username;
+
     $.ajax({
         url: '/userservice/login',
         type: 'post',
         data: {
             session: getcookie("user_selfservice"),
             serial: token['LinOtp.TokenSerialnumber'],
-            data: i18n.gettext('Selfservice Login Request')
+            data: transactiondata,
+            content_type: 0
         },
         success: function(data, status) {
             ssLoginChallengeCallback(data, status, token);
