@@ -1241,7 +1241,7 @@ syst></textarea></td>
             </table>
         </fieldset>
         <br>
-        <p>${_("The users of the csv file will update an existing or populate a new managed resolver which needs to be added to a realm to view them in the user view.")}</p>
+        <p>${_("The users of the csv file will update an existing or populate a new managed resolver. The target resolver has to be added to a realm after the import.")}</p>
         <table>
             <tr>
                 <td>${_("Resolver:")}</td>
@@ -1253,21 +1253,6 @@ syst></textarea></td>
                             </td>
                             <td style="white-space: nowrap">
                                 &nbsp;or <a href="#" id="import_users_create_resolver">${_("create new...")}</a>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td>${_("Target realm:")}</td>
-                <td>
-                    <table>
-                        <tr>
-                            <td style="width: 100%">
-                                <select name="target_realm" id="import_users_targetrealm" required></select>
-                            </td>
-                            <td style="white-space: nowrap">
-                                &nbsp;or <a href="#" id="import_users_create_realm">${_("create new...")}</a>
                             </td>
                         </tr>
                     </table>
