@@ -69,7 +69,7 @@ div#main {
 
 div#sidebar {
 	float:left;
-	max-width: 20%;
+	width: 20%;
 	display: block;
 	box-sizing: border-box;
 	min-height: 33em;
