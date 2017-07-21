@@ -1027,7 +1027,7 @@ class SystemController(BaseController):
             realm = param["realm"]
 
             if 'resolvers' not in param:
-                raise ParameterError("missing required parameter: resolver")
+                raise ParameterError("missing required parameter: resolvers")
 
             resolver_specs_str = param["resolvers"]
             resolver_specs = resolver_specs_str.split(',')
