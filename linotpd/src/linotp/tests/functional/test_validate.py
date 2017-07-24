@@ -2078,10 +2078,12 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         # now check pw token: the pw token requires the fixed pw, which was
         # initially stored on the otpkey
-        otpkey = "123456"
-        serial = self.createPWToken(pin=pin, user=user, otpkey=otpkey)
+        otpkey = u"123456öäüß"
+        u_pin = u'#123ä'
+
+        serial = self.createPWToken(pin=u_pin, user=user, otpkey=otpkey)
         params = {'user': user,
-                  'pass': pin + otpkey,
+                  'pass': u_pin + otpkey,
                   'auth_info': True
                   }
         response = self.make_validate_request('check', params=params)
@@ -2092,7 +2094,7 @@ please enable 'linotp.selfTest = True' in your *.ini
 
         pin_list = jresp.get('detail', {}).get('auth_info', [])[0]
         self.assertTrue("pin_length" in pin_list, response)
-        self.assertTrue(pin_list[1] == len(pin), response)
+        self.assertTrue(pin_list[1] == len(u_pin), response)
 
         otp_list = jresp.get('detail', {}).get('auth_info', [])[1]
         self.assertTrue("otp_length" in otp_list, response)

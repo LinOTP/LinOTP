@@ -59,6 +59,10 @@ class PasswordTokenClass(HmacTokenClass):
         return "pw"
 
     @classmethod
+    def getClassPrefix(cls):
+        return "kipw"
+
+    @classmethod
     def getClassInfo(cls, key=None, ret='all'):
         '''
         getClassInfo - returns a subtree of the token definition
@@ -77,15 +81,35 @@ class PasswordTokenClass(HmacTokenClass):
         res = {
             'type': 'pw',
             'title': 'Password Token',
-            'description': ('A token with a fixed password. '
-                            'Can be combined with the OTP PIN. Is used for'
-                            ' the lost token scenario.'),
-            'init': {},
-            'config': {},
-            'selfservice':  {},
-            'policy': {},
-        }
-        # I don't think we need to define the lost token policies here...
+            'description': ('A token with a fixed password. Can be combined '
+                            'with the OTP PIN. Is used for the lost token '
+                            'scenario.'),
+            'init': {
+                'page': {
+                   'html': 'passwordtoken.mako',
+                   'scope': 'enroll', },
+                'title': {
+                    'html': 'passwordtoken.mako',
+                    'scope': 'enroll.title', }, },
+
+            'config': {
+                'page': {
+                    'html': 'passwordtoken.mako',
+                    'scope': 'config', },
+                'title': {
+                    'html': 'passwordtoken.mako',
+                    'scope': 'config.title', }, },
+
+            'selfservice': {
+                'enroll': {
+                    'page': {
+                        'html': 'passwordtoken.mako',
+                        'scope': 'selfservice.enroll', },
+                    'title': {
+                        'html': 'passwordtoken.mako',
+                        'scope': 'selfservice.title.enroll', }, }, },
+
+            'policy': {}, }
 
         if key and key in res:
             ret = res.get(key)
@@ -99,7 +123,7 @@ class PasswordTokenClass(HmacTokenClass):
         update - the api, which is called during the token enrollment
 
         we have to make sure that the otpkey, which carries our password
-        is encodede as utf-8 to not break the storing
+        is encoded as utf-8 to not break the storing
 
         :raises: otpkey contains the password and is required therefore
                  otherewise raises ParameterError
@@ -109,8 +133,6 @@ class PasswordTokenClass(HmacTokenClass):
         if 'otpkey' not in param:
 
             raise ParameterError("Missing Parameter 'otpkey'!")
-
-        param['otpkey'] = param['otpkey'].encode('utf-8')
 
         TokenClass.update(self, param)
 
@@ -126,7 +148,7 @@ class PasswordTokenClass(HmacTokenClass):
         :param reset_failcount: boolean, if the failcounter should be reseted
         """
 
-        password_hash = libcrypt_password(otpKey)
+        password_hash = libcrypt_password(otpKey.encode('utf-8'))
 
         self.token.set_encrypted_seed(password_hash, ":1:",
                                       reset_failcount=reset_failcount)
