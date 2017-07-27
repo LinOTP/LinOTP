@@ -213,7 +213,7 @@ setup(
                     }
                 ),
             (
-                'lib/tokens/*.mako',
+                'tokens/**.mako',
                 'mako',
                 {
                     'input_encoding': 'utf-8'
