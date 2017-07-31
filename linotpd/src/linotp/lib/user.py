@@ -471,7 +471,11 @@ def getUserFromRequest(request, config=None):
             hdr = request.environ['HTTP_AUTHORIZATION']
             if hdr.startswith('Basic '):
                 a_auth = b64decode(hdr[5:].strip())
-                d_auth['login'], junk, junk = a.auth.partition(':')
+
+                d_auth['login'], _junk, _junk = a_auth.partition(':')
+
+                log.debug("[getUserFromRequest] BasicAuth: found "
+                          "this HTTP_AUTHORIZATION: %r", d_auth)
             else:
                 for field in hdr.split(","):
                     (key, _delimiter, value) = field.partition("=")
@@ -479,8 +483,8 @@ def getUserFromRequest(request, config=None):
 
                 d_auth['login'] = d_auth.get('Digest username', '') or ''
 
-            log.debug("[getUserFromRequest] DigestAuth: found "
-                      "this HTTP_AUTHORIZATION: %r", d_auth)
+                log.debug("[getUserFromRequest] DigestAuth: found "
+                          "this HTTP_AUTHORIZATION: %r", d_auth)
 
         # Do SSL Client Cert
         elif 'SSL_CLIENT_S_DN_CN' in request.environ:

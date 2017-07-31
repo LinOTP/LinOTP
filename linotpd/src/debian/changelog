@@ -1,4 +1,4 @@
-linotp (2.9.3~rc0-1) jessie; urgency=low
+linotp (2.9.3~rc1-1) jessie; urgency=low
 
   Enhancements:
   * Server: Add support for QR Token unpairing via API (LINOTP-372)
@@ -51,6 +51,7 @@ linotp (2.9.3~rc0-1) jessie; urgency=low
   * Server: Fix enroll of QR Token when username in multiple realms (LINOTP-314)
   * Server: Allow utf-8 filenames in FileSMSProvider configuration (LINOTP-284)
   * Server: fix for HSM migration problems (LINOTP-203)
+  * Server: Fix reusing OTP counter for email token if challenge timed out (LINOTP-415)
 
   * Web UI: Allow more than 80 characters in user field (LINOTP-61)
   * Web UI: Fix filtering in policies tab (LINOTP-97)
@@ -60,7 +61,7 @@ linotp (2.9.3~rc0-1) jessie; urgency=low
   * API: Add validation of resolver name in defineResolver (LINOTP-285)
   * Tools: create-pwidresolver-user: Fix phone fields (LINOTP-251)
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 06 Jun 2017 12:02:30 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 26 Jun 2017 17:27:02 +0200
 
 linotp (2.9.1.4-1) jessie; urgency=low
 
