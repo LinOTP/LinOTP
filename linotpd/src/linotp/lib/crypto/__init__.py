@@ -150,7 +150,37 @@ class SecretObj(object):
         bhOtpKey = binascii.unhexlify(key)
         enc_otp_key = encrypt(bhOtpKey, self.iv, hsm=self.hsm)
         otpKeyEnc = binascii.hexlify(enc_otp_key)
+
         return (otpKeyEnc == self.val)
+
+    def compare_password(self, password):
+        '''
+        compare the password of the password token
+
+        the password token contains the unix hashed (hmac256) password format
+        and is using the standard libcryp password hash compare. the iv is used
+        as indicator for the new password format, which is :1:
+
+        - legacy -
+        the seed for some tokens contains the encrypted password
+        insetead of decrypting the password and running the comparison,
+        the new otp will be encrypted as well.
+
+        :param password: the password - for the password token this is the
+                         to be compared password
+
+        :return: boolean
+        '''
+
+        if self.iv == ':1:':
+
+            return libcrypt_password(password, self.val)
+
+        # the legacy comparison: compare the ecrypted password
+
+        enc_otp_key = encrypt(password, self.iv, hsm=self.hsm)
+
+        return binascii.hexlify(enc_otp_key) == binascii.hexlify(self.val)
 
     def hmac_digest(self, data_input, hash_algo=None, bkey=None):
 
