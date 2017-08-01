@@ -592,6 +592,18 @@ class OcraTest(TestController):
 
         if activationkey is None:
             activationkey = createActivationCode('1234567890')
+
+        # ------------------------------------------------------------------ --
+
+        # verify that we support as well b32 char ambiguity errors
+        # like '1' instead of 'i' and '0' instead of 'o'
+
+        activationkey = activationkey.lower().replace(
+                                                'o', '0').replace(
+                                                    'i', '1')
+
+        # ------------------------------------------------------------------ --
+
         parameters['activationcode'] = activationkey
 
         if ocrasuite is not None:

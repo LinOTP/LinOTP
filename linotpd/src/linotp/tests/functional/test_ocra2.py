@@ -3216,37 +3216,41 @@ class OcraTest(TestController):
 
         activationkey = createActivationCode()
 
-        wrongactivationkey = activationkey + 'w'
-        (response2, activationkey) = self.init_1_QR_Token(user='root',
-                                                          message='TestTTT',
-                                                          activationkey=wrongactivationkey)
-        self.assertTrue('Incorrect padding' in response2, response2)
+        wrongactivationkey = activationkey[:-1] + 'w'
+        (response2, activationkey) = self.init_1_QR_Token(
+                                            user='root',
+                                            message='TestTTT',
+                                            activationkey=wrongactivationkey)
 
-        wrongactivationkey = 'w' + activationkey
-        (response2, activationkey) = self.init_1_QR_Token(user='root',
-                                                          message='TestTTT',
-                                                          activationkey=wrongactivationkey)
-        self.assertTrue('Incorrect padding' in response2, response2)
+        msg = 'Not all checksum characters are hex digits'
+        self.assertTrue(msg in response2, response2)
+
+        wrongactivationkey = '8' + activationkey[1:]
+        (response2, activationkey) = self.init_1_QR_Token(
+                                            user='root',
+                                            message='TestTTT',
+                                            activationkey=wrongactivationkey)
+
+        msg = 'Not all characters are in base32 charset'
+        self.assertTrue(msg in response2, response2)
 
         activationkey = createActivationCode()
-        while True:
-            wrongactivationkey = self.randOTP(activationkey)
-            checksum = check(str(wrongactivationkey))
-            if checksum != wrongactivationkey[-2:]:
-                break
+        ch_code = '%X' % (int(activationkey[-2:], 16) ^ 0xff)
+        wrongactivationkey = activationkey[:-2] + ch_code
 
-        (response2, activationkey) = self.init_1_QR_Token(user='root',
-                                                          message='TestTTT',
-                                                          activationkey=wrongactivationkey)
+        (response2, activationkey) = self.init_1_QR_Token(
+                                            user='root',
+                                            message='TestTTT',
+                                            activationkey=wrongactivationkey)
         self.assertTrue('"status": false' in response2, response2)
-        stat = ('Non-base32 digit found' in response2 or
-                'activation code checksum error' in response2)
-        self.assertTrue(stat, response2)
+        self.assertTrue('activation code checksum error' in response2,
+                        response2)
 
         activationkey = createActivationCode()
-        (response2, activationkey) = self.init_1_QR_Token(user='root',
-                                                          message='TestTTT',
-                                                          activationkey=activationkey)
+        (response2, activationkey) = self.init_1_QR_Token(
+                                            user='root',
+                                            message='TestTTT',
+                                            activationkey=activationkey)
         self.assertTrue('app_import' in response2, response2)
 
         (challenge, transid) = ocra.init_2(response2, activationkey)

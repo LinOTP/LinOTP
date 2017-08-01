@@ -354,24 +354,34 @@ def get_client(request):
     return client
 
 
-def normalize_activation_code(activationcode, upper=True, convert_o=True,
-                              convert_0=True):
+def normalize_activation_code(activationcode):
     '''
     This normalizes the activation code.
     1. lower letters are capitaliezed
-    2. Oh's in the last two characters are turned to zeros
-    3. zeros before the last 2 characters are turned to Ohs
+    2. Oh's in the last two characters are turned to zeros,
+       big i's in the last two characters are turned to ones,
+    3. zeros before the last 2 characters are turned to Oh's,
+       ones before the last 2 characters are turned to big i's
     '''
-    if upper:
-        activationcode = activationcode.upper()
-    if convert_o:
-        activationcode = activationcode[:-2] + \
-                         activationcode[-2:].replace("O", "0")
-    if convert_0:
-        activationcode = activationcode[:-2].replace("0", "O") + \
-                         activationcode[-2:]
+    b32chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567="
+    hexdigits = "ABCDEF1234567890"
 
-    return activationcode
+    activationcode = activationcode.upper()
+
+    a_code = activationcode[:-2].replace('1', 'I').replace('0', 'O')
+    ch_sum = activationcode[-2:].replace("I", "1").replace("O", "0")
+
+    for a_chr in a_code:
+        if a_chr not in b32chars:
+            raise Exception("Not all characters are in base32 charset: %r"
+                            % a_chr)
+
+    for ch_chr in ch_sum:
+        if ch_chr not in hexdigits:
+            raise Exception("Not all checksum characters are hex digits: %r"
+                            % ch_chr)
+
+    return a_code + ch_sum
 
 
 def is_valid_fqdn(hostname, split_port=False):
