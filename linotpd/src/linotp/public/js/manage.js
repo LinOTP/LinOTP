@@ -6948,8 +6948,8 @@ function resolver_sql(name, duplicate){
             sql_driver: {
                 required: true,
                 minlength: 3,
-                number: false,
-                sql_driver: true
+                number: false
+                //sql_driver: true
             },
             sql_port: {
                 minlength: 1,
