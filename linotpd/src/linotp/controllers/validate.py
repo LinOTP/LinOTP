@@ -501,9 +501,19 @@ class ValidateController(BaseController):
 
         try:
             param.update(request.params)
-            try:
+
+            if 'pass' in param:
                 passw = param['pass']
-            except KeyError:
+
+            elif 'accept' in param:
+                passw = {'accept': param['accept']}
+                c.audit['detail'] = 'transaction confirmed'
+
+            elif 'deny' in param:
+                passw = {'deny': param['deny']}
+                c.audit['detail'] = 'transaction denyed'
+
+            else:
                 raise ParameterError("Missing parameter: 'pass'")
 
             transid = param.get('state', None)

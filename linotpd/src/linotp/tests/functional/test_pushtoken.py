@@ -42,6 +42,7 @@ from pysodium import crypto_sign_keypair as gen_dsa_keypair
 from pysodium import crypto_sign_detached
 from pysodium import crypto_sign_verify_detached
 import linotp.provider.pushprovider.default_push_provider as default_provider
+from base64 import b64decode
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
@@ -57,7 +58,7 @@ PAIRING_URL_VERSION = 2
 PAIR_RESPONSE_VERSION = 1
 
 TYPE_PUSHTOKEN = 4
-CHALLENGE_URL_VERSION = 1
+CHALLENGE_URL_VERSION = 2
 
 CONTENT_TYPE_SIGNREQ = 0
 CONTENT_TYPE_PAIRING = 1
@@ -277,7 +278,8 @@ class TestPushToken(TestController):
 
         # parse, descrypt and verify the challenge url
 
-        challenge, sig = self.decrypt_and_verify_challenge(challenge_url)
+        challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
+                                                           accept=True)
 
         # ------------------------------------------------------------------- --
 
@@ -287,12 +289,12 @@ class TestPushToken(TestController):
         content_type = challenge['content_type']
         self.assertEqual(content_type, CONTENT_TYPE_PAIRING)
 
-        # ------------------------------------------------------------------- --
+        # ----------------------------------------------------------------- --
 
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'pass': sig}
+                  'accept': sig}
 
         # again, we ignore the callback definitions
 
@@ -303,7 +305,7 @@ class TestPushToken(TestController):
         status = response_dict.get('result', {}).get('status')
         self.assertEqual(status, True)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         value = response_dict.get('result', {}).get('value')
 
@@ -434,7 +436,7 @@ class TestPushToken(TestController):
 
 # --------------------------------------------------------------------------- --
 
-    def decrypt_and_verify_challenge(self, challenge_url):
+    def decrypt_and_verify_challenge(self, challenge_url, accept=True):
 
         """
         Decrypts the data packed in the challenge url, verifies
@@ -577,9 +579,20 @@ class TestPushToken(TestController):
         challenge['transaction_id'] = transaction_id
         challenge['user_token_id'] = user_token_id
 
-        # calculate signature
+        # calculate signature - dependend on deny or accept mode
+        if accept:
 
-        sig_base = server_signature + plaintext
+            sig_base = (
+                struct.pack('<b', CHALLENGE_URL_VERSION) +
+                b'ACCEPT\0' +
+                server_signature + plaintext)
+
+        else:
+            sig_base = (
+                struct.pack('<b', CHALLENGE_URL_VERSION) +
+                b'DENY\0' +
+                server_signature + plaintext)
+
         sig = crypto_sign_detached(sig_base, self.secret_key)
         encoded_sig = encode_base64_urlsafe(sig)
 
@@ -744,7 +757,7 @@ class TestPushToken(TestController):
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'pass': sig}
+                  'accept': sig}
 
         # again, we ignore the callback definitions
 
@@ -778,7 +791,8 @@ class TestPushToken(TestController):
             content_type=CONTENT_TYPE_SIGNREQ)
 
         challenge, __ = self.decrypt_and_verify_challenge(challenge_url)
-        wrong_sig = encode_base64_urlsafe('DEADBEEF' * 32)
+
+        wrong_sig = 'DEADBEEF' * 32
 
         # ------------------------------------------------------------------- --
 
@@ -787,12 +801,12 @@ class TestPushToken(TestController):
         content_type = challenge['content_type']
         self.assertEqual(content_type, CONTENT_TYPE_SIGNREQ)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'pass': wrong_sig}
+                  'accept': wrong_sig}
 
         # again, we ignore the callback definitions
 
@@ -813,8 +827,7 @@ class TestPushToken(TestController):
         self.assertFalse(value_value)
         self.assertGreater(failcount, 0)
 
-
-# --------------------------------------------------------------------------- --
+# -------------------------------------------------------------------------- --
 
     def test_repairing(self):
 
@@ -969,7 +982,7 @@ class TestPushToken(TestController):
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'pass': sig}
+                  'accept': sig}
 
         # again, we ignore the callback definitions
 

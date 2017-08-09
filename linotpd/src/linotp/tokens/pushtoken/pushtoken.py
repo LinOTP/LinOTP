@@ -62,7 +62,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-CHALLENGE_URL_VERSION = 1
+CHALLENGE_URL_VERSION = 2
 
 CONTENT_TYPE_SIGNREQ = 0
 CONTENT_TYPE_PAIRING = 1
@@ -439,7 +439,27 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         self.ensure_state_is_in(valid_states)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
+
+        # new pushtoken protocoll supports the keyword based accept or deny.
+        # the old 'passwd' argument is not supported anymore
+
+        try:
+
+            signature_accept = passwd.get('accept', None)
+            signature_deny = passwd.get('deny', None)
+
+        except AttributeError:  # will be raised with a get() on a str object
+
+            raise Exception('Pushtoken version %r requires "accept" or'
+                            ' "deny" as parameter' % CHALLENGE_URL_VERSION)
+
+        if signature_accept is not None and signature_deny is not None:
+
+            raise Exception('Pushtoken version %r requires "accept" or'
+                            ' "deny" as parameter' % CHALLENGE_URL_VERSION)
+
+        # ------------------------------------------------------------------ --
 
         filtered_challenges = []
         serial = self.getSerial()
@@ -449,11 +469,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         max_fail = int(getFromConfig('PushMaxChallenges', '3'))
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         if 'transactionid' in options:
 
-            # --------------------------------------------------------------- --
+            # -------------------------------------------------------------- --
 
             # fetch all challenges that match the transaction id or serial
 
@@ -461,7 +481,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             challenges = Challenges.lookup_challenges(serial, transaction_id)
 
-            # --------------------------------------------------------------- --
+            # -------------------------------------------------------------- --
 
             # filter into filtered_challenges
 
@@ -481,7 +501,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 elif not tan_is_valid and fail_counter <= max_fail:
                     filtered_challenges.append(challenge)
 
-        # ------------------------------------------------------------------- --
+        # ------------------------------------------------------------------ --
 
         if not filtered_challenges:
             return -1
@@ -492,25 +512,64 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # plaintext. we retrieve the original plaintext (saved
             # in createChallenge) and check for a match
 
+            data = challenge.getData()
+            data_to_verify = b64decode(data['sig_base'])
+
             b64_dsa_public_key = self.getFromTokenInfo('user_dsa_public_key')
             user_dsa_public_key = b64decode(b64_dsa_public_key)
 
-            data = challenge.getData()
-            sig_base = data['sig_base']
+            # -------------------------------------------------------------- --
 
-            passwd_as_bytes = decode_base64_urlsafe(passwd)
-            sig_base_as_bytes = b64decode(sig_base)
-            try:
-                verify_sig(passwd_as_bytes,
-                           sig_base_as_bytes,
-                           user_dsa_public_key)
-                return 1
-            except ValueError:  # signature mismatch
-                return -1
+            # handle the accept case
+
+            if signature_accept is not None:
+
+                accept_signature_as_bytes = decode_base64_urlsafe(
+                                                        signature_accept)
+
+                accept_data_to_verify_as_bytes = (
+                                struct.pack('<b', CHALLENGE_URL_VERSION) +
+                                b'ACCEPT\0' +
+                                data_to_verify)
+
+                try:
+                    verify_sig(accept_signature_as_bytes,
+                               accept_data_to_verify_as_bytes,
+                               user_dsa_public_key)
+                    return 1
+                except ValueError:  # accept signature mismatch
+
+                    log.error("accept signature mismatch!")
+
+                    return -1
+
+            # -------------------------------------------------------------- --
+
+            # handle the deny case
+
+            elif signature_deny is not None:
+
+                deny_signature_as_bytes = decode_base64_urlsafe(signature_deny)
+
+                deny_data_to_verify_as_bytes = (
+                                struct.pack('<b', CHALLENGE_URL_VERSION) +
+                                b'DENY\0' +
+                                data_to_verify)
+
+                try:
+                    verify_sig(deny_signature_as_bytes,
+                               deny_data_to_verify_as_bytes,
+                               user_dsa_public_key)
+                    return 1
+                except ValueError:  # deny signature mismatch
+
+                    log.error("deny signature mismatch!")
+
+                    return -1
 
         return -1
 
-# --------------------------------------------------------------------------- --
+# -------------------------------------------------------------------------- --
 
     def statusValidationSuccess(self):
 
