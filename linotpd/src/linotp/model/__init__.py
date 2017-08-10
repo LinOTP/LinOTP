@@ -968,7 +968,23 @@ class Challenge(object):
         return self.session
 
     def setSession(self, session):
+        """
+        set the session state information like open or closed
+        - contains in addition the mac of the whole challenge entry
+        
+        :param session: dictionary of the session info
+        """
         self.session = unicode(session)
+
+    def add_session_info(self, info):
+        session_dict = {}
+
+        if self.session:
+            session_dict = json.loads(self.session)
+
+        session_dict.update(info)
+
+        self.session = unicode(json.dumps(session_dict))
 
     def signChallenge(self, hsm):
         """
@@ -978,16 +994,23 @@ class Challenge(object):
         :return: - nothing -
         """
 
+        # calculate the new mac for the challenge
+
         challenge_dict = self.get_vars(save=True)
         challenge_data = json.dumps(challenge_dict)
 
         mac = hsm.signMessage(challenge_data)
 
-        status = challenge_dict.get('session').get('status', 'open')
-        session = {'status': status, 'mac': mac}
-        self.setSession(json.dumps(session))
+        # ------------------------------------------------------------------ --
 
-        res = self.checkChallengeSignature(hsm)
+        # update the session info:
+
+        session = challenge_dict.get('session', {})
+
+        session['status'] = session.get('status', 'open')
+        session['mac'] = mac
+
+        self.setSession(json.dumps(session))
 
     def checkChallengeSignature(self, hsm):
         """
@@ -1031,9 +1054,14 @@ class Challenge(object):
 
         """
         session_info = json.loads(self.session) or {}
+
         if not session_info:
             session_info = {'status': 'open'}
         session_info['status'] = 'closed'
+
+        if 'reject' in session_info:
+            self.valid_tan = False
+
         self.session = json.dumps(session_info)
 
     def is_open(self):
@@ -1106,15 +1134,19 @@ class Challenge(object):
         descr['received_tan'] = self.received_tan
         descr['valid_tan'] = self.valid_tan
 
-        # for the vars, only the session status is of interest
+        # for the vars, session is of interest but without mac
+
         session_info = {'status': 'open'}
         if self.session:
             try:
                 session_info = json.loads(self.session)
+                if 'mac' in session_info:
+                    del session_info['mac']
             except Exception as exx:
                 pass
-        status = session_info.get('status', 'open')
-        descr['session'] = {'status': status}
+
+        descr['session'] = session_info
+
         return descr
 
     def __unicode__(self):

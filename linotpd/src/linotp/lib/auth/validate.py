@@ -25,6 +25,7 @@
 #
 """ validation processing logic"""
 
+import json
 from hashlib import sha256
 from datetime import datetime
 
@@ -382,6 +383,24 @@ class ValidationHandler(object):
             trans_dict['valid_tan'] = ch.valid_tan
             trans_dict['message'] = ch.challenge
             trans_dict['status'] = ch.getStatus()
+
+            # -------------------------------------------------------------- --
+
+            # extend the check status with the accept or deny of a transaction
+
+            challenge_session = ch.getSession()
+
+            if challenge_session:
+
+                challenge_session_dict = json.loads(challenge_session)
+
+                if 'accept' in challenge_session_dict:
+                    trans_dict['accept'] = challenge_session_dict['accept']
+
+                if 'reject' in challenge_session_dict:
+                    trans_dict['reject'] = challenge_session_dict['reject']
+
+            # -------------------------------------------------------------- --
 
             token_dict = {'serial': serial, 'type': token.type}
 
