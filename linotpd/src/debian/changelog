@@ -1,41 +1,50 @@
+linotp (2.9.3.1~rc0-1) jessie; urgency=low
+
+  Enhancements:
+  * 175d54f Policy: Support filtering on user=<userIdResolver>
+  * b31bd17 Server: Accept DB2 format database urls
+
+  Bug Fixes:
+  * 42c9e68 Web UI: Simplify user import dialog by removing realm section
+  * a5b6b81 Server: Fix OTP counter for email token
+  * 9fab468 Server: Remove user related data from logs:
+                    - 9fab468 password hash from SQL resolver
+                    - 8862f6f user information from user.py
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 10 Aug 2017 14:00:59 +0200
+
 linotp (2.9.3-1) jessie; urgency=low
 
   Enhancements:
-  * Server: Add support for QR Token unpairing via API (LINOTP-372)
+  * Server: Add support for QR Token unpairing via API
   * Server: Support for deleting / disabling token if usage exceeded
-            (LINOTP-290)
   * Server: Logging enhancements including unique request IDs and timestamps
   * Server: Logging message cleanup to remove unecessary messages
-  * Server: Support Ocra token with current LinOTP (LINOTP-291)
+  * Server: Support Ocra token with current LinOTP
   * Server: Prefer HTTP_X_FORWARDED_HOST to HTTP_HOST for logout_url
   * Server: Use HTTP_AUTHORIZATION to determine login name for Basic auth
   * Server: Support rfc7239 HTTP_X_FORWARDED_FOR to determine client IP
-            (LINOTP-355)
-  * Server: Add token issuer to 'otpauth' URLs (LINOTP-66)
+  * Server: Add token issuer to 'otpauth' URLs
   * Server: Add FIPS security provider to comply with some operations
-            (LINOTP-39)
   * Server: Add experimental new policy engine implementation (off by default)
-            (LINOTP-340)
   * Server: Refactor lib.user:
             - changed isEmpty into a property
             - removed methods getRealm, getUser
             - getUserFromParam signature
   * Server: Refactor resolvers:
             - setResolver and testresolver
-            - configuration handling (LINOTP-265)
+            - configuration handling
   * Server: Email provider added support for SMTP port configuration
   * Server: Add support for read only (managed) provider configurations
 
-  * Web UI: Version static resources to bust browser caching (LINOTP-275)
-  * Web UI: Add support for importing users via flat CSV file (LINOTP-197)
+  * Web UI: Version static resources to bust browser caching
+  * Web UI: Add support for importing users via flat CSV file
   * Web UI: Add limited support for setting the admin password via the UI
-            (LINOTP-287)
   * Web UI: Improvements to LDAP edit dialog
 
   * API: Support dynamic logging via new maintainence controller
-  * API: Add server healthcheck: maintainence/ok (LINOTP-325)
+  * API: Add server healthcheck: maintainence/ok
   * API: Support filtering by token type using token_type parameter
-            (LINOTP-318)
 
   * Tools: Add CI Jenkins build pipeline
   * Tools: Add central makefile with targets for Docker, packages, tests
@@ -47,20 +56,20 @@ linotp (2.9.3-1) jessie; urgency=low
   * Config examples: Modify logging configuration to prevent duplicate lines
 
   Bug Fixes:
-  * Server: Fix challenge response authentication (Yubikey) (LINOTP-261)
-  * Server: Fix enroll of QR Token when username in multiple realms (LINOTP-314)
-  * Server: Allow utf-8 filenames in FileSMSProvider configuration (LINOTP-284)
-  * Server: fix for HSM migration problems (LINOTP-203)
-  * Server: Fix reusing OTP counter for email token if challenge timed out (LINOTP-415)
+  * Server: Fix challenge response authentication (Yubikey)
+  * Server: Fix enroll of QR Token when username in multiple realms
+  * Server: Allow utf-8 filenames in FileSMSProvider configuration
+  * Server: Fix for HSM migration problems
+  * Server: Fix reusing OTP counter for email token if challenge timed out
   * Server: Fix typo in error message
 
-  * Web UI: Allow more than 80 characters in user field (LINOTP-61)
-  * Web UI: Fix filtering in policies tab (LINOTP-97)
-  * Web UI: Fix parsing of duration configuration fields (LINOTP-227)
+  * Web UI: Allow more than 80 characters in user field
+  * Web UI: Fix filtering in policies tab
+  * Web UI: Fix parsing of duration configuration fields
   * Web UI: Fix link to https://keyidentity.com
 
-  * API: Add validation of resolver name in defineResolver (LINOTP-285)
-  * Tools: create-pwidresolver-user: Fix phone fields (LINOTP-251)
+  * API: Add validation of resolver name in defineResolver
+  * Tools: create-pwidresolver-user: Fix phone fields
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 31 Jul 2017 14:50:16 +0200
 
