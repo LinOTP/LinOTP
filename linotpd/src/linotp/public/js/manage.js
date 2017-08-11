@@ -488,6 +488,7 @@ function get_selected(){
         else {
             $("#button_assign").button("disable");
         }
+
         $("#button_unassign").button("enable");
         $("#button_tokenrealm").button("enable");
         $("#button_getmuli").button("enable");
@@ -496,23 +497,15 @@ function get_selected(){
         $("#button_delete").button("enable");
         $("#button_setpin").button("enable");
         $("#button_resetcounter").button("enable");
+        $("#button_setexpiration").button("enable");
 
-        if (selectedTokenItems.length == 0) {
-            $("#button_tokenrealm").button("disable");
-            $("#button_resync").button("disable");
-            $("#button_losttoken").button("disable");
-            $('#button_getmulti').button("disable");
-            $("#button_tokeninfo").button("disable");
-        }
-        else if (selectedTokenItems.length == 1) {
-            $("#button_tokenrealm").button("enable");
+        if (selectedTokenItems.length == 1) {
             $("#button_resync").button("enable");
             $('#button_losttoken').button("enable");
             $('#button_getmulti').button("enable");
             $("#button_tokeninfo").button("enable");
           }
         else if (selectedTokenItems.length > 1) {
-            $("#button_tokenrealm").button("enable");
             $("#button_resync").button("disable");
             $("#button_losttoken").button("disable");
             $('#button_getmulti').button("disable");
@@ -554,7 +547,6 @@ function get_selected(){
             });
         }
     }
-
 };
 
 function disable_all_buttons(){
@@ -567,6 +559,7 @@ function disable_all_buttons(){
     $('#button_setpin').button("disable");
     $('#button_delete').button("disable");
     $('#button_resetcounter').button("disable");
+    $("#button_setexpiration").button("disable");
     $("#button_resync").button("disable");
     $("#button_tokeninfo").button("disable");
     $("#button_losttoken").button("disable");
@@ -607,7 +600,6 @@ function get_server_config(search_key) {
     try {
         var data = jQuery.parseJSON(resp);
         if (data.result.status == false) {
-            //console_log("Failed to access linotp system config: " + data.result.error.message);
             throw("" + data.result.error.message);
         }else {
             if ((search_key === undefined) === false) {
@@ -619,11 +611,9 @@ function get_server_config(search_key) {
             } else {
                 $systemConfig = data.result.value;
             }
-            //console_log("Access linotp system config: " + data.result.value);
         }
     }
     catch (e) {
-        //console_log("Failed to access linotp system config: " + e);
         throw(e);
     }
     return $systemConfig;
@@ -1159,7 +1149,7 @@ function token_setpin(){
  */
 function view_setpin_dialog(tokens) {
     var token_string = tokens.join(", ");
-    $('#dialog_set_pin_token_string').html(escape(token_string));
+    $('#dialog_set_pin_token_string').text(token_string);
     $('#setpin_tokens').val(tokens);
     $dialog_setpin_token.dialog('open');
 }
@@ -3414,57 +3404,13 @@ function set_tokeninfo_buttons(){
         $dialog_tokeninfo_set.dialog('open');
     });
 
-    $('#ti_button_count_auth_max').button({
-        icons: { primary: 'ui-icon-arrowthickstop-1-n'},
-        text : false,
-        label: "auth max"
-    });
-    $('#ti_button_count_auth_max').click(function(){
-        $dialog_tokeninfo_set.html('<input type="hidden" name="info_type" value="countAuthMax">\
-            <input id=info_value name=info_value></input>\
-            ');
-        translate_dialog_ti_countauthmax();
-        $dialog_tokeninfo_set.dialog('open');
+    $('#ti_button_expiration').button({
+        icons: { primary: 'ui-icon-calendar'}
+    }).click(function() {
+        $().dialog('close');
+        openExpirationDialog();
     });
 
-    $('#ti_button_count_auth_max_success').button({
-        icons: { primary: 'ui-icon-arrowthick-1-n'},
-        text : false,
-        label: "auth max_success"
-    });
-    $('#ti_button_count_auth_max_success').click(function(){
-        $dialog_tokeninfo_set.html($.parseHTML('<input type="hidden" name="info_type" value="countAuthSuccessMax">\
-            <input id=info_value name=info_value></input>\
-            '));
-        translate_dialog_ti_countauthsuccessmax();
-        $dialog_tokeninfo_set.dialog('open');
-    });
-
-    $('#ti_button_valid_start').button({
-        icons: { primary: 'ui-icon-seek-first'},
-        text : false,
-        label: "valid start"
-    });
-    $('#ti_button_valid_start').click(function(){
-        $dialog_tokeninfo_set.html('Format: %d/%m/%y %H:%M<br><input type="hidden" name="info_type" value="validityPeriodStart">\
-            <input id=info_value name=info_value></input>\
-            ');
-        translate_dialog_ti_validityPeriodStart();
-        $dialog_tokeninfo_set.dialog('open');
-    });
-
-    $('#ti_button_valid_end').button({
-        icons: { primary: 'ui-icon-seek-end'},
-        text : false,
-        label: "valid end"
-    });
-    $('#ti_button_valid_end').click(function(){
-        $dialog_tokeninfo_set.html('Format: %d/%m/%y %H:%M<br><input type="hidden" name="info_type" value="validityPeriodEnd">\
-            <input id=info_value name=info_value></input>\
-            ');
-        translate_dialog_ti_validityPeriodEnd();
-        $dialog_tokeninfo_set.dialog('open');
-    });
     $('#ti_button_mobile_phone').button({
         icons: { primary: 'ui-icon-signal'},
         text : false,
@@ -3847,6 +3793,10 @@ $(document).ready(function(){
         event.preventDefault();
     });
 
+    $('#button_setexpiration').click(function(e) {
+        openExpirationDialog();
+    });
+
     // Set icons for buttons
     $('body').enableUIComponents();
 
@@ -3888,8 +3838,6 @@ $(document).ready(function(){
             recycleImage(ui.draggable);
         }
     });
-
-
 
     $dialog_edit_realms = $('#dialog_edit_realms').dialog({
         autoOpen: false,
@@ -5844,6 +5792,153 @@ $(document).ready(function(){
 });
 //--------------------------------------------------------------------------------------
 // End of document ready
+
+/** 
+ * openExpirationDialog
+ *
+ * is the handler to create and or open the dialog to set the expiration
+ * on one or many tokens 
+ */
+function openExpirationDialog() {
+    var setexpiration_validator;
+    $("#dialog_setexpiration").dialog({
+        title: i18n.gettext('Set Token Expiration'),
+        width: 600,
+        modal: true,
+        buttons: [
+            {
+                click: function(){
+                    $(this).dialog('close');
+                },
+                id: "button_setexpiration_cancel",
+                text: i18n.gettext("Cancel")
+            },
+            {
+                click: function(){
+                    var dialog = $(this);
+
+                    if(!setexpiration_validator.valid()) {
+                        return;
+                    }
+
+                    var validityPeriodStart = $("#setexpiration_period_start").datetimepicker('getValue');
+                    validityPeriodStart = $("#setexpiration_period_start").val() ? parseInt(validityPeriodStart.valueOf()/1000) : "unlimited";
+
+                    var validityPeriodEnd = $("#setexpiration_period_end").datetimepicker('getValue');
+                    validityPeriodEnd = $("#setexpiration_period_end").val() ? parseInt(validityPeriodEnd.valueOf()/1000) : "unlimited";
+
+                    var data = {
+                        "tokens": get_selected_tokens(),
+                        "session": getsession(),
+                        "countAuthMax": $("#setexpiration_count_requests").val() || "unlimited",
+                        "countAuthSuccessMax": $("#setexpiration_count_success").val() || "unlimited",
+                        "validityPeriodStart": validityPeriodStart,
+                        "validityPeriodEnd": validityPeriodEnd
+                    }
+
+
+                    $.post("/admin/setValidity", data, function(data, textStatus, XMLHttpRequest) {
+                        if (data.result && data.result.status == true) {
+                            alert_info_text({'text': i18n.gettext("Expiration set successfully"),
+                                             'is_escaped': true});
+                            dialog.dialog('close');
+                        }
+                        else {
+                            var message = i18n.gettext("An error occurred during saving expiration.");
+                            message += (isDefinedKey(data, ["result", "error", "message"]) ? "<br><br>" + escape(data.result.error.message) : "");
+
+                            alert_box({
+                                'title': i18n.gettext('Error saving expiration'),
+                                'text': message,
+                                'type': ERROR,
+                                'is_escaped': true
+                            });
+                        }
+                    });
+                },
+                id: "button_setexpiration_save",
+                text: i18n.gettext("Save")
+            }
+        ],
+        open: function() {
+            var tokens = get_selected_tokens();
+            $('#dialog_setexpiration_tokens').text(tokens.join(", "));
+
+            setexpiration_validator = $("form", this).validate()
+            setexpiration_validator.resetForm();
+
+            var showWarning = tokens.length > 1;
+
+            if(showWarning) {
+                $(".multiple-tokens.warning .tokencount", this).text(tokens.length);
+            }
+            else if(tokens.length === 1) {
+                var tokeninfo = $.parseHTML(token_info());
+                $("#setexpiration_count_requests").val($("#tokeninfo_count_auth_max", tokeninfo).text());
+                $("#setexpiration_count_success").val($("#tokeninfo_count_auth_success_max", tokeninfo).text());
+                var start = $("#tokeninfo_validity_period_start", tokeninfo).text();
+                new Date(start+"+0")
+            }
+
+            $(".multiple-tokens.warning").toggleClass("hidden", !showWarning);
+
+        },
+        create: function() {
+            $(".multiple-tokens.warning", this).html(sprintf($(".multiple-tokens.warning", this).text(), "<span class='tokencount'></span>"));
+
+            $("input", this).change(function() {
+                if($(this).val() === "0") {
+                    $(this).val("");
+                }
+            });
+
+            jQuery.datetimepicker.setLocale(CURRENT_LANGUAGE);
+
+            var dtStart = $('#setexpiration_period_start'),
+                dtEnd = $('#setexpiration_period_end'),
+                dtConfig = {
+                    format: "Y-m-d H:i (T)",
+                    dayOfWeekStart: 1,
+                    onShow: function(event, $input) {
+                        if(!$input.is(":focus")) {
+                            setTimeout(function() {$input.datetimepicker("hide");});
+                        }
+                    }
+                };
+
+            function dtStartOnChange() {
+                if(dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue')) {
+                    dtEnd.datetimepicker("reset");
+                    dtEndOnChange();
+                }
+                dtEnd.datetimepicker({
+                    minDate: dtStart.val()
+                });
+            }
+            function dtEndOnChange() {
+                var invalidPeriod = dtStart.val().length !== 0
+                        && dtEnd.val().length !== 0
+                        && dtStart.datetimepicker('getValue') > dtEnd.datetimepicker('getValue');
+                if(invalidPeriod) {
+                    var valid_cfg = {};
+                    valid_cfg[dtEnd.attr("name")] = i18n.gettext("Invalid time period");
+                    setexpiration_validator.showErrors(valid_cfg);
+                }
+                else {
+                    setexpiration_validator.errorList.pop(dtEnd);
+                    dtEnd.next().hide(); // hide the error label so that error is not shown anymore.
+                                         // JQuery-validates data model is updated correct, but the label
+                                         // is not removed, so we do it manually.
+                }
+            }
+
+            dtStart.datetimepicker($.extend({"onChangeDateTime":dtStartOnChange}, dtConfig));
+            dtEnd.datetimepicker($.extend({"onChangeDateTime":dtEndOnChange}, dtConfig));
+
+            $(this).dialog_icons();
+        }
+    });
+}
 
 /**
  * submits the change password form to the linotp backend

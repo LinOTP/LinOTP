@@ -29,6 +29,7 @@ admin controller - interfaces to administrate LinOTP
 """
 import os
 import logging
+from datetime import datetime
 
 import json
 
@@ -1214,6 +1215,160 @@ class AdminController(BaseController):
         finally:
             Session.close()
 
+    def setValidity(self):
+        """
+        dedicated backend for setting the token validity for
+        multiple selected tokens.
+
+        arguments:
+
+        * tokens[]: the token serials (required)
+
+        * countAuthSuccessMax:
+            the maximum number of allowed successful authentications
+
+        * countAuthMax:
+            the maximum number of allowed successful authentications
+
+        * validityPeriodStart: utc - unix seconds as int
+
+        * validityPeriodEnd: utc - unix seconds as int
+
+        remark:
+
+            the parameter names are the same as with the admin/set
+            while admin/set does not support multiple tokens
+
+        remark:
+
+            if the value is 'unlimited' the validity limit will be removed
+
+        return:
+
+        * json document with the value field containing the serials of
+          the modified tokens
+
+        """
+        try:
+
+            c.audit['info'] = "set token validity"
+
+            param = getLowerParams(request.params)
+
+            # -------------------------------------------------------------- --
+
+            # check admin authorization
+
+            admin_user = getUserFromRequest(request)
+
+            checkPolicyPre('admin', 'set', param, user=admin_user)
+
+            # -------------------------------------------------------------- --
+
+            # process the arguments
+
+            unlimited = 'unlimited'
+
+            countAuthSuccessMax = None
+            if "countAuthSuccessMax".lower() in param:
+                countAuthSuccessMax = param.get(
+                                        'countAuthSuccessMax'.lower()).strip()
+
+            countAuthMax = None
+            if "countAuthMax".lower() in param:
+                countAuthMax = param.get(
+                                        'countAuthMax'.lower()).strip()
+
+            validityPeriodStart = None
+            if "validityPeriodStart".lower() in param:
+                validityPeriodStart = param.get(
+                                        'validityPeriodStart'.lower()).strip()
+
+            validityPeriodEnd = None
+            if "validityPeriodEnd".lower() in param:
+                validityPeriodEnd = param.get(
+                                        'validityPeriodEnd'.lower()).strip()
+
+            # -------------------------------------------------------------- --
+
+            if 'tokens[]' not in request.params:
+                raise ParameterError('missing parameter: tokens[]')
+
+            serials = request.params.getall("tokens[]")
+
+            tokens = []
+            for serial in serials:
+                tokens.extend(getTokens4UserOrSerial(serial=serial))
+
+            # -------------------------------------------------------------- --
+
+            # push the validity values into the tokens
+
+            for token in tokens:
+
+                # ---------------------------------------------------------- --
+
+                if countAuthMax == unlimited:
+                    token.del_count_auth_max()
+
+                elif countAuthMax is not None:
+                    token.count_auth_max = int(countAuthMax)
+
+                # ---------------------------------------------------------- --
+
+                if countAuthSuccessMax == unlimited:
+                    token.del_count_auth_success_max()
+
+                elif countAuthSuccessMax is not None:
+                    token.count_auth_success_max = int(countAuthSuccessMax)
+
+                # ---------------------------------------------------------- --
+
+                if validityPeriodStart == unlimited:
+                    token.del_validity_period_start()
+
+                elif validityPeriodStart is not None:
+
+                    validity_period_start = datetime.utcfromtimestamp(
+                                    int(validityPeriodStart)).strftime(
+                                        "%d/%m/%y %H:%M").strip()
+                    token.validity_period_start = validity_period_start
+
+                # ---------------------------------------------------------- --
+
+                if validityPeriodEnd == unlimited:
+                    token.del_validity_period_end()
+
+                elif validityPeriodEnd is not None:
+
+                    validity_period_end = datetime.utcfromtimestamp(
+                                    int(validityPeriodEnd)).strftime(
+                                        "%d/%m/%y %H:%M").strip()
+
+                    token.validity_period_end = validity_period_end
+
+            c.audit['success'] = 1
+
+            c.audit['action_detail'] = ("%r " % serials)[:80]
+
+            Session.commit()
+            return sendResult(response, serials, 1)
+
+        except PolicyException as pex:
+            log.exception('policy failed%r', pex)
+            Session.rollback()
+            return sendError(response, unicode(pex), 1)
+
+        except Exception as exx:
+
+            c.audit['success'] = False
+
+            log.exception('%r', exx)
+            Session.rollback()
+            return sendError(response, unicode(exx), 0)
+
+        finally:
+            Session.close()
 
 
 ########################################################

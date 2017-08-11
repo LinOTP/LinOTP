@@ -85,6 +85,25 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         return
 
+    def test_del_access_count(self):
+        '''
+        check that the max access counter will be removed
+        '''
+
+        fake_token = FakeTokenClass()
+
+        fake_token.count_auth_max = 3
+
+        self.assertTrue(fake_token.count_auth_max == 3, fake_token)
+
+        fake_token.del_count_auth_max()
+
+        t_info = fake_token.getTokenInfo()
+
+        self.assertTrue('count_auth_max' not in t_info, fake_token)
+
+        return
+
     def test_inc_access_count(self):
         '''
         check if the access counter (with getter and setter) is incremented
@@ -104,6 +123,8 @@ class TestTokenValidityMixin(unittest.TestCase):
         self.assertTrue(fake_token.count_auth == 4, fake_token)
 
         return
+
+    # ---------------------------------------------------------------------- --
 
     def test_success_count(self):
         '''
@@ -143,6 +164,73 @@ class TestTokenValidityMixin(unittest.TestCase):
         self.assertTrue(fake_token.count_auth_success == 4, fake_token)
 
         return
+
+    def test_del_success_count(self):
+        '''
+        delete the success counter
+        '''
+
+        fake_token = FakeTokenClass()
+
+        fake_token.count_auth_success_max = 3
+
+        self.assertTrue(fake_token.count_auth_success_max == 3, fake_token)
+
+        fake_token.del_count_auth_success_max()
+
+        t_info = fake_token.getTokenInfo()
+
+        self.assertTrue('count_auth_success_max' not in t_info, fake_token)
+
+    # ---------------------------------------------------------------------- --
+
+    def test_del_expiry_end(self):
+        '''
+        check expiration end compare
+        '''
+
+        fake_token = FakeTokenClass()
+
+        now = datetime.now()
+        end_time = now - timedelta(minutes=1)
+
+        end_time_str = datetime.strftime(end_time, "%d/%m/%y %H:%M")
+        fake_token.validity_period_end = end_time_str
+
+        self.assertTrue(fake_token.validity_period_end, fake_token)
+
+        fake_token.del_validity_period_end()
+
+        t_info = fake_token.getTokenInfo()
+
+        self.assertTrue('validity_period_end' not in t_info, fake_token)
+
+        return
+
+    def test_del_expiry_start(self):
+        '''
+        check expiration end compare
+        '''
+
+        fake_token = FakeTokenClass()
+
+        now = datetime.now()
+        start_time = now - timedelta(minutes=1)
+
+        start_time_str = datetime.strftime(start_time, "%d/%m/%y %H:%M")
+        fake_token.validity_period_start = start_time_str
+
+        self.assertTrue(fake_token.validity_period_start, fake_token)
+
+        fake_token.del_validity_period_start()
+
+        t_info = fake_token.getTokenInfo()
+
+        self.assertTrue('validity_period_start' not in t_info, fake_token)
+
+        return
+
+    # ---------------------------------------------------------------------- --
 
     def test_for_expiry_end(self):
         '''

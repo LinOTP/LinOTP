@@ -57,6 +57,7 @@ if isinstance(lang, list):
 %endif
 <link type="text/css" rel="stylesheet" href="/css/flexigrid/flexigrid.css">
 <link type='text/css' rel='stylesheet' media='screen' href='/css/superfish.css'>
+<link type="text/css" rel="stylesheet" href="/css/datetimepicker/jquery.datetimepicker.css">
 <link type="text/css" rel="stylesheet" href="/css/linotp.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/manage/style.css?ref=${c.version_ref}">
 <link type="text/css" rel="stylesheet" href="/manage/custom-style.css">
@@ -67,6 +68,7 @@ if isinstance(lang, list):
     <script type="text/javascript" src="/js/jquery.validate.js"></script>
     <script type="text/javascript" src="/js/jquery.form.js"></script>
     <script type="text/javascript" src="/js/jquery.cookie.js"></script>
+    <script type='text/javascript' src='/js/jquery.datetimepicker.js'></script>
     <script type='text/javascript' src='/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/js/superfish.js'></script>
 %else:
@@ -75,6 +77,7 @@ if isinstance(lang, list):
     <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
     <script type="text/javascript" src="/js/jquery.form.min.js"></script>
     <script type="text/javascript" src="/js/jquery.cookie.min.js"></script>
+    <script type='text/javascript' src='/js/jquery.datetimepicker.min.js'></script>
     <script type='text/javascript' src='/js/hoverIntent.js'></script>
     <script type='text/javascript' src='/js/superfish.min.js'></script>
 %endif
@@ -225,6 +228,9 @@ if isinstance(lang, list):
     </button>
     <button class='action-button ui-button' id='button_resetcounter' data-ui-icon="ui-icon-arrowthickstop-1-w">
         ${_("Reset Failcounter")}
+    </button>
+    <button class='action-button ui-button' id='button_setexpiration' data-ui-icon="ui-icon-calendar">
+        ${_("Set Expiration")}
     </button>
     <button class='action-button ui-button' id='button_delete' data-ui-icon="ui-icon-trash">
         ${_("Delete")}
@@ -1030,6 +1036,62 @@ if isinstance(lang, list):
         $('#button_about_close').button("option", "label", '${_("Close")}');
     }
 </script>
+
+
+<!-- ##################### Set expiration ######################### -->
+<div id='dialog_setexpiration'>
+    <p>${_("Selected Tokens")}:
+    <span id='dialog_setexpiration_tokens'></span></p>
+    <p class="warning multiple-tokens hidden">${_("Changes will affect all %s tokens")}</p>
+    <form class="cmxform" action="">
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h4>${_("Usage Count")}</h4>
+                    <p>${_("Set maximum usage limits for the entire token lifetime.")}</p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_count_requests">${_("Max. authentication attempts")}:</label>
+                </td>
+                <td>
+                    <input type="number" name="countAuthMax" id="setexpiration_count_requests" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_count_success">${_("Max. successful authentications")}:</label>
+                </td>
+                <td>
+                    <input type="number" name="countAuthSuccessMax" id="setexpiration_count_success" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <h4>${_("Validity Period")}</h4>
+                    <p>${_("Set the period of time where the token is enabled.")}</p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_period_start">${_("Valid from")}:</label>
+                </td>
+                <td>
+                    <input type="text" name="validityPeriodStart" id="setexpiration_period_start" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="setexpiration_period_end">${_("Valid until")}:</label>
+                </td>
+                <td>
+                    <input type="text" name="validityPeriodEnd" id="setexpiration_period_end" class="ph_focus_fadeout" placeholder='${_("unlimited")}'>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
 
 
 <!-- ##################### Set PIN ######################### -->

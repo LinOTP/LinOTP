@@ -107,6 +107,7 @@
 .hint {
     font-size: 70%;
     opacity: 0.8;
+    vertical-align: middle!important;
 }
 
 .legend {
@@ -168,4 +169,36 @@ table.data-table tr:nth-child(even) {
 
 table.data-table tr:nth-child(odd) {
   background: white;
+}
+
+/* to properly recognize these selectors, they had to be split */
+
+input.ph_focus_fadeout::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color:rgb(0, 0, 0);
+}
+input.ph_focus_fadeout::-moz-placeholder { /* FF 19+ */
+  color:rgb(0, 0, 0);
+}
+input.ph_focus_fadeout:-ms-input-placeholder { /* IE 10+ */
+  color:rgb(0, 0, 0);
+}
+input.ph_focus_fadeout::placeholder { /* The future is now */
+  color:rgb(0, 0, 0);
+}
+
+input.ph_focus_fadeout:focus::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color:rgb(117, 117, 117);
+}
+input.ph_focus_fadeout:focus::-moz-placeholder { /* FF 19+ */
+  color:rgb(117, 117, 117);
+}
+input.ph_focus_fadeout:focus:-ms-input-placeholder { /* IE 10+ */
+  color:rgb(117, 117, 117);
+}
+input.ph_focus_fadeout:focus::placeholder { /* The future is now */
+  color:rgb(117, 117, 117);
+}
+
+.warning {
+  color: red;
 }
