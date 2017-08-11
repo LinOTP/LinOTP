@@ -25,9 +25,12 @@
  *    Support: www.keyidentity.com
  *
 </%doc>
-<a id=policy_export>${_("Export policies")}</a>
-
-<button id=policy_import>${_("Import policies")}</button>
+<a class="ui-button" id="policy_export" data-ui-icon="ui-icon-arrowthickstop-1-s">
+    ${_("Export policies")}
+</a>
+<button class="ui-button" id="policy_import" data-ui-icon="ui-icon-plusthick">
+    ${_("Import policies")}
+</button>
 
 <table id="policy_table" class="flexme2" style="display:none"></table>
 
@@ -81,9 +84,15 @@
     <tr>
         <td></td>
         <td>
-            <button id="button_policy_add">${_("Set Policy")}</button>
-            <button id="button_policy_delete">${_("Delete Selected Policy")}</button>
-            <button id="button_policy_clear">${_("Clear Fields")}</button>
+            <button class="ui-button" id="button_policy_add" data-ui-icon="ui-icon-disk">
+                ${_("Set Policy")}
+            </button>
+            <button class="ui-button" id="button_policy_delete" data-ui-icon="ui-icon-trash">
+                ${_("Delete Selected Policy")}
+            </button>
+            <button class="ui-button" id="button_policy_clear" data-ui-icon="ui-icon-cancel">
+                ${_("Clear Fields")}
+            </button>
         </td>
     </tr>
     </table>
@@ -91,5 +100,3 @@
 <script type="text/javascript">
     view_policy();
 </script>
-
-

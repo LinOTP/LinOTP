@@ -1540,6 +1540,22 @@ function tokentype_changed(){
 }
 
 /**
+ * enables jquery ui components
+ */
+$.fn.enableUIComponents = function(){
+    $('.ui-button', this).each(function() {
+        var config = {};
+
+        if($(this).attr("data-ui-icon"))
+            config.icons = {primary: $(this).attr("data-ui-icon")};
+
+        $(this).button(config);
+    });
+
+    return this;
+}
+
+/**
  * adds icons to the given dialogs buttons
  */
 $.fn.dialog_icons = function(){
@@ -3832,61 +3848,9 @@ $(document).ready(function(){
     });
 
     // Set icons for buttons
-    $('#button_enroll').button({
-        icons: {
-            primary: 'ui-icon-plusthick'
-        }
-    });
-    $('#button_assign').button({
-        icons: {
-            primary: 'ui-icon-arrowthick-2-e-w'
-        }
-    });
-    $('#button_unassign').button({
-        icons: {
-            primary: 'ui-icon-arrowthick-1-w'
-        }
-    });
-
-    $('#button_enable').button({
-        icons: {
-            primary: 'ui-icon-radio-on'
-        }
-    });
-    $('#button_disable').button({
-        icons: {
-            primary: 'ui-icon-radio-off'
-        }
-    });
-    $('#button_setpin').button({
-        icons: {
-            primary: 'ui-icon-pin-s'
-        }
-    });
-    $('#button_delete').button({
-        icons: {
-            primary: 'ui-icon-trash'
-        }
-    });
-
-    $('#button_resetcounter').button({
-        icons: {
-            primary: 'ui-icon-arrowthickstop-1-w'
-        }
-    });
-    $('#button_policy_add').button({
-        icons: {
-            primary: 'ui-icon-plusthick'
-        }
-    });
-    $('#button_policy_delete').button({
-        icons: {
-            primary: 'ui-icon-trash'
-        }
-    });
+    $('body').enableUIComponents();
 
     // Info box
-    $(".button_info_text").button();
     $('.button_info_text').click(function(){
         $(this).parent().hide('blind', {}, 500, toggle_close_all_link);
     });
@@ -5758,10 +5722,10 @@ $(document).ready(function(){
                 });
             }
             return;
+        },
+        load: function(event, ui){
+            $(ui.panel).enableUIComponents();
         }
-        //load: function(event, ui){
-        //    get_selected();
-        //}
     });
 
     /**********************************************************************
