@@ -1834,7 +1834,7 @@ if isinstance(lang, list):
             <p>${_("You are creating a new realm.")}
             ${_("You may add resolvers by holding down Ctrl-Key and left-clicking.")}</p>\
             <p><label for=realm_name>${_("Realm name")}:</label>
-                <input type='text' class="required" id='realm_name' size='20' maxlength='60' value="">
+                <input type='text' class="required" id='realm_name' name='realm_name' size='20' maxlength='60' value="">
                 </p>
         </div>
         <div id='realm_intro_edit'>

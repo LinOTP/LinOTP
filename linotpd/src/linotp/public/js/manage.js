@@ -3884,17 +3884,6 @@ $(document).ready(function(){
         }
     });
 
-    $("#form_realmconfig").validate({
-        rules: {
-            realm_name: {
-                required: true,
-                minlength: 4,
-                number: false,
-                realmname: true
-            }
-        }
-    });
-
     /**********************************************************************
     * Temporary token dialog
     */
