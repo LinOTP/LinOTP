@@ -447,17 +447,17 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         try:
 
             signature_accept = passwd.get('accept', None)
-            signature_deny = passwd.get('deny', None)
+            signature_reject = passwd.get('reject', None)
 
         except AttributeError:  # will be raised with a get() on a str object
 
             raise Exception('Pushtoken version %r requires "accept" or'
-                            ' "deny" as parameter' % CHALLENGE_URL_VERSION)
+                            ' "reject" as parameter' % CHALLENGE_URL_VERSION)
 
-        if signature_accept is not None and signature_deny is not None:
+        if signature_accept is not None and signature_reject is not None:
 
             raise Exception('Pushtoken version %r requires "accept" or'
-                            ' "deny" as parameter' % CHALLENGE_URL_VERSION)
+                            ' "reject" as parameter' % CHALLENGE_URL_VERSION)
 
         # ------------------------------------------------------------------ --
 
@@ -536,34 +536,44 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                     verify_sig(accept_signature_as_bytes,
                                accept_data_to_verify_as_bytes,
                                user_dsa_public_key)
+
+                    challenge.add_session_info({'accept': True})
+
                     return 1
                 except ValueError:  # accept signature mismatch
 
+                    challenge.add_session_info({'accept': False})
                     log.error("accept signature mismatch!")
 
                     return -1
 
             # -------------------------------------------------------------- --
 
-            # handle the deny case
+            # handle the reject case
 
-            elif signature_deny is not None:
+            elif signature_reject is not None:
 
-                deny_signature_as_bytes = decode_base64_urlsafe(signature_deny)
+                reject_signature_as_bytes = decode_base64_urlsafe(
+                                                            signature_reject)
 
-                deny_data_to_verify_as_bytes = (
+                reject_data_to_verify_as_bytes = (
                                 struct.pack('<b', CHALLENGE_URL_VERSION) +
                                 b'DENY\0' +
                                 data_to_verify)
 
                 try:
-                    verify_sig(deny_signature_as_bytes,
-                               deny_data_to_verify_as_bytes,
+                    verify_sig(reject_signature_as_bytes,
+                               reject_data_to_verify_as_bytes,
                                user_dsa_public_key)
-                    return 1
-                except ValueError:  # deny signature mismatch
 
-                    log.error("deny signature mismatch!")
+                    challenge.add_session_info({'reject': True})
+
+                    return 1
+
+                except ValueError:  # reject signature mismatch
+
+                    challenge.add_session_info({'reject': False})
+                    log.error("reject signature mismatch!")
 
                     return -1
 

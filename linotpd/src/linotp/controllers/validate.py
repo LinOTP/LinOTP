@@ -502,19 +502,10 @@ class ValidateController(BaseController):
         try:
             param.update(request.params)
 
-            if 'pass' in param:
-                passw = param['pass']
-
-            elif 'accept' in param:
-                passw = {'accept': param['accept']}
-                c.audit['detail'] = 'transaction confirmed'
-
-            elif 'deny' in param:
-                passw = {'deny': param['deny']}
-                c.audit['detail'] = 'transaction denyed'
-
-            else:
+            if 'pass' not in param:
                 raise ParameterError("Missing parameter: 'pass'")
+
+            passw = param['pass']
 
             transid = param.get('state', None)
             if transid is not None:
@@ -561,6 +552,75 @@ class ValidateController(BaseController):
         finally:
             Session.close()
 
+    def confirm_transaction(self):
+        """
+        verfiy the transaction
+        - the next verification step in a multifactor authentication.
+
+        * param action: accept or deny
+        * param signature: signature of the accepted or denied
+                                    transaction
+        * param: transactionid * : the continuation id of the authorisation /
+                                   authentication processing
+        """
+
+        try:
+
+            param = {}
+            param.update(request.params)
+
+            # -------------------------------------------------------------- --
+
+            # check the parameters
+
+            if 'signature' not in param:
+                raise ParameterError("Missing parameter: 'signature'!")
+
+            if 'transactionid' not in param:
+                raise ParameterError("Missing parameter: 'transactionid'!")
+
+            if 'action' not in param:
+                raise ParameterError("Missing parameter: 'action'!")
+
+            if param['action'] not in ['accept', 'reject']:
+                raise ParameterError("Missing action parameter value:"
+                                     " 'accept' or 'reject'!")
+
+            # -------------------------------------------------------------- --
+
+            # start the processing
+
+            action = param['action']
+            passw = {action: param['signature']}
+            transid = param['transactionid']
+
+            vh = ValidationHandler()
+            ok, _opt = vh.check_by_transactionid(transid=transid,
+                                                 passw=passw,
+                                                 options=param)
+
+            # -------------------------------------------------------------- --
+
+            # finish the result
+
+            value = {action: ok}
+            c.audit['info'] = '%s transaction: %r' % (action, ok)
+
+            c.audit['success'] = ok
+            Session.commit()
+
+            return sendResult(response, value)
+
+        except Exception as exx:
+
+            log.exception("validate/check_transaction failed: %r" % exx)
+            c.audit['info'] = "%r" % exx
+            Session.rollback()
+
+            return sendResult(response, False, 0)
+
+        finally:
+            Session.close()
 
     def check_s(self):
         '''
