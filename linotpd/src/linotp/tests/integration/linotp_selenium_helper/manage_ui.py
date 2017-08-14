@@ -36,6 +36,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from manage_elements import ManageDialog
 from realm import RealmManager
 from policy import PolicyManager
+from system_config import SystemConfig
 from user_id_resolver import UserIdResolverManager
 from user_view import UserView
 from token_view import TokenView
@@ -46,8 +47,9 @@ This file contains the main manage page class
 
 
 class ManageUi(object):
-    """Object for representing the manage page itself. There should be
-       a single ManageUi object to represent the browser page
+    """
+    Object for representing the manage page itself. There should be
+    a single ManageUi object to represent the browser page
     """
 
     URL = "/manage"
@@ -100,6 +102,8 @@ class ManageUi(object):
         self.token_view = TokenView(self)
         self.user_view = UserView(self)
         self.policy_view = PolicyManager(self)
+        self.system_config = SystemConfig(self)
+        self.alert_box_handler = AlertBoxHandler(self)
 
         self.alert_dialog = ManageDialog(self, 'alert_box')
 
@@ -109,35 +113,59 @@ class ManageUi(object):
 
     @property
     def manage_url(self):
-        "The URL of the page"
+        """
+        The URL of the page
+        """
         return self.testcase.base_url + self.URL
 
     @property
     def driver(self):
-        "Return a reference to the selenium driver"
+        """
+        Return a reference to the selenium driver
+        """
         return self.testcase.driver
 
     def check_url(self):
-        """Check we are on the right page"""
+        """
+        Check we are on the right page
+        """
         assert self._is_url_open(), \
             'URL %s should end with %s - page not loaded?' % \
             (self.driver.current_url, self.URL)
         self.testcase.assertEquals(self.driver.title, 'LinOTP 2 Management')
 
     def find_by_css(self, css_value):
-        """Return the element indicated by CSS selector"""
+        """
+        Return the element indicated by CSS selector
+        """
         self.check_url()
         return helper.find_by_css(self.driver, css_value)
 
     def find_all_by_css(self, css_value):
-        """Return a list of elements indicated by CSS selector"""
+        """
+        Return a list of elements indicated by CSS selector
+        """
         self.check_url()
         return self.driver.find_elements_by_css_selector(css_value)
 
     def find_by_id(self, id_value):
-        """Return the element by ID"""
+        """
+        Return the element by ID
+        """
         self.check_url()
         return helper.find_by_id(self.driver, id_value)
+
+    def find_by_class(self, class_name):
+        """
+        Return the element by its class name
+        """
+        return helper.find_by_class(self.driver, class_name)
+
+    def find_by_xpath(self, xpath):
+        """
+        Return the element by its xpath
+        """
+        return helper.find_by_xpath(self.driver, xpath)
 
     def open_manage(self):
         if not self._is_url_open():
@@ -203,9 +231,9 @@ class ManageUi(object):
         * check the text contents
         * close or dismiss the box
 
-        @param expected_text: Text contents expected. An exception will be raised if not found
-        @param click_accept: If set, will click the accept button
-        @param click_dismiss: If set, will close the dialog
+        :param expected_text: Text contents expected. An exception will be raised if not found
+        :param click_accept: If set, will click the accept button
+        :param click_dismiss: If set, will close the dialog
         """
 
         assert not click_accept or not click_dismiss, "check_alert cannot click both accept and dismiss"
@@ -247,3 +275,87 @@ class ManageUi(object):
 
         is_visible = (element is not False)
         return is_visible
+
+
+class MsgType(object):
+    """
+    Kind of an enum - Used in AlertBoxHandler to specify
+    message types when needed for method paramaters
+    """
+    Error = 'error'
+    Info = 'info'
+
+
+class AlertBoxHandler:
+    """
+    The AlertBoxHandler class allows to check the info/error
+    messages on the /manage page thrown by admin actions
+       e.g. after creating realms, tokens, etc.
+    """
+
+    manageui = None
+
+    msgs_parent_id = 'info_box'
+    error_msg_class = 'error_box'
+    info_msg_class = 'info_box'
+    link_close_all_msgs_class = 'close_all'
+    single_msg_ok_button_xpath = "//button[contains(text(),'ok')]"
+
+    def __init__(self, manage_ui):
+        """
+        Init the AlertBoxHandler
+        :param manage_ui Reference to the manage_ui
+        """
+        self.manageui = manage_ui
+
+    def clear_messages(self):
+        """
+        Delete all action response messages
+        """
+
+        try:
+            clear_msgs_button = self.manageui.find_by_class(
+                self.link_close_all_msgs_class)
+            clear_msgs_button.click()
+        except:
+            pass
+
+        # seems to be only one or no messages at all
+        # Remark: if only one message is visible, there's only an OK button
+        # beside the message
+
+        try:
+            allButtonsError = self.manageui.find_all_by_css(
+                ".error_box > button:nth-child(2)")
+            [but.click() for but in allButtonsError]
+        except:
+            pass
+
+        try:
+            allButtonsInfo = self.manageui.find_all_by_css(
+                ".info_box > button:nth-child(2)")
+            [but.click() for but in allButtonsInfo]
+        except:
+            pass
+
+    def check_message(self, msg, msg_type):
+        """
+        Return True if the message string is a substring of the
+        found info/error message
+        :param msg The substring to search for in the open alert boxes
+        :param msg_type Specify box type where you expect 'msg'. /sa MsgType
+        :return Return True if 'msg' is part of any alert box of 'msg_type'.
+        """
+        xpath = None
+        try:
+            if(msg_type == MsgType.Error):
+                xpath = "//div[@class='" + self.error_msg_class + \
+                    "']//span[contains(text(), '" + msg + "')] "
+            else:
+                xpath = "//div[@class='" + self.info_msg_class + \
+                    "']//span[contains(text(), '" + msg + "')] "
+
+            self.manageui.find_by_xpath(xpath)
+            return True
+        except:
+            return False
