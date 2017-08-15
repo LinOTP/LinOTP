@@ -1,4 +1,4 @@
-linotp (2.9.3.1~rc0-1) jessie; urgency=low
+linotp (2.9.3.1-1) jessie; urgency=low
 
   Enhancements:
   * 175d54f Policy: Support filtering on user=<userIdResolver>
@@ -11,7 +11,7 @@ linotp (2.9.3.1~rc0-1) jessie; urgency=low
                     - 9fab468 password hash from SQL resolver
                     - 8862f6f user information from user.py
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 10 Aug 2017 14:00:59 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 15 Aug 2017 15:31:53 +0200
 
 linotp (2.9.3-1) jessie; urgency=low
 
