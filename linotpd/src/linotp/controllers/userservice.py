@@ -687,17 +687,25 @@ class UserserviceController(BaseController):
         :param param: the request parameters
         """
 
-        otp = param.get('otp', '')
+        if not user.checkPass(passw):
+
+            log.info("User %r failed to authenticate!", user)
+            c.audit['action_detail'] = ("User %r failed to authenticate!"
+                                        % user)
+            c.audit['success'] = False
+
+            Session.commit()
+            return sendResult(response, False, 0)
+
+        # ------------------------------------------------------------------ --
 
         # if there is an otp, we can do a direct otp authentication
 
+        otp = param.get('otp', '')
         if otp:
 
             vh = ValidationHandler()
-            res = user.checkPass(passw)
-
-            if res:
-                res, reply = vh.checkUserPass(user, otp)
+            res, reply = vh.checkUserPass(user, otp)
 
             if res:
                 log.debug("Successfully authenticated user %r:", user)
@@ -723,34 +731,23 @@ class UserserviceController(BaseController):
         # ------------------------------------------------------------------ --
 
         # last step - we have no otp but mfa_login request - so we
-        # validate the password and create the 'credentials_verified state'
+        # create the 'credentials_verified state'
 
-        res = user.checkPass(passw)
+        (cookie, expires,
+         expiration) = create_auth_cookie(
+                            user, self.client,
+                            state='credentials_verified')
 
-        if res:
+        response.set_cookie('user_selfservice', cookie,
+                            secure=secure_cookie,
+                            expires=expires)
+        reply = {'message': 'credential verified - '
+                 'additional authentication parameter required'}
 
-            (cookie, expires,
-             expiration) = create_auth_cookie(
-                                user, self.client,
-                                state='credentials_verified')
+        c.audit['action_detail'] = "expires: %s " % expiration
+        c.audit['info'] = "%r credentials verified" % user
 
-            response.set_cookie('user_selfservice', cookie,
-                                secure=secure_cookie,
-                                expires=expires)
-            reply = {'message': 'credential verified - '
-                     'additional authentication parameter required'}
-
-            c.audit['action_detail'] = "expires: %s " % expiration
-            c.audit['info'] = "%r credentials verified" % user
-
-        else:
-
-            log.info("User %r failed to authenticate!", user)
-            c.audit['action_detail'] = ("User %r failed to authenticate!"
-                                        % user)
-            reply = None
-
-        c.audit['success'] = res
+        c.audit['success'] = True
         Session.commit()
 
         return sendResult(response, False, 0, opt=reply)
@@ -847,6 +844,8 @@ class UserserviceController(BaseController):
             # -------------------------------------------------------------- --
 
         except Exception as exx:
+
+            log.exception('userservice login failed: %r', exx)
 
             c.audit['info'] = ("%r" % exx)[:80]
             c.audit['success'] = False

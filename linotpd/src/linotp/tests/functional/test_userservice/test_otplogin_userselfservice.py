@@ -54,6 +54,8 @@ import os
 import webtest
 
 import logging
+import json
+
 from linotp.tests import TestController, url
 
 log = logging.getLogger(__name__)
@@ -148,6 +150,26 @@ class TestUserserviceAuthController(TestController):
 
         self.createPolicy(policy)
 
+    def get_audit_entries(self, num=3, page=1):
+        '''
+        query the last audit entry
+        # audit/search?sortorder=desc&rp=1
+
+        Be aware: this method could not be moved into the parent class !!!
+                  it wont be found :(
+        '''
+        params = {'sortorder': 'desc',
+                  'rp': num,
+                  'page': page,
+                  }
+        response = self.make_audit_request(action="search",
+                                           params=params)
+
+        jresp = json.loads(response.body)
+        for row in jresp.get('rows',[]):
+            cell_info = row.get('cell',[])
+            yield cell_info
+
     # ---------------------------------------------------------------------- --
 
     def test_login_with_token(self):
@@ -184,6 +206,54 @@ class TestUserserviceAuthController(TestController):
                                                      auth_user=auth_user)
 
         self.assertTrue('"delete token": 1' in response, response)
+
+        return
+
+    def test_login_with_false_password(self):
+        """
+        check that the login generate a cookie, which does not require
+        to reenter credentials while login session is valid
+        """
+
+        auth_user = {'login': 'passthru_user1@myDefRealm',
+                     'password': 'WRONGPASS'}
+
+        auth_user['otp'] = self.otps.pop()
+
+        params = {'type': 'hmac', 'genkey': '1', 'serial': 'hmac123'}
+        response = self.make_userselfservice_request('enroll',
+                                                     params=params,
+                                                     auth_user=auth_user,
+                                                     new_auth_cookie=True)
+
+        self.assertTrue('"value": false' in response, response)
+
+        # ----------------------------------------------------------------- ---
+
+        # now we verify that the faild login is in the audit log and
+        # the exception does not appear anymore
+
+        unbound_msg = ('UnboundLocalError("local variable \'reply\' '
+                       'referenced before assignment",)')
+
+        failed_auth_msg = ("User User(login=u'passthru_user1', "
+                           "realm=u'mydefrealm', conf='' ::resolverUid:{}, "
+                           "resolverConf:{}) failed to authenticate!")
+
+        unbound_not_found = True
+        failed_auth_found = False
+
+        entries = self.get_audit_entries(num=5, page=1)
+        for entry in entries:
+
+            if unbound_msg in entry:
+                unbound_not_found = False
+
+            if failed_auth_msg in entry:
+                failed_auth_found = True
+
+        self.assertTrue(unbound_not_found, entries)
+        self.assertTrue(failed_auth_found, entries)
 
         return
 
