@@ -1,15 +1,15 @@
 linotp (2.9.3.1-1) jessie; urgency=low
 
   Enhancements:
-  * 175d54f Policy: Support filtering on user=<userIdResolver>
   * b31bd17 Server: Accept DB2 format database urls
 
   Bug Fixes:
+  * 175d54f Policy: Fix support for filtering on <UserIdResolver>: in user field
   * 42c9e68 Web UI: Simplify user import dialog by removing realm section
   * a5b6b81 Server: Fix OTP counter for email token
   * 9fab468 Server: Remove user related data from logs:
-                    - 9fab468 password hash from SQL resolver
-                    - 8862f6f user information from user.py
+                    - 9fab468 Password hash from SQL resolver
+                    - 8862f6f User information from user.py
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 15 Aug 2017 15:31:53 +0200
 
