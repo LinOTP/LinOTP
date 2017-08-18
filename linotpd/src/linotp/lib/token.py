@@ -464,10 +464,9 @@ class TokenHandler(object):
 
         (uuserid, uidResolver, uidResolverClass) = token.getUser()
 
-        if uidResolver == idResolver:
-            if uidResolverClass == idResolverClass:
-                if uuserid == userid:
-                    ret = True
+        if uidResolverClass == idResolverClass:
+            if uuserid == userid:
+                ret = True
 
         return ret
 
