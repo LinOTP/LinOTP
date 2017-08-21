@@ -350,48 +350,6 @@ function create_tools_importusers_dialog() {
                     }
                 });
             });
-            $('#import_users_create_realm').click(function() {
-                $("<div><form action=''><input style='width:100%; box-sizing: border-box;' name='realm_name' placeholder='"+i18n.gettext("Realm name")+"' type='text' autofocus></form></div>").dialog({
-                    modal: true,
-                    title: i18n.gettext("Create a new realm"),
-                    buttons: [
-                        {
-                            text: i18n.gettext("Cancel"),
-                            click: function() {
-                                $( this ).dialog( "close" );
-                            }
-                        },
-                        {
-                            text: i18n.gettext("Create"),
-                            click: function() {
-                                if($("form", this).valid()) {
-                                    var name = $("input", this).val();
-                                    $("#import_users_targetrealm").append('<option val="' + name + '">' + name + '</option>');
-                                    $("#import_users_targetrealm").val(name);
-                                    $( this ).dialog( "close" );
-                                }
-                            }
-                        }
-                    ],
-                    create: function() {
-                        if($('#import_users_file').val()) {
-                            var realm = $('#import_users_file').val().split('\\').pop().split(".")[0];
-                            $("input", this).val(realm);
-                        }
-                        $("form", this).validate({
-                            debug: true,
-                            rules: {
-                                "realm_name": {
-                                    required: true,
-                                    minlength: 4,
-                                    realmname: true,
-                                    unique_realm_name: true
-                                }
-                            }
-                        });
-                    }
-                });
-            });
         },
         open: function() {
             show_waiting();
@@ -400,10 +358,9 @@ function create_tools_importusers_dialog() {
                 $('#import_users_dryrun').val("true");
                 $('#import_users_file').val("");
                 $('#import_users_resolver').val("");
-                $('#import_users_targetrealm').val("");
             }
 
-            //prefill resolver and realm selects
+            //prefill resolver select
             $.post('/system/getResolvers', {'session':getsession()}, function(data, status, XMLHttpRequest){
                 var resolvers = '<option value="" disabled selected>[' + i18n.gettext("Select resolver") + ']</option>';
                 for(var res in data.result.value) {
@@ -413,14 +370,7 @@ function create_tools_importusers_dialog() {
                 }
                 $('#import_users_resolver').html(resolvers);
 
-                $.post('/system/getRealms', {'session':getsession()}, function(data, status, XMLHttpRequest){
-                    var realms = '<option value="" disabled selected>[' + i18n.gettext("Select realm") + ']</option>';
-                    for(var realm in data.result.value) {
-                        realms += '<option value="' + realm + '">' + realm + '</option>';
-                    }
-                    $('#import_users_targetrealm').html(realms);
-                    hide_waiting();
-                });
+                hide_waiting();
             });
 
             import_users_dialog.data("caller", "");
@@ -487,8 +437,6 @@ function import_users_callback(response, status) {
             'is_escaped': false});
         return;
     }
-
-    fill_realms();
 
     alert_box({'title': i18n.gettext('Import successful'),
         'text': i18n.gettext('The resolver ' + $('#import_users_resolver').val() + ' was successfully updated.'),

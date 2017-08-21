@@ -67,6 +67,9 @@ class TestImportUser(TestController):
 
     resolver_name = "myresolv"
     target_realm = "myrealm"
+    resolver_spec = ('useridresolver.'
+                     'SQLIdResolver.'
+                     'IdResolver.' + resolver_name)
 
     def setUp(self):
 
@@ -109,8 +112,7 @@ class TestImportUser(TestController):
 
         content = ""
         upload_files = [("file", "user_list", content)]
-        params = {'target_realm': self.target_realm,
-                  'resolver': self.resolver_name,
+        params = {'resolver': self.resolver_name,
                   'dryrun': False,
                   'format': 'password',
                   'delimiter': ',',
@@ -130,8 +132,7 @@ class TestImportUser(TestController):
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
-        params = {'target_realm': self.target_realm,
-                  'resolver': self.resolver_name,
+        params = {'resolver': self.resolver_name,
                   'dryrun': False,
                   'format': 'password',
                   'delimiter': ',',
@@ -177,8 +178,7 @@ class TestImportUser(TestController):
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
-        params = {'target_realm': self.target_realm,
-                  'resolver': self.resolver_name,
+        params = {'resolver': self.resolver_name,
                   'dryrun': True,
                   'format': 'password',
                   'delimiter': ',',
@@ -196,8 +196,7 @@ class TestImportUser(TestController):
         self.assertTrue(len(created) == 25, response)
 
         upload_files = [("file", "user_list", content)]
-        params = {'target_realm': self.target_realm,
-                  'resolver': self.resolver_name,
+        params = {'resolver': self.resolver_name,
                   'dryrun': True,
                   'format': 'password',
                   'delimiter': ',',
@@ -253,7 +252,6 @@ class TestImportUser(TestController):
                 "password": 7}
 
         params = {
-                'target_realm': self.target_realm,
                 'resolver': self.resolver_name,
                 'dryrun': False,
                 'format': 'csv',
@@ -280,9 +278,7 @@ class TestImportUser(TestController):
         jresp = json.loads(response.body)
 
         resolver_params = jresp.get(
-                            'result', {}).get(
-                            'value', {}).get(
-                            'data', {})
+                                'result', {}).get('value', {}).get('data', {})
 
         resolver_params['Password'] = ''
         resolver_params['type'] = 'sqlresolver'
@@ -304,11 +300,10 @@ class TestImportUser(TestController):
 
         # create a realm for this resolver and do a userlist
 
-        reasolver_spec = ('useridresolver.'
-                          'SQLIdResolver.'
-                          'IdResolver.' + self.resolver_name)
+        params = {'realm': 'myrealm', 'resolvers': self.resolver_spec}
+        response = self.make_system_request(action='setRealm',  params=params)
 
-        params = {'realm': self.target_realm, 'username': '*'}
+        params = {'resConf': self.resolver_spec, 'username': '*'}
         response = self.make_admin_request(action='userlist', params=params)
 
         jresp = json.loads(response.body)
@@ -322,7 +317,7 @@ class TestImportUser(TestController):
         policy = {'name': 'T1',
                   'action': 'enrollHMAC',
                   'user': '*',
-                  'realm': self.target_realm,
+                  'realm': '*',
                   'scope': 'selfservice', }
 
         response = self.make_system_request('setPolicy', params=policy)
@@ -349,7 +344,7 @@ class TestImportUser(TestController):
         policy = {'name': 'user_import',
                   'action': 'import_users',
                   'user': 'hans',
-                  'realm': self.target_realm,
+                  'realm': '*',
                   'scope': 'tools', }
 
         response = self.make_system_request('setPolicy', params=policy)
@@ -358,7 +353,7 @@ class TestImportUser(TestController):
 
         content = ""
         upload_files = [("file", "user_list", content)]
-        params = {'target_realm': self.target_realm,
+        params = {
                   'resolver': self.resolver_name,
                   'dryrun': False,
                   'format': 'password',
@@ -414,7 +409,6 @@ class TestImportUser(TestController):
                 "password": 7}
 
         params = {
-                'target_realm': self.target_realm,
                 'resolver': self.resolver_name,
                 'passwords_in_plaintext': True,
                 'dryrun': False,
@@ -446,14 +440,22 @@ class TestImportUser(TestController):
         self.assertTrue(len(updated) == 24, response)
 
         # login to the selfservice to check the password
-
         policy = {'name': 'T1',
                   'action': 'enrollHMAC',
                   'user': '*',
-                  'realm': self.target_realm,
+                  'realm': '*',
                   'scope': 'selfservice', }
 
         response = self.make_system_request('setPolicy', params=policy)
+
+        setRealmParams = {
+            'realm': 'newrealm',
+            'resolvers': self.resolver_spec
+        }
+
+        response = self.make_system_request(action='setRealm',
+                                            params=setRealmParams
+                                            )
 
         # for passthru_user1 do check if policy is defined
         auth_user = ('root', 'root')
@@ -468,80 +470,5 @@ class TestImportUser(TestController):
         self.assertTrue("data:image" in img, response)
 
         return
-
-    def test_multiple_imported_users(self):
-        """
-        list the csv imported users with plain passwords
-        """
-
-        # ------------------------------------------------------------------ --
-
-        # open the csv data and import the users
-
-        def_passwd_file = os.path.join(self.fixture_path,
-                                       'def-passwd.csv')
-
-        with open(def_passwd_file, "r") as f:
-            content = f.read()
-
-        upload_files = [("file", "user_list", content)]
-
-        column_mapping = {
-                "username": 0,
-                "userid": 1,
-                "surname": 2,
-                "givenname": 3,
-                "email": 4,
-                "phone": 5,
-                "mobile": 6,
-                "password": 7}
-
-        params = {
-                'target_realm': self.target_realm,
-                'resolver': self.resolver_name,
-                'passwords_in_plaintext': False,
-                'dryrun': False,
-                'format': 'csv',
-                'delimiter': ',',
-                'quotechar': '"',
-                'column_mapping': json.dumps(column_mapping), }
-
-        params["resolver"] = "plain22"
-
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
-
-        self.assertTrue('"updated": {}' in response, response)
-
-        jresp = json.loads(response.body)
-        created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 24, response)
-
-        params["resolver"] = "plain33"
-
-        response = self.make_tools_request(action='import_users',
-                                           params=params,
-                                           upload_files=upload_files)
-
-        self.assertTrue('"updated": {}' in response, response)
-
-        jresp = json.loads(response.body)
-        created = jresp.get('result', {}).get('value', {}).get('created', {})
-        self.assertTrue(len(created) == 24, response)
-
-        # ------------------------------------------------------------------ --
-
-        # finally we lookup if both users are there
-
-        params = {'realm': self.target_realm, 'username': 'moli*'}
-        response = self.make_admin_request(action='userlist', params=params)
-
-        self.assertTrue('plain22' in response, response)
-        self.assertTrue('plain33' in response, response)
-
-        jresp = json.loads(response.body)
-        users = jresp.get('result', {}).get('value', [])
-        self.assertTrue(len(users) == 2, users)
 
 # eof ########################################################################
