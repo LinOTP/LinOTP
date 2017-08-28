@@ -2303,7 +2303,7 @@ def get_auth_forward(user):
     '''
     client = _get_client()
 
-    pol = has_client_policy(client, scope="authentication",
+    pol = get_client_policy(client, scope="authentication",
                             action="forward_server", realm=user.realm,
                             user=user.login, userObj=user)
     if not pol:

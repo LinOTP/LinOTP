@@ -118,7 +118,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' in Rad_Serv)
+        self.assertTrue('127.0.0.1' in Rad_Serv, Rad_Serv)
 
         params = {
             'user': 'passthru_user2',
@@ -126,7 +126,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' not in Rad_Serv)
+        self.assertTrue('127.0.0.1' not in Rad_Serv, Rad_Serv)
 
         return
 
@@ -151,7 +151,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' in Rad_Serv)
+        self.assertTrue('127.0.0.1' in Rad_Serv, Rad_Serv)
 
         params = {
             'user': 'passthru_user2',
@@ -159,7 +159,7 @@ class TestForwardServer(TestController):
 
         _response = self.make_validate_request(action='check', params=params)
 
-        self.assertTrue('127.0.0.1' not in Rad_Serv)
+        self.assertTrue('127.0.0.1' not in Rad_Serv, Rad_Serv)
 
         return
 
