@@ -39,6 +39,24 @@ log = logging.getLogger(__name__)
 
 class Challenges(object):
 
+    DefaultTransactionIdLength = 17
+
+    @staticmethod
+    def get_tranactionid_length():
+        """
+        get transaction_id length from config and check if it is in range
+        :return: length of transaction id
+        """
+        transid_len = int(
+            context.get(
+            'Config', {}).get(
+            'TransactionIdLength', Challenges.DefaultTransactionIdLength))
+
+        if transid_len < 12 or transid_len > 17:
+            raise Exception("TransactionIdLength must be between 12 and 17, "
+                            "was %d" % transid_len)
+        return transid_len
+
     @staticmethod
     def lookup_challenges(serial=None, transid=None, filter_open=False):
         """
@@ -61,8 +79,7 @@ class Challenges(object):
         conditions = ()
 
         if transid:
-            transid_len = int(
-                context.get('Config').get('TransactionIdLength', 12) or 12)
+            transid_len = Challenges.get_tranactionid_length()
 
             if len(transid) == transid_len:
                 conditions += (and_(Challenge.transid == transid),)
@@ -126,9 +143,9 @@ class Challenges(object):
 
         hsm = context['hsm'].get('obj')
 
-        id_length = int(
-            context.get('Config', None).get('TransactionIdLength', 12)) - \
-                        len(id_postfix)
+        transid_len = Challenges.get_tranactionid_length()
+
+        id_length = transid_len - len(id_postfix)
 
         while True:
             try:
