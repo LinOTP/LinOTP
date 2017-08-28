@@ -165,10 +165,24 @@ def getPolicyDefinitions(scope=""):
                 'type': 'str',
                 'desc': 'users can enroll a token just by using the '
                         'pin to authenticate and will an otp for authentication'},
+
             'autoassignment_forward': {
                 'type': 'bool',
                 'desc': 'in case of an autoassignement with a remotetoken, '
                         'the credentials are forwarded'},
+
+            'autoassignment_from_realm': {
+                'type': 'str',
+                'desc': 'define the src realm, where the unassigned tokens '
+                        'should be taken from'},
+
+            'autoassignment_without_password': {
+                'type': 'bool',
+                'desc': 'users can assign a token just by using the '
+                        'unassigned token to authenticate providing the '
+                        'otp value only.'
+                },
+
             'autoassignment': {
                 'type': 'bool',
                 'desc': 'users can assign a token just by using the '

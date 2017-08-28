@@ -1733,6 +1733,60 @@ def get_tokenlabel(user="", realm="", serial=""):
     return tokenlabel
 
 
+def get_autoassignment_from_realm(user):
+    '''
+    this function checks the policy scope=enrollment,
+                                    action=autoassignment_from_realm
+
+    :return: the realm where the tokens should be taken from
+    '''
+
+    token_src_realm_action = 'autoassignment_from_realm'
+
+    pol = get_client_policy(client=_get_client(),
+                            scope='enrollment',
+                            action=token_src_realm_action,
+                            realm=user.realm,
+                            user=user.login,
+                            userObj=user)
+
+    if len(pol) > 0:
+        realm = getPolicyActionValue(pol,
+                                     token_src_realm_action,
+                                     is_string=True).strip()
+        log.debug("got the %s: %r", token_src_realm_action, realm)
+        return realm
+
+    return None
+
+
+def get_autoassignment_without_pass(user):
+    """
+    check if autoassigment without password for the user is allowed
+
+    :return: boolean
+    """
+
+    action_name = 'autoassignment_without_password'
+
+    pol = get_client_policy(client=_get_client(),
+                            scope='enrollment',
+                            action=action_name,
+                            realm=user.realm,
+                            user=user.login,
+                            userObj=user)
+
+    if len(pol) > 0:
+        val = getPolicyActionValue(pol, action_name)
+
+        if val in [True, False]:
+            return val
+        if val.lower().strip() == 'true':
+            return True
+
+    return False
+
+
 def get_autoassignment(user):
     '''
     this function checks the policy scope=enrollment, action=autoassignment

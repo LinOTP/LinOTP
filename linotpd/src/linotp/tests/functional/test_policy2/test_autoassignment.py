@@ -28,6 +28,7 @@
 """
 Test the autoassignment Policy.
 """
+import json
 
 import unittest2
 from copy import deepcopy
@@ -517,7 +518,8 @@ class TestAutoassignmentController(TestController):
             self.assertTrue(content['result']['status'])
             self.assertEqual(1, content['result']['value'])
 
-    def _create_autoassignment_policy(self, name, realm):
+    def _create_autoassignment_policy(self, name, realm,
+                                      action='autoassignment'):
         """
         Create an autoassignment policy with name 'name' for realm 'realm'.
 
@@ -527,7 +529,7 @@ class TestAutoassignmentController(TestController):
         params = {
             'name': name,
             'scope': 'enrollment',
-            'action': 'autoassignment',
+            'action': action,
             'user': '*',
             'realm': realm,
         }
@@ -583,3 +585,73 @@ class TestAutoassignmentController(TestController):
             self.fail("Unknown 'expected' %s" % expected)
         return content
 
+
+    def test_autoassign_mixed_token_wo_password(self):
+        """
+        Autoassignment wo password with 4 HMAC + 1 Yubikey to 5 different users
+
+        - 5 Token (4 HMAC + 1 Yubikey) are enrolled and put together in
+          the same token realm.
+
+        - An autoenrollment policy for that realm is created.
+
+        - 5 different users from that realm autoassign themselves one token
+          each by authenticating with the OTP value corresponding to
+          that token.
+
+        """
+
+        # 5 users from myDefRealm
+        users = [u'molière', u'shakespeare', u'lorca', u'aἰσχύλος', u'beckett']
+
+        # 5 token descriptions
+        token_list = deepcopy(self.token_list)
+
+        # ----------------------------------------------------------------- --
+
+        # create the policies for autoassigment without pin
+
+        self._create_autoassignment_policy(
+                            name='my_autoassign_policy_wo_pass',
+                            realm='mydefrealm',
+                            action='autoassignment_without_password')
+
+        self._set_token_realm(token_list, 'mydefrealm')
+
+        # ----------------------------------------------------------------- --
+
+        # validate/check with otp only to autoassign token to users
+
+        for i in range(5):
+            user_name = users[i]
+            token = token_list[i]
+
+            self._validate(user_name, token['otps'][0])
+
+        # ----------------------------------------------------------------- --
+
+        # verify the correct assignment of the token to the user
+
+        for i in range(5):
+
+            user_name = users[i]
+            token = token_list[i]
+            params = {'serial': token['serial']}
+
+            response = self.make_admin_request('getTokenOwner', params=params)
+            content = json.loads(response.body)
+
+            self.assertTrue(content['result']['status'])
+            self.assertEqual(user_name, content['result']['value']['username'])
+
+            # -------------------------------------------------------------- --
+
+            # verify the correct working of the token by validate/check with
+            # the remaining OTP values
+
+            for j in range(1, 3):
+                self._validate(user_name, token['otps'][j])
+
+        return
+
+# eof #
