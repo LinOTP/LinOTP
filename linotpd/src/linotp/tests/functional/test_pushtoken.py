@@ -278,7 +278,7 @@ class TestPushToken(TestController):
         # parse, descrypt and verify the challenge url
 
         challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
-                                                           accept=True)
+                                                           action='ACCEPT')
 
         # ------------------------------------------------------------------ --
 
@@ -293,19 +293,18 @@ class TestPushToken(TestController):
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig,
-                  'action': 'accept'}
+                  'signature': sig}
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('confirm_transaction', params)
+        response = self.make_validate_request('accept_transaction', params)
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
         self.assertTrue(status)
 
-        accept = response_dict.get('result', {}).get('value', {}).get('accept')
-        self.assertTrue(accept, response)
+        value = response_dict.get('result', {}).get('value')
+        self.assertTrue(value, response)
 
         user_token_id = challenge['user_token_id']
 
@@ -431,7 +430,7 @@ class TestPushToken(TestController):
 
 # -------------------------------------------------------------------------- --
 
-    def decrypt_and_verify_challenge(self, challenge_url, accept=True):
+    def decrypt_and_verify_challenge(self, challenge_url, action):
 
         """
         Decrypts the data packed in the challenge url, verifies
@@ -445,6 +444,8 @@ class TestPushToken(TestController):
         checked by the method that simulates the pairing)
 
         :param challenge_url: the challenge url as sent by the server
+        :param action: a string identifier for the verification action
+            (at the moment 'ACCEPT' or 'DENY')
 
         :returns: (challenge, signature)
 
@@ -574,19 +575,12 @@ class TestPushToken(TestController):
         challenge['transaction_id'] = transaction_id
         challenge['user_token_id'] = user_token_id
 
-        # calculate signature - dependend on reject or accept mode
-        if accept:
+        # calculate signature
 
-            sig_base = (
-                struct.pack('<b', CHALLENGE_URL_VERSION) +
-                b'ACCEPT\0' +
-                server_signature + plaintext)
-
-        else:
-            sig_base = (
-                struct.pack('<b', CHALLENGE_URL_VERSION) +
-                b'DENY\0' +
-                server_signature + plaintext)
+        sig_base = (
+            struct.pack('<b', CHALLENGE_URL_VERSION) +
+            b'%s\0' % action +
+            server_signature + plaintext)
 
         sig = crypto_sign_detached(sig_base, self.secret_key)
         encoded_sig = encode_base64_urlsafe(sig)
@@ -738,7 +732,8 @@ class TestPushToken(TestController):
             'magic diet pill they don\'t want me to know about'),
             content_type=CONTENT_TYPE_SIGNREQ)
 
-        challenge, sig = self.decrypt_and_verify_challenge(challenge_url)
+        challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
+                                                           action='ACCEPT')
 
         # ------------------------------------------------------------------ --
 
@@ -752,19 +747,18 @@ class TestPushToken(TestController):
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig,
-                  'action': 'accept'}
+                  'signature': sig}
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('confirm_transaction', params)
+        response = self.make_validate_request('accept_transaction', params)
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
         self.assertTrue(status)
 
-        accept = response_dict.get('result', {}).get('value', {}).get('accept')
-        self.assertTrue(accept, response)
+        value = response_dict.get('result', {}).get('value')
+        self.assertTrue(value, response)
 
         # ------------------------------------------------------------------ --
 
@@ -800,7 +794,7 @@ class TestPushToken(TestController):
             content_type=CONTENT_TYPE_SIGNREQ)
 
         challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
-                                                           accept=False)
+                                                           action='DENY')
 
         # ------------------------------------------------------------------ --
 
@@ -814,19 +808,18 @@ class TestPushToken(TestController):
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig,
-                  'action': 'reject'}
+                  'signature': sig}
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('confirm_transaction', params)
+        response = self.make_validate_request('reject_transaction', params)
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
         self.assertTrue(status)
 
-        reject = response_dict.get('result', {}).get('value', {}).get('reject')
-        self.assertTrue(reject, response)
+        value = response_dict.get('result', {}).get('value')
+        self.assertTrue(value, response)
 
         # ------------------------------------------------------------------ --
 
@@ -860,7 +853,8 @@ class TestPushToken(TestController):
             'magic diet pill they don\'t want me to know about'),
             content_type=CONTENT_TYPE_SIGNREQ)
 
-        challenge, __ = self.decrypt_and_verify_challenge(challenge_url)
+        challenge, __ = self.decrypt_and_verify_challenge(challenge_url,
+                                                          action='ACCEPT')
 
         wrong_sig = 'DEADBEEF' * 32
 
@@ -876,19 +870,18 @@ class TestPushToken(TestController):
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'signature': wrong_sig,
-                  'action': 'accept'}
+                  'signature': wrong_sig}
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('confirm_transaction', params)
+        response = self.make_validate_request('accept_transaction', params)
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
         self.assertTrue(status)
 
-        accept = response_dict.get('result', {}).get('value', {}).get('accept')
-        self.assertFalse(accept, response)
+        value = response_dict.get('result', {}).get('value')
+        self.assertFalse(value, response)
 
 # -------------------------------------------------------------------------- --
 
@@ -1034,7 +1027,8 @@ class TestPushToken(TestController):
         challenge_url = self.trigger_challenge(user_token_id, data='root@foo',
                                                content_type=CONTENT_TYPE_LOGIN)
 
-        challenge, sig = self.decrypt_and_verify_challenge(challenge_url)
+        challenge, sig = self.decrypt_and_verify_challenge(challenge_url,
+                                                           action='ACCEPT')
 
         # ------------------------------------------------------------------ --
 
@@ -1048,19 +1042,18 @@ class TestPushToken(TestController):
         # prepare params for validate
 
         params = {'transactionid': challenge['transaction_id'],
-                  'signature': sig,
-                  'action': 'accept'}
+                  'signature': sig}
 
         # again, we ignore the callback definitions
 
-        response = self.make_validate_request('confirm_transaction', params)
+        response = self.make_validate_request('accept_transaction', params)
         response_dict = json.loads(response.body)
 
         status = response_dict.get('result', {}).get('status')
         self.assertTrue(status)
 
-        accept = response_dict.get('result', {}).get('value', {}).get('accept')
-        self.assertTrue(accept, response)
+        value = response_dict.get('result', {}).get('value')
+        self.assertTrue(value, response)
 
 # -------------------------------------------------------------------------- --
 
