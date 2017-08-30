@@ -31,6 +31,11 @@ from helper import hover
 
 import tempfile
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
+
 class TokenImport:
     """TokenImport imports files as Tokens in the LinOTP WebUI"""
 
@@ -54,14 +59,21 @@ class TokenImport:
 
         self.driver.get(self.base_url + "/manage")
         import_button = self.driver.find_element_by_xpath(u"//ul[@id='menu']//"
-                                       "li[a[text()='Import Token File']]")
+                                                          "li[a[text()='Import Token File']]")
         time.sleep(1)
         hover(self.driver, import_button)
-        time.sleep(1)
+        time.sleep(3)
         if self.file_type == "safenet":
-            self.driver.find_element_by_id("menu_load_aladdin_xml_tokenfile").click()
+            WebDriverWait(self.driver, 4).until(
+                EC.element_to_be_clickable(
+                    (By.ID, "menu_load_aladdin_xml_tokenfile"))
+            )
+            self.driver.find_element_by_id(
+                "menu_load_aladdin_xml_tokenfile").click()
         else:
             exit(1)
-        self.driver.find_element_by_xpath("(//input[@name='file'])[7]").send_keys(self.file_path)
-        self.driver.find_element_by_id("button_aladdin_load").click()
+        self.driver.find_element_by_xpath(
+            '//*[@id="load_tokenfile_form_aladdin"]/p[2]/input').send_keys(self.file_path)
 
+        self.driver.find_element_by_id("button_aladdin_load").click()
+        self.driver.find_element_by_id("logo").click()

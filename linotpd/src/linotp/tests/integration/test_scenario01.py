@@ -89,34 +89,23 @@ class TestScenario01(TestCase):
 
         # Create SQL UserIdResolver
         sql_data = data.sql_resolver
+
         sql_resolver = self.useridresolver_manager.create_resolver(sql_data)
+        self.useridresolver_manager.close()
 
         # Create realm for all resolvers
         realm_name1 = "SE_scenario01_realm1"
         realm_name2 = "SE_scenario01_realm2"
+
         self.realm_manager.create(realm_name1, [ldap_resolver])
         self.realm_manager.create(realm_name2, [sql_resolver])
+        self.realm_manager.close()
 
         self._announce_test(
             "2. In Management Webinterface, check that all users are visible")
 
-        def check_users(realm, data):
-            expected_users = data['expected_users']
-            users = data['users']
-
-            found_users = self.manage_ui.user_view.get_num_users(realm)
-
-            self.assertEqual(expected_users, found_users,
-                             "Not the expected number of users in realm %s: Expecting %s but found %s"
-                             % (realm, expected_users, found_users))
-
-            for user in users:
-                self.assertTrue(self.manage_ui.user_view.user_exists(user),
-                                "User '%s' should exist in realm %s" % (user, realm))
-                break
-
-        check_users(realm_name1, ldap_data)
-        check_users(realm_name2, sql_data)
+        self.check_users(realm_name1, ldap_data)
+        self.check_users(realm_name2, sql_data)
 
         self._announce_test("3. eToken.xml ueber das Webinterface importieren")
 
@@ -189,6 +178,7 @@ class TestScenario01(TestCase):
 
         user_view.select_realm(test1_realm)
         user_view.select_user("bach")
+
         token_view.assign_token(serial_token_bach, "1234")
 
         self._announce_test("6. Remote Token zuweisen")
@@ -317,8 +307,10 @@ class TestScenario01(TestCase):
             key=motp_key,
             pin=motp_pin
         )
+
         access_granted, _ = validate.validate(user="mozart@" + test1_realm,
                                               password="mozartnewpin" + motp_otp)
+        time.sleep(1)
         self.assertTrue(access_granted, "OTP: " + motp_otp + " for user " +
                         "mozart@" + test1_realm + " returned False")
         motp_otp = calculate_motp(
@@ -384,7 +376,7 @@ class TestScenario01(TestCase):
             "13. Benutzer beethoven deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden.")
 
         selfservice.login("beethoven", "Test123!", test1_realm)
-        selfservice.resync_token(serial_token_beethoven)
+        selfservice.disable_token(serial_token_beethoven)
         selfservice.logout()
 
         # beethoven should be unable to authenticate
@@ -400,8 +392,24 @@ class TestScenario01(TestCase):
         token_view.select_token(serial_token_beethoven)
         driver.find_element_by_id("button_enable").click()
 
+        time.sleep(1)
         # beethoven should be able to authenticate
         access_granted, _ = validate.validate(user="beethoven@" + test1_realm,
                                               password="beethovennewpin")
         self.assertTrue(
-            access_granted, "OTP: beethovennewpin should be False for user beethoven")
+            access_granted, "OTP: beethovennewpin should be able to authenticate after re-enabled token.")
+
+    def check_users(self, realm, data):
+        expected_users = data['expected_users']
+        users = data['users']
+
+        found_users = self.manage_ui.user_view.get_num_users(realm)
+
+        self.assertEqual(expected_users, found_users,
+                         "Not the expected number of users in realm %s: Expecting %s but found %s"
+                         % (realm, expected_users, found_users))
+
+        for user in users:
+            self.assertTrue(self.manage_ui.user_view.user_exists(user),
+                            "User '%s' should exist in realm %s" % (user, realm))
+            break

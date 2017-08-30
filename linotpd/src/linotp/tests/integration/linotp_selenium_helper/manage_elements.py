@@ -24,6 +24,8 @@
 #    Support: www.keyidentity.com
 #
 
+import time
+
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -107,6 +109,7 @@ class ManageTab(ManageElement):
         super(ManageTab, self).__init__(manage_ui)
         self.tabbutton_css = 'div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span' % (
             self.TAB_INDEX)
+
         self.tabpane_css = 'div#tabs > div.ui-tabs-panel:nth-of-type(%s)' % (
             self.TAB_INDEX)
         self.flexigrid_css = self.tabpane_css + ' div.flexigrid'
@@ -147,8 +150,19 @@ class ManageTab(ManageElement):
 
         tab_button = self.find_by_css(self.tabbutton_css)
 
+        WebDriverWait(self.driver, 3).until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, self.tabbutton_css))
+        )
+        time.sleep(1)
         if tab_button.is_enabled():
             self.manage.close_dialogs_and_click(tab_button)
+        time.sleep(1)
+
+        WebDriverWait(self.driver, 3).until(
+            EC.visibility_of_element_located(
+                (By.CSS_SELECTOR, self.tabpane_css))
+        )
 
         assert self._is_tab_open(), "Tab should be open"
 

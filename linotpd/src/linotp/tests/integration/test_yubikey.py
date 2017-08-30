@@ -70,7 +70,9 @@ class TestYubikey(TestCase):
         lotpc = linotpclient(self.http_protocol,
                              url,
                              admin=self.http_username,
-                             adminpw=self.http_password)
+                             adminpw=self.http_password,
+                             cert=None, key=None,
+                             disable_ssl_certificate_validation=True)
         serialnum = "01382015"
         yubi_slot = 1
         serial = "UBAM%s_%s" % (serialnum, yubi_slot)
