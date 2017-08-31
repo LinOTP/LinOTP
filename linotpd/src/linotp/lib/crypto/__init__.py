@@ -297,6 +297,7 @@ def libcrypt_password(password, crypted_password=None):
 
     return encryptedPW
 
+
 def get_hashalgo_from_description(description, fallback='sha1'):
     """
     get the hashing function from a string value
@@ -305,6 +306,9 @@ def get_hashalgo_from_description(description, fallback='sha1'):
     :param fallback: the fallback hash allgorithm
     :return: hashing function pointer
     """
+
+    if not description:
+        description = fallback
 
     try:
         hash_func = Hashlib_map.get(description.lower(),
@@ -316,7 +320,6 @@ def get_hashalgo_from_description(description, fallback='sha1'):
         raise Exception("hash function not callable %r", hash_func)
 
     return hash_func
-
 
 
 def getSecretDummy():
