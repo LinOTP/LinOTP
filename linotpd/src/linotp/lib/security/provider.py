@@ -314,9 +314,8 @@ class SecurityProvider(object):
                             raise exx
                         error = u"%r: %r" % (provider_id, exx)
 
-                    except Exception as e:
-                        error = u"%r" % e
-                        log.exception("[createHSMPool] %r " % (e))
+                    except Exception as exx:
+                        log.exception("[createHSMPool] %r ", exx)
                         error = u"%r: %r" % (provider_id, exx)
 
                     pool.append({'obj': hsm, 'session': 0, 'error': error})
