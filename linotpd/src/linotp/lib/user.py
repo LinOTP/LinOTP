@@ -384,6 +384,21 @@ def splitUser(username):
     return (user, group)
 
 
+def _get_resolver_from_param(param):
+    """
+    extract the resolver shortname from the given parameter,
+    which could be "res_name (fq resolber name) "
+    """
+
+    resolver_config_identifier = param.get("resConf", '')
+
+    if not resolver_config_identifier or "(" not in resolver_config_identifier:
+        return resolver_config_identifier
+
+    resolver_config_id, __ = resolver_config_identifier.split("(")
+    return resolver_config_id.strip()
+
+
 def getUserFromParam(param):
     """
     establish an user object from the request parameters
@@ -391,58 +406,70 @@ def getUserFromParam(param):
 
     log.debug("[getUserFromParam] entering function")
 
-    realm = ""
-    user = param.get("user")
+    realm = param.get("realm", '')
+    login = param.get("user", '')
+    resolver_config_id = _get_resolver_from_param(param)
 
-    log.debug("[getUserFromParam] got user <<%r>>", user)
+    log.debug("[getUserFromParam] got user <<%r>>", login)
 
-    if user is None:
-        user = ""
-    else:
-        splitAtSign = getFromConfig("splitAtSign", "true")
+    # ---------------------------------------------------------------------- --
 
-        if splitAtSign.lower() == "true":
-            (user, realm) = splitUser(user)
+    if not login and not realm and not resolver_config_id:
+        return User()
 
-    if "realm" in param:
-        realm = param["realm"]
+    # ---------------------------------------------------------------------- --
 
-    if user != "":
-        if not realm:
-            realm = getDefaultRealm()
+    if realm:
 
-    usr = User(user, realm, "")
+        usr = User(login=login, realm=realm,
+                   resolver_config_identifier=resolver_config_id)
 
-    resolver_config_id = ''
-    if "resConf" in param:
-        resolver_config_identifier = param["resConf"]
-        # with the short resolvernames, we have to extract the
-        # configuration name from the resolver spec
-        if "(" in resolver_config_identifier and \
-           ")" in resolver_config_identifier:
-            resolver_config_id, __ = resolver_config_identifier.split(" ")
-        usr.resolver_config_identifier = resolver_config_id
-    else:
-        if len(usr.login) > 0 or \
-           len(usr.realm) > 0 or \
-           len(usr.resolver_config_identifier) > 0:
+        return usr
 
-            res = getResolversOfUser(usr)
+    # ---------------------------------------------------------------------- --
 
-            #
-            # if nothing is found, we try to find fall back to the
-            # user definition like u@r
+    # no realm but a user!
 
-            if not res and '@' in usr.login:
-                ulogin, _, urealm = usr.login.rpartition('@')
-                if urealm in getRealms():
-                    usr = User(ulogin, urealm)
-                    res = getResolversOfUser(usr)
+    splitAtSign = getFromConfig("splitAtSign", "true")
 
-            usr.resolvers_list = res
+    if splitAtSign.lower() == "true":
+        (login, realm) = splitUser(login)
+
+    if login and not realm:
+        realm = getDefaultRealm()
+
+    # ---------------------------------------------------------------------- --
+
+    # everything ready to create the user
+
+    usr = User(login, realm, resolver_config_identifier=resolver_config_id)
+
+    # ---------------------------------------------------------------------- --
+
+    # if no resolver determined, we try to extend the user info
+
+    if "resConf" not in param:
+
+        res = getResolversOfUser(usr)
+
+        #
+        # if nothing is found, we try to find fall back to the
+        # user definition like u@r
+
+        if not res and 'realm' not in param and '@' in usr.login:
+
+            ulogin, _, urealm = usr.login.rpartition('@')
+
+            if urealm in getRealms():
+                realm = urealm
+                login = ulogin
+                usr = User(ulogin, urealm)
+                res = getResolversOfUser(usr)
+
+        usr.resolvers_list = res
 
     log.debug("[getUserFromParam] creating user object %r,%r,%r",
-              user, realm, resolver_config_id)
+              login, realm, resolver_config_id)
     log.debug("[getUserFromParam] created user object %r ", usr)
 
     return usr
