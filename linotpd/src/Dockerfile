@@ -60,6 +60,10 @@ ARG LINOTP_MIRROR=www.linotp.org
 #   LOGSTASH_HOST=logstash1
 #   LOGSTASH_PORT=5000
 #   LOGSTASH_TAGS=('instance1', 'server1')
+#
+# To change the location of the database
+# encryption key file, set
+#   SECRET_FILE_LOCATION=/path/to/encKey
 
 ENV LINOTP_USER=linotp \
 	LINOTP_DB_TYPE=sqlite \
@@ -76,7 +80,8 @@ ENV LINOTP_USER=linotp \
 	APACHE_LOGLEVEL=info \
 	LOGSTASH_HOST= \
 	LOGSTASH_PORT= \
-	LOGSTASH_TAGS=()
+	LOGSTASH_TAGS=() \
+	SECRET_FILE_LOCATION=
 
 # Internal environment variables used by the docker images
 ENV LINOTP_INI_TEMPLATE=/etc/linotp/linotp-docker.ini.tmpl \
