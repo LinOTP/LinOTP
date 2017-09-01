@@ -70,6 +70,8 @@ from linotp.lib.crypto import urandom
 from linotp.lib.util import uniquify
 
 
+from linotp.lib.context import request_context
+
 log = logging.getLogger(__name__)
 
 # This dictionary maps the token_types to actions in the scope gettoken,
@@ -2526,6 +2528,9 @@ def get_auth_challenge_response(user, ttype):
 
     token_types = [t.lower() for t in Token_Types.split()]
 
+    if request_context['Path'] == '/userservice/login':
+        token_types = "*"
+
     if ttype.lower() in token_types or '*' in token_types:
 
         log.debug("found matching token type %s", ttype)
@@ -2815,6 +2820,14 @@ def get_pin_policies(user):
 
     pin_policies.append(_get_auth_PinPolicy(user=user))
     pin_policies = list(set(pin_policies))
+
+    # ---------------------------------------------------------------------- --
+
+    # in the context of the selfservice login we precheck the password
+    # so thate the password could be ignored at all
+
+    if request_context['Path'] == '/userservice/login':
+        pin_policies = [3]
 
     if len(pin_policies) > 1:
         msg = ("conflicting authentication polices. "

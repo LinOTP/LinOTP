@@ -28,11 +28,10 @@
 import binascii
 import os
 import datetime
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import hmac
+import hashlib
+import base64
+import json
 
 # for the temporary rendering context, we use 'c'
 from pylons import (tmpl_context as c
@@ -64,20 +63,12 @@ from linotp.lib.user import (
 from linotp.lib.token import getTokens4UserOrSerial
 from linotp.tokens import tokenclass_registry
 
-
-from linotp.lib.crypto import (aes_decrypt_data,
-                              aes_encrypt_data
-                              )
-
-
 from linotp.lib.user import (getUserInfo,
-                              User,
-                              getUserId)
+                             User,
+                             getUserId)
 
 from linotp.lib.realm import getDefaultRealm
-
-
-
+from linotp.lib.context import request_context
 
 import logging
 log = logging.getLogger(__name__)
@@ -88,26 +79,17 @@ SECRET_LEN = 32
 # const - timeformat used in session cookie
 TIMEFORMAT = "%Y-%m-%d %H:%M:%S"
 
+Cookie_Cache = {}
 
-def get_userinfo(login):
 
-    uinfo = {}
-
-    if '@' in login:
-        uuser, rrealm = login.split("@")
-        user = User(uuser, rrealm)
-    else:
-        realm = getDefaultRealm()
-        user = User(login, realm)
+def get_userinfo(user):
 
     (uid, resolver, resolver_class) = getUserId(user)
     uinfo = getUserInfo(uid, resolver, resolver_class)
-
-    # the passwd resolver should not expose the crypted/hasehd password
-    if 'cryptpass' in uinfo:
-        del uinfo['cryptpass']
+    del uinfo['cryptpass']
 
     return uinfo
+
 
 def getTokenForUser(user, active=None):
     """
@@ -116,19 +98,22 @@ def getTokenForUser(user, active=None):
     tokenArray = []
 
     log.debug("[getTokenForUser] iterating tokens for user...")
-    log.debug("[getTokenForUser] ...user %s in realm %s." % (user.login, user.realm))
+    log.debug("[getTokenForUser] ...user %s in realm %s.",
+              user.login, user.realm)
+
     tokens = getTokens4UserOrSerial(user=user, serial=None, _class=False,
                                     active=active)
 
     for token in tokens:
         tok = token.get_vars()
-        if tok.get('LinOtp.TokneInfo', None):
-            token_info = json.loads(tok.get('LinOtp.TokneInfo'))
+        if tok.get('LinOtp.TokenInfo', None):
+            token_info = json.loads(tok.get('LinOtp.TokenInfo'))
             tok['LinOtp.TokenInfo'] = token_info
         tokenArray.append(tok)
 
     log.debug("[getTokenForUser] found tokenarray: %r" % tokenArray)
     return tokenArray
+
 
 def _get_realms_():
     realms = {}
@@ -141,47 +126,79 @@ def _get_realms_():
     return realms
 
 
-def create_auth_cookie(config, user, client):
+def create_auth_cookie(user, client, state='authenticated', state_data=None):
     """
     create and auth_cookie value from the authenticated user and client
 
     :param user: the authenticated user
     :param client: the requesting client
-    :return: the encrypted cookie value, the expires datetime object and
+    :param state: the state info for the authentication
+    :return: the hmac256digest of the user data
+             the expiration time as datetime
              the expiration time as string
     """
 
-    secret = get_cookie_secret(config)
-    expiry = get_cookie_expiry(config)
+    secret = get_cookie_secret()
+    key = binascii.unhexlify(secret)
 
-    if expiry:
-        delta = parse_duration(expiry)
-    else:
+    # ---------------------------------------------------------------------- --
+
+    # handle expiration calculation
+
+    expiry = get_cookie_expiry()
+
+    if expiry is False:
         # default should be at max 1 hour
         delta = datetime.timedelta(seconds=1 * 60 * 60)
+    else:
+        delta = parse_duration(expiry)
 
     now = datetime.datetime.now()
     expires = now + delta
     expiration = expires.strftime(TIMEFORMAT)
 
-    key = binascii.unhexlify(secret)
+    # ---------------------------------------------------------------------- --
 
-    username = "%r" % user
-    if type(user) == User:
-        username = "%r@%r" % (user.login, user.realm)
-    iv = os.urandom(SECRET_LEN)
-    try:
-        enc = aes_encrypt_data(username + "|" + client + '|' + expiration,
-                               key, iv)
-    except Exception as exx:
-        log.exception("Failed to create encrypted cookie %r" % exx)
-        raise exx
+    # build the cache data
 
-    auth_cookie = "%s%s" % (binascii.hexlify(iv), binascii.hexlify(enc))
+    data = [user, client, expiration, state, state_data]
+
+    digest = hmac.new(key, "%r" % data, digestmod=hashlib.sha256).digest()
+    auth_cookie = base64.urlsafe_b64encode(digest).decode()
+
+    Cookie_Cache[auth_cookie] = data
+
     return auth_cookie, expires, expiration
 
 
-def check_auth_cookie(config, cookie, user, client):
+def get_cookie_authinfo(cookie):
+    """
+    return the authentication data from the cookie, which is the user
+    and the auth state and the optional state_data
+
+    :param cookie: the session cookie, which is an hmac256 hash
+    :return: triple of user, state and state_data
+    """
+
+    data = Cookie_Cache.get(cookie)
+
+    if not data:
+        return None, None, None, None
+
+    [user, client, expiration, state, state_data] = data
+
+    # handle session expiration
+
+    now = datetime.datetime.now()
+    expires = datetime.datetime.strptime(expiration, TIMEFORMAT)
+    if now > expires:
+        log.info("session is expired")
+        return None, None, None, None
+
+    return user, client, state, state_data
+
+
+def remove_auth_cookie(cookie):
     """
     verify that value of the auth_cookie contains the correct user and client
 
@@ -191,43 +208,50 @@ def check_auth_cookie(config, cookie, user, client):
 
     :return: boolean
     """
-    secret = get_cookie_secret(config)
-    key = binascii.unhexlify(secret)
 
-    try:
-        iv = cookie[:2 * SECRET_LEN]
-        enc = cookie[2 * SECRET_LEN:]
-        auth_cookie_val = aes_decrypt_data(binascii.unhexlify(enc),
-                                           key,
-                                           binascii.unhexlify(iv))
-        cookie_user, cookie_client, expiration = auth_cookie_val.split('|')
+    if cookie in Cookie_Cache:
+        del Cookie_Cache[cookie]
 
-        # handle session expiration
-        now = datetime.datetime.now()
-        expires = datetime.datetime.strptime(expiration, TIMEFORMAT)
-        if now > expires:
-            log.info("session is expired")
-            return False
 
-    except Exception as exx:
-        log.exception("Failed to decode cookie - session key seems to be old")
+def check_auth_cookie(cookie, user, client):
+    """
+    verify that value of the auth_cookie contains the correct user and client
+
+    :param user: the authenticated user object
+    :param cookie: the auth_cookie
+    :param client: the requesting client
+
+    :return: boolean
+    """
+
+    data = Cookie_Cache.get(cookie)
+
+    if not data:
+        return False, None, None
+
+    [cookie_user, cookie_client, expiration, _state, _state_data] = data
+
+    # handle session expiration
+
+    now = datetime.datetime.now()
+    expires = datetime.datetime.strptime(expiration, TIMEFORMAT)
+
+    if now > expires:
+        log.info("session is expired")
         return False
 
-    username = user
-    if type(user) == User:
-        username = "%r@%r" % (user.login, user.realm)
-
-    return (username == cookie_user and cookie_client == client)
+    return (user == cookie_user and cookie_client == client)
 
 
-def get_cookie_secret(config):
+def get_cookie_secret():
     """
-    get the cookie encryption secret from the repoze config
+    get the cookie encryption secret from the config
     - if the selfservice is droped from running localy, this
       configuration option might not exist anymore
 
     :return: return the cookie encryption secret
     """
+    config = request_context['Config']
 
     if not config.get('selfservice_auth_secret'):
         secret = binascii.hexlify(os.urandom(SECRET_LEN))
@@ -236,19 +260,20 @@ def get_cookie_secret(config):
     return config.get('selfservice_auth_secret')
 
 
-def get_cookie_expiry(config):
+def get_cookie_expiry():
     """
-    get the cookie encryption expiry from the repoze config
+    get the cookie encryption expiry from the config
     - if the selfservice is dropped from running locally, this
       configuration option might not exist anymore
 
     :return: return the cookie encryption expiry
     """
+    config = request_context['Config']
 
     return config.get('selfservice.auth_expiry', False)
 
 
-def check_userservice_session(request, config, user, client):
+def check_session(request, user, client):
     """
     check if the user session is ok:
     - check if the sessionvalue is the same as the cookie
@@ -262,18 +287,26 @@ def check_userservice_session(request, config, user, client):
     """
     ret = False
 
-    cookie = request.cookies.get('userauthcookie', 'no_auth_cookie')
+    # try to get (local) selfservice
+    # if none is present fall back to possible
+    # userauthcookie (cookie for remote self service)
+
+    cookie = request.cookies.get(
+        'user_selfservice', request.cookies.get(
+            'userauthcookie', 'no_auth_cookie'))
+
     session = request.params.get('session', 'no_session')
 
     if session == cookie:
-        ret = check_auth_cookie(config, cookie, user, client)
+        ret = check_auth_cookie(cookie, user, client)
 
     return ret
+
 
 def get_pre_context(client):
     """
     get the rendering context before the login is shown, so the rendering
-    of the login page could be controlled if realm_box or otpLogin is
+    of the login page could be controlled if realm_box or mfa_login is
     defined
 
     :param client: the rendering is client dependend, so we need the info
@@ -289,29 +322,33 @@ def get_pre_context(client):
 
     pre_context["realms"] = json.dumps(_get_realms_())
 
+    # check for mfa_login, autoassign and autoenroll in policy definition
 
-    """
-    check for otpLogin, autoassign and autoenroll in policy definition
-    """
-
-    pre_context['otpLogin'] = False
+    pre_context['mfa_login'] = False
     policy = get_client_policy(client=client,
-                                scope='selfservice',
-                                action='otpLogin')
+                               scope='selfservice',
+                               action='mfa_login')
     if policy:
-        pre_context['otpLogin'] = True
+        pre_context['mfa_login'] = True
+
+    pre_context['mfa_3_fields'] = False
+    policy = get_client_policy(client=client,
+                               scope='selfservice',
+                               action='mfa_3_fields')
+    if policy:
+        pre_context['mfa_3_fields'] = True
 
     pre_context['autoassign'] = False
     policy = get_client_policy(client=client,
-                                scope='enrollment',
-                                action='autoassignment')
+                               scope='enrollment',
+                               action='autoassignment')
     if policy:
         pre_context['autoassign'] = True
 
     pre_context['autoenroll'] = False
     policy = get_client_policy(client=client,
-                                scope='enrollment',
-                                action='autoenrollment')
+                               scope='enrollment',
+                               action='autoenrollment')
     if policy:
         pre_context['autoenroll'] = True
 

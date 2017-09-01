@@ -410,7 +410,7 @@ class TestGetOtpController(TestController):
                                                  auth_user=auth_user)
         print response
         self.assertTrue('"message": "The serial hotp1 does not belong'
-                        ' to user passthru_user1@myDefRealm"' in response, response)
+                        ' to user passthru_user1@mydefrealm"' in response, response)
 
         return
 

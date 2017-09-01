@@ -28,6 +28,30 @@
 var i18n = new Jed({});
 var sprintf = Jed.sprintf;
 
+/**
+ * loads language file from the backend if browser language is not
+ * default (en).
+ * 
+ * window.CURRENT_LANGUAGE gets set in the mako template from the server
+ * and evaluated here
+ */
+function loadTranslations() {
+    var browser_lang = window.CURRENT_LANGUAGE || 'en';
+    if (browser_lang !== 'en') {
+        try {
+            var url = "/i18n/" + browser_lang + ".json";
+            $.get(url,
+                function(data, textStatus) {
+                    i18n.options.locale_data.messages = data;
+                },
+                "json"
+            );
+        } catch(e) {
+            alert('Unsupported localisation: ' + escape(browser_lang));
+        }
+    }
+}
+
  /**
   * checkpins compares the values of the inputs given via
   * the jquery selector or object and visualizes the result

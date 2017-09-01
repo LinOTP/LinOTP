@@ -39,28 +39,15 @@ window.onerror = error_handling;
  * the Login to the selfservice portal is required.
  * Is also defined in controllers/account.py
  */
-LOGIN_CODE = 576
+LOGIN_CODE = 403
 
-function SelfLogout(logout_url) {
 /* clear the admin cookie and
    * for IE try to clean the ClearAuthenticationCache and reload same page
-   * for Firefox redirect to a location, with
+   * for evergreen browsers: clear the cookie and redirect to the logout page
 */
-
-    var done = false;
-    done = document.execCommand("ClearAuthenticationCache", false);
-    $.cookie("linotp_selfservice", "invalid", {expires: 0,  path: '/'});
-
-    if (done == true) {
-        window.location.href = document.URL;
-    } else {
-        window.location.href = logout_url;
-    }
-
+function SelfLogout(logout_url) {
+    window.location.href = logout_url;
 }
-
-
-
 
 function self_alert_box(params /* dict or parameters */){
 	/*
@@ -129,9 +116,9 @@ function error_handling(message, file, line) {
 function get_selfservice_session() {
     var session = "";
     if (document.cookie) {
-        session = getcookie("linotp_selfservice");
+        session = getcookie("user_selfservice");
         if (session == "") {
-            alert(i18n.gettext("there is no linotp_selfservice cookie"));
+            alert(i18n.gettext("there is no user_selfservice cookie"));
         }
     }
     return session;
@@ -849,24 +836,4 @@ function view_audit_selfservice() {
     });
 }
 
-/*
- * window.CURRENT_LANGUAGE is set in the template from the mako lib.
- * Here, we dynamically load the desired language JSON file for Jed.
- */
-var browser_lang = window.CURRENT_LANGUAGE || 'en';
-if (browser_lang && browser_lang !== 'en') {
-    try {
-        var url = sprintf("/i18n/%s.json", browser_lang);
-        $.get(
-            url,
-            {},
-            function(data, textStatus) {
-                i18n.options.locale_data.messages = data;
-            },
-            "json"
-        );
-    } catch(e) {
-        alert('Unsupported localisation for ' + escape(browser_lang));
-    }
-}
-
+loadTranslations();

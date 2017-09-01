@@ -27,103 +27,144 @@
  *
  * contains the template login web interface
 </%doc>
+
+<%!
+from pylons.i18n.translation import get_lang
+%>
+
+<%
+lang = get_lang() or "en"
+if isinstance(lang, list):
+    lang = lang[0]
+%>
 <html>
+
 <head>
-<title>LinOTP 2 User self service</title>
-<meta name="copyright" content="KeyIdentity GmbH">
-<meta name="keywords" content="LinOTP 2, self service">
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
-<meta http-equiv="content-style-type" content="text/css">
+  <title>LinOTP 2 User self service</title>
+  <meta name="copyright" content="KeyIdentity GmbH">
+  <meta name="keywords" content="LinOTP 2, self service">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+  <meta http-equiv="content-style-type" content="text/css">
 
-<link type="text/css" rel="stylesheet" href="/selfservice/style.css">
-<link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
-<script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
-
+  <link type="text/css" rel="stylesheet" href="/selfservice/style.css">
+  <link type="text/css" rel="stylesheet" href="/selfservice/custom-style.css">
+  <link type="text/css" rel="stylesheet" href="/css/jquery-ui/jquery-ui.min.css">
 </head>
 
 <body>
-
-<script>
-$(document).ready(function() {
-    $('form:first *:input[type!=hidden]:first').focus();
-});
-</script>
-
-<div id="wrap">
+  <div id="wrap">
 
     <div id="header" class="clearfix">
         <span class="portalname float_left">${_("Selfservice Portal")}</span>
         <div id="logo" class="float_right"> </div>
     </div>
 
+    <div id="sidebar">
+      <P>${_("This is the LinOTP self service portal. You may login here with your username and realm.")}</P>
+      <P>${_("Within the self service portal you may reset the PINs of your tokens, assign new tokens or resync your tokens.")}</p>
+      <p>${_("If you lost a token, you may also disable this token.")}</p>
+    </div> <!-- sidebar -->
 
-<div id="sidebar">
-
-<P>
-${_("This is the LinOTP self service portal. You may login here with your username and realm.")}
-</P>
-<P>
-${_("Within the self service portal you may reset the PINs of your tokens, assign new tokens or resync your tokens.")}
-</p>
-<p>
-${_("If you lost a token, you may also disable this token.")}
-</p>
-
-</div> <!-- sidebar -->
-
-<div id="main">
-<h1>${_("Login to LinOTP self service")}</h1>
-
-  <p>
-    <form action="/account/dologin" method="POST">
-      <table>
-        <tr><td><label for=login>${_("Username")}:</label></td>
-        <td><input type="text" id="login" name="login" value=""></td></tr>
-        %if c.realmbox:
+    <div id="main">
+      <h1>${_("Login to LinOTP self service")}</h1>
+      <div id="template-area">
+        <form id="loginForm" action="" method="post">
+          <table>
+            <tr>
+              <td><label for=username>${_("Username")}:</label></td>
+              <td><input type="text" id="login" name="login" value="" autofocus></td>
+            </tr>
+            %if c.realmbox:
             <tr>
               <td>${_("Realm")}:</td>
               <td>
                 <select name="realm">
-                    % for realm in c.realmArray:
-                    %if c.defaultRealm == realm:
-                    <option value="${realm}" selected>${realm}</option>
-                    %else:
-                    <option value="${realm}">${realm}</option>
-                    %endif
-                    %endfor
+                  %for realm in c.realmArray:
+                  <option value="${realm}"
+                      %if c.defaultRealm == realm:
+                      selected
+                      %endif
+                      >
+                    ${realm}
+                  </option>
+                  %endfor
                 </select>
-             </td>
-          </tr>
-        %else:
-            <tr style="display:none;">
-              <td>${_("Realm")}:</td>
-              <td><input type="text" id="realm" name="realm"
-                  value=''></td>
+              </td>
             </tr>
-        %endif
-        <tr style="display:none;">
-            <td><input type="hidden" name="realmbox" value="${c.realmbox}"></td>
-            <td><input type="hidden" name="defaultRealm" value="${c.defaultRealm}"></td></tr>
-        <tr><td><label for=password>${_("Password")}:</label></td>
-        <td><input autocomplete="off" type="password" id="password" name="password"></td></tr>
-        <tr><td> </td>
-        <td>   <input type="submit" value="Login"></td></tr>
-      </table>
-    </form>
-  </p>
+            %endif
+            <tr>
+              <td><label for=password>${_("Password")}:</label></td>
+              <td><input autocomplete="off" type="password" id="password" name="password"></td>
+            </tr>
+            %if c.mfa_3_fields:
+            <tr>
+              <td><label for=otp>${_("OTP")}:</label></td>
+              <td><input autocomplete="off" type="password" id="otp" name="otp"></td>
+            </tr>
+            %endif
+            <tr>
+              <td></td>
+              <td><input type="submit" value="Login"></td>
+            </tr>
+          </table>
+        </form>
+      </div>  <!-- template-area-->
+    </div>  <!-- main-->
 
-<div id='errorDiv'></div>
-<div id='successDiv'></div>
+    <div id="footer">
+      ${c.version} --- &copy; ${c.licenseinfo}
+    </div> <!-- footer -->
+
+  </div> <!-- wrap -->
+  <div id="templates" style="display:none;">
+
+    <div id="template-tokenlist" class="widget">
+      <h1>${_("Authentication")}</h1>
+      <p>${_("Choose your preferred method to authenticate")}</p>
+      <div class="list"></div>
+    </div>
+    <button id="template-tokenlist-entry" class="tokenlist-entry"></button>
+    <a id="template-cancel-entry" href="/selfservice/logout" class="cancel-auth">Cancel</a>
+
+    <div id="template-otp" class="widget">
+      <h1>${_("Authentication")}</h1>
+      <div class="method"></div>
+    </div>
+
+    <div id="template-otp-input" class="widget otp-login">
+      <form action="" method="post">
+        <label for="otp">${_("Enter the otp value")}:</label>
+        <input type="text" name="otp">
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+
+    <div id="template-otp-push" class="widget">
+      <p>${_("Check your mobile and confirm the login")}</p>
+    </div>
+
+    <div id="template-otp-qr" class="widget">
+      <p>${_("Scan the QR code and comfirm on your mobile or submit below")}</p>
+      <img class="qr" width="300"></img>
+    </div>
+
+  </div>
 
 
-</div>  <!-- end of main-->
+  <!-- load language settings -->
+  <script type="text/javascript">
+    window.CURRENT_LANGUAGE = "${lang}";
+  </script>
 
-<div id="footer">
-    ${c.version} --- &copy; ${c.licenseinfo}
-</div>
-</div>  <!-- end of wrap -->
+  <script type="text/javascript" src="/js/jquery-1.12.4.min.js"></script>
+  <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="/js/jquery.form.js"></script>
+  <script type="text/javascript" src="/js/linotp_utils.js"></script>
+  <script type="text/javascript" src="/js/jed.js"></script>
+  <script type="text/javascript" src="/js/selfservice/login.js"></script>
 </body>
+
 </html>
 
 

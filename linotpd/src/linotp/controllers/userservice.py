@@ -47,7 +47,6 @@ Remarks:
 """
 
 import base64
-import copy
 import logging
 
 import os
@@ -57,11 +56,11 @@ try:
 except ImportError:
     import simplejson as json
 
-from pylons import (request,
-                     response,
-                     config,
-                     tmpl_context as c
-                     )
+from pylons import request
+from pylons import response
+from pylons import config
+from pylons import tmpl_context as c
+
 
 from pylons.controllers.util import abort
 
@@ -82,7 +81,8 @@ from linotp.lib.policy import (checkPolicyPre,
 from linotp.lib.reply import (sendResult,
                               sendError,
                               sendQRImageResult,
-                              create_img
+                              create_img,
+                              create_img_src
                               )
 
 from linotp.lib.util import (generate_otpkey,
@@ -91,10 +91,13 @@ from linotp.lib.util import (generate_otpkey,
                              )
 
 from linotp.lib.realm import getDefaultRealm
+from linotp.lib.realm import getRealms
 
 from linotp.lib.user import (getUserInfo,
-                              User,
-                              getUserId)
+                             getRealmBox,
+                             User,
+                             getUserId,
+                             splitUser)
 
 from linotp.lib.token import (resetToken,
                               setPin,
@@ -102,7 +105,6 @@ from linotp.lib.token import (resetToken,
                               getTokenRealms,
                               get_multi_otp,
                               getTokenType,
-                              get_tokenserial_of_transaction,
                               getTokens4UserOrSerial,
                               )
 
@@ -123,16 +125,15 @@ from linotp.lib.audit.base import (logTokenNum,
                                    )
 
 from linotp.lib.userservice import (get_userinfo,
-                                    check_userservice_session,
+                                    get_cookie_authinfo,
+                                    check_session,
                                     get_pre_context,
                                     get_context,
                                     create_auth_cookie,
-                                    getTokenForUser
+                                    getTokenForUser,
+                                    remove_auth_cookie,
                                     )
 
-from linotp.lib.util import (check_selfservice_session,
-                             isSelfTest
-                            )
 from linotp.model import Session
 
 from linotp.lib.resolver import getResolverObject
@@ -148,43 +149,69 @@ audit = config.get('audit')
 
 ENCODING = "utf-8"
 
+# -------------------------------------------------------------------------- --
+
+# provide secure cookies for production evironments
+
+secure_cookie = True
+
+# in the development environment where we run in debug or uniTest mode
+# there is probaly no https defined. So we switch secure cookies only off
+# if the url is not https
+
+if config.get('debug') is True or config.get('unitTest') in [True, 'True']:
+
+    if request.application_url.startswith('https://'):
+        secure_cookie = True
+    else:
+        secure_cookie = False
+
+
+# -------------------------------------------------------------------------- --
+
+
+class UserNotFound(Exception):
+    pass
+
 
 def get_auth_user(request):
     """
     retrieve the authenticated user either from
-    - repoze or userservice or selftest
-
-    remark: should be moved in a utils thing, as it is used as well from
-            selfservice
+    selfservice or userservice api / remote selfservice
 
     :param request: the request object
-    :return: tuple of (authentication type and authenticated user)
+    :return: tuple of (authentication type and authenticated user and
+                        authentication state)
     """
-    auth_type = ''
 
-    repose_auth = request.environ.get('repoze.who.identity')
-    if repose_auth:
-        log.debug("getting identity from repoze.who: %r" % repose_auth)
-        user_id = request.environ.get('repoze.who.identity', {})\
-                                 .get('repoze.who.userid', '')
-        auth_type = "repoze"
-    else:
-        log.debug("getting identity from params: %r" % request.params)
-        user_id = request.params.get('user', None)
+    # ---------------------------------------------------------------------- --
+
+    # for the form based selfservice we have the 'user_selfservice' cookie
+
+    selfservice_cookie = request.cookies.get('user_selfservice')
+
+    if selfservice_cookie:
+        user, _client, state, _state_data = get_cookie_authinfo(
+                                                    selfservice_cookie)
+        auth_type = "user_selfservice"
+
+        return auth_type, user, state
+
+    # ---------------------------------------------------------------------- --
+
+    # for the remote selfservice or userservice api via /userservice/auth
+    # we have the 'userauthcookie'
+
+    remote_selfservice_cookie = request.cookies.get('userauthcookie')
+
+    if remote_selfservice_cookie:
+        user, _client, state, _state_data = get_cookie_authinfo(
+                                                    remote_selfservice_cookie)
         auth_type = "userservice"
 
-    if not user_id and isSelfTest():
-        user_id = request.params.get('selftest_user', '')
-        auth_type = "selftest"
+        return auth_type, user, state
 
-    if not user_id:
-        return ('unauthenticated', None)
-
-    if type(user_id) == unicode:
-        user_id = user_id.encode(ENCODING)
-    identity = user_id.decode(ENCODING)
-
-    return (auth_type, identity)
+    return 'unauthenticated', None, None
 
 
 class UserserviceController(BaseController):
@@ -197,56 +224,87 @@ class UserserviceController(BaseController):
     request during which the auth_cookie and session is verified
     """
 
-
     def __before__(self, action, **parameters):
-        # if action is not an authentication request:
-        # - check if there is a cookie in the headers and in the session param
-        # - check if the decrypted cookie user and client are the same as
-        #   the requesting user / client
+        """
+        every request to the userservice must pass this place
+        here we can check the authorisation for each action and the
+        per request general available information
+        """
 
         self.client = get_client(request) or ''
 
-        if action not in ['auth', 'pre_context']:
-            auth_type, identity = get_auth_user(request)
-            if not identity:
-                abort(401, _("You are not authenticated"))
-
-            if '@' in identity:
-                login, _foo, realm = identity.rpartition('@')
-            else:
-                login = identity
-                realm = getDefaultRealm()
-
-            self.authUser = User(login, realm)
-
-            # make the authenticated user global available
-            c.user = login
-            c.realm = realm
-
-            if auth_type == "userservice":
-                res = check_userservice_session(request, config,
-                                                self.authUser, self.client)
-            elif auth_type == 'repoze':
-                call_url = "userservice/%s" % action
-                res = check_selfservice_session(url=call_url,
-                                                cookies=request.cookies,
-                                                params=request.params)
-            elif auth_type == 'selftest':
-                res = True
-            else:
-                abort(401, _("No valid authentication session %r") % auth_type)
-
-            if not res:
-                abort(401, _("No valid session"))
-
         context = get_pre_context(self.client)
-        self.otpLogin = context['otpLogin']
+
+        # ------------------------------------------------------------------ --
+
+        # build up general available variables
+
+        self.mfa_login = context['mfa_login']
         self.autoassign = context['autoassign']
         self.autoenroll = context['autoenroll']
+
+        # ------------------------------------------------------------------ --
+
+        # setup the audit for general availibility
 
         c.audit = request_context['audit']
         c.audit['success'] = False
         c.audit['client'] = self.client
+
+        # ------------------------------------------------------------------ --
+
+        # the following actions dont require an authenticated session
+
+        if action in ['auth', 'pre_context', 'login', 'logout']:
+
+            return
+
+        # ------------------------------------------------------------------ --
+
+        # every action other than auth, login and pre_context requires a valid
+        # session and cookie
+
+        auth_type, identity, auth_state = get_auth_user(request)
+
+        if (not identity or
+           auth_type not in ["userservice", 'user_selfservice']):
+
+            abort(403, _("No valid session"))
+
+        # ------------------------------------------------------------------ --
+
+        # make the authenticated user global available
+
+        self.authUser = identity
+
+        c.user = identity.login
+        c.realm = identity.realm
+
+        # ------------------------------------------------------------------ --
+
+        # finally check the validty of the session
+
+        if not check_session(request, self.authUser, self.client):
+
+            abort(403, _("No valid session"))
+
+        # ------------------------------------------------------------------ --
+
+        # the usertokenlist could be catched in any identified state
+
+        if action in ['usertokenlist', 'userinfo']:
+
+            return
+
+        # ------------------------------------------------------------------ --
+
+        # any other action requires a full ' state
+
+        if auth_state != 'authenticated':
+
+            abort(403, _("No valid session"))
+
+        # ------------------------------------------------------------------ --
 
         return
 
@@ -298,6 +356,63 @@ class UserserviceController(BaseController):
             log.exception("[__after__::%r] webob.exception %r" % (action, acc))
             raise acc
 
+    def _identify_user(self, params):
+        """
+        identify the user from the request parameters
+
+        the idea of the processing was derived from the former selfservice
+        user identification and authentication:
+                lib.user.get_authenticated_user
+        and has been adjusted to the need to run the password authentication
+        as a seperate step
+
+        :param params: request parameters
+        :return: User Object or None
+        """
+
+        try:
+            username = params['login']
+        except KeyError as exx:
+            log.error("Missing Key: %r", exx)
+            return None
+
+        realm = params.get('realm', '').strip().lower()
+
+        # if we have an realmbox, we take the user as it is
+        # - the realm is always given
+
+        if getRealmBox():
+            user = User(username, realm, "")
+            if user.exists():
+                return user
+
+        # if no realm box is given
+        #    and realm is not empty:
+        #    - create the user from the values (as we are in auto_assign, etc)
+        if realm and realm in getRealms():
+            user = User(username, realm, "")
+            if user.exists():
+                return user
+
+        # if the realm is empty or no realm parameter or realm does not exist
+        #     - the user could live in the default realm
+        else:
+            def_realm = getDefaultRealm()
+            if def_realm:
+                user = User(username, def_realm, "")
+                if user.exists():
+                    return user
+
+        # if any explicit realm handling had no success, we end up here
+        # with the implicit realm handling:
+
+        login, realm = splitUser(username)
+        user = User(login, realm)
+        if user.exists():
+            return user
+
+        return None
+
 ###############################################################################
 # authentication hooks
 
@@ -309,68 +424,435 @@ class UserserviceController(BaseController):
         :param realm: the realm of the user
         :param password: the password for the user authentication
                          which is base32 encoded to seperate the
-                         os_passw:pin+otp in case of otpLogin
+                         os_passw:pin+otp in case of mfa_login
 
         :return: {result : {value: bool} }
         :rtype: json dict with bool value
         """
 
-        ok = False
-        param = {}
-
         try:
+
+            param = {}
             param.update(request.params)
-            login = param['login']
-            password = param['password']
-        except KeyError as exx:
-            return sendError(response, "Missing Key: %r" % exx)
 
-        try:
-            res = False
-            uid = ""
-            user = User()
+            # -------------------------------------------------------------- --
+
+            # identify the user
+
+            user = self._identify_user(params=param)
+            if not user:
+                log.info("User %r not found", param.get('login'))
+                c.audit['action_detail'] = ("User %r not found" %
+                                            param.get('login'))
+                c.audit['success'] = False
+                return sendResult(response, False, 0)
+
+            uid = "%s@%s" % (user.login, user.realm)
+
+            self.authUser = user
+
+            # -------------------------------------------------------------- --
+
+            # extract password
+
+            try:
+                password = param['password']
+            except KeyError as exx:
+
+                log.info("Missing password for user %r", uid)
+                c.audit['action_detail'] = ("Missing password for user %r"
+                                            % uid)
+                c.audit['success'] = False
+                return sendResult(response, False, 0)
 
             (otp, passw) = password.split(':')
             otp = base64.b32decode(otp)
             passw = base64.b32decode(passw)
 
-            if '@' in login:
-                user, rrealm = login.split("@")
-                user = User(user, rrealm)
+            # -------------------------------------------------------------- --
+
+            # check the authentication
+
+            if self.mfa_login:
+
+                res = self._mfa_login_check(user, passw, otp)
+
             else:
-                realm = getDefaultRealm()
-                user = User(login, realm)
+
+                res = self._default_auth_check(user, passw, otp)
+
+            if not res:
+
+                log.info("User %r failed to authenticate!", uid)
+                c.audit['action_detail'] = ("User %r failed to authenticate!"
+                                            % uid)
+                c.audit['success'] = False
+                return sendResult(response, False, 0)
+
+            # -------------------------------------------------------------- --
+
+            log.debug("Successfully authenticated user %s:", uid)
+
+            (cookie, expires,
+             expiration) = create_auth_cookie(user, self.client)
+
+            response.set_cookie('userauthcookie', cookie,
+                                secure=secure_cookie,
+                                expires=expires)
+
+            c.audit['action_detail'] = "expires: %s " % expiration
+            c.audit['success'] = True
+
+            Session.commit()
+            return sendResult(response, True, 0)
+
+        except Exception as exx:
+
+            c.audit['info'] = ("%r" % exx)[:80]
+            c.audit['success'] = False
+
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+
+    def _login_with_cookie(self, cookie, params):
+        """
+
+        if credentials are already verified, the state of authenticaion
+        is stored in the cookie cache
+
+        :param cookie: the authentication state
+        :param params: the request parameters
+        """
+        user, _client, auth_state, state_data = get_cookie_authinfo(cookie)
+
+        if not user:
+            raise UserNotFound('no user info in authentication cache')
+
+        if auth_state == 'credentials_verified':
+
+            # TODO: finish implementation in checkUserPass / checkSerialPass:
+            # the cookie and the path should be part of the request context
+            # so that checkUserPass could skip the password check
+
+            # -------------------------------------------------------------- --
+
+            otp = params.get('otp', '')
+            serial = params.get('serial')
+
+            vh = ValidationHandler()
+
+            if 'serial' in params:
+                res, reply = vh.checkSerialPass(serial, passw=otp,
+                                                options=params)
+            else:
+                request_context['selfservice'] = {'state': auth_state,
+                                                  'user': user}
+                res, reply = vh.checkUserPass(user, passw=otp, options=params)
+
+            # -------------------------------------------------------------- --
+
+            # if an otp is provided we can do a direct authentication
+
+            if otp:
+                if res:
+                    (cookie, expires, _exp) = create_auth_cookie(
+                                                        user, self.client)
+
+                    response.set_cookie('user_selfservice', cookie,
+                                        secure=secure_cookie,
+                                        expires=expires)
+
+                    c.audit['info'] = ("User %r authenticated from otp" % user)
+
+                Session.commit()
+                return sendResult(response, res, 0)
+
+            # -------------------------------------------------------------- --
+
+            # if no otp is provided, we check if a challenge is triggered
+
+            c.audit['action_detail'] = ("User %r authenticated with "
+                                        "credentials_verified state" %
+                                        user)
+
+            if not res and reply:
+
+                if 'message' in reply and "://chal/" in reply['message']:
+                    reply['img_src'] = create_img_src(reply['message'])
+
+                (cookie, expires,
+                 expiration) = create_auth_cookie(
+                                        user, self.client,
+                                        state='challenge_triggered',
+                                        state_data=reply)
+
+                response.set_cookie('user_selfservice', cookie,
+                                    secure=secure_cookie,
+                                    expires=expires)
+
+                c.audit['success'] = False
+
+                Session.commit()
+                return sendResult(response, False, 0, opt=reply)
+
+            Session.commit()
+            return sendResult(response, res, 0, opt=reply)
+
+        # -------------------------------------------------------------- --
+
+        elif auth_state == 'challenge_triggered':
+
+            if params.get('otp'):
+                # -------------------------------------------------------------- --
+
+                # if there has been a challenge triggerd before, we can extract
+                # the the transaction info from the cookie cached data
+
+                if not state_data:
+                    raise Exception('invalid state data')
+
+                # TODO: adjust the state_data for multiple challenges
+
+                transid = state_data.get('transactionid')
+                params['transactionid'] = transid
+
+                otp_value = params['otp']
+
+                vh = ValidationHandler()
+                res, reply = vh.check_by_transactionid(transid, passw=otp_value,
+                                                       options=params)
+
+                c.audit['success'] = res
+
+                if res:
+                    (cookie, expires,
+                     expiration) = create_auth_cookie(user, self.client)
+
+                    response.set_cookie('user_selfservice', cookie,
+                                        secure=secure_cookie,
+                                        expires=expires)
+
+                    c.audit['action_detail'] = "expires: %s " % expiration
+                    c.audit['info'] = "%r logged in " % user
+
+                Session.commit()
+                return sendResult(response, res, 0)
+
+            # -------------------------------------------------------------- --
+
+            # if there is no otp in the request, we assume that we
+            # have to poll for the transaction state
+
+            if not state_data:
+                raise Exception('invalid state data')
+
+            verified = False
+            transid = state_data.get('transactionid')
+
+            va = ValidationHandler()
+            ok, opt = va.check_status(transid=transid, user=user,
+                                      serial=None, password='passw',
+                                      )
+            if ok and opt and opt.get('transactions', {}).get(transid):
+                verified = opt.get(
+                    'transactions', {}).get(
+                        transid).get(
+                            'valid_tan')
+
+            if verified:
+                (cookie, expires,
+                 expiration) = create_auth_cookie(user, self.client)
+
+                response.set_cookie('user_selfservice', cookie,
+                                    secure=secure_cookie,
+                                    expires=expires)
+                c.audit['action_detail'] = "expires: %s " % expiration
+                c.audit['info'] = "%r logged in " % user
+
+            Session.commit()
+            return sendResult(response, verified, 0)
+
+        else:
+            raise NotImplementedError('unknown state %r' % auth_state)
+
+    def _login_with_otp(self, user, passw, param):
+        """
+        handle login with otp - either if provided directly or delayed
+
+        :param user: User Object of the identified user
+        :param password: the password parameter
+        :param param: the request parameters
+        """
+
+        otp = param.get('otp', '')
+
+        # if there is an otp, we can do a direct otp authentication
+
+        if otp:
+
+            vh = ValidationHandler()
+            res = user.checkPass(passw)
+
+            if res:
+                res, reply = vh.checkUserPass(user, otp)
+
+            if res:
+                log.debug("Successfully authenticated user %r:", user)
+
+                (cookie, expires,
+                 expiration) = create_auth_cookie(user, self.client)
+
+                response.set_cookie('user_selfservice', cookie,
+                                    secure=secure_cookie,
+                                    expires=expires)
+
+                c.audit['action_detail'] = "expires: %s " % expiration
+                c.audit['info'] = "%r logged in " % user
+
+            elif not res and reply:
+                log.error("challenge trigger though otp is provided")
+
+            c.audit['success'] = res
+
+            Session.commit()
+            return sendResult(response, res, 0, reply)
+
+        # ------------------------------------------------------------------ --
+
+        # last step - we have no otp but mfa_login request - so we
+        # validate the password and create the 'credentials_verified state'
+
+        res = user.checkPass(passw)
+
+        if res:
+
+            (cookie, expires,
+             expiration) = create_auth_cookie(
+                                user, self.client,
+                                state='credentials_verified')
+
+            response.set_cookie('user_selfservice', cookie,
+                                secure=secure_cookie,
+                                expires=expires)
+            reply = {'message': 'credential verified - '
+                     'additional authentication parameter required'}
+
+            c.audit['action_detail'] = "expires: %s " % expiration
+            c.audit['info'] = "%r credentials verified" % user
+
+        else:
+
+            log.info("User %r failed to authenticate!", user)
+            c.audit['action_detail'] = ("User %r failed to authenticate!"
+                                        % user)
+            reply = None
+
+        c.audit['success'] = res
+        Session.commit()
+
+        return sendResult(response, False, 0, opt=reply)
+
+    def _login_with_password_only(self, user, password):
+        """
+        simple old password authentication
+
+        :param user: the identified user
+        :param password: the password
+        """
+
+        res = user.checkPass(password)
+
+        if res:
+            (cookie, expires,
+             _expiration) = create_auth_cookie(user, self.client)
+
+            response.set_cookie('user_selfservice', cookie,
+                                secure=secure_cookie,
+                                expires=expires)
+
+        c.audit['success'] = res
+        c.audit['info'] = "%r logged in " % user
+
+        Session.commit()
+
+        return sendResult(response, res, 0)
+
+    def login(self):
+        """
+        user authentication for example to the remote selfservice
+
+        parameters:
+
+            login: login name of the user normaly in the user@realm format
+            realm: the realm of the user
+            password: the password for the user authentication
+            otp: optional the otp
+
+        return: {result : {value: bool} }
+        """
+
+        try:
+
+            param = {}
+            param.update(request.params)
+
+            # -------------------------------------------------------------- --
+
+            # if this is an preauthenticated login we continue
+            # with the authetication states
+
+            user_selfservice_cookie = request.cookies.get('user_selfservice')
+
+            # check if this cookie is still valid
+
+            auth_info = get_cookie_authinfo(user_selfservice_cookie)
+
+            if (auth_info[0] and
+                check_session(request, auth_info[0], auth_info[1])):
+
+                return self._login_with_cookie(user_selfservice_cookie, param)
+
+            # if there is a cookie but could not be found in cache
+            # we remove the outdated client cookie
+
+            if user_selfservice_cookie and not auth_info[0]:
+
+                response.delete_cookie('user_selfservice')
+
+            # -------------------------------------------------------------- --
+
+            # identify the user
+
+            user = self._identify_user(params=param)
+            if not user:
+                raise UserNotFound('user %r not found!' % param.get('login'))
 
             self.authUser = user
 
-            uid = "%s@%s" % (user.login, user.realm)
+            # -------------------------------------------------------------- --
 
-            if self.otpLogin:
-                res = self._otpLogin_check(user, passw, otp)
+            password = param['password']
+
+            if self.mfa_login:
+
+                return self._login_with_otp(user, password, param)
+
             else:
-                res = self._default_auth_check(user, passw, otp)
 
-            if res:
-                log.debug("Successfully authenticated user %s:" % uid)
+                return self._login_with_password_only(user, password)
 
-                (cookie, expires,
-                 expiration) = create_auth_cookie(config, user, self.client)
-
-                response.set_cookie('userauthcookie', cookie, expires=expires)
-                c.audit['action_detail'] = "expires: %s " % expiration
-
-                ok = uid
-            else:
-                log.info("User %s failed to authenticate!" % uid)
-
-            c.audit['success'] = True
-            Session.commit()
-            return sendResult(response, ok, 0)
+            # -------------------------------------------------------------- --
 
         except Exception as exx:
+
             c.audit['info'] = ("%r" % exx)[:80]
+            c.audit['success'] = False
+
             Session.rollback()
-            return sendError(response, exx)
+            return sendResult(response, False, 0)
 
         finally:
             Session.close()
@@ -391,7 +873,7 @@ class UserserviceController(BaseController):
         res = r_obj.checkPass(uid, password)
         return res
 
-    def _otpLogin_check(self, user, password, otp):
+    def _mfa_login_check(self, user, password, otp):
         """
         secure auth requires the os password and the otp (pin+otp)
         - secure auth supports autoassignement, where the user logs in with
@@ -414,7 +896,7 @@ class UserserviceController(BaseController):
         passwd_match = self._default_auth_check(user, password, otp)
 
         if passwd_match:
-            toks = getTokenForUser(user)
+            toks = getTokenForUser(user, active=True)
 
             # if user has no token, we check for auto assigneing one to him
             if len(toks) == 0:
@@ -441,21 +923,44 @@ class UserserviceController(BaseController):
                 (ret, _reply) = vh.checkUserPass(user, otp)
         return ret
 
-    def userinfo(self):
-        """
-        hook for the repoze auth, which requests additional user info
-        """
+    def usertokenlist(self):
+        '''
+        This returns a tokenlist as html output
+        '''
+
         param = {}
 
         try:
             param.update(request.params)
-            login = param['user']
-        except KeyError as exx:
-            return sendError(response, "Missing Key: %r" % exx)
+
+            if param.get('active', '').lower() in ['true']:
+                active = True
+            elif param.get('active', '').lower() in ['false']:
+                active = True
+            else:
+                active = None
+
+            tokenArray = getTokenForUser(self.authUser, active=active)
+
+            Session.commit()
+            return sendResult(response, tokenArray, 0)
+
+        except Exception as exx:
+            log.exception("failed with error: %r", exx)
+            Session.rollback()
+            return sendError(response, exx)
+
+        finally:
+            Session.close()
+
+    def userinfo(self):
+        """
+        hook for the auth, which requests additional user info
+        """
 
         try:
 
-            uinfo = get_userinfo(login)
+            uinfo = get_userinfo(self.authUser)
 
             c.audit['success'] = True
 
@@ -470,6 +975,34 @@ class UserserviceController(BaseController):
 
         finally:
             Session.close()
+
+    def logout(self):
+        """
+        hook for the auth, which requests additional user info
+        """
+
+        try:
+
+            cookie = request.cookies.get('user_selfservice')
+            remove_auth_cookie(cookie)
+            response.delete_cookie('user_selfservice')
+            c.audit['success'] = True
+
+            Session.commit()
+            return sendResult(response, True, 0)
+
+        except Exception as exx:
+            Session.rollback()
+            error = ('error (%r) ' % exx)
+            log.exception(error)
+            return '<pre>%s</pre>' % error
+
+        finally:
+            Session.close()
+            log.debug('done')
+
+
+
 
 ###############################################################################
 # context setup functionsa

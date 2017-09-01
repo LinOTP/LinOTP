@@ -973,4 +973,119 @@ class TestController(unittest2.TestCase):
 
         return response
 
-###eof#########################################################################
+    # ---------------------------------------------------------------------- --
+
+    # new selfservice authentication
+
+    def _user_service_login(self, auth_user=None, password=None, otp=None):
+
+        params = {}
+
+        if auth_user is not None:
+            params['login'] = auth_user
+
+        if password is not None:
+            params['password'] = password
+
+        if otp is not None:
+            params['otp'] = otp
+
+        response = self.app.get(url(controller='userservice',
+                                    action='login'), params=params)
+
+        cookies = TestController.get_cookies(response)
+        auth_cookie = cookies.get('user_selfservice')
+
+        return response, auth_cookie
+
+    def make_userselfservice_request(self, action, params=None,
+                                     auth_user=None, new_auth_cookie=False):
+
+        if not params:
+            params = {}
+
+        # ------------------------------------------------------------------ --
+
+        # identify login credentials
+
+        user = auth_user.get('login')
+        password = auth_user.get('password')
+        otp = auth_user.get('otp')
+
+        if new_auth_cookie and user in self.user_service:
+            del self.user_service[user]
+
+        # ------------------------------------------------------------------ --
+
+        if not hasattr(self, 'user_selfservice'):
+            setattr(self, 'user_selfservice', {})
+
+        auth_cookie = self.user_selfservice.get(user)
+
+        if not auth_cookie:
+            response, auth_cookie = self._user_service_login(user,
+                                                             password,
+                                                             otp)
+
+            if not auth_cookie or '"value": false' in response.body:
+                return response
+
+            self.user_selfservice[user] = auth_cookie
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params['session'] = auth_cookie
+        # params['user'] = user
+        response = self.app.get(url(controller='userservice',
+                                    action=action),
+                                params=params)
+
+        return response
+
+
+    # ------------------------------------------------------------------------ -
+
+    def make_selfservice_request(self, action, params=None,
+                                 auth_user=None, new_auth_cookie=False):
+
+        if not params:
+            params = {}
+
+        # ------------------------------------------------------------------ --
+
+        # identify login credentials
+
+        user = auth_user.get('login')
+        password = auth_user.get('password')
+        otp = auth_user.get('otp')
+
+        if new_auth_cookie and user in self.user_service:
+            del self.user_service[user]
+
+        # ------------------------------------------------------------------ --
+
+        if not hasattr(self, 'user_selfservice'):
+            setattr(self, 'user_selfservice', {})
+
+        auth_cookie = self.user_selfservice.get(user)
+
+        if not auth_cookie:
+            response, auth_cookie = self._user_service_login(user,
+                                                             password,
+                                                             otp)
+
+            if not auth_cookie or '"value": false' in response.body:
+                return response
+
+            self.user_selfservice[user] = auth_cookie
+
+        TestController.set_cookie(self.app, 'user_selfservice', auth_cookie)
+
+        params['session'] = auth_cookie
+        # params['user'] = user
+        response = self.app.get(url(controller='selfservice',
+                                    action=action),
+                                params=params)
+
+        return response
+# eof #

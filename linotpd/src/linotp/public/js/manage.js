@@ -7115,23 +7115,4 @@ function view_audit() {
     });
 }
 
-/*
- * window.CURRENT_LANGUAGE is set in the template from the mako lib.
- * Here, we dynamically load the desired language JSON file for Jed.
- */
-var browser_lang = window.CURRENT_LANGUAGE || 'en';
-if (browser_lang && browser_lang !== 'en') {
-    try {
-        var url = sprintf("/i18n/%s.json", browser_lang);
-        $.get(
-            url,
-            {},
-            function(data, textStatus) {
-                i18n.options.locale_data.messages = data;
-            },
-            "json"
-        );
-    } catch(e) {
-        alert('Unsupported localisation for ' + escape(browser_lang));
-    }
-}
+loadTranslations();

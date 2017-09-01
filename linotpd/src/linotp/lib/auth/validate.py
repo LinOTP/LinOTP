@@ -63,7 +63,6 @@ from linotp.lib.policy import get_auth_passOnNoToken
 
 from linotp.lib.policy.forward import ForwardServerPolicy
 
-
 import logging
 
 
@@ -132,6 +131,17 @@ def check_pin(token, passw, user=None, options=None):
         log.debug("[__checkToken] pin policy=2: checking no pin")
         if len(passw) == 0:
             res = True
+
+    elif 3 in pin_policies:
+        # ignore pin or password
+
+        log.debug("[__checkToken] pin policy=3: ignoreing pin")
+
+        if token.type in ['spass']:
+            res = token.checkPin(passw, options=options)
+        else:
+            res = True
+
     else:
         # old stuff: We check The fixed OTP PIN
         log.debug("[__checkToken] pin policy=0: checkin the PIN")
@@ -491,7 +501,9 @@ class ValidationHandler(object):
 
         # ------------------------------------------------------------------ --
 
-        token_type = options.get('token_type', None)
+        token_type = None
+        if options:
+            token_type = options.get('token_type', None)
 
         tokenList = getTokens4UserOrSerial(
                                user,

@@ -594,6 +594,26 @@ def create_png(data, alt=None):
     return o_data
 
 
+def create_img_src(data):
+    '''
+        _create_img - create the qr image data
+
+        :param data: input data that will be munched into the qrcode
+        :type  data: string
+        :param width: image width in pixel
+        :type  width: int
+
+        :return: <img/> taged data
+        :rtype:  string
+    '''
+
+    o_data = create_png(data)
+    data_uri = o_data.encode("base64").replace("\n", "")
+    ret_img_src = 'data:image/png;base64,%s' % data_uri
+
+    return ret_img_src
+
+
 def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
     '''
         _create_img - create the qr image data
@@ -609,17 +629,17 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
     width_str = ''
     alt_str = ''
 
-    o_data = create_png(data, alt=alt)
-    data_uri = o_data.encode("base64").replace("\n", "")
+    img_src = create_img_src(data)
 
     if width != 0:
         width_str = " width=%d " % (int(width))
 
     if alt is not None:
-        val = urllib.urlencode({'alt':alt})
+        val = urllib.urlencode({'alt': alt})
         alt_str = " alt=%r " % (val[len('alt='):])
 
-    ret_img = '<img id="%s" %s  %s  src="data:image/png;base64,%s"/>' % (img_id, alt_str, width_str, data_uri)
+    ret_img = ('<img id="%s" %s  %s  src="%s"/>' %
+               (img_id, alt_str, width_str, img_src))
 
     return ret_img
 

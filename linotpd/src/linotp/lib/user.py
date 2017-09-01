@@ -306,7 +306,7 @@ class User(object):
 
         self._exists = False
 
-        realms = getRealms(self.realm)
+        realms = getRealms(self.realm.lower())
         if not realms:
             return self._exists
 
