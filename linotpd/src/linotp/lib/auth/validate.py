@@ -473,6 +473,24 @@ class ValidationHandler(object):
                                                           user, passw, options)
                 return res, opt
 
+        # ------------------------------------------------------------------ --
+
+        th = TokenHandler()
+
+        # ------------------------------------------------------------------ --
+
+        # auto asignement with otp only if user has no active token
+
+        auto_assign_otp_return = th.auto_assign_otp_only(
+                                                    otp=passw,
+                                                    user=user,
+                                                    options=options)
+
+        if auto_assign_otp_return is True:
+            return (True, None)
+
+        # ------------------------------------------------------------------ --
+
         token_type = options.get('token_type', None)
 
         tokenList = getTokens4UserOrSerial(
@@ -484,8 +502,6 @@ class ValidationHandler(object):
             audit['action_detail'] = 'User has no tokens assigned'
 
             # here we check if we should to autoassign and try to do it
-
-            th = TokenHandler()
             auto_assign_return = th.auto_assignToken(passw, user)
             if auto_assign_return is True:
                 # We can not check the token, as the OTP value is already used!

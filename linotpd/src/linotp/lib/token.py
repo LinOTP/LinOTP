@@ -72,6 +72,9 @@ from linotp.lib.realm import createDBRealm, getRealmObject
 from linotp.lib.context import request_context as context
 from linotp.tokens import tokenclass_registry
 
+from linotp.lib.policy import get_autoassignment_from_realm
+from linotp.lib.policy import get_autoassignment_without_pass
+
 import linotp.model.meta
 
 Session = linotp.model.meta.Session
@@ -547,6 +550,71 @@ class TokenHandler(object):
             new_serial = "%s_%02i" % (serial, i)
 
         return (result, new_serial)
+
+    def auto_assign_otp_only(self, otp, user, options=None):
+        '''
+        This function is called to auto_assign a token, when the
+        user enters an OTP value of an not assigned token.
+        '''
+        if options is None:
+            options = {}
+
+        auto = get_autoassignment_without_pass(user)
+        if not auto:
+            log.debug("no autoassigment configured")
+            return False
+
+        # only auto assign if no token exists
+
+        tokens = getTokens4UserOrSerial(user)
+        if len(tokens) > 0:
+            log.debug("No auto_assigment for user %r@%r. User already has"
+                      " some tokens.", user.login, user.realm)
+            return False
+
+        token_src_realm = get_autoassignment_from_realm(user)
+
+        if not token_src_realm:
+            token_src_realm = user.realm
+
+        # get all tokens of the users realm, which are not assigned
+        token_type = options.get('token_type', None)
+
+        # List of (token, pin) pairs
+        matching_tokens = []
+
+        tokens = self.getTokensOfType(typ=token_type,
+                                      realm=token_src_realm,
+                                      assigned="0")
+        for token in tokens:
+
+            token_exists = token.check_otp_exist(
+                                        otp=otp,
+                                        window=token.getOtpCountWindow())
+
+            if token_exists >= 0:
+                matching_tokens.append(token)
+
+        if len(matching_tokens) != 1:
+            log.warning("[auto_assignToken] %d tokens with "
+                        "the given OTP value found.", len(matching_tokens))
+            return False
+
+        token = matching_tokens[0]
+        serial = token.getSerial()
+
+        # if found, assign the found token to the user.login
+        try:
+            self.assignToken(serial, user, pin="")
+            context['audit']['serial'] = serial
+            context['audit']['info'] = "Token with otp auto assigned"
+            context['audit']['token_type'] = token.getType()
+            return True
+        except Exception as exx:
+            log.exception("Failed to assign token: %r", exx)
+            return False
+
+        return False
 
     def auto_assignToken(self, passw, user, _pin="", param=None):
         '''
