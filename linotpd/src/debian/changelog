@@ -1,3 +1,45 @@
+linotp (2.10~0dev0-1) jessie; urgency=low
+
+  Enhancements:
+  * 64342d94 Server: Adjust default TransactionId length to 17
+  * 15ab7abe, 8b4d6a8d Server: Implement explicit-deny for pushtoken
+  * 7a37b525 Server: Add UI in manage and selfservice for "static password"
+    token
+  * 8c32fc28 Server: Add token type specific enrollment limits
+  * e4f1ebc4 Server: Support loading provider via configuartion in linotp.ini
+  * dc798300, ed8b5afb Server: Enable new policy engine by default
+  * 8c37e1d3, 952f311b Server: moved tokens to new location in src tree
+  * e5281d75, bc71dc42 Server: Refactoring Resolver class instantiation
+  * b50e562d Smsprovider: Moved the smsproviders to become part of linotp
+  * 13a30113 UserIdresolver: Moved useridresolvers into linotp package
+  * 445b5696, 62e74d00 Sever: Removed getParam() method
+  * 48167b8e, 5b99a3d9, 84551a07, 54d25be9, 037e2505 Server: Refactor config
+    handling (todo finsih)
+  * dae4d8cd Server: Refactoring: Use typing for encrypted values in config
+    (todo finsih)
+  * 09d3e5ab Server: Removed IE compatibility mode from templates
+  * f9a3179b Web UI: Refactor dialog button icon generation
+  * 0a0c3d2d Web UI: Performance improvement by removing mouseover effects on
+    Manage-UI
+  * fe7ac117 Web UI: Extract custom form validators into seperate files
+ 
+  Bug Fixes:
+  * 4d2dadc9 Server: Fix evaluation of forward policy to match most specific
+    user definition
+  * f87d36e3 Server: Fix password comparison of password token
+  * 32a003ba Server: Adjust location of token makos for translation
+  * 8595b449 Server: Fix typo in getUserFromRequest in case of basic auth
+  * 8910dda9 Server: Fix missing 'serial' for audit and policy check in
+    selfservice.enroll
+  * bf1abbb3 Server: Fix for loading active token modules 
+  * 43cd5622 Server: Refactoring - cleanup for the "day password" token file
+    and algorithm
+  * 80552676 Web UI: Fix UI crash check if backend response is array in ldap
+    testconnection
+                     - d5f607cd On LDAP test connection always close dialog
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 29 Aug 2017 11:29:18 +0200
+
 linotp (2.9.3.1-1) jessie; urgency=low
 
   Enhancements:
