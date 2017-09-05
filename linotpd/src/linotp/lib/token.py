@@ -96,8 +96,6 @@ ENCODING = "utf-8"
 
 ###############################################
 
-
-
 class TokenHandler(object):
 
     def initToken(self, param, user, tokenrealm=None):
@@ -1480,7 +1478,7 @@ def getAllTokenUsers():
 
 
 def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
-                           _class=True):
+                           _class=True, read_for_update=False):
     tokenList = []
     tokenCList = []
     tok = None
@@ -1505,7 +1503,15 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
 
         # finally run the query on token serial
         condition = and_(*sconditions)
+
         sqlQuery = Session.query(Token).filter(condition)
+
+        # ------------------------------------------------------------------ --
+
+        # for the validation we require an read for update lock
+
+        if read_for_update:
+            sqlQuery = sqlQuery.with_lockmode('update').all()
 
         for token in sqlQuery:
             tokenList.append(token)
@@ -1538,7 +1544,15 @@ def getTokens4UserOrSerial(user=None, serial=None, token_type=None,
                                          token_type.lower()),)
 
                 condition = and_(*uconditions)
+
                 sqlQuery = Session.query(Token).filter(condition)
+
+                # ---------------------------------------------------------- --
+
+                # for the validation we require an read for update lock
+
+                if read_for_update:
+                    sqlQuery = sqlQuery.with_lockmode('update').all()
 
                 for token in sqlQuery:
                     # we have to check that the token is in the same realm as the user
