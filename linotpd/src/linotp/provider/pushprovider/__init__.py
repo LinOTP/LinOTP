@@ -61,15 +61,14 @@ class IPushProvider(object):
 
         return config_mapping
 
-    def push_notification(self, message, token_info=None, gda=None):
+    def push_notification(self, challenge, gda, transactionId):
         """
         Sends out the push notification message.
 
-        :param message: The push notification message / challenge
-        :param token_info: the token info, which contains target token
-                           descriptor
+        :param challenge: The push notification message / challenge
         :param gda: alternative to the token_info, the gda could be provided
                     directly
+        :param transactionId: The push notification transaction reference
         :return: A tuple of success and result message
         """
         raise NotImplementedError("Every subclass of IPushProvider has to "

@@ -226,8 +226,10 @@ class TestPushProviderController(TestController):
         TestPushProviderController.R_AUTH_STATUS = 200
 
         # run the fake request
-        status, response = push_prov.push_notification(message=message,
-                                                       gda=gda)
+        status, response = push_prov.push_notification(
+                                            challenge=message,
+                                            gda=gda,
+                                            transactionId='012345678901234')
 
         self.assertEquals(status, True)
         self.assertEquals(response, VALID_REQUEST)
