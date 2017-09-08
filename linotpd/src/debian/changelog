@@ -40,6 +40,15 @@ linotp (2.10~0dev0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 29 Aug 2017 11:29:18 +0200
 
+linotp (2.9.3.2-1) jessie; urgency=low
+
+  Bug Fixes:
+  * 77ab047 Server: Fix YubiKey import
+  * 9101282 Server: Give realm parameter priority over user@realm if not
+                    split@sign
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Thu, 07 Sep 2017 14:51:10 +0200
+
 linotp (2.9.3.1-1) jessie; urgency=low
 
   Enhancements:

@@ -86,7 +86,11 @@ linotp.splitAtSign = True
 linotpGetotp.active = False
 
 ## Encrytion key:
+{{ if .Env.SECRET_FILE_LOCATION }}
+linotpSecretFile = {{ .Env.SECRET_FILE_LOCATION }}
+{{ else }}
 linotpSecretFile = %(here)s/encKey
+{{ end }}
 
 ## RADIUS Token:
 radius.dictfile= %(here)s/dictionary
