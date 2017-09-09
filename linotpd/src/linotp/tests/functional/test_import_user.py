@@ -303,7 +303,8 @@ class TestImportUser(TestController):
         params = {'realm': 'myrealm', 'resolvers': self.resolver_spec}
         response = self.make_system_request(action='setRealm',  params=params)
 
-        params = {'resConf': self.resolver_name, 'username': '*'}
+        resolver_id = self.resolver_spec.split('.')[-1]
+        params = {'resConf': resolver_id, 'username': '*'}
         response = self.make_admin_request(action='userlist', params=params)
 
         jresp = json.loads(response.body)
