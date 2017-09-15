@@ -169,7 +169,7 @@ if isinstance(lang, list):
 <div id='successDiv'> </div>
 
 </div>  <!-- end of main-->
-</div>
+</div>  <!-- end of content-->
 <div id="footer">
 ${c.version} --- &copy; ${c.licenseinfo}
 </div>
