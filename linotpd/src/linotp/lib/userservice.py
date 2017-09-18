@@ -86,7 +86,8 @@ def get_userinfo(user):
 
     (uid, resolver, resolver_class) = getUserId(user)
     uinfo = getUserInfo(uid, resolver, resolver_class)
-    del uinfo['cryptpass']
+    if 'cryptpass' in uinfo:
+        del uinfo['cryptpass']
 
     return uinfo
 
@@ -227,7 +228,7 @@ def check_auth_cookie(cookie, user, client):
     data = Cookie_Cache.get(cookie)
 
     if not data:
-        return False, None, None
+        return False
 
     [cookie_user, cookie_client, expiration, _state, _state_data] = data
 
