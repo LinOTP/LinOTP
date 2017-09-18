@@ -359,6 +359,10 @@ class TestChunkConfigCase(unittest.TestCase):
 class TestConfigStoreCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # we need a clean Session context to setup new sqlite db
+        # no matter what other unittests did
+        Session.close_all()
+        Session.remove()
         # Use an in memory empty Sqlite database
         super(TestConfigStoreCase, cls).setUpClass()
         cls.engine = create_engine('sqlite:///:memory:')
@@ -371,9 +375,12 @@ class TestConfigStoreCase(unittest.TestCase):
         # Clear all config entries before starting each test
         Session.query(Config).delete(synchronize_session='fetch')
 
+    def tearDown(self):
+        Session.remove()
+
     def test_storeConfigDB_encoding(self):
         # Test round trip of _storeConfigDB with entries that require
-        # encodinfg of special characters
+        # encoding of special characters
         conf = {
             'Key': u'linotp.TËST',
             'Value': u'VALUEÄ',
