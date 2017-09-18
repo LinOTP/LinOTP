@@ -1,3 +1,13 @@
+linotp (2.9.3.3-1) jessie; urgency=low
+
+  Bug Fixes:
+  * daca96 Server: Fix HMAC-based tokens:
+                   - prevent (positive) double authentication with the same
+                     OTP. This used to happen when a user submitted the OTP
+                     more than once within a very short timeframe.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 18 Sep 2017 17:52:04 +0200
+
 linotp (2.9.3.2-1) jessie; urgency=low
 
   Bug Fixes:
