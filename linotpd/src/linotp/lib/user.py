@@ -866,6 +866,8 @@ def _get_resolver_lookup_cache(realm):
     :param realm: realm description
     :return: the resolver lookup cache
     """
+    return None
+
     config = request_context['Config']
 
     enabled = config.get('linotp.resolver_lookup_cache.enabled',
@@ -1017,6 +1019,8 @@ def _get_user_lookup_cache(resolver_spec):
     :param resolver_spec: resolver description
     :return: the user lookup cache
     """
+
+    return None
 
     config = request_context['Config']
 

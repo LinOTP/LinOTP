@@ -541,6 +541,7 @@ def getResolverObject(resolver_spec, config=None, load_config=True):
                 resolver.loadConfig(config, config_identifier)
             except Exception as exx:
                 # FIXME: Except clause is too general. resolver
+                # should be ResolverLoadConfigError
                 # exceptions in the useridresolver modules should
                 # have their own type, so we can filter here
                 log.error('Resolver config loading failed for resolver with '

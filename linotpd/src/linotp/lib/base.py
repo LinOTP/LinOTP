@@ -477,10 +477,7 @@ class BaseController(WSGIController):
         l_config = getLinotpConfig()
 
         # initialize the elliptic curve secret + public key for the qrtoken
-        secret_key = l_config.get('SecretKey.Partition.0', False)
-
-        if not secret_key:
-            init_key_partition(l_config, partition=0)
+        self.secret_key = l_config.get('SecretKey.Partition.0', False)
 
         resolver_setup_done = config.get('resolver_setup_done', False)
         if resolver_setup_done is False:
@@ -619,8 +616,7 @@ class BaseController(WSGIController):
         request_context['translate'] = translate
         request_context['CacheManager'] = environment['beaker.cache']
         request_context['Path'] = environment.get("PATH_INFO", "") or ""
-
-        initResolvers()
+        request_context['hsm'] = self.hsm
 
         request_params = {}
 
@@ -630,6 +626,19 @@ class BaseController(WSGIController):
             log.error("Failed to decode request parameters %r" % exx)
 
         request_context['Params'] = request_params
+
+        initResolvers()
+
+        client = None
+        try:
+            client = get_client(request=request)
+        except UnicodeDecodeError as exx:
+            log.error("Failed to decode request parameters %r" % exx)
+
+        request_context['Client'] = client
+
+        request_context['Audit'] = Audit
+        request_context['audit'] = Audit.initialize(request, client=client)
 
         authUser = None
         try:
@@ -647,16 +656,6 @@ class BaseController(WSGIController):
             log.error("Failed to decode request parameters %r" % exx)
         request_context['RequestUser'] = requestUser
 
-        client = None
-        try:
-            client = get_client(request=request)
-        except UnicodeDecodeError as exx:
-            log.error("Failed to decode request parameters %r" % exx)
-
-        request_context['Client'] = client
-
-        request_context['Audit'] = Audit
-        request_context['audit'] = Audit.initialize(request, client=client)
 
         defaultRealm = ""
         try:
@@ -674,9 +673,15 @@ class BaseController(WSGIController):
 
         request_context['Realms'] = realms
 
-        request_context['hsm'] = None
-        if hasattr(self, "hsm"):
-            request_context['hsm'] = self.hsm
+        # ------------------------------------------------------------------ --
+
+        # for the setup of encrypted data, we require the hsm is instatiated
+        # and available in the request context
+
+        if not self.secret_key:
+            init_key_partition(linotp_config, partition=0)
+
+        # ------------------------------------------------------------------ --
 
         # copy some system entries from pylons
         syskeys = {
@@ -689,6 +694,7 @@ class BaseController(WSGIController):
             sysconfig[key] = config.get(key, default)
 
         request_context['SystemConfig'] = sysconfig
+
 
 
 # eof ########################################################################

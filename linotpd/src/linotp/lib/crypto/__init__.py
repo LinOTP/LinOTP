@@ -66,7 +66,7 @@ from Cryptodome.Cipher import AES
 
 # for the hmac algo, we have to check the python version
 
-from linotp.lib.error import HSMException
+from linotp.lib.error import HSMException, ProgrammingError
 from linotp.lib.error import ConfigAdminError
 
 from linotp.lib.ext.pbkdf2  import PBKDF2
@@ -522,16 +522,7 @@ def kdf2(sharedsecret, nonce, activationcode, len, iterations=10000,
 
 
 def hash_digest(val, seed, algo=None, hsm=None):
-
-    if hsm:
-        hsm_obj = hsm.get('obj')
-    else:
-        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
-            raise HSMException('no hsm defined in execution context!')
-        hsm_obj = c.hsm.get('obj')
-
-    if hsm_obj is None or hsm_obj.isReady() is False:
-        raise HSMException('hsm not ready!')
+    hsm_obj = _get_hsm_obj_from_context(hsm)
 
     if algo is None:
         algo = get_hashalgo_from_description('sha256')
@@ -543,15 +534,7 @@ def hash_digest(val, seed, algo=None, hsm=None):
 
 def hmac_digest(bkey, data_input, hsm=None, hash_algo=None):
 
-    if hsm:
-        hsm_obj = hsm.get('obj')
-    else:
-        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
-            raise HSMException('no hsm defined in execution context!')
-        hsm_obj = c.hsm.get('obj')
-
-    if hsm_obj is None or hsm_obj.isReady() is False:
-        raise HSMException('hsm not ready!')
+    hsm_obj = _get_hsm_obj_from_context(hsm)
 
     if hash_algo is None:
         hash_algo = get_hashalgo_from_description('sha1')
@@ -563,60 +546,55 @@ def hmac_digest(bkey, data_input, hsm=None, hash_algo=None):
 
 def encryptPassword(password):
 
-    if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
-        raise HSMException('no hsm defined in execution context!')
-
-    hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() is False:
-        raise HSMException('hsm not ready!')
-
-    ret = hsm.encryptPassword(password)
-    return ret
+    hsm_obj = _get_hsm_obj_from_context()
+    return hsm_obj.encryptPassword(password)
 
 
 def encryptPin(cryptPin, iv=None, hsm=None):
 
+    hsm_obj = _get_hsm_obj_from_context(hsm)
+    return hsm_obj.encryptPin(cryptPin, iv)
+
+
+def _get_hsm_obj_from_context(hsm=None):
+    """Get the hsm from  LinOTP request context
+
+    If no hsm parameter is given, we get the hsm from the LinOTP request context
+    (var context) which was extended some time ago.
+
+    :param hsm: hsm security object instance
+    :return: return the hsm object
+    :rtype:
+    """
+
     if hsm:
         hsm_obj = hsm.get('obj')
     else:
-        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
-            raise HSMException('no hsm defined in execution context!')
-        hsm_obj = c.hsm.get('obj')
+        hsm_obj = context.get('hsm', {}).get('obj')
 
-    if hsm_obj is None or hsm_obj.isReady() is False:
-        raise HSMException('hsm not ready!')
-
-    ret = hsm_obj.encryptPin(cryptPin, iv)
-    return ret
-
-
-def decryptPassword(cryptPass):
-
-    if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
+    if not hsm_obj:
         raise HSMException('no hsm defined in execution context!')
 
-    hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() is False:
+    if hsm_obj.isReady() is False:
         raise HSMException('hsm not ready!')
+    return hsm_obj
 
-    ret = hsm.decryptPassword(cryptPass)
+def decryptPassword(cryptPass):
+    """
+    Restore the encrypted password
+
+    :param cryptPass: encrypted password (i.e. ldap password)
+    :return: decrypted password
+    """
+    hsm_obj = _get_hsm_obj_from_context()
+    ret = hsm_obj.decryptPassword(cryptPass)
     return ret
 
 
 def decryptPin(cryptPin, hsm=None):
 
-    if hsm:
-        hsm_obj = hsm.get('obj')
-    else:
-        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
-            raise HSMException('no hsm defined in execution context!')
-        hsm_obj = c.hsm.get('obj')
-
-    if hsm_obj is None or hsm_obj.isReady() is False:
-        raise HSMException('hsm not ready!')
-
-    ret = hsm_obj.decryptPin(cryptPin)
-    return ret
+    hsm_obj = _get_hsm_obj_from_context(hsm)
+    return hsm_obj.decryptPin(cryptPin)
 
 
 def encrypt(data, iv, id=0, hsm=None):
@@ -633,17 +611,8 @@ def encrypt(data, iv, id=0, hsm=None):
     :return:      encryted buffer
     """
 
-    if hsm:
-        hsm_obj = hsm.get('obj')
-    else:
-        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
-            raise HSMException('no hsm defined in execution context!')
-
-        hsm_obj = c.hsm.get('obj')
-    if hsm_obj is None or hsm_obj.isReady() is False:
-        raise HSMException('hsm not ready!')
-    ret = hsm_obj.encrypt(data, iv, id)
-    return ret
+    hsm_obj = _get_hsm_obj_from_context(hsm)
+    return hsm_obj.encrypt(data, iv, id)
 
 
 def decrypt(input, iv, id=0, hsm=None):
@@ -660,18 +629,8 @@ def decrypt(input, iv, id=0, hsm=None):
     :return:      decryted buffer
     """
 
-    if hsm:
-        hsm_obj = hsm.get('obj')
-    else:
-        if hasattr(c, 'hsm') is False or isinstance(c.hsm, dict) is False:
-            raise HSMException('no hsm defined in execution context!')
-        hsm_obj = c.hsm.get('obj')
-
-    if hsm_obj is None or hsm_obj.isReady() is False:
-        raise HSMException('hsm not ready!')
-
-    ret = hsm_obj.decrypt(input, iv, id)
-    return ret
+    hsm_obj = _get_hsm_obj_from_context(hsm)
+    return hsm_obj.decrypt(input, iv, id)
 
 
 def uencode(value):
@@ -783,22 +742,14 @@ def geturandom(len=20):
     :return: buffer of bytes
 
     '''
-    if hasattr(c, 'hsm') is False:
-        ret = os.urandom(len)
-        return ret
 
-    if isinstance(c.hsm, dict) is False:
-        raise HSMException('hsm not found!')
-
-    hsm = c.hsm.get('obj')
-    if hsm is None or hsm.isReady() is False:
-        raise HSMException('hsm not ready!')
-
-    ret = hsm.random(len)
-    return ret
+    try:
+        hsm_obj = _get_hsm_obj_from_context()
+        return hsm_obj.random(len)
+    except (HSMException, ProgrammingError):
+        return os.urandom(len)
 
 ### some random functions based on geturandom #################################
-
 
 class urandom(object):
 
