@@ -186,7 +186,6 @@ def is_phone_editable(user=""):
 
     return ret
 
-
 @tokenclass_registry.class_entry('sms')
 @tokenclass_registry.class_entry('linotp.tokens.smstoken.SmsTokenClass')
 class SmsTokenClass(HmacTokenClass):
@@ -289,7 +288,16 @@ class SmsTokenClass(HmacTokenClass):
                          'value': [0, 1],
                          'desc': _('define if the user should be allowed'
                                     ' to define the sms')
-                         }}}
+                         }},
+                       'authentication':{
+                           'sms_dynamic_mobile_number':{
+                               'type': 'bool',
+                               'desc': 'if set, a new mobile number will be '
+                                       'retrieved from the user info instead '
+                                       'of the token'},
+
+                           }
+                       }
         }
 
         if key and key in res:
@@ -706,7 +714,7 @@ class SmsTokenClass(HmacTokenClass):
         self.setSMSInfo("until", until)
         return
 
-    def getPhone(self):
+    def _getPhone(self):
         '''
         getter for the phone number
 
@@ -716,6 +724,33 @@ class SmsTokenClass(HmacTokenClass):
 
         (phone, _till) = self.getSMSInfo()
         return phone
+
+    def get_mobile_number(self, user=None):
+        '''
+        get the mobile number
+            - from the token info or
+            - if the policy allowes it, from the user info
+        '''
+
+        if not user:
+            return self._getPhone()
+
+        pol = get_client_policy(context['Client'],
+                                scope="authentication",
+                                user=user,
+                                action="sms_dynamic_mobile_number")
+
+        if not pol:
+            return self._getPhone()
+
+        get_dynamic = getPolicyActionValue(pol, "sms_dynamic_mobile_number",
+                                            is_string=True)
+
+        if not get_dynamic:
+            return self._getPhone()
+
+        user_detail = getUserDetail(user)
+        return user_detail.get('mobile', self._getPhone())
 
     def getUntil(self):
         '''
@@ -818,7 +853,11 @@ class SmsTokenClass(HmacTokenClass):
                             "didn't install the package (Debian "
                             "linotp-smsprovider or PyPI SMSProvider)")
 
-        phone = self.getPhone()
+        # we require the token owner to get the phone number and the provider
+        owner = get_token_owner(self)
+
+        phone = self.get_mobile_number(owner)
+
         otp = self.getNextOtp()
         serial = self.getSerial()
 

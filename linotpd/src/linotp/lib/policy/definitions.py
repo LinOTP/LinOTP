@@ -309,7 +309,7 @@ def getPolicyDefinitions(scope=""):
                 'value': ['qr', 'u2f'], # TODO: currently hardcoded
                 'desc': 'The token types that should support offline '
                         'authentication'
-             }
+             },
             },
         'authorization': {
             'authorize': {
