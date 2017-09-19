@@ -545,13 +545,24 @@ def hmac_digest(bkey, data_input, hsm=None, hash_algo=None):
 
 
 def encryptPassword(password):
+    """Encrypt password (i.e. ldap password)
 
+    :param password: password to encrypt
+    :return: encrypted password
+    """
+    # TODO: this function have no iv and hsm. encryptPin does; is this correct?
     hsm_obj = _get_hsm_obj_from_context()
     return hsm_obj.encryptPassword(password)
 
 
 def encryptPin(cryptPin, iv=None, hsm=None):
+    """Encrypt pin (i.e. token pin)
 
+    :param cryptPin: pin to encrypt
+    :param iv: initializain vector
+    :param hsm: hsm security object instance
+    :return: return encrypted pin
+    """
     hsm_obj = _get_hsm_obj_from_context(hsm)
     return hsm_obj.encryptPin(cryptPin, iv)
 
@@ -592,6 +603,11 @@ def decryptPassword(cryptPass):
 
 
 def decryptPin(cryptPin, hsm=None):
+    """
+    :param cryptPin: encrypted pin (i.e. token pin)
+    :param hsm: hsm security object instance
+    :return: decrypted pin
+    """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
     return hsm_obj.decryptPin(cryptPin)
