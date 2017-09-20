@@ -171,11 +171,11 @@ def check_otp(token, otpval, options=None):
 
 def split_pin_otp(token, passw, user=None, options=None):
     """
-    split the pin and the otp fron the given password
+    split the pin and the otp from the given password
 
     :param token: the corresponding token
-    :param passw: the to be splitted password
-    :param user: the tokenuser
+    :param passw: the to be split password
+    :param user: the token user
     :param options: currently not used, but might be forwarded to the
                     token.splitPinPass
     :return: tuple of (split status, pin and otpval)
@@ -186,7 +186,7 @@ def split_pin_otp(token, passw, user=None, options=None):
 
     if 0 in pin_policies or "token_pin" in pin_policies:
         # old stuff: We check The fixed OTP PIN
-        log.debug('pin policy=0: checkin the PIN')
+        log.debug('pin policy=0: checking the PIN')
         (pin, otp) = token.splitPinPass(passw)
 
     elif 1 in pin_policies or "password" in pin_policies:
@@ -443,7 +443,7 @@ class ValidationHandler(object):
     def checkUserPass(self, user, passw, options=None):
         """
         :param user: the to be identified user
-        :param passw: the identifiaction pass
+        :param passw: the identification pass
         :param options: optional parameters, which are provided
                     to the token checkOTP / checkPass
 
@@ -571,7 +571,7 @@ class ValidationHandler(object):
         :param tokenList: list of identified tokens
         :param passw: the provided passw (mostly pin+otp)
         :param user: the identified use - as class object
-        :param options: additonal parameters, which are passed to the token
+        :param options: additional parameters, which are passed to the token
 
         :return: tuple of boolean and optional response
         """

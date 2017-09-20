@@ -97,7 +97,7 @@ class Challenges(object):
         if filter_open is True:
             conditions += (and_(Challenge.session.like('%"status": "open"%')),)
 
-        # SQLAlchemy requires the conditions in one arg as tupple
+        # SQLAlchemy requires the conditions in one arg as tuple
         condition = and_(*conditions)
         challenges_query = Session.query(Challenge).\
             filter(condition).order_by(desc(Challenge.id))
@@ -204,7 +204,7 @@ class Challenges(object):
                     transactionid = open_transactionid
 
             else:
-                # in case the init was successfull, we preserve no the
+                # in case the init was successful, we preserve no the
                 # challenge data to support the implementation of a blocking
                 # based on the previous stored data
                 challenge_obj.setChallenge(message)
@@ -375,7 +375,7 @@ class Challenges(object):
         handle related challenges and close these
 
         :param matching_challenges: all challenges that have
-                                    been correctly answerd
+                                    been correctly answered
         """
         from linotp.lib.token import getTokens4UserOrSerial
 
