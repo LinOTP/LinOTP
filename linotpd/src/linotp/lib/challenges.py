@@ -319,7 +319,8 @@ class Challenges(object):
         return res
 
     @staticmethod
-    def get_challenges(token=None, transid=None, options=None, filter_open=False):
+    def get_challenges(token=None, transid=None, options=None,
+                       filter_open=False, read_for_update=False):
 
         if not options:
             options = {}
@@ -333,9 +334,13 @@ class Challenges(object):
 
         # transaction ids are handled preferred
         if transid:
-            challenges = Challenges.lookup_challenges(transid=transid)
+            challenges = Challenges.lookup_challenges(
+                                        transid=transid,
+                                        read_for_update=read_for_update)
         elif token:
-            challenges = Challenges.lookup_challenges(serial=token.getSerial())
+            challenges = Challenges.lookup_challenges(
+                                        serial=token.getSerial(),
+                                        read_for_update=read_for_update)
         else:
             challenges = []
 
