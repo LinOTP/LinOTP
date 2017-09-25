@@ -178,23 +178,6 @@ class User(object):
             except Exception as exx:
                 log.exception("Error while accessing resolver %r", exx)
 
-    def does_exists(self, resolvers=None):
-        """
-        check if the user exists - will iterate through the resolvers
-
-        :param resolvers: list of resolvers, where to do the user lookup
-        :return: boolean - True if user exist in a resolver
-        """
-        try:
-            uid, _reso = self.get_uid_resolver(resolvers=resolvers).next()
-        except StopIteration:
-            return False
-
-        if uid is not None:
-            return True
-
-        return False
-
     @property
     def is_empty(self):
         return len(self.login) == 0 and \
