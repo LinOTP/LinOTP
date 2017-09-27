@@ -1,3 +1,11 @@
+linotp (2.9.3.4~rc0-1) jessie; urgency=low
+
+  Bug Fixes:
+  * 75b52f Server: Fix encoding error that prevented Token View from being
+                   displayed in the web interface.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 27 Sep 2017 13:38:28 +0200
+
 linotp (2.9.3.3-1) jessie; urgency=low
 
   Bug Fixes:
