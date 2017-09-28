@@ -126,6 +126,7 @@ if isinstance(lang, list):
                         <li><a href='#' id='menu_sms_provider_config'>${_("SMS Provider Config")}</a>
                         <li><a href='#' id='menu_email_provider_config'>${_("Email Provider Config")}</a>
                         <li><a href='#' id='menu_push_provider_config'>${_("Push Provider Config")}</a>
+                        <li><a href='#' id='menu_voice_provider_config'>${_("Voice Provider Config")}</a>
                     </ul>
                  </li>
                 % endif
@@ -569,7 +570,7 @@ if isinstance(lang, list):
 "server_certificate": "/etc/linotp2/keyidentity-push-ca-bundle.crt"
 }'
 
-syst></textarea></td>
+></textarea></td>
             </tr>
             <tr>
                 <td><label for="push_provider_timeout">${_("Timeout (sec)")}</label>: </td>
@@ -612,8 +613,97 @@ syst></textarea></td>
     }
 </script>
 
+<!-- ############ voice provider settings ################# -->
+<div id='dialog_voice_providers'>
+    <div class="list-wrapper"><div id='voice_providers_list'> </div></div>
+    <div class="ui-dialog-buttonpane flat"><button id='button_voice_provider_set_default'>${_("Set as default")}</button></div>
+</div>
+<script type="text/javascript">
+    function translate_dialog_voice_providers() {
+        $("#dialog_voice_providers" ).dialog( "option", "title", '${_("Voice Provider: create and edit")}');
+        $('#button_voice_provider_new').button("option", "label", '${_("New")}');
+        $('#button_voice_provider_edit').button("option", "label", '${_("Edit")}');
+        $('#button_voice_provider_delete').button("option", "label", '${_("Delete")}');
+        $('#button_voice_providers_close').button("option", "label", '${_("Close")}');
+    }
+</script>
 
+<!-- ############ voice provider edit ################# -->
+<div id="dialog_voice_provider_edit">
+    <form class="cmxform" id="form_voiceprovider" action="">
+        <table>
+            <tr>
+                <td><label for="voice_provider_name">${_("Name")}</label>: </td>
+                <td><input type="text" name="voice_provider_name" class="required"
+                                       id="voice_provider_name" size="37" maxlength="80"
+                                       placeholder=""></td>
+            </tr>
+            <tr>
+                <td><label for="voice_provider_class">${_("Class")}</label>: </td>
+                <td><input type="text" name="voice_provider_class" class="required"
+                           id="voice_provider_class" size="37" maxlength="80"
+                           placeholder="CustomVoiceProvider"></td>
+            </tr>
+            <tr>
+                <td><label for='voice_provider_config'>${_("Config")}</label>: </td>
+                <td><textarea name="voice_provider_config" class="required"
+                              id="voice_provider_config" cols='35' rows='6'
+                              placeholder=
+'{
+"server_url": "url of the voice service (required)",
+"callerNumber": "number of the originator (required)",
+"twilio": {
+    "authToken": "authentication token",
+    "accountSid": "account identifier",
+    "voice": "reader's voice - default is alice (optinal)"
+},
+"access_certificate": "client authentication certificate (optional)",
+"server_certificate": "server verification certificate (optional)",
+"proxy": "proxy url (optional)"
+}
+'
+></textarea></td>
+            </tr>
+            <tr>
+                <td><label for="voice_provider_timeout">${_("Timeout (sec)")}</label>: </td>
+                <td><input type="number" name="voice_provider_timeout" class="required"
+                              placeholder="120" id="voice_provider_timeout" size="5" maxlength="5"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script type="text/javascript">
+    function translate_dialog_voice_provider_edit() {
+        $("#dialog_voice_provider_edit" ).dialog( "option", "title", '${_("voice Provider")}' );
+        $('#button_voice_provider_cancel').button("option", "label", '${_("Cancel")}');
+        $('#button_voice_provider_save').button("option", "label", '${_("Save")}');
+    }
+</script>
 
+<!-- ################## voice provider delete ###################### -->
+<div id='dialog_voice_provider_delete'>
+    <p>${_("Do you want to delete the voice provider?")}</p>
+</div>
+<script type="text/javascript">
+    function translate_dialog_voice_provider_delete() {
+        $("#dialog_voice_provider_delete" ).dialog( "option", "title", '${_("Deleting provider")} ' + selectedVoiceProvider );
+        $('#button_voice_provider_delete_delete').button("option", "label", '${_("Delete")}');
+        $('#button_voice_provider_delete_cancel').button("option", "label", '${_("Cancel")}');
+    }
+</script>
+
+<!-- ############ voice provider settings ################# -->
+<div id='dialog_voice_provider_settings'>
+
+</div>
+
+<script type="text/javascript">
+    function translate_voice_provider_settings() {
+        $("#dialog_voice_provider_settings" ).dialog( "option", "title", '${_("Voice provider configuration")}' );
+        $('#button_voice_provider_save').button("option", "label", '${_("Save config")}');
+        $('#button_voice_provider_cancel').button("option", "label", '${_("Cancel")}');
+    }
+</script>
 
 <!-- ############ dialog settings ################# -->
 <div id='dialog_token_settings'>

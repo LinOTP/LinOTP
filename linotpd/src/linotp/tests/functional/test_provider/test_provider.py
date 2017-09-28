@@ -36,6 +36,7 @@ test the administrative handling of providers:
 from mock import patch
 import logging
 import json
+import os
 
 import linotp.provider.smsprovider.FileSMSProvider
 
@@ -456,6 +457,94 @@ class TestProviderController(TestController):
         self.assertTrue('"value": true' in response, response)
 
         return
+
+    def test_voice_provider(self):
+        """
+        check if custom voice provider could be saved, retrieved and deleted
+        """
+        # ----------------------------------------------------------------- --
+
+        # basic voice provider configuartion
+
+        configDict = {
+            "access_certificate": os.path.join(self.fixture_path, 'cert.pem'),
+            'callerNumber': '+4989231234567',
+            }
+
+        configDict['twilio'] = {
+            'accountSid': 'ACf9095f540f0b090edbd239b99230a8ee',
+            'authToken': '8f36aab7ca485b432500ce49c15280c5',
+            'voice': 'alice',
+            }
+
+        configDict['server_url'] = 'https://vcs.keyidentity.com/'
+
+        # ----------------------------------------------------------------- --
+
+        # define the new provider, which should become default
+
+        provider_name = 'new_voice'
+
+        provider_params = {
+            'name': provider_name,
+            'config': json.dumps(configDict),
+            'timeout': '301',
+            'type': 'voice',
+            'class': 'CustomVoiceProvider'}
+
+        response = self.define_new_provider(provider_params=provider_params)
+        self.assertTrue('"value": true' in response, response)
+
+        # ----------------------------------------------------------------- --
+
+        # check for the loaded provider, which should be default
+
+        params = {'type': 'voice'}
+        response = self.make_system_request('getProvider', params=params)
+
+        jresp = json.loads(response.body)
+        provider = jresp["result"]["value"].get(provider_name, {})
+        self.assertTrue(provider.get('Default', False), response)
+
+        # ----------------------------------------------------------------- --
+
+        # define second provider, which should not be default and could be
+        # deleted
+
+        provider_name_2 = 'new_voice_2'
+
+        provider_params = {
+            'name': provider_name_2,
+            'config': json.dumps(configDict),
+            'timeout': '301',
+            'type': 'voice',
+            'class': 'CustomVoiceProvider'}
+
+        response = self.define_new_provider(provider_params=provider_params)
+        self.assertTrue('"value": true' in response, response)
+
+        # ----------------------------------------------------------------- --
+
+        # lookup for the new provider, which should not be default
+
+        params = {'type': 'voice',
+                  'name': provider_name_2}
+        response = self.make_system_request('getProvider', params=params)
+
+        jresp = json.loads(response.body)
+        provider = jresp["result"]["value"].get(provider_name_2, {})
+        self.assertFalse(provider.get('Default', False), response)
+
+        # ----------------------------------------------------------------- --
+
+        # finally we can delete the second, non default one
+
+        params = {'type': 'voice', 'name': provider_name_2}
+        response = self.make_system_request('delProvider', params=params)
+        self.assertTrue('"value": true' in response, response)
+
+        return
+
 
 
 # eof #####################################################################
