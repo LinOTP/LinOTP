@@ -1,58 +1,73 @@
-linotp (2.10~0dev0-1) jessie; urgency=low
+linotp (2.10~0dev1-1) jessie; urgency=low
 
   Enhancements:
-  * 64342d94 Server: Adjust default TransactionId length to 17
-  * 15ab7abe, 8b4d6a8d Server: Implement explicit-deny for pushtoken
-  * 7a37b525 Server: Add UI in manage and selfservice for "static password"
+  * 64342d9 Server: Adjust default TransactionId length to 17
+  * 15ab7ab, 8b4d6a8 Server: Implement explicit-deny for pushtoken
+  * 7a37b52 Server: Add UI in manage and selfservice for "static password"
     token
-  * 8c32fc28 Server: Add token type specific enrollment limits
-  * e4f1ebc4 Server: Support loading provider via configuartion in linotp.ini
-  * dc798300, ed8b5afb Server: Enable new policy engine by default
-  * 8c37e1d3, 952f311b Server: moved tokens to new location in src tree
-  * e5281d75, bc71dc42 Server: Refactoring Resolver class instantiation
-  * b50e562d Smsprovider: Moved the smsproviders to become part of linotp
-  * 13a30113 UserIdresolver: Moved useridresolvers into linotp package
-  * 445b5696, 62e74d00 Sever: Removed getParam() method
-  * 48167b8e, 5b99a3d9, 84551a07, 54d25be9, 037e2505 Server: Refactor config
+  * 8c32fc2 Server: Add token type specific enrollment limits
+  * e4f1ebc Server: Support loading provider via configuartion in linotp.ini
+  * dc79830, ed8b5af Server: Enable new policy engine by default
+  * 8c37e1d, 952f311 Server: moved tokens to new location in src tree
+  * e5281d7, bc71dc4 Server: Refactoring Resolver class instantiation
+  * b50e562 Smsprovider: Moved the smsproviders to become part of linotp
+  * 13a3011 UserIdresolver: Moved useridresolvers into linotp package
+  * 445b569, 62e74d0 Sever: Removed getParam() method
+  * 48167b8, 5b99a3d, 84551a0, 54d25be, 037e250 Server: Refactor config
     handling (todo finsih)
-  * dae4d8cd Server: Refactoring: Use typing for encrypted values in config
+  * dae4d8c Server: Refactoring: Use typing for encrypted values in config
     (todo finsih)
-  * 09d3e5ab Server: Removed IE compatibility mode from templates
-  * f9a3179b Web UI: Refactor dialog button icon generation
-  * 0a0c3d2d Web UI: Performance improvement by removing mouseover effects on
+  * 09d3e5a Server: Removed IE compatibility mode from templates
+  * f9a3179 Web UI: Refactor dialog button icon generation
+  * 0a0c3d2 Web UI: Performance improvement by removing mouseover effects on
     Manage-UI
-  * fe7ac117 Web UI: Extract custom form validators into seperate files
- 
+  * fe7ac11 Web UI: Extract custom form validators into seperate files
+  * a18d46c Server: Take the already stored mobile number of a token owner
+                    (available from UserIdResolver) if it exists, otherwise
+                    take the number stored in the token info.
+  * 4f25bcb Server: Autoassignment without password
+  * 27a518f Web UI: Removed IE compatibility mode from templates
+  * 9c28919, 7ae1849 Selfservice: Center UI layout for login and polling
+  * c116490, 7c61edc, 4dd8956, c2eb554, ac9589b, 3d4429, 65c04c
+    05ec119, 086467  Selfservice: Add multifactor authentication 
+                     support for login
+  * e44f3be Selfservice: Remove obsolete HTML redirection index page
+  * 78f4d39 Selfservice: Add transaction ID on push or QR token on selfservice login
+  * b517af2 Server: Support shorter lost token duration (days, hours, and minutes
+                    added)
+  * 4f25bcb Server: Autoassign a token if a request arrives with only username
+                    (without password)
+  * 1df19db Server: Add push version 2.0
+
   Bug Fixes:
-  * 4d2dadc9 Server: Fix evaluation of forward policy to match most specific
+  * 4d2dad Server: Fix evaluation of forward policy to match most specific
     user definition
-  * f87d36e3 Server: Fix password comparison of password token
-  * 32a003ba Server: Adjust location of token makos for translation
-  * 8595b449 Server: Fix typo in getUserFromRequest in case of basic auth
-  * 8910dda9 Server: Fix missing 'serial' for audit and policy check in
+  * f87d36 Server: Fix password comparison of password token
+  * 32a003 Server: Adjust location of token makos for translation
+  * 8595b4 Server: Fix typo in getUserFromRequest in case of basic auth
+  * 8910dd Server: Fix missing 'serial' for audit and policy check in
     selfservice.enroll
-  * bf1abbb3 Server: Fix for loading active token modules 
-  * 43cd5622 Server: Refactoring - cleanup for the "day password" token file
+  * bf1abb Server: Fix for loading active token modules
+  * 43cd56 Server: Refactoring - cleanup for the "day password" token file
     and algorithm
-  * 80552676 Web UI: Fix UI crash check if backend response is array in ldap
+  * 805526 Web UI: Fix UI crash check if backend response is array in ldap
     testconnection
                      - d5f607cd On LDAP test connection always close dialog
-
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 29 Aug 2017 11:29:18 +0200
-
-linotp (2.9.3.4~rc1-1) jessie; urgency=low
-
-  Bug Fixes:
   * 75b52f Server: Fix encoding error that prevented Token View from being
                    displayed in the web interface.
-  * f55cea,
-    eca869 Server: Fix challenge validation to check only one request at a
+  * f150d9,
+    d676de Server: Fix challenge validation to check only one request at a
                    time. Prevent (positve) double authentication with the
                    same transaction ID and OTP. This used to happen when
                    a user submitted the OTP for a transaction ID more than
                    once within a very short timeframe.
+  * 1a3db9 Server: Fix for missing LDAP uft-8 conversion
+  * 77ab04 Server: Fix default hash algorithm. This  was causing issues in 
+                   the YubiKey import. 
+  * e34a96 Server: Fix wrong audit log entries where "failcounter exceeded"
+                   was incorrectly being replaced with "no token found"
 
- -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 27 Sep 2017 16:06:03 +0200
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Fri, 29 Sep 2017 13:55:11 +0200
 
 linotp (2.9.3.3-1) jessie; urgency=low
 
