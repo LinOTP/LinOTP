@@ -250,7 +250,8 @@ class ValidationHandler(object):
         for serial in serials:
 
             tokens = getTokens4UserOrSerial(serial=serial,
-                                            token_type=token_type)
+                                            token_type=token_type,
+                                            read_for_update=True)
 
             if not tokens and token_type:
                 continue
@@ -287,7 +288,8 @@ class ValidationHandler(object):
 
         token_type = options.get('token_type', None)
 
-        tokenList = getTokens4UserOrSerial(None, serial, token_type=token_type)
+        tokenList = getTokens4UserOrSerial(None, serial, token_type=token_type,
+                                           read_for_update=True)
 
         if passw is None:
             # other than zero or one token should not happen, as serial is
@@ -509,7 +511,9 @@ class ValidationHandler(object):
         tokenList = getTokens4UserOrSerial(
                                user,
                                serial,
-                               token_type=token_type)
+                               token_type=token_type,
+                               read_for_update=True
+                               )
 
         if len(tokenList) == 0:
             audit['action_detail'] = 'User has no tokens assigned'
@@ -834,7 +838,8 @@ class ValidationHandler(object):
             serials.append("%s_%s" % (serialnum, i))
 
         for serial in serials:
-            tokens = getTokens4UserOrSerial(serial=serial)
+            tokens = getTokens4UserOrSerial(serial=serial,
+                                            read_for_update=True)
             tokenList.extend(tokens)
 
         if len(tokenList) == 0:

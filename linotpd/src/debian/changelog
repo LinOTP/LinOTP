@@ -40,6 +40,30 @@ linotp (2.10~0dev0-1) jessie; urgency=low
 
  -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Tue, 29 Aug 2017 11:29:18 +0200
 
+linotp (2.9.3.4~rc1-1) jessie; urgency=low
+
+  Bug Fixes:
+  * 75b52f Server: Fix encoding error that prevented Token View from being
+                   displayed in the web interface.
+  * f55cea,
+    eca869 Server: Fix challenge validation to check only one request at a
+                   time. Prevent (positve) double authentication with the
+                   same transaction ID and OTP. This used to happen when
+                   a user submitted the OTP for a transaction ID more than
+                   once within a very short timeframe.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Wed, 27 Sep 2017 16:06:03 +0200
+
+linotp (2.9.3.3-1) jessie; urgency=low
+
+  Bug Fixes:
+  * daca96 Server: Fix HMAC-based tokens:
+                   - prevent (positive) double authentication with the same
+                     OTP. This used to happen when a user submitted the OTP
+                     more than once within a very short timeframe.
+
+ -- LSE LinOTP2 Packaging <linotp2@lsexperts.de>  Mon, 18 Sep 2017 17:52:04 +0200
+
 linotp (2.9.3.2-1) jessie; urgency=low
 
   Bug Fixes:
