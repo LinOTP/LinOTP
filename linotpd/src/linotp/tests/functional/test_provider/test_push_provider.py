@@ -165,14 +165,6 @@ class TestPushProviderController(TestController):
             configDict['access_certificate'] = cert_file_name
             push_prov.loadConfig(configDict)
 
-        #
-        # test if missing required parameters is detected
-        #
-
-        with self.assertRaises(KeyError):
-            del configDict['access_certificate']
-            push_prov.loadConfig(configDict)
-
         # restore access certificate parameter
         cert_file_name = os.path.join(self.fixture_path, 'cert.pem')
         configDict['access_certificate'] = cert_file_name

@@ -98,11 +98,13 @@ class DefaultPushProvider(IPushProvider):
             self.push_server_url = configDict['push_url']
 
             #
-            # for authentication on the pnp we require a client certificate
+            # for authentication on the challenge service we can use a
+            # client certificate
             #
 
-            self.client_cert = configDict['access_certificate']
-            if not os.path.isfile(self.client_cert):
+            self.client_cert = configDict.get('access_certificate')
+
+            if self.client_cert and not os.path.isfile(self.client_cert):
                 raise IOError("required authenticating client"
                               " cert could not be found %r" %
                               self.client_cert)
@@ -120,8 +122,10 @@ class DefaultPushProvider(IPushProvider):
 
             if server_cert:
 
-                if (not os.path.isfile(server_cert) and
-                   not os.path.isdir(server_cert)):
+                if (
+                    not os.path.isfile(server_cert) and
+                    not os.path.isdir(server_cert)):
+
                     raise IOError("server certificate verification could not"
                                   " be made as certificate could not be found"
                                   " %r" % server_cert)
@@ -188,9 +192,6 @@ class DefaultPushProvider(IPushProvider):
         if not self.push_server_url:
             raise Exception("Missing Server Push Url configuration!")
 
-        if not self.client_cert:
-            raise Exception("Missing Access Certificate configuration!")
-
         if not challenge:
             raise Exception("No challenge to submit!")
 
@@ -227,13 +228,6 @@ class DefaultPushProvider(IPushProvider):
         :return: tuple with response status and content / reason
         """
 
-        params = {}
-        params['challenge'] = challenge
-        params['gda'] = gda
-        params['transactionId'] = transactionId
-
-        json_challenge = {"challenge": params}
-
         # ----------------------------------------------------------------- --
 
         # Challenge Service expectes the following document
@@ -243,6 +237,13 @@ class DefaultPushProvider(IPushProvider):
         #    "gda": "string",
         #    "challenge": "string" }
         # }
+
+        params = {}
+        params['transactionId'] = transactionId
+        params['gda'] = gda
+        params['challenge'] = challenge
+
+        json_challenge = {"challenge": params}
 
         #
         # using **args for the timeout parameter
